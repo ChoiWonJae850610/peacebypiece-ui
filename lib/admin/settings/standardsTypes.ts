@@ -1,3 +1,5 @@
+import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
+
 export type AdminUnitCategory = "count" | "length" | "bundle" | "service" | (string & {});
 
 export type AdminUnitDefinition = {
@@ -31,5 +33,10 @@ export type AdminStandardsPayload = {
     adapterConfigured: boolean;
     supportsWrite: boolean;
   };
+  error?: string;
+};
+
+export type AdminStandardProcessesPayload = {
+  processDefinitions: OutsourcingProcessDefinition[];
   error?: string;
 };

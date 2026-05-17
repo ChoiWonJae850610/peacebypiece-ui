@@ -13,7 +13,7 @@ import {
   PARTNER_MASTER_FORM_ERRORS,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partner";
-import { fetchPartnerMasterItemsFromApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partner/apiClient";
+import { fetchAdminStandardProcessesFromApi, saveAdminStandardProcessesToApi } from "@/lib/admin/settings/standardsApiClient";
 import { fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi, saveAdminUnitsToApi } from "@/lib/admin/settings/standardsApiClient";
 import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
@@ -39,9 +39,12 @@ function formatStandardUsageDescription(activeCount: number, totalCount: number,
 
 type AdminStandardsSectionProps = {
   mode?: "full" | "standards-only";
+  capabilities?: {
+    canManage?: boolean;
+  };
 };
 
-export default function AdminStandardsSection({ mode = "full" }: AdminStandardsSectionProps) {
+export default function AdminStandardsSection({ mode = "full", capabilities }: AdminStandardsSectionProps) {
   const notificationTools = useAdminWorkspaceTools();
   const t = useAdminTranslation();
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>([]);
@@ -63,13 +66,14 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [selectedActiveProcessDefinition, setSelectedActiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const standardsLoadSeqRef = useRef(0);
+  const canManageStandards = capabilities?.canManage ?? true;
 
   useEffect(() => {
     let isMounted = true;
     const requestId = standardsLoadSeqRef.current + 1;
     standardsLoadSeqRef.current = requestId;
 
-    fetchPartnerMasterItemsFromApi()
+    fetchAdminStandardProcessesFromApi()
       .then((payload) => {
         if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         if (payload.processDefinitions) {
@@ -112,13 +116,14 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
   );
 
   const openProcessModal = useCallback(() => {
+    if (!canManageStandards) return;
     setProcessDraftDefinitions(processDefinitions);
     setNewProcessLabel("");
     setProcessFormError("");
     setSelectedInactiveProcessDefinition(null);
     setSelectedActiveProcessDefinition(null);
     setIsProcessModalOpen(true);
-  }, [processDefinitions]);
+  }, [canManageStandards, processDefinitions]);
 
   const closeProcessModal = useCallback(() => {
     if (isSavingProcesses) return;
@@ -167,7 +172,7 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
     const nextDefinitions = normalizeOutsourcingProcessDefinitions(processDraftDefinitions);
     setIsSavingProcesses(true);
     setProcessFormError("");
-    savePartnerMasterProcessesToApi(nextDefinitions)
+    saveAdminStandardProcessesToApi(nextDefinitions)
       .then((payload) => {
         const savedDefinitions = payload.processDefinitions ? payload.processDefinitions : nextDefinitions;
         setProcessDefinitions(savedDefinitions);
@@ -184,6 +189,7 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
   }, [isSavingProcesses, processDraftDefinitions, t]);
 
   const saveUnitDefinitions = useCallback((nextUnits: AdminUnitDefinition[]) => {
+    if (!canManageStandards) return;
     setIsSavingUnits(true);
     setStandardFormError("");
     saveAdminUnitsToApi(nextUnits)
@@ -193,9 +199,10 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
       })
       .catch(() => setStandardFormError(t("standards.section.saveUnitFailed", "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
       .finally(() => setIsSavingUnits(false));
-  }, [t]);
+  }, [canManageStandards, t]);
 
   const saveItemCategoryDefinitions = useCallback((nextCategories: AdminItemCategoryDefinition[]) => {
+    if (!canManageStandards) return;
     setIsSavingItemCategories(true);
     setStandardFormError("");
     saveAdminItemCategoriesToApi(nextCategories)
@@ -205,7 +212,7 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
       })
       .catch(() => setStandardFormError(t("standards.section.saveItemFailed", "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
       .finally(() => setIsSavingItemCategories(false));
-  }, [t]);
+  }, [canManageStandards, t]);
 
   const resetProcessDefinitions = useCallback(() => {
     setProcessDraftDefinitions((current) => current.map((definition) => ({ ...definition, isActive: true })));
@@ -224,10 +231,14 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
   const inUseSuffix = t("standards.common.inUseSuffix", "개 사용중");
   const emptyDbLabel = t("standards.common.emptyDbLabel", "DB 항목 없음");
 
+  const standardActionStatusLabel = canManageStandards
+    ? t("standards.common.manage", "관리")
+    : t("standards.common.readOnly", "조회 전용");
+
   const standardActions: StandardAction[] = [
-    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: formatStandardUsageDescription(itemCategoryDefinitions.filter((item) => item.is_active).length, itemCategoryDefinitions.length, t("standards.actions.items.empty", "고객사 품목 없음"), inUseSuffix), statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsItemCategoryModalOpen(true) },
-    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: formatStandardUsageDescription(unitDefinitions.filter((unit) => unit.is_active).length, unitDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsUnitModalOpen(true) },
-    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: formatStandardUsageDescription(activeProcessDefinitions.length, processDraftDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: t("standards.common.manage", "관리"), onClick: openProcessModal },
+    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: formatStandardUsageDescription(itemCategoryDefinitions.filter((item) => item.is_active).length, itemCategoryDefinitions.length, t("standards.actions.items.empty", "고객사 품목 없음"), inUseSuffix), statusLabel: standardActionStatusLabel, onClick: canManageStandards ? () => setIsItemCategoryModalOpen(true) : undefined },
+    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: formatStandardUsageDescription(unitDefinitions.filter((unit) => unit.is_active).length, unitDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: standardActionStatusLabel, onClick: canManageStandards ? () => setIsUnitModalOpen(true) : undefined },
+    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: formatStandardUsageDescription(activeProcessDefinitions.length, processDraftDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: standardActionStatusLabel, onClick: canManageStandards ? openProcessModal : undefined },
   ];
 
   const hasMissingDbStandards = unitDefinitions.length === 0 || processDraftDefinitions.length === 0 || defaultItemCategoryDefinitions.length === 0;
@@ -265,11 +276,11 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
       <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
         <div className="flex shrink-0 items-center justify-between gap-3">
           <h2 className="text-base font-semibold text-stone-950">{t("standards.section.standardTitle", "기준 관리")}</h2>
-          <p className="hidden text-xs font-semibold text-stone-400 sm:block">작업지시서 생성 기준값</p>
+          <p className="hidden text-xs font-semibold text-stone-400 sm:block">{t("standards.section.standardDescription", "작업지시서 생성 기준값")}</p>
         </div>
         {hasMissingDbStandards ? (
           <div className="mt-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
-            DB 기준정보 seed가 비어 있거나 일부 부족합니다. 시스템관리자 &gt; 기준정보 seed 상태에서 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 확인하세요.
+            {t("standards.section.missingSeedNotice", "DB 기준정보 seed가 비어 있거나 일부 부족합니다. 시스템관리자 > 기준정보 seed 상태에서 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 확인하세요.")}
           </div>
         ) : null}
         <div className="mt-2.5">{renderActionGrid(standardActions)}</div>

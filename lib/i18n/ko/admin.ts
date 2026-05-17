@@ -1653,6 +1653,7 @@ export const adminKo = {
       active: "사용",
       inactive: "미사용",
       manage: "관리",
+      readOnly: "조회 전용",
       inUseSuffix: "개 사용중",
     },
     section: {

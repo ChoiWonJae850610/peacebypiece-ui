@@ -48,6 +48,10 @@ export const commonEn = {
       title: "Partners",
       description: "Members with permission can read and manage partner data from the workspace home.",
     },
+    standards: {
+      title: "Standards",
+      description: "Members with permission can read and manage units, processes, and item-type standards from the workspace home.",
+    },
   },
   workorderToolbar: {
     refresh: "Refresh",

@@ -1702,6 +1702,7 @@ export const adminEn = {
       active: "Active",
       inactive: "Inactive",
       manage: "Manage",
+      readOnly: "Read only",
       inUseSuffix: " active",
     },
     section: {

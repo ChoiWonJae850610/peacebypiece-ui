@@ -1,4 +1,5 @@
-import type { AdminItemCategoryDefinition, AdminStandardsPayload, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
+import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
+import type { AdminItemCategoryDefinition, AdminStandardProcessesPayload, AdminStandardsPayload, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 
 async function readStandardsResponse(response: Response): Promise<AdminStandardsPayload> {
   const payload = (await response.json()) as AdminStandardsPayload;
@@ -27,4 +28,30 @@ export async function saveAdminItemCategoriesToApi(itemCategories: AdminItemCate
     body: JSON.stringify({ itemCategories }),
   });
   return readStandardsResponse(response);
+}
+
+
+async function readStandardProcessesResponse(response: Response): Promise<AdminStandardProcessesPayload> {
+  const payload = (await response.json()) as AdminStandardProcessesPayload;
+  if (!response.ok) throw new Error(payload.error ?? "ADMIN_STANDARD_PROCESSES_API_ERROR");
+  return {
+    processDefinitions: Array.isArray(payload.processDefinitions) ? payload.processDefinitions : [],
+    error: payload.error,
+  };
+}
+
+export async function fetchAdminStandardProcessesFromApi(): Promise<AdminStandardProcessesPayload> {
+  const response = await fetch("/api/admin/standards/processes", { method: "GET", cache: "no-store" });
+  return readStandardProcessesResponse(response);
+}
+
+export async function saveAdminStandardProcessesToApi(
+  processDefinitions: OutsourcingProcessDefinition[],
+): Promise<AdminStandardProcessesPayload> {
+  const response = await fetch("/api/admin/standards/processes", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ processDefinitions }),
+  });
+  return readStandardProcessesResponse(response);
 }

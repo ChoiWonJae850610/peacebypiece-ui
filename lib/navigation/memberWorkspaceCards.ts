@@ -36,9 +36,9 @@ export const MEMBER_WORKSPACE_CARDS: readonly MemberWorkspaceCard[] = [
   {
     id: "standards",
     href: "/workspace/standards",
-    status: MEMBER_WORKSPACE_CARD_STATUS.planned,
+    status: MEMBER_WORKSPACE_CARD_STATUS.available,
     section: "work",
-    requiredPermissions: ["standards.read", "standards.create", "standards.update", "standards.delete"],
+    requiredPermissions: ["standards.read"],
   },
 ] as const;
 
