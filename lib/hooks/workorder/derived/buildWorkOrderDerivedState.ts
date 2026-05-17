@@ -40,12 +40,13 @@ export function buildWorkOrderDerivedState({
   searchQuery,
   attachmentPreviewId,
 }: BuildWorkOrderDerivedStateParams) {
-  const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
+  const hasSessionUser = Boolean(currentUser.id);
+  const currentRoles = hasSessionUser ? normalizeRoles(currentUser.roles, currentUser.role) : [];
   const currentRole = currentUser.role;
   const isAdmin = isAdminRole(currentRoles);
-  const canCreateWorkOrder = canCreateWorkOrderByRoles(currentRoles);
-  const canReorderWorkOrder = canCreateWorkOrderByRoles(currentRoles);
-  const permissionTargetUser = users.find((user) => user.id === permissionTargetUserId) ?? users[0];
+  const canCreateWorkOrder = hasSessionUser && canCreateWorkOrderByRoles(currentRoles);
+  const canReorderWorkOrder = hasSessionUser && canCreateWorkOrderByRoles(currentRoles);
+  const permissionTargetUser = users.find((user) => user.id === permissionTargetUserId) ?? users[0] ?? currentUser;
   const workflowStateById = deriveWorkflowStateById(workOrders);
   const currentWorkflowState = deriveWorkflowStateFromOrderEntries(selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries);
   const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);

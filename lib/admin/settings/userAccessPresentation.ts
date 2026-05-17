@@ -1,8 +1,7 @@
 import { ROLE_DISPLAY_GUIDE, formatRoles } from "@/lib/constants/roles";
-import { WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
 import type { UserProfile } from "@/types/user";
 
-export type AdminUserAccessSourceState = "db-connected" | "db-prepared" | "mock-adapter" | "mock-fallback";
+export type AdminUserAccessSourceState = "db-connected" | "db-prepared" | "unavailable";
 
 export type AdminUserAccessChecklistItem = {
   id: string;
@@ -25,8 +24,8 @@ export type AdminUserAccessViewModel = {
 };
 
 export function buildAdminUserAccessViewModel(
-  users: readonly UserProfile[] = WORKORDER_SEED_USERS,
-  sourceState: AdminUserAccessSourceState = "mock-adapter",
+  users: readonly UserProfile[] = [],
+  sourceState: AdminUserAccessSourceState = "db-prepared",
 ): AdminUserAccessViewModel {
   return {
     sourceState,

@@ -1219,8 +1219,7 @@ export const adminEn = {
     sourceStates: {
       "db-connected": "Live user query",
       "db-prepared": "User structure prepared",
-      "mock-adapter": "Test user source",
-      "mock-fallback": "Temporary user source",
+      unavailable: "User query unavailable",
     },
     userCountLabel: "Users",
     testUsersTitle: "Users by role",

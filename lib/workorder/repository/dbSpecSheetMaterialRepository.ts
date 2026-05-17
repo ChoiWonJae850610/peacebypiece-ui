@@ -2,7 +2,6 @@ import "server-only";
 
 import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import { queryDb } from "@/lib/db/client";
-import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { Material } from "@/types/material";
 import type { WorkOrder } from "@/types/workorder";
 
@@ -23,6 +22,26 @@ const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
 const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
 const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
 const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
+
+type WorkOrderCompanyContext = {
+  companyId: string;
+  companyName?: string | null;
+};
+
+function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
+  companyId: string;
+  companyName: string;
+} {
+  const companyId = scope.companyId.trim();
+  if (!companyId) {
+    throw new Error("COMPANY_SESSION_REQUIRED");
+  }
+
+  return {
+    companyId,
+    companyName: scope.companyName?.trim() || companyId,
+  };
+}
 
 type DbColumnInfo = {
   column_name: string;
@@ -177,7 +196,10 @@ function buildSpecSheetMaterialId(workOrderId: string, material: Material, index
   return `${workOrderId}:material:${material.id || index + 1}`;
 }
 
-export async function syncDbSpecSheetMaterialsForSpecSheet(workOrder: WorkOrder): Promise<void> {
+export async function syncDbSpecSheetMaterialsForSpecSheet(
+  workOrder: WorkOrder,
+  companyScope: WorkOrderCompanyContext,
+): Promise<void> {
   const schema = await loadSpecSheetMaterialSchema();
   if (!canSyncSpecSheetMaterials(schema)) return;
 
@@ -202,7 +224,7 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(workOrder: WorkOrder)
     const columns = ["id", specSheetIdColumn];
     const values: unknown[] = [id, workOrder.id];
     const placeholders = ["$1", "$2"];
-    const company = getWorkspaceCompanyContext();
+    const company = resolveWorkOrderCompanyContext(companyScope);
 
     if (schema.companyIdColumn) {
       columns.push(schema.companyIdColumn);

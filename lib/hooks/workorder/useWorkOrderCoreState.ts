@@ -11,9 +11,16 @@ import {
   type WorkOrderListStatusFilter,
 } from "@/lib/workorder/list/workOrderListControls";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
+import { buildUserRoleState } from "@/lib/constants/roles";
 import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 import { hasWorkOrderDraftChanges } from "@/lib/workorder/draftState";
+
+const EMPTY_CURRENT_USER: UserProfile = {
+  id: "",
+  name: "",
+  ...buildUserRoleState([]),
+};
 
 const createFallbackWorkOrder = (): WorkOrder => ({
   id: "",
@@ -209,7 +216,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   }, [isSelectedWorkOrderDetailLoading, repository, repositoryStatus, selectedId]);
 
   const currentUser = useMemo(
-    () => users.find((user) => user.id === currentUserId) ?? users[0],
+    () => users.find((user) => user.id === currentUserId) ?? users[0] ?? EMPTY_CURRENT_USER,
     [users, currentUserId],
   );
 
@@ -226,7 +233,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   }, [persistedWorkOrders, selectedId, workOrders]);
 
   const permissionTargetUser = useMemo(
-    () => users.find((user) => user.id === permissionTargetUserId) ?? users[0],
+    () => users.find((user) => user.id === permissionTargetUserId) ?? users[0] ?? EMPTY_CURRENT_USER,
     [users, permissionTargetUserId],
   );
 

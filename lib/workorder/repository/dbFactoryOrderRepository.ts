@@ -1,7 +1,6 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
-import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import type { OrderEntry, WorkOrder } from "@/types/workorder";
 
@@ -29,6 +28,26 @@ const FACTORY_ORDER_STATUS = {
   inspection: "inspection",
   completed: "completed",
 } as const;
+
+type WorkOrderCompanyContext = {
+  companyId: string;
+  companyName?: string | null;
+};
+
+function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
+  companyId: string;
+  companyName: string;
+} {
+  const companyId = scope.companyId.trim();
+  if (!companyId) {
+    throw new Error("COMPANY_SESSION_REQUIRED");
+  }
+
+  return {
+    companyId,
+    companyName: scope.companyName?.trim() || companyId,
+  };
+}
 
 type DbColumnInfo = {
   column_name: string;
@@ -224,7 +243,10 @@ function buildFactoryOrderId(workOrderId: string, entry: OrderEntry, index: numb
   return `${workOrderId}:factory:${entry.id || index + 1}`;
 }
 
-export async function syncDbFactoryOrdersForSpecSheet(workOrder: WorkOrder): Promise<void> {
+export async function syncDbFactoryOrdersForSpecSheet(
+  workOrder: WorkOrder,
+  companyScope: WorkOrderCompanyContext,
+): Promise<void> {
   const schema = await loadFactoryOrderSchema();
   if (!canSyncFactoryOrders(schema)) return;
 
@@ -259,7 +281,7 @@ export async function syncDbFactoryOrdersForSpecSheet(workOrder: WorkOrder): Pro
     const columns = ["id", specSheetIdColumn];
     const values: unknown[] = [id, workOrder.id];
     const placeholders = ["$1", "$2"];
-    const company = getWorkspaceCompanyContext();
+    const company = resolveWorkOrderCompanyContext(companyScope);
 
     if (schema.companyIdColumn) {
       columns.push(schema.companyIdColumn);

@@ -1187,8 +1187,7 @@ export const adminKo = {
     sourceStates: {
       "db-connected": "실제 사용자 조회",
       "db-prepared": "사용자 구조 준비",
-      "mock-adapter": "샘플 사용자 기준",
-      "mock-fallback": "임시 사용자 기준",
+      unavailable: "사용자 조회 불가",
     },
     userCountLabel: "사용자",
     testUsersTitle: "역할별 사용자",

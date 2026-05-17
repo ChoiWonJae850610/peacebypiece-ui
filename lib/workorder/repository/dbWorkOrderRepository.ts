@@ -3,10 +3,6 @@ import "server-only";
 import { queryDb } from "@/lib/db/client";
 import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import {
-  getAdminCompanyId,
-  getAdminCompanyScope,
-} from "@/lib/admin/settings/companyScope";
-import {
   LEGACY_WORKFLOW_STATE_MAP,
   WORKFLOW_STATES,
 } from "@/lib/constants/workorderStates";
@@ -46,14 +42,14 @@ function resolveWorkOrderCompanyScope(scope?: WorkOrderCompanyScope | null): {
   companyName: string;
 } {
   const companyId = scope?.companyId?.trim();
-  if (companyId) {
-    return {
-      companyId,
-      companyName: scope?.companyName?.trim() || companyId,
-    };
+  if (!companyId) {
+    throw new Error("COMPANY_SESSION_REQUIRED");
   }
 
-  return getAdminCompanyScope();
+  return {
+    companyId,
+    companyName: scope?.companyName?.trim() || companyId,
+  };
 }
 
 function resolveWorkOrderCompanyId(
@@ -934,6 +930,7 @@ function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
   const missingColumns = [
     !schema.hasIdColumn ? "id" : null,
     !schema.hasTitleColumn ? "title" : null,
+    !schema.companyIdColumn ? "company_id" : null,
   ].filter((value): value is string => Boolean(value));
 
   if (missingColumns.length > 0) {
@@ -1663,9 +1660,9 @@ export async function createDbWorkOrder(
     materials: normalizedWorkOrder.materials ?? [],
     outsourcing: normalizedWorkOrder.outsourcing ?? [],
   };
-  await syncDbFactoryOrdersForSpecSheet(persisted);
-  await syncDbSpecSheetMaterialsForSpecSheet(persisted);
-  await syncDbSpecSheetOutsourcingForSpecSheet(persisted);
+  await syncDbFactoryOrdersForSpecSheet(persisted, company);
+  await syncDbSpecSheetMaterialsForSpecSheet(persisted, company);
+  await syncDbSpecSheetOutsourcingForSpecSheet(persisted, company);
   return persisted;
 }
 
@@ -1882,9 +1879,9 @@ export async function updateDbWorkOrder(
     materials: normalizedWorkOrder.materials ?? [],
     outsourcing: normalizedWorkOrder.outsourcing ?? [],
   };
-  await syncDbFactoryOrdersForSpecSheet(persisted);
-  await syncDbSpecSheetMaterialsForSpecSheet(persisted);
-  await syncDbSpecSheetOutsourcingForSpecSheet(persisted);
+  await syncDbFactoryOrdersForSpecSheet(persisted, company);
+  await syncDbSpecSheetMaterialsForSpecSheet(persisted, company);
+  await syncDbSpecSheetOutsourcingForSpecSheet(persisted, company);
   return persisted;
 }
 
@@ -1993,14 +1990,14 @@ export async function updateDbWorkOrderStatePatch(
     buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
   ];
 
-  const companyId = resolveWorkOrderCompanyId(scope);
+  const company = resolveWorkOrderCompanyScope(scope);
   const result = await queryDb<DbSpecSheetRow>(
     `
       UPDATE ${quoteIdentifier(SPEC_SHEET_TABLE)}
       SET
         ${assignments.join(",\n        ")}
       WHERE id = $1
-        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(companyId)}` : ""}
+        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(company.companyId)}` : ""}
       RETURNING
         ${returningColumns.join(",\n        ")}
     `,
@@ -2034,7 +2031,7 @@ export async function updateDbWorkOrderStatePatch(
         ? (patch.factoryOrderRequest ?? null)
         : (existing?.factoryOrderRequest ?? null),
     };
-    await syncDbFactoryOrdersForSpecSheet(patchedWorkOrder);
+    await syncDbFactoryOrdersForSpecSheet(patchedWorkOrder, company);
     return patchedWorkOrder;
   }
 

@@ -11,99 +11,123 @@ function createNotConfiguredError(methodName: string) {
   return new Error(`DB repository adapter is not configured: ${methodName}`);
 }
 
+const EMPTY_DB_WORKORDER_STATE: InitialWorkorderRepositoryState = {
+  users: [],
+  workOrders: [],
+  historyLogs: [],
+  selectedId: "",
+  currentUserId: "",
+  permissionTargetUserId: "",
+};
+
+
 export function createDbWorkorderRepository(
-  fallbackRepository: WorkorderRepository,
+  _baseRepository: WorkorderRepository,
   adapter?: WorkorderRepositoryAdapter,
 ): WorkorderRepository {
   const capabilities = createDbWorkorderRepositoryCapabilities(adapter);
   return {
     getRepositoryInfo: () => createWorkorderRepositoryInfo("db", capabilities, Boolean(adapter)),
-    createInitialState: (): InitialWorkorderRepositoryState => fallbackRepository.createInitialState(),
+    createInitialState: (): InitialWorkorderRepositoryState => EMPTY_DB_WORKORDER_STATE,
     createInitialStateAsync: async (): Promise<InitialWorkorderRepositoryState> => {
       const workspaceState = adapter?.loadWorkspaceState ? await adapter.loadWorkspaceState() : null;
-      return workspaceState ?? fallbackRepository.createInitialState();
+      return workspaceState ?? EMPTY_DB_WORKORDER_STATE;
     },
-    getInitialUsers: () => fallbackRepository.getInitialUsers(),
-    getInitialWorkOrders: () => fallbackRepository.getInitialWorkOrders(),
-    getInitialHistoryLogs: () => fallbackRepository.getInitialHistoryLogs(),
-    getDefaultSelectedId: () => fallbackRepository.getDefaultSelectedId(),
-    getDefaultCurrentUserId: () => fallbackRepository.getDefaultCurrentUserId(),
-    getDefaultPermissionTargetId: () => fallbackRepository.getDefaultPermissionTargetId(),
-    loadPersistedState: () => fallbackRepository.loadPersistedState(),
-    loadPersistedStateAsync: async () => fallbackRepository.loadPersistedStateAsync(),
-    persistState: (payload) => fallbackRepository.persistState(payload),
-    persistStateAsync: async (payload) => fallbackRepository.persistStateAsync(payload),
-    loadWorkspaceState: () => fallbackRepository.loadWorkspaceState(),
+    getInitialUsers: () => EMPTY_DB_WORKORDER_STATE.users,
+    getInitialWorkOrders: () => EMPTY_DB_WORKORDER_STATE.workOrders,
+    getInitialHistoryLogs: () => EMPTY_DB_WORKORDER_STATE.historyLogs,
+    getDefaultSelectedId: () => EMPTY_DB_WORKORDER_STATE.selectedId,
+    getDefaultCurrentUserId: () => EMPTY_DB_WORKORDER_STATE.currentUserId,
+    getDefaultPermissionTargetId: () => EMPTY_DB_WORKORDER_STATE.permissionTargetUserId,
+    loadPersistedState: () => null,
+    loadPersistedStateAsync: async () => null,
+    persistState: () => undefined,
+    persistStateAsync: async () => undefined,
+    loadWorkspaceState: () => EMPTY_DB_WORKORDER_STATE,
     loadWorkspaceStateAsync: async () => {
       if (adapter?.loadWorkspaceState) {
         return adapter.loadWorkspaceState();
       }
-      return fallbackRepository.loadWorkspaceStateAsync();
+      return EMPTY_DB_WORKORDER_STATE;
     },
-    loadWorkOrderDetail: (workOrderId) => fallbackRepository.loadWorkOrderDetail(workOrderId),
+    loadWorkOrderDetail: () => {
+      throw createNotConfiguredError("loadWorkOrderDetail");
+    },
     loadWorkOrderDetailAsync: async (workOrderId) => {
       if (adapter?.loadWorkOrderDetail) {
         return adapter.loadWorkOrderDetail(workOrderId);
       }
-      return fallbackRepository.loadWorkOrderDetailAsync(workOrderId);
+      throw createNotConfiguredError("loadWorkOrderDetail");
     },
-    saveWorkspaceState: (payload) => fallbackRepository.saveWorkspaceState(payload),
+    saveWorkspaceState: (payload) => payload,
     saveWorkspaceStateAsync: async (payload) => {
-      if (!adapter?.saveWorkspaceState) return fallbackRepository.saveWorkspaceStateAsync(payload);
+      if (!adapter?.saveWorkspaceState) return payload;
       return adapter.saveWorkspaceState(payload);
     },
-    saveWorkspaceSession: (payload) => fallbackRepository.saveWorkspaceSession(payload),
+    saveWorkspaceSession: (payload) => payload,
     saveWorkspaceSessionAsync: async (payload) => {
-      if (!adapter?.saveWorkspaceSession) return fallbackRepository.saveWorkspaceSessionAsync(payload);
+      if (!adapter?.saveWorkspaceSession) return payload;
       return adapter.saveWorkspaceSession(payload);
     },
-    createWorkOrder: (workOrder) => fallbackRepository.createWorkOrder(workOrder),
+    createWorkOrder: () => {
+      throw createNotConfiguredError("createWorkOrder");
+    },
     createWorkOrderAsync: async (workOrder) => {
-      if (!adapter?.createWorkOrder) return fallbackRepository.createWorkOrderAsync(workOrder);
+      if (!adapter?.createWorkOrder) throw createNotConfiguredError("createWorkOrder");
       return adapter.createWorkOrder(workOrder);
     },
-    saveWorkOrder: (workOrder) => fallbackRepository.saveWorkOrder(workOrder),
+    saveWorkOrder: () => {
+      throw createNotConfiguredError("saveWorkOrder");
+    },
     saveWorkOrderAsync: async (workOrder) => {
-      if (!adapter?.saveWorkOrder) return fallbackRepository.saveWorkOrderAsync(workOrder);
+      if (!adapter?.saveWorkOrder) throw createNotConfiguredError("saveWorkOrder");
       return adapter.saveWorkOrder(workOrder);
     },
-    saveWorkOrderStatePatch: (patch) => fallbackRepository.saveWorkOrderStatePatch(patch),
+    saveWorkOrderStatePatch: () => {
+      throw createNotConfiguredError("saveWorkOrderStatePatch");
+    },
     saveWorkOrderStatePatchAsync: async (patch) => {
-      if (!adapter?.saveWorkOrderStatePatch) return fallbackRepository.saveWorkOrderStatePatchAsync(patch);
+      if (!adapter?.saveWorkOrderStatePatch) throw createNotConfiguredError("saveWorkOrderStatePatch");
       return adapter.saveWorkOrderStatePatch(patch);
     },
-    saveWorkOrders: (workOrders) => fallbackRepository.saveWorkOrders(workOrders),
+    saveWorkOrders: () => {
+      throw createNotConfiguredError("saveWorkOrders");
+    },
     saveWorkOrdersAsync: async (workOrders) => {
-      if (!adapter?.saveWorkOrders) return fallbackRepository.saveWorkOrdersAsync(workOrders);
+      if (!adapter?.saveWorkOrders) throw createNotConfiguredError("saveWorkOrders");
       return adapter.saveWorkOrders(workOrders);
     },
-    deleteWorkOrder: (workOrderId) => fallbackRepository.deleteWorkOrder(workOrderId),
+    deleteWorkOrder: () => {
+      throw createNotConfiguredError("deleteWorkOrder");
+    },
     deleteWorkOrderAsync: async (workOrderId) => {
-      if (!adapter?.deleteWorkOrder) return fallbackRepository.deleteWorkOrderAsync(workOrderId);
+      if (!adapter?.deleteWorkOrder) throw createNotConfiguredError("deleteWorkOrder");
       return adapter.deleteWorkOrder(workOrderId);
     },
-    appendHistoryLogs: (historyLogs) => fallbackRepository.appendHistoryLogs(historyLogs),
+    appendHistoryLogs: (historyLogs) => historyLogs,
     appendHistoryLogsAsync: async (historyLogs) => {
-      if (!adapter?.appendHistoryLogs) return fallbackRepository.appendHistoryLogsAsync(historyLogs);
+      if (!adapter?.appendHistoryLogs) return historyLogs;
       return adapter.appendHistoryLogs(historyLogs);
     },
-    saveUsers: (users) => fallbackRepository.saveUsers(users),
+    saveUsers: (users) => users,
     saveUsersAsync: async (users) => {
-      if (!adapter?.saveUsers) return fallbackRepository.saveUsersAsync(users);
+      if (!adapter?.saveUsers) return users;
       return adapter.saveUsers(users);
     },
-    savePermissions: (users) => fallbackRepository.savePermissions(users),
+    savePermissions: (users) => users,
     savePermissionsAsync: async (users) => {
-      if (!adapter?.savePermissions) return fallbackRepository.savePermissionsAsync(users);
+      if (!adapter?.savePermissions) return users;
       return adapter.savePermissions(users);
     },
   };
 }
 
-export function createUnconfiguredDbWorkorderRepository(fallbackRepository: WorkorderRepository): WorkorderRepository {
-  const repository = createDbWorkorderRepository(fallbackRepository, {
-    loadWorkspaceState: async () => fallbackRepository.loadWorkspaceStateAsync(),
-    loadWorkOrderDetail: async (workOrderId) => fallbackRepository.loadWorkOrderDetailAsync(workOrderId),
+export function createUnconfiguredDbWorkorderRepository(baseRepository: WorkorderRepository): WorkorderRepository {
+  const repository = createDbWorkorderRepository(baseRepository, {
+    loadWorkspaceState: async () => EMPTY_DB_WORKORDER_STATE,
+    loadWorkOrderDetail: async () => {
+      throw createNotConfiguredError("loadWorkOrderDetail");
+    },
     saveWorkspaceState: async () => {
       throw createNotConfiguredError("saveWorkspaceState");
     },

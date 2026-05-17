@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { listCompanyUserAccessProfiles } from "@/lib/admin/settings/userAccessRepository";
-import { WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,12 +40,12 @@ export async function GET() {
     return NextResponse.json(
       {
         ok: false,
-        sourceState: "mock-fallback",
-        users: WORKORDER_SEED_USERS,
+        sourceState: "unavailable",
+        users: [],
         error: "ADMIN_USER_ACCESS_UNAVAILABLE",
         message,
       },
-      { status: 200, headers: { "Cache-Control": "no-store" } },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
 }

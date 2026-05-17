@@ -6,7 +6,6 @@ import {
   buildWorkOrderDeletedAuditLog,
   buildWorkOrderStatusChangedAuditLog,
 } from "@/lib/system/audit/writeActions";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import {
   getDatabaseRuntimeErrorCode,
   getSupportedDatabaseEnvKeys,
@@ -52,14 +51,38 @@ type DbApiErrorPayload = {
   code: DbApiErrorCode;
 };
 
+type WorkOrderRequestCompanyScopeResult =
+  | { ok: true; scope: WorkOrderCompanyScope }
+  | { ok: false; response: NextResponse };
+
+function createCompanySessionRequiredResponse() {
+  return NextResponse.json(
+    {
+      message: "Company session is required for work order requests.",
+      code: "COMPANY_SESSION_REQUIRED",
+    },
+    { status: 401 },
+  );
+}
+
 async function resolveWorkOrderRequestCompanyScope(): Promise<WorkOrderCompanyScope | null> {
   const session = await getCurrentWaflSession();
-  if (!session?.companyId) return null;
+  const companyId = session?.companyId?.trim();
+  if (!companyId) return null;
 
   return {
-    companyId: session.companyId,
+    companyId,
     companyName: session.companyName,
   };
+}
+
+async function requireWorkOrderRequestCompanyScope(): Promise<WorkOrderRequestCompanyScopeResult> {
+  const scope = await resolveWorkOrderRequestCompanyScope();
+  if (!scope) {
+    return { ok: false, response: createCompanySessionRequiredResponse() };
+  }
+
+  return { ok: true, scope };
 }
 
 function applySessionActorDefaults(
@@ -246,9 +269,10 @@ function buildWorkOrderMap(workOrders: WorkOrder[]): Map<string, WorkOrder> {
 
 async function writeWorkOrderCreatedHistory(
   workOrder: WorkOrder,
+  companyId: string,
 ): Promise<void> {
   await createAdminHistoryLogSafe({
-    company_id: WORKSPACE_COMPANY_ID,
+    company_id: companyId,
     user_id: workOrder.createdById ?? null,
     action_type: "WORKORDER_CREATED",
     target_type: "workorder",
@@ -274,12 +298,13 @@ type WorkOrderStatusChangeAuditContext = {
 async function writeWorkOrderStatusChangeLogs(
   previous: WorkOrder | undefined,
   next: WorkOrder,
+  companyId: string,
   context: WorkOrderStatusChangeAuditContext = {},
 ): Promise<void> {
   if (!previous || previous.workflowState === next.workflowState) return;
 
   await createAdminHistoryLogSafe({
-    company_id: WORKSPACE_COMPANY_ID,
+    company_id: companyId,
     user_id: next.managerId ?? previous.managerId ?? null,
     action_type: "STATUS_CHANGED",
     target_type: "workorder",
@@ -306,7 +331,7 @@ async function writeWorkOrderStatusChangeLogs(
     actorRole: context.auditActor
       ? toSystemAuditActorRole(context.auditActor.role)
       : null,
-    companyId: WORKSPACE_COMPANY_ID,
+    companyId,
     managerName: next.manager ?? previous.manager ?? null,
     source: context.source,
     requestId: context.requestId ?? null,
@@ -427,9 +452,11 @@ export async function handleGetWorkOrders() {
   }
 
   try {
-    const scope = await resolveWorkOrderRequestCompanyScope();
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
     const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(
-      await findAllDbWorkOrders(scope),
+      await findAllDbWorkOrders(scopeResult.scope),
     );
     logDbRequestOutcome("GET", true, "READY", `rows=${workOrders.length}`);
 
@@ -462,8 +489,10 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
   }
 
   try {
-    const scope = await resolveWorkOrderRequestCompanyScope();
-    const foundWorkOrder = await findDbWorkOrderById(workOrderId, scope);
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
+    const foundWorkOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
 
     if (!foundWorkOrder) {
       return NextResponse.json(
@@ -520,8 +549,10 @@ export async function handleGetWorkOrderSummaries(request?: Request) {
       url?.searchParams.get("status"),
     );
     const sort = normalizeWorkOrderListSort(url?.searchParams.get("sort"));
-    const scope = await resolveWorkOrderRequestCompanyScope();
-    const workOrders = await findDbWorkOrderSummaries({ status, sort }, scope);
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
+    const workOrders = await findDbWorkOrderSummaries({ status, sort }, scopeResult.scope);
     logDbRequestOutcome(
       "GET",
       true,
@@ -571,19 +602,19 @@ export async function handlePostWorkOrders(request: Request) {
     }
 
     const session = await getCurrentWaflSession();
-    const scope = session?.companyId
-      ? { companyId: session.companyId, companyName: session.companyName }
-      : await resolveWorkOrderRequestCompanyScope();
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
     const workOrderToCreate = applySessionActorDefaults(
       body.workOrder,
       session,
     );
-    const createdWorkOrder = await createDbWorkOrder(workOrderToCreate, scope);
+    const createdWorkOrder = await createDbWorkOrder(workOrderToCreate, scopeResult.scope);
     await replaceWorkOrderMemoThreads(workOrderToCreate);
 
     const workOrder =
       await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder);
-    await writeWorkOrderCreatedHistory(workOrder);
+    await writeWorkOrderCreatedHistory(workOrder, scopeResult.scope.companyId);
 
     logDbRequestOutcome("POST", true, "READY", workOrder.id);
 
@@ -638,16 +669,18 @@ export async function handlePatchWorkOrders(request: Request) {
       const requestedWorkOrderIds = Array.from(
         new Set(body.workOrders.map((workOrder) => workOrder.id)),
       );
-      const scope = await resolveWorkOrderRequestCompanyScope();
+      const scopeResult = await requireWorkOrderRequestCompanyScope();
+      if (!scopeResult.ok) return scopeResult.response;
+
       const previousWorkOrders = (
         await Promise.all(
           requestedWorkOrderIds.map((workOrderId) =>
-            findDbWorkOrderById(workOrderId, scope),
+            findDbWorkOrderById(workOrderId, scopeResult.scope),
           ),
         )
       ).filter((workOrder): workOrder is WorkOrder => Boolean(workOrder));
       const previousWorkOrderMap = buildWorkOrderMap(previousWorkOrders);
-      const savedWorkOrders = await saveDbWorkOrders(body.workOrders, scope);
+      const savedWorkOrders = await saveDbWorkOrders(body.workOrders, scopeResult.scope);
 
       const workOrders =
         await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
@@ -657,6 +690,7 @@ export async function handlePatchWorkOrders(request: Request) {
           writeWorkOrderStatusChangeLogs(
             previousWorkOrderMap.get(workOrder.id),
             workOrder,
+            scopeResult.scope.companyId,
             {
               requestId: getAuditRequestId(request),
               ipAddress: getAuditIpAddress(request),
@@ -682,18 +716,21 @@ export async function handlePatchWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrder.id is required.");
     }
 
-    const scope = await resolveWorkOrderRequestCompanyScope();
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
     const previousWorkOrder = await findDbWorkOrderById(
       body.workOrder.id,
-      scope,
+      scopeResult.scope,
     );
-    const savedWorkOrder = await saveDbWorkOrder(body.workOrder, scope);
+    const savedWorkOrder = await saveDbWorkOrder(body.workOrder, scopeResult.scope);
 
     const workOrder =
       await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
     await writeWorkOrderStatusChangeLogs(
       previousWorkOrder ?? undefined,
       workOrder,
+      scopeResult.scope.companyId,
       {
         requestId: getAuditRequestId(request),
         ipAddress: getAuditIpAddress(request),
@@ -759,8 +796,10 @@ export async function handlePatchWorkOrderState(
       return createInvalidPayloadResponse("workflowState is required.");
     }
 
-    const scope = await resolveWorkOrderRequestCompanyScope();
-    const previousWorkOrder = await findDbWorkOrderById(workOrderId, scope);
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
+    const previousWorkOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
     const savedWorkOrder = await updateDbWorkOrderStatePatch(
       {
         id: workOrderId,
@@ -785,12 +824,13 @@ export async function handlePatchWorkOrderState(
           ? body.patch.orderEntries
           : undefined,
       },
-      scope,
+      scopeResult.scope,
     );
 
     await writeWorkOrderStatusChangeLogs(
       previousWorkOrder ?? undefined,
       savedWorkOrder,
+      scopeResult.scope.companyId,
       {
         requestId: getAuditRequestId(request),
         ipAddress: getAuditIpAddress(request),
@@ -852,15 +892,20 @@ export async function handleDeleteWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrderId is required.");
     }
 
-    const scope = await resolveWorkOrderRequestCompanyScope();
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
     const previousWorkOrder = await findDbWorkOrderById(
       body.workOrderId,
-      scope,
+      scopeResult.scope,
     );
     const previousSnapshot = previousWorkOrder
       ? await hydrateWorkOrderWithAttachmentMemoSnapshot(previousWorkOrder)
       : null;
-    const deletedWorkOrderId = await deleteDbWorkOrder(body.workOrderId, scope);
+    const deletedWorkOrderId = await deleteDbWorkOrder(
+      body.workOrderId,
+      scopeResult.scope,
+    );
 
     await createSystemAuditLogSafe(
       buildWorkOrderDeletedAuditLog({
@@ -872,7 +917,7 @@ export async function handleDeleteWorkOrders(request: Request) {
           null,
         actorId:
           previousSnapshot?.managerId ?? previousWorkOrder?.managerId ?? null,
-        companyId: WORKSPACE_COMPANY_ID,
+        companyId: scopeResult.scope.companyId,
         attachmentCount:
           previousSnapshot?.attachments?.length ??
           previousWorkOrder?.attachments?.length ??
