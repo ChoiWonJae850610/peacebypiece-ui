@@ -7,6 +7,7 @@ import {
   toMemberListPreviews,
   getMemberManagementPermissionCards,
   getMemberManagementSummaryCards,
+  getEditableMemberPermissionGroupPreviews,
   getMemberPermissionCatalogPreviews,
   getMemberPermissionGroupPreviews,
   getMemberPermissionMatrixPreviews,
@@ -181,6 +182,13 @@ const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
   (permission) => !permission.systemOnly,
 ).map((permission) => permission.code);
 
+function getMemberDetailErrorCode(errorCode: string): string {
+  if (errorCode.includes("could not determine data type")) {
+    return "MEMBER_UPDATE_FAILED";
+  }
+  return errorCode;
+}
+
 const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
 const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-1 flex-col pt-4";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
@@ -230,6 +238,7 @@ export default function AdminMemberManagementDashboard() {
   const groups = getMemberPermissionGroupPreviews();
   const catalogItems = getMemberPermissionCatalogPreviews();
   const matrixItems = getMemberPermissionMatrixPreviews();
+  const editablePermissionGroups = getEditableMemberPermissionGroupPreviews();
   const [selectedRoleId, setSelectedRoleId] = useState<string>(
     inviteRoleOptions[1]?.id ?? inviteRoleOptions[0]?.id ?? "viewer",
   );
@@ -807,8 +816,33 @@ export default function AdminMemberManagementDashboard() {
       setMemberDetailDraft(null);
       setMemberDetailError(null);
     } catch (error) {
-      setMemberDetailError(
+      const errorCode = getMemberDetailErrorCode(
         error instanceof Error ? error.message : "MEMBER_UPDATE_FAILED",
+      );
+      const errorMessageMap: Record<string, string> = {
+        MEMBER_PERMISSION_REQUIRED: t(
+          "memberManagement.detailModal.errors.permissionRequired",
+          "권한은 최소 1개 이상 선택해야 합니다.",
+        ),
+        SELF_PERMISSION_UPDATE_REMOVAL_BLOCKED: t(
+          "memberManagement.detailModal.errors.selfPermissionBlocked",
+          "본인의 권한 수정 권한은 직접 제거할 수 없습니다.",
+        ),
+        SELF_STATUS_UPDATE_BLOCKED: t(
+          "memberManagement.detailModal.errors.selfStatusBlocked",
+          "본인의 사용 상태는 직접 변경할 수 없습니다.",
+        ),
+        LAST_ADMIN_PERMISSION_REMOVAL_BLOCKED: t(
+          "memberManagement.detailModal.errors.lastAdminBlocked",
+          "마지막 관리자 권한은 제거할 수 없습니다.",
+        ),
+      };
+      setMemberDetailError(
+        errorMessageMap[errorCode] ??
+          t(
+            "memberManagement.detailModal.errors.updateFailed",
+            "멤버 정보를 저장하지 못했습니다.",
+          ),
       );
     } finally {
       setIsSavingMemberDetail(false);
@@ -1762,7 +1796,7 @@ export default function AdminMemberManagementDashboard() {
               )}
               description={t(
                 "memberManagement.detailModal.sections.permissionsDescription",
-                "역할을 선택하면 기본 권한이 채워지고, 필요한 권한만 세부 조정할 수 있습니다.",
+                "역할은 기본 권한 묶음입니다. 역할을 선택한 뒤 필요한 화면 권한만 조정합니다.",
               )}
             >
               <div className="grid gap-3">
@@ -1786,33 +1820,51 @@ export default function AdminMemberManagementDashboard() {
                     ))}
                   </select>
                 </label>
-                <div className="max-h-[320px] space-y-2 overflow-y-auto rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-2">
-                  {MEMBER_PERMISSION_CATALOG.filter(
-                    (permission) => !permission.systemOnly,
-                  ).map((permission) => (
-                    <label
-                      key={permission.code}
-                      className="flex items-start gap-3 rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 text-left"
+                <div className="max-h-[360px] space-y-3 overflow-y-auto rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3">
+                  {editablePermissionGroups.map((group) => (
+                    <section
+                      key={group.id}
+                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3"
                     >
-                      <input
-                        type="checkbox"
-                        checked={memberDetailDraft.permissionCodes.includes(
-                          permission.code,
-                        )}
-                        onChange={() =>
-                          handleToggleMemberPermission(permission.code)
-                        }
-                        className="mt-1 size-4 rounded border-[var(--pbp-border)]"
-                      />
-                      <span className="min-w-0">
-                        <span className="block text-xs font-semibold pbp-text-primary">
-                          {t(permission.labelKey, permission.code)}
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <h4 className="text-sm font-semibold pbp-text-primary">
+                          {t(group.labelKey, group.id)}
+                        </h4>
+                        <span className="rounded-full bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold pbp-text-muted">
+                          {t(
+                            "memberManagement.detailModal.permissionGroupCount",
+                            "권한 {count}개",
+                          ).replace("{count}", String(group.permissions.length))}
                         </span>
-                        <span className="mt-0.5 block text-[11px] leading-4 pbp-text-muted">
-                          {t(permission.descriptionKey, permission.code)}
-                        </span>
-                      </span>
-                    </label>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {group.permissions.map((permission) => (
+                          <label
+                            key={permission.code}
+                            className="flex items-start gap-3 rounded-xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-left"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={memberDetailDraft.permissionCodes.includes(
+                                permission.code,
+                              )}
+                              onChange={() =>
+                                handleToggleMemberPermission(permission.code)
+                              }
+                              className="mt-1 size-4 rounded border-[var(--pbp-border)]"
+                            />
+                            <span className="min-w-0">
+                              <span className="block text-xs font-semibold pbp-text-primary">
+                                {t(permission.labelKey, permission.code)}
+                              </span>
+                              <span className="mt-0.5 block text-[11px] leading-4 pbp-text-muted">
+                                {t(permission.descriptionKey, "")}
+                              </span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </section>
                   ))}
                 </div>
               </div>

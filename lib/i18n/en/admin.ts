@@ -25,6 +25,57 @@ export const adminEn = {
     adminMenu: "Admin menu",
     countUnit: "items",
   },
+  permissions: {
+    workorder: {
+      read: { label: "Read", description: "View work order lists and details." },
+      create: { label: "Create", description: "Create new work orders." },
+      update: { label: "Edit", description: "Edit work order information and contents." },
+      delete: { label: "Request deletion", description: "Move work orders to trash or request deletion." },
+      restore: { label: "Restore", description: "Restore deleted work orders." },
+      statusReview: { label: "Review status", description: "Move work orders into review steps." },
+      statusOrder: { label: "Order status", description: "Change order and production progress status." },
+      statusInspect: { label: "Inspection status", description: "Change inbound inspection and defect status." },
+      statusComplete: { label: "Complete", description: "Mark work orders as completed." },
+    },
+    partner: {
+      read: { label: "Read", description: "View partner lists and details." },
+      manage: { label: "Create/edit", description: "Create, edit, and change partner status." },
+    },
+    storage: {
+      read: { label: "Read", description: "View storage files and usage." },
+      deleteRequest: { label: "Request deletion", description: "Request deletion for files and trash items." },
+      restore: { label: "Restore", description: "Restore files from trash." },
+    },
+    stats: {
+      read: { label: "Read", description: "View statistics and operation metrics." },
+    },
+    settings: {
+      read: { label: "Read", description: "View settings and company configuration." },
+      manage: { label: "Edit", description: "Edit settings and company policies." },
+    },
+    standards: {
+      manage: { label: "Manage standards", description: "Manage unit, process, and product standards." },
+    },
+    member: {
+      read: { label: "Read", description: "View members and approval queues." },
+      invite: { label: "Invite", description: "Create member invitation links." },
+      approve: { label: "Approve", description: "Approve join requests." },
+      reject: { label: "Reject", description: "Reject join requests." },
+      permissionUpdate: { label: "Edit permissions", description: "Edit member roles and detailed permissions." },
+      suspend: { label: "Change status", description: "Suspend or reactivate members." },
+    },
+    audit: {
+      readCompany: { label: "Read audit logs", description: "View company-level change history." },
+    },
+    personalSettings: {
+      manage: { label: "Personal settings", description: "Change the member's own language, theme, and personal settings." },
+    },
+    system: {
+      standardManage: { label: "System standards", description: "Manage system-only standards." },
+      companyInvite: { label: "Invite companies", description: "Create system-admin company invitations." },
+      companyApprove: { label: "Approve companies", description: "Approve system-admin company join requests." },
+    },
+  },
   filesPage: {
     title: "Storage",
     tabGroupLabel: "Document/design status",
@@ -284,6 +335,35 @@ export const adminEn = {
     actions: {
       openOrganizationSettings: "Open organization settings",
       createInvite: "Create invitation link",
+    },
+    detailModal: {
+      title: "Member details",
+      description: "Click a member row to manage profile, status, and permissions in one place.",
+      permissionGroupCount: "{count} permissions",
+      sections: {
+        profile: "Profile",
+        profileDescription: "Name and contact are saved against the same-company member record.",
+        permissions: "Role and permissions",
+        permissionsDescription: "A role is a default permission bundle. Select a role, then adjust only the required screen permissions.",
+      },
+      fields: {
+        name: "Name",
+        phone: "Contact",
+        status: "Status",
+        role: "Role",
+      },
+      actions: {
+        save: "Save",
+        saving: "Saving",
+      },
+      errors: {
+        permissionRequired: "Select at least one permission.",
+        selfPermissionBlocked: "You cannot remove your own permission-editing permission.",
+        selfStatusBlocked: "You cannot change your own active status.",
+        lastAdminBlocked: "The last admin permission cannot be removed.",
+        updateFailed: "Could not save member information.",
+      },
+      feedback: { saved: "Member information saved." },
     },
     tabs: {
       invite: {

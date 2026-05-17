@@ -23,6 +23,57 @@ export const adminKo = {
     adminMenu: "관리자 메뉴",
     countUnit: "건",
   },
+  permissions: {
+    workorder: {
+      read: { label: "조회", description: "작업지시서 목록과 상세를 볼 수 있습니다." },
+      create: { label: "생성", description: "새 작업지시서를 등록할 수 있습니다." },
+      update: { label: "수정", description: "작업지시서의 기본 정보와 내용을 수정할 수 있습니다." },
+      delete: { label: "삭제 요청", description: "작업지시서를 휴지통으로 보내거나 삭제 요청할 수 있습니다." },
+      restore: { label: "복원", description: "삭제한 작업지시서를 복원할 수 있습니다." },
+      statusReview: { label: "검토 상태 변경", description: "작업지시서를 검토 단계로 넘길 수 있습니다." },
+      statusOrder: { label: "발주 상태 변경", description: "발주·생산 진행 상태를 변경할 수 있습니다." },
+      statusInspect: { label: "검수 상태 변경", description: "입고 검수와 불량 확인 상태를 변경할 수 있습니다." },
+      statusComplete: { label: "완료 처리", description: "작업지시서를 완료 상태로 변경할 수 있습니다." },
+    },
+    partner: {
+      read: { label: "조회", description: "업체관리 목록과 상세를 볼 수 있습니다." },
+      manage: { label: "등록/수정", description: "업체를 등록, 수정, 상태 변경할 수 있습니다." },
+    },
+    storage: {
+      read: { label: "조회", description: "저장소 파일과 사용량을 볼 수 있습니다." },
+      deleteRequest: { label: "삭제 요청", description: "파일과 휴지통 항목의 삭제를 요청할 수 있습니다." },
+      restore: { label: "복원", description: "휴지통 파일을 복원할 수 있습니다." },
+    },
+    stats: {
+      read: { label: "조회", description: "통계정보 화면과 운영 지표를 볼 수 있습니다." },
+    },
+    settings: {
+      read: { label: "조회", description: "환경설정과 회사 설정을 볼 수 있습니다." },
+      manage: { label: "수정", description: "환경설정과 회사 정책을 수정할 수 있습니다." },
+    },
+    standards: {
+      manage: { label: "기준정보 관리", description: "단위, 공정, 품목 기준정보를 관리할 수 있습니다." },
+    },
+    member: {
+      read: { label: "조회", description: "멤버 목록과 승인 대기 목록을 볼 수 있습니다." },
+      invite: { label: "초대", description: "멤버 초대 링크를 생성할 수 있습니다." },
+      approve: { label: "승인", description: "가입 신청을 승인할 수 있습니다." },
+      reject: { label: "거절", description: "가입 신청을 거절할 수 있습니다." },
+      permissionUpdate: { label: "권한 수정", description: "멤버의 역할과 세부 권한을 수정할 수 있습니다." },
+      suspend: { label: "상태 변경", description: "멤버를 비활성화하거나 다시 사용할 수 있게 변경할 수 있습니다." },
+    },
+    audit: {
+      readCompany: { label: "감사 로그 조회", description: "회사 단위 변경 이력을 볼 수 있습니다." },
+    },
+    personalSettings: {
+      manage: { label: "개인설정", description: "본인의 언어, 테마 등 개인 설정을 변경할 수 있습니다." },
+    },
+    system: {
+      standardManage: { label: "시스템 기준정보", description: "시스템 전용 기준정보를 관리할 수 있습니다." },
+      companyInvite: { label: "회사 초대", description: "시스템관리자 전용 회사 초대를 생성할 수 있습니다." },
+      companyApprove: { label: "회사 승인", description: "시스템관리자 전용 회사 가입 요청을 승인할 수 있습니다." },
+    },
+  },
   filesPage: {
     title: "저장소 관리",
     tabGroupLabel: "저장소 파일 상태",
@@ -275,6 +326,35 @@ export const adminKo = {
     actions: {
       openOrganizationSettings: "조직 설정 보기",
       createInvite: "초대 링크 생성",
+    },
+    detailModal: {
+      title: "멤버 상세 관리",
+      description: "멤버 로우를 클릭해 기본 정보, 상태, 권한을 한 곳에서 관리합니다.",
+      permissionGroupCount: "권한 {count}개",
+      sections: {
+        profile: "기본 정보",
+        profileDescription: "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
+        permissions: "역할 및 권한",
+        permissionsDescription: "역할은 기본 권한 묶음입니다. 역할을 선택한 뒤 필요한 화면 권한만 조정합니다.",
+      },
+      fields: {
+        name: "이름",
+        phone: "연락처",
+        status: "상태",
+        role: "역할",
+      },
+      actions: {
+        save: "저장",
+        saving: "저장 중",
+      },
+      errors: {
+        permissionRequired: "권한은 최소 1개 이상 선택해야 합니다.",
+        selfPermissionBlocked: "본인의 권한 수정 권한은 직접 제거할 수 없습니다.",
+        selfStatusBlocked: "본인의 사용 상태는 직접 변경할 수 없습니다.",
+        lastAdminBlocked: "마지막 관리자 권한은 제거할 수 없습니다.",
+        updateFailed: "멤버 정보를 저장하지 못했습니다.",
+      },
+      feedback: { saved: "멤버 정보를 저장했습니다." },
     },
     tabs: {
       invite: {

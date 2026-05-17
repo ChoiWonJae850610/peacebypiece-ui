@@ -42,6 +42,18 @@ export type MemberPermissionMatrixPreview = {
   enabled: boolean;
 };
 
+export type EditableMemberPermissionPreview = {
+  code: MemberPermissionCode;
+  labelKey: string;
+  descriptionKey: string;
+};
+
+export type EditableMemberPermissionGroupPreview = {
+  id: MemberPermissionGroupKey;
+  labelKey: string;
+  permissions: readonly EditableMemberPermissionPreview[];
+};
+
 export type MemberManagementSummaryCard = {
   id: "members" | "invitations" | "joinRequests" | "permissionTemplates";
   value: string;
@@ -370,6 +382,23 @@ export function getMemberPermissionMatrixPreviews(): readonly MemberPermissionMa
       enabled: role.permissionCodes.includes(permission.code),
     })),
   );
+}
+
+export function getEditableMemberPermissionGroupPreviews(): readonly EditableMemberPermissionGroupPreview[] {
+  const editablePermissions = MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly);
+  const groupIds = Array.from(new Set(editablePermissions.map((permission) => permission.group)));
+
+  return groupIds.map((groupId) => ({
+    id: groupId,
+    labelKey: `memberManagement.permissionGroups.${groupId}.label`,
+    permissions: editablePermissions
+      .filter((permission) => permission.group === groupId)
+      .map((permission) => ({
+        code: permission.code,
+        labelKey: permission.labelKey,
+        descriptionKey: permission.descriptionKey,
+      })),
+  }));
 }
 
 export function getMemberTableColumns(): readonly MemberManagementTableColumn[] {

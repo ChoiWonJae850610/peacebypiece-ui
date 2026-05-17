@@ -343,9 +343,9 @@ async function updateDbCompanyMember(
     await client.query(
       `
         UPDATE users
-           SET name = COALESCE($2, users.name),
-               phone = $3,
-               phone_source = CASE WHEN $3 IS NULL THEN users.phone_source ELSE 'user' END,
+           SET name = COALESCE($2::text, users.name),
+               phone = $3::text,
+               phone_source = CASE WHEN $3::text IS NULL THEN users.phone_source ELSE 'user' END,
                updated_at = now()
          WHERE id = $1
       `,
@@ -355,15 +355,15 @@ async function updateDbCompanyMember(
     await client.query(
       `
         UPDATE company_members
-           SET display_name = $2,
-               role_template_code = $3,
-               status = $4,
-               approved_at = CASE WHEN $4 = 'approved' AND approved_at IS NULL THEN now() ELSE approved_at END,
-               approved_by = CASE WHEN $4 = 'approved' AND approved_by IS NULL THEN $5 ELSE approved_by END,
-               rejected_at = CASE WHEN $4 = 'rejected' THEN COALESCE(rejected_at, now()) ELSE NULL END,
-               rejected_by = CASE WHEN $4 = 'rejected' THEN COALESCE(rejected_by, $5) ELSE NULL END,
-               suspended_at = CASE WHEN $4 = 'suspended' THEN COALESCE(suspended_at, now()) ELSE NULL END,
-               suspended_by = CASE WHEN $4 = 'suspended' THEN COALESCE(suspended_by, $5) ELSE NULL END,
+           SET display_name = $2::text,
+               role_template_code = $3::text,
+               status = $4::text,
+               approved_at = CASE WHEN $4::text = 'approved' AND approved_at IS NULL THEN now() ELSE approved_at END,
+               approved_by = CASE WHEN $4::text = 'approved' AND approved_by IS NULL THEN $5::text ELSE approved_by END,
+               rejected_at = CASE WHEN $4::text = 'rejected' THEN COALESCE(rejected_at, now()) ELSE NULL END,
+               rejected_by = CASE WHEN $4::text = 'rejected' THEN COALESCE(rejected_by, $5::text) ELSE NULL END,
+               suspended_at = CASE WHEN $4::text = 'suspended' THEN COALESCE(suspended_at, now()) ELSE NULL END,
+               suspended_by = CASE WHEN $4::text = 'suspended' THEN COALESCE(suspended_by, $5::text) ELSE NULL END,
                updated_at = now()
          WHERE id = $1
            AND company_id = $6
