@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createDevSystemAdminSession, isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
 
 type ProtectedArea = "admin" | "system" | "worker";
@@ -22,6 +23,10 @@ function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boo
 export async function requireWaflSessionForArea(area: ProtectedArea): Promise<WaflSessionPayload> {
   const session = await getCurrentWaflSession();
   if (!session) {
+    if (area === "system" && isDevSystemAdminEntryEnabled()) {
+      return createDevSystemAdminSession();
+    }
+
     redirect("/?error=SESSION_REQUIRED");
   }
 

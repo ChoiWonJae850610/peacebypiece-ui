@@ -2,6 +2,7 @@ export const systemEn = {
   eyebrow: "WAFL System",
   title: "Super admin operations",
   description: "A base page for expanding customer invitations, tenant operations, and work-order recommendation rules from the super-admin perspective.",
+  devEntryLabel: "Dev system-admin entry",
   versionLabel: "Version",
   moveToWorkspace: "Go to workspace",
   openCategoryRules: "Open category rules",

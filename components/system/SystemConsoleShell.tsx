@@ -17,6 +17,7 @@ import {
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 
 import { APP_VERSION } from "@/lib/constants/app";
+import { isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import { getI18n } from "@/lib/i18n";
 import {
   SYSTEM_CONSOLE_NAVIGATION_SECTIONS,
@@ -91,6 +92,8 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
 }
 
 export default function SystemConsoleShell() {
+  const devSystemEntryEnabled = isDevSystemAdminEntryEnabled();
+
   return (
     <main className={SYSTEM_PAGE_CLASS}>
       <div className={SYSTEM_PAGE_WIDE_CLASS}>
@@ -111,6 +114,9 @@ export default function SystemConsoleShell() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
+              {devSystemEntryEnabled ? (
+                <AdminStatusBadge tone="warning">{system.devEntryLabel}</AdminStatusBadge>
+              ) : null}
               <AdminStatusBadge tone="neutral">{system.versionLabel} v{APP_VERSION}</AdminStatusBadge>
             </div>
           </div>
