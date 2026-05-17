@@ -716,7 +716,6 @@ CREATE TABLE memos (
   )
 );
 
-
 CREATE TABLE audit_logs (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -961,7 +960,6 @@ CREATE TABLE storage_usage_snapshots (
   CONSTRAINT storage_usage_attachment_count_non_negative CHECK (attachment_count >= 0)
 );
 
-
 -- =========================================
 -- 11) STATS SUMMARY TABLES
 -- =========================================
@@ -1093,86 +1091,13 @@ FROM storage_usage_snapshots
 ORDER BY company_id, measured_at DESC, created_at DESC;
 
 -- =========================================
--- 13) SEED DATA
+-- 13) SYSTEM BASELINE DATA
 -- =========================================
 
-INSERT INTO companies (id, name, memo, is_active)
-VALUES ('company-sample-customer', '샘플 고객사', '기본 샘플 고객사', true);
-
-INSERT INTO company_settings (company_id)
-VALUES ('company-sample-customer');
-
-INSERT INTO users (id, company_id, email, name, role, is_active)
-VALUES
-  ('user-sample-admin', 'company-sample-customer', 'admin@example.com', '샘플 관리자', 'admin', true),
-  ('user-sample-designer', 'company-sample-customer', 'designer@example.com', '샘플 디자이너', 'designer', true),
-  ('user-sample-inspector', 'company-sample-customer', 'inspector@example.com', '샘플 검수담당자', 'inspector', true);
-
-INSERT INTO company_users (id, company_id, user_id, role, is_active, display_name)
-VALUES
-  ('company-user-sample-admin', 'company-sample-customer', 'user-sample-admin', 'admin', true, '샘플 관리자'),
-  ('company-user-sample-designer', 'company-sample-customer', 'user-sample-designer', 'designer', true, '샘플 디자이너'),
-  ('company-user-sample-inspector', 'company-sample-customer', 'user-sample-inspector', 'inspector', true, '샘플 검수담당자');
-
-INSERT INTO role_catalog (role, label, description, is_system, is_active)
-VALUES
-  ('admin', '관리자', '고객사 내부 관리자 역할', false, true),
-  ('designer', '디자이너', '작업지시서 작성 및 검토요청 역할', false, true),
-  ('inspector', '검수담당자', '생산 및 검수 확인 역할', false, true),
-  ('inventory_manager', '재고담당자', '재고 관리 역할', false, true),
-  ('viewer', '조회자', '읽기 중심 역할', false, true);
-
-INSERT INTO permission_catalog (permission_key, label, description, category, is_active)
-VALUES
-  ('workorder.create', '작업지시서 생성', '작업지시서를 생성할 수 있다.', 'workorder', true),
-  ('workorder.edit', '작업지시서 수정', '작업지시서 기본 정보를 수정할 수 있다.', 'workorder', true),
-  ('workorder.request_review', '검토요청', '작업지시서 검토요청을 할 수 있다.', 'workorder', true),
-  ('workorder.skip_review', '검토 생략', '검토요청 없이 다음 단계로 진행할 수 있다.', 'workorder', true),
-  ('workorder.request_order', '발주요청', '발주요청 액션을 실행할 수 있다.', 'workorder', true),
-  ('workorder.inspect', '검수', '검수 단계의 확인 액션을 실행할 수 있다.', 'workorder', true),
-  ('workorder.complete', '완료', '작업지시서를 완료 처리할 수 있다.', 'workorder', true),
-  ('inventory.manage', '재고 관리', '재고 데이터를 관리할 수 있다.', 'inventory', true),
-  ('partner.manage', '거래처 관리', '거래처/공장/외주처 기준정보를 관리할 수 있다.', 'partner', true),
-  ('member.invite', '멤버 초대', '고객사 멤버를 초대할 수 있다.', 'member', true),
-  ('billing.manage', '요금제 관리', '고객사 요금제와 과금 관련 설정을 관리할 수 있다.', 'billing', true),
-  ('storage.manage', '저장공간 관리', '고객사 저장공간 정책과 삭제 요청을 관리할 수 있다.', 'storage', true),
-  ('stats.view', '통계 조회', '고객사 통계를 조회할 수 있다.', 'stats', true),
-  ('system.audit.view', '시스템 감사 로그 조회', '시스템관리자 감사 로그를 조회할 수 있다.', 'system', true);
-
-INSERT INTO role_permissions (role, permission_key, is_enabled)
-VALUES
-  ('admin', 'workorder.create', true),
-  ('admin', 'workorder.edit', true),
-  ('admin', 'workorder.request_review', true),
-  ('admin', 'workorder.skip_review', true),
-  ('admin', 'workorder.request_order', true),
-  ('admin', 'workorder.inspect', true),
-  ('admin', 'workorder.complete', true),
-  ('admin', 'inventory.manage', true),
-  ('admin', 'partner.manage', true),
-  ('admin', 'member.invite', true),
-  ('admin', 'billing.manage', false),
-  ('admin', 'storage.manage', true),
-  ('admin', 'stats.view', true),
-  ('designer', 'workorder.create', true),
-  ('designer', 'workorder.edit', true),
-  ('designer', 'workorder.request_review', true),
-  ('designer', 'workorder.skip_review', false),
-  ('designer', 'workorder.request_order', false),
-  ('designer', 'workorder.inspect', false),
-  ('designer', 'workorder.complete', false),
-  ('designer', 'inventory.manage', false),
-  ('designer', 'partner.manage', false),
-  ('designer', 'member.invite', false),
-  ('designer', 'storage.manage', false),
-  ('designer', 'stats.view', false),
-  ('inspector', 'workorder.inspect', true),
-  ('inspector', 'workorder.complete', true),
-  ('inventory_manager', 'inventory.manage', true),
-  ('viewer', 'stats.view', true);
-
-INSERT INTO system_users (id, email, name, role, is_active)
-VALUES ('system-user-sample-admin', 'system@example.com', '샘플 시스템관리자', 'system_admin', true);
+-- 주의:
+-- - full reset은 실제 고객사/고객사 관리자/업무자/작업지시서/협력업체 샘플 데이터를 생성하지 않는다.
+-- - 고객사 데이터는 /system 고객사 초대 → 고객사 관리자 Google 로그인 → /admin 온보딩 → /system 승인 플로우로 생성한다.
+-- - 아래에는 시스템 공통 권한, 시스템 기준정보, 요금제, 역할 템플릿처럼 운영에 필요한 baseline만 남긴다.
 
 INSERT INTO system_permission_catalog (permission_key, label, description, category, is_active)
 VALUES
@@ -1183,10 +1108,6 @@ VALUES
   ('system.stats.view', '시스템 통계 조회', '시스템관리자가 전체 통계를 조회할 수 있다.', 'stats', true),
   ('system.audit.view', '감사 로그 조회', '시스템관리자가 감사 로그를 조회할 수 있다.', 'audit', true),
   ('system.standard.manage', '시스템 기준정보 관리', '시스템관리자가 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 관리할 수 있다.', 'standards', true);
-
-INSERT INTO system_user_permissions (system_user_id, permission_key, is_enabled)
-SELECT 'system-user-sample-admin', permission_key, true
-FROM system_permission_catalog;
 
 INSERT INTO system_unit_standards (id, code, korean_name, english_code, category, description, example_label, is_active, sort_order)
 VALUES
@@ -1199,10 +1120,6 @@ VALUES
   ('system-unit-box', 'box', '박스', 'box', 'bundle', '박스 단위 부자재', '단추 2박스', true, 60),
   ('system-unit-process', 'process', '공정', 'process', 'service', '외주공정 단위', '자수 1공정', true, 70);
 
-INSERT INTO company_enabled_unit_standards (company_id, unit_standard_id, is_enabled, sort_order)
-SELECT 'company-sample-customer', id, true, sort_order
-FROM system_unit_standards;
-
 INSERT INTO system_outsourcing_process_standards (id, code, name, category, description, example_label, is_active, sort_order)
 VALUES
   ('system-process-printing', 'printing', '나염', 'surface', '원단 또는 완제품 위 프린트 공정', '앞판 나염', true, 10),
@@ -1210,10 +1127,6 @@ VALUES
   ('system-process-washing', 'washing', '워싱', 'finishing', '수축·질감·후가공 워싱 공정', '바이오 워싱', true, 30),
   ('system-process-pleats', 'pleats', '플리츠', 'finishing', '주름 고정 외주 공정', '스커트 플리츠', true, 40),
   ('system-process-bonding', 'bonding', '본딩', 'construction', '원단 또는 부자재 접착 공정', '심지 본딩', true, 50);
-
-INSERT INTO company_enabled_process_standards (company_id, process_standard_id, is_enabled, sort_order)
-SELECT 'company-sample-customer', id, true, sort_order
-FROM system_outsourcing_process_standards;
 
 INSERT INTO system_product_type_templates (id, code, name, description, is_default, is_active, sort_order)
 VALUES
@@ -1230,39 +1143,6 @@ VALUES
   ('template-apparel-basic:아우터', 'template-apparel-basic', NULL, 1, '아우터', true, 30),
   ('template-apparel-basic:아우터:자켓', 'template-apparel-basic', 'template-apparel-basic:아우터', 2, '자켓', true, 10),
   ('template-apparel-basic:아우터:자켓:테일러드', 'template-apparel-basic', 'template-apparel-basic:아우터:자켓', 3, '테일러드', true, 10);
-
-INSERT INTO units (id, company_id, code, name, category, is_active, sort_order)
-VALUES
-  ('mock-unit-piece', 'company-sample-customer', 'piece', '개', 'count', true, 10),
-  ('mock-unit-sheet', 'company-sample-customer', 'sheet', '장', 'count', true, 20),
-  ('mock-unit-set', 'company-sample-customer', 'set', '세트', 'count', true, 30),
-  ('mock-unit-yard', 'company-sample-customer', 'yard', '야드', 'length', true, 40),
-  ('mock-unit-meter', 'company-sample-customer', 'meter', '미터', 'length', true, 50),
-  ('mock-unit-roll', 'company-sample-customer', 'roll', '롤', 'bundle', true, 60),
-  ('mock-unit-pack', 'company-sample-customer', 'pack', '팩', 'bundle', true, 70),
-  ('mock-unit-box', 'company-sample-customer', 'box', '박스', 'bundle', true, 80),
-  ('mock-unit-process', 'company-sample-customer', 'process', '공정', 'service', true, 90),
-  ('mock-unit-case', 'company-sample-customer', 'case', '건', 'service', true, 100);
-
-INSERT INTO item_categories (id, company_id, parent_id, level, name, is_active, sort_order)
-VALUES
-  ('category:상의', 'company-sample-customer', NULL, 1, '상의', true, 10),
-  ('category:상의:티셔츠', 'company-sample-customer', 'category:상의', 2, '티셔츠', true, 10),
-  ('category:상의:티셔츠:반팔', 'company-sample-customer', 'category:상의:티셔츠', 3, '반팔', true, 10),
-  ('category:하의', 'company-sample-customer', NULL, 1, '하의', true, 20),
-  ('category:하의:팬츠', 'company-sample-customer', 'category:하의', 2, '팬츠', true, 10),
-  ('category:하의:팬츠:슬랙스', 'company-sample-customer', 'category:하의:팬츠', 3, '슬랙스', true, 10),
-  ('category:아우터', 'company-sample-customer', NULL, 1, '아우터', true, 30),
-  ('category:아우터:자켓', 'company-sample-customer', 'category:아우터', 2, '자켓', true, 10),
-  ('category:아우터:자켓:테일러드', 'company-sample-customer', 'category:아우터:자켓', 3, '테일러드', true, 10);
-
-INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order)
-VALUES
-  ('process-cutting', 'company-sample-customer', '샘플 고객사', '재단', 10),
-  ('process-printing', 'company-sample-customer', '샘플 고객사', '나염', 20),
-  ('process-embroidery', 'company-sample-customer', '샘플 고객사', '자수', 30),
-  ('process-washing', 'company-sample-customer', '샘플 고객사', '워싱', 40),
-  ('process-finishing', 'company-sample-customer', '샘플 고객사', '후가공', 50);
 
 INSERT INTO plans (
   id,
@@ -1349,39 +1229,6 @@ VALUES
     true,
     '대용량/다인원 고객사 기준 요금제 초안'
   );
-
-INSERT INTO company_plan_assignments (
-  id,
-  company_id,
-  plan_id,
-  status,
-  starts_at
-)
-VALUES (
-  'company-plan-sample-team',
-  'company-sample-customer',
-  'plan-team',
-  'active',
-  now()
-);
-
-INSERT INTO storage_usage_snapshots (
-  id,
-  company_id,
-  used_bytes,
-  attachment_count,
-  source,
-  memo
-)
-VALUES (
-  'storage-snapshot-sample-initial',
-  'company-sample-customer',
-  0,
-  0,
-  'db_attachment_metadata',
-  'full reset 초기 snapshot'
-);
-
 
 -- =========================================
 -- 13.5) ACCESS / INVITATION BASELINE CONSOLIDATION
@@ -1951,7 +1798,6 @@ CREATE INDEX storage_usage_snapshots_company_id_idx ON storage_usage_snapshots (
 CREATE INDEX storage_usage_snapshots_measured_at_idx ON storage_usage_snapshots (measured_at DESC);
 CREATE INDEX storage_usage_snapshots_company_measured_at_idx ON storage_usage_snapshots (company_id, measured_at DESC);
 
-
 CREATE INDEX spec_sheets_company_created_idx ON spec_sheets (company_id, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
 CREATE INDEX spec_sheets_company_status_created_idx ON spec_sheets (company_id, status, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
 CREATE INDEX spec_sheets_company_reorder_created_idx ON spec_sheets (company_id, reorder_group_id, reorder_round, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
@@ -1979,7 +1825,6 @@ COMMENT ON TABLE storage_usage_snapshots IS '고객사별 저장공간 사용량
 COMMENT ON TABLE company_workorder_daily_stats IS '고객사별 일 단위 작업지시서/발주/메모/첨부 통계 summary table. 초기 통계 API의 선택적 캐시/집계 저장소로 사용한다.';
 COMMENT ON TABLE company_workorder_monthly_stats IS '고객사별 월 단위 작업지시서 통계 summary table. stats_month는 해당 월 1일로 저장한다.';
 COMMENT ON TABLE company_storage_daily_stats IS '고객사별 일 단위 저장소/휴지통/purge 통계 summary table. 실제 R2 list 조회가 아니라 DB metadata 기준 집계를 저장한다.';
-
 
 CREATE INDEX IF NOT EXISTS users_google_sub_idx
   ON users (google_sub)

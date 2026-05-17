@@ -1,22 +1,20 @@
 Version :
-0.13.54
+0.13.55
 
 Summary :
-고객사 초대 링크를 Google 로그인 게이트로 전환
+full reset 샘플 seed 제거와 DB 기준 데이터 정리
 
 Description :
-고객사 초대 링크 화면에서 가입 신청 폼을 제거하고 멤버 초대와 동일한 Google 로그인 게이트 흐름으로 전환했다. Google OAuth requestType에 company를 추가하고, 고객사 관리자 초대 로그인 후 임시 고객사와 고객사 관리자 세션을 생성해 /admin 회사정보 입력 모달로 이어지도록 보강했다. 회사정보 저장 시 승인 대기 가입 신청 정보에도 회사명, 사업자명, 관리자 이름과 연락처가 반영되도록 수정했다.
+full_reset.sql에서 샘플 고객사, 샘플 사용자, 샘플 시스템관리자, 회사별 mock 기준정보, 샘플 요금제 배정, 샘플 저장소 snapshot을 제거하고 시스템 기준정보와 역할 템플릿 같은 운영 baseline만 남겼다. 기존 DB 보강용 system_standards_seed.sql의 용도를 명확히 정리하고, 더 이상 사용하지 않는 고객사/작업지시서 샘플 seed 파일을 삭제했다.
 
 수정 파일 목록 :
-- components/invitations/CompanyInvitationJoinRequestPage.tsx
-- lib/auth/googleOAuth.ts
-- app/api/auth/google/start/route.ts
-- app/api/auth/google/callback/route.ts
-- lib/admin/settings/companyOnboardingRepository.ts
+- db/schema/full_reset.sql
+- db/seed/system_standards_seed.sql
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- lib/auth/companyInvitationLoginRepository.ts
+- docs/db/full-reset-cleanup-0.13.55.md
 
 삭제 파일 목록 :
-없음
+- db/seed/realistic_workorders_seed.sql
+- db/seed/seolo_seoul_admin_seed.sql
