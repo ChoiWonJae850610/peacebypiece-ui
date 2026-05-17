@@ -24,6 +24,11 @@ export const UNIT_CATEGORY_VALUES = ["count", "length", "bundle", "service"] as 
 
 export type UnitCategory = (typeof UNIT_CATEGORY_VALUES)[number] | (string & {});
 
+export type PartnerCompanyScope = {
+  companyId: string;
+  companyName?: string | null;
+};
+
 export type PartnerDbRecord = {
   id: string;
   company_id: string | null;

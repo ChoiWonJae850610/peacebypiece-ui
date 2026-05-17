@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
+import { requirePartnerCompanyScope } from "@/lib/partners/sessionScope";
 
 export async function GET() {
+  const scopeResult = await requirePartnerCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
-    const repository = await createPartnerRepository();
+    const repository = await createPartnerRepository(scopeResult.companyScope);
     const partners = await repository.listPartners({ type: "factory", activeOnly: true });
 
     return NextResponse.json({

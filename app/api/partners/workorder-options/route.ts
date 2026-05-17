@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
+import { requirePartnerCompanyScope } from "@/lib/partners/sessionScope";
 import type { OutsourcingProcessRecord, PartnerDbRecord, PartnerItemWithRelations } from "@/lib/partners/types";
 
 type WorkOrderPartnerOptions = {
@@ -117,8 +118,11 @@ function buildPartnerOptions(
 }
 
 export async function GET() {
+  const scopeResult = await requirePartnerCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
-    const repository = await createPartnerRepository();
+    const repository = await createPartnerRepository(scopeResult.companyScope);
     const [partners, partnerItems, outsourcingProcesses] = await Promise.all([
       repository.listPartners({ activeOnly: true }),
       repository.listPartnerItems({ activeOnly: true }),

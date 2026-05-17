@@ -9,9 +9,10 @@ import {
   mapPartnerDbRecordsToAdminPartners,
 } from "@/lib/admin/partner/dbMapper";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
+import type { PartnerCompanyScope } from "@/lib/partners/types";
+import { requirePartnerCompanyScope } from "@/lib/partners/sessionScope";
 import type { PartnerRepository, PartnerWritableRepository } from "@/lib/partners/partnerRepository";
 import type { PartnerDraft } from "@/types/partner";
 
@@ -21,37 +22,43 @@ type PartnerMasterRequestBody = {
   processDefinitions?: OutsourcingProcessDefinition[];
 };
 
-
 async function writePartnerHistory(input: {
+  companyScope: PartnerCompanyScope;
+  userId: string;
   action: "created" | "updated" | "processes";
   partnerId?: string | null;
   partnerName?: string | null;
   processCount?: number;
 }): Promise<void> {
   await createAdminHistoryLogSafe({
-    company_id: WORKSPACE_COMPANY_ID,
-    user_id: "admin",
+    company_id: input.companyScope.companyId,
+    user_id: input.userId,
     action_type: "PARTNER_UPDATED",
     target_type: "partner",
     target_id: input.partnerId ?? null,
-    message: input.action === "processes"
-      ? `외주 공정 유형 ${input.processCount ?? 0}개 저장`
-      : `${input.partnerName || "협력업체"} ${input.action === "created" ? "등록" : "수정"}`,
-    metadata: input,
+    message:
+      input.action === "processes"
+        ? `외주 공정 유형 ${input.processCount ?? 0}개 저장`
+        : `${input.partnerName || "협력업체"} ${input.action === "created" ? "등록" : "수정"}`,
+    metadata: {
+      action: input.action,
+      partnerId: input.partnerId ?? null,
+      processCount: input.processCount ?? null,
+    },
   });
 }
 
-async function buildPartnerMasterResponse(repository?: PartnerRepository) {
-  const targetRepository = repository ?? (await createPartnerRepository());
-  const partners = await targetRepository.listPartners({ activeOnly: false });
-  const partnerItems = await targetRepository.listPartnerItems({ activeOnly: false });
-  const processRecords = targetRepository.listOutsourcingProcesses
-    ? await targetRepository.listOutsourcingProcesses(false)
+async function buildPartnerMasterResponse(repository: PartnerRepository) {
+  const partners = await repository.listPartners({ activeOnly: false });
+  const partnerItems = await repository.listPartnerItems({ activeOnly: false });
+  const processRecords = repository.listOutsourcingProcesses
+    ? await repository.listOutsourcingProcesses(false)
     : [];
-  const repositoryInfo = targetRepository.getRepositoryInfo();
-  const processDefinitions = processRecords.length > 0
-    ? mapOutsourcingProcessRecordsToDefinitions(processRecords)
-    : [];
+  const repositoryInfo = repository.getRepositoryInfo();
+  const processDefinitions =
+    processRecords.length > 0
+      ? mapOutsourcingProcessRecordsToDefinitions(processRecords)
+      : [];
 
   return {
     partners: mapPartnerDbRecordsToAdminPartners(partners, partnerItems),
@@ -74,8 +81,12 @@ function isWritablePartnerRepository(repository: PartnerRepository): repository 
 }
 
 export async function GET() {
+  const scopeResult = await requirePartnerCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
-    return NextResponse.json(await buildPartnerMasterResponse());
+    const repository = await createPartnerRepository(scopeResult.companyScope);
+    return NextResponse.json(await buildPartnerMasterResponse(repository));
   } catch {
     return NextResponse.json(
       {
@@ -95,8 +106,11 @@ export async function POST(request: NextRequest) {
   });
   if (permissionDenied) return permissionDenied;
 
+  const scopeResult = await requirePartnerCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
-    const repository = await createPartnerRepository();
+    const repository = await createPartnerRepository(scopeResult.companyScope);
     const { draft } = await readRequestBody(request);
 
     if (!draft) {
@@ -108,7 +122,13 @@ export async function POST(request: NextRequest) {
     }
 
     const created = await repository.createPartner(buildPartnerDbCreateInput(draft));
-    await writePartnerHistory({ action: "created", partnerId: created.id, partnerName: draft.name });
+    await writePartnerHistory({
+      companyScope: scopeResult.companyScope,
+      userId: scopeResult.userId,
+      action: "created",
+      partnerId: created.id,
+      partnerName: draft.name,
+    });
     if (repository.replacePartnerRoleItems) {
       await repository.replacePartnerRoleItems(created.id, buildPartnerRoleItemsFromDraft(draft));
     }
@@ -126,8 +146,11 @@ export async function PATCH(request: NextRequest) {
   });
   if (permissionDenied) return permissionDenied;
 
+  const scopeResult = await requirePartnerCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
-    const repository = await createPartnerRepository();
+    const repository = await createPartnerRepository(scopeResult.companyScope);
     const { partnerId, draft } = await readRequestBody(request);
 
     if (!partnerId || !draft) {
@@ -139,7 +162,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     await repository.updatePartner(partnerId, buildPartnerDbUpdateInput(draft));
-    await writePartnerHistory({ action: "updated", partnerId, partnerName: draft.name });
+    await writePartnerHistory({
+      companyScope: scopeResult.companyScope,
+      userId: scopeResult.userId,
+      action: "updated",
+      partnerId,
+      partnerName: draft.name,
+    });
     if (repository.replacePartnerRoleItems) {
       await repository.replacePartnerRoleItems(partnerId, buildPartnerRoleItemsFromDraft(draft));
     }
@@ -157,8 +186,11 @@ export async function PUT(request: NextRequest) {
   });
   if (permissionDenied) return permissionDenied;
 
+  const scopeResult = await requirePartnerCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
-    const repository = await createPartnerRepository();
+    const repository = await createPartnerRepository(scopeResult.companyScope);
     const { processDefinitions } = await readRequestBody(request);
 
     if (!Array.isArray(processDefinitions)) {
@@ -170,7 +202,12 @@ export async function PUT(request: NextRequest) {
     }
 
     await repository.replaceOutsourcingProcesses(buildOutsourcingProcessDbInputs(processDefinitions));
-    await writePartnerHistory({ action: "processes", processCount: processDefinitions.length });
+    await writePartnerHistory({
+      companyScope: scopeResult.companyScope,
+      userId: scopeResult.userId,
+      action: "processes",
+      processCount: processDefinitions.length,
+    });
 
     return NextResponse.json(await buildPartnerMasterResponse(repository));
   } catch {

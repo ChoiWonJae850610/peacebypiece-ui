@@ -67,7 +67,9 @@ function createCompanySessionRequiredResponse() {
 
 async function resolveWorkOrderRequestCompanyScope(): Promise<WorkOrderCompanyScope | null> {
   const session = await getCurrentWaflSession();
-  const companyId = session?.companyId?.trim();
+  if (!session) return null;
+
+  const companyId = session.companyId?.trim();
   if (!companyId) return null;
 
   return {

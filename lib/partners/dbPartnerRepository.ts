@@ -2,11 +2,10 @@ import "server-only";
 
 import { randomUUID } from "crypto";
 import { queryDb, isDatabaseConfigured } from "@/lib/db/client";
-import { getAdminCompanyScope } from "@/lib/admin/settings/companyScope";
-import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type {
   OutsourcingProcessRecord,
+  PartnerCompanyScope,
   PartnerDbRecord,
   PartnerDbType,
   PartnerItemCategory,
@@ -136,12 +135,12 @@ async function findSystemOutsourcingProcessStandard(processId: string) {
 
 async function ensureCompanyOutsourcingProcess(input: {
   companyId: string;
-  companyName: string;
+  companyName?: string | null;
   processId?: string | null;
   processName: string;
 }) {
   const processId = normalizeProcessSearchValue(input.processId);
-  const fallbackName = normalizeProcessSearchValue(input.processName);
+  const processName = normalizeProcessSearchValue(input.processName);
 
   if (processId) {
     const existingById = await findCompanyOutsourcingProcessById(
@@ -182,10 +181,10 @@ async function ensureCompanyOutsourcingProcess(input: {
     }
   }
 
-  if (fallbackName) {
+  if (processName) {
     const existingByName = await findCompanyOutsourcingProcessByName(
       input.companyId,
-      fallbackName,
+      processName,
     );
     if (existingByName) return existingByName;
 
@@ -194,11 +193,11 @@ async function ensureCompanyOutsourcingProcess(input: {
       `INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order, is_active)
        VALUES ($1, $2, $3, $4, 9999, true)
        RETURNING id, name, sort_order`,
-      [createdId, input.companyId, input.companyName, fallbackName],
+      [createdId, input.companyId, input.companyName, processName],
     );
 
     return (
-      created.rows[0] ?? { id: createdId, name: fallbackName, sort_order: 9999 }
+      created.rows[0] ?? { id: createdId, name: processName, sort_order: 9999 }
     );
   }
 
@@ -213,12 +212,11 @@ export function getDbPartnerRepositoryInfo(): PartnerRepositoryInfo {
   };
 }
 
-export function createDbPartnerRepository(): PartnerWritableRepository {
+export function createDbPartnerRepository(companyScope: PartnerCompanyScope): PartnerWritableRepository {
   return {
     getRepositoryInfo: getDbPartnerRepositoryInfo,
     listPartners: async (options: ListPartnersOptions = {}) => {
-      const scope = getAdminCompanyScope();
-      const params: unknown[] = [scope.companyId];
+      const params: unknown[] = [companyScope.companyId];
       const conditions: string[] = [`p.company_id = $1`];
 
       if (options.type) {
@@ -268,14 +266,13 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
          WHERE (company_id = $1 OR company_id IS NULL)
          ${activeOnly ? "AND is_active = true" : ""}
          ORDER BY sort_order ASC, name ASC`,
-        [getWorkspaceCompanyContext().companyId],
+        [companyScope.companyId],
       );
 
       return result.rows;
     },
     listPartnerItems: async (options: ListPartnerItemsOptions = {}) => {
-      const scope = getAdminCompanyScope();
-      const params: unknown[] = [scope.companyId];
+      const params: unknown[] = [companyScope.companyId];
       const conditions: string[] = [`pi.company_id = $1`, `p.company_id = $1`];
 
       if (options.partnerId) {
@@ -326,7 +323,6 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       return result.rows.map(normalizePartnerItem);
     },
     listOutsourcingProcesses: async (activeOnly = false) => {
-      const scope = getAdminCompanyScope();
       const result = await queryDb<OutsourcingProcessRow>(
         `SELECT sops.id,
                 $1::text AS company_id,
@@ -344,7 +340,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
           WHERE sops.is_active = true
             ${activeOnly ? "AND COALESCE(ceps.is_enabled, true) = true" : ""}
           ORDER BY COALESCE(ceps.sort_order, sops.sort_order) ASC, sops.name ASC`,
-        [scope.companyId, scope.companyName],
+        [companyScope.companyId, companyScope.companyName],
       );
 
       return result.rows;
@@ -357,8 +353,8 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
          RETURNING id, company_id, company_name, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at`,
         [
           id,
-          input.company_id ?? getWorkspaceCompanyContext().companyId,
-          input.company_name ?? getWorkspaceCompanyContext().companyName,
+          companyScope.companyId,
+          companyScope.companyName,
           input.name.trim(),
           input.contact_person ?? null,
           input.contact ?? null,
@@ -376,19 +372,16 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       const current = await queryDb<PartnerRow>(
         `SELECT id, company_id, company_name, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at
          FROM partners
-         WHERE id = $1`,
-        [partnerId],
+         WHERE id = $1
+           AND company_id = $2`,
+        [partnerId, companyScope.companyId],
       );
       const [target] = current.rows;
       if (!target) throw new Error("Partner not found");
 
       const next = {
-        company_id:
-          input.company_id === undefined ? target.company_id : input.company_id,
-        company_name:
-          input.company_name === undefined
-            ? (target.company_name ?? getWorkspaceCompanyContext().companyName)
-            : input.company_name,
+        company_id: companyScope.companyId,
+        company_name: companyScope.companyName,
         name: input.name === undefined ? target.name : input.name.trim(),
         contact_person:
           input.contact_person === undefined
@@ -413,6 +406,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
              is_active = $9,
              updated_at = now()
          WHERE id = $1
+           AND company_id = $2
          RETURNING id, company_id, company_name, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at`,
         [
           partnerId,
@@ -440,8 +434,8 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
          RETURNING id, partner_id, item_type AS category, item_name AS name, NULL::text AS unit_id, COALESCE(unit_cost, 0) AS unit_price, 'KRW'::text AS currency, memo, is_active, created_at, updated_at, outsourcing_process_id`,
         [
           id,
-          getWorkspaceCompanyContext().companyId,
-          getWorkspaceCompanyContext().companyName,
+          companyScope.companyId,
+          companyScope.companyName,
           input.partner_id,
           itemType,
           input.name.trim(),
@@ -460,19 +454,18 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       await queryDb(
         `DELETE FROM partner_items
          WHERE partner_id = $1
-           AND item_type = ANY($2::text[])`,
-        [partnerId, ROLE_ITEM_TYPES],
+           AND company_id = $2
+           AND item_type = ANY($3::text[])`,
+        [partnerId, companyScope.companyId, ROLE_ITEM_TYPES],
       );
-
-      const companyContext = getWorkspaceCompanyContext();
 
       for (const item of items) {
         const itemType = mapCategoryToDbItemType(item.category);
         const outsourcingProcess =
           itemType === "outsourcing"
             ? await ensureCompanyOutsourcingProcess({
-                companyId: companyContext.companyId,
-                companyName: companyContext.companyName,
+                companyId: companyScope.companyId,
+                companyName: companyScope.companyName,
                 processId: item.outsourcing_process_id,
                 processName: item.name,
               })
@@ -483,8 +476,8 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
            VALUES ($1, $2, $3, $4, $5, $6, $7, NULL, 0, $8, $9)`,
           [
             randomUUID(),
-            companyContext.companyId,
-            companyContext.companyName,
+            companyScope.companyId,
+            companyScope.companyName,
             partnerId,
             itemType,
             itemType === "outsourcing"
@@ -500,7 +493,6 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       }
     },
     replaceOutsourcingProcesses: async (items) => {
-      const scope = getAdminCompanyScope();
       for (const item of items) {
         await queryDb(
           `INSERT INTO company_enabled_process_standards (company_id, process_standard_id, is_enabled, sort_order, updated_at)
@@ -509,7 +501,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
            SET is_enabled = EXCLUDED.is_enabled,
                sort_order = EXCLUDED.sort_order,
                updated_at = now()`,
-          [scope.companyId, item.id, item.is_active, item.sort_order],
+          [companyScope.companyId, item.id, item.is_active, item.sort_order],
         );
       }
     },

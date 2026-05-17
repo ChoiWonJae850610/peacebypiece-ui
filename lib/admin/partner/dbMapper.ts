@@ -57,8 +57,8 @@ export function mapPartnerDbRecordsToAdminPartners(
       ),
     );
 
-    const fallbackType = mapPartnerDbTypeToPartnerType(record.type);
-    const normalizedPartnerTypes = partnerTypes.length > 0 ? partnerTypes : [fallbackType];
+    const primaryTypeFromRecord = mapPartnerDbTypeToPartnerType(record.type);
+    const normalizedPartnerTypes = partnerTypes.length > 0 ? partnerTypes : [primaryTypeFromRecord];
     const outsourcingProcessTypes = items
       .filter((item) => item.category === "outsourcing")
       .map((item) => item.outsourcing_process_id ?? item.name)

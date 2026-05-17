@@ -8,7 +8,7 @@ import type {
   PartnerUnitRecord,
 } from "@/lib/partners/types";
 
-export type PartnerRepositoryMode = "mock" | "db";
+export type PartnerRepositoryMode = "db";
 
 export type PartnerRepositoryInfo = {
   mode: PartnerRepositoryMode;
