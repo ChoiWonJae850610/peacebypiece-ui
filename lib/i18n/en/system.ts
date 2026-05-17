@@ -1,7 +1,7 @@
 export const systemEn = {
   eyebrow: "WAFL System",
   title: "Super admin operations",
-  description: "A base page for expanding customer invitations, tenant operations, and work-order recommendation rules from the super-admin perspective.",
+  description: "Manage customers, storage, logs, plans and quotas, standards, and category rules from one operations menu.",
   devEntryLabel: "Dev system-admin entry",
   versionLabel: "Version",
   moveToWorkspace: "Go to workspace",
@@ -19,13 +19,13 @@ export const systemEn = {
     },
     categoryRules: {
       title: "Category rules",
-      description: "Area for managing title-keyword to category recommendation rules from the super-admin view.",
+      description: "Area for managing title-based major category, item, and detail-shape recommendation rules.",
       badge: "High priority",
     },
   },
   operationsSection: {
-    title: "System operations setup",
-    description: "Operational areas to separate first in the /system route, including company creation, plans, storage, and system-admin permissions.",
+    title: "Operations menu",
+    description: "Use customer management, storage, logs, plans and quotas, standards, and category rules as the primary operations menu.",
   },
   inviteSection: {
     title: "Company invitation status",

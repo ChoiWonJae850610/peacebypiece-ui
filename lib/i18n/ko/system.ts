@@ -1,11 +1,11 @@
 export const systemKo = {
   eyebrow: "WAFL System",
   title: "최고관리자 운영 화면",
-  description: "고객사 초대, 고객사별 운영 현황, 작업지시서 추천 규칙을 최고관리자 기준으로 확장하기 위한 기본 화면입니다.",
+  description: "고객사 관리, 저장소, 로그, 요금제·용량, 기준정보, 카테고리 규칙을 운영 메뉴로 관리합니다.",
   devEntryLabel: "개발용 시스템관리자 진입",
   versionLabel: "버전",
   moveToWorkspace: "작업지시서 화면으로 이동",
-  openCategoryRules: "분류 규칙 화면 열기",
+  openCategoryRules: "카테고리 규칙 화면 열기",
   cards: {
     companies: {
       title: "고객사 관리",
@@ -18,14 +18,14 @@ export const systemKo = {
       badge: "구조 준비",
     },
     categoryRules: {
-      title: "분류 규칙 관리",
-      description: "작업지시서명 키워드와 추천 분류 연결 규칙을 최고관리자 기준으로 관리할 영역",
+      title: "카테고리 규칙",
+      description: "작업지시서 제목 기반 대분류·품목·세부형태 추천 규칙을 관리할 영역",
       badge: "우선순위 높음",
     },
   },
   operationsSection: {
-    title: "시스템 운영 준비",
-    description: "고객사 생성, 요금제, 시스템 관리자 권한처럼 /system 라우트에서 우선 분리해야 할 운영 영역입니다.",
+    title: "운영 메뉴",
+    description: "고객사관리, 저장소관리, 로그, 요금제·용량, 기준정보관리, 카테고리규칙을 우선 운영 메뉴로 사용합니다.",
   },
   inviteSection: {
     title: "고객사 초대 상태",
@@ -165,7 +165,7 @@ export const systemKo = {
     performanceTitle: "성능 측정 기준",
   },
   categoryRulePage: {
-    title: "분류 규칙 관리",
+    title: "카테고리 규칙",
     description: "작업지시서명 추천 규칙을 최고관리자 기준으로 추가·수정·삭제하고, 실제 추천 흐름을 테스트할 수 있는 화면입니다.",
     backToSystem: "시스템 홈",
     listTitle: "규칙 목록",
