@@ -1,7 +1,6 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
-import { WORKSPACE_COMPANY_ID, WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type {
   AdminCompanySummary,
@@ -160,17 +159,17 @@ export async function listAdminCompanies(): Promise<AdminCompanySummary[]> {
   return result.rows.map(mapCompanyRow);
 }
 
-export async function getCurrentAdminCompany(): Promise<AdminCompanySummary> {
+export async function getAdminCompanyById(companyId: string): Promise<AdminCompanySummary | null> {
   const result = await queryDb<CompanyRow>(
     `SELECT id, name, memo, is_active
      FROM companies
      WHERE id = $1
      LIMIT 1`,
-    [WORKSPACE_COMPANY_ID],
+    [companyId],
   );
 
   const row = result.rows[0];
-  return row ? mapCompanyRow(row) : { id: WORKSPACE_COMPANY_ID, name: WORKSPACE_COMPANY_NAME, memo: null, isActive: true };
+  return row ? mapCompanyRow(row) : null;
 }
 
 export async function getCompanySettings(companyId: string): Promise<CompanySettings> {

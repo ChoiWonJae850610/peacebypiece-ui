@@ -1,26 +1,29 @@
 Version :
-0.13.32
+0.13.33
 
 Summary :
-멤버관리 회사 범위 기준과 초대 승인 scope 보강
+환경설정 회사 범위 기준과 설정 fallback 제거
 
 Description :
-멤버관리 목록과 권한 수정, 멤버 초대 생성, 가입 승인/거절 조회가 실제 로그인 세션의 companyId 기준으로만 동작하도록 보강했다. 관리자 멤버 화면의 하드코딩 회사명과 companyId 요청 파라미터 의존을 제거하고, DB 미설정 시 멤버 mock fallback을 반환하지 않도록 정리했다.
+환경설정과 회사설정 조회·저장 API가 실제 로그인 세션의 companyId 기준으로 동작하도록 보강했다. 현재 회사 조회 실패 시 고정 회사 fallback을 반환하지 않도록 제거하고, 기준정보 설정 API도 세션 회사 범위를 repository에 명시적으로 전달하도록 정리했다.
 
 수정 파일 목록 :
-- app/admin/members/page.tsx
-- components/admin/members/AdminMemberManagementDashboard.tsx
-- lib/admin/members/memberRepository.ts
-- lib/admin/members/memberRouteHandlers.ts
-- lib/admin/members/memberTypes.ts
+- app/api/admin/companies/current/route.ts
+- app/api/admin/companies/route.ts
+- app/api/admin/standards/route.ts
+- app/admin/settings/page.tsx
+- components/admin/settings/AdminSettingsHub.tsx
+- lib/admin/settings/adminBillingPlanPlaceholder.ts
+- lib/admin/settings/companyDefaults.ts
+- lib/admin/settings/companyRepository.ts
+- lib/admin/settings/standardsDefaults.ts
+- lib/admin/settings/standardsRepository.ts
 - lib/constants/app.ts
-- lib/invitations/api/invitationRouteHandlers.ts
-- lib/invitations/api/joinRequestRouteHandlers.ts
-- lib/invitations/joinRequestRepository.ts
-- lib/invitations/joinRequestTypes.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 
 추가 파일 목록 :
-- lib/admin/members/sessionScope.ts
+- lib/admin/settings/sessionScope.ts
 
 삭제 파일 목록 :
 없음

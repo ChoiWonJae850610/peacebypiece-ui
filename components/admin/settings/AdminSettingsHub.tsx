@@ -15,7 +15,7 @@ import {
   type AdminSettingsMenuTone,
 } from "@/lib/admin/settings/adminSettingsHub";
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
-import { ADMIN_BILLING_PLAN_PLACEHOLDER, type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
+import { type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 import { ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER } from "@/lib/admin/settings/adminAccountSettingsPlaceholder";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -219,7 +219,7 @@ function FeedbackPanel() {
 export default function AdminSettingsHub() {
   const t = useAdminTranslation();
   const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("standards");
-  const [billingPlanOverview, setBillingPlanOverview] = useState<AdminBillingPlanOverview>(ADMIN_BILLING_PLAN_PLACEHOLDER);
+  const [billingPlanOverview, setBillingPlanOverview] = useState<AdminBillingPlanOverview | null>(null);
   const [billingPlanLoadState, setBillingPlanLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
 
   useEffect(() => {
@@ -256,6 +256,15 @@ export default function AdminSettingsHub() {
     }
 
     if (activeMenuId === "billing") {
+      if (!billingPlanOverview) {
+        return (
+          <AdminEmptyState
+            title={t("settings.billing.emptyTitle", "요금제 정보를 불러오지 못했습니다.")}
+            description={t("settings.billing.emptyDescription", "현재 로그인 회사 기준의 설정 데이터가 없거나 조회 권한이 없습니다.")}
+          />
+        );
+      }
+
       return <BillingPlanPanel overview={billingPlanOverview} loadState={billingPlanLoadState} />;
     }
 

@@ -3,7 +3,6 @@ import "server-only";
 import { randomUUID } from "crypto";
 
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
-import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import { listSystemProductTemplates } from "@/lib/system/standards/productTemplateRepository";
 import type { SystemProductTemplateRow } from "@/lib/system/standards/systemProductTemplateStandards";
 import type { AdminItemCategoryDefinition, AdminItemCategoryLevel, AdminStandardsPayload, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
@@ -26,10 +25,10 @@ function normalizeNumber(value: unknown, fallback = 0) {
   return fallback;
 }
 
-function normalizeUnit(row: UnitRow): AdminUnitDefinition {
+function normalizeUnit(row: UnitRow, companyId: string): AdminUnitDefinition {
   return {
     id: String(row.id),
-    company_id: row.company_id ?? getWorkspaceCompanyContext().companyId,
+    company_id: row.company_id ?? companyId,
     code: String(row.code ?? ""),
     name: String(row.name ?? ""),
     category: row.category ?? null,
@@ -38,11 +37,11 @@ function normalizeUnit(row: UnitRow): AdminUnitDefinition {
   };
 }
 
-function normalizeItemCategory(row: ItemCategoryRow): AdminItemCategoryDefinition {
+function normalizeItemCategory(row: ItemCategoryRow, companyId: string): AdminItemCategoryDefinition {
   const level = normalizeNumber(row.level, 1);
   return {
     id: String(row.id),
-    company_id: row.company_id ?? getWorkspaceCompanyContext().companyId,
+    company_id: row.company_id ?? companyId,
     parent_id: row.parent_id ?? null,
     level: level === 2 || level === 3 ? level : 1,
     name: String(row.name ?? ""),
@@ -104,9 +103,7 @@ async function getDefaultItemCategories(companyId: string): Promise<AdminItemCat
   return toDefaultItemCategories(defaultTemplate, companyId);
 }
 
-export async function getAdminStandards(): Promise<AdminStandardsPayload> {
-  const companyId = getWorkspaceCompanyContext().companyId;
-
+export async function getAdminStandards(companyId: string): Promise<AdminStandardsPayload> {
   if (!isDatabaseConfigured()) {
     return {
       units: [],
@@ -145,8 +142,8 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
   ]);
 
   return {
-    units: unitsResult.rows.map(normalizeUnit),
-    itemCategories: companyCategoriesResult.rows.map(normalizeItemCategory),
+    units: unitsResult.rows.map((row) => normalizeUnit(row, companyId)),
+    itemCategories: companyCategoriesResult.rows.map((row) => normalizeItemCategory(row, companyId)),
     defaultItemCategories,
     repository: { mode: "db", adapterConfigured: true, supportsWrite: true },
   };
@@ -156,8 +153,7 @@ function normalizeItemCategoryLevel(level: AdminItemCategoryDefinition["level"])
   return level === 2 || level === 3 ? level : 1;
 }
 
-function normalizeIncomingCategories(items: AdminItemCategoryDefinition[]): AdminItemCategoryDefinition[] {
-  const companyId = getWorkspaceCompanyContext().companyId;
+function normalizeIncomingCategories(items: AdminItemCategoryDefinition[], companyId: string): AdminItemCategoryDefinition[] {
   return items
     .map((item, index): AdminItemCategoryDefinition => {
       const level = normalizeItemCategoryLevel(item.level);
@@ -175,7 +171,7 @@ function normalizeIncomingCategories(items: AdminItemCategoryDefinition[]): Admi
     .filter((item) => item.name.length > 0);
 }
 
-export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPayload, "units" | "itemCategories">>): Promise<AdminStandardsPayload> {
+export async function replaceAdminStandards(companyId: string, input: Partial<Pick<AdminStandardsPayload, "units" | "itemCategories">>): Promise<AdminStandardsPayload> {
   if (!isDatabaseConfigured()) {
     return {
       units: [],
@@ -185,8 +181,6 @@ export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPa
       error: "DB_NOT_CONFIGURED",
     };
   }
-
-  const companyId = getWorkspaceCompanyContext().companyId;
 
   if (input.units) {
     const incomingUnitIds = input.units.map((unit) => unit.id?.trim()).filter((id): id is string => Boolean(id));
@@ -219,7 +213,7 @@ export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPa
   }
 
   if (input.itemCategories) {
-    const categories = normalizeIncomingCategories(input.itemCategories)
+    const categories = normalizeIncomingCategories(input.itemCategories, companyId)
       .sort((a, b) => a.level - b.level || a.sort_order - b.sort_order || a.name.localeCompare(b.name, "ko-KR"));
 
     await queryDb("DELETE FROM item_categories WHERE company_id = $1", [companyId]);
@@ -241,5 +235,5 @@ export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPa
     }
   }
 
-  return getAdminStandards();
+  return getAdminStandards(companyId);
 }

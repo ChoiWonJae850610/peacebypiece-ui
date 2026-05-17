@@ -1,13 +1,21 @@
+import { redirect } from "next/navigation";
+
 import AdminShell from "@/components/admin/layout/AdminShell";
 import AdminSettingsHub from "@/components/admin/settings/AdminSettingsHub";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
+import { getAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const companyScope = await getAdminSettingsCompanyScope();
+
+  if (!companyScope) {
+    redirect("/login");
+  }
+
   return (
     <AdminShell
-      companyName={WORKSPACE_COMPANY_NAME}
+      companyName={companyScope.companyName ?? ""}
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/settings")}
       title="환경설정"

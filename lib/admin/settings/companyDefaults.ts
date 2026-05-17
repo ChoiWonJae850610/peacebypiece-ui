@@ -1,10 +1,11 @@
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 
 export const COMPANY_FILE_TRASH_RETENTION_DAYS = 30;
 
+const DEFAULT_COMPANY_SETTINGS_COMPANY_ID = "";
+
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyId: WORKSPACE_COMPANY_ID,
+  companyId: DEFAULT_COMPANY_SETTINGS_COMPANY_ID,
   ui: {
     themeColor: "blue",
     language: "ko",

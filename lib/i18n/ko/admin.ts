@@ -1101,6 +1101,12 @@ export const adminKo = {
     delayRateColumn: "납기 지연율",
     qualityRateColumn: "검수/불량률",
   },
+  settings: {
+    billing: {
+      emptyTitle: "요금제 정보를 불러오지 못했습니다.",
+      emptyDescription: "현재 로그인 회사 기준의 설정 데이터가 없거나 조회 권한이 없습니다.",
+    },
+  },
   settingsForm: {
     title: "조직 설정",
     sampleCompanyName: "샘플 고객사",

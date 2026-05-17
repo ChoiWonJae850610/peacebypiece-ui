@@ -1133,6 +1133,12 @@ export const adminEn = {
     delayRateColumn: "Delay rate",
     qualityRateColumn: "Inspection/defect rate",
   },
+  settings: {
+    billing: {
+      emptyTitle: "Could not load billing information.",
+      emptyDescription: "No settings data is available for the current signed-in company, or you do not have access.",
+    },
+  },
   settingsForm: {
     title: "Organization Settings",
     sampleCompanyName: "Sample customer",

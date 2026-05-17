@@ -83,7 +83,7 @@ export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewIn
   const fallbackStorageBytes = fallbackPlan?.storage.includedStorageBytes ?? 5 * BYTES_PER_GB;
   const storageLimitBytes = normalizeStorageLimitBytes(input, fallbackStorageBytes);
   const companyLabel = resolveCompanyLabel(input);
-  const dataSourceLabel = input?.ok ? "현재 고객사 설정 조회" : "기본 정책 fallback";
+  const dataSourceLabel = input?.ok ? "현재 고객사 설정 조회" : "현재 고객사 설정 없음";
   const includeTrashInUsage = input?.settings?.filePolicy?.includeTrashInUsage;
 
   return {
@@ -156,4 +156,3 @@ export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewIn
   };
 }
 
-export const ADMIN_BILLING_PLAN_PLACEHOLDER = buildAdminBillingPlanOverview();
