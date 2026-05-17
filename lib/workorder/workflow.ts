@@ -15,6 +15,7 @@ import {
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
 import {
+  canDirectRequestFactoryOrderByPolicy,
   canRequestFactoryOrderByPolicy,
   canRequestReviewByPolicy,
   getAvailableWorkflowActionsByPolicy,
@@ -32,6 +33,7 @@ export type WorkflowContext = {
   currentWorkflowState: WorkflowState;
   currentRoles: RoleType[];
   currentUserId: string;
+  currentUser?: UserProfile | null;
   workOrder: WorkOrder;
   users?: UserProfile[];
 };
@@ -62,20 +64,30 @@ export function canManageWorkOrderManager(currentRoles: RoleType[], _currentWork
   return isAdminRole(currentRoles);
 }
 
-export function canRequestReview(payload: Pick<WorkflowContext, "currentRoles" | "currentUserId" | "workOrder">) {
+export function canRequestReview(payload: Pick<WorkflowContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder">) {
   return canRequestReviewByPolicy(payload);
 }
 
-export function canRequestOrder(currentRoles: RoleType[]) {
-  return isAdminRole(currentRoles);
+export function canRequestOrder(currentRoles: RoleType[], currentUser?: UserProfile | null) {
+  return isAdminRole(currentRoles) || Boolean(currentUser && canDirectRequestFactoryOrderByPolicy({
+    currentRoles,
+    currentUser,
+    currentUserId: currentUser.id,
+    workOrder: { createdById: currentUser.id, managerId: currentUser.id } as WorkOrder,
+  }));
 }
 
 export function canRequestFactoryOrder(payload: {
   currentRoles: RoleType[];
+  currentUser?: UserProfile | null;
+  currentUserId?: string;
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
 }) {
-  return canRequestFactoryOrderByPolicy(payload);
+  return canRequestFactoryOrderByPolicy({
+    ...payload,
+    currentUserId: payload.currentUserId ?? payload.currentUser?.id ?? "",
+  });
 }
 
 function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
@@ -162,6 +174,8 @@ export function getReviewApprovalWarningMessage(payload: { workOrder: WorkOrder;
 
 export function getFactoryOrderRequestValidationMessage(payload: {
   currentRoles: RoleType[];
+  currentUser?: UserProfile | null;
+  currentUserId?: string;
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
   factoryName: string;
@@ -178,10 +192,17 @@ export function getFactoryOrderRequestValidationMessage(payload: {
     factoryOrderRowsInvalidToast?: string;
   };
 }) {
-  if (!canRequestOrder(payload.currentRoles)) {
+  const canRequestByPermission = canRequestFactoryOrder({
+    currentRoles: payload.currentRoles,
+    currentUser: payload.currentUser,
+    currentUserId: payload.currentUserId,
+    workOrder: payload.workOrder,
+    currentWorkflowState: payload.currentWorkflowState,
+  });
+  if (!canRequestByPermission) {
     return payload.text.factoryOrderAdminOnlyToast ?? null;
   }
-  if (!canRequestFactoryOrderInWorkflow(payload.currentWorkflowState)) {
+  if (isAdminRole(payload.currentRoles) && !canRequestFactoryOrderInWorkflow(payload.currentWorkflowState)) {
     return payload.text.factoryOrderReviewApprovedOnlyToast ?? null;
   }
   const rowValidationMessage = getFactoryOrderRowsValidationMessage(payload.workOrder, payload.text);

@@ -9,6 +9,7 @@ type AdminUserAccessRow = Record<string, unknown> & {
   id: string;
   name: string;
   roles: unknown;
+  permission_codes: unknown;
 };
 
 const COMPANY_ROLE_TO_WORKORDER_ROLE: Record<string, RoleType | null> = {
@@ -39,6 +40,21 @@ function normalizeRoleList(value: unknown): RoleType[] {
     .filter((item): item is RoleType => item !== null);
 }
 
+function normalizePermissionCodeList(value: unknown): string[] {
+  const source = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? [value]
+      : [];
+  return Array.from(
+    new Set(
+      source
+        .map((item) => String(item ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
 function mapUserAccessRow(row: AdminUserAccessRow): UserProfile | null {
   const roles = normalizeRoleList(row.roles);
   if (roles.length === 0) return null;
@@ -46,6 +62,7 @@ function mapUserAccessRow(row: AdminUserAccessRow): UserProfile | null {
   return {
     id: row.id,
     name: row.name,
+    permissionCodes: normalizePermissionCodeList(row.permission_codes),
     ...buildUserRoleState(roles),
   };
 }
@@ -56,9 +73,15 @@ async function listFromCompanyMembers(
   const result = await queryDb<AdminUserAccessRow>(
     `SELECT users.id,
             COALESCE(company_members.display_name, users.name, users.email, users.id) AS name,
-            ARRAY_AGG(DISTINCT company_members.role_template_code ORDER BY company_members.role_template_code) AS roles
+            ARRAY_AGG(DISTINCT company_members.role_template_code ORDER BY company_members.role_template_code) AS roles,
+            COALESCE(
+              ARRAY_AGG(DISTINCT member_permissions.permission_code ORDER BY member_permissions.permission_code)
+                FILTER (WHERE member_permissions.is_enabled = true),
+              ARRAY[]::text[]
+            ) AS permission_codes
        FROM company_members
        INNER JOIN users ON users.id = company_members.user_id
+       LEFT JOIN member_permissions ON member_permissions.company_member_id = company_members.id
       WHERE company_members.company_id = $1
         AND company_members.status = 'approved'
         AND COALESCE(users.is_active, true) = true

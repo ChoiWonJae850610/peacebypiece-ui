@@ -265,6 +265,8 @@ export function useWorkOrderWorkflowActions({
         const submissionSnapshot = getOrderSubmissionSnapshot(workOrder);
         const validationMessage = getFactoryOrderRequestValidationMessage({
           currentRoles,
+          currentUser,
+          currentUserId: currentUser.id,
           workOrder,
           currentWorkflowState,
           factoryName: submissionSnapshot.factoryName,
@@ -294,6 +296,8 @@ export function useWorkOrderWorkflowActions({
       const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
       const validationMessage = getFactoryOrderRequestValidationMessage({
         currentRoles,
+        currentUser,
+        currentUserId: currentUser.id,
         workOrder,
         currentWorkflowState,
         factoryName: payload.factoryName,

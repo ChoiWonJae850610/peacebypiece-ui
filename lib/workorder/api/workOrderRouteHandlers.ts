@@ -13,6 +13,9 @@ import {
 } from "@/lib/db/client";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
+import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
+import type { WaflSessionPayload } from "@/lib/auth/session";
 import {
   createDbWorkOrder,
   deleteDbWorkOrder,
@@ -86,6 +89,45 @@ async function requireWorkOrderRequestCompanyScope(): Promise<WorkOrderRequestCo
 
   return { ok: true, scope };
 }
+async function hasCurrentWorkOrderPermission(
+  session: WaflSessionPayload,
+  permissionCode: MemberPermissionCode,
+): Promise<boolean> {
+  if (session.role === "company_admin") return true;
+  if (session.role !== "member" || !session.companyId || !session.companyMemberId) return false;
+
+  const { members } = await adminMemberRepository.listCompanyMembers({
+    companyId: session.companyId,
+    status: "all",
+    limit: 200,
+  });
+  const member = members.find((item) => item.id === session.companyMemberId);
+  return Boolean(member && member.status === "approved" && hasMemberPermission(member, permissionCode));
+}
+
+function getRequiredWorkflowPermission(input: {
+  previousState?: WorkOrder["workflowState"] | null;
+  nextState: WorkOrder["workflowState"];
+  hasFactoryOrderRequest: boolean;
+}): MemberPermissionCode | null {
+  if (input.hasFactoryOrderRequest || input.nextState === "inspection") return "workorder.status.order";
+  if (input.nextState === "review_requested" || input.nextState === "draft" || input.nextState === "rejected") return "workorder.status.review";
+  if (input.nextState === "review_completed") return "workorder.status.order";
+  if (input.nextState === "completed") return "workorder.status.complete";
+  return null;
+}
+
+function createWorkOrderPermissionRequiredResponse(permissionCode: MemberPermissionCode) {
+  return NextResponse.json(
+    {
+      message: "Current user does not have permission to change this work order workflow state.",
+      code: "WORKORDER_PERMISSION_REQUIRED",
+      permissionCode,
+    },
+    { status: 403 },
+  );
+}
+
 
 function applySessionActorDefaults(
   workOrder: WorkOrder,
@@ -802,6 +844,18 @@ export async function handlePatchWorkOrderState(
     if (!scopeResult.ok) return scopeResult.response;
 
     const previousWorkOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
+    const session = await getCurrentWaflSession();
+    if (!session) return createCompanySessionRequiredResponse();
+
+    const requiredPermission = getRequiredWorkflowPermission({
+      previousState: previousWorkOrder?.workflowState ?? null,
+      nextState: body.patch.workflowState as WorkOrder["workflowState"],
+      hasFactoryOrderRequest: Object.prototype.hasOwnProperty.call(body.patch, "factoryOrderRequest"),
+    });
+    if (requiredPermission && !(await hasCurrentWorkOrderPermission(session, requiredPermission))) {
+      return createWorkOrderPermissionRequiredResponse(requiredPermission);
+    }
+
     const savedWorkOrder = await updateDbWorkOrderStatePatch(
       {
         id: workOrderId,

@@ -4,6 +4,7 @@ import {
   isAdminRole,
   normalizeRoles,
 } from "@/lib/constants/roles";
+import { hasMemberPermission } from "@/lib/permissions";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
 import { isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { getAttachmentCollectionPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
@@ -44,8 +45,9 @@ export function buildWorkOrderDerivedState({
   const currentRoles = hasSessionUser ? normalizeRoles(currentUser.roles, currentUser.role) : [];
   const currentRole = currentUser.role;
   const isAdmin = isAdminRole(currentRoles);
-  const canCreateWorkOrder = hasSessionUser && canCreateWorkOrderByRoles(currentRoles);
-  const canReorderWorkOrder = hasSessionUser && canCreateWorkOrderByRoles(currentRoles);
+  const canWriteWorkOrder = isAdmin || hasMemberPermission(currentUser, "workorder.update");
+  const canCreateWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create") || canCreateWorkOrderByRoles(currentRoles));
+  const canReorderWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create") || canCreateWorkOrderByRoles(currentRoles));
   const permissionTargetUser = users.find((user) => user.id === permissionTargetUserId) ?? users[0] ?? currentUser;
   const workflowStateById = deriveWorkflowStateById(workOrders);
   const currentWorkflowState = deriveWorkflowStateFromOrderEntries(selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries);
@@ -53,7 +55,7 @@ export function buildWorkOrderDerivedState({
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
   const isReviewRequestLocked = isWorkflowStateReviewLocked(currentWorkflowState, isAdmin);
-  const canEditSideDraftContent = isWorkOrderSideDraftEditable(currentWorkflowState);
+  const canEditSideDraftContent = canWriteWorkOrder && isWorkOrderSideDraftEditable(currentWorkflowState);
   const canEditMemo = canEditWorkOrderMemo(currentWorkflowState);
   const canRenameTitle = canRenameWorkOrderTitle(currentUser, currentWorkflowState);
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
@@ -81,6 +83,7 @@ export function buildWorkOrderDerivedState({
     currentWorkflowState,
     currentRoles,
     currentUserId,
+    currentUser,
     workOrder: selectedWorkOrder,
     users,
   });
