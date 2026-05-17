@@ -1,6 +1,48 @@
 export type CompanyThemeColor = "blue" | "emerald" | "violet" | "stone";
 export type CompanyLanguage = "ko" | "en";
 
+export type CompanyOnboardingStatus =
+  | "profile_required"
+  | "approval_pending"
+  | "active";
+
+export type CompanyOnboardingProfile = {
+  companyId: string;
+  companyName: string;
+  companyEnglishName: string;
+  businessName: string;
+  businessRegistrationNumber: string;
+  logoUrl: string;
+  postalCode: string;
+  roadAddress: string;
+  jibunAddress: string;
+  addressDetail: string;
+  addressExtra: string;
+  requestedPlanCode: string;
+  onboardingStatus: CompanyOnboardingStatus;
+  onboardingCompletedAt?: string | null;
+  adminName: string;
+  adminPhone: string;
+  profileComplete: boolean;
+};
+
+export type CompanyOnboardingUpdateInput = {
+  companyName?: string | null;
+  companyEnglishName?: string | null;
+  businessName?: string | null;
+  businessRegistrationNumber?: string | null;
+  logoUrl?: string | null;
+  postalCode?: string | null;
+  roadAddress?: string | null;
+  jibunAddress?: string | null;
+  addressDetail?: string | null;
+  addressExtra?: string | null;
+  requestedPlanCode?: string | null;
+  adminName?: string | null;
+  adminPhone?: string | null;
+};
+
+
 export type CompanyFilePolicySettings = {
   softDeleteEnabled: boolean;
   includeTrashInUsage: boolean;

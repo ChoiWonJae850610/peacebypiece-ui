@@ -152,13 +152,27 @@ CREATE TABLE companies (
   memo text,
   is_active boolean NOT NULL DEFAULT true,
 
+  english_name text,
   business_name text,
   business_registration_number text,
+  logo_url text,
+  postal_code text,
+  road_address text,
+  jibun_address text,
+  address_detail text,
+  address_extra text,
+  requested_plan_code text,
+  onboarding_status text NOT NULL DEFAULT 'profile_required',
+  onboarding_completed_at timestamptz,
   owner_user_id text,
   default_plan_id text,
   storage_limit_bytes bigint,
   member_limit integer,
   billing_status text NOT NULL DEFAULT 'trial',
+
+  CONSTRAINT companies_onboarding_status_check CHECK (
+    onboarding_status IN ('profile_required', 'approval_pending', 'active')
+  ),
 
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()

@@ -1,0 +1,308 @@
+"use client";
+
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+
+import { useI18n } from "@/lib/i18n";
+import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
+
+type CompanyOnboardingProfile = {
+  companyId: string;
+  companyName: string;
+  companyEnglishName: string;
+  businessName: string;
+  businessRegistrationNumber: string;
+  logoUrl: string;
+  postalCode: string;
+  roadAddress: string;
+  jibunAddress: string;
+  addressDetail: string;
+  addressExtra: string;
+  requestedPlanCode: string;
+  onboardingStatus: "profile_required" | "approval_pending" | "active";
+  onboardingCompletedAt?: string | null;
+  adminName: string;
+  adminPhone: string;
+  profileComplete: boolean;
+};
+
+type CompanyOnboardingDraft = {
+  companyName: string;
+  companyEnglishName: string;
+  businessName: string;
+  businessRegistrationNumber: string;
+  logoUrl: string;
+  postalCode: string;
+  roadAddress: string;
+  jibunAddress: string;
+  addressDetail: string;
+  addressExtra: string;
+  requestedPlanCode: string;
+  adminName: string;
+  adminPhone: string;
+};
+
+type CompanyOnboardingResponse = {
+  profile?: CompanyOnboardingProfile | null;
+  error?: string;
+};
+
+function buildDraft(profile: CompanyOnboardingProfile | null): CompanyOnboardingDraft {
+  return {
+    companyName: profile?.companyName ?? "",
+    companyEnglishName: profile?.companyEnglishName ?? "",
+    businessName: profile?.businessName ?? "",
+    businessRegistrationNumber: profile?.businessRegistrationNumber ?? "",
+    logoUrl: profile?.logoUrl ?? "",
+    postalCode: profile?.postalCode ?? "",
+    roadAddress: profile?.roadAddress ?? "",
+    jibunAddress: profile?.jibunAddress ?? "",
+    addressDetail: profile?.addressDetail ?? "",
+    addressExtra: profile?.addressExtra ?? "",
+    requestedPlanCode: profile?.requestedPlanCode || "basic",
+    adminName: profile?.adminName ?? "",
+    adminPhone: formatPhoneNumber(profile?.adminPhone ?? ""),
+  };
+}
+
+function TextInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+  readOnly,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  readOnly?: boolean;
+}) {
+  return (
+    <label className="grid gap-1.5 text-sm font-semibold text-[var(--pbp-text-primary)]">
+      <span>
+        {label}
+        {required ? <span className="ml-1 text-rose-500">*</span> : null}
+      </span>
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        className="h-11 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-faint)] focus:border-[var(--pbp-accent)] read-only:bg-[var(--pbp-surface-muted)]"
+      />
+    </label>
+  );
+}
+
+export default function AdminCompanyOnboardingGate({ children }: { children: ReactNode }) {
+  const { i18n } = useI18n();
+  const copy = i18n.admin.companyOnboarding;
+  const [profile, setProfile] = useState<CompanyOnboardingProfile | null>(null);
+  const [draft, setDraft] = useState<CompanyOnboardingDraft>(() => buildDraft(null));
+  const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const requiresOnboarding = loadState === "loaded" && profile !== null && !profile.profileComplete;
+  const isApprovalPending = loadState === "loaded" && profile?.profileComplete && profile.onboardingStatus === "approval_pending";
+  const canSave = useMemo(() => {
+    return Boolean(
+      draft.companyName.trim() &&
+        draft.businessName.trim() &&
+        draft.postalCode.trim() &&
+        draft.roadAddress.trim() &&
+        draft.adminName.trim() &&
+        normalizePhoneNumber(draft.adminPhone).length >= 10,
+    );
+  }, [draft]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function load() {
+      setLoadState("loading");
+      setErrorMessage(null);
+      try {
+        const response = await fetch("/api/admin/companies/onboarding", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (response.status === 401 || response.status === 404) {
+          setLoadState("loaded");
+          return;
+        }
+
+        const payload = (await response.json()) as CompanyOnboardingResponse;
+        if (!response.ok || !payload.profile) {
+          throw new Error(payload.error ?? "COMPANY_ONBOARDING_LOAD_FAILED");
+        }
+
+        setProfile(payload.profile);
+        setDraft(buildDraft(payload.profile));
+        setLoadState("loaded");
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        setLoadState("error");
+        setErrorMessage(error instanceof Error ? error.message : copy.errors.load);
+      }
+    }
+
+    void load();
+    return () => controller.abort();
+  }, [copy.errors.load]);
+
+  function updateDraft<TKey extends keyof CompanyOnboardingDraft>(key: TKey, value: CompanyOnboardingDraft[TKey]) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  async function save() {
+    if (!canSave || saveState === "saving") return;
+
+    setSaveState("saving");
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/companies/onboarding", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...draft,
+          adminPhone: normalizePhoneNumber(draft.adminPhone),
+        }),
+      });
+      const payload = (await response.json()) as CompanyOnboardingResponse;
+
+      if (!response.ok || !payload.profile) {
+        throw new Error(payload.error ?? "COMPANY_ONBOARDING_SAVE_FAILED");
+      }
+
+      setProfile(payload.profile);
+      setDraft(buildDraft(payload.profile));
+      setSaveState("saved");
+    } catch (error) {
+      setSaveState("error");
+      setErrorMessage(error instanceof Error ? error.message : copy.errors.save);
+    }
+  }
+
+  return (
+    <>
+      {children}
+      {requiresOnboarding || isApprovalPending || loadState === "error" ? (
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-stone-950/70 px-4 py-6 backdrop-blur-sm">
+          <div className="mx-auto grid min-h-full max-w-4xl place-items-center">
+            <section className="w-full rounded-[32px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 text-[var(--pbp-text-primary)] shadow-2xl sm:p-7">
+              <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--pbp-accent)]">
+                    {copy.eyebrow}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">{copy.title}</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.description}</p>
+                </div>
+                <a
+                  href="/api/auth/logout"
+                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-2xl border border-[var(--pbp-border)] px-4 text-sm font-semibold text-[var(--pbp-text-muted)] transition hover:border-[var(--pbp-border-strong)] hover:text-[var(--pbp-text-primary)]"
+                >
+                  {copy.logout}
+                </a>
+              </div>
+
+              {loadState === "error" ? (
+                <div className="mt-5 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+                  {errorMessage ?? copy.errors.load}
+                </div>
+              ) : isApprovalPending ? (
+                <div className="mt-5 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-800">
+                  <p className="font-bold">{copy.pending.title}</p>
+                  <p className="mt-2">{copy.pending.description}</p>
+                </div>
+              ) : (
+                <div className="mt-5 grid gap-5">
+                  <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+                    <p className="font-bold">{copy.requiredNoticeTitle}</p>
+                    <p className="mt-1">{copy.requiredNoticeDescription}</p>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+                      <h3 className="text-base font-bold">{copy.sections.company}</h3>
+                      <TextInput label={copy.fields.companyName} value={draft.companyName} onChange={(value) => updateDraft("companyName", value)} required />
+                      <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} />
+                      <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} required />
+                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} />
+                      <TextInput label={copy.fields.logoUrl} value={draft.logoUrl} onChange={(value) => updateDraft("logoUrl", value)} placeholder={copy.placeholders.logoUrl} />
+                    </section>
+
+                    <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+                      <h3 className="text-base font-bold">{copy.sections.address}</h3>
+                      <div className="grid gap-3 sm:grid-cols-[0.7fr_1.3fr]">
+                        <TextInput label={copy.fields.postalCode} value={draft.postalCode} onChange={(value) => updateDraft("postalCode", value)} required />
+                        <TextInput label={copy.fields.roadAddress} value={draft.roadAddress} onChange={(value) => updateDraft("roadAddress", value)} required />
+                      </div>
+                      <TextInput label={copy.fields.jibunAddress} value={draft.jibunAddress} onChange={(value) => updateDraft("jibunAddress", value)} />
+                      <TextInput label={copy.fields.addressDetail} value={draft.addressDetail} onChange={(value) => updateDraft("addressDetail", value)} />
+                      <TextInput label={copy.fields.addressExtra} value={draft.addressExtra} onChange={(value) => updateDraft("addressExtra", value)} />
+                      <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.addressApiNote}</p>
+                    </section>
+                  </div>
+
+                  <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+                    <h3 className="text-base font-bold">{copy.sections.admin}</h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <TextInput label={copy.fields.adminName} value={draft.adminName} onChange={(value) => updateDraft("adminName", value)} required />
+                      <TextInput
+                        label={copy.fields.adminPhone}
+                        value={draft.adminPhone}
+                        onChange={(value) => updateDraft("adminPhone", formatPhoneNumber(value))}
+                        placeholder={copy.placeholders.adminPhone}
+                        required
+                      />
+                    </div>
+                    <label className="grid gap-1.5 text-sm font-semibold text-[var(--pbp-text-primary)]">
+                      <span>{copy.fields.requestedPlanCode}</span>
+                      <select
+                        value={draft.requestedPlanCode}
+                        onChange={(event) => updateDraft("requestedPlanCode", event.target.value)}
+                        className="h-11 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-accent)]"
+                      >
+                        <option value="basic">{copy.planOptions.basic}</option>
+                        <option value="standard">{copy.planOptions.standard}</option>
+                        <option value="pro">{copy.planOptions.pro}</option>
+                      </select>
+                    </label>
+                  </section>
+
+                  {errorMessage ? (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                      {errorMessage}
+                    </div>
+                  ) : null}
+                  {saveState === "saved" ? (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                      {copy.saved}
+                    </div>
+                  ) : null}
+
+                  <div className="flex flex-col gap-2 border-t border-[var(--pbp-border)] pt-5 sm:flex-row sm:items-center sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => void save()}
+                      disabled={!canSave || saveState === "saving"}
+                      className="inline-flex h-11 items-center justify-center rounded-2xl bg-[var(--pbp-accent)] px-5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {saveState === "saving" ? copy.saving : copy.submit}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
