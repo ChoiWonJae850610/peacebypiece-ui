@@ -107,16 +107,18 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
   const requiresOnboarding = loadState === "loaded" && profile !== null && !profile.profileComplete;
   const isApprovalPending = loadState === "loaded" && profile?.profileComplete && profile.onboardingStatus === "approval_pending";
-  const canSave = useMemo(() => {
-    return Boolean(
-      draft.companyName.trim() &&
-        draft.businessName.trim() &&
-        draft.postalCode.trim() &&
-        draft.roadAddress.trim() &&
-        draft.adminName.trim() &&
-        normalizePhoneNumber(draft.adminPhone).length >= 10,
-    );
-  }, [draft]);
+  const missingRequiredLabels = useMemo(() => {
+    const missing: string[] = [];
+    if (!draft.companyName.trim()) missing.push(copy.fields.companyName);
+    if (!draft.businessName.trim()) missing.push(copy.fields.businessName);
+    if (!draft.postalCode.trim()) missing.push(copy.fields.postalCode);
+    if (!draft.roadAddress.trim()) missing.push(copy.fields.roadAddress);
+    if (!draft.adminName.trim()) missing.push(copy.fields.adminName);
+    if (normalizePhoneNumber(draft.adminPhone).length < 10) missing.push(copy.fields.adminPhone);
+    return missing;
+  }, [copy.fields.adminName, copy.fields.adminPhone, copy.fields.businessName, copy.fields.companyName, copy.fields.postalCode, copy.fields.roadAddress, draft]);
+
+  const canSave = missingRequiredLabels.length === 0;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -159,7 +161,13 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
   }
 
   async function save() {
-    if (!canSave || saveState === "saving") return;
+    if (saveState === "saving") return;
+
+    if (!canSave) {
+      setSaveState("error");
+      setErrorMessage(`필수 입력값을 확인해주세요: ${missingRequiredLabels.join(", ")}`);
+      return;
+    }
 
     setSaveState("saving");
     setErrorMessage(null);
@@ -291,7 +299,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                     <button
                       type="button"
                       onClick={() => void save()}
-                      disabled={!canSave || saveState === "saving"}
+                      disabled={saveState === "saving"}
                       className="inline-flex h-11 items-center justify-center rounded-2xl bg-[var(--pbp-accent)] px-5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {saveState === "saving" ? copy.saving : copy.submit}

@@ -842,7 +842,7 @@ CREATE TABLE material_allocations (
 
 CREATE TABLE invitations (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  company_id text REFERENCES companies(id) ON DELETE CASCADE,
   scope invitation_scope NOT NULL,
   recipient_email text NOT NULL,
   recipient_role text NOT NULL,

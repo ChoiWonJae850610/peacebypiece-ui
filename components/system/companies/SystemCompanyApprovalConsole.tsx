@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   SYSTEM_CARD_CLASS,
-  SYSTEM_CODE_BLOCK_CLASS,
   SYSTEM_DANGER_BOX_CLASS,
   SYSTEM_EYEBROW_CLASS,
   SYSTEM_HEADER_PANEL_CLASS,
@@ -16,29 +16,14 @@ import {
   SYSTEM_SECTION_HEADER_CLASS,
   SYSTEM_SECTION_TITLE_CLASS,
   SYSTEM_SMALL_TEXT_CLASS,
-  SYSTEM_STEP_NUMBER_CLASS,
   SYSTEM_SUBTITLE_CLASS,
   SYSTEM_SUCCESS_BOX_CLASS,
   SYSTEM_TITLE_CLASS,
   SYSTEM_VALUE_TEXT_CLASS,
 } from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
-import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
-import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
-import { INVITATION_QR_PREVIEW_CELLS, SYSTEM_CUSTOMER_INVITE_QR_PREVIEW } from "@/lib/invitations/invitationQrPreview";
-import {
-  SYSTEM_COMPANY_APPROVAL_ACTIONS,
-  SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS,
-  SYSTEM_COMPANY_APPROVAL_POLICY_NOTES,
-  SYSTEM_COMPANY_APPROVAL_STEPS,
-  getSystemCompanyApprovalSummaryItems,
-  toSystemCompanyJoinRequestPreviews,
-  type SystemCompanyApprovalStepStatus,
-  type SystemCompanyJoinRequestLoadStatus,
-  type SystemCompanyJoinRequestPreview,
-  type SystemCompanyRequestEmailMatchStatus,
-} from "@/lib/system/systemCompanyApprovalConsole";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 
 type JoinRequestListResponse = {
   ok?: boolean;
@@ -51,7 +36,6 @@ type CompanyJoinRequestReviewResponse = {
   error?: string;
 };
 
-
 type CreatedSystemInvitationResult = {
   inviteUrl: string;
   rawToken: string;
@@ -59,6 +43,18 @@ type CreatedSystemInvitationResult = {
     id: string;
     expiresAt: string;
   };
+};
+
+type CompanyJoinRequestRow = {
+  id: string;
+  companyName: string;
+  companyEnglishName: string;
+  businessName: string;
+  logoUrl: string | null;
+  applicantEmail: string;
+  applicantName: string;
+  applicantPhone: string;
+  requestedAtLabel: string;
 };
 
 function getAbsoluteInviteUrl(inviteUrl: string): string {
@@ -72,45 +68,61 @@ function getDefaultInvitationExpiresAt(days: number): string {
   return expiresAt.toISOString();
 }
 
-function getCompanyStepStatusTone(status: SystemCompanyApprovalStepStatus) {
-  if (status === "ready") return "success";
-  if (status === "planned") return "warning";
-  return "neutral";
+function toCompactDateTimeLabel(value: string | null | undefined): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("ko-KR", {
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
-function getCompanyActionVariant(state: "disabled" | "ready") {
-  return state === "ready" ? "primary" : "secondary";
+function parseCompanyMemoValue(memo: string | null | undefined, key: string): string {
+  if (!memo) return "";
+  const lines = memo.split("\n");
+  const prefix = `${key}:`;
+  const matched = lines.find((line) => line.trim().startsWith(prefix));
+  return matched?.slice(prefix.length).trim() ?? "";
 }
 
-function getLoadStatusTone(status: SystemCompanyJoinRequestLoadStatus) {
+function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): CompanyJoinRequestRow {
+  const companyEnglishName = parseCompanyMemoValue(joinRequest.requestMemo, "companyEnglishName");
+  const logoUrl = parseCompanyMemoValue(joinRequest.requestMemo, "logoUrl") || joinRequest.googlePictureUrl || null;
+
+  return {
+    id: joinRequest.id,
+    companyName: joinRequest.requestedCompanyName?.trim() || "-",
+    companyEnglishName: companyEnglishName || "-",
+    businessName: joinRequest.businessName?.trim() || "-",
+    logoUrl,
+    applicantEmail: joinRequest.applicantEmail,
+    applicantName: joinRequest.applicantName?.trim() || joinRequest.applicantEmail,
+    applicantPhone: joinRequest.applicantPhone?.trim() || "-",
+    requestedAtLabel: toCompactDateTimeLabel(joinRequest.createdAt),
+  };
+}
+
+function getLoadStatusTone(status: "idle" | "loading" | "loaded" | "failed") {
   if (status === "loaded") return "success";
   if (status === "loading") return "warning";
   if (status === "failed") return "danger";
   return "neutral";
 }
 
-function getEmailMatchTone(status: SystemCompanyRequestEmailMatchStatus) {
-  if (status === "matched") return "success";
-  if (status === "mismatched") return "warning";
-  return "neutral";
-}
-
-function getLoadStatusLabel(status: SystemCompanyJoinRequestLoadStatus) {
-  if (status === "loaded") return "DB 연결";
+function getLoadStatusLabel(status: "idle" | "loading" | "loaded" | "failed") {
+  if (status === "loaded") return "조회 완료";
   if (status === "loading") return "불러오는 중";
   if (status === "failed") return "조회 실패";
   return "대기";
 }
 
-function getEmailMatchLabel(status: SystemCompanyRequestEmailMatchStatus) {
-  if (status === "matched") return "일치";
-  if (status === "mismatched") return "불일치";
-  return "확인 필요";
-}
-
 export default function SystemCompanyApprovalConsole() {
   const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
-  const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<SystemCompanyJoinRequestLoadStatus>("idle");
+  const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const [joinRequestLoadError, setJoinRequestLoadError] = useState<string | null>(null);
   const [reviewActionError, setReviewActionError] = useState<string | null>(null);
   const [reviewActionMessage, setReviewActionMessage] = useState<string | null>(null);
@@ -122,62 +134,62 @@ export default function SystemCompanyApprovalConsole() {
   const [systemInviteError, setSystemInviteError] = useState<string | null>(null);
   const [isCreatingSystemInvite, setIsCreatingSystemInvite] = useState(false);
 
-  const joinRequests = useMemo(() => toSystemCompanyJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
-  const canCreateSystemInvite = systemInviteRecipientEmail.trim().length > 0 && !isCreatingSystemInvite;
-  const summaryItems = useMemo(
-    () => getSystemCompanyApprovalSummaryItems(joinRequests.length, joinRequestLoadStatus),
-    [joinRequestLoadStatus, joinRequests.length],
+  const joinRequests = useMemo(
+    () => joinRequestRecords.map(toCompanyJoinRequestRow),
+    [joinRequestRecords],
   );
-  const joinRequestTableColumns = useMemo<AdminTableColumn<SystemCompanyJoinRequestPreview>[]>(
+  const canCreateSystemInvite = systemInviteRecipientEmail.trim().length > 0 && !isCreatingSystemInvite;
+
+  const joinRequestTableColumns = useMemo<AdminTableColumn<CompanyJoinRequestRow>[]>(
     () => [
       {
         key: "company",
-        label: "회사",
+        label: "회사명",
         render: (request) => (
           <div>
-            <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{request.requestedCompanyName}</p>
+            <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{request.companyName}</p>
             <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{request.businessName}</p>
           </div>
         ),
       },
       {
-        key: "applicant",
-        label: "신청자",
-        render: (request) => (
-          <div>
-            <p className="font-medium text-[var(--pbp-text-primary)]">{request.applicantName}</p>
-            <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{request.applicantEmail}</p>
-          </div>
-        ),
-      },
-      {
-        key: "invitationEmail",
-        label: "초대 이메일",
+        key: "englishName",
+        label: "영문명",
         className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.invitationEmailLabel,
+        render: (request) => request.companyEnglishName,
       },
       {
-        key: "emailMatch",
-        label: "비교",
+        key: "logo",
+        label: "사진",
         headerClassName: "text-center",
         className: "text-center",
-        render: (request) => (
-          <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
-            {getEmailMatchLabel(request.emailMatchStatus)}
-          </AdminStatusBadge>
+        render: (request) => request.logoUrl ? (
+          <img
+            src={request.logoUrl}
+            alt="회사 또는 신청자 이미지"
+            className="mx-auto h-10 w-10 rounded-2xl border border-[var(--pbp-border)] object-cover"
+          />
+        ) : (
+          <span className="text-xs text-[var(--pbp-text-faint)]">-</span>
         ),
+      },
+      {
+        key: "email",
+        label: "이메일",
+        className: "text-xs text-[var(--pbp-text-muted)]",
+        render: (request) => request.applicantEmail,
+      },
+      {
+        key: "name",
+        label: "이름",
+        className: "text-sm font-medium text-[var(--pbp-text-primary)]",
+        render: (request) => request.applicantName,
       },
       {
         key: "phone",
         label: "연락처",
         className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.applicantPhoneLabel,
-      },
-      {
-        key: "memo",
-        label: "메모",
-        className: "max-w-[260px] text-xs leading-5 text-[var(--pbp-text-muted)]",
-        render: (request) => request.requestMemoLabel,
+        render: (request) => request.applicantPhone,
       },
       {
         key: "requestedAt",
@@ -235,10 +247,11 @@ export default function SystemCompanyApprovalConsole() {
       const payload = (await response.json()) as CreatedSystemInvitationResult & {
         ok?: boolean;
         error?: string;
+        message?: string;
       };
 
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED");
+        throw new Error(payload?.message ?? payload?.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED");
       }
 
       setCreatedSystemInvite({
@@ -301,7 +314,7 @@ export default function SystemCompanyApprovalConsole() {
         throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
       }
 
-      setReviewActionMessage("고객사 생성과 고객관리자 승인 처리를 완료했습니다.");
+      setReviewActionMessage("고객사 가입 신청을 승인했습니다.");
       await loadCompanyJoinRequests();
     } catch (error) {
       setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
@@ -327,7 +340,7 @@ export default function SystemCompanyApprovalConsole() {
         throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_REJECT_FAILED");
       }
 
-      setReviewActionMessage("고객사 가입 신청을 거절 처리했습니다.");
+      setReviewActionMessage("고객사 가입 신청을 거절했습니다.");
       await loadCompanyJoinRequests();
     } catch (error) {
       setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_REJECT_FAILED");
@@ -346,13 +359,11 @@ export default function SystemCompanyApprovalConsole() {
         <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
-              <p className={SYSTEM_EYEBROW_CLASS}>
-                SYSTEM COMPANY APPROVAL
-              </p>
+              <p className={SYSTEM_EYEBROW_CLASS}>SYSTEM COMPANY MANAGEMENT</p>
               <div className="space-y-2">
-                <h1 className={SYSTEM_TITLE_CLASS}>시스템관리자 고객사 승인</h1>
+                <h1 className={SYSTEM_TITLE_CLASS}>고객사 관리</h1>
                 <p className={SYSTEM_SUBTITLE_CLASS}>
-                  고객사 초대 링크로 들어온 가입 신청을 검토하고, 승인 시 고객사 생성·고객관리자 멤버십·권한 부여·초기 기준정보 복사로 이어지는 흐름입니다.
+                  고객사 관리자 초대 링크를 만들고, 초대 링크로 들어온 고객사 가입 신청을 검토합니다.
                 </p>
               </div>
             </div>
@@ -364,30 +375,20 @@ export default function SystemCompanyApprovalConsole() {
           </div>
         </header>
 
-        <section className="grid gap-3 sm:grid-cols-2 lg:gap-4 xl:grid-cols-4">
-          {summaryItems.map((item) => (
-            <article key={item.id} className={SYSTEM_CARD_CLASS}>
-              <p className="text-xs font-semibold text-[var(--pbp-text-subtle)]">{item.label}</p>
-              <p className={`mt-3 text-xl font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{item.value}</p>
-              <p className={SYSTEM_SMALL_TEXT_CLASS}>{item.description}</p>
-            </article>
-          ))}
-        </section>
-
         <section className={SYSTEM_CARD_CLASS}>
           <div className={`flex flex-col gap-3 ${SYSTEM_SECTION_HEADER_CLASS} lg:flex-row lg:items-start lg:justify-between`}>
             <div>
               <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객사 관리자 초대</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-                시스템관리자는 초대 대상과 만료일만 정합니다. 회사명, 주소, 로고, 신청 요금제는 고객사 관리자가 초대 링크로 로그인한 뒤 직접 입력합니다.
+                초대 대상과 만료일만 정합니다. 회사명, 주소, 로고, 신청 요금제는 고객사 관리자가 첫 로그인 후 직접 입력합니다.
               </p>
             </div>
             <AdminStatusBadge tone="success">고객사관리 통합</AdminStatusBadge>
           </div>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
+          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
             <article className={SYSTEM_MUTED_CARD_CLASS}>
-              <div className="grid gap-4 md:grid-cols-[0.7fr_1fr_0.6fr]">
+              <div className="grid gap-4 md:grid-cols-[0.8fr_1.3fr_0.7fr]">
                 <label className="grid gap-2">
                   <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 방식</span>
                   <select
@@ -424,9 +425,7 @@ export default function SystemCompanyApprovalConsole() {
               </div>
 
               {systemInviteError ? (
-                <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>
-                  {systemInviteError}
-                </div>
+                <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>{systemInviteError}</div>
               ) : null}
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -444,44 +443,22 @@ export default function SystemCompanyApprovalConsole() {
             </article>
 
             <article className={SYSTEM_MUTED_CARD_CLASS}>
-              <div className={SYSTEM_SECTION_HEADER_CLASS}>
-                <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>초대 결과</h3>
-                <p className={SYSTEM_SMALL_TEXT_CLASS}>
-                  raw token은 생성 응답에서만 확인합니다. DB에는 token_hash만 저장합니다.
-                </p>
-              </div>
-
+              <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>초대 결과</h3>
+              <p className={SYSTEM_SMALL_TEXT_CLASS}>초대 링크는 생성 직후 한 번 확인하고 복사합니다.</p>
               {createdSystemInvite ? (
-                <div className="mt-4 grid gap-4 md:grid-cols-[auto_1fr] md:items-center">
-                  <InvitationQrPreview
-                    model={{
-                      title: "고객사 초대 QR",
-                      description: "생성된 초대 링크를 QR 미리보기로 표시합니다.",
-                      inviteUrl: getAbsoluteInviteUrl(createdSystemInvite.inviteUrl),
-                      cells: INVITATION_QR_PREVIEW_CELLS,
-                    }}
-                  />
-                  <div className="min-w-0 space-y-3">
-                    <div className={SYSTEM_CODE_BLOCK_CLASS}>
-                      {getAbsoluteInviteUrl(createdSystemInvite.inviteUrl)}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <AdminButton onClick={() => void copyCreatedSystemInviteLink()}>
-                        링크 복사
-                      </AdminButton>
-                      <AdminLinkButton href={createdSystemInvite.inviteUrl}>
-                        가입 화면 열기
-                      </AdminLinkButton>
-                    </div>
+                <div className="mt-4 space-y-3">
+                  <div className="break-all rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-xs font-medium text-[var(--pbp-text-primary)]">
+                    {getAbsoluteInviteUrl(createdSystemInvite.inviteUrl)}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <AdminButton onClick={() => void copyCreatedSystemInviteLink()}>링크 복사</AdminButton>
+                    <AdminLinkButton href={createdSystemInvite.inviteUrl}>가입 화면 열기</AdminLinkButton>
                   </div>
                 </div>
               ) : (
-                <div className="mt-4 grid gap-4 md:grid-cols-[auto_1fr] md:items-center">
-                  <InvitationQrPreview model={SYSTEM_CUSTOMER_INVITE_QR_PREVIEW} />
-                  <p className={SYSTEM_SMALL_TEXT_CLASS}>
-                    초대 링크를 생성하면 이 영역에 실제 링크와 QR이 표시됩니다.
-                  </p>
-                </div>
+                <p className="mt-4 rounded-2xl border border-dashed border-[var(--pbp-border)] px-4 py-6 text-sm text-[var(--pbp-text-muted)]">
+                  초대 링크를 생성하면 이 영역에 실제 가입 링크가 표시됩니다.
+                </p>
               )}
             </article>
           </div>
@@ -492,7 +469,7 @@ export default function SystemCompanyApprovalConsole() {
             <div>
               <h2 className={SYSTEM_SECTION_TITLE_CLASS}>가입 신청 검토</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-                request_type = company, invitation.scope = system_to_company_admin 조건의 승인 대기 신청만 표시합니다.
+                고객사 관리자가 초대 링크로 로그인한 뒤 회사 정보를 입력하면 이 목록에 승인 대기로 표시됩니다.
               </p>
             </div>
             <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
@@ -503,130 +480,21 @@ export default function SystemCompanyApprovalConsole() {
             </div>
           </div>
 
-          {joinRequestLoadError ? (
-            <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>
-              {joinRequestLoadError}
-            </div>
-          ) : null}
-
-          {reviewActionError ? (
-            <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>
-              {reviewActionError}
-            </div>
-          ) : null}
-
-          {reviewActionMessage ? (
-            <div className={`mt-4 ${SYSTEM_SUCCESS_BOX_CLASS}`}>
-              {reviewActionMessage}
-            </div>
-          ) : null}
+          {joinRequestLoadError ? <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>{joinRequestLoadError}</div> : null}
+          {reviewActionError ? <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>{reviewActionError}</div> : null}
+          {reviewActionMessage ? <div className={`mt-4 ${SYSTEM_SUCCESS_BOX_CLASS}`}>{reviewActionMessage}</div> : null}
 
           <div className="mt-5">
             <AdminTable
               items={[...joinRequests]}
               columns={joinRequestTableColumns}
               getRowKey={(request) => request.id}
-              emptyLabel="승인 대기 고객사 가입 신청이 없습니다. 고객사 초대 링크로 가입 신청이 들어오면 이 영역에 실제 join_requests.pending 데이터가 표시됩니다."
+              emptyLabel="승인 대기 고객사 가입 신청이 없습니다."
               isLoading={joinRequestLoadStatus === "loading"}
               loadingLabel="고객사 가입 신청을 불러오는 중입니다."
-              gridTemplateColumns="1.2fr 1.1fr 1fr 0.7fr 0.8fr 1.2fr 0.8fr 1fr"
-              rowBaseClassName="grid min-w-[980px] w-full gap-3 px-4 py-4 text-left text-sm md:items-start"
+              gridTemplateColumns="1.2fr 0.8fr 0.5fr 1.2fr 0.8fr 0.8fr 0.8fr 1fr"
+              rowBaseClassName="grid min-w-[980px] w-full gap-3 px-4 py-4 text-left text-sm md:items-center"
             />
-          </div>
-        </section>
-
-        <section className={SYSTEM_CARD_CLASS}>
-          <div className={`flex flex-col gap-2 ${SYSTEM_SECTION_HEADER_CLASS}`}>
-            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>승인 처리 단계</h2>
-            <p className="text-sm leading-6 text-[var(--pbp-text-muted)]">
-              고객사 생성과 고객관리자 승인, 권한 저장, 초기 기준정보 복사를 분리하지 말고 승인 흐름으로 묶습니다.
-            </p>
-          </div>
-
-          <div className="mt-5 grid gap-4 lg:grid-cols-4">
-            {SYSTEM_COMPANY_APPROVAL_STEPS.map((step, index) => (
-              <article key={step.id} className={SYSTEM_MUTED_CARD_CLASS}>
-                <div className="flex items-center justify-between gap-3">
-                  <span className={SYSTEM_STEP_NUMBER_CLASS}>
-                    {index + 1}
-                  </span>
-                  <AdminStatusBadge tone={getCompanyStepStatusTone(step.status)}>
-                    {step.statusLabel}
-                  </AdminStatusBadge>
-                </div>
-                <h3 className={`mt-4 text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{step.title}</h3>
-                <p className={SYSTEM_SMALL_TEXT_CLASS}>{step.description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-[1fr_0.8fr]">
-          <article className={SYSTEM_CARD_CLASS}>
-            <div className={SYSTEM_SECTION_HEADER_CLASS}>
-              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객관리자 기본 권한</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-                승인 시 role template은 기본 체크값으로만 사용하고 실제 저장은 permission_code 목록으로 처리합니다.
-              </p>
-            </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              {SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS.map((item) => (
-                <article key={item.id} className={SYSTEM_MUTED_CARD_CLASS}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{item.label}</p>
-                    <AdminStatusBadge tone="success">기본 체크</AdminStatusBadge>
-                  </div>
-                  <code className={SYSTEM_CODE_BLOCK_CLASS}>
-                    {item.permissionCode}
-                  </code>
-                </article>
-              ))}
-            </div>
-          </article>
-
-          <article className={SYSTEM_CARD_CLASS}>
-            <div className={SYSTEM_SECTION_HEADER_CLASS}>
-              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>승인 액션</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-                고객사 생성과 고객관리자 승인, 가입 신청 거절 처리를 실제 API 흐름으로 연결했습니다.
-              </p>
-            </div>
-            <div className="mt-5 space-y-3">
-              {SYSTEM_COMPANY_APPROVAL_ACTIONS.map((action) => (
-                <div key={action.id} className={SYSTEM_MUTED_CARD_CLASS}>
-                  {action.id === "open-invite" ? (
-                    <AdminLinkButton href="/system/invites" variant={getCompanyActionVariant(action.state)} className="w-full rounded-xl">
-                      {action.label}
-                    </AdminLinkButton>
-                  ) : (
-                    <AdminButton disabled variant={getCompanyActionVariant(action.state)} className="w-full rounded-xl">
-                      {action.label}
-                    </AdminButton>
-                  )}
-                  <p className={SYSTEM_SMALL_TEXT_CLASS}>{action.helper}</p>
-                  <code className={SYSTEM_CODE_BLOCK_CLASS}>
-                    {action.requiredPermission}
-                  </code>
-                </div>
-              ))}
-            </div>
-          </article>
-        </section>
-
-        <section className={SYSTEM_CARD_CLASS}>
-          <div className={SYSTEM_SECTION_HEADER_CLASS}>
-            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>처리 정책</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-              고객사 승인 기능을 실제 API로 연결할 때 깨지면 안 되는 기준입니다.
-            </p>
-          </div>
-          <div className="mt-5 grid gap-4 lg:grid-cols-4">
-            {SYSTEM_COMPANY_APPROVAL_POLICY_NOTES.map((note) => (
-              <article key={note.id} className={SYSTEM_MUTED_CARD_CLASS}>
-                <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{note.title}</h3>
-                <p className={SYSTEM_SMALL_TEXT_CLASS}>{note.description}</p>
-              </article>
-            ))}
           </div>
         </section>
       </div>
