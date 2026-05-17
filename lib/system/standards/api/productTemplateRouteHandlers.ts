@@ -35,9 +35,13 @@ function toErrorResponse(error: unknown, status = 500) {
   );
 }
 
-function getAuditBase(request: Request) {
+type SystemStandardRouteScope = {
+  actorUserId: string;
+};
+
+function getAuditBase(request: Request, scope: SystemStandardRouteScope) {
   return {
-    actorUserId: "system-user-sample-admin",
+    actorUserId: scope.actorUserId,
     actorRole: "system_admin" as const,
     targetType: "settings" as const,
     requestId: getRequestId(request),
@@ -62,14 +66,14 @@ export async function handleGetSystemProductTemplates() {
   }
 }
 
-export async function handlePostSystemProductTemplate(request: Request) {
+export async function handlePostSystemProductTemplate(request: Request, scope: SystemStandardRouteScope) {
   try {
     const body = (await request.json()) as ProductTemplatePostPayload;
 
     if (body.action === "create_category") {
       const record = await createSystemProductTemplateCategory(body);
       await createSystemAuditLogSafe({
-        ...getAuditBase(request),
+        ...getAuditBase(request, scope),
         targetId: body.templateId,
         eventType: "standard.product_template_category_created",
         severity: "medium",
@@ -88,7 +92,7 @@ export async function handlePostSystemProductTemplate(request: Request) {
 
     const record = await createSystemProductTemplate(body);
     await createSystemAuditLogSafe({
-      ...getAuditBase(request),
+      ...getAuditBase(request, scope),
       targetId: record.id,
       eventType: "standard.product_template_created",
       severity: "medium",
@@ -110,14 +114,14 @@ export async function handlePostSystemProductTemplate(request: Request) {
   }
 }
 
-export async function handlePatchSystemProductTemplate(request: Request) {
+export async function handlePatchSystemProductTemplate(request: Request, scope: SystemStandardRouteScope) {
   try {
     const body = (await request.json()) as ProductTemplatePatchPayload;
 
     if (body.action === "update_category") {
       const record = await updateSystemProductTemplateCategory(body);
       await createSystemAuditLogSafe({
-        ...getAuditBase(request),
+        ...getAuditBase(request, scope),
         targetId: body.id,
         eventType: "standard.product_template_category_updated",
         severity: "medium",
@@ -135,7 +139,7 @@ export async function handlePatchSystemProductTemplate(request: Request) {
 
     const record = await updateSystemProductTemplate(body);
     await createSystemAuditLogSafe({
-      ...getAuditBase(request),
+      ...getAuditBase(request, scope),
       targetId: record.id,
       eventType: "standard.product_template_updated",
       severity: "medium",

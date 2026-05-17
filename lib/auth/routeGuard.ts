@@ -15,8 +15,8 @@ function getRoleHomePath(role: WaflSessionRole): string {
 
 function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boolean {
   if (area === "system") return role === "system_admin";
-  if (area === "admin") return role === "company_admin" || role === "system_admin";
-  return role === "member" || role === "company_admin" || role === "system_admin";
+  if (area === "admin") return role === "company_admin";
+  return role === "member" || role === "company_admin";
 }
 
 export async function requireWaflSessionForArea(area: ProtectedArea): Promise<WaflSessionPayload> {

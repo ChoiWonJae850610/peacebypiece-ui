@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
+import { requireSystemAdminScope } from "@/lib/system/sessionScope";
 import { buildSystemStoragePurgeAuditLog } from "@/lib/system/audit/writeActions";
 import { runSystemStoragePurge } from "@/lib/system/storagePurgeCandidates";
 
@@ -36,6 +37,9 @@ function getAuditIpAddress(request: NextRequest): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const scope = await requireSystemAdminScope();
+  if (!scope.ok) return scope.response;
+
   try {
     const payload = (await request.json().catch(() => null)) as PurgeRequestPayload | null;
     const mode = payload?.mode === "all-due" ? "all-due" : "selected";
@@ -45,7 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "TRASH_ITEM_IDS_REQUIRED" }, { status: 400 });
     }
 
-    const actorId = "system-admin";
+    const actorId = scope.systemScope.userId;
     const result = await runSystemStoragePurge({
       mode,
       trashItemIds,

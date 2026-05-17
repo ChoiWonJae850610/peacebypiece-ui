@@ -31,9 +31,13 @@ function toErrorResponse(error: unknown, status = 500) {
   );
 }
 
-function getAuditBase(request: Request) {
+type SystemStandardRouteScope = {
+  actorUserId: string;
+};
+
+function getAuditBase(request: Request, scope: SystemStandardRouteScope) {
   return {
-    actorUserId: "system-user-sample-admin",
+    actorUserId: scope.actorUserId,
     actorRole: "system_admin" as const,
     targetType: "settings" as const,
     requestId: getRequestId(request),
@@ -50,13 +54,13 @@ export async function handleGetSystemProcessStandards() {
   }
 }
 
-export async function handlePostSystemProcessStandard(request: Request) {
+export async function handlePostSystemProcessStandard(request: Request, scope: SystemStandardRouteScope) {
   try {
     const body = (await request.json()) as SystemProcessStandardUpsertInput;
     const record = await createSystemProcessStandard(body);
 
     await createSystemAuditLogSafe({
-      ...getAuditBase(request),
+      ...getAuditBase(request, scope),
       targetId: record.id,
       eventType: "standard.process_created",
       severity: "medium",
@@ -77,13 +81,13 @@ export async function handlePostSystemProcessStandard(request: Request) {
   }
 }
 
-export async function handlePatchSystemProcessStandard(request: Request) {
+export async function handlePatchSystemProcessStandard(request: Request, scope: SystemStandardRouteScope) {
   try {
     const body = (await request.json()) as SystemProcessStandardUpdateInput;
     const record = await updateSystemProcessStandard(body);
 
     await createSystemAuditLogSafe({
-      ...getAuditBase(request),
+      ...getAuditBase(request, scope),
       targetId: record.id,
       eventType: "standard.process_updated",
       severity: "medium",

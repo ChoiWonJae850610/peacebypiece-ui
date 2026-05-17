@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { requireSystemAdminScope } from "@/lib/system/sessionScope";
 import { getSystemStandardsRegressionSnapshot } from "@/lib/system/standards/regressionRepository";
 
 export async function GET() {
+  const scope = await requireSystemAdminScope();
+  if (!scope.ok) return scope.response;
+
   try {
     const snapshot = await getSystemStandardsRegressionSnapshot();
     return NextResponse.json({ ok: true, snapshot });

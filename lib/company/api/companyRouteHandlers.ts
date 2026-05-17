@@ -9,6 +9,10 @@ import { initializeCompanyStandards } from "@/lib/system/standards/companyStanda
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildCompanyCreatedAuditLog } from "@/lib/system/audit/writeActions";
 
+type SystemCompanyRouteScope = {
+  actorUserId: string;
+};
+
 function getRequestId(request: Request): string | null {
   return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
 }
@@ -72,7 +76,7 @@ export async function handleListCompanies(request: Request) {
   }
 }
 
-export async function handleCreateCompany(request: Request) {
+export async function handleCreateCompany(request: Request, scope: SystemCompanyRouteScope) {
   try {
     const input = (await request.json()) as CreateCompanyInput;
     const company = await companyRepository.createCompany(input);
@@ -82,6 +86,7 @@ export async function handleCreateCompany(request: Request) {
 
     await createSystemAuditLogSafe(
       buildCompanyCreatedAuditLog({
+        actorId: scope.actorUserId,
         companyId: company.id,
         companyName: company.name,
         storageLimitBytes: company.storageLimitBytes ?? null,

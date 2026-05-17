@@ -29,6 +29,10 @@ interface ReviewMemberJoinRequestBody {
   reasonCode?: string | null;
 }
 
+type SystemJoinRequestReviewScope = {
+  actorSystemUserId: string;
+};
+
 interface ReviewCompanyJoinRequestBody {
   actorSystemUserId?: string | null;
   approvedBySystemUserId?: string | null;
@@ -320,10 +324,10 @@ export async function handleRejectMemberJoinRequest(requestId: string, request: 
 }
 
 
-export async function handleApproveCompanyJoinRequest(requestId: string, request: Request) {
+export async function handleApproveCompanyJoinRequest(requestId: string, request: Request, scope: SystemJoinRequestReviewScope) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReviewCompanyJoinRequestBody;
-    const approvedBySystemUserId = readSystemActorUserId(body);
+    const approvedBySystemUserId = scope.actorSystemUserId || readSystemActorUserId(body);
     const result = await joinRequestRepository.approveCompanyJoinRequest({
       requestId,
       approvedBySystemUserId,
@@ -372,10 +376,10 @@ export async function handleApproveCompanyJoinRequest(requestId: string, request
 }
 
 
-export async function handleRejectCompanyJoinRequest(requestId: string, request: Request) {
+export async function handleRejectCompanyJoinRequest(requestId: string, request: Request, scope: SystemJoinRequestReviewScope) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReviewCompanyJoinRequestBody;
-    const rejectedBySystemUserId = readRejectedSystemActorUserId(body);
+    const rejectedBySystemUserId = scope.actorSystemUserId || readRejectedSystemActorUserId(body);
     const result = await joinRequestRepository.rejectCompanyJoinRequest({
       requestId,
       rejectedBySystemUserId,

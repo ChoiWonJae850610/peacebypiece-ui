@@ -31,9 +31,13 @@ function toErrorResponse(error: unknown, status = 500) {
   );
 }
 
-function getAuditBase(request: Request) {
+type SystemStandardRouteScope = {
+  actorUserId: string;
+};
+
+function getAuditBase(request: Request, scope: SystemStandardRouteScope) {
   return {
-    actorUserId: "system-user-sample-admin",
+    actorUserId: scope.actorUserId,
     actorRole: "system_admin" as const,
     targetType: "settings" as const,
     requestId: getRequestId(request),
@@ -50,13 +54,13 @@ export async function handleGetSystemUnitStandards() {
   }
 }
 
-export async function handlePostSystemUnitStandard(request: Request) {
+export async function handlePostSystemUnitStandard(request: Request, scope: SystemStandardRouteScope) {
   try {
     const body = (await request.json()) as SystemUnitStandardUpsertInput;
     const record = await createSystemUnitStandard(body);
 
     await createSystemAuditLogSafe({
-      ...getAuditBase(request),
+      ...getAuditBase(request, scope),
       targetId: record.id,
       eventType: "standard.unit_created",
       severity: "medium",
@@ -78,13 +82,13 @@ export async function handlePostSystemUnitStandard(request: Request) {
   }
 }
 
-export async function handlePatchSystemUnitStandard(request: Request) {
+export async function handlePatchSystemUnitStandard(request: Request, scope: SystemStandardRouteScope) {
   try {
     const body = (await request.json()) as SystemUnitStandardUpdateInput;
     const record = await updateSystemUnitStandard(body);
 
     await createSystemAuditLogSafe({
-      ...getAuditBase(request),
+      ...getAuditBase(request, scope),
       targetId: record.id,
       eventType: "standard.unit_updated",
       severity: "medium",

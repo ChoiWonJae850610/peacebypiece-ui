@@ -1,3 +1,4 @@
+import { requireSystemAdminScope } from "@/lib/system/sessionScope";
 import { handleApproveCompanyJoinRequest } from "@/lib/invitations/api/joinRequestRouteHandlers";
 
 type SystemCompanyJoinRequestApproveRouteContext = {
@@ -7,6 +8,9 @@ type SystemCompanyJoinRequestApproveRouteContext = {
 };
 
 export async function POST(request: Request, context: SystemCompanyJoinRequestApproveRouteContext) {
+  const scope = await requireSystemAdminScope();
+  if (!scope.ok) return scope.response;
+
   const { requestId } = await context.params;
-  return handleApproveCompanyJoinRequest(requestId, request);
+  return handleApproveCompanyJoinRequest(requestId, request, { actorSystemUserId: scope.systemScope.userId });
 }
