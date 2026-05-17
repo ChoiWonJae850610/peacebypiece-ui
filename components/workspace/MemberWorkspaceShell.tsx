@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import AdminThemeScope from "@/components/admin/layout/AdminThemeScope";
-import { useI18n } from "@/lib/i18n";
+import MemberWorkspaceTopbarActions from "@/components/workspace/MemberWorkspaceTopbarActions";
 
 type MemberWorkspaceShellProps = {
   companyName?: string | null;
@@ -15,26 +14,6 @@ type MemberWorkspaceShellProps = {
   contentMode?: "scroll" | "fixed-md";
 };
 
-function HomeIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3.5 10.6 12 3.75l8.5 6.85" />
-      <path d="M5.75 9.5v9.25a1.5 1.5 0 0 0 1.5 1.5h9.5a1.5 1.5 0 0 0 1.5-1.5V9.5" />
-      <path d="M9.75 20.25v-5.5a1.25 1.25 0 0 1 1.25-1.25h2a1.25 1.25 0 0 1 1.25 1.25v5.5" />
-    </svg>
-  );
-}
-
-function LogoutIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9.5 4.75H6.75A1.75 1.75 0 0 0 5 6.5v11a1.75 1.75 0 0 0 1.75 1.75H9.5" />
-      <path d="M14 8.25 17.75 12 14 15.75" />
-      <path d="M17.5 12H9.75" />
-    </svg>
-  );
-}
-
 export default function MemberWorkspaceShell({
   companyName,
   appVersion,
@@ -43,7 +22,6 @@ export default function MemberWorkspaceShell({
   children,
   contentMode = "scroll",
 }: MemberWorkspaceShellProps) {
-  const { i18n } = useI18n();
   const isFixedFromDesktop = contentMode === "fixed-md";
   const contentFrameClassName = isFixedFromDesktop
     ? "min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0 sm:pr-1 md:overflow-hidden"
@@ -74,26 +52,7 @@ export default function MemberWorkspaceShell({
                 <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--pbp-text-primary)] sm:text-2xl">{title}</h1>
               </div>
 
-              <div className="relative z-30 flex shrink-0 flex-wrap gap-2">
-                <Link
-                  href="/workspace"
-                  aria-label={i18n.common.workspaceHome.title}
-                  title={i18n.common.workspaceHome.title}
-                  className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
-                >
-                  <HomeIcon />
-                </Link>
-                <form action="/api/auth/logout" method="post">
-                  <button
-                    type="submit"
-                    aria-label={i18n.common.workorderToolbar.logout}
-                    title={i18n.common.workorderToolbar.logout}
-                    className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
-                  >
-                    <LogoutIcon />
-                  </button>
-                </form>
-              </div>
+              <MemberWorkspaceTopbarActions />
             </div>
           </header>
           <div className={contentFrameClassName}>

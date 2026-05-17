@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import MemberWorkspaceTopbarActions from "@/components/workspace/MemberWorkspaceTopbarActions";
 import { APP_VERSION } from "@/lib/constants/app";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -35,7 +36,7 @@ export default function MemberWorkspaceHome({
     <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#f5f5f4_48%,#eef2ff_100%)] px-4 py-5 text-stone-900 md:px-6 md:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
         <header className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-5 shadow-sm backdrop-blur">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white">
@@ -57,6 +58,7 @@ export default function MemberWorkspaceHome({
                 {copy.description}
               </p>
             </div>
+            <MemberWorkspaceTopbarActions showHome={false} />
           </div>
         </header>
 

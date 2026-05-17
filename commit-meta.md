@@ -1,26 +1,19 @@
 Version :
-0.13.44
+0.13.45
 
 Summary :
-업무홈 기준정보 카드 화면 연결
+업무홈 공통 개인설정과 로그아웃 액션 추가
 
 Description :
-업무홈 기준정보 카드를 실제 기준정보 화면으로 연결했다. 기준정보 업무 화면은 멤버 권한에 따라 조회 전용 또는 관리 가능 상태로 동작하며, 기준정보 전용 외주 공정 API를 추가해 협력업체 목록 권한 없이 공정 기준정보를 조회하고 저장할 수 있도록 정리했다.
+업무홈 메인과 업무홈 하위 화면에서 동일하게 개인설정 모달과 로그아웃 버튼을 사용할 수 있도록 공통 업무홈 상단 액션 컴포넌트를 추가했다. 기준정보와 협력업체 같은 업무홈 하위 화면에서도 개인설정 모달 접근이 유지되도록 업무홈 공통 shell에 연결했다.
 
 수정 파일 목록 :
-- components/admin/standards/AdminStandardsSection.tsx
-- lib/admin/settings/standardsApiClient.ts
-- lib/admin/settings/standardsTypes.ts
+- components/workspace/MemberWorkspaceHome.tsx
+- components/workspace/MemberWorkspaceShell.tsx
 - lib/constants/app.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
-- lib/i18n/ko/common.ts
-- lib/i18n/en/common.ts
-- lib/navigation/memberWorkspaceCards.ts
 
 추가 파일 목록 :
-- app/api/admin/standards/processes/route.ts
-- app/workspace/standards/page.tsx
+- components/workspace/MemberWorkspaceTopbarActions.tsx
 
 삭제 파일 목록 :
 없음
