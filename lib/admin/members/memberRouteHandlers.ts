@@ -5,9 +5,21 @@ import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildMemberPermissionUpdatedAuditLog } from "@/lib/system/audit/writeActions";
 import {
   isMemberPermissionCode,
+  MEMBER_ROLE_TEMPLATE_POLICIES,
   type MemberPermissionCode,
+  type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
 import { adminMemberRepository } from "./memberRepository";
+
+interface UpdateMemberBody {
+  actorUserId?: string | null;
+  updatedByUserId?: string | null;
+  displayName?: string | null;
+  phone?: string | null;
+  status?: "approved" | "pending" | "rejected" | "suspended" | null;
+  roleTemplateCode?: string | null;
+  permissionCodes?: string[] | null;
+}
 
 interface UpdateMemberPermissionsBody {
   actorUserId?: string | null;
@@ -40,7 +52,9 @@ function toErrorResponse(error: unknown) {
       : message === "ADMIN_MEMBER_COMPANY_SESSION_REQUIRED"
         ? 401
         : message === "COMPANY_MEMBER_NOT_APPROVED" ||
-          message === "SELF_PERMISSION_UPDATE_REMOVAL_BLOCKED"
+          message === "SELF_PERMISSION_UPDATE_REMOVAL_BLOCKED" ||
+          message === "SELF_STATUS_UPDATE_BLOCKED" ||
+          message === "LAST_ADMIN_PERMISSION_REMOVAL_BLOCKED"
         ? 409
         : message.endsWith("_REQUIRED")
           ? 400
@@ -64,7 +78,17 @@ function normalizePermissionCodes(
   );
 }
 
-function readActorUserId(body: UpdateMemberPermissionsBody): string | null {
+
+function normalizeRoleTemplateCode(
+  value: string | null | undefined,
+): MemberPermissionRoleTemplateCode | null {
+  if (!value) return null;
+  return MEMBER_ROLE_TEMPLATE_POLICIES.some((role) => role.code === value)
+    ? (value as MemberPermissionRoleTemplateCode)
+    : null;
+}
+
+function readActorUserId(body: UpdateMemberPermissionsBody | UpdateMemberBody): string | null {
   return body.actorUserId?.trim() || body.updatedByUserId?.trim() || null;
 }
 
@@ -91,6 +115,59 @@ export async function handleListAdminMembers(request: Request) {
     return NextResponse.json({
       ok: true,
       members: result.members,
+    });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+
+export async function handleUpdateAdminMember(
+  companyMemberId: string,
+  request: Request,
+) {
+  try {
+    const body = (await request
+      .json()
+      .catch(() => ({}))) as UpdateMemberBody;
+    const scope = await requireAdminMemberCompanyScope();
+    if (!scope.ok) return scope.response;
+
+    const updatedByUserId = readActorUserId(body) ?? scope.companyScope.userId;
+    const result = await adminMemberRepository.updateCompanyMember({
+      companyId: scope.companyScope.companyId,
+      companyMemberId,
+      updatedByUserId,
+      displayName: body.displayName,
+      phone: body.phone,
+      status: body.status,
+      roleTemplateCode: normalizeRoleTemplateCode(body.roleTemplateCode),
+      permissionCodes:
+        body.permissionCodes === undefined
+          ? undefined
+          : normalizePermissionCodes(body.permissionCodes),
+    });
+
+    await createSystemAuditLogSafe(
+      buildMemberPermissionUpdatedAuditLog({
+        companyMemberId: result.member.id,
+        companyId: result.member.companyId,
+        userId: result.member.userId,
+        memberEmail: result.member.email,
+        memberName: result.member.name,
+        previousPermissionCodes: [...result.previousPermissionCodes],
+        nextPermissionCodes: [...result.nextPermissionCodes],
+        updatedBy: updatedByUserId,
+        requestId: getRequestId(request),
+        ipAddress: getRequestIpAddress(request),
+      }),
+    );
+
+    return NextResponse.json({
+      ok: true,
+      member: result.member,
+      previousPermissionCodes: result.previousPermissionCodes,
+      nextPermissionCodes: result.nextPermissionCodes,
     });
   } catch (error) {
     return toErrorResponse(error);

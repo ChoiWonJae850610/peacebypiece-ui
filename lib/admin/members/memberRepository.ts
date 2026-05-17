@@ -14,6 +14,8 @@ import type {
   AdminMemberRepository,
   ListAdminCompanyMembersInput,
   ListAdminCompanyMembersResult,
+  UpdateAdminCompanyMemberInput,
+  UpdateAdminCompanyMemberResult,
   UpdateAdminCompanyMemberPermissionsInput,
   UpdateAdminCompanyMemberPermissionsResult,
 } from "./memberTypes";
@@ -94,6 +96,97 @@ function assertPermissionUpdateInput(input: UpdateAdminCompanyMemberPermissionsI
 
   return permissionCodes;
 }
+
+
+function assertMemberUpdateInput(input: UpdateAdminCompanyMemberInput): {
+  displayName?: string | null;
+  phone?: string | null;
+  status?: AdminCompanyMemberStatus | null;
+  roleTemplateCode?: MemberPermissionRoleTemplateCode | null;
+  permissionCodes?: readonly MemberPermissionCode[] | null;
+} {
+  if (!input.companyId.trim()) {
+    throw new Error("COMPANY_ID_REQUIRED");
+  }
+
+  if (!input.companyMemberId.trim()) {
+    throw new Error("COMPANY_MEMBER_ID_REQUIRED");
+  }
+
+  const nextStatus = input.status === undefined || input.status === null ? undefined : readMemberStatus(input.status);
+  if (input.status !== undefined && input.status !== null && !nextStatus) {
+    throw new Error("COMPANY_MEMBER_STATUS_INVALID");
+  }
+
+  const roleTemplateCode =
+    input.roleTemplateCode === undefined || input.roleTemplateCode === null
+      ? undefined
+      : toRoleTemplateCode(input.roleTemplateCode);
+
+  return {
+    displayName:
+      input.displayName === undefined
+        ? undefined
+        : input.displayName?.trim() || null,
+    phone:
+      input.phone === undefined
+        ? undefined
+        : input.phone?.trim() || null,
+    status: nextStatus,
+    roleTemplateCode,
+    permissionCodes:
+      input.permissionCodes === undefined
+        ? undefined
+        : normalizePermissionCodes(input.permissionCodes),
+  };
+}
+
+async function countApprovedPermissionHolders(
+  client: DbTransactionClient,
+  companyId: string,
+  permissionCode: MemberPermissionCode,
+  excludingCompanyMemberId: string,
+): Promise<number> {
+  const result = await client.query<{ count: string }>(
+    `
+      SELECT count(*)::text AS count
+        FROM company_members
+        JOIN member_permissions ON member_permissions.company_member_id = company_members.id
+       WHERE company_members.company_id = $1
+         AND company_members.id <> $2
+         AND company_members.status = 'approved'
+         AND member_permissions.permission_code = $3
+         AND member_permissions.is_enabled = true
+    `,
+    [companyId, excludingCompanyMemberId, permissionCode],
+  );
+
+  return Number(result.rows[0]?.count ?? 0);
+}
+
+async function assertAdminContinuity(
+  client: DbTransactionClient,
+  current: AdminCompanyMemberRecord,
+  nextStatus: AdminCompanyMemberStatus,
+  nextPermissionCodes: readonly MemberPermissionCode[],
+): Promise<void> {
+  const currentlyCanManageMembers = current.status === "approved" && current.permissionCodes.includes("member.permission.update");
+  const willManageMembers = nextStatus === "approved" && nextPermissionCodes.includes("member.permission.update");
+
+  if (!currentlyCanManageMembers || willManageMembers) return;
+
+  const remainingAdminCount = await countApprovedPermissionHolders(
+    client,
+    current.companyId,
+    "member.permission.update",
+    current.id,
+  );
+
+  if (remainingAdminCount <= 0) {
+    throw new Error("LAST_ADMIN_PERMISSION_REMOVAL_BLOCKED");
+  }
+}
+
 
 function toAdminCompanyMemberRecord(row: AdminCompanyMemberDbRow): AdminCompanyMemberRecord {
   const permissionCodes = normalizePermissionCodes(row.permission_codes || []);
@@ -212,6 +305,125 @@ async function listDbCompanyMembers(input: ListAdminCompanyMembersInput): Promis
   return { members: result.rows.map(toAdminCompanyMemberRecord) };
 }
 
+
+async function updateDbCompanyMember(
+  input: UpdateAdminCompanyMemberInput,
+): Promise<UpdateAdminCompanyMemberResult> {
+  const normalized = assertMemberUpdateInput(input);
+
+  return withDbTransaction(async (client) => {
+    const current = await selectCompanyMemberById(client, input.companyMemberId, input.companyId);
+    if (!current) {
+      throw new Error("COMPANY_MEMBER_NOT_FOUND");
+    }
+
+    const nextStatus = normalized.status ?? current.status;
+    const nextPermissionCodes = normalized.permissionCodes ?? current.permissionCodes;
+
+    if (
+      input.updatedByUserId &&
+      current.userId === input.updatedByUserId &&
+      current.permissionCodes.includes("member.permission.update") &&
+      !nextPermissionCodes.includes("member.permission.update")
+    ) {
+      throw new Error("SELF_PERMISSION_UPDATE_REMOVAL_BLOCKED");
+    }
+
+    if (
+      input.updatedByUserId &&
+      current.userId === input.updatedByUserId &&
+      current.status === "approved" &&
+      nextStatus !== "approved"
+    ) {
+      throw new Error("SELF_STATUS_UPDATE_BLOCKED");
+    }
+
+    await assertAdminContinuity(client, current, nextStatus, nextPermissionCodes);
+
+    await client.query(
+      `
+        UPDATE users
+           SET name = COALESCE($2, users.name),
+               phone = $3,
+               phone_source = CASE WHEN $3 IS NULL THEN users.phone_source ELSE 'user' END,
+               updated_at = now()
+         WHERE id = $1
+      `,
+      [current.userId, normalized.displayName ?? current.name, normalized.phone ?? null],
+    );
+
+    await client.query(
+      `
+        UPDATE company_members
+           SET display_name = $2,
+               role_template_code = $3,
+               status = $4,
+               approved_at = CASE WHEN $4 = 'approved' AND approved_at IS NULL THEN now() ELSE approved_at END,
+               approved_by = CASE WHEN $4 = 'approved' AND approved_by IS NULL THEN $5 ELSE approved_by END,
+               rejected_at = CASE WHEN $4 = 'rejected' THEN COALESCE(rejected_at, now()) ELSE NULL END,
+               rejected_by = CASE WHEN $4 = 'rejected' THEN COALESCE(rejected_by, $5) ELSE NULL END,
+               suspended_at = CASE WHEN $4 = 'suspended' THEN COALESCE(suspended_at, now()) ELSE NULL END,
+               suspended_by = CASE WHEN $4 = 'suspended' THEN COALESCE(suspended_by, $5) ELSE NULL END,
+               updated_at = now()
+         WHERE id = $1
+           AND company_id = $6
+      `,
+      [
+        current.id,
+        normalized.displayName ?? current.displayName ?? current.name,
+        normalized.roleTemplateCode ?? current.roleTemplateCode,
+        nextStatus,
+        input.updatedByUserId ?? null,
+        input.companyId,
+      ],
+    );
+
+    if (normalized.permissionCodes !== undefined) {
+      if (nextPermissionCodes.length === 0) {
+        throw new Error("MEMBER_PERMISSION_REQUIRED");
+      }
+
+      await client.query(
+        `
+          UPDATE member_permissions
+             SET is_enabled = false,
+                 updated_at = now()
+           WHERE company_member_id = $1
+        `,
+        [current.id],
+      );
+
+      for (const permissionCode of nextPermissionCodes) {
+        await client.query(
+          `
+            INSERT INTO member_permissions (company_member_id, permission_code, is_enabled, granted_by, granted_at)
+            VALUES ($1, $2, true, $3, now())
+            ON CONFLICT (company_member_id, permission_code)
+            DO UPDATE SET
+              is_enabled = true,
+              granted_by = EXCLUDED.granted_by,
+              granted_at = now(),
+              updated_at = now()
+          `,
+          [current.id, permissionCode, input.updatedByUserId ?? null],
+        );
+      }
+    }
+
+    const updated = await selectCompanyMemberById(client, current.id, input.companyId);
+    if (!updated) {
+      throw new Error("COMPANY_MEMBER_NOT_FOUND");
+    }
+
+    return {
+      member: updated,
+      previousPermissionCodes: current.permissionCodes,
+      nextPermissionCodes: updated.permissionCodes,
+    };
+  });
+}
+
+
 async function updateDbCompanyMemberPermissions(
   input: UpdateAdminCompanyMemberPermissionsInput,
 ): Promise<UpdateAdminCompanyMemberPermissionsResult> {
@@ -235,6 +447,8 @@ async function updateDbCompanyMemberPermissions(
     ) {
       throw new Error("SELF_PERMISSION_UPDATE_REMOVAL_BLOCKED");
     }
+
+    await assertAdminContinuity(client, current, current.status, nextPermissionCodes);
 
     await client.query(
       `
@@ -292,6 +506,14 @@ export function createAdminMemberRepository(): AdminMemberRepository {
       }
 
       return listDbCompanyMembers(input);
+    },
+
+    async updateCompanyMember(input) {
+      if (!isDatabaseConfigured()) {
+        throw new Error("DATABASE_NOT_CONFIGURED");
+      }
+
+      return updateDbCompanyMember(input);
     },
 
     async updateCompanyMemberPermissions(input) {

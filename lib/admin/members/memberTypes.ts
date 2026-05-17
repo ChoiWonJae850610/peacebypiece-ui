@@ -31,6 +31,24 @@ export interface ListAdminCompanyMembersResult {
   members: AdminCompanyMemberRecord[];
 }
 
+
+export interface UpdateAdminCompanyMemberInput {
+  companyId: string;
+  companyMemberId: string;
+  displayName?: string | null;
+  phone?: string | null;
+  status?: AdminCompanyMemberStatus | null;
+  roleTemplateCode?: MemberPermissionRoleTemplateCode | null;
+  permissionCodes?: readonly MemberPermissionCode[] | null;
+  updatedByUserId?: string | null;
+}
+
+export interface UpdateAdminCompanyMemberResult {
+  member: AdminCompanyMemberRecord;
+  previousPermissionCodes: readonly MemberPermissionCode[];
+  nextPermissionCodes: readonly MemberPermissionCode[];
+}
+
 export interface UpdateAdminCompanyMemberPermissionsInput {
   companyId: string;
   companyMemberId: string;
@@ -46,5 +64,6 @@ export interface UpdateAdminCompanyMemberPermissionsResult {
 
 export interface AdminMemberRepository {
   listCompanyMembers(input: ListAdminCompanyMembersInput): Promise<ListAdminCompanyMembersResult>;
+  updateCompanyMember(input: UpdateAdminCompanyMemberInput): Promise<UpdateAdminCompanyMemberResult>;
   updateCompanyMemberPermissions(input: UpdateAdminCompanyMemberPermissionsInput): Promise<UpdateAdminCompanyMemberPermissionsResult>;
 }

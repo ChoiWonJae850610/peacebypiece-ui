@@ -22,6 +22,8 @@ import {
   MEMBER_PERMISSION_CATALOG,
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
+  type MemberPermissionCode,
+  type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
@@ -35,6 +37,12 @@ import {
   ADMIN_TABLE_ROW_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import {
+  AdminModal,
+  AdminModalFooterActions,
+  AdminModalSection,
+  adminModalInputClassName,
+} from "@/components/admin/layout/AdminModal";
 import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
@@ -68,6 +76,12 @@ type JoinRequestReviewResponse = {
 type MemberListResponse = {
   ok?: boolean;
   members?: AdminCompanyMemberRecord[];
+  error?: string;
+};
+
+type MemberUpdateResponse = {
+  ok?: boolean;
+  member?: AdminCompanyMemberRecord;
   error?: string;
 };
 
@@ -114,6 +128,15 @@ type MemberDirectoryRow = {
   lastActiveAt: string;
   joinRequest?: ReturnType<typeof toMemberJoinRequestPreviews>[number];
   member?: ReturnType<typeof toMemberListPreviews>[number];
+  memberRecord?: AdminCompanyMemberRecord;
+};
+
+type MemberDetailDraft = {
+  displayName: string;
+  phone: string;
+  status: AdminCompanyMemberRecord["status"];
+  roleTemplateCode: MemberPermissionRoleTemplateCode;
+  permissionCodes: MemberPermissionCode[];
 };
 
 function isValidEmail(value: string): boolean {
@@ -132,6 +155,26 @@ function getPendingInvitationExpiresLabel(expiresAt: string): string {
     month: "2-digit",
     day: "2-digit",
   });
+}
+
+
+function buildMemberDetailDraft(member: AdminCompanyMemberRecord): MemberDetailDraft {
+  return {
+    displayName: member.displayName?.trim() || member.name,
+    phone: member.phone?.trim() || "",
+    status: member.status,
+    roleTemplateCode: member.roleTemplateCode,
+    permissionCodes: [...member.permissionCodes],
+  };
+}
+
+function toggleMemberPermissionCode(
+  permissionCodes: readonly MemberPermissionCode[],
+  permissionCode: MemberPermissionCode,
+): MemberPermissionCode[] {
+  return permissionCodes.includes(permissionCode)
+    ? permissionCodes.filter((code) => code !== permissionCode)
+    : [...permissionCodes, permissionCode].sort();
 }
 
 const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
@@ -229,6 +272,13 @@ export default function AdminMemberManagementDashboard() {
   const [reviewingJoinRequestId, setReviewingJoinRequestId] = useState<
     string | null
   >(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [memberDetailDraft, setMemberDetailDraft] =
+    useState<MemberDetailDraft | null>(null);
+  const [memberDetailError, setMemberDetailError] = useState<string | null>(
+    null,
+  );
+  const [isSavingMemberDetail, setIsSavingMemberDetail] = useState(false);
   const canCreateInvite = hasEveryMemberPermission(
     { permissionCodes: currentPermissionCodes },
     ["member.invite"],
@@ -386,10 +436,11 @@ export default function AdminMemberManagementDashboard() {
       approvedAt: member.approvedAtLabel,
       lastActiveAt: member.lastActiveLabel,
       member,
+      memberRecord: memberRecords.find((record) => record.id === member.id),
     }));
 
     return [...pendingRows, ...memberRows];
-  }, [joinRequests, members]);
+  }, [joinRequests, memberRecords, members]);
 
   const filteredMemberDirectoryRows = useMemo(() => {
     const query = memberSearchQuery.trim().toLowerCase();
@@ -492,7 +543,10 @@ export default function AdminMemberManagementDashboard() {
         className: "flex justify-center",
         render: (row) =>
           row.source === "joinRequest" && row.joinRequest ? (
-            <div className="flex flex-wrap justify-center gap-1.5">
+            <div
+              className="flex flex-wrap justify-center gap-1.5"
+              onClick={(event) => event.stopPropagation()}
+            >
               <AdminButton
                 onClick={() => void handleReviewJoinRequest(row.joinRequest!, "approve")}
                 disabled={reviewingJoinRequestId !== null}
@@ -515,14 +569,7 @@ export default function AdminMemberManagementDashboard() {
               </AdminButton>
             </div>
           ) : (
-            <AdminButton
-              onClick={() => setActiveTab("permissions")}
-              variant="secondary"
-              size="sm"
-              className="px-2.5 py-1 text-[11px]"
-            >
-              {t("memberManagement.memberActions.managePermissions", "권한 관리")}
-            </AdminButton>
+            <span className="block h-8" aria-hidden="true" />
           ),
       },
     ],
@@ -668,6 +715,105 @@ export default function AdminMemberManagementDashboard() {
     const timer = window.setTimeout(() => setFeedbackMessage(null), 2400);
     return () => window.clearTimeout(timer);
   }, [feedbackMessage]);
+
+
+
+  function handleOpenMemberDetail(row: MemberDirectoryRow) {
+    if (row.source !== "member" || !row.memberRecord) return;
+    setSelectedMemberId(row.memberRecord.id);
+    setMemberDetailDraft(buildMemberDetailDraft(row.memberRecord));
+    setMemberDetailError(null);
+  }
+
+  function handleCloseMemberDetail() {
+    if (isSavingMemberDetail) return;
+    setSelectedMemberId(null);
+    setMemberDetailDraft(null);
+    setMemberDetailError(null);
+  }
+
+  function handleRoleTemplateChange(roleTemplateCode: MemberPermissionRoleTemplateCode) {
+    setMemberDetailDraft((previous) =>
+      previous
+        ? {
+            ...previous,
+            roleTemplateCode,
+            permissionCodes: [...getMemberRoleTemplatePermissions(roleTemplateCode)],
+          }
+        : previous,
+    );
+  }
+
+  function handleToggleMemberPermission(permissionCode: MemberPermissionCode) {
+    setMemberDetailDraft((previous) =>
+      previous
+        ? {
+            ...previous,
+            permissionCodes: toggleMemberPermissionCode(
+              previous.permissionCodes,
+              permissionCode,
+            ),
+          }
+        : previous,
+    );
+  }
+
+  async function handleSaveMemberDetail() {
+    if (!selectedMemberId || !memberDetailDraft || isSavingMemberDetail) return;
+    if (memberDetailDraft.permissionCodes.length === 0) {
+      setMemberDetailError(
+        t(
+          "memberManagement.detailModal.errors.permissionRequired",
+          "권한은 최소 1개 이상 선택해야 합니다.",
+        ),
+      );
+      return;
+    }
+
+    setIsSavingMemberDetail(true);
+    setMemberDetailError(null);
+
+    try {
+      const response = await fetch(
+        `/api/admin/members/${encodeURIComponent(selectedMemberId)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "x-peacebypiece-permissions":
+              "member.read,member.permission.update,member.suspend",
+          },
+          body: JSON.stringify(memberDetailDraft),
+        },
+      );
+      const payload = (await response.json()) as MemberUpdateResponse;
+
+      if (!response.ok || !payload.ok || !payload.member) {
+        throw new Error(payload.error ?? "MEMBER_UPDATE_FAILED");
+      }
+
+      setMemberRecords((previous) =>
+        previous.map((member) =>
+          member.id === payload.member!.id ? payload.member! : member,
+        ),
+      );
+      setFeedbackMessage(
+        t(
+          "memberManagement.detailModal.feedback.saved",
+          "멤버 정보를 저장했습니다.",
+        ),
+      );
+      setSelectedMemberId(null);
+      setMemberDetailDraft(null);
+      setMemberDetailError(null);
+    } catch (error) {
+      setMemberDetailError(
+        error instanceof Error ? error.message : "MEMBER_UPDATE_FAILED",
+      );
+    } finally {
+      setIsSavingMemberDetail(false);
+    }
+  }
 
   async function handleReviewJoinRequest(
     request: (typeof joinRequests)[number],
@@ -1243,6 +1389,7 @@ export default function AdminMemberManagementDashboard() {
                 rowBaseClassName="grid w-full min-w-[1120px] gap-3 px-4 py-3 text-left text-xs md:items-center"
                 headerClassName="hidden min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
                 className="min-h-0 flex-1"
+                onRowClick={handleOpenMemberDetail}
               />
             </AdminPanelSection>
           ) : null}
@@ -1499,6 +1646,181 @@ export default function AdminMemberManagementDashboard() {
           ) : null}
         </div>
       </section>
+
+      <AdminModal
+        open={Boolean(selectedMemberId && memberDetailDraft)}
+        title={t(
+          "memberManagement.detailModal.title",
+          "멤버 상세 관리",
+        )}
+        description={t(
+          "memberManagement.detailModal.description",
+          "멤버 로우를 클릭해 기본 정보, 상태, 권한을 한 곳에서 관리합니다.",
+        )}
+        onClose={handleCloseMemberDetail}
+        maxWidthClass="md:max-w-4xl"
+        footer={
+          <AdminModalFooterActions
+            secondaryLabel={t("common.cancel", "취소")}
+            primaryLabel={
+              isSavingMemberDetail
+                ? t("memberManagement.detailModal.actions.saving", "저장 중")
+                : t("memberManagement.detailModal.actions.save", "저장")
+            }
+            onSecondary={handleCloseMemberDetail}
+            onPrimary={() => void handleSaveMemberDetail()}
+            secondaryDisabled={isSavingMemberDetail}
+            primaryDisabled={isSavingMemberDetail || !memberDetailDraft}
+            statusMessage={memberDetailError ?? ""}
+            statusTone={memberDetailError ? "danger" : "neutral"}
+          />
+        }
+      >
+        {memberDetailDraft ? (
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+            <AdminModalSection
+              title={t(
+                "memberManagement.detailModal.sections.profile",
+                "기본 정보",
+              )}
+              description={t(
+                "memberManagement.detailModal.sections.profileDescription",
+                "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
+              )}
+            >
+              <div className="grid gap-3">
+                <label className="grid gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
+                    {t("memberManagement.detailModal.fields.name", "이름")}
+                  </span>
+                  <input
+                    value={memberDetailDraft.displayName}
+                    onChange={(event) =>
+                      setMemberDetailDraft((previous) =>
+                        previous
+                          ? { ...previous, displayName: event.target.value }
+                          : previous,
+                      )
+                    }
+                    className={adminModalInputClassName}
+                  />
+                </label>
+                <label className="grid gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
+                    {t("memberManagement.detailModal.fields.phone", "연락처")}
+                  </span>
+                  <input
+                    value={memberDetailDraft.phone}
+                    onChange={(event) =>
+                      setMemberDetailDraft((previous) =>
+                        previous
+                          ? { ...previous, phone: event.target.value }
+                          : previous,
+                      )
+                    }
+                    className={adminModalInputClassName}
+                    placeholder="01012345678"
+                  />
+                </label>
+                <label className="grid gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
+                    {t("memberManagement.detailModal.fields.status", "상태")}
+                  </span>
+                  <select
+                    value={memberDetailDraft.status}
+                    onChange={(event) =>
+                      setMemberDetailDraft((previous) =>
+                        previous
+                          ? {
+                              ...previous,
+                              status: event.target.value as AdminCompanyMemberRecord["status"],
+                            }
+                          : previous,
+                      )
+                    }
+                    className={adminModalInputClassName}
+                  >
+                    {(["approved", "pending", "suspended", "rejected"] as const).map(
+                      (status) => (
+                        <option key={status} value={status}>
+                          {t(
+                            `memberManagement.memberDirectory.statuses.${status}`,
+                            status,
+                          )}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
+              </div>
+            </AdminModalSection>
+
+            <AdminModalSection
+              title={t(
+                "memberManagement.detailModal.sections.permissions",
+                "역할 및 권한",
+              )}
+              description={t(
+                "memberManagement.detailModal.sections.permissionsDescription",
+                "역할을 선택하면 기본 권한이 채워지고, 필요한 권한만 세부 조정할 수 있습니다.",
+              )}
+            >
+              <div className="grid gap-3">
+                <label className="grid gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
+                    {t("memberManagement.detailModal.fields.role", "역할")}
+                  </span>
+                  <select
+                    value={memberDetailDraft.roleTemplateCode}
+                    onChange={(event) =>
+                      handleRoleTemplateChange(
+                        event.target.value as MemberPermissionRoleTemplateCode,
+                      )
+                    }
+                    className={adminModalInputClassName}
+                  >
+                    {roles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {t(`memberManagement.roles.${role.id}.label`, role.id)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="max-h-[320px] space-y-2 overflow-y-auto rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-2">
+                  {MEMBER_PERMISSION_CATALOG.filter(
+                    (permission) => !permission.systemOnly,
+                  ).map((permission) => (
+                    <label
+                      key={permission.code}
+                      className="flex items-start gap-3 rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 text-left"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={memberDetailDraft.permissionCodes.includes(
+                          permission.code,
+                        )}
+                        onChange={() =>
+                          handleToggleMemberPermission(permission.code)
+                        }
+                        className="mt-1 size-4 rounded border-[var(--pbp-border)]"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-xs font-semibold pbp-text-primary">
+                          {t(permission.labelKey, permission.code)}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] leading-4 pbp-text-muted">
+                          {t(permission.descriptionKey, permission.code)}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </AdminModalSection>
+          </div>
+        ) : null}
+      </AdminModal>
+
       <ToastMessage message={feedbackMessage} />
     </div>
   );
