@@ -9,14 +9,23 @@ import PartnerMasterSummaryCards from "@/components/admin/partnerMaster/PartnerM
 import { togglePartnerFilterSelection } from "@/lib/admin/partner";
 import { usePartnerMasterController } from "@/components/admin/partnerMaster/usePartnerMasterController";
 
-export default function PartnerMasterSection() {
+export type PartnerMasterCapabilities = {
+  canCreate?: boolean;
+  canUpdate?: boolean;
+};
+
+type PartnerMasterSectionProps = {
+  capabilities?: PartnerMasterCapabilities;
+};
+
+export default function PartnerMasterSection({ capabilities }: PartnerMasterSectionProps = {}) {
   const { i18n } = useI18n();
   const partnerText = i18n.admin.partnerMaster;
-  const controller = usePartnerMasterController(partnerText);
+  const controller = usePartnerMasterController(partnerText, capabilities);
 
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:h-full md:max-h-full md:overflow-hidden md:p-5 xl:p-6">
-      <PartnerMasterHeader onOpenCreateModal={controller.openCreateModal} />
+      <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
 
       <PartnerMasterSummaryCards summary={controller.listViewModel.summary} />
 
@@ -38,6 +47,7 @@ export default function PartnerMasterSection() {
         className="mt-4 min-h-[360px] md:min-h-0 md:flex-1"
         items={controller.listViewModel.items}
         isLoading={controller.isLoadingPartners}
+        canUpdate={controller.canUpdatePartner}
         onEditPartner={controller.openEditModal}
       />
 
@@ -54,6 +64,7 @@ export default function PartnerMasterSection() {
         selectedAvailableProcess={controller.selectedAvailableProcess}
         selectedAssignedProcess={controller.selectedAssignedProcess}
         onClose={controller.closeModal}
+        canEdit={controller.canSubmitPartner}
         onSubmit={controller.handleSubmit}
         onDraftChange={controller.setDraft}
         onSetPrimaryType={controller.setPrimaryType}

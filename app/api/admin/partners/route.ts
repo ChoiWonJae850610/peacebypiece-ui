@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiPermission } from "@/lib/permissions";
 import {
   buildOutsourcingProcessDbInputs,
   buildPartnerDbCreateInput,
@@ -80,14 +79,8 @@ function isWritablePartnerRepository(repository: PartnerRepository): repository 
   return "createPartner" in repository && "updatePartner" in repository;
 }
 
-export async function GET(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "partner.read",
-    routeLabel: "admin.partners.read",
-  });
-  if (permissionDenied) return permissionDenied;
-
-  const scopeResult = await requirePartnerCompanyScope();
+export async function GET() {
+  const scopeResult = await requirePartnerCompanyScope("partner.read");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
@@ -106,13 +99,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "partner.create",
-    routeLabel: "admin.partners.create",
-  });
-  if (permissionDenied) return permissionDenied;
-
-  const scopeResult = await requirePartnerCompanyScope();
+  const scopeResult = await requirePartnerCompanyScope("partner.create");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
@@ -146,13 +133,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "partner.update",
-    routeLabel: "admin.partners.update",
-  });
-  if (permissionDenied) return permissionDenied;
-
-  const scopeResult = await requirePartnerCompanyScope();
+  const scopeResult = await requirePartnerCompanyScope("partner.update");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
@@ -186,13 +167,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "standards.update",
-    routeLabel: "admin.partners.processes.update",
-  });
-  if (permissionDenied) return permissionDenied;
-
-  const scopeResult = await requirePartnerCompanyScope();
+  const scopeResult = await requirePartnerCompanyScope("standards.update");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {

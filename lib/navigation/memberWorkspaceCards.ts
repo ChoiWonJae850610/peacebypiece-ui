@@ -29,9 +29,9 @@ export const MEMBER_WORKSPACE_CARDS: readonly MemberWorkspaceCard[] = [
   {
     id: "partners",
     href: "/workspace/partners",
-    status: MEMBER_WORKSPACE_CARD_STATUS.planned,
+    status: MEMBER_WORKSPACE_CARD_STATUS.available,
     section: "work",
-    requiredPermissions: ["partner.read", "partner.create", "partner.update", "partner.delete"],
+    requiredPermissions: ["partner.read"],
   },
   {
     id: "standards",

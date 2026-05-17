@@ -33,6 +33,7 @@ type PartnerMasterFormModalProps = {
   selectedAvailableProcess: OutsourcingProcessType | null;
   selectedAssignedProcess: OutsourcingProcessType | null;
   onClose: () => void;
+  canEdit?: boolean;
   onSubmit: () => void;
   onDraftChange: (updater: (current: PartnerDraft) => PartnerDraft) => void;
   onSetPrimaryType: (type: BasePartnerType) => void;
@@ -54,6 +55,7 @@ export default function PartnerMasterFormModal({
   selectedAvailableProcess,
   selectedAssignedProcess,
   onClose,
+  canEdit = true,
   onSubmit,
   onDraftChange,
   onSetPrimaryType,
@@ -77,7 +79,7 @@ export default function PartnerMasterFormModal({
             <AdminButton type="button" onClick={onClose} disabled={isSubmitting} variant="secondary">
               {formText.cancel}
             </AdminButton>
-            <AdminButton type="button" onClick={onSubmit} disabled={isSubmitting} variant="primary">
+            <AdminButton type="button" onClick={onSubmit} disabled={isSubmitting || !canEdit} variant="primary">
               {formText.save}
             </AdminButton>
           </div>

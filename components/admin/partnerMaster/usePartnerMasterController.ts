@@ -20,6 +20,7 @@ import {
 } from "@/lib/admin/partner";
 import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi } from "@/lib/admin/partner/apiClient";
 import type { OutsourcingProcessType, Partner, PartnerDraft } from "@/types/partner";
+import type { PartnerMasterCapabilities } from "@/components/admin/PartnerMasterSection";
 
 type PartnerMasterText = {
   typeLabels: Parameters<typeof buildPartnerListViewModel>[3];
@@ -28,7 +29,10 @@ type PartnerMasterText = {
   };
 };
 
-export function usePartnerMasterController(partnerText: PartnerMasterText) {
+export function usePartnerMasterController(partnerText: PartnerMasterText, capabilities: PartnerMasterCapabilities = {}) {
+  const canCreatePartner = capabilities.canCreate ?? true;
+  const canUpdatePartner = capabilities.canUpdate ?? true;
+
   const [partners, setPartners] = useState<Partner[]>([]);
   const [selectedTypes, setSelectedTypes] = useState(DEFAULT_PARTNER_FILTER_STATE.selectedTypes);
   const [selectedStatus, setSelectedStatus] = useState(DEFAULT_PARTNER_FILTER_STATE.status);
@@ -36,6 +40,7 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPartnerId, setEditingPartnerId] = useState<string | null>(null);
+  const canSubmitPartner = editingPartnerId ? canUpdatePartner : canCreatePartner;
   const [draft, setDraft] = useState<PartnerDraft>(createEmptyPartnerDraft());
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>([]);
   const [selectedAvailableProcess, setSelectedAvailableProcess] = useState<OutsourcingProcessType | null>(null);
@@ -95,12 +100,14 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
   }, []);
 
   const openCreateModal = useCallback(() => {
+    if (!canCreatePartner) return;
     resetDraftState();
     setIsModalOpen(true);
-  }, [resetDraftState]);
+  }, [canCreatePartner, resetDraftState]);
 
   const openEditModal = useCallback(
     (partnerId: string) => {
+      if (!canUpdatePartner) return;
       const partner = listViewModel.editablePartnerMap[partnerId];
 
       if (!partner) return;
@@ -112,7 +119,7 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
       setFormError("");
       setIsModalOpen(true);
     },
-    [listViewModel.editablePartnerMap],
+    [canUpdatePartner, listViewModel.editablePartnerMap],
   );
 
   const closeModal = useCallback(() => {
@@ -131,7 +138,7 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
   }, []);
 
   const handleSubmit = useCallback(() => {
-    if (isSavingPartnerRef.current) return;
+    if (isSavingPartnerRef.current || !canSubmitPartner) return;
 
     const normalizedDraft = normalizePartnerDraft(draft);
 
@@ -166,9 +173,12 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
         isSavingPartnerRef.current = false;
         setIsSavingPartner(false);
       });
-  }, [closeModal, draft, editingPartnerId, partnerText.form.saveFailed]);
+  }, [canSubmitPartner, closeModal, draft, editingPartnerId, partnerText.form.saveFailed]);
 
   return {
+    canCreatePartner,
+    canUpdatePartner,
+    canSubmitPartner,
     partners,
     setPartners,
     selectedTypes,

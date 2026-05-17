@@ -43,6 +43,12 @@ export const commonEn = {
       },
     },
   },
+  workspacePages: {
+    partners: {
+      title: "Partners",
+      description: "Members with permission can read and manage partner data from the workspace home.",
+    },
+  },
   workorderToolbar: {
     refresh: "Refresh",
     logout: "Log out",

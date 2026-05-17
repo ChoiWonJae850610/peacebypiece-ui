@@ -17,6 +17,7 @@ import { useI18n } from "@/lib/i18n";
 type PartnerMasterListProps = {
   items: PartnerListItemViewModel[];
   isLoading?: boolean;
+  canUpdate?: boolean;
   onEditPartner: (partnerId: string) => void;
   className?: string;
 };
@@ -52,7 +53,7 @@ function SortableHeader({ label, sortKey, activeSort, onSort, align = "left" }: 
   );
 }
 
-export default function PartnerMasterList({ items, isLoading = false, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
+export default function PartnerMasterList({ items, isLoading = false, canUpdate = true, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
   const { i18n } = useI18n();
   const listText = i18n.admin.partnerMaster.list;
   const [sortState, setSortState] = useState<PartnerSortState>(PARTNER_DEFAULT_SORT_STATE);
@@ -77,10 +78,11 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
       getRowKey={(item) => item.id}
       gridTemplateColumns={PARTNER_TABLE_GRID}
       rowClassName={(item) => [
-        "px-4 py-3 md:gap-3 transition hover:bg-[var(--admin-theme-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]",
+        "px-4 py-3 md:gap-3 transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]",
+        canUpdate ? "hover:bg-[var(--admin-theme-soft)]" : "",
         item.isActive ? "bg-white" : "bg-[var(--pbp-surface-muted)]",
       ].join(" ")}
-      onRowClick={(item) => onEditPartner(item.id)}
+      onRowClick={canUpdate ? (item) => onEditPartner(item.id) : undefined}
       columns={[
         {
           key: "name",

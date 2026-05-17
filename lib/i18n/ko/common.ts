@@ -43,6 +43,12 @@ export const commonKo = {
       },
     },
   },
+  workspacePages: {
+    partners: {
+      title: "협력업체",
+      description: "권한이 있는 멤버가 업무홈에서 협력업체를 조회하고 관리합니다.",
+    },
+  },
   workorderToolbar: {
     refresh: "새로고침",
     logout: "로그아웃",
