@@ -147,14 +147,13 @@ export const MEMBER_ROLE_PREVIEWS: readonly MemberRolePreview[] = MEMBER_ROLE_TE
 
 export const MEMBER_MANAGEMENT_PERMISSION_CARDS: readonly MemberPermissionCard[] = [
   { id: "workorder", requiredPermissions: ["workorder.read"], status: "ready" },
+  { id: "workflow", requiredPermissions: ["workorder.status.review", "workorder.status.order", "workorder.status.inspect", "workorder.status.complete"], status: "ready" },
   { id: "partners", requiredPermissions: ["partner.read"], status: "ready" },
+  { id: "standards", requiredPermissions: ["standards.read"], status: "ready" },
   { id: "storage", requiredPermissions: ["storage.read"], status: "ready" },
   { id: "stats", requiredPermissions: ["stats.read"], status: "ready" },
   { id: "members", requiredPermissions: ["member.read"], status: "ready" },
   { id: "organization-settings", requiredPermissions: ["settings.read"], status: "ready" },
-  { id: "standard-units", requiredPermissions: ["standards.manage"], status: "planned" },
-  { id: "outsourcing-processes", requiredPermissions: ["standards.manage"], status: "planned" },
-  { id: "product-types", requiredPermissions: ["standards.manage"], status: "planned" },
 ] as const;
 
 export const MEMBER_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = [
@@ -384,8 +383,17 @@ export function getMemberPermissionMatrixPreviews(): readonly MemberPermissionMa
   );
 }
 
+const HIDDEN_EDITABLE_MEMBER_PERMISSION_CODES: readonly MemberPermissionCode[] = [
+  "partner.manage",
+  "standards.manage",
+] as const;
+
 export function getEditableMemberPermissionGroupPreviews(): readonly EditableMemberPermissionGroupPreview[] {
-  const editablePermissions = MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly);
+  const editablePermissions = MEMBER_PERMISSION_CATALOG.filter(
+    (permission) =>
+      !permission.systemOnly &&
+      !HIDDEN_EDITABLE_MEMBER_PERMISSION_CODES.includes(permission.code),
+  );
   const groupIds = Array.from(new Set(editablePermissions.map((permission) => permission.group)));
 
   return groupIds.map((groupId) => ({

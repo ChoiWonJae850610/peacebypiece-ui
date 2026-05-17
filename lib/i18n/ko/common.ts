@@ -29,6 +29,14 @@ export const commonKo = {
         label: "작업지시서 업무 화면",
         description: "나에게 배정된 작업지시서와 진행 중인 업무를 확인합니다.",
       },
+      partners: {
+        label: "협력업체",
+        description: "권한이 부여된 멤버가 협력업체 정보를 조회하고 관리할 수 있는 업무 카드입니다.",
+      },
+      standards: {
+        label: "기준정보",
+        description: "단위, 공정, 품목 등 작업지시서 입력 기준을 관리할 수 있는 업무 카드입니다.",
+      },
   personalSettings: {
         label: "개인 환경설정",
         description: "언어와 테마를 사용자별로 관리합니다.",

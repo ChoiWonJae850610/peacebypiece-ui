@@ -9,6 +9,7 @@ import {
   getMemberWorkspaceCardsBySection,
   type MemberWorkspaceCardStatus,
 } from "@/lib/navigation/memberWorkspaceCards";
+import type { MemberPermissionCode } from "@/lib/permissions";
 
 function getStatusClassName(status: MemberWorkspaceCardStatus) {
   if (status === "available") {
@@ -20,9 +21,13 @@ function getStatusClassName(status: MemberWorkspaceCardStatus) {
 
 type MemberWorkspaceHomeProps = {
   companyName?: string | null;
+  permissionCodes?: readonly MemberPermissionCode[];
 };
 
-export default function MemberWorkspaceHome({ companyName = null }: MemberWorkspaceHomeProps) {
+export default function MemberWorkspaceHome({
+  companyName = null,
+  permissionCodes = [],
+}: MemberWorkspaceHomeProps) {
   const { i18n } = useI18n();
   const copy = i18n.common.workspaceHome;
 
@@ -56,7 +61,7 @@ export default function MemberWorkspaceHome({ companyName = null }: MemberWorksp
         </header>
 
         {MEMBER_WORKSPACE_CARD_SECTIONS.map((section) => {
-          const cards = getMemberWorkspaceCardsBySection(section);
+          const cards = getMemberWorkspaceCardsBySection(section, { permissionCodes });
           if (cards.length === 0) return null;
 
           return (
@@ -96,12 +101,18 @@ export default function MemberWorkspaceHome({ companyName = null }: MemberWorksp
                       </div>
 
                       <div className="mt-4">
-                        <Link
-                          href={card.href}
-                          className="inline-flex rounded-xl border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800"
-                        >
-                          {copy.openLabel}
-                        </Link>
+                        {card.status === "available" ? (
+                          <Link
+                            href={card.href}
+                            className="inline-flex rounded-xl border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800"
+                          >
+                            {copy.openLabel}
+                          </Link>
+                        ) : (
+                          <span className="inline-flex rounded-xl border border-stone-200 bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-500">
+                            {copy.plannedLabel}
+                          </span>
+                        )}
                       </div>
                     </article>
                   );

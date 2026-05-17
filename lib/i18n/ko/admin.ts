@@ -36,8 +36,11 @@ export const adminKo = {
       statusComplete: { label: "완료 처리", description: "작업지시서를 완료 상태로 변경할 수 있습니다." },
     },
     partner: {
-      read: { label: "조회", description: "업체관리 목록과 상세를 볼 수 있습니다." },
-      manage: { label: "등록/수정", description: "업체를 등록, 수정, 상태 변경할 수 있습니다." },
+      read: { label: "조회", description: "협력업체 목록과 상세를 볼 수 있습니다." },
+      create: { label: "등록", description: "새 협력업체를 등록할 수 있습니다." },
+      update: { label: "수정", description: "협력업체 기본 정보와 역할을 수정할 수 있습니다." },
+      delete: { label: "비활성/삭제", description: "협력업체를 비활성화하거나 삭제 요청할 수 있습니다." },
+      manage: { label: "기존 통합 관리", description: "이전 버전에서 사용하던 협력업체 통합 관리 권한입니다." },
     },
     storage: {
       read: { label: "조회", description: "저장소 파일과 사용량을 볼 수 있습니다." },
@@ -52,7 +55,11 @@ export const adminKo = {
       manage: { label: "수정", description: "환경설정과 회사 정책을 수정할 수 있습니다." },
     },
     standards: {
-      manage: { label: "기준정보 관리", description: "단위, 공정, 품목 기준정보를 관리할 수 있습니다." },
+      read: { label: "조회", description: "단위, 공정, 품목 기준정보를 볼 수 있습니다." },
+      create: { label: "등록", description: "새 기준정보 항목을 등록할 수 있습니다." },
+      update: { label: "수정", description: "기준정보 항목의 이름, 정렬, 사용 상태를 수정할 수 있습니다." },
+      delete: { label: "삭제/비활성", description: "기준정보 항목을 삭제하거나 비활성 처리할 수 있습니다." },
+      manage: { label: "기존 통합 관리", description: "이전 버전에서 사용하던 기준정보 통합 관리 권한입니다." },
     },
     member: {
       read: { label: "조회", description: "멤버 목록과 승인 대기 목록을 볼 수 있습니다." },
@@ -740,8 +747,16 @@ export const adminKo = {
         description: "작업지시서 업무 화면 접근 권한입니다.",
       },
       partners: {
-        label: "협력업체 관리",
-        description: "공장, 원단, 부자재, 외주처 기준정보 관리 권한입니다.",
+        label: "협력업체",
+        description: "업무홈 협력업체 카드 노출과 조회/등록/수정/비활성 권한입니다.",
+      },
+      workflow: {
+        label: "작업흐름",
+        description: "검토, 발주, 검수, 완료 같은 작업지시서 상태 전환 권한입니다.",
+      },
+      standards: {
+        label: "기준정보",
+        description: "업무홈 기준정보 카드 노출과 기준정보 조회/등록/수정/비활성 권한입니다.",
       },
       storage: {
         label: "저장소 관리",
@@ -774,11 +789,12 @@ export const adminKo = {
     },
     permissionGroups: {
       workorder: { label: "작업지시서" },
-      workflow: { label: "워크플로우" },
+      workflow: { label: "작업흐름" },
       memo: { label: "메모" },
       attachment: { label: "첨부/디자인" },
       "master-data": { label: "기준정보" },
       partner: { label: "협력업체" },
+      standards: { label: "기준정보" },
       storage: { label: "저장소" },
       stats: { label: "통계" },
       settings: { label: "환경설정" },

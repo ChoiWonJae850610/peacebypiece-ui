@@ -80,6 +80,54 @@ function normalizePermissionCodes(values: readonly string[] | null | undefined):
   ).sort();
 }
 
+async function ensureMemberPermissionCatalogEntries(
+  client: DbTransactionClient,
+  permissionCodes: readonly MemberPermissionCode[],
+): Promise<void> {
+  const catalogItems = MEMBER_PERMISSION_CATALOG.filter((item) =>
+    permissionCodes.includes(item.code),
+  );
+
+  for (const item of catalogItems) {
+    await client.query(
+      `
+        INSERT INTO permission_catalog (
+          permission_key,
+          label,
+          description,
+          category,
+          permission_group,
+          label_key,
+          description_key,
+          is_system_permission,
+          sort_order,
+          is_active
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+        ON CONFLICT (permission_key) DO UPDATE SET
+          permission_group = EXCLUDED.permission_group,
+          label_key = EXCLUDED.label_key,
+          description_key = EXCLUDED.description_key,
+          is_system_permission = EXCLUDED.is_system_permission,
+          sort_order = EXCLUDED.sort_order,
+          is_active = true,
+          updated_at = now()
+      `,
+      [
+        item.code,
+        item.labelKey,
+        item.descriptionKey,
+        item.group,
+        item.group,
+        item.labelKey,
+        item.descriptionKey,
+        item.systemOnly,
+        item.sortOrder,
+      ],
+    );
+  }
+}
+
 function assertPermissionUpdateInput(input: UpdateAdminCompanyMemberPermissionsInput): readonly MemberPermissionCode[] {
   if (!input.companyId.trim()) {
     throw new Error("COMPANY_ID_REQUIRED");
@@ -383,6 +431,8 @@ async function updateDbCompanyMember(
         throw new Error("MEMBER_PERMISSION_REQUIRED");
       }
 
+      await ensureMemberPermissionCatalogEntries(client, nextPermissionCodes);
+
       await client.query(
         `
           UPDATE member_permissions
@@ -449,6 +499,8 @@ async function updateDbCompanyMemberPermissions(
     }
 
     await assertAdminContinuity(client, current, current.status, nextPermissionCodes);
+
+    await ensureMemberPermissionCatalogEntries(client, nextPermissionCodes);
 
     await client.query(
       `

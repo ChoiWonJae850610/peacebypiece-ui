@@ -39,7 +39,10 @@ export const adminEn = {
     },
     partner: {
       read: { label: "Read", description: "View partner lists and details." },
-      manage: { label: "Create/edit", description: "Create, edit, and change partner status." },
+      create: { label: "Create", description: "Create new partners." },
+      update: { label: "Edit", description: "Edit partner details and roles." },
+      delete: { label: "Disable/delete", description: "Disable partners or request deletion." },
+      manage: { label: "Legacy manage", description: "Legacy aggregate partner management permission from earlier versions." },
     },
     storage: {
       read: { label: "Read", description: "View storage files and usage." },
@@ -54,7 +57,11 @@ export const adminEn = {
       manage: { label: "Edit", description: "Edit settings and company policies." },
     },
     standards: {
-      manage: { label: "Manage standards", description: "Manage unit, process, and product standards." },
+      read: { label: "Read", description: "View unit, process, and item standards." },
+      create: { label: "Create", description: "Create new standards." },
+      update: { label: "Edit", description: "Edit standard labels, order, and active status." },
+      delete: { label: "Delete/disable", description: "Delete or disable standards." },
+      manage: { label: "Legacy manage", description: "Legacy aggregate standards management permission from earlier versions." },
     },
     member: {
       read: { label: "Read", description: "View members and approval queues." },
@@ -754,9 +761,19 @@ export const adminEn = {
         description: "Permission to access the work order workspace.",
       },
       partners: {
-        label: "Partner management",
+        label: "Partners",
         description:
-          "Permission to manage factory, fabric, subsidiary, and outsourcing master data.",
+          "Home-card visibility and read/create/edit/disable permissions for partners.",
+      },
+      workflow: {
+        label: "Workflow",
+        description:
+          "Work-order status transition permissions such as review, order, inspection, and completion.",
+      },
+      standards: {
+        label: "Standards",
+        description:
+          "Home-card visibility and read/create/edit/disable permissions for standards.",
       },
       storage: {
         label: "Storage management",
@@ -801,6 +818,7 @@ export const adminEn = {
       attachment: { label: "Files/designs" },
       "master-data": { label: "Master data" },
       partner: { label: "Partners" },
+      standards: { label: "Standards" },
       storage: { label: "Storage" },
       stats: { label: "Statistics" },
       settings: { label: "Settings" },

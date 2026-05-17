@@ -29,6 +29,14 @@ export const commonEn = {
         label: "Work order workspace",
         description: "Review assigned work orders and active work items.",
       },
+      partners: {
+        label: "Partners",
+        description: "A work card for members who can read or manage partner data.",
+      },
+      standards: {
+        label: "Standards",
+        description: "A work card for managing units, processes, item types, and other work-order standards.",
+      },
   personalSettings: {
         label: "Personal settings",
         description: "A future area for language, color, and notification preferences per user.",

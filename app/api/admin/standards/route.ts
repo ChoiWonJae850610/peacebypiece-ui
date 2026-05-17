@@ -9,7 +9,13 @@ function isRequestBody(value: unknown): value is Partial<AdminStandardsPayload> 
   return typeof value === "object" && value !== null;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "standards.read",
+    routeLabel: "admin.standards.read",
+  });
+  if (permissionDenied) return permissionDenied;
+
   const scopeResult = await requireAdminSettingsCompanyScope();
   if (!scopeResult.ok) return scopeResult.response;
 
@@ -28,7 +34,7 @@ export async function PUT(request: NextRequest) {
   if (!scopeResult.ok) return scopeResult.response;
 
   const permissionDenied = requireApiPermission(request, {
-    permissionCode: "standards.manage",
+    permissionCode: "standards.update",
     routeLabel: "admin.standards.update",
   });
   if (permissionDenied) return permissionDenied;
