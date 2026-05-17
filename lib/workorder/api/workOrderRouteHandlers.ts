@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
-import { buildWorkOrderDeletedAuditLog, buildWorkOrderStatusChangedAuditLog } from "@/lib/system/audit/writeActions";
+import {
+  buildWorkOrderDeletedAuditLog,
+  buildWorkOrderStatusChangedAuditLog,
+} from "@/lib/system/audit/writeActions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import {
   getDatabaseRuntimeErrorCode,
@@ -10,6 +13,7 @@ import {
   isDatabaseConfigured,
 } from "@/lib/db/client";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import {
   createDbWorkOrder,
   deleteDbWorkOrder,
@@ -19,8 +23,15 @@ import {
   saveDbWorkOrder,
   saveDbWorkOrders,
   updateDbWorkOrderStatePatch,
+  type WorkOrderCompanyScope,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
-import type { MemoThread, WorkOrder, WorkOrderAuditActor, WorkOrderStatePatch, WorkOrderStatePatchResult } from "@/types/workorder";
+import type {
+  MemoThread,
+  WorkOrder,
+  WorkOrderAuditActor,
+  WorkOrderStatePatch,
+  WorkOrderStatePatchResult,
+} from "@/types/workorder";
 import {
   normalizeWorkOrderListSort,
   normalizeWorkOrderListStatusFilter,
@@ -41,10 +52,44 @@ type DbApiErrorPayload = {
   code: DbApiErrorCode;
 };
 
-type ReplaceMemoThreadsRepository = {
-  replaceMemoThreads: (workOrderId: string, memoThreads: MemoThread[]) => Promise<void>;
-};
+async function resolveWorkOrderRequestCompanyScope(): Promise<WorkOrderCompanyScope | null> {
+  const session = await getCurrentWaflSession();
+  if (!session?.companyId) return null;
 
+  return {
+    companyId: session.companyId,
+    companyName: session.companyName,
+  };
+}
+
+function applySessionActorDefaults(
+  workOrder: WorkOrder,
+  sessionUser: Awaited<ReturnType<typeof getCurrentWaflSession>>,
+): WorkOrder {
+  if (!sessionUser) return workOrder;
+
+  const sessionRole =
+    sessionUser.role === "company_admin" || sessionUser.role === "system_admin"
+      ? "admin"
+      : "designer";
+  const managerId = workOrder.managerId || sessionUser.userId;
+  const managerName = workOrder.manager?.trim() || sessionUser.name;
+
+  return {
+    ...workOrder,
+    managerId,
+    manager: managerName,
+    createdById: workOrder.createdById || sessionUser.userId,
+    createdByRole: workOrder.createdByRole || sessionRole,
+  };
+}
+
+type ReplaceMemoThreadsRepository = {
+  replaceMemoThreads: (
+    workOrderId: string,
+    memoThreads: MemoThread[],
+  ) => Promise<void>;
+};
 
 type WorkOrderAuditActorContext = {
   id: string;
@@ -59,15 +104,23 @@ function readAuditActor(value: unknown): WorkOrderAuditActorContext | null {
   const name = typeof source.name === "string" ? source.name.trim() : "";
   const role = source.role;
 
-  if (!id || !name || (role !== "admin" && role !== "designer" && role !== "inspector")) {
+  if (
+    !id ||
+    !name ||
+    (role !== "admin" && role !== "designer" && role !== "inspector")
+  ) {
     return null;
   }
 
   return { id, name, role };
 }
 
-function getAuditActorFromWorkOrder(workOrder: WorkOrder): WorkOrderAuditActorContext | null {
-  return readAuditActor((workOrder as WorkOrder & { auditActor?: unknown }).auditActor);
+function getAuditActorFromWorkOrder(
+  workOrder: WorkOrder,
+): WorkOrderAuditActorContext | null {
+  return readAuditActor(
+    (workOrder as WorkOrder & { auditActor?: unknown }).auditActor,
+  );
 }
 
 function toSystemAuditActorRole(role: WorkOrderAuditActorContext["role"]) {
@@ -138,7 +191,11 @@ function resolveDbErrorPayload(
     return { status: 503, payload: { message, code: "DB_SCHEMA_UNSUPPORTED" } };
   }
 
-  if (/column .* does not exist/i.test(message) || /invalid input syntax/i.test(message) || /cannot cast/i.test(message)) {
+  if (
+    /column .* does not exist/i.test(message) ||
+    /invalid input syntax/i.test(message) ||
+    /cannot cast/i.test(message)
+  ) {
     return { status: 503, payload: { message, code: "DB_SCHEMA_INVALID" } };
   }
 
@@ -154,16 +211,22 @@ function createDbErrorResponse(error: unknown, fallbackMessage: string) {
   return NextResponse.json(resolved.payload, { status: resolved.status });
 }
 
-function canReplaceMemoThreads(repository: unknown): repository is ReplaceMemoThreadsRepository {
+function canReplaceMemoThreads(
+  repository: unknown,
+): repository is ReplaceMemoThreadsRepository {
   return (
     typeof repository === "object" &&
     repository !== null &&
     "replaceMemoThreads" in repository &&
-    typeof (repository as { replaceMemoThreads?: unknown }).replaceMemoThreads === "function"
+    typeof (repository as { replaceMemoThreads?: unknown })
+      .replaceMemoThreads === "function"
   );
 }
 
-function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: MemoThread[]): MemoThread[] {
+function mergeMemoThreads(
+  payloadThreads: MemoThread[] | undefined,
+  dbThreads: MemoThread[],
+): MemoThread[] {
   const merged = new Map<string, MemoThread>();
 
   for (const thread of payloadThreads ?? []) {
@@ -181,7 +244,9 @@ function buildWorkOrderMap(workOrders: WorkOrder[]): Map<string, WorkOrder> {
   return new Map(workOrders.map((workOrder) => [workOrder.id, workOrder]));
 }
 
-async function writeWorkOrderCreatedHistory(workOrder: WorkOrder): Promise<void> {
+async function writeWorkOrderCreatedHistory(
+  workOrder: WorkOrder,
+): Promise<void> {
   await createAdminHistoryLogSafe({
     company_id: WORKSPACE_COMPANY_ID,
     user_id: workOrder.createdById ?? null,
@@ -235,9 +300,12 @@ async function writeWorkOrderStatusChangeLogs(
     title: next.title,
     fromWorkflowState: previous.workflowState,
     toWorkflowState: next.workflowState,
-    actorId: context.auditActor?.id ?? next.managerId ?? previous.managerId ?? null,
+    actorId:
+      context.auditActor?.id ?? next.managerId ?? previous.managerId ?? null,
     actorName: context.auditActor?.name ?? null,
-    actorRole: context.auditActor ? toSystemAuditActorRole(context.auditActor.role) : null,
+    actorRole: context.auditActor
+      ? toSystemAuditActorRole(context.auditActor.role)
+      : null,
     companyId: WORKSPACE_COMPANY_ID,
     managerName: next.manager ?? previous.manager ?? null,
     source: context.source,
@@ -250,7 +318,9 @@ async function writeWorkOrderStatusChangeLogs(
   }
 }
 
-async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+async function hydrateWorkOrdersWithAttachmentMemoSnapshots(
+  workOrders: WorkOrder[],
+): Promise<WorkOrder[]> {
   if (workOrders.length === 0) return workOrders;
 
   try {
@@ -261,7 +331,11 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrde
       return workOrders;
     }
 
-    const snapshots = await Promise.all(workOrders.map((workOrder) => repository.listSnapshotByWorkOrderId(workOrder.id)));
+    const snapshots = await Promise.all(
+      workOrders.map((workOrder) =>
+        repository.listSnapshotByWorkOrderId(workOrder.id),
+      ),
+    );
 
     return workOrders.map((workOrder, index) => {
       const snapshot = snapshots[index];
@@ -270,12 +344,18 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrde
       return {
         ...workOrder,
         attachments: snapshot.attachments,
-        memoThreads: mergeMemoThreads(workOrder.memoThreads, snapshot.memoThreads),
+        memoThreads: mergeMemoThreads(
+          workOrder.memoThreads,
+          snapshot.memoThreads,
+        ),
       };
     });
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
-      const message = error instanceof Error ? error.message : "Attachment snapshot hydration failed.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Attachment snapshot hydration failed.";
       console.warn("[attachment hydration] " + message);
     }
 
@@ -283,28 +363,48 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrde
   }
 }
 
-async function replaceWorkOrderMemoThreads(workOrder: WorkOrder): Promise<void> {
+async function replaceWorkOrderMemoThreads(
+  workOrder: WorkOrder,
+): Promise<void> {
   const repository = await createAttachmentMemoRepository();
   const info = repository.getRepositoryInfo();
 
-  if (info.mode !== "db" || !info.adapterConfigured || !canReplaceMemoThreads(repository)) {
+  if (
+    info.mode !== "db" ||
+    !info.adapterConfigured ||
+    !canReplaceMemoThreads(repository)
+  ) {
     return;
   }
 
-  await repository.replaceMemoThreads(workOrder.id, workOrder.memoThreads ?? []);
+  await repository.replaceMemoThreads(
+    workOrder.id,
+    workOrder.memoThreads ?? [],
+  );
 }
 
-async function hydrateWorkOrderWithAttachmentMemoSnapshot(workOrder: WorkOrder): Promise<WorkOrder> {
-  const [hydrated] = await hydrateWorkOrdersWithAttachmentMemoSnapshots([workOrder]);
+async function hydrateWorkOrderWithAttachmentMemoSnapshot(
+  workOrder: WorkOrder,
+): Promise<WorkOrder> {
+  const [hydrated] = await hydrateWorkOrdersWithAttachmentMemoSnapshots([
+    workOrder,
+  ]);
   return hydrated ?? workOrder;
 }
 
 function createInvalidPayloadResponse(message: string) {
-  return NextResponse.json({ message, code: "INVALID_PAYLOAD" }, { status: 400 });
+  return NextResponse.json(
+    { message, code: "INVALID_PAYLOAD" },
+    { status: 400 },
+  );
 }
 
 function getAuditRequestId(request: Request): string | null {
-  return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
+  return (
+    request.headers.get("x-request-id") ||
+    request.headers.get("x-vercel-id") ||
+    null
+  );
 }
 
 function getAuditIpAddress(request: Request): string | null {
@@ -327,13 +427,24 @@ export async function handleGetWorkOrders() {
   }
 
   try {
-    const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(await findAllDbWorkOrders());
+    const scope = await resolveWorkOrderRequestCompanyScope();
+    const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(
+      await findAllDbWorkOrders(scope),
+    );
     logDbRequestOutcome("GET", true, "READY", `rows=${workOrders.length}`);
 
     return NextResponse.json({ workOrders });
   } catch (error) {
-    const resolved = resolveDbErrorPayload(error, "Failed to fetch work orders.");
-    logDbRequestOutcome("GET", false, resolved.payload.code, resolved.payload.message);
+    const resolved = resolveDbErrorPayload(
+      error,
+      "Failed to fetch work orders.",
+    );
+    logDbRequestOutcome(
+      "GET",
+      false,
+      resolved.payload.code,
+      resolved.payload.message,
+    );
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
@@ -351,13 +462,21 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
   }
 
   try {
-    const foundWorkOrder = await findDbWorkOrderById(workOrderId);
+    const scope = await resolveWorkOrderRequestCompanyScope();
+    const foundWorkOrder = await findDbWorkOrderById(workOrderId, scope);
 
     if (!foundWorkOrder) {
-      return NextResponse.json({ message: `spec_sheets row not found for id: ${workOrderId}`, code: "DB_REQUEST_FAILED" }, { status: 404 });
+      return NextResponse.json(
+        {
+          message: `spec_sheets row not found for id: ${workOrderId}`,
+          code: "DB_REQUEST_FAILED",
+        },
+        { status: 404 },
+      );
     }
 
-    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(foundWorkOrder);
+    const workOrder =
+      await hydrateWorkOrderWithAttachmentMemoSnapshot(foundWorkOrder);
     logDbRequestOutcome("GET", true, "DETAIL_READY", workOrder.id);
 
     return NextResponse.json({
@@ -373,8 +492,16 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
       },
     });
   } catch (error) {
-    const resolved = resolveDbErrorPayload(error, "Failed to fetch work order detail.");
-    logDbRequestOutcome("GET", false, resolved.payload.code, resolved.payload.message);
+    const resolved = resolveDbErrorPayload(
+      error,
+      "Failed to fetch work order detail.",
+    );
+    logDbRequestOutcome(
+      "GET",
+      false,
+      resolved.payload.code,
+      resolved.payload.message,
+    );
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
@@ -389,10 +516,18 @@ export async function handleGetWorkOrderSummaries(request?: Request) {
 
   try {
     const url = request ? new URL(request.url) : null;
-    const status = normalizeWorkOrderListStatusFilter(url?.searchParams.get("status"));
+    const status = normalizeWorkOrderListStatusFilter(
+      url?.searchParams.get("status"),
+    );
     const sort = normalizeWorkOrderListSort(url?.searchParams.get("sort"));
-    const workOrders = await findDbWorkOrderSummaries({ status, sort });
-    logDbRequestOutcome("GET", true, "SUMMARY_READY", `rows=${workOrders.length};status=${status};sort=${sort}`);
+    const scope = await resolveWorkOrderRequestCompanyScope();
+    const workOrders = await findDbWorkOrderSummaries({ status, sort }, scope);
+    logDbRequestOutcome(
+      "GET",
+      true,
+      "SUMMARY_READY",
+      `rows=${workOrders.length};status=${status};sort=${sort}`,
+    );
 
     return NextResponse.json({
       workOrders,
@@ -404,8 +539,16 @@ export async function handleGetWorkOrderSummaries(request?: Request) {
       },
     });
   } catch (error) {
-    const resolved = resolveDbErrorPayload(error, "Failed to fetch work order summaries.");
-    logDbRequestOutcome("GET", false, resolved.payload.code, resolved.payload.message);
+    const resolved = resolveDbErrorPayload(
+      error,
+      "Failed to fetch work order summaries.",
+    );
+    logDbRequestOutcome(
+      "GET",
+      false,
+      resolved.payload.code,
+      resolved.payload.message,
+    );
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
@@ -427,18 +570,35 @@ export async function handlePostWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrder payload is required.");
     }
 
-    const createdWorkOrder = await createDbWorkOrder(body.workOrder);
-    await replaceWorkOrderMemoThreads(body.workOrder);
+    const session = await getCurrentWaflSession();
+    const scope = session?.companyId
+      ? { companyId: session.companyId, companyName: session.companyName }
+      : await resolveWorkOrderRequestCompanyScope();
+    const workOrderToCreate = applySessionActorDefaults(
+      body.workOrder,
+      session,
+    );
+    const createdWorkOrder = await createDbWorkOrder(workOrderToCreate, scope);
+    await replaceWorkOrderMemoThreads(workOrderToCreate);
 
-    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder);
+    const workOrder =
+      await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder);
     await writeWorkOrderCreatedHistory(workOrder);
 
     logDbRequestOutcome("POST", true, "READY", workOrder.id);
 
     return NextResponse.json({ workOrder }, { status: 201 });
   } catch (error) {
-    const resolved = resolveDbErrorPayload(error, "Failed to create work order.");
-    logDbRequestOutcome("POST", false, resolved.payload.code, resolved.payload.message);
+    const resolved = resolveDbErrorPayload(
+      error,
+      "Failed to create work order.",
+    );
+    logDbRequestOutcome(
+      "POST",
+      false,
+      resolved.payload.code,
+      resolved.payload.message,
+    );
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
@@ -450,7 +610,11 @@ export async function handlePatchWorkOrders(request: Request) {
   }
 
   try {
-    const body = await readJsonBody<{ workOrder?: WorkOrder; workOrders?: WorkOrder[]; auditActor?: WorkOrderAuditActor | null }>(request);
+    const body = await readJsonBody<{
+      workOrder?: WorkOrder;
+      workOrders?: WorkOrder[];
+      auditActor?: WorkOrderAuditActor | null;
+    }>(request);
 
     if (!body) {
       return createInvalidPayloadResponse("Invalid JSON payload.");
@@ -459,28 +623,50 @@ export async function handlePatchWorkOrders(request: Request) {
     if (Array.isArray(body.workOrders)) {
       if (
         body.workOrders.some(
-          (item) => !item || typeof item !== "object" || typeof item.id !== "string" || !item.id.trim(),
+          (item) =>
+            !item ||
+            typeof item !== "object" ||
+            typeof item.id !== "string" ||
+            !item.id.trim(),
         )
       ) {
-        return createInvalidPayloadResponse("Every workOrders item must include workOrder.id.");
+        return createInvalidPayloadResponse(
+          "Every workOrders item must include workOrder.id.",
+        );
       }
 
-      const requestedWorkOrderIds = Array.from(new Set(body.workOrders.map((workOrder) => workOrder.id)));
+      const requestedWorkOrderIds = Array.from(
+        new Set(body.workOrders.map((workOrder) => workOrder.id)),
+      );
+      const scope = await resolveWorkOrderRequestCompanyScope();
       const previousWorkOrders = (
-        await Promise.all(requestedWorkOrderIds.map((workOrderId) => findDbWorkOrderById(workOrderId)))
+        await Promise.all(
+          requestedWorkOrderIds.map((workOrderId) =>
+            findDbWorkOrderById(workOrderId, scope),
+          ),
+        )
       ).filter((workOrder): workOrder is WorkOrder => Boolean(workOrder));
       const previousWorkOrderMap = buildWorkOrderMap(previousWorkOrders);
-      const savedWorkOrders = await saveDbWorkOrders(body.workOrders);
+      const savedWorkOrders = await saveDbWorkOrders(body.workOrders, scope);
 
-      const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
+      const workOrders =
+        await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
 
       await Promise.all(
-        workOrders.map((workOrder) => writeWorkOrderStatusChangeLogs(previousWorkOrderMap.get(workOrder.id), workOrder, {
-            requestId: getAuditRequestId(request),
-            ipAddress: getAuditIpAddress(request),
-            source: "bulk-save",
-            auditActor: getAuditActorFromWorkOrder(workOrder) ?? readAuditActor(body.auditActor),
-          })),
+        workOrders.map((workOrder) =>
+          writeWorkOrderStatusChangeLogs(
+            previousWorkOrderMap.get(workOrder.id),
+            workOrder,
+            {
+              requestId: getAuditRequestId(request),
+              ipAddress: getAuditIpAddress(request),
+              source: "bulk-save",
+              auditActor:
+                getAuditActorFromWorkOrder(workOrder) ??
+                readAuditActor(body.auditActor),
+            },
+          ),
+        ),
       );
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
@@ -496,36 +682,57 @@ export async function handlePatchWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrder.id is required.");
     }
 
-    const previousWorkOrder = await findDbWorkOrderById(body.workOrder.id);
-    const savedWorkOrder = await saveDbWorkOrder(body.workOrder);
+    const scope = await resolveWorkOrderRequestCompanyScope();
+    const previousWorkOrder = await findDbWorkOrderById(
+      body.workOrder.id,
+      scope,
+    );
+    const savedWorkOrder = await saveDbWorkOrder(body.workOrder, scope);
 
-    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
-    await writeWorkOrderStatusChangeLogs(previousWorkOrder ?? undefined, workOrder, {
-      requestId: getAuditRequestId(request),
-      ipAddress: getAuditIpAddress(request),
-      source: "workorder-save",
-      auditActor: getAuditActorFromWorkOrder(body.workOrder) ?? readAuditActor(body.auditActor),
-    });
+    const workOrder =
+      await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
+    await writeWorkOrderStatusChangeLogs(
+      previousWorkOrder ?? undefined,
+      workOrder,
+      {
+        requestId: getAuditRequestId(request),
+        ipAddress: getAuditIpAddress(request),
+        source: "workorder-save",
+        auditActor:
+          getAuditActorFromWorkOrder(body.workOrder) ??
+          readAuditActor(body.auditActor),
+      },
+    );
 
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
 
     return NextResponse.json({ workOrder });
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to save work order.");
-    logDbRequestOutcome("PATCH", false, resolved.payload.code, resolved.payload.message);
+    logDbRequestOutcome(
+      "PATCH",
+      false,
+      resolved.payload.code,
+      resolved.payload.message,
+    );
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
 
-
-export async function handlePatchWorkOrderState(workOrderId: string, request: Request) {
+export async function handlePatchWorkOrderState(
+  workOrderId: string,
+  request: Request,
+) {
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
 
   try {
-    const body = await readJsonBody<{ patch?: Partial<WorkOrderStatePatch>; historyLogs?: unknown[] }>(request);
+    const body = await readJsonBody<{
+      patch?: Partial<WorkOrderStatePatch>;
+      historyLogs?: unknown[];
+    }>(request);
 
     if (!body) {
       return createInvalidPayloadResponse("Invalid JSON payload.");
@@ -535,36 +742,62 @@ export async function handlePatchWorkOrderState(workOrderId: string, request: Re
       return createInvalidPayloadResponse("state patch payload is required.");
     }
 
-    const patchId = typeof body.patch.id === "string" && body.patch.id.trim() ? body.patch.id.trim() : workOrderId;
+    const patchId =
+      typeof body.patch.id === "string" && body.patch.id.trim()
+        ? body.patch.id.trim()
+        : workOrderId;
     if (patchId !== workOrderId) {
-      return createInvalidPayloadResponse("workOrder id does not match route parameter.");
+      return createInvalidPayloadResponse(
+        "workOrder id does not match route parameter.",
+      );
     }
 
-    if (typeof body.patch.workflowState !== "string" || !body.patch.workflowState.trim()) {
+    if (
+      typeof body.patch.workflowState !== "string" ||
+      !body.patch.workflowState.trim()
+    ) {
       return createInvalidPayloadResponse("workflowState is required.");
     }
 
-    const previousWorkOrder = await findDbWorkOrderById(workOrderId);
-    const savedWorkOrder = await updateDbWorkOrderStatePatch({
-      id: workOrderId,
-      workflowState: body.patch.workflowState as WorkOrder["workflowState"],
-      lastSavedAt: typeof body.patch.lastSavedAt === "string" && body.patch.lastSavedAt.trim()
-        ? body.patch.lastSavedAt
-        : new Date().toISOString(),
-      inventoryQuantity: typeof body.patch.inventoryQuantity === "number" ? body.patch.inventoryQuantity : undefined,
-      inventoryStatus: body.patch.inventoryStatus,
-      factoryOrderRequest: Object.prototype.hasOwnProperty.call(body.patch, "factoryOrderRequest")
-        ? (body.patch.factoryOrderRequest ?? null)
-        : undefined,
-      orderEntries: Array.isArray(body.patch.orderEntries) ? body.patch.orderEntries : undefined,
-    });
+    const scope = await resolveWorkOrderRequestCompanyScope();
+    const previousWorkOrder = await findDbWorkOrderById(workOrderId, scope);
+    const savedWorkOrder = await updateDbWorkOrderStatePatch(
+      {
+        id: workOrderId,
+        workflowState: body.patch.workflowState as WorkOrder["workflowState"],
+        lastSavedAt:
+          typeof body.patch.lastSavedAt === "string" &&
+          body.patch.lastSavedAt.trim()
+            ? body.patch.lastSavedAt
+            : new Date().toISOString(),
+        inventoryQuantity:
+          typeof body.patch.inventoryQuantity === "number"
+            ? body.patch.inventoryQuantity
+            : undefined,
+        inventoryStatus: body.patch.inventoryStatus,
+        factoryOrderRequest: Object.prototype.hasOwnProperty.call(
+          body.patch,
+          "factoryOrderRequest",
+        )
+          ? (body.patch.factoryOrderRequest ?? null)
+          : undefined,
+        orderEntries: Array.isArray(body.patch.orderEntries)
+          ? body.patch.orderEntries
+          : undefined,
+      },
+      scope,
+    );
 
-    await writeWorkOrderStatusChangeLogs(previousWorkOrder ?? undefined, savedWorkOrder, {
-      requestId: getAuditRequestId(request),
-      ipAddress: getAuditIpAddress(request),
-      source: "state-patch",
-      auditActor: readAuditActor(body.patch.auditActor),
-    });
+    await writeWorkOrderStatusChangeLogs(
+      previousWorkOrder ?? undefined,
+      savedWorkOrder,
+      {
+        requestId: getAuditRequestId(request),
+        ipAddress: getAuditIpAddress(request),
+        source: "state-patch",
+        auditActor: readAuditActor(body.patch.auditActor),
+      },
+    );
 
     const patchResult: WorkOrderStatePatchResult = {
       id: savedWorkOrder.id,
@@ -576,12 +809,28 @@ export async function handlePatchWorkOrderState(workOrderId: string, request: Re
       orderEntries: savedWorkOrder.orderEntries ?? [],
     };
 
-    logDbRequestOutcome("PATCH", true, "READY", `${savedWorkOrder.id}:state-patch`);
+    logDbRequestOutcome(
+      "PATCH",
+      true,
+      "READY",
+      `${savedWorkOrder.id}:state-patch`,
+    );
 
-    return NextResponse.json({ patch: patchResult, meta: { mode: "state-patch", hydrated: false } });
+    return NextResponse.json({
+      patch: patchResult,
+      meta: { mode: "state-patch", hydrated: false },
+    });
   } catch (error) {
-    const resolved = resolveDbErrorPayload(error, "Failed to save work order state.");
-    logDbRequestOutcome("PATCH", false, resolved.payload.code, `state-patch: ${resolved.payload.message}`);
+    const resolved = resolveDbErrorPayload(
+      error,
+      "Failed to save work order state.",
+    );
+    logDbRequestOutcome(
+      "PATCH",
+      false,
+      resolved.payload.code,
+      `state-patch: ${resolved.payload.message}`,
+    );
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
@@ -603,19 +852,35 @@ export async function handleDeleteWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrderId is required.");
     }
 
-    const previousWorkOrder = await findDbWorkOrderById(body.workOrderId);
-    const previousSnapshot = previousWorkOrder ? await hydrateWorkOrderWithAttachmentMemoSnapshot(previousWorkOrder) : null;
-    const deletedWorkOrderId = await deleteDbWorkOrder(body.workOrderId);
+    const scope = await resolveWorkOrderRequestCompanyScope();
+    const previousWorkOrder = await findDbWorkOrderById(
+      body.workOrderId,
+      scope,
+    );
+    const previousSnapshot = previousWorkOrder
+      ? await hydrateWorkOrderWithAttachmentMemoSnapshot(previousWorkOrder)
+      : null;
+    const deletedWorkOrderId = await deleteDbWorkOrder(body.workOrderId, scope);
 
     await createSystemAuditLogSafe(
       buildWorkOrderDeletedAuditLog({
         workOrderId: deletedWorkOrderId,
         title: previousSnapshot?.title ?? previousWorkOrder?.title ?? null,
-        workflowState: previousSnapshot?.workflowState ?? previousWorkOrder?.workflowState ?? null,
-        actorId: previousSnapshot?.managerId ?? previousWorkOrder?.managerId ?? null,
+        workflowState:
+          previousSnapshot?.workflowState ??
+          previousWorkOrder?.workflowState ??
+          null,
+        actorId:
+          previousSnapshot?.managerId ?? previousWorkOrder?.managerId ?? null,
         companyId: WORKSPACE_COMPANY_ID,
-        attachmentCount: previousSnapshot?.attachments?.length ?? previousWorkOrder?.attachments?.length ?? 0,
-        memoThreadCount: previousSnapshot?.memoThreads?.length ?? previousWorkOrder?.memoThreads?.length ?? 0,
+        attachmentCount:
+          previousSnapshot?.attachments?.length ??
+          previousWorkOrder?.attachments?.length ??
+          0,
+        memoThreadCount:
+          previousSnapshot?.memoThreads?.length ??
+          previousWorkOrder?.memoThreads?.length ??
+          0,
         requestId: getAuditRequestId(request),
         ipAddress: getAuditIpAddress(request),
       }),

@@ -12,9 +12,32 @@ type AdminUserAccessRow = Record<string, unknown> & {
   roles: unknown;
 };
 
+const COMPANY_ROLE_TO_WORKORDER_ROLE: Record<string, RoleType | null> = {
+  company_admin: "admin",
+  designer: "designer",
+  inspector: "inspector",
+  inventory_manager: "inspector",
+  viewer: null,
+};
+
+function toWorkOrderRole(value: unknown): RoleType | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (normalized in COMPANY_ROLE_TO_WORKORDER_ROLE) {
+    return COMPANY_ROLE_TO_WORKORDER_ROLE[normalized] ?? null;
+  }
+  return toRoleType(normalized);
+}
+
 function normalizeRoleList(value: unknown): RoleType[] {
-  const source = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
-  return source.map((item) => toRoleType(item)).filter((item): item is RoleType => item !== null);
+  const source = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? [value]
+      : [];
+  return source
+    .map((item) => toWorkOrderRole(item))
+    .filter((item): item is RoleType => item !== null);
 }
 
 function mapUserAccessRow(row: AdminUserAccessRow): UserProfile | null {
@@ -26,6 +49,28 @@ function mapUserAccessRow(row: AdminUserAccessRow): UserProfile | null {
     name: row.name,
     ...buildUserRoleState(roles),
   };
+}
+
+async function listFromCompanyMembers(
+  companyId: string,
+): Promise<UserProfile[]> {
+  const result = await queryDb<AdminUserAccessRow>(
+    `SELECT users.id,
+            COALESCE(company_members.display_name, users.name, users.email, users.id) AS name,
+            ARRAY_AGG(DISTINCT company_members.role_template_code ORDER BY company_members.role_template_code) AS roles
+       FROM company_members
+       INNER JOIN users ON users.id = company_members.user_id
+      WHERE company_members.company_id = $1
+        AND company_members.status = 'approved'
+        AND COALESCE(users.is_active, true) = true
+      GROUP BY users.id, users.name, users.email
+      ORDER BY name ASC`,
+    [companyId],
+  );
+
+  return result.rows
+    .map(mapUserAccessRow)
+    .filter((user): user is UserProfile => user !== null);
 }
 
 async function listFromCompanyUsers(companyId: string): Promise<UserProfile[]> {
@@ -43,10 +88,14 @@ async function listFromCompanyUsers(companyId: string): Promise<UserProfile[]> {
     [companyId],
   );
 
-  return result.rows.map(mapUserAccessRow).filter((user): user is UserProfile => user !== null);
+  return result.rows
+    .map(mapUserAccessRow)
+    .filter((user): user is UserProfile => user !== null);
 }
 
-async function listFromUserCompanyRole(companyId: string): Promise<UserProfile[]> {
+async function listFromUserCompanyRole(
+  companyId: string,
+): Promise<UserProfile[]> {
   const result = await queryDb<AdminUserAccessRow>(
     `SELECT id,
             name,
@@ -58,13 +107,27 @@ async function listFromUserCompanyRole(companyId: string): Promise<UserProfile[]
     [companyId],
   );
 
-  return result.rows.map(mapUserAccessRow).filter((user): user is UserProfile => user !== null);
+  return result.rows
+    .map(mapUserAccessRow)
+    .filter((user): user is UserProfile => user !== null);
 }
 
-export async function listCompanyUserAccessProfiles(companyId = WORKSPACE_COMPANY_ID): Promise<UserProfile[]> {
+export async function listCompanyUserAccessProfiles(
+  companyId = WORKSPACE_COMPANY_ID,
+): Promise<UserProfile[]> {
   try {
-    return await listFromCompanyUsers(companyId);
+    const members = await listFromCompanyMembers(companyId);
+    if (members.length > 0) return members;
   } catch {
-    return listFromUserCompanyRole(companyId);
+    // Continue to legacy access tables below.
   }
+
+  try {
+    const companyUsers = await listFromCompanyUsers(companyId);
+    if (companyUsers.length > 0) return companyUsers;
+  } catch {
+    // Continue to legacy user.company_id fallback below.
+  }
+
+  return listFromUserCompanyRole(companyId);
 }

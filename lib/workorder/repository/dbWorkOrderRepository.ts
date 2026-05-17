@@ -21,7 +21,13 @@ import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyD
 import { ADMIN_FILE_TRASH_ACTOR_IDS } from "@/lib/admin/files/trashPolicy";
 import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import type { Material } from "@/types/material";
-import type { OrderEntry, Outsourcing, WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
+import type {
+  OrderEntry,
+  Outsourcing,
+  WorkOrder,
+  WorkOrderStatePatch,
+  WorkOrderSummary,
+} from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
@@ -29,6 +35,32 @@ import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/reposito
 
 const SPEC_SHEET_TABLE = "spec_sheets";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
+
+export type WorkOrderCompanyScope = {
+  companyId: string;
+  companyName?: string | null;
+};
+
+function resolveWorkOrderCompanyScope(scope?: WorkOrderCompanyScope | null): {
+  companyId: string;
+  companyName: string;
+} {
+  const companyId = scope?.companyId?.trim();
+  if (companyId) {
+    return {
+      companyId,
+      companyName: scope?.companyName?.trim() || companyId,
+    };
+  }
+
+  return getAdminCompanyScope();
+}
+
+function resolveWorkOrderCompanyId(
+  scope?: WorkOrderCompanyScope | null,
+): string {
+  return resolveWorkOrderCompanyScope(scope).companyId;
+}
 
 const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
 const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
@@ -211,6 +243,7 @@ function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
 
 async function resolveCategoryIdsForDb(
   workOrder: WorkOrder,
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<Pick<WorkOrder, "category1Id" | "category2Id" | "category3Id">> {
   if (workOrder.category1Id || workOrder.category2Id || workOrder.category3Id) {
     return {
@@ -220,7 +253,7 @@ async function resolveCategoryIdsForDb(
     };
   }
 
-  const companyId = getAdminCompanyId();
+  const companyId = resolveWorkOrderCompanyId(scope);
   const result = await queryDb<{
     id: string;
     parent_id: string | null;
@@ -261,18 +294,28 @@ async function resolveCategoryIdsForDb(
   };
 }
 
-function readRoleValue(value: unknown, fallback: WorkOrder["createdByRole"] = "admin"): WorkOrder["createdByRole"] {
-  if (value === "admin" || value === "designer" || value === "inspector") return value;
+function readRoleValue(
+  value: unknown,
+  fallback: WorkOrder["createdByRole"] = "admin",
+): WorkOrder["createdByRole"] {
+  if (value === "admin" || value === "designer" || value === "inspector")
+    return value;
   return fallback;
 }
 
-function readInventoryStatusValue(value: unknown, fallback: WorkOrder["inventoryStatus"] = "unchecked"): WorkOrder["inventoryStatus"] {
-  if (value === "unchecked" || value === "normal" || value === "shortage") return value;
+function readInventoryStatusValue(
+  value: unknown,
+  fallback: WorkOrder["inventoryStatus"] = "unchecked",
+): WorkOrder["inventoryStatus"] {
+  if (value === "unchecked" || value === "normal" || value === "shortage")
+    return value;
   return fallback;
 }
 
 function readStringRowValue(value: unknown, fallback = ""): string {
-  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+  return typeof value === "string" && value.trim().length > 0
+    ? value
+    : fallback;
 }
 
 function readNumberRowValue(value: unknown, fallback = 0): number {
@@ -293,9 +336,11 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     baseTitle: readStringRowValue(row.base_title, row.title),
     workOrderKind: row.work_order_kind ?? undefined,
     reorderGroupId: row.reorder_group_id ?? undefined,
-    reorderRound: typeof row.reorder_round === "number" ? row.reorder_round : undefined,
+    reorderRound:
+      typeof row.reorder_round === "number" ? row.reorder_round : undefined,
     parentSpecSheetId: row.parent_spec_sheet_id ?? undefined,
-    isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : undefined,
+    isDefectOrder:
+      typeof row.is_rework === "boolean" ? row.is_rework : undefined,
     category1: readStringRowValue(row.category1),
     category2: readStringRowValue(row.category2),
     category3: readStringRowValue(row.category3),
@@ -328,10 +373,14 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
 }
 
 function readCountValue(value: number | null | undefined): number {
-  return typeof value === "number" && Number.isFinite(value) ? Math.max(0, value) : 0;
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, value)
+    : 0;
 }
 
-function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummary {
+function mapSpecSheetRowToWorkOrderSummary(
+  row: DbSpecSheetRow,
+): WorkOrderSummary {
   const normalizedWorkflowState = normalizeDbWorkflowState(row.workflow_state);
   const lastSavedAt =
     row.last_saved_at ??
@@ -345,9 +394,11 @@ function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummar
     baseTitle: readStringRowValue(row.base_title, row.title),
     workOrderKind: row.work_order_kind ?? undefined,
     reorderGroupId: row.reorder_group_id ?? undefined,
-    reorderRound: typeof row.reorder_round === "number" ? row.reorder_round : undefined,
+    reorderRound:
+      typeof row.reorder_round === "number" ? row.reorder_round : undefined,
     parentSpecSheetId: row.parent_spec_sheet_id ?? undefined,
-    isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : undefined,
+    isDefectOrder:
+      typeof row.is_rework === "boolean" ? row.is_rework : undefined,
     category1: readStringRowValue(row.category1),
     category2: readStringRowValue(row.category2),
     category3: readStringRowValue(row.category3),
@@ -438,23 +489,125 @@ function appendNormalizedWorkOrderInsertColumns(
   values: unknown[],
   placeholders: string[],
 ) {
-  pushInsertColumn(columns, values, placeholders, schema.displayTitleColumn, workOrder.displayTitle ?? workOrder.title);
-  pushInsertColumn(columns, values, placeholders, schema.baseTitleColumn, workOrder.baseTitle ?? workOrder.title);
-  pushInsertColumn(columns, values, placeholders, schema.category1Column, workOrder.category1 || null);
-  pushInsertColumn(columns, values, placeholders, schema.category2Column, workOrder.category2 || null);
-  pushInsertColumn(columns, values, placeholders, schema.category3Column, workOrder.category3 || null);
-  pushInsertColumn(columns, values, placeholders, schema.seasonColumn, workOrder.season || null);
-  pushInsertColumn(columns, values, placeholders, schema.priorityColumn, workOrder.priority || null);
-  pushInsertColumn(columns, values, placeholders, schema.vendorColumn, workOrder.vendor || null);
-  pushInsertColumn(columns, values, placeholders, schema.managerColumn, workOrder.manager || null);
-  pushInsertColumn(columns, values, placeholders, schema.managerIdColumn, workOrder.managerId ?? null);
-  pushInsertColumn(columns, values, placeholders, schema.createdByIdColumn, workOrder.createdById || "system");
-  pushInsertColumn(columns, values, placeholders, schema.createdByRoleColumn, workOrder.createdByRole || "admin");
-  pushInsertColumn(columns, values, placeholders, schema.dueDateColumn, workOrder.dueDate || null);
-  pushInsertColumn(columns, values, placeholders, schema.quantityColumn, workOrder.quantity ?? 0);
-  pushInsertColumn(columns, values, placeholders, schema.inventoryQuantityColumn, workOrder.inventoryQuantity ?? 0);
-  pushInsertColumn(columns, values, placeholders, schema.inventoryStatusColumn, workOrder.inventoryStatus || "unchecked");
-  pushInsertColumn(columns, values, placeholders, schema.memoColumn, workOrder.memo || null);
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.displayTitleColumn,
+    workOrder.displayTitle ?? workOrder.title,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.baseTitleColumn,
+    workOrder.baseTitle ?? workOrder.title,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.category1Column,
+    workOrder.category1 || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.category2Column,
+    workOrder.category2 || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.category3Column,
+    workOrder.category3 || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.seasonColumn,
+    workOrder.season || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.priorityColumn,
+    workOrder.priority || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.vendorColumn,
+    workOrder.vendor || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.managerColumn,
+    workOrder.manager || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.managerIdColumn,
+    workOrder.managerId ?? null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.createdByIdColumn,
+    workOrder.createdById || "system",
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.createdByRoleColumn,
+    workOrder.createdByRole || "admin",
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.dueDateColumn,
+    workOrder.dueDate || null,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.quantityColumn,
+    workOrder.quantity ?? 0,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.inventoryQuantityColumn,
+    workOrder.inventoryQuantity ?? 0,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.inventoryStatusColumn,
+    workOrder.inventoryStatus || "unchecked",
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.memoColumn,
+    workOrder.memo || null,
+  );
 }
 
 function appendNormalizedWorkOrderUpdateAssignments(
@@ -463,25 +616,109 @@ function appendNormalizedWorkOrderUpdateAssignments(
   assignments: string[],
   values: unknown[],
 ) {
-  pushUpdateAssignment(assignments, values, schema.displayTitleColumn, workOrder.displayTitle ?? workOrder.title);
-  pushUpdateAssignment(assignments, values, schema.baseTitleColumn, workOrder.baseTitle ?? workOrder.title);
-  pushUpdateAssignment(assignments, values, schema.category1Column, workOrder.category1 || null);
-  pushUpdateAssignment(assignments, values, schema.category2Column, workOrder.category2 || null);
-  pushUpdateAssignment(assignments, values, schema.category3Column, workOrder.category3 || null);
-  pushUpdateAssignment(assignments, values, schema.seasonColumn, workOrder.season || null);
-  pushUpdateAssignment(assignments, values, schema.priorityColumn, workOrder.priority || null);
-  pushUpdateAssignment(assignments, values, schema.vendorColumn, workOrder.vendor || null);
-  pushUpdateAssignment(assignments, values, schema.managerColumn, workOrder.manager || null);
-  pushUpdateAssignment(assignments, values, schema.managerIdColumn, workOrder.managerId ?? null);
-  pushUpdateAssignment(assignments, values, schema.createdByIdColumn, workOrder.createdById || "system");
-  pushUpdateAssignment(assignments, values, schema.createdByRoleColumn, workOrder.createdByRole || "admin");
-  pushUpdateAssignment(assignments, values, schema.dueDateColumn, workOrder.dueDate || null);
-  pushUpdateAssignment(assignments, values, schema.quantityColumn, workOrder.quantity ?? 0);
-  pushUpdateAssignment(assignments, values, schema.inventoryQuantityColumn, workOrder.inventoryQuantity ?? 0);
-  pushUpdateAssignment(assignments, values, schema.inventoryStatusColumn, workOrder.inventoryStatus || "unchecked");
-  pushUpdateAssignment(assignments, values, schema.memoColumn, workOrder.memo || null);
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.displayTitleColumn,
+    workOrder.displayTitle ?? workOrder.title,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.baseTitleColumn,
+    workOrder.baseTitle ?? workOrder.title,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.category1Column,
+    workOrder.category1 || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.category2Column,
+    workOrder.category2 || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.category3Column,
+    workOrder.category3 || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.seasonColumn,
+    workOrder.season || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.priorityColumn,
+    workOrder.priority || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.vendorColumn,
+    workOrder.vendor || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.managerColumn,
+    workOrder.manager || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.managerIdColumn,
+    workOrder.managerId ?? null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.createdByIdColumn,
+    workOrder.createdById || "system",
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.createdByRoleColumn,
+    workOrder.createdByRole || "admin",
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.dueDateColumn,
+    workOrder.dueDate || null,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.quantityColumn,
+    workOrder.quantity ?? 0,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.inventoryQuantityColumn,
+    workOrder.inventoryQuantity ?? 0,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.inventoryStatusColumn,
+    workOrder.inventoryStatus || "unchecked",
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.memoColumn,
+    workOrder.memo || null,
+  );
 }
-
 
 let specSheetSchemaCache: Promise<DbSpecSheetSchema> | null = null;
 
@@ -612,22 +849,70 @@ async function readSpecSheetSchema(): Promise<DbSpecSheetSchema> {
       columnNames,
       CATEGORY3_ID_COLUMN_CANDIDATES,
     ),
-    displayTitleColumn: findFirstMatchingColumn(columnNames, DISPLAY_TITLE_COLUMN_CANDIDATES),
-    baseTitleColumn: findFirstMatchingColumn(columnNames, BASE_TITLE_COLUMN_CANDIDATES),
-    category1Column: findFirstMatchingColumn(columnNames, CATEGORY1_COLUMN_CANDIDATES),
-    category2Column: findFirstMatchingColumn(columnNames, CATEGORY2_COLUMN_CANDIDATES),
-    category3Column: findFirstMatchingColumn(columnNames, CATEGORY3_COLUMN_CANDIDATES),
-    seasonColumn: findFirstMatchingColumn(columnNames, SEASON_COLUMN_CANDIDATES),
-    priorityColumn: findFirstMatchingColumn(columnNames, PRIORITY_COLUMN_CANDIDATES),
-    vendorColumn: findFirstMatchingColumn(columnNames, VENDOR_COLUMN_CANDIDATES),
-    managerColumn: findFirstMatchingColumn(columnNames, MANAGER_COLUMN_CANDIDATES),
-    managerIdColumn: findFirstMatchingColumn(columnNames, MANAGER_ID_COLUMN_CANDIDATES),
-    createdByIdColumn: findFirstMatchingColumn(columnNames, CREATED_BY_ID_COLUMN_CANDIDATES),
-    createdByRoleColumn: findFirstMatchingColumn(columnNames, CREATED_BY_ROLE_COLUMN_CANDIDATES),
-    dueDateColumn: findFirstMatchingColumn(columnNames, DUE_DATE_COLUMN_CANDIDATES),
-    quantityColumn: findFirstMatchingColumn(columnNames, QUANTITY_COLUMN_CANDIDATES),
-    inventoryQuantityColumn: findFirstMatchingColumn(columnNames, INVENTORY_QUANTITY_COLUMN_CANDIDATES),
-    inventoryStatusColumn: findFirstMatchingColumn(columnNames, INVENTORY_STATUS_COLUMN_CANDIDATES),
+    displayTitleColumn: findFirstMatchingColumn(
+      columnNames,
+      DISPLAY_TITLE_COLUMN_CANDIDATES,
+    ),
+    baseTitleColumn: findFirstMatchingColumn(
+      columnNames,
+      BASE_TITLE_COLUMN_CANDIDATES,
+    ),
+    category1Column: findFirstMatchingColumn(
+      columnNames,
+      CATEGORY1_COLUMN_CANDIDATES,
+    ),
+    category2Column: findFirstMatchingColumn(
+      columnNames,
+      CATEGORY2_COLUMN_CANDIDATES,
+    ),
+    category3Column: findFirstMatchingColumn(
+      columnNames,
+      CATEGORY3_COLUMN_CANDIDATES,
+    ),
+    seasonColumn: findFirstMatchingColumn(
+      columnNames,
+      SEASON_COLUMN_CANDIDATES,
+    ),
+    priorityColumn: findFirstMatchingColumn(
+      columnNames,
+      PRIORITY_COLUMN_CANDIDATES,
+    ),
+    vendorColumn: findFirstMatchingColumn(
+      columnNames,
+      VENDOR_COLUMN_CANDIDATES,
+    ),
+    managerColumn: findFirstMatchingColumn(
+      columnNames,
+      MANAGER_COLUMN_CANDIDATES,
+    ),
+    managerIdColumn: findFirstMatchingColumn(
+      columnNames,
+      MANAGER_ID_COLUMN_CANDIDATES,
+    ),
+    createdByIdColumn: findFirstMatchingColumn(
+      columnNames,
+      CREATED_BY_ID_COLUMN_CANDIDATES,
+    ),
+    createdByRoleColumn: findFirstMatchingColumn(
+      columnNames,
+      CREATED_BY_ROLE_COLUMN_CANDIDATES,
+    ),
+    dueDateColumn: findFirstMatchingColumn(
+      columnNames,
+      DUE_DATE_COLUMN_CANDIDATES,
+    ),
+    quantityColumn: findFirstMatchingColumn(
+      columnNames,
+      QUANTITY_COLUMN_CANDIDATES,
+    ),
+    inventoryQuantityColumn: findFirstMatchingColumn(
+      columnNames,
+      INVENTORY_QUANTITY_COLUMN_CANDIDATES,
+    ),
+    inventoryStatusColumn: findFirstMatchingColumn(
+      columnNames,
+      INVENTORY_STATUS_COLUMN_CANDIDATES,
+    ),
     memoColumn: findFirstMatchingColumn(columnNames, MEMO_COLUMN_CANDIDATES),
     hasIdColumn: columnNames.includes("id"),
     hasTitleColumn: columnNames.includes("title"),
@@ -644,7 +929,6 @@ function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
 
   return specSheetSchemaCache;
 }
-
 
 function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
   const missingColumns = [
@@ -748,11 +1032,22 @@ function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
     `;
 }
 
-const DB_WORKFLOW_STATE_FILTER_VALUES: Record<Exclude<WorkOrderListStatusFilter, "active" | "all">, readonly string[]> = {
+const DB_WORKFLOW_STATE_FILTER_VALUES: Record<
+  Exclude<WorkOrderListStatusFilter, "active" | "all">,
+  readonly string[]
+> = {
   draft: ["draft", "작성중"],
   review_requested: ["review_requested", "검토요청"],
   review_completed: ["review_completed", "review_approved", "검토완료"],
-  inspection: ["inspection", "order_requested", "in_production", "in_inspection", "발주요청", "생산중", "검수중"],
+  inspection: [
+    "inspection",
+    "order_requested",
+    "in_production",
+    "in_inspection",
+    "발주요청",
+    "생산중",
+    "검수중",
+  ],
   rejected: ["rejected", "반려"],
   completed: ["completed", "완료"],
 };
@@ -761,11 +1056,17 @@ function quoteSqlLiteral(value: string): string {
   return `'${value.replace(/'/g, "''")}'`;
 }
 
-function buildWorkflowStateInSql(column: string, values: readonly string[]): string {
+function buildWorkflowStateInSql(
+  column: string,
+  values: readonly string[],
+): string {
   return `${column} IN (${values.map(quoteSqlLiteral).join(", ")})`;
 }
 
-function buildSpecSheetSummaryWhereSql(schema: DbSpecSheetSchema, status: WorkOrderListStatusFilter): string {
+function buildSpecSheetSummaryWhereSql(
+  schema: DbSpecSheetSchema,
+  status: WorkOrderListStatusFilter,
+): string {
   const predicates: string[] = [];
 
   if (schema.companyIdColumn) {
@@ -783,20 +1084,37 @@ function buildSpecSheetSummaryWhereSql(schema: DbSpecSheetSchema, status: WorkOr
   if (schema.workflowStateColumn) {
     const workflowColumn = `COALESCE(${quoteIdentifier(schema.workflowStateColumn)}, 'draft')`;
     if (status === "active") {
-      predicates.push(`NOT (${buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES.completed)})`);
+      predicates.push(
+        `NOT (${buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES.completed)})`,
+      );
     } else if (status === "completed") {
-      predicates.push(buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES.completed));
+      predicates.push(
+        buildWorkflowStateInSql(
+          workflowColumn,
+          DB_WORKFLOW_STATE_FILTER_VALUES.completed,
+        ),
+      );
     } else if (isWorkflowStateStatusFilter(status)) {
-      predicates.push(buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES[status]));
+      predicates.push(
+        buildWorkflowStateInSql(
+          workflowColumn,
+          DB_WORKFLOW_STATE_FILTER_VALUES[status],
+        ),
+      );
     }
   } else if (status === "completed") {
     predicates.push("FALSE");
   }
 
-  return predicates.length > 0 ? `WHERE ${predicates.join("\n        AND ")}` : "";
+  return predicates.length > 0
+    ? `WHERE ${predicates.join("\n        AND ")}`
+    : "";
 }
 
-function buildSpecSheetSummaryOrderBySql(schema: DbSpecSheetSchema, sort: WorkOrderListSort): string {
+function buildSpecSheetSummaryOrderBySql(
+  schema: DbSpecSheetSchema,
+  sort: WorkOrderListSort,
+): string {
   if (sort === "createdDesc") {
     return `ORDER BY ${schema.createdAtColumn ? `s.created_at DESC NULLS LAST, ` : ""}${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}s.id DESC`;
   }
@@ -816,7 +1134,10 @@ function buildSpecSheetSummaryOrderBySql(schema: DbSpecSheetSchema, sort: WorkOr
   return `ORDER BY ${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `s.created_at DESC NULLS LAST, ` : ""}s.id DESC`;
 }
 
-function buildSpecSheetSummarySelectSql(schema: DbSpecSheetSchema, options: WorkOrderSummaryQueryOptions = {}): string {
+function buildSpecSheetSummarySelectSql(
+  schema: DbSpecSheetSchema,
+  options: WorkOrderSummaryQueryOptions = {},
+): string {
   const status = options.status ?? DEFAULT_WORK_ORDER_LIST_STATUS_FILTER;
   const sort = options.sort ?? DEFAULT_WORK_ORDER_LIST_SORT;
 
@@ -891,13 +1212,15 @@ function buildSpecSheetSelectByIdSql(schema: DbSpecSheetSchema): string {
     `;
 }
 
-async function loadActiveSpecSheetRows(): Promise<DbSpecSheetRow[]> {
+async function loadActiveSpecSheetRows(
+  scope?: WorkOrderCompanyScope | null,
+): Promise<DbSpecSheetRow[]> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
   const result = await queryDb<DbSpecSheetRow>(
     buildSpecSheetSelectSql(schema),
-    schema.companyIdColumn ? [getAdminCompanyId()] : undefined,
+    schema.companyIdColumn ? [resolveWorkOrderCompanyId(scope)] : undefined,
   );
 
   return result.rows;
@@ -908,13 +1231,16 @@ type WorkOrderSummaryQueryOptions = {
   sort?: WorkOrderListSort;
 };
 
-async function loadActiveSpecSheetSummaryRows(options: WorkOrderSummaryQueryOptions = {}): Promise<DbSpecSheetRow[]> {
+async function loadActiveSpecSheetSummaryRows(
+  options: WorkOrderSummaryQueryOptions = {},
+  scope?: WorkOrderCompanyScope | null,
+): Promise<DbSpecSheetRow[]> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
   const result = await queryDb<DbSpecSheetRow>(
     buildSpecSheetSummarySelectSql(schema, options),
-    schema.companyIdColumn ? [getAdminCompanyId()] : undefined,
+    schema.companyIdColumn ? [resolveWorkOrderCompanyId(scope)] : undefined,
   );
 
   return result.rows;
@@ -1037,7 +1363,10 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
   ]);
 
   for (const row of ordersResult.rows) {
-    getOrCreateDetailRows(rowsByWorkOrderId, row.spec_sheet_id).orderEntries.push({
+    getOrCreateDetailRows(
+      rowsByWorkOrderId,
+      row.spec_sheet_id,
+    ).orderEntries.push({
       id: row.source_order_entry_id || row.id,
       type: "생산발주",
       targetType: ORDER_ENTRY_TARGET_TYPE.factory,
@@ -1065,7 +1394,10 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
   }
 
   for (const row of outsourcingResult.rows) {
-    getOrCreateDetailRows(rowsByWorkOrderId, row.spec_sheet_id).outsourcing.push({
+    getOrCreateDetailRows(
+      rowsByWorkOrderId,
+      row.spec_sheet_id,
+    ).outsourcing.push({
       id: row.id,
       process: row.process || "",
       vendor: row.vendor || "",
@@ -1080,7 +1412,9 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
   return rowsByWorkOrderId;
 }
 
-async function attachNormalizedDetailRows(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+async function attachNormalizedDetailRows(
+  workOrders: WorkOrder[],
+): Promise<WorkOrder[]> {
   const rowsByWorkOrderId = await loadNormalizedDetailRowsByWorkOrderIds(
     workOrders.map((workOrder) => workOrder.id),
   );
@@ -1097,23 +1431,31 @@ async function attachNormalizedDetailRows(workOrders: WorkOrder[]): Promise<Work
   });
 }
 
-export async function findDbWorkOrderSummaries(options: WorkOrderSummaryQueryOptions = {}): Promise<WorkOrderSummary[]> {
-  const rows = await loadActiveSpecSheetSummaryRows(options);
+export async function findDbWorkOrderSummaries(
+  options: WorkOrderSummaryQueryOptions = {},
+  scope?: WorkOrderCompanyScope | null,
+): Promise<WorkOrderSummary[]> {
+  const rows = await loadActiveSpecSheetSummaryRows(options, scope);
   return rows.map(mapSpecSheetRowToWorkOrderSummary);
 }
 
-export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
-  const rows = await loadActiveSpecSheetRows();
+export async function findAllDbWorkOrders(
+  scope?: WorkOrderCompanyScope | null,
+): Promise<WorkOrder[]> {
+  const rows = await loadActiveSpecSheetRows(scope);
   return attachNormalizedDetailRows(rows.map(mapSpecSheetRowToWorkOrder));
 }
 
-export async function findDbWorkOrderById(workOrderId: string): Promise<WorkOrder | null> {
+export async function findDbWorkOrderById(
+  workOrderId: string,
+  scope?: WorkOrderCompanyScope | null,
+): Promise<WorkOrder | null> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
   const values: unknown[] = [workOrderId];
   if (schema.companyIdColumn) {
-    values.push(getAdminCompanyId());
+    values.push(resolveWorkOrderCompanyId(scope));
   }
 
   const result = await queryDb<DbSpecSheetRow>(
@@ -1122,12 +1464,15 @@ export async function findDbWorkOrderById(workOrderId: string): Promise<WorkOrde
   );
   const row = result.rows[0] ?? null;
   if (!row) return null;
-  const [hydrated] = await attachNormalizedDetailRows([mapSpecSheetRowToWorkOrder(row)]);
+  const [hydrated] = await attachNormalizedDetailRows([
+    mapSpecSheetRowToWorkOrder(row),
+  ]);
   return hydrated ?? mapSpecSheetRowToWorkOrder(row);
 }
 
 export async function createDbWorkOrder(
   workOrder: WorkOrder,
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
@@ -1135,6 +1480,7 @@ export async function createDbWorkOrder(
   const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
   const resolvedCategoryIds = await resolveCategoryIdsForDb(
     normalizedBaseWorkOrder,
+    scope,
   );
   const normalizedWorkOrder = {
     ...normalizedBaseWorkOrder,
@@ -1143,7 +1489,7 @@ export async function createDbWorkOrder(
   const columns = ["id", "title"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
   const placeholders = ["$1", "$2"];
-  const company = getAdminCompanyScope();
+  const company = resolveWorkOrderCompanyScope(scope);
 
   if (schema.companyIdColumn) {
     columns.push(schema.companyIdColumn);
@@ -1217,7 +1563,13 @@ export async function createDbWorkOrder(
     placeholders.push(`$${values.length}`);
   }
 
-  appendNormalizedWorkOrderInsertColumns(schema, normalizedWorkOrder, columns, values, placeholders);
+  appendNormalizedWorkOrderInsertColumns(
+    schema,
+    normalizedWorkOrder,
+    columns,
+    values,
+    placeholders,
+  );
 
   if (schema.isActiveColumn) {
     columns.push(schema.isActiveColumn);
@@ -1266,8 +1618,16 @@ export async function createDbWorkOrder(
     buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL"),
     buildAliasSelection(schema.dueDateColumn, "due_date", "NULL"),
     buildAliasSelection(schema.quantityColumn, "quantity", "NULL"),
-    buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
-    buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
+    buildAliasSelection(
+      schema.inventoryQuantityColumn,
+      "inventory_quantity",
+      "NULL",
+    ),
+    buildAliasSelection(
+      schema.inventoryStatusColumn,
+      "inventory_status",
+      "NULL",
+    ),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
@@ -1318,6 +1678,7 @@ function isNotFoundWorkOrderError(error: unknown): boolean {
 
 export async function updateDbWorkOrder(
   workOrder: WorkOrder,
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
@@ -1325,6 +1686,7 @@ export async function updateDbWorkOrder(
   const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
   const resolvedCategoryIds = await resolveCategoryIdsForDb(
     normalizedBaseWorkOrder,
+    scope,
   );
   const normalizedWorkOrder = {
     ...normalizedBaseWorkOrder,
@@ -1332,7 +1694,7 @@ export async function updateDbWorkOrder(
   };
   const assignments = ["title = $2"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
-  const company = getAdminCompanyScope();
+  const company = resolveWorkOrderCompanyScope(scope);
 
   if (schema.companyIdColumn) {
     assignments.push(
@@ -1418,7 +1780,12 @@ export async function updateDbWorkOrder(
     values.push(normalizedWorkOrder.category3Id ?? null);
   }
 
-  appendNormalizedWorkOrderUpdateAssignments(schema, normalizedWorkOrder, assignments, values);
+  appendNormalizedWorkOrderUpdateAssignments(
+    schema,
+    normalizedWorkOrder,
+    assignments,
+    values,
+  );
 
   if (schema.isActiveColumn) {
     assignments.push(
@@ -1469,8 +1836,16 @@ export async function updateDbWorkOrder(
     buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL"),
     buildAliasSelection(schema.dueDateColumn, "due_date", "NULL"),
     buildAliasSelection(schema.quantityColumn, "quantity", "NULL"),
-    buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
-    buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
+    buildAliasSelection(
+      schema.inventoryQuantityColumn,
+      "inventory_quantity",
+      "NULL",
+    ),
+    buildAliasSelection(
+      schema.inventoryStatusColumn,
+      "inventory_status",
+      "NULL",
+    ),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
@@ -1484,6 +1859,7 @@ export async function updateDbWorkOrder(
       SET
         ${assignments.join(",\n        ")}
       WHERE id = $1
+        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(company.companyId)}` : ""}
       RETURNING
         ${returningColumns.join(",\n        ")}
     `,
@@ -1512,9 +1888,9 @@ export async function updateDbWorkOrder(
   return persisted;
 }
 
-
 export async function updateDbWorkOrderStatePatch(
   patch: WorkOrderStatePatch,
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
@@ -1525,28 +1901,43 @@ export async function updateDbWorkOrderStatePatch(
   const values: unknown[] = [patch.id];
 
   if (schema.workflowStateColumn) {
-    assignments.push(`${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkflowState);
   }
 
   if (schema.lastSavedAtColumn) {
-    assignments.push(`${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`,
+    );
     values.push(lastSavedAt);
   }
 
-  if (schema.inventoryQuantityColumn && Object.prototype.hasOwnProperty.call(patch, "inventoryQuantity")) {
-    assignments.push(`${quoteIdentifier(schema.inventoryQuantityColumn)} = $${values.length + 1}`);
+  if (
+    schema.inventoryQuantityColumn &&
+    Object.prototype.hasOwnProperty.call(patch, "inventoryQuantity")
+  ) {
+    assignments.push(
+      `${quoteIdentifier(schema.inventoryQuantityColumn)} = $${values.length + 1}`,
+    );
     values.push(patch.inventoryQuantity ?? 0);
   }
 
-  if (schema.inventoryStatusColumn && Object.prototype.hasOwnProperty.call(patch, "inventoryStatus")) {
-    assignments.push(`${quoteIdentifier(schema.inventoryStatusColumn)} = $${values.length + 1}`);
+  if (
+    schema.inventoryStatusColumn &&
+    Object.prototype.hasOwnProperty.call(patch, "inventoryStatus")
+  ) {
+    assignments.push(
+      `${quoteIdentifier(schema.inventoryStatusColumn)} = $${values.length + 1}`,
+    );
     values.push(patch.inventoryStatus ?? "unchecked");
   }
 
   if (assignments.length === 0) {
-    const existing = await findDbWorkOrderById(patch.id);
-    if (!existing) throw new Error(`spec_sheets row not found for id: ${patch.id}`);
+    const existing = await findDbWorkOrderById(patch.id, scope);
+    if (!existing)
+      throw new Error(`spec_sheets row not found for id: ${patch.id}`);
     return existing;
   }
 
@@ -1556,9 +1947,17 @@ export async function updateDbWorkOrderStatePatch(
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
     buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL"),
-    buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL"),
+    buildAliasSelection(
+      schema.reorderGroupIdColumn,
+      "reorder_group_id",
+      "NULL",
+    ),
     buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
-    buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL"),
+    buildAliasSelection(
+      schema.parentSpecSheetIdColumn,
+      "parent_spec_sheet_id",
+      "NULL",
+    ),
     buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL"),
     buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
     buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
@@ -1577,8 +1976,16 @@ export async function updateDbWorkOrderStatePatch(
     buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL"),
     buildAliasSelection(schema.dueDateColumn, "due_date", "NULL"),
     buildAliasSelection(schema.quantityColumn, "quantity", "NULL"),
-    buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
-    buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
+    buildAliasSelection(
+      schema.inventoryQuantityColumn,
+      "inventory_quantity",
+      "NULL",
+    ),
+    buildAliasSelection(
+      schema.inventoryStatusColumn,
+      "inventory_status",
+      "NULL",
+    ),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
@@ -1586,12 +1993,14 @@ export async function updateDbWorkOrderStatePatch(
     buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
   ];
 
+  const companyId = resolveWorkOrderCompanyId(scope);
   const result = await queryDb<DbSpecSheetRow>(
     `
       UPDATE ${quoteIdentifier(SPEC_SHEET_TABLE)}
       SET
         ${assignments.join(",\n        ")}
       WHERE id = $1
+        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(companyId)}` : ""}
       RETURNING
         ${returningColumns.join(",\n        ")}
     `,
@@ -1604,15 +2013,23 @@ export async function updateDbWorkOrderStatePatch(
   }
 
   const mapped = mapSpecSheetRowToWorkOrder(updated);
-  const hasOrderEntriesPatch = Object.prototype.hasOwnProperty.call(patch, "orderEntries");
-  const hasFactoryOrderRequestPatch = Object.prototype.hasOwnProperty.call(patch, "factoryOrderRequest");
+  const hasOrderEntriesPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "orderEntries",
+  );
+  const hasFactoryOrderRequestPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "factoryOrderRequest",
+  );
 
   if (hasOrderEntriesPatch || hasFactoryOrderRequestPatch) {
-    const existing = await findDbWorkOrderById(patch.id);
+    const existing = await findDbWorkOrderById(patch.id, scope);
     const patchedWorkOrder: WorkOrder = {
       ...(existing ?? mapped),
       ...mapped,
-      orderEntries: hasOrderEntriesPatch ? (patch.orderEntries ?? []) : (existing?.orderEntries ?? []),
+      orderEntries: hasOrderEntriesPatch
+        ? (patch.orderEntries ?? [])
+        : (existing?.orderEntries ?? []),
       factoryOrderRequest: hasFactoryOrderRequestPatch
         ? (patch.factoryOrderRequest ?? null)
         : (existing?.factoryOrderRequest ?? null),
@@ -1701,7 +2118,11 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(
             COALESCE(purge_after_at, now() + ($2::integer * interval '1 day'))
        FROM updated_attachments
      ON CONFLICT DO NOTHING`,
-    [workOrderId, trashRetentionDays, ADMIN_FILE_TRASH_ACTOR_IDS.workorderDelete],
+    [
+      workOrderId,
+      trashRetentionDays,
+      ADMIN_FILE_TRASH_ACTOR_IDS.workorderDelete,
+    ],
   );
 
   await queryDb(
@@ -1727,7 +2148,10 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(
   );
 }
 
-export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
+export async function deleteDbWorkOrder(
+  workOrderId: string,
+  scope?: WorkOrderCompanyScope | null,
+): Promise<string> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
@@ -1792,6 +2216,7 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
         SET
           ${assignments.join(",\n          ")}
         WHERE id = $1
+          ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(resolveWorkOrderCompanyId(scope))}` : ""}
         RETURNING id
       `,
       [workOrderId],
@@ -1810,6 +2235,7 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
     `
       DELETE FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
       WHERE id = $1
+        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(resolveWorkOrderCompanyId(scope))}` : ""}
       RETURNING id
     `,
     [workOrderId],
@@ -1827,25 +2253,27 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
 
 export async function saveDbWorkOrder(
   workOrder: WorkOrder,
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
   try {
-    return await updateDbWorkOrder(workOrder);
+    return await updateDbWorkOrder(workOrder, scope);
   } catch (error) {
     if (!isNotFoundWorkOrderError(error)) {
       throw error;
     }
 
-    return createDbWorkOrder(workOrder);
+    return createDbWorkOrder(workOrder, scope);
   }
 }
 
 export async function saveDbWorkOrders(
   workOrders: WorkOrder[],
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder[]> {
   const savedWorkOrders: WorkOrder[] = [];
 
   for (const workOrder of workOrders) {
-    savedWorkOrders.push(await saveDbWorkOrder(workOrder));
+    savedWorkOrders.push(await saveDbWorkOrder(workOrder, scope));
   }
 
   return savedWorkOrders;

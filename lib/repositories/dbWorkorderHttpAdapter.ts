@@ -2,8 +2,18 @@ import { createInitialSeededWorkorderState } from "@/lib/data/mock/seedState";
 import { mockWorkorderAdapter } from "@/lib/repositories/mockWorkorderRepository";
 import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
-import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
-import type { MemoThread, UserProfile, WorkOrder, WorkOrderStatePatch, WorkOrderStatePatchResult, WorkOrderSummary } from "@/types/workorder";
+import {
+  setDbConnectionStatus,
+  type DbConnectionStateCode,
+} from "@/lib/repositories/dbConnectionStatusStore";
+import type {
+  MemoThread,
+  UserProfile,
+  WorkOrder,
+  WorkOrderStatePatch,
+  WorkOrderStatePatchResult,
+  WorkOrderSummary,
+} from "@/types/workorder";
 import {
   DEFAULT_WORK_ORDER_LIST_SORT,
   DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
@@ -15,7 +25,6 @@ type DbApiErrorBody = {
   message?: string;
   code?: string;
 };
-
 
 type WorkOrderSummaryLoadResponse = {
   workOrders?: WorkOrderSummary[];
@@ -50,6 +59,36 @@ type UserAccessResponse = {
   message?: string;
 };
 
+type CurrentUserResponse = {
+  authenticated?: boolean;
+  user?: {
+    id?: string | null;
+    name?: string | null;
+    role?: string | null;
+  } | null;
+};
+
+async function loadCurrentUserIdFromSession(): Promise<string | null> {
+  try {
+    const response = await fetch("/api/auth/me", {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    const result = await parseResponse<CurrentUserResponse>(response);
+    return result.authenticated && result.user?.id ? result.user.id : null;
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        "[current user hydration]",
+        error instanceof Error ? error.message : error,
+      );
+    }
+    return null;
+  }
+}
+
 async function loadUserProfilesForWorkspace(): Promise<UserProfile[] | null> {
   try {
     const response = await fetch("/api/admin/settings/users", {
@@ -59,16 +98,25 @@ async function loadUserProfilesForWorkspace(): Promise<UserProfile[] | null> {
     });
 
     const result = await parseResponse<UserAccessResponse>(response);
-    return Array.isArray(result.users) && result.users.length > 0 ? result.users : null;
+    return Array.isArray(result.users) && result.users.length > 0
+      ? result.users
+      : null;
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("[user access hydration]", error instanceof Error ? error.message : error);
+      console.warn(
+        "[user access hydration]",
+        error instanceof Error ? error.message : error,
+      );
     }
     return null;
   }
 }
 
-function resolveUserId(users: UserProfile[], persistedUserId: string | null | undefined, defaultUserId: string) {
+function resolveUserId(
+  users: UserProfile[],
+  persistedUserId: string | null | undefined,
+  defaultUserId: string,
+) {
   if (persistedUserId && users.some((user) => user.id === persistedUserId)) {
     return persistedUserId;
   }
@@ -76,7 +124,10 @@ function resolveUserId(users: UserProfile[], persistedUserId: string | null | un
   return users[0]?.id ?? defaultUserId;
 }
 
-function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: MemoThread[] | undefined): MemoThread[] {
+function mergeMemoThreads(
+  payloadThreads: MemoThread[] | undefined,
+  dbThreads: MemoThread[] | undefined,
+): MemoThread[] {
   const merged = new Map<string, MemoThread>();
 
   for (const thread of payloadThreads ?? []) {
@@ -135,8 +186,6 @@ function createSummaryWorkOrder(summary: WorkOrderSummary): WorkOrder {
   };
 }
 
-
-
 function buildSummaryQueryStringFromLocation(): string {
   if (typeof window === "undefined") {
     return `?status=${DEFAULT_WORK_ORDER_LIST_STATUS_FILTER}&sort=${DEFAULT_WORK_ORDER_LIST_SORT}`;
@@ -154,27 +203,37 @@ function buildSummaryQueryStringFromLocation(): string {
 }
 
 async function loadWorkOrderSummariesFromApi(): Promise<WorkOrder[]> {
-  const response = await fetch(`/api/workorders/summary${buildSummaryQueryStringFromLocation()}`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
+  const response = await fetch(
+    `/api/workorders/summary${buildSummaryQueryStringFromLocation()}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    },
+  );
 
   const result = await parseResponse<WorkOrderSummaryLoadResponse>(response);
   return (result.workOrders ?? []).map(createSummaryWorkOrder);
 }
 
-async function loadWorkOrderDetailFromApi(workOrderId: string): Promise<WorkOrder> {
-  const response = await fetch(`/api/workorders/${encodeURIComponent(workOrderId)}`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
+async function loadWorkOrderDetailFromApi(
+  workOrderId: string,
+): Promise<WorkOrder> {
+  const response = await fetch(
+    `/api/workorders/${encodeURIComponent(workOrderId)}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    },
+  );
 
   const result = await parseResponse<WorkOrderDetailLoadResponse>(response);
 
   if (!result.workOrder) {
-    const emptyBodyError = new Error("DB work order detail response is empty.") as Error & { code?: string };
+    const emptyBodyError = new Error(
+      "DB work order detail response is empty.",
+    ) as Error & { code?: string };
     emptyBodyError.code = "DB_EMPTY_RESPONSE";
     throw emptyBodyError;
   }
@@ -185,16 +244,20 @@ async function loadWorkOrderDetailFromApi(workOrderId: string): Promise<WorkOrde
   };
 }
 
-
-async function saveWorkOrderStatePatchToApi(patch: WorkOrderStatePatch): Promise<WorkOrder> {
-  const response = await fetch(`/api/workorders/${encodeURIComponent(patch.id)}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+async function saveWorkOrderStatePatchToApi(
+  patch: WorkOrderStatePatch,
+): Promise<WorkOrder> {
+  const response = await fetch(
+    `/api/workorders/${encodeURIComponent(patch.id)}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ patch }),
     },
-    body: JSON.stringify({ patch }),
-  });
+  );
 
   const result = await parseResponse<WorkOrderStatePatchResponse>(response);
 
@@ -209,23 +272,32 @@ async function saveWorkOrderStatePatchToApi(patch: WorkOrderStatePatch): Promise
     return result.workOrder;
   }
 
-  const emptyBodyError = new Error("DB work order state patch response is empty.") as Error & { code?: string };
+  const emptyBodyError = new Error(
+    "DB work order state patch response is empty.",
+  ) as Error & { code?: string };
   emptyBodyError.code = "DB_EMPTY_RESPONSE";
   throw emptyBodyError;
 }
 
-async function loadMemoThreadsForWorkOrder(workOrderId: string): Promise<MemoThread[] | null> {
-  const response = await fetch(`/api/workorders/memos?orderId=${encodeURIComponent(workOrderId)}`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
+async function loadMemoThreadsForWorkOrder(
+  workOrderId: string,
+): Promise<MemoThread[] | null> {
+  const response = await fetch(
+    `/api/workorders/memos?orderId=${encodeURIComponent(workOrderId)}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    },
+  );
 
   const result = await parseResponse<MemoLoadResponse>(response);
   return result.memoThreads ?? [];
 }
 
-async function hydrateWorkOrdersWithMemoThreads(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+async function hydrateWorkOrdersWithMemoThreads(
+  workOrders: WorkOrder[],
+): Promise<WorkOrder[]> {
   if (workOrders.length === 0) return workOrders;
 
   const memoSnapshots = await Promise.all(
@@ -234,7 +306,11 @@ async function hydrateWorkOrdersWithMemoThreads(workOrders: WorkOrder[]): Promis
         return await loadMemoThreadsForWorkOrder(workOrder.id);
       } catch (error) {
         if (process.env.NODE_ENV !== "production") {
-          console.warn("[memo hydration]", workOrder.id, error instanceof Error ? error.message : error);
+          console.warn(
+            "[memo hydration]",
+            workOrder.id,
+            error instanceof Error ? error.message : error,
+          );
         }
         return null;
       }
@@ -269,7 +345,11 @@ async function parseResponse<T>(response: Response): Promise<T> {
   try {
     body = (await response.json()) as T & DbApiErrorBody;
   } catch (error) {
-    const parseError = new Error("Failed to parse DB response.") as Error & { code?: string; status?: number; cause?: unknown };
+    const parseError = new Error("Failed to parse DB response.") as Error & {
+      code?: string;
+      status?: number;
+      cause?: unknown;
+    };
     parseError.code = "DB_RESPONSE_PARSE_FAILED";
     parseError.status = response.status;
     parseError.cause = error;
@@ -277,14 +357,20 @@ async function parseResponse<T>(response: Response): Promise<T> {
   }
 
   if (!response.ok) {
-    const error = new Error(body?.message ?? "DB request failed.") as Error & { code?: string; status?: number };
+    const error = new Error(body?.message ?? "DB request failed.") as Error & {
+      code?: string;
+      status?: number;
+    };
     error.code = body?.code;
     error.status = response.status;
     throw error;
   }
 
   if (!body) {
-    const emptyBodyError = new Error("DB response body is empty.") as Error & { code?: string; status?: number };
+    const emptyBodyError = new Error("DB response body is empty.") as Error & {
+      code?: string;
+      status?: number;
+    };
     emptyBodyError.code = "DB_EMPTY_RESPONSE";
     emptyBodyError.status = response.status;
     throw emptyBodyError;
@@ -294,7 +380,9 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 function isNetworkErrorMessage(message: string): boolean {
-  return /fetch failed|networkerror|network error|load failed|failed to fetch/i.test(message);
+  return /fetch failed|networkerror|network error|load failed|failed to fetch/i.test(
+    message,
+  );
 }
 
 function shouldUseLocalFallback(error: unknown): boolean {
@@ -303,19 +391,19 @@ function shouldUseLocalFallback(error: unknown): boolean {
   const errorWithMeta = error as Error & { code?: string; status?: number };
 
   return (
-    (typeof errorWithMeta.code === "string" && (
-      LOCAL_FALLBACK_ERROR_CODES.has(errorWithMeta.code) ||
-      errorWithMeta.code === "DB_RESPONSE_PARSE_FAILED" ||
-      errorWithMeta.code === "DB_EMPTY_RESPONSE"
-    )) ||
+    (typeof errorWithMeta.code === "string" &&
+      (LOCAL_FALLBACK_ERROR_CODES.has(errorWithMeta.code) ||
+        errorWithMeta.code === "DB_RESPONSE_PARSE_FAILED" ||
+        errorWithMeta.code === "DB_EMPTY_RESPONSE")) ||
     errorWithMeta.status === 503 ||
-    /DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message) ||
+    /DATABASE_URL is not configured|No supported database env var is configured/i.test(
+      error.message,
+    ) ||
     /The 'pg' package is required/i.test(error.message) ||
     /relation .*spec_sheets.* does not exist/i.test(error.message) ||
     isNetworkErrorMessage(error.message)
   );
 }
-
 
 function toStatusCode(error: unknown): DbConnectionStateCode {
   if (!(error instanceof Error)) return "UNKNOWN";
@@ -325,10 +413,22 @@ function toStatusCode(error: unknown): DbConnectionStateCode {
     return errorWithMeta.code as DbConnectionStateCode;
   }
 
-  if (/DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message)) return "DB_NOT_CONFIGURED";
-  if (/The 'pg' package is required/i.test(error.message)) return "DB_DRIVER_MISSING";
-  if (/relation .*spec_sheets.* does not exist/i.test(error.message)) return "DB_TABLE_MISSING";
-  if (/column .* does not exist/i.test(error.message) || /invalid input syntax/i.test(error.message) || /cannot cast/i.test(error.message)) return "DB_SCHEMA_INVALID";
+  if (
+    /DATABASE_URL is not configured|No supported database env var is configured/i.test(
+      error.message,
+    )
+  )
+    return "DB_NOT_CONFIGURED";
+  if (/The 'pg' package is required/i.test(error.message))
+    return "DB_DRIVER_MISSING";
+  if (/relation .*spec_sheets.* does not exist/i.test(error.message))
+    return "DB_TABLE_MISSING";
+  if (
+    /column .* does not exist/i.test(error.message) ||
+    /invalid input syntax/i.test(error.message) ||
+    /cannot cast/i.test(error.message)
+  )
+    return "DB_SCHEMA_INVALID";
   if (isNetworkErrorMessage(error.message)) return "DB_CONNECTION_FAILED";
   return "DB_REQUEST_FAILED";
 }
@@ -359,17 +459,29 @@ function reportDbStatus(params: {
 
     if (now - lastLoggedAt >= LOG_THROTTLE_MS) {
       lastFallbackLogByKey.set(logKey, now);
-      console.warn(`[db fallback] ${params.source}: ${params.code}${params.message ? ` - ${params.message}` : ""}`);
+      console.warn(
+        `[db fallback] ${params.source}: ${params.code}${params.message ? ` - ${params.message}` : ""}`,
+      );
     }
   }
 }
 
 function loadLocalWorkspaceState() {
-  return mockWorkorderAdapter.loadWorkspaceState?.() ?? createInitialSeededWorkorderState();
+  return (
+    mockWorkorderAdapter.loadWorkspaceState?.() ??
+    createInitialSeededWorkorderState()
+  );
 }
 
-function resolveSelectedId(workOrders: WorkOrder[], persistedSelectedId: string | null | undefined, defaultSelectedId: string) {
-  if (persistedSelectedId && workOrders.some((item) => item.id === persistedSelectedId)) {
+function resolveSelectedId(
+  workOrders: WorkOrder[],
+  persistedSelectedId: string | null | undefined,
+  defaultSelectedId: string,
+) {
+  if (
+    persistedSelectedId &&
+    workOrders.some((item) => item.id === persistedSelectedId)
+  ) {
     return persistedSelectedId;
   }
 
@@ -383,7 +495,10 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
         const summaryWorkOrders = await loadWorkOrderSummariesFromApi();
         const seededState = createInitialSeededWorkorderState();
         const persistedState = loadPersistedWorkspaceState();
-        const dbUsers = await loadUserProfilesForWorkspace();
+        const [dbUsers, sessionUserId] = await Promise.all([
+          loadUserProfilesForWorkspace(),
+          loadCurrentUserIdFromSession(),
+        ]);
         const users = dbUsers ?? persistedState?.users ?? seededState.users;
         const selectedId = resolveSelectedId(
           summaryWorkOrders,
@@ -391,10 +506,23 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           seededState.selectedId,
         );
         const workOrders = summaryWorkOrders;
-        const currentUserId = resolveUserId(users, persistedState?.currentUserId, seededState.currentUserId);
-        const permissionTargetUserId = resolveUserId(users, persistedState?.permissionTargetUserId, currentUserId);
+        const currentUserId = resolveUserId(
+          users,
+          sessionUserId ?? persistedState?.currentUserId,
+          seededState.currentUserId,
+        );
+        const permissionTargetUserId = resolveUserId(
+          users,
+          persistedState?.permissionTargetUserId,
+          currentUserId,
+        );
 
-        reportDbStatus({ source: "workspace-load", connected: true, fallbackActive: false, code: "READY" });
+        reportDbStatus({
+          source: "workspace-load",
+          connected: true,
+          fallbackActive: false,
+          code: "READY",
+        });
 
         return {
           users,
@@ -409,7 +537,13 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           throw error;
         }
 
-        reportDbStatus({ source: "workspace-load", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        reportDbStatus({
+          source: "workspace-load",
+          connected: false,
+          fallbackActive: true,
+          code: toStatusCode(error),
+          message: error instanceof Error ? error.message : null,
+        });
         return loadLocalWorkspaceState();
       }
     },
@@ -421,9 +555,19 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           throw error;
         }
 
-        reportDbStatus({ source: "workspace-load", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
-        const localState = (await loadLocalWorkspaceState()) ?? createInitialSeededWorkorderState();
-        const localWorkOrder = localState.workOrders.find((item) => item.id === workOrderId) ?? localState.workOrders[0];
+        reportDbStatus({
+          source: "workspace-load",
+          connected: false,
+          fallbackActive: true,
+          code: toStatusCode(error),
+          message: error instanceof Error ? error.message : null,
+        });
+        const localState =
+          (await loadLocalWorkspaceState()) ??
+          createInitialSeededWorkorderState();
+        const localWorkOrder =
+          localState.workOrders.find((item) => item.id === workOrderId) ??
+          localState.workOrders[0];
         return { ...localWorkOrder, hasDetailSnapshot: true };
       }
     },
@@ -438,15 +582,28 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           body: JSON.stringify({ workOrder }),
         });
 
-        const { workOrder: createdWorkOrder } = await parseResponse<{ workOrder: WorkOrder }>(response);
-        reportDbStatus({ source: "create", connected: true, fallbackActive: false, code: "READY" });
+        const { workOrder: createdWorkOrder } = await parseResponse<{
+          workOrder: WorkOrder;
+        }>(response);
+        reportDbStatus({
+          source: "create",
+          connected: true,
+          fallbackActive: false,
+          code: "READY",
+        });
         return createdWorkOrder;
       } catch (error) {
         if (!shouldUseLocalFallback(error)) {
           throw error;
         }
 
-        reportDbStatus({ source: "create", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        reportDbStatus({
+          source: "create",
+          connected: false,
+          fallbackActive: true,
+          code: toStatusCode(error),
+          message: error instanceof Error ? error.message : null,
+        });
         return mockWorkorderAdapter.createWorkOrder?.(workOrder) ?? workOrder;
       }
     },
@@ -461,30 +618,58 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           body: JSON.stringify({ workOrder }),
         });
 
-        const { workOrder: savedWorkOrder } = await parseResponse<{ workOrder: WorkOrder }>(response);
-        reportDbStatus({ source: "save", connected: true, fallbackActive: false, code: "READY" });
+        const { workOrder: savedWorkOrder } = await parseResponse<{
+          workOrder: WorkOrder;
+        }>(response);
+        reportDbStatus({
+          source: "save",
+          connected: true,
+          fallbackActive: false,
+          code: "READY",
+        });
         return savedWorkOrder;
       } catch (error) {
         if (!shouldUseLocalFallback(error)) {
           throw error;
         }
 
-        reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        reportDbStatus({
+          source: "save",
+          connected: false,
+          fallbackActive: true,
+          code: toStatusCode(error),
+          message: error instanceof Error ? error.message : null,
+        });
         return mockWorkorderAdapter.saveWorkOrder?.(workOrder) ?? workOrder;
       }
     },
     saveWorkOrderStatePatch: async (patch) => {
       try {
         const savedWorkOrder = await saveWorkOrderStatePatchToApi(patch);
-        reportDbStatus({ source: "save", connected: true, fallbackActive: false, code: "READY" });
+        reportDbStatus({
+          source: "save",
+          connected: true,
+          fallbackActive: false,
+          code: "READY",
+        });
         return savedWorkOrder;
       } catch (error) {
         if (!shouldUseLocalFallback(error)) {
           throw error;
         }
 
-        reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
-        return mockWorkorderAdapter.saveWorkOrderStatePatch?.(patch) ?? mockWorkorderAdapter.loadWorkOrderDetail?.(patch.id) ?? ({ ...patch } as WorkOrder);
+        reportDbStatus({
+          source: "save",
+          connected: false,
+          fallbackActive: true,
+          code: toStatusCode(error),
+          message: error instanceof Error ? error.message : null,
+        });
+        return (
+          mockWorkorderAdapter.saveWorkOrderStatePatch?.(patch) ??
+          mockWorkorderAdapter.loadWorkOrderDetail?.(patch.id) ??
+          ({ ...patch } as WorkOrder)
+        );
       }
     },
     saveWorkOrders: async (workOrders) => {
@@ -498,15 +683,28 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           body: JSON.stringify({ workOrders }),
         });
 
-        const { workOrders: savedWorkOrders } = await parseResponse<{ workOrders: WorkOrder[] }>(response);
-        reportDbStatus({ source: "save", connected: true, fallbackActive: false, code: "READY" });
+        const { workOrders: savedWorkOrders } = await parseResponse<{
+          workOrders: WorkOrder[];
+        }>(response);
+        reportDbStatus({
+          source: "save",
+          connected: true,
+          fallbackActive: false,
+          code: "READY",
+        });
         return savedWorkOrders;
       } catch (error) {
         if (!shouldUseLocalFallback(error)) {
           throw error;
         }
 
-        reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        reportDbStatus({
+          source: "save",
+          connected: false,
+          fallbackActive: true,
+          code: toStatusCode(error),
+          message: error instanceof Error ? error.message : null,
+        });
         return mockWorkorderAdapter.saveWorkOrders?.(workOrders) ?? workOrders;
       }
     },
@@ -522,16 +720,31 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           body: JSON.stringify({ workOrderId }),
         });
 
-        const { workOrderId: deletedWorkOrderId } = await parseResponse<{ workOrderId: string }>(response);
-        reportDbStatus({ source: "delete", connected: true, fallbackActive: false, code: "READY" });
+        const { workOrderId: deletedWorkOrderId } = await parseResponse<{
+          workOrderId: string;
+        }>(response);
+        reportDbStatus({
+          source: "delete",
+          connected: true,
+          fallbackActive: false,
+          code: "READY",
+        });
         return deletedWorkOrderId;
       } catch (error) {
         if (!shouldUseLocalFallback(error)) {
           throw error;
         }
 
-        reportDbStatus({ source: "delete", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
-        return mockWorkorderAdapter.deleteWorkOrder?.(workOrderId) ?? workOrderId;
+        reportDbStatus({
+          source: "delete",
+          connected: false,
+          fallbackActive: true,
+          code: toStatusCode(error),
+          message: error instanceof Error ? error.message : null,
+        });
+        return (
+          mockWorkorderAdapter.deleteWorkOrder?.(workOrderId) ?? workOrderId
+        );
       }
     },
   };
