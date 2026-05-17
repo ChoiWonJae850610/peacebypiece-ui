@@ -55,7 +55,7 @@ export type EditableMemberPermissionGroupPreview = {
 };
 
 export type MemberManagementSummaryCard = {
-  id: "members" | "invitations" | "joinRequests" | "permissionTemplates";
+  id: "members" | "invitations" | "joinRequests";
   value: string;
   status: MemberManagementStatus;
 };
@@ -136,7 +136,6 @@ export const MEMBER_MANAGEMENT_SUMMARY_CARDS: readonly MemberManagementSummaryCa
   { id: "members", value: "0", status: "planned" },
   { id: "invitations", value: "0", status: "planned" },
   { id: "joinRequests", value: "0", status: "planned" },
-  { id: "permissionTemplates", value: String(MEMBER_ROLE_TEMPLATE_POLICIES.length), status: "ready" },
 ] as const;
 
 export const MEMBER_ROLE_PREVIEWS: readonly MemberRolePreview[] = MEMBER_ROLE_TEMPLATE_POLICIES.map((role) => ({

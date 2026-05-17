@@ -13,7 +13,7 @@ function isProcessRequestBody(value: unknown): value is { processDefinitions?: O
 }
 
 function isWritablePartnerRepository(repository: PartnerRepository): repository is PartnerWritableRepository {
-  return "createPartner" in repository && "updatePartner" in repository;
+  return "createPartner" in repository && "updatePartner" in repository && "replaceOutsourcingProcesses" in repository;
 }
 
 async function buildStandardProcessesResponse(companyId: string, companyName: string | null) {
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
       company_id: scopeResult.companyScope.companyId,
       user_id: scopeResult.companyScope.userId,
       action_type: "PARTNER_UPDATED",
-      target_type: "partner_process",
+      target_type: "partner",
       target_id: null,
       message: `외주 공정 유형 ${payload.processDefinitions.length}개 저장`,
       metadata: {

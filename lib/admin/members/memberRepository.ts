@@ -291,6 +291,7 @@ async function selectCompanyMemberById(
         LEFT JOIN member_permissions ON member_permissions.company_member_id = company_members.id
        WHERE company_members.id = $1
          AND company_members.company_id = $2
+         AND COALESCE(company_members.role_template_code, 'viewer') <> 'company_admin'
        GROUP BY company_members.id, users.id
        LIMIT 1
     `,
