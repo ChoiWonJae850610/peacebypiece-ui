@@ -79,7 +79,11 @@ export async function runAdminFilePurgeWorker(input: AdminFilePurgeWorkerInput =
   const dryRun = input.dryRun ?? true;
   const company = await getCurrentAdminCompany();
   const settings = await getCompanySettings(company.id);
-  const candidates = await listPurgeReadyAttachmentTrashItems(input.limit ?? 50, settings.filePolicy.trashRetentionDays);
+  const candidates = await listPurgeReadyAttachmentTrashItems({
+    companyId: company.id,
+    limit: input.limit ?? 50,
+    trashRetentionDays: settings.filePolicy.trashRetentionDays,
+  });
 
   if (dryRun) {
     return {

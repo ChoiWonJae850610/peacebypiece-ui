@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
 import { requestPurgeAttachmentTrashItems } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 
 export const runtime = "nodejs";
 
@@ -24,6 +25,9 @@ export async function POST(request: NextRequest) {
   });
   if (permissionDenied) return permissionDenied;
 
+  const scopeResult = await requireAdminFileCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
     const payload = (await request.json().catch(() => null)) as PurgeRequest | null;
     const trashItemIds = readStringArray(payload?.trashItemIds);
@@ -32,7 +36,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "TRASH_ITEM_IDS_REQUIRED" }, { status: 400 });
     }
 
-    const result = await requestPurgeAttachmentTrashItems({ trashItemIds });
+    const { companyId, userId } = scopeResult.companyScope;
+    const result = await requestPurgeAttachmentTrashItems({
+      companyId,
+      trashItemIds,
+      actorId: userId,
+    });
 
     const ok = result.affectedCount > 0;
     return NextResponse.json(

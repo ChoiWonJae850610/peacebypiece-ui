@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
 import { restoreAttachmentTrashItems } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildAttachmentRestoredAuditLog } from "@/lib/system/audit/writeActions";
 
@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
   });
   if (permissionDenied) return permissionDenied;
 
+  const scopeResult = await requireAdminFileCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
     const payload = (await request.json().catch(() => null)) as RestoreRequest | null;
     const trashItemIds = readStringArray(payload?.trashItemIds);
@@ -51,7 +54,9 @@ export async function POST(request: NextRequest) {
     }
 
     const actorId = readText(payload?.restoredBy);
+    const { companyId } = scopeResult.companyScope;
     const result = await restoreAttachmentTrashItems({
+      companyId,
       trashItemIds,
       actorId,
     });
@@ -61,7 +66,7 @@ export async function POST(request: NextRequest) {
       await createSystemAuditLogSafe(
         buildAttachmentRestoredAuditLog({
           actorId,
-          companyId: WORKSPACE_COMPANY_ID,
+          companyId,
           requestedCount: result.requestedCount,
           affectedCount: result.affectedCount,
           documentCount: result.documentCount,

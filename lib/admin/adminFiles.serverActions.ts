@@ -32,7 +32,11 @@ import type {
   AdminTrashFileItem,
 } from "@/lib/admin/adminFiles.types";
 
-export type AdminTrashDbActionInput = {
+export type AdminCompanyScopedInput = {
+  companyId: string;
+};
+
+export type AdminTrashDbActionInput = AdminCompanyScopedInput & {
   trashItemIds: string[];
   actorId?: string | null;
 };
@@ -142,6 +146,7 @@ export async function restoreAttachmentTrashItems(
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
         WHERE t.id = ANY($1::text[])
+          AND t.company_id = $3
           AND t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
@@ -173,7 +178,7 @@ export async function restoreAttachmentTrashItems(
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
        FROM target_trash`,
-    [trashItemIds, input.actorId ?? null],
+    [trashItemIds, input.actorId ?? null, input.companyId],
   );
 
   const row = result.rows[0];
@@ -208,6 +213,7 @@ export async function requestPurgeAttachmentTrashItems(
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
         WHERE t.id = ANY($1::text[])
+          AND t.company_id = $3
           AND t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
@@ -236,7 +242,7 @@ export async function requestPurgeAttachmentTrashItems(
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
        FROM target_trash`,
-    [trashItemIds, input.actorId ?? null],
+    [trashItemIds, input.actorId ?? null, input.companyId],
   );
 
   const row = result.rows[0];
@@ -479,9 +485,11 @@ type AdminFileManagementRows = {
   workOrders: AdminStorageWorkOrderItem[];
 };
 
-export async function listAdminFileManagementRows(
-  trashRetentionDays = 30,
-): Promise<AdminFileManagementRows> {
+export async function listAdminFileManagementRows(input: {
+  companyId: string;
+  trashRetentionDays?: number;
+}): Promise<AdminFileManagementRows> {
+  const trashRetentionDays = input.trashRetentionDays ?? 30;
   const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays)
     ? trashRetentionDays
     : 30;
@@ -505,10 +513,12 @@ export async function listAdminFileManagementRows(
               a.purge_after_at
          FROM attachments a
          LEFT JOIN spec_sheets s ON s.id = a.order_id
-        WHERE a.deleted_at IS NULL
+        WHERE a.company_id = $1
+          AND a.deleted_at IS NULL
           AND COALESCE(a.is_active, true) = true
         ORDER BY a.created_at DESC
         LIMIT 100`,
+      [input.companyId],
     ),
     queryDb<AdminTrashRow>(
       `SELECT t.id,
@@ -533,13 +543,14 @@ export async function listAdminFileManagementRows(
               t.delete_parent_type,
               t.delete_parent_id,
               t.delete_batch_id,
-              (COALESCE(t.deleted_at, now()) + ($1::integer * interval '1 day')) AS purge_after_at,
+              (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_after_at,
               t.purge_status,
               t.purge_attempt_count,
               t.last_purge_error
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
-        WHERE t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending}
+        WHERE t.company_id = $1
+          AND t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND (
@@ -550,7 +561,7 @@ export async function listAdminFileManagementRows(
           AND (s.id IS NULL OR s.purged_at IS NULL OR ${createNotWorkOrderBundleTrashPredicate("t")})
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
-      [safeTrashRetentionDays],
+      [input.companyId, safeTrashRetentionDays],
     ),
     queryDb<AdminStorageWorkOrderRow>(
       `SELECT s.id,
@@ -581,13 +592,15 @@ export async function listAdminFileManagementRows(
          FROM spec_sheets s
          LEFT JOIN attachments a ON a.order_id = s.id
          LEFT JOIN memos m ON m.order_id = s.id
-        WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
+        WHERE s.company_id = $1
+          AND (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
           AND COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.deleted}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST})
           AND COALESCE(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_PURGE_STATUS_SQL_LIST})
           AND s.purged_at IS NULL
         GROUP BY s.id, s.title, s.reorder_round, s.work_order_kind, s.is_rework, s.status, s.updated_at, s.deleted_at, s.delete_status, s.purge_status, s.purged_at
         ORDER BY COALESCE(s.deleted_at, s.updated_at) DESC
         LIMIT 50`,
+      [input.companyId],
     ),
   ]);
 
@@ -750,10 +763,13 @@ export type AdminPurgeCandidate = {
   purgeAfterAt: string;
 };
 
-export async function listPurgeReadyAttachmentTrashItems(
-  limit = 50,
-  trashRetentionDays = 30,
-): Promise<AdminPurgeCandidate[]> {
+export async function listPurgeReadyAttachmentTrashItems(input: {
+  companyId: string;
+  limit?: number;
+  trashRetentionDays?: number;
+}): Promise<AdminPurgeCandidate[]> {
+  const limit = input.limit ?? 50;
+  const trashRetentionDays = input.trashRetentionDays ?? 30;
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
   const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays)
     ? trashRetentionDays
@@ -763,10 +779,11 @@ export async function listPurgeReadyAttachmentTrashItems(
             t.attachment_id,
             t.storage_key,
             t.thumbnail_key,
-            (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_after_at
+            (COALESCE(t.deleted_at, now()) + ($3::integer * interval '1 day')) AS purge_after_at
        FROM attachment_trash_items t
        LEFT JOIN spec_sheets s ON s.id = t.order_id
-      WHERE t.restored_at IS NULL
+      WHERE t.company_id = $2
+        AND t.restored_at IS NULL
         AND t.purged_at IS NULL
         AND (
           t.order_id IS NULL
@@ -783,11 +800,11 @@ export async function listPurgeReadyAttachmentTrashItems(
         )
         AND (
           t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
-          OR (t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending} AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+          OR (t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending} AND (COALESCE(t.deleted_at, now()) + ($3::integer * interval '1 day')) <= now())
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
-    [safeLimit, safeTrashRetentionDays],
+    [safeLimit, input.companyId, safeTrashRetentionDays],
   );
 
   return result.rows.map((row) => ({
@@ -799,9 +816,10 @@ export async function listPurgeReadyAttachmentTrashItems(
   }));
 }
 
-export async function markAttachmentTrashItemsPurged(
-  input: AdminTrashDbActionInput,
-): Promise<AdminTrashDbActionResult> {
+export async function markAttachmentTrashItemsPurged(input: {
+  trashItemIds: string[];
+  actorId?: string | null;
+}): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
   if (trashItemIds.length === 0)
     return {
@@ -938,7 +956,7 @@ export async function markAttachmentTrashItemPurgeFailed(input: {
 
 export type AdminWorkOrderTrashActionType = "restore" | "purge";
 
-export type AdminWorkOrderTrashActionInput = {
+export type AdminWorkOrderTrashActionInput = AdminCompanyScopedInput & {
   workOrderId: string;
   actorId?: string | null;
 };
@@ -1019,6 +1037,7 @@ export async function restoreWorkOrderTrashBundle(
        SELECT id, deleted_at
          FROM spec_sheets
         WHERE id = $1
+          AND company_id = $3
           AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
      ), restored_workorder AS (
        UPDATE spec_sheets
@@ -1041,6 +1060,7 @@ export async function restoreWorkOrderTrashBundle(
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
+          AND t.company_id = $3
           AND ${createWorkOrderBundleMetadataPredicate("t", 1)}
           AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
           AND t.restored_at IS NULL
@@ -1083,6 +1103,7 @@ export async function restoreWorkOrderTrashBundle(
               deleted_at = NULL,
               updated_at = now()
         WHERE order_id = $1
+          AND company_id = $3
           AND deleted_at IS NOT NULL
           AND ${createWorkOrderBundleMemoMetadataPredicate("memos", 1)}
         RETURNING id
@@ -1094,7 +1115,7 @@ export async function restoreWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM restored_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM restored_memos)::text AS memo_count
        FROM restored_workorder`,
-    [workOrderId, input.actorId ?? null],
+    [workOrderId, input.actorId ?? null, input.companyId],
   );
 
   const row = result.rows[0];
@@ -1164,6 +1185,7 @@ export async function purgeWorkOrderTrashBundle(
        SELECT id
          FROM spec_sheets
         WHERE id = $1
+          AND company_id = $3
           AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
           AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
           AND purged_at IS NULL
@@ -1188,6 +1210,7 @@ export async function purgeWorkOrderTrashBundle(
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
+          AND t.company_id = $3
           AND ${createWorkOrderBundleMetadataPredicate("t", 1)}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
@@ -1233,6 +1256,7 @@ export async function purgeWorkOrderTrashBundle(
               purged_by = NULL,
               updated_at = now()
         WHERE order_id = $1
+          AND company_id = $3
           AND deleted_at IS NOT NULL
           AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
           AND ${createWorkOrderBundleMemoMetadataPredicate("memos", 1)}
@@ -1244,7 +1268,7 @@ export async function purgeWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
        FROM marked_workorder`,
-    [workOrderId, input.actorId ?? null],
+    [workOrderId, input.actorId ?? null, input.companyId],
   );
 
   const row = result.rows[0];

@@ -185,6 +185,7 @@ export type AdminFileActionResult = {
 export type AdminFileDataSource = "db" | "placeholder";
 
 export type AdminFileManagementSnapshot = {
+  companyName: string | null;
   dataSource: AdminFileDataSource;
   dataSourceLabel: string;
   usageCards: AdminFileUsageCard[];

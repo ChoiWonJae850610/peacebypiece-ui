@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
 import { purgeWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 
 export const runtime = "nodejs";
 
@@ -25,9 +26,14 @@ export async function POST(request: NextRequest) {
   });
   if (permissionDenied) return permissionDenied;
 
+  const scopeResult = await requireAdminFileCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
+    const { companyId } = scopeResult.companyScope;
     const payload = (await request.json().catch(() => null)) as WorkOrderPurgeRequest | null;
     const result = await purgeWorkOrderTrashBundle({
+      companyId,
       workOrderId: readText(payload?.workOrderId) ?? "",
       actorId: readText(payload?.purgedBy),
     });

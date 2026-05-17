@@ -17,6 +17,7 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
   };
 
   return {
+    companyName: null,
     dataSource: "db",
     dataSourceLabel: "DB 대기",
     usageCards: [

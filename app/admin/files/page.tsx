@@ -17,7 +17,6 @@ import type {
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/admin/files");
 
@@ -200,7 +199,7 @@ export default function AdminFilesPage() {
 
   return (
     <AdminShell
-      companyName={WORKSPACE_COMPANY_NAME}
+      companyName={snapshot.companyName ?? t("common.companyNameFallback", "회사")}
       appVersion={APP_VERSION}
       navigationItems={FILE_ADMIN_NAVIGATION_ITEMS}
       title={t("filesPage.title", "저장소 관리")}

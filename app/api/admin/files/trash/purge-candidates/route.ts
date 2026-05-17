@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listPurgeReadyAttachmentTrashItems } from "@/lib/admin/files/serverActions";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
+import { getCompanySettings } from "@/lib/admin/settings/companyRepository";
 
 export const runtime = "nodejs";
 
@@ -15,10 +16,17 @@ function getErrorMessage(error: unknown): string {
 }
 
 export async function GET(request: NextRequest) {
+  const scopeResult = await requireAdminFileCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
-    const company = await getCurrentAdminCompany();
-    const settings = await getCompanySettings(company.id);
-    const candidates = await listPurgeReadyAttachmentTrashItems(readLimit(request), settings.filePolicy.trashRetentionDays);
+    const { companyId } = scopeResult.companyScope;
+    const settings = await getCompanySettings(companyId);
+    const candidates = await listPurgeReadyAttachmentTrashItems({
+      companyId,
+      limit: readLimit(request),
+      trashRetentionDays: settings.filePolicy.trashRetentionDays,
+    });
 
     return NextResponse.json({
       ok: true,

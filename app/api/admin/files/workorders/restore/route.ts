@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
 import { restoreWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildWorkOrderRestoredAuditLog } from "@/lib/system/audit/writeActions";
 
@@ -38,10 +38,15 @@ export async function POST(request: NextRequest) {
   });
   if (permissionDenied) return permissionDenied;
 
+  const scopeResult = await requireAdminFileCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
+    const { companyId } = scopeResult.companyScope;
     const payload = (await request.json().catch(() => null)) as WorkOrderRestoreRequest | null;
     const actorId = readText(payload?.restoredBy);
     const result = await restoreWorkOrderTrashBundle({
+      companyId,
       workOrderId: readText(payload?.workOrderId) ?? "",
       actorId,
     });
@@ -53,7 +58,7 @@ export async function POST(request: NextRequest) {
         buildWorkOrderRestoredAuditLog({
           workOrderId: restoredWorkOrderId,
           actorId,
-          companyId: WORKSPACE_COMPANY_ID,
+          companyId,
           affectedCount: result.affectedCount,
           documentCount: result.documentCount ?? result.attachmentCount ?? 0,
           designCount: result.designCount ?? 0,

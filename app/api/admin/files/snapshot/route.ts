@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
 import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/files/presentation";
 import { buildResolvedStorageUsageSummary, formatStorageBytes, resolveStorageQuotaFromCompanyFilePolicy } from "@/lib/billing/storageQuotaPolicy";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
+import { getCompanySettings } from "@/lib/admin/settings/companyRepository";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { listAdminFileManagementRows } from "@/lib/admin/files/serverActions";
 import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
@@ -113,7 +113,7 @@ function readNumber(value: string | number | null | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-async function getPurgeRequestSummary(): Promise<{ count: number; bytes: number }> {
+async function getPurgeRequestSummary(companyId: string): Promise<{ count: number; bytes: number }> {
   const result = await queryDb<PurgeRequestSummaryRow>(
     `WITH purge_requested_attachments AS (
        SELECT DISTINCT ON (t.attachment_id)
@@ -121,7 +121,8 @@ async function getPurgeRequestSummary(): Promise<{ count: number; bytes: number 
               COALESCE(t.size_bytes, a.size_bytes, 0) AS size_bytes
          FROM attachment_trash_items t
          LEFT JOIN attachments a ON a.id = t.attachment_id
-        WHERE t.purge_status = 'purge_requested'
+        WHERE t.company_id = $1
+          AND t.purge_status = 'purge_requested'
           AND t.attachment_id IS NOT NULL
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
@@ -130,6 +131,7 @@ async function getPurgeRequestSummary(): Promise<{ count: number; bytes: number 
      SELECT COUNT(*)::text AS file_count,
             COALESCE(SUM(size_bytes), 0)::text AS size_bytes
        FROM purge_requested_attachments`,
+    [companyId],
   );
   const row = result.rows[0];
   return {
@@ -159,21 +161,25 @@ function buildUsageCards(
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const trendPeriod = normalizeTrendPeriod(requestUrl.searchParams.get("period"));
-  const fallbackSnapshot = { ...getAdminFileManagementSnapshot(), recentUploadTrendPeriod: trendPeriod };
+  const scopeResult = await requireAdminFileCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
 
   try {
-    const company = await getCurrentAdminCompany();
-    const settings = await getCompanySettings(company.id);
+    const { companyId, companyName } = scopeResult.companyScope;
+    const settings = await getCompanySettings(companyId);
     const policySettings = normalizeAdminFilePolicySettings(settings.filePolicy);
-    const rows = await listAdminFileManagementRows(settings.filePolicy.trashRetentionDays);
+    const rows = await listAdminFileManagementRows({
+      companyId,
+      trashRetentionDays: settings.filePolicy.trashRetentionDays,
+    });
     const activeBytes = rows.attachments.reduce((total, item) => total + item.fileSizeBytes, 0);
     const trashBytes = rows.trashItems.reduce((total, item) => total + item.fileSizeBytes, 0);
-    const purgeRequestSummary = await getPurgeRequestSummary();
+    const purgeRequestSummary = await getPurgeRequestSummary(companyId);
 
     return NextResponse.json({
       ok: true,
       snapshot: {
-        ...fallbackSnapshot,
+        companyName,
         dataSource: "db",
         dataSourceLabel: "DB 조회",
         workOrders: rows.workOrders,
@@ -190,13 +196,15 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[ADMIN_FILE_SNAPSHOT_DB_FALLBACK]", { message, error });
+    console.error("[ADMIN_FILE_SNAPSHOT_FAILED]", { message, error });
 
-    return NextResponse.json({
-      ok: false,
-      error: "ADMIN_FILE_SNAPSHOT_DB_FALLBACK",
-      message,
-      snapshot: fallbackSnapshot,
-    });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "ADMIN_FILE_SNAPSHOT_FAILED",
+        message,
+      },
+      { status: 500 },
+    );
   }
 }
