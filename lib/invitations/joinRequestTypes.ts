@@ -66,6 +66,7 @@ export interface JoinRequestLookupInput {
   requestType?: JoinRequestType | null;
   status?: JoinRequestStatus | null;
   invitationScope?: InvitationScope | null;
+  invitationCompanyId?: string | null;
   limit?: number | null;
 }
 
@@ -75,6 +76,7 @@ export interface JoinRequestListResult {
 }
 
 export interface MemberJoinRequestApproveInput {
+  companyId: string;
   requestId: string;
   approvedByUserId?: string | null;
   roleTemplateCode?: MemberPermissionRoleTemplateCode | null;
@@ -82,6 +84,7 @@ export interface MemberJoinRequestApproveInput {
 }
 
 export interface MemberJoinRequestRejectInput {
+  companyId: string;
   requestId: string;
   rejectedByUserId?: string | null;
   reasonCode?: string | null;

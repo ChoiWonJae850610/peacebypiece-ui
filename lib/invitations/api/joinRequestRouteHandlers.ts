@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { joinRequestRepository } from "../joinRequestRepository";
+import { requireAdminMemberCompanyScope } from "@/lib/admin/members/sessionScope";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import {
   buildCompanyCreatedAuditLog,
@@ -71,6 +72,7 @@ function toErrorResponse(error: unknown) {
   const status =
     message === "INVITATION_NOT_FOUND" || message === "JOIN_REQUEST_NOT_FOUND" ? 404 :
     message === "INVITATION_EXPIRED" ? 410 :
+    message === "ADMIN_MEMBER_COMPANY_SESSION_REQUIRED" ? 401 :
     message === "JOIN_REQUEST_ALREADY_PENDING" ||
     message === "JOIN_REQUEST_ALREADY_REVIEWED" ||
     message === "COMPANY_ALREADY_EXISTS" ||
@@ -78,6 +80,7 @@ function toErrorResponse(error: unknown) {
     message.endsWith("_REQUIRED") ||
     message === "INVITATION_SCOPE_MISMATCH" ||
     message === "INVITATION_NOT_ACTIVE" ||
+    message === "JOIN_REQUEST_COMPANY_SCOPE_MISMATCH" ||
     message === "JOIN_REQUEST_COMPANY_ONLY" ||
     message === "JOIN_REQUEST_MEMBER_ONLY" ||
     message === "MEMBER_PERMISSION_REQUIRED" ? 400 :
@@ -178,12 +181,23 @@ function readLimit(value: string | null): number {
 export async function handleListJoinRequests(request: Request) {
   try {
     const url = new URL(request.url);
+    const requestType = readJoinRequestType(url.searchParams.get("requestType") || url.searchParams.get("type"));
+    const invitationScope = readInvitationScope(url.searchParams.get("invitationScope") || url.searchParams.get("scope"));
+    const memberScopedLookup =
+      requestType === "member" || invitationScope === "company_to_member";
+    const companyScope = memberScopedLookup
+      ? await requireAdminMemberCompanyScope()
+      : null;
+
+    if (companyScope && !companyScope.ok) return companyScope.response;
+
     const result = await joinRequestRepository.listJoinRequests({
       id: url.searchParams.get("requestId") || url.searchParams.get("id"),
       applicantEmail: url.searchParams.get("applicantEmail") || url.searchParams.get("email"),
-      requestType: readJoinRequestType(url.searchParams.get("requestType") || url.searchParams.get("type")),
+      requestType,
       status: readJoinRequestStatus(url.searchParams.get("status")),
-      invitationScope: readInvitationScope(url.searchParams.get("invitationScope") || url.searchParams.get("scope")),
+      invitationScope,
+      invitationCompanyId: companyScope?.ok ? companyScope.companyScope.companyId : null,
       limit: readLimit(url.searchParams.get("limit")),
     });
 
@@ -225,8 +239,12 @@ function readRejectedSystemActorUserId(body: ReviewCompanyJoinRequestBody): stri
 export async function handleApproveMemberJoinRequest(requestId: string, request: Request) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReviewMemberJoinRequestBody;
-    const approvedByUserId = readActorUserId(body);
+    const companyScope = await requireAdminMemberCompanyScope();
+    if (!companyScope.ok) return companyScope.response;
+
+    const approvedByUserId = readActorUserId(body) ?? companyScope.companyScope.userId;
     const result = await joinRequestRepository.approveMemberJoinRequest({
+      companyId: companyScope.companyScope.companyId,
       requestId,
       approvedByUserId,
       roleTemplateCode: body.roleTemplateCode ?? null,
@@ -265,8 +283,12 @@ export async function handleApproveMemberJoinRequest(requestId: string, request:
 export async function handleRejectMemberJoinRequest(requestId: string, request: Request) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReviewMemberJoinRequestBody;
-    const rejectedByUserId = readActorUserId(body);
+    const companyScope = await requireAdminMemberCompanyScope();
+    if (!companyScope.ok) return companyScope.response;
+
+    const rejectedByUserId = readActorUserId(body) ?? companyScope.companyScope.userId;
     const result = await joinRequestRepository.rejectMemberJoinRequest({
+      companyId: companyScope.companyScope.companyId,
       requestId,
       rejectedByUserId,
       reasonCode: body.reasonCode ?? "customer_admin_rejected",

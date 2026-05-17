@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
-import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { requireAdminMemberCompanyScope } from "./sessionScope";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildMemberPermissionUpdatedAuditLog } from "@/lib/system/audit/writeActions";
 import {
@@ -38,7 +37,9 @@ function toErrorResponse(error: unknown) {
   const status =
     message === "COMPANY_MEMBER_NOT_FOUND"
       ? 404
-      : message === "COMPANY_MEMBER_NOT_APPROVED" ||
+      : message === "ADMIN_MEMBER_COMPANY_SESSION_REQUIRED"
+        ? 401
+        : message === "COMPANY_MEMBER_NOT_APPROVED" ||
           message === "SELF_PERMISSION_UPDATE_REMOVAL_BLOCKED"
         ? 409
         : message.endsWith("_REQUIRED")
@@ -70,11 +71,10 @@ function readActorUserId(body: UpdateMemberPermissionsBody): string | null {
 export async function handleListAdminMembers(request: Request) {
   try {
     const url = new URL(request.url);
-    const session = await getCurrentWaflSession();
-    const companyId =
-      session?.companyId?.trim() ||
-      url.searchParams.get("companyId")?.trim() ||
-      WORKSPACE_COMPANY_ID;
+    const scope = await requireAdminMemberCompanyScope();
+    if (!scope.ok) return scope.response;
+
+    const companyId = scope.companyScope.companyId;
     const status = url.searchParams.get("status")?.trim() || "approved";
     const limit = Number(url.searchParams.get("limit") ?? "50");
     const result = await adminMemberRepository.listCompanyMembers({
@@ -105,8 +105,12 @@ export async function handleUpdateAdminMemberPermissions(
     const body = (await request
       .json()
       .catch(() => ({}))) as UpdateMemberPermissionsBody;
-    const updatedByUserId = readActorUserId(body);
+    const scope = await requireAdminMemberCompanyScope();
+    if (!scope.ok) return scope.response;
+
+    const updatedByUserId = readActorUserId(body) ?? scope.companyScope.userId;
     const result = await adminMemberRepository.updateCompanyMemberPermissions({
+      companyId: scope.companyScope.companyId,
       companyMemberId,
       updatedByUserId,
       permissionCodes: normalizePermissionCodes(body.permissionCodes),

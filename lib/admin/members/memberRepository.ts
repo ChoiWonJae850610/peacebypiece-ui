@@ -21,7 +21,6 @@ import type {
 const DEFAULT_MEMBER_LIST_LIMIT = 50;
 const MEMBER_STATUSES: readonly AdminCompanyMemberStatus[] = ["approved", "pending", "rejected", "suspended"] as const;
 
-const inMemoryMembers: AdminCompanyMemberRecord[] = [];
 
 type AdminCompanyMemberDbRow = {
   id: string;
@@ -80,6 +79,10 @@ function normalizePermissionCodes(values: readonly string[] | null | undefined):
 }
 
 function assertPermissionUpdateInput(input: UpdateAdminCompanyMemberPermissionsInput): readonly MemberPermissionCode[] {
+  if (!input.companyId.trim()) {
+    throw new Error("COMPANY_ID_REQUIRED");
+  }
+
   if (!input.companyMemberId.trim()) {
     throw new Error("COMPANY_MEMBER_ID_REQUIRED");
   }
@@ -119,6 +122,7 @@ function toAdminCompanyMemberRecord(row: AdminCompanyMemberDbRow): AdminCompanyM
 async function selectCompanyMemberById(
   client: DbTransactionClient,
   companyMemberId: string,
+  companyId: string,
 ): Promise<AdminCompanyMemberRecord | null> {
   const result = await client.query<AdminCompanyMemberDbRow>(
     `
@@ -145,10 +149,11 @@ async function selectCompanyMemberById(
         JOIN users ON users.id = company_members.user_id
         LEFT JOIN member_permissions ON member_permissions.company_member_id = company_members.id
        WHERE company_members.id = $1
+         AND company_members.company_id = $2
        GROUP BY company_members.id, users.id
        LIMIT 1
     `,
-    [companyMemberId],
+    [companyMemberId, companyId],
   );
 
   return result.rows[0] ? toAdminCompanyMemberRecord(result.rows[0]) : null;
@@ -213,7 +218,7 @@ async function updateDbCompanyMemberPermissions(
   const nextPermissionCodes = assertPermissionUpdateInput(input);
 
   return withDbTransaction(async (client) => {
-    const current = await selectCompanyMemberById(client, input.companyMemberId);
+    const current = await selectCompanyMemberById(client, input.companyMemberId, input.companyId);
     if (!current) {
       throw new Error("COMPANY_MEMBER_NOT_FOUND");
     }
@@ -266,7 +271,7 @@ async function updateDbCompanyMemberPermissions(
       [current.id],
     );
 
-    const updated = await selectCompanyMemberById(client, current.id);
+    const updated = await selectCompanyMemberById(client, current.id, input.companyId);
     if (!updated) {
       throw new Error("COMPANY_MEMBER_NOT_FOUND");
     }
@@ -279,41 +284,11 @@ async function updateDbCompanyMemberPermissions(
   });
 }
 
-function updateInMemoryCompanyMemberPermissions(
-  input: UpdateAdminCompanyMemberPermissionsInput,
-): UpdateAdminCompanyMemberPermissionsResult {
-  const nextPermissionCodes = assertPermissionUpdateInput(input);
-  const index = inMemoryMembers.findIndex((member) => member.id === input.companyMemberId);
-  const current = index >= 0 ? inMemoryMembers[index] : null;
-  if (!current) throw new Error("COMPANY_MEMBER_NOT_FOUND");
-  if (current.status !== "approved") throw new Error("COMPANY_MEMBER_NOT_APPROVED");
-
-  const updated: AdminCompanyMemberRecord = {
-    ...current,
-    permissionCodes: nextPermissionCodes,
-    permissionCount: nextPermissionCodes.length,
-    updatedAt: new Date().toISOString(),
-  };
-  inMemoryMembers[index] = updated;
-
-  return {
-    member: updated,
-    previousPermissionCodes: current.permissionCodes,
-    nextPermissionCodes,
-  };
-}
-
 export function createAdminMemberRepository(): AdminMemberRepository {
   return {
     async listCompanyMembers(input) {
       if (!isDatabaseConfigured()) {
-        return {
-          members: inMemoryMembers.filter((member) => {
-            if (member.companyId !== input.companyId) return false;
-            if (!input.status || input.status === "all") return true;
-            return member.status === input.status;
-          }),
-        };
+        return { members: [] };
       }
 
       return listDbCompanyMembers(input);
@@ -321,7 +296,7 @@ export function createAdminMemberRepository(): AdminMemberRepository {
 
     async updateCompanyMemberPermissions(input) {
       if (!isDatabaseConfigured()) {
-        return updateInMemoryCompanyMemberPermissions(input);
+        throw new Error("DATABASE_NOT_CONFIGURED");
       }
 
       return updateDbCompanyMemberPermissions(input);

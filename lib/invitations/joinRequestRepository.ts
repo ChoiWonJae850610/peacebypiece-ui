@@ -313,6 +313,8 @@ function filterInMemoryJoinRequests(input: JoinRequestLookupInput): JoinRequestR
       if (normalizedEmail && item.applicantEmail !== normalizedEmail) return false;
       if (input.requestType && item.requestType !== input.requestType) return false;
       if (input.status && item.status !== input.status) return false;
+      if (input.invitationScope && item.invitation?.scope !== input.invitationScope) return false;
+      if (input.invitationCompanyId && item.invitation?.companyId !== input.invitationCompanyId) return false;
       return true;
     })
     .slice(0, limit);
@@ -352,6 +354,11 @@ async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRe
   if (input.invitationScope) {
     values.push(input.invitationScope);
     conditions.push(`invitations.scope = $${values.length}`);
+  }
+
+  if (input.invitationCompanyId?.trim()) {
+    values.push(input.invitationCompanyId.trim());
+    conditions.push(`invitations.company_id = $${values.length}`);
   }
 
   values.push(normalizeLookupLimit(input.limit));
@@ -526,6 +533,18 @@ function resolveJoinRequestCompanyId(joinRequest: JoinRequestRecord): string {
   const companyId = joinRequest.invitation?.companyId?.trim();
   if (!companyId) {
     throw new Error("INVITATION_COMPANY_REQUIRED");
+  }
+
+  return companyId;
+}
+
+function assertJoinRequestCompanyScope(
+  joinRequest: JoinRequestRecord,
+  expectedCompanyId: string,
+): string {
+  const companyId = resolveJoinRequestCompanyId(joinRequest);
+  if (companyId !== expectedCompanyId.trim()) {
+    throw new Error("JOIN_REQUEST_COMPANY_SCOPE_MISMATCH");
   }
 
   return companyId;
@@ -1076,7 +1095,7 @@ async function approveDbMemberJoinRequest(
 
     assertPendingMemberJoinRequest(joinRequest);
 
-    const companyId = resolveJoinRequestCompanyId(joinRequest);
+    const companyId = assertJoinRequestCompanyScope(joinRequest, input.companyId);
     const roleTemplateCode = resolveMemberRoleTemplateCode(joinRequest, input.roleTemplateCode);
     const permissionCodes = normalizeMemberPermissionCodeList(input.permissionCodes, roleTemplateCode);
     const user = await findOrCreateMemberUser(client, {
@@ -1156,6 +1175,7 @@ async function rejectDbMemberJoinRequest(
     }
 
     assertPendingMemberJoinRequest(joinRequest);
+    const companyId = assertJoinRequestCompanyScope(joinRequest, input.companyId);
     const reasonCode = normalizeText(input.reasonCode) ?? "customer_admin_rejected";
 
     await client.query(
@@ -1193,7 +1213,7 @@ async function rejectDbMemberJoinRequest(
 
     return {
       joinRequest: updatedJoinRequest,
-      companyId: joinRequest.invitation?.companyId ?? null,
+      companyId,
     };
   });
 }
@@ -1206,7 +1226,7 @@ function approveInMemoryMemberJoinRequest(
   if (!joinRequest) throw new Error("JOIN_REQUEST_NOT_FOUND");
   assertPendingMemberJoinRequest(joinRequest);
 
-  const companyId = resolveJoinRequestCompanyId(joinRequest);
+  const companyId = assertJoinRequestCompanyScope(joinRequest, input.companyId);
   const roleTemplateCode = resolveMemberRoleTemplateCode(joinRequest, input.roleTemplateCode);
   const permissionCodes = normalizeMemberPermissionCodeList(input.permissionCodes, roleTemplateCode);
   const userId = joinRequest.userId ?? randomUUID();
@@ -1230,6 +1250,7 @@ function rejectInMemoryMemberJoinRequest(input: MemberJoinRequestRejectInput): M
   const joinRequest = index >= 0 ? inMemoryJoinRequests[index] : null;
   if (!joinRequest) throw new Error("JOIN_REQUEST_NOT_FOUND");
   assertPendingMemberJoinRequest(joinRequest);
+  const companyId = assertJoinRequestCompanyScope(joinRequest, input.companyId);
 
   const now = new Date().toISOString();
   const updated: JoinRequestRecord = {
@@ -1242,7 +1263,7 @@ function rejectInMemoryMemberJoinRequest(input: MemberJoinRequestRejectInput): M
   };
   inMemoryJoinRequests[index] = updated;
 
-  return { joinRequest: updated, companyId: joinRequest.invitation?.companyId ?? null };
+  return { joinRequest: updated, companyId };
 }
 
 export function createJoinRequestRepository(): JoinRequestRepository {
@@ -1290,28 +1311,36 @@ export function createJoinRequestRepository(): JoinRequestRepository {
 
     async approveMemberJoinRequest(input: MemberJoinRequestApproveInput): Promise<MemberJoinRequestApprovalResult> {
       const trimmedId = input.requestId.trim();
+      const companyId = input.companyId.trim();
+      if (!companyId) {
+        throw new Error("COMPANY_ID_REQUIRED");
+      }
       if (!trimmedId) {
         throw new Error("JOIN_REQUEST_ID_REQUIRED");
       }
 
       if (isDatabaseConfigured()) {
-        return approveDbMemberJoinRequest({ ...input, requestId: trimmedId });
+        return approveDbMemberJoinRequest({ ...input, companyId, requestId: trimmedId });
       }
 
-      return approveInMemoryMemberJoinRequest({ ...input, requestId: trimmedId });
+      return approveInMemoryMemberJoinRequest({ ...input, companyId, requestId: trimmedId });
     },
 
     async rejectMemberJoinRequest(input: MemberJoinRequestRejectInput): Promise<MemberJoinRequestRejectionResult> {
       const trimmedId = input.requestId.trim();
+      const companyId = input.companyId.trim();
+      if (!companyId) {
+        throw new Error("COMPANY_ID_REQUIRED");
+      }
       if (!trimmedId) {
         throw new Error("JOIN_REQUEST_ID_REQUIRED");
       }
 
       if (isDatabaseConfigured()) {
-        return rejectDbMemberJoinRequest({ ...input, requestId: trimmedId });
+        return rejectDbMemberJoinRequest({ ...input, companyId, requestId: trimmedId });
       }
 
-      return rejectInMemoryMemberJoinRequest({ ...input, requestId: trimmedId });
+      return rejectInMemoryMemberJoinRequest({ ...input, companyId, requestId: trimmedId });
     },
 
     async approveCompanyJoinRequest(input: CompanyJoinRequestApproveInput): Promise<CompanyJoinRequestApprovalResult> {

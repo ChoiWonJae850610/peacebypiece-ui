@@ -1,20 +1,26 @@
 Version :
-0.13.31
+0.13.32
 
 Summary :
-통계정보 회사 범위 기준과 세션 scope 보강
+멤버관리 회사 범위 기준과 초대 승인 scope 보강
 
 Description :
-관리자 통계 화면과 통계 API가 하드코딩 회사 기준이나 요청 파라미터 companyId에 의존하지 않고 실제 로그인 세션의 companyId를 사용하도록 정리했다. 세션 companyId가 없으면 통계 API는 401로 차단하고 관리자 통계 화면은 로그인 화면으로 이동하도록 보강했다.
+멤버관리 목록과 권한 수정, 멤버 초대 생성, 가입 승인/거절 조회가 실제 로그인 세션의 companyId 기준으로만 동작하도록 보강했다. 관리자 멤버 화면의 하드코딩 회사명과 companyId 요청 파라미터 의존을 제거하고, DB 미설정 시 멤버 mock fallback을 반환하지 않도록 정리했다.
 
 수정 파일 목록 :
-- app/admin/stats/page.tsx
-- lib/admin/adminStats.repository.ts
+- app/admin/members/page.tsx
+- components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/admin/members/memberRepository.ts
+- lib/admin/members/memberRouteHandlers.ts
+- lib/admin/members/memberTypes.ts
 - lib/constants/app.ts
-- lib/stats/api/statsRouteHandlers.ts
+- lib/invitations/api/invitationRouteHandlers.ts
+- lib/invitations/api/joinRequestRouteHandlers.ts
+- lib/invitations/joinRequestRepository.ts
+- lib/invitations/joinRequestTypes.ts
 
 추가 파일 목록 :
-- lib/admin/stats/sessionScope.ts
+- lib/admin/members/sessionScope.ts
 
 삭제 파일 목록 :
 없음

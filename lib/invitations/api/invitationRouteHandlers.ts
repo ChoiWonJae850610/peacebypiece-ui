@@ -14,7 +14,7 @@ import type {
   InvitationScope,
 } from "../invitationTypes";
 
-import { WORKSPACE_ADMIN_USER_ID, WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { requireAdminMemberCompanyScope } from "@/lib/admin/members/sessionScope";
 
 const SYSTEM_ADMIN_USER_ID = "system-user-seed-admin";
 
@@ -40,23 +40,32 @@ function getRequestIpAddress(request: Request): string | null {
   return forwardedFor || request.headers.get("x-real-ip") || null;
 }
 
-function toInvitationDraft(body: CreateInvitationRequestBody): InvitationDraft {
+function toInvitationDraft(
+  body: CreateInvitationRequestBody,
+  sessionCompanyScope?: { companyId: string; userId: string } | null,
+): InvitationDraft {
   const scope = body.scope ?? "company_to_member";
   const recipientRole = body.recipientRole ?? (scope === "system_to_company_admin" ? "admin" : "viewer");
   const permissionPreset =
     body.permissionPreset ??
     (recipientRole === "admin" ? "company_admin" : recipientRole);
-  const inviterCompanyId = body.inviterCompanyId ?? (scope === "company_to_member" ? WORKSPACE_COMPANY_ID : null);
+  const inviterCompanyId = scope === "company_to_member"
+    ? sessionCompanyScope?.companyId ?? null
+    : body.inviterCompanyId ?? null;
 
   return {
-    companyId: body.companyId ?? inviterCompanyId ?? null,
+    companyId: scope === "company_to_member"
+      ? sessionCompanyScope?.companyId ?? null
+      : body.companyId ?? inviterCompanyId ?? null,
     inviterCompanyId,
     recipientEmail: body.recipientEmail ?? "",
     recipientRole,
     permissionPreset,
     scope,
     expiresAt: body.expiresAt ?? getDefaultInvitationExpiresAt(),
-    createdByUserId: body.createdByUserId ?? (scope === "company_to_member" ? WORKSPACE_ADMIN_USER_ID : null),
+    createdByUserId: scope === "company_to_member"
+      ? sessionCompanyScope?.userId ?? null
+      : body.createdByUserId ?? null,
     createdBySystemUserId: body.createdBySystemUserId ?? (scope === "system_to_company_admin" ? SYSTEM_ADMIN_USER_ID : null),
   };
 }
@@ -86,20 +95,12 @@ function toErrorResponse(error: unknown) {
 
 export async function handleListInvitations(request: Request) {
   try {
-    const url = new URL(request.url);
-    const companyId = url.searchParams.get("companyId");
+    const scope = await requireAdminMemberCompanyScope();
+    if (!scope.ok) return scope.response;
 
-    if (!companyId) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "COMPANY_ID_REQUIRED",
-        },
-        { status: 400 },
-      );
-    }
-
-    const invitations = await invitationRepository.listInvitations(companyId);
+    const invitations = await invitationRepository.listInvitations(
+      scope.companyScope.companyId,
+    );
 
     return NextResponse.json({
       ok: true,
@@ -113,7 +114,22 @@ export async function handleListInvitations(request: Request) {
 export async function handleCreateInvitation(request: Request) {
   try {
     const body = (await request.json()) as CreateInvitationRequestBody;
-    const draft = toInvitationDraft(body);
+    const requestedScope = body.scope ?? "company_to_member";
+    const companyScope = requestedScope === "company_to_member"
+      ? await requireAdminMemberCompanyScope()
+      : null;
+
+    if (companyScope && !companyScope.ok) return companyScope.response;
+
+    const draft = toInvitationDraft(
+      body,
+      companyScope?.ok
+        ? {
+            companyId: companyScope.companyScope.companyId,
+            userId: companyScope.companyScope.userId,
+          }
+        : null,
+    );
 
     const policy = evaluateInvitationPolicy({
       scope: draft.scope,

@@ -32,6 +32,7 @@ export interface ListAdminCompanyMembersResult {
 }
 
 export interface UpdateAdminCompanyMemberPermissionsInput {
+  companyId: string;
   companyMemberId: string;
   permissionCodes: readonly MemberPermissionCode[];
   updatedByUserId?: string | null;

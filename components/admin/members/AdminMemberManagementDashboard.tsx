@@ -23,7 +23,6 @@ import {
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
 } from "@/lib/permissions";
-import { WORKSPACE_ADMIN_USER_ID, WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
@@ -606,7 +605,7 @@ export default function AdminMemberManagementDashboard() {
 
     try {
       const response = await fetch(
-        `/api/admin/members?companyId=${encodeURIComponent(WORKSPACE_COMPANY_ID)}&status=all&limit=50`,
+        "/api/admin/members?status=all&limit=50",
         {
           cache: "no-store",
           headers: {
@@ -685,7 +684,6 @@ export default function AdminMemberManagementDashboard() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            actorUserId: WORKSPACE_ADMIN_USER_ID,
             roleTemplateCode: request.requestedRoleId,
             permissionCodes: getMemberRoleTemplatePermissions(
               request.requestedRoleId,
@@ -774,8 +772,6 @@ export default function AdminMemberManagementDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "company_to_member",
-          companyId: WORKSPACE_COMPANY_ID,
-          inviterCompanyId: WORKSPACE_COMPANY_ID,
           recipientEmail: target,
           recipientRole: selectedRole.id as
             | "designer"
