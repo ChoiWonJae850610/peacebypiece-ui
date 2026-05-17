@@ -1,21 +1,22 @@
 Version :
-0.13.53
+0.13.54
 
 Summary :
-고객사관리 화면 정리와 초대 생성 오류 수정
+고객사 초대 링크를 Google 로그인 게이트로 전환
 
 Description :
-시스템 고객사관리 화면에서 QR, 승인 단계, 권한 설명 등 개발 점검 UI를 제거하고 고객사 관리자 초대와 가입 신청 검토 중심으로 단순화했다. 고객사 생성 전 시스템 초대를 만들 수 있도록 invitations.company_id NULL 허용 migration을 추가하고, 개발용 시스템관리자 초대 생성 시 system_users FK 오류가 나지 않도록 보강했다. 고객사 관리자 온보딩 모달 저장 버튼은 필수값 누락 안내를 보여주고 저장 시도 자체는 가능하도록 수정했다.
+고객사 초대 링크 화면에서 가입 신청 폼을 제거하고 멤버 초대와 동일한 Google 로그인 게이트 흐름으로 전환했다. Google OAuth requestType에 company를 추가하고, 고객사 관리자 초대 로그인 후 임시 고객사와 고객사 관리자 세션을 생성해 /admin 회사정보 입력 모달로 이어지도록 보강했다. 회사정보 저장 시 승인 대기 가입 신청 정보에도 회사명, 사업자명, 관리자 이름과 연락처가 반영되도록 수정했다.
 
 수정 파일 목록 :
-- components/system/companies/SystemCompanyApprovalConsole.tsx
-- lib/invitations/invitationRepository.ts
-- components/admin/companies/AdminCompanyOnboardingGate.tsx
-- db/schema/full_reset.sql
+- components/invitations/CompanyInvitationJoinRequestPage.tsx
+- lib/auth/googleOAuth.ts
+- app/api/auth/google/start/route.ts
+- app/api/auth/google/callback/route.ts
+- lib/admin/settings/companyOnboardingRepository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- db/migrations/patch_0_13_53_system_company_invitation.sql
+- lib/auth/companyInvitationLoginRepository.ts
 
 삭제 파일 목록 :
 없음

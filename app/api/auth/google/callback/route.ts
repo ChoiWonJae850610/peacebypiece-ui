@@ -9,9 +9,10 @@ import {
 import { completeGoogleLogin } from "@/lib/auth/loginRepository";
 import { createWaflSessionCookieValue, WAFL_AUTH_SESSION_COOKIE } from "@/lib/auth/session";
 import { joinRequestRepository } from "@/lib/invitations/joinRequestRepository";
+import { completeCompanyAdminInvitationLogin } from "@/lib/auth/companyInvitationLoginRepository";
 
-function redirectToInvitation(request: Request, token: string, error: string): NextResponse {
-  return NextResponse.redirect(new URL(`/invite/member/${encodeURIComponent(token)}?error=${encodeURIComponent(error)}`, request.url));
+function redirectToInvitation(request: Request, requestType: "member" | "company", token: string, error: string): NextResponse {
+  return NextResponse.redirect(new URL(`/invite/${requestType}/${encodeURIComponent(token)}?error=${encodeURIComponent(error)}`, request.url));
 }
 
 function redirectToLogin(request: Request, error: string): NextResponse {
@@ -52,13 +53,13 @@ export async function GET(request: Request) {
   if (!code) {
     return state.requestType === "login"
       ? redirectToLogin(request, "GOOGLE_OAUTH_CODE_REQUIRED")
-      : redirectToInvitation(request, state.token ?? "", "GOOGLE_OAUTH_CODE_REQUIRED");
+      : redirectToInvitation(request, state.requestType === "company" ? "company" : "member", state.token ?? "", "GOOGLE_OAUTH_CODE_REQUIRED");
   }
 
   if (!storedNonce || storedNonce !== state.nonce) {
     return state.requestType === "login"
       ? redirectToLogin(request, "GOOGLE_OAUTH_STATE_MISMATCH")
-      : redirectToInvitation(request, state.token ?? "", "GOOGLE_OAUTH_STATE_MISMATCH");
+      : redirectToInvitation(request, state.requestType === "company" ? "company" : "member", state.token ?? "", "GOOGLE_OAUTH_STATE_MISMATCH");
   }
 
   try {
@@ -77,6 +78,11 @@ export async function GET(request: Request) {
     }
 
     const token = state.token ?? "";
+    if (state.requestType === "company") {
+      const result = await completeCompanyAdminInvitationLogin(profile, token);
+      return createSessionResponse(request, result.redirectPath, result.session);
+    }
+
     const result = await joinRequestRepository.createJoinRequest({
       rawToken: token,
       requestType: "member",
@@ -96,6 +102,6 @@ export async function GET(request: Request) {
     const message = error instanceof Error ? error.message : "GOOGLE_OAUTH_CALLBACK_FAILED";
     return state.requestType === "login"
       ? redirectToLogin(request, message)
-      : redirectToInvitation(request, state.token ?? "", message);
+      : redirectToInvitation(request, state.requestType === "company" ? "company" : "member", state.token ?? "", message);
   }
 }

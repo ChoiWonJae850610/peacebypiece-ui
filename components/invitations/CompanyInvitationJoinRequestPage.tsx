@@ -1,82 +1,78 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-
-import { APP_VERSION } from "@/lib/constants/app";
-import {
-  COMPANY_INVITATION_JOIN_REQUEST_DESCRIPTION,
-  COMPANY_INVITATION_JOIN_REQUEST_FIELDS,
-  COMPANY_INVITATION_JOIN_REQUEST_POLICY_NOTES,
-  COMPANY_INVITATION_JOIN_REQUEST_STEPS,
-  COMPANY_INVITATION_JOIN_REQUEST_TITLE,
-  COMPANY_INVITATION_SUMMARY_ITEMS,
-  createCompanyInvitationTokenPreview,
-  type CompanyInvitationJoinRequestStatus,
-} from "@/lib/invitations/companyInvitationJoinRequestPresentation";
+import { useEffect, useState } from "react";
 
 interface CompanyInvitationJoinRequestPageProps {
   token: string;
 }
 
-type SubmitState = "idle" | "submitting" | "success" | "error";
+type SubmitState = "idle" | "redirecting";
 type VerifyState = "idle" | "loading" | "valid" | "invalid";
 
-function getStatusClassName(status: CompanyInvitationJoinRequestStatus): string {
-  if (status === "ready") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
+type PublicCompanyInvitation = {
+  id?: string;
+  recipientEmail?: string | null;
+  status?: string | null;
+  expiresAt?: string | null;
+};
 
-  if (status === "planned") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  }
+type VerifyInvitationPayload = {
+  ok?: boolean;
+  isJoinable?: boolean;
+  error?: string;
+  invitation?: PublicCompanyInvitation | null;
+};
 
-  return "border-stone-200 bg-stone-100 text-stone-500";
+function formatDate(value?: string | null): string {
+  if (!value) return "만료일을 확인하고 있어요.";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "만료일을 확인하고 있어요.";
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
-function HomeIcon() {
+function readFriendlyError(error: string | null): string {
+  if (error === "INVITATION_NOT_FOUND") return "유효하지 않은 고객사 초대 링크예요.";
+  if (error === "INVITATION_EXPIRED") return "고객사 초대가 만료되었어요.";
+  if (error === "INVITATION_NOT_ACTIVE") return "현재 사용할 수 없는 고객사 초대예요.";
+  if (error === "INVITATION_SCOPE_MISMATCH") return "초대 링크의 사용 범위가 맞지 않아요.";
+  return "고객사 초대 링크를 확인할 수 없어요.";
+}
+
+function GoogleMark() {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m3 10.5 9-7 9 7" />
-      <path d="M5 10v10h14V10" />
-      <path d="M9 20v-6h6v6" />
-    </svg>
+    <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-xs font-black text-[#2B2118] shadow-sm">
+      G
+    </span>
   );
 }
 
-function readSubmitMessage(state: SubmitState, message: string | null): string {
-  if (message) return message;
-  if (state === "success") return "고객사 가입 신청이 저장되었습니다. 시스템관리자 승인 전까지 대기 상태로 유지됩니다.";
-  if (state === "submitting") return "고객사 가입 신청을 저장하는 중입니다.";
-  return "초대 token 검증 후 고객사 가입 신청을 저장합니다.";
+function WaffleGridMark() {
+  return (
+    <div aria-hidden="true" className="grid h-12 w-12 grid-cols-3 gap-1 rounded-2xl bg-[#B8742B] p-2 shadow-[inset_0_0_0_1px_rgba(62,39,18,0.22)]">
+      {Array.from({ length: 9 }).map((_, index) => (
+        <span
+          key={index}
+          className="rounded-[0.35rem] bg-[#FFE7A8] shadow-[inset_0_-1px_0_rgba(62,39,18,0.16)]"
+        />
+      ))}
+    </div>
+  );
 }
 
 export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvitationJoinRequestPageProps) {
-  const tokenPreview = useMemo(() => createCompanyInvitationTokenPreview(token), [token]);
-  const [verifyState, setVerifyState] = useState<VerifyState>(token.startsWith("preview-") ? "valid" : "idle");
+  const [verifyState, setVerifyState] = useState<VerifyState>("idle");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const [redirectPath, setRedirectPath] = useState<string | null>(null);
-  const [formValues, setFormValues] = useState<Record<string, string>>({
-    applicantName: "",
-    applicantPhone: "",
-    requestedCompanyName: "",
-    businessName: "",
-    requestMemo: "",
-    expectedAdminEmail: "",
-  });
+  const [invitation, setInvitation] = useState<PublicCompanyInvitation | null>(null);
 
   useEffect(() => {
-    if (!token || token.startsWith("preview-")) return;
+    if (!token) return;
 
     const controller = new AbortController();
 
@@ -87,199 +83,120 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
           `/api/invitations/verify?requestType=company&token=${encodeURIComponent(token)}`,
           { signal: controller.signal },
         );
-        const payload = (await response.json()) as { ok?: boolean; isJoinable?: boolean; error?: string };
+        const payload = (await response.json()) as VerifyInvitationPayload;
         if (!response.ok || !payload.ok || !payload.isJoinable) {
           setVerifyState("invalid");
-          setMessage(payload.error ?? "고객사 초대 링크를 확인할 수 없습니다.");
+          setMessage(readFriendlyError(payload.error ?? null));
+          setInvitation(payload.invitation ?? null);
           return;
         }
+        setInvitation(payload.invitation ?? null);
         setVerifyState("valid");
+        setMessage(null);
       } catch (error) {
         if ((error as Error).name === "AbortError") return;
         setVerifyState("invalid");
-        setMessage("고객사 초대 링크 검증 중 오류가 발생했습니다.");
+        setMessage("고객사 초대장을 불러오는 중 문제가 생겼어요.");
       }
     }
 
     verifyInvitation();
+
     return () => controller.abort();
   }, [token]);
 
-  const canSubmit = verifyState === "valid" && submitState !== "submitting";
+  const recipientEmail = invitation?.recipientEmail ?? "초대받은 Google 계정";
+  const expiresAtLabel = formatDate(invitation?.expiresAt);
+  const isJoinable = verifyState === "valid" && submitState !== "redirecting";
 
-  async function handleSubmit() {
-    if (!canSubmit) return;
-
-    setSubmitState("submitting");
-    setMessage(null);
-    setRedirectPath(null);
-
-    try {
-      const response = await fetch("/api/invitations/join-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          requestType: "company",
-          applicantName: formValues.applicantName,
-          applicantEmail: formValues.expectedAdminEmail,
-          applicantPhone: formValues.applicantPhone,
-          requestedCompanyName: formValues.requestedCompanyName,
-          businessName: formValues.businessName,
-          requestMemo: formValues.requestMemo,
-        }),
-      });
-      const payload = (await response.json()) as { ok?: boolean; error?: string; redirectPath?: string; joinRequest?: { id?: string } };
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "JOIN_REQUEST_CREATE_FAILED");
-      }
-      setSubmitState("success");
-      setRedirectPath(payload.redirectPath ?? "/pending");
-      setMessage(`고객사 가입 신청 저장 완료 · 승인 대기 화면에서 requestId 기준으로 상태를 확인할 수 있습니다.`);
-    } catch (error) {
-      setSubmitState("error");
-      setMessage(error instanceof Error ? error.message : "고객사 가입 신청 저장 중 오류가 발생했습니다.");
-    }
+  function handleGoogleJoin() {
+    if (!isJoinable) return;
+    setSubmitState("redirecting");
+    window.location.href = `/api/auth/google/start?requestType=company&token=${encodeURIComponent(token)}`;
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">COMPANY JOIN REQUEST</p>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-stone-950">{COMPANY_INVITATION_JOIN_REQUEST_TITLE}</h1>
-                <p className="max-w-3xl text-sm leading-6 text-stone-600">{COMPANY_INVITATION_JOIN_REQUEST_DESCRIPTION}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">v{APP_VERSION}</span>
-              <Link href="/system" aria-label="시스템 콘솔" title="시스템 콘솔" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-700 transition hover:bg-stone-50">
-                <HomeIcon />
-              </Link>
+    <main className="relative min-h-screen overflow-hidden bg-[#FFF7E3] px-5 py-6 text-[#2A2016] sm:px-8 sm:py-8 lg:px-10">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.2] [background-image:linear-gradient(#D89B43_1px,transparent_1px),linear-gradient(90deg,#D89B43_1px,transparent_1px)] [background-size:58px_58px]" />
+      <div className="pointer-events-none absolute left-[-8rem] top-[-6rem] h-80 w-80 rounded-full bg-[#F3C05E]/35 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-7rem] right-[-8rem] h-96 w-96 rounded-full bg-[#9F6227]/25 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/30 blur-3xl" />
+
+      <section className="relative mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col justify-between gap-8 lg:min-h-[calc(100vh-4rem)]">
+        <header className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <WaffleGridMark />
+            <div>
+              <p className="text-2xl font-black tracking-[-0.04em] text-[#2A2016]">WAFL</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9C6424]">
+                Work Assignment Flow
+              </p>
             </div>
           </div>
         </header>
 
-        <section className="grid gap-4 lg:grid-cols-4">
-          {COMPANY_INVITATION_SUMMARY_ITEMS.map((item) => (
-            <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium text-stone-500">{item.label}</p>
-              <p className="mt-2 text-lg font-semibold text-stone-950">{item.value}</p>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{item.description}</p>
-            </article>
-          ))}
-        </section>
+        <div className="grid flex-1 items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.54fr)] lg:gap-14">
+          <article className="max-w-3xl space-y-8 sm:space-y-10">
+            <div className="space-y-5 sm:space-y-6">
+              <p className="text-sm font-black uppercase tracking-[0.3em] text-[#9C6424]">Company admin invitation</p>
+              <h1 className="text-5xl font-black leading-[0.95] tracking-[-0.07em] text-[#2A2016] sm:text-6xl lg:text-7xl">
+                고객사 관리자
+                <br /> 초대가
+                <br /> 도착했어요.
+              </h1>
+            </div>
 
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <div className="border-b border-stone-100 pb-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">Invitation token</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">고객사 초대 링크 상태</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">
-                URL token을 서버에서 token_hash로 변환해 초대 유형, 상태, 만료일을 확인합니다.
+            <div className="space-y-5 text-2xl font-black leading-tight tracking-[-0.04em] text-[#4A321C] sm:text-3xl lg:text-4xl">
+              <p>Google 계정으로 먼저 본인 확인을 진행합니다.</p>
+              <p className="max-w-2xl text-base font-bold leading-7 tracking-normal text-[#765332]">
+                로그인 후 WAFL 관리자 화면에서 회사명, 주소, 담당자 연락처, 신청 요금제를 입력하면 시스템관리자 승인 대기 상태로 전환됩니다.
               </p>
             </div>
-            <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-stone-500">token</p>
-                  <p className="mt-1 truncate text-base font-semibold text-stone-950">{tokenPreview.maskedToken}</p>
-                </div>
-                <span className="w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  {verifyState === "loading" ? "검증 중" : verifyState === "invalid" ? "검증 실패" : tokenPreview.stateLabel}
-                </span>
+          </article>
+
+          <aside className="w-full rounded-[2rem] border border-[#E1AF68]/60 bg-[#FFFDF7]/75 p-5 shadow-[0_24px_70px_rgba(89,53,18,0.14)] backdrop-blur sm:p-6 lg:p-7">
+            <div className="space-y-5">
+              <div className="rounded-3xl bg-[#FFF4D8] px-5 py-4">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#9C6424]">초대 대상</p>
+                <p className="mt-2 break-all text-base font-black text-[#2A2016]">{recipientEmail}</p>
               </div>
-              <p className="mt-3 text-xs leading-5 text-stone-500">{tokenPreview.description}</p>
-            </div>
-          </article>
 
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">Login gate</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">Google 로그인 후 신청</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">
-              현재 테스트 단계에서는 로그인 이메일 후보를 입력값으로 저장하고, 후속 OAuth 연결에서 검증합니다.
-            </p>
-            <button type="button" disabled className="mt-5 w-full rounded-2xl border border-stone-200 bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-400">
-              Google 로그인 연결 예정
-            </button>
-          </article>
-        </section>
-
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">고객사 가입 신청 정보</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">
-              신청 완료 시 join_requests.pending으로 저장되고, 승인 전에는 회사와 고객관리자 권한을 생성하지 않습니다.
-            </p>
-          </div>
-
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {COMPANY_INVITATION_JOIN_REQUEST_FIELDS.map((field) => (
-              <label key={field.id} className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                <span className="text-xs font-semibold text-stone-500">{field.label}{field.required ? " *" : ""}</span>
-                <input
-                  type={field.id === "expectedAdminEmail" ? "email" : "text"}
-                  value={formValues[field.id] ?? ""}
-                  onChange={(event) => setFormValues((current) => ({ ...current, [field.id]: event.target.value }))}
-                  placeholder={field.placeholder}
-                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
-                />
-                <span className="mt-2 block text-[11px] leading-4 text-stone-500">{field.helper}</span>
-              </label>
-            ))}
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-xs leading-5 text-stone-500">
-              <p>{readSubmitMessage(submitState, message)}</p>
-              {redirectPath ? (
-                <Link href={redirectPath} className="mt-1 inline-flex font-semibold text-stone-900 underline underline-offset-4">
-                  승인 대기 화면으로 이동
-                </Link>
-              ) : null}
-            </div>
-            <button
-              type="button"
-              disabled={!canSubmit}
-              onClick={handleSubmit}
-              className="rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-            >
-              {submitState === "submitting" ? "저장 중" : "고객사 가입 신청 제출"}
-            </button>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">처리 흐름</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">고객사 초대 링크 접속부터 시스템관리자 승인과 고객사 생성까지의 상태 전환 기준입니다.</p>
-          </div>
-          <div className="mt-5 grid gap-4 lg:grid-cols-4">
-            {COMPANY_INVITATION_JOIN_REQUEST_STEPS.map((step, index) => (
-              <article key={step.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white">{index + 1}</span>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(step.status)}`}>{step.statusLabel}</span>
+              {verifyState === "loading" ? (
+                <div className="rounded-3xl bg-[#FFF4D8] px-5 py-4 text-sm font-bold text-[#8B5A24]">
+                  초대장을 확인하고 있어요.
                 </div>
-                <h3 className="mt-4 text-sm font-semibold text-stone-950">{step.title}</h3>
-                <p className="mt-2 text-xs leading-5 text-stone-600">{step.description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+              ) : null}
 
-        <section className="grid gap-4 lg:grid-cols-3">
-          {COMPANY_INVITATION_JOIN_REQUEST_POLICY_NOTES.map((note) => (
-            <article key={note.id} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-stone-950">{note.title}</h2>
-              <p className="mt-2 text-xs leading-5 text-stone-600">{note.description}</p>
-            </article>
-          ))}
-        </section>
-      </div>
+              {verifyState === "invalid" ? (
+                <div className="rounded-3xl border border-[#E08A70]/70 bg-[#FFF1EA] px-5 py-4 text-sm font-bold text-[#9B3F24]">
+                  {message ?? "초대 링크를 확인할 수 없어요."}
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                disabled={!isJoinable}
+                onClick={handleGoogleJoin}
+                className="flex w-full items-center justify-center gap-3 rounded-[1.4rem] bg-[#2A2016] px-5 py-4 text-sm font-black text-[#FFF8E7] shadow-[0_14px_30px_rgba(72,42,16,0.22)] transition hover:-translate-y-0.5 hover:bg-[#3A2A1B] disabled:translate-y-0 disabled:bg-[#D8CDBB] disabled:text-[#857464]"
+              >
+                <GoogleMark />
+                {submitState === "redirecting" ? "Google로 이동 중" : "Google로 계속하기"}
+              </button>
+
+              <p className="text-xs font-semibold leading-5 text-[#8B6A45]">
+                초대 이메일과 Google 로그인 이메일이 일치해야 합니다. 회사 정보 입력은 로그인 후 관리자 화면에서 진행합니다.
+              </p>
+            </div>
+          </aside>
+        </div>
+
+        <footer className="relative flex flex-col gap-3 text-xs font-semibold leading-5 text-[#8B6A45] sm:flex-row sm:items-end sm:justify-start">
+          <p>
+            {expiresAtLabel} 이후
+            <br />이 초대장은 사라집니다.
+          </p>
+        </footer>
+      </section>
     </main>
   );
 }

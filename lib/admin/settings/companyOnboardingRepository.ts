@@ -194,5 +194,32 @@ export async function updateCompanyOnboardingProfile(
     [session.userId, adminName, adminPhone],
   );
 
+  await queryDb(
+    `
+      UPDATE company_members
+         SET display_name = $2::text,
+             updated_at = now()
+       WHERE company_id = $1::text
+         AND user_id = $3::text
+    `,
+    [session.companyId, adminName, session.userId],
+  );
+
+  await queryDb(
+    `
+      UPDATE join_requests
+         SET requested_company_name = $2::text,
+             business_name = $3::text,
+             applicant_name = $4::text,
+             applicant_phone = $5::text,
+             updated_at = now()
+       WHERE request_type = 'company'
+         AND status = 'pending'
+         AND user_id = $6::text
+         AND created_company_id = $1::text
+    `,
+    [session.companyId, companyName, businessName, adminName, adminPhone, session.userId],
+  );
+
   return getCompanyOnboardingProfile(session);
 }

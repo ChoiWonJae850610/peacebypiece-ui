@@ -11,7 +11,9 @@ import {
 function readRequestType(url: URL): GoogleOAuthRequestType {
   const intent = url.searchParams.get("intent")?.trim();
   const requestType = url.searchParams.get("requestType")?.trim();
-  return intent === "login" || requestType === "login" ? "login" : "member";
+  if (intent === "login" || requestType === "login") return "login";
+  if (requestType === "company") return "company";
+  return "member";
 }
 
 function toErrorRedirect(request: Request, requestType: GoogleOAuthRequestType, error: string, token: string | null): NextResponse {
@@ -20,7 +22,8 @@ function toErrorRedirect(request: Request, requestType: GoogleOAuthRequestType, 
   }
 
   if (token) {
-    return NextResponse.redirect(new URL(`/invite/member/${encodeURIComponent(token)}?error=${encodeURIComponent(error)}`, request.url));
+    const inviteBase = requestType === "company" ? "company" : "member";
+    return NextResponse.redirect(new URL(`/invite/${inviteBase}/${encodeURIComponent(token)}?error=${encodeURIComponent(error)}`, request.url));
   }
 
   return NextResponse.redirect(new URL(`/invite/error?error=${encodeURIComponent(error)}`, request.url));
@@ -32,7 +35,7 @@ export async function GET(request: Request) {
   const token = url.searchParams.get("token")?.trim() || null;
 
   try {
-    if (requestType === "member" && !token) {
+    if ((requestType === "member" || requestType === "company") && !token) {
       return toErrorRedirect(request, requestType, "INVITATION_TOKEN_REQUIRED", token);
     }
 
