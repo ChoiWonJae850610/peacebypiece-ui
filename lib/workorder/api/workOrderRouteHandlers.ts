@@ -14,6 +14,7 @@ import {
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
+import { getPersonalProfile } from "@/lib/me/profileRepository";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import {
@@ -129,18 +130,20 @@ function createWorkOrderPermissionRequiredResponse(permissionCode: MemberPermiss
 }
 
 
-function applySessionActorDefaults(
+async function applySessionActorDefaults(
   workOrder: WorkOrder,
   sessionUser: Awaited<ReturnType<typeof getCurrentWaflSession>>,
-): WorkOrder {
+): Promise<WorkOrder> {
   if (!sessionUser) return workOrder;
 
   const sessionRole =
     sessionUser.role === "company_admin" || sessionUser.role === "system_admin"
       ? "admin"
       : "designer";
+  const profile = sessionUser.companyId ? await getPersonalProfile(sessionUser) : null;
+  const sessionDisplayName = profile?.name?.trim() || sessionUser.name;
   const managerId = workOrder.managerId || sessionUser.userId;
-  const managerName = workOrder.manager?.trim() || sessionUser.name;
+  const managerName = workOrder.manager?.trim() || sessionDisplayName;
 
   return {
     ...workOrder,
@@ -649,7 +652,7 @@ export async function handlePostWorkOrders(request: Request) {
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
 
-    const workOrderToCreate = applySessionActorDefaults(
+    const workOrderToCreate = await applySessionActorDefaults(
       body.workOrder,
       session,
     );

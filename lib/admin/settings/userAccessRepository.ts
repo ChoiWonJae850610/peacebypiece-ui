@@ -7,7 +7,9 @@ import type { UserProfile } from "@/types/user";
 
 type AdminUserAccessRow = Record<string, unknown> & {
   id: string;
-  name: string;
+  name: string | null;
+  email: string | null;
+  display_name: string | null;
   roles: unknown;
   permission_codes: unknown;
 };
@@ -55,13 +57,21 @@ function normalizePermissionCodeList(value: unknown): string[] {
   );
 }
 
+function normalizeDisplayName(...values: Array<string | null | undefined>): string {
+  for (const value of values) {
+    const normalized = String(value ?? "").trim().replace(/\s+/g, " ");
+    if (normalized) return normalized;
+  }
+  return "-";
+}
+
 function mapUserAccessRow(row: AdminUserAccessRow): UserProfile | null {
   const roles = normalizeRoleList(row.roles);
   if (roles.length === 0) return null;
 
   return {
     id: row.id,
-    name: row.name,
+    name: normalizeDisplayName(row.display_name, row.name, row.email, row.id),
     permissionCodes: normalizePermissionCodeList(row.permission_codes),
     ...buildUserRoleState(roles),
   };
@@ -72,7 +82,9 @@ async function listFromCompanyMembers(
 ): Promise<UserProfile[]> {
   const result = await queryDb<AdminUserAccessRow>(
     `SELECT users.id,
-            COALESCE(company_members.display_name, users.name, users.email, users.id) AS name,
+            users.name,
+            users.email,
+            company_members.display_name,
             ARRAY_AGG(DISTINCT company_members.role_template_code ORDER BY company_members.role_template_code) AS roles,
             COALESCE(
               ARRAY_AGG(DISTINCT member_permissions.permission_code ORDER BY member_permissions.permission_code)
@@ -84,9 +96,10 @@ async function listFromCompanyMembers(
        LEFT JOIN member_permissions ON member_permissions.company_member_id = company_members.id
       WHERE company_members.company_id = $1
         AND company_members.status = 'approved'
+        AND COALESCE(company_members.role_template_code, 'viewer') <> 'company_admin'
         AND COALESCE(users.is_active, true) = true
       GROUP BY users.id, users.name, users.email, company_members.display_name
-      ORDER BY name ASC`,
+      ORDER BY COALESCE(NULLIF(company_members.display_name, ''), NULLIF(users.name, ''), users.email, users.id) ASC`,
     [companyId],
   );
 

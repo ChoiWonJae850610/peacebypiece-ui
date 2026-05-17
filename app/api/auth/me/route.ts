@@ -26,6 +26,7 @@ export async function GET() {
         companyId: session.companyId,
         companyName: profile?.companyName ?? session.companyName,
         companyMemberId: session.companyMemberId,
+        profileComplete: profile?.profileComplete ?? false,
       },
     },
     { headers: { "Cache-Control": "no-store" } },

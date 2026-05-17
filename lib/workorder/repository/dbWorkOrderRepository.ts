@@ -454,6 +454,52 @@ function buildAliasSelection(
   return `${quoteIdentifier(columnName)} AS ${alias}`;
 }
 
+function buildSourceAliasSelection(
+  sourceAlias: string,
+  columnName: string | null,
+  alias: keyof DbSpecSheetRow,
+  fallbackSql: string,
+): string {
+  if (!columnName) {
+    return `${fallbackSql} AS ${alias}`;
+  }
+
+  return `${sourceAlias}.${quoteIdentifier(columnName)} AS ${alias}`;
+}
+
+function buildManagerNameSourceSelection(
+  schema: DbSpecSheetSchema,
+  sourceAlias: string,
+): string {
+  if (!schema.managerIdColumn) {
+    return buildSourceAliasSelection(sourceAlias, schema.managerColumn, "manager", "NULL");
+  }
+
+  const storedManagerNameSql = schema.managerColumn
+    ? `NULLIF(${sourceAlias}.${quoteIdentifier(schema.managerColumn)}, '')`
+    : "NULL";
+
+  return `COALESCE(NULLIF(manager_member.display_name, ''), NULLIF(manager_user.name, ''), NULLIF(manager_user.email, ''), ${storedManagerNameSql}) AS manager`;
+}
+
+function buildManagerDisplayJoinSql(
+  schema: DbSpecSheetSchema,
+  sourceAlias: string,
+): string {
+  if (!schema.managerIdColumn) return "";
+
+  const companyPredicate = schema.companyIdColumn
+    ? `AND manager_member.company_id = ${sourceAlias}.${quoteIdentifier(schema.companyIdColumn)}`
+    : "";
+
+  return `
+      LEFT JOIN users manager_user
+        ON manager_user.id = ${sourceAlias}.${quoteIdentifier(schema.managerIdColumn)}
+      LEFT JOIN company_members manager_member
+        ON manager_member.user_id = manager_user.id
+       ${companyPredicate}`;
+}
+
 function pushInsertColumn(
   columns: string[],
   values: unknown[],
@@ -941,91 +987,97 @@ function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
 }
 
 function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
+  const sourceAlias = "spec_sheet";
+
   return `
       SELECT
-        id,
-        title,
-        ${buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL")},
-        ${buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL")},
-        ${buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL")},
-        ${buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL")},
-        ${buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL")},
-        ${buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL")},
-        ${buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL")},
-        ${buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL")},
-        ${buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL")},
-        ${buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL")},
-        ${buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL")},
-        ${buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL")},
-        ${buildAliasSelection(schema.category1Column, "category1", "NULL")},
-        ${buildAliasSelection(schema.category2Column, "category2", "NULL")},
-        ${buildAliasSelection(schema.category3Column, "category3", "NULL")},
-        ${buildAliasSelection(schema.seasonColumn, "season", "NULL")},
-        ${buildAliasSelection(schema.priorityColumn, "priority", "NULL")},
-        ${buildAliasSelection(schema.vendorColumn, "vendor", "NULL")},
-        ${buildAliasSelection(schema.managerColumn, "manager", "NULL")},
-        ${buildAliasSelection(schema.managerIdColumn, "manager_id", "NULL")},
-        ${buildAliasSelection(schema.createdByIdColumn, "created_by_id", "NULL")},
-        ${buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL")},
-        ${buildAliasSelection(schema.dueDateColumn, "due_date", "NULL")},
-        ${buildAliasSelection(schema.quantityColumn, "quantity", "NULL")},
-        ${buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
-        ${buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL")},
-        ${buildAliasSelection(schema.memoColumn, "memo", "NULL")},
-        ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
-        ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
-        ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
-        ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
-      FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
+        ${sourceAlias}.id,
+        ${sourceAlias}.title,
+        ${buildSourceAliasSelection(sourceAlias, schema.workflowStateColumn, "workflow_state", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.lastSavedAtColumn, "last_saved_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.workOrderKindColumn, "work_order_kind", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.reorderGroupIdColumn, "reorder_group_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.reorderRoundColumn, "reorder_round", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.isReworkColumn, "is_rework", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category1IdColumn, "category1_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category2IdColumn, "category2_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category3IdColumn, "category3_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.displayTitleColumn, "display_title", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.baseTitleColumn, "base_title", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category1Column, "category1", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category2Column, "category2", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category3Column, "category3", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.seasonColumn, "season", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.priorityColumn, "priority", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.vendorColumn, "vendor", "NULL")},
+        ${buildManagerNameSourceSelection(schema, sourceAlias)},
+        ${buildSourceAliasSelection(sourceAlias, schema.managerIdColumn, "manager_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.createdByIdColumn, "created_by_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.createdByRoleColumn, "created_by_role", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.dueDateColumn, "due_date", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.quantityColumn, "quantity", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.inventoryStatusColumn, "inventory_status", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.memoColumn, "memo", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.isActiveColumn, "is_active", "TRUE")},
+        ${buildSourceAliasSelection(sourceAlias, schema.deletedAtColumn, "deleted_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.createdAtColumn, "created_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.updatedAtColumn, "updated_at", "NULL")}
+      FROM ${quoteIdentifier(SPEC_SHEET_TABLE)} ${sourceAlias}
+      ${buildManagerDisplayJoinSql(schema, sourceAlias)}
     `;
 }
 
 function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
+  const sourceAlias = "spec_sheet";
+
   return `
       SELECT
-        id,
-        title,
-        ${buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL")},
-        ${buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL")},
-        ${buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL")},
-        ${buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL")},
-        ${buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL")},
-        ${buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL")},
-        ${buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL")},
-        ${buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL")},
-        ${buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL")},
-        ${buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL")},
-        ${buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL")},
-        ${buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL")},
-        ${buildAliasSelection(schema.category1Column, "category1", "NULL")},
-        ${buildAliasSelection(schema.category2Column, "category2", "NULL")},
-        ${buildAliasSelection(schema.category3Column, "category3", "NULL")},
-        ${buildAliasSelection(schema.seasonColumn, "season", "NULL")},
-        ${buildAliasSelection(schema.priorityColumn, "priority", "NULL")},
-        ${buildAliasSelection(schema.vendorColumn, "vendor", "NULL")},
-        ${buildAliasSelection(schema.managerColumn, "manager", "NULL")},
-        ${buildAliasSelection(schema.managerIdColumn, "manager_id", "NULL")},
-        ${buildAliasSelection(schema.createdByIdColumn, "created_by_id", "NULL")},
-        ${buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL")},
-        ${buildAliasSelection(schema.dueDateColumn, "due_date", "NULL")},
-        ${buildAliasSelection(schema.quantityColumn, "quantity", "NULL")},
-        ${buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
-        ${buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL")},
-        ${buildAliasSelection(schema.memoColumn, "memo", "NULL")},
-        ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
-        ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
-        ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
-        ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
-      FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
+        ${sourceAlias}.id,
+        ${sourceAlias}.title,
+        ${buildSourceAliasSelection(sourceAlias, schema.workflowStateColumn, "workflow_state", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.lastSavedAtColumn, "last_saved_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.workOrderKindColumn, "work_order_kind", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.reorderGroupIdColumn, "reorder_group_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.reorderRoundColumn, "reorder_round", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.isReworkColumn, "is_rework", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category1IdColumn, "category1_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category2IdColumn, "category2_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category3IdColumn, "category3_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.displayTitleColumn, "display_title", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.baseTitleColumn, "base_title", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category1Column, "category1", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category2Column, "category2", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.category3Column, "category3", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.seasonColumn, "season", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.priorityColumn, "priority", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.vendorColumn, "vendor", "NULL")},
+        ${buildManagerNameSourceSelection(schema, sourceAlias)},
+        ${buildSourceAliasSelection(sourceAlias, schema.managerIdColumn, "manager_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.createdByIdColumn, "created_by_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.createdByRoleColumn, "created_by_role", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.dueDateColumn, "due_date", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.quantityColumn, "quantity", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.inventoryStatusColumn, "inventory_status", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.memoColumn, "memo", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.isActiveColumn, "is_active", "TRUE")},
+        ${buildSourceAliasSelection(sourceAlias, schema.deletedAtColumn, "deleted_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.createdAtColumn, "created_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.updatedAtColumn, "updated_at", "NULL")}
+      FROM ${quoteIdentifier(SPEC_SHEET_TABLE)} ${sourceAlias}
+      ${buildManagerDisplayJoinSql(schema, sourceAlias)}
     `;
 }
 
 function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
   return `
       ${buildSpecSheetSelectBaseSql(schema)}
-      ${schema.companyIdColumn ? `WHERE ${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
-      ${schema.companyIdColumn && schema.isActiveColumn ? `AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
-      ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
+      ${schema.companyIdColumn ? `WHERE spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+      ${schema.companyIdColumn && schema.isActiveColumn ? `AND spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+      ORDER BY ${schema.updatedAtColumn ? `spec_sheet.${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `spec_sheet.${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}spec_sheet.id DESC
     `;
 }
 
@@ -1067,19 +1119,19 @@ function buildSpecSheetSummaryWhereSql(
   const predicates: string[] = [];
 
   if (schema.companyIdColumn) {
-    predicates.push(`${quoteIdentifier(schema.companyIdColumn)} = $1`);
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $1`);
   }
 
   if (schema.isActiveColumn) {
-    predicates.push(`${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
   }
 
   if (schema.deletedAtColumn) {
-    predicates.push(`${quoteIdentifier(schema.deletedAtColumn)} IS NULL`);
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.deletedAtColumn)} IS NULL`);
   }
 
   if (schema.workflowStateColumn) {
-    const workflowColumn = `COALESCE(${quoteIdentifier(schema.workflowStateColumn)}, 'draft')`;
+    const workflowColumn = `COALESCE(spec_sheet.${quoteIdentifier(schema.workflowStateColumn)}, 'draft')`;
     if (status === "active") {
       predicates.push(
         `NOT (${buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES.completed)})`,
@@ -1192,14 +1244,14 @@ function buildSpecSheetSummarySelectSql(
 }
 
 function buildSpecSheetSelectByIdSql(schema: DbSpecSheetSchema): string {
-  const predicates = ["id = $1"];
+  const predicates = ["spec_sheet.id = $1"];
 
   if (schema.companyIdColumn) {
-    predicates.push(`${quoteIdentifier(schema.companyIdColumn)} = $2`);
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $2`);
   }
 
   if (schema.isActiveColumn) {
-    predicates.push(`${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
   }
 
   return `
