@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
@@ -86,12 +86,28 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
   const t = useAdminTranslation();
   const { user } = useCurrentUser();
   const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
+  const [reviveKey, setReviveKey] = useState(0);
+
+  useEffect(() => {
+    const reviveTopbarActions = () => {
+      setPersonalSettingsOpen(false);
+      setReviveKey((current) => current + 1);
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) reviveTopbarActions();
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
+
   const displayCompanyName = user?.companyName ?? companyName;
   const localizedTitle = getLocalizedTopbarTitle(title, t);
   const summary = getTopbarSummary(localizedTitle, description, t);
 
   return (
-    <header className="pbp-topbar-shell rounded-[24px] px-4 py-3 backdrop-blur sm:rounded-[30px] sm:px-5 sm:py-4">
+    <header className="pbp-topbar-shell relative z-20 rounded-[24px] px-4 py-3 backdrop-blur sm:rounded-[30px] sm:px-5 sm:py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -109,7 +125,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--pbp-text-primary)] sm:text-2xl">{localizedTitle}</h1>
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2">
+        <div key={reviveKey} className="relative z-30 flex shrink-0 flex-wrap gap-2">
           <Link
             href="/admin"
             aria-label={t("topbar.actions.home", "홈")}

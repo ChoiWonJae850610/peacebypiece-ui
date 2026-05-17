@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AdminSection, AdminCard } from "@/components/admin/common/AdminSection";
 import { ADMIN_SURFACE_ITEM_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
@@ -64,9 +65,9 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
   if (!item.href) return content;
 
   return (
-    <a href={item.href} className="block h-full min-w-0">
+    <Link href={item.href} className="block h-full min-w-0" prefetch={false}>
       {content}
-    </a>
+    </Link>
   );
 }
 

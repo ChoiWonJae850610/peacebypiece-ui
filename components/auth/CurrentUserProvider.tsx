@@ -13,38 +13,58 @@ type CurrentUserContextValue = {
 
 const CurrentUserContext = createContext<CurrentUserContextValue | null>(null);
 
-async function fetchCurrentUser(): Promise<WaflCurrentUser | null> {
-  const response = await fetch("/api/auth/me", {
-    method: "GET",
-    credentials: "include",
-    cache: "no-store",
-  });
+type CurrentUserFetchResult =
+  | { status: "authenticated"; user: WaflCurrentUser }
+  | { status: "unauthenticated" }
+  | { status: "failed"; error: unknown };
 
-  if (response.status === 401) return null;
-  if (!response.ok) throw new Error("CURRENT_USER_LOAD_FAILED");
+async function fetchCurrentUser(): Promise<CurrentUserFetchResult> {
+  try {
+    const response = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
 
-  const payload = (await response.json()) as WaflCurrentUserResponse;
-  return payload.authenticated ? payload.user : null;
+    if (response.status === 401) return { status: "unauthenticated" };
+    if (!response.ok) throw new Error("CURRENT_USER_LOAD_FAILED");
+
+    const payload = (await response.json()) as WaflCurrentUserResponse;
+    if (!payload.authenticated || !payload.user) return { status: "unauthenticated" };
+    return { status: "authenticated", user: payload.user };
+  } catch (error) {
+    return { status: "failed", error };
+  }
 }
 
 export function CurrentUserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<WaflCurrentUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const refreshInFlightRef = useRef<Promise<WaflCurrentUser | null> | null>(null);
+  const userRef = useRef<WaflCurrentUser | null>(null);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   const refreshCurrentUser = useCallback(async () => {
     if (refreshInFlightRef.current) return refreshInFlightRef.current;
 
     setIsLoading(true);
     const nextRefresh = fetchCurrentUser()
-      .then((nextUser) => {
-        setUser(nextUser);
-        return nextUser;
-      })
-      .catch((error) => {
-        console.error("Current user refresh failed", error);
-        setUser(null);
-        return null;
+      .then((result) => {
+        if (result.status === "authenticated") {
+          setUser(result.user);
+          return result.user;
+        }
+
+        if (result.status === "unauthenticated") {
+          setUser(null);
+          return null;
+        }
+
+        console.error("Current user refresh failed", result.error);
+        return userRef.current;
       })
       .finally(() => {
         refreshInFlightRef.current = null;
