@@ -335,29 +335,63 @@ export const adminKo = {
       createInvite: "초대 링크 생성",
     },
     detailModal: {
-      title: "멤버 상세 관리",
-      description: "멤버 로우를 클릭해 기본 정보, 상태, 권한을 한 곳에서 관리합니다.",
+      title: "멤버 권한 관리",
+      description: "멤버 로우를 클릭해 업무홈 카드와 작성 가능 범위를 관리합니다.",
       permissionGroupCount: "권한 {count}개",
       permissionGroupSelectedCount: "{selected}/{total}개 선택",
       selectedPermissionCount: "{count}개 선택",
-      roleTemplateHelper: "역할은 기본 권한 묶음입니다. 아래 권한은 필요할 때만 예외 조정합니다.",
-      policyNotice: "본인의 권한 수정 권한 제거와 마지막 관리자 권한 제거는 저장 시 자동으로 차단됩니다.",
+      roleTemplateHelper: "역할은 기본 권한 묶음입니다. 아래 업무 화면 권한은 필요할 때만 조정합니다.",
+      policyNotice: "개인설정은 별도 권한 없이 모든 로그인 사용자가 접근할 수 있습니다.",
       summary: {
         title: "선택 멤버",
         role: "역할",
-        permissions: "선택 권한",
+        permissions: "선택 항목",
       },
       sections: {
         profile: "기본 정보",
         profileDescription: "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
-        permissions: "역할 및 권한",
-        permissionsDescription: "역할은 기본 권한 묶음입니다. 역할을 선택한 뒤 필요한 화면 권한만 조정합니다.",
+        permissions: "업무 권한",
+        permissionsDescription: "업무홈에 보일 카드와 각 카드에서 작성할 수 있는 범위를 선택합니다.",
       },
       fields: {
         name: "이름",
         phone: "연락처",
         status: "상태",
         role: "역할",
+      },
+      simplePermissions: {
+        workorderAccess: {
+          label: "작업지시서",
+          description: "업무홈에 작업지시서 카드를 표시하고 본인 담당 작업지시서를 조회합니다.",
+        },
+        workorderWrite: {
+          label: "작업지시서 작성 가능",
+          description: "작업지시서 생성, 수정, 삭제 요청과 검토 요청을 허용합니다.",
+        },
+        workorderOrderDirect: {
+          label: "발주 가능",
+          description: "검토 절차 없이 바로 발주 요청까지 진행할 수 있습니다.",
+        },
+        partnerAccess: {
+          label: "협력업체관리",
+          description: "업무홈에 협력업체관리 카드를 표시하고 협력업체를 조회합니다.",
+        },
+        partnerWrite: {
+          label: "협력업체 작성 가능",
+          description: "협력업체 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
+        },
+        statsAccess: {
+          label: "통계",
+          description: "업무홈에 통계 카드를 표시하고 통계정보를 조회합니다.",
+        },
+        standardsAccess: {
+          label: "기준정보",
+          description: "업무홈에 기준정보 카드를 표시하고 기준정보를 조회합니다.",
+        },
+        standardsWrite: {
+          label: "기준정보 작성 가능",
+          description: "기준정보 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
+        },
       },
       actions: {
         save: "저장",

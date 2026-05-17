@@ -1,28 +1,22 @@
 Version :
-0.13.41
+0.13.42
 
 Summary :
-업무홈 협력업체 카드 화면 연결
+멤버 권한 모달 단순화와 빌드 타입 설정 보정
 
 Description :
-업무홈의 협력업체 카드를 실제 협력업체 관리 화면으로 연결했다. 멤버 권한에 따라 협력업체 등록과 수정 기능을 제한하고, 협력업체 API 권한 검사를 실제 세션 멤버 권한 기준으로 보강했다.
+멤버관리 목록에서 고객사 관리자 역할을 제외하고, 멤버 권한 모달을 작업지시서, 협력업체관리, 통계, 기준정보 중심의 업무홈 카드 선택 구조로 단순화했다. 작업지시서 작성 가능과 발주 가능, 협력업체 및 기준정보 작성 가능을 큰 권한 단위로 조정하도록 변경했다. Next.js dev 타입 산출물이 production build 타입 검사에 포함되지 않도록 tsconfig 설정도 보정했다.
 
 수정 파일 목록 :
-- app/api/admin/partners/route.ts
-- components/admin/PartnerMasterSection.tsx
-- components/admin/partnerMaster/PartnerMasterFormModal.tsx
-- components/admin/partnerMaster/PartnerMasterHeader.tsx
-- components/admin/partnerMaster/PartnerMasterList.tsx
-- components/admin/partnerMaster/usePartnerMasterController.ts
+- components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/admin/members/memberRepository.ts
 - lib/constants/app.ts
-- lib/i18n/ko/common.ts
-- lib/i18n/en/common.ts
-- lib/navigation/memberWorkspaceCards.ts
-- lib/partners/sessionScope.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
+- tsconfig.json
 
 추가 파일 목록 :
-- app/workspace/partners/page.tsx
-- components/workspace/MemberWorkspaceShell.tsx
+없음
 
 삭제 파일 목록 :
 없음

@@ -354,12 +354,12 @@ export const adminEn = {
       summary: {
         title: "Selected member",
         role: "Role",
-        permissions: "Selected permissions",
+        permissions: "Selected items",
       },
       sections: {
         profile: "Profile",
         profileDescription: "Name and contact are saved against the same-company member record.",
-        permissions: "Role and permissions",
+        permissions: "Workspace permissions",
         permissionsDescription: "A role is a default permission bundle. Select a role, then adjust only the required screen permissions.",
       },
       fields: {
@@ -367,6 +367,40 @@ export const adminEn = {
         phone: "Contact",
         status: "Status",
         role: "Role",
+      },
+      simplePermissions: {
+        workorderAccess: {
+          label: "Work orders",
+          description: "Shows the work order card on the workspace home and allows assigned work order viewing.",
+        },
+        workorderWrite: {
+          label: "Can write work orders",
+          description: "Allows creating, editing, delete requests, and review requests for work orders.",
+        },
+        workorderOrderDirect: {
+          label: "Can request orders",
+          description: "Allows direct order requests without the review step.",
+        },
+        partnerAccess: {
+          label: "Partners",
+          description: "Shows the partner management card on the workspace home and allows partner viewing.",
+        },
+        partnerWrite: {
+          label: "Can write partners",
+          description: "Allows creating, editing, deactivating, or deleting partners.",
+        },
+        statsAccess: {
+          label: "Stats",
+          description: "Shows the stats card on the workspace home and allows stats viewing.",
+        },
+        standardsAccess: {
+          label: "Standards",
+          description: "Shows the standards card on the workspace home and allows standards viewing.",
+        },
+        standardsWrite: {
+          label: "Can write standards",
+          description: "Allows creating, editing, deactivating, or deleting standards.",
+        },
       },
       actions: {
         save: "Save",

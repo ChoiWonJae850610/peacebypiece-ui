@@ -7,7 +7,6 @@ import {
   toMemberListPreviews,
   getMemberManagementPermissionCards,
   getMemberManagementSummaryCards,
-  getEditableMemberPermissionGroupPreviews,
   getMemberPermissionCatalogPreviews,
   getMemberPermissionGroupPreviews,
   getMemberPermissionMatrixPreviews,
@@ -20,11 +19,9 @@ import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
-  MEMBER_PERMISSION_CATALOG,
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
   type MemberPermissionCode,
-  type MemberPermissionGroupKey,
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
 import { AdminButton } from "@/components/admin/common/AdminButton";
@@ -160,6 +157,129 @@ const EDITABLE_MEMBER_STATUS_OPTIONS: readonly MemberStatusOption[] = [
   },
 ] as const;
 
+type SimplePermissionControl = {
+  id:
+    | "workorderAccess"
+    | "workorderWrite"
+    | "workorderOrderDirect"
+    | "partnerAccess"
+    | "partnerWrite"
+    | "statsAccess"
+    | "standardsAccess"
+    | "standardsWrite";
+  labelKey: string;
+  fallbackLabel: string;
+  descriptionKey: string;
+  fallbackDescription: string;
+  permissionCodes: readonly MemberPermissionCode[];
+};
+
+const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
+  {
+    id: "workorderAccess",
+    labelKey: "memberManagement.detailModal.simplePermissions.workorderAccess.label",
+    fallbackLabel: "작업지시서",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderAccess.description",
+    fallbackDescription: "업무홈에 작업지시서 카드를 표시하고 본인 담당 작업지시서를 조회합니다.",
+    permissionCodes: ["workorder.read"],
+  },
+  {
+    id: "workorderWrite",
+    labelKey: "memberManagement.detailModal.simplePermissions.workorderWrite.label",
+    fallbackLabel: "작업지시서 작성 가능",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderWrite.description",
+    fallbackDescription: "작업지시서 생성, 수정, 삭제 요청과 검토 요청을 허용합니다.",
+    permissionCodes: ["workorder.read", "workorder.create", "workorder.update", "workorder.delete", "workorder.status.review"],
+  },
+  {
+    id: "workorderOrderDirect",
+    labelKey: "memberManagement.detailModal.simplePermissions.workorderOrderDirect.label",
+    fallbackLabel: "발주 가능",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderOrderDirect.description",
+    fallbackDescription: "검토 절차 없이 바로 발주 요청까지 진행할 수 있습니다.",
+    permissionCodes: ["workorder.status.order"],
+  },
+  {
+    id: "partnerAccess",
+    labelKey: "memberManagement.detailModal.simplePermissions.partnerAccess.label",
+    fallbackLabel: "협력업체관리",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.partnerAccess.description",
+    fallbackDescription: "업무홈에 협력업체관리 카드를 표시하고 협력업체를 조회합니다.",
+    permissionCodes: ["partner.read"],
+  },
+  {
+    id: "partnerWrite",
+    labelKey: "memberManagement.detailModal.simplePermissions.partnerWrite.label",
+    fallbackLabel: "협력업체 작성 가능",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.partnerWrite.description",
+    fallbackDescription: "협력업체 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
+    permissionCodes: ["partner.read", "partner.create", "partner.update", "partner.delete", "partner.manage"],
+  },
+  {
+    id: "statsAccess",
+    labelKey: "memberManagement.detailModal.simplePermissions.statsAccess.label",
+    fallbackLabel: "통계",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.statsAccess.description",
+    fallbackDescription: "업무홈에 통계 카드를 표시하고 통계정보를 조회합니다.",
+    permissionCodes: ["stats.read"],
+  },
+  {
+    id: "standardsAccess",
+    labelKey: "memberManagement.detailModal.simplePermissions.standardsAccess.label",
+    fallbackLabel: "기준정보",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.standardsAccess.description",
+    fallbackDescription: "업무홈에 기준정보 카드를 표시하고 기준정보를 조회합니다.",
+    permissionCodes: ["standards.read"],
+  },
+  {
+    id: "standardsWrite",
+    labelKey: "memberManagement.detailModal.simplePermissions.standardsWrite.label",
+    fallbackLabel: "기준정보 작성 가능",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.standardsWrite.description",
+    fallbackDescription: "기준정보 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
+    permissionCodes: ["standards.read", "standards.create", "standards.update", "standards.delete", "standards.manage"],
+  },
+] as const;
+
+function hasEverySimplePermissionCode(
+  permissionCodes: readonly MemberPermissionCode[],
+  nextPermissionCodes: readonly MemberPermissionCode[],
+): boolean {
+  return nextPermissionCodes.every((code) => permissionCodes.includes(code));
+}
+
+function mergeSimplePermissionCodes(
+  permissionCodes: readonly MemberPermissionCode[],
+  nextPermissionCodes: readonly MemberPermissionCode[],
+): MemberPermissionCode[] {
+  return Array.from(new Set([...permissionCodes, ...nextPermissionCodes])).sort();
+}
+
+function removeSimplePermissionCodes(
+  permissionCodes: readonly MemberPermissionCode[],
+  nextPermissionCodes: readonly MemberPermissionCode[],
+): MemberPermissionCode[] {
+  const removalSet = new Set(nextPermissionCodes);
+  return permissionCodes.filter((code) => !removalSet.has(code));
+}
+
+function toggleSimplePermissionControl(
+  permissionCodes: readonly MemberPermissionCode[],
+  control: SimplePermissionControl,
+): MemberPermissionCode[] {
+  return hasEverySimplePermissionCode(permissionCodes, control.permissionCodes)
+    ? removeSimplePermissionCodes(permissionCodes, control.permissionCodes)
+    : mergeSimplePermissionCodes(permissionCodes, control.permissionCodes);
+}
+
+function countVisibleSimplePermissionControls(
+  permissionCodes: readonly MemberPermissionCode[],
+): number {
+  return SIMPLE_PERMISSION_CONTROLS.filter((control) =>
+    hasEverySimplePermissionCode(permissionCodes, control.permissionCodes),
+  ).length;
+}
+
 function getMemberDetailStatusOptions(
   currentStatus: AdminCompanyMemberRecord["status"] | null | undefined,
 ): readonly MemberStatusOption[] {
@@ -209,40 +329,6 @@ function buildMemberDetailDraft(member: AdminCompanyMemberRecord): MemberDetailD
   };
 }
 
-function toggleMemberPermissionCode(
-  permissionCodes: readonly MemberPermissionCode[],
-  permissionCode: MemberPermissionCode,
-): MemberPermissionCode[] {
-  return permissionCodes.includes(permissionCode)
-    ? permissionCodes.filter((code) => code !== permissionCode)
-    : [...permissionCodes, permissionCode].sort();
-}
-
-function addMemberPermissionCodes(
-  permissionCodes: readonly MemberPermissionCode[],
-  nextPermissionCodes: readonly MemberPermissionCode[],
-): MemberPermissionCode[] {
-  return Array.from(new Set([...permissionCodes, ...nextPermissionCodes])).sort();
-}
-
-function removeMemberPermissionCodes(
-  permissionCodes: readonly MemberPermissionCode[],
-  nextPermissionCodes: readonly MemberPermissionCode[],
-): MemberPermissionCode[] {
-  const removalSet = new Set(nextPermissionCodes);
-  return permissionCodes.filter((code) => !removalSet.has(code));
-}
-
-function countSelectedMemberPermissionCodes(
-  permissionCodes: readonly MemberPermissionCode[],
-  groupPermissionCodes: readonly MemberPermissionCode[],
-): number {
-  return groupPermissionCodes.filter((code) => permissionCodes.includes(code)).length;
-}
-
-const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
-  (permission) => !permission.systemOnly,
-).map((permission) => permission.code);
 
 function getMemberDetailErrorCode(errorCode: string): string {
   if (errorCode.includes("could not determine data type")) {
@@ -293,6 +379,7 @@ export default function AdminMemberManagementDashboard() {
   const t = useAdminTranslation();
   const baseSummaryCards = getMemberManagementSummaryCards();
   const roles = getMemberRolePreviews();
+  const manageableRoles = roles.filter((role) => role.id !== "company_admin");
   const permissionCards = getMemberManagementPermissionCards();
   const currentPermissionCodes =
     getMemberRoleTemplatePermissions("company_admin");
@@ -300,7 +387,6 @@ export default function AdminMemberManagementDashboard() {
   const groups = getMemberPermissionGroupPreviews();
   const catalogItems = getMemberPermissionCatalogPreviews();
   const matrixItems = getMemberPermissionMatrixPreviews();
-  const editablePermissionGroups = getEditableMemberPermissionGroupPreviews();
   const [selectedRoleId, setSelectedRoleId] = useState<string>(
     inviteRoleOptions[1]?.id ?? inviteRoleOptions[0]?.id ?? "viewer",
   );
@@ -546,8 +632,9 @@ export default function AdminMemberManagementDashboard() {
     () => getMemberDetailStatusOptions(selectedMemberRecord?.status),
     [selectedMemberRecord?.status],
   );
-  const selectedMemberPermissionCount =
-    memberDetailDraft?.permissionCodes.length ?? 0;
+  const selectedMemberPermissionCount = memberDetailDraft
+    ? countVisibleSimplePermissionControls(memberDetailDraft.permissionCodes)
+    : 0;
 
   const memberDirectoryColumns = useMemo<AdminTableColumn<MemberDirectoryRow>[]>(
     () => [
@@ -731,7 +818,7 @@ export default function AdminMemberManagementDashboard() {
       countLabel: t(
         "memberManagement.tabs.permissions.count",
         "권한 {count}개",
-      ).replace("{count}", String(editableMemberPermissionCodes.length)),
+      ).replace("{count}", String(SIMPLE_PERMISSION_CONTROLS.length)),
     },
   ];
 
@@ -833,20 +920,6 @@ export default function AdminMemberManagementDashboard() {
     );
   }
 
-  function handleToggleMemberPermission(permissionCode: MemberPermissionCode) {
-    setMemberDetailDraft((previous) =>
-      previous
-        ? {
-            ...previous,
-            permissionCodes: toggleMemberPermissionCode(
-              previous.permissionCodes,
-              permissionCode,
-            ),
-          }
-        : previous,
-    );
-  }
-
   function handleApplyRoleTemplatePermissions() {
     setMemberDetailDraft((previous) =>
       previous
@@ -860,31 +933,15 @@ export default function AdminMemberManagementDashboard() {
     );
   }
 
-  function handleApplyPermissionGroup(
-    groupId: MemberPermissionGroupKey,
-    action: "select" | "clear",
-  ) {
-    const group = editablePermissionGroups.find((item) => item.id === groupId);
-    if (!group) return;
-
-    const groupPermissionCodes = group.permissions.map(
-      (permission) => permission.code,
-    );
-
+  function handleToggleSimplePermissionControl(control: SimplePermissionControl) {
     setMemberDetailDraft((previous) =>
       previous
         ? {
             ...previous,
-            permissionCodes:
-              action === "select"
-                ? addMemberPermissionCodes(
-                    previous.permissionCodes,
-                    groupPermissionCodes,
-                  )
-                : removeMemberPermissionCodes(
-                    previous.permissionCodes,
-                    groupPermissionCodes,
-                  ),
+            permissionCodes: toggleSimplePermissionControl(
+              previous.permissionCodes,
+              control,
+            ),
           }
         : previous,
     );
@@ -892,7 +949,7 @@ export default function AdminMemberManagementDashboard() {
 
   async function handleSaveMemberDetail() {
     if (!selectedMemberId || !memberDetailDraft || isSavingMemberDetail) return;
-    if (memberDetailDraft.permissionCodes.length === 0) {
+    if (selectedMemberPermissionCount === 0) {
       setMemberDetailError(
         t(
           "memberManagement.detailModal.errors.permissionRequired",
@@ -1564,7 +1621,7 @@ export default function AdminMemberManagementDashboard() {
                   )}
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                  {roles.map((role) => (
+                  {manageableRoles.map((role) => (
                     <div
                       key={role.id}
                       className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
@@ -1773,7 +1830,7 @@ export default function AdminMemberManagementDashboard() {
                   )}
                 </p>
                 <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                  {roles.map((role) => {
+                  {manageableRoles.map((role) => {
                     const enabledCount = matrixItems.filter(
                       (item) => item.roleId === role.id && item.enabled,
                     ).length;
@@ -1808,11 +1865,11 @@ export default function AdminMemberManagementDashboard() {
         open={Boolean(selectedMemberId && memberDetailDraft)}
         title={t(
           "memberManagement.detailModal.title",
-          "멤버 상세 관리",
+          "멤버 권한 관리",
         )}
         description={t(
           "memberManagement.detailModal.description",
-          "멤버 로우를 클릭해 기본 정보, 상태, 권한을 한 곳에서 관리합니다.",
+          "멤버 로우를 클릭해 업무홈 카드와 작성 가능 범위를 관리합니다.",
         )}
         onClose={handleCloseMemberDetail}
         maxWidthClass="md:max-w-5xl"
@@ -1863,7 +1920,7 @@ export default function AdminMemberManagementDashboard() {
               </div>
               <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2">
                 <p className="text-[11px] font-semibold pbp-text-muted">
-                  {t("memberManagement.detailModal.summary.permissions", "선택 권한")}
+                  {t("memberManagement.detailModal.summary.permissions", "선택 항목")}
                 </p>
                 <p className="mt-1 text-sm font-semibold pbp-text-primary">
                   {t(
@@ -1877,90 +1934,17 @@ export default function AdminMemberManagementDashboard() {
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-            <AdminModalSection
-              title={t(
-                "memberManagement.detailModal.sections.profile",
-                "기본 정보",
-              )}
-              description={t(
-                "memberManagement.detailModal.sections.profileDescription",
-                "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
-              )}
-            >
-              <div className="grid gap-3">
-                <label className="grid gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
-                    {t("memberManagement.detailModal.fields.name", "이름")}
-                  </span>
-                  <input
-                    value={memberDetailDraft.displayName}
-                    onChange={(event) =>
-                      setMemberDetailDraft((previous) =>
-                        previous
-                          ? { ...previous, displayName: event.target.value }
-                          : previous,
-                      )
-                    }
-                    className={adminModalInputClassName}
-                  />
-                </label>
-                <label className="grid gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
-                    {t("memberManagement.detailModal.fields.phone", "연락처")}
-                  </span>
-                  <input
-                    value={memberDetailDraft.phone}
-                    onChange={(event) =>
-                      setMemberDetailDraft((previous) =>
-                        previous
-                          ? { ...previous, phone: formatPhoneNumber(event.target.value) }
-                          : previous,
-                      )
-                    }
-                    className={adminModalInputClassName}
-                    placeholder="01012345678"
-                  />
-                </label>
-                <label className="grid gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
-                    {t("memberManagement.detailModal.fields.status", "상태")}
-                  </span>
-                  <select
-                    value={memberDetailDraft.status}
-                    onChange={(event) =>
-                      setMemberDetailDraft((previous) =>
-                        previous
-                          ? {
-                              ...previous,
-                              status: event.target.value as AdminCompanyMemberRecord["status"],
-                            }
-                          : previous,
-                      )
-                    }
-                    className={adminModalInputClassName}
-                  >
-                    {selectedMemberStatusOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {t(option.labelKey, option.fallbackLabel)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </AdminModalSection>
-
             <AdminModalSection
               title={t(
                 "memberManagement.detailModal.sections.permissions",
-                "역할 및 권한",
+                "업무 권한",
               )}
               description={t(
                 "memberManagement.detailModal.sections.permissionsDescription",
-                "역할은 기본 권한 묶음입니다. 역할을 선택한 뒤 필요한 화면 권한만 조정합니다.",
+                "업무홈에 보일 카드와 각 카드에서 작성할 수 있는 범위를 선택합니다.",
               )}
             >
-              <div className="grid gap-3">
+              <div className="grid gap-4">
                 <label className="grid gap-1.5">
                   <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
                     {t("memberManagement.detailModal.fields.role", "역할")}
@@ -1974,18 +1958,19 @@ export default function AdminMemberManagementDashboard() {
                     }
                     className={adminModalInputClassName}
                   >
-                    {roles.map((role) => (
+                    {manageableRoles.map((role) => (
                       <option key={role.id} value={role.id}>
                         {t(`memberManagement.roles.${role.id}.label`, role.id)}
                       </option>
                     ))}
                   </select>
                 </label>
+
                 <div className="flex flex-col gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs leading-5 pbp-text-muted">
                     {t(
                       "memberManagement.detailModal.roleTemplateHelper",
-                      "역할은 기본 권한 묶음입니다. 아래 권한은 필요할 때만 예외 조정합니다.",
+                      "역할은 기본 권한 묶음입니다. 아래 업무 화면 권한은 필요할 때만 조정합니다.",
                     )}
                   </p>
                   <AdminButton
@@ -2000,92 +1985,51 @@ export default function AdminMemberManagementDashboard() {
                     )}
                   </AdminButton>
                 </div>
+
                 <p className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] leading-5 pbp-text-muted">
                   {t(
                     "memberManagement.detailModal.policyNotice",
-                    "본인의 권한 수정 권한 제거와 마지막 관리자 권한 제거는 저장 시 자동으로 차단됩니다.",
+                    "개인설정은 별도 권한 없이 모든 로그인 사용자가 접근할 수 있습니다.",
                   )}
                 </p>
-                <div className="max-h-[360px] space-y-3 overflow-y-auto rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3">
-                  {editablePermissionGroups.map((group) => (
-                    <section
-                      key={group.id}
-                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3"
-                    >
-                      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <h4 className="text-sm font-semibold pbp-text-primary">
-                            {t(group.labelKey, group.id)}
-                          </h4>
-                          <p className="mt-1 text-[11px] pbp-text-muted">
-                            {t(
-                              "memberManagement.detailModal.permissionGroupSelectedCount",
-                              "{selected}/{total}개 선택",
-                            )
-                              .replace(
-                                "{selected}",
-                                String(
-                                  countSelectedMemberPermissionCodes(
-                                    memberDetailDraft.permissionCodes,
-                                    group.permissions.map(
-                                      (permission) => permission.code,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .replace("{total}", String(group.permissions.length))}
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleApplyPermissionGroup(group.id, "select")}
-                            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold pbp-text-muted transition hover:border-[var(--pbp-accent-border)] hover:text-[var(--pbp-text-primary)]"
-                          >
-                            {t("memberManagement.detailModal.actions.selectGroup", "그룹 선택")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleApplyPermissionGroup(group.id, "clear")}
-                            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-1 text-[11px] font-semibold pbp-text-muted transition hover:border-[var(--pbp-danger-border)] hover:text-[var(--pbp-danger)]"
-                          >
-                            {t("memberManagement.detailModal.actions.clearGroup", "해제")}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {group.permissions.map((permission) => (
-                          <label
-                            key={permission.code}
-                            className="flex items-start gap-3 rounded-xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-left"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={memberDetailDraft.permissionCodes.includes(
-                                permission.code,
-                              )}
-                              onChange={() =>
-                                handleToggleMemberPermission(permission.code)
-                              }
-                              className="mt-1 size-4 rounded border-[var(--pbp-border)]"
-                            />
-                            <span className="min-w-0">
-                              <span className="block text-xs font-semibold pbp-text-primary">
-                                {t(permission.labelKey, permission.code)}
-                              </span>
-                              <span className="mt-0.5 block text-[11px] leading-4 pbp-text-muted">
-                                {t(permission.descriptionKey, "")}
-                              </span>
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </section>
-                  ))}
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  {SIMPLE_PERMISSION_CONTROLS.map((control) => {
+                    const checked = hasEverySimplePermissionCode(
+                      memberDetailDraft.permissionCodes,
+                      control.permissionCodes,
+                    );
+
+                    return (
+                      <label
+                        key={control.id}
+                        className={[
+                          "flex cursor-pointer items-start gap-3 rounded-2xl border px-3 py-3 text-left transition",
+                          checked
+                            ? "border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)]"
+                            : "border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] hover:border-[var(--pbp-accent-border)]",
+                        ].join(" ")}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => handleToggleSimplePermissionControl(control)}
+                          className="mt-1 size-4 rounded border-[var(--pbp-border)]"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold pbp-text-primary">
+                            {t(control.labelKey, control.fallbackLabel)}
+                          </span>
+                          <span className="mt-1 block text-xs leading-5 pbp-text-muted">
+                            {t(control.descriptionKey, control.fallbackDescription)}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             </AdminModalSection>
-            </div>
           </div>
         ) : null}
       </AdminModal>

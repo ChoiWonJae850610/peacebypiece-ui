@@ -306,7 +306,10 @@ async function listDbCompanyMembers(input: ListAdminCompanyMembersInput): Promis
     throw new Error("COMPANY_ID_REQUIRED");
   }
 
-  const whereClauses = ["company_members.company_id = $1"];
+  const whereClauses = [
+    "company_members.company_id = $1",
+    "COALESCE(company_members.role_template_code, 'viewer') <> 'company_admin'",
+  ];
   const params: unknown[] = [companyId];
   const status = input.status === "all" ? null : readMemberStatus(input.status);
 
