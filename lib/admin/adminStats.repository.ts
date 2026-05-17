@@ -1,7 +1,7 @@
 import "server-only";
 
+import type { AdminStatsCompanyScope } from "@/lib/admin/stats/sessionScope";
 import type { AdminStatsCategoryByRound, AdminStatsCategoryDrilldown, AdminStatsFactoryPerformance, AdminStatsPeriodKey, AdminStatsRatioPoint, AdminStatsSnapshot, AdminStatsSourceState } from "@/lib/admin/stats/types";
-import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import {
   buildAdminAttachmentTrashCards,
   buildAdminCategoryDistribution,
@@ -184,7 +184,7 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
   };
 }
 
-export async function getAdminStatsSnapshot(periodValue?: string | string[], startDateValue?: string | string[], endDateValue?: string | string[]): Promise<AdminStatsSnapshot> {
+export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope, periodValue?: string | string[], startDateValue?: string | string[], endDateValue?: string | string[]): Promise<AdminStatsSnapshot> {
   const requestedPeriod = normalizeAdminStatsPeriod(periodValue);
   const selectedPeriodRange = buildAdminPeriodRange(requestedPeriod, startDateValue, endDateValue);
   const selectedPeriod: AdminStatsPeriodKey = requestedPeriod === "custom" && !selectedPeriodRange.isCustom ? "30d" : requestedPeriod;
@@ -192,7 +192,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
   if (!isDatabaseConfigured()) return buildEmptyStats("not_configured", selectedPeriod, selectedPeriodRange);
 
   try {
-    const companyId = getAdminCompanyId();
+    const { companyId } = companyScope;
     const orderDueDateExpression = buildAdminStatsSafeDateExpression("o.due_date");
     const dueDateExpression = buildAdminStatsSafeDateExpression("due_date");
     const reorderWorkorderCondition = buildAdminStatsReorderWorkorderCondition();
@@ -614,7 +614,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       sourceLabel: "DB",
     };
   } catch (error) {
-    console.warn("[admin-stats] failed to load DB stats. Mock fallback is disabled.", error);
+    console.warn("[admin-stats] failed to load DB stats. Returning empty stats.", error);
     return buildEmptyStats("error", selectedPeriod, selectedPeriodRange);
   }
 }

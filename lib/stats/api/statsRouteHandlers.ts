@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireAdminStatsCompanyScope } from "@/lib/admin/stats/sessionScope";
+
 import { statsRepository } from "../statsRepository";
 import type { StatsPeriod } from "../statsTypes";
 
@@ -28,21 +30,14 @@ function toErrorResponse(error: unknown) {
 
 export async function handleGetAdminStats(request: Request) {
   try {
-    const url = new URL(request.url);
-    const companyId = url.searchParams.get("companyId");
+    const scopeResult = await requireAdminStatsCompanyScope();
 
-    if (!companyId) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "COMPANY_ID_REQUIRED",
-        },
-        { status: 400 },
-      );
+    if (!scopeResult.ok) {
+      return scopeResult.response;
     }
 
     const summary = await statsRepository.getAdminStats({
-      companyId,
+      companyId: scopeResult.companyScope.companyId,
       period: toPeriod(request),
     });
 
