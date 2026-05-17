@@ -1,7 +1,6 @@
 import "server-only";
 
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
-import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type { Attachment, MemoReply, MemoThread } from "@/types/workorder";
 import type {
@@ -26,6 +25,7 @@ import type {
 
 type AttachmentRow = WorkOrderAttachmentDbRecord & DbQueryResultRow;
 type MemoRow = WorkOrderMemoDbRecord & DbQueryResultRow;
+type WorkOrderCompanyRow = DbQueryResultRow & { company_id: string; company_name: string | null };
 
 function toNumberOrNull(value: unknown): number | null {
   if (typeof value === "number") return value;
@@ -43,6 +43,31 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value,
   );
+}
+
+type WorkOrderCompanyContext = {
+  companyId: string;
+  companyName: string | null;
+};
+
+async function getWorkOrderCompanyContext(workOrderId: string): Promise<WorkOrderCompanyContext> {
+  const result = await queryDb<WorkOrderCompanyRow>(
+    `SELECT company_id, company_name
+       FROM spec_sheets
+      WHERE id = $1
+      LIMIT 1`,
+    [workOrderId],
+  );
+
+  const row = result.rows[0];
+  if (!row?.company_id) {
+    throw new Error("WORK_ORDER_COMPANY_SCOPE_NOT_FOUND");
+  }
+
+  return {
+    companyId: row.company_id,
+    companyName: row.company_name,
+  };
 }
 
 function mapAttachmentRow(row: AttachmentRow): Attachment {
@@ -146,7 +171,7 @@ async function insertMemoThreadRecord(
   thread: MemoThread,
 ): Promise<string> {
   const keepId = isUuid(thread.id);
-  const company = getWorkspaceCompanyContext();
+  const company = await getWorkOrderCompanyContext(workOrderId);
   const columns = keepId
     ? "id, company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at"
     : "company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at";
@@ -189,7 +214,7 @@ async function insertMemoReplyRecord(
   reply: MemoReply,
 ): Promise<void> {
   const keepId = isUuid(reply.id);
-  const company = getWorkspaceCompanyContext();
+  const company = await getWorkOrderCompanyContext(workOrderId);
   const columns = keepId
     ? "id, company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at"
     : "company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at";
@@ -291,6 +316,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
       };
     },
     createAttachment: async (input) => {
+      const company = await getWorkOrderCompanyContext(input.order_id);
       const next = mapAttachmentInput(input);
       const attachmentId = crypto.randomUUID();
       const result = await queryDb<AttachmentRow>(
@@ -324,8 +350,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    created_at`,
         [
           attachmentId,
-          getWorkspaceCompanyContext().companyId,
-          getWorkspaceCompanyContext().companyName,
+          company.companyId,
+          company.companyName,
           next.order_id,
           next.type,
           next.storage_key,
@@ -345,6 +371,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
     createMemoThread: async (
       input: CreateMemoThreadRecordInput,
     ): Promise<WorkOrderMemoThreadDbRecord> => {
+      const company = await getWorkOrderCompanyContext(input.order_id);
       const result = await queryDb<MemoRow>(
         `INSERT INTO memos (company_id, company_name, order_id, parent_id, body, author_id)
          VALUES ($1, $2, $3, NULL, $4, $5)
@@ -358,8 +385,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    created_at,
                    updated_at`,
         [
-          getWorkspaceCompanyContext().companyId,
-          getWorkspaceCompanyContext().companyName,
+          company.companyId,
+          company.companyName,
           input.order_id,
           input.thread.content,
           input.thread.authorId || input.thread.authorName || null,
@@ -373,6 +400,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
     createMemoReply: async (
       input: CreateMemoReplyRecordInput,
     ): Promise<WorkOrderMemoReplyDbRecord> => {
+      const company = await getWorkOrderCompanyContext(input.order_id);
       const result = await queryDb<MemoRow>(
         `INSERT INTO memos (company_id, company_name, order_id, parent_id, body, author_id)
          VALUES ($1, $2, $3, $4, $5, $6)
@@ -386,8 +414,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    created_at,
                    updated_at`,
         [
-          getWorkspaceCompanyContext().companyId,
-          getWorkspaceCompanyContext().companyName,
+          company.companyId,
+          company.companyName,
           input.order_id,
           input.thread_id,
           input.reply.content,

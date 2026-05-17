@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
-import { getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
+import { queryDb } from "@/lib/db/client";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
@@ -26,6 +27,21 @@ function readText(value: unknown): string | null {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
+}
+
+
+
+async function attachmentBelongsToCompany(input: { attachmentId: string; companyId: string }): Promise<boolean> {
+  const result = await queryDb<{ id: string }>(
+    `SELECT id
+       FROM attachments
+      WHERE id = $1
+        AND company_id = $2
+      LIMIT 1`,
+    [input.attachmentId, input.companyId],
+  );
+
+  return Boolean(result.rows[0]);
 }
 
 function getAuditRequestId(request: NextRequest): string | null {
@@ -53,6 +69,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_ID_REQUIRED" }, { status: 400 });
     }
 
+    const scopeResult = await requireAdminFileCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
+    const { companyId } = scopeResult.companyScope;
+    const isCompanyAttachment = await attachmentBelongsToCompany({ attachmentId, companyId });
+    if (!isCompanyAttachment) {
+      return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
+    }
+
     const repository = await createAttachmentMemoRepository();
     if (!isWritableRepository(repository)) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
@@ -63,7 +88,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
-    const company = await getCurrentAdminCompany();
     const trashRetentionDays = COMPANY_FILE_TRASH_RETENTION_DAYS;
 
     const deleteKeys = Array.from(
@@ -89,7 +113,7 @@ export async function POST(request: NextRequest) {
     const actorId = readText(payload?.deletedBy);
 
     await createAdminHistoryLogSafe({
-      company_id: company.id,
+      company_id: companyId,
       user_id: actorId,
       action_type: "FILE_DELETED",
       target_type: "file",

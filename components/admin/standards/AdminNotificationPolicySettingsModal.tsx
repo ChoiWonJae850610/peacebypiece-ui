@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import AdminSettingsToggleRow from "@/components/admin/common/AdminSettingsToggleRow";
 import { AdminModal, AdminModalFooterActions } from "@/components/admin/layout/AdminModal";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
-import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
+import { DEFAULT_COMPANY_SETTINGS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminNotificationPolicySettingsModalProps = {
@@ -27,7 +26,7 @@ const POLICY_ITEMS: Array<{
 
 export default function AdminNotificationPolicySettingsModal({ open, onClose }: AdminNotificationPolicySettingsModalProps) {
   const t = useAdminTranslation();
-  const defaultSettings = buildDefaultCompanySettings(WORKSPACE_COMPANY_ID);
+  const defaultSettings = DEFAULT_COMPANY_SETTINGS;
   const [draft, setDraft] = useState<CompanySettings>(() => defaultSettings);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -63,7 +62,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
     if (saving || loading) return;
     setDraft((current) => ({
       ...current,
-      notificationPolicy: { ...defaultSettings.notificationPolicy },
+      notificationPolicy: { ...buildDefaultCompanySettings(current.companyId).notificationPolicy },
     }));
   }
 

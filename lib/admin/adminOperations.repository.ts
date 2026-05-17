@@ -1,6 +1,5 @@
 import "server-only";
 
-import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/adminStats";
 import {
   isDatabaseConfigured,
@@ -558,7 +557,7 @@ function buildSnapshot(
   };
 }
 
-export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOperationalDashboardSnapshots> {
+export async function getAdminOperationalDashboardSnapshots(companyId: string): Promise<AdminOperationalDashboardSnapshots> {
   if (!isDatabaseConfigured()) {
     return {
       today: emptySnapshot("today", "not_configured"),
@@ -568,7 +567,6 @@ export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOper
   }
 
   try {
-    const companyId = getAdminCompanyId();
     const [workordersResult, ordersResult, attachmentsResult] =
       await Promise.all([
         queryDb<WorkorderRow>(

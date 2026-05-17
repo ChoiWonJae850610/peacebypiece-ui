@@ -27,6 +27,7 @@ type WorkOrderWorkspaceProps = {
   initialListSort?: WorkOrderListSort;
   initialSearchQuery?: string;
   initialHomeRole?: RoleType | null;
+  initialCompanyName?: string | null;
 };
 
 export default function WorkOrderWorkspace({
@@ -35,6 +36,7 @@ export default function WorkOrderWorkspace({
   initialListSort,
   initialSearchQuery,
   initialHomeRole = null,
+  initialCompanyName = null,
 }: WorkOrderWorkspaceProps) {
   const { i18n } = useI18n();
   const workOrder = useWorkOrder({
@@ -294,6 +296,7 @@ export default function WorkOrderWorkspace({
   };
 
   const viewModel = buildWorkspaceViewModel({
+    companyName: initialCompanyName,
     drawerOpen: ui.drawerOpen,
     basicInfoOpen: ui.basicInfoOpen,
     materialOpen: ui.materialOpen,

@@ -3,7 +3,6 @@
 import Link from "next/link";
 
 import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { useI18n } from "@/lib/i18n";
 import {
   MEMBER_WORKSPACE_CARD_SECTIONS,
@@ -19,7 +18,11 @@ function getStatusClassName(status: MemberWorkspaceCardStatus) {
   return "border-stone-200 bg-stone-100 text-stone-500";
 }
 
-export default function MemberWorkspaceHome() {
+type MemberWorkspaceHomeProps = {
+  companyName?: string | null;
+};
+
+export default function MemberWorkspaceHome({ companyName = null }: MemberWorkspaceHomeProps) {
   const { i18n } = useI18n();
   const copy = i18n.common.workspaceHome;
 
@@ -33,9 +36,11 @@ export default function MemberWorkspaceHome() {
                 <span className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white">
                   WAFL
                 </span>
-                <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">
-                  {WORKSPACE_COMPANY_NAME}
-                </span>
+                {companyName ? (
+                  <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">
+                    {companyName}
+                  </span>
+                ) : null}
                 <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">
                   v{APP_VERSION}
                 </span>

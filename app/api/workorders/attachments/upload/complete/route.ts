@@ -5,7 +5,8 @@ import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageK
 import { isImageContentType, isWorkOrderAttachmentThumbnailKeyForScope } from "@/lib/storage/r2/r2ThumbnailKeys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
+import { queryDb } from "@/lib/db/client";
 import { normalizeAttachmentUploadScope, validateAttachmentFile, validateAttachmentFileCount } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
@@ -61,6 +62,23 @@ function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { work
   };
 }
 
+
+
+async function workOrderBelongsToCompany(input: { workOrderId: string; companyId: string }): Promise<boolean> {
+  const result = await queryDb<{ id: string }>(
+    `SELECT id
+       FROM spec_sheets
+      WHERE id = $1
+        AND company_id = $2
+        AND deleted_at IS NULL
+        AND COALESCE(is_active, true) = true
+      LIMIT 1`,
+    [input.workOrderId, input.companyId],
+  );
+
+  return Boolean(result.rows[0]);
+}
+
 function createUploadAttachment(input: {
   id: string;
   fileName: string;
@@ -90,6 +108,10 @@ function createUploadAttachment(input: {
 
 export async function POST(request: NextRequest) {
   try {
+    const scopeResult = await requireAdminFileCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
+    const { companyId, userId } = scopeResult.companyScope;
     const payload = (await request.json().catch(() => null)) as CompleteUploadRequest | null;
     const workOrderId = readText(payload?.workOrderId);
     const ownerId = readText(payload?.ownerId);
@@ -107,6 +129,11 @@ export async function POST(request: NextRequest) {
 
     if (uploadTargets.length === 0) {
       return NextResponse.json({ attachments: [], error: "UPLOAD_TARGETS_REQUIRED" }, { status: 400 });
+    }
+
+    const belongsToCompany = await workOrderBelongsToCompany({ workOrderId, companyId });
+    if (!belongsToCompany) {
+      return NextResponse.json({ attachments: [], error: "WORK_ORDER_NOT_FOUND" }, { status: 404 });
     }
 
     const repository = await createAttachmentMemoRepository();
@@ -174,8 +201,8 @@ export async function POST(request: NextRequest) {
     }
 
     await Promise.all(attachments.map((attachment) => createAdminHistoryLogSafe({
-      company_id: WORKSPACE_COMPANY_ID,
-      user_id: ownerId,
+      company_id: companyId,
+      user_id: ownerId ?? userId,
       action_type: "FILE_UPLOADED",
       target_type: "file",
       target_id: attachment.id,

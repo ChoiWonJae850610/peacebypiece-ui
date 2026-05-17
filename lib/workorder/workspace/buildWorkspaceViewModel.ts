@@ -1,5 +1,4 @@
 import { APP_VERSION } from "@/lib/constants/app";
-import { getWorkspaceCompanyName } from "@/lib/constants/company";
 import {
   applySidePanelPreviewHandler,
   buildDetailProps,
@@ -18,7 +17,7 @@ export function buildWorkspaceViewModel(
   args: BuildWorkspaceViewModelArgs,
 ): WorkspaceViewModel {
   const version = APP_VERSION;
-  const companyName = getWorkspaceCompanyName();
+  const companyName = args.companyName ?? "";
   const isWorkspaceWriteLocked = Boolean(
     args.isWorkspaceWriteLocked || args.workflowProcessingLabel,
   );

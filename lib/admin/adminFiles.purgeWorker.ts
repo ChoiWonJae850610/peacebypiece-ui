@@ -8,7 +8,7 @@ import {
 } from "@/lib/admin/adminFiles.serverActions";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
+import { getCompanySettings, listAdminCompanies } from "@/lib/admin/settings/companyRepository";
 
 export type AdminFilePurgeWorkerInput = {
   limit?: number;
@@ -77,13 +77,23 @@ async function purgeCandidate(candidate: AdminPurgeCandidate): Promise<AdminFile
 
 export async function runAdminFilePurgeWorker(input: AdminFilePurgeWorkerInput = {}): Promise<AdminFilePurgeWorkerResult> {
   const dryRun = input.dryRun ?? true;
-  const company = await getCurrentAdminCompany();
-  const settings = await getCompanySettings(company.id);
-  const candidates = await listPurgeReadyAttachmentTrashItems({
-    companyId: company.id,
-    limit: input.limit ?? 50,
-    trashRetentionDays: settings.filePolicy.trashRetentionDays,
-  });
+  const limit = input.limit ?? 50;
+  const companies = await listAdminCompanies();
+  const activeCompanies = companies.filter((company) => company.isActive);
+  const candidates: AdminPurgeCandidate[] = [];
+
+  for (const company of activeCompanies) {
+    if (candidates.length >= limit) break;
+
+    const settings = await getCompanySettings(company.id);
+    const companyCandidates = await listPurgeReadyAttachmentTrashItems({
+      companyId: company.id,
+      limit: limit - candidates.length,
+      trashRetentionDays: settings.filePolicy.trashRetentionDays,
+    });
+
+    candidates.push(...companyCandidates);
+  }
 
   if (dryRun) {
     return {

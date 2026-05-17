@@ -9,5 +9,5 @@ export function isWorkorderRepositoryMode(value: string): value is WorkorderRepo
 }
 
 export function getDefaultWorkorderRepositoryMode(): WorkorderRepositoryMode {
-  return isWorkorderRepositoryMode(WORKORDER_REPOSITORY_MODE) ? WORKORDER_REPOSITORY_MODE : "mock";
+  return isWorkorderRepositoryMode(WORKORDER_REPOSITORY_MODE) ? WORKORDER_REPOSITORY_MODE : "db";
 }

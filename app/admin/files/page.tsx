@@ -22,12 +22,12 @@ const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/admin/files");
 
 export default function AdminFilesPage() {
   const t = useAdminTranslation();
-  const placeholderSnapshot = useMemo(
+  const initialSnapshot = useMemo(
     () => getAdminFileManagementSnapshot(),
     [],
   );
   const [snapshot, setSnapshot] =
-    useState<AdminFileManagementSnapshot>(placeholderSnapshot);
+    useState<AdminFileManagementSnapshot>(initialSnapshot);
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>(
     [],

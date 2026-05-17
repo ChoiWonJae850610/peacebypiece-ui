@@ -9,9 +9,8 @@ import {
   normalizeAdminFilePolicyDraft,
 } from "@/lib/admin/settings/presentation";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
-import { COMPANY_FILE_TRASH_RETENTION_DAYS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
+import { COMPANY_FILE_TRASH_RETENTION_DAYS, DEFAULT_COMPANY_SETTINGS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminFilePolicySettingsModalProps = {
@@ -21,7 +20,7 @@ type AdminFilePolicySettingsModalProps = {
 
 export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFilePolicySettingsModalProps) {
   const t = useAdminTranslation();
-  const defaultSettings = buildDefaultCompanySettings(WORKSPACE_COMPANY_ID);
+  const defaultSettings = DEFAULT_COMPANY_SETTINGS;
   const [draft, setDraft] = useState<CompanySettings>(() => defaultSettings);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,7 +59,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
     if (saving || loading) return;
     setDraft((current) => ({
       ...current,
-      filePolicy: { ...defaultSettings.filePolicy },
+      filePolicy: { ...buildDefaultCompanySettings(current.companyId).filePolicy },
     }));
   }
 

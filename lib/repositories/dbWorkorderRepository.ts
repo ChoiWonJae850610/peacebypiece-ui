@@ -22,7 +22,7 @@ const EMPTY_DB_WORKORDER_STATE: InitialWorkorderRepositoryState = {
 
 
 export function createDbWorkorderRepository(
-  _baseRepository: WorkorderRepository,
+  _baseRepository?: WorkorderRepository,
   adapter?: WorkorderRepositoryAdapter,
 ): WorkorderRepository {
   const capabilities = createDbWorkorderRepositoryCapabilities(adapter);
@@ -122,7 +122,7 @@ export function createDbWorkorderRepository(
   };
 }
 
-export function createUnconfiguredDbWorkorderRepository(baseRepository: WorkorderRepository): WorkorderRepository {
+export function createUnconfiguredDbWorkorderRepository(baseRepository?: WorkorderRepository): WorkorderRepository {
   const repository = createDbWorkorderRepository(baseRepository, {
     loadWorkspaceState: async () => EMPTY_DB_WORKORDER_STATE,
     loadWorkOrderDetail: async () => {

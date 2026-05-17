@@ -20,6 +20,7 @@ export type ModalProps = ComponentProps<typeof WorkOrderOverlay>["modalProps"];
 export type GetAttachmentPermissions = (attachment: Attachment | null) => AttachmentPermissionState;
 
 export type BuildWorkspaceViewModelArgs = {
+  companyName?: string | null;
   drawerOpen: boolean;
   basicInfoOpen: boolean;
   materialOpen: boolean;

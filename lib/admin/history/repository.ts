@@ -2,7 +2,6 @@ import "server-only";
 
 import { randomUUID } from "crypto";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { ADMIN_VISIBLE_HISTORY_LOG_ACTION_TYPES, ADMIN_VISIBLE_HISTORY_LOG_TARGET_TYPES, isAdminVisibleHistoryLogAction, isAdminVisibleHistoryLogTarget } from "@/lib/constants/history";
 import type { CreateAdminHistoryLogInput } from "@/lib/admin/history/dbTypes";
 import type { AdminHistoryEvent } from "@/lib/admin/history/types";
@@ -32,7 +31,7 @@ export async function createAdminHistoryLog(input: CreateAdminHistoryLogInput): 
      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, now())`,
     [
       randomUUID(),
-      input.company_id || WORKSPACE_COMPANY_ID,
+      input.company_id,
       input.user_id ?? null,
       input.action_type,
       input.target_type,
@@ -155,7 +154,7 @@ function buildTargetLabel(metadata: Record<string, unknown>, message: string | n
   return selectMetadataLabelValue(metadata, ["title", "name", "partnerName", "partner_name", "fileName", "file_name", "message"]) ?? message ?? null;
 }
 
-export async function listAdminHistoryEvents(): Promise<AdminHistoryEvent[]> {
+export async function listAdminHistoryEvents(companyId: string): Promise<AdminHistoryEvent[]> {
   if (!isDatabaseConfigured()) return [];
 
   try {
@@ -186,7 +185,7 @@ export async function listAdminHistoryEvents(): Promise<AdminHistoryEvent[]> {
           AND h.target_type = ANY($3::text[])
         ORDER BY h.created_at DESC
         LIMIT 200`,
-      [WORKSPACE_COMPANY_ID, ADMIN_VISIBLE_HISTORY_LOG_ACTION_TYPES, ADMIN_VISIBLE_HISTORY_LOG_TARGET_TYPES],
+      [companyId, ADMIN_VISIBLE_HISTORY_LOG_ACTION_TYPES, ADMIN_VISIBLE_HISTORY_LOG_TARGET_TYPES],
     );
 
     return result.rows.flatMap((row) => {

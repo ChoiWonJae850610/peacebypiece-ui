@@ -43,6 +43,7 @@ export default async function WorkerPage({ searchParams }: WorkerPageProps) {
   return (
     <WorkOrderWorkspace
       initialHomeRole={initialHomeRole}
+      initialCompanyName={session?.companyName ?? null}
       initialWorkOrderId={initialWorkOrderId}
       initialListStatusFilter={initialListStatusFilter}
       initialListSort={initialListSort}
