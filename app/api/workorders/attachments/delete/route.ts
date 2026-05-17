@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         workOrderId: target.order_id,
         fileName: target.original_name ?? null,
         actorId,
-        companyId: company.id,
+        companyId,
         mimeType: target.mime_type ?? null,
         sizeBytes: target.size_bytes ?? null,
         hasStorageKey: Boolean(target.storage_key),
