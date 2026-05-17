@@ -331,6 +331,15 @@ export const adminKo = {
       title: "멤버 상세 관리",
       description: "멤버 로우를 클릭해 기본 정보, 상태, 권한을 한 곳에서 관리합니다.",
       permissionGroupCount: "권한 {count}개",
+      permissionGroupSelectedCount: "{selected}/{total}개 선택",
+      selectedPermissionCount: "{count}개 선택",
+      roleTemplateHelper: "역할은 기본 권한 묶음입니다. 아래 권한은 필요할 때만 예외 조정합니다.",
+      policyNotice: "본인의 권한 수정 권한 제거와 마지막 관리자 권한 제거는 저장 시 자동으로 차단됩니다.",
+      summary: {
+        title: "선택 멤버",
+        role: "역할",
+        permissions: "선택 권한",
+      },
       sections: {
         profile: "기본 정보",
         profileDescription: "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
@@ -346,6 +355,9 @@ export const adminKo = {
       actions: {
         save: "저장",
         saving: "저장 중",
+        resetRoleTemplate: "역할 기본값 적용",
+        selectGroup: "그룹 선택",
+        clearGroup: "해제",
       },
       errors: {
         permissionRequired: "권한은 최소 1개 이상 선택해야 합니다.",

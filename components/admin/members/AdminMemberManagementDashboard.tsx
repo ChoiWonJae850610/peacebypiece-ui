@@ -24,6 +24,7 @@ import {
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
   type MemberPermissionCode,
+  type MemberPermissionGroupKey,
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
 import { AdminButton } from "@/components/admin/common/AdminButton";
@@ -140,6 +141,45 @@ type MemberDetailDraft = {
   permissionCodes: MemberPermissionCode[];
 };
 
+type MemberStatusOption = {
+  value: AdminCompanyMemberRecord["status"];
+  labelKey: string;
+  fallbackLabel: string;
+};
+
+const EDITABLE_MEMBER_STATUS_OPTIONS: readonly MemberStatusOption[] = [
+  {
+    value: "approved",
+    labelKey: "memberManagement.memberDirectory.statuses.approved",
+    fallbackLabel: "사용 중",
+  },
+  {
+    value: "suspended",
+    labelKey: "memberManagement.memberDirectory.statuses.suspended",
+    fallbackLabel: "비활성",
+  },
+] as const;
+
+function getMemberDetailStatusOptions(
+  currentStatus: AdminCompanyMemberRecord["status"] | null | undefined,
+): readonly MemberStatusOption[] {
+  if (
+    !currentStatus ||
+    EDITABLE_MEMBER_STATUS_OPTIONS.some((option) => option.value === currentStatus)
+  ) {
+    return EDITABLE_MEMBER_STATUS_OPTIONS;
+  }
+
+  return [
+    {
+      value: currentStatus,
+      labelKey: `memberManagement.memberDirectory.statuses.${currentStatus}`,
+      fallbackLabel: currentStatus,
+    },
+    ...EDITABLE_MEMBER_STATUS_OPTIONS,
+  ];
+}
+
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -176,6 +216,28 @@ function toggleMemberPermissionCode(
   return permissionCodes.includes(permissionCode)
     ? permissionCodes.filter((code) => code !== permissionCode)
     : [...permissionCodes, permissionCode].sort();
+}
+
+function addMemberPermissionCodes(
+  permissionCodes: readonly MemberPermissionCode[],
+  nextPermissionCodes: readonly MemberPermissionCode[],
+): MemberPermissionCode[] {
+  return Array.from(new Set([...permissionCodes, ...nextPermissionCodes])).sort();
+}
+
+function removeMemberPermissionCodes(
+  permissionCodes: readonly MemberPermissionCode[],
+  nextPermissionCodes: readonly MemberPermissionCode[],
+): MemberPermissionCode[] {
+  const removalSet = new Set(nextPermissionCodes);
+  return permissionCodes.filter((code) => !removalSet.has(code));
+}
+
+function countSelectedMemberPermissionCodes(
+  permissionCodes: readonly MemberPermissionCode[],
+  groupPermissionCodes: readonly MemberPermissionCode[],
+): number {
+  return groupPermissionCodes.filter((code) => permissionCodes.includes(code)).length;
 }
 
 const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
@@ -469,6 +531,24 @@ export default function AdminMemberManagementDashboard() {
     });
   }, [memberDirectoryRows, memberRoleFilter, memberSearchQuery, memberStatusFilter]);
 
+  const selectedMemberRecord = useMemo(
+    () =>
+      selectedMemberId
+        ? memberRecords.find((member) => member.id === selectedMemberId) ?? null
+        : null,
+    [memberRecords, selectedMemberId],
+  );
+  const selectedMemberRolePreview = useMemo(
+    () => roles.find((role) => role.id === memberDetailDraft?.roleTemplateCode) ?? null,
+    [memberDetailDraft?.roleTemplateCode, roles],
+  );
+  const selectedMemberStatusOptions = useMemo(
+    () => getMemberDetailStatusOptions(selectedMemberRecord?.status),
+    [selectedMemberRecord?.status],
+  );
+  const selectedMemberPermissionCount =
+    memberDetailDraft?.permissionCodes.length ?? 0;
+
   const memberDirectoryColumns = useMemo<AdminTableColumn<MemberDirectoryRow>[]>(
     () => [
       {
@@ -547,7 +627,7 @@ export default function AdminMemberManagementDashboard() {
       },
       {
         key: "actions",
-        label: t("memberManagement.tables.memberDirectory.columns.actions", "액션"),
+        label: t("memberManagement.tables.memberDirectory.columns.actions", "액션관리"),
         headerClassName: "text-center",
         className: "flex justify-center",
         render: (row) =>
@@ -762,6 +842,49 @@ export default function AdminMemberManagementDashboard() {
               previous.permissionCodes,
               permissionCode,
             ),
+          }
+        : previous,
+    );
+  }
+
+  function handleApplyRoleTemplatePermissions() {
+    setMemberDetailDraft((previous) =>
+      previous
+        ? {
+            ...previous,
+            permissionCodes: [
+              ...getMemberRoleTemplatePermissions(previous.roleTemplateCode),
+            ],
+          }
+        : previous,
+    );
+  }
+
+  function handleApplyPermissionGroup(
+    groupId: MemberPermissionGroupKey,
+    action: "select" | "clear",
+  ) {
+    const group = editablePermissionGroups.find((item) => item.id === groupId);
+    if (!group) return;
+
+    const groupPermissionCodes = group.permissions.map(
+      (permission) => permission.code,
+    );
+
+    setMemberDetailDraft((previous) =>
+      previous
+        ? {
+            ...previous,
+            permissionCodes:
+              action === "select"
+                ? addMemberPermissionCodes(
+                    previous.permissionCodes,
+                    groupPermissionCodes,
+                  )
+                : removeMemberPermissionCodes(
+                    previous.permissionCodes,
+                    groupPermissionCodes,
+                  ),
           }
         : previous,
     );
@@ -1692,7 +1815,8 @@ export default function AdminMemberManagementDashboard() {
           "멤버 로우를 클릭해 기본 정보, 상태, 권한을 한 곳에서 관리합니다.",
         )}
         onClose={handleCloseMemberDetail}
-        maxWidthClass="md:max-w-4xl"
+        maxWidthClass="md:max-w-5xl"
+        bodyClassName="space-y-4 [scrollbar-gutter:stable]"
         footer={
           <AdminModalFooterActions
             secondaryLabel={t("common.cancel", "취소")}
@@ -1711,7 +1835,49 @@ export default function AdminMemberManagementDashboard() {
         }
       >
         {memberDetailDraft ? (
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div className="space-y-4">
+            <div className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4 md:grid-cols-[minmax(0,1.1fr)_160px_160px]">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">
+                  {t("memberManagement.detailModal.summary.title", "선택 멤버")}
+                </p>
+                <p className="mt-1 truncate text-base font-semibold pbp-text-primary">
+                  {selectedMemberRecord?.name ?? memberDetailDraft.displayName}
+                </p>
+                <p className="mt-1 truncate text-xs pbp-text-muted">
+                  {selectedMemberRecord?.email ?? "-"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2">
+                <p className="text-[11px] font-semibold pbp-text-muted">
+                  {t("memberManagement.detailModal.summary.role", "역할")}
+                </p>
+                <p className="mt-1 text-sm font-semibold pbp-text-primary">
+                  {selectedMemberRolePreview
+                    ? t(
+                        `memberManagement.roles.${selectedMemberRolePreview.id}.label`,
+                        selectedMemberRolePreview.id,
+                      )
+                    : "-"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2">
+                <p className="text-[11px] font-semibold pbp-text-muted">
+                  {t("memberManagement.detailModal.summary.permissions", "선택 권한")}
+                </p>
+                <p className="mt-1 text-sm font-semibold pbp-text-primary">
+                  {t(
+                    "memberManagement.detailModal.selectedPermissionCount",
+                    "{count}개 선택",
+                  ).replace(
+                    "{count}",
+                    String(selectedMemberPermissionCount),
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <AdminModalSection
               title={t(
                 "memberManagement.detailModal.sections.profile",
@@ -1748,7 +1914,7 @@ export default function AdminMemberManagementDashboard() {
                     onChange={(event) =>
                       setMemberDetailDraft((previous) =>
                         previous
-                          ? { ...previous, phone: event.target.value }
+                          ? { ...previous, phone: formatPhoneNumber(event.target.value) }
                           : previous,
                       )
                     }
@@ -1774,16 +1940,11 @@ export default function AdminMemberManagementDashboard() {
                     }
                     className={adminModalInputClassName}
                   >
-                    {(["approved", "pending", "suspended", "rejected"] as const).map(
-                      (status) => (
-                        <option key={status} value={status}>
-                          {t(
-                            `memberManagement.memberDirectory.statuses.${status}`,
-                            status,
-                          )}
-                        </option>
-                      ),
-                    )}
+                    {selectedMemberStatusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {t(option.labelKey, option.fallbackLabel)}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
@@ -1820,22 +1981,77 @@ export default function AdminMemberManagementDashboard() {
                     ))}
                   </select>
                 </label>
+                <div className="flex flex-col gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs leading-5 pbp-text-muted">
+                    {t(
+                      "memberManagement.detailModal.roleTemplateHelper",
+                      "역할은 기본 권한 묶음입니다. 아래 권한은 필요할 때만 예외 조정합니다.",
+                    )}
+                  </p>
+                  <AdminButton
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleApplyRoleTemplatePermissions}
+                  >
+                    {t(
+                      "memberManagement.detailModal.actions.resetRoleTemplate",
+                      "역할 기본값 적용",
+                    )}
+                  </AdminButton>
+                </div>
+                <p className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] leading-5 pbp-text-muted">
+                  {t(
+                    "memberManagement.detailModal.policyNotice",
+                    "본인의 권한 수정 권한 제거와 마지막 관리자 권한 제거는 저장 시 자동으로 차단됩니다.",
+                  )}
+                </p>
                 <div className="max-h-[360px] space-y-3 overflow-y-auto rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3">
                   {editablePermissionGroups.map((group) => (
                     <section
                       key={group.id}
                       className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3"
                     >
-                      <div className="mb-2 flex items-center justify-between gap-3">
-                        <h4 className="text-sm font-semibold pbp-text-primary">
-                          {t(group.labelKey, group.id)}
-                        </h4>
-                        <span className="rounded-full bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold pbp-text-muted">
-                          {t(
-                            "memberManagement.detailModal.permissionGroupCount",
-                            "권한 {count}개",
-                          ).replace("{count}", String(group.permissions.length))}
-                        </span>
+                      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-semibold pbp-text-primary">
+                            {t(group.labelKey, group.id)}
+                          </h4>
+                          <p className="mt-1 text-[11px] pbp-text-muted">
+                            {t(
+                              "memberManagement.detailModal.permissionGroupSelectedCount",
+                              "{selected}/{total}개 선택",
+                            )
+                              .replace(
+                                "{selected}",
+                                String(
+                                  countSelectedMemberPermissionCodes(
+                                    memberDetailDraft.permissionCodes,
+                                    group.permissions.map(
+                                      (permission) => permission.code,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .replace("{total}", String(group.permissions.length))}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPermissionGroup(group.id, "select")}
+                            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold pbp-text-muted transition hover:border-[var(--pbp-accent-border)] hover:text-[var(--pbp-text-primary)]"
+                          >
+                            {t("memberManagement.detailModal.actions.selectGroup", "그룹 선택")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPermissionGroup(group.id, "clear")}
+                            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-1 text-[11px] font-semibold pbp-text-muted transition hover:border-[var(--pbp-danger-border)] hover:text-[var(--pbp-danger)]"
+                          >
+                            {t("memberManagement.detailModal.actions.clearGroup", "해제")}
+                          </button>
+                        </div>
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {group.permissions.map((permission) => (
@@ -1869,6 +2085,7 @@ export default function AdminMemberManagementDashboard() {
                 </div>
               </div>
             </AdminModalSection>
+            </div>
           </div>
         ) : null}
       </AdminModal>

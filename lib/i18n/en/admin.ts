@@ -340,6 +340,15 @@ export const adminEn = {
       title: "Member details",
       description: "Click a member row to manage profile, status, and permissions in one place.",
       permissionGroupCount: "{count} permissions",
+      permissionGroupSelectedCount: "{selected}/{total} selected",
+      selectedPermissionCount: "{count} selected",
+      roleTemplateHelper: "A role is a default permission set. Adjust only the screen permissions that need exceptions.",
+      policyNotice: "Removing your own permission-management access or the last administrator access is blocked when saving.",
+      summary: {
+        title: "Selected member",
+        role: "Role",
+        permissions: "Selected permissions",
+      },
       sections: {
         profile: "Profile",
         profileDescription: "Name and contact are saved against the same-company member record.",
@@ -355,6 +364,9 @@ export const adminEn = {
       actions: {
         save: "Save",
         saving: "Saving",
+        resetRoleTemplate: "Apply role defaults",
+        selectGroup: "Select group",
+        clearGroup: "Clear",
       },
       errors: {
         permissionRequired: "Select at least one permission.",
