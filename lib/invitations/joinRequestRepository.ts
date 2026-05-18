@@ -817,10 +817,20 @@ async function insertApprovedCompanyMember(
 ): Promise<CompanyMemberDbRow> {
   const existing = await client.query<CompanyMemberDbRow>(
     `
-      SELECT id, company_id, user_id, status, role_template_code
+      WITH approval_input AS (
+        SELECT
+          $1::text AS company_id,
+          $2::text AS user_id
+      )
+      SELECT company_members.id,
+             company_members.company_id,
+             company_members.user_id,
+             company_members.status,
+             company_members.role_template_code
         FROM company_members
-       WHERE company_id = $1::text
-         AND user_id = $2::text
+        JOIN approval_input
+          ON company_members.company_id = approval_input.company_id
+         AND company_members.user_id = approval_input.user_id
        LIMIT 1
     `,
     [input.companyId, input.userId],
@@ -829,23 +839,34 @@ async function insertApprovedCompanyMember(
   if (existing.rows[0]) {
     const updated = await client.query<CompanyMemberDbRow>(
       `
+        WITH approval_input AS (
+          SELECT
+            $1::text AS member_id,
+            $2::text AS role_template_code,
+            $3::text AS display_name,
+            $4::text AS approved_by
+        )
         UPDATE company_members
            SET status = 'approved',
-               role_template_code = $3::text,
-               display_name = COALESCE($4::text, display_name),
-               approved_by = $5::text,
-               approved_at = COALESCE(approved_at, now()),
+               role_template_code = approval_input.role_template_code,
+               display_name = COALESCE(approval_input.display_name, company_members.display_name),
+               approved_by = approval_input.approved_by,
+               approved_at = COALESCE(company_members.approved_at, now()),
                rejected_by = NULL,
                rejected_at = NULL,
                suspended_by = NULL,
                suspended_at = NULL,
                updated_at = now()
-         WHERE id = $1::text
-         RETURNING id, company_id, user_id, status, role_template_code
+          FROM approval_input
+         WHERE company_members.id = approval_input.member_id
+         RETURNING company_members.id,
+                   company_members.company_id,
+                   company_members.user_id,
+                   company_members.status,
+                   company_members.role_template_code
       `,
       [
         existing.rows[0].id,
-        input.companyId,
         input.roleTemplateCode,
         input.displayName,
         input.approvedByUserId ?? null,
@@ -857,6 +878,14 @@ async function insertApprovedCompanyMember(
 
   const result = await client.query<CompanyMemberDbRow>(
     `
+      WITH approval_input AS (
+        SELECT
+          $1::text AS company_id,
+          $2::text AS user_id,
+          $3::text AS role_template_code,
+          $4::text AS display_name,
+          $5::text AS approved_by
+      )
       INSERT INTO company_members (
         company_id,
         user_id,
@@ -866,7 +895,15 @@ async function insertApprovedCompanyMember(
         approved_by,
         approved_at
       )
-      VALUES ($1::text, $2::text, 'approved', $3::text, $4::text, $5::text, now())
+      SELECT
+        approval_input.company_id,
+        approval_input.user_id,
+        'approved'::text,
+        approval_input.role_template_code,
+        approval_input.display_name,
+        approval_input.approved_by,
+        now()
+      FROM approval_input
       RETURNING id, company_id, user_id, status, role_template_code
     `,
     [
