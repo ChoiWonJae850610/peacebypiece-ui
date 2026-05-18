@@ -1772,6 +1772,7 @@ export const adminKo = {
     sections: {
       company: "회사 정보",
       address: "회사 주소",
+      files: "회사 파일",
       admin: "관리자 정보 및 요금제",
     },
     fields: {
@@ -1779,7 +1780,6 @@ export const adminKo = {
       companyEnglishName: "회사 영문명",
       businessName: "사업자명",
       businessRegistrationNumber: "사업자등록번호",
-      logoUrl: "회사 로고 URL",
       postalCode: "우편번호",
       roadAddress: "도로명주소",
       jibunAddress: "지번주소",
@@ -1794,7 +1794,6 @@ export const adminKo = {
       companyEnglishName: "예: CHWJ STUDIO",
       businessName: "예: 에어윙",
       businessRegistrationNumber: "예: 123-45-67890",
-      logoUrl: "예: https://example.com/logo.png",
       postalCode: "예: 58328",
       roadAddress: "예: 전라남도 나주시 그린로 125",
       jibunAddress: "예: 전라남도 나주시 빛가람동 000",
@@ -1807,6 +1806,25 @@ export const adminKo = {
       basic: "Basic",
       standard: "Standard",
       pro: "Pro",
+    },
+    fileUploads: {
+      select: "파일 선택",
+      replace: "교체",
+      delete: "삭제",
+      uploading: "업로드 중입니다.",
+      deleting: "삭제 중입니다.",
+      saveBlocked: "파일 업로드가 끝난 뒤 저장할 수 있습니다.",
+      note: "회사 로고와 사업자등록증은 선택 항목입니다. 저장 전 또는 승인 전 잘못 올린 파일은 삭제하거나 교체할 수 있습니다.",
+      logo: {
+        label: "회사 로고",
+        description: "JPG, PNG, WEBP 파일을 업로드할 수 있습니다. 최대 5MB까지 허용됩니다.",
+        empty: "업로드된 회사 로고가 없습니다.",
+      },
+      businessLicense: {
+        label: "사업자등록증",
+        description: "JPG, PNG, WEBP, PDF 파일을 업로드할 수 있습니다. 최대 10MB까지 허용됩니다.",
+        empty: "업로드된 사업자등록증이 없습니다.",
+      },
     },
     loading: {
       title: "회사 정보 상태를 확인하고 있습니다.",

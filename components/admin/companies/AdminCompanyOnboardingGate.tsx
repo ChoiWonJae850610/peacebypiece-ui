@@ -1,9 +1,24 @@
 "use client";
 
-import { type InputHTMLAttributes, type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ChangeEvent, type InputHTMLAttributes, type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { useI18n } from "@/lib/i18n";
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
+
+type CompanyOnboardingFileType = "logo" | "business_license";
+
+type CompanyOnboardingFileMetadata = {
+  id: string;
+  companyId: string;
+  fileType: CompanyOnboardingFileType;
+  originalName: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedByUserId?: string | null;
+  createdAt?: string | null;
+  deletedAt?: string | null;
+};
 
 type CompanyOnboardingProfile = {
   companyId: string;
@@ -27,6 +42,7 @@ type CompanyOnboardingProfile = {
   adminName: string;
   adminPhone: string;
   profileComplete: boolean;
+  onboardingFiles?: CompanyOnboardingFileMetadata[];
 };
 
 type CompanyOnboardingDraft = {
@@ -50,10 +66,29 @@ type CompanyOnboardingResponse = {
   error?: string;
 };
 
+type CompanyOnboardingFileResponse = {
+  file?: CompanyOnboardingFileMetadata | null;
+  error?: string;
+};
+
 type CompanyOnboardingErrorCopy = {
   load: string;
   save: string;
   requiredFields: string;
+  fileRequired: string;
+  fileTypeRequired: string;
+  fileTypeUnsupported: string;
+  fileMimeTypeUnsupported: string;
+  fileSizeUnsupported: string;
+  fileUploadNotConfigured: string;
+  fileUploadFailed: string;
+  fileDeleteFailed: string;
+  fileNotFound: string;
+};
+
+type OnboardingFileState = {
+  status: "idle" | "uploading" | "deleting" | "error";
+  error: string | null;
 };
 
 const ONBOARDING_PLACEHOLDER_COMPANY_NAME_PATTERNS = [
@@ -61,6 +96,31 @@ const ONBOARDING_PLACEHOLDER_COMPANY_NAME_PATTERNS = [
   /^회사\s*정보\s*입력\s*전$/i,
   /^company\s*profile\s*required$/i,
 ];
+
+const COMPANY_ONBOARDING_FILE_ERROR_MESSAGE_KEYS = {
+  COMPANY_ADMIN_SESSION_REQUIRED: "save",
+  COMPANY_ONBOARDING_FILE_REQUIRED: "fileRequired",
+  COMPANY_ONBOARDING_FILE_TYPE_REQUIRED: "fileTypeRequired",
+  COMPANY_ONBOARDING_FILE_TYPE_UNSUPPORTED: "fileTypeUnsupported",
+  COMPANY_ONBOARDING_FILE_MIME_TYPE_UNSUPPORTED: "fileMimeTypeUnsupported",
+  COMPANY_ONBOARDING_FILE_SIZE_UNSUPPORTED: "fileSizeUnsupported",
+  COMPANY_ONBOARDING_FILE_UPLOAD_NOT_CONFIGURED: "fileUploadNotConfigured",
+  COMPANY_ONBOARDING_FILE_UPLOAD_FAILED: "fileUploadFailed",
+  COMPANY_ONBOARDING_FILE_METADATA_SAVE_FAILED: "fileUploadFailed",
+  COMPANY_ONBOARDING_FILE_DELETE_FAILED: "fileDeleteFailed",
+  COMPANY_ONBOARDING_FILE_NOT_FOUND: "fileNotFound",
+} as const satisfies Record<string, keyof CompanyOnboardingErrorCopy>;
+
+const COMPANY_ONBOARDING_FILE_FIELD_CONFIG = {
+  logo: {
+    accept: "image/jpeg,image/png,image/webp",
+    inputId: "company-onboarding-logo-file",
+  },
+  business_license: {
+    accept: "image/jpeg,image/png,image/webp,application/pdf",
+    inputId: "company-onboarding-business-license-file",
+  },
+} as const satisfies Record<CompanyOnboardingFileType, { accept: string; inputId: string }>;
 
 function isOnboardingPlaceholderCompanyName(value: string | null | undefined): boolean {
   const normalized = String(value ?? "").trim();
@@ -72,6 +132,12 @@ function resolveCompanyOnboardingErrorMessage(errorCode: string | null | undefin
   if (errorCode === "COMPANY_ONBOARDING_LOAD_FAILED") return copy.load;
   if (errorCode === "COMPANY_ONBOARDING_SAVE_FAILED") return copy.save;
   return copy.save;
+}
+
+function resolveCompanyOnboardingFileErrorMessage(errorCode: string | null | undefined, copy: CompanyOnboardingErrorCopy): string {
+  const code = String(errorCode ?? "") as keyof typeof COMPANY_ONBOARDING_FILE_ERROR_MESSAGE_KEYS;
+  const messageKey = COMPANY_ONBOARDING_FILE_ERROR_MESSAGE_KEYS[code];
+  return messageKey ? copy[messageKey] : copy.fileUploadFailed;
 }
 
 function buildRequiredFieldsMessage(prefix: string, labels: string[]): string {
@@ -94,6 +160,20 @@ function buildDraft(profile: CompanyOnboardingProfile | null): CompanyOnboarding
     adminName: profile?.adminName ?? "",
     adminPhone: formatPhoneNumber(profile?.adminPhone ?? ""),
   };
+}
+
+function getActiveOnboardingFile(
+  files: CompanyOnboardingFileMetadata[],
+  fileType: CompanyOnboardingFileType,
+): CompanyOnboardingFileMetadata | null {
+  return files.find((file) => file.fileType === fileType && !file.deletedAt) ?? null;
+}
+
+function formatFileSize(sizeBytes: number): string {
+  if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) return "0 KB";
+  const mb = sizeBytes / (1024 * 1024);
+  if (mb >= 1) return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
+  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
 }
 
 function TextInput({
@@ -131,11 +211,102 @@ function TextInput({
   );
 }
 
+function OnboardingFileField({
+  fileType,
+  label,
+  description,
+  emptyText,
+  selectText,
+  replaceText,
+  deleteText,
+  uploadingText,
+  deletingText,
+  file,
+  state,
+  onUpload,
+  onDelete,
+}: {
+  fileType: CompanyOnboardingFileType;
+  label: string;
+  description: string;
+  emptyText: string;
+  selectText: string;
+  replaceText: string;
+  deleteText: string;
+  uploadingText: string;
+  deletingText: string;
+  file: CompanyOnboardingFileMetadata | null;
+  state: OnboardingFileState;
+  onUpload: (fileType: CompanyOnboardingFileType, file: File) => void;
+  onDelete: (file: CompanyOnboardingFileMetadata) => void;
+}) {
+  const config = COMPANY_ONBOARDING_FILE_FIELD_CONFIG[fileType];
+  const isBusy = state.status === "uploading" || state.status === "deleting";
+
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFile = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    if (!selectedFile) return;
+    onUpload(fileType, selectedFile);
+  }
+
+  return (
+    <div className="grid gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{label}</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{description}</p>
+        </div>
+        <label
+          htmlFor={config.inputId}
+          className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[var(--pbp-border)] px-3 text-xs font-bold text-[var(--pbp-text-primary)] transition hover:border-[var(--pbp-border-strong)] aria-disabled:pointer-events-none aria-disabled:opacity-50"
+          aria-disabled={isBusy}
+        >
+          {file ? replaceText : selectText}
+        </label>
+        <input
+          id={config.inputId}
+          type="file"
+          accept={config.accept}
+          disabled={isBusy}
+          onChange={handleChange}
+          className="sr-only"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs leading-5 text-[var(--pbp-text-muted)] sm:flex-row sm:items-center sm:justify-between">
+        <span className="font-semibold text-[var(--pbp-text-primary)]">
+          {state.status === "uploading" ? uploadingText : state.status === "deleting" ? deletingText : file ? file.originalName : emptyText}
+        </span>
+        {file ? <span>{formatFileSize(file.sizeBytes)}</span> : null}
+      </div>
+
+      {file ? (
+        <button
+          type="button"
+          onClick={() => onDelete(file)}
+          disabled={isBusy}
+          className="justify-self-start text-xs font-bold text-rose-600 underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {deleteText}
+        </button>
+      ) : null}
+
+      {state.error ? <p className="text-xs font-semibold text-rose-600">{state.error}</p> : null}
+    </div>
+  );
+}
+
 export default function AdminCompanyOnboardingGate({ children }: { children: ReactNode }) {
   const { i18n } = useI18n();
   const copy = i18n.admin.companyOnboarding;
   const [profile, setProfile] = useState<CompanyOnboardingProfile | null>(null);
   const [draft, setDraft] = useState<CompanyOnboardingDraft>(() => buildDraft(null));
+  const [onboardingFiles, setOnboardingFiles] = useState<CompanyOnboardingFileMetadata[]>([]);
+  const [fileStates, setFileStates] = useState<Record<CompanyOnboardingFileType, OnboardingFileState>>({
+    logo: { status: "idle", error: null },
+    business_license: { status: "idle", error: null },
+  });
   const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -146,6 +317,9 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
   const isTrialExpired = loadState === "loaded" && profile?.profileComplete && profile.trialExpired;
   const isCheckingOnboarding = loadState === "idle" || loadState === "loading";
   const blocksAdminWorkspace = isCheckingOnboarding || requiresOnboarding || isApprovalPending || isTrialExpired || loadState === "error";
+  const hasUploadingFile = Object.values(fileStates).some((state) => state.status === "uploading" || state.status === "deleting");
+  const activeLogoFile = getActiveOnboardingFile(onboardingFiles, "logo");
+  const activeBusinessLicenseFile = getActiveOnboardingFile(onboardingFiles, "business_license");
   const missingRequiredLabels = useMemo(() => {
     const missing: string[] = [];
     if (!draft.companyName.trim()) missing.push(copy.fields.companyName);
@@ -169,7 +343,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     draft,
   ]);
 
-  const canSave = missingRequiredLabels.length === 0;
+  const canSave = missingRequiredLabels.length === 0 && !hasUploadingFile;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -195,6 +369,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
         setProfile(payload.profile);
         setDraft(buildDraft(payload.profile));
+        setOnboardingFiles(payload.profile.onboardingFiles ?? []);
         setLoadState("loaded");
       } catch (error) {
         if ((error as Error).name === "AbortError") return;
@@ -226,6 +401,74 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     if (errorMessage) setErrorMessage(null);
   }
 
+  function updateFileState(fileType: CompanyOnboardingFileType, state: OnboardingFileState) {
+    setFileStates((current) => ({ ...current, [fileType]: state }));
+  }
+
+  function replaceActiveFile(file: CompanyOnboardingFileMetadata) {
+    setOnboardingFiles((current) => [file, ...current.filter((item) => item.fileType !== file.fileType)]);
+  }
+
+  function removeActiveFile(file: CompanyOnboardingFileMetadata) {
+    setOnboardingFiles((current) => current.filter((item) => item.id !== file.id));
+  }
+
+  async function uploadFile(fileType: CompanyOnboardingFileType, file: File) {
+    updateFileState(fileType, { status: "uploading", error: null });
+    setSaveState("idle");
+    setErrorMessage(null);
+
+    const formData = new FormData();
+    formData.append("file_type", fileType);
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/admin/companies/onboarding/files/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const payload = (await response.json()) as CompanyOnboardingFileResponse;
+
+      if (!response.ok || !payload.file) {
+        throw new Error(payload.error ?? "COMPANY_ONBOARDING_FILE_UPLOAD_FAILED");
+      }
+
+      replaceActiveFile(payload.file);
+      updateFileState(fileType, { status: "idle", error: null });
+    } catch (error) {
+      updateFileState(fileType, {
+        status: "error",
+        error: resolveCompanyOnboardingFileErrorMessage(error instanceof Error ? error.message : null, copy.errors),
+      });
+    }
+  }
+
+  async function deleteFile(file: CompanyOnboardingFileMetadata) {
+    updateFileState(file.fileType, { status: "deleting", error: null });
+    setSaveState("idle");
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/companies/onboarding/files/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileId: file.id }),
+      });
+      const payload = (await response.json().catch(() => null)) as CompanyOnboardingFileResponse | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "COMPANY_ONBOARDING_FILE_DELETE_FAILED");
+      }
+
+      removeActiveFile(file);
+      updateFileState(file.fileType, { status: "idle", error: null });
+    } catch (error) {
+      updateFileState(file.fileType, {
+        status: "error",
+        error: resolveCompanyOnboardingFileErrorMessage(error instanceof Error ? error.message : null, copy.errors),
+      });
+    }
+  }
 
   function keepFocusInsideDialog(event: KeyboardEvent<HTMLElement>) {
     if (event.key !== "Tab") return;
@@ -256,11 +499,11 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
   }
 
   async function save() {
-    if (saveState === "saving") return;
+    if (saveState === "saving" || hasUploadingFile) return;
 
     if (!canSave) {
       setSaveState("error");
-      setErrorMessage(buildRequiredFieldsMessage(copy.errors.requiredFields, missingRequiredLabels));
+      setErrorMessage(hasUploadingFile ? copy.fileUploads.saveBlocked : buildRequiredFieldsMessage(copy.errors.requiredFields, missingRequiredLabels));
       return;
     }
 
@@ -284,6 +527,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
       setProfile(payload.profile);
       setDraft(buildDraft(payload.profile));
+      setOnboardingFiles(payload.profile.onboardingFiles ?? onboardingFiles);
       setSaveState("saved");
     } catch (error) {
       setSaveState("error");
@@ -371,7 +615,6 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                       <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} placeholder={copy.placeholders.companyEnglishName} />
                       <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} placeholder={copy.placeholders.businessName} required />
                       <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" required />
-                      <TextInput label={copy.fields.logoUrl} value={draft.logoUrl} onChange={(value) => updateDraft("logoUrl", value)} placeholder={copy.placeholders.logoUrl} />
                     </section>
 
                     <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
@@ -386,6 +629,43 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                       <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.addressApiNote}</p>
                     </section>
                   </div>
+
+                  <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+                    <h3 className="text-base font-bold">{copy.sections.files}</h3>
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      <OnboardingFileField
+                        fileType="logo"
+                        label={copy.fileUploads.logo.label}
+                        description={copy.fileUploads.logo.description}
+                        emptyText={copy.fileUploads.logo.empty}
+                        selectText={copy.fileUploads.select}
+                        replaceText={copy.fileUploads.replace}
+                        deleteText={copy.fileUploads.delete}
+                        uploadingText={copy.fileUploads.uploading}
+                        deletingText={copy.fileUploads.deleting}
+                        file={activeLogoFile}
+                        state={fileStates.logo}
+                        onUpload={(nextFileType, file) => void uploadFile(nextFileType, file)}
+                        onDelete={(file) => void deleteFile(file)}
+                      />
+                      <OnboardingFileField
+                        fileType="business_license"
+                        label={copy.fileUploads.businessLicense.label}
+                        description={copy.fileUploads.businessLicense.description}
+                        emptyText={copy.fileUploads.businessLicense.empty}
+                        selectText={copy.fileUploads.select}
+                        replaceText={copy.fileUploads.replace}
+                        deleteText={copy.fileUploads.delete}
+                        uploadingText={copy.fileUploads.uploading}
+                        deletingText={copy.fileUploads.deleting}
+                        file={activeBusinessLicenseFile}
+                        state={fileStates.business_license}
+                        onUpload={(nextFileType, file) => void uploadFile(nextFileType, file)}
+                        onDelete={(file) => void deleteFile(file)}
+                      />
+                    </div>
+                    <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.fileUploads.note}</p>
+                  </section>
 
                   <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                     <h3 className="text-base font-bold">{copy.sections.admin}</h3>
@@ -429,10 +709,10 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                     <button
                       type="button"
                       onClick={() => void save()}
-                      disabled={saveState === "saving"}
+                      disabled={saveState === "saving" || hasUploadingFile}
                       className="inline-flex h-11 items-center justify-center rounded-2xl bg-[var(--pbp-accent)] px-5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {saveState === "saving" ? copy.saving : copy.submit}
+                      {saveState === "saving" ? copy.saving : hasUploadingFile ? copy.fileUploads.saveBlocked : copy.submit}
                     </button>
                   </div>
                 </div>

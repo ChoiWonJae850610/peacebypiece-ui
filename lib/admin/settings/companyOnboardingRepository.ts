@@ -8,10 +8,12 @@ import {
   normalizeCompanySubscriptionStatus,
 } from "@/lib/billing/companyTrialPolicy";
 import type {
+  CompanyOnboardingFileMetadata,
   CompanyOnboardingProfile,
   CompanyOnboardingStatus,
   CompanyOnboardingUpdateInput,
 } from "@/lib/admin/settings/companyTypes";
+import { listActiveCompanyOnboardingFileMetadata } from "@/lib/admin/settings/companyOnboardingFileRepository";
 
 type CompanyOnboardingRow = {
   company_id: string;
@@ -140,7 +142,16 @@ export async function getCompanyOnboardingProfile(
   );
 
   const row = result.rows[0];
-  return row ? mapRow(row) : null;
+  if (!row) return null;
+
+  const onboardingFiles: CompanyOnboardingFileMetadata[] = await listActiveCompanyOnboardingFileMetadata({
+    companyId: session.companyId,
+  });
+
+  return {
+    ...mapRow(row),
+    onboardingFiles,
+  };
 }
 
 

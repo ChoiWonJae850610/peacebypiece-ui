@@ -18,6 +18,7 @@ import {
 import {
   createCompanyOnboardingFileMetadata,
   getActiveCompanyOnboardingFileMetadata,
+  softDeleteActiveCompanyOnboardingFileMetadataByType,
   softDeleteCompanyOnboardingFileMetadata,
 } from "@/lib/admin/settings/companyOnboardingFileRepository";
 
@@ -123,7 +124,14 @@ export async function uploadCompanyOnboardingFile(
       uploadedByUserId: input.uploadedByUserId,
     });
 
+    const replacedFiles = await softDeleteActiveCompanyOnboardingFileMetadataByType({
+      companyId: input.companyId,
+      fileType: validation.fileType,
+      excludeFileId: metadata.id,
+    });
+
     deleteCachedR2UrlsByKey(storageKey);
+    replacedFiles.forEach((file) => deleteCachedR2UrlsByKey(file.storageKey));
     return metadata;
   } catch (error) {
     await deleteUploadedObjectQuietly(storageKey);

@@ -1825,6 +1825,7 @@ export const adminEn = {
     sections: {
       company: "Company information",
       address: "Company address",
+      files: "Company files",
       admin: "Administrator and plan",
     },
     fields: {
@@ -1832,7 +1833,6 @@ export const adminEn = {
       companyEnglishName: "Company English name",
       businessName: "Business name",
       businessRegistrationNumber: "Business registration number",
-      logoUrl: "Company logo URL",
       postalCode: "Postal code",
       roadAddress: "Road address",
       jibunAddress: "Jibun address",
@@ -1847,7 +1847,6 @@ export const adminEn = {
       companyEnglishName: "e.g. CHWJ STUDIO",
       businessName: "e.g. AirWing",
       businessRegistrationNumber: "e.g. 123-45-67890",
-      logoUrl: "e.g. https://example.com/logo.png",
       postalCode: "e.g. 58328",
       roadAddress: "e.g. 125 Green-ro, Naju-si",
       jibunAddress: "e.g. Bitgaram-dong, Naju-si",
@@ -1860,6 +1859,25 @@ export const adminEn = {
       basic: "Basic",
       standard: "Standard",
       pro: "Pro",
+    },
+    fileUploads: {
+      select: "Select file",
+      replace: "Replace",
+      delete: "Delete",
+      uploading: "Uploading file.",
+      deleting: "Deleting file.",
+      saveBlocked: "You can save after file upload is complete.",
+      note: "Company logo and business registration files are optional. Incorrect files can be deleted or replaced before saving or approval.",
+      logo: {
+        label: "Company logo",
+        description: "JPG, PNG, and WEBP files are supported. The maximum size is 5 MB.",
+        empty: "No company logo has been uploaded.",
+      },
+      businessLicense: {
+        label: "Business registration certificate",
+        description: "JPG, PNG, WEBP, and PDF files are supported. The maximum size is 10 MB.",
+        empty: "No business registration certificate has been uploaded.",
+      },
     },
     loading: {
       title: "Checking company information status.",

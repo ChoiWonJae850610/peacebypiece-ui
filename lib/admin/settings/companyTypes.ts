@@ -50,6 +50,7 @@ export type CompanyOnboardingProfile = {
   adminName: string;
   adminPhone: string;
   profileComplete: boolean;
+  onboardingFiles?: CompanyOnboardingFileMetadata[];
 };
 
 export type CompanyOnboardingUpdateInput = {

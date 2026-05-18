@@ -183,3 +183,35 @@ export async function softDeleteCompanyOnboardingFileMetadata(input: {
   const row = result.rows[0];
   return row ? mapRow(row) : null;
 }
+
+export async function softDeleteActiveCompanyOnboardingFileMetadataByType(input: {
+  companyId: string;
+  fileType: CompanyOnboardingFileType;
+  excludeFileId?: string | null;
+}): Promise<CompanyOnboardingFileMetadata[]> {
+  const values = [input.companyId, input.fileType, input.excludeFileId ?? ""];
+  const result = await queryDb<CompanyOnboardingFileRow>(
+    `
+      UPDATE company_onboarding_files
+         SET deleted_at = now()
+       WHERE company_id = $1::text
+         AND file_type = $2::text
+         AND deleted_at IS NULL
+         AND id <> $3::text
+      RETURNING
+        id,
+        company_id,
+        file_type,
+        original_name,
+        storage_key,
+        mime_type,
+        size_bytes,
+        uploaded_by_user_id,
+        created_at,
+        deleted_at
+    `,
+    values,
+  );
+
+  return result.rows.map(mapRow);
+}
