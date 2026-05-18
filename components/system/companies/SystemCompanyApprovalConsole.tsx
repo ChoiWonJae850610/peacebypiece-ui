@@ -42,6 +42,8 @@ type InvitationListResponse = {
 type CompanyJoinRequestReviewResponse = {
   ok?: boolean;
   error?: string;
+  stage?: string | null;
+  detail?: string | null;
 };
 
 type CreatedSystemInvitationResult = {
@@ -283,14 +285,22 @@ const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
   COMPANY_MEMBER_CREATE_FAILED: "고객사 관리자 멤버십 생성에 실패했습니다.",
   MEMBER_PERMISSION_REQUIRED: "고객사 관리자에게 부여할 권한이 없습니다.",
   SYSTEM_ADMIN_SESSION_REQUIRED: "시스템관리자 로그인이 필요합니다.",
-  POSTGRES_PARAMETER_TYPE_ERROR: "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 최신 패치 적용 후 다시 시도해 주세요.",
-  "could not determine data type of parameter $2": "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 최신 패치 적용 후 다시 시도해 주세요.",
+  POSTGRES_PARAMETER_TYPE_ERROR: "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 아래 단계 정보를 확인해 주세요.",
+  "could not determine data type of parameter $2": "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 아래 단계 정보를 확인해 주세요.",
 };
 
 function resolveSystemCompanyErrorMessage(errorCode: string | null | undefined, fallback: string): string {
   const normalized = errorCode?.trim();
   if (!normalized) return fallback;
   return SYSTEM_COMPANY_ERROR_MESSAGES[normalized] ?? fallback;
+}
+
+function buildSystemCompanyReviewErrorMessage(payload: CompanyJoinRequestReviewResponse, fallback: string): string {
+  const baseMessage = resolveSystemCompanyErrorMessage(payload.error, fallback);
+  const stage = payload.stage?.trim();
+  const detail = payload.detail?.trim();
+  const extra = [stage ? `단계: ${stage}` : null, detail ? `상세: ${detail}` : null].filter(Boolean).join(" / ");
+  return extra ? `${baseMessage} (${extra})` : baseMessage;
 }
 
 function normalizePhoneInput(value: string): string {
@@ -754,7 +764,7 @@ export default function SystemCompanyApprovalConsole() {
       const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
 
       if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
+        throw new Error(buildSystemCompanyReviewErrorMessage(payload, "고객사 가입 신청 승인에 실패했습니다."));
       }
 
       setReviewActionMessage("고객사 가입 신청을 승인했습니다.");
@@ -787,7 +797,7 @@ export default function SystemCompanyApprovalConsole() {
       const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
 
       if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_REJECT_FAILED");
+        throw new Error(buildSystemCompanyReviewErrorMessage(payload, "고객사 가입 신청 거절에 실패했습니다."));
       }
 
       setReviewActionMessage("고객사 가입 신청을 거절했습니다.");
@@ -821,7 +831,7 @@ export default function SystemCompanyApprovalConsole() {
       const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
 
       if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_REOPEN_FAILED");
+        throw new Error(buildSystemCompanyReviewErrorMessage(payload, "고객사 재입력 요청 처리에 실패했습니다."));
       }
 
       setReviewActionMessage("거절된 고객사를 재입력 요청 상태로 전환했습니다.");

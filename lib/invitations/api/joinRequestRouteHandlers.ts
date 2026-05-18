@@ -73,11 +73,30 @@ function toPublicInvitation(invitation: Awaited<ReturnType<typeof invitationRepo
   return publicInvitation;
 }
 
-function toErrorResponse(error: unknown) {
+function parseJoinRequestError(error: unknown): { message: string; stage: string | null; rawMessage: string } {
   const rawMessage = error instanceof Error ? error.message : "Unknown join request error";
-  const message = rawMessage.includes("could not determine data type of parameter")
-    ? "POSTGRES_PARAMETER_TYPE_ERROR"
-    : rawMessage;
+  const stepPrefix = "COMPANY_APPROVAL_STEP_FAILED:";
+  if (rawMessage.startsWith(stepPrefix)) {
+    const [stage = null, code = "COMPANY_APPROVAL_FAILED", ...rawParts] = rawMessage.slice(stepPrefix.length).split(":");
+    return {
+      message: code || "COMPANY_APPROVAL_FAILED",
+      stage,
+      rawMessage: rawParts.join(":") || rawMessage,
+    };
+  }
+
+  return {
+    message: rawMessage.includes("could not determine data type of parameter")
+      ? "POSTGRES_PARAMETER_TYPE_ERROR"
+      : rawMessage,
+    stage: null,
+    rawMessage,
+  };
+}
+
+function toErrorResponse(error: unknown) {
+  const parsed = parseJoinRequestError(error);
+  const message = parsed.message;
   const status =
     message === "INVITATION_NOT_FOUND" || message === "JOIN_REQUEST_NOT_FOUND" ? 404 :
     message === "INVITATION_EXPIRED" ? 410 :
@@ -100,6 +119,8 @@ function toErrorResponse(error: unknown) {
     {
       ok: false,
       error: message,
+      stage: parsed.stage,
+      detail: process.env.NODE_ENV === "production" ? undefined : parsed.rawMessage,
     },
     { status },
   );

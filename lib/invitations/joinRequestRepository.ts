@@ -993,16 +993,27 @@ async function assertCompanyNameAvailable(
   companyName: string,
   exceptCompanyId?: string | null,
 ): Promise<void> {
-  const existing = await client.query<CompanyDbRow>(
-    `
-      SELECT id, name, business_name, storage_limit_bytes
-        FROM companies
-       WHERE lower(name) = lower($1)
-         AND ($2::text IS NULL OR id <> $2::text)
-       LIMIT 1
-    `,
-    [companyName, exceptCompanyId ?? null],
-  );
+  const trimmedExceptCompanyId = exceptCompanyId?.trim() || null;
+  const existing = trimmedExceptCompanyId
+    ? await client.query<CompanyDbRow>(
+        `
+          SELECT id, name, business_name, storage_limit_bytes
+            FROM companies
+           WHERE lower(name) = lower($1::text)
+             AND id <> $2::text
+           LIMIT 1
+        `,
+        [companyName, trimmedExceptCompanyId],
+      )
+    : await client.query<CompanyDbRow>(
+        `
+          SELECT id, name, business_name, storage_limit_bytes
+            FROM companies
+           WHERE lower(name) = lower($1::text)
+           LIMIT 1
+        `,
+        [companyName],
+      );
 
   if (existing.rows[0]) {
     throw new Error("COMPANY_ALREADY_EXISTS");
@@ -1195,91 +1206,139 @@ function createSkippedStandardsInitializationResult(
 
 
 
+function normalizeDbApprovalStepError(stage: string, error: unknown): Error {
+  const rawMessage = error instanceof Error ? error.message : String(error || "UNKNOWN_APPROVAL_ERROR");
+  if (rawMessage.startsWith("COMPANY_APPROVAL_STEP_FAILED:")) {
+    return error instanceof Error ? error : new Error(rawMessage);
+  }
+
+  if (rawMessage.includes("could not determine data type of parameter")) {
+    return new Error(`COMPANY_APPROVAL_STEP_FAILED:${stage}:POSTGRES_PARAMETER_TYPE_ERROR:${rawMessage}`);
+  }
+
+  return new Error(`COMPANY_APPROVAL_STEP_FAILED:${stage}:${rawMessage}`);
+}
+
+async function runCompanyApprovalStep<TResult>(
+  stage: string,
+  operation: () => Promise<TResult>,
+): Promise<TResult> {
+  try {
+    return await operation();
+  } catch (error) {
+    throw normalizeDbApprovalStepError(stage, error);
+  }
+}
+
 async function approveDbCompanyJoinRequest(
   input: CompanyJoinRequestApproveInput,
 ): Promise<CompanyJoinRequestApprovalResult> {
   const approval = await withDbTransaction(async (client) => {
-    const joinRequest = await selectDbJoinRequestById(client, input.requestId);
+    const joinRequest = await runCompanyApprovalStep("select_join_request", () =>
+      selectDbJoinRequestById(client, input.requestId),
+    );
     if (!joinRequest) {
       throw new Error("JOIN_REQUEST_NOT_FOUND");
     }
 
     assertPendingCompanyJoinRequest(joinRequest);
 
-    const reviewedBySystemUserId = await resolveExistingSystemReviewerId(client, input.approvedBySystemUserId);
+    const reviewedBySystemUserId = await runCompanyApprovalStep("resolve_system_reviewer", () =>
+      resolveExistingSystemReviewerId(client, input.approvedBySystemUserId),
+    );
     const companyName = normalizeCompanyName(joinRequest.requestedCompanyName);
-    await assertCompanyNameAvailable(client, companyName, joinRequest.createdCompanyId);
-
-    const company = joinRequest.createdCompanyId
-      ? await approveExistingProfileRequiredCompany(client, {
-          companyId: joinRequest.createdCompanyId,
-          companyName,
-          businessName: joinRequest.businessName,
-          memo: joinRequest.requestMemo,
-        })
-      : await insertApprovedCompany(client, {
-          companyName,
-          businessName: joinRequest.businessName,
-          memo: joinRequest.requestMemo,
-        });
-    await assignTrialPlanToCompany(client, company.id);
-
-    const permissionCodes = resolveCompanyAdminPermissionCodes();
-    const user = await findOrCreateMemberUser(client, {
-      companyId: company.id,
-      applicantEmail: joinRequest.applicantEmail,
-      applicantName: joinRequest.applicantName,
-      applicantPhone: joinRequest.applicantPhone,
-      googleSub: joinRequest.googleSub,
-      googlePictureUrl: joinRequest.googlePictureUrl,
-      roleTemplateCode: COMPANY_ADMIN_ROLE_TEMPLATE_CODE,
-      preferredUserId: joinRequest.userId,
-    });
-    const companyMember = await insertApprovedCompanyMember(client, {
-      companyId: company.id,
-      userId: user.id,
-      displayName: joinRequest.applicantName,
-      roleTemplateCode: COMPANY_ADMIN_ROLE_TEMPLATE_CODE,
-      approvedByUserId: null,
-    });
-
-    await assignCompanyOwner(client, { companyId: company.id, userId: user.id });
-
-    await insertMemberPermissions(client, {
-      companyMemberId: companyMember.id,
-      permissionCodes,
-      grantedByUserId: null,
-    });
-
-    await client.query(
-      `
-        UPDATE join_requests
-           SET status = 'approved',
-               user_id = $2::text,
-               reviewed_by_system_user_id = $3::text,
-               reviewed_at = now(),
-               created_company_id = $4::text,
-               updated_at = now()
-         WHERE id = $1::text
-      `,
-      [joinRequest.id, user.id, reviewedBySystemUserId, company.id],
+    await runCompanyApprovalStep("assert_company_name", () =>
+      assertCompanyNameAvailable(client, companyName, joinRequest.createdCompanyId),
     );
 
-    if (joinRequest.invitationId) {
-      await client.query(
+    const company = joinRequest.createdCompanyId
+      ? await runCompanyApprovalStep("approve_existing_company", () =>
+          approveExistingProfileRequiredCompany(client, {
+            companyId: joinRequest.createdCompanyId as string,
+            companyName,
+            businessName: joinRequest.businessName,
+            memo: joinRequest.requestMemo,
+          }),
+        )
+      : await runCompanyApprovalStep("insert_company", () =>
+          insertApprovedCompany(client, {
+            companyName,
+            businessName: joinRequest.businessName,
+            memo: joinRequest.requestMemo,
+          }),
+        );
+    await runCompanyApprovalStep("assign_trial_plan", () => assignTrialPlanToCompany(client, company.id));
+
+    const permissionCodes = resolveCompanyAdminPermissionCodes();
+    const user = await runCompanyApprovalStep("find_or_create_user", () =>
+      findOrCreateMemberUser(client, {
+        companyId: company.id,
+        applicantEmail: joinRequest.applicantEmail,
+        applicantName: joinRequest.applicantName,
+        applicantPhone: joinRequest.applicantPhone,
+        googleSub: joinRequest.googleSub,
+        googlePictureUrl: joinRequest.googlePictureUrl,
+        roleTemplateCode: COMPANY_ADMIN_ROLE_TEMPLATE_CODE,
+        preferredUserId: joinRequest.userId,
+      }),
+    );
+    const companyMember = await runCompanyApprovalStep("insert_company_member", () =>
+      insertApprovedCompanyMember(client, {
+        companyId: company.id,
+        userId: user.id,
+        displayName: joinRequest.applicantName,
+        roleTemplateCode: COMPANY_ADMIN_ROLE_TEMPLATE_CODE,
+        approvedByUserId: null,
+      }),
+    );
+
+    await runCompanyApprovalStep("assign_company_owner", () =>
+      assignCompanyOwner(client, { companyId: company.id, userId: user.id }),
+    );
+
+    await runCompanyApprovalStep("insert_member_permissions", () =>
+      insertMemberPermissions(client, {
+        companyMemberId: companyMember.id,
+        permissionCodes,
+        grantedByUserId: null,
+      }),
+    );
+
+    await runCompanyApprovalStep("update_join_request", () =>
+      client.query(
         `
-          UPDATE invitations
-             SET status = 'accepted',
-                 accepted_at = now(),
-                 accepted_user_id = $2::text,
+          UPDATE join_requests
+             SET status = 'approved',
+                 user_id = $2::text,
+                 reviewed_by_system_user_id = $3::text,
+                 reviewed_at = now(),
+                 created_company_id = $4::text,
                  updated_at = now()
            WHERE id = $1::text
         `,
-        [joinRequest.invitationId, user.id],
+        [joinRequest.id, user.id, reviewedBySystemUserId, company.id],
+      ),
+    );
+
+    if (joinRequest.invitationId) {
+      await runCompanyApprovalStep("update_invitation", () =>
+        client.query(
+          `
+            UPDATE invitations
+               SET status = 'accepted',
+                   accepted_at = now(),
+                   accepted_user_id = $2::text,
+                   updated_at = now()
+             WHERE id = $1::text
+          `,
+          [joinRequest.invitationId, user.id],
+        ),
       );
     }
 
-    const updatedJoinRequest = await selectDbJoinRequestById(client, joinRequest.id);
+    const updatedJoinRequest = await runCompanyApprovalStep("reload_join_request", () =>
+      selectDbJoinRequestById(client, joinRequest.id),
+    );
     if (!updatedJoinRequest) {
       throw new Error("JOIN_REQUEST_NOT_FOUND");
     }
