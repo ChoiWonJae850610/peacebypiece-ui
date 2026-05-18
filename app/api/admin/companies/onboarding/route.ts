@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyAdminAccountFromInvitationSession } from "@/lib/auth/companyInvitationLoginRepository";
+import { createWaflSessionCookieValue, WAFL_AUTH_SESSION_COOKIE, type WaflSessionPayload } from "@/lib/auth/session";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import {
   getCompanyOnboardingProfile,
@@ -21,6 +23,47 @@ function getErrorCode(error: unknown): string {
 }
 
 
+function hasCompanyInvitationEntrySession(session: WaflSessionPayload | null): session is WaflSessionPayload & { companyInvitationToken: string } {
+  return Boolean(session?.role === "company_admin" && session.companyInvitationToken?.trim());
+}
+
+function createPendingInvitationProfile(session: WaflSessionPayload) {
+  return {
+    companyId: "pending-company-invitation",
+    companyName: "",
+    companyEnglishName: "",
+    businessName: "",
+    businessRegistrationNumber: "",
+    logoUrl: "",
+    postalCode: "",
+    roadAddress: "",
+    jibunAddress: "",
+    addressDetail: "",
+    addressExtra: "",
+    requestedPlanCode: "basic",
+    onboardingStatus: "profile_required" as const,
+    onboardingCompletedAt: null,
+    subscriptionStatus: "trialing" as const,
+    trialStartedAt: null,
+    trialEndsAt: null,
+    trialExpired: false,
+    adminName: session.name ?? "",
+    adminPhone: "",
+    profileComplete: false,
+    onboardingFiles: [],
+  };
+}
+
+function setCompanyAdminSessionCookie(response: NextResponse, request: NextRequest, session: WaflSessionPayload) {
+  response.cookies.set(WAFL_AUTH_SESSION_COOKIE, createWaflSessionCookieValue(session), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: new URL(request.url).protocol === "https:",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
+}
+
 function parseJsonPayload(value: string | null): unknown {
   if (!value) return null;
   try {
@@ -40,7 +83,21 @@ async function requireOnboardingCompanyApiAccess(companyId: string): Promise<Nex
 export async function GET() {
   const session = await getCurrentWaflSession();
 
-  if (!session || session.role !== "company_admin" || !session.companyId) {
+  if (!session || session.role !== "company_admin") {
+    return NextResponse.json(
+      { profile: null, error: "COMPANY_ADMIN_SESSION_REQUIRED" },
+      { status: 401 },
+    );
+  }
+
+  if (!session.companyId && hasCompanyInvitationEntrySession(session)) {
+    return NextResponse.json(
+      { profile: createPendingInvitationProfile(session) },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  if (!session.companyId) {
     return NextResponse.json(
       { profile: null, error: "COMPANY_ADMIN_SESSION_REQUIRED" },
       { status: 401 },
@@ -65,14 +122,42 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   const session = await getCurrentWaflSession();
 
-  if (!session || session.role !== "company_admin" || !session.companyId) {
+  if (!session || session.role !== "company_admin") {
     return NextResponse.json(
       { profile: null, error: "COMPANY_ADMIN_SESSION_REQUIRED" },
       { status: 401 },
     );
   }
 
-  const blockedResponse = await requireOnboardingCompanyApiAccess(session.companyId);
+  let effectiveSession = session;
+
+  if (!effectiveSession.companyId) {
+    if (!hasCompanyInvitationEntrySession(effectiveSession)) {
+      return NextResponse.json(
+        { profile: null, error: "COMPANY_ADMIN_INVITATION_REQUIRED" },
+        { status: 403 },
+      );
+    }
+
+    try {
+      effectiveSession = await createCompanyAdminAccountFromInvitationSession(effectiveSession);
+    } catch (error) {
+      return NextResponse.json(
+        { profile: null, error: getErrorCode(error) },
+        { status: 400 },
+      );
+    }
+  }
+
+  const companyId = effectiveSession.companyId;
+  if (!companyId) {
+    return NextResponse.json(
+      { profile: null, error: "COMPANY_ADMIN_SESSION_REQUIRED" },
+      { status: 401 },
+    );
+  }
+
+  const blockedResponse = await requireOnboardingCompanyApiAccess(companyId);
   if (blockedResponse) return blockedResponse;
 
   const contentType = request.headers.get("content-type") ?? "";
@@ -102,8 +187,8 @@ export async function PATCH(request: NextRequest) {
   try {
     if (logoFile) {
       await uploadCompanyOnboardingFile({
-        companyId: session.companyId,
-        uploadedByUserId: session.userId,
+        companyId,
+        uploadedByUserId: effectiveSession.userId,
         fileType: "logo",
         file: logoFile,
       });
@@ -111,14 +196,14 @@ export async function PATCH(request: NextRequest) {
 
     if (businessLicenseFile) {
       await uploadCompanyOnboardingFile({
-        companyId: session.companyId,
-        uploadedByUserId: session.userId,
+        companyId,
+        uploadedByUserId: effectiveSession.userId,
         fileType: "business_license",
         file: businessLicenseFile,
       });
     }
 
-    const profile = await updateCompanyOnboardingProfile(session, body);
+    const profile = await updateCompanyOnboardingProfile(effectiveSession, body);
     if (!profile) {
       return NextResponse.json(
         { profile: null, error: "COMPANY_ONBOARDING_PROFILE_NOT_FOUND" },
@@ -126,7 +211,11 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ profile }, { headers: { "Cache-Control": "no-store" } });
+    const response = NextResponse.json({ profile }, { headers: { "Cache-Control": "no-store" } });
+    if (effectiveSession.userId !== session.userId || effectiveSession.companyId !== session.companyId) {
+      setCompanyAdminSessionCookie(response, request, effectiveSession);
+    }
+    return response;
   } catch (error) {
     const code = getErrorCode(error);
     const status = code === "COMPANY_ONBOARDING_REQUIRED_FIELDS" ? 400 : 500;

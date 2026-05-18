@@ -61,11 +61,12 @@ type CurrentUserResponse = {
   user?: {
     id?: string | null;
     name?: string | null;
+    email?: string | null;
     role?: string | null;
   } | null;
 };
 
-async function loadCurrentUserIdFromSession(): Promise<string | null> {
+async function loadCurrentUserFromSession(): Promise<CurrentUserResponse["user"] | null> {
   try {
     const response = await fetch("/api/auth/me", {
       method: "GET",
@@ -74,7 +75,7 @@ async function loadCurrentUserIdFromSession(): Promise<string | null> {
     });
 
     const result = await parseResponse<CurrentUserResponse>(response);
-    return result.authenticated && result.user?.id ? result.user.id : null;
+    return result.authenticated && result.user?.id ? result.user : null;
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
       console.warn(
@@ -84,6 +85,39 @@ async function loadCurrentUserIdFromSession(): Promise<string | null> {
     }
     return null;
   }
+}
+
+function toWorkOrderRoleFromSessionRole(role: string | null | undefined): UserProfile["role"] {
+  return role === "company_admin" || role === "system_admin" ? "admin" : "designer";
+}
+
+function ensureSessionUserProfile(
+  users: UserProfile[],
+  sessionUser: CurrentUserResponse["user"] | null,
+): UserProfile[] {
+  if (!sessionUser?.id) return users;
+  if (users.some((user) => user.id === sessionUser.id)) return users;
+
+  const role = toWorkOrderRoleFromSessionRole(sessionUser.role);
+  return [
+    {
+      id: sessionUser.id,
+      name: sessionUser.name?.trim() || sessionUser.email?.trim() || sessionUser.id,
+      permissionCodes: [],
+      role,
+      team: role,
+      roles: [role],
+      permissions: {
+        canSeeProductionSections: true,
+        canSeeCostSections: role === "admin",
+        canEditInventory: role === "admin",
+        canSeeInventoryHistorySection: true,
+        canSeeAttachments: true,
+        canAssignRoles: role === "admin",
+      },
+    },
+    ...users,
+  ];
 }
 
 async function loadUserProfilesForWorkspace(): Promise<UserProfile[]> {
@@ -417,12 +451,13 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
   return {
     loadWorkspaceState: async () => {
       try {
-        const [summaryWorkOrders, users, sessionUserId] = await Promise.all([
+        const [summaryWorkOrders, loadedUsers, sessionUser] = await Promise.all([
           loadWorkOrderSummariesFromApi(),
           loadUserProfilesForWorkspace(),
-          loadCurrentUserIdFromSession(),
+          loadCurrentUserFromSession(),
         ]);
-        const currentUserId = resolveSessionUserId(users, sessionUserId);
+        const users = ensureSessionUserProfile(loadedUsers, sessionUser);
+        const currentUserId = resolveSessionUserId(users, sessionUser?.id ?? null);
         const selectedId = summaryWorkOrders[0]?.id ?? "";
         const workOrders = summaryWorkOrders;
         const permissionTargetUserId = currentUserId || users[0]?.id || "";

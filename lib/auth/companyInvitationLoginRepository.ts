@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "crypto";
 
-import { isDatabaseConfigured, queryDb, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
+import { isDatabaseConfigured, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
 import type { GoogleUserProfile } from "./googleOAuth";
 import type { WaflSessionPayload } from "./session";
 import { invitationRepository } from "@/lib/invitations/invitationRepository";
@@ -243,6 +243,16 @@ async function updateExistingCompanyAdminUserLogin(
   return updated.rows[0] ?? input.user;
 }
 
+function assertActiveCompanyAdminInvitation(rawToken: string) {
+  return invitationRepository.findInvitationByRawToken(rawToken).then((invitation) => {
+    if (!invitation) throw new Error("INVITATION_NOT_FOUND");
+    if (invitation.scope !== "system_to_company_admin") throw new Error("INVITATION_SCOPE_MISMATCH");
+    if (invitation.status !== "pending" && invitation.status !== "active") throw new Error("INVITATION_NOT_ACTIVE");
+    if (new Date(invitation.expiresAt).getTime() <= Date.now()) throw new Error("INVITATION_EXPIRED");
+    return invitation;
+  });
+}
+
 export async function completeCompanyAdminInvitationLogin(
   profile: GoogleUserProfile,
   rawToken: string,
@@ -251,11 +261,47 @@ export async function completeCompanyAdminInvitationLogin(
     throw new Error("DB_NOT_CONFIGURED");
   }
 
-  const invitation = await invitationRepository.findInvitationByRawToken(rawToken);
-  if (!invitation) throw new Error("INVITATION_NOT_FOUND");
-  if (invitation.scope !== "system_to_company_admin") throw new Error("INVITATION_SCOPE_MISMATCH");
-  if (invitation.status !== "pending" && invitation.status !== "active") throw new Error("INVITATION_NOT_ACTIVE");
-  if (new Date(invitation.expiresAt).getTime() <= Date.now()) throw new Error("INVITATION_EXPIRED");
+  await assertActiveCompanyAdminInvitation(rawToken);
+
+  return {
+    redirectPath: "/admin",
+    session: {
+      userId: `invitation:${profile.sub}`,
+      companyId: null,
+      companyMemberId: null,
+      companyName: null,
+      role: "company_admin",
+      email: normalizeEmail(profile.email),
+      name: profile.name || normalizeEmail(profile.email),
+      issuedAt: new Date().toISOString(),
+      companyInvitationToken: rawToken,
+      googleSub: profile.sub,
+      googlePictureUrl: normalizeText(profile.picture),
+    },
+  };
+}
+
+export async function createCompanyAdminAccountFromInvitationSession(
+  session: WaflSessionPayload,
+): Promise<WaflSessionPayload> {
+  if (!isDatabaseConfigured()) {
+    throw new Error("DB_NOT_CONFIGURED");
+  }
+
+  const rawToken = session.companyInvitationToken?.trim();
+  if (!rawToken) throw new Error("INVITATION_TOKEN_REQUIRED");
+  const googleSub = session.googleSub?.trim();
+  if (!googleSub) throw new Error("GOOGLE_SUB_REQUIRED");
+
+  await assertActiveCompanyAdminInvitation(rawToken);
+
+  const profile: GoogleUserProfile = {
+    sub: googleSub,
+    email: session.email,
+    name: session.name,
+    picture: session.googlePictureUrl ?? null,
+  };
+
   return withDbTransaction(async (client) => {
     const existingUser = await findExistingUser(client, profile);
     const company = existingUser
@@ -287,18 +333,17 @@ export async function completeCompanyAdminInvitationLogin(
     );
 
     return {
-      redirectPath: "/admin",
-      session: {
-        userId: user.id,
-        companyId: company.id,
-        companyMemberId: member.id,
-        companyName: company.name,
-        role: "company_admin",
-        email: normalizeEmail(user.email ?? profile.email),
-        name: user.name || profile.name,
-        issuedAt: new Date().toISOString(),
-        companyInvitationToken: rawToken,
-      },
+      userId: user.id,
+      companyId: company.id,
+      companyMemberId: member.id,
+      companyName: company.name,
+      role: "company_admin",
+      email: normalizeEmail(user.email ?? profile.email),
+      name: user.name || profile.name,
+      issuedAt: new Date().toISOString(),
+      companyInvitationToken: rawToken,
+      googleSub,
+      googlePictureUrl: normalizeText(profile.picture),
     };
   });
 }
