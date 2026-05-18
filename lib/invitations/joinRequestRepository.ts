@@ -122,8 +122,8 @@ type JoinRequestDbRow = {
   created_company_trial_ends_at?: Date | string | null;
 };
 
-function toIsoString(value: Date | string | null): string | null {
-  if (value === null) return null;
+function toIsoString(value: Date | string | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 }
 

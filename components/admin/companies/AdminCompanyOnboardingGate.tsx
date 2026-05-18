@@ -61,6 +61,21 @@ type CompanyOnboardingDraft = {
   adminPhone: string;
 };
 
+const COMPANY_ONBOARDING_TEXT_LIMITS = {
+  companyName: 60,
+  companyEnglishName: 80,
+  businessName: 60,
+  businessRegistrationNumber: 20,
+  postalCode: 10,
+  roadAddress: 120,
+  jibunAddress: 120,
+  addressDetail: 80,
+  addressExtra: 80,
+  adminName: 40,
+  adminPhone: 20,
+} as const;
+
+
 type CompanyOnboardingResponse = {
   profile?: CompanyOnboardingProfile | null;
   error?: string;
@@ -191,6 +206,7 @@ function TextInput({
   required,
   readOnly,
   inputMode,
+  maxLength,
 }: {
   label: string;
   value: string;
@@ -199,6 +215,7 @@ function TextInput({
   required?: boolean;
   readOnly?: boolean;
   inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
+  maxLength?: number;
 }) {
   return (
     <label className="grid gap-1.5 text-sm font-semibold text-[var(--pbp-text-primary)]">
@@ -209,6 +226,7 @@ function TextInput({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        maxLength={maxLength}
         placeholder={placeholder}
         readOnly={readOnly}
         inputMode={inputMode}
@@ -631,21 +649,21 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                   <div className="grid gap-4 lg:grid-cols-2">
                     <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                       <h3 className="text-base font-bold">{copy.sections.company}</h3>
-                      <TextInput label={copy.fields.companyName} value={draft.companyName} onChange={(value) => updateDraft("companyName", value)} placeholder={copy.placeholders.companyName} required />
-                      <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} placeholder={copy.placeholders.companyEnglishName} />
-                      <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} placeholder={copy.placeholders.businessName} required />
-                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" required />
+                      <TextInput label={copy.fields.companyName} value={draft.companyName} onChange={(value) => updateDraft("companyName", value)} placeholder={copy.placeholders.companyName} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.companyName} required />
+                      <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} placeholder={copy.placeholders.companyEnglishName} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.companyEnglishName} />
+                      <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} placeholder={copy.placeholders.businessName} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.businessName} required />
+                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.businessRegistrationNumber} required />
                     </section>
 
                     <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                       <h3 className="text-base font-bold">{copy.sections.address}</h3>
                       <div className="grid gap-3 sm:grid-cols-[0.7fr_1.3fr]">
-                        <TextInput label={copy.fields.postalCode} value={draft.postalCode} onChange={(value) => updateDraft("postalCode", value)} placeholder={copy.placeholders.postalCode} inputMode="numeric" required />
-                        <TextInput label={copy.fields.roadAddress} value={draft.roadAddress} onChange={(value) => updateDraft("roadAddress", value)} placeholder={copy.placeholders.roadAddress} required />
+                        <TextInput label={copy.fields.postalCode} value={draft.postalCode} onChange={(value) => updateDraft("postalCode", value)} placeholder={copy.placeholders.postalCode} inputMode="numeric" maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.postalCode} required />
+                        <TextInput label={copy.fields.roadAddress} value={draft.roadAddress} onChange={(value) => updateDraft("roadAddress", value)} placeholder={copy.placeholders.roadAddress} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.roadAddress} required />
                       </div>
-                      <TextInput label={copy.fields.jibunAddress} value={draft.jibunAddress} onChange={(value) => updateDraft("jibunAddress", value)} placeholder={copy.placeholders.jibunAddress} />
-                      <TextInput label={copy.fields.addressDetail} value={draft.addressDetail} onChange={(value) => updateDraft("addressDetail", value)} placeholder={copy.placeholders.addressDetail} required />
-                      <TextInput label={copy.fields.addressExtra} value={draft.addressExtra} onChange={(value) => updateDraft("addressExtra", value)} placeholder={copy.placeholders.addressExtra} />
+                      <TextInput label={copy.fields.jibunAddress} value={draft.jibunAddress} onChange={(value) => updateDraft("jibunAddress", value)} placeholder={copy.placeholders.jibunAddress} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.jibunAddress} />
+                      <TextInput label={copy.fields.addressDetail} value={draft.addressDetail} onChange={(value) => updateDraft("addressDetail", value)} placeholder={copy.placeholders.addressDetail} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.addressDetail} required />
+                      <TextInput label={copy.fields.addressExtra} value={draft.addressExtra} onChange={(value) => updateDraft("addressExtra", value)} placeholder={copy.placeholders.addressExtra} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.addressExtra} />
                       <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.addressApiNote}</p>
                     </section>
                   </div>
@@ -696,13 +714,14 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                   <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                     <h3 className="text-base font-bold">{copy.sections.admin}</h3>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <TextInput label={copy.fields.adminName} value={draft.adminName} onChange={(value) => updateDraft("adminName", value)} placeholder={copy.placeholders.adminName} required />
+                      <TextInput label={copy.fields.adminName} value={draft.adminName} onChange={(value) => updateDraft("adminName", value)} placeholder={copy.placeholders.adminName} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.adminName} required />
                       <TextInput
                         label={copy.fields.adminPhone}
                         value={draft.adminPhone}
                         onChange={(value) => updateDraft("adminPhone", formatPhoneNumber(value))}
                         placeholder={copy.placeholders.adminPhone}
                         inputMode="tel"
+                        maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.adminPhone}
                         required
                       />
                     </div>

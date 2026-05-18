@@ -114,6 +114,24 @@ function toCompactDateTimeLabel(value: string | null | undefined): string {
   });
 }
 
+
+function TruncatedText({
+  value,
+  fallback = "-",
+  className = "",
+}: {
+  value: string | null | undefined;
+  fallback?: string;
+  className?: string;
+}) {
+  const text = value?.trim() || fallback;
+  return (
+    <span className={["block min-w-0 max-w-full truncate", className].filter(Boolean).join(" ")} title={text}>
+      {text}
+    </span>
+  );
+}
+
 function parseCompanyMemoValue(memo: string | null | undefined, key: string): string {
   if (!memo) return "";
   const lines = memo.split("\n");
@@ -445,11 +463,12 @@ export default function SystemCompanyApprovalConsole() {
     () => [
       {
         key: "company",
-        label: "회사명",
+        label: "회사",
         render: (request) => (
-          <div>
-            <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{request.companyName}</p>
-            <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{request.businessName}</p>
+          <div className="min-w-0">
+            <TruncatedText value={request.companyName} className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`} />
+            <TruncatedText value={request.businessName} className="mt-1 text-xs text-[var(--pbp-text-muted)]" />
+            <TruncatedText value={request.companyEnglishName} className="mt-1 text-xs text-[var(--pbp-text-faint)]" />
           </div>
         ),
       },
@@ -459,24 +478,15 @@ export default function SystemCompanyApprovalConsole() {
         render: (request) => <AdminStatusBadge tone={request.statusTone}>{request.statusLabel}</AdminStatusBadge>,
       },
       {
-        key: "englishName",
-        label: "영문명",
+        key: "admin",
+        label: "관리자",
         className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.companyEnglishName,
-      },
-      {
-        key: "logo",
-        label: "로고",
-        headerClassName: "text-center",
-        className: "text-center",
-        render: (request) => request.logoUrl ? (
-          <img
-            src={request.logoUrl}
-            alt="회사 로고"
-            className="mx-auto h-10 w-10 rounded-2xl border border-[var(--pbp-border)] object-cover"
-          />
-        ) : (
-          <span className="text-xs text-[var(--pbp-text-faint)]">-</span>
+        render: (request) => (
+          <div className="min-w-0">
+            <TruncatedText value={request.applicantName} className="font-semibold text-[var(--pbp-text-primary)]" />
+            <TruncatedText value={request.applicantEmail} className="mt-1" />
+            <TruncatedText value={request.applicantPhone} className="mt-1" />
+          </div>
         ),
       },
       {
@@ -488,48 +498,29 @@ export default function SystemCompanyApprovalConsole() {
           const businessLicenseFile = getCompanyOnboardingFile(request.onboardingFiles, "business_license");
 
           return (
-            <div className="grid gap-1">
-              <span>로고 {getCompanyOnboardingFileStatusLabel(logoFile)}</span>
-              <span>사업자등록증 {getCompanyOnboardingFileStatusLabel(businessLicenseFile)}</span>
+            <div className="grid min-w-0 gap-1">
+              <TruncatedText value={`로고 ${getCompanyOnboardingFileStatusLabel(logoFile)}`} />
+              <TruncatedText value={`사업자등록증 ${getCompanyOnboardingFileStatusLabel(businessLicenseFile)}`} />
             </div>
           );
         },
       },
       {
-        key: "email",
-        label: "이메일",
+        key: "plan",
+        label: "요금제",
         className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.applicantEmail,
-      },
-      {
-        key: "name",
-        label: "이름",
-        className: "text-sm font-medium text-[var(--pbp-text-primary)]",
-        render: (request) => request.applicantName,
-      },
-      {
-        key: "phone",
-        label: "연락처",
-        className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.applicantPhone,
-      },
-      {
-        key: "requestedPlan",
-        label: "신청 요금제",
-        className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.requestedPlanCode,
-      },
-      {
-        key: "currentPlan",
-        label: "현재 요금제",
-        className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.currentPlanLabel,
+        render: (request) => (
+          <div className="min-w-0">
+            <TruncatedText value={`신청 ${request.requestedPlanCode}`} />
+            <TruncatedText value={`현재 ${request.currentPlanLabel}`} className="mt-1" />
+          </div>
+        ),
       },
       {
         key: "requestedAt",
         label: "신청일",
         className: "text-xs text-[var(--pbp-text-muted)]",
-        render: (request) => request.requestedAtLabel,
+        render: (request) => <TruncatedText value={request.requestedAtLabel} />,
       },
       {
         key: "actions",
@@ -537,7 +528,7 @@ export default function SystemCompanyApprovalConsole() {
         headerClassName: "text-center",
         className: "text-center",
         render: (request) => (
-          <div className="grid gap-2 sm:flex sm:justify-center">
+          <div className="grid min-w-0 gap-2 sm:flex sm:flex-wrap sm:justify-center">
             <AdminButton
               onClick={() => setSelectedJoinRequestId(request.id)}
               disabled={approvingRequestId !== null || rejectingRequestId !== null}
@@ -961,8 +952,8 @@ export default function SystemCompanyApprovalConsole() {
               emptyLabel="표시할 고객사 가입 이력이 없습니다."
               isLoading={joinRequestLoadStatus === "loading"}
               loadingLabel="고객사 가입 신청을 불러오는 중입니다."
-              gridTemplateColumns="1.2fr 0.75fr 0.8fr 0.5fr 0.9fr 1.2fr 0.8fr 0.8fr 0.75fr 0.75fr 0.8fr 1.2fr"
-              rowBaseClassName="grid min-w-[1420px] w-full gap-3 px-4 py-4 text-left text-sm md:items-center"
+              gridTemplateColumns="minmax(0,1.25fr) 0.65fr minmax(0,1.2fr) minmax(0,0.9fr) minmax(0,0.9fr) minmax(0,0.85fr) minmax(0,1fr)"
+              rowBaseClassName="grid w-full min-w-0 gap-3 px-4 py-4 text-left text-sm md:items-center"
             />
           </div>
         </section>
