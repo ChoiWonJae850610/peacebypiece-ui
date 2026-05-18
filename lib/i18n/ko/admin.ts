@@ -1822,6 +1822,7 @@ export const adminKo = {
       action: "요금제 확인하기",
     },
     errors: {
+      requiredFields: "필수 입력값을 확인해주세요",
       load: "회사 정보를 불러오지 못했습니다.",
       save: "회사 정보 저장에 실패했습니다. 필수 항목을 확인해주세요.",
     },

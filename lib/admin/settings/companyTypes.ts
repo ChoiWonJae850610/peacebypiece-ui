@@ -13,6 +13,21 @@ export type CompanySubscriptionStatus =
   | "past_due"
   | "canceled";
 
+export type CompanyOnboardingFileType = "logo" | "business_license";
+
+export type CompanyOnboardingFileMetadata = {
+  id: string;
+  companyId: string;
+  fileType: CompanyOnboardingFileType;
+  originalName: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedByUserId?: string | null;
+  createdAt?: string | null;
+  deletedAt?: string | null;
+};
+
 export type CompanyOnboardingProfile = {
   companyId: string;
   companyName: string;

@@ -50,6 +50,12 @@ type CompanyOnboardingResponse = {
   error?: string;
 };
 
+type CompanyOnboardingErrorCopy = {
+  load: string;
+  save: string;
+  requiredFields: string;
+};
+
 const ONBOARDING_PLACEHOLDER_COMPANY_NAME_PATTERNS = [
   /회사\s*정보\s*입력\s*필요/i,
   /^회사\s*정보\s*입력\s*전$/i,
@@ -59,6 +65,17 @@ const ONBOARDING_PLACEHOLDER_COMPANY_NAME_PATTERNS = [
 function isOnboardingPlaceholderCompanyName(value: string | null | undefined): boolean {
   const normalized = String(value ?? "").trim();
   return Boolean(normalized) && ONBOARDING_PLACEHOLDER_COMPANY_NAME_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+function resolveCompanyOnboardingErrorMessage(errorCode: string | null | undefined, copy: CompanyOnboardingErrorCopy): string {
+  if (errorCode === "COMPANY_ONBOARDING_REQUIRED_FIELDS") return copy.requiredFields;
+  if (errorCode === "COMPANY_ONBOARDING_LOAD_FAILED") return copy.load;
+  if (errorCode === "COMPANY_ONBOARDING_SAVE_FAILED") return copy.save;
+  return copy.save;
+}
+
+function buildRequiredFieldsMessage(prefix: string, labels: string[]): string {
+  return `${prefix}: ${labels.join(", ")}`;
 }
 
 function buildDraft(profile: CompanyOnboardingProfile | null): CompanyOnboardingDraft {
@@ -133,12 +150,24 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     const missing: string[] = [];
     if (!draft.companyName.trim()) missing.push(copy.fields.companyName);
     if (!draft.businessName.trim()) missing.push(copy.fields.businessName);
+    if (!draft.businessRegistrationNumber.trim()) missing.push(copy.fields.businessRegistrationNumber);
     if (!draft.postalCode.trim()) missing.push(copy.fields.postalCode);
     if (!draft.roadAddress.trim()) missing.push(copy.fields.roadAddress);
+    if (!draft.addressDetail.trim()) missing.push(copy.fields.addressDetail);
     if (!draft.adminName.trim()) missing.push(copy.fields.adminName);
     if (normalizePhoneNumber(draft.adminPhone).length < 10) missing.push(copy.fields.adminPhone);
     return missing;
-  }, [copy.fields.adminName, copy.fields.adminPhone, copy.fields.businessName, copy.fields.companyName, copy.fields.postalCode, copy.fields.roadAddress, draft]);
+  }, [
+    copy.fields.addressDetail,
+    copy.fields.adminName,
+    copy.fields.adminPhone,
+    copy.fields.businessName,
+    copy.fields.businessRegistrationNumber,
+    copy.fields.companyName,
+    copy.fields.postalCode,
+    copy.fields.roadAddress,
+    draft,
+  ]);
 
   const canSave = missingRequiredLabels.length === 0;
 
@@ -170,13 +199,13 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
       } catch (error) {
         if ((error as Error).name === "AbortError") return;
         setLoadState("error");
-        setErrorMessage(error instanceof Error ? error.message : copy.errors.load);
+        setErrorMessage(error instanceof Error ? resolveCompanyOnboardingErrorMessage(error.message, copy.errors) : copy.errors.load);
       }
     }
 
     void load();
     return () => controller.abort();
-  }, [copy.errors.load]);
+  }, [copy.errors]);
 
   useEffect(() => {
     if (!blocksAdminWorkspace) return;
@@ -231,7 +260,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
     if (!canSave) {
       setSaveState("error");
-      setErrorMessage(`필수 입력값을 확인해주세요: ${missingRequiredLabels.join(", ")}`);
+      setErrorMessage(buildRequiredFieldsMessage(copy.errors.requiredFields, missingRequiredLabels));
       return;
     }
 
@@ -258,7 +287,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
       setSaveState("saved");
     } catch (error) {
       setSaveState("error");
-      setErrorMessage(error instanceof Error ? error.message : copy.errors.save);
+      setErrorMessage(error instanceof Error ? resolveCompanyOnboardingErrorMessage(error.message, copy.errors) : copy.errors.save);
     }
   }
 
@@ -341,7 +370,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                       <TextInput label={copy.fields.companyName} value={draft.companyName} onChange={(value) => updateDraft("companyName", value)} placeholder={copy.placeholders.companyName} required />
                       <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} placeholder={copy.placeholders.companyEnglishName} />
                       <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} placeholder={copy.placeholders.businessName} required />
-                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" />
+                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" required />
                       <TextInput label={copy.fields.logoUrl} value={draft.logoUrl} onChange={(value) => updateDraft("logoUrl", value)} placeholder={copy.placeholders.logoUrl} />
                     </section>
 
@@ -352,7 +381,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                         <TextInput label={copy.fields.roadAddress} value={draft.roadAddress} onChange={(value) => updateDraft("roadAddress", value)} placeholder={copy.placeholders.roadAddress} required />
                       </div>
                       <TextInput label={copy.fields.jibunAddress} value={draft.jibunAddress} onChange={(value) => updateDraft("jibunAddress", value)} placeholder={copy.placeholders.jibunAddress} />
-                      <TextInput label={copy.fields.addressDetail} value={draft.addressDetail} onChange={(value) => updateDraft("addressDetail", value)} placeholder={copy.placeholders.addressDetail} />
+                      <TextInput label={copy.fields.addressDetail} value={draft.addressDetail} onChange={(value) => updateDraft("addressDetail", value)} placeholder={copy.placeholders.addressDetail} required />
                       <TextInput label={copy.fields.addressExtra} value={draft.addressExtra} onChange={(value) => updateDraft("addressExtra", value)} placeholder={copy.placeholders.addressExtra} />
                       <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.addressApiNote}</p>
                     </section>

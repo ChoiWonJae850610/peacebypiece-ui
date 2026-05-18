@@ -1,16 +1,24 @@
-Version : 0.13.60
-Summary : 고객사 초대 링크 목록과 발송 UI 정리
-Description : 고객사 관리자 초대 영역을 전달 방식/대상 입력, 만료일 선택, 독립 링크 생성, 초대 링크 목록 구조로 재정리했습니다. 시스템관리자 초대 링크 목록 조회와 취소 API를 추가하고, 초대 링크를 재복사할 수 있도록 invitations에 invite_url_path를 저장합니다. 고객사 초대 검증 화면은 유효/무효 상태 문구가 충돌하지 않도록 정리했습니다.
+Version :
+0.13.61
+
+Summary :
+고객사 온보딩 파일 metadata 구조와 필수값 오류 문구 보정
+
+Description :
+고객사 온보딩 로고와 사업자등록증 업로드를 위한 DB metadata 테이블, migration, R2 storage key 정책, 파일 mime/size 정책, metadata repository를 추가했다. 온보딩 모달에서 사업자등록번호와 상세주소 필수 표시 및 클라이언트 검증 누락을 보정하고, COMPANY_ONBOARDING_REQUIRED_FIELDS 코드가 화면에 그대로 노출되지 않도록 i18n 오류 문구 매핑을 추가했다.
+
 수정 파일 목록 :
-- components/system/companies/SystemCompanyApprovalConsole.tsx
-- components/invitations/CompanyInvitationJoinRequestPage.tsx
-- lib/invitations/invitationRepository.ts
-- lib/invitations/invitationTypes.ts
-- lib/invitations/api/invitationRouteHandlers.ts
+- components/admin/companies/AdminCompanyOnboardingGate.tsx
 - db/schema/full_reset.sql
+- lib/admin/settings/companyTypes.ts
 - lib/constants/app.ts
+- lib/i18n/en/admin.ts
+- lib/i18n/ko/admin.ts
+
 추가 파일 목록 :
-- app/api/invitations/[invitationId]/revoke/route.ts
-- db/migrations/patch_0_13_60_invitation_link_list.sql
+- db/migrations/patch_0_13_61_company_onboarding_files.sql
+- lib/admin/settings/companyOnboardingFilePolicy.ts
+- lib/admin/settings/companyOnboardingFileRepository.ts
+
 삭제 파일 목록 :
-- 없음
+없음

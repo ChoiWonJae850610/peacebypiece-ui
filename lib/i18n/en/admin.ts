@@ -1875,6 +1875,7 @@ export const adminEn = {
       action: "View plans",
     },
     errors: {
+      requiredFields: "Check the required fields",
       load: "Failed to load company information.",
       save: "Failed to save company information. Check required fields.",
     },

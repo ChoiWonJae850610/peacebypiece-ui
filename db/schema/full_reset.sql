@@ -50,6 +50,7 @@ DROP TABLE IF EXISTS role_templates CASCADE;
 DROP TABLE IF EXISTS company_members CASCADE;
 
 DROP TABLE IF EXISTS company_user_permissions CASCADE;
+DROP TABLE IF EXISTS company_onboarding_files CASCADE;
 DROP TABLE IF EXISTS role_permissions CASCADE;
 DROP TABLE IF EXISTS permission_catalog CASCADE;
 DROP TABLE IF EXISTS role_catalog CASCADE;
@@ -209,6 +210,27 @@ CREATE TABLE users (
   CONSTRAINT users_role_check CHECK (
     role IN ('admin', 'designer', 'inspector', 'inventory_manager', 'viewer', 'system')
   )
+);
+
+
+CREATE TABLE company_onboarding_files (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  file_type text NOT NULL,
+  original_name text NOT NULL,
+  storage_key text NOT NULL,
+  mime_type text NOT NULL,
+  size_bytes bigint NOT NULL DEFAULT 0,
+  uploaded_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  CONSTRAINT company_onboarding_files_type_check CHECK (
+    file_type IN ('logo', 'business_license')
+  ),
+  CONSTRAINT company_onboarding_files_size_check CHECK (size_bytes >= 0),
+  CONSTRAINT company_onboarding_files_original_name_check CHECK (length(trim(original_name)) > 0),
+  CONSTRAINT company_onboarding_files_storage_key_check CHECK (length(trim(storage_key)) > 0),
+  CONSTRAINT company_onboarding_files_mime_type_check CHECK (length(trim(mime_type)) > 0)
 );
 
 CREATE TABLE company_users (
@@ -1679,6 +1701,11 @@ COMMENT ON COLUMN permission_catalog.permission_key IS
 -- =========================================
 
 CREATE INDEX companies_active_name_idx ON companies (is_active, name);
+CREATE INDEX company_onboarding_files_company_type_active_idx
+  ON company_onboarding_files (company_id, file_type, created_at DESC)
+  WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX company_onboarding_files_storage_key_unique
+  ON company_onboarding_files (storage_key);
 CREATE INDEX company_settings_company_idx ON company_settings (company_id);
 CREATE UNIQUE INDEX users_company_email_unique ON users (company_id, lower(email)) WHERE email IS NOT NULL;
 CREATE INDEX users_company_active_idx ON users (company_id, is_active, role, name);
