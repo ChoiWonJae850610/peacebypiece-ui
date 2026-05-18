@@ -279,6 +279,9 @@ const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
   REQUESTED_COMPANY_NAME_REQUIRED: "회사명이 입력되지 않았습니다.",
   COMPANY_ALREADY_EXISTS: "이미 같은 이름의 고객사가 있습니다.",
   COMPANY_APPROVAL_TARGET_NOT_FOUND: "승인 대상 고객사 정보를 찾을 수 없습니다.",
+  MEMBER_USER_CREATE_FAILED: "고객사 관리자 사용자 계정 생성에 실패했습니다.",
+  COMPANY_MEMBER_CREATE_FAILED: "고객사 관리자 멤버십 생성에 실패했습니다.",
+  MEMBER_PERMISSION_REQUIRED: "고객사 관리자에게 부여할 권한이 없습니다.",
   SYSTEM_ADMIN_SESSION_REQUIRED: "시스템관리자 로그인이 필요합니다.",
 };
 

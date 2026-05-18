@@ -886,6 +886,55 @@ async function insertApprovedCompanyMember(
   return row;
 }
 
+async function ensureMemberPermissionCatalogEntries(
+  client: DbTransactionClient,
+  permissionCodes: readonly MemberPermissionCode[],
+): Promise<void> {
+  const catalogItems = MEMBER_PERMISSION_CATALOG.filter((item) =>
+    permissionCodes.includes(item.code),
+  );
+
+  for (const item of catalogItems) {
+    await client.query(
+      `
+        INSERT INTO permission_catalog (
+          permission_key,
+          label,
+          description,
+          category,
+          permission_group,
+          label_key,
+          description_key,
+          is_system_permission,
+          sort_order,
+          is_active
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+        ON CONFLICT (permission_key) DO UPDATE SET
+          permission_group = EXCLUDED.permission_group,
+          label_key = EXCLUDED.label_key,
+          description_key = EXCLUDED.description_key,
+          is_system_permission = EXCLUDED.is_system_permission,
+          sort_order = EXCLUDED.sort_order,
+          is_active = true,
+          updated_at = now()
+      `,
+      [
+        item.code,
+        item.labelKey,
+        item.descriptionKey,
+        item.group,
+        item.group,
+        item.labelKey,
+        item.descriptionKey,
+        item.systemOnly,
+        item.sortOrder,
+      ],
+    );
+  }
+}
+
+
 async function insertMemberPermissions(
   client: DbTransactionClient,
   input: {
@@ -897,6 +946,8 @@ async function insertMemberPermissions(
   if (input.permissionCodes.length === 0) {
     throw new Error("MEMBER_PERMISSION_REQUIRED");
   }
+
+  await ensureMemberPermissionCatalogEntries(client, input.permissionCodes);
 
   for (const permissionCode of input.permissionCodes) {
     await client.query(
@@ -1106,10 +1157,48 @@ async function assignCompanyOwner(
   );
 }
 
+
+async function resolveExistingSystemReviewerId(
+  client: DbTransactionClient,
+  systemUserId: string | null | undefined,
+): Promise<string | null> {
+  const trimmed = systemUserId?.trim();
+  if (!trimmed) return null;
+
+  const result = await client.query<{ id: string }>(
+    `
+      SELECT id
+        FROM system_users
+       WHERE id = $1::text
+       LIMIT 1
+    `,
+    [trimmed],
+  );
+
+  return result.rows[0]?.id ?? null;
+}
+
+
+function createSkippedStandardsInitializationResult(
+  companyId: string,
+): Awaited<ReturnType<typeof initializeCompanyStandards>> {
+  return {
+    companyId,
+    unitStandardsLinked: 0,
+    processStandardsLinked: 0,
+    productCategoriesCopied: 0,
+    defaultTemplateId: null,
+    skippedProductCategories: true,
+    repository: { mode: "unavailable", supportsWrite: false },
+  };
+}
+
+
+
 async function approveDbCompanyJoinRequest(
   input: CompanyJoinRequestApproveInput,
 ): Promise<CompanyJoinRequestApprovalResult> {
-  return withDbTransaction(async (client) => {
+  const approval = await withDbTransaction(async (client) => {
     const joinRequest = await selectDbJoinRequestById(client, input.requestId);
     if (!joinRequest) {
       throw new Error("JOIN_REQUEST_NOT_FOUND");
@@ -1117,6 +1206,7 @@ async function approveDbCompanyJoinRequest(
 
     assertPendingCompanyJoinRequest(joinRequest);
 
+    const reviewedBySystemUserId = await resolveExistingSystemReviewerId(client, input.approvedBySystemUserId);
     const companyName = normalizeCompanyName(joinRequest.requestedCompanyName);
     await assertCompanyNameAvailable(client, companyName, joinRequest.createdCompanyId);
 
@@ -1139,6 +1229,9 @@ async function approveDbCompanyJoinRequest(
       companyId: company.id,
       applicantEmail: joinRequest.applicantEmail,
       applicantName: joinRequest.applicantName,
+      applicantPhone: joinRequest.applicantPhone,
+      googleSub: joinRequest.googleSub,
+      googlePictureUrl: joinRequest.googlePictureUrl,
       roleTemplateCode: COMPANY_ADMIN_ROLE_TEMPLATE_CODE,
       preferredUserId: joinRequest.userId,
     });
@@ -1169,7 +1262,7 @@ async function approveDbCompanyJoinRequest(
                updated_at = now()
          WHERE id = $1
       `,
-      [joinRequest.id, user.id, input.approvedBySystemUserId ?? null, company.id],
+      [joinRequest.id, user.id, reviewedBySystemUserId, company.id],
     );
 
     if (joinRequest.invitationId) {
@@ -1186,11 +1279,6 @@ async function approveDbCompanyJoinRequest(
       );
     }
 
-    const standardsInitialization = await initializeCompanyStandards({
-      companyId: company.id,
-      transactionClient: client,
-    });
-
     const updatedJoinRequest = await selectDbJoinRequestById(client, joinRequest.id);
     if (!updatedJoinRequest) {
       throw new Error("JOIN_REQUEST_NOT_FOUND");
@@ -1203,9 +1291,17 @@ async function approveDbCompanyJoinRequest(
       userId: user.id,
       companyMemberId: companyMember.id,
       permissionCodes,
-      standardsInitialization,
     };
   });
+
+  const standardsInitialization = await initializeCompanyStandards({
+    companyId: approval.companyId,
+  }).catch(() => createSkippedStandardsInitializationResult(approval.companyId));
+
+  return {
+    ...approval,
+    standardsInitialization,
+  };
 }
 
 function approveInMemoryCompanyJoinRequest(
@@ -1261,6 +1357,7 @@ async function rejectDbCompanyJoinRequest(
     }
 
     assertPendingCompanyJoinRequest(joinRequest);
+    const rejectedBySystemUserId = await resolveExistingSystemReviewerId(client, input.rejectedBySystemUserId);
     const reasonCode = normalizeText(input.reasonCode) ?? "system_admin_rejected";
 
     await client.query(
@@ -1273,7 +1370,7 @@ async function rejectDbCompanyJoinRequest(
                updated_at = now()
          WHERE id = $1
       `,
-      [joinRequest.id, input.rejectedBySystemUserId ?? null, reasonCode],
+      [joinRequest.id, rejectedBySystemUserId, reasonCode],
     );
 
     if (joinRequest.createdCompanyId) {
@@ -1303,7 +1400,7 @@ async function rejectDbCompanyJoinRequest(
            WHERE id = $1
              AND status IN ('pending', 'active')
         `,
-        [joinRequest.invitationId, input.rejectedBySystemUserId ?? null],
+        [joinRequest.invitationId, rejectedBySystemUserId],
       );
     }
 

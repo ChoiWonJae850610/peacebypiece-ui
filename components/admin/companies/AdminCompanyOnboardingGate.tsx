@@ -351,9 +351,12 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
 
-  const requiresOnboarding = loadState === "loaded" && profile !== null && !profile.profileComplete;
-  const isApprovalPending = loadState === "loaded" && profile?.profileComplete && profile.onboardingStatus === "approval_pending";
-  const isTrialExpired = loadState === "loaded" && profile?.profileComplete && profile.trialExpired;
+  const requiresOnboarding =
+    loadState === "loaded" &&
+    profile !== null &&
+    (profile.onboardingStatus === "profile_required" || !profile.profileComplete);
+  const isApprovalPending = loadState === "loaded" && profile?.onboardingStatus === "approval_pending";
+  const isTrialExpired = loadState === "loaded" && profile?.onboardingStatus === "active" && profile.trialExpired;
   const isCheckingOnboarding = loadState === "idle" || loadState === "loading";
   const blocksAdminWorkspace = isCheckingOnboarding || requiresOnboarding || isApprovalPending || isTrialExpired || loadState === "error";
   const hasUploadingFile = Object.values(fileStates).some((state) => state.status === "uploading" || state.status === "deleting");
