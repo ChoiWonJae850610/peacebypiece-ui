@@ -1,25 +1,72 @@
+import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { getCompanyAccessState } from "@/lib/billing/companyAccessRepository";
+import { buildServicePausedViewModel } from "@/lib/billing/companyAccessPresentation";
 import { APP_VERSION } from "@/lib/constants/app";
+import { getI18n } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-export default function ServicePausedPage() {
+export default async function ServicePausedPage() {
+  const session = await getCurrentWaflSession();
+  const accessState = session?.companyId ? await getCompanyAccessState(session.companyId) : null;
+  const i18n = getI18n();
+  const viewModel = buildServicePausedViewModel({
+    session,
+    accessState,
+    copy: i18n.admin.servicePausedPage,
+  });
+
   return (
-    <main className="grid min-h-screen place-items-center bg-stone-100 px-5 py-10 text-stone-900">
-      <section className="w-full max-w-xl rounded-[32px] border border-stone-200 bg-white p-6 shadow-xl sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-stone-500">WAFL v{APP_VERSION}</p>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight">서비스 이용 대기 중입니다.</h1>
-        <p className="mt-3 text-sm leading-6 text-stone-600">
-          회사의 가입 신청이 거절되었거나 무료체험 기간이 종료되어 이용 상태 확인이 필요합니다. 일반 멤버 계정에서는 상태 변경이나 요금제 변경을 처리할 수 없습니다.
+    <main className="grid min-h-screen place-items-center bg-[var(--pbp-page-bg)] px-5 py-10 text-[var(--pbp-text-primary)]">
+      <section className="w-full max-w-2xl rounded-[32px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-6 shadow-xl sm:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--pbp-text-muted)]">
+          {viewModel.eyebrow} · WAFL v{APP_VERSION}
         </p>
-        <div className="mt-5 rounded-2xl bg-stone-50 p-4 text-sm leading-6 text-stone-600">
-          가입 신청이 거절된 경우 시스템관리자에게 문의해 주세요. 무료체험 만료 또는 결제 상태 문제인 경우 고객사 관리자에게 요금제 갱신 또는 서비스 재개 요청을 문의해 주세요.
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{viewModel.title}</h1>
+            <p className="mt-3 text-sm leading-6 text-[var(--pbp-text-muted)]">{viewModel.description}</p>
+          </div>
+          <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-1 text-xs font-bold text-[var(--pbp-text-muted)]">
+            {viewModel.statusLabel}
+          </span>
         </div>
-        <a
-          href="/api/auth/logout"
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-2xl bg-stone-900 px-5 text-sm font-bold text-white"
-        >
-          로그아웃
-        </a>
+
+        <dl className="mt-5 grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4 text-sm sm:grid-cols-3">
+          <div>
+            <dt className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.company}</dt>
+            <dd className="mt-1 font-bold">{viewModel.companyName}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.account}</dt>
+            <dd className="mt-1 truncate font-bold">{viewModel.accountEmail}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.status}</dt>
+            <dd className="mt-1 font-bold">{viewModel.statusLabel}</dd>
+          </div>
+        </dl>
+
+        <div className="mt-5 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4 text-sm leading-6 text-[var(--pbp-text-muted)]">
+          {viewModel.notice}
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          <a
+            href={viewModel.primaryActionHref}
+            className="inline-flex h-11 items-center justify-center rounded-2xl bg-[var(--pbp-primary)] px-5 text-sm font-bold text-white"
+          >
+            {viewModel.primaryActionLabel}
+          </a>
+          {viewModel.primaryActionHref !== viewModel.secondaryActionHref ? (
+            <a
+              href={viewModel.secondaryActionHref}
+              className="inline-flex h-11 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-5 text-sm font-bold text-[var(--pbp-text-primary)]"
+            >
+              {viewModel.secondaryActionLabel}
+            </a>
+          ) : null}
+        </div>
       </section>
     </main>
   );

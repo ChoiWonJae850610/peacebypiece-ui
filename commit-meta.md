@@ -1,19 +1,22 @@
 Version :
-0.13.83
+0.13.84
 
 Summary :
-작업지시서 조회 범위와 멤버 권한 guard 보정
+가입대기 거절 접근불가 안내 화면 보정
 
 Description :
-작업지시서 조회 scope에 고객사 전체 조회와 멤버 담당 범위를 분리하는 visibility 기준을 추가했다. 고객사 관리자는 같은 회사의 모든 작업지시서를 조회할 수 있고, 일반 멤버는 본인 사용자 또는 멤버 식별자에 연결된 작업지시서만 조회하도록 DB query layer를 보정했다. 작업지시서 조회, 생성, 수정, 삭제 API에도 멤버 권한 guard와 접근 불가 항목의 404 응답을 추가했다.
+회사 접근 상태 판정에 profile_required와 approval_pending 상태를 포함해 일반 멤버 업무 화면 접근을 서비스 대기 화면으로 차단하고, 서비스 대기 화면을 상태별 안내 모델과 i18n 문구로 정리했다. 고객사 관리자 온보딩 모달 흐름은 유지하면서 거절, 승인대기, 회사정보 필요, 요금제 제한 상태를 구분해 표시하도록 보정했다.
 
 수정 파일 목록 :
-- lib/workorder/repository/dbWorkOrderRepository.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
+- lib/billing/companyAccessRepository.ts
+- lib/auth/routeGuard.ts
+- app/service-paused/page.tsx
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- lib/billing/companyAccessPresentation.ts
 
 삭제 파일 목록 :
 없음

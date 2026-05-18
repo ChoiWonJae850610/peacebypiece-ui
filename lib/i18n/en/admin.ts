@@ -1910,6 +1910,78 @@ export const adminEn = {
       fileNotFound: "File not found.",
     },
   },
+  servicePausedPage: {
+    eyebrow: "WAFL ACCESS",
+    sessionRequired: {
+      title: "Sign-in is required.",
+      description: "To use the workspace, sign in again with an invitation link or a registered account.",
+      notice: "If a new Google account enters directly without an invitation link, onboarding cannot continue. Ask the company admin or system admin for an invitation link.",
+    },
+    profileRequiredAdmin: {
+      title: "Company information is required.",
+      description: "The company admin must submit company details and required files before requesting approval.",
+      notice: "Company details are not finalized in DB/R2 until the approval request is submitted. Return to the input screen and submit the required information.",
+    },
+    profileRequiredMember: {
+      title: "This account is not ready for workspace access.",
+      description: "Regular members cannot submit company information or request company approval.",
+      notice: "Ask the company admin to check the company approval status and member approval status.",
+    },
+    approvalPendingAdmin: {
+      title: "Company approval is pending.",
+      description: "Company information has been submitted and is waiting for system-admin review.",
+      notice: "Core workspace screens such as work orders, storage, and member management are unavailable before approval.",
+    },
+    approvalPendingMember: {
+      title: "Company or member approval is pending.",
+      description: "Regular members cannot use the workspace while approval is pending.",
+      notice: "Ask the company admin to check the approval status. After approval, sign in again to enter the workspace.",
+    },
+    rejectedAdmin: {
+      title: "The company request was rejected.",
+      description: "The system admin rejected the company request or requested resubmission.",
+      notice: "Check the rejection reason and request resubmission from the system admin. Workspace features are unavailable on this screen.",
+    },
+    rejectedMember: {
+      title: "The company request has not been approved.",
+      description: "Because the company request was rejected, member accounts cannot use the workspace.",
+      notice: "Ask the company admin to check the company approval status.",
+    },
+    subscriptionAdmin: {
+      title: "Plan or service status needs review.",
+      description: "Workspace access is restricted because the free trial ended or the billing/subscription status needs review.",
+      notice: "Company admins can check the current status on the subscription screen and request service reactivation from the system admin.",
+    },
+    subscriptionMember: {
+      title: "Service access is paused.",
+      description: "Regular member workspace access is restricted because the free trial ended or the billing status needs review.",
+      notice: "Regular members cannot change plans. Ask the company admin to check the service status.",
+    },
+    unknown: {
+      title: "Access status needs review.",
+      description: "The company status for this account could not be determined clearly.",
+      notice: "If the same screen appears after signing in again, contact the company admin or system admin.",
+    },
+    labels: {
+      company: "Company",
+      account: "Account",
+      status: "Status",
+    },
+    actions: {
+      logout: "Log out",
+      goAdmin: "Go to company information",
+      goSubscription: "Go to subscription",
+      goLogin: "Go to sign-in",
+    },
+    statusLabels: {
+      session_required: "Sign-in required",
+      profile_required: "Company information required",
+      approval_pending: "Approval pending",
+      rejected: "Rejected",
+      subscription_blocked: "Access restricted",
+      unknown: "Review needed",
+    },
+  },
   subscriptionPage: {
     shellTitle: "Subscription",
     shellDescription: "Review free-trial expiration and subscription status.",

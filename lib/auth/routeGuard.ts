@@ -3,7 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
-import { getCompanyAccessState } from "@/lib/billing/companyAccessRepository";
+import { getCompanyAccessState, resolveCompanyAccessBlockReason, type CompanyAccessBlockReason } from "@/lib/billing/companyAccessRepository";
 import { createDevSystemAdminSession, isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
 
@@ -19,8 +19,13 @@ function getRoleHomePath(role: WaflSessionRole): string {
   return "/worker";
 }
 
-function getCompanyAccessBlockedPath(area: ProtectedArea): string {
-  return area === "admin" ? "/admin/subscription" : "/service-paused";
+function getCompanyAccessBlockedPath(area: ProtectedArea, reason: CompanyAccessBlockReason): string {
+  if (area !== "admin") return "/service-paused";
+  if (reason === "rejected" || reason === "profile_required" || reason === "approval_pending") {
+    return "/service-paused";
+  }
+
+  return "/admin/subscription";
 }
 
 function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boolean {
@@ -53,11 +58,16 @@ export async function requireWaflSessionForArea(
 
   if (session.companyId && shouldCheckCompanyAccess(area, session.role)) {
     const accessState = await getCompanyAccessState(session.companyId);
-    if (accessState?.accessBlocked && !options.allowBlockedCompanyAccess) {
-      if (accessState.onboardingStatus === "rejected") {
-        redirect("/service-paused");
-      }
-      redirect(getCompanyAccessBlockedPath(area));
+    const blockedReason = accessState
+      ? resolveCompanyAccessBlockReason({
+          onboardingStatus: accessState.onboardingStatus,
+          subscriptionStatus: accessState.subscriptionStatus,
+          trialExpired: accessState.trialExpired,
+        })
+      : null;
+
+    if (blockedReason && !options.allowBlockedCompanyAccess) {
+      redirect(getCompanyAccessBlockedPath(area, blockedReason));
     }
   }
 

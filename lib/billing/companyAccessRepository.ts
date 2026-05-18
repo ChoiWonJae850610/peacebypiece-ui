@@ -11,6 +11,13 @@ type CompanyAccessRow = {
   trial_ends_at: string | Date | null;
 };
 
+export type CompanyAccessBlockReason =
+  | "profile_required"
+  | "approval_pending"
+  | "rejected"
+  | "trial_expired"
+  | "subscription_blocked";
+
 export type CompanyAccessState = {
   companyId: string;
   onboardingStatus: string;
@@ -19,7 +26,36 @@ export type CompanyAccessState = {
   trialEndsAt: string | null;
   trialExpired: boolean;
   accessBlocked: boolean;
+  workspaceBlockedReason: CompanyAccessBlockReason | null;
 };
+
+export function resolveCompanyAccessBlockReason(input: {
+  onboardingStatus: string | null | undefined;
+  subscriptionStatus: string | null | undefined;
+  trialExpired: boolean;
+}): CompanyAccessBlockReason | null {
+  if (input.onboardingStatus === "profile_required") return "profile_required";
+  if (input.onboardingStatus === "approval_pending") return "approval_pending";
+  if (input.onboardingStatus === "rejected") return "rejected";
+  if (input.trialExpired || input.subscriptionStatus === "trial_expired") return "trial_expired";
+  if (input.subscriptionStatus === "past_due" || input.subscriptionStatus === "canceled") return "subscription_blocked";
+
+  return null;
+}
+
+function isAdminAccessBlocked(input: {
+  onboardingStatus: string | null | undefined;
+  subscriptionStatus: string | null | undefined;
+  trialExpired: boolean;
+}): boolean {
+  return (
+    input.onboardingStatus === "rejected" ||
+    input.trialExpired ||
+    input.subscriptionStatus === "trial_expired" ||
+    input.subscriptionStatus === "past_due" ||
+    input.subscriptionStatus === "canceled"
+  );
+}
 
 function toIso(value: string | Date | null | undefined): string | null {
   if (!value) return null;
@@ -52,13 +88,25 @@ export async function getCompanyAccessState(companyId: string): Promise<CompanyA
   });
   const subscriptionStatus = normalizeCompanySubscriptionStatus(row.subscription_status);
 
+  const onboardingStatus = row.onboarding_status ?? "profile_required";
+  const workspaceBlockedReason = resolveCompanyAccessBlockReason({
+    onboardingStatus,
+    subscriptionStatus,
+    trialExpired,
+  });
+
   return {
     companyId: row.company_id,
-    onboardingStatus: row.onboarding_status ?? "profile_required",
+    onboardingStatus,
     subscriptionStatus,
     trialStartedAt: toIso(row.trial_started_at),
     trialEndsAt: toIso(row.trial_ends_at),
     trialExpired,
-    accessBlocked: row.onboarding_status === "rejected" || trialExpired || subscriptionStatus === "past_due" || subscriptionStatus === "canceled",
+    workspaceBlockedReason,
+    accessBlocked: isAdminAccessBlocked({
+      onboardingStatus,
+      subscriptionStatus,
+      trialExpired,
+    }),
   };
 }

@@ -1857,6 +1857,78 @@ export const adminKo = {
       fileNotFound: "파일을 찾을 수 없습니다.",
     },
   },
+  servicePausedPage: {
+    eyebrow: "WAFL ACCESS",
+    sessionRequired: {
+      title: "로그인이 필요합니다.",
+      description: "업무 화면을 사용하려면 초대 링크 또는 등록된 계정으로 다시 로그인해야 합니다.",
+      notice: "초대 링크 없이 새 Google 계정으로 직접 접근한 경우 가입을 진행할 수 없습니다. 고객사 관리자 또는 시스템관리자에게 초대 링크를 요청해 주세요.",
+    },
+    profileRequiredAdmin: {
+      title: "회사 정보 입력이 필요합니다.",
+      description: "고객사 관리자 계정은 회사 정보와 필수 첨부파일을 제출한 뒤 승인 요청을 진행해야 합니다.",
+      notice: "회사 정보는 승인 요청 버튼을 누르기 전까지 DB/R2에 최종 저장되지 않습니다. 입력 화면으로 돌아가 필수 정보를 제출해 주세요.",
+    },
+    profileRequiredMember: {
+      title: "아직 사용할 수 없는 계정입니다.",
+      description: "일반 멤버 계정에서는 회사 정보 입력이나 승인 요청을 처리할 수 없습니다.",
+      notice: "고객사 관리자에게 회사 승인 상태와 멤버 승인 상태를 확인해 달라고 요청해 주세요.",
+    },
+    approvalPendingAdmin: {
+      title: "가입 승인 대기 중입니다.",
+      description: "회사 정보 제출이 완료되었고 시스템관리자 검토를 기다리는 상태입니다.",
+      notice: "승인 전에는 작업지시서, 저장소, 멤버관리 등 주요 업무 화면을 사용할 수 없습니다.",
+    },
+    approvalPendingMember: {
+      title: "회사 또는 멤버 승인을 기다리고 있습니다.",
+      description: "승인 대기 상태에서는 일반 멤버가 업무 화면을 사용할 수 없습니다.",
+      notice: "고객사 관리자에게 승인 상태를 확인해 주세요. 승인 완료 후 다시 로그인하면 업무 화면으로 이동합니다.",
+    },
+    rejectedAdmin: {
+      title: "가입 신청이 거절되었습니다.",
+      description: "시스템관리자가 회사 가입 신청을 거절했거나 재입력을 요청한 상태입니다.",
+      notice: "거절 사유를 확인한 뒤 시스템관리자의 재입력 요청이 필요합니다. 현재 화면에서는 업무 기능을 사용할 수 없습니다.",
+    },
+    rejectedMember: {
+      title: "회사 가입 신청이 승인되지 않았습니다.",
+      description: "소속 회사의 가입 신청이 거절되어 멤버 계정도 업무 화면을 사용할 수 없습니다.",
+      notice: "고객사 관리자에게 회사 승인 상태를 확인해 주세요.",
+    },
+    subscriptionAdmin: {
+      title: "요금제 또는 서비스 상태 확인이 필요합니다.",
+      description: "무료체험이 종료되었거나 결제/구독 상태 문제로 주요 업무 화면 접근이 제한되었습니다.",
+      notice: "고객사 관리자는 요금제 화면에서 현재 상태를 확인하고 시스템관리자에게 서비스 재개를 요청할 수 있습니다.",
+    },
+    subscriptionMember: {
+      title: "서비스 이용 대기 중입니다.",
+      description: "무료체험 만료 또는 결제 상태 문제로 일반 멤버의 업무 화면 접근이 제한되었습니다.",
+      notice: "일반 멤버는 요금제 변경을 처리할 수 없습니다. 고객사 관리자에게 서비스 상태 확인을 요청해 주세요.",
+    },
+    unknown: {
+      title: "접근 상태 확인이 필요합니다.",
+      description: "현재 계정의 회사 상태를 명확히 확인하지 못했습니다.",
+      notice: "다시 로그인해도 같은 화면이 나오면 고객사 관리자 또는 시스템관리자에게 문의해 주세요.",
+    },
+    labels: {
+      company: "회사",
+      account: "계정",
+      status: "상태",
+    },
+    actions: {
+      logout: "로그아웃",
+      goAdmin: "회사 정보 입력으로 이동",
+      goSubscription: "요금제 화면으로 이동",
+      goLogin: "로그인 화면으로 이동",
+    },
+    statusLabels: {
+      session_required: "로그인 필요",
+      profile_required: "회사 정보 필요",
+      approval_pending: "승인 대기",
+      rejected: "승인 거절",
+      subscription_blocked: "이용 제한",
+      unknown: "상태 확인 필요",
+    },
+  },
   subscriptionPage: {
     shellTitle: "요금제 관리",
     shellDescription: "무료체험 만료와 요금제 적용 상태를 확인합니다.",
