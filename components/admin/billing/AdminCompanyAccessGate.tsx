@@ -5,19 +5,20 @@ import { usePathname, useRouter } from "next/navigation";
 
 type AdminCompanyAccessGateProps = {
   accessBlocked: boolean;
+  blockedPath?: string;
   children: ReactNode;
 };
 
 const ADMIN_SUBSCRIPTION_PATH = "/admin/subscription";
 
-export default function AdminCompanyAccessGate({ accessBlocked, children }: AdminCompanyAccessGateProps) {
+export default function AdminCompanyAccessGate({ accessBlocked, blockedPath = ADMIN_SUBSCRIPTION_PATH, children }: AdminCompanyAccessGateProps) {
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    if (!accessBlocked || pathname === ADMIN_SUBSCRIPTION_PATH) return;
-    router.replace(ADMIN_SUBSCRIPTION_PATH);
-  }, [accessBlocked, pathname, router]);
+    if (!accessBlocked || pathname === blockedPath) return;
+    router.replace(blockedPath);
+  }, [accessBlocked, blockedPath, pathname, router]);
 
   return <>{children}</>;
 }

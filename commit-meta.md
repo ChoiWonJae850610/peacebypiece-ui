@@ -1,25 +1,28 @@
 Version :
-0.13.69
+0.13.70
 
 Summary :
-고객사 체험 만료 화면과 관리자 접근 분기 추가
+시스템관리자 고객사 관리 목록과 승인 거절 상태 로직 보정
 
 Description :
-무료체험 만료 또는 결제 확인이 필요한 고객사 관리자에게 요금제 관리 화면을 표시하고, 일반 멤버는 서비스 대기 화면으로 분리되도록 접근 분기와 안내 화면을 추가했다. 결제 API는 연결하지 않고 화면 진입과 상태 안내만 정리했다.
+시스템관리자 고객사 관리 화면에서 승인 대기뿐 아니라 승인됨, 거절됨 상태의 고객사 가입 이력도 함께 확인하도록 목록 구조를 보정했다. 고객사 승인 로직에서 현재 schema와 맞지 않는 회사 상태/요금제 컬럼 참조를 제거했고, 거절된 고객사는 rejected 상태로 보존하면서 관리자 접근을 차단하도록 수정했다. rejected onboarding status를 full_reset과 migration에 반영했다.
 
 수정 파일 목록 :
 - app/admin/layout.tsx
 - app/service-paused/page.tsx
+- components/admin/billing/AdminCompanyAccessGate.tsx
+- components/system/companies/SystemCompanyApprovalConsole.tsx
+- db/schema/full_reset.sql
+- lib/admin/settings/companyOnboardingRepository.ts
+- lib/admin/settings/companyTypes.ts
 - lib/auth/routeGuard.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- lib/billing/companyAccessRepository.ts
+- lib/invitations/joinRequestRepository.ts
+- lib/invitations/joinRequestTypes.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- app/admin/subscription/page.tsx
-- components/admin/billing/AdminCompanyAccessGate.tsx
-- components/admin/billing/AdminSubscriptionConsole.tsx
-- lib/admin/billing/adminSubscription.presentation.ts
+- db/migrations/patch_0_13_70_company_rejected_status.sql
 
 삭제 파일 목록 :
 없음

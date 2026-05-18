@@ -175,7 +175,7 @@ CREATE TABLE companies (
   trial_ends_at timestamptz,
 
   CONSTRAINT companies_onboarding_status_check CHECK (
-    onboarding_status IN ('profile_required', 'approval_pending', 'active')
+    onboarding_status IN ('profile_required', 'approval_pending', 'active', 'rejected')
   ),
   CONSTRAINT companies_subscription_status_check CHECK (
     subscription_status IN ('trialing', 'trial_expired', 'active', 'past_due', 'canceled')

@@ -116,6 +116,10 @@ type JoinRequestDbRow = {
   invitation_scope?: InvitationScope | null;
   invitation_status?: InvitationRecord["status"] | null;
   invitation_expires_at?: Date | string | null;
+  created_company_onboarding_status?: string | null;
+  created_company_subscription_status?: string | null;
+  created_company_requested_plan_code?: string | null;
+  created_company_trial_ends_at?: Date | string | null;
 };
 
 function toIsoString(value: Date | string | null): string | null {
@@ -145,6 +149,10 @@ function toJoinRequestRecord(row: JoinRequestDbRow): JoinRequestRecord {
     rejectionReason: row.rejection_reason,
     createdAt: toIsoString(row.created_at) ?? new Date().toISOString(),
     updatedAt: toIsoString(row.updated_at) ?? new Date().toISOString(),
+    companyOnboardingStatus: row.created_company_onboarding_status ?? null,
+    companySubscriptionStatus: row.created_company_subscription_status ?? null,
+    companyRequestedPlanCode: row.created_company_requested_plan_code ?? null,
+    companyTrialEndsAt: toIsoString(row.created_company_trial_ends_at),
     invitation: row.invitation_id_joined && row.invitation_recipient_role && row.invitation_permission_preset && row.invitation_scope && row.invitation_status && row.invitation_expires_at
       ? {
           id: row.invitation_id_joined,
@@ -406,7 +414,11 @@ async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRe
         invitations.permission_preset AS invitation_permission_preset,
         invitations.scope AS invitation_scope,
         invitations.status AS invitation_status,
-        invitations.expires_at AS invitation_expires_at
+        invitations.expires_at AS invitation_expires_at,
+        created_companies.onboarding_status AS created_company_onboarding_status,
+        created_companies.subscription_status AS created_company_subscription_status,
+        created_companies.requested_plan_code AS created_company_requested_plan_code,
+        created_companies.trial_ends_at AS created_company_trial_ends_at
       FROM join_requests
       LEFT JOIN invitations ON invitations.id = join_requests.invitation_id
       LEFT JOIN companies created_companies ON created_companies.id = join_requests.created_company_id
@@ -597,9 +609,14 @@ async function selectDbJoinRequestById(
         invitations.permission_preset AS invitation_permission_preset,
         invitations.scope AS invitation_scope,
         invitations.status AS invitation_status,
-        invitations.expires_at AS invitation_expires_at
+        invitations.expires_at AS invitation_expires_at,
+        created_companies.onboarding_status AS created_company_onboarding_status,
+        created_companies.subscription_status AS created_company_subscription_status,
+        created_companies.requested_plan_code AS created_company_requested_plan_code,
+        created_companies.trial_ends_at AS created_company_trial_ends_at
       FROM join_requests
       LEFT JOIN invitations ON invitations.id = join_requests.invitation_id
+      LEFT JOIN companies created_companies ON created_companies.id = join_requests.created_company_id
       WHERE join_requests.id = $1
       LIMIT 1
     `,
@@ -888,9 +905,7 @@ async function insertApprovedCompany(
         business_name,
         memo,
         is_active,
-        status,
         onboarding_status,
-        plan_code,
         billing_status,
         subscription_status,
         trial_started_at,
@@ -898,7 +913,7 @@ async function insertApprovedCompany(
         storage_limit_bytes,
         member_limit
       )
-      VALUES ($1, $2, $3, $4, true, 'active', 'active', $5, 'trial', 'trialing', $6::timestamptz, $7::timestamptz, $8::bigint, $9::integer)
+      VALUES ($1, $2, $3, $4, true, 'active', 'trial', 'trialing', $5::timestamptz, $6::timestamptz, $7::bigint, $8::integer)
       RETURNING id, name, business_name, storage_limit_bytes
     `,
     [
@@ -906,7 +921,6 @@ async function insertApprovedCompany(
       input.companyName,
       normalizeText(input.businessName),
       normalizeText(input.memo),
-      TRIAL_PLAN_CODE,
       new Date().toISOString(),
       getTrialEndsAt().toISOString(),
       TRIAL_STORAGE_LIMIT_BYTES,
@@ -941,15 +955,13 @@ async function approveExistingProfileRequiredCompany(
              business_name = $3::text,
              memo = $4::text,
              is_active = true,
-             status = 'active',
              onboarding_status = 'active',
-             plan_code = $5::text,
              billing_status = 'trial',
              subscription_status = 'trialing',
-             trial_started_at = $6::timestamptz,
-             trial_ends_at = $7::timestamptz,
-             storage_limit_bytes = COALESCE(storage_limit_bytes, $8::bigint),
-             member_limit = COALESCE(member_limit, $9::integer),
+             trial_started_at = $5::timestamptz,
+             trial_ends_at = $6::timestamptz,
+             storage_limit_bytes = COALESCE(storage_limit_bytes, $7::bigint),
+             member_limit = COALESCE(member_limit, $8::integer),
              updated_at = now()
        WHERE id = $1::text
        RETURNING id, name, business_name, storage_limit_bytes
@@ -959,7 +971,6 @@ async function approveExistingProfileRequiredCompany(
       input.companyName,
       normalizeText(input.businessName),
       normalizeText(input.memo),
-      TRIAL_PLAN_CODE,
       trialStartedAt.toISOString(),
       trialEndsAt.toISOString(),
       TRIAL_STORAGE_LIMIT_BYTES,
@@ -1199,8 +1210,10 @@ async function rejectDbCompanyJoinRequest(
       await client.query(
         `
           UPDATE companies
-             SET status = 'pending',
-                 onboarding_status = 'profile_required',
+             SET onboarding_status = 'rejected',
+                 subscription_status = 'canceled',
+                 trial_started_at = NULL,
+                 trial_ends_at = NULL,
                  updated_at = now()
            WHERE id = $1::text
              AND onboarding_status = 'approval_pending'

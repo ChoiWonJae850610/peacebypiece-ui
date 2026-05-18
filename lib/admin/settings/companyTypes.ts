@@ -4,7 +4,8 @@ export type CompanyLanguage = "ko" | "en";
 export type CompanyOnboardingStatus =
   | "profile_required"
   | "approval_pending"
-  | "active";
+  | "active"
+  | "rejected";
 
 export type CompanySubscriptionStatus =
   | "trialing"

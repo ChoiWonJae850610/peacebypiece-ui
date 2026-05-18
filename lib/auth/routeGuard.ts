@@ -54,6 +54,9 @@ export async function requireWaflSessionForArea(
   if (session.companyId && shouldCheckCompanyAccess(area, session.role)) {
     const accessState = await getCompanyAccessState(session.companyId);
     if (accessState?.accessBlocked && !options.allowBlockedCompanyAccess) {
+      if (accessState.onboardingStatus === "rejected") {
+        redirect("/service-paused");
+      }
       redirect(getCompanyAccessBlockedPath(area));
     }
   }

@@ -47,7 +47,7 @@ function normalizeNullableText(value: string | null | undefined): string | null 
 }
 
 function normalizeStatus(value: string | null | undefined): CompanyOnboardingStatus {
-  if (value === "active" || value === "approval_pending" || value === "profile_required") {
+  if (value === "active" || value === "approval_pending" || value === "profile_required" || value === "rejected") {
     return value;
   }
 
@@ -90,7 +90,7 @@ function mapRow(row: CompanyOnboardingRow): CompanyOnboardingProfile {
     addressDetail: normalizeText(row.address_detail),
     addressExtra: normalizeText(row.address_extra),
     requestedPlanCode: normalizeText(row.requested_plan_code),
-    onboardingStatus: profileComplete ? normalizeStatus(row.onboarding_status) : "profile_required",
+    onboardingStatus: normalizeStatus(row.onboarding_status) === "rejected" ? "rejected" : profileComplete ? normalizeStatus(row.onboarding_status) : "profile_required",
     onboardingCompletedAt: toIso(row.onboarding_completed_at),
     subscriptionStatus: normalizeCompanySubscriptionStatus(row.subscription_status),
     trialStartedAt: toIso(row.trial_started_at),

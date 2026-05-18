@@ -63,6 +63,11 @@ type CompanyJoinRequestRow = {
   addressDetail: string;
   addressExtra: string;
   requestedPlanCode: string;
+  currentPlanLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "neutral";
+  canReview: boolean;
+  reviewedAtLabel: string;
   logoUrl: string | null;
   applicantEmail: string;
   applicantName: string;
@@ -151,11 +156,47 @@ function formatFileSize(sizeBytes: number): string {
   return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
 }
 
+
+function getCompanyJoinRequestStatus(joinRequest: JoinRequestRecord): {
+  label: string;
+  tone: CompanyJoinRequestRow["statusTone"];
+  canReview: boolean;
+} {
+  if (joinRequest.status === "approved") {
+    return { label: "승인됨", tone: "success", canReview: false };
+  }
+
+  if (joinRequest.status === "rejected" || joinRequest.companyOnboardingStatus === "rejected") {
+    return { label: "거절됨", tone: "danger", canReview: false };
+  }
+
+  if (joinRequest.companyOnboardingStatus === "approval_pending") {
+    return { label: "승인 대기", tone: "warning", canReview: true };
+  }
+
+  return { label: "정보 입력 중", tone: "neutral", canReview: false };
+}
+
+function getCompanyJoinRequestCurrentPlanLabel(joinRequest: JoinRequestRecord, requestedPlanCode: string): string {
+  if (joinRequest.companySubscriptionStatus === "trialing") return "Trial";
+  if (joinRequest.companySubscriptionStatus === "active") return requestedPlanCode || "이용중";
+  if (joinRequest.companySubscriptionStatus === "canceled") return "중지";
+  if (joinRequest.companySubscriptionStatus === "past_due") return "연체";
+  if (joinRequest.companySubscriptionStatus === "trial_expired") return "체험 만료";
+  return "-";
+}
+
 function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): CompanyJoinRequestRow {
   const onboardingFiles = joinRequest.companyOnboardingFiles ?? [];
   const logoFile = getCompanyOnboardingFile(onboardingFiles, "logo");
   const companyEnglishName = parseCompanyMemoValue(joinRequest.requestMemo, "companyEnglishName");
   const logoUrl = logoFile ? getCompanyOnboardingFileViewUrl(logoFile) : parseCompanyMemoValue(joinRequest.requestMemo, "logoUrl") || joinRequest.googlePictureUrl || null;
+
+  const requestedPlanCode =
+    joinRequest.companyRequestedPlanCode?.trim() ||
+    parseCompanyMemoValue(joinRequest.requestMemo, "requestedPlanCode") ||
+    "-";
+  const status = getCompanyJoinRequestStatus(joinRequest);
 
   return {
     id: joinRequest.id,
@@ -169,7 +210,12 @@ function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): CompanyJoinReq
     jibunAddress: parseCompanyMemoValue(joinRequest.requestMemo, "jibunAddress") || "-",
     addressDetail: parseCompanyMemoValue(joinRequest.requestMemo, "addressDetail") || "-",
     addressExtra: parseCompanyMemoValue(joinRequest.requestMemo, "addressExtra") || "-",
-    requestedPlanCode: parseCompanyMemoValue(joinRequest.requestMemo, "requestedPlanCode") || "-",
+    requestedPlanCode,
+    currentPlanLabel: getCompanyJoinRequestCurrentPlanLabel(joinRequest, requestedPlanCode),
+    statusLabel: status.label,
+    statusTone: status.tone,
+    canReview: status.canReview,
+    reviewedAtLabel: toCompactDateTimeLabel(joinRequest.reviewedAt),
     logoUrl,
     applicantEmail: joinRequest.applicantEmail,
     applicantName: joinRequest.applicantName?.trim() || joinRequest.applicantEmail,
@@ -408,6 +454,11 @@ export default function SystemCompanyApprovalConsole() {
         ),
       },
       {
+        key: "status",
+        label: "상태",
+        render: (request) => <AdminStatusBadge tone={request.statusTone}>{request.statusLabel}</AdminStatusBadge>,
+      },
+      {
         key: "englishName",
         label: "영문명",
         className: "text-xs text-[var(--pbp-text-muted)]",
@@ -463,6 +514,18 @@ export default function SystemCompanyApprovalConsole() {
         render: (request) => request.applicantPhone,
       },
       {
+        key: "requestedPlan",
+        label: "신청 요금제",
+        className: "text-xs text-[var(--pbp-text-muted)]",
+        render: (request) => request.requestedPlanCode,
+      },
+      {
+        key: "currentPlan",
+        label: "현재 요금제",
+        className: "text-xs text-[var(--pbp-text-muted)]",
+        render: (request) => request.currentPlanLabel,
+      },
+      {
         key: "requestedAt",
         label: "신청일",
         className: "text-xs text-[var(--pbp-text-muted)]",
@@ -482,20 +545,24 @@ export default function SystemCompanyApprovalConsole() {
             >
               상세
             </AdminButton>
-            <AdminButton
-              onClick={() => void approveCompanyJoinRequest(request.id)}
-              disabled={approvingRequestId !== null || rejectingRequestId !== null}
-              variant="primary"
-            >
-              {approvingRequestId === request.id ? "승인 중" : "승인"}
-            </AdminButton>
-            <AdminButton
-              onClick={() => void rejectCompanyJoinRequest(request.id)}
-              disabled={approvingRequestId !== null || rejectingRequestId !== null}
-              variant="danger"
-            >
-              {rejectingRequestId === request.id ? "거절 중" : "거절"}
-            </AdminButton>
+            {request.canReview ? (
+              <>
+                <AdminButton
+                  onClick={() => void approveCompanyJoinRequest(request.id)}
+                  disabled={approvingRequestId !== null || rejectingRequestId !== null}
+                  variant="primary"
+                >
+                  {approvingRequestId === request.id ? "승인 중" : "승인"}
+                </AdminButton>
+                <AdminButton
+                  onClick={() => void rejectCompanyJoinRequest(request.id)}
+                  disabled={approvingRequestId !== null || rejectingRequestId !== null}
+                  variant="danger"
+                >
+                  {rejectingRequestId === request.id ? "거절 중" : "거절"}
+                </AdminButton>
+              </>
+            ) : null}
           </div>
         ),
       },
@@ -634,7 +701,7 @@ export default function SystemCompanyApprovalConsole() {
 
     try {
       const response = await fetch(
-        "/api/invitations/join-requests?requestType=company&status=pending&invitationScope=system_to_company_admin&companyOnboardingStatus=approval_pending&limit=50",
+        "/api/invitations/join-requests?requestType=company&invitationScope=system_to_company_admin&limit=50",
         { cache: "no-store" },
       );
       const payload = (await response.json()) as JoinRequestListResponse;
@@ -869,9 +936,9 @@ export default function SystemCompanyApprovalConsole() {
         <section className={SYSTEM_CARD_CLASS}>
           <div className={`flex flex-col gap-3 ${SYSTEM_SECTION_HEADER_CLASS} lg:flex-row lg:items-start lg:justify-between`}>
             <div>
-              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>가입 신청 검토</h2>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객사 관리 목록</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-                고객사 관리자가 초대 링크로 로그인한 뒤 회사 정보를 입력하고 승인 요청을 눌러야 이 목록에 표시됩니다.
+                전체 고객사의 가입 신청, 승인, 거절, 요금제 상태를 한 목록에서 확인하고 필요한 액션을 처리합니다.
               </p>
             </div>
             <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
@@ -891,11 +958,11 @@ export default function SystemCompanyApprovalConsole() {
               items={[...joinRequests]}
               columns={joinRequestTableColumns}
               getRowKey={(request) => request.id}
-              emptyLabel="승인 대기 고객사 가입 신청이 없습니다."
+              emptyLabel="표시할 고객사 가입 이력이 없습니다."
               isLoading={joinRequestLoadStatus === "loading"}
               loadingLabel="고객사 가입 신청을 불러오는 중입니다."
-              gridTemplateColumns="1.2fr 0.8fr 0.5fr 0.9fr 1.2fr 0.8fr 0.8fr 0.8fr 1.2fr"
-              rowBaseClassName="grid min-w-[1120px] w-full gap-3 px-4 py-4 text-left text-sm md:items-center"
+              gridTemplateColumns="1.2fr 0.75fr 0.8fr 0.5fr 0.9fr 1.2fr 0.8fr 0.8fr 0.75fr 0.75fr 0.8fr 1.2fr"
+              rowBaseClassName="grid min-w-[1420px] w-full gap-3 px-4 py-4 text-left text-sm md:items-center"
             />
           </div>
         </section>
@@ -908,7 +975,7 @@ export default function SystemCompanyApprovalConsole() {
               <div>
                 <p className={SYSTEM_EYEBROW_CLASS}>COMPANY REVIEW</p>
                 <h3 className={`mt-2 text-xl font-bold ${SYSTEM_VALUE_TEXT_CLASS}`}>{selectedJoinRequest.companyName}</h3>
-                <p className="mt-1 text-sm text-[var(--pbp-text-muted)]">승인 전 회사 정보와 제출 첨부를 확인합니다.</p>
+                <p className="mt-1 text-sm text-[var(--pbp-text-muted)]">회사 상태, 요금제, 제출 첨부와 처리 이력을 확인합니다.</p>
               </div>
               <AdminButton onClick={() => setSelectedJoinRequestId(null)} variant="secondary">닫기</AdminButton>
             </div>
@@ -921,7 +988,9 @@ export default function SystemCompanyApprovalConsole() {
                   <ReviewField label="회사 영문명" value={selectedJoinRequest.companyEnglishName} />
                   <ReviewField label="사업자명" value={selectedJoinRequest.businessName} />
                   <ReviewField label="사업자등록번호" value={selectedJoinRequest.businessRegistrationNumber} />
+                                    <ReviewField label="상태" value={selectedJoinRequest.statusLabel} />
                   <ReviewField label="신청 요금제" value={selectedJoinRequest.requestedPlanCode} />
+                  <ReviewField label="현재 요금제" value={selectedJoinRequest.currentPlanLabel} />
                 </dl>
               </article>
 
@@ -931,7 +1000,8 @@ export default function SystemCompanyApprovalConsole() {
                   <ReviewField label="관리자 이름" value={selectedJoinRequest.applicantName} />
                   <ReviewField label="관리자 연락처" value={selectedJoinRequest.applicantPhone} />
                   <ReviewField label="Google 로그인 이메일" value={selectedJoinRequest.applicantEmail} />
-                  <ReviewField label="신청일" value={selectedJoinRequest.requestedAtLabel} />
+                                    <ReviewField label="신청일" value={selectedJoinRequest.requestedAtLabel} />
+                  <ReviewField label="처리일" value={selectedJoinRequest.reviewedAtLabel} />
                 </dl>
               </article>
 

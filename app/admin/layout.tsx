@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const accessState = session.companyId ? await getCompanyAccessState(session.companyId) : null;
 
   return (
-    <AdminCompanyAccessGate accessBlocked={Boolean(accessState?.accessBlocked)}>
+    <AdminCompanyAccessGate accessBlocked={Boolean(accessState?.accessBlocked)} blockedPath={accessState?.onboardingStatus === "rejected" ? "/service-paused" : undefined}>
       <AdminCompanyOnboardingGate>{children}</AdminCompanyOnboardingGate>
     </AdminCompanyAccessGate>
   );

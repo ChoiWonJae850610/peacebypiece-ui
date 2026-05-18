@@ -59,6 +59,6 @@ export async function getCompanyAccessState(companyId: string): Promise<CompanyA
     trialStartedAt: toIso(row.trial_started_at),
     trialEndsAt: toIso(row.trial_ends_at),
     trialExpired,
-    accessBlocked: trialExpired || subscriptionStatus === "past_due" || subscriptionStatus === "canceled",
+    accessBlocked: row.onboarding_status === "rejected" || trialExpired || subscriptionStatus === "past_due" || subscriptionStatus === "canceled",
   };
 }

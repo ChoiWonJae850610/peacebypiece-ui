@@ -54,6 +54,10 @@ export interface JoinRequestRecord {
   updatedAt: string;
   invitation?: JoinRequestInvitationSummary | null;
   companyOnboardingFiles?: CompanyOnboardingFileMetadata[];
+  companyOnboardingStatus?: string | null;
+  companySubscriptionStatus?: string | null;
+  companyRequestedPlanCode?: string | null;
+  companyTrialEndsAt?: string | null;
 }
 
 export interface JoinRequestCreateResult {
