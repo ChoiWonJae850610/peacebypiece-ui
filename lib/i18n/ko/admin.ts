@@ -1768,7 +1768,21 @@ export const adminKo = {
     saved: "회사 정보를 저장했습니다. 시스템관리자 승인 후 정상 이용할 수 있습니다.",
     saving: "저장 중",
     submit: "회사 정보 저장 및 승인 요청",
-    addressApiNote: "도로명주소 검색 API 연동은 다음 단계에서 연결합니다. 현재는 우편번호와 도로명주소를 직접 입력할 수 있습니다.",
+    addressApiNote: "주소 검색 결과를 선택해도 상세주소는 직접 입력해야 합니다. 검색이 되지 않으면 우편번호와 주소를 수동 입력할 수 있습니다.",
+    addressSearch: {
+      label: "도로명주소 검색",
+      placeholder: "도로명, 건물명, 지번을 입력하세요",
+      description: "공식 도로명주소 검색 API를 통해 우편번호, 도로명주소, 지번주소를 가져옵니다.",
+      button: "주소 검색",
+      loading: "검색 중",
+      empty: "검색 결과가 없습니다. 검색어를 바꾸거나 직접 입력해 주세요.",
+      postalCodeLabel: "우편번호",
+      errors: {
+        keywordRequired: "검색어를 입력해 주세요.",
+        notConfigured: "도로명주소 API 승인키가 설정되지 않았습니다. 수동 입력을 사용해 주세요.",
+        failed: "주소 검색에 실패했습니다. 잠시 후 다시 시도하거나 수동 입력해 주세요.",
+      },
+    },
     sections: {
       company: "회사 정보",
       address: "회사 주소",

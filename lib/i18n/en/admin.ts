@@ -1821,7 +1821,21 @@ export const adminEn = {
     saved: "Company information has been saved. The workspace becomes available after system admin approval.",
     saving: "Saving",
     submit: "Save and request approval",
-    addressApiNote: "Road-name address search API integration will be connected in the next step. For now, postal code and road address can be entered manually.",
+    addressApiNote: "After selecting a search result, enter the address detail manually. If search is unavailable, postal code and address can still be entered manually.",
+    addressSearch: {
+      label: "Road-name address search",
+      placeholder: "Enter a road name, building name, or lot number",
+      description: "Searches the official road-name address API and fills postal code, road address, and jibun address.",
+      button: "Search address",
+      loading: "Searching",
+      empty: "No address results found. Try another keyword or enter the address manually.",
+      postalCodeLabel: "Postal code",
+      errors: {
+        keywordRequired: "Enter a search keyword.",
+        notConfigured: "The road-name address API key is not configured. Use manual entry instead.",
+        failed: "Address search failed. Try again later or enter the address manually.",
+      },
+    },
     sections: {
       company: "Company information",
       address: "Company address",

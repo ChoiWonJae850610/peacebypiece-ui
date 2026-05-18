@@ -1,23 +1,21 @@
 Version :
-0.13.86
+0.13.87
 
 Summary :
-DB full reset 기준과 누적 patch SQL 정리
+도로명주소 검색 API 연동 1차 추가
 
 Description :
-0.13.58부터 0.13.70까지의 고객사 초대, 체험 상태, 초대 링크 목록, 온보딩 파일, 거절 상태 관련 patch SQL이 full_reset.sql에 이미 반영되어 있음을 기준으로 개별 migration 파일을 삭제 대상으로 정리했다. full_reset smoke test에는 최근 온보딩/초대/체험 상태 구조의 테이블, 컬럼, 인덱스, seed 검증을 추가했다.
+고객사 온보딩 회사 주소 입력 영역에 도로명주소 검색 UI를 추가하고, 서버 API route에서 JUSO_API_KEY를 사용해 공식 도로명주소 검색 API를 호출하도록 구성했다. 검색 결과 선택 시 우편번호, 도로명주소, 지번주소, 참고항목을 입력값에 반영하며, 승인키 미설정 또는 검색 실패 시 수동 입력을 유지한다.
 
 수정 파일 목록 :
-- db/schema/full_reset.sql
-- db/schema/full_reset_smoke_test.sql
+- components/admin/companies/AdminCompanyOnboardingGate.tsx
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- app/api/address/search/route.ts
+- lib/address/jusoAddressSearch.ts
 
 삭제 파일 목록 :
-- db/migrations/patch_0_13_58_company_invitation_independent_token.sql
-- db/migrations/patch_0_13_59_company_trial_period.sql
-- db/migrations/patch_0_13_60_invitation_link_list.sql
-- db/migrations/patch_0_13_61_company_onboarding_files.sql
-- db/migrations/patch_0_13_70_company_rejected_status.sql
+없음

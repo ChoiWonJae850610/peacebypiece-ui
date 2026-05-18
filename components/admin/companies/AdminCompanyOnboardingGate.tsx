@@ -86,6 +86,22 @@ type CompanyOnboardingFileResponse = {
   error?: string;
 };
 
+type AddressSearchResult = {
+  zipNo: string;
+  roadAddr: string;
+  roadAddrPart1?: string;
+  roadAddrPart2?: string;
+  jibunAddr?: string;
+  bdNm?: string;
+};
+
+type AddressSearchResponse = {
+  items?: AddressSearchResult[];
+  error?: string;
+};
+
+type AddressSearchState = "idle" | "loading" | "loaded" | "error";
+
 type CompanyOnboardingErrorCopy = {
   load: string;
   save: string;
@@ -153,6 +169,12 @@ function resolveCompanyOnboardingFileErrorMessage(errorCode: string | null | und
   const code = String(errorCode ?? "") as keyof typeof COMPANY_ONBOARDING_FILE_ERROR_MESSAGE_KEYS;
   const messageKey = COMPANY_ONBOARDING_FILE_ERROR_MESSAGE_KEYS[code];
   return messageKey ? copy[messageKey] : copy.fileUploadFailed;
+}
+
+function resolveAddressSearchErrorMessage(errorCode: string | null | undefined, copy: { notConfigured: string; failed: string; keywordRequired: string }): string {
+  if (errorCode === "ADDRESS_SEARCH_KEYWORD_REQUIRED") return copy.keywordRequired;
+  if (errorCode === "ADDRESS_SEARCH_NOT_CONFIGURED") return copy.notConfigured;
+  return copy.failed;
 }
 
 function buildRequiredFieldsMessage(prefix: string, labels: string[]): string {
@@ -349,6 +371,10 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
   const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [addressSearchKeyword, setAddressSearchKeyword] = useState("");
+  const [addressSearchState, setAddressSearchState] = useState<AddressSearchState>("idle");
+  const [addressSearchResults, setAddressSearchResults] = useState<AddressSearchResult[]>([]);
+  const [addressSearchError, setAddressSearchError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
 
   const requiresOnboarding =
@@ -441,6 +467,61 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     setDraft((current) => ({ ...current, [key]: value }));
     if (saveState === "error") setSaveState("idle");
     if (errorMessage) setErrorMessage(null);
+  }
+
+  async function searchAddress() {
+    const keyword = addressSearchKeyword.trim();
+    if (!keyword) {
+      setAddressSearchState("error");
+      setAddressSearchResults([]);
+      setAddressSearchError(copy.addressSearch.errors.keywordRequired);
+      return;
+    }
+
+    setAddressSearchState("loading");
+    setAddressSearchResults([]);
+    setAddressSearchError(null);
+
+    try {
+      const response = await fetch(`/api/address/search?keyword=${encodeURIComponent(keyword)}`, {
+        cache: "no-store",
+      });
+      const payload = (await response.json()) as AddressSearchResponse;
+
+      if (!response.ok || payload.error) {
+        throw new Error(payload.error ?? "ADDRESS_SEARCH_FAILED");
+      }
+
+      setAddressSearchResults(payload.items ?? []);
+      setAddressSearchState("loaded");
+    } catch (error) {
+      setAddressSearchState("error");
+      setAddressSearchResults([]);
+      setAddressSearchError(
+        error instanceof Error
+          ? resolveAddressSearchErrorMessage(error.message, copy.addressSearch.errors)
+          : copy.addressSearch.errors.failed,
+      );
+    }
+  }
+
+  function applyAddressSearchResult(address: AddressSearchResult) {
+    setDraft((current) => ({
+      ...current,
+      postalCode: address.zipNo,
+      roadAddress: address.roadAddr || address.roadAddrPart1 || current.roadAddress,
+      jibunAddress: address.jibunAddr ?? current.jibunAddress,
+      addressExtra: address.roadAddrPart2 || address.bdNm || current.addressExtra,
+    }));
+    if (saveState === "error") setSaveState("idle");
+    if (errorMessage) setErrorMessage(null);
+    setAddressSearchKeyword(address.roadAddr || address.roadAddrPart1 || addressSearchKeyword);
+  }
+
+  function handleAddressSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    void searchAddress();
   }
 
   function updateFileState(fileType: CompanyOnboardingFileType, state: OnboardingFileState) {
@@ -647,6 +728,59 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
                     <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                       <h3 className="text-base font-bold">{copy.sections.address}</h3>
+                      <div className="grid gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3">
+                        <label className="grid gap-1.5 text-sm font-semibold text-[var(--pbp-text-primary)]">
+                          <span>{copy.addressSearch.label}</span>
+                          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                            <input
+                              value={addressSearchKeyword}
+                              onChange={(event) => setAddressSearchKeyword(event.target.value)}
+                              onKeyDown={handleAddressSearchKeyDown}
+                              placeholder={copy.addressSearch.placeholder}
+                              className="h-11 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:font-normal placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-accent)]"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void searchAddress()}
+                              disabled={addressSearchState === "loading"}
+                              className="inline-flex h-11 items-center justify-center rounded-2xl bg-[var(--pbp-accent)] px-4 text-sm font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {addressSearchState === "loading" ? copy.addressSearch.loading : copy.addressSearch.button}
+                            </button>
+                          </div>
+                        </label>
+                        <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.addressSearch.description}</p>
+                        {addressSearchError ? (
+                          <p className="text-xs font-semibold text-rose-600">{addressSearchError}</p>
+                        ) : null}
+                        {addressSearchState === "loaded" && addressSearchResults.length === 0 ? (
+                          <p className="rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
+                            {copy.addressSearch.empty}
+                          </p>
+                        ) : null}
+                        {addressSearchResults.length > 0 ? (
+                          <div className="grid max-h-60 gap-2 overflow-y-auto pr-1">
+                            {addressSearchResults.map((address) => (
+                              <button
+                                key={`${address.zipNo}-${address.roadAddr}-${address.jibunAddr ?? ""}`}
+                                type="button"
+                                onClick={() => applyAddressSearchResult(address)}
+                                className="grid gap-1 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-left text-xs leading-5 transition hover:border-[var(--pbp-border-strong)]"
+                              >
+                                <span className="font-bold text-[var(--pbp-text-primary)]">
+                                  {address.roadAddr || address.roadAddrPart1}
+                                </span>
+                                {address.jibunAddr ? (
+                                  <span className="text-[var(--pbp-text-muted)]">{address.jibunAddr}</span>
+                                ) : null}
+                                <span className="text-[var(--pbp-text-subtle)]">
+                                  {copy.addressSearch.postalCodeLabel} {address.zipNo}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                       <div className="grid gap-3 sm:grid-cols-[0.7fr_1.3fr]">
                         <TextInput label={copy.fields.postalCode} value={draft.postalCode} onChange={(value) => updateDraft("postalCode", value)} placeholder={copy.placeholders.postalCode} inputMode="numeric" maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.postalCode} required />
                         <TextInput label={copy.fields.roadAddress} value={draft.roadAddress} onChange={(value) => updateDraft("roadAddress", value)} placeholder={copy.placeholders.roadAddress} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.roadAddress} required />
