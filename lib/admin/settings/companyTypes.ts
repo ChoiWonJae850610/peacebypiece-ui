@@ -6,6 +6,13 @@ export type CompanyOnboardingStatus =
   | "approval_pending"
   | "active";
 
+export type CompanySubscriptionStatus =
+  | "trialing"
+  | "trial_expired"
+  | "active"
+  | "past_due"
+  | "canceled";
+
 export type CompanyOnboardingProfile = {
   companyId: string;
   companyName: string;
@@ -21,6 +28,10 @@ export type CompanyOnboardingProfile = {
   requestedPlanCode: string;
   onboardingStatus: CompanyOnboardingStatus;
   onboardingCompletedAt?: string | null;
+  subscriptionStatus: CompanySubscriptionStatus;
+  trialStartedAt?: string | null;
+  trialEndsAt?: string | null;
+  trialExpired: boolean;
   adminName: string;
   adminPhone: string;
   profileComplete: boolean;

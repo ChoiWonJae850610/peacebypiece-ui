@@ -169,9 +169,18 @@ CREATE TABLE companies (
   storage_limit_bytes bigint,
   member_limit integer,
   billing_status text NOT NULL DEFAULT 'trial',
+  subscription_status text NOT NULL DEFAULT 'trialing',
+  trial_started_at timestamptz,
+  trial_ends_at timestamptz,
 
   CONSTRAINT companies_onboarding_status_check CHECK (
     onboarding_status IN ('profile_required', 'approval_pending', 'active')
+  ),
+  CONSTRAINT companies_subscription_status_check CHECK (
+    subscription_status IN ('trialing', 'trial_expired', 'active', 'past_due', 'canceled')
+  ),
+  CONSTRAINT companies_trial_period_valid CHECK (
+    trial_ends_at IS NULL OR trial_started_at IS NULL OR trial_ends_at > trial_started_at
   ),
 
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -1170,6 +1179,27 @@ INSERT INTO plans (
   memo
 )
 VALUES
+  (
+    'plan-trial',
+    'trial',
+    'Trial',
+    'active',
+    'monthly',
+    0,
+    1073741824,
+    5368709120,
+    true,
+    5,
+    5,
+    true,
+    false,
+    true,
+    false,
+    false,
+    true,
+    true,
+    '고객사 승인 시점부터 7일 무료 체험 기준 요금제'
+  ),
   (
     'plan-starter',
     'starter',

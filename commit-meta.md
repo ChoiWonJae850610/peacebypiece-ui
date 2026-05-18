@@ -1,20 +1,25 @@
-Version : 0.13.58
-Summary : 고객사 초대 링크 독립화와 승인 요청 상태 흐름 정리
-Description : 고객사 관리자 초대 링크를 이메일/휴대폰 대상과 분리해 독립 token으로 생성하도록 정리했습니다. Google 로그인 이메일 일치 검사를 제거하고, 로그인만으로 가입 신청 검토 목록에 표시되지 않도록 고객사 온보딩 저장 시점에 join_requests pending을 생성하도록 보강했습니다. 시스템 고객사관리 목록은 approval_pending 회사만 표시하도록 필터링하고, invitations.recipient_email nullable 구조를 full_reset과 migration에 반영했습니다.
+Version : 0.13.59
+Summary : 고객사 무료 체험 기간과 이용 제한 기준 추가
+Description : 고객사 승인 시점부터 7일 무료 체험 기간을 저장하고 trial plan 기준 및 만료 상태 계산을 추가했습니다. 고객사 관리자 온보딩 게이트에서 무료 체험 만료 안내를 표시하고, 멤버 워크스페이스는 만료 고객사 접근 시 서비스 대기 화면으로 이동하도록 보강했습니다.
+
 수정 파일 목록 :
-- components/system/companies/SystemCompanyApprovalConsole.tsx
-- components/invitations/CompanyInvitationJoinRequestPage.tsx
-- lib/invitations/invitationPolicy.ts
-- lib/invitations/invitationRepository.ts
-- lib/invitations/invitationTypes.ts
-- lib/invitations/api/invitationRouteHandlers.ts
-- lib/invitations/api/joinRequestRouteHandlers.ts
-- lib/invitations/joinRequestRepository.ts
-- lib/invitations/joinRequestTypes.ts
-- lib/auth/companyInvitationLoginRepository.ts
+- components/admin/companies/AdminCompanyOnboardingGate.tsx
 - lib/admin/settings/companyOnboardingRepository.ts
+- lib/admin/settings/companyTypes.ts
+- lib/invitations/joinRequestRepository.ts
+- lib/auth/routeGuard.ts
+- lib/billing/defaultPlans.ts
+- lib/billing/planPolicy.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - db/schema/full_reset.sql
 - lib/constants/app.ts
+
 추가 파일 목록 :
-- db/migrations/patch_0_13_58_company_invitation_independent_token.sql
+- lib/billing/companyTrialPolicy.ts
+- lib/billing/companyAccessRepository.ts
+- app/service-paused/page.tsx
+- db/migrations/patch_0_13_59_company_trial_period.sql
+
 삭제 파일 목록 :
+- 없음

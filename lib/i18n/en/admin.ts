@@ -1869,6 +1869,11 @@ export const adminEn = {
       title: "Waiting for approval.",
       description: "Company information has been submitted. The workspace will become available after a system administrator reviews and approves the company.",
     },
+    trialExpired: {
+      title: "The free trial has ended.",
+      description: "Select a plan or ask the system administrator to extend access. Members should contact the customer administrator.",
+      action: "View plans",
+    },
     errors: {
       load: "Failed to load company information.",
       save: "Failed to save company information. Check required fields.",

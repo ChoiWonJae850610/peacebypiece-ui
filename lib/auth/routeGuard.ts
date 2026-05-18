@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { getCompanyAccessState } from "@/lib/billing/companyAccessRepository";
 import { createDevSystemAdminSession, isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
 
@@ -32,6 +33,13 @@ export async function requireWaflSessionForArea(area: ProtectedArea): Promise<Wa
 
   if (!canAccessProtectedArea(session.role, area)) {
     redirect(getRoleHomePath(session.role));
+  }
+
+  if (area === "worker" && session.companyId) {
+    const accessState = await getCompanyAccessState(session.companyId);
+    if (accessState?.accessBlocked) {
+      redirect("/service-paused");
+    }
   }
 
   return session;

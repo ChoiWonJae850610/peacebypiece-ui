@@ -16,6 +16,25 @@ const defaultFeatures = {
 
 export const DEFAULT_PLAN_DEFINITIONS: PlanDefinition[] = [
   {
+    id: "plan-trial",
+    code: DEFAULT_PLAN_CODES.TRIAL,
+    name: "Trial",
+    status: "active",
+    billingCycle: "monthly",
+    priceKrw: 0,
+    storage: {
+      includedStorageBytes: DEFAULT_PLAN_STORAGE_LIMITS.TRIAL,
+      maxStorageBytes: DEFAULT_PLAN_STORAGE_LIMITS.STARTER,
+      allowStorageOverride: true,
+    },
+    members: {
+      includedMembers: DEFAULT_PLAN_MEMBER_LIMITS.TRIAL,
+      maxMembers: DEFAULT_PLAN_MEMBER_LIMITS.STARTER,
+      allowMemberOverride: true,
+    },
+    features: defaultFeatures,
+  },
+  {
     id: "plan-starter",
     code: DEFAULT_PLAN_CODES.STARTER,
     name: "Starter",

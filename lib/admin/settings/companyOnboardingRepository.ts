@@ -3,6 +3,10 @@ import "server-only";
 import { queryDb } from "@/lib/db/client";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import { normalizePhoneNumber } from "@/lib/utils/phoneFormat";
+import {
+  isCompanyTrialExpired,
+  normalizeCompanySubscriptionStatus,
+} from "@/lib/billing/companyTrialPolicy";
 import type {
   CompanyOnboardingProfile,
   CompanyOnboardingStatus,
@@ -24,6 +28,9 @@ type CompanyOnboardingRow = {
   requested_plan_code: string | null;
   onboarding_status: string | null;
   onboarding_completed_at: string | Date | null;
+  subscription_status: string | null;
+  trial_started_at: string | Date | null;
+  trial_ends_at: string | Date | null;
   admin_name: string | null;
   admin_phone: string | null;
 };
@@ -83,6 +90,13 @@ function mapRow(row: CompanyOnboardingRow): CompanyOnboardingProfile {
     requestedPlanCode: normalizeText(row.requested_plan_code),
     onboardingStatus: profileComplete ? normalizeStatus(row.onboarding_status) : "profile_required",
     onboardingCompletedAt: toIso(row.onboarding_completed_at),
+    subscriptionStatus: normalizeCompanySubscriptionStatus(row.subscription_status),
+    trialStartedAt: toIso(row.trial_started_at),
+    trialEndsAt: toIso(row.trial_ends_at),
+    trialExpired: isCompanyTrialExpired({
+      subscriptionStatus: row.subscription_status,
+      trialEndsAt: row.trial_ends_at,
+    }),
     adminName: normalizeText(row.admin_name),
     adminPhone: normalizeText(row.admin_phone),
     profileComplete,
@@ -111,6 +125,9 @@ export async function getCompanyOnboardingProfile(
         c.requested_plan_code,
         c.onboarding_status,
         c.onboarding_completed_at,
+        c.subscription_status,
+        c.trial_started_at,
+        c.trial_ends_at,
         u.name AS admin_name,
         u.phone AS admin_phone
       FROM companies c

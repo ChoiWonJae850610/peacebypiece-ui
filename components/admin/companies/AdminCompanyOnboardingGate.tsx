@@ -20,6 +20,10 @@ type CompanyOnboardingProfile = {
   requestedPlanCode: string;
   onboardingStatus: "profile_required" | "approval_pending" | "active";
   onboardingCompletedAt?: string | null;
+  subscriptionStatus: "trialing" | "trial_expired" | "active" | "past_due" | "canceled";
+  trialStartedAt?: string | null;
+  trialEndsAt?: string | null;
+  trialExpired: boolean;
   adminName: string;
   adminPhone: string;
   profileComplete: boolean;
@@ -122,8 +126,9 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
   const requiresOnboarding = loadState === "loaded" && profile !== null && !profile.profileComplete;
   const isApprovalPending = loadState === "loaded" && profile?.profileComplete && profile.onboardingStatus === "approval_pending";
+  const isTrialExpired = loadState === "loaded" && profile?.profileComplete && profile.trialExpired;
   const isCheckingOnboarding = loadState === "idle" || loadState === "loading";
-  const blocksAdminWorkspace = isCheckingOnboarding || requiresOnboarding || isApprovalPending || loadState === "error";
+  const blocksAdminWorkspace = isCheckingOnboarding || requiresOnboarding || isApprovalPending || isTrialExpired || loadState === "error";
   const missingRequiredLabels = useMemo(() => {
     const missing: string[] = [];
     if (!draft.companyName.trim()) missing.push(copy.fields.companyName);
@@ -306,6 +311,17 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
               ) : loadState === "error" ? (
                 <div className="mt-5 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
                   {errorMessage ?? copy.errors.load}
+                </div>
+              ) : isTrialExpired ? (
+                <div className="mt-5 rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm leading-6 text-rose-800">
+                  <p className="font-bold">{copy.trialExpired.title}</p>
+                  <p className="mt-2">{copy.trialExpired.description}</p>
+                  <a
+                    href="/admin/settings"
+                    className="mt-4 inline-flex h-10 items-center justify-center rounded-2xl bg-[var(--pbp-accent)] px-4 text-sm font-bold text-white"
+                  >
+                    {copy.trialExpired.action}
+                  </a>
                 </div>
               ) : isApprovalPending ? (
                 <div className="mt-5 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-800">

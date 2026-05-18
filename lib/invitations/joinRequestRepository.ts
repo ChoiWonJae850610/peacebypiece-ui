@@ -8,6 +8,12 @@ import {
   type MemberPermissionCode,
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
+import {
+  getTrialEndsAt,
+  TRIAL_MEMBER_LIMIT,
+  TRIAL_PLAN_CODE,
+  TRIAL_STORAGE_LIMIT_BYTES,
+} from "@/lib/billing/companyTrialPolicy";
 import { initializeCompanyStandards } from "@/lib/system/standards/companyStandardsInitializationRepository";
 import { invitationRepository } from "./invitationRepository";
 import type { InvitationRecord, InvitationScope } from "./invitationTypes";
@@ -738,7 +744,32 @@ async function insertApprovedCompanyMember(
   );
 
   if (existing.rows[0]) {
-    throw new Error("COMPANY_MEMBER_ALREADY_EXISTS");
+    const updated = await client.query<CompanyMemberDbRow>(
+      `
+        UPDATE company_members
+           SET status = 'approved',
+               role_template_code = $3::text,
+               display_name = COALESCE($4::text, display_name),
+               approved_by = $5::text,
+               approved_at = COALESCE(approved_at, now()),
+               rejected_by = NULL,
+               rejected_at = NULL,
+               suspended_by = NULL,
+               suspended_at = NULL,
+               updated_at = now()
+         WHERE id = $1::text
+         RETURNING id, company_id, user_id, status, role_template_code
+      `,
+      [
+        existing.rows[0].id,
+        input.companyId,
+        input.roleTemplateCode,
+        input.displayName,
+        input.approvedByUserId ?? null,
+      ],
+    );
+
+    return updated.rows[0] ?? existing.rows[0];
   }
 
   const result = await client.query<CompanyMemberDbRow>(
@@ -822,15 +853,17 @@ function resolveCompanyAdminPermissionCodes(): readonly MemberPermissionCode[] {
 async function assertCompanyNameAvailable(
   client: DbTransactionClient,
   companyName: string,
+  exceptCompanyId?: string | null,
 ): Promise<void> {
   const existing = await client.query<CompanyDbRow>(
     `
       SELECT id, name, business_name, storage_limit_bytes
         FROM companies
        WHERE lower(name) = lower($1)
+         AND ($2::text IS NULL OR id <> $2::text)
        LIMIT 1
     `,
-    [companyName],
+    [companyName, exceptCompanyId ?? null],
   );
 
   if (existing.rows[0]) {
@@ -849,8 +882,23 @@ async function insertApprovedCompany(
   const companyId = randomUUID();
   const result = await client.query<CompanyDbRow>(
     `
-      INSERT INTO companies (id, name, business_name, memo, is_active)
-      VALUES ($1, $2, $3, $4, true)
+      INSERT INTO companies (
+        id,
+        name,
+        business_name,
+        memo,
+        is_active,
+        status,
+        onboarding_status,
+        plan_code,
+        billing_status,
+        subscription_status,
+        trial_started_at,
+        trial_ends_at,
+        storage_limit_bytes,
+        member_limit
+      )
+      VALUES ($1, $2, $3, $4, true, 'active', 'active', $5, 'trial', 'trialing', $6::timestamptz, $7::timestamptz, $8::bigint, $9::integer)
       RETURNING id, name, business_name, storage_limit_bytes
     `,
     [
@@ -858,6 +906,11 @@ async function insertApprovedCompany(
       input.companyName,
       normalizeText(input.businessName),
       normalizeText(input.memo),
+      TRIAL_PLAN_CODE,
+      new Date().toISOString(),
+      getTrialEndsAt().toISOString(),
+      TRIAL_STORAGE_LIMIT_BYTES,
+      TRIAL_MEMBER_LIMIT,
     ],
   );
 
@@ -867,6 +920,94 @@ async function insertApprovedCompany(
   }
 
   return row;
+}
+
+async function approveExistingProfileRequiredCompany(
+  client: DbTransactionClient,
+  input: {
+    companyId: string;
+    companyName: string;
+    businessName?: string | null;
+    memo?: string | null;
+  },
+): Promise<CompanyDbRow> {
+  const trialStartedAt = new Date();
+  const trialEndsAt = getTrialEndsAt(trialStartedAt);
+
+  const result = await client.query<CompanyDbRow>(
+    `
+      UPDATE companies
+         SET name = $2::text,
+             business_name = $3::text,
+             memo = $4::text,
+             is_active = true,
+             status = 'active',
+             onboarding_status = 'active',
+             plan_code = $5::text,
+             billing_status = 'trial',
+             subscription_status = 'trialing',
+             trial_started_at = $6::timestamptz,
+             trial_ends_at = $7::timestamptz,
+             storage_limit_bytes = COALESCE(storage_limit_bytes, $8::bigint),
+             member_limit = COALESCE(member_limit, $9::integer),
+             updated_at = now()
+       WHERE id = $1::text
+       RETURNING id, name, business_name, storage_limit_bytes
+    `,
+    [
+      input.companyId,
+      input.companyName,
+      normalizeText(input.businessName),
+      normalizeText(input.memo),
+      TRIAL_PLAN_CODE,
+      trialStartedAt.toISOString(),
+      trialEndsAt.toISOString(),
+      TRIAL_STORAGE_LIMIT_BYTES,
+      TRIAL_MEMBER_LIMIT,
+    ],
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error("COMPANY_APPROVAL_TARGET_NOT_FOUND");
+  }
+
+  return row;
+}
+
+async function assignTrialPlanToCompany(
+  client: DbTransactionClient,
+  companyId: string,
+): Promise<void> {
+  await client.query(
+    `
+      INSERT INTO company_plan_assignments (
+        company_id,
+        plan_id,
+        status,
+        override_storage_limit_bytes,
+        override_member_limit,
+        override_price_krw,
+        override_memo,
+        starts_at,
+        ends_at
+      )
+      SELECT
+        $1::text,
+        plans.id,
+        'active',
+        $2::bigint,
+        $3::integer,
+        0,
+        '7일 무료 체험 자동 부여',
+        now(),
+        now() + interval '7 days'
+      FROM plans
+      WHERE plans.code = $4::text
+      ON CONFLICT DO NOTHING
+    `,
+    [companyId, TRIAL_STORAGE_LIMIT_BYTES, TRIAL_MEMBER_LIMIT, TRIAL_PLAN_CODE],
+  );
 }
 
 async function assignCompanyOwner(
@@ -896,13 +1037,22 @@ async function approveDbCompanyJoinRequest(
     assertPendingCompanyJoinRequest(joinRequest);
 
     const companyName = normalizeCompanyName(joinRequest.requestedCompanyName);
-    await assertCompanyNameAvailable(client, companyName);
+    await assertCompanyNameAvailable(client, companyName, joinRequest.createdCompanyId);
 
-    const company = await insertApprovedCompany(client, {
-      companyName,
-      businessName: joinRequest.businessName,
-      memo: joinRequest.requestMemo,
-    });
+    const company = joinRequest.createdCompanyId
+      ? await approveExistingProfileRequiredCompany(client, {
+          companyId: joinRequest.createdCompanyId,
+          companyName,
+          businessName: joinRequest.businessName,
+          memo: joinRequest.requestMemo,
+        })
+      : await insertApprovedCompany(client, {
+          companyName,
+          businessName: joinRequest.businessName,
+          memo: joinRequest.requestMemo,
+        });
+    await assignTrialPlanToCompany(client, company.id);
+
     const permissionCodes = resolveCompanyAdminPermissionCodes();
     const user = await findOrCreateMemberUser(client, {
       companyId: company.id,
