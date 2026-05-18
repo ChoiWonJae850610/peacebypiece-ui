@@ -67,6 +67,7 @@ type CompanyJoinRequestRow = {
   statusLabel: string;
   statusTone: "success" | "warning" | "danger" | "neutral";
   canReview: boolean;
+  canRequestReinput: boolean;
   reviewedAtLabel: string;
   logoUrl: string | null;
   applicantEmail: string;
@@ -179,20 +180,21 @@ function getCompanyJoinRequestStatus(joinRequest: JoinRequestRecord): {
   label: string;
   tone: CompanyJoinRequestRow["statusTone"];
   canReview: boolean;
+  canRequestReinput: boolean;
 } {
   if (joinRequest.status === "approved") {
-    return { label: "승인됨", tone: "success", canReview: false };
+    return { label: "승인됨", tone: "success", canReview: false, canRequestReinput: false };
   }
 
   if (joinRequest.status === "rejected" || joinRequest.companyOnboardingStatus === "rejected") {
-    return { label: "거절됨", tone: "danger", canReview: false };
+    return { label: "거절됨", tone: "danger", canReview: false, canRequestReinput: true };
   }
 
   if (joinRequest.companyOnboardingStatus === "approval_pending") {
-    return { label: "승인 대기", tone: "warning", canReview: true };
+    return { label: "승인 대기", tone: "warning", canReview: true, canRequestReinput: false };
   }
 
-  return { label: "정보 입력 중", tone: "neutral", canReview: false };
+  return { label: "정보 입력 중", tone: "neutral", canReview: false, canRequestReinput: false };
 }
 
 function getCompanyJoinRequestCurrentPlanLabel(joinRequest: JoinRequestRecord, requestedPlanCode: string): string {
@@ -233,6 +235,7 @@ function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): CompanyJoinReq
     statusLabel: status.label,
     statusTone: status.tone,
     canReview: status.canReview,
+    canRequestReinput: status.canRequestReinput,
     reviewedAtLabel: toCompactDateTimeLabel(joinRequest.reviewedAt),
     logoUrl,
     applicantEmail: joinRequest.applicantEmail,
@@ -262,6 +265,8 @@ const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
   COMPANY_JOIN_REQUESTS_LOAD_FAILED: "고객사 가입 신청 목록을 불러오지 못했습니다.",
   COMPANY_JOIN_REQUEST_APPROVE_FAILED: "고객사 가입 신청 승인에 실패했습니다.",
   COMPANY_JOIN_REQUEST_REJECT_FAILED: "고객사 가입 신청 거절에 실패했습니다.",
+  COMPANY_JOIN_REQUEST_REOPEN_FAILED: "고객사 재입력 요청 처리에 실패했습니다.",
+  COMPANY_JOIN_REQUEST_REOPEN_TARGET_REQUIRED: "거절된 고객사만 재입력 요청으로 전환할 수 있습니다.",
   INVITATION_SCOPE_MISMATCH: "초대 링크의 사용 범위가 고객사 관리자 가입 신청과 맞지 않습니다.",
   INVITATION_NOT_FOUND: "초대 링크 정보를 찾을 수 없습니다.",
   INVITATION_EXPIRED: "만료된 초대 링크입니다.",
@@ -383,6 +388,7 @@ export default function SystemCompanyApprovalConsole() {
   const [reviewActionMessage, setReviewActionMessage] = useState<string | null>(null);
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
+  const [reopeningRequestId, setReopeningRequestId] = useState<string | null>(null);
   const [systemInviteExpiresInDays, setSystemInviteExpiresInDays] = useState(7);
   const [systemInvitations, setSystemInvitations] = useState<InvitationRecord[]>([]);
   const [systemInvitationLoadStatus, setSystemInvitationLoadStatus] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
@@ -536,7 +542,7 @@ export default function SystemCompanyApprovalConsole() {
           <div className="grid min-w-0 gap-2 sm:flex sm:flex-wrap sm:justify-center">
             <AdminButton
               onClick={() => setSelectedJoinRequestId(request.id)}
-              disabled={approvingRequestId !== null || rejectingRequestId !== null}
+              disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
               variant="secondary"
             >
               상세
@@ -545,25 +551,34 @@ export default function SystemCompanyApprovalConsole() {
               <>
                 <AdminButton
                   onClick={() => void approveCompanyJoinRequest(request.id)}
-                  disabled={approvingRequestId !== null || rejectingRequestId !== null}
+                  disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
                   variant="primary"
                 >
                   {approvingRequestId === request.id ? "승인 중" : "승인"}
                 </AdminButton>
                 <AdminButton
                   onClick={() => void rejectCompanyJoinRequest(request.id)}
-                  disabled={approvingRequestId !== null || rejectingRequestId !== null}
+                  disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
                   variant="danger"
                 >
                   {rejectingRequestId === request.id ? "거절 중" : "거절"}
                 </AdminButton>
               </>
             ) : null}
+            {request.canRequestReinput ? (
+              <AdminButton
+                onClick={() => void requestCompanyReinput(request.id)}
+                disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                variant="secondary"
+              >
+                {reopeningRequestId === request.id ? "요청 중" : "재입력 요청"}
+              </AdminButton>
+            ) : null}
           </div>
         ),
       },
     ],
-    [approvingRequestId, rejectingRequestId],
+    [approvingRequestId, rejectingRequestId, reopeningRequestId],
   );
 
   async function loadSystemInvitations() {
@@ -783,6 +798,40 @@ export default function SystemCompanyApprovalConsole() {
       );
     } finally {
       setRejectingRequestId(null);
+    }
+  }
+
+
+  async function requestCompanyReinput(requestId: string) {
+    setReopeningRequestId(requestId);
+    setReviewActionError(null);
+    setReviewActionMessage(null);
+
+    try {
+      const response = await fetch(`/api/system/companies/join-requests/${encodeURIComponent(requestId)}/reopen`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reasonCode: "system_admin_reinput_requested" }),
+      });
+      const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_REOPEN_FAILED");
+      }
+
+      setReviewActionMessage("거절된 고객사를 재입력 요청 상태로 전환했습니다.");
+      setSelectedJoinRequestId(null);
+      await loadCompanyJoinRequests();
+      await loadSystemInvitations();
+    } catch (error) {
+      setReviewActionError(
+        resolveSystemCompanyErrorMessage(
+          error instanceof Error ? error.message : null,
+          "고객사 재입력 요청 처리에 실패했습니다.",
+        ),
+      );
+    } finally {
+      setReopeningRequestId(null);
     }
   }
 

@@ -38,6 +38,7 @@ interface ReviewCompanyJoinRequestBody {
   actorSystemUserId?: string | null;
   approvedBySystemUserId?: string | null;
   rejectedBySystemUserId?: string | null;
+  reopenedBySystemUserId?: string | null;
   reasonCode?: string | null;
 }
 
@@ -88,6 +89,7 @@ function toErrorResponse(error: unknown) {
     message === "JOIN_REQUEST_COMPANY_SCOPE_MISMATCH" ||
     message === "JOIN_REQUEST_COMPANY_ONLY" ||
     message === "JOIN_REQUEST_MEMBER_ONLY" ||
+    message === "COMPANY_JOIN_REQUEST_REOPEN_TARGET_REQUIRED" ||
     message === "MEMBER_PERMISSION_REQUIRED" ? 400 :
     500;
 
@@ -279,6 +281,10 @@ function readRejectedSystemActorUserId(body: ReviewCompanyJoinRequestBody): stri
   return body.actorSystemUserId?.trim() || body.rejectedBySystemUserId?.trim() || null;
 }
 
+function readReopenedSystemActorUserId(body: ReviewCompanyJoinRequestBody): string | null {
+  return body.actorSystemUserId?.trim() || body.reopenedBySystemUserId?.trim() || null;
+}
+
 export async function handleApproveMemberJoinRequest(requestId: string, request: Request) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReviewMemberJoinRequestBody;
@@ -443,6 +449,28 @@ export async function handleRejectCompanyJoinRequest(requestId: string, request:
     return NextResponse.json({
       ok: true,
       action: "company_rejected",
+      joinRequest: result.joinRequest,
+    });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+
+
+export async function handleReopenCompanyJoinRequest(requestId: string, request: Request, scope: SystemJoinRequestReviewScope) {
+  try {
+    const body = (await request.json().catch(() => ({}))) as ReviewCompanyJoinRequestBody;
+    const reopenedBySystemUserId = scope.actorSystemUserId || readReopenedSystemActorUserId(body);
+    const result = await joinRequestRepository.reopenCompanyJoinRequest({
+      requestId,
+      reopenedBySystemUserId,
+      reasonCode: body.reasonCode ?? "system_admin_reopen_requested",
+    });
+
+    return NextResponse.json({
+      ok: true,
+      action: "company_reopened",
       joinRequest: result.joinRequest,
     });
   } catch (error) {

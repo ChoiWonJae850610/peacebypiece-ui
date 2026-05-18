@@ -29,6 +29,8 @@ import type {
   CompanyJoinRequestApprovalResult,
   CompanyJoinRequestRejectInput,
   CompanyJoinRequestRejectionResult,
+  CompanyJoinRequestReopenInput,
+  CompanyJoinRequestReopenResult,
   MemberJoinRequestApproveInput,
   MemberJoinRequestApprovalResult,
   MemberJoinRequestRejectInput,
@@ -554,6 +556,20 @@ function assertPendingCompanyJoinRequest(joinRequest: JoinRequestRecord): void {
   }
 }
 
+function assertRejectedCompanyJoinRequest(joinRequest: JoinRequestRecord): void {
+  if (joinRequest.requestType !== "company") {
+    throw new Error("JOIN_REQUEST_COMPANY_ONLY");
+  }
+
+  if (joinRequest.status !== "rejected" && joinRequest.companyOnboardingStatus !== "rejected") {
+    throw new Error("COMPANY_JOIN_REQUEST_REOPEN_TARGET_REQUIRED");
+  }
+
+  if (joinRequest.invitation?.scope !== "system_to_company_admin") {
+    throw new Error("INVITATION_SCOPE_MISMATCH");
+  }
+}
+
 function resolveJoinRequestCompanyId(joinRequest: JoinRequestRecord): string {
   const companyId = joinRequest.invitation?.companyId?.trim();
   if (!companyId) {
@@ -648,7 +664,33 @@ async function findOrCreateMemberUser(
       [input.preferredUserId.trim()],
     );
 
-    if (preferred.rows[0]) return preferred.rows[0];
+    if (preferred.rows[0]) {
+      const updated = await client.query<UserDbRow>(
+        `
+          UPDATE users
+             SET company_id = $2::text,
+                 name = COALESCE($3::text, name),
+                 role = $4::text,
+                 google_sub = COALESCE($5::text, google_sub),
+                 google_picture_url = COALESCE($6::text, google_picture_url),
+                 phone = COALESCE($7::text, phone),
+                 phone_source = CASE WHEN $7::text IS NULL THEN phone_source ELSE COALESCE(phone_source, 'user') END,
+                 updated_at = now()
+           WHERE id = $1::text
+           RETURNING id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
+        `,
+        [
+          preferred.rows[0].id,
+          input.companyId,
+          normalizeText(input.applicantName),
+          getUserRoleForRoleTemplate(input.roleTemplateCode),
+          normalizeText(input.googleSub),
+          normalizeText(input.googlePictureUrl),
+          normalizeText(input.applicantPhone),
+        ],
+      );
+      return updated.rows[0] ?? preferred.rows[0];
+    }
   }
 
   if (input.googleSub?.trim()) {
@@ -662,7 +704,31 @@ async function findOrCreateMemberUser(
       [input.googleSub.trim()],
     );
 
-    if (existingGoogleUser.rows[0]) return existingGoogleUser.rows[0];
+    if (existingGoogleUser.rows[0]) {
+      const updated = await client.query<UserDbRow>(
+        `
+          UPDATE users
+             SET company_id = $2::text,
+                 name = COALESCE($3::text, name),
+                 role = $4::text,
+                 google_picture_url = COALESCE($5::text, google_picture_url),
+                 phone = COALESCE($6::text, phone),
+                 phone_source = CASE WHEN $6::text IS NULL THEN phone_source ELSE COALESCE(phone_source, 'user') END,
+                 updated_at = now()
+           WHERE id = $1::text
+           RETURNING id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
+        `,
+        [
+          existingGoogleUser.rows[0].id,
+          input.companyId,
+          normalizeText(input.applicantName),
+          getUserRoleForRoleTemplate(input.roleTemplateCode),
+          normalizeText(input.googlePictureUrl),
+          normalizeText(input.applicantPhone),
+        ],
+      );
+      return updated.rows[0] ?? existingGoogleUser.rows[0];
+    }
   }
 
   const existing = await client.query<UserDbRow>(
@@ -724,7 +790,7 @@ async function findOrCreateMemberUser(
       input.companyId,
       normalizedEmail,
       displayName,
-      input.roleTemplateCode,
+      getUserRoleForRoleTemplate(input.roleTemplateCode),
       normalizeText(input.googleSub),
       normalizeText(input.googlePictureUrl),
       normalizeText(input.applicantPhone),
@@ -858,6 +924,10 @@ type CompanyDbRow = {
 };
 
 const COMPANY_ADMIN_ROLE_TEMPLATE_CODE: MemberPermissionRoleTemplateCode = "company_admin";
+
+function getUserRoleForRoleTemplate(roleTemplateCode: MemberPermissionRoleTemplateCode): string {
+  return roleTemplateCode === COMPANY_ADMIN_ROLE_TEMPLATE_CODE ? "admin" : roleTemplateCode;
+}
 
 function normalizeCompanyName(value: string | null | undefined): string {
   return value?.trim() || "";
@@ -1268,6 +1338,78 @@ function rejectInMemoryCompanyJoinRequest(
   return { joinRequest: updated };
 }
 
+async function reopenDbCompanyJoinRequest(
+  input: CompanyJoinRequestReopenInput,
+): Promise<CompanyJoinRequestReopenResult> {
+  return withDbTransaction(async (client) => {
+    const joinRequest = await selectDbJoinRequestById(client, input.requestId);
+    if (!joinRequest) {
+      throw new Error("JOIN_REQUEST_NOT_FOUND");
+    }
+
+    assertRejectedCompanyJoinRequest(joinRequest);
+
+    await client.query(
+      `
+        UPDATE join_requests
+           SET status = 'pending',
+               reviewed_by_system_user_id = NULL,
+               reviewed_at = NULL,
+               rejection_reason = NULL,
+               updated_at = now()
+         WHERE id = $1::text
+      `,
+      [joinRequest.id],
+    );
+
+    if (joinRequest.createdCompanyId) {
+      await client.query(
+        `
+          UPDATE companies
+             SET onboarding_status = 'profile_required',
+                 onboarding_completed_at = NULL,
+                 billing_status = 'trial',
+                 subscription_status = 'trialing',
+                 trial_started_at = NULL,
+                 trial_ends_at = NULL,
+                 updated_at = now()
+           WHERE id = $1::text
+        `,
+        [joinRequest.createdCompanyId],
+      );
+    }
+
+    const updatedJoinRequest = await selectDbJoinRequestById(client, joinRequest.id);
+    if (!updatedJoinRequest) {
+      throw new Error("JOIN_REQUEST_NOT_FOUND");
+    }
+
+    return { joinRequest: updatedJoinRequest };
+  });
+}
+
+function reopenInMemoryCompanyJoinRequest(
+  input: CompanyJoinRequestReopenInput,
+): CompanyJoinRequestReopenResult {
+  const index = inMemoryJoinRequests.findIndex((item) => item.id === input.requestId);
+  const joinRequest = index >= 0 ? inMemoryJoinRequests[index] : null;
+  if (!joinRequest) throw new Error("JOIN_REQUEST_NOT_FOUND");
+  assertRejectedCompanyJoinRequest(joinRequest);
+
+  const now = new Date().toISOString();
+  const updated: JoinRequestRecord = {
+    ...joinRequest,
+    status: "pending",
+    reviewedBySystemUserId: null,
+    reviewedAt: null,
+    rejectionReason: null,
+    updatedAt: now,
+  };
+  inMemoryJoinRequests[index] = updated;
+
+  return { joinRequest: updated };
+}
+
 async function approveDbMemberJoinRequest(
   input: MemberJoinRequestApproveInput,
 ): Promise<MemberJoinRequestApprovalResult> {
@@ -1551,6 +1693,18 @@ export function createJoinRequestRepository(): JoinRequestRepository {
       }
 
       return rejectInMemoryCompanyJoinRequest({ ...input, requestId: trimmedId });
+    },
+    async reopenCompanyJoinRequest(input: CompanyJoinRequestReopenInput): Promise<CompanyJoinRequestReopenResult> {
+      const trimmedId = input.requestId.trim();
+      if (!trimmedId) {
+        throw new Error("JOIN_REQUEST_ID_REQUIRED");
+      }
+
+      if (isDatabaseConfigured()) {
+        return reopenDbCompanyJoinRequest({ ...input, requestId: trimmedId });
+      }
+
+      return reopenInMemoryCompanyJoinRequest({ ...input, requestId: trimmedId });
     },
   };
 }
