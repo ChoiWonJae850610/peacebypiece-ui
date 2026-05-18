@@ -283,6 +283,8 @@ const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
   COMPANY_MEMBER_CREATE_FAILED: "고객사 관리자 멤버십 생성에 실패했습니다.",
   MEMBER_PERMISSION_REQUIRED: "고객사 관리자에게 부여할 권한이 없습니다.",
   SYSTEM_ADMIN_SESSION_REQUIRED: "시스템관리자 로그인이 필요합니다.",
+  POSTGRES_PARAMETER_TYPE_ERROR: "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 최신 패치 적용 후 다시 시도해 주세요.",
+  "could not determine data type of parameter $2": "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 최신 패치 적용 후 다시 시도해 주세요.",
 };
 
 function resolveSystemCompanyErrorMessage(errorCode: string | null | undefined, fallback: string): string {

@@ -74,7 +74,10 @@ function toPublicInvitation(invitation: Awaited<ReturnType<typeof invitationRepo
 }
 
 function toErrorResponse(error: unknown) {
-  const message = error instanceof Error ? error.message : "Unknown join request error";
+  const rawMessage = error instanceof Error ? error.message : "Unknown join request error";
+  const message = rawMessage.includes("could not determine data type of parameter")
+    ? "POSTGRES_PARAMETER_TYPE_ERROR"
+    : rawMessage;
   const status =
     message === "INVITATION_NOT_FOUND" || message === "JOIN_REQUEST_NOT_FOUND" ? 404 :
     message === "INVITATION_EXPIRED" ? 410 :

@@ -239,8 +239,8 @@ async function createDbJoinRequest(
         created_at,
         updated_at
       FROM join_requests
-      WHERE invitation_id = $1
-        AND lower(applicant_email) = lower($2)
+      WHERE invitation_id = $1::text
+        AND lower(applicant_email) = lower($2::text)
         AND status = 'pending'
       LIMIT 1
     `,
@@ -267,7 +267,7 @@ async function createDbJoinRequest(
         request_memo,
         status
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending')
+      VALUES ($1::text, $2::text, $3::text, $4::text, $5::text, $6::text, $7::text, $8::text, $9::text, $10::text, $11::text, 'pending')
       RETURNING
         id,
         invitation_id,
@@ -735,8 +735,8 @@ async function findOrCreateMemberUser(
     `
       SELECT id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
         FROM users
-       WHERE company_id = $1
-         AND lower(email) = lower($2)
+       WHERE company_id = $1::text
+         AND lower(email) = lower($2::text)
        LIMIT 1
     `,
     [input.companyId, normalizedEmail],
@@ -747,12 +747,12 @@ async function findOrCreateMemberUser(
       await client.query(
         `
           UPDATE users
-             SET google_sub = $2,
-                 google_picture_url = COALESCE($3, google_picture_url),
-                 phone = COALESCE($4, phone),
+             SET google_sub = $2::text,
+                 google_picture_url = COALESCE($3::text, google_picture_url),
+                 phone = COALESCE($4::text, phone),
                  phone_source = CASE WHEN $4::text IS NULL THEN phone_source ELSE COALESCE(phone_source, 'user') END,
                  updated_at = now()
-           WHERE id = $1
+           WHERE id = $1::text
         `,
         [
           existing.rows[0].id,
@@ -782,7 +782,7 @@ async function findOrCreateMemberUser(
         birthday_source,
         is_active
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::text, CASE WHEN $8::text IS NULL THEN NULL ELSE 'user' END, NULL, NULL, true)
+      VALUES ($1::text, $2::text, $3::text, $4::text, $5::text, $6::text, $7::text, $8::text, CASE WHEN $8::text IS NULL THEN NULL ELSE 'user' END, NULL, NULL, true)
       RETURNING id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
     `,
     [
@@ -819,8 +819,8 @@ async function insertApprovedCompanyMember(
     `
       SELECT id, company_id, user_id, status, role_template_code
         FROM company_members
-       WHERE company_id = $1
-         AND user_id = $2
+       WHERE company_id = $1::text
+         AND user_id = $2::text
        LIMIT 1
     `,
     [input.companyId, input.userId],
@@ -866,7 +866,7 @@ async function insertApprovedCompanyMember(
         approved_by,
         approved_at
       )
-      VALUES ($1, $2, 'approved', $3, $4, $5, now())
+      VALUES ($1::text, $2::text, 'approved', $3::text, $4::text, $5::text, now())
       RETURNING id, company_id, user_id, status, role_template_code
     `,
     [
@@ -909,7 +909,7 @@ async function ensureMemberPermissionCatalogEntries(
           sort_order,
           is_active
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+        VALUES ($1::text, $2::text, $3::text, $4::text, $5::text, $6::text, $7::text, $8::boolean, $9::integer, true)
         ON CONFLICT (permission_key) DO UPDATE SET
           permission_group = EXCLUDED.permission_group,
           label_key = EXCLUDED.label_key,
@@ -953,7 +953,7 @@ async function insertMemberPermissions(
     await client.query(
       `
         INSERT INTO member_permissions (company_member_id, permission_code, is_enabled, granted_by, granted_at)
-        VALUES ($1, $2, true, $3, now())
+        VALUES ($1::text, $2::text, true, $3::text, now())
         ON CONFLICT (company_member_id, permission_code)
         DO UPDATE SET
           is_enabled = true,
@@ -1034,7 +1034,7 @@ async function insertApprovedCompany(
         storage_limit_bytes,
         member_limit
       )
-      VALUES ($1, $2, $3, $4, true, 'active', 'trial', 'trialing', $5::timestamptz, $6::timestamptz, $7::bigint, $8::integer)
+      VALUES ($1::text, $2::text, $3::text, $4::text, true, 'active', 'trial', 'trialing', $5::timestamptz, $6::timestamptz, $7::bigint, $8::integer)
       RETURNING id, name, business_name, storage_limit_bytes
     `,
     [
@@ -1149,9 +1149,9 @@ async function assignCompanyOwner(
   await client.query(
     `
       UPDATE companies
-         SET owner_user_id = $2,
+         SET owner_user_id = $2::text,
              updated_at = now()
-       WHERE id = $1
+       WHERE id = $1::text
     `,
     [input.companyId, input.userId],
   );
@@ -1255,12 +1255,12 @@ async function approveDbCompanyJoinRequest(
       `
         UPDATE join_requests
            SET status = 'approved',
-               user_id = $2,
-               reviewed_by_system_user_id = $3,
+               user_id = $2::text,
+               reviewed_by_system_user_id = $3::text,
                reviewed_at = now(),
-               created_company_id = $4,
+               created_company_id = $4::text,
                updated_at = now()
-         WHERE id = $1
+         WHERE id = $1::text
       `,
       [joinRequest.id, user.id, reviewedBySystemUserId, company.id],
     );
@@ -1271,9 +1271,9 @@ async function approveDbCompanyJoinRequest(
           UPDATE invitations
              SET status = 'accepted',
                  accepted_at = now(),
-                 accepted_user_id = $2,
+                 accepted_user_id = $2::text,
                  updated_at = now()
-           WHERE id = $1
+           WHERE id = $1::text
         `,
         [joinRequest.invitationId, user.id],
       );
@@ -1364,11 +1364,11 @@ async function rejectDbCompanyJoinRequest(
       `
         UPDATE join_requests
            SET status = 'rejected',
-               reviewed_by_system_user_id = $2,
+               reviewed_by_system_user_id = $2::text,
                reviewed_at = now(),
-               rejection_reason = $3,
+               rejection_reason = $3::text,
                updated_at = now()
-         WHERE id = $1
+         WHERE id = $1::text
       `,
       [joinRequest.id, rejectedBySystemUserId, reasonCode],
     );
@@ -1395,9 +1395,9 @@ async function rejectDbCompanyJoinRequest(
           UPDATE invitations
              SET status = 'cancelled',
                  cancelled_at = now(),
-                 cancelled_by_system_user_id = $2,
+                 cancelled_by_system_user_id = $2::text,
                  updated_at = now()
-           WHERE id = $1
+           WHERE id = $1::text
              AND status IN ('pending', 'active')
         `,
         [joinRequest.invitationId, rejectedBySystemUserId],
@@ -1549,11 +1549,11 @@ async function approveDbMemberJoinRequest(
       `
         UPDATE join_requests
            SET status = 'approved',
-               user_id = $2,
-               reviewed_by_user_id = $3,
+               user_id = $2::text,
+               reviewed_by_user_id = $3::text,
                reviewed_at = now(),
                updated_at = now()
-         WHERE id = $1
+         WHERE id = $1::text
       `,
       [joinRequest.id, user.id, input.approvedByUserId ?? null],
     );
@@ -1564,9 +1564,9 @@ async function approveDbMemberJoinRequest(
           UPDATE invitations
              SET status = 'accepted',
                  accepted_at = now(),
-                 accepted_user_id = $2,
+                 accepted_user_id = $2::text,
                  updated_at = now()
-           WHERE id = $1
+           WHERE id = $1::text
         `,
         [joinRequest.invitationId, user.id],
       );
@@ -1605,11 +1605,11 @@ async function rejectDbMemberJoinRequest(
       `
         UPDATE join_requests
            SET status = 'rejected',
-               reviewed_by_user_id = $2,
+               reviewed_by_user_id = $2::text,
                reviewed_at = now(),
-               rejection_reason = $3,
+               rejection_reason = $3::text,
                updated_at = now()
-         WHERE id = $1
+         WHERE id = $1::text
       `,
       [joinRequest.id, input.rejectedByUserId ?? null, reasonCode],
     );
@@ -1620,9 +1620,9 @@ async function rejectDbMemberJoinRequest(
           UPDATE invitations
              SET status = 'cancelled',
                  cancelled_at = now(),
-                 cancelled_by_user_id = $2,
+                 cancelled_by_user_id = $2::text,
                  updated_at = now()
-           WHERE id = $1
+           WHERE id = $1::text
              AND status IN ('pending', 'active')
         `,
         [joinRequest.invitationId, input.rejectedByUserId ?? null],
