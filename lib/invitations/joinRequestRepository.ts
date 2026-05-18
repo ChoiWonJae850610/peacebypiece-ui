@@ -145,11 +145,11 @@ function toJoinRequestRecord(row: JoinRequestDbRow): JoinRequestRecord {
     rejectionReason: row.rejection_reason,
     createdAt: toIsoString(row.created_at) ?? new Date().toISOString(),
     updatedAt: toIsoString(row.updated_at) ?? new Date().toISOString(),
-    invitation: row.invitation_id_joined && row.invitation_recipient_email && row.invitation_recipient_role && row.invitation_permission_preset && row.invitation_scope && row.invitation_status && row.invitation_expires_at
+    invitation: row.invitation_id_joined && row.invitation_recipient_role && row.invitation_permission_preset && row.invitation_scope && row.invitation_status && row.invitation_expires_at
       ? {
           id: row.invitation_id_joined,
           companyId: row.invitation_company_id ?? null,
-          recipientEmail: row.invitation_recipient_email,
+          recipientEmail: row.invitation_recipient_email ?? null,
           recipientRole: row.invitation_recipient_role,
           permissionPreset: row.invitation_permission_preset,
           scope: row.invitation_scope,
@@ -1194,6 +1194,20 @@ async function rejectDbCompanyJoinRequest(
       `,
       [joinRequest.id, input.rejectedBySystemUserId ?? null, reasonCode],
     );
+
+    if (joinRequest.createdCompanyId) {
+      await client.query(
+        `
+          UPDATE companies
+             SET status = 'pending',
+                 onboarding_status = 'profile_required',
+                 updated_at = now()
+           WHERE id = $1::text
+             AND onboarding_status = 'approval_pending'
+        `,
+        [joinRequest.createdCompanyId],
+      );
+    }
 
     if (joinRequest.invitationId) {
       await client.query(

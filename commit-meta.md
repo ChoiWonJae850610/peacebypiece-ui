@@ -1,23 +1,19 @@
 Version :
-0.13.64
+0.13.65
 
 Summary :
-고객사 온보딩 첨부 preview와 R2 Worker 회사 파일 정책 보강
+고객사 가입 신청 승인 거절 흐름과 오류 문구 보정
 
 Description :
-시스템관리자 가입 신청 검토 화면에서 고객사 로고와 사업자등록증 제출 상태를 확인하고 상세 모달에서 preview 또는 열기 처리를 할 수 있도록 보강했다. 고객사 온보딩 파일을 R2 Worker에서 허용하도록 회사 온보딩 storage key와 파일 정책을 추가해 업로드 실패 원인을 보완했다.
+시스템관리자 고객사 가입 신청 승인/거절 시 system_to_company_admin 초대의 recipientEmail이 비어 있어도 초대 scope를 정상 판정하도록 수정했다. 가입 신청 검토 화면에서 INVITATION_SCOPE_MISMATCH 같은 내부 오류 코드가 그대로 노출되지 않도록 사용자 문구로 변환하고, 승인/거절 성공 후 상세 모달을 닫도록 정리했다. 거절된 승인 대기 고객사는 재입력 가능한 profile_required 상태로 되돌리도록 보정했다.
 
 수정 파일 목록 :
-- cloudflare/r2-upload-worker.js
 - components/system/companies/SystemCompanyApprovalConsole.tsx
-- lib/admin/settings/companyOnboardingFileRepository.ts
-- lib/admin/settings/companyOnboardingRepository.ts
-- lib/invitations/api/joinRequestRouteHandlers.ts
-- lib/invitations/joinRequestTypes.ts
+- lib/invitations/joinRequestRepository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- app/api/system/companies/onboarding/files/[fileId]/view/route.ts
+없음
 
 삭제 파일 목록 :
 없음

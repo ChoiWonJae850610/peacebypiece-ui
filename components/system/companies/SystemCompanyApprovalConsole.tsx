@@ -193,6 +193,31 @@ function getLoadStatusLabel(status: "idle" | "loading" | "loaded" | "failed") {
   return "대기";
 }
 
+
+const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
+  COMPANY_JOIN_REQUESTS_LOAD_FAILED: "고객사 가입 신청 목록을 불러오지 못했습니다.",
+  COMPANY_JOIN_REQUEST_APPROVE_FAILED: "고객사 가입 신청 승인에 실패했습니다.",
+  COMPANY_JOIN_REQUEST_REJECT_FAILED: "고객사 가입 신청 거절에 실패했습니다.",
+  INVITATION_SCOPE_MISMATCH: "초대 링크의 사용 범위가 고객사 관리자 가입 신청과 맞지 않습니다.",
+  INVITATION_NOT_FOUND: "초대 링크 정보를 찾을 수 없습니다.",
+  INVITATION_EXPIRED: "만료된 초대 링크입니다.",
+  INVITATION_NOT_ACTIVE: "사용할 수 없는 초대 링크입니다.",
+  JOIN_REQUEST_NOT_FOUND: "가입 신청 정보를 찾을 수 없습니다.",
+  JOIN_REQUEST_ALREADY_REVIEWED: "이미 처리된 가입 신청입니다. 목록을 새로고침해 주세요.",
+  JOIN_REQUEST_COMPANY_ONLY: "고객사 가입 신청만 처리할 수 있습니다.",
+  JOIN_REQUEST_MEMBER_ONLY: "멤버 가입 신청은 이 화면에서 처리할 수 없습니다.",
+  REQUESTED_COMPANY_NAME_REQUIRED: "회사명이 입력되지 않았습니다.",
+  COMPANY_ALREADY_EXISTS: "이미 같은 이름의 고객사가 있습니다.",
+  COMPANY_APPROVAL_TARGET_NOT_FOUND: "승인 대상 고객사 정보를 찾을 수 없습니다.",
+  SYSTEM_ADMIN_SESSION_REQUIRED: "시스템관리자 로그인이 필요합니다.",
+};
+
+function resolveSystemCompanyErrorMessage(errorCode: string | null | undefined, fallback: string): string {
+  const normalized = errorCode?.trim();
+  if (!normalized) return fallback;
+  return SYSTEM_COMPANY_ERROR_MESSAGES[normalized] ?? fallback;
+}
+
 function normalizePhoneInput(value: string): string {
   return value.replace(/[^\d-]/g, "").slice(0, 13);
 }
@@ -494,7 +519,12 @@ export default function SystemCompanyApprovalConsole() {
     } catch (error) {
       setSystemInvitations([]);
       setSystemInvitationLoadStatus("failed");
-      setSystemInviteError(error instanceof Error ? error.message : "SYSTEM_COMPANY_ADMIN_INVITATIONS_LOAD_FAILED");
+      setSystemInviteError(
+        resolveSystemCompanyErrorMessage(
+          error instanceof Error ? error.message : null,
+          "초대 링크 목록을 불러오지 못했습니다.",
+        ),
+      );
     }
   }
 
@@ -530,7 +560,10 @@ export default function SystemCompanyApprovalConsole() {
       await loadSystemInvitations();
     } catch (error) {
       setSystemInviteError(
-        error instanceof Error ? error.message : "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED",
+        resolveSystemCompanyErrorMessage(
+          error instanceof Error ? error.message : null,
+          "초대 링크 생성에 실패했습니다.",
+        ),
       );
     } finally {
       setIsCreatingSystemInvite(false);
@@ -562,7 +595,12 @@ export default function SystemCompanyApprovalConsole() {
       setSystemInviteMessage("초대 링크를 취소했습니다.");
       await loadSystemInvitations();
     } catch (error) {
-      setSystemInviteError(error instanceof Error ? error.message : "SYSTEM_COMPANY_ADMIN_INVITATION_REVOKE_FAILED");
+      setSystemInviteError(
+        resolveSystemCompanyErrorMessage(
+          error instanceof Error ? error.message : null,
+          "초대 링크 취소에 실패했습니다.",
+        ),
+      );
     } finally {
       setRevokingInvitationId(null);
     }
@@ -610,7 +648,12 @@ export default function SystemCompanyApprovalConsole() {
     } catch (error) {
       setJoinRequestRecords([]);
       setJoinRequestLoadStatus("failed");
-      setJoinRequestLoadError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUESTS_LOAD_FAILED");
+      setJoinRequestLoadError(
+        resolveSystemCompanyErrorMessage(
+          error instanceof Error ? error.message : null,
+          "고객사 가입 신청 목록을 불러오지 못했습니다.",
+        ),
+      );
     }
   }
 
@@ -632,10 +675,16 @@ export default function SystemCompanyApprovalConsole() {
       }
 
       setReviewActionMessage("고객사 가입 신청을 승인했습니다.");
+      setSelectedJoinRequestId(null);
       await loadCompanyJoinRequests();
       await loadSystemInvitations();
     } catch (error) {
-      setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
+      setReviewActionError(
+        resolveSystemCompanyErrorMessage(
+          error instanceof Error ? error.message : null,
+          "고객사 가입 신청 승인에 실패했습니다.",
+        ),
+      );
     } finally {
       setApprovingRequestId(null);
     }
@@ -659,10 +708,16 @@ export default function SystemCompanyApprovalConsole() {
       }
 
       setReviewActionMessage("고객사 가입 신청을 거절했습니다.");
+      setSelectedJoinRequestId(null);
       await loadCompanyJoinRequests();
       await loadSystemInvitations();
     } catch (error) {
-      setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_REJECT_FAILED");
+      setReviewActionError(
+        resolveSystemCompanyErrorMessage(
+          error instanceof Error ? error.message : null,
+          "고객사 가입 신청 거절에 실패했습니다.",
+        ),
+      );
     } finally {
       setRejectingRequestId(null);
     }
