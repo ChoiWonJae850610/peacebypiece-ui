@@ -23,7 +23,7 @@ import {
 } from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
-import type { CompanyOnboardingFileMetadata, CompanyOnboardingFileType } from "@/lib/admin/settings/companyTypes";
+import type { CompanyOnboardingFileMetadata, CompanyOnboardingFileType, CompanyOnboardingStatus, CompanySubscriptionStatus } from "@/lib/admin/settings/companyTypes";
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 
@@ -66,6 +66,9 @@ type CompanyJoinRequestRow = {
   addressExtra: string;
   requestedPlanCode: string;
   currentPlanLabel: string;
+  joinRequestStatus: JoinRequestRecord["status"];
+  onboardingStatus: CompanyOnboardingStatus | null;
+  subscriptionStatus: CompanySubscriptionStatus | null;
   statusLabel: string;
   statusTone: "success" | "warning" | "danger" | "neutral";
   canReview: boolean;
@@ -93,6 +96,14 @@ type SystemInvitationRow = {
 
 type DeliveryMethod = "email" | "phone";
 
+type CompanyManagementFilter =
+  | "all"
+  | "approval_pending"
+  | "approved"
+  | "rejected"
+  | "reinput_required"
+  | "access_limited";
+
 function getAbsoluteInviteUrl(inviteUrl: string): string {
   if (typeof window === "undefined") return inviteUrl;
   return new URL(inviteUrl, window.location.origin).toString();
@@ -115,6 +126,62 @@ function toCompactDateTimeLabel(value: string | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+
+function isCompanyOnboardingStatus(value: string | null | undefined): value is CompanyOnboardingStatus {
+  return value === "profile_required" || value === "approval_pending" || value === "active" || value === "rejected";
+}
+
+function normalizeCompanyOnboardingStatus(value: string | null | undefined): CompanyOnboardingStatus | null {
+  return isCompanyOnboardingStatus(value) ? value : null;
+}
+
+function isCompanySubscriptionStatus(value: string | null | undefined): value is CompanySubscriptionStatus {
+  return value === "trialing" || value === "trial_expired" || value === "active" || value === "past_due" || value === "canceled";
+}
+
+function normalizeCompanySubscriptionStatus(value: string | null | undefined): CompanySubscriptionStatus | null {
+  return isCompanySubscriptionStatus(value) ? value : null;
+}
+
+function isCompanyAccessLimitedStatus(status: CompanySubscriptionStatus | null): boolean {
+  return status === "trial_expired" || status === "past_due" || status === "canceled";
+}
+
+function getCompanyManagementFilterLabel(filter: CompanyManagementFilter): string {
+  if (filter === "approval_pending") return "승인 대기";
+  if (filter === "approved") return "승인됨";
+  if (filter === "rejected") return "거절됨";
+  if (filter === "reinput_required") return "재입력 필요";
+  if (filter === "access_limited") return "이용제한";
+  return "전체";
+}
+
+function getCompanyManagementFilterDescription(filter: CompanyManagementFilter): string {
+  if (filter === "approval_pending") return "시스템관리자 검토가 필요한 고객사입니다.";
+  if (filter === "approved") return "승인되어 업무 화면 접근이 가능한 고객사입니다.";
+  if (filter === "rejected") return "거절 상태이며 재입력 요청으로 되돌릴 수 있는 고객사입니다.";
+  if (filter === "reinput_required") return "회사 정보 재입력이 필요한 고객사입니다.";
+  if (filter === "access_limited") return "체험 만료, 연체, 구독 중지 상태의 고객사입니다.";
+  return "전체 고객사 가입 이력과 운영 상태입니다.";
+}
+
+function matchesCompanyManagementFilter(request: CompanyJoinRequestRow, filter: CompanyManagementFilter): boolean {
+  if (filter === "all") return true;
+  if (filter === "approval_pending") return request.onboardingStatus === "approval_pending" && request.joinRequestStatus === "pending";
+  if (filter === "approved") return request.onboardingStatus === "active" || request.joinRequestStatus === "approved";
+  if (filter === "rejected") return request.onboardingStatus === "rejected" || request.joinRequestStatus === "rejected";
+  if (filter === "reinput_required") return request.onboardingStatus === "profile_required" && request.joinRequestStatus !== "approved";
+  if (filter === "access_limited") return isCompanyAccessLimitedStatus(request.subscriptionStatus);
+  return true;
+}
+
+function countCompanyManagementFilterItems(
+  requests: readonly CompanyJoinRequestRow[],
+  filter: CompanyManagementFilter,
+): number {
+  return requests.filter((request) => matchesCompanyManagementFilter(request, filter)).length;
 }
 
 
@@ -218,6 +285,8 @@ function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): CompanyJoinReq
     joinRequest.companyRequestedPlanCode?.trim() ||
     parseCompanyMemoValue(joinRequest.requestMemo, "requestedPlanCode") ||
     "-";
+  const onboardingStatus = normalizeCompanyOnboardingStatus(joinRequest.companyOnboardingStatus);
+  const subscriptionStatus = normalizeCompanySubscriptionStatus(joinRequest.companySubscriptionStatus);
   const status = getCompanyJoinRequestStatus(joinRequest);
 
   return {
@@ -234,6 +303,9 @@ function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): CompanyJoinReq
     addressExtra: parseCompanyMemoValue(joinRequest.requestMemo, "addressExtra") || "-",
     requestedPlanCode,
     currentPlanLabel: getCompanyJoinRequestCurrentPlanLabel(joinRequest, requestedPlanCode),
+    joinRequestStatus: joinRequest.status,
+    onboardingStatus,
+    subscriptionStatus,
     statusLabel: status.label,
     statusTone: status.tone,
     canReview: status.canReview,
@@ -413,6 +485,7 @@ export default function SystemCompanyApprovalConsole() {
   const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("email");
   const [deliveryTarget, setDeliveryTarget] = useState("");
+  const [activeCompanyFilter, setActiveCompanyFilter] = useState<CompanyManagementFilter>("all");
   const [selectedJoinRequestId, setSelectedJoinRequestId] = useState<string | null>(null);
 
   const joinRequests = useMemo(
@@ -424,9 +497,21 @@ export default function SystemCompanyApprovalConsole() {
     [systemInvitations],
   );
   const latestCopyableInvitation = systemInvitationRows.find((invitation) => invitation.canCopy);
+  const filteredJoinRequests = useMemo(
+    () => joinRequests.filter((request) => matchesCompanyManagementFilter(request, activeCompanyFilter)),
+    [activeCompanyFilter, joinRequests],
+  );
   const selectedJoinRequest = joinRequests.find((request) => request.id === selectedJoinRequestId) ?? null;
   const canCreateSystemInvite = !isCreatingSystemInvite;
   const deliveryPlaceholder = deliveryMethod === "email" ? "예: customer@example.com" : "예: 010-1234-5678";
+  const companyManagementFilters: readonly CompanyManagementFilter[] = [
+    "all",
+    "approval_pending",
+    "approved",
+    "rejected",
+    "reinput_required",
+    "access_limited",
+  ];
 
   const systemInvitationTableColumns = useMemo<AdminTableColumn<SystemInvitationRow>[]>(
     () => [
@@ -554,7 +639,7 @@ export default function SystemCompanyApprovalConsole() {
         headerClassName: "text-center",
         className: "text-center",
         render: (request) => (
-          <div className="grid min-w-0 gap-2 sm:flex sm:flex-wrap sm:justify-center">
+          <div className="grid min-w-0 gap-2 sm:flex sm:flex-wrap sm:justify-center" onClick={(event) => event.stopPropagation()}>
             <AdminButton
               onClick={() => setSelectedJoinRequestId(request.id)}
               disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
@@ -1013,16 +1098,55 @@ export default function SystemCompanyApprovalConsole() {
           {reviewActionError ? <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>{reviewActionError}</div> : null}
           {reviewActionMessage ? <div className={`mt-4 ${SYSTEM_SUCCESS_BOX_CLASS}`}>{reviewActionMessage}</div> : null}
 
-          <div className="mt-5">
+          <div className="mt-5 grid gap-4">
+            <div className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                    {getCompanyManagementFilterLabel(activeCompanyFilter)}
+                  </p>
+                  <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">
+                    {getCompanyManagementFilterDescription(activeCompanyFilter)}
+                  </p>
+                </div>
+                <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+                  표시 {filteredJoinRequests.length}건 / 전체 {joinRequests.length}건
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {companyManagementFilters.map((filter) => {
+                  const isActive = activeCompanyFilter === filter;
+                  const count = countCompanyManagementFilterItems(joinRequests, filter);
+
+                  return (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setActiveCompanyFilter(filter)}
+                      className={[
+                        "rounded-full border px-3 py-2 text-xs font-semibold transition",
+                        isActive
+                          ? "border-[var(--pbp-accent)] bg-[var(--pbp-accent-soft)] text-[var(--pbp-accent)]"
+                          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-accent)]",
+                      ].join(" ")}
+                    >
+                      {getCompanyManagementFilterLabel(filter)} {count}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <AdminTable
-              items={[...joinRequests]}
+              items={filteredJoinRequests}
               columns={joinRequestTableColumns}
               getRowKey={(request) => request.id}
-              emptyLabel="표시할 고객사 가입 이력이 없습니다."
+              emptyLabel="현재 필터에 표시할 고객사 이력이 없습니다."
               isLoading={joinRequestLoadStatus === "loading"}
               loadingLabel="고객사 가입 신청을 불러오는 중입니다."
               gridTemplateColumns="minmax(0,1.25fr) 0.65fr minmax(0,1.2fr) minmax(0,0.9fr) minmax(0,0.9fr) minmax(0,0.85fr) minmax(0,1fr)"
               rowBaseClassName="grid w-full min-w-0 gap-3 px-4 py-4 text-left text-sm md:items-center"
+              onRowClick={(request) => setSelectedJoinRequestId(request.id)}
             />
           </div>
         </section>
@@ -1048,7 +1172,7 @@ export default function SystemCompanyApprovalConsole() {
                   <ReviewField label="회사 영문명" value={selectedJoinRequest.companyEnglishName} />
                   <ReviewField label="사업자명" value={selectedJoinRequest.businessName} />
                   <ReviewField label="사업자등록번호" value={selectedJoinRequest.businessRegistrationNumber} />
-                                    <ReviewField label="상태" value={selectedJoinRequest.statusLabel} />
+                  <ReviewField label="상태" value={selectedJoinRequest.statusLabel} />
                   <ReviewField label="신청 요금제" value={selectedJoinRequest.requestedPlanCode} />
                   <ReviewField label="현재 요금제" value={selectedJoinRequest.currentPlanLabel} />
                 </dl>
@@ -1060,7 +1184,7 @@ export default function SystemCompanyApprovalConsole() {
                   <ReviewField label="관리자 이름" value={selectedJoinRequest.applicantName} />
                   <ReviewField label="관리자 연락처" value={selectedJoinRequest.applicantPhone} />
                   <ReviewField label="Google 로그인 이메일" value={selectedJoinRequest.applicantEmail} />
-                                    <ReviewField label="신청일" value={selectedJoinRequest.requestedAtLabel} />
+                  <ReviewField label="신청일" value={selectedJoinRequest.requestedAtLabel} />
                   <ReviewField label="처리일" value={selectedJoinRequest.reviewedAtLabel} />
                 </dl>
               </article>
@@ -1089,6 +1213,36 @@ export default function SystemCompanyApprovalConsole() {
                   />
                 </div>
               </article>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2 border-t border-[var(--pbp-border)] pt-4 sm:flex-row sm:justify-end">
+              {selectedJoinRequest.canReview ? (
+                <>
+                  <AdminButton
+                    onClick={() => void approveCompanyJoinRequest(selectedJoinRequest.id)}
+                    disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                    variant="primary"
+                  >
+                    {approvingRequestId === selectedJoinRequest.id ? "승인 중" : "승인"}
+                  </AdminButton>
+                  <AdminButton
+                    onClick={() => void rejectCompanyJoinRequest(selectedJoinRequest.id)}
+                    disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                    variant="danger"
+                  >
+                    {rejectingRequestId === selectedJoinRequest.id ? "거절 중" : "거절"}
+                  </AdminButton>
+                </>
+              ) : null}
+              {selectedJoinRequest.canRequestReinput ? (
+                <AdminButton
+                  onClick={() => void requestCompanyReinput(selectedJoinRequest.id)}
+                  disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                  variant="secondary"
+                >
+                  {reopeningRequestId === selectedJoinRequest.id ? "요청 중" : "재입력 요청"}
+                </AdminButton>
+              ) : null}
             </div>
           </section>
         </div>

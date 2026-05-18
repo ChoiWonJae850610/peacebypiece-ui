@@ -1,22 +1,18 @@
 Version :
-0.13.84
+0.13.85
 
 Summary :
-가입대기 거절 접근불가 안내 화면 보정
+고객사 관리 목록 필터와 상세 처리 UX 정리
 
 Description :
-회사 접근 상태 판정에 profile_required와 approval_pending 상태를 포함해 일반 멤버 업무 화면 접근을 서비스 대기 화면으로 차단하고, 서비스 대기 화면을 상태별 안내 모델과 i18n 문구로 정리했다. 고객사 관리자 온보딩 모달 흐름은 유지하면서 거절, 승인대기, 회사정보 필요, 요금제 제한 상태를 구분해 표시하도록 보정했다.
+시스템관리자 고객사 관리 목록에 전체, 승인 대기, 승인됨, 거절됨, 재입력 필요, 이용제한 필터를 추가했다. 선택한 필터의 표시 건수와 설명을 함께 보여주고, 고객사 행 클릭으로 상세 모달을 열 수 있게 정리했다. 상세 모달 하단에서도 승인, 거절, 재입력 요청 액션을 처리할 수 있게 보완했다. APP_VERSION을 0.13.85로 올렸다.
 
 수정 파일 목록 :
-- lib/billing/companyAccessRepository.ts
-- lib/auth/routeGuard.ts
-- app/service-paused/page.tsx
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- components/system/companies/SystemCompanyApprovalConsole.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- lib/billing/companyAccessPresentation.ts
+없음
 
 삭제 파일 목록 :
 없음
