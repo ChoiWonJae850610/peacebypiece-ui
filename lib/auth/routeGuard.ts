@@ -9,10 +9,18 @@ import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
 
 type ProtectedArea = "admin" | "system" | "worker";
 
+type CompanyAccessGuardOptions = {
+  allowBlockedCompanyAccess?: boolean;
+};
+
 function getRoleHomePath(role: WaflSessionRole): string {
   if (role === "system_admin") return "/system";
   if (role === "company_admin") return "/admin";
   return "/worker";
+}
+
+function getCompanyAccessBlockedPath(area: ProtectedArea): string {
+  return area === "admin" ? "/admin/subscription" : "/service-paused";
 }
 
 function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boolean {
@@ -21,7 +29,15 @@ function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boo
   return role === "member" || role === "company_admin";
 }
 
-export async function requireWaflSessionForArea(area: ProtectedArea): Promise<WaflSessionPayload> {
+function shouldCheckCompanyAccess(area: ProtectedArea, role: WaflSessionRole): boolean {
+  if (area === "worker") return role === "member" || role === "company_admin";
+  return area === "admin" && role === "company_admin";
+}
+
+export async function requireWaflSessionForArea(
+  area: ProtectedArea,
+  options: CompanyAccessGuardOptions = {},
+): Promise<WaflSessionPayload> {
   const session = await getCurrentWaflSession();
   if (!session) {
     if (area === "system" && isDevSystemAdminEntryEnabled()) {
@@ -35,10 +51,10 @@ export async function requireWaflSessionForArea(area: ProtectedArea): Promise<Wa
     redirect(getRoleHomePath(session.role));
   }
 
-  if (area === "worker" && session.companyId) {
+  if (session.companyId && shouldCheckCompanyAccess(area, session.role)) {
     const accessState = await getCompanyAccessState(session.companyId);
-    if (accessState?.accessBlocked) {
-      redirect("/service-paused");
+    if (accessState?.accessBlocked && !options.allowBlockedCompanyAccess) {
+      redirect(getCompanyAccessBlockedPath(area));
     }
   }
 

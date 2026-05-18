@@ -1,21 +1,25 @@
 Version :
-0.13.68
+0.13.69
 
 Summary :
-작업지시서 R2 legacy key 호환 제거
+고객사 체험 만료 화면과 관리자 접근 분기 추가
 
 Description :
-작업지시서 첨부와 썸네일 R2 key 검증에서 기존 workorders/{workOrderId} 경로 호환을 제거하고 companies/{companyId}/workorders 경로만 허용하도록 보정했다. Worker 파일 정책에서도 legacy workorders 경로 허용을 제거했다.
+무료체험 만료 또는 결제 확인이 필요한 고객사 관리자에게 요금제 관리 화면을 표시하고, 일반 멤버는 서비스 대기 화면으로 분리되도록 접근 분기와 안내 화면을 추가했다. 결제 API는 연결하지 않고 화면 진입과 상태 안내만 정리했다.
 
 수정 파일 목록 :
-- cloudflare/r2-upload-worker.js
-- lib/storage/r2/r2Keys.ts
-- lib/storage/r2/r2ThumbnailKeys.ts
-- lib/workorder/attachments/attachmentFileRoute.ts
+- app/admin/layout.tsx
+- app/service-paused/page.tsx
+- lib/auth/routeGuard.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- app/admin/subscription/page.tsx
+- components/admin/billing/AdminCompanyAccessGate.tsx
+- components/admin/billing/AdminSubscriptionConsole.tsx
+- lib/admin/billing/adminSubscription.presentation.ts
 
 삭제 파일 목록 :
 없음

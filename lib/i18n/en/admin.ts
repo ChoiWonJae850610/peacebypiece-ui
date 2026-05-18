@@ -1910,4 +1910,53 @@ export const adminEn = {
       fileNotFound: "File not found.",
     },
   },
+  subscriptionPage: {
+    shellTitle: "Subscription",
+    shellDescription: "Review free-trial expiration and subscription status.",
+    eyebrow: "WAFL SUBSCRIPTION",
+    title: "Plan selection and service status",
+    description:
+      "Companies whose free trial has ended or whose access status needs review can request plan activation through the system administrator until payment integration is connected.",
+    status: {
+      unknown: "Company status needs review",
+      trialExpired: "Free trial expired",
+      pastDue: "Payment review needed",
+      canceled: "Service canceled",
+      active: "Active",
+      trialing: "Free trial active",
+    },
+    statusDescription:
+      "Company admins can review the current status and available plans here. Payment integration will be added in a later step.",
+    primaryActionLabel: "Request plan activation from system admin",
+    secondaryActionLabel: "Log out",
+    memberNoticeTitle: "Member screen notice",
+    memberNoticeDescription:
+      "Regular members cannot change plans, so they only see a service-paused notice asking them to contact the company admin.",
+    metricLabels: {
+      currentStatus: "Current status",
+      trialStartedAt: "Trial started",
+      trialEndsAt: "Trial ends",
+    },
+    metricDescriptions: {
+      currentStatus: "Calculated from company subscription_status and trial_ends_at.",
+      trialStartedAt: "The free-trial start timestamp set at approval.",
+      trialEndsAt: "Core workspace access is restricted after this time passes.",
+    },
+    unsetDateLabel: "Not set",
+    planStatus: {
+      active: "Available",
+      preparing: "Preparing",
+    },
+    planDescription: "Until payment integration is connected, the system admin handles plan changes and service reactivation.",
+    storageLabel: "Storage",
+    memberLabel: " members",
+    freePriceLabel: "Free",
+    monthlyPriceSuffix: " KRW / month",
+    policyNotes: [
+      "This step does not connect payment APIs; it only organizes screen routing and guidance.",
+      "Company admins move to the subscription screen, while members move to the service-paused screen.",
+      "The next step will block core API requests using the same trial-expiration status.",
+    ],
+  },
+
 } as const;

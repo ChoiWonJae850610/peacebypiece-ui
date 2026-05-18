@@ -1857,4 +1857,53 @@ export const adminKo = {
       fileNotFound: "파일을 찾을 수 없습니다.",
     },
   },
+  subscriptionPage: {
+    shellTitle: "요금제 관리",
+    shellDescription: "무료체험 만료와 요금제 적용 상태를 확인합니다.",
+    eyebrow: "WAFL SUBSCRIPTION",
+    title: "요금제 선택과 서비스 이용 상태",
+    description:
+      "무료체험이 종료되었거나 이용 상태 확인이 필요한 고객사는 결제 연동 전까지 시스템관리자를 통해 요금제 적용을 요청합니다.",
+    status: {
+      unknown: "회사 상태 확인 필요",
+      trialExpired: "무료체험 만료",
+      pastDue: "결제 확인 필요",
+      canceled: "서비스 해지 상태",
+      active: "이용 가능",
+      trialing: "무료체험 이용 중",
+    },
+    statusDescription:
+      "고객사 관리자는 이 화면에서 현재 상태와 선택 가능한 요금제를 확인합니다. 실제 결제 연결은 이후 단계에서 추가합니다.",
+    primaryActionLabel: "시스템관리자에게 요금제 적용 요청",
+    secondaryActionLabel: "로그아웃",
+    memberNoticeTitle: "멤버 화면 안내",
+    memberNoticeDescription:
+      "일반 멤버는 요금제 변경을 처리할 수 없으므로 서비스 대기 화면에서 고객사 관리자 문의 안내만 표시합니다.",
+    metricLabels: {
+      currentStatus: "현재 상태",
+      trialStartedAt: "체험 시작",
+      trialEndsAt: "체험 종료",
+    },
+    metricDescriptions: {
+      currentStatus: "회사 subscription_status와 trial_ends_at 기준으로 계산합니다.",
+      trialStartedAt: "승인 시점에 시작된 무료체험 기준입니다.",
+      trialEndsAt: "종료 시각이 지났으면 주요 업무 화면 접근을 제한합니다.",
+    },
+    unsetDateLabel: "미정",
+    planStatus: {
+      active: "사용 가능",
+      preparing: "준비중",
+    },
+    planDescription: "정식 결제 연동 전까지는 시스템관리자가 요금제 변경과 이용 재개를 처리합니다.",
+    storageLabel: "저장공간",
+    memberLabel: "명",
+    freePriceLabel: "무료",
+    monthlyPriceSuffix: "원 / 월",
+    policyNotes: [
+      "이번 단계에서는 결제 API를 연결하지 않고 화면 진입과 안내 흐름만 정리합니다.",
+      "고객사 관리자는 요금제 갱신 화면으로 이동하고, 멤버는 서비스 대기 화면으로 이동합니다.",
+      "다음 단계에서 주요 API 요청도 trial 만료 상태를 기준으로 차단합니다.",
+    ],
+  },
+
 } as const;
