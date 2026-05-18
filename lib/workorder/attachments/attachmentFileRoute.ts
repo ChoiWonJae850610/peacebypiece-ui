@@ -4,9 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
-import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import { getCompanyIdFromWorkOrderAttachmentStorageKey, isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { getOrSetCachedR2Url, type R2UrlCacheState } from "@/lib/storage/r2/r2UrlCache";
 import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
+import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 
 function isSafeStorageKey(value: string): boolean {
   return (
@@ -17,6 +19,23 @@ function isSafeStorageKey(value: string): boolean {
   );
 }
 
+
+
+async function requireAttachmentFileCompanyAccess(key: string): Promise<NextResponse | null> {
+  const session = await getCurrentWaflSession();
+  const companyId = session?.companyId?.trim();
+  const keyCompanyId = getCompanyIdFromWorkOrderAttachmentStorageKey(key);
+
+  if (!session || !companyId) {
+    return NextResponse.json({ ok: false, error: "COMPANY_SESSION_REQUIRED" }, { status: 401 });
+  }
+
+  if (!keyCompanyId || keyCompanyId !== companyId) {
+    return NextResponse.json({ ok: false, error: "ATTACHMENT_FILE_COMPANY_SCOPE_MISMATCH" }, { status: 403 });
+  }
+
+  return createCompanyApiAccessBlockedResponse(companyId);
+}
 function createReadableStream(body: Buffer | Uint8Array | ArrayBuffer): ReadableStream {
   const chunk = body instanceof ArrayBuffer ? new Uint8Array(body) : new Uint8Array(body);
 
@@ -108,6 +127,9 @@ export async function handleWorkOrderAttachmentFileGet(request: NextRequest) {
   if (!key || !isSafeStorageKey(key)) {
     return NextResponse.json({ error: "INVALID_STORAGE_KEY" }, { status: 400 });
   }
+
+  const blockedResponse = await requireAttachmentFileCompanyAccess(key);
+  if (blockedResponse) return blockedResponse;
 
   if (isR2WorkerUploadConfigured()) {
     try {

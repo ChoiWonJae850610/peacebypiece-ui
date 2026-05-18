@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { uploadCompanyOnboardingFile } from "@/lib/admin/settings/companyOnboardingFileService";
 import { COMPANY_ONBOARDING_FILE_ERROR_CODES } from "@/lib/admin/settings/companyOnboardingFilePolicy";
 
@@ -35,6 +36,15 @@ function getErrorCode(error: unknown): string {
   return error instanceof Error && error.message ? error.message : COMPANY_ONBOARDING_FILE_ERROR_CODES.uploadFailed;
 }
 
+
+
+async function requireOnboardingFileCompanyApiAccess(companyId: string): Promise<NextResponse | null> {
+  return createCompanyApiAccessBlockedResponse(companyId, {
+    allowProfileRequired: true,
+    allowApprovalPending: true,
+    allowSubscriptionManagement: true,
+  });
+}
 export async function POST(request: NextRequest) {
   const session = await getCurrentWaflSession();
 
@@ -44,6 +54,9 @@ export async function POST(request: NextRequest) {
       { status: 401 },
     );
   }
+
+  const blockedResponse = await requireOnboardingFileCompanyApiAccess(session.companyId);
+  if (blockedResponse) return blockedResponse;
 
   const formData = await request.formData().catch(() => null);
   if (!formData) {

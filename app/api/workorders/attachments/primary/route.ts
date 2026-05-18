@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 
 export const runtime = "nodejs";
@@ -18,6 +19,9 @@ function readText(value: unknown): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const scopeResult = await requireAdminFileCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
   try {
     const payload = (await request.json().catch(() => null)) as PrimaryAttachmentRequest | null;
     const workOrderId = readText(payload?.workOrderId);

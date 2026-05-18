@@ -3,6 +3,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 
 export const ADMIN_STATS_COMPANY_SESSION_REQUIRED =
   "ADMIN_STATS_COMPANY_SESSION_REQUIRED";
@@ -29,6 +30,11 @@ export async function requireAdminStatsCompanyScope(): Promise<AdminStatsCompany
         { status: 401 },
       ),
     };
+  }
+
+  const blockedResponse = await createCompanyApiAccessBlockedResponse(companyId);
+  if (blockedResponse) {
+    return { ok: false, response: blockedResponse };
   }
 
   return {

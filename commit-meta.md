@@ -1,20 +1,32 @@
 Version :
-0.13.71
+0.13.72
 
 Summary :
-고객사 관리 목록 폭 정리와 빌드 타입 오류 수정
+고객사 접근 제한 API guard 보강
 
 Description :
-시스템관리자 고객사 관리 목록의 과도한 컬럼 폭과 긴 문자열 노출을 줄여 좌우 스크롤 없이 요약 정보를 확인할 수 있게 정리했다. 고객사 온보딩 입력 필드에는 최대 입력 길이를 추가했다. 가입 신청 목록 조회 중 trial 종료일 값이 undefined일 수 있어 발생하던 TypeScript 빌드 오류를 수정했다.
+고객사 상태가 승인 대기, 거절, 무료체험 만료, 결제 문제 상태일 때 주요 고객사 업무 API가 우회 호출되지 않도록 공통 API 접근 제한 guard를 추가했다. 작업지시서, 첨부, 메모, 업체, 저장소, 통계, 멤버, 설정 범위의 회사 세션 스코프에 접근 제한 응답을 연결하고, 요금제/프로필 확인에 필요한 회사 정보 API와 온보딩 API는 필요한 예외 범위만 허용하도록 분리했다.
 
 수정 파일 목록 :
-- components/admin/companies/AdminCompanyOnboardingGate.tsx
-- components/system/companies/SystemCompanyApprovalConsole.tsx
-- lib/invitations/joinRequestRepository.ts
+- app/api/admin/companies/route.ts
+- app/api/admin/companies/current/route.ts
+- app/api/admin/companies/onboarding/route.ts
+- app/api/admin/companies/onboarding/files/delete/route.ts
+- app/api/admin/companies/onboarding/files/upload/route.ts
+- app/api/workorders/attachments/primary/route.ts
+- app/api/workorders/memos/route.ts
+- lib/admin/files/sessionScope.ts
+- lib/admin/members/sessionScope.ts
+- lib/admin/settings/sessionScope.ts
+- lib/admin/stats/sessionScope.ts
 - lib/constants/app.ts
+- lib/partners/sessionScope.ts
+- lib/storage/r2/r2Keys.ts
+- lib/workorder/api/workOrderRouteHandlers.ts
+- lib/workorder/attachments/attachmentFileRoute.ts
 
 추가 파일 목록 :
-없음
+- lib/billing/companyApiAccessGuard.ts
 
 삭제 파일 목록 :
 없음

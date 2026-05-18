@@ -84,3 +84,13 @@ export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
     WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalized)
   );
 }
+
+
+export function getCompanyIdFromWorkOrderAttachmentStorageKey(key: string): string | null {
+  const normalized = normalizeStorageKey(key);
+  if (!isSupportedWorkOrderAttachmentStorageKey(normalized)) return null;
+
+  const segments = normalized.split("/");
+  return segments[0] === "companies" && segments[1] ? segments[1] : null;
+}
+

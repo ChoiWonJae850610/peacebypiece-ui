@@ -13,6 +13,7 @@ import {
 } from "@/lib/db/client";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
@@ -86,6 +87,11 @@ async function requireWorkOrderRequestCompanyScope(): Promise<WorkOrderRequestCo
   const scope = await resolveWorkOrderRequestCompanyScope();
   if (!scope) {
     return { ok: false, response: createCompanySessionRequiredResponse() };
+  }
+
+  const blockedResponse = await createCompanyApiAccessBlockedResponse(scope.companyId);
+  if (blockedResponse) {
+    return { ok: false, response: blockedResponse };
   }
 
   return { ok: true, scope };

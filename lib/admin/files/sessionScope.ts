@@ -3,6 +3,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 
 export const ADMIN_FILE_COMPANY_SESSION_REQUIRED = "ADMIN_FILE_COMPANY_SESSION_REQUIRED";
 
@@ -28,6 +29,11 @@ export async function requireAdminFileCompanyScope(): Promise<AdminFileCompanySc
         { status: 401 },
       ),
     };
+  }
+
+  const blockedResponse = await createCompanyApiAccessBlockedResponse(companyId);
+  if (blockedResponse) {
+    return { ok: false, response: blockedResponse };
   }
 
   return {

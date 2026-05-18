@@ -3,6 +3,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
 import type { WaflSessionPayload } from "@/lib/auth/session";
@@ -51,6 +52,11 @@ export async function requirePartnerCompanyScope(permissionCode?: MemberPermissi
         { status: 401 },
       ),
     };
+  }
+
+  const blockedResponse = await createCompanyApiAccessBlockedResponse(companyId);
+  if (blockedResponse) {
+    return { ok: false, response: blockedResponse };
   }
 
   if (!(await hasPartnerPermission(session, permissionCode))) {

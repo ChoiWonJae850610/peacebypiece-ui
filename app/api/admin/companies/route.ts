@@ -4,7 +4,11 @@ import { getAdminCompanyById } from "@/lib/admin/settings/companyRepository";
 import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
 
 export async function GET() {
-  const scopeResult = await requireAdminSettingsCompanyScope();
+  const scopeResult = await requireAdminSettingsCompanyScope({
+    allowProfileRequired: true,
+    allowApprovalPending: true,
+    allowSubscriptionManagement: true,
+  });
   if (!scopeResult.ok) return scopeResult.response;
 
   try {

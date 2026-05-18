@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import {
   getCompanyOnboardingProfile,
   updateCompanyOnboardingProfile,
@@ -18,6 +19,15 @@ function getErrorCode(error: unknown): string {
   return error instanceof Error ? error.message : "COMPANY_ONBOARDING_SAVE_FAILED";
 }
 
+
+
+async function requireOnboardingCompanyApiAccess(companyId: string): Promise<NextResponse | null> {
+  return createCompanyApiAccessBlockedResponse(companyId, {
+    allowProfileRequired: true,
+    allowApprovalPending: true,
+    allowSubscriptionManagement: true,
+  });
+}
 export async function GET() {
   const session = await getCurrentWaflSession();
 
@@ -27,6 +37,9 @@ export async function GET() {
       { status: 401 },
     );
   }
+
+  const blockedResponse = await requireOnboardingCompanyApiAccess(session.companyId);
+  if (blockedResponse) return blockedResponse;
 
   const profile = await getCompanyOnboardingProfile(session);
 
@@ -49,6 +62,9 @@ export async function PATCH(request: NextRequest) {
       { status: 401 },
     );
   }
+
+  const blockedResponse = await requireOnboardingCompanyApiAccess(session.companyId);
+  if (blockedResponse) return blockedResponse;
 
   const body = (await request.json().catch(() => null)) as unknown;
   if (!isUpdateBody(body)) {

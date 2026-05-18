@@ -24,7 +24,11 @@ async function readSettingsUpdateInput(request: Request): Promise<CompanySetting
 }
 
 export async function GET() {
-  const scopeResult = await requireAdminSettingsCompanyScope();
+  const scopeResult = await requireAdminSettingsCompanyScope({
+    allowProfileRequired: true,
+    allowApprovalPending: true,
+    allowSubscriptionManagement: true,
+  });
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
@@ -52,7 +56,11 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const scopeResult = await requireAdminSettingsCompanyScope();
+  const scopeResult = await requireAdminSettingsCompanyScope({
+    allowProfileRequired: true,
+    allowApprovalPending: true,
+    allowSubscriptionManagement: true,
+  });
   if (!scopeResult.ok) return scopeResult.response;
 
   try {

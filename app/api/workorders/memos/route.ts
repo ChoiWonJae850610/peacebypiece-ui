@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import type { MemoReply, MemoThread, RoleType } from "@/types/workorder";
@@ -74,7 +76,22 @@ function mapReply(row: WorkOrderMemoReplyDbRecord, authorName: string, authorRol
 }
 
 
+
+async function requireMemoCompanyAccess(): Promise<NextResponse | null> {
+  const session = await getCurrentWaflSession();
+  const companyId = session?.companyId?.trim();
+
+  if (!session || !companyId) {
+    return NextResponse.json({ ok: false, error: "COMPANY_SESSION_REQUIRED" }, { status: 401 });
+  }
+
+  return createCompanyApiAccessBlockedResponse(companyId);
+}
+
 export async function GET(request: NextRequest) {
+  const blockedResponse = await requireMemoCompanyAccess();
+  if (blockedResponse) return blockedResponse;
+
   try {
     const orderId = readText(request.nextUrl.searchParams.get("orderId"));
     if (!orderId) return NextResponse.json({ error: "ORDER_ID_REQUIRED" }, { status: 400 });
@@ -90,6 +107,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const blockedResponse = await requireMemoCompanyAccess();
+  if (blockedResponse) return blockedResponse;
+
   try {
     const payload = (await request.json().catch(() => null)) as MemoCreateRequest | null;
     const target = normalizeTarget(payload?.target);
@@ -148,6 +168,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const blockedResponse = await requireMemoCompanyAccess();
+  if (blockedResponse) return blockedResponse;
+
   try {
     const payload = (await request.json().catch(() => null)) as MemoUpdateRequest | null;
     const memoId = readText(payload?.memoId);
@@ -173,6 +196,9 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const blockedResponse = await requireMemoCompanyAccess();
+  if (blockedResponse) return blockedResponse;
+
   try {
     const payload = (await request.json().catch(() => null)) as MemoDeleteRequest | null;
     const target = normalizeTarget(payload?.target);
