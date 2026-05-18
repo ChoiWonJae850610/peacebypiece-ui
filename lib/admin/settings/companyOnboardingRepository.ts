@@ -123,6 +123,32 @@ export async function getCompanyOnboardingProfile(
   return row ? mapRow(row) : null;
 }
 
+
+function buildCompanyOnboardingMemo(input: {
+  companyEnglishName: string | null;
+  logoUrl: string | null;
+  postalCode: string | null;
+  roadAddress: string | null;
+  jibunAddress: string | null;
+  addressDetail: string | null;
+  addressExtra: string | null;
+  requestedPlanCode: string | null;
+}): string {
+  return [
+    ["companyEnglishName", input.companyEnglishName],
+    ["logoUrl", input.logoUrl],
+    ["postalCode", input.postalCode],
+    ["roadAddress", input.roadAddress],
+    ["jibunAddress", input.jibunAddress],
+    ["addressDetail", input.addressDetail],
+    ["addressExtra", input.addressExtra],
+    ["requestedPlanCode", input.requestedPlanCode],
+  ]
+    .filter((entry): entry is [string, string] => Boolean(entry[1]?.trim()))
+    .map(([key, value]) => `${key}: ${value.trim()}`)
+    .join("\n");
+}
+
 export async function updateCompanyOnboardingProfile(
   session: WaflSessionPayload,
   input: CompanyOnboardingUpdateInput,
@@ -212,13 +238,31 @@ export async function updateCompanyOnboardingProfile(
              business_name = $3::text,
              applicant_name = $4::text,
              applicant_phone = $5::text,
+             request_memo = $6::text,
              updated_at = now()
        WHERE request_type = 'company'
          AND status = 'pending'
-         AND user_id = $6::text
+         AND user_id = $7::text
          AND created_company_id = $1::text
     `,
-    [session.companyId, companyName, businessName, adminName, adminPhone, session.userId],
+    [
+      session.companyId,
+      companyName,
+      businessName,
+      adminName,
+      adminPhone,
+      buildCompanyOnboardingMemo({
+        companyEnglishName,
+        logoUrl,
+        postalCode,
+        roadAddress,
+        jibunAddress,
+        addressDetail,
+        addressExtra,
+        requestedPlanCode,
+      }),
+      session.userId,
+    ],
   );
 
   return getCompanyOnboardingProfile(session);

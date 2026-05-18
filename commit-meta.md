@@ -1,20 +1,21 @@
 Version :
-0.13.55
+0.13.56
 
 Summary :
-full reset 샘플 seed 제거와 DB 기준 데이터 정리
+고객사 온보딩 입력 예시와 가입 신청 표시 보정
 
 Description :
-full_reset.sql에서 샘플 고객사, 샘플 사용자, 샘플 시스템관리자, 회사별 mock 기준정보, 샘플 요금제 배정, 샘플 저장소 snapshot을 제거하고 시스템 기준정보와 역할 템플릿 같은 운영 baseline만 남겼다. 기존 DB 보강용 system_standards_seed.sql의 용도를 명확히 정리하고, 더 이상 사용하지 않는 고객사/작업지시서 샘플 seed 파일을 삭제했다.
+고객사 관리자 첫 로그인 회사정보 입력 모달의 placeholder를 전체 입력 필드에 적용하고 입력 수정 시 이전 필수값 오류가 남아 보이지 않도록 정리했다. 회사 영문명, 로고, 주소, 신청 요금제 정보를 가입 신청 검토 목록에서 표시할 수 있도록 join_requests 메모에 온보딩 보조 정보를 함께 저장하도록 보강했다.
 
 수정 파일 목록 :
-- db/schema/full_reset.sql
-- db/seed/system_standards_seed.sql
+- components/admin/companies/AdminCompanyOnboardingGate.tsx
+- lib/admin/settings/companyOnboardingRepository.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/db/full-reset-cleanup-0.13.55.md
+없음
 
 삭제 파일 목록 :
-- db/seed/realistic_workorders_seed.sql
-- db/seed/seolo_seoul_admin_seed.sql
+없음

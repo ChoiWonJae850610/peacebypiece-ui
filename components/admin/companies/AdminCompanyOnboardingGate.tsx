@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type InputHTMLAttributes, type ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useI18n } from "@/lib/i18n";
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
@@ -71,6 +71,7 @@ function TextInput({
   placeholder,
   required,
   readOnly,
+  inputMode,
 }: {
   label: string;
   value: string;
@@ -78,6 +79,7 @@ function TextInput({
   placeholder?: string;
   required?: boolean;
   readOnly?: boolean;
+  inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
 }) {
   return (
     <label className="grid gap-1.5 text-sm font-semibold text-[var(--pbp-text-primary)]">
@@ -90,6 +92,7 @@ function TextInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         readOnly={readOnly}
+        inputMode={inputMode}
         className="h-11 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-faint)] focus:border-[var(--pbp-accent)] read-only:bg-[var(--pbp-surface-muted)]"
       />
     </label>
@@ -158,6 +161,8 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
   function updateDraft<TKey extends keyof CompanyOnboardingDraft>(key: TKey, value: CompanyOnboardingDraft[TKey]) {
     setDraft((current) => ({ ...current, [key]: value }));
+    if (saveState === "error") setSaveState("idle");
+    if (errorMessage) setErrorMessage(null);
   }
 
   async function save() {
@@ -238,22 +243,22 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                   <div className="grid gap-4 lg:grid-cols-2">
                     <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                       <h3 className="text-base font-bold">{copy.sections.company}</h3>
-                      <TextInput label={copy.fields.companyName} value={draft.companyName} onChange={(value) => updateDraft("companyName", value)} required />
-                      <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} />
-                      <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} required />
-                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} />
+                      <TextInput label={copy.fields.companyName} value={draft.companyName} onChange={(value) => updateDraft("companyName", value)} placeholder={copy.placeholders.companyName} required />
+                      <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} placeholder={copy.placeholders.companyEnglishName} />
+                      <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} placeholder={copy.placeholders.businessName} required />
+                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" />
                       <TextInput label={copy.fields.logoUrl} value={draft.logoUrl} onChange={(value) => updateDraft("logoUrl", value)} placeholder={copy.placeholders.logoUrl} />
                     </section>
 
                     <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                       <h3 className="text-base font-bold">{copy.sections.address}</h3>
                       <div className="grid gap-3 sm:grid-cols-[0.7fr_1.3fr]">
-                        <TextInput label={copy.fields.postalCode} value={draft.postalCode} onChange={(value) => updateDraft("postalCode", value)} required />
-                        <TextInput label={copy.fields.roadAddress} value={draft.roadAddress} onChange={(value) => updateDraft("roadAddress", value)} required />
+                        <TextInput label={copy.fields.postalCode} value={draft.postalCode} onChange={(value) => updateDraft("postalCode", value)} placeholder={copy.placeholders.postalCode} inputMode="numeric" required />
+                        <TextInput label={copy.fields.roadAddress} value={draft.roadAddress} onChange={(value) => updateDraft("roadAddress", value)} placeholder={copy.placeholders.roadAddress} required />
                       </div>
-                      <TextInput label={copy.fields.jibunAddress} value={draft.jibunAddress} onChange={(value) => updateDraft("jibunAddress", value)} />
-                      <TextInput label={copy.fields.addressDetail} value={draft.addressDetail} onChange={(value) => updateDraft("addressDetail", value)} />
-                      <TextInput label={copy.fields.addressExtra} value={draft.addressExtra} onChange={(value) => updateDraft("addressExtra", value)} />
+                      <TextInput label={copy.fields.jibunAddress} value={draft.jibunAddress} onChange={(value) => updateDraft("jibunAddress", value)} placeholder={copy.placeholders.jibunAddress} />
+                      <TextInput label={copy.fields.addressDetail} value={draft.addressDetail} onChange={(value) => updateDraft("addressDetail", value)} placeholder={copy.placeholders.addressDetail} />
+                      <TextInput label={copy.fields.addressExtra} value={draft.addressExtra} onChange={(value) => updateDraft("addressExtra", value)} placeholder={copy.placeholders.addressExtra} />
                       <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.addressApiNote}</p>
                     </section>
                   </div>
@@ -261,12 +266,13 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                   <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                     <h3 className="text-base font-bold">{copy.sections.admin}</h3>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <TextInput label={copy.fields.adminName} value={draft.adminName} onChange={(value) => updateDraft("adminName", value)} required />
+                      <TextInput label={copy.fields.adminName} value={draft.adminName} onChange={(value) => updateDraft("adminName", value)} placeholder={copy.placeholders.adminName} required />
                       <TextInput
                         label={copy.fields.adminPhone}
                         value={draft.adminPhone}
                         onChange={(value) => updateDraft("adminPhone", formatPhoneNumber(value))}
                         placeholder={copy.placeholders.adminPhone}
+                        inputMode="tel"
                         required
                       />
                     </div>
