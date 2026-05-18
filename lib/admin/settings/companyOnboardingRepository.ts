@@ -14,6 +14,7 @@ import type {
   CompanyOnboardingUpdateInput,
 } from "@/lib/admin/settings/companyTypes";
 import { listActiveCompanyOnboardingFileMetadata } from "@/lib/admin/settings/companyOnboardingFileRepository";
+import { invitationRepository } from "@/lib/invitations/invitationRepository";
 
 type CompanyOnboardingRow = {
   company_id: string;
@@ -182,6 +183,59 @@ function buildCompanyOnboardingMemo(input: {
     .join("\n");
 }
 
+
+async function findSubmissionInvitationId(session: WaflSessionPayload): Promise<string | null> {
+  const token = session.companyInvitationToken?.trim();
+  if (token) {
+    const invitation = await invitationRepository.findInvitationByRawToken(token);
+    if (!invitation) throw new Error("INVITATION_NOT_FOUND");
+    if (invitation.scope !== "system_to_company_admin") throw new Error("INVITATION_SCOPE_MISMATCH");
+    if (invitation.status !== "pending" && invitation.status !== "active" && invitation.status !== "accepted") {
+      throw new Error("INVITATION_NOT_ACTIVE");
+    }
+    if (new Date(invitation.expiresAt).getTime() <= Date.now()) throw new Error("INVITATION_EXPIRED");
+    return invitation.id;
+  }
+
+  const invitationResult = await queryDb<{ id: string }>(
+    `
+      SELECT id
+        FROM invitations
+       WHERE scope = 'system_to_company_admin'
+         AND status IN ('pending', 'active', 'accepted')
+         AND (company_id = $1::text OR accepted_user_id = $2::text)
+       ORDER BY updated_at DESC, created_at DESC
+       LIMIT 1
+    `,
+    [session.companyId, session.userId],
+  );
+
+  return invitationResult.rows[0]?.id ?? null;
+}
+
+async function markSubmissionInvitationAccepted(input: {
+  invitationId: string | null;
+  companyId: string;
+  userId: string;
+}): Promise<void> {
+  if (!input.invitationId) return;
+
+  await queryDb(
+    `
+      UPDATE invitations
+         SET status = 'accepted',
+             company_id = $2::text,
+             accepted_user_id = $3::text,
+             accepted_at = COALESCE(accepted_at, now()),
+             updated_at = now()
+       WHERE id = $1::text
+         AND scope = 'system_to_company_admin'
+         AND status IN ('pending', 'active', 'accepted')
+    `,
+    [input.invitationId, input.companyId, input.userId],
+  );
+}
+
 export async function updateCompanyOnboardingProfile(
   session: WaflSessionPayload,
   input: CompanyOnboardingUpdateInput,
@@ -286,19 +340,7 @@ export async function updateCompanyOnboardingProfile(
     requestedPlanCode,
   });
 
-  const invitationResult = await queryDb<{ id: string }>(
-    `
-      SELECT id
-        FROM invitations
-       WHERE scope = 'system_to_company_admin'
-         AND status IN ('pending', 'active', 'accepted')
-         AND (company_id = $1::text OR accepted_user_id = $2::text)
-       ORDER BY updated_at DESC, created_at DESC
-       LIMIT 1
-    `,
-    [session.companyId, session.userId],
-  );
-  const invitationId = invitationResult.rows[0]?.id ?? null;
+  const invitationId = await findSubmissionInvitationId(session);
 
   const userResult = await queryDb<{ email: string | null; google_sub: string | null; google_picture_url: string | null }>(
     `
@@ -380,6 +422,12 @@ export async function updateCompanyOnboardingProfile(
       ],
     );
   }
+
+  await markSubmissionInvitationAccepted({
+    invitationId,
+    companyId: session.companyId,
+    userId: session.userId,
+  });
 
   return getCompanyOnboardingProfile(session);
 }

@@ -6,6 +6,7 @@ import {
   getCompanyOnboardingProfile,
   updateCompanyOnboardingProfile,
 } from "@/lib/admin/settings/companyOnboardingRepository";
+import { uploadCompanyOnboardingFile } from "@/lib/admin/settings/companyOnboardingFileService";
 import type { CompanyOnboardingUpdateInput } from "@/lib/admin/settings/companyTypes";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,14 @@ function getErrorCode(error: unknown): string {
 }
 
 
+function parseJsonPayload(value: string | null): unknown {
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return null;
+  }
+}
 
 async function requireOnboardingCompanyApiAccess(companyId: string): Promise<NextResponse | null> {
   return createCompanyApiAccessBlockedResponse(companyId, {
@@ -66,7 +75,23 @@ export async function PATCH(request: NextRequest) {
   const blockedResponse = await requireOnboardingCompanyApiAccess(session.companyId);
   if (blockedResponse) return blockedResponse;
 
-  const body = (await request.json().catch(() => null)) as unknown;
+  const contentType = request.headers.get("content-type") ?? "";
+  let body: unknown = null;
+  let logoFile: File | null = null;
+  let businessLicenseFile: File | null = null;
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await request.formData().catch(() => null);
+    const payload = formData?.get("payload");
+    body = parseJsonPayload(typeof payload === "string" ? payload : null);
+    const logo = formData?.get("logo");
+    const businessLicense = formData?.get("business_license");
+    logoFile = logo instanceof File && logo.size > 0 ? logo : null;
+    businessLicenseFile = businessLicense instanceof File && businessLicense.size > 0 ? businessLicense : null;
+  } else {
+    body = (await request.json().catch(() => null)) as unknown;
+  }
+
   if (!isUpdateBody(body)) {
     return NextResponse.json(
       { profile: null, error: "COMPANY_ONBOARDING_PAYLOAD_REQUIRED" },
@@ -75,6 +100,24 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
+    if (logoFile) {
+      await uploadCompanyOnboardingFile({
+        companyId: session.companyId,
+        uploadedByUserId: session.userId,
+        fileType: "logo",
+        file: logoFile,
+      });
+    }
+
+    if (businessLicenseFile) {
+      await uploadCompanyOnboardingFile({
+        companyId: session.companyId,
+        uploadedByUserId: session.userId,
+        fileType: "business_license",
+        file: businessLicenseFile,
+      });
+    }
+
     const profile = await updateCompanyOnboardingProfile(session, body);
     if (!profile) {
       return NextResponse.json(

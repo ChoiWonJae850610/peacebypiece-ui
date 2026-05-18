@@ -266,7 +266,7 @@ const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
   INVITATION_NOT_FOUND: "초대 링크 정보를 찾을 수 없습니다.",
   INVITATION_EXPIRED: "만료된 초대 링크입니다.",
   INVITATION_NOT_ACTIVE: "사용할 수 없는 초대 링크입니다.",
-  INVITATION_ALREADY_CLAIMED: "이미 다른 계정이 진행 중인 초대 링크입니다.",
+  INVITATION_ALREADY_CLAIMED: "이미 사용된 초대 링크입니다.",
   JOIN_REQUEST_NOT_FOUND: "가입 신청 정보를 찾을 수 없습니다.",
   JOIN_REQUEST_ALREADY_REVIEWED: "이미 처리된 가입 신청입니다. 목록을 새로고침해 주세요.",
   JOIN_REQUEST_COMPANY_ONLY: "고객사 가입 신청만 처리할 수 있습니다.",
@@ -309,7 +309,7 @@ function getInvitationState(invitation: InvitationRecord): {
   }
 
   if (invitation.status === "active") {
-    return { label: "진행 중", tone: "warning", canCopy: true, canRevoke: true };
+    return { label: "사용 가능", tone: "success", canCopy: true, canRevoke: true };
   }
 
   return { label: "사용 가능", tone: "success", canCopy: true, canRevoke: true };

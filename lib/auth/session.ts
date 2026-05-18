@@ -15,6 +15,7 @@ export type WaflSessionPayload = {
   email: string;
   name: string;
   issuedAt: string;
+  companyInvitationToken?: string | null;
 };
 
 function toBase64Url(value: string): string {
@@ -73,6 +74,7 @@ export function verifyWaflSessionCookieValue(value: string | null | undefined): 
       email: parsed.email,
       name: parsed.name,
       issuedAt: parsed.issuedAt,
+      companyInvitationToken: typeof parsed.companyInvitationToken === "string" ? parsed.companyInvitationToken : null,
     };
   } catch {
     return null;

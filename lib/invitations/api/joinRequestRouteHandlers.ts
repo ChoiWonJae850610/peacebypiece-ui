@@ -177,7 +177,7 @@ export async function handleVerifyInvitation(request: Request) {
 
     const expiresAtTime = new Date(invitation.expiresAt).getTime();
     const isExpired = Number.isFinite(expiresAtTime) && expiresAtTime <= Date.now();
-    const isJoinable = (invitation.status === "pending" || invitation.status === "active") && !isExpired;
+    const isJoinable = invitation.status === "pending" && !isExpired;
 
     return NextResponse.json({
       ok: true,

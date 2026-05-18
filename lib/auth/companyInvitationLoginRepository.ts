@@ -220,30 +220,6 @@ async function insertCompanyAdminPermissions(
   }
 }
 
-async function markSystemCompanyInvitationInProgress(
-  client: DbTransactionClient,
-  input: { invitationId: string; companyId: string; userId: string },
-): Promise<void> {
-  const result = await client.query(
-    `
-      UPDATE invitations
-         SET status = 'active',
-             company_id = COALESCE(company_id, $2::text),
-             accepted_user_id = COALESCE(accepted_user_id, $3::text),
-             updated_at = now()
-       WHERE id = $1::text
-         AND scope = 'system_to_company_admin'
-         AND status IN ('pending', 'active')
-         AND (accepted_user_id IS NULL OR accepted_user_id = $3::text)
-    `,
-    [input.invitationId, input.companyId, input.userId],
-  );
-
-  if (result.rowCount === 0) {
-    throw new Error("INVITATION_ALREADY_CLAIMED");
-  }
-}
-
 async function updateExistingCompanyAdminUserLogin(
   client: DbTransactionClient,
   input: { user: UserRow; profile: GoogleUserProfile },
@@ -310,12 +286,6 @@ export async function completeCompanyAdminInvitationLogin(
       [company.id, user.id],
     );
 
-    await markSystemCompanyInvitationInProgress(client, {
-      invitationId: invitation.id,
-      companyId: company.id,
-      userId: user.id,
-    });
-
     return {
       redirectPath: "/admin",
       session: {
@@ -327,6 +297,7 @@ export async function completeCompanyAdminInvitationLogin(
         email: normalizeEmail(user.email ?? profile.email),
         name: user.name || profile.name,
         issuedAt: new Date().toISOString(),
+        companyInvitationToken: rawToken,
       },
     };
   });

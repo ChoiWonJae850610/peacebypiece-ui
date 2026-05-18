@@ -33,7 +33,7 @@ type CompanyOnboardingProfile = {
   addressDetail: string;
   addressExtra: string;
   requestedPlanCode: string;
-  onboardingStatus: "profile_required" | "approval_pending" | "active";
+  onboardingStatus: "profile_required" | "approval_pending" | "active" | "rejected";
   onboardingCompletedAt?: string | null;
   subscriptionStatus: "trialing" | "trial_expired" | "active" | "past_due" | "canceled";
   trialStartedAt?: string | null;
@@ -341,6 +341,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
   const [profile, setProfile] = useState<CompanyOnboardingProfile | null>(null);
   const [draft, setDraft] = useState<CompanyOnboardingDraft>(() => buildDraft(null));
   const [onboardingFiles, setOnboardingFiles] = useState<CompanyOnboardingFileMetadata[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<Partial<Record<CompanyOnboardingFileType, File>>>({});
   const [fileStates, setFileStates] = useState<Record<CompanyOnboardingFileType, OnboardingFileState>>({
     logo: { status: "idle", error: null },
     business_license: { status: "idle", error: null },
@@ -451,61 +452,39 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     setOnboardingFiles((current) => current.filter((item) => item.id !== file.id));
   }
 
-  async function uploadFile(fileType: CompanyOnboardingFileType, file: File) {
-    updateFileState(fileType, { status: "uploading", error: null });
-    setSaveState("idle");
-    setErrorMessage(null);
-
-    const formData = new FormData();
-    formData.append("file_type", fileType);
-    formData.append("file", file);
-
-    try {
-      const response = await fetch("/api/admin/companies/onboarding/files/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const payload = (await response.json()) as CompanyOnboardingFileResponse;
-
-      if (!response.ok || !payload.file) {
-        throw new Error(payload.error ?? "COMPANY_ONBOARDING_FILE_UPLOAD_FAILED");
-      }
-
-      replaceActiveFile(payload.file);
-      updateFileState(fileType, { status: "idle", error: null });
-    } catch (error) {
-      updateFileState(fileType, {
-        status: "error",
-        error: resolveCompanyOnboardingFileErrorMessage(error instanceof Error ? error.message : null, copy.errors),
-      });
-    }
+  function createLocalOnboardingFile(fileType: CompanyOnboardingFileType, file: File): CompanyOnboardingFileMetadata {
+    return {
+      id: `local-${fileType}`,
+      companyId: profile?.companyId ?? "local",
+      fileType,
+      originalName: file.name || fileType,
+      storageKey: "",
+      mimeType: file.type || "application/octet-stream",
+      sizeBytes: file.size,
+      uploadedByUserId: null,
+      createdAt: null,
+      deletedAt: null,
+    };
   }
 
-  async function deleteFile(file: CompanyOnboardingFileMetadata) {
-    updateFileState(file.fileType, { status: "deleting", error: null });
+  function uploadFile(fileType: CompanyOnboardingFileType, file: File) {
+    updateFileState(fileType, { status: "idle", error: null });
     setSaveState("idle");
     setErrorMessage(null);
+    setSelectedFiles((current) => ({ ...current, [fileType]: file }));
+    replaceActiveFile(createLocalOnboardingFile(fileType, file));
+  }
 
-    try {
-      const response = await fetch("/api/admin/companies/onboarding/files/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileId: file.id }),
-      });
-      const payload = (await response.json().catch(() => null)) as CompanyOnboardingFileResponse | null;
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "COMPANY_ONBOARDING_FILE_DELETE_FAILED");
-      }
-
-      removeActiveFile(file);
-      updateFileState(file.fileType, { status: "idle", error: null });
-    } catch (error) {
-      updateFileState(file.fileType, {
-        status: "error",
-        error: resolveCompanyOnboardingFileErrorMessage(error instanceof Error ? error.message : null, copy.errors),
-      });
-    }
+  function deleteFile(file: CompanyOnboardingFileMetadata) {
+    updateFileState(file.fileType, { status: "idle", error: null });
+    setSaveState("idle");
+    setErrorMessage(null);
+    setSelectedFiles((current) => {
+      const next = { ...current };
+      delete next[file.fileType];
+      return next;
+    });
+    removeActiveFile(file);
   }
 
   function keepFocusInsideDialog(event: KeyboardEvent<HTMLElement>) {
@@ -549,13 +528,20 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     setErrorMessage(null);
 
     try {
-      const response = await fetch("/api/admin/companies/onboarding", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const formData = new FormData();
+      formData.append(
+        "payload",
+        JSON.stringify({
           ...draft,
           adminPhone: normalizePhoneNumber(draft.adminPhone),
         }),
+      );
+      if (selectedFiles.logo) formData.append("logo", selectedFiles.logo);
+      if (selectedFiles.business_license) formData.append("business_license", selectedFiles.business_license);
+
+      const response = await fetch("/api/admin/companies/onboarding", {
+        method: "PATCH",
+        body: formData,
       });
       const payload = (await response.json()) as CompanyOnboardingResponse;
 
@@ -566,6 +552,7 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
       setProfile(payload.profile);
       setDraft(buildDraft(payload.profile));
       setOnboardingFiles(payload.profile.onboardingFiles ?? onboardingFiles);
+      setSelectedFiles({});
       setSaveState("saved");
     } catch (error) {
       setSaveState("error");
