@@ -1861,6 +1861,10 @@ export const adminEn = {
       standard: "Standard",
       pro: "Pro",
     },
+    loading: {
+      title: "Checking company information status.",
+      description: "The admin workspace is temporarily blocked while the required onboarding status is checked.",
+    },
     pending: {
       title: "Waiting for approval.",
       description: "Company information has been submitted. The workspace will become available after a system administrator reviews and approves the company.",

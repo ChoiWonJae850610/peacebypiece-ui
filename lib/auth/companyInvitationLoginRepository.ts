@@ -47,9 +47,8 @@ function normalizeText(value: string | null | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
-function buildDraftCompanyName(profile: GoogleUserProfile): string {
-  const name = normalizeText(profile.name) ?? normalizeEmail(profile.email);
-  return `${name} 회사 정보 입력 필요`;
+function buildDraftCompanyName(): string {
+  return "회사 정보 입력 전";
 }
 
 function assertInvitationRecipientEmail(profile: GoogleUserProfile, recipientEmail: string): void {
@@ -89,7 +88,7 @@ async function createProfileRequiredCompany(client: DbTransactionClient, profile
       VALUES ($1::text, $2::text, NULL, 'system invitation pending onboarding', true, 'profile_required', 'pending')
       RETURNING id, name
     `,
-    [randomUUID(), buildDraftCompanyName(profile)],
+    [randomUUID(), buildDraftCompanyName()],
   );
 
   const row = result.rows[0];

@@ -1808,6 +1808,10 @@ export const adminKo = {
       standard: "Standard",
       pro: "Pro",
     },
+    loading: {
+      title: "회사 정보 상태를 확인하고 있습니다.",
+      description: "필수 회사 정보 입력 여부를 확인하는 동안 관리자 화면 사용을 잠시 막습니다.",
+    },
     pending: {
       title: "승인 대기 중입니다.",
       description: "회사 정보 입력이 완료되었습니다. 시스템관리자가 고객사 정보를 확인하고 승인하면 관리자 화면을 사용할 수 있습니다.",

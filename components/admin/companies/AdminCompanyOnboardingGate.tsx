@@ -1,6 +1,6 @@
 "use client";
 
-import { type InputHTMLAttributes, type ReactNode, useEffect, useMemo, useState } from "react";
+import { type InputHTMLAttributes, type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { useI18n } from "@/lib/i18n";
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
@@ -46,9 +46,20 @@ type CompanyOnboardingResponse = {
   error?: string;
 };
 
+const ONBOARDING_PLACEHOLDER_COMPANY_NAME_PATTERNS = [
+  /회사\s*정보\s*입력\s*필요/i,
+  /^회사\s*정보\s*입력\s*전$/i,
+  /^company\s*profile\s*required$/i,
+];
+
+function isOnboardingPlaceholderCompanyName(value: string | null | undefined): boolean {
+  const normalized = String(value ?? "").trim();
+  return Boolean(normalized) && ONBOARDING_PLACEHOLDER_COMPANY_NAME_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
 function buildDraft(profile: CompanyOnboardingProfile | null): CompanyOnboardingDraft {
   return {
-    companyName: profile?.companyName ?? "",
+    companyName: isOnboardingPlaceholderCompanyName(profile?.companyName) ? "" : profile?.companyName ?? "",
     companyEnglishName: profile?.companyEnglishName ?? "",
     businessName: profile?.businessName ?? "",
     businessRegistrationNumber: profile?.businessRegistrationNumber ?? "",
@@ -93,7 +104,7 @@ function TextInput({
         placeholder={placeholder}
         readOnly={readOnly}
         inputMode={inputMode}
-        className="h-11 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-faint)] focus:border-[var(--pbp-accent)] read-only:bg-[var(--pbp-surface-muted)]"
+        className="h-11 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:font-normal placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-accent)] read-only:bg-[var(--pbp-surface-muted)]"
       />
     </label>
   );
@@ -107,9 +118,12 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
   const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLElement | null>(null);
 
   const requiresOnboarding = loadState === "loaded" && profile !== null && !profile.profileComplete;
   const isApprovalPending = loadState === "loaded" && profile?.profileComplete && profile.onboardingStatus === "approval_pending";
+  const isCheckingOnboarding = loadState === "idle" || loadState === "loading";
+  const blocksAdminWorkspace = isCheckingOnboarding || requiresOnboarding || isApprovalPending || loadState === "error";
   const missingRequiredLabels = useMemo(() => {
     const missing: string[] = [];
     if (!draft.companyName.trim()) missing.push(copy.fields.companyName);
@@ -159,10 +173,52 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     return () => controller.abort();
   }, [copy.errors.load]);
 
+  useEffect(() => {
+    if (!blocksAdminWorkspace) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusTimer = window.setTimeout(() => dialogRef.current?.focus(), 0);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [blocksAdminWorkspace]);
+
   function updateDraft<TKey extends keyof CompanyOnboardingDraft>(key: TKey, value: CompanyOnboardingDraft[TKey]) {
     setDraft((current) => ({ ...current, [key]: value }));
     if (saveState === "error") setSaveState("idle");
     if (errorMessage) setErrorMessage(null);
+  }
+
+
+  function keepFocusInsideDialog(event: KeyboardEvent<HTMLElement>) {
+    if (event.key !== "Tab") return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const focusableElements = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((element) => !element.hasAttribute("aria-hidden"));
+
+    const first = focusableElements[0];
+    const last = focusableElements[focusableElements.length - 1];
+    if (!first || !last) return;
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+      return;
+    }
+
+    if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   async function save() {
@@ -203,17 +259,35 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
 
   return (
     <>
-      {children}
-      {requiresOnboarding || isApprovalPending || loadState === "error" ? (
-        <div className="fixed inset-0 z-[100] overflow-y-auto bg-stone-950/70 px-4 py-6 backdrop-blur-sm">
+      <div aria-hidden={blocksAdminWorkspace} className={blocksAdminWorkspace ? "pointer-events-none select-none" : undefined}>
+        {children}
+      </div>
+      {blocksAdminWorkspace ? (
+        <div
+          className="fixed inset-0 z-[100] overflow-y-auto bg-stone-950/70 px-4 py-6 backdrop-blur-sm"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) event.preventDefault();
+          }}
+          onKeyDownCapture={(event) => {
+            if (event.key === "Escape") event.preventDefault();
+          }}
+        >
           <div className="mx-auto grid min-h-full max-w-4xl place-items-center">
-            <section className="w-full rounded-[32px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 text-[var(--pbp-text-primary)] shadow-2xl sm:p-7">
+            <section
+              ref={dialogRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="company-onboarding-title"
+              onKeyDown={keepFocusInsideDialog}
+              className="w-full rounded-[32px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 text-[var(--pbp-text-primary)] shadow-2xl outline-none sm:p-7"
+            >
               <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--pbp-accent)]">
                     {copy.eyebrow}
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-tight">{copy.title}</h2>
+                  <h2 id="company-onboarding-title" className="mt-2 text-2xl font-bold tracking-tight">{copy.title}</h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.description}</p>
                 </div>
                 <a
@@ -224,7 +298,12 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                 </a>
               </div>
 
-              {loadState === "error" ? (
+              {isCheckingOnboarding ? (
+                <div className="mt-5 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-5 text-sm leading-6 text-[var(--pbp-text-muted)]">
+                  <p className="font-bold text-[var(--pbp-text-primary)]">{copy.loading.title}</p>
+                  <p className="mt-2">{copy.loading.description}</p>
+                </div>
+              ) : loadState === "error" ? (
                 <div className="mt-5 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
                   {errorMessage ?? copy.errors.load}
                 </div>
