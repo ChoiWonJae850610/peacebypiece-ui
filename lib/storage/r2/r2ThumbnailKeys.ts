@@ -4,8 +4,7 @@ import { randomUUID } from "crypto";
 import type { AttachmentScope } from "@/types/workorder";
 import { getAttachmentStorageDirectory, normalizeAttachmentScopeForStorage } from "@/lib/storage/r2/r2Keys";
 
-const CURRENT_WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
-const LEGACY_WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
+const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
 
 function sanitizeSegment(value: string): string {
   return value
@@ -39,44 +38,29 @@ export function createWorkOrderAttachmentThumbnailKey(input: {
 }
 
 export function isCurrentWorkOrderAttachmentThumbnailKey(key: string): boolean {
-  return CURRENT_WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalizeStorageKey(key));
-}
-
-export function isLegacyWorkOrderAttachmentThumbnailKey(key: string): boolean {
-  return LEGACY_WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalizeStorageKey(key));
+  return WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalizeStorageKey(key));
 }
 
 export function isWorkOrderAttachmentThumbnailKeyForScope(input: {
   key: string;
-  companyId?: string | null;
+  companyId: string;
   workOrderId: string;
   scope: AttachmentScope;
 }): boolean {
-  const companyId = input.companyId ? sanitizeSegment(input.companyId) : null;
+  const companyId = sanitizeSegment(input.companyId);
   const workOrderId = sanitizeSegment(input.workOrderId);
   const scope = normalizeAttachmentScopeForStorage(input.scope);
   const directory = getAttachmentStorageDirectory(scope);
   const segments = normalizeStorageKey(input.key).split("/");
 
-  const isCurrentKey = (
+  return (
     segments.length === 7 &&
     segments[0] === "companies" &&
-    (!companyId || segments[1] === companyId) &&
+    segments[1] === companyId &&
     segments[2] === "workorders" &&
     segments[3] === workOrderId &&
     segments[4] === "thumbnails" &&
     segments[5] === directory &&
     segments[6].toLowerCase().endsWith(".webp")
-  );
-
-  if (isCurrentKey) return true;
-
-  return (
-    segments.length === 5 &&
-    segments[0] === "workorders" &&
-    segments[1] === workOrderId &&
-    segments[2] === "thumbnails" &&
-    segments[3] === directory &&
-    segments[4].toLowerCase().endsWith(".webp")
   );
 }

@@ -11,7 +11,7 @@ import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage
 function isSafeStorageKey(value: string): boolean {
   return (
     isSupportedWorkOrderAttachmentStorageKey(value) &&
-    value.startsWith("workorders/") &&
+    value.startsWith("companies/") &&
     !value.includes("..") &&
     !value.startsWith("/")
   );
