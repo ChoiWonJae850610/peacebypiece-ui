@@ -1,32 +1,21 @@
 Version :
-0.13.72
+0.13.73
 
 Summary :
-고객사 접근 제한 API guard 보강
+고객사 초대 링크 로그인 후 재진입 흐름 보정
 
 Description :
-고객사 상태가 승인 대기, 거절, 무료체험 만료, 결제 문제 상태일 때 주요 고객사 업무 API가 우회 호출되지 않도록 공통 API 접근 제한 guard를 추가했다. 작업지시서, 첨부, 메모, 업체, 저장소, 통계, 멤버, 설정 범위의 회사 세션 스코프에 접근 제한 응답을 연결하고, 요금제/프로필 확인에 필요한 회사 정보 API와 온보딩 API는 필요한 예외 범위만 허용하도록 분리했다.
+고객사 관리자 초대 링크를 Google 로그인 성공 시점에 사용 완료 처리하지 않고 진행 중 상태로만 표시하도록 수정했다. 회사 정보를 입력하지 않고 로그아웃해도 같은 계정이 다시 온보딩에 진입할 수 있게 기존 고객사 관리자 계정을 재사용하고, 온보딩 저장 시 진행 중인 초대 링크를 가입 신청과 연결하도록 보정했다. 시스템관리자 초대 링크 목록에는 진행 중 상태와 관련 오류 문구를 표시하도록 정리했다.
 
 수정 파일 목록 :
-- app/api/admin/companies/route.ts
-- app/api/admin/companies/current/route.ts
-- app/api/admin/companies/onboarding/route.ts
-- app/api/admin/companies/onboarding/files/delete/route.ts
-- app/api/admin/companies/onboarding/files/upload/route.ts
-- app/api/workorders/attachments/primary/route.ts
-- app/api/workorders/memos/route.ts
-- lib/admin/files/sessionScope.ts
-- lib/admin/members/sessionScope.ts
-- lib/admin/settings/sessionScope.ts
-- lib/admin/stats/sessionScope.ts
+- lib/auth/companyInvitationLoginRepository.ts
+- lib/admin/settings/companyOnboardingRepository.ts
+- components/system/companies/SystemCompanyApprovalConsole.tsx
+- components/invitations/CompanyInvitationJoinRequestPage.tsx
 - lib/constants/app.ts
-- lib/partners/sessionScope.ts
-- lib/storage/r2/r2Keys.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
-- lib/workorder/attachments/attachmentFileRoute.ts
 
 추가 파일 목록 :
-- lib/billing/companyApiAccessGuard.ts
+없음
 
 삭제 파일 목록 :
 없음

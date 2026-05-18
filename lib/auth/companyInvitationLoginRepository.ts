@@ -23,6 +23,7 @@ type CompanyRow = {
 type UserRow = {
   id: string;
   company_id: string;
+  company_name?: string | null;
   email: string | null;
   name: string;
   google_sub: string | null;
@@ -54,11 +55,20 @@ function buildDraftCompanyName(): string {
 async function findExistingUser(client: DbTransactionClient, profile: GoogleUserProfile): Promise<UserRow | null> {
   const result = await client.query<UserRow>(
     `
-      SELECT id, company_id, email, name, google_sub, google_picture_url, role
+      SELECT
+        users.id,
+        users.company_id,
+        companies.name AS company_name,
+        users.email,
+        users.name,
+        users.google_sub,
+        users.google_picture_url,
+        users.role
         FROM users
-       WHERE google_sub = $1::text
-          OR lower(email) = lower($2::text)
-       ORDER BY CASE WHEN google_sub = $1::text THEN 0 ELSE 1 END
+        LEFT JOIN companies ON companies.id = users.company_id
+       WHERE users.google_sub = $1::text
+          OR lower(users.email) = lower($2::text)
+       ORDER BY CASE WHEN users.google_sub = $1::text THEN 0 ELSE 1 END
        LIMIT 1
     `,
     [profile.sub, normalizeEmail(profile.email)],
@@ -210,6 +220,53 @@ async function insertCompanyAdminPermissions(
   }
 }
 
+async function markSystemCompanyInvitationInProgress(
+  client: DbTransactionClient,
+  input: { invitationId: string; companyId: string; userId: string },
+): Promise<void> {
+  const result = await client.query(
+    `
+      UPDATE invitations
+         SET status = 'active',
+             company_id = COALESCE(company_id, $2::text),
+             accepted_user_id = COALESCE(accepted_user_id, $3::text),
+             updated_at = now()
+       WHERE id = $1::text
+         AND scope = 'system_to_company_admin'
+         AND status IN ('pending', 'active')
+         AND (accepted_user_id IS NULL OR accepted_user_id = $3::text)
+    `,
+    [input.invitationId, input.companyId, input.userId],
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error("INVITATION_ALREADY_CLAIMED");
+  }
+}
+
+async function updateExistingCompanyAdminUserLogin(
+  client: DbTransactionClient,
+  input: { user: UserRow; profile: GoogleUserProfile },
+): Promise<UserRow> {
+  const updated = await client.query<UserRow>(
+    `
+      UPDATE users
+         SET google_sub = COALESCE(google_sub, $2::text),
+             email = COALESCE(NULLIF(email, ''), $3::text),
+             name = COALESCE(NULLIF(name, ''), $4::text),
+             google_picture_url = $5::text,
+             role = 'admin',
+             last_login_at = now(),
+             updated_at = now()
+       WHERE id = $1::text
+       RETURNING id, company_id, email, name, google_sub, google_picture_url, role
+    `,
+    [input.user.id, input.profile.sub, normalizeEmail(input.profile.email), input.profile.name, normalizeText(input.profile.picture)],
+  );
+
+  return updated.rows[0] ?? input.user;
+}
+
 export async function completeCompanyAdminInvitationLogin(
   profile: GoogleUserProfile,
   rawToken: string,
@@ -224,8 +281,14 @@ export async function completeCompanyAdminInvitationLogin(
   if (invitation.status !== "pending" && invitation.status !== "active") throw new Error("INVITATION_NOT_ACTIVE");
   if (new Date(invitation.expiresAt).getTime() <= Date.now()) throw new Error("INVITATION_EXPIRED");
   return withDbTransaction(async (client) => {
-    const company = await createProfileRequiredCompany(client, profile);
-    const user = await createCompanyAdminUser(client, { companyId: company.id, profile });
+    const existingUser = await findExistingUser(client, profile);
+    const company = existingUser
+      ? { id: existingUser.company_id, name: existingUser.company_name || buildDraftCompanyName() }
+      : await createProfileRequiredCompany(client, profile);
+    const user = existingUser
+      ? await updateExistingCompanyAdminUserLogin(client, { user: existingUser, profile })
+      : await createCompanyAdminUser(client, { companyId: company.id, profile });
+
     const member = await createApprovedCompanyAdminMember(client, {
       companyId: company.id,
       userId: user.id,
@@ -240,24 +303,18 @@ export async function completeCompanyAdminInvitationLogin(
     await client.query(
       `
         UPDATE companies
-           SET owner_user_id = $2::text,
+           SET owner_user_id = COALESCE(owner_user_id, $2::text),
                updated_at = now()
          WHERE id = $1::text
       `,
       [company.id, user.id],
     );
 
-    await client.query(
-      `
-        UPDATE invitations
-           SET status = 'accepted',
-               accepted_at = now(),
-               accepted_user_id = $2::text,
-               updated_at = now()
-         WHERE id = $1::text
-      `,
-      [invitation.id, user.id],
-    );
+    await markSystemCompanyInvitationInProgress(client, {
+      invitationId: invitation.id,
+      companyId: company.id,
+      userId: user.id,
+    });
 
     return {
       redirectPath: "/admin",

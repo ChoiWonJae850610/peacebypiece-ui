@@ -291,11 +291,12 @@ export async function updateCompanyOnboardingProfile(
       SELECT id
         FROM invitations
        WHERE scope = 'system_to_company_admin'
-         AND accepted_user_id = $1::text
-       ORDER BY accepted_at DESC NULLS LAST, created_at DESC
+         AND status IN ('pending', 'active', 'accepted')
+         AND (company_id = $1::text OR accepted_user_id = $2::text)
+       ORDER BY updated_at DESC, created_at DESC
        LIMIT 1
     `,
-    [session.userId],
+    [session.companyId, session.userId],
   );
   const invitationId = invitationResult.rows[0]?.id ?? null;
 
