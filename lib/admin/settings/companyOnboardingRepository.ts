@@ -236,39 +236,87 @@ async function markSubmissionInvitationAccepted(input: {
   );
 }
 
+type NormalizedCompanyOnboardingUpdateInput = {
+  companyName: string | null;
+  companyEnglishName: string | null;
+  businessName: string | null;
+  businessRegistrationNumber: string | null;
+  logoUrl: string | null;
+  postalCode: string | null;
+  roadAddress: string | null;
+  jibunAddress: string | null;
+  addressDetail: string | null;
+  addressExtra: string | null;
+  requestedPlanCode: string | null;
+  adminName: string | null;
+  adminPhone: string;
+};
+
+function normalizeCompanyOnboardingUpdateInput(input: CompanyOnboardingUpdateInput): NormalizedCompanyOnboardingUpdateInput {
+  return {
+    companyName: normalizeNullableText(input.companyName),
+    companyEnglishName: normalizeNullableText(input.companyEnglishName),
+    businessName: normalizeNullableText(input.businessName),
+    businessRegistrationNumber: normalizeNullableText(input.businessRegistrationNumber),
+    logoUrl: normalizeNullableText(input.logoUrl),
+    postalCode: normalizeNullableText(input.postalCode),
+    roadAddress: normalizeNullableText(input.roadAddress),
+    jibunAddress: normalizeNullableText(input.jibunAddress),
+    addressDetail: normalizeNullableText(input.addressDetail),
+    addressExtra: normalizeNullableText(input.addressExtra),
+    requestedPlanCode: normalizeNullableText(input.requestedPlanCode),
+    adminName: normalizeNullableText(input.adminName),
+    adminPhone: normalizePhoneNumber(String(input.adminPhone ?? "")),
+  };
+}
+
+function isCompanyOnboardingUpdateComplete(input: NormalizedCompanyOnboardingUpdateInput): boolean {
+  return Boolean(
+    input.companyName &&
+      input.businessName &&
+      input.businessRegistrationNumber &&
+      input.postalCode &&
+      input.roadAddress &&
+      input.addressDetail &&
+      input.requestedPlanCode &&
+      input.adminName &&
+      input.adminPhone.length >= 10,
+  );
+}
+
+export function validateCompanyOnboardingUpdateInput(input: CompanyOnboardingUpdateInput): { ok: true } | { ok: false; error: string } {
+  const normalized = normalizeCompanyOnboardingUpdateInput(input);
+  return isCompanyOnboardingUpdateComplete(normalized)
+    ? { ok: true }
+    : { ok: false, error: "COMPANY_ONBOARDING_REQUIRED_FIELDS" };
+}
+
 export async function updateCompanyOnboardingProfile(
   session: WaflSessionPayload,
   input: CompanyOnboardingUpdateInput,
 ): Promise<CompanyOnboardingProfile | null> {
   if (!session.companyId) return null;
 
-  const companyName = normalizeNullableText(input.companyName);
-  const companyEnglishName = normalizeNullableText(input.companyEnglishName);
-  const businessName = normalizeNullableText(input.businessName);
-  const businessRegistrationNumber = normalizeNullableText(input.businessRegistrationNumber);
-  const logoUrl = normalizeNullableText(input.logoUrl);
-  const postalCode = normalizeNullableText(input.postalCode);
-  const roadAddress = normalizeNullableText(input.roadAddress);
-  const jibunAddress = normalizeNullableText(input.jibunAddress);
-  const addressDetail = normalizeNullableText(input.addressDetail);
-  const addressExtra = normalizeNullableText(input.addressExtra);
-  const requestedPlanCode = normalizeNullableText(input.requestedPlanCode);
-  const adminName = normalizeNullableText(input.adminName);
-  const adminPhone = normalizePhoneNumber(String(input.adminPhone ?? ""));
-
-  if (
-    !companyName ||
-    !businessName ||
-    !businessRegistrationNumber ||
-    !postalCode ||
-    !roadAddress ||
-    !addressDetail ||
-    !requestedPlanCode ||
-    !adminName ||
-    adminPhone.length < 10
-  ) {
+  const normalized = normalizeCompanyOnboardingUpdateInput(input);
+  if (!isCompanyOnboardingUpdateComplete(normalized)) {
     throw new Error("COMPANY_ONBOARDING_REQUIRED_FIELDS");
   }
+
+  const {
+    companyName,
+    companyEnglishName,
+    businessName,
+    businessRegistrationNumber,
+    logoUrl,
+    postalCode,
+    roadAddress,
+    jibunAddress,
+    addressDetail,
+    addressExtra,
+    requestedPlanCode,
+    adminName,
+    adminPhone,
+  } = normalized;
 
   await queryDb(
     `

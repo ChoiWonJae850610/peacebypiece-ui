@@ -7,9 +7,15 @@ import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiA
 import {
   getCompanyOnboardingProfile,
   updateCompanyOnboardingProfile,
+  validateCompanyOnboardingUpdateInput,
 } from "@/lib/admin/settings/companyOnboardingRepository";
 import { uploadCompanyOnboardingFile } from "@/lib/admin/settings/companyOnboardingFileService";
-import type { CompanyOnboardingUpdateInput } from "@/lib/admin/settings/companyTypes";
+import {
+  COMPANY_ONBOARDING_FILE_ERROR_CODES,
+  validateCompanyOnboardingFileInput,
+} from "@/lib/admin/settings/companyOnboardingFilePolicy";
+import type { CompanyOnboardingUpdateInput, CompanyOnboardingFileType } from "@/lib/admin/settings/companyTypes";
+import { isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -73,6 +79,30 @@ function parseJsonPayload(value: string | null): unknown {
   }
 }
 
+function validateOnboardingFilePreflight(fileType: CompanyOnboardingFileType, file: File | null): string | null {
+  if (!file) return null;
+
+  const validation = validateCompanyOnboardingFileInput({
+    fileType,
+    mimeType: file.type,
+    sizeBytes: file.size,
+  });
+
+  if (!validation.ok) return validation.error;
+  if (!isR2WorkerUploadConfigured()) return COMPANY_ONBOARDING_FILE_ERROR_CODES.uploadNotConfigured;
+  return null;
+}
+
+function getOnboardingFilePreflightError(input: {
+  logoFile: File | null;
+  businessLicenseFile: File | null;
+}): string | null {
+  return (
+    validateOnboardingFilePreflight("logo", input.logoFile) ??
+    validateOnboardingFilePreflight("business_license", input.businessLicenseFile)
+  );
+}
+
 async function requireOnboardingCompanyApiAccess(companyId: string): Promise<NextResponse | null> {
   return createCompanyApiAccessBlockedResponse(companyId, {
     allowProfileRequired: true,
@@ -129,6 +159,46 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
+  const contentType = request.headers.get("content-type") ?? "";
+  let body: unknown = null;
+  let logoFile: File | null = null;
+  let businessLicenseFile: File | null = null;
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await request.formData().catch(() => null);
+    const payload = formData?.get("payload");
+    body = parseJsonPayload(typeof payload === "string" ? payload : null);
+    const logo = formData?.get("logo");
+    const businessLicense = formData?.get("business_license");
+    logoFile = logo instanceof File && logo.size > 0 ? logo : null;
+    businessLicenseFile = businessLicense instanceof File && businessLicense.size > 0 ? businessLicense : null;
+  } else {
+    body = (await request.json().catch(() => null)) as unknown;
+  }
+
+  if (!isUpdateBody(body)) {
+    return NextResponse.json(
+      { profile: null, error: "COMPANY_ONBOARDING_PAYLOAD_REQUIRED" },
+      { status: 400 },
+    );
+  }
+
+  const profileValidation = validateCompanyOnboardingUpdateInput(body);
+  if (!profileValidation.ok) {
+    return NextResponse.json(
+      { profile: null, error: profileValidation.error },
+      { status: 400 },
+    );
+  }
+
+  const filePreflightError = getOnboardingFilePreflightError({ logoFile, businessLicenseFile });
+  if (filePreflightError) {
+    return NextResponse.json(
+      { profile: null, error: filePreflightError },
+      { status: 400 },
+    );
+  }
+
   let effectiveSession = session;
 
   if (!effectiveSession.companyId) {
@@ -159,30 +229,6 @@ export async function PATCH(request: NextRequest) {
 
   const blockedResponse = await requireOnboardingCompanyApiAccess(companyId);
   if (blockedResponse) return blockedResponse;
-
-  const contentType = request.headers.get("content-type") ?? "";
-  let body: unknown = null;
-  let logoFile: File | null = null;
-  let businessLicenseFile: File | null = null;
-
-  if (contentType.includes("multipart/form-data")) {
-    const formData = await request.formData().catch(() => null);
-    const payload = formData?.get("payload");
-    body = parseJsonPayload(typeof payload === "string" ? payload : null);
-    const logo = formData?.get("logo");
-    const businessLicense = formData?.get("business_license");
-    logoFile = logo instanceof File && logo.size > 0 ? logo : null;
-    businessLicenseFile = businessLicense instanceof File && businessLicense.size > 0 ? businessLicense : null;
-  } else {
-    body = (await request.json().catch(() => null)) as unknown;
-  }
-
-  if (!isUpdateBody(body)) {
-    return NextResponse.json(
-      { profile: null, error: "COMPANY_ONBOARDING_PAYLOAD_REQUIRED" },
-      { status: 400 },
-    );
-  }
 
   try {
     if (logoFile) {
