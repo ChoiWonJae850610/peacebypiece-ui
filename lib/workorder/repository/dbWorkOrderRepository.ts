@@ -32,9 +32,18 @@ import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/reposito
 const SPEC_SHEET_TABLE = "spec_sheets";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
+export type WorkOrderVisibilityScope =
+  | { mode: "company" }
+  | {
+      mode: "assigned";
+      userId: string;
+      companyMemberId?: string | null;
+    };
+
 export type WorkOrderCompanyScope = {
   companyId: string;
   companyName?: string | null;
+  visibility?: WorkOrderVisibilityScope;
 };
 
 function resolveWorkOrderCompanyScope(scope?: WorkOrderCompanyScope | null): {
@@ -56,6 +65,64 @@ function resolveWorkOrderCompanyId(
   scope?: WorkOrderCompanyScope | null,
 ): string {
   return resolveWorkOrderCompanyScope(scope).companyId;
+}
+
+function normalizeWorkOrderVisibilityScope(
+  scope?: WorkOrderCompanyScope | null,
+): WorkOrderVisibilityScope {
+  const visibility = scope?.visibility;
+  if (visibility?.mode !== "assigned") return { mode: "company" };
+
+  const userId = visibility.userId.trim();
+  if (!userId) return { mode: "company" };
+
+  return {
+    mode: "assigned",
+    userId,
+    companyMemberId: visibility.companyMemberId?.trim() || null,
+  };
+}
+
+function appendAssignedWorkOrderVisibilityPredicate(
+  schema: DbSpecSheetSchema,
+  predicates: string[],
+  values: unknown[],
+  scope?: WorkOrderCompanyScope | null,
+): void {
+  const visibility = normalizeWorkOrderVisibilityScope(scope);
+  if (visibility.mode !== "assigned") return;
+
+  const accessibleOwnerIds = Array.from(
+    new Set(
+      [visibility.userId, visibility.companyMemberId]
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+
+  if (accessibleOwnerIds.length === 0) {
+    predicates.push("FALSE");
+    return;
+  }
+
+  const ownerPredicates: string[] = [];
+  if (schema.createdByIdColumn) {
+    values.push(accessibleOwnerIds);
+    ownerPredicates.push(
+      `spec_sheet.${quoteIdentifier(schema.createdByIdColumn)} = ANY($${values.length}::text[])`,
+    );
+  }
+
+  if (schema.managerIdColumn) {
+    values.push(accessibleOwnerIds);
+    ownerPredicates.push(
+      `spec_sheet.${quoteIdentifier(schema.managerIdColumn)} = ANY($${values.length}::text[])`,
+    );
+  }
+
+  predicates.push(
+    ownerPredicates.length > 0 ? `(${ownerPredicates.join(" OR ")})` : "FALSE",
+  );
 }
 
 const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
@@ -1072,13 +1139,34 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
     `;
 }
 
-function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
-  return `
+function buildSpecSheetSelectQuery(
+  schema: DbSpecSheetSchema,
+  scope?: WorkOrderCompanyScope | null,
+): { sql: string; values: unknown[] } {
+  const predicates: string[] = [];
+  const values: unknown[] = [];
+
+  if (schema.companyIdColumn) {
+    values.push(resolveWorkOrderCompanyId(scope));
+    predicates.push(
+      `spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $${values.length}`,
+    );
+  }
+
+  if (schema.isActiveColumn) {
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
+  }
+
+  appendAssignedWorkOrderVisibilityPredicate(schema, predicates, values, scope);
+
+  return {
+    sql: `
       ${buildSpecSheetSelectBaseSql(schema)}
-      ${schema.companyIdColumn ? `WHERE spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
-      ${schema.companyIdColumn && schema.isActiveColumn ? `AND spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+      ${predicates.length > 0 ? `WHERE ${predicates.join("\n        AND ")}` : ""}
       ORDER BY ${schema.updatedAtColumn ? `spec_sheet.${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `spec_sheet.${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}spec_sheet.id DESC
-    `;
+    `,
+    values,
+  };
 }
 
 const DB_WORKFLOW_STATE_FILTER_VALUES: Record<
@@ -1115,11 +1203,16 @@ function buildWorkflowStateInSql(
 function buildSpecSheetSummaryWhereSql(
   schema: DbSpecSheetSchema,
   status: WorkOrderListStatusFilter,
+  values: unknown[],
+  scope?: WorkOrderCompanyScope | null,
 ): string {
   const predicates: string[] = [];
 
   if (schema.companyIdColumn) {
-    predicates.push(`spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $1`);
+    values.push(resolveWorkOrderCompanyId(scope));
+    predicates.push(
+      `spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $${values.length}`,
+    );
   }
 
   if (schema.isActiveColumn) {
@@ -1129,6 +1222,8 @@ function buildSpecSheetSummaryWhereSql(
   if (schema.deletedAtColumn) {
     predicates.push(`spec_sheet.${quoteIdentifier(schema.deletedAtColumn)} IS NULL`);
   }
+
+  appendAssignedWorkOrderVisibilityPredicate(schema, predicates, values, scope);
 
   if (schema.workflowStateColumn) {
     const workflowColumn = `COALESCE(spec_sheet.${quoteIdentifier(schema.workflowStateColumn)}, 'draft')`;
@@ -1183,17 +1278,20 @@ function buildSpecSheetSummaryOrderBySql(
   return `ORDER BY ${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `s.created_at DESC NULLS LAST, ` : ""}s.id DESC`;
 }
 
-function buildSpecSheetSummarySelectSql(
+function buildSpecSheetSummarySelectQuery(
   schema: DbSpecSheetSchema,
   options: WorkOrderSummaryQueryOptions = {},
-): string {
+  scope?: WorkOrderCompanyScope | null,
+): { sql: string; values: unknown[] } {
   const status = options.status ?? DEFAULT_WORK_ORDER_LIST_STATUS_FILTER;
   const sort = options.sort ?? DEFAULT_WORK_ORDER_LIST_SORT;
+  const values: unknown[] = [];
 
-  return `
+  return {
+    sql: `
       WITH spec_sheet_summaries AS (
         ${buildSpecSheetSummarySelectBaseSql(schema)}
-        ${buildSpecSheetSummaryWhereSql(schema, status)}
+        ${buildSpecSheetSummaryWhereSql(schema, status, values, scope)}
       )
       SELECT
         s.*,
@@ -1240,25 +1338,40 @@ function buildSpecSheetSummarySelectSql(
           AND memo.deleted_at IS NULL
       ) memo_counts ON true
       ${buildSpecSheetSummaryOrderBySql(schema, sort)}
-    `;
+    `,
+    values,
+  };
 }
 
-function buildSpecSheetSelectByIdSql(schema: DbSpecSheetSchema): string {
-  const predicates = ["spec_sheet.id = $1"];
+function buildSpecSheetSelectByIdQuery(
+  schema: DbSpecSheetSchema,
+  workOrderId: string,
+  scope?: WorkOrderCompanyScope | null,
+): { sql: string; values: unknown[] } {
+  const values: unknown[] = [workOrderId];
+  const predicates = [`spec_sheet.id = $${values.length}`];
 
   if (schema.companyIdColumn) {
-    predicates.push(`spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $2`);
+    values.push(resolveWorkOrderCompanyId(scope));
+    predicates.push(
+      `spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $${values.length}`,
+    );
   }
 
   if (schema.isActiveColumn) {
     predicates.push(`spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
   }
 
-  return `
+  appendAssignedWorkOrderVisibilityPredicate(schema, predicates, values, scope);
+
+  return {
+    sql: `
       ${buildSpecSheetSelectBaseSql(schema)}
       WHERE ${predicates.join("\n        AND ")}
       LIMIT 1
-    `;
+    `,
+    values,
+  };
 }
 
 async function loadActiveSpecSheetRows(
@@ -1267,9 +1380,10 @@ async function loadActiveSpecSheetRows(
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
+  const query = buildSpecSheetSelectQuery(schema, scope);
   const result = await queryDb<DbSpecSheetRow>(
-    buildSpecSheetSelectSql(schema),
-    schema.companyIdColumn ? [resolveWorkOrderCompanyId(scope)] : undefined,
+    query.sql,
+    query.values.length > 0 ? query.values : undefined,
   );
 
   return result.rows;
@@ -1287,9 +1401,10 @@ async function loadActiveSpecSheetSummaryRows(
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
+  const query = buildSpecSheetSummarySelectQuery(schema, options, scope);
   const result = await queryDb<DbSpecSheetRow>(
-    buildSpecSheetSummarySelectSql(schema, options),
-    schema.companyIdColumn ? [resolveWorkOrderCompanyId(scope)] : undefined,
+    query.sql,
+    query.values.length > 0 ? query.values : undefined,
   );
 
   return result.rows;
@@ -1502,14 +1617,11 @@ export async function findDbWorkOrderById(
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
-  const values: unknown[] = [workOrderId];
-  if (schema.companyIdColumn) {
-    values.push(resolveWorkOrderCompanyId(scope));
-  }
+  const query = buildSpecSheetSelectByIdQuery(schema, workOrderId, scope);
 
   const result = await queryDb<DbSpecSheetRow>(
-    buildSpecSheetSelectByIdSql(schema),
-    values,
+    query.sql,
+    query.values,
   );
   const row = result.rows[0] ?? null;
   if (!row) return null;

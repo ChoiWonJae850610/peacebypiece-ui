@@ -80,6 +80,14 @@ async function resolveWorkOrderRequestCompanyScope(): Promise<WorkOrderCompanySc
   return {
     companyId,
     companyName: session.companyName,
+    visibility:
+      session.role === "member"
+        ? {
+            mode: "assigned",
+            userId: session.userId,
+            companyMemberId: session.companyMemberId,
+          }
+        : { mode: "company" },
   };
 }
 
@@ -127,12 +135,23 @@ function getRequiredWorkflowPermission(input: {
 function createWorkOrderPermissionRequiredResponse(permissionCode: MemberPermissionCode) {
   return NextResponse.json(
     {
-      message: "Current user does not have permission to change this work order workflow state.",
+      message: "Current user does not have permission to access this work order action.",
       code: "WORKORDER_PERMISSION_REQUIRED",
       permissionCode,
     },
     { status: 403 },
   );
+}
+
+async function requireCurrentWorkOrderPermission(
+  permissionCode: MemberPermissionCode,
+): Promise<NextResponse | null> {
+  const session = await getCurrentWaflSession();
+  if (!session) return createCompanySessionRequiredResponse();
+
+  return (await hasCurrentWorkOrderPermission(session, permissionCode))
+    ? null
+    : createWorkOrderPermissionRequiredResponse(permissionCode);
 }
 
 
@@ -477,6 +496,16 @@ function createInvalidPayloadResponse(message: string) {
   );
 }
 
+function createWorkOrderNotFoundResponse(workOrderId: string) {
+  return NextResponse.json(
+    {
+      message: `spec_sheets row not found for id: ${workOrderId}`,
+      code: "DB_REQUEST_FAILED",
+    },
+    { status: 404 },
+  );
+}
+
 function getAuditRequestId(request: Request): string | null {
   return (
     request.headers.get("x-request-id") ||
@@ -507,6 +536,8 @@ export async function handleGetWorkOrders() {
   try {
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
+    const readPermissionResponse = await requireCurrentWorkOrderPermission("workorder.read");
+    if (readPermissionResponse) return readPermissionResponse;
 
     const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(
       await findAllDbWorkOrders(scopeResult.scope),
@@ -544,17 +575,13 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
   try {
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
+    const readPermissionResponse = await requireCurrentWorkOrderPermission("workorder.read");
+    if (readPermissionResponse) return readPermissionResponse;
 
     const foundWorkOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
 
     if (!foundWorkOrder) {
-      return NextResponse.json(
-        {
-          message: `spec_sheets row not found for id: ${workOrderId}`,
-          code: "DB_REQUEST_FAILED",
-        },
-        { status: 404 },
-      );
+      return createWorkOrderNotFoundResponse(workOrderId);
     }
 
     const workOrder =
@@ -604,6 +631,8 @@ export async function handleGetWorkOrderSummaries(request?: Request) {
     const sort = normalizeWorkOrderListSort(url?.searchParams.get("sort"));
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
+    const readPermissionResponse = await requireCurrentWorkOrderPermission("workorder.read");
+    if (readPermissionResponse) return readPermissionResponse;
 
     const workOrders = await findDbWorkOrderSummaries({ status, sort }, scopeResult.scope);
     logDbRequestOutcome(
@@ -657,6 +686,8 @@ export async function handlePostWorkOrders(request: Request) {
     const session = await getCurrentWaflSession();
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
+    const createPermissionResponse = await requireCurrentWorkOrderPermission("workorder.create");
+    if (createPermissionResponse) return createPermissionResponse;
 
     const workOrderToCreate = await applySessionActorDefaults(
       body.workOrder,
@@ -724,6 +755,8 @@ export async function handlePatchWorkOrders(request: Request) {
       );
       const scopeResult = await requireWorkOrderRequestCompanyScope();
       if (!scopeResult.ok) return scopeResult.response;
+      const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
+      if (updatePermissionResponse) return updatePermissionResponse;
 
       const previousWorkOrders = (
         await Promise.all(
@@ -732,6 +765,14 @@ export async function handlePatchWorkOrders(request: Request) {
           ),
         )
       ).filter((workOrder): workOrder is WorkOrder => Boolean(workOrder));
+      if (previousWorkOrders.length !== requestedWorkOrderIds.length) {
+        return createWorkOrderNotFoundResponse(
+          requestedWorkOrderIds.find(
+            (workOrderId) =>
+              !previousWorkOrders.some((workOrder) => workOrder.id === workOrderId),
+          ) ?? requestedWorkOrderIds[0],
+        );
+      }
       const previousWorkOrderMap = buildWorkOrderMap(previousWorkOrders);
       const savedWorkOrders = await saveDbWorkOrders(body.workOrders, scopeResult.scope);
 
@@ -771,11 +812,16 @@ export async function handlePatchWorkOrders(request: Request) {
 
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
+    const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
+    if (updatePermissionResponse) return updatePermissionResponse;
 
     const previousWorkOrder = await findDbWorkOrderById(
       body.workOrder.id,
       scopeResult.scope,
     );
+    if (!previousWorkOrder) {
+      return createWorkOrderNotFoundResponse(body.workOrder.id);
+    }
     const savedWorkOrder = await saveDbWorkOrder(body.workOrder, scopeResult.scope);
 
     const workOrder =
@@ -853,6 +899,9 @@ export async function handlePatchWorkOrderState(
     if (!scopeResult.ok) return scopeResult.response;
 
     const previousWorkOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
+    if (!previousWorkOrder) {
+      return createWorkOrderNotFoundResponse(workOrderId);
+    }
     const session = await getCurrentWaflSession();
     if (!session) return createCompanySessionRequiredResponse();
 
@@ -959,11 +1008,16 @@ export async function handleDeleteWorkOrders(request: Request) {
 
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
+    const deletePermissionResponse = await requireCurrentWorkOrderPermission("workorder.delete");
+    if (deletePermissionResponse) return deletePermissionResponse;
 
     const previousWorkOrder = await findDbWorkOrderById(
       body.workOrderId,
       scopeResult.scope,
     );
+    if (!previousWorkOrder) {
+      return createWorkOrderNotFoundResponse(body.workOrderId);
+    }
     const previousSnapshot = previousWorkOrder
       ? await hydrateWorkOrderWithAttachmentMemoSnapshot(previousWorkOrder)
       : null;
