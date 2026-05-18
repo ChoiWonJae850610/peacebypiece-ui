@@ -34,6 +34,7 @@ export interface InvitationRecord {
   scope: InvitationScope;
   status: InvitationStatus;
   tokenHash: string;
+  inviteUrlPath?: string | null;
   acceptedAt?: string | null;
   revokedAt?: string | null;
   expiresAt: string;
@@ -53,6 +54,7 @@ export interface InvitationCreateResult {
 export interface InvitationRepository {
   createInvitation(draft: InvitationDraft): Promise<InvitationCreateResult>;
   listInvitations(companyId: string): Promise<InvitationRecord[]>;
+  listSystemCompanyAdminInvitations(): Promise<InvitationRecord[]>;
   revokeInvitation(invitationId: string): Promise<InvitationRecord>;
   findInvitationByRawToken(rawToken: string): Promise<InvitationRecord | null>;
 }

@@ -23,11 +23,18 @@ import {
 } from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 
 type JoinRequestListResponse = {
   ok?: boolean;
   joinRequests?: JoinRequestRecord[];
+  error?: string;
+};
+
+type InvitationListResponse = {
+  ok?: boolean;
+  invitations?: InvitationRecord[];
   error?: string;
 };
 
@@ -39,10 +46,7 @@ type CompanyJoinRequestReviewResponse = {
 type CreatedSystemInvitationResult = {
   inviteUrl: string;
   rawToken: string;
-  invitation?: {
-    id: string;
-    expiresAt: string;
-  };
+  invitation?: InvitationRecord;
 };
 
 type CompanyJoinRequestRow = {
@@ -56,6 +60,20 @@ type CompanyJoinRequestRow = {
   applicantPhone: string;
   requestedAtLabel: string;
 };
+
+type SystemInvitationRow = {
+  id: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "neutral";
+  inviteUrlLabel: string;
+  inviteUrlPath: string | null;
+  expiresAtLabel: string;
+  createdAtLabel: string;
+  canCopy: boolean;
+  canRevoke: boolean;
+};
+
+type DeliveryMethod = "email" | "phone";
 
 function getAbsoluteInviteUrl(inviteUrl: string): string {
   if (typeof window === "undefined") return inviteUrl;
@@ -120,6 +138,51 @@ function getLoadStatusLabel(status: "idle" | "loading" | "loaded" | "failed") {
   return "대기";
 }
 
+function normalizePhoneInput(value: string): string {
+  return value.replace(/[^\d-]/g, "").slice(0, 13);
+}
+
+function getInvitationState(invitation: InvitationRecord): {
+  label: string;
+  tone: SystemInvitationRow["statusTone"];
+  canCopy: boolean;
+  canRevoke: boolean;
+} {
+  const expiresAtTime = new Date(invitation.expiresAt).getTime();
+  const isExpired = Number.isFinite(expiresAtTime) && expiresAtTime <= Date.now();
+
+  if (invitation.status === "revoked") {
+    return { label: "취소됨", tone: "neutral", canCopy: false, canRevoke: false };
+  }
+
+  if (isExpired) {
+    return { label: "만료됨", tone: "danger", canCopy: false, canRevoke: false };
+  }
+
+  if (invitation.status === "accepted") {
+    return { label: "사용됨", tone: "warning", canCopy: true, canRevoke: false };
+  }
+
+  return { label: "사용 가능", tone: "success", canCopy: true, canRevoke: true };
+}
+
+function toSystemInvitationRow(invitation: InvitationRecord): SystemInvitationRow {
+  const state = getInvitationState(invitation);
+  const inviteUrlPath = invitation.inviteUrlPath?.trim() || null;
+
+  return {
+    id: invitation.id,
+    statusLabel: state.label,
+    statusTone: state.tone,
+    inviteUrlLabel: inviteUrlPath ? getAbsoluteInviteUrl(inviteUrlPath) : "이전 초대 링크",
+    inviteUrlPath,
+    expiresAtLabel: toCompactDateTimeLabel(invitation.expiresAt),
+    createdAtLabel: toCompactDateTimeLabel(invitation.createdAt),
+    canCopy: state.canCopy && Boolean(inviteUrlPath),
+    canRevoke: state.canRevoke,
+  };
+}
+
 export default function SystemCompanyApprovalConsole() {
   const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
   const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
@@ -129,15 +192,83 @@ export default function SystemCompanyApprovalConsole() {
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
   const [systemInviteExpiresInDays, setSystemInviteExpiresInDays] = useState(7);
-  const [createdSystemInvite, setCreatedSystemInvite] = useState<CreatedSystemInvitationResult | null>(null);
+  const [systemInvitations, setSystemInvitations] = useState<InvitationRecord[]>([]);
+  const [systemInvitationLoadStatus, setSystemInvitationLoadStatus] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const [systemInviteError, setSystemInviteError] = useState<string | null>(null);
+  const [systemInviteMessage, setSystemInviteMessage] = useState<string | null>(null);
   const [isCreatingSystemInvite, setIsCreatingSystemInvite] = useState(false);
+  const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("email");
+  const [deliveryTarget, setDeliveryTarget] = useState("");
 
   const joinRequests = useMemo(
     () => joinRequestRecords.map(toCompanyJoinRequestRow),
     [joinRequestRecords],
   );
+  const systemInvitationRows = useMemo(
+    () => systemInvitations.map(toSystemInvitationRow),
+    [systemInvitations],
+  );
+  const latestCopyableInvitation = systemInvitationRows.find((invitation) => invitation.canCopy);
   const canCreateSystemInvite = !isCreatingSystemInvite;
+  const deliveryPlaceholder = deliveryMethod === "email" ? "예: customer@example.com" : "예: 010-1234-5678";
+
+  const systemInvitationTableColumns = useMemo<AdminTableColumn<SystemInvitationRow>[]>(
+    () => [
+      {
+        key: "status",
+        label: "상태",
+        render: (invitation) => <AdminStatusBadge tone={invitation.statusTone}>{invitation.statusLabel}</AdminStatusBadge>,
+      },
+      {
+        key: "link",
+        label: "초대 링크",
+        className: "text-xs text-[var(--pbp-text-muted)]",
+        render: (invitation) => (
+          <span className="block max-w-[18rem] truncate" title={invitation.inviteUrlLabel}>
+            {invitation.inviteUrlLabel}
+          </span>
+        ),
+      },
+      {
+        key: "expiresAt",
+        label: "만료일",
+        className: "text-xs text-[var(--pbp-text-muted)]",
+        render: (invitation) => invitation.expiresAtLabel,
+      },
+      {
+        key: "createdAt",
+        label: "생성일",
+        className: "text-xs text-[var(--pbp-text-muted)]",
+        render: (invitation) => invitation.createdAtLabel,
+      },
+      {
+        key: "actions",
+        label: "작업",
+        headerClassName: "text-center",
+        className: "text-center",
+        render: (invitation) => (
+          <div className="grid gap-2 sm:flex sm:justify-center">
+            <AdminButton
+              onClick={() => void copySystemInvitationLink(invitation)}
+              disabled={!invitation.canCopy}
+              variant="secondary"
+            >
+              복사
+            </AdminButton>
+            <AdminButton
+              onClick={() => void revokeSystemInvitation(invitation.id)}
+              disabled={!invitation.canRevoke || revokingInvitationId !== null}
+              variant="danger"
+            >
+              {revokingInvitationId === invitation.id ? "취소 중" : "취소"}
+            </AdminButton>
+          </div>
+        ),
+      },
+    ],
+    [revokingInvitationId],
+  );
 
   const joinRequestTableColumns = useMemo<AdminTableColumn<CompanyJoinRequestRow>[]>(
     () => [
@@ -224,12 +355,32 @@ export default function SystemCompanyApprovalConsole() {
     [approvingRequestId, rejectingRequestId],
   );
 
+  async function loadSystemInvitations() {
+    setSystemInvitationLoadStatus("loading");
+
+    try {
+      const response = await fetch("/api/invitations?scope=system_to_company_admin", { cache: "no-store" });
+      const payload = (await response.json()) as InvitationListResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "SYSTEM_COMPANY_ADMIN_INVITATIONS_LOAD_FAILED");
+      }
+
+      setSystemInvitations(payload.invitations ?? []);
+      setSystemInvitationLoadStatus("loaded");
+    } catch (error) {
+      setSystemInvitations([]);
+      setSystemInvitationLoadStatus("failed");
+      setSystemInviteError(error instanceof Error ? error.message : "SYSTEM_COMPANY_ADMIN_INVITATIONS_LOAD_FAILED");
+    }
+  }
+
   async function createSystemCompanyAdminInvite() {
     if (!canCreateSystemInvite) return;
 
     setIsCreatingSystemInvite(true);
     setSystemInviteError(null);
-    setCreatedSystemInvite(null);
+    setSystemInviteMessage(null);
 
     try {
       const response = await fetch("/api/invitations", {
@@ -252,11 +403,8 @@ export default function SystemCompanyApprovalConsole() {
         throw new Error(payload?.message ?? payload?.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED");
       }
 
-      setCreatedSystemInvite({
-        inviteUrl: payload.inviteUrl,
-        rawToken: payload.rawToken,
-        invitation: payload.invitation,
-      });
+      setSystemInviteMessage("초대 링크를 생성했습니다. 우측 목록에서 복사할 수 있습니다.");
+      await loadSystemInvitations();
     } catch (error) {
       setSystemInviteError(
         error instanceof Error ? error.message : "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED",
@@ -266,9 +414,57 @@ export default function SystemCompanyApprovalConsole() {
     }
   }
 
-  async function copyCreatedSystemInviteLink() {
-    if (!createdSystemInvite?.inviteUrl || typeof navigator === "undefined") return;
-    await navigator.clipboard.writeText(getAbsoluteInviteUrl(createdSystemInvite.inviteUrl));
+  async function copySystemInvitationLink(invitation: SystemInvitationRow) {
+    if (!invitation.inviteUrlPath || typeof navigator === "undefined") return;
+    await navigator.clipboard.writeText(getAbsoluteInviteUrl(invitation.inviteUrlPath));
+    setSystemInviteMessage("초대 링크를 복사했습니다.");
+    setSystemInviteError(null);
+  }
+
+  async function revokeSystemInvitation(invitationId: string) {
+    setRevokingInvitationId(invitationId);
+    setSystemInviteError(null);
+    setSystemInviteMessage(null);
+
+    try {
+      const response = await fetch(`/api/invitations/${encodeURIComponent(invitationId)}/revoke`, {
+        method: "POST",
+      });
+      const payload = (await response.json()) as { ok?: boolean; error?: string; message?: string };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_REVOKE_FAILED");
+      }
+
+      setSystemInviteMessage("초대 링크를 취소했습니다.");
+      await loadSystemInvitations();
+    } catch (error) {
+      setSystemInviteError(error instanceof Error ? error.message : "SYSTEM_COMPANY_ADMIN_INVITATION_REVOKE_FAILED");
+    } finally {
+      setRevokingInvitationId(null);
+    }
+  }
+
+  async function handleDeliveryButton() {
+    setSystemInviteError(null);
+    setSystemInviteMessage(null);
+
+    if (!deliveryTarget.trim()) {
+      setSystemInviteError(deliveryMethod === "email" ? "이메일을 입력해 주세요." : "휴대폰 번호를 입력해 주세요.");
+      return;
+    }
+
+    if (!latestCopyableInvitation) {
+      setSystemInviteError("먼저 초대 링크를 생성해 주세요.");
+      return;
+    }
+
+    await copySystemInvitationLink(latestCopyableInvitation);
+    setSystemInviteMessage(
+      deliveryMethod === "email"
+        ? "실제 이메일 발송은 다음 단계에서 연결합니다. 현재는 최신 초대 링크를 복사했습니다."
+        : "실제 문자/카톡 발송은 다음 단계에서 연결합니다. 현재는 최신 초대 링크를 복사했습니다.",
+    );
   }
 
   async function loadCompanyJoinRequests() {
@@ -314,6 +510,7 @@ export default function SystemCompanyApprovalConsole() {
 
       setReviewActionMessage("고객사 가입 신청을 승인했습니다.");
       await loadCompanyJoinRequests();
+      await loadSystemInvitations();
     } catch (error) {
       setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
     } finally {
@@ -340,6 +537,7 @@ export default function SystemCompanyApprovalConsole() {
 
       setReviewActionMessage("고객사 가입 신청을 거절했습니다.");
       await loadCompanyJoinRequests();
+      await loadSystemInvitations();
     } catch (error) {
       setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_REJECT_FAILED");
     } finally {
@@ -349,6 +547,7 @@ export default function SystemCompanyApprovalConsole() {
 
   useEffect(() => {
     void loadCompanyJoinRequests();
+    void loadSystemInvitations();
   }, []);
 
   return (
@@ -378,70 +577,113 @@ export default function SystemCompanyApprovalConsole() {
             <div>
               <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객사 관리자 초대</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-                초대 대상과 만료일만 정합니다. 회사명, 주소, 로고, 신청 요금제는 고객사 관리자가 첫 로그인 후 직접 입력합니다.
+                초대 링크는 독립적으로 생성하고, 이메일과 휴대폰은 링크 전달 수단으로만 사용합니다.
               </p>
             </div>
-            <AdminStatusBadge tone="success">고객사관리 통합</AdminStatusBadge>
+            <AdminStatusBadge tone={getLoadStatusTone(systemInvitationLoadStatus)}>
+              {getLoadStatusLabel(systemInvitationLoadStatus)}
+            </AdminStatusBadge>
           </div>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
+          <div className="mt-5 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
             <article className={SYSTEM_MUTED_CARD_CLASS}>
-              <div className="grid gap-4 md:grid-cols-[1fr_0.7fr]">
-                <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3">
-                  <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 링크 생성 방식</p>
-                  <p className="mt-1 text-sm font-medium text-[var(--pbp-text-primary)]">대상 이메일이나 휴대폰 번호 없이 독립 초대 링크를 생성합니다.</p>
-                  <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">이메일·휴대폰·카카오톡 전달은 후속 보내기 기능에서 링크 전달 수단으로만 사용합니다.</p>
+              <div className="grid gap-3">
+                <div className="grid gap-3 xl:grid-cols-[0.36fr_1fr_auto]">
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">전달 방식</span>
+                    <select
+                      value={deliveryMethod}
+                      onChange={(event) => {
+                        const nextMethod = event.target.value === "phone" ? "phone" : "email";
+                        setDeliveryMethod(nextMethod);
+                        setDeliveryTarget("");
+                      }}
+                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
+                    >
+                      <option value="email">이메일</option>
+                      <option value="phone">휴대폰</option>
+                    </select>
+                  </label>
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">전달 대상</span>
+                    <input
+                      value={deliveryTarget}
+                      onChange={(event) => setDeliveryTarget(
+                        deliveryMethod === "phone"
+                          ? normalizePhoneInput(event.target.value)
+                          : event.target.value,
+                      )}
+                      placeholder={deliveryPlaceholder}
+                      inputMode={deliveryMethod === "phone" ? "tel" : "email"}
+                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)] placeholder:text-[var(--pbp-text-faint)]"
+                    />
+                  </label>
+                  <div className="flex items-end">
+                    <AdminButton
+                      onClick={() => void handleDeliveryButton()}
+                      className="w-full"
+                      variant="secondary"
+                    >
+                      발송
+                    </AdminButton>
+                  </div>
                 </div>
-                <label className="grid gap-2">
-                  <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 만료</span>
-                  <select
-                    value={systemInviteExpiresInDays}
-                    onChange={(event) => setSystemInviteExpiresInDays(Number(event.target.value))}
-                    className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
-                  >
-                    <option value={3}>3일</option>
-                    <option value={7}>7일</option>
-                    <option value={14}>14일</option>
-                  </select>
-                </label>
+
+                <div className="grid gap-3 border-t border-[var(--pbp-border)] pt-3 xl:grid-cols-[1fr_auto]">
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 만료</span>
+                    <select
+                      value={systemInviteExpiresInDays}
+                      onChange={(event) => setSystemInviteExpiresInDays(Number(event.target.value))}
+                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
+                    >
+                      <option value={1}>1일</option>
+                      <option value={3}>3일</option>
+                      <option value={7}>7일</option>
+                      <option value={14}>14일</option>
+                      <option value={30}>30일</option>
+                    </select>
+                  </label>
+                  <div className="flex items-end">
+                    <AdminButton
+                      onClick={() => void createSystemCompanyAdminInvite()}
+                      disabled={!canCreateSystemInvite}
+                      variant="primary"
+                      className="w-full"
+                    >
+                      {isCreatingSystemInvite ? "생성 중" : "링크 생성"}
+                    </AdminButton>
+                  </div>
+                </div>
               </div>
 
               {systemInviteError ? (
                 <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>{systemInviteError}</div>
               ) : null}
+              {systemInviteMessage ? (
+                <div className={`mt-4 ${SYSTEM_SUCCESS_BOX_CLASS}`}>{systemInviteMessage}</div>
+              ) : null}
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <p className={SYSTEM_SMALL_TEXT_CLASS}>
-                  생성된 링크는 복사해서 고객사 관리자 후보에게 직접 전달합니다. 이메일/SMS/카카오톡 전송은 후속 기능에서 연결합니다.
-                </p>
-                <AdminButton
-                  onClick={() => void createSystemCompanyAdminInvite()}
-                  disabled={!canCreateSystemInvite}
-                  variant="primary"
-                >
-                  {isCreatingSystemInvite ? "초대 생성 중" : "초대 링크 생성"}
-                </AdminButton>
-              </div>
+              <p className={`mt-4 ${SYSTEM_SMALL_TEXT_CLASS}`}>
+                발송 버튼은 현재 최신 사용 가능 링크를 복사하는 준비 단계입니다. 실제 이메일/SMS 발송은 후속 기능에서 연결합니다.
+              </p>
             </article>
 
             <article className={SYSTEM_MUTED_CARD_CLASS}>
-              <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>초대 결과</h3>
-              <p className={SYSTEM_SMALL_TEXT_CLASS}>초대 링크는 생성 직후 한 번 확인하고 복사합니다.</p>
-              {createdSystemInvite ? (
-                <div className="mt-4 space-y-3">
-                  <div className="break-all rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-xs font-medium text-[var(--pbp-text-primary)]">
-                    {getAbsoluteInviteUrl(createdSystemInvite.inviteUrl)}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <AdminButton onClick={() => void copyCreatedSystemInviteLink()}>링크 복사</AdminButton>
-                    <AdminLinkButton href={createdSystemInvite.inviteUrl}>가입 화면 열기</AdminLinkButton>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-4 rounded-2xl border border-dashed border-[var(--pbp-border)] px-4 py-6 text-sm text-[var(--pbp-text-muted)]">
-                  초대 링크를 생성하면 이 영역에 실제 가입 링크가 표시됩니다.
-                </p>
-              )}
+              <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>초대 링크 목록</h3>
+              <p className={SYSTEM_SMALL_TEXT_CLASS}>사용 가능, 사용됨, 만료됨, 취소됨 상태를 확인하고 링크를 복사하거나 취소합니다.</p>
+              <div className="mt-4">
+                <AdminTable
+                  items={systemInvitationRows}
+                  columns={systemInvitationTableColumns}
+                  getRowKey={(invitation) => invitation.id}
+                  emptyLabel="생성된 고객사 관리자 초대 링크가 없습니다."
+                  isLoading={systemInvitationLoadStatus === "loading"}
+                  loadingLabel="초대 링크 목록을 불러오는 중입니다."
+                  gridTemplateColumns="0.7fr 1.2fr 0.8fr 0.8fr 1fr"
+                  rowBaseClassName="grid min-w-[760px] w-full gap-3 px-4 py-4 text-left text-sm md:items-center"
+                />
+              </div>
             </article>
           </div>
         </section>

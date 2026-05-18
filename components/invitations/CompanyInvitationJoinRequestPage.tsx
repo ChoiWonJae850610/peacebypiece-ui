@@ -84,13 +84,22 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
           { signal: controller.signal },
         );
         const payload = (await response.json()) as VerifyInvitationPayload;
-        if (!response.ok || !payload.ok || !payload.isJoinable) {
+        if (!response.ok || !payload.ok) {
           setVerifyState("invalid");
           setMessage(readFriendlyError(payload.error ?? null));
           setInvitation(payload.invitation ?? null);
           return;
         }
+
         setInvitation(payload.invitation ?? null);
+
+        if (!payload.isJoinable) {
+          setVerifyState("invalid");
+          const status = payload.invitation?.status ?? null;
+          setMessage(status === "accepted" ? "이미 사용된 고객사 초대 링크예요." : readFriendlyError(payload.error ?? null));
+          return;
+        }
+
         setVerifyState("valid");
         setMessage(null);
       } catch (error) {
@@ -105,7 +114,12 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
     return () => controller.abort();
   }, [token]);
 
-  const recipientEmail = invitation?.recipientEmail?.trim() || "초대 링크 확인 완료";
+  const invitationStatusLabel =
+    verifyState === "valid"
+      ? "사용 가능한 초대 링크"
+      : verifyState === "invalid"
+        ? "초대 링크 확인 실패"
+        : "초대 링크 확인 중";
   const expiresAtLabel = formatDate(invitation?.expiresAt);
   const isJoinable = verifyState === "valid" && submitState !== "redirecting";
 
@@ -158,7 +172,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
             <div className="space-y-5">
               <div className="rounded-3xl bg-[#FFF4D8] px-5 py-4">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[#9C6424]">초대 상태</p>
-                <p className="mt-2 break-all text-base font-black text-[#2A2016]">{recipientEmail}</p>
+                <p className="mt-2 break-all text-base font-black text-[#2A2016]">{invitationStatusLabel}</p>
               </div>
 
               {verifyState === "loading" ? (

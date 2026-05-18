@@ -35,6 +35,7 @@ function normalizeEmail(email: string | null | undefined): string {
 function createInvitationRecord(
   draft: InvitationDraft,
   tokenHash: string,
+  inviteUrlPath: string,
 ): InvitationRecord {
   const now = new Date().toISOString();
 
@@ -42,12 +43,13 @@ function createInvitationRecord(
     id: randomUUID(),
     companyId: draft.companyId ?? null,
     companyName: null,
-    recipientEmail: normalizeEmail(draft.recipientEmail),
+    recipientEmail: draft.scope === "system_to_company_admin" ? null : normalizeEmail(draft.recipientEmail),
     recipientRole: draft.recipientRole,
     permissionPreset: draft.permissionPreset,
     scope: draft.scope,
     status: "pending",
     tokenHash,
+    inviteUrlPath,
     acceptedAt: null,
     revokedAt: null,
     expiresAt: draft.expiresAt || getDefaultInvitationExpiresAt(),
@@ -62,13 +64,14 @@ function createInvitationRecord(
 type InvitationDbRow = {
   id: string;
   company_id: string | null;
-  recipient_email: string;
+  recipient_email: string | null;
   company_name?: string | null;
   recipient_role: InvitationRecord["recipientRole"];
   permission_preset: InvitationRecord["permissionPreset"];
   scope: InvitationRecord["scope"];
   status: InvitationRecord["status"];
   token_hash: string;
+  invite_url_path: string | null;
   accepted_at: Date | string | null;
   revoked_at: Date | string | null;
   expires_at: Date | string;
@@ -95,6 +98,7 @@ function toInvitationRecord(row: InvitationDbRow): InvitationRecord {
     scope: row.scope,
     status: row.status,
     tokenHash: row.token_hash,
+    inviteUrlPath: row.invite_url_path,
     acceptedAt: toIsoString(row.accepted_at),
     revokedAt: toIsoString(row.revoked_at),
     expiresAt: toIsoString(row.expires_at) ?? new Date().toISOString(),
@@ -126,7 +130,7 @@ async function ensureSystemInvitationCreator(draft: InvitationDraft): Promise<vo
   );
 }
 
-async function createDbInvitation(draft: InvitationDraft, tokenHash: string): Promise<InvitationRecord> {
+async function createDbInvitation(draft: InvitationDraft, tokenHash: string, inviteUrlPath: string): Promise<InvitationRecord> {
   await ensureSystemInvitationCreator(draft);
 
   const result = await queryDb<InvitationDbRow>(
@@ -138,12 +142,13 @@ async function createDbInvitation(draft: InvitationDraft, tokenHash: string): Pr
         recipient_role,
         permission_preset,
         token_hash,
+        invite_url_path,
         status,
         expires_at,
         created_by_user_id,
         created_by_system_user_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9, $10)
       RETURNING
         id,
         company_id,
@@ -153,6 +158,7 @@ async function createDbInvitation(draft: InvitationDraft, tokenHash: string): Pr
         scope,
         status,
         token_hash,
+        invite_url_path,
         accepted_at,
         revoked_at,
         expires_at,
@@ -165,10 +171,11 @@ async function createDbInvitation(draft: InvitationDraft, tokenHash: string): Pr
     [
       draft.companyId ?? null,
       draft.scope,
-      normalizeEmail(draft.recipientEmail),
+      draft.scope === "system_to_company_admin" ? null : normalizeEmail(draft.recipientEmail),
       draft.recipientRole,
       draft.permissionPreset,
       tokenHash,
+      inviteUrlPath,
       draft.expiresAt || getDefaultInvitationExpiresAt(),
       draft.createdByUserId ?? null,
       draft.createdBySystemUserId ?? null,
@@ -196,6 +203,7 @@ async function listDbInvitations(companyId: string): Promise<InvitationRecord[]>
         scope,
         status,
         token_hash,
+        invite_url_path,
         accepted_at,
         revoked_at,
         expires_at,
@@ -218,6 +226,44 @@ async function listDbInvitations(companyId: string): Promise<InvitationRecord[]>
   return result.rows.map(toInvitationRecord);
 }
 
+
+async function listDbSystemCompanyAdminInvitations(): Promise<InvitationRecord[]> {
+  const result = await queryDb<InvitationDbRow>(
+    `
+      SELECT
+        id,
+        company_id,
+        recipient_email,
+        company_name,
+        recipient_role,
+        permission_preset,
+        scope,
+        status,
+        token_hash,
+        invite_url_path,
+        accepted_at,
+        revoked_at,
+        expires_at,
+        created_by_user_id,
+        created_by_system_user_id,
+        accepted_user_id,
+        created_at,
+        updated_at
+      FROM (
+        SELECT invitations.*, companies.name AS company_name
+          FROM invitations
+          LEFT JOIN companies ON companies.id = invitations.company_id
+      ) invitations
+      WHERE scope = 'system_to_company_admin'
+      ORDER BY created_at DESC
+      LIMIT 50
+    `,
+    [],
+  );
+
+  return result.rows.map(toInvitationRecord);
+}
+
 async function findDbInvitationByRawToken(rawToken: string): Promise<InvitationRecord | null> {
   const tokenHash = createInvitationTokenHash(rawToken);
   const result = await queryDb<InvitationDbRow>(
@@ -232,6 +278,7 @@ async function findDbInvitationByRawToken(rawToken: string): Promise<InvitationR
         scope,
         status,
         token_hash,
+        invite_url_path,
         accepted_at,
         revoked_at,
         expires_at,
@@ -270,6 +317,7 @@ async function revokeDbInvitation(invitationId: string): Promise<InvitationRecor
         scope,
         status,
         token_hash,
+        invite_url_path,
         accepted_at,
         revoked_at,
         expires_at,
@@ -295,9 +343,10 @@ export function createInvitationRepository(): InvitationRepository {
     async createInvitation(draft: InvitationDraft): Promise<InvitationCreateResult> {
       const rawToken = createRawInvitationToken();
       const tokenHash = createInvitationTokenHash(rawToken);
+      const inviteUrlPath = createInviteUrl(rawToken, draft.scope);
       const invitation = isDatabaseConfigured()
-        ? await createDbInvitation(draft, tokenHash)
-        : createInvitationRecord(draft, tokenHash);
+        ? await createDbInvitation(draft, tokenHash, inviteUrlPath)
+        : createInvitationRecord(draft, tokenHash, inviteUrlPath);
 
       if (!isDatabaseConfigured()) {
         inMemoryInvitations.unshift(invitation);
@@ -306,7 +355,7 @@ export function createInvitationRepository(): InvitationRepository {
       return {
         invitation,
         rawToken,
-        inviteUrl: createInviteUrl(rawToken, draft.scope),
+        inviteUrl: inviteUrlPath,
       };
     },
 
@@ -318,6 +367,17 @@ export function createInvitationRepository(): InvitationRepository {
       return inMemoryInvitations.filter(
         (invitation) => invitation.companyId === companyId,
       );
+    },
+
+    async listSystemCompanyAdminInvitations(): Promise<InvitationRecord[]> {
+      if (isDatabaseConfigured()) {
+        return listDbSystemCompanyAdminInvitations();
+      }
+
+      return inMemoryInvitations
+        .filter((invitation) => invitation.scope === "system_to_company_admin")
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 50);
     },
 
     async findInvitationByRawToken(rawToken: string): Promise<InvitationRecord | null> {

@@ -856,6 +856,7 @@ CREATE TABLE invitations (
   recipient_role text NOT NULL,
   permission_preset invitation_permission_preset NOT NULL DEFAULT 'viewer',
   token_hash text NOT NULL,
+  invite_url_path text,
   status invitation_status NOT NULL DEFAULT 'pending',
   expires_at timestamptz NOT NULL,
   accepted_at timestamptz,
@@ -871,6 +872,7 @@ CREATE TABLE invitations (
     (scope = 'company_to_member' AND recipient_email IS NOT NULL AND length(trim(recipient_email)) > 0)
   ),
   CONSTRAINT invitations_token_hash_not_empty CHECK (length(trim(token_hash)) > 0),
+  CONSTRAINT invitations_invite_url_path_check CHECK (invite_url_path IS NULL OR length(trim(invite_url_path)) > 0),
   CONSTRAINT invitations_expires_after_created CHECK (expires_at > created_at),
   CONSTRAINT invitations_acceptance_consistency CHECK (
     (status = 'accepted' AND accepted_at IS NOT NULL) OR (status <> 'accepted')

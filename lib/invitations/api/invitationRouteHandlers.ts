@@ -97,6 +97,21 @@ function toErrorResponse(error: unknown) {
 
 export async function handleListInvitations(request: Request) {
   try {
+    const url = new URL(request.url);
+    const requestedScope = url.searchParams.get("scope");
+
+    if (requestedScope === "system_to_company_admin") {
+      const systemScope = await requireSystemAdminScope();
+      if (!systemScope.ok) return systemScope.response;
+
+      const invitations = await invitationRepository.listSystemCompanyAdminInvitations();
+
+      return NextResponse.json({
+        ok: true,
+        invitations,
+      });
+    }
+
     const scope = await requireAdminMemberCompanyScope();
     if (!scope.ok) return scope.response;
 
@@ -187,6 +202,24 @@ export async function handleCreateInvitation(request: Request) {
       },
       { status: 201 },
     );
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+
+export async function handleRevokeInvitation(invitationId: string) {
+  try {
+    const systemScope = await requireSystemAdminScope();
+    if (!systemScope.ok) return systemScope.response;
+
+    const invitation = await invitationRepository.revokeInvitation(invitationId);
+    const { tokenHash: _tokenHash, ...publicInvitation } = invitation;
+
+    return NextResponse.json({
+      ok: true,
+      invitation: publicInvitation,
+    });
   } catch (error) {
     return toErrorResponse(error);
   }
