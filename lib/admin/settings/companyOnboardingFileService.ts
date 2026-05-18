@@ -66,15 +66,30 @@ async function uploadFileToR2(input: { storageKey: string; mimeType: string; fil
   }
 }
 
-async function deleteUploadedObjectQuietly(storageKey: string): Promise<void> {
+async function deleteUploadedObjectQuietly(input: { storageKey: string; reason: string }): Promise<void> {
   try {
-    await deleteR2ObjectViaWorker({ key: storageKey });
+    await deleteR2ObjectViaWorker({ key: input.storageKey });
+    deleteCachedR2UrlsByKey(input.storageKey);
   } catch (error) {
-    console.error("[COMPANY_ONBOARDING_FILE_ROLLBACK_DELETE_FAILED]", {
-      storageKey,
+    console.error("[COMPANY_ONBOARDING_FILE_R2_DELETE_FAILED]", {
+      storageKey: input.storageKey,
+      reason: input.reason,
       message: error instanceof Error ? error.message : String(error),
     });
   }
+}
+
+async function cleanupReplacedCompanyOnboardingFiles(
+  files: readonly CompanyOnboardingFileMetadata[],
+): Promise<void> {
+  await Promise.all(
+    files.map((file) =>
+      deleteUploadedObjectQuietly({
+        storageKey: file.storageKey,
+        reason: "replace",
+      }),
+    ),
+  );
 }
 
 export async function uploadCompanyOnboardingFile(
@@ -132,9 +147,10 @@ export async function uploadCompanyOnboardingFile(
 
     deleteCachedR2UrlsByKey(storageKey);
     replacedFiles.forEach((file) => deleteCachedR2UrlsByKey(file.storageKey));
+    await cleanupReplacedCompanyOnboardingFiles(replacedFiles);
     return metadata;
   } catch (error) {
-    await deleteUploadedObjectQuietly(storageKey);
+    await deleteUploadedObjectQuietly({ storageKey, reason: "metadata-save-failed" });
     throw new Error(error instanceof Error ? error.message : COMPANY_ONBOARDING_FILE_ERROR_CODES.metadataSaveFailed);
   }
 }

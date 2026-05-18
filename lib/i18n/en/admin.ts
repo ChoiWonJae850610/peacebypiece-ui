@@ -1866,8 +1866,11 @@ export const adminEn = {
       delete: "Delete",
       uploading: "Uploading file.",
       deleting: "Deleting file.",
+      uploadedAt: "Uploaded at",
+      confirmReplace: "Delete the current file and replace it with the new file?",
+      confirmDelete: "Delete the uploaded file?",
       saveBlocked: "You can save after file upload is complete.",
-      note: "Company logo and business registration files are optional. Incorrect files can be deleted or replaced before saving or approval.",
+      note: "Company logo and business registration files are optional. Incorrect files can be deleted or replaced before saving or approval. Replaced files are also cleaned up from R2.",
       logo: {
         label: "Company logo",
         description: "JPG, PNG, and WEBP files are supported. The maximum size is 5 MB.",

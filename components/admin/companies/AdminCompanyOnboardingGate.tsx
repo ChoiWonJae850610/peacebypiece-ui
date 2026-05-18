@@ -176,6 +176,13 @@ function formatFileSize(sizeBytes: number): string {
   return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
 }
 
+function formatFileCreatedAt(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString();
+}
+
 function TextInput({
   label,
   value,
@@ -221,6 +228,9 @@ function OnboardingFileField({
   deleteText,
   uploadingText,
   deletingText,
+  uploadedAtLabel,
+  confirmReplaceText,
+  confirmDeleteText,
   file,
   state,
   onUpload,
@@ -235,6 +245,9 @@ function OnboardingFileField({
   deleteText: string;
   uploadingText: string;
   deletingText: string;
+  uploadedAtLabel: string;
+  confirmReplaceText: string;
+  confirmDeleteText: string;
   file: CompanyOnboardingFileMetadata | null;
   state: OnboardingFileState;
   onUpload: (fileType: CompanyOnboardingFileType, file: File) => void;
@@ -242,11 +255,13 @@ function OnboardingFileField({
 }) {
   const config = COMPANY_ONBOARDING_FILE_FIELD_CONFIG[fileType];
   const isBusy = state.status === "uploading" || state.status === "deleting";
+  const uploadedAt = formatFileCreatedAt(file?.createdAt);
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0] ?? null;
     event.target.value = "";
     if (!selectedFile) return;
+    if (file && !window.confirm(confirmReplaceText)) return;
     onUpload(fileType, selectedFile);
   }
 
@@ -274,17 +289,22 @@ function OnboardingFileField({
         />
       </div>
 
-      <div className="flex flex-col gap-2 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs leading-5 text-[var(--pbp-text-muted)] sm:flex-row sm:items-center sm:justify-between">
-        <span className="font-semibold text-[var(--pbp-text-primary)]">
-          {state.status === "uploading" ? uploadingText : state.status === "deleting" ? deletingText : file ? file.originalName : emptyText}
-        </span>
-        {file ? <span>{formatFileSize(file.sizeBytes)}</span> : null}
+      <div className="grid gap-1 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-semibold text-[var(--pbp-text-primary)]">
+            {state.status === "uploading" ? uploadingText : state.status === "deleting" ? deletingText : file ? file.originalName : emptyText}
+          </span>
+          {file ? <span>{formatFileSize(file.sizeBytes)}</span> : null}
+        </div>
+        {file && uploadedAt ? <span>{uploadedAtLabel}: {uploadedAt}</span> : null}
       </div>
 
       {file ? (
         <button
           type="button"
-          onClick={() => onDelete(file)}
+          onClick={() => {
+            if (window.confirm(confirmDeleteText)) onDelete(file);
+          }}
           disabled={isBusy}
           className="justify-self-start text-xs font-bold text-rose-600 underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -643,6 +663,9 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                         deleteText={copy.fileUploads.delete}
                         uploadingText={copy.fileUploads.uploading}
                         deletingText={copy.fileUploads.deleting}
+                        uploadedAtLabel={copy.fileUploads.uploadedAt}
+                        confirmReplaceText={copy.fileUploads.confirmReplace}
+                        confirmDeleteText={copy.fileUploads.confirmDelete}
                         file={activeLogoFile}
                         state={fileStates.logo}
                         onUpload={(nextFileType, file) => void uploadFile(nextFileType, file)}
@@ -658,6 +681,9 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
                         deleteText={copy.fileUploads.delete}
                         uploadingText={copy.fileUploads.uploading}
                         deletingText={copy.fileUploads.deleting}
+                        uploadedAtLabel={copy.fileUploads.uploadedAt}
+                        confirmReplaceText={copy.fileUploads.confirmReplace}
+                        confirmDeleteText={copy.fileUploads.confirmDelete}
                         file={activeBusinessLicenseFile}
                         state={fileStates.business_license}
                         onUpload={(nextFileType, file) => void uploadFile(nextFileType, file)}

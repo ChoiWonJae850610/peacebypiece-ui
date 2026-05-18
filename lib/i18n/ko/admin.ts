@@ -1813,8 +1813,11 @@ export const adminKo = {
       delete: "삭제",
       uploading: "업로드 중입니다.",
       deleting: "삭제 중입니다.",
+      uploadedAt: "업로드일",
+      confirmReplace: "기존 파일을 삭제하고 새 파일로 교체할까요?",
+      confirmDelete: "업로드한 파일을 삭제할까요?",
       saveBlocked: "파일 업로드가 끝난 뒤 저장할 수 있습니다.",
-      note: "회사 로고와 사업자등록증은 선택 항목입니다. 저장 전 또는 승인 전 잘못 올린 파일은 삭제하거나 교체할 수 있습니다.",
+      note: "회사 로고와 사업자등록증은 선택 항목입니다. 저장 전 또는 승인 전 잘못 올린 파일은 삭제하거나 교체할 수 있습니다. 교체된 기존 파일은 R2에서도 정리됩니다.",
       logo: {
         label: "회사 로고",
         description: "JPG, PNG, WEBP 파일을 업로드할 수 있습니다. 최대 5MB까지 허용됩니다.",
