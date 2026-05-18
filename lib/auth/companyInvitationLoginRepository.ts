@@ -51,12 +51,6 @@ function buildDraftCompanyName(): string {
   return "회사 정보 입력 전";
 }
 
-function assertInvitationRecipientEmail(profile: GoogleUserProfile, recipientEmail: string): void {
-  if (normalizeEmail(profile.email) !== normalizeEmail(recipientEmail)) {
-    throw new Error("INVITATION_EMAIL_MISMATCH");
-  }
-}
-
 async function findExistingUser(client: DbTransactionClient, profile: GoogleUserProfile): Promise<UserRow | null> {
   const result = await client.query<UserRow>(
     `
@@ -216,60 +210,6 @@ async function insertCompanyAdminPermissions(
   }
 }
 
-async function createPendingCompanyJoinRequest(
-  client: DbTransactionClient,
-  input: {
-    invitationId: string;
-    companyId: string;
-    userId: string;
-    profile: GoogleUserProfile;
-  },
-): Promise<void> {
-  const existing = await client.query<{ id: string }>(
-    `
-      SELECT id
-        FROM join_requests
-       WHERE invitation_id = $1::text
-         AND lower(applicant_email) = lower($2::text)
-         AND status = 'pending'
-       LIMIT 1
-    `,
-    [input.invitationId, normalizeEmail(input.profile.email)],
-  );
-
-  if (existing.rows[0]) return;
-
-  await client.query(
-    `
-      INSERT INTO join_requests (
-        invitation_id,
-        user_id,
-        applicant_email,
-        request_type,
-        requested_company_name,
-        business_name,
-        applicant_name,
-        applicant_phone,
-        google_sub,
-        google_picture_url,
-        request_memo,
-        status,
-        created_company_id
-      )
-      VALUES ($1::text, $2::text, $3::text, 'company', NULL, NULL, $4::text, NULL, $5::text, $6::text, NULL, 'pending', $7::text)
-    `,
-    [
-      input.invitationId,
-      input.userId,
-      normalizeEmail(input.profile.email),
-      input.profile.name,
-      input.profile.sub,
-      normalizeText(input.profile.picture),
-      input.companyId,
-    ],
-  );
-}
-
 export async function completeCompanyAdminInvitationLogin(
   profile: GoogleUserProfile,
   rawToken: string,
@@ -283,8 +223,6 @@ export async function completeCompanyAdminInvitationLogin(
   if (invitation.scope !== "system_to_company_admin") throw new Error("INVITATION_SCOPE_MISMATCH");
   if (invitation.status !== "pending" && invitation.status !== "active") throw new Error("INVITATION_NOT_ACTIVE");
   if (new Date(invitation.expiresAt).getTime() <= Date.now()) throw new Error("INVITATION_EXPIRED");
-  assertInvitationRecipientEmail(profile, invitation.recipientEmail);
-
   return withDbTransaction(async (client) => {
     const company = await createProfileRequiredCompany(client, profile);
     const user = await createCompanyAdminUser(client, { companyId: company.id, profile });
@@ -308,13 +246,6 @@ export async function completeCompanyAdminInvitationLogin(
       `,
       [company.id, user.id],
     );
-
-    await createPendingCompanyJoinRequest(client, {
-      invitationId: invitation.id,
-      companyId: company.id,
-      userId: user.id,
-      profile,
-    });
 
     await client.query(
       `

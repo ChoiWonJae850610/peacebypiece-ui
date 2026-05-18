@@ -78,7 +78,7 @@ export function evaluateInvitationPolicy(
 ): InvitationPolicyResult {
   const reasons: string[] = [];
 
-  if (!hasEmailValue(input.recipientEmail)) {
+  if (input.scope === "company_to_member" && !hasEmailValue(input.recipientEmail)) {
     reasons.push("recipient_email_required");
   }
 

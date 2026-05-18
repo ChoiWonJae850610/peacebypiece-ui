@@ -128,7 +128,6 @@ export default function SystemCompanyApprovalConsole() {
   const [reviewActionMessage, setReviewActionMessage] = useState<string | null>(null);
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
-  const [systemInviteRecipientEmail, setSystemInviteRecipientEmail] = useState("");
   const [systemInviteExpiresInDays, setSystemInviteExpiresInDays] = useState(7);
   const [createdSystemInvite, setCreatedSystemInvite] = useState<CreatedSystemInvitationResult | null>(null);
   const [systemInviteError, setSystemInviteError] = useState<string | null>(null);
@@ -138,7 +137,7 @@ export default function SystemCompanyApprovalConsole() {
     () => joinRequestRecords.map(toCompanyJoinRequestRow),
     [joinRequestRecords],
   );
-  const canCreateSystemInvite = systemInviteRecipientEmail.trim().length > 0 && !isCreatingSystemInvite;
+  const canCreateSystemInvite = !isCreatingSystemInvite;
 
   const joinRequestTableColumns = useMemo<AdminTableColumn<CompanyJoinRequestRow>[]>(
     () => [
@@ -238,7 +237,6 @@ export default function SystemCompanyApprovalConsole() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "system_to_company_admin",
-          recipientEmail: systemInviteRecipientEmail.trim(),
           recipientRole: "admin",
           permissionPreset: "company_admin",
           expiresAt: getDefaultInvitationExpiresAt(systemInviteExpiresInDays),
@@ -279,7 +277,7 @@ export default function SystemCompanyApprovalConsole() {
 
     try {
       const response = await fetch(
-        "/api/invitations/join-requests?requestType=company&status=pending&invitationScope=system_to_company_admin&limit=50",
+        "/api/invitations/join-requests?requestType=company&status=pending&invitationScope=system_to_company_admin&companyOnboardingStatus=approval_pending&limit=50",
         { cache: "no-store" },
       );
       const payload = (await response.json()) as JoinRequestListResponse;
@@ -388,28 +386,12 @@ export default function SystemCompanyApprovalConsole() {
 
           <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
             <article className={SYSTEM_MUTED_CARD_CLASS}>
-              <div className="grid gap-4 md:grid-cols-[0.8fr_1.3fr_0.7fr]">
-                <label className="grid gap-2">
-                  <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 방식</span>
-                  <select
-                    className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
-                    defaultValue="email"
-                    disabled
-                  >
-                    <option value="email">이메일</option>
-                    <option value="phone">휴대폰 문자 준비 중</option>
-                  </select>
-                </label>
-                <label className="grid gap-2">
-                  <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 이메일</span>
-                  <input
-                    value={systemInviteRecipientEmail}
-                    onChange={(event) => setSystemInviteRecipientEmail(event.target.value)}
-                    placeholder="customer-admin@example.com"
-                    type="email"
-                    className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)] outline-none focus:border-[var(--pbp-accent)]"
-                  />
-                </label>
+              <div className="grid gap-4 md:grid-cols-[1fr_0.7fr]">
+                <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3">
+                  <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 링크 생성 방식</p>
+                  <p className="mt-1 text-sm font-medium text-[var(--pbp-text-primary)]">대상 이메일이나 휴대폰 번호 없이 독립 초대 링크를 생성합니다.</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">이메일·휴대폰·카카오톡 전달은 후속 보내기 기능에서 링크 전달 수단으로만 사용합니다.</p>
+                </div>
                 <label className="grid gap-2">
                   <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 만료</span>
                   <select
@@ -430,7 +412,7 @@ export default function SystemCompanyApprovalConsole() {
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <p className={SYSTEM_SMALL_TEXT_CLASS}>
-                  생성된 링크는 고객사 관리자 후보에게 직접 전달합니다. 자동 이메일/SMS 발송은 후속 연결입니다.
+                  생성된 링크는 복사해서 고객사 관리자 후보에게 직접 전달합니다. 이메일/SMS/카카오톡 전송은 후속 기능에서 연결합니다.
                 </p>
                 <AdminButton
                   onClick={() => void createSystemCompanyAdminInvite()}
@@ -469,7 +451,7 @@ export default function SystemCompanyApprovalConsole() {
             <div>
               <h2 className={SYSTEM_SECTION_TITLE_CLASS}>가입 신청 검토</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
-                고객사 관리자가 초대 링크로 로그인한 뒤 회사 정보를 입력하면 이 목록에 승인 대기로 표시됩니다.
+                고객사 관리자가 초대 링크로 로그인한 뒤 회사 정보를 입력하고 승인 요청을 눌러야 이 목록에 표시됩니다.
               </p>
             </div>
             <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">

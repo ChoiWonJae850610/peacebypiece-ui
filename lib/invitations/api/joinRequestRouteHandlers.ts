@@ -202,6 +202,7 @@ export async function handleListJoinRequests(request: Request) {
       status: readJoinRequestStatus(url.searchParams.get("status")),
       invitationScope,
       invitationCompanyId: companyScope?.ok ? companyScope.companyScope.companyId : null,
+      createdCompanyOnboardingStatus: url.searchParams.get("companyOnboardingStatus"),
       limit: readLimit(url.searchParams.get("limit")),
     });
 

@@ -58,7 +58,7 @@ function toInvitationDraft(
       ? sessionCompanyScope?.companyId ?? null
       : body.companyId ?? inviterCompanyId ?? null,
     inviterCompanyId,
-    recipientEmail: body.recipientEmail ?? "",
+    recipientEmail: scope === "system_to_company_admin" ? null : body.recipientEmail ?? "",
     recipientRole,
     permissionPreset,
     scope,

@@ -15,7 +15,7 @@ export type {
 export interface InvitationDraft {
   companyId: string | null;
   inviterCompanyId?: string | null;
-  recipientEmail: string;
+  recipientEmail: string | null;
   recipientRole: InvitationRecipientRole;
   permissionPreset: InvitationPermissionPreset;
   scope: InvitationScope;
@@ -28,7 +28,7 @@ export interface InvitationRecord {
   id: string;
   companyId: string | null;
   companyName?: string | null;
-  recipientEmail: string;
+  recipientEmail: string | null;
   recipientRole: InvitationRecipientRole;
   permissionPreset: InvitationPermissionPreset;
   scope: InvitationScope;

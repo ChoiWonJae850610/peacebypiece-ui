@@ -105,7 +105,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
     return () => controller.abort();
   }, [token]);
 
-  const recipientEmail = invitation?.recipientEmail ?? "초대받은 Google 계정";
+  const recipientEmail = invitation?.recipientEmail?.trim() || "초대 링크 확인 완료";
   const expiresAtLabel = formatDate(invitation?.expiresAt);
   const isJoinable = verifyState === "valid" && submitState !== "redirecting";
 
@@ -149,7 +149,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
             <div className="space-y-5 text-2xl font-black leading-tight tracking-[-0.04em] text-[#4A321C] sm:text-3xl lg:text-4xl">
               <p>Google 계정으로 먼저 본인 확인을 진행합니다.</p>
               <p className="max-w-2xl text-base font-bold leading-7 tracking-normal text-[#765332]">
-                로그인 후 WAFL 관리자 화면에서 회사명, 주소, 담당자 연락처, 신청 요금제를 입력하면 시스템관리자 승인 대기 상태로 전환됩니다.
+                로그인 후 WAFL 관리자 화면에서 회사명, 주소, 사업자등록번호, 담당자 연락처, 신청 요금제를 입력하고 승인 요청을 누르면 시스템관리자 검토 목록에 표시됩니다.
               </p>
             </div>
           </article>
@@ -157,7 +157,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
           <aside className="w-full rounded-[2rem] border border-[#E1AF68]/60 bg-[#FFFDF7]/75 p-5 shadow-[0_24px_70px_rgba(89,53,18,0.14)] backdrop-blur sm:p-6 lg:p-7">
             <div className="space-y-5">
               <div className="rounded-3xl bg-[#FFF4D8] px-5 py-4">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#9C6424]">초대 대상</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#9C6424]">초대 상태</p>
                 <p className="mt-2 break-all text-base font-black text-[#2A2016]">{recipientEmail}</p>
               </div>
 
@@ -184,7 +184,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
               </button>
 
               <p className="text-xs font-semibold leading-5 text-[#8B6A45]">
-                초대 이메일과 Google 로그인 이메일이 일치해야 합니다. 회사 정보 입력은 로그인 후 관리자 화면에서 진행합니다.
+                이 링크는 고객사 관리자 등록을 시작하는 초대 링크입니다. Google 로그인 이메일 일치 여부는 검사하지 않으며, 회사 정보 입력은 로그인 후 관리자 화면에서 진행합니다.
               </p>
             </div>
           </aside>

@@ -22,7 +22,7 @@ export interface JoinRequestDraft {
 export interface JoinRequestInvitationSummary {
   id: string;
   companyId: string | null;
-  recipientEmail: string;
+  recipientEmail: string | null;
   recipientRole: InvitationRecord["recipientRole"];
   permissionPreset: InvitationRecord["permissionPreset"];
   scope: InvitationScope;
@@ -67,6 +67,7 @@ export interface JoinRequestLookupInput {
   status?: JoinRequestStatus | null;
   invitationScope?: InvitationScope | null;
   invitationCompanyId?: string | null;
+  createdCompanyOnboardingStatus?: string | null;
   limit?: number | null;
 }
 

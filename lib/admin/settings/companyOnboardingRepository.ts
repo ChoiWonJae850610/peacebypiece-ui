@@ -55,8 +55,11 @@ function isProfileComplete(row: CompanyOnboardingRow): boolean {
   return Boolean(
     normalizeText(row.company_name) &&
       normalizeText(row.business_name) &&
+      normalizeText(row.business_registration_number) &&
       normalizeText(row.postal_code) &&
       normalizeText(row.road_address) &&
+      normalizeText(row.address_detail) &&
+      normalizeText(row.requested_plan_code) &&
       normalizeText(row.admin_name) &&
       normalizePhoneNumber(row.admin_phone ?? "").length >= 10,
   );
@@ -169,7 +172,17 @@ export async function updateCompanyOnboardingProfile(
   const adminName = normalizeNullableText(input.adminName);
   const adminPhone = normalizePhoneNumber(String(input.adminPhone ?? ""));
 
-  if (!companyName || !businessName || !postalCode || !roadAddress || !adminName || adminPhone.length < 10) {
+  if (
+    !companyName ||
+    !businessName ||
+    !businessRegistrationNumber ||
+    !postalCode ||
+    !roadAddress ||
+    !addressDetail ||
+    !requestedPlanCode ||
+    !adminName ||
+    adminPhone.length < 10
+  ) {
     throw new Error("COMPANY_ONBOARDING_REQUIRED_FIELDS");
   }
 
@@ -231,39 +244,110 @@ export async function updateCompanyOnboardingProfile(
     [session.companyId, adminName, session.userId],
   );
 
-  await queryDb(
+  const requestMemo = buildCompanyOnboardingMemo({
+    companyEnglishName,
+    logoUrl,
+    postalCode,
+    roadAddress,
+    jibunAddress,
+    addressDetail,
+    addressExtra,
+    requestedPlanCode,
+  });
+
+  const invitationResult = await queryDb<{ id: string }>(
+    `
+      SELECT id
+        FROM invitations
+       WHERE scope = 'system_to_company_admin'
+         AND accepted_user_id = $1::text
+       ORDER BY accepted_at DESC NULLS LAST, created_at DESC
+       LIMIT 1
+    `,
+    [session.userId],
+  );
+  const invitationId = invitationResult.rows[0]?.id ?? null;
+
+  const userResult = await queryDb<{ email: string | null; google_sub: string | null; google_picture_url: string | null }>(
+    `
+      SELECT email, google_sub, google_picture_url
+        FROM users
+       WHERE id = $1::text
+       LIMIT 1
+    `,
+    [session.userId],
+  );
+  const user = userResult.rows[0] ?? null;
+  const applicantEmail = normalizeNullableText(user?.email) ?? session.email ?? `${session.userId}@pending.local`;
+
+  const updatedJoinRequest = await queryDb(
     `
       UPDATE join_requests
-         SET requested_company_name = $2::text,
-             business_name = $3::text,
-             applicant_name = $4::text,
-             applicant_phone = $5::text,
-             request_memo = $6::text,
+         SET invitation_id = COALESCE(invitation_id, $2::text),
+             applicant_email = $3::text,
+             requested_company_name = $4::text,
+             business_name = $5::text,
+             applicant_name = $6::text,
+             applicant_phone = $7::text,
+             google_sub = $8::text,
+             google_picture_url = $9::text,
+             request_memo = $10::text,
              updated_at = now()
        WHERE request_type = 'company'
          AND status = 'pending'
-         AND user_id = $7::text
+         AND user_id = $11::text
          AND created_company_id = $1::text
     `,
     [
       session.companyId,
+      invitationId,
+      applicantEmail,
       companyName,
       businessName,
       adminName,
       adminPhone,
-      buildCompanyOnboardingMemo({
-        companyEnglishName,
-        logoUrl,
-        postalCode,
-        roadAddress,
-        jibunAddress,
-        addressDetail,
-        addressExtra,
-        requestedPlanCode,
-      }),
+      normalizeNullableText(user?.google_sub),
+      normalizeNullableText(user?.google_picture_url),
+      requestMemo,
       session.userId,
     ],
   );
+
+  if (updatedJoinRequest.rowCount === 0) {
+    await queryDb(
+      `
+        INSERT INTO join_requests (
+          invitation_id,
+          user_id,
+          applicant_email,
+          request_type,
+          requested_company_name,
+          business_name,
+          applicant_name,
+          applicant_phone,
+          google_sub,
+          google_picture_url,
+          request_memo,
+          status,
+          created_company_id
+        )
+        VALUES ($1::text, $2::text, $3::text, 'company', $4::text, $5::text, $6::text, $7::text, $8::text, $9::text, $10::text, 'pending', $11::text)
+      `,
+      [
+        invitationId,
+        session.userId,
+        applicantEmail,
+        companyName,
+        businessName,
+        adminName,
+        adminPhone,
+        normalizeNullableText(user?.google_sub),
+        normalizeNullableText(user?.google_picture_url),
+        requestMemo,
+        session.companyId,
+      ],
+    );
+  }
 
   return getCompanyOnboardingProfile(session);
 }

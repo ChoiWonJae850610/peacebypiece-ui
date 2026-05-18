@@ -28,8 +28,8 @@ export function createInviteUrl(rawToken: string, scope: InvitationDraft["scope"
   return `/invite/company/${rawToken}`;
 }
 
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
+function normalizeEmail(email: string | null | undefined): string {
+  return String(email ?? "").trim().toLowerCase();
 }
 
 function createInvitationRecord(

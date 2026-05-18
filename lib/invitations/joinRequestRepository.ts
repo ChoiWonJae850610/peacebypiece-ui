@@ -315,6 +315,7 @@ function filterInMemoryJoinRequests(input: JoinRequestLookupInput): JoinRequestR
       if (input.status && item.status !== input.status) return false;
       if (input.invitationScope && item.invitation?.scope !== input.invitationScope) return false;
       if (input.invitationCompanyId && item.invitation?.companyId !== input.invitationCompanyId) return false;
+      // In-memory mode does not carry company onboarding rows; keep only DB-backed filtering for this field.
       return true;
     })
     .slice(0, limit);
@@ -361,6 +362,11 @@ async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRe
     conditions.push(`invitations.company_id = $${values.length}`);
   }
 
+  if (input.createdCompanyOnboardingStatus?.trim()) {
+    values.push(input.createdCompanyOnboardingStatus.trim());
+    conditions.push(`created_companies.onboarding_status = $${values.length}`);
+  }
+
   values.push(normalizeLookupLimit(input.limit));
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -397,6 +403,7 @@ async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRe
         invitations.expires_at AS invitation_expires_at
       FROM join_requests
       LEFT JOIN invitations ON invitations.id = join_requests.invitation_id
+      LEFT JOIN companies created_companies ON created_companies.id = join_requests.created_company_id
       ${whereClause}
       ORDER BY join_requests.created_at DESC
       LIMIT $${values.length}

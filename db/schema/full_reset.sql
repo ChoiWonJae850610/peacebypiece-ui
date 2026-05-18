@@ -843,7 +843,7 @@ CREATE TABLE invitations (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   company_id text REFERENCES companies(id) ON DELETE CASCADE,
   scope invitation_scope NOT NULL,
-  recipient_email text NOT NULL,
+  recipient_email text,
   recipient_role text NOT NULL,
   permission_preset invitation_permission_preset NOT NULL DEFAULT 'viewer',
   token_hash text NOT NULL,
@@ -856,7 +856,11 @@ CREATE TABLE invitations (
   accepted_user_id text REFERENCES users(id),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT invitations_recipient_email_not_empty CHECK (length(trim(recipient_email)) > 0),
+  CONSTRAINT invitations_recipient_email_scope_check CHECK (
+    (scope = 'system_to_company_admin' AND (recipient_email IS NULL OR length(trim(recipient_email)) >= 0))
+    OR
+    (scope = 'company_to_member' AND recipient_email IS NOT NULL AND length(trim(recipient_email)) > 0)
+  ),
   CONSTRAINT invitations_token_hash_not_empty CHECK (length(trim(token_hash)) > 0),
   CONSTRAINT invitations_expires_after_created CHECK (expires_at > created_at),
   CONSTRAINT invitations_acceptance_consistency CHECK (
