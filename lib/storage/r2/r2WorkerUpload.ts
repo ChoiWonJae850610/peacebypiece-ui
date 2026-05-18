@@ -1,5 +1,6 @@
 import { createHmac } from "crypto";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import { isSupportedCompanyOnboardingFileStorageKey } from "@/lib/admin/settings/companyOnboardingFilePolicy";
 
 export type R2WorkerUploadConfig = {
   uploadUrl: string;
@@ -56,7 +57,10 @@ function normalizeBaseUrl(value: string): string {
 
 function assertSafeWorkerStorageKey(key: string): string {
   const value = key.trim().replace(/^\/+/, "");
-  if (!isSupportedWorkOrderAttachmentStorageKey(value) || !value.startsWith("workorders/") || value.includes("..")) {
+  const isSupportedWorkOrderKey = isSupportedWorkOrderAttachmentStorageKey(value) && value.startsWith("workorders/");
+  const isSupportedCompanyOnboardingKey = isSupportedCompanyOnboardingFileStorageKey(value) && value.startsWith("companies/");
+
+  if ((!isSupportedWorkOrderKey && !isSupportedCompanyOnboardingKey) || value.includes("..")) {
     throw new Error("R2_WORKER_INVALID_STORAGE_KEY");
   }
   return value;

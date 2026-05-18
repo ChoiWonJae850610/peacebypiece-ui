@@ -123,3 +123,63 @@ export async function listActiveCompanyOnboardingFileMetadata(input: {
 
   return result.rows.map(mapRow);
 }
+
+export async function getActiveCompanyOnboardingFileMetadata(input: {
+  companyId: string;
+  fileId: string;
+}): Promise<CompanyOnboardingFileMetadata | null> {
+  const result = await queryDb<CompanyOnboardingFileRow>(
+    `
+      SELECT
+        id,
+        company_id,
+        file_type,
+        original_name,
+        storage_key,
+        mime_type,
+        size_bytes,
+        uploaded_by_user_id,
+        created_at,
+        deleted_at
+      FROM company_onboarding_files
+      WHERE company_id = $1::text
+        AND id = $2::text
+        AND deleted_at IS NULL
+      LIMIT 1
+    `,
+    [input.companyId, input.fileId],
+  );
+
+  const row = result.rows[0];
+  return row ? mapRow(row) : null;
+}
+
+export async function softDeleteCompanyOnboardingFileMetadata(input: {
+  companyId: string;
+  fileId: string;
+}): Promise<CompanyOnboardingFileMetadata | null> {
+  const result = await queryDb<CompanyOnboardingFileRow>(
+    `
+      UPDATE company_onboarding_files
+         SET deleted_at = now()
+       WHERE company_id = $1::text
+         AND id = $2::text
+         AND deleted_at IS NULL
+      RETURNING
+        id,
+        company_id,
+        file_type,
+        original_name,
+        storage_key,
+        mime_type,
+        size_bytes,
+        uploaded_by_user_id,
+        created_at,
+        deleted_at
+    `,
+    [input.companyId, input.fileId],
+  );
+
+  const row = result.rows[0];
+  return row ? mapRow(row) : null;
+}

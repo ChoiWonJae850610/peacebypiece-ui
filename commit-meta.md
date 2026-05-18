@@ -1,24 +1,24 @@
 Version :
-0.13.61
+0.13.62
 
 Summary :
-고객사 온보딩 파일 metadata 구조와 필수값 오류 문구 보정
+고객사 온보딩 파일 업로드 API 추가
 
 Description :
-고객사 온보딩 로고와 사업자등록증 업로드를 위한 DB metadata 테이블, migration, R2 storage key 정책, 파일 mime/size 정책, metadata repository를 추가했다. 온보딩 모달에서 사업자등록번호와 상세주소 필수 표시 및 클라이언트 검증 누락을 보정하고, COMPANY_ONBOARDING_REQUIRED_FIELDS 코드가 화면에 그대로 노출되지 않도록 i18n 오류 문구 매핑을 추가했다.
+고객사 온보딩 로고와 사업자등록증 파일을 Worker 기반 R2 업로드로 저장하고 company_onboarding_files metadata를 기록하는 업로드 API를 추가했다. 업로드 파일 정책과 storage key 검증을 보강하고, 승인 전 파일 삭제 API와 관련 i18n 문구를 추가했다.
 
 수정 파일 목록 :
-- components/admin/companies/AdminCompanyOnboardingGate.tsx
-- db/schema/full_reset.sql
-- lib/admin/settings/companyTypes.ts
-- lib/constants/app.ts
-- lib/i18n/en/admin.ts
-- lib/i18n/ko/admin.ts
-
-추가 파일 목록 :
-- db/migrations/patch_0_13_61_company_onboarding_files.sql
 - lib/admin/settings/companyOnboardingFilePolicy.ts
 - lib/admin/settings/companyOnboardingFileRepository.ts
+- lib/storage/r2/r2WorkerUpload.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
+- lib/constants/app.ts
+
+추가 파일 목록 :
+- app/api/admin/companies/onboarding/files/upload/route.ts
+- app/api/admin/companies/onboarding/files/delete/route.ts
+- lib/admin/settings/companyOnboardingFileService.ts
 
 삭제 파일 목록 :
 없음
