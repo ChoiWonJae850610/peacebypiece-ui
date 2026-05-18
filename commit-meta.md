@@ -1,18 +1,23 @@
 Version :
-0.13.85
+0.13.86
 
 Summary :
-고객사 관리 목록 필터와 상세 처리 UX 정리
+DB full reset 기준과 누적 patch SQL 정리
 
 Description :
-시스템관리자 고객사 관리 목록에 전체, 승인 대기, 승인됨, 거절됨, 재입력 필요, 이용제한 필터를 추가했다. 선택한 필터의 표시 건수와 설명을 함께 보여주고, 고객사 행 클릭으로 상세 모달을 열 수 있게 정리했다. 상세 모달 하단에서도 승인, 거절, 재입력 요청 액션을 처리할 수 있게 보완했다. APP_VERSION을 0.13.85로 올렸다.
+0.13.58부터 0.13.70까지의 고객사 초대, 체험 상태, 초대 링크 목록, 온보딩 파일, 거절 상태 관련 patch SQL이 full_reset.sql에 이미 반영되어 있음을 기준으로 개별 migration 파일을 삭제 대상으로 정리했다. full_reset smoke test에는 최근 온보딩/초대/체험 상태 구조의 테이블, 컬럼, 인덱스, seed 검증을 추가했다.
 
 수정 파일 목록 :
-- components/system/companies/SystemCompanyApprovalConsole.tsx
+- db/schema/full_reset.sql
+- db/schema/full_reset_smoke_test.sql
 - lib/constants/app.ts
 
 추가 파일 목록 :
 없음
 
 삭제 파일 목록 :
-없음
+- db/migrations/patch_0_13_58_company_invitation_independent_token.sql
+- db/migrations/patch_0_13_59_company_trial_period.sql
+- db/migrations/patch_0_13_60_invitation_link_list.sql
+- db/migrations/patch_0_13_61_company_onboarding_files.sql
+- db/migrations/patch_0_13_70_company_rejected_status.sql

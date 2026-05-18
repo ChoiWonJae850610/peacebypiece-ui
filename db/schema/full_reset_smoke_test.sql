@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.10.79
+-- Version: 0.13.86
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -26,6 +26,7 @@ BEGIN
       ('companies', to_regclass('public.companies')),
       ('users', to_regclass('public.users')),
       ('company_users', to_regclass('public.company_users')),
+      ('company_onboarding_files', to_regclass('public.company_onboarding_files')),
       ('role_catalog', to_regclass('public.role_catalog')),
       ('permission_catalog', to_regclass('public.permission_catalog')),
       ('role_permissions', to_regclass('public.role_permissions')),
@@ -152,6 +153,19 @@ BEGIN
       ('users', 'status'),
       ('companies', 'plan_code'),
       ('companies', 'status'),
+      ('companies', 'requested_plan_code'),
+      ('companies', 'onboarding_status'),
+      ('companies', 'subscription_status'),
+      ('companies', 'trial_started_at'),
+      ('companies', 'trial_ends_at'),
+      ('invitations', 'recipient_email'),
+      ('invitations', 'invite_url_path'),
+      ('company_onboarding_files', 'company_id'),
+      ('company_onboarding_files', 'file_type'),
+      ('company_onboarding_files', 'original_name'),
+      ('company_onboarding_files', 'storage_key'),
+      ('company_onboarding_files', 'mime_type'),
+      ('company_onboarding_files', 'size_bytes'),
       ('permission_catalog', 'permission_group'),
       ('permission_catalog', 'label_key'),
       ('permission_catalog', 'description_key'),
@@ -387,7 +401,9 @@ BEGIN
       ('company_enabled_process_standards_company_idx'),
       ('system_product_type_templates_active_idx'),
       ('system_product_type_template_categories_template_idx'),
-      ('join_requests_pending_invitation_email_unique')
+      ('join_requests_pending_invitation_email_unique'),
+      ('company_onboarding_files_company_type_active_idx'),
+      ('company_onboarding_files_storage_key_unique')
   ) AS required_indexes(index_name)
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 
@@ -463,6 +479,91 @@ BEGIN
 
   IF join_request_user_nullable <> 'YES' THEN
     RAISE EXCEPTION 'join_requests.user_id must be nullable until OAuth user mapping is connected';
+  END IF;
+END $$;
+
+
+DO $$
+DECLARE
+  rejected_status_allowed boolean;
+  trial_status_allowed boolean;
+  trial_plan_exists boolean;
+  invitation_url_path_exists boolean;
+  company_onboarding_file_type_valid boolean;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'companies'
+      AND cc.constraint_name = 'companies_onboarding_status_check'
+      AND cc.check_clause LIKE '%rejected%'
+  ) INTO rejected_status_allowed;
+
+  IF NOT rejected_status_allowed THEN
+    RAISE EXCEPTION 'companies_onboarding_status_check must allow rejected';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'companies'
+      AND cc.constraint_name = 'companies_subscription_status_check'
+      AND cc.check_clause LIKE '%trial_expired%'
+      AND cc.check_clause LIKE '%past_due%'
+      AND cc.check_clause LIKE '%canceled%'
+  ) INTO trial_status_allowed;
+
+  IF NOT trial_status_allowed THEN
+    RAISE EXCEPTION 'companies_subscription_status_check must allow current subscription statuses';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM plans
+    WHERE id = 'plan-trial'
+      AND code = 'trial'
+      AND status = 'active'
+  ) INTO trial_plan_exists;
+
+  IF NOT trial_plan_exists THEN
+    RAISE EXCEPTION 'trial plan seed missing';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = 'invitations'
+      AND column_name = 'invite_url_path'
+  ) INTO invitation_url_path_exists;
+
+  IF NOT invitation_url_path_exists THEN
+    RAISE EXCEPTION 'invitations.invite_url_path column missing';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'company_onboarding_files'
+      AND cc.constraint_name = 'company_onboarding_files_type_check'
+      AND cc.check_clause LIKE '%business_license%'
+      AND cc.check_clause LIKE '%logo%'
+  ) INTO company_onboarding_file_type_valid;
+
+  IF NOT company_onboarding_file_type_valid THEN
+    RAISE EXCEPTION 'company_onboarding_files_type_check must allow logo and business_license';
   END IF;
 END $$;
 
