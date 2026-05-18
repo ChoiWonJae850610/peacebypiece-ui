@@ -11,8 +11,9 @@ import {
   buildMemberRejectedAuditLog,
 } from "@/lib/system/audit/writeActions";
 import { invitationRepository } from "../invitationRepository";
+import { listActiveCompanyOnboardingFileMetadataByCompanyIds } from "@/lib/admin/settings/companyOnboardingFileRepository";
 import type { InvitationScope } from "../invitationTypes";
-import type { JoinRequestDraft, JoinRequestStatus, JoinRequestType } from "../joinRequestTypes";
+import type { JoinRequestDraft, JoinRequestRecord, JoinRequestStatus, JoinRequestType } from "../joinRequestTypes";
 import {
   isMemberPermissionCode,
   type MemberPermissionCode,
@@ -97,6 +98,36 @@ function toErrorResponse(error: unknown) {
     },
     { status },
   );
+}
+
+async function attachCompanyOnboardingFilesToJoinRequests(
+  joinRequests: readonly JoinRequestRecord[],
+): Promise<JoinRequestRecord[]> {
+  const companyIds = Array.from(
+    new Set(
+      joinRequests
+        .map((joinRequest) => joinRequest.createdCompanyId?.trim() ?? "")
+        .filter(Boolean),
+    ),
+  );
+
+  if (companyIds.length === 0) return [...joinRequests];
+
+  const files = await listActiveCompanyOnboardingFileMetadataByCompanyIds(companyIds);
+  const filesByCompanyId = new Map<string, typeof files>();
+
+  for (const file of files) {
+    const current = filesByCompanyId.get(file.companyId) ?? [];
+    current.push(file);
+    filesByCompanyId.set(file.companyId, current);
+  }
+
+  return joinRequests.map((joinRequest) => ({
+    ...joinRequest,
+    companyOnboardingFiles: joinRequest.createdCompanyId
+      ? filesByCompanyId.get(joinRequest.createdCompanyId) ?? []
+      : [],
+  }));
 }
 
 function readExpectedRequestType(value: string | null): JoinRequestType | null {
@@ -206,10 +237,17 @@ export async function handleListJoinRequests(request: Request) {
       limit: readLimit(url.searchParams.get("limit")),
     });
 
+    const joinRequests = requestType === "company"
+      ? await attachCompanyOnboardingFilesToJoinRequests(result.joinRequests)
+      : result.joinRequests;
+    const [primaryJoinRequest = null] = result.primaryJoinRequest
+      ? await attachCompanyOnboardingFilesToJoinRequests([result.primaryJoinRequest])
+      : [null];
+
     return NextResponse.json({
       ok: true,
-      joinRequests: result.joinRequests,
-      primaryJoinRequest: result.primaryJoinRequest,
+      joinRequests,
+      primaryJoinRequest,
       lookupPolicy: "requestId is preferred; applicantEmail lookup is for OAuth-before testing only",
     });
   } catch (error) {

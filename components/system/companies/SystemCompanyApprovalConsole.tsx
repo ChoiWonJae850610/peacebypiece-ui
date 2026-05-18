@@ -23,6 +23,7 @@ import {
 } from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import type { CompanyOnboardingFileMetadata, CompanyOnboardingFileType } from "@/lib/admin/settings/companyTypes";
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 
@@ -51,14 +52,23 @@ type CreatedSystemInvitationResult = {
 
 type CompanyJoinRequestRow = {
   id: string;
+  companyId: string | null;
   companyName: string;
   companyEnglishName: string;
   businessName: string;
+  businessRegistrationNumber: string;
+  postalCode: string;
+  roadAddress: string;
+  jibunAddress: string;
+  addressDetail: string;
+  addressExtra: string;
+  requestedPlanCode: string;
   logoUrl: string | null;
   applicantEmail: string;
   applicantName: string;
   applicantPhone: string;
   requestedAtLabel: string;
+  onboardingFiles: CompanyOnboardingFileMetadata[];
 };
 
 type SystemInvitationRow = {
@@ -107,20 +117,65 @@ function parseCompanyMemoValue(memo: string | null | undefined, key: string): st
   return matched?.slice(prefix.length).trim() ?? "";
 }
 
+function getCompanyOnboardingFile(
+  files: readonly CompanyOnboardingFileMetadata[],
+  fileType: CompanyOnboardingFileType,
+): CompanyOnboardingFileMetadata | null {
+  return files.find((file) => file.fileType === fileType && !file.deletedAt) ?? null;
+}
+
+function getCompanyOnboardingFileViewUrl(file: CompanyOnboardingFileMetadata): string {
+  return `/api/system/companies/onboarding/files/${encodeURIComponent(file.id)}/view`;
+}
+
+function getCompanyOnboardingFileDownloadUrl(file: CompanyOnboardingFileMetadata): string {
+  return `${getCompanyOnboardingFileViewUrl(file)}?download=1`;
+}
+
+function getCompanyOnboardingFileStatusLabel(file: CompanyOnboardingFileMetadata | null): string {
+  return file ? "있음" : "없음";
+}
+
+function getCompanyOnboardingFileStatusTone(file: CompanyOnboardingFileMetadata | null): "success" | "neutral" {
+  return file ? "success" : "neutral";
+}
+
+function isPreviewableImageFile(file: CompanyOnboardingFileMetadata): boolean {
+  return file.mimeType.startsWith("image/");
+}
+
+function formatFileSize(sizeBytes: number): string {
+  if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) return "0 KB";
+  const mb = sizeBytes / (1024 * 1024);
+  if (mb >= 1) return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
+  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
+}
+
 function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): CompanyJoinRequestRow {
+  const onboardingFiles = joinRequest.companyOnboardingFiles ?? [];
+  const logoFile = getCompanyOnboardingFile(onboardingFiles, "logo");
   const companyEnglishName = parseCompanyMemoValue(joinRequest.requestMemo, "companyEnglishName");
-  const logoUrl = parseCompanyMemoValue(joinRequest.requestMemo, "logoUrl") || joinRequest.googlePictureUrl || null;
+  const logoUrl = logoFile ? getCompanyOnboardingFileViewUrl(logoFile) : parseCompanyMemoValue(joinRequest.requestMemo, "logoUrl") || joinRequest.googlePictureUrl || null;
 
   return {
     id: joinRequest.id,
+    companyId: joinRequest.createdCompanyId,
     companyName: joinRequest.requestedCompanyName?.trim() || "-",
     companyEnglishName: companyEnglishName || "-",
     businessName: joinRequest.businessName?.trim() || "-",
+    businessRegistrationNumber: parseCompanyMemoValue(joinRequest.requestMemo, "businessRegistrationNumber") || "-",
+    postalCode: parseCompanyMemoValue(joinRequest.requestMemo, "postalCode") || "-",
+    roadAddress: parseCompanyMemoValue(joinRequest.requestMemo, "roadAddress") || "-",
+    jibunAddress: parseCompanyMemoValue(joinRequest.requestMemo, "jibunAddress") || "-",
+    addressDetail: parseCompanyMemoValue(joinRequest.requestMemo, "addressDetail") || "-",
+    addressExtra: parseCompanyMemoValue(joinRequest.requestMemo, "addressExtra") || "-",
+    requestedPlanCode: parseCompanyMemoValue(joinRequest.requestMemo, "requestedPlanCode") || "-",
     logoUrl,
     applicantEmail: joinRequest.applicantEmail,
     applicantName: joinRequest.applicantName?.trim() || joinRequest.applicantEmail,
     applicantPhone: joinRequest.applicantPhone?.trim() || "-",
     requestedAtLabel: toCompactDateTimeLabel(joinRequest.createdAt),
+    onboardingFiles,
   };
 }
 
@@ -183,6 +238,49 @@ function toSystemInvitationRow(invitation: InvitationRecord): SystemInvitationRo
   };
 }
 
+
+function ReviewField({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div className="grid gap-1 rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 sm:grid-cols-[7rem_1fr]">
+      <dt className="text-xs font-semibold text-[var(--pbp-text-muted)]">{label}</dt>
+      <dd className="break-words text-sm font-medium text-[var(--pbp-text-primary)]">{value?.trim() || "-"}</dd>
+    </div>
+  );
+}
+
+function ReviewFileCard({ label, file }: { label: string; file: CompanyOnboardingFileMetadata | null }) {
+  return (
+    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{label}</p>
+            <AdminStatusBadge tone={getCompanyOnboardingFileStatusTone(file)}>
+              {getCompanyOnboardingFileStatusLabel(file)}
+            </AdminStatusBadge>
+          </div>
+          <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">
+            {file ? `${file.originalName} · ${formatFileSize(file.sizeBytes)}` : "제출된 파일이 없습니다."}
+          </p>
+        </div>
+        {file ? (
+          <AdminLinkButton href={getCompanyOnboardingFileDownloadUrl(file)} target="_blank" rel="noreferrer" variant="secondary">
+            열기
+          </AdminLinkButton>
+        ) : null}
+      </div>
+
+      {file && isPreviewableImageFile(file) ? (
+        <img
+          src={getCompanyOnboardingFileViewUrl(file)}
+          alt={`${label} preview`}
+          className="mt-3 max-h-56 w-full rounded-2xl border border-[var(--pbp-border)] object-contain"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export default function SystemCompanyApprovalConsole() {
   const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
   const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
@@ -200,6 +298,7 @@ export default function SystemCompanyApprovalConsole() {
   const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("email");
   const [deliveryTarget, setDeliveryTarget] = useState("");
+  const [selectedJoinRequestId, setSelectedJoinRequestId] = useState<string | null>(null);
 
   const joinRequests = useMemo(
     () => joinRequestRecords.map(toCompanyJoinRequestRow),
@@ -210,6 +309,7 @@ export default function SystemCompanyApprovalConsole() {
     [systemInvitations],
   );
   const latestCopyableInvitation = systemInvitationRows.find((invitation) => invitation.canCopy);
+  const selectedJoinRequest = joinRequests.find((request) => request.id === selectedJoinRequestId) ?? null;
   const canCreateSystemInvite = !isCreatingSystemInvite;
   const deliveryPlaceholder = deliveryMethod === "email" ? "예: customer@example.com" : "예: 010-1234-5678";
 
@@ -290,18 +390,34 @@ export default function SystemCompanyApprovalConsole() {
       },
       {
         key: "logo",
-        label: "사진",
+        label: "로고",
         headerClassName: "text-center",
         className: "text-center",
         render: (request) => request.logoUrl ? (
           <img
             src={request.logoUrl}
-            alt="회사 또는 신청자 이미지"
+            alt="회사 로고"
             className="mx-auto h-10 w-10 rounded-2xl border border-[var(--pbp-border)] object-cover"
           />
         ) : (
           <span className="text-xs text-[var(--pbp-text-faint)]">-</span>
         ),
+      },
+      {
+        key: "files",
+        label: "첨부",
+        className: "text-xs text-[var(--pbp-text-muted)]",
+        render: (request) => {
+          const logoFile = getCompanyOnboardingFile(request.onboardingFiles, "logo");
+          const businessLicenseFile = getCompanyOnboardingFile(request.onboardingFiles, "business_license");
+
+          return (
+            <div className="grid gap-1">
+              <span>로고 {getCompanyOnboardingFileStatusLabel(logoFile)}</span>
+              <span>사업자등록증 {getCompanyOnboardingFileStatusLabel(businessLicenseFile)}</span>
+            </div>
+          );
+        },
       },
       {
         key: "email",
@@ -334,6 +450,13 @@ export default function SystemCompanyApprovalConsole() {
         className: "text-center",
         render: (request) => (
           <div className="grid gap-2 sm:flex sm:justify-center">
+            <AdminButton
+              onClick={() => setSelectedJoinRequestId(request.id)}
+              disabled={approvingRequestId !== null || rejectingRequestId !== null}
+              variant="secondary"
+            >
+              상세
+            </AdminButton>
             <AdminButton
               onClick={() => void approveCompanyJoinRequest(request.id)}
               disabled={approvingRequestId !== null || rejectingRequestId !== null}
@@ -716,12 +839,76 @@ export default function SystemCompanyApprovalConsole() {
               emptyLabel="승인 대기 고객사 가입 신청이 없습니다."
               isLoading={joinRequestLoadStatus === "loading"}
               loadingLabel="고객사 가입 신청을 불러오는 중입니다."
-              gridTemplateColumns="1.2fr 0.8fr 0.5fr 1.2fr 0.8fr 0.8fr 0.8fr 1fr"
-              rowBaseClassName="grid min-w-[980px] w-full gap-3 px-4 py-4 text-left text-sm md:items-center"
+              gridTemplateColumns="1.2fr 0.8fr 0.5fr 0.9fr 1.2fr 0.8fr 0.8fr 0.8fr 1.2fr"
+              rowBaseClassName="grid min-w-[1120px] w-full gap-3 px-4 py-4 text-left text-sm md:items-center"
             />
           </div>
         </section>
       </div>
+
+      {selectedJoinRequest ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/55 px-4 py-6">
+          <section className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-2xl">
+            <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className={SYSTEM_EYEBROW_CLASS}>COMPANY REVIEW</p>
+                <h3 className={`mt-2 text-xl font-bold ${SYSTEM_VALUE_TEXT_CLASS}`}>{selectedJoinRequest.companyName}</h3>
+                <p className="mt-1 text-sm text-[var(--pbp-text-muted)]">승인 전 회사 정보와 제출 첨부를 확인합니다.</p>
+              </div>
+              <AdminButton onClick={() => setSelectedJoinRequestId(null)} variant="secondary">닫기</AdminButton>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
+              <article className={SYSTEM_MUTED_CARD_CLASS}>
+                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>회사 정보</h4>
+                <dl className="mt-3 grid gap-2 text-sm">
+                  <ReviewField label="회사명" value={selectedJoinRequest.companyName} />
+                  <ReviewField label="회사 영문명" value={selectedJoinRequest.companyEnglishName} />
+                  <ReviewField label="사업자명" value={selectedJoinRequest.businessName} />
+                  <ReviewField label="사업자등록번호" value={selectedJoinRequest.businessRegistrationNumber} />
+                  <ReviewField label="신청 요금제" value={selectedJoinRequest.requestedPlanCode} />
+                </dl>
+              </article>
+
+              <article className={SYSTEM_MUTED_CARD_CLASS}>
+                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>관리자 정보</h4>
+                <dl className="mt-3 grid gap-2 text-sm">
+                  <ReviewField label="관리자 이름" value={selectedJoinRequest.applicantName} />
+                  <ReviewField label="관리자 연락처" value={selectedJoinRequest.applicantPhone} />
+                  <ReviewField label="Google 로그인 이메일" value={selectedJoinRequest.applicantEmail} />
+                  <ReviewField label="신청일" value={selectedJoinRequest.requestedAtLabel} />
+                </dl>
+              </article>
+
+              <article className={SYSTEM_MUTED_CARD_CLASS}>
+                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>주소</h4>
+                <dl className="mt-3 grid gap-2 text-sm">
+                  <ReviewField label="우편번호" value={selectedJoinRequest.postalCode} />
+                  <ReviewField label="도로명주소" value={selectedJoinRequest.roadAddress} />
+                  <ReviewField label="지번주소" value={selectedJoinRequest.jibunAddress} />
+                  <ReviewField label="상세주소" value={selectedJoinRequest.addressDetail} />
+                  <ReviewField label="참고항목" value={selectedJoinRequest.addressExtra} />
+                </dl>
+              </article>
+
+              <article className={SYSTEM_MUTED_CARD_CLASS}>
+                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>첨부 파일</h4>
+                <div className="mt-3 grid gap-3">
+                  <ReviewFileCard
+                    label="회사 로고"
+                    file={getCompanyOnboardingFile(selectedJoinRequest.onboardingFiles, "logo")}
+                  />
+                  <ReviewFileCard
+                    label="사업자등록증"
+                    file={getCompanyOnboardingFile(selectedJoinRequest.onboardingFiles, "business_license")}
+                  />
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
     </main>
   );
 }

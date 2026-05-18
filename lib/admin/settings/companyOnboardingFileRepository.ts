@@ -124,6 +124,61 @@ export async function listActiveCompanyOnboardingFileMetadata(input: {
   return result.rows.map(mapRow);
 }
 
+
+export async function getActiveCompanyOnboardingFileMetadataById(fileId: string): Promise<CompanyOnboardingFileMetadata | null> {
+  const result = await queryDb<CompanyOnboardingFileRow>(
+    `
+      SELECT
+        id,
+        company_id,
+        file_type,
+        original_name,
+        storage_key,
+        mime_type,
+        size_bytes,
+        uploaded_by_user_id,
+        created_at,
+        deleted_at
+      FROM company_onboarding_files
+      WHERE id = $1::text
+        AND deleted_at IS NULL
+      LIMIT 1
+    `,
+    [fileId],
+  );
+
+  const row = result.rows[0];
+  return row ? mapRow(row) : null;
+}
+
+export async function listActiveCompanyOnboardingFileMetadataByCompanyIds(companyIds: readonly string[]): Promise<CompanyOnboardingFileMetadata[]> {
+  const normalizedCompanyIds = Array.from(new Set(companyIds.map((companyId) => companyId.trim()).filter(Boolean)));
+  if (normalizedCompanyIds.length === 0) return [];
+
+  const result = await queryDb<CompanyOnboardingFileRow>(
+    `
+      SELECT
+        id,
+        company_id,
+        file_type,
+        original_name,
+        storage_key,
+        mime_type,
+        size_bytes,
+        uploaded_by_user_id,
+        created_at,
+        deleted_at
+      FROM company_onboarding_files
+      WHERE company_id = ANY($1::text[])
+        AND deleted_at IS NULL
+      ORDER BY company_id ASC, file_type ASC, created_at DESC, id DESC
+    `,
+    [normalizedCompanyIds],
+  );
+
+  return result.rows.map(mapRow);
+}
+
 export async function getActiveCompanyOnboardingFileMetadata(input: {
   companyId: string;
   fileId: string;

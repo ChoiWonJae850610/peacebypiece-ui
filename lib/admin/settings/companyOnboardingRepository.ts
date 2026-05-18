@@ -157,6 +157,7 @@ export async function getCompanyOnboardingProfile(
 
 function buildCompanyOnboardingMemo(input: {
   companyEnglishName: string | null;
+  businessRegistrationNumber: string | null;
   logoUrl: string | null;
   postalCode: string | null;
   roadAddress: string | null;
@@ -167,6 +168,7 @@ function buildCompanyOnboardingMemo(input: {
 }): string {
   return [
     ["companyEnglishName", input.companyEnglishName],
+    ["businessRegistrationNumber", input.businessRegistrationNumber],
     ["logoUrl", input.logoUrl],
     ["postalCode", input.postalCode],
     ["roadAddress", input.roadAddress],
@@ -274,6 +276,7 @@ export async function updateCompanyOnboardingProfile(
 
   const requestMemo = buildCompanyOnboardingMemo({
     companyEnglishName,
+    businessRegistrationNumber,
     logoUrl,
     postalCode,
     roadAddress,

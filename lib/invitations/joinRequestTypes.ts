@@ -1,4 +1,5 @@
 import type { InvitationRecord, InvitationScope } from "./invitationTypes";
+import type { CompanyOnboardingFileMetadata } from "@/lib/admin/settings/companyTypes";
 import type { MemberPermissionCode, MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 
 export type JoinRequestType = "member" | "company";
@@ -52,6 +53,7 @@ export interface JoinRequestRecord {
   createdAt: string;
   updatedAt: string;
   invitation?: JoinRequestInvitationSummary | null;
+  companyOnboardingFiles?: CompanyOnboardingFileMetadata[];
 }
 
 export interface JoinRequestCreateResult {

@@ -6,10 +6,11 @@ const CORS_HEADERS = {
 };
 
 const TEXT_ENCODER = new TextEncoder();
-const WORKER_VERSION = "0.9.130";
+const WORKER_VERSION = "0.13.64";
 const ATTACHMENT_KEY_PATTERN = /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
 const SCOPED_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
 const LEGACY_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/[^/]+\.webp$/i;
+const COMPANY_ONBOARDING_KEY_PATTERN = /^companies\/[^/]+\/onboarding\/(logo|business-license)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 
 const ATTACHMENT_POLICY = {
   maxFileSizeBytes: 10 * 1024 * 1024,
@@ -17,6 +18,17 @@ const ATTACHMENT_POLICY = {
     design: ["image/jpeg", "image/png", "image/webp"],
     attachment: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
     memos: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+  },
+};
+
+const COMPANY_ONBOARDING_POLICY = {
+  maxFileSizeBytes: {
+    logo: 5 * 1024 * 1024,
+    businessLicense: 10 * 1024 * 1024,
+  },
+  allowedMimeTypes: {
+    logo: ["image/jpeg", "image/png", "image/webp"],
+    businessLicense: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
   },
 };
 
@@ -31,10 +43,26 @@ function getScopeFromKey(key) {
   return "attachment";
 }
 
+function getCompanyOnboardingFileTypeFromKey(key) {
+  const normalized = normalizeStorageKey(key);
+  if (normalized.includes("/onboarding/logo/")) return "logo";
+  if (normalized.includes("/onboarding/business-license/")) return "businessLicense";
+  return null;
+}
+
 function isAllowedWorkerFile({ key, contentType, size }) {
+  const normalizedContentType = String(contentType || "").toLowerCase();
+  const companyOnboardingFileType = getCompanyOnboardingFileTypeFromKey(key);
+
+  if (companyOnboardingFileType) {
+    const allowedTypes = COMPANY_ONBOARDING_POLICY.allowedMimeTypes[companyOnboardingFileType] || [];
+    const maxFileSizeBytes = COMPANY_ONBOARDING_POLICY.maxFileSizeBytes[companyOnboardingFileType] || 0;
+    return allowedTypes.includes(normalizedContentType) && size <= maxFileSizeBytes;
+  }
+
   const scope = getScopeFromKey(key);
   const allowedTypes = ATTACHMENT_POLICY.allowedMimeTypes[scope] || ATTACHMENT_POLICY.allowedMimeTypes.attachment;
-  return allowedTypes.includes(String(contentType || "").toLowerCase()) && size <= ATTACHMENT_POLICY.maxFileSizeBytes;
+  return allowedTypes.includes(normalizedContentType) && size <= ATTACHMENT_POLICY.maxFileSizeBytes;
 }
 
 function json(data, init = {}) {
@@ -54,7 +82,8 @@ function isSafeStorageKey(key) {
   return (
     ATTACHMENT_KEY_PATTERN.test(normalized) ||
     SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
-    LEGACY_THUMBNAIL_KEY_PATTERN.test(normalized)
+    LEGACY_THUMBNAIL_KEY_PATTERN.test(normalized) ||
+    COMPANY_ONBOARDING_KEY_PATTERN.test(normalized)
   ) && !normalized.includes("..") && !normalized.startsWith("/");
 }
 
