@@ -5,6 +5,8 @@ import { createWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createWorkOrderAttachmentThumbnailKey, isImageContentType } from "@/lib/storage/r2/r2ThumbnailKeys";
 import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
+import { queryDb } from "@/lib/db/client";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { validateAttachmentFile, validateAttachmentFileCount, normalizeAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentScope } from "@/types/workorder";
@@ -34,13 +36,28 @@ function normalizeFile(input: PrepareUploadFileInput) {
   return { name, type, size };
 }
 
-function createUploadTarget(input: { workOrderId: string; scope: AttachmentScope; file: NonNullable<ReturnType<typeof normalizeFile>> }) {
-  const storageKey = createWorkOrderAttachmentStorageKey({ workOrderId: input.workOrderId, scope: input.scope, originalName: input.file.name });
+async function workOrderBelongsToCompany(input: { workOrderId: string; companyId: string }): Promise<boolean> {
+  const result = await queryDb<{ id: string }>(
+    `SELECT id
+       FROM spec_sheets
+      WHERE id = $1
+        AND company_id = $2
+        AND deleted_at IS NULL
+        AND COALESCE(is_active, true) = true
+      LIMIT 1`,
+    [input.workOrderId, input.companyId],
+  );
+
+  return Boolean(result.rows[0]);
+}
+
+function createUploadTarget(input: { companyId: string; workOrderId: string; scope: AttachmentScope; file: NonNullable<ReturnType<typeof normalizeFile>> }) {
+  const storageKey = createWorkOrderAttachmentStorageKey({ companyId: input.companyId, workOrderId: input.workOrderId, scope: input.scope, originalName: input.file.name });
   const upload = isR2WorkerUploadConfigured()
     ? createR2WorkerUploadUrl({ key: storageKey, contentType: input.file.type })
     : createR2PresignedPutUrl({ key: storageKey, contentType: input.file.type });
   const thumbnailStorageKey = isImageContentType(input.file.type)
-    ? createWorkOrderAttachmentThumbnailKey({ workOrderId: input.workOrderId, scope: input.scope })
+    ? createWorkOrderAttachmentThumbnailKey({ companyId: input.companyId, workOrderId: input.workOrderId, scope: input.scope })
     : null;
   const thumbnailUpload = thumbnailStorageKey
     ? isR2WorkerUploadConfigured()
@@ -69,6 +86,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const scopeResult = await requireAdminFileCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+
+    const { companyId } = scopeResult.companyScope;
     const payload = (await request.json().catch(() => null)) as PrepareUploadRequest | null;
     const workOrderId = readText(payload?.workOrderId);
     const scope = normalizeScope(payload?.scope);
@@ -78,6 +99,11 @@ export async function POST(request: NextRequest) {
 
     if (!workOrderId) return NextResponse.json({ uploadTargets: [], error: "WORK_ORDER_ID_REQUIRED" }, { status: 400 });
     if (files.length === 0) return NextResponse.json({ uploadTargets: [], error: "FILES_REQUIRED" }, { status: 400 });
+
+    const belongsToCompany = await workOrderBelongsToCompany({ workOrderId, companyId });
+    if (!belongsToCompany) {
+      return NextResponse.json({ uploadTargets: [], error: "WORK_ORDER_NOT_FOUND" }, { status: 404 });
+    }
 
     const repository = await createAttachmentMemoRepository();
     if (isWritableRepository(repository)) {
@@ -100,7 +126,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ uploadTargets: files.map((file) => createUploadTarget({ workOrderId, scope, file })) });
+    return NextResponse.json({ uploadTargets: files.map((file) => createUploadTarget({ companyId, workOrderId, scope, file })) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Attachment upload prepare failed.";
     console.error("[ATTACHMENT_UPLOAD_PREPARE_FAILED]", { message, error });

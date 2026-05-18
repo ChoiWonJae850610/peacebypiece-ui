@@ -1,17 +1,19 @@
 Version :
-0.13.66
+0.13.67
 
 Summary :
-온보딩 파일 삭제 교체 UX와 R2 정리 보강
+작업지시서 첨부 R2 key를 고객사 하위 구조로 전환
 
 Description :
-고객사 온보딩 모달의 로고와 사업자등록증 파일 교체 및 삭제 시 확인 절차와 업로드 일시 표시를 추가했다. 새 파일로 교체된 기존 온보딩 파일은 metadata를 비활성화한 뒤 R2 객체도 정리하도록 보강했다.
+신규 작업지시서 첨부와 썸네일 R2 key가 companies/{companyId}/workorders/{workOrderId}/... 구조로 생성되도록 수정했다. 기존 workorders/{workOrderId}/... key는 조회, 삭제, legacy 호환 대상으로 유지하고, Worker와 앱의 안전 key 검증도 고객사 하위 작업지시서 경로를 허용하도록 보강했다.
 
 수정 파일 목록 :
-- components/admin/companies/AdminCompanyOnboardingGate.tsx
-- lib/admin/settings/companyOnboardingFileService.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- cloudflare/r2-upload-worker.js
+- app/api/workorders/attachments/upload/route.ts
+- app/api/workorders/attachments/upload/complete/route.ts
+- lib/storage/r2/r2Keys.ts
+- lib/storage/r2/r2ThumbnailKeys.ts
+- lib/storage/r2/r2WorkerUpload.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

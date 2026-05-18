@@ -57,7 +57,7 @@ function normalizeBaseUrl(value: string): string {
 
 function assertSafeWorkerStorageKey(key: string): string {
   const value = key.trim().replace(/^\/+/, "");
-  const isSupportedWorkOrderKey = isSupportedWorkOrderAttachmentStorageKey(value) && value.startsWith("workorders/");
+  const isSupportedWorkOrderKey = isSupportedWorkOrderAttachmentStorageKey(value);
   const isSupportedCompanyOnboardingKey = isSupportedCompanyOnboardingFileStorageKey(value) && value.startsWith("companies/");
 
   if ((!isSupportedWorkOrderKey && !isSupportedCompanyOnboardingKey) || value.includes("..")) {

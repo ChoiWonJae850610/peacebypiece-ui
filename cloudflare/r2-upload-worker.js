@@ -6,9 +6,11 @@ const CORS_HEADERS = {
 };
 
 const TEXT_ENCODER = new TextEncoder();
-const WORKER_VERSION = "0.13.64";
-const ATTACHMENT_KEY_PATTERN = /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
-const SCOPED_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
+const WORKER_VERSION = "0.13.67";
+const ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
+const LEGACY_ATTACHMENT_KEY_PATTERN = /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
+const SCOPED_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
+const LEGACY_SCOPED_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
 const LEGACY_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/[^/]+\.webp$/i;
 const COMPANY_ONBOARDING_KEY_PATTERN = /^companies\/[^/]+\/onboarding\/(logo|business-license)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 
@@ -81,7 +83,9 @@ function isSafeStorageKey(key) {
   const normalized = normalizeStorageKey(key);
   return (
     ATTACHMENT_KEY_PATTERN.test(normalized) ||
+    LEGACY_ATTACHMENT_KEY_PATTERN.test(normalized) ||
     SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
+    LEGACY_SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
     LEGACY_THUMBNAIL_KEY_PATTERN.test(normalized) ||
     COMPANY_ONBOARDING_KEY_PATTERN.test(normalized)
   ) && !normalized.includes("..") && !normalized.startsWith("/");

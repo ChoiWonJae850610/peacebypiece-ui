@@ -42,7 +42,7 @@ function normalizeScope(value: unknown): AttachmentScope {
   return normalizeAttachmentUploadScope(value);
 }
 
-function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { workOrderId: string; scope: AttachmentScope }) {
+function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { companyId: string; workOrderId: string; scope: AttachmentScope }) {
   const storageKey = readText(input.storageKey);
   const fileName = readText(input.fileName);
   const contentType = readText(input.contentType);
@@ -50,8 +50,8 @@ function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { work
   const thumbnailStorageKey = readText(input.thumbnailStorageKey);
 
   if (!storageKey || !fileName || !isSupportedWorkOrderAttachmentStorageKey(storageKey)) return null;
-  if (!isWorkOrderAttachmentStorageKeyForScope({ key: storageKey, workOrderId: context.workOrderId, scope: context.scope })) return null;
-  if (thumbnailStorageKey && !isWorkOrderAttachmentThumbnailKeyForScope({ key: thumbnailStorageKey, workOrderId: context.workOrderId, scope: context.scope })) return null;
+  if (!isWorkOrderAttachmentStorageKeyForScope({ key: storageKey, companyId: context.companyId, workOrderId: context.workOrderId, scope: context.scope })) return null;
+  if (thumbnailStorageKey && !isWorkOrderAttachmentThumbnailKeyForScope({ key: thumbnailStorageKey, companyId: context.companyId, workOrderId: context.workOrderId, scope: context.scope })) return null;
 
   return {
     storageKey,
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     const uploadTargets = rawUploadTargets
-      .map((item) => normalizeUploadTarget(item as CompleteUploadTargetInput, { workOrderId, scope }))
+      .map((item) => normalizeUploadTarget(item as CompleteUploadTargetInput, { companyId, workOrderId, scope }))
       .filter((item): item is NonNullable<ReturnType<typeof normalizeUploadTarget>> => item !== null);
 
     if (uploadTargets.length === 0) {
