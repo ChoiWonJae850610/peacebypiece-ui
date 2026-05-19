@@ -11,14 +11,11 @@ export type CreateWorkorderRepositoryOptions = {
 };
 
 export function createWorkorderRepository(options: CreateWorkorderRepositoryOptions = {}): WorkorderRepository {
-  const mode = options.mode ?? getDefaultWorkorderRepositoryMode();
+  options.mode ?? getDefaultWorkorderRepositoryMode();
   const adapter = options.adapter ?? options.dbAdapter ?? createDbWorkorderHttpAdapter();
 
-  if (mode === "db") {
-    if (adapter) {
-      return createDbWorkorderRepository(undefined, adapter);
-    }
-    return createUnconfiguredDbWorkorderRepository();
+  if (adapter) {
+    return createDbWorkorderRepository(undefined, adapter);
   }
 
   return createUnconfiguredDbWorkorderRepository();

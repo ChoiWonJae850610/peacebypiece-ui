@@ -1,7 +1,7 @@
 import type { Partner, PartnerDraft } from "@/types/partner";
 
 export type PartnerRepositoryInfo = {
-  mode: "mock" | "db";
+  mode: "db";
   adapterConfigured: boolean;
 };
 

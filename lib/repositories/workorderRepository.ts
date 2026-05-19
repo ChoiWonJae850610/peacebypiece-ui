@@ -26,7 +26,7 @@ export type WorkorderRepositoryCapabilities = {
 };
 
 export type WorkorderRepositoryInfo = {
-  mode: "mock" | "db";
+  mode: "db";
   adapterConfigured: boolean;
   capabilities: WorkorderRepositoryCapabilities;
 };

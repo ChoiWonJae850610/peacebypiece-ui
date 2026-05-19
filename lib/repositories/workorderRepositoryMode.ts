@@ -1,6 +1,6 @@
 import { WORKORDER_REPOSITORY_MODE } from "@/lib/constants/app";
 
-export const WORKORDER_REPOSITORY_MODES = ["mock", "db"] as const;
+export const WORKORDER_REPOSITORY_MODES = ["db"] as const;
 
 export type WorkorderRepositoryMode = (typeof WORKORDER_REPOSITORY_MODES)[number];
 

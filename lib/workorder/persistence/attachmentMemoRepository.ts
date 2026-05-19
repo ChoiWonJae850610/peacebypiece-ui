@@ -11,7 +11,7 @@ import type {
 } from "@/lib/workorder/persistence/attachmentMemoTypes";
 
 export type AttachmentMemoRepositoryInfo = {
-  mode: "mock" | "db";
+  mode: "db";
   adapterConfigured: boolean;
   supportsWrite: boolean;
 };
