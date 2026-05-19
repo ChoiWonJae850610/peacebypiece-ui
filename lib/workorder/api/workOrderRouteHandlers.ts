@@ -41,6 +41,11 @@ import {
   normalizeWorkOrderListStatusFilter,
 } from "@/lib/workorder/list/workOrderListControls";
 
+import {
+  getWorkflowMutationPermissionCode,
+  hasFactoryOrderRequestChanged,
+} from "@/lib/workorder/workflowPermissionPolicy";
+
 type DbApiErrorCode =
   | "DB_NOT_CONFIGURED"
   | "DB_DRIVER_MISSING"
@@ -120,18 +125,6 @@ async function hasCurrentWorkOrderPermission(
   return Boolean(member && member.status === "approved" && hasMemberPermission(member, permissionCode));
 }
 
-function getRequiredWorkflowPermission(input: {
-  previousState?: WorkOrder["workflowState"] | null;
-  nextState: WorkOrder["workflowState"];
-  hasFactoryOrderRequest: boolean;
-}): MemberPermissionCode | null {
-  if (input.hasFactoryOrderRequest || input.nextState === "inspection") return "workorder.status.order";
-  if (input.nextState === "review_requested" || input.nextState === "draft" || input.nextState === "rejected") return "workorder.status.review";
-  if (input.nextState === "review_completed") return "workorder.status.order";
-  if (input.nextState === "completed") return "workorder.status.complete";
-  return null;
-}
-
 function createWorkOrderPermissionRequiredResponse(permissionCode: MemberPermissionCode) {
   return NextResponse.json(
     {
@@ -152,6 +145,62 @@ async function requireCurrentWorkOrderPermission(
   return (await hasCurrentWorkOrderPermission(session, permissionCode))
     ? null
     : createWorkOrderPermissionRequiredResponse(permissionCode);
+}
+
+function hasOwnFactoryOrderRequest(value: object): boolean {
+  return Object.prototype.hasOwnProperty.call(value, "factoryOrderRequest");
+}
+
+async function requireWorkOrderWorkflowMutationPermission(input: {
+  session: WaflSessionPayload;
+  previousWorkOrder: WorkOrder;
+  nextWorkOrder: Pick<WorkOrder, "workflowState" | "factoryOrderRequest">;
+  factoryOrderRequestTouched: boolean;
+}): Promise<NextResponse | null> {
+  const requiredPermission = getWorkflowMutationPermissionCode({
+    previousWorkflowState: input.previousWorkOrder.workflowState,
+    nextWorkflowState: input.nextWorkOrder.workflowState,
+    previousFactoryOrderRequest: input.previousWorkOrder.factoryOrderRequest ?? null,
+    nextFactoryOrderRequest: input.nextWorkOrder.factoryOrderRequest ?? null,
+    factoryOrderRequestTouched: input.factoryOrderRequestTouched,
+  });
+
+  if (!requiredPermission) return null;
+
+  return (await hasCurrentWorkOrderPermission(input.session, requiredPermission))
+    ? null
+    : createWorkOrderPermissionRequiredResponse(requiredPermission);
+}
+
+async function requireWorkOrderStatePatchWorkflowPermission(input: {
+  session: WaflSessionPayload;
+  previousWorkOrder: WorkOrder;
+  patch: Pick<WorkOrderStatePatch, "workflowState"> &
+    Partial<Pick<WorkOrderStatePatch, "factoryOrderRequest">>;
+}): Promise<NextResponse | null> {
+  const factoryOrderRequestTouched = hasOwnFactoryOrderRequest(input.patch);
+
+  const requiredPermission = getWorkflowMutationPermissionCode({
+    previousWorkflowState: input.previousWorkOrder.workflowState,
+    nextWorkflowState: input.patch.workflowState,
+    previousFactoryOrderRequest: input.previousWorkOrder.factoryOrderRequest ?? null,
+    nextFactoryOrderRequest: factoryOrderRequestTouched
+      ? (input.patch.factoryOrderRequest ?? null)
+      : (input.previousWorkOrder.factoryOrderRequest ?? null),
+    factoryOrderRequestTouched:
+      factoryOrderRequestTouched &&
+      hasFactoryOrderRequestChanged({
+        previousFactoryOrderRequest: input.previousWorkOrder.factoryOrderRequest ?? null,
+        nextFactoryOrderRequest: input.patch.factoryOrderRequest ?? null,
+        factoryOrderRequestTouched: true,
+      }),
+  });
+
+  if (!requiredPermission) return null;
+
+  return (await hasCurrentWorkOrderPermission(input.session, requiredPermission))
+    ? null
+    : createWorkOrderPermissionRequiredResponse(requiredPermission);
 }
 
 
@@ -753,6 +802,9 @@ export async function handlePatchWorkOrders(request: Request) {
       const requestedWorkOrderIds = Array.from(
         new Set(body.workOrders.map((workOrder) => workOrder.id)),
       );
+      const session = await getCurrentWaflSession();
+      if (!session) return createCompanySessionRequiredResponse();
+
       const scopeResult = await requireWorkOrderRequestCompanyScope();
       if (!scopeResult.ok) return scopeResult.response;
       const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
@@ -774,6 +826,22 @@ export async function handlePatchWorkOrders(request: Request) {
         );
       }
       const previousWorkOrderMap = buildWorkOrderMap(previousWorkOrders);
+      for (const workOrder of body.workOrders) {
+        const previousWorkOrder = previousWorkOrderMap.get(workOrder.id);
+        if (!previousWorkOrder) {
+          return createWorkOrderNotFoundResponse(workOrder.id);
+        }
+
+        const workflowPermissionResponse =
+          await requireWorkOrderWorkflowMutationPermission({
+            session,
+            previousWorkOrder,
+            nextWorkOrder: workOrder,
+            factoryOrderRequestTouched: hasOwnFactoryOrderRequest(workOrder),
+          });
+        if (workflowPermissionResponse) return workflowPermissionResponse;
+      }
+
       const savedWorkOrders = await saveDbWorkOrders(body.workOrders, scopeResult.scope);
 
       const workOrders =
@@ -810,6 +878,9 @@ export async function handlePatchWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrder.id is required.");
     }
 
+    const session = await getCurrentWaflSession();
+    if (!session) return createCompanySessionRequiredResponse();
+
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
     const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
@@ -822,6 +893,16 @@ export async function handlePatchWorkOrders(request: Request) {
     if (!previousWorkOrder) {
       return createWorkOrderNotFoundResponse(body.workOrder.id);
     }
+
+    const workflowPermissionResponse =
+      await requireWorkOrderWorkflowMutationPermission({
+        session,
+        previousWorkOrder,
+        nextWorkOrder: body.workOrder,
+        factoryOrderRequestTouched: hasOwnFactoryOrderRequest(body.workOrder),
+      });
+    if (workflowPermissionResponse) return workflowPermissionResponse;
+
     const savedWorkOrder = await saveDbWorkOrder(body.workOrder, scopeResult.scope);
 
     const workOrder =
@@ -905,14 +986,14 @@ export async function handlePatchWorkOrderState(
     const session = await getCurrentWaflSession();
     if (!session) return createCompanySessionRequiredResponse();
 
-    const requiredPermission = getRequiredWorkflowPermission({
-      previousState: previousWorkOrder?.workflowState ?? null,
-      nextState: body.patch.workflowState as WorkOrder["workflowState"],
-      hasFactoryOrderRequest: Object.prototype.hasOwnProperty.call(body.patch, "factoryOrderRequest"),
-    });
-    if (requiredPermission && !(await hasCurrentWorkOrderPermission(session, requiredPermission))) {
-      return createWorkOrderPermissionRequiredResponse(requiredPermission);
-    }
+    const workflowPermissionResponse =
+      await requireWorkOrderStatePatchWorkflowPermission({
+        session,
+        previousWorkOrder,
+        patch: body.patch as Pick<WorkOrderStatePatch, "workflowState"> &
+          Partial<Pick<WorkOrderStatePatch, "factoryOrderRequest">>,
+      });
+    if (workflowPermissionResponse) return workflowPermissionResponse;
 
     const savedWorkOrder = await updateDbWorkOrderStatePatch(
       {

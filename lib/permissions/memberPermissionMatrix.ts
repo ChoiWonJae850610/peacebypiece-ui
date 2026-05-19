@@ -131,7 +131,7 @@ export const MEMBER_ROLE_TEMPLATE_POLICIES: readonly MemberRoleTemplatePolicy[] 
     labelKey: "memberManagement.roles.designer.label",
     descriptionKey: "memberManagement.roles.designer.description",
     sortOrder: 20,
-    permissionCodes: ["workorder.read", "workorder.create", "workorder.update", "workorder.status.review", "workorder.status.order", "partner.read", "partner.create", "partner.update", "standards.read", "standards.create", "standards.update", "storage.read", "personal_settings.manage"],
+    permissionCodes: ["workorder.read", "workorder.create", "workorder.update", "workorder.status.review", "partner.read", "partner.create", "partner.update", "standards.read", "standards.create", "standards.update", "storage.read", "personal_settings.manage"],
   },
   {
     code: "inspector",
