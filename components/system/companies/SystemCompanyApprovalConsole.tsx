@@ -218,11 +218,13 @@ function getCompanyOnboardingFile(
 }
 
 function getCompanyOnboardingFileViewUrl(file: CompanyOnboardingFileMetadata): string {
-  return `/api/system/companies/onboarding/files/${encodeURIComponent(file.id)}/view`;
+  const params = new URLSearchParams({ companyId: file.companyId });
+  return `/api/system/companies/onboarding/files/${encodeURIComponent(file.id)}/view?${params.toString()}`;
 }
 
 function getCompanyOnboardingFileDownloadUrl(file: CompanyOnboardingFileMetadata): string {
-  return `${getCompanyOnboardingFileViewUrl(file)}?download=1`;
+  const params = new URLSearchParams({ companyId: file.companyId, download: "1" });
+  return `/api/system/companies/onboarding/files/${encodeURIComponent(file.id)}/view?${params.toString()}`;
 }
 
 function getCompanyOnboardingFileStatusLabel(file: CompanyOnboardingFileMetadata | null): string {
@@ -235,6 +237,16 @@ function getCompanyOnboardingFileStatusTone(file: CompanyOnboardingFileMetadata 
 
 function isPreviewableImageFile(file: CompanyOnboardingFileMetadata): boolean {
   return file.mimeType.startsWith("image/");
+}
+
+function isPdfOnboardingFile(file: CompanyOnboardingFileMetadata): boolean {
+  return file.mimeType === "application/pdf";
+}
+
+function getCompanyOnboardingFileKindLabel(file: CompanyOnboardingFileMetadata): string {
+  if (isPreviewableImageFile(file)) return "이미지";
+  if (isPdfOnboardingFile(file)) return "PDF";
+  return "파일";
 }
 
 function formatFileSize(sizeBytes: number): string {
@@ -353,6 +365,11 @@ const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
   REQUESTED_COMPANY_NAME_REQUIRED: "회사명이 입력되지 않았습니다.",
   COMPANY_ALREADY_EXISTS: "이미 같은 이름의 고객사가 있습니다.",
   COMPANY_APPROVAL_TARGET_NOT_FOUND: "승인 대상 고객사 정보를 찾을 수 없습니다.",
+  COMPANY_ONBOARDING_FILE_VIEW_NOT_CONFIGURED: "온보딩 첨부 확인용 R2 Worker 설정이 필요합니다.",
+  COMPANY_ONBOARDING_FILE_NOT_FOUND: "온보딩 첨부 파일을 찾을 수 없습니다.",
+  COMPANY_ONBOARDING_FILE_COMPANY_MISMATCH: "다른 고객사의 온보딩 첨부 파일은 확인할 수 없습니다.",
+  COMPANY_ONBOARDING_FILE_INVALID_STORAGE_KEY: "온보딩 첨부 파일의 저장 경로가 올바르지 않습니다.",
+  COMPANY_ONBOARDING_FILE_VIEW_FAILED: "온보딩 첨부 파일 열기에 실패했습니다.",
   MEMBER_USER_CREATE_FAILED: "고객사 관리자 사용자 계정 생성에 실패했습니다.",
   COMPANY_MEMBER_CREATE_FAILED: "고객사 관리자 멤버십 생성에 실패했습니다.",
   MEMBER_PERMISSION_REQUIRED: "고객사 관리자에게 부여할 권한이 없습니다.",
@@ -435,37 +452,62 @@ function ReviewField({ label, value }: { label: string; value: string | null | u
 }
 
 function ReviewFileCard({ label, file }: { label: string; file: CompanyOnboardingFileMetadata | null }) {
+  const viewUrl = file ? getCompanyOnboardingFileViewUrl(file) : "";
+  const downloadUrl = file ? getCompanyOnboardingFileDownloadUrl(file) : "";
+  const canPreviewImage = file ? isPreviewableImageFile(file) : false;
+  const canOpenPdf = file ? isPdfOnboardingFile(file) : false;
+
   return (
     <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{label}</p>
             <AdminStatusBadge tone={getCompanyOnboardingFileStatusTone(file)}>
               {getCompanyOnboardingFileStatusLabel(file)}
             </AdminStatusBadge>
+            {file ? (
+              <AdminStatusBadge tone="neutral">{getCompanyOnboardingFileKindLabel(file)}</AdminStatusBadge>
+            ) : null}
           </div>
-          <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">
+          <p className="mt-1 break-words text-xs text-[var(--pbp-text-muted)]">
             {file ? `${file.originalName} · ${formatFileSize(file.sizeBytes)}` : "제출된 파일이 없습니다."}
           </p>
+          {file ? (
+            <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-faint)]">
+              {canPreviewImage
+                ? "이미지는 아래에서 미리보고, 필요하면 원본을 다운로드할 수 있습니다."
+                : canOpenPdf
+                  ? "PDF는 새 탭에서 열거나 원본을 다운로드할 수 있습니다."
+                  : "미리보기를 지원하지 않는 파일입니다. 원본 다운로드로 확인해 주세요."}
+            </p>
+          ) : null}
         </div>
         {file ? (
-          <AdminLinkButton href={getCompanyOnboardingFileDownloadUrl(file)} target="_blank" rel="noreferrer" variant="secondary">
-            열기
-          </AdminLinkButton>
+          <div className="grid gap-2 sm:min-w-[8rem]">
+            <AdminLinkButton href={viewUrl} target="_blank" rel="noreferrer" variant="secondary">
+              {canOpenPdf ? "PDF 열기" : "열기"}
+            </AdminLinkButton>
+            <AdminLinkButton href={downloadUrl} target="_blank" rel="noreferrer" variant="secondary">
+              다운로드
+            </AdminLinkButton>
+          </div>
         ) : null}
       </div>
 
-      {file && isPreviewableImageFile(file) ? (
-        <img
-          src={getCompanyOnboardingFileViewUrl(file)}
-          alt={`${label} preview`}
-          className="mt-3 max-h-56 w-full rounded-2xl border border-[var(--pbp-border)] object-contain"
-        />
+      {file && canPreviewImage ? (
+        <a href={viewUrl} target="_blank" rel="noreferrer" className="mt-3 block">
+          <img
+            src={viewUrl}
+            alt={`${label} preview`}
+            className="max-h-56 w-full rounded-2xl border border-[var(--pbp-border)] object-contain"
+          />
+        </a>
       ) : null}
     </div>
   );
 }
+
 
 export default function SystemCompanyApprovalConsole() {
   const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
