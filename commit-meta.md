@@ -1,21 +1,25 @@
 Version :
-0.13.92
+0.13.93
 
 Summary :
-R2 작업지시서 파일 key scope 검증 보강
+주소 검색과 초대 오류 문구 정리
 
 Description :
-작업지시서 첨부와 썸네일 R2 key를 companyId와 workOrderId 기준으로 파싱·검증하는 공통 함수를 추가했다. 고객사/시스템 실제 삭제 후보 처리에서 삭제 대상 R2 key가 해당 회사와 작업지시서 범위에 속하지 않으면 실제 Worker 삭제를 진행하지 않고 실패로 남기도록 보정했다. 기존 업로드, 미리보기, 온보딩, 작업지시서 UI 흐름은 변경하지 않았다.
+도로명주소 API 실패 원인을 개발환경에서 확인할 수 있도록 응답을 세분화하고, 사용자 화면에는 승인키·외부 API 오류를 자연스러운 안내 문구로 표시하도록 정리했다. 초대 링크 오류 문구도 공통 presentation 함수로 분리해 내부 error code가 직접 노출되지 않도록 보정했다.
 
 수정 파일 목록 :
-- lib/storage/r2/r2Keys.ts
-- lib/admin/adminFiles.serverActions.ts
-- lib/admin/adminFiles.purgeWorker.ts
-- lib/system/storagePurgeCandidates.ts
+- app/api/address/search/route.ts
+- lib/address/jusoAddressSearch.ts
+- components/admin/companies/AdminCompanyOnboardingGate.tsx
+- components/invitations/CompanyInvitationJoinRequestPage.tsx
+- components/invitations/MemberInvitationJoinRequestPage.tsx
+- app/invite/error/page.tsx
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- lib/invitations/invitationErrorPresentation.ts
 
 삭제 파일 목록 :
 없음

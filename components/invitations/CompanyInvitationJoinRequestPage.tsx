@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  resolveCompanyInvitationAlreadyUsedMessage,
+  resolveCompanyInvitationErrorMessage,
+} from "@/lib/invitations/invitationErrorPresentation";
+
 interface CompanyInvitationJoinRequestPageProps {
   token: string;
 }
@@ -34,15 +39,6 @@ function formatDate(value?: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
-}
-
-function readFriendlyError(error: string | null): string {
-  if (error === "INVITATION_NOT_FOUND") return "유효하지 않은 고객사 초대 링크예요.";
-  if (error === "INVITATION_EXPIRED") return "고객사 초대가 만료되었어요.";
-  if (error === "INVITATION_NOT_ACTIVE") return "현재 사용할 수 없는 고객사 초대예요.";
-  if (error === "INVITATION_ALREADY_CLAIMED") return "이미 사용된 고객사 초대 링크예요.";
-  if (error === "INVITATION_SCOPE_MISMATCH") return "초대 링크의 사용 범위가 맞지 않아요.";
-  return "고객사 초대 링크를 확인할 수 없어요.";
 }
 
 function GoogleMark() {
@@ -87,7 +83,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
         const payload = (await response.json()) as VerifyInvitationPayload;
         if (!response.ok || !payload.ok) {
           setVerifyState("invalid");
-          setMessage(readFriendlyError(payload.error ?? null));
+          setMessage(resolveCompanyInvitationErrorMessage(payload.error ?? null));
           setInvitation(payload.invitation ?? null);
           return;
         }
@@ -97,7 +93,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
         if (!payload.isJoinable) {
           setVerifyState("invalid");
           const status = payload.invitation?.status ?? null;
-          setMessage(status === "accepted" ? "이미 승인 절차에 사용된 고객사 초대 링크예요." : readFriendlyError(payload.error ?? null));
+          setMessage(status === "accepted" ? resolveCompanyInvitationAlreadyUsedMessage() : resolveCompanyInvitationErrorMessage(payload.error ?? null));
           return;
         }
 

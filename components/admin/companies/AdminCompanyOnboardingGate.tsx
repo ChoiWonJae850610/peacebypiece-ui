@@ -98,6 +98,10 @@ type AddressSearchResult = {
 type AddressSearchResponse = {
   items?: AddressSearchResult[];
   error?: string;
+  debug?: {
+    providerCode?: string;
+    providerMessage?: string;
+  };
 };
 
 type AddressSearchState = "idle" | "loading" | "loaded" | "error";
@@ -171,9 +175,22 @@ function resolveCompanyOnboardingFileErrorMessage(errorCode: string | null | und
   return messageKey ? copy[messageKey] : copy.fileUploadFailed;
 }
 
-function resolveAddressSearchErrorMessage(errorCode: string | null | undefined, copy: { notConfigured: string; failed: string; keywordRequired: string }): string {
+function resolveAddressSearchErrorMessage(
+  errorCode: string | null | undefined,
+  copy: {
+    notConfigured: string;
+    failed: string;
+    keywordRequired: string;
+    providerRejected: string;
+    upstreamFailed: string;
+    responseInvalid: string;
+  },
+): string {
   if (errorCode === "ADDRESS_SEARCH_KEYWORD_REQUIRED") return copy.keywordRequired;
   if (errorCode === "ADDRESS_SEARCH_NOT_CONFIGURED") return copy.notConfigured;
+  if (errorCode === "ADDRESS_SEARCH_PROVIDER_REJECTED") return copy.providerRejected;
+  if (errorCode === "ADDRESS_SEARCH_UPSTREAM_FAILED") return copy.upstreamFailed;
+  if (errorCode === "ADDRESS_SEARCH_RESPONSE_INVALID") return copy.responseInvalid;
   return copy.failed;
 }
 

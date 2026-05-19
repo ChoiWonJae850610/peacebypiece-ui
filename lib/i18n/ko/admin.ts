@@ -1784,6 +1784,9 @@ export const adminKo = {
         keywordRequired: "검색어를 입력해 주세요.",
         notConfigured: "도로명주소 API 승인키가 설정되지 않았습니다. 수동 입력을 사용해 주세요.",
         failed: "주소 검색에 실패했습니다. 잠시 후 다시 시도하거나 수동 입력해 주세요.",
+        providerRejected: "도로명주소 승인키 또는 등록 URL을 확인할 수 없습니다. 수동 입력을 사용해 주세요.",
+        upstreamFailed: "도로명주소 검색 서버와 연결하지 못했습니다. 잠시 후 다시 시도하거나 수동 입력해 주세요.",
+        responseInvalid: "도로명주소 검색 응답을 확인할 수 없습니다. 수동 입력을 사용해 주세요.",
       },
     },
     sections: {

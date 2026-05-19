@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { resolveMemberInvitationErrorMessage } from "@/lib/invitations/invitationErrorPresentation";
+
 interface MemberInvitationJoinRequestPageProps {
   token: string;
 }
@@ -44,14 +46,6 @@ function formatDate(value?: string | null): string {
 
 function readCompanyName(invitation: PublicMemberInvitation | null): string {
   return invitation?.companyName || invitation?.customerName || "초대한 고객사";
-}
-
-function readFriendlyError(error: string | null): string {
-  if (error === "INVITATION_NOT_FOUND") return "유효하지 않은 초대 링크예요.";
-  if (error === "INVITATION_EXPIRED") return "초대가 만료되었어요.";
-  if (error === "INVITATION_NOT_ACTIVE") return "현재 사용할 수 없는 초대예요.";
-  if (error === "INVITATION_SCOPE_MISMATCH") return "초대 링크의 사용 범위가 맞지 않아요.";
-  return "초대 링크를 확인할 수 없어요.";
 }
 
 function GoogleMark() {
@@ -98,7 +92,7 @@ export default function MemberInvitationJoinRequestPage({
         const payload = (await response.json()) as VerifyInvitationPayload;
         if (!response.ok || !payload.ok || !payload.isJoinable) {
           setVerifyState("invalid");
-          setMessage(readFriendlyError(payload.error ?? null));
+          setMessage(resolveMemberInvitationErrorMessage(payload.error ?? null));
           setInvitation(payload.invitation ?? null);
           return;
         }

@@ -1837,6 +1837,9 @@ export const adminEn = {
         keywordRequired: "Enter a search keyword.",
         notConfigured: "The road-name address API key is not configured. Use manual entry instead.",
         failed: "Address search failed. Try again later or enter the address manually.",
+        providerRejected: "The road-name address API key or registered URL could not be verified. Use manual entry instead.",
+        upstreamFailed: "Could not connect to the road-name address search server. Try again later or enter the address manually.",
+        responseInvalid: "The road-name address response could not be verified. Use manual entry instead.",
       },
     },
     sections: {
