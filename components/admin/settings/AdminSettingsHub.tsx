@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { ADMIN_SURFACE_ITEM_CLASS, ADMIN_SURFACE_SUBTLE_BOX_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminSection } from "@/components/admin/common/AdminSection";
@@ -130,6 +130,47 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
 
 function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountSettingsOverview; loadState: "idle" | "loading" | "loaded" | "failed" }) {
   const t = useAdminTranslation();
+  const [activeRequestType, setActiveRequestType] = useState<"company_info_change" | "account_deactivation" | null>(null);
+  const [requestMessage, setRequestMessage] = useState("");
+  const [requestState, setRequestState] = useState<"idle" | "submitting" | "submitted" | "failed">("idle");
+  const [requestFeedback, setRequestFeedback] = useState("");
+
+  const activeRequestAction = overview.actions.find((action) => action.requestType === activeRequestType) ?? null;
+  const canSubmitRequest = requestState !== "submitting" && requestMessage.trim().length >= 10;
+
+  const submitAccountRequest = async () => {
+    if (!activeRequestType || !canSubmitRequest) return;
+
+    setRequestState("submitting");
+    setRequestFeedback("");
+
+    try {
+      const response = await fetch("/api/admin/settings/company-account-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestType: activeRequestType,
+          message: requestMessage,
+          source: "admin_settings_account_panel",
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || "COMPANY_ACCOUNT_REQUEST_CREATE_FAILED");
+      }
+
+      setRequestState("submitted");
+      setRequestFeedback(t("settings.accountRequest.submitted", "요청이 접수되었습니다. 시스템관리자 검토 후 처리됩니다."));
+      setRequestMessage("");
+      setActiveRequestType(null);
+    } catch {
+      setRequestState("failed");
+      setRequestFeedback(t("settings.accountRequest.failed", "요청을 접수하지 못했습니다. 잠시 후 다시 시도해 주세요."));
+    }
+  };
+
   return (
     <AdminSection
       title={overview.title}
@@ -163,10 +204,85 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
                 <AdminStatusBadge tone={action.tone} size="xs">{action.statusLabel}</AdminStatusBadge>
               </div>
               <p className="mt-2 text-xs leading-5 pbp-text-muted">{action.description}</p>
+              {action.requestType ? (
+                <div className="mt-3">
+                  <AdminButton
+                    size="sm"
+                    variant={action.requestType === "account_deactivation" ? "danger" : "secondary"}
+                    onClick={() => {
+                      setActiveRequestType(action.requestType ?? null);
+                      setRequestState("idle");
+                      setRequestFeedback("");
+                    }}
+                  >
+                    {t("settings.accountRequest.open", "요청 작성")}
+                  </AdminButton>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
       </div>
+
+      {activeRequestAction ? (
+        <div className={`${ADMIN_SURFACE_ITEM_CLASS} rounded-[22px]`}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold pbp-text-primary">{activeRequestAction.label}</p>
+              <p className="mt-1 text-xs leading-5 pbp-text-muted">
+                {t("settings.accountRequest.description", "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.")}
+              </p>
+            </div>
+            <AdminStatusBadge tone={activeRequestAction.tone} size="xs">{activeRequestAction.statusLabel}</AdminStatusBadge>
+          </div>
+          <textarea
+            value={requestMessage}
+            onChange={(event) => {
+              setRequestMessage(event.target.value);
+              if (requestState !== "idle") {
+                setRequestState("idle");
+                setRequestFeedback("");
+              }
+            }}
+            rows={4}
+            className="mt-3 min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-white px-3 py-2 text-sm leading-6 text-stone-900 outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
+            placeholder={t("settings.accountRequest.placeholder", "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.")}
+          />
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs leading-5 pbp-text-muted">
+              {t("settings.accountRequest.validation", "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.")}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <AdminButton
+                variant="ghost"
+                onClick={() => {
+                  setActiveRequestType(null);
+                  setRequestMessage("");
+                  setRequestState("idle");
+                  setRequestFeedback("");
+                }}
+                disabled={requestState === "submitting"}
+              >
+                {t("common.cancel", "취소")}
+              </AdminButton>
+              <AdminButton
+                variant={activeRequestType === "account_deactivation" ? "danger" : "primary"}
+                onClick={submitAccountRequest}
+                disabled={!canSubmitRequest}
+              >
+                {requestState === "submitting" ? t("common.saving", "저장 중") : t("settings.accountRequest.submit", "요청 접수")}
+              </AdminButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {requestFeedback ? (
+        <div className={`${ADMIN_SURFACE_ITEM_CLASS} rounded-[22px] text-sm font-semibold ${requestState === "failed" ? "text-rose-700" : "text-emerald-700"}`}>
+          {requestFeedback}
+        </div>
+      ) : null}
+
       <div className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-2 rounded-[22px] md:grid-cols-2`}>
         {overview.policyNotes.map((note) => (
           <p key={note} className="text-xs leading-5 pbp-text-muted">• {note}</p>

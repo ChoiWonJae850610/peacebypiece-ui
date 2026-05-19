@@ -1273,6 +1273,15 @@ export const adminEn = {
     qualityRateColumn: "Inspection/defect rate",
   },
   settings: {
+    accountRequest: {
+      open: "Write request",
+      description: "Describe the requested change and reason. It will be submitted for system-admin review.",
+      placeholder: "Example: The business name changed. Enter the before/after information and reason.",
+      validation: "Enter at least 10 characters. This is submitted as a review request and is not applied immediately.",
+      submit: "Submit request",
+      submitted: "The request has been submitted and will be reviewed by the system admin.",
+      failed: "Could not submit the request. Try again later.",
+    },
     billing: {
       emptyTitle: "Could not load billing information.",
       emptyDescription: "No settings data is available for the current signed-in company, or you do not have access.",

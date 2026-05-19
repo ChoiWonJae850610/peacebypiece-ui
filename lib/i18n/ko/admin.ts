@@ -1237,6 +1237,15 @@ export const adminKo = {
     qualityRateColumn: "검수/불량률",
   },
   settings: {
+    accountRequest: {
+      open: "요청 작성",
+      description: "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.",
+      placeholder: "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.",
+      validation: "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.",
+      submit: "요청 접수",
+      submitted: "요청이 접수되었습니다. 시스템관리자 검토 후 처리됩니다.",
+      failed: "요청을 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    },
     billing: {
       emptyTitle: "요금제 정보를 불러오지 못했습니다.",
       emptyDescription: "현재 로그인 회사 기준의 설정 데이터가 없거나 조회 권한이 없습니다.",

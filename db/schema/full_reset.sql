@@ -1,6 +1,6 @@
 -- =========================================
 -- WAFL full DB reset schema
--- Version: 0.13.97
+-- Version: 0.14.1
 --
 -- 기준:
 -- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
@@ -50,6 +50,7 @@ DROP TABLE IF EXISTS role_templates CASCADE;
 DROP TABLE IF EXISTS company_members CASCADE;
 
 DROP TABLE IF EXISTS company_user_permissions CASCADE;
+DROP TABLE IF EXISTS company_account_requests CASCADE;
 DROP TABLE IF EXISTS company_onboarding_files CASCADE;
 DROP TABLE IF EXISTS role_permissions CASCADE;
 DROP TABLE IF EXISTS permission_catalog CASCADE;
@@ -1364,6 +1365,36 @@ CREATE INDEX company_members_company_status_idx
 
 CREATE INDEX company_members_user_idx
   ON company_members (user_id);
+
+
+CREATE TABLE company_account_requests (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  requested_by_user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_type text NOT NULL,
+  request_status text NOT NULL DEFAULT 'pending',
+  request_title text NOT NULL,
+  request_message text NOT NULL,
+  request_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  reviewed_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_at timestamptz,
+  review_message text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT company_account_requests_type_check
+    CHECK (request_type IN ('company_info_change', 'account_deactivation')),
+  CONSTRAINT company_account_requests_status_check
+    CHECK (request_status IN ('pending', 'reviewing', 'approved', 'rejected', 'cancelled')),
+  CONSTRAINT company_account_requests_message_check
+    CHECK (length(trim(request_message)) >= 10)
+);
+
+CREATE INDEX company_account_requests_company_status_idx
+  ON company_account_requests (company_id, request_status, created_at DESC);
+
+CREATE INDEX company_account_requests_type_created_idx
+  ON company_account_requests (request_type, created_at DESC);
+
 
 ALTER TABLE permission_catalog
   ADD COLUMN IF NOT EXISTS permission_group text NOT NULL DEFAULT 'general',

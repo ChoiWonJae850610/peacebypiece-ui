@@ -13,6 +13,7 @@ export type AdminAccountSettingsAction = {
   statusLabel: string;
   description: string;
   tone: "neutral" | "warning" | "success";
+  requestType?: "company_info_change" | "account_deactivation";
 };
 
 export type AdminAccountSettingsOverview = {
@@ -141,15 +142,17 @@ export function buildAdminAccountSettingsOverview(input: AdminAccountSettingsOve
       {
         id: "request-company-info-change",
         label: "회사 정보 변경 요청",
-        statusLabel: "후속 연결",
+        statusLabel: "요청 가능",
         tone: "neutral",
+        requestType: "company_info_change",
         description: "회사명, 사업자명, 사업자등록번호, 주소, 대표 연락처 변경은 시스템관리자 검토 요청으로 접수합니다.",
       },
       {
         id: "request-account-deactivation",
         label: "계정 비활성화 요청",
-        statusLabel: "후속 연결",
+        statusLabel: "검토 요청",
         tone: "warning",
+        requestType: "account_deactivation",
         description: "고객사 폐쇄, 관리자 교체, 서비스 중지는 즉시 삭제가 아니라 검토 요청으로 처리합니다.",
       },
       {

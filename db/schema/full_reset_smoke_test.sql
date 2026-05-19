@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.13.98
+-- Version: 0.14.1
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -32,6 +32,7 @@ BEGIN
       ('role_permissions', to_regclass('public.role_permissions')),
       ('company_user_permissions', to_regclass('public.company_user_permissions')),
       ('company_members', to_regclass('public.company_members')),
+      ('company_account_requests', to_regclass('public.company_account_requests')),
       ('member_permissions', to_regclass('public.member_permissions')),
       ('role_templates', to_regclass('public.role_templates')),
       ('role_template_permissions', to_regclass('public.role_template_permissions')),
@@ -172,6 +173,13 @@ BEGIN
       ('permission_catalog', 'is_system_permission'),
       ('permission_catalog', 'sort_order'),
       ('company_members', 'role_template_code'),
+      ('company_account_requests', 'company_id'),
+      ('company_account_requests', 'requested_by_user_id'),
+      ('company_account_requests', 'request_type'),
+      ('company_account_requests', 'request_status'),
+      ('company_account_requests', 'request_title'),
+      ('company_account_requests', 'request_message'),
+      ('company_account_requests', 'request_payload'),
       ('member_permissions', 'permission_code'),
       ('role_templates', 'role_code'),
       ('role_template_permissions', 'permission_code'),
@@ -416,7 +424,9 @@ BEGIN
       ('system_product_type_template_categories_template_idx'),
       ('join_requests_pending_invitation_email_unique'),
       ('company_onboarding_files_company_type_active_idx'),
-      ('company_onboarding_files_storage_key_unique')
+      ('company_onboarding_files_storage_key_unique'),
+      ('company_account_requests_company_status_idx'),
+      ('company_account_requests_type_created_idx')
   ) AS required_indexes(index_name)
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 
@@ -577,6 +587,49 @@ BEGIN
 
   IF NOT company_onboarding_file_type_valid THEN
     RAISE EXCEPTION 'company_onboarding_files_type_check must allow logo and business_license';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  account_request_type_valid boolean;
+  account_request_status_valid boolean;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'company_account_requests'
+      AND cc.constraint_name = 'company_account_requests_type_check'
+      AND cc.check_clause LIKE '%company_info_change%'
+      AND cc.check_clause LIKE '%account_deactivation%'
+  ) INTO account_request_type_valid;
+
+  IF NOT account_request_type_valid THEN
+    RAISE EXCEPTION 'company_account_requests_type_check must allow current account request types';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'company_account_requests'
+      AND cc.constraint_name = 'company_account_requests_status_check'
+      AND cc.check_clause LIKE '%pending%'
+      AND cc.check_clause LIKE '%reviewing%'
+      AND cc.check_clause LIKE '%approved%'
+      AND cc.check_clause LIKE '%rejected%'
+      AND cc.check_clause LIKE '%cancelled%'
+  ) INTO account_request_status_valid;
+
+  IF NOT account_request_status_valid THEN
+    RAISE EXCEPTION 'company_account_requests_status_check must allow current review statuses';
   END IF;
 END $$;
 
