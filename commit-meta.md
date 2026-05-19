@@ -1,28 +1,19 @@
 Version :
-0.13.95
+0.13.96
 
 Summary :
-작업지시서와 첨부 메모 저장소의 mock 모드 제거
+full reset smoke test 기준 보정
 
 Description :
-작업지시서, 협력업체 구형 저장소 타입, 첨부 메모 저장소의 mock 모드 선택지를 제거하고 DB 전용 모드로 고정했다. 더 이상 사용하지 않는 mock 작업지시서 저장소와 mock 첨부 메모 저장소, 관련 seed 파일을 삭제했다. 실제 로그인 세션과 DB 기준 흐름을 유지하기 위한 정리이며 화면 기능과 R2 흐름은 변경하지 않았다.
+full_reset.sql에 기본 역할 role_catalog seed를 추가하고, 디자이너 기본 역할 템플릿에서 발주 권한 seed를 제거했다. full_reset_smoke_test.sql은 실제 고객사 seed를 요구하지 않도록 수정해 초대/온보딩/승인 플로우로 고객사 데이터를 생성하는 현재 정책과 맞췄다.
 
 수정 파일 목록 :
-- lib/repositories/workorderRepository.ts
-- lib/repositories/workorderRepositoryMode.ts
-- lib/repositories/workorderRepositoryFactory.ts
-- lib/repositories/partnerRepository.ts
-- lib/workorder/persistence/attachmentMemoRepository.ts
-- lib/workorder/persistence/attachmentMemoAdapter.ts
+- db/schema/full_reset.sql
+- db/schema/full_reset_smoke_test.sql
 - lib/constants/app.ts
 
 추가 파일 목록 :
 없음
 
 삭제 파일 목록 :
-- lib/repositories/mockWorkorderAdapter.ts
-- lib/repositories/mockWorkorderRepository.ts
-- lib/workorder/persistence/mockAttachmentMemoRepository.ts
-- lib/data/mock/seedState.ts
-- lib/data/mock/users.ts
-- lib/data/mock/workorders.ts
+없음

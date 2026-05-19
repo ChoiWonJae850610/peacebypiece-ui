@@ -1,6 +1,6 @@
 -- =========================================
 -- WAFL full DB reset schema
--- Version: 0.13.86
+-- Version: 0.13.96
 --
 -- 기준:
 -- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
@@ -1375,6 +1375,20 @@ ALTER TABLE permission_catalog
 CREATE INDEX IF NOT EXISTS permission_catalog_group_sort_idx
   ON permission_catalog (permission_group, sort_order, permission_key);
 
+INSERT INTO role_catalog (role, label, description, is_system, is_active)
+VALUES
+  ('company_admin', '고객관리자', '고객사 운영과 멤버 권한을 관리하는 기본 역할이다.', true, true),
+  ('designer', '디자이너', '작업지시서 작성과 디자인 첨부를 담당하는 기본 역할이다.', true, true),
+  ('inspector', '검수담당자', '검수 상태와 완료 확인을 담당하는 기본 역할이다.', true, true),
+  ('inventory_manager', '재고/자재담당자', '생산 구성과 자재 확인을 담당하는 기본 역할이다.', true, true),
+  ('viewer', '조회전용', '업무 화면을 읽기 중심으로 확인하는 기본 역할이다.', true, true)
+ON CONFLICT (role) DO UPDATE SET
+  label = EXCLUDED.label,
+  description = EXCLUDED.description,
+  is_system = EXCLUDED.is_system,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
 INSERT INTO permission_catalog (
   permission_key,
   label,
@@ -1530,7 +1544,6 @@ VALUES
   ('role-template-designer', 'workorder.create', true),
   ('role-template-designer', 'workorder.update', true),
   ('role-template-designer', 'workorder.status.review', true),
-  ('role-template-designer', 'workorder.status.order', true),
   ('role-template-designer', 'partner.read', true),
   ('role-template-designer', 'partner.create', true),
   ('role-template-designer', 'partner.update', true),

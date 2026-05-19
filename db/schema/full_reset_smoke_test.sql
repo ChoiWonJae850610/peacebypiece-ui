@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.13.86
+-- Version: 0.13.96
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -260,9 +260,8 @@ BEGIN
     RAISE EXCEPTION 'plans seed count too low: %', plan_count;
   END IF;
 
-  IF company_count < 1 THEN
-    RAISE EXCEPTION 'companies seed missing';
-  END IF;
+  -- full_reset은 실제 고객사 seed를 생성하지 않는다.
+  -- 고객사 데이터는 초대/온보딩/승인 플로우에서 생성되므로 0건도 정상이다.
 
   IF system_permission_count < 7 THEN
     RAISE EXCEPTION 'system_permission_catalog seed count too low: %', system_permission_count;
