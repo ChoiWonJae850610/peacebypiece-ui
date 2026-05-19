@@ -1833,7 +1833,9 @@ export const adminKo = {
       basic: "Basic",
       standard: "Standard",
       pro: "Pro",
+      trial: "무료(Trial) 7일",
     },
+    planReadOnlyDescription: "최초 고객사 등록 시 기본 체험 요금제가 자동 적용됩니다. 실제 요금제 변경은 승인 후 환경설정에서 요청합니다.",
     fileUploads: {
       select: "파일 선택",
       replace: "교체",

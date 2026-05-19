@@ -3,6 +3,7 @@
 import { type ChangeEvent, type InputHTMLAttributes, type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { useI18n } from "@/lib/i18n";
+import { formatBusinessRegistrationNumber } from "@/lib/utils/businessRegistrationFormat";
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
 
 type CompanyOnboardingFileType = "logo" | "business_license";
@@ -65,7 +66,7 @@ const COMPANY_ONBOARDING_TEXT_LIMITS = {
   companyName: 60,
   companyEnglishName: 80,
   businessName: 60,
-  businessRegistrationNumber: 20,
+  businessRegistrationNumber: 12,
   postalCode: 10,
   roadAddress: 120,
   jibunAddress: 120,
@@ -203,14 +204,14 @@ function buildDraft(profile: CompanyOnboardingProfile | null): CompanyOnboarding
     companyName: isOnboardingPlaceholderCompanyName(profile?.companyName) ? "" : profile?.companyName ?? "",
     companyEnglishName: profile?.companyEnglishName ?? "",
     businessName: profile?.businessName ?? "",
-    businessRegistrationNumber: profile?.businessRegistrationNumber ?? "",
+    businessRegistrationNumber: formatBusinessRegistrationNumber(profile?.businessRegistrationNumber ?? ""),
     logoUrl: profile?.logoUrl ?? "",
     postalCode: profile?.postalCode ?? "",
     roadAddress: profile?.roadAddress ?? "",
     jibunAddress: profile?.jibunAddress ?? "",
     addressDetail: profile?.addressDetail ?? "",
     addressExtra: profile?.addressExtra ?? "",
-    requestedPlanCode: profile?.requestedPlanCode || "basic",
+    requestedPlanCode: "basic",
     adminName: profile?.adminName ?? "",
     adminPhone: formatPhoneNumber(profile?.adminPhone ?? ""),
   };
@@ -496,6 +497,10 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
     };
   }, [blocksAdminWorkspace]);
 
+  function updateBusinessRegistrationNumber(value: string) {
+    updateDraft("businessRegistrationNumber", formatBusinessRegistrationNumber(value));
+  }
+
   function updateDraft<TKey extends keyof CompanyOnboardingDraft>(key: TKey, value: CompanyOnboardingDraft[TKey]) {
     setDraft((current) => ({ ...current, [key]: value }));
     if (saveState === "error") setSaveState("idle");
@@ -650,6 +655,7 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
         "payload",
         JSON.stringify({
           ...draft,
+          requestedPlanCode: "basic",
           adminPhone: normalizePhoneNumber(draft.adminPhone),
         }),
       );
@@ -756,7 +762,7 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
                       <TextInput label={copy.fields.companyName} value={draft.companyName} onChange={(value) => updateDraft("companyName", value)} placeholder={copy.placeholders.companyName} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.companyName} required />
                       <TextInput label={copy.fields.companyEnglishName} value={draft.companyEnglishName} onChange={(value) => updateDraft("companyEnglishName", value)} placeholder={copy.placeholders.companyEnglishName} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.companyEnglishName} />
                       <TextInput label={copy.fields.businessName} value={draft.businessName} onChange={(value) => updateDraft("businessName", value)} placeholder={copy.placeholders.businessName} maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.businessName} required />
-                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={(value) => updateDraft("businessRegistrationNumber", value)} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.businessRegistrationNumber} required />
+                      <TextInput label={copy.fields.businessRegistrationNumber} value={draft.businessRegistrationNumber} onChange={updateBusinessRegistrationNumber} placeholder={copy.placeholders.businessRegistrationNumber} inputMode="numeric" maxLength={COMPANY_ONBOARDING_TEXT_LIMITS.businessRegistrationNumber} required />
                     </section>
 
                     <section className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
@@ -882,18 +888,16 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
                         required
                       />
                     </div>
-                    <label className="grid gap-1.5 text-sm font-semibold text-[var(--pbp-text-primary)]">
+                    <div className="grid gap-1.5 text-sm font-semibold text-[var(--pbp-text-primary)]">
                       <span>{copy.fields.requestedPlanCode}</span>
-                      <select
-                        value={draft.requestedPlanCode}
-                        onChange={(event) => updateDraft("requestedPlanCode", event.target.value)}
-                        className="h-11 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-accent)]"
+                      <div
+                        aria-readonly="true"
+                        className="grid gap-1 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2 text-sm text-[var(--pbp-text-muted)] opacity-70"
                       >
-                        <option value="basic">{copy.planOptions.basic}</option>
-                        <option value="standard">{copy.planOptions.standard}</option>
-                        <option value="pro">{copy.planOptions.pro}</option>
-                      </select>
-                    </label>
+                        <span className="font-bold text-[var(--pbp-text-primary)]">{copy.planOptions.trial}</span>
+                        <span className="text-xs leading-5">{copy.planReadOnlyDescription}</span>
+                      </div>
+                    </div>
                   </section>
 
                   {errorMessage ? (

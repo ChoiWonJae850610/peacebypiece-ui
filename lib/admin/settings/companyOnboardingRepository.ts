@@ -2,6 +2,7 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import type { WaflSessionPayload } from "@/lib/auth/session";
+import { formatBusinessRegistrationNumber } from "@/lib/utils/businessRegistrationFormat";
 import { normalizePhoneNumber } from "@/lib/utils/phoneFormat";
 import {
   isCompanyTrialExpired,
@@ -83,7 +84,7 @@ function mapRow(row: CompanyOnboardingRow): CompanyOnboardingProfile {
     companyName: normalizeText(row.company_name),
     companyEnglishName: normalizeText(row.company_english_name),
     businessName: normalizeText(row.business_name),
-    businessRegistrationNumber: normalizeText(row.business_registration_number),
+    businessRegistrationNumber: formatBusinessRegistrationNumber(normalizeText(row.business_registration_number)),
     logoUrl: normalizeText(row.logo_url),
     postalCode: normalizeText(row.postal_code),
     roadAddress: normalizeText(row.road_address),
@@ -257,14 +258,14 @@ function normalizeCompanyOnboardingUpdateInput(input: CompanyOnboardingUpdateInp
     companyName: normalizeNullableText(input.companyName),
     companyEnglishName: normalizeNullableText(input.companyEnglishName),
     businessName: normalizeNullableText(input.businessName),
-    businessRegistrationNumber: normalizeNullableText(input.businessRegistrationNumber),
+    businessRegistrationNumber: formatBusinessRegistrationNumber(normalizeNullableText(input.businessRegistrationNumber) ?? ""),
     logoUrl: normalizeNullableText(input.logoUrl),
     postalCode: normalizeNullableText(input.postalCode),
     roadAddress: normalizeNullableText(input.roadAddress),
     jibunAddress: normalizeNullableText(input.jibunAddress),
     addressDetail: normalizeNullableText(input.addressDetail),
     addressExtra: normalizeNullableText(input.addressExtra),
-    requestedPlanCode: normalizeNullableText(input.requestedPlanCode),
+    requestedPlanCode: "basic",
     adminName: normalizeNullableText(input.adminName),
     adminPhone: normalizePhoneNumber(String(input.adminPhone ?? "")),
   };

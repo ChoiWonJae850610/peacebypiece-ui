@@ -1888,7 +1888,9 @@ export const adminEn = {
       basic: "Basic",
       standard: "Standard",
       pro: "Pro",
+      trial: "Free trial · 7 days",
     },
+    planReadOnlyDescription: "The default trial plan is applied automatically during initial company registration. Plan changes are requested after approval from settings.",
     fileUploads: {
       select: "Select file",
       replace: "Replace",
