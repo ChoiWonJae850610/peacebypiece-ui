@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { buildAdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
+import { buildAdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import {
+  getAdminAccountSettingsSnapshot,
   getAdminCompanyById,
   getCompanySettings,
   updateCompanySettings,
@@ -32,7 +34,7 @@ export async function GET() {
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
-    const { companyId } = scopeResult.companyScope;
+    const { companyId, userId } = scopeResult.companyScope;
     const company = await getAdminCompanyById(companyId);
 
     if (!company) {
@@ -43,8 +45,10 @@ export async function GET() {
     }
 
     const settings = await getCompanySettings(company.id);
+    const accountSnapshot = await getAdminAccountSettingsSnapshot(company.id, userId);
     const billing = buildAdminBillingPlanOverview({ ok: true, company, settings });
-    return NextResponse.json({ ok: true, company, settings, billing });
+    const account = buildAdminAccountSettingsOverview({ company, account: accountSnapshot });
+    return NextResponse.json({ ok: true, company, settings, billing, account });
   } catch (error) {
     const message = getErrorMessage(error);
     console.error("[ADMIN_CURRENT_COMPANY_UNAVAILABLE]", { message, error });

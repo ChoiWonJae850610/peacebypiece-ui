@@ -1,19 +1,23 @@
 Version :
-0.13.99
+0.14.0
 
 Summary :
-고객사 관리자 초기 온보딩 모달 깜빡임 보정
+고객사 관리자 환경설정 계정정보 구조 정리
 
 Description :
-고객사 관리자 화면 새로고침 시 서버에서 이미 active 상태로 확인된 고객사에 대해 온보딩 상태 조회가 끝나기 전 회사정보 등록 모달이 잠깐 표시되지 않도록 초기 접근 상태를 AdminCompanyOnboardingGate에 전달했다. profile_required, approval_pending, rejected, trial 제한 상태의 기존 차단 흐름은 유지했다.
+고객사 관리자 환경설정의 기본 진입을 계정 정보로 변경하고, 현재 고객사와 대표 관리자 계정 정보를 실제 로그인 회사 기준으로 표시하도록 정리했다. 회사 정보 변경, 계정 비활성화 요청, 개인설정 이동 범위도 후속 요청 흐름 기준으로 분리했다.
 
 수정 파일 목록 :
-- app/admin/layout.tsx
-- components/admin/companies/AdminCompanyOnboardingGate.tsx
+- app/admin/settings/page.tsx
+- app/api/admin/companies/current/route.ts
+- components/admin/settings/AdminSettingsHub.tsx
+- lib/admin/settings/adminSettingsHub.ts
+- lib/admin/settings/companyRepository.ts
+- lib/admin/settings/companyTypes.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- lib/admin/settings/adminAccountSettingsOverview.ts
 
 삭제 파일 목록 :
 없음

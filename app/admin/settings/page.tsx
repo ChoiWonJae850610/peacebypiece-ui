@@ -19,7 +19,7 @@ export default async function AdminSettingsPage() {
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/settings")}
       title="환경설정"
-      description="회사 운영 기준과 계정 관련 설정을 관리합니다."
+      description="회사 계정 정보, 기준정보, 요금제, 개발 건의를 관리합니다."
     >
       <AdminSettingsHub />
     </AdminShell>

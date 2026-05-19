@@ -16,12 +16,13 @@ import {
 } from "@/lib/admin/settings/adminSettingsHub";
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 import { type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
-import { ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER } from "@/lib/admin/settings/adminAccountSettingsPlaceholder";
+import { type AdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminCurrentCompanyPayload = {
   ok?: boolean;
   billing?: AdminBillingPlanOverview;
+  account?: AdminAccountSettingsOverview;
 };
 
 const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badgeTone: AdminStatusBadgeTone; dot: string }> = {
@@ -127,48 +128,47 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
   );
 }
 
-function AccountSettingsPanel() {
-  const account = ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER;
+function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountSettingsOverview; loadState: "idle" | "loading" | "loaded" | "failed" }) {
+  const t = useAdminTranslation();
   return (
     <AdminSection
-      title={account.title}
-      description={account.description}
-      actions={<AdminStatusBadge tone="warning">{account.readOnlyLabel}</AdminStatusBadge>}
+      title={overview.title}
+      description={overview.description}
+      actions={
+        <div className="flex flex-wrap gap-1.5">
+          <AdminStatusBadge tone={overview.statusTone}>{overview.statusLabel}</AdminStatusBadge>
+          <AdminStatusBadge tone={loadState === "failed" ? "warning" : "neutral"}>
+            {loadState === "loading" ? t("common.loadingShort", "조회 중") : t("settings.account.currentData", "현재 계정 기준")}
+          </AdminStatusBadge>
+        </div>
+      }
       className="min-h-[320px]"
       bodyClassName="mt-4 space-y-4"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.9fr)]">
         <div className="grid gap-3 sm:grid-cols-2">
-          {account.metrics.map((metric) => (
+          {overview.metrics.map((metric) => (
             <div key={metric.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
               <p className="text-[11px] font-semibold pbp-text-subtle">{metric.label}</p>
-              <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
+              <p className="mt-2 text-base font-semibold text-stone-950 sm:text-lg">{metric.value}</p>
               <p className="mt-2 text-xs leading-5 pbp-text-muted">{metric.description}</p>
             </div>
           ))}
         </div>
         <div className="space-y-3">
-          {account.actions.map((action) => {
-            const body = (
-              <>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold pbp-text-primary">{action.label}</p>
-                  <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
-                </div>
-                <p className="mt-2 text-xs leading-5 pbp-text-muted">{action.description}</p>
-              </>
-            );
-
-            return (
-              <div key={action.id} className={ADMIN_SURFACE_ITEM_CLASS}>
-                {body}
+          {overview.actions.map((action) => (
+            <div key={action.id} className={ADMIN_SURFACE_ITEM_CLASS}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold pbp-text-primary">{action.label}</p>
+                <AdminStatusBadge tone={action.tone} size="xs">{action.statusLabel}</AdminStatusBadge>
               </div>
-            );
-          })}
+              <p className="mt-2 text-xs leading-5 pbp-text-muted">{action.description}</p>
+            </div>
+          ))}
         </div>
       </div>
       <div className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-2 rounded-[22px] md:grid-cols-2`}>
-        {account.policyNotes.map((note) => (
+        {overview.policyNotes.map((note) => (
           <p key={note} className="text-xs leading-5 pbp-text-muted">• {note}</p>
         ))}
       </div>
@@ -218,13 +218,16 @@ function FeedbackPanel() {
 
 export default function AdminSettingsHub() {
   const t = useAdminTranslation();
-  const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("standards");
+  const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("account");
   const [billingPlanOverview, setBillingPlanOverview] = useState<AdminBillingPlanOverview | null>(null);
+  const [accountOverview, setAccountOverview] = useState<AdminAccountSettingsOverview | null>(null);
   const [billingPlanLoadState, setBillingPlanLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
+  const [accountLoadState, setAccountLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
 
   useEffect(() => {
     let cancelled = false;
     setBillingPlanLoadState("loading");
+    setAccountLoadState("loading");
 
     fetch("/api/admin/companies/current", { cache: "no-store" })
       .then(async (response) => {
@@ -234,14 +237,21 @@ export default function AdminSettingsHub() {
         if (payload?.billing) {
           setBillingPlanOverview(payload.billing);
           setBillingPlanLoadState("loaded");
-          return;
+        } else {
+          setBillingPlanLoadState("failed");
         }
 
-        setBillingPlanLoadState("failed");
+        if (payload?.account) {
+          setAccountOverview(payload.account);
+          setAccountLoadState("loaded");
+        } else {
+          setAccountLoadState("failed");
+        }
       })
       .catch(() => {
         if (!cancelled) {
           setBillingPlanLoadState("failed");
+          setAccountLoadState("failed");
         }
       });
 
@@ -269,7 +279,16 @@ export default function AdminSettingsHub() {
     }
 
     if (activeMenuId === "account") {
-      return <AccountSettingsPanel />;
+      if (!accountOverview) {
+        return (
+          <AdminEmptyState
+            title={t("settings.account.emptyTitle", "계정 정보를 불러오지 못했습니다.")}
+            description={t("settings.account.emptyDescription", "현재 로그인 회사와 관리자 계정 기준의 설정 데이터를 확인할 수 없습니다.")}
+          />
+        );
+      }
+
+      return <AccountSettingsPanel overview={accountOverview} loadState={accountLoadState} />;
     }
 
     if (activeMenuId === "feedback") {
@@ -283,7 +302,7 @@ export default function AdminSettingsHub() {
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0 sm:pr-1">
       <AdminSection
         title={t("settings.hub.title", "환경설정")}
-        description={t("settings.hub.description", "회사 운영 기준정보, 요금제, 계정, 개발 건의를 한 화면에서 전환해 확인합니다.")}
+        description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 개발 건의를 한 화면에서 전환해 확인합니다.")}
         actions={
           <p className="w-full rounded-2xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs font-semibold leading-5 pbp-text-muted sm:w-auto">
             {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}

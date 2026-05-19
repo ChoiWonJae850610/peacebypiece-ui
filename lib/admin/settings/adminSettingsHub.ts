@@ -13,6 +13,14 @@ export type AdminSettingsMenuItem = {
 
 export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
   {
+    id: "account",
+    title: "계정 정보",
+    description: "회사 정보, 대표 계정, 상태, 변경 요청 범위를 확인합니다.",
+    statusLabel: "현재 계정",
+    tone: "amber",
+    detailItems: ["회사 정보", "대표 계정", "탈퇴 요청"],
+  },
+  {
     id: "standards",
     title: "기준정보 설정",
     description: "작업지시서 생성과 협력업체 선택에 쓰는 회사 기준값을 관리합니다.",
@@ -27,14 +35,6 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
     statusLabel: "읽기 전용",
     tone: "emerald",
     detailItems: ["현재 요금제", "저장공간 한도", "변경 요청"],
-  },
-  {
-    id: "account",
-    title: "계정 정보",
-    description: "회사 계정과 개인 설정의 분리 기준을 확인합니다.",
-    statusLabel: "읽기 전용",
-    tone: "amber",
-    detailItems: ["대표 계정", "개인 설정", "관리자 교체"],
   },
   {
     id: "feedback",
@@ -54,10 +54,10 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
     items: ["현재 요금제 확인", "저장공간 한도 확인", "요금제 변경 요청", "청구 정보 문의"],
   },
   account: {
-    title: "계정 설정은 읽기 전용으로 확인합니다.",
-    description: "회사 정보, 대표 로그인 이메일, 계정 상태를 확인하고 개인 설정과 조직 설정을 분리하는 기준을 안내합니다.",
-    nextStep: "회사 정보 변경, 계정 비활성화, 관리자 교체 요청은 정식 인증/승인 연결 후 활성화합니다.",
-    items: ["회사 정보 확인", "대표 로그인 이메일 확인", "개인 설정 분리", "계정 비활성화 요청"],
+    title: "계정 정보는 현재 고객사 기준으로 확인합니다.",
+    description: "회사 정보, 대표 로그인 이메일, 계정 상태, 탈퇴·비활성화 요청 범위를 조직 설정과 개인 설정으로 나누어 안내합니다.",
+    nextStep: "회사 정보 변경, 계정 비활성화, 관리자 교체 요청은 시스템관리자 검토 요청 흐름으로 확장합니다.",
+    items: ["회사 정보 확인", "대표 로그인 이메일 확인", "회사 정보 변경 요청", "계정 비활성화 요청"],
   },
   feedback: {
     title: "개발 건의는 이메일로 접수합니다.",
