@@ -8,6 +8,7 @@ import {
 } from "@/lib/admin/adminFiles.serverActions";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
+import { isWorkOrderAttachmentStorageKeyForWorkOrder } from "@/lib/storage/r2/r2Keys";
 import { getCompanySettings, listAdminCompanies } from "@/lib/admin/settings/companyRepository";
 
 export type AdminFilePurgeWorkerInput = {
@@ -37,15 +38,26 @@ function getErrorMessage(error: unknown): string {
 }
 
 function getDeleteKeys(candidate: AdminPurgeCandidate): string[] {
-  return Array.from(
+  const keys = Array.from(
     new Set([candidate.storageKey, candidate.thumbnailKey].filter((key): key is string => typeof key === "string" && key.trim().length > 0)),
   );
+
+  for (const key of keys) {
+    if (!isWorkOrderAttachmentStorageKeyForWorkOrder({
+      key,
+      companyId: candidate.companyId,
+      workOrderId: candidate.workOrderId,
+    })) {
+      throw new Error("R2_PURGE_STORAGE_KEY_SCOPE_MISMATCH");
+    }
+  }
+
+  return keys;
 }
 
 async function purgeCandidate(candidate: AdminPurgeCandidate): Promise<AdminFilePurgeWorkerItemResult> {
-  const keys = getDeleteKeys(candidate);
-
   try {
+    const keys = getDeleteKeys(candidate);
     for (const key of keys) {
       await deleteR2ObjectViaWorker({ key });
       deleteCachedR2UrlsByKey(key);

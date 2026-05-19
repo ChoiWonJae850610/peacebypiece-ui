@@ -23,6 +23,7 @@ import {
 } from "@/lib/admin/files/serverActions";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
+import { isWorkOrderAttachmentStorageKeyForWorkOrder } from "@/lib/storage/r2/r2Keys";
 import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
@@ -576,9 +577,9 @@ function getPurgeErrorMessage(error: unknown): string {
 }
 
 function getPurgeDeleteKeys(
-  candidate: Pick<PurgeCandidateRow, "storage_key" | "thumbnail_key">,
+  candidate: Pick<PurgeCandidateRow, "company_id" | "order_id" | "storage_key" | "thumbnail_key">,
 ): string[] {
-  return Array.from(
+  const keys = Array.from(
     new Set(
       [candidate.storage_key, candidate.thumbnail_key].filter(
         (key): key is string =>
@@ -586,6 +587,18 @@ function getPurgeDeleteKeys(
       ),
     ),
   );
+
+  for (const key of keys) {
+    if (!isWorkOrderAttachmentStorageKeyForWorkOrder({
+      key,
+      companyId: candidate.company_id,
+      workOrderId: candidate.order_id,
+    })) {
+      throw new Error("R2_PURGE_STORAGE_KEY_SCOPE_MISMATCH");
+    }
+  }
+
+  return keys;
 }
 
 function getWorkOrderBundleFileVisibilitySql(alias: string): string {

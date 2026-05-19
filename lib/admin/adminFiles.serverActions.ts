@@ -750,6 +750,8 @@ export async function listAdminFileManagementRows(input: {
 type PurgeCandidateRow = DbQueryResultRow & {
   id: string;
   attachment_id: string;
+  company_id: string;
+  order_id: string | null;
   storage_key: string | null;
   thumbnail_key: string | null;
   purge_after_at: string | Date | null;
@@ -758,6 +760,8 @@ type PurgeCandidateRow = DbQueryResultRow & {
 export type AdminPurgeCandidate = {
   trashItemId: string;
   attachmentId: string;
+  companyId: string;
+  workOrderId: string | null;
   storageKey: string | null;
   thumbnailKey: string | null;
   purgeAfterAt: string;
@@ -777,6 +781,8 @@ export async function listPurgeReadyAttachmentTrashItems(input: {
   const result = await queryDb<PurgeCandidateRow>(
     `SELECT t.id,
             t.attachment_id,
+            t.company_id,
+            t.order_id,
             t.storage_key,
             t.thumbnail_key,
             (COALESCE(t.deleted_at, now()) + ($3::integer * interval '1 day')) AS purge_after_at
@@ -810,6 +816,8 @@ export async function listPurgeReadyAttachmentTrashItems(input: {
   return result.rows.map((row) => ({
     trashItemId: row.id,
     attachmentId: row.attachment_id,
+    companyId: row.company_id,
+    workOrderId: row.order_id,
     storageKey: row.storage_key,
     thumbnailKey: row.thumbnail_key,
     purgeAfterAt: formatDate(row.purge_after_at),
