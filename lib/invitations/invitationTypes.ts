@@ -56,5 +56,6 @@ export interface InvitationRepository {
   listInvitations(companyId: string): Promise<InvitationRecord[]>;
   listSystemCompanyAdminInvitations(): Promise<InvitationRecord[]>;
   revokeInvitation(invitationId: string): Promise<InvitationRecord>;
+  revokeCompanyMemberInvitation(invitationId: string, companyId: string): Promise<InvitationRecord>;
   findInvitationByRawToken(rawToken: string): Promise<InvitationRecord | null>;
 }

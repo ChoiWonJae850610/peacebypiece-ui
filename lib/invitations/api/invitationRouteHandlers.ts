@@ -211,9 +211,23 @@ export async function handleCreateInvitation(request: Request) {
 export async function handleRevokeInvitation(invitationId: string) {
   try {
     const systemScope = await requireSystemAdminScope();
-    if (!systemScope.ok) return systemScope.response;
+    if (systemScope.ok) {
+      const invitation = await invitationRepository.revokeInvitation(invitationId);
+      const { tokenHash: _tokenHash, ...publicInvitation } = invitation;
 
-    const invitation = await invitationRepository.revokeInvitation(invitationId);
+      return NextResponse.json({
+        ok: true,
+        invitation: publicInvitation,
+      });
+    }
+
+    const companyScope = await requireAdminMemberCompanyScope();
+    if (!companyScope.ok) return companyScope.response;
+
+    const invitation = await invitationRepository.revokeCompanyMemberInvitation(
+      invitationId,
+      companyScope.companyScope.companyId,
+    );
     const { tokenHash: _tokenHash, ...publicInvitation } = invitation;
 
     return NextResponse.json({

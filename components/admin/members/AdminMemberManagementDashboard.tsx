@@ -12,6 +12,7 @@ import {
   type MemberManagementStatus,
 } from "@/lib/admin/members/memberManagementPresentation";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
+import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
@@ -99,7 +100,14 @@ type PendingMemberInvitationRow = {
   method: MemberInviteMethod;
   inviteUrl: string;
   expiresAt: string;
-  status: "pending" | "sent" | "expired";
+  status: InvitationRecord["status"];
+};
+
+type MemberInvitationListResponse = {
+  ok?: boolean;
+  invitations?: InvitationRecord[];
+  error?: string;
+  message?: string;
 };
 
 
@@ -364,6 +372,33 @@ function getAbsoluteInviteUrl(inviteUrl: string): string {
   return new URL(inviteUrl, window.location.origin).toString();
 }
 
+function getMemberInvitationTargetLabel(invitation: InvitationRecord): string {
+  return (
+    invitation.recipientEmail?.trim() ||
+    invitation.companyName?.trim() ||
+    "링크 직접 전달"
+  );
+}
+
+function getMemberInviteMethod(invitation: InvitationRecord): MemberInviteMethod {
+  return invitation.recipientEmail?.trim() ? "email" : "phone";
+}
+
+function toPendingMemberInvitationRow(
+  invitation: InvitationRecord,
+): PendingMemberInvitationRow {
+  return {
+    id: invitation.id,
+    target: getMemberInvitationTargetLabel(invitation),
+    method: getMemberInviteMethod(invitation),
+    inviteUrl: getAbsoluteInviteUrl(
+      invitation.inviteUrlPath ?? `/invite/member/${invitation.id}`,
+    ),
+    expiresAt: invitation.expiresAt,
+    status: invitation.status,
+  };
+}
+
 function resolveExpiresAt(expiresInDays: string): string {
   const days = Number.parseInt(expiresInDays.replace("d", ""), 10);
   const expiresAt = new Date();
@@ -402,6 +437,7 @@ export default function AdminMemberManagementDashboard() {
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const [revokingInviteId, setRevokingInviteId] = useState<string | null>(null);
   const [memberRecords, setMemberRecords] = useState<
     AdminCompanyMemberRecord[]
   >([]);
@@ -523,7 +559,16 @@ export default function AdminMemberManagementDashboard() {
         className: "whitespace-nowrap",
         render: (invitation) => (
           <AdminStatusBadge
-            tone={invitation.status === "expired" ? "warning" : "success"}
+            tone={
+              invitation.status === "revoked" ||
+              invitation.status === "cancelled"
+                ? "danger"
+                : invitation.status === "expired"
+                  ? "warning"
+                  : invitation.status === "accepted"
+                    ? "neutral"
+                    : "success"
+            }
           >
             {t(
               `memberManagement.invitationStatuses.${invitation.status}`,
@@ -540,19 +585,25 @@ export default function AdminMemberManagementDashboard() {
         render: (invitation) => (
           <button
             type="button"
-            onClick={() => handleCancelPendingInvitation(invitation.id)}
-            className="inline-flex size-8 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-sm font-semibold pbp-text-muted transition hover:border-[var(--pbp-danger-border)] hover:text-[var(--pbp-danger)]"
+            onClick={() => void handleCancelPendingInvitation(invitation)}
+            disabled={
+              revokingInviteId !== null ||
+              invitation.status === "accepted" ||
+              invitation.status === "revoked" ||
+              invitation.status === "cancelled"
+            }
+            className="inline-flex size-8 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-sm font-semibold pbp-text-muted transition hover:border-[var(--pbp-danger-border)] hover:text-[var(--pbp-danger)] disabled:cursor-not-allowed disabled:opacity-45"
             aria-label={t(
               "memberManagement.inviteBuilder.actions.cancel",
               "초대 취소",
             )}
           >
-            ×
+            {revokingInviteId === invitation.id ? "…" : "×"}
           </button>
         ),
       },
     ],
-    [t],
+    [revokingInviteId, t],
   );
   const joinRequests = useMemo(
     () => toMemberJoinRequestPreviews(joinRequestRecords),
@@ -822,6 +873,28 @@ export default function AdminMemberManagementDashboard() {
     },
   ];
 
+  async function loadMemberInvitations() {
+    try {
+      const response = await fetch("/api/invitations?scope=company_to_member", {
+        cache: "no-store",
+      });
+      const payload = (await response.json()) as MemberInvitationListResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message ?? payload.error ?? "INVITATIONS_LOAD_FAILED");
+      }
+
+      setPendingInvitations(
+        (payload.invitations ?? []).map(toPendingMemberInvitationRow),
+      );
+    } catch (error) {
+      setInviteError(
+        error instanceof Error ? error.message : "INVITATIONS_LOAD_FAILED",
+      );
+      setPendingInvitations([]);
+    }
+  }
+
   async function loadCompanyMembers() {
     setMemberListLoadStatus("loading");
     setMemberListLoadError(null);
@@ -882,6 +955,7 @@ export default function AdminMemberManagementDashboard() {
   }
 
   useEffect(() => {
+    void loadMemberInvitations();
     void loadCompanyMembers();
     void loadMemberJoinRequests();
   }, []);
@@ -1076,6 +1150,7 @@ export default function AdminMemberManagementDashboard() {
       );
       await loadMemberJoinRequests();
       await loadCompanyMembers();
+      await loadMemberInvitations();
     } catch (error) {
       console.error("[admin:members] join request review failed", error);
       setFeedbackMessage(
@@ -1107,36 +1182,12 @@ export default function AdminMemberManagementDashboard() {
     setInviteError(null);
 
     try {
-      if (inviteMethod === "phone") {
-        setPendingInvitations((previous) => [
-          {
-            id: `local-sms-${Date.now()}`,
-            target: formatPhoneNumber(target),
-            method: "phone",
-            inviteUrl: getAbsoluteInviteUrl(
-              `/invite/member/sms-delivery-pending-${Date.now()}`,
-            ),
-            expiresAt,
-            status: "pending",
-          },
-          ...previous,
-        ]);
-        setTargetContact("");
-        setFeedbackMessage(
-          t(
-            "memberManagement.inviteBuilder.feedback.created",
-            "초대 링크가 생성되었습니다.",
-          ),
-        );
-        return;
-      }
-
       const response = await fetch("/api/invitations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "company_to_member",
-          recipientEmail: target,
+          recipientEmail: inviteMethod === "email" ? target : null,
           recipientRole: selectedRole.id as
             | "designer"
             | "inspector"
@@ -1156,14 +1207,14 @@ export default function AdminMemberManagementDashboard() {
       setPendingInvitations((previous) => [
         {
           id: payload.invitation?.id ?? `local-${Date.now()}`,
-          target,
-          method: "email",
+          target: inviteMethod === "phone" ? formatPhoneNumber(target) : target,
+          method: inviteMethod,
           inviteUrl: getAbsoluteInviteUrl(
             payload.inviteUrl ??
               `/invite/member/${payload.rawToken ?? "pending"}`,
           ),
           expiresAt: payload.invitation?.expiresAt ?? expiresAt,
-          status: "pending",
+          status: payload.invitation?.status ?? "pending",
         },
         ...previous,
       ]);
@@ -1174,6 +1225,7 @@ export default function AdminMemberManagementDashboard() {
           "초대 링크가 생성되었습니다.",
         ),
       );
+      await loadMemberInvitations();
     } catch (error) {
       setInviteError(
         error instanceof Error ? error.message : "INVITATION_CREATE_FAILED",
@@ -1183,16 +1235,50 @@ export default function AdminMemberManagementDashboard() {
     }
   }
 
-  function handleCancelPendingInvitation(invitationId: string) {
-    setPendingInvitations((previous) =>
-      previous.filter((invitation) => invitation.id !== invitationId),
-    );
-    setFeedbackMessage(
-      t(
-        "memberManagement.inviteBuilder.feedback.cancelled",
-        "초대를 취소했습니다.",
-      ),
-    );
+  async function handleCancelPendingInvitation(
+    invitation: PendingMemberInvitationRow,
+  ) {
+    if (
+      revokingInviteId ||
+      invitation.status === "accepted" ||
+      invitation.status === "revoked" ||
+      invitation.status === "cancelled"
+    ) {
+      return;
+    }
+
+    setRevokingInviteId(invitation.id);
+    setInviteError(null);
+
+    try {
+      const response = await fetch(
+        `/api/invitations/${encodeURIComponent(invitation.id)}/revoke`,
+        { method: "POST" },
+      );
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+      };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message ?? payload.error ?? "INVITATION_REVOKE_FAILED");
+      }
+
+      setFeedbackMessage(
+        t(
+          "memberManagement.inviteBuilder.feedback.cancelled",
+          "초대를 취소했습니다.",
+        ),
+      );
+      await loadMemberInvitations();
+    } catch (error) {
+      setInviteError(
+        error instanceof Error ? error.message : "INVITATION_REVOKE_FAILED",
+      );
+    } finally {
+      setRevokingInviteId(null);
+    }
   }
 
   async function handleCopyInviteLink(inviteUrl: string) {

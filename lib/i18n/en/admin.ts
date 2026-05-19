@@ -558,6 +558,9 @@ export const adminEn = {
       pending: "Waiting",
       sent: "Sent",
       expired: "Expired",
+      accepted: "Accepted",
+      revoked: "Revoked",
+      cancelled: "Cancelled",
     },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: {

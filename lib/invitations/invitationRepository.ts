@@ -28,8 +28,9 @@ export function createInviteUrl(rawToken: string, scope: InvitationDraft["scope"
   return `/invite/company/${rawToken}`;
 }
 
-function normalizeEmail(email: string | null | undefined): string {
-  return String(email ?? "").trim().toLowerCase();
+function normalizeEmail(email: string | null | undefined): string | null {
+  const normalized = String(email ?? "").trim().toLowerCase();
+  return normalized || null;
 }
 
 function createInvitationRecord(
@@ -338,6 +339,49 @@ async function revokeDbInvitation(invitationId: string): Promise<InvitationRecor
   return toInvitationRecord(row);
 }
 
+
+async function revokeDbCompanyMemberInvitation(
+  invitationId: string,
+  companyId: string,
+): Promise<InvitationRecord> {
+  const result = await queryDb<InvitationDbRow>(
+    `
+      UPDATE invitations
+         SET status = 'revoked', revoked_at = now(), updated_at = now()
+       WHERE id = $1
+         AND company_id = $2
+         AND scope = 'company_to_member'
+         AND status IN ('pending', 'active')
+      RETURNING
+        id,
+        company_id,
+        recipient_email,
+        recipient_role,
+        permission_preset,
+        scope,
+        status,
+        token_hash,
+        invite_url_path,
+        accepted_at,
+        revoked_at,
+        expires_at,
+        created_by_user_id,
+        created_by_system_user_id,
+        accepted_user_id,
+        created_at,
+        updated_at
+    `,
+    [invitationId, companyId],
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error("INVITATION_NOT_FOUND");
+  }
+
+  return toInvitationRecord(row);
+}
+
 export function createInvitationRepository(): InvitationRepository {
   return {
     async createInvitation(draft: InvitationDraft): Promise<InvitationCreateResult> {
@@ -396,6 +440,41 @@ export function createInvitationRepository(): InvitationRepository {
 
       const invitation = inMemoryInvitations.find(
         (item) => item.id === invitationId,
+      );
+
+      if (!invitation) {
+        throw new Error("INVITATION_NOT_FOUND");
+      }
+
+      const updated: InvitationRecord = {
+        ...invitation,
+        status: "revoked",
+        revokedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const index = inMemoryInvitations.findIndex(
+        (item) => item.id === invitationId,
+      );
+      inMemoryInvitations[index] = updated;
+
+      return updated;
+    },
+
+    async revokeCompanyMemberInvitation(
+      invitationId: string,
+      companyId: string,
+    ): Promise<InvitationRecord> {
+      if (isDatabaseConfigured()) {
+        return revokeDbCompanyMemberInvitation(invitationId, companyId);
+      }
+
+      const invitation = inMemoryInvitations.find(
+        (item) =>
+          item.id === invitationId &&
+          item.companyId === companyId &&
+          item.scope === "company_to_member" &&
+          (item.status === "pending" || item.status === "active"),
       );
 
       if (!invitation) {

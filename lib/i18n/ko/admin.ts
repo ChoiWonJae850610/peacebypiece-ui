@@ -544,6 +544,9 @@ export const adminKo = {
       pending: "가입 대기",
       sent: "발송 완료",
       expired: "만료",
+      accepted: "수락됨",
+      revoked: "취소됨",
+      cancelled: "취소됨",
     },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
     sourceState: {

@@ -54,10 +54,6 @@ const COMPANY_ALLOWED_ROLES: InvitationRecipientRole[] = [
   "viewer",
 ];
 
-function hasEmailValue(email?: string | null): boolean {
-  return Boolean(email?.trim());
-}
-
 function isExpired(expiresAt?: string | null, now?: string | null): boolean {
   if (!expiresAt) {
     return false;
@@ -77,10 +73,6 @@ export function evaluateInvitationPolicy(
   input: InvitationPolicyInput,
 ): InvitationPolicyResult {
   const reasons: string[] = [];
-
-  if (input.scope === "company_to_member" && !hasEmailValue(input.recipientEmail)) {
-    reasons.push("recipient_email_required");
-  }
 
   if (isExpired(input.expiresAt, input.now)) {
     reasons.push("invitation_already_expired");
