@@ -312,11 +312,11 @@ export const adminEn = {
       },
       settings: {
         label: "Settings",
-        description: "Manage customer screen, file, and notification policies.",
+        description: "Use the top-right settings button.",
       },
       "member-management": {
         label: "Member management",
-        description: "Manage member invitations and role settings.",
+        description: "Manage member invitations, join approvals, roles, and permissions.",
       },
       "standard-units": {
         label: "Standard units",

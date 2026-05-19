@@ -305,11 +305,11 @@ export const adminKo = {
       },
       settings: {
         label: "환경설정",
-        description: "고객사별 화면, 파일, 알림 정책을 관리합니다.",
+        description: "상단 톱니바퀴 버튼에서 관리합니다.",
       },
       "member-management": {
         label: "멤버 관리",
-        description: "멤버 초대와 역할 설정을 관리합니다.",
+        description: "멤버 초대, 가입 승인, 역할 권한을 관리합니다.",
       },
       "standard-units": {
         label: "단위표준",

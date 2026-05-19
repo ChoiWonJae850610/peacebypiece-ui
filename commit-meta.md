@@ -1,22 +1,20 @@
 Version :
-0.14.3
+0.14.4
 
 Summary :
-시스템관리자 부트스트랩 SQL과 고객사 온보딩 입력 보정
+고객사 관리자 홈 카드에서 환경설정 대신 멤버관리 노출
 
 Description :
-kty872@gmail.com 계정을 시스템관리자로 등록하는 부트스트랩 SQL을 추가했다. 고객사 온보딩 사업자등록번호 입력은 3-2-5 형식으로 자동 하이픈 처리되도록 보정하고, 최초 신청 요금제는 무료 Trial 7일 읽기 전용으로 고정했다.
+고객사 관리자 /admin 홈의 주요 카드 구성을 정리했다. 환경설정 카드는 홈 주요 카드에서 제외하고, 멤버관리 카드를 같은 위치의 주요 카드로 노출하도록 수정했다. 환경설정은 기존 상단 톱니바퀴 진입 구조를 유지한다.
 
 수정 파일 목록 :
-- components/admin/companies/AdminCompanyOnboardingGate.tsx
-- lib/admin/settings/companyOnboardingRepository.ts
+- lib/admin/adminWorkspaceCards.ts
 - lib/i18n/ko/admin.ts
 - lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- lib/utils/businessRegistrationFormat.ts
-- db/seed/system_admin_bootstrap_kty872.sql
+없음
 
 삭제 파일 목록 :
 없음

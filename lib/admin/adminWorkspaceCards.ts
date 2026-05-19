@@ -76,12 +76,12 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
   {
     id: "member-management",
     label: "멤버 관리",
-    description: "멤버 초대와 역할 설정을 관리합니다.",
+    description: "멤버 초대, 가입 승인, 역할 권한을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.memberManage,
     requiredMemberPermissions: ["member.read"],
     href: "/admin/members",
     status: "available",
-    statusLabel: "설계 화면",
+    statusLabel: "관리",
   },
 ];
 
@@ -124,10 +124,10 @@ export const ADMIN_HOME_PRIMARY_CARD_IDS = [
   "partners",
   "files",
   "stats",
-  "settings",
+  "member-management",
 ] as const;
 
-export const ADMIN_HOME_MEMBER_CARD_IDS = ["member-management"] as const;
+export const ADMIN_HOME_MEMBER_CARD_IDS = [] as const;
 
 function filterAdminWorkspaceCardsByIds(
   cards: readonly AdminWorkspaceCard[],
