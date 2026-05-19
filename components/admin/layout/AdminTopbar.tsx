@@ -103,6 +103,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
   }, []);
 
   const displayCompanyName = user?.companyName ?? companyName;
+  const canOpenAdminSettings = user?.role === "company_admin";
   const localizedTitle = getLocalizedTopbarTitle(title, t);
   const summary = getTopbarSummary(localizedTitle, description, t);
 
@@ -143,9 +144,16 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           >
             <UserIcon />
           </button>
-          <Link href="/admin/settings" aria-label={t("topbar.actions.adminSettings", "환경설정")} title={t("topbar.actions.adminSettings", "환경설정")} className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition">
-            <SettingsIcon />
-          </Link>
+          {canOpenAdminSettings ? (
+            <Link
+              href="/admin/settings"
+              aria-label={t("topbar.actions.adminSettings", "환경설정")}
+              title={t("topbar.actions.adminSettings", "환경설정")}
+              className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+            >
+              <SettingsIcon />
+            </Link>
+          ) : null}
           <form action="/api/auth/logout" method="post">
             <button
               type="submit"

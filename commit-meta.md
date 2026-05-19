@@ -1,25 +1,22 @@
 Version :
-0.13.93
+0.13.94
 
 Summary :
-주소 검색과 초대 오류 문구 정리
+고객사 관리자 업무홈 카드 IA 정리
 
 Description :
-도로명주소 API 실패 원인을 개발환경에서 확인할 수 있도록 응답을 세분화하고, 사용자 화면에는 승인키·외부 API 오류를 자연스러운 안내 문구로 표시하도록 정리했다. 초대 링크 오류 문구도 공통 presentation 함수로 분리해 내부 error code가 직접 노출되지 않도록 보정했다.
+고객사 관리자 메인 화면의 카드 구성을 작업지시서 업무 화면, 협력업체관리, 저장소관리, 통계정보, 환경설정 중심으로 정리하고 멤버 관리는 별도 섹션으로 분리했다. 카드 구성 기준은 공통 admin workspace card presentation 함수로 분리했으며, 상단 톱니바퀴 환경설정 진입은 고객사 관리자 역할에서만 표시되도록 보정했다.
 
 수정 파일 목록 :
-- app/api/address/search/route.ts
-- lib/address/jusoAddressSearch.ts
-- components/admin/companies/AdminCompanyOnboardingGate.tsx
-- components/invitations/CompanyInvitationJoinRequestPage.tsx
-- components/invitations/MemberInvitationJoinRequestPage.tsx
-- app/invite/error/page.tsx
+- components/admin/dashboard/AdminConsoleSections.tsx
+- components/admin/layout/AdminTopbar.tsx
+- lib/admin/adminWorkspaceCards.ts
 - lib/i18n/ko/admin.ts
 - lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- lib/invitations/invitationErrorPresentation.ts
+없음
 
 삭제 파일 목록 :
 없음

@@ -118,6 +118,25 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
   },
 ];
 
+
+export const ADMIN_HOME_PRIMARY_CARD_IDS = [
+  "workorder-entry",
+  "partners",
+  "files",
+  "stats",
+  "settings",
+] as const;
+
+export const ADMIN_HOME_MEMBER_CARD_IDS = ["member-management"] as const;
+
+function filterAdminWorkspaceCardsByIds(
+  cards: readonly AdminWorkspaceCard[],
+  ids: readonly string[],
+): AdminWorkspaceCard[] {
+  const allowedIds = new Set(ids);
+  return cards.filter((card) => allowedIds.has(card.id));
+}
+
 export type AdminWorkspaceAccessInput = {
   permissionCodes?: readonly MemberPermissionCode[] | null;
 };
@@ -153,4 +172,13 @@ export function getVisibleAdminWorkspaceCards(input: AdminWorkspaceAccessInput):
 
 export function getVisibleAdminWorkspaceManagementCards(input: AdminWorkspaceAccessInput): AdminWorkspaceCard[] {
   return filterAdminWorkspaceCardsByPermissions(ADMIN_WORKSPACE_MANAGEMENT_CARDS, input);
+}
+
+
+export function getVisibleAdminHomePrimaryCards(input: AdminWorkspaceAccessInput): AdminWorkspaceCard[] {
+  return filterAdminWorkspaceCardsByIds(getVisibleAdminWorkspaceCards(input), ADMIN_HOME_PRIMARY_CARD_IDS);
+}
+
+export function getVisibleAdminHomeMemberCards(input: AdminWorkspaceAccessInput): AdminWorkspaceCard[] {
+  return filterAdminWorkspaceCardsByIds(getVisibleAdminWorkspaceManagementCards(input), ADMIN_HOME_MEMBER_CARD_IDS);
 }

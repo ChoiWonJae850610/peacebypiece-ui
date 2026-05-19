@@ -6,13 +6,13 @@ import { ADMIN_SURFACE_ITEM_CLASS } from "@/components/admin/common/adminSemanti
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
-  getVisibleAdminWorkspaceManagementCards,
+  getVisibleAdminHomeMemberCards,
+  getVisibleAdminHomePrimaryCards,
   type AdminWorkspaceCard,
   type AdminWorkspaceCardStatus,
 } from "@/lib/admin/adminWorkspaceCards";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
-const ADMIN_CONSOLE_VISIBLE_CARD_IDS = new Set(["partners", "files", "stats", "member-management"]);
 
 function getStatusTone(status: AdminWorkspaceCardStatus) {
   if (status === "available") return "success";
@@ -73,19 +73,29 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
 
 export default function AdminConsoleSections() {
   const t = useAdminTranslation();
-  const managementCards = getVisibleAdminWorkspaceManagementCards({ permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES }).filter((item) =>
-    ADMIN_CONSOLE_VISIBLE_CARD_IDS.has(item.id),
-  );
+  const cardAccessInput = { permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES };
+  const primaryCards = getVisibleAdminHomePrimaryCards(cardAccessInput);
+  const memberCards = getVisibleAdminHomeMemberCards(cardAccessInput);
 
   return (
     <>
-      <AdminSection title={t("adminConsole.managementCards.title", "운영 관리")} bodyClassName="mt-4">
-        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {managementCards.map((item) => (
+      <AdminSection title={t("adminConsole.managementCards.title", "업무 바로가기")} bodyClassName="mt-4">
+        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {primaryCards.map((item) => (
             <AdminWorkspaceCardView key={item.id} item={item} />
           ))}
         </div>
       </AdminSection>
+
+      {memberCards.length > 0 ? (
+        <AdminSection title={t("adminConsole.memberCards.title", "멤버 관리")} bodyClassName="mt-4">
+          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {memberCards.map((item) => (
+              <AdminWorkspaceCardView key={item.id} item={item} />
+            ))}
+          </div>
+        </AdminSection>
+      ) : null}
     </>
   );
 }

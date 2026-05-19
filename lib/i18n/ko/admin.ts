@@ -274,9 +274,13 @@ export const adminKo = {
     },
     permissionLabel: "권한",
     managementCards: {
-      title: "운영 관리",
+      title: "업무 바로가기",
       description: "",
       cardCount: "",
+    },
+    memberCards: {
+      title: "멤버 관리",
+      description: "멤버 초대, 가입 승인, 역할 권한 관리는 별도 카드에서 처리합니다.",
     },
     futurePermissions: {
       title: "기준정보",

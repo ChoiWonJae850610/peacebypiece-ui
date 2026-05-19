@@ -280,9 +280,13 @@ export const adminEn = {
     },
     permissionLabel: "Permission",
     managementCards: {
-      title: "Operations",
+      title: "Workspace shortcuts",
       description: "",
       cardCount: "",
+    },
+    memberCards: {
+      title: "Member management",
+      description: "Handle member invitations, join approvals, roles, and permissions in a separate card.",
     },
     futurePermissions: {
       title: "Master data",
