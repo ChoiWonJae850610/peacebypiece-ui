@@ -349,11 +349,11 @@ export const adminEn = {
     },
     detailModal: {
       title: "Member details",
-      description: "Click a member row to manage profile, status, and permissions in one place.",
+      description: "Click a member row to manage work order, partner, standards, and order authority.",
       permissionGroupCount: "{count} permissions",
       permissionGroupSelectedCount: "{selected}/{total} selected",
       selectedPermissionCount: "{count} selected",
-      roleTemplateHelper: "A role is a default permission set. Adjust only the screen permissions that need exceptions.",
+      roleTemplateHelper: "A role is only the starting value. Adjust the actual work permissions with the four options below.",
       policyNotice: "Removing your own permission-management access or the last administrator access is blocked when saving.",
       summary: {
         title: "Selected member",
@@ -364,7 +364,7 @@ export const adminEn = {
         profile: "Profile",
         profileDescription: "Name and contact are saved against the same-company member record.",
         permissions: "Workspace permissions",
-        permissionsDescription: "A role is a default permission bundle. Select a role, then adjust only the required screen permissions.",
+        permissionsDescription: "Unchecked items remain read-only. Checked items allow writing and management. Stats are always readable by default.",
       },
       fields: {
         name: "Name",
@@ -373,37 +373,21 @@ export const adminEn = {
         role: "Role",
       },
       simplePermissions: {
-        workorderAccess: {
-          label: "Work orders",
-          description: "Shows the work order card on the workspace home and allows assigned work order viewing.",
+        workorderManage: {
+          label: "Work order management",
+          description: "When off, the member can only view assigned work orders. When on, the member can create, edit, delete, and request review.",
         },
-        workorderWrite: {
-          label: "Can write work orders",
-          description: "Allows creating, editing, delete requests, and review requests for work orders.",
+        partnerManage: {
+          label: "Partner management",
+          description: "When off, the member can only view partners. When on, the member can create, edit, deactivate, and request deletion.",
+        },
+        standardsManage: {
+          label: "Standards management",
+          description: "When off, the member can only view standards. When on, the member can create, edit, deactivate, and request deletion.",
         },
         workorderOrderDirect: {
-          label: "Can request orders",
-          description: "Allows direct order requests without the review step.",
-        },
-        partnerAccess: {
-          label: "Partners",
-          description: "Shows the partner management card on the workspace home and allows partner viewing.",
-        },
-        partnerWrite: {
-          label: "Can write partners",
-          description: "Allows creating, editing, deactivating, or deleting partners.",
-        },
-        statsAccess: {
-          label: "Stats",
-          description: "Shows the stats card on the workspace home and allows stats viewing.",
-        },
-        standardsAccess: {
-          label: "Standards",
-          description: "Shows the standards card on the workspace home and allows standards viewing.",
-        },
-        standardsWrite: {
-          label: "Can write standards",
-          description: "Allows creating, editing, deactivating, or deleting standards.",
+          label: "Order authority",
+          description: "Allows admin-level direct order requests without the review step.",
         },
       },
       actions: {
@@ -425,7 +409,7 @@ export const adminEn = {
     tabs: {
       invite: {
         label: "Invite members",
-        description: "Create email or SMS invitations.",
+        description: "Create and copy invitation links.",
         count: "{count} invites",
       },
       members: {
@@ -443,7 +427,7 @@ export const adminEn = {
       eyebrow: "Member invitation",
       title: "Create employee invitation",
       description:
-        "Enter the email address or mobile phone number that will receive the invitation link, then choose the default permission bundle and expiry.",
+        "Invitation links are created independently. Email and SMS are only future delivery channels.",
       fields: {
         method: "Invitation method",
         email: "Email address",
@@ -458,10 +442,11 @@ export const adminEn = {
         phone: "Enter a valid mobile phone number.",
       },
       expires: { "3d": "3 days", "7d": "7 days", "14d": "14 days" },
-      sendPolicyTitle: "Delivery rule",
+      sendPolicyTitle: "Link creation rule",
       sendPolicy: {
         email: "Send the invitation link by email.",
         phone: "Send the invitation link by SMS.",
+        linkOnly: "Create an invitation link for copying. Actual email/SMS delivery will be connected later.",
       },
       actions: {
         copy: "Copy link",
@@ -601,9 +586,9 @@ export const adminEn = {
     sections: {
       members: "Member management",
       membersDescription: "Manage pending approvals and all members in one list.",
-      invitations: "Invitation queue",
+      invitations: "Invitation links",
       invitationsDescription:
-        "Manage expiration and cancellation status for generated invitation links and QR codes.",
+        "Review usable, accepted, expired, and cancelled links, then copy or cancel them.",
       joinRequests: "Join requests / approval queue",
       joinRequestsDescription:
         "Approve or reject users who applied through an invitation link.",
@@ -655,8 +640,11 @@ export const adminEn = {
         columns: {
           target: "Target",
           type: "Type",
-          status: "Status",
+          link: "Invitation link",
           expires: "Expires",
+          createdAt: "Created",
+          status: "Status",
+          actions: "Actions",
         },
       },
       joinRequests: {

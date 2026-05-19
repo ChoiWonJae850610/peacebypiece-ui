@@ -340,11 +340,11 @@ export const adminKo = {
     },
     detailModal: {
       title: "멤버 권한 관리",
-      description: "멤버 로우를 클릭해 업무홈 카드와 작성 가능 범위를 관리합니다.",
+      description: "멤버 로우를 클릭해 작업지시서, 협력업체, 기준정보, 발주 권한을 관리합니다.",
       permissionGroupCount: "권한 {count}개",
       permissionGroupSelectedCount: "{selected}/{total}개 선택",
       selectedPermissionCount: "{count}개 선택",
-      roleTemplateHelper: "역할은 기본 권한 묶음입니다. 아래 업무 화면 권한은 필요할 때만 조정합니다.",
+      roleTemplateHelper: "역할은 시작값입니다. 실제 업무 권한은 아래 4개 항목으로 단순하게 조정합니다.",
       policyNotice: "개인설정은 별도 권한 없이 모든 로그인 사용자가 접근할 수 있습니다.",
       summary: {
         title: "선택 멤버",
@@ -355,7 +355,7 @@ export const adminKo = {
         profile: "기본 정보",
         profileDescription: "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
         permissions: "업무 권한",
-        permissionsDescription: "업무홈에 보일 카드와 각 카드에서 작성할 수 있는 범위를 선택합니다.",
+        permissionsDescription: "체크 해제 시 조회만 가능하고, 체크 시 해당 업무의 작성과 관리 작업을 허용합니다. 통계는 기본 조회 권한으로 제공합니다.",
       },
       fields: {
         name: "이름",
@@ -364,37 +364,21 @@ export const adminKo = {
         role: "역할",
       },
       simplePermissions: {
-        workorderAccess: {
-          label: "작업지시서",
-          description: "업무홈에 작업지시서 카드를 표시하고 본인 담당 작업지시서를 조회합니다.",
+        workorderManage: {
+          label: "작업지시서 관리",
+          description: "해제하면 본인 담당 작업지시서 조회만 가능하고, 선택하면 생성·수정·삭제·검토요청이 가능합니다.",
         },
-        workorderWrite: {
-          label: "작업지시서 작성 가능",
-          description: "작업지시서 생성, 수정, 삭제 요청과 검토 요청을 허용합니다.",
+        partnerManage: {
+          label: "협력업체 관리",
+          description: "해제하면 협력업체 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
+        },
+        standardsManage: {
+          label: "기준정보 관리",
+          description: "해제하면 기준정보 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
         },
         workorderOrderDirect: {
-          label: "발주 가능",
-          description: "검토 절차 없이 바로 발주 요청까지 진행할 수 있습니다.",
-        },
-        partnerAccess: {
-          label: "협력업체관리",
-          description: "업무홈에 협력업체관리 카드를 표시하고 협력업체를 조회합니다.",
-        },
-        partnerWrite: {
-          label: "협력업체 작성 가능",
-          description: "협력업체 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
-        },
-        statsAccess: {
-          label: "통계",
-          description: "업무홈에 통계 카드를 표시하고 통계정보를 조회합니다.",
-        },
-        standardsAccess: {
-          label: "기준정보",
-          description: "업무홈에 기준정보 카드를 표시하고 기준정보를 조회합니다.",
-        },
-        standardsWrite: {
-          label: "기준정보 작성 가능",
-          description: "기준정보 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
+          label: "발주 권한",
+          description: "선택하면 관리자급으로 검토 없이 바로 발주 요청까지 진행할 수 있습니다.",
         },
       },
       actions: {
@@ -416,7 +400,7 @@ export const adminKo = {
     tabs: {
       invite: {
         label: "멤버 초대",
-        description: "이메일 또는 문자 초대를 생성합니다.",
+        description: "초대 링크를 생성하고 복사합니다.",
         count: "초대 {count}건",
       },
       members: {
@@ -434,7 +418,7 @@ export const adminKo = {
       eyebrow: "멤버 초대",
       title: "직원 초대 생성",
       description:
-        "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
+        "초대 링크는 독립적으로 생성하고, 이메일과 휴대폰은 나중에 링크 전달 수단으로만 연결합니다.",
       fields: {
         method: "초대 방식",
         email: "이메일 주소",
@@ -449,10 +433,11 @@ export const adminKo = {
         phone: "휴대폰 번호 형식으로 입력해 주세요.",
       },
       expires: { "3d": "3일", "7d": "7일", "14d": "14일" },
-      sendPolicyTitle: "발송 기준",
+      sendPolicyTitle: "링크 생성 기준",
       sendPolicy: {
         email: "초대 링크를 이메일로 발송합니다.",
         phone: "초대 링크를 문자/SMS로 발송합니다.",
+        linkOnly: "초대 링크를 생성해 복사할 수 있게 준비합니다. 실제 이메일/SMS 발송은 추후 기능에서 연결합니다.",
       },
       actions: {
         copy: "링크 복사",
@@ -587,9 +572,9 @@ export const adminKo = {
     sections: {
       members: "멤버 관리",
       membersDescription: "승인 대기와 전체 멤버를 한 목록에서 관리합니다.",
-      invitations: "초대 대기 목록",
+      invitations: "초대 링크 목록",
       invitationsDescription:
-        "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
+        "사용 가능, 사용됨, 만료됨, 취소됨 상태를 확인하고 링크를 복사하거나 취소합니다.",
       joinRequests: "가입 신청/승인 대기",
       joinRequestsDescription:
         "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.",
@@ -643,8 +628,9 @@ export const adminKo = {
           type: "방식",
           link: "초대 링크",
           expires: "만료일",
+          createdAt: "생성일",
           status: "상태",
-          actions: "취소",
+          actions: "작업",
         },
       },
       joinRequests: {

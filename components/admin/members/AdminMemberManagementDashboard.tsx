@@ -46,10 +46,6 @@ import {
 import AdminTable from "@/components/admin/common/AdminTable";
 import ToastMessage from "@/components/common/ToastMessage";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
-import {
-  formatPhoneNumber,
-  normalizePhoneNumber,
-} from "@/lib/utils/phoneFormat";
 
 function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
   if (status === "ready") return "success";
@@ -92,14 +88,11 @@ function getEmailMatchTone(
 }
 
 
-type MemberInviteMethod = "email" | "phone";
-
 type PendingMemberInvitationRow = {
   id: string;
-  target: string;
-  method: MemberInviteMethod;
   inviteUrl: string;
   expiresAt: string;
+  createdAt: string;
   status: InvitationRecord["status"];
 };
 
@@ -163,85 +156,62 @@ const EDITABLE_MEMBER_STATUS_OPTIONS: readonly MemberStatusOption[] = [
 
 type SimplePermissionControl = {
   id:
-    | "workorderAccess"
-    | "workorderWrite"
-    | "workorderOrderDirect"
-    | "partnerAccess"
-    | "partnerWrite"
-    | "statsAccess"
-    | "standardsAccess"
-    | "standardsWrite";
+    | "workorderManage"
+    | "partnerManage"
+    | "standardsManage"
+    | "workorderOrderDirect";
   labelKey: string;
   fallbackLabel: string;
   descriptionKey: string;
   fallbackDescription: string;
   permissionCodes: readonly MemberPermissionCode[];
+  readPermissionCodes?: readonly MemberPermissionCode[];
 };
+
+const MEMBER_BASE_READ_PERMISSION_CODES: readonly MemberPermissionCode[] = [
+  "workorder.read",
+  "partner.read",
+  "standards.read",
+  "stats.read",
+  "storage.read",
+  "personal_settings.manage",
+];
 
 const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
   {
-    id: "workorderAccess",
-    labelKey: "memberManagement.detailModal.simplePermissions.workorderAccess.label",
-    fallbackLabel: "작업지시서",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderAccess.description",
-    fallbackDescription: "업무홈에 작업지시서 카드를 표시하고 본인 담당 작업지시서를 조회합니다.",
-    permissionCodes: ["workorder.read"],
+    id: "workorderManage",
+    labelKey: "memberManagement.detailModal.simplePermissions.workorderManage.label",
+    fallbackLabel: "작업지시서 관리",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderManage.description",
+    fallbackDescription: "해제하면 본인 담당 작업지시서 조회만 가능하고, 선택하면 생성·수정·삭제·검토요청이 가능합니다.",
+    readPermissionCodes: ["workorder.read"],
+    permissionCodes: ["workorder.create", "workorder.update", "workorder.delete", "workorder.status.review"],
   },
   {
-    id: "workorderWrite",
-    labelKey: "memberManagement.detailModal.simplePermissions.workorderWrite.label",
-    fallbackLabel: "작업지시서 작성 가능",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderWrite.description",
-    fallbackDescription: "작업지시서 생성, 수정, 삭제 요청과 검토 요청을 허용합니다.",
-    permissionCodes: ["workorder.read", "workorder.create", "workorder.update", "workorder.delete", "workorder.status.review"],
+    id: "partnerManage",
+    labelKey: "memberManagement.detailModal.simplePermissions.partnerManage.label",
+    fallbackLabel: "협력업체 관리",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.partnerManage.description",
+    fallbackDescription: "해제하면 협력업체 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
+    readPermissionCodes: ["partner.read"],
+    permissionCodes: ["partner.create", "partner.update", "partner.delete", "partner.manage"],
+  },
+  {
+    id: "standardsManage",
+    labelKey: "memberManagement.detailModal.simplePermissions.standardsManage.label",
+    fallbackLabel: "기준정보 관리",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.standardsManage.description",
+    fallbackDescription: "해제하면 기준정보 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
+    readPermissionCodes: ["standards.read"],
+    permissionCodes: ["standards.create", "standards.update", "standards.delete", "standards.manage"],
   },
   {
     id: "workorderOrderDirect",
     labelKey: "memberManagement.detailModal.simplePermissions.workorderOrderDirect.label",
-    fallbackLabel: "발주 가능",
+    fallbackLabel: "발주 권한",
     descriptionKey: "memberManagement.detailModal.simplePermissions.workorderOrderDirect.description",
-    fallbackDescription: "검토 절차 없이 바로 발주 요청까지 진행할 수 있습니다.",
+    fallbackDescription: "선택하면 관리자급으로 검토 없이 바로 발주 요청까지 진행할 수 있습니다.",
     permissionCodes: ["workorder.status.order"],
-  },
-  {
-    id: "partnerAccess",
-    labelKey: "memberManagement.detailModal.simplePermissions.partnerAccess.label",
-    fallbackLabel: "협력업체관리",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.partnerAccess.description",
-    fallbackDescription: "업무홈에 협력업체관리 카드를 표시하고 협력업체를 조회합니다.",
-    permissionCodes: ["partner.read"],
-  },
-  {
-    id: "partnerWrite",
-    labelKey: "memberManagement.detailModal.simplePermissions.partnerWrite.label",
-    fallbackLabel: "협력업체 작성 가능",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.partnerWrite.description",
-    fallbackDescription: "협력업체 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
-    permissionCodes: ["partner.read", "partner.create", "partner.update", "partner.delete", "partner.manage"],
-  },
-  {
-    id: "statsAccess",
-    labelKey: "memberManagement.detailModal.simplePermissions.statsAccess.label",
-    fallbackLabel: "통계",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.statsAccess.description",
-    fallbackDescription: "업무홈에 통계 카드를 표시하고 통계정보를 조회합니다.",
-    permissionCodes: ["stats.read"],
-  },
-  {
-    id: "standardsAccess",
-    labelKey: "memberManagement.detailModal.simplePermissions.standardsAccess.label",
-    fallbackLabel: "기준정보",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.standardsAccess.description",
-    fallbackDescription: "업무홈에 기준정보 카드를 표시하고 기준정보를 조회합니다.",
-    permissionCodes: ["standards.read"],
-  },
-  {
-    id: "standardsWrite",
-    labelKey: "memberManagement.detailModal.simplePermissions.standardsWrite.label",
-    fallbackLabel: "기준정보 작성 가능",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.standardsWrite.description",
-    fallbackDescription: "기준정보 등록, 수정, 비활성 또는 삭제 요청을 허용합니다.",
-    permissionCodes: ["standards.read", "standards.create", "standards.update", "standards.delete", "standards.manage"],
   },
 ] as const;
 
@@ -252,11 +222,17 @@ function hasEverySimplePermissionCode(
   return nextPermissionCodes.every((code) => permissionCodes.includes(code));
 }
 
+function normalizeSimplePermissionCodes(
+  permissionCodes: readonly MemberPermissionCode[],
+): MemberPermissionCode[] {
+  return Array.from(new Set([...MEMBER_BASE_READ_PERMISSION_CODES, ...permissionCodes])).sort();
+}
+
 function mergeSimplePermissionCodes(
   permissionCodes: readonly MemberPermissionCode[],
   nextPermissionCodes: readonly MemberPermissionCode[],
 ): MemberPermissionCode[] {
-  return Array.from(new Set([...permissionCodes, ...nextPermissionCodes])).sort();
+  return normalizeSimplePermissionCodes([...permissionCodes, ...nextPermissionCodes]);
 }
 
 function removeSimplePermissionCodes(
@@ -264,7 +240,9 @@ function removeSimplePermissionCodes(
   nextPermissionCodes: readonly MemberPermissionCode[],
 ): MemberPermissionCode[] {
   const removalSet = new Set(nextPermissionCodes);
-  return permissionCodes.filter((code) => !removalSet.has(code));
+  return normalizeSimplePermissionCodes(
+    permissionCodes.filter((code) => !removalSet.has(code)),
+  );
 }
 
 function toggleSimplePermissionControl(
@@ -273,7 +251,10 @@ function toggleSimplePermissionControl(
 ): MemberPermissionCode[] {
   return hasEverySimplePermissionCode(permissionCodes, control.permissionCodes)
     ? removeSimplePermissionCodes(permissionCodes, control.permissionCodes)
-    : mergeSimplePermissionCodes(permissionCodes, control.permissionCodes);
+    : mergeSimplePermissionCodes(permissionCodes, [
+        ...(control.readPermissionCodes ?? []),
+        ...control.permissionCodes,
+      ]);
 }
 
 function countVisibleSimplePermissionControls(
@@ -304,14 +285,6 @@ function getMemberDetailStatusOptions(
   ];
 }
 
-function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-function isValidKoreanMobilePhone(value: string): boolean {
-  return /^01[016789][0-9]{7,8}$/.test(normalizePhoneNumber(value));
-}
-
 function getPendingInvitationExpiresLabel(expiresAt: string): string {
   const date = new Date(expiresAt);
   if (Number.isNaN(date.getTime())) return "-";
@@ -329,7 +302,7 @@ function buildMemberDetailDraft(member: AdminCompanyMemberRecord): MemberDetailD
     phone: member.phone?.trim() || "",
     status: member.status,
     roleTemplateCode: member.roleTemplateCode,
-    permissionCodes: [...member.permissionCodes],
+    permissionCodes: normalizeSimplePermissionCodes(member.permissionCodes),
   };
 }
 
@@ -372,29 +345,16 @@ function getAbsoluteInviteUrl(inviteUrl: string): string {
   return new URL(inviteUrl, window.location.origin).toString();
 }
 
-function getMemberInvitationTargetLabel(invitation: InvitationRecord): string {
-  return (
-    invitation.recipientEmail?.trim() ||
-    invitation.companyName?.trim() ||
-    "링크 직접 전달"
-  );
-}
-
-function getMemberInviteMethod(invitation: InvitationRecord): MemberInviteMethod {
-  return invitation.recipientEmail?.trim() ? "email" : "phone";
-}
-
 function toPendingMemberInvitationRow(
   invitation: InvitationRecord,
 ): PendingMemberInvitationRow {
   return {
     id: invitation.id,
-    target: getMemberInvitationTargetLabel(invitation),
-    method: getMemberInviteMethod(invitation),
     inviteUrl: getAbsoluteInviteUrl(
       invitation.inviteUrlPath ?? `/invite/member/${invitation.id}`,
     ),
     expiresAt: invitation.expiresAt,
+    createdAt: invitation.createdAt,
     status: invitation.status,
   };
 }
@@ -414,22 +374,11 @@ export default function AdminMemberManagementDashboard() {
   const currentPermissionCodes =
     getMemberRoleTemplatePermissions("company_admin");
   const inviteRoleOptions = getMemberInviteRoleOptions();
-  const [selectedRoleId, setSelectedRoleId] = useState<string>(
-    inviteRoleOptions[1]?.id ?? inviteRoleOptions[0]?.id ?? "viewer",
-  );
   const [activeTab, setActiveTab] = useState<MemberManagementTab>("invite");
   const [memberSearchQuery, setMemberSearchQuery] = useState("");
   const [memberStatusFilter, setMemberStatusFilter] =
     useState<MemberDirectoryStatusFilter>("all");
   const [memberRoleFilter, setMemberRoleFilter] = useState<string>("all");
-  const selectedRole = useMemo(
-    () =>
-      inviteRoleOptions.find((role) => role.id === selectedRoleId) ??
-      inviteRoleOptions[0],
-    [inviteRoleOptions, selectedRoleId],
-  );
-  const [inviteMethod, setInviteMethod] = useState<MemberInviteMethod>("email");
-  const [targetContact, setTargetContact] = useState("");
   const [expiresInDays, setExpiresInDays] = useState("7d");
   const [pendingInvitations, setPendingInvitations] = useState<
     PendingMemberInvitationRow[]
@@ -475,84 +424,10 @@ export default function AdminMemberManagementDashboard() {
     [memberRecords],
   );
   const invitations = pendingInvitations;
-  const invitationValidationError = useMemo(() => {
-    const value = targetContact.trim();
-    if (!value)
-      return t(
-        "memberManagement.inviteBuilder.validation.required",
-        "초대 대상을 입력해 주세요.",
-      );
-    if (inviteMethod === "email" && !isValidEmail(value)) {
-      return t(
-        "memberManagement.inviteBuilder.validation.email",
-        "이메일 형식으로 입력해 주세요.",
-      );
-    }
-    if (inviteMethod === "phone" && !isValidKoreanMobilePhone(value)) {
-      return t(
-        "memberManagement.inviteBuilder.validation.phone",
-        "휴대폰 번호 형식으로 입력해 주세요.",
-      );
-    }
-    return null;
-  }, [inviteMethod, targetContact, t]);
   const invitationTableColumns = useMemo<
     AdminTableColumn<PendingMemberInvitationRow>[]
   >(
     () => [
-      {
-        key: "target",
-        label: t("memberManagement.tables.invitations.columns.target", "대상"),
-        className: "min-w-0",
-        render: (invitation) => (
-          <span className="block truncate font-semibold pbp-text-primary" title={invitation.target}>
-            {invitation.target}
-          </span>
-        ),
-      },
-      {
-        key: "type",
-        label: t("memberManagement.tables.invitations.columns.type", "방식"),
-        className: "whitespace-nowrap",
-        render: (invitation) => (
-          <span className="font-semibold pbp-text-primary">
-            {t(
-              `memberManagement.invitationMethods.${invitation.method}`,
-              invitation.method,
-            )}
-          </span>
-        ),
-      },
-      {
-        key: "link",
-        label: t(
-          "memberManagement.tables.invitations.columns.link",
-          "초대 링크",
-        ),
-        className: "min-w-0",
-        render: (invitation) => (
-          <button
-            type="button"
-            onClick={() => void handleCopyInviteLink(invitation.inviteUrl)}
-            className="max-w-full truncate rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold pbp-text-primary transition hover:border-[var(--pbp-accent-border)]"
-          >
-            {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-          </button>
-        ),
-      },
-      {
-        key: "expires",
-        label: t(
-          "memberManagement.tables.invitations.columns.expires",
-          "만료일",
-        ),
-        className: "whitespace-nowrap",
-        render: (invitation) => (
-          <span className="pbp-text-muted">
-            {getPendingInvitationExpiresLabel(invitation.expiresAt)}
-          </span>
-        ),
-      },
       {
         key: "status",
         label: t("memberManagement.tables.invitations.columns.status", "상태"),
@@ -578,28 +453,79 @@ export default function AdminMemberManagementDashboard() {
         ),
       },
       {
-        key: "actions",
-        label: t("memberManagement.tables.invitations.columns.actions", "취소"),
-        headerClassName: "text-center",
-        className: "flex justify-center",
+        key: "link",
+        label: t(
+          "memberManagement.tables.invitations.columns.link",
+          "초대 링크",
+        ),
+        className: "min-w-0",
         render: (invitation) => (
-          <button
-            type="button"
-            onClick={() => void handleCancelPendingInvitation(invitation)}
-            disabled={
-              revokingInviteId !== null ||
-              invitation.status === "accepted" ||
-              invitation.status === "revoked" ||
-              invitation.status === "cancelled"
-            }
-            className="inline-flex size-8 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-sm font-semibold pbp-text-muted transition hover:border-[var(--pbp-danger-border)] hover:text-[var(--pbp-danger)] disabled:cursor-not-allowed disabled:opacity-45"
-            aria-label={t(
-              "memberManagement.inviteBuilder.actions.cancel",
-              "초대 취소",
-            )}
+          <span
+            className="block truncate font-semibold pbp-text-primary"
+            title={invitation.inviteUrl}
           >
-            {revokingInviteId === invitation.id ? "…" : "×"}
-          </button>
+            {invitation.inviteUrl}
+          </span>
+        ),
+      },
+      {
+        key: "expires",
+        label: t(
+          "memberManagement.tables.invitations.columns.expires",
+          "만료일",
+        ),
+        className: "whitespace-nowrap",
+        render: (invitation) => (
+          <span className="pbp-text-muted">
+            {getPendingInvitationExpiresLabel(invitation.expiresAt)}
+          </span>
+        ),
+      },
+      {
+        key: "createdAt",
+        label: t(
+          "memberManagement.tables.invitations.columns.createdAt",
+          "생성일",
+        ),
+        className: "whitespace-nowrap",
+        render: (invitation) => (
+          <span className="pbp-text-muted">
+            {getPendingInvitationExpiresLabel(invitation.createdAt)}
+          </span>
+        ),
+      },
+      {
+        key: "actions",
+        label: t("memberManagement.tables.invitations.columns.actions", "작업"),
+        headerClassName: "text-center",
+        className: "flex justify-center gap-2",
+        render: (invitation) => (
+          <>
+            <AdminButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => void handleCopyInviteLink(invitation.inviteUrl)}
+            >
+              {t("memberManagement.inviteBuilder.actions.copy", "복사")}
+            </AdminButton>
+            <AdminButton
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={() => void handleCancelPendingInvitation(invitation)}
+              disabled={
+                revokingInviteId !== null ||
+                invitation.status === "accepted" ||
+                invitation.status === "revoked" ||
+                invitation.status === "cancelled"
+              }
+            >
+              {revokingInviteId === invitation.id
+                ? "…"
+                : t("memberManagement.inviteBuilder.actions.cancel", "취소")}
+            </AdminButton>
+          </>
         ),
       },
     ],
@@ -846,8 +772,7 @@ export default function AdminMemberManagementDashboard() {
       members.length,
     ],
   );
-  const canSubmitInvite =
-    canCreateInvite && !invitationValidationError && !isCreatingInvite;
+  const canSubmitInvite = canCreateInvite && !isCreatingInvite;
   const tabPreviews: MemberManagementTabPreview[] = [
     {
       id: "invite",
@@ -988,7 +913,9 @@ export default function AdminMemberManagementDashboard() {
         ? {
             ...previous,
             roleTemplateCode,
-            permissionCodes: [...getMemberRoleTemplatePermissions(roleTemplateCode)],
+            permissionCodes: normalizeSimplePermissionCodes(
+              getMemberRoleTemplatePermissions(roleTemplateCode),
+            ),
           }
         : previous,
     );
@@ -999,9 +926,9 @@ export default function AdminMemberManagementDashboard() {
       previous
         ? {
             ...previous,
-            permissionCodes: [
-              ...getMemberRoleTemplatePermissions(previous.roleTemplateCode),
-            ],
+            permissionCodes: normalizeSimplePermissionCodes(
+              getMemberRoleTemplatePermissions(previous.roleTemplateCode),
+            ),
           }
         : previous,
     );
@@ -1046,7 +973,12 @@ export default function AdminMemberManagementDashboard() {
             "x-peacebypiece-permissions":
               "member.read,member.permission.update,member.suspend",
           },
-          body: JSON.stringify(memberDetailDraft),
+          body: JSON.stringify({
+            ...memberDetailDraft,
+            permissionCodes: normalizeSimplePermissionCodes(
+              memberDetailDraft.permissionCodes,
+            ),
+          }),
         },
       );
       const payload = (await response.json()) as MemberUpdateResponse;
@@ -1170,12 +1102,8 @@ export default function AdminMemberManagementDashboard() {
   }
 
   async function handleCreateInvite() {
-    if (!canSubmitInvite || !selectedRole) return;
+    if (!canSubmitInvite) return;
 
-    const target =
-      inviteMethod === "phone"
-        ? normalizePhoneNumber(targetContact)
-        : targetContact.trim();
     const expiresAt = resolveExpiresAt(expiresInDays);
 
     setIsCreatingInvite(true);
@@ -1187,13 +1115,9 @@ export default function AdminMemberManagementDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "company_to_member",
-          recipientEmail: inviteMethod === "email" ? target : null,
-          recipientRole: selectedRole.id as
-            | "designer"
-            | "inspector"
-            | "inventory_manager"
-            | "viewer",
-          permissionPreset: selectedRole.id,
+          recipientEmail: null,
+          recipientRole: "viewer",
+          permissionPreset: "viewer",
           expiresAt,
           createdByUserId: undefined,
         }),
@@ -1207,18 +1131,16 @@ export default function AdminMemberManagementDashboard() {
       setPendingInvitations((previous) => [
         {
           id: payload.invitation?.id ?? `local-${Date.now()}`,
-          target: inviteMethod === "phone" ? formatPhoneNumber(target) : target,
-          method: inviteMethod,
           inviteUrl: getAbsoluteInviteUrl(
             payload.inviteUrl ??
               `/invite/member/${payload.rawToken ?? "pending"}`,
           ),
           expiresAt: payload.invitation?.expiresAt ?? expiresAt,
+          createdAt: payload.invitation?.createdAt ?? new Date().toISOString(),
           status: payload.invitation?.status ?? "pending",
         },
         ...previous,
       ]);
-      setTargetContact("");
       setFeedbackMessage(
         t(
           "memberManagement.inviteBuilder.feedback.created",
@@ -1346,7 +1268,7 @@ export default function AdminMemberManagementDashboard() {
                 title={t("memberManagement.inviteBuilder.title", "직원 초대 생성")}
                 description={t(
                   "memberManagement.inviteBuilder.description",
-                  "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
+                  "초대 링크는 독립적으로 생성하고, 이메일과 휴대폰은 나중에 링크 전달 수단으로만 연결합니다.",
                 )}
                 contentClassName={MEMBER_INVITE_PANEL_CONTENT_CLASS}
                 footer={
@@ -1356,151 +1278,26 @@ export default function AdminMemberManagementDashboard() {
                         <p className="text-xs font-semibold pbp-text-primary">
                           {t(
                             "memberManagement.inviteBuilder.sendPolicyTitle",
-                            "발송 기준",
+                            "링크 생성 기준",
                           )}
                         </p>
                         <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                          {inviteMethod === "email"
-                            ? t(
-                                "memberManagement.inviteBuilder.sendPolicy.email",
-                                "초대 링크를 이메일로 발송합니다.",
-                              )
-                            : t(
-                                "memberManagement.inviteBuilder.sendPolicy.phone",
-                                "초대 링크를 문자/SMS로 발송합니다.",
-                              )}
+                          {t(
+                            "memberManagement.inviteBuilder.sendPolicy.linkOnly",
+                            "초대 링크를 생성해 복사할 수 있게 준비합니다. 실제 이메일/SMS 발송은 추후 기능에서 연결합니다.",
+                          )}
                         </p>
-                        {targetContact.trim() && invitationValidationError ? (
-                          <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
-                            {invitationValidationError}
-                          </p>
-                        ) : null}
                         {inviteError ? (
                           <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
                             {inviteError}
                           </p>
                         ) : null}
                       </div>
-                      <AdminButton
-                        onClick={handleCreateInvite}
-                        variant="primary"
-                        disabled={!canSubmitInvite}
-                        className="min-w-[120px]"
-                      >
-                        {isCreatingInvite
-                          ? t(
-                              "memberManagement.inviteBuilder.actions.creating",
-                              "생성 중",
-                            )
-                          : t(
-                              "memberManagement.inviteBuilder.actions.create",
-                              "초대 생성",
-                            )}
-                      </AdminButton>
                     </div>
                   </div>
                 }
               >
-                <div className="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
-                  <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-                    <span className="text-xs font-semibold pbp-text-muted">
-                      {t(
-                        "memberManagement.inviteBuilder.fields.method",
-                        "초대 방식",
-                      )}
-                    </span>
-                    <select
-                      value={inviteMethod}
-                      onChange={(event) => {
-                        setInviteMethod(
-                          event.target.value as MemberInviteMethod,
-                        );
-                        setTargetContact("");
-                        setInviteError(null);
-                      }}
-                      className={ADMIN_INPUT_CLASS}
-                    >
-                      <option value="email">
-                        {t(
-                          "memberManagement.invitationMethods.email",
-                          "이메일",
-                        )}
-                      </option>
-                      <option value="phone">
-                        {t("memberManagement.invitationMethods.phone", "문자")}
-                      </option>
-                    </select>
-                  </label>
-
-                  <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-                    <span className="text-xs font-semibold pbp-text-muted">
-                      {inviteMethod === "email"
-                        ? t(
-                            "memberManagement.inviteBuilder.fields.email",
-                            "이메일 주소",
-                          )
-                        : t(
-                            "memberManagement.inviteBuilder.fields.phone",
-                            "휴대폰 번호",
-                          )}
-                    </span>
-                    <input
-                      type={inviteMethod === "email" ? "email" : "tel"}
-                      inputMode={inviteMethod === "email" ? "email" : "numeric"}
-                      pattern={inviteMethod === "email" ? undefined : "[0-9]*"}
-                      value={targetContact}
-                      onChange={(event) =>
-                        setTargetContact(
-                          inviteMethod === "email"
-                            ? event.target.value
-                            : formatPhoneNumber(event.target.value),
-                        )
-                      }
-                      className={ADMIN_INPUT_CLASS}
-                      placeholder={
-                        inviteMethod === "email"
-                          ? t(
-                              "memberManagement.inviteBuilder.placeholders.email",
-                              "member@example.com",
-                            )
-                          : t(
-                              "memberManagement.inviteBuilder.placeholders.phone",
-                              "010-1234-5678",
-                            )
-                      }
-                    />
-                  </label>
-
-                  <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-                    <span className="text-xs font-semibold pbp-text-muted">
-                      {t(
-                        "memberManagement.inviteBuilder.fields.roleTemplate",
-                        "기본 권한 묶음",
-                      )}
-                    </span>
-                    <select
-                      value={selectedRoleId}
-                      onChange={(event) =>
-                        setSelectedRoleId(event.target.value)
-                      }
-                      className={ADMIN_INPUT_CLASS}
-                    >
-                      {inviteRoleOptions.map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {t(
-                            `memberManagement.roles.${role.id}.label`,
-                            role.id,
-                          )}{" "}
-                          ·{" "}
-                          {t(
-                            "memberManagement.permissionCount",
-                            "권한 {count}개",
-                          ).replace("{count}", String(role.permissionCount))}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
+                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px]">
                   <label className={ADMIN_FIELD_CONTAINER_CLASS}>
                     <span className="text-xs font-semibold pbp-text-muted">
                       {t(
@@ -1527,6 +1324,24 @@ export default function AdminMemberManagementDashboard() {
                       </option>
                     </select>
                   </label>
+                  <div className="flex items-end">
+                    <AdminButton
+                      onClick={handleCreateInvite}
+                      variant="primary"
+                      disabled={!canSubmitInvite}
+                      className="w-full"
+                    >
+                      {isCreatingInvite
+                        ? t(
+                            "memberManagement.inviteBuilder.actions.creating",
+                            "생성 중",
+                          )
+                        : t(
+                            "memberManagement.inviteBuilder.actions.create",
+                            "링크 생성",
+                          )}
+                    </AdminButton>
+                  </div>
                 </div>
 
               </AdminPanelSection>
@@ -1535,11 +1350,11 @@ export default function AdminMemberManagementDashboard() {
                 className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
                 title={t(
                   "memberManagement.sections.invitations",
-                  "초대 대기 목록",
+                  "초대 링크 목록",
                 )}
                 description={t(
                   "memberManagement.sections.invitationsDescription",
-                  "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
+                  "사용 가능, 사용됨, 만료됨, 취소됨 상태를 확인하고 링크를 복사하거나 취소합니다.",
                 )}
                 meta={t(
                   "memberManagement.tabs.invite.count",
@@ -1559,7 +1374,7 @@ export default function AdminMemberManagementDashboard() {
                     "memberManagement.empty.invitations.description",
                     "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
                   )}
-                  gridTemplateColumns="minmax(96px,1.2fr) 44px 72px 78px 70px 30px"
+                  gridTemplateColumns="84px minmax(180px,1fr) 90px 90px 140px"
                   headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
                   rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
                   className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
@@ -1709,7 +1524,7 @@ export default function AdminMemberManagementDashboard() {
         )}
         description={t(
           "memberManagement.detailModal.description",
-          "멤버 로우를 클릭해 업무홈 카드와 작성 가능 범위를 관리합니다.",
+          "멤버 로우를 클릭해 작업지시서, 협력업체, 기준정보, 발주 권한을 관리합니다.",
         )}
         onClose={handleCloseMemberDetail}
         maxWidthClass="md:max-w-5xl"
@@ -1781,7 +1596,7 @@ export default function AdminMemberManagementDashboard() {
               )}
               description={t(
                 "memberManagement.detailModal.sections.permissionsDescription",
-                "업무홈에 보일 카드와 각 카드에서 작성할 수 있는 범위를 선택합니다.",
+                "체크 해제 시 조회만 가능하고, 체크 시 해당 업무의 작성과 관리 작업을 허용합니다. 통계는 기본 조회 권한으로 제공합니다.",
               )}
             >
               <div className="grid gap-4">
@@ -1810,7 +1625,7 @@ export default function AdminMemberManagementDashboard() {
                   <p className="text-xs leading-5 pbp-text-muted">
                     {t(
                       "memberManagement.detailModal.roleTemplateHelper",
-                      "역할은 기본 권한 묶음입니다. 아래 업무 화면 권한은 필요할 때만 조정합니다.",
+                      "역할은 시작값입니다. 실제 업무 권한은 아래 4개 항목으로 단순하게 조정합니다.",
                     )}
                   </p>
                   <AdminButton
