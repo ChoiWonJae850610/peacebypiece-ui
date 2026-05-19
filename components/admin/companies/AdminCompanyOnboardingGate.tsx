@@ -374,7 +374,22 @@ function OnboardingFileField({
   );
 }
 
-export default function AdminCompanyOnboardingGate({ children }: { children: ReactNode }) {
+type AdminCompanyOnboardingInitialAccessState = {
+  onboardingStatus?: CompanyOnboardingProfile["onboardingStatus"] | string | null;
+  trialExpired?: boolean | null;
+  accessBlocked?: boolean | null;
+};
+
+type AdminCompanyOnboardingGateProps = {
+  children: ReactNode;
+  initialAccessState?: AdminCompanyOnboardingInitialAccessState | null;
+};
+
+function isConfirmedActiveCompanyAccess(input: AdminCompanyOnboardingInitialAccessState | null | undefined): boolean {
+  return input?.onboardingStatus === "active" && !input.trialExpired && !input.accessBlocked;
+}
+
+export default function AdminCompanyOnboardingGate({ children, initialAccessState = null }: AdminCompanyOnboardingGateProps) {
   const { i18n } = useI18n();
   const copy = i18n.admin.companyOnboarding;
   const [profile, setProfile] = useState<CompanyOnboardingProfile | null>(null);
@@ -400,7 +415,8 @@ export default function AdminCompanyOnboardingGate({ children }: { children: Rea
     (profile.onboardingStatus === "profile_required" || !profile.profileComplete);
   const isApprovalPending = loadState === "loaded" && profile?.onboardingStatus === "approval_pending";
   const isTrialExpired = loadState === "loaded" && profile?.onboardingStatus === "active" && profile.trialExpired;
-  const isCheckingOnboarding = loadState === "idle" || loadState === "loading";
+  const hasInitialActiveAccess = isConfirmedActiveCompanyAccess(initialAccessState);
+  const isCheckingOnboarding = !hasInitialActiveAccess && (loadState === "idle" || loadState === "loading");
   const blocksAdminWorkspace = isCheckingOnboarding || requiresOnboarding || isApprovalPending || isTrialExpired || loadState === "error";
   const hasUploadingFile = Object.values(fileStates).some((state) => state.status === "uploading" || state.status === "deleting");
   const activeLogoFile = getActiveOnboardingFile(onboardingFiles, "logo");

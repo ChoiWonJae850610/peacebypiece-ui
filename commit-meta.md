@@ -1,19 +1,15 @@
 Version :
-0.13.98
+0.13.99
 
 Summary :
-멤버 초대 링크 UI 단순화와 권한 4개 항목 정리
+고객사 관리자 초기 온보딩 모달 깜빡임 보정
 
 Description :
-고객사 관리자 멤버 초대 화면을 시스템관리자 고객사 초대 화면과 같은 초대 만료 및 링크 생성 중심 구조로 단순화했다. 멤버 권한 모달은 작업지시서 관리, 협력업체 관리, 기준정보 관리, 발주 권한 4개 항목으로 정리하고, 통계와 기본 조회 권한은 항상 유지되도록 보정했다. full reset 역할 기본 권한도 새 권한 기준에 맞췄다.
+고객사 관리자 화면 새로고침 시 서버에서 이미 active 상태로 확인된 고객사에 대해 온보딩 상태 조회가 끝나기 전 회사정보 등록 모달이 잠깐 표시되지 않도록 초기 접근 상태를 AdminCompanyOnboardingGate에 전달했다. profile_required, approval_pending, rejected, trial 제한 상태의 기존 차단 흐름은 유지했다.
 
 수정 파일 목록 :
-- components/admin/members/AdminMemberManagementDashboard.tsx
-- db/schema/full_reset.sql
-- db/schema/full_reset_smoke_test.sql
-- lib/permissions/memberPermissionMatrix.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- app/admin/layout.tsx
+- components/admin/companies/AdminCompanyOnboardingGate.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
