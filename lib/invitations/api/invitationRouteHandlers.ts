@@ -58,7 +58,7 @@ function toInvitationDraft(
       ? sessionCompanyScope?.companyId ?? null
       : body.companyId ?? inviterCompanyId ?? null,
     inviterCompanyId,
-    recipientEmail: scope === "system_to_company_admin" ? null : body.recipientEmail ?? "",
+    recipientEmail: scope === "system_to_company_admin" ? null : body.recipientEmail ?? null,
     recipientRole,
     permissionPreset,
     scope,
@@ -84,12 +84,16 @@ function toBadRequestResponse(reasons: string[]) {
 }
 
 function toErrorResponse(error: unknown) {
+  const message =
+    process.env.NODE_ENV !== "production" && error instanceof Error
+      ? error.message
+      : "Invitation request could not be processed.";
+
   return NextResponse.json(
     {
       ok: false,
       error: "INVITATION_ROUTE_ERROR",
-      message:
-        error instanceof Error ? error.message : "Unknown invitation route error",
+      message,
     },
     { status: 500 },
   );

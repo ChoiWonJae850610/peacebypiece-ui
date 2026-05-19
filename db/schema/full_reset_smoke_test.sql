@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.14.1
+-- Version: 0.14.2
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -512,6 +512,7 @@ DECLARE
   trial_status_allowed boolean;
   trial_plan_exists boolean;
   invitation_url_path_exists boolean;
+  member_invitation_link_only_valid boolean;
   company_onboarding_file_type_valid boolean;
 BEGIN
   SELECT EXISTS (
@@ -570,6 +571,23 @@ BEGIN
 
   IF NOT invitation_url_path_exists THEN
     RAISE EXCEPTION 'invitations.invite_url_path column missing';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'invitations'
+      AND cc.constraint_name = 'invitations_recipient_email_scope_check'
+      AND cc.check_clause LIKE '%company_to_member%'
+      AND cc.check_clause LIKE '%recipient_email IS NULL%'
+  ) INTO member_invitation_link_only_valid;
+
+  IF NOT member_invitation_link_only_valid THEN
+    RAISE EXCEPTION 'invitations_recipient_email_scope_check must allow link-only company member invitations';
   END IF;
 
   SELECT EXISTS (

@@ -219,6 +219,7 @@ async function listDbInvitations(companyId: string): Promise<InvitationRecord[]>
           LEFT JOIN companies ON companies.id = invitations.company_id
       ) invitations
       WHERE company_id = $1
+        AND scope = 'company_to_member'
       ORDER BY created_at DESC
     `,
     [companyId],
@@ -409,7 +410,9 @@ export function createInvitationRepository(): InvitationRepository {
       }
 
       return inMemoryInvitations.filter(
-        (invitation) => invitation.companyId === companyId,
+        (invitation) =>
+          invitation.companyId === companyId &&
+          invitation.scope === "company_to_member",
       );
     },
 

@@ -295,6 +295,58 @@ function getPendingInvitationExpiresLabel(expiresAt: string): string {
   });
 }
 
+function resolveMemberInvitationErrorMessage(
+  t: ReturnType<typeof useAdminTranslation>,
+  errorCode: string | null | undefined,
+  fallbackLabel: string,
+): string {
+  const normalized = String(errorCode ?? "").trim().toUpperCase();
+
+  if (normalized === "INVITATION_ROUTE_ERROR") {
+    return t(
+      "memberManagement.inviteBuilder.errors.route",
+      "멤버 초대 링크를 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    );
+  }
+
+  if (normalized === "INVITATION_POLICY_REJECTED") {
+    return t(
+      "memberManagement.inviteBuilder.errors.policy",
+      "멤버 초대 조건을 확인할 수 없습니다. 회사 관리자 권한으로 다시 시도해 주세요.",
+    );
+  }
+
+  if (normalized === "INVITATION_NOT_FOUND") {
+    return t(
+      "memberManagement.inviteBuilder.errors.notFound",
+      "해당 초대 링크를 찾을 수 없습니다.",
+    );
+  }
+
+  if (normalized === "INVITATIONS_LOAD_FAILED") {
+    return t(
+      "memberManagement.inviteBuilder.errors.load",
+      "초대 링크 목록을 불러오지 못했습니다.",
+    );
+  }
+
+  if (normalized === "INVITATION_CREATE_FAILED") {
+    return t(
+      "memberManagement.inviteBuilder.errors.create",
+      "초대 링크를 생성하지 못했습니다.",
+    );
+  }
+
+  if (normalized === "INVITATION_REVOKE_FAILED") {
+    return t(
+      "memberManagement.inviteBuilder.errors.revoke",
+      "초대 링크를 취소하지 못했습니다.",
+    );
+  }
+
+  return fallbackLabel;
+}
+
 
 function buildMemberDetailDraft(member: AdminCompanyMemberRecord): MemberDetailDraft {
   return {
@@ -814,7 +866,14 @@ export default function AdminMemberManagementDashboard() {
       );
     } catch (error) {
       setInviteError(
-        error instanceof Error ? error.message : "INVITATIONS_LOAD_FAILED",
+        resolveMemberInvitationErrorMessage(
+          t,
+          error instanceof Error ? error.message : "INVITATIONS_LOAD_FAILED",
+          t(
+            "memberManagement.inviteBuilder.errors.load",
+            "초대 링크 목록을 불러오지 못했습니다.",
+          ),
+        ),
       );
       setPendingInvitations([]);
     }
@@ -1115,7 +1174,6 @@ export default function AdminMemberManagementDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "company_to_member",
-          recipientEmail: null,
           recipientRole: "viewer",
           permissionPreset: "viewer",
           expiresAt,
@@ -1150,7 +1208,14 @@ export default function AdminMemberManagementDashboard() {
       await loadMemberInvitations();
     } catch (error) {
       setInviteError(
-        error instanceof Error ? error.message : "INVITATION_CREATE_FAILED",
+        resolveMemberInvitationErrorMessage(
+          t,
+          error instanceof Error ? error.message : "INVITATION_CREATE_FAILED",
+          t(
+            "memberManagement.inviteBuilder.errors.create",
+            "초대 링크를 생성하지 못했습니다.",
+          ),
+        ),
       );
     } finally {
       setIsCreatingInvite(false);
@@ -1196,7 +1261,14 @@ export default function AdminMemberManagementDashboard() {
       await loadMemberInvitations();
     } catch (error) {
       setInviteError(
-        error instanceof Error ? error.message : "INVITATION_REVOKE_FAILED",
+        resolveMemberInvitationErrorMessage(
+          t,
+          error instanceof Error ? error.message : "INVITATION_REVOKE_FAILED",
+          t(
+            "memberManagement.inviteBuilder.errors.revoke",
+            "초대 링크를 취소하지 못했습니다.",
+          ),
+        ),
       );
     } finally {
       setRevokingInviteId(null);
@@ -1260,7 +1332,7 @@ export default function AdminMemberManagementDashboard() {
           {activeTab === "invite" ? (
             <section
               id="member-invite-builder"
-              className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_520px]"
+              className="grid items-stretch gap-4 lg:grid-cols-[0.9fr_1.1fr]"
             >
               <AdminPanelSection
                 className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}

@@ -1,6 +1,6 @@
 -- =========================================
 -- WAFL full DB reset schema
--- Version: 0.14.1
+-- Version: 0.14.2
 --
 -- 기준:
 -- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
@@ -890,9 +890,9 @@ CREATE TABLE invitations (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT invitations_recipient_email_scope_check CHECK (
-    (scope = 'system_to_company_admin' AND (recipient_email IS NULL OR length(trim(recipient_email)) >= 0))
+    (scope = 'system_to_company_admin' AND recipient_email IS NULL)
     OR
-    (scope = 'company_to_member' AND recipient_email IS NOT NULL AND length(trim(recipient_email)) > 0)
+    (scope = 'company_to_member' AND (recipient_email IS NULL OR length(trim(recipient_email)) > 0))
   ),
   CONSTRAINT invitations_token_hash_not_empty CHECK (length(trim(token_hash)) > 0),
   CONSTRAINT invitations_invite_url_path_check CHECK (invite_url_path IS NULL OR length(trim(invite_url_path)) > 0),

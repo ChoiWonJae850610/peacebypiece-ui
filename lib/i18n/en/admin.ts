@@ -459,6 +459,14 @@ export const adminEn = {
         copied: "Invitation link copied.",
         cancelled: "Invitation cancelled.",
       },
+      errors: {
+        load: "Could not load invitation links.",
+        create: "Could not create the invitation link.",
+        revoke: "Could not cancel the invitation link.",
+        route: "Could not create the member invitation link. Try again shortly.",
+        policy: "Could not verify the member invitation conditions. Try again with a company administrator account.",
+        notFound: "The invitation link could not be found.",
+      },
     },
 
     memberDirectory: {
