@@ -9,15 +9,32 @@ export const COMPANY_API_ACCESS_ERROR_CODES = {
   approvalPending: "COMPANY_APPROVAL_PENDING",
   rejected: "COMPANY_ONBOARDING_REJECTED",
   trialExpired: "TRIAL_EXPIRED",
-  subscriptionBlocked: "SUBSCRIPTION_ACCESS_BLOCKED",
+  pastDue: "SUBSCRIPTION_PAST_DUE",
+  canceled: "SUBSCRIPTION_CANCELED",
+} as const;
+
+export const COMPANY_API_ACCESS_BLOCK_REASONS = {
+  profileRequired: "profile_required",
+  approvalPending: "approval_pending",
+  rejected: "rejected",
+  trialExpired: "trial_expired",
+  pastDue: "past_due",
+  canceled: "canceled",
 } as const;
 
 export type CompanyApiAccessErrorCode =
   (typeof COMPANY_API_ACCESS_ERROR_CODES)[keyof typeof COMPANY_API_ACCESS_ERROR_CODES];
 
+export type CompanyApiAccessBlockReason =
+  (typeof COMPANY_API_ACCESS_BLOCK_REASONS)[keyof typeof COMPANY_API_ACCESS_BLOCK_REASONS];
+
 export type CompanyApiAccessGuardOptions = {
   allowProfileRequired?: boolean;
   allowApprovalPending?: boolean;
+  allowRejected?: boolean;
+  allowTrialExpired?: boolean;
+  allowPastDue?: boolean;
+  allowCanceled?: boolean;
   allowSubscriptionManagement?: boolean;
 };
 
@@ -25,6 +42,7 @@ export type CompanyApiAccessBlockedPayload = {
   ok: false;
   error: CompanyApiAccessErrorCode;
   code: CompanyApiAccessErrorCode;
+  reason: CompanyApiAccessBlockReason;
   accessBlocked: true;
   companyAccess: {
     companyId: string;
@@ -34,14 +52,20 @@ export type CompanyApiAccessBlockedPayload = {
   };
 };
 
-function createBlockedPayload(input: {
+type CompanyApiAccessBlockDecision = {
   code: CompanyApiAccessErrorCode;
+  reason: CompanyApiAccessBlockReason;
+};
+
+function createBlockedPayload(input: {
+  decision: CompanyApiAccessBlockDecision;
   state: CompanyAccessState;
 }): CompanyApiAccessBlockedPayload {
   return {
     ok: false,
-    error: input.code,
-    code: input.code,
+    error: input.decision.code,
+    code: input.decision.code,
+    reason: input.decision.reason,
     accessBlocked: true,
     companyAccess: {
       companyId: input.state.companyId,
@@ -55,7 +79,8 @@ function createBlockedPayload(input: {
 function getBlockedStatus(code: CompanyApiAccessErrorCode): number {
   if (
     code === COMPANY_API_ACCESS_ERROR_CODES.trialExpired ||
-    code === COMPANY_API_ACCESS_ERROR_CODES.subscriptionBlocked
+    code === COMPANY_API_ACCESS_ERROR_CODES.pastDue ||
+    code === COMPANY_API_ACCESS_ERROR_CODES.canceled
   ) {
     return 402;
   }
@@ -63,32 +88,79 @@ function getBlockedStatus(code: CompanyApiAccessErrorCode): number {
   return 403;
 }
 
-function resolveBlockedCompanyApiCode(
+function isSubscriptionExceptionAllowed(
+  decision: CompanyApiAccessBlockDecision,
+  options: CompanyApiAccessGuardOptions,
+): boolean {
+  if (options.allowSubscriptionManagement) return true;
+  if (decision.reason === COMPANY_API_ACCESS_BLOCK_REASONS.trialExpired) {
+    return Boolean(options.allowTrialExpired);
+  }
+  if (decision.reason === COMPANY_API_ACCESS_BLOCK_REASONS.pastDue) {
+    return Boolean(options.allowPastDue);
+  }
+  if (decision.reason === COMPANY_API_ACCESS_BLOCK_REASONS.canceled) {
+    return Boolean(options.allowCanceled);
+  }
+
+  return false;
+}
+
+function resolveBlockedCompanyApiDecision(
   state: CompanyAccessState,
   options: CompanyApiAccessGuardOptions,
-): CompanyApiAccessErrorCode | null {
-  if (state.onboardingStatus === "rejected") {
-    return COMPANY_API_ACCESS_ERROR_CODES.rejected;
+): CompanyApiAccessBlockDecision | null {
+  if (state.onboardingStatus === COMPANY_API_ACCESS_BLOCK_REASONS.rejected) {
+    return options.allowRejected
+      ? null
+      : {
+          code: COMPANY_API_ACCESS_ERROR_CODES.rejected,
+          reason: COMPANY_API_ACCESS_BLOCK_REASONS.rejected,
+        };
   }
 
-  if (state.onboardingStatus === "profile_required" && !options.allowProfileRequired) {
-    return COMPANY_API_ACCESS_ERROR_CODES.profileRequired;
+  if (
+    state.onboardingStatus === COMPANY_API_ACCESS_BLOCK_REASONS.profileRequired &&
+    !options.allowProfileRequired
+  ) {
+    return {
+      code: COMPANY_API_ACCESS_ERROR_CODES.profileRequired,
+      reason: COMPANY_API_ACCESS_BLOCK_REASONS.profileRequired,
+    };
   }
 
-  if (state.onboardingStatus === "approval_pending" && !options.allowApprovalPending) {
-    return COMPANY_API_ACCESS_ERROR_CODES.approvalPending;
+  if (
+    state.onboardingStatus === COMPANY_API_ACCESS_BLOCK_REASONS.approvalPending &&
+    !options.allowApprovalPending
+  ) {
+    return {
+      code: COMPANY_API_ACCESS_ERROR_CODES.approvalPending,
+      reason: COMPANY_API_ACCESS_BLOCK_REASONS.approvalPending,
+    };
   }
 
-  if (options.allowSubscriptionManagement) {
-    return null;
+  if (state.subscriptionStatus === COMPANY_API_ACCESS_BLOCK_REASONS.canceled) {
+    const decision = {
+      code: COMPANY_API_ACCESS_ERROR_CODES.canceled,
+      reason: COMPANY_API_ACCESS_BLOCK_REASONS.canceled,
+    } satisfies CompanyApiAccessBlockDecision;
+    return isSubscriptionExceptionAllowed(decision, options) ? null : decision;
+  }
+
+  if (state.subscriptionStatus === COMPANY_API_ACCESS_BLOCK_REASONS.pastDue) {
+    const decision = {
+      code: COMPANY_API_ACCESS_ERROR_CODES.pastDue,
+      reason: COMPANY_API_ACCESS_BLOCK_REASONS.pastDue,
+    } satisfies CompanyApiAccessBlockDecision;
+    return isSubscriptionExceptionAllowed(decision, options) ? null : decision;
   }
 
   if (state.trialExpired) {
-    return COMPANY_API_ACCESS_ERROR_CODES.trialExpired;
-  }
-
-  if (state.subscriptionStatus === "past_due" || state.subscriptionStatus === "canceled") {
-    return COMPANY_API_ACCESS_ERROR_CODES.subscriptionBlocked;
+    const decision = {
+      code: COMPANY_API_ACCESS_ERROR_CODES.trialExpired,
+      reason: COMPANY_API_ACCESS_BLOCK_REASONS.trialExpired,
+    } satisfies CompanyApiAccessBlockDecision;
+    return isSubscriptionExceptionAllowed(decision, options) ? null : decision;
   }
 
   return null;
@@ -101,10 +173,11 @@ export async function createCompanyApiAccessBlockedResponse(
   const state = await getCompanyAccessState(companyId);
   if (!state) return null;
 
-  const code = resolveBlockedCompanyApiCode(state, options);
-  if (!code) return null;
+  const decision = resolveBlockedCompanyApiDecision(state, options);
+  if (!decision) return null;
 
-  return NextResponse.json(createBlockedPayload({ code, state }), {
-    status: getBlockedStatus(code),
+  return NextResponse.json(createBlockedPayload({ decision, state }), {
+    status: getBlockedStatus(decision.code),
+    headers: { "Cache-Control": "no-store" },
   });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { listCompanyUserAccessProfiles } from "@/lib/admin/settings/userAccessRepository";
 
 export const runtime = "nodejs";
@@ -28,6 +29,9 @@ export async function GET() {
         { status: 401, headers: { "Cache-Control": "no-store" } },
       );
     }
+
+    const blockedResponse = await createCompanyApiAccessBlockedResponse(companyId);
+    if (blockedResponse) return blockedResponse;
 
     const users = await listCompanyUserAccessProfiles(companyId);
     return NextResponse.json(
