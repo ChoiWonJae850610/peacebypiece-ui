@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.13.96
+-- Version: 0.13.97
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -246,7 +246,21 @@ BEGIN
   SELECT count(*) INTO system_process_standard_count FROM system_outsourcing_process_standards;
   SELECT count(*) INTO system_product_template_count FROM system_product_type_templates;
   SELECT count(*) INTO role_template_count FROM role_templates WHERE is_system_default = true;
-  SELECT count(*) INTO member_permission_catalog_count FROM permission_catalog WHERE permission_group IN ('workorder', 'member', 'storage', 'settings', 'audit');
+  SELECT count(*) INTO member_permission_catalog_count
+  FROM permission_catalog
+  WHERE is_system_permission = false
+    AND permission_group IN (
+      'workorder',
+      'workflow',
+      'partner',
+      'storage',
+      'stats',
+      'settings',
+      'standards',
+      'member',
+      'audit',
+      'personal'
+    );
 
   IF role_count < 5 THEN
     RAISE EXCEPTION 'role_catalog seed count too low: %', role_count;
@@ -283,8 +297,8 @@ BEGIN
     RAISE EXCEPTION 'role_templates default seed count too low: %', role_template_count;
   END IF;
 
-  IF member_permission_catalog_count < 20 THEN
-    RAISE EXCEPTION 'permission_catalog member/access seed count too low: %', member_permission_catalog_count;
+  IF member_permission_catalog_count < 30 THEN
+    RAISE EXCEPTION 'permission_catalog workspace/member seed count too low: %', member_permission_catalog_count;
   END IF;
 END $$;
 
