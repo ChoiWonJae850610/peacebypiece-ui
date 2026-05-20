@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.19
+baseline_source: peacebypiece-ui-0.15.20
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.6에서는 SaaS 운영 기준을 홈/메뉴 매핑으로 1차 연결한다.
+v0.7에서는 원단/부자재 발주 데이터 모델과 권한 matrix를 상세화한다.
 
 ```txt
 브랜드 톤
@@ -34,6 +34,7 @@ QA 체크리스트
 원단/부자재 발주 업무 흐름
 카드결제/청구/증빙 정책
 운영 IA 기반 홈/메뉴 매핑
+원단/부자재 발주 데이터 모델
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -54,6 +55,7 @@ QA 체크리스트
 - 작업지시서 직접 그리기 기능은 태블릿 가로모드에서 차단된 기존 결정을 반영
 - 로그인 문구는 최종 카피 확정 전까지 후보 문구로 관리
 - 결제/증빙/원단 발주 화면은 0.15.19 기준 홈/메뉴 진입 구조만 반영했고 기능 구현 전이다.
+- 원단/부자재 발주는 0.15.20 기준 데이터 모델과 권한 matrix를 상세화했으나 DB schema는 아직 반영하지 않았다.
 ```
 
 ## 3. 문서 목록
@@ -102,6 +104,7 @@ QA 체크리스트
 40_wafl-a-type-material-order-workflow.md
 41_wafl-a-type-billing-payment-evidence-policy.md
 42_wafl-a-type-operation-menu-mapping.md
+43_wafl-a-type-material-order-data-model.md
 ```
 
 ## 4. 핵심 결정
@@ -123,6 +126,8 @@ QA 체크리스트
 14. 고객사관리자 결제/증빙 화면은 본인 회사 범위로 제한한다.
 15. 원단/부자재 발주는 작업지시서 내부 모달만으로 처리하지 않고 별도 업무 흐름으로 분리한다.
 16. 카드결제는 PG의 customerKey/billingKey 기반으로 처리하고 전체 카드번호/CVC/카드 비밀번호/주민등록번호/카드 유효기간 원문은 저장하지 않는다.
+17. 원단/부자재 발주는 work_order_material_rows, material_purchase_orders, material_purchase_order_items의 3계층 모델을 기본 설계로 둔다.
+18. 원단/부자재 발주 권한은 초기 UI에서는 단순화하되 내부 설계는 view/request/approve/direct/execute/receive/cancel로 확장 가능하게 둔다.
 ```
 
 ## 5. 0.14.9 문서 정리 기준
@@ -247,4 +252,16 @@ QA 체크리스트
 - 0.15.18 운영 IA를 시스템관리자 홈 섹션과 고객사관리자 홈 카드에 1차 매핑
 - 고객사관리자 환경설정에 약관·정책 준비 카드 추가
 - 결제/증빙/원단 발주 기능 구현은 후속 버전으로 유지
+```
+
+
+### 0.15.20 업데이트
+
+```txt
+43_wafl-a-type-material-order-data-model.md
+- 원단/부자재 발주 데이터 모델 상세 설계
+- work_order_material_rows / material_purchase_orders / material_purchase_order_items 3계층 모델 정리
+- materials.order 계열 권한 matrix 정리
+- 작업지시서와 자재 발주 연결 방식 및 full_reset 반영 여부 검토
+- DB schema/API/화면 구현은 아직 제외
 ```

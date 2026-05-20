@@ -47,17 +47,18 @@
 - `wafl-a-type/40_wafl-a-type-material-order-workflow.md` — 원단/부자재 발주 업무 흐름
 - `wafl-a-type/41_wafl-a-type-billing-payment-evidence-policy.md` — 카드결제/청구/증빙 정책
 - `wafl-a-type/42_wafl-a-type-operation-menu-mapping.md` — 운영 IA 기반 홈/메뉴 매핑
+- `wafl-a-type/43_wafl-a-type-material-order-data-model.md` — 원단/부자재 발주 데이터 모델 상세 설계
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.19부터 기준 문서는 `docs/wafl-a-type/` 안의 00~42 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.20부터 기준 문서는 `docs/wafl-a-type/` 안의 00~43 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.19
+현재 기준: 0.15.20
 PC A-TYPE 전환과 SaaS 운영 IA 정리 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

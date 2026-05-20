@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.19
+baseline_source: peacebypiece-ui-0.15.20
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.19
+현재 기준: 0.15.20
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -38,6 +38,7 @@ updated: 2026-05-20
 - 원단/부자재 발주 업무 흐름 문서화
 - 카드결제/청구/증빙 정책 문서화
 - 운영 IA 기반 홈/메뉴 매핑 1차
+- 원단/부자재 발주 데이터 모델 상세 설계
 ```
 
 ## 2. 전환 원칙
@@ -77,6 +78,7 @@ updated: 2026-05-20
 0.15.17 — 시스템관리자 홈 visual pass
 0.15.18 — 운영 IA + 원단/부자재 발주 IA + 카드결제/증빙 정책 문서화
 0.15.19 — 운영 IA 기반 홈/메뉴 매핑 1차
+0.15.20 — 원단/부자재 발주 데이터 모델 상세 설계
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -98,18 +100,19 @@ updated: 2026-05-20
 ### 0.15.20 — 원단/부자재 발주 데이터 모델 상세 설계
 
 ```txt
-목표:
-- material_purchase_orders 설계
-- material_purchase_order_items 설계
-- work_order_material_rows 설계
-- 작업지시서와 자재 발주 연결 방식 설계
-- 권한 matrix 설계
-- full_reset 반영 여부 검토
+완료:
+- work_order_material_rows 상세 모델 정리
+- material_purchase_orders 상세 모델 정리
+- material_purchase_order_items 상세 모델 정리
+- 작업지시서와 자재 발주 연결 방식 정리
+- materials.order 계열 권한 matrix 정리
+- 발주 상태 전이와 selector 기준 후보 정리
+- full_reset.sql 영향 검토
 
-산출:
-- 문서
-- 필요 시 DB schema 초안
-- 아직 코드 구현은 보류 가능
+주의:
+- 실제 DB schema는 아직 추가하지 않는다.
+- full_reset.sql은 수정하지 않는다.
+- API/화면/PDF 구현은 아직 하지 않는다.
 ```
 
 ### 0.15.21 — 작업지시서 발주 flow 변경 설계
@@ -296,4 +299,5 @@ High risk:
 
 ```txt
 0.15.19 — 운영 IA 기반 홈/메뉴 매핑 1차
+0.15.20 — 원단/부자재 발주 데이터 모델 상세 설계
 ```
