@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
-version: 0.5
-baseline_source: peacebypiece-ui-0.14.8
+version: 0.6
+baseline_source: peacebypiece-ui-0.14.9
 status: draft-final
 updated: 2026-05-20
 ---
@@ -27,6 +27,7 @@ A-TYPE은 단순 테마가 아니라 다음을 포함한다.
 권한별 UI 노출 정책
 i18n/copy 정책
 구현 아키텍처
+소스 구조 감사
 리팩토링 로드맵
 QA 체크리스트
 공유/PWA/앱 전략
@@ -75,6 +76,7 @@ QA 체크리스트
 18_wafl-a-type-auth-session-policy.md
 19_wafl-a-type-release-test-policy.md
 20_wafl-a-type-page-inventory.md
+21_wafl-a-type-source-refactor-audit.md
 ```
 
 ## 4. 핵심 결정

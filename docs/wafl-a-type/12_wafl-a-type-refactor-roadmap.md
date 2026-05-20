@@ -1,150 +1,193 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
-version: 0.5
-baseline_source: peacebypiece-ui-0.14.8
+version: 0.6
+baseline_source: peacebypiece-ui-0.14.9
 status: draft-final
 updated: 2026-05-20
 ---
 
-
 # 12. A-TYPE 전환 로드맵
 
-## 0. 현재 진행 기준 업데이트
+## 1. 현재 기준
 
 ```txt
-현재 기준: 0.14.8
-완료: A-TYPE 문서 00~14 반영, semantic token 1차 정리
-이번 보완: docs 기준 문서 00~20 체계화, legacy version note 정리
-다음 우선순위: Admin 공통 컴포넌트 A-TYPE variant 정리 → 로그인/초대/에러 화면 → 고객사 관리자 주요 화면 → 시스템관리자 주요 화면 → DeviceKind/모바일/태블릿
+현재 기준: 0.14.9
+완료:
+- 고객사 초대/온보딩/승인 흐름 1차
+- 멤버 초대 링크 단순화
+- 권한 4개 구조 1차
+- 고객사 관리자 홈 IA 일부 정리
+- A-TYPE 문서 00~20 정리
+- semantic token 1차
+- legacy docs 정리
 ```
 
-
-## 1. 기준
+## 2. 전환 원칙
 
 ```txt
-현재 기준: 0.13.50
-목표: WAFL A-TYPE 제품 UI 통일
-원칙: 작은 버전 단위, 기능 회귀 최소화
+- 작은 버전 단위로 진행한다.
+- URL은 변경하지 않는다.
+- 기능/DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 건드리지 않는다.
+- UI 전환 전 router/layout/shell 책임을 먼저 정리한다.
+- Admin* 공통 컴포넌트는 버리지 않고 A-TYPE 기준으로 승격한다.
+- PC 기준 안정화 후 tablet/mobile로 확장한다.
 ```
 
-## 2. 추천 버전 계획
+## 3. 0.15.x — 소스 구조와 PC A-TYPE 기반
 
-### 0.13.51 — 문서 세트 v0.4 생성
+### 0.15.0 — 소스 구조 감사
 
 ```txt
-코드 수정 없음
-A-TYPE 최종 문서 세트 생성
-- 공유/PWA/앱 전략 추가
-- 초대 링크 공유, 작업지시서 PDF 공유 정책 추가
+- app route 구조 감사
+- layout/shell 구조 감사
+- route group 적용 방향 정리
+- AdminShell/SystemShell 책임 분리
+- UI debt 후보 집계
+- 21번 감사 문서 추가
 ```
 
-### 0.13.52 — Token / Theme 정리
+### 0.15.1 — Router/Layout 구조 정리 1차
 
 ```txt
-beige-atelier를 A-TYPE 기준으로 정리
-pbp token 문서와 코드 매칭
-raw color 사용 금지 기준 준비
+- URL 유지
+- route group 도입 가능성 반영
+- public/admin/system/workspace 경계 정리
+- layout 중복 최소화
+- 직접 URL 접근 테스트
 ```
 
-### 0.13.53 — Admin common component 정리
+### 0.15.2 — AdminShell / SystemShell 책임 정리
 
 ```txt
-AdminButton / AdminCard / AdminStatusBadge / AdminEmptyState / AdminFilterBar / AdminTable
+- 고객사 관리자 shell과 시스템관리자 shell을 억지로 합치지 않음
+- 공통 primitive만 공유
+- AdminShell raw color/background token화
+- System semantic class와 A-TYPE token 매칭
 ```
 
-### 0.13.54 — Login / Invite / Error / Share A-TYPE화
+### 0.15.3 — Admin 공통 컴포넌트 A-TYPE variant 1차
 
 ```txt
-WaflLoginPage token화
-로그인 문구 정리
-invite error page 정리
-not-found/error/forbidden 화면 추가 또는 정리
+- AdminButton
+- AdminCard
+- AdminStatusBadge
+- AdminEmptyState
+- AdminFilterBar
 ```
 
-### 0.13.55 — AdminShell / Topbar / Sidebar 정리
+### 0.15.4 — Login / Invite / Error A-TYPE
 
 ```txt
-PC 수치 기준 적용
-sidebar/header/page padding 정리
+- WaflLoginPage
+- CompanyInvitationJoinRequestPage
+- MemberInvitationJoinRequestPage
+- invite error
+- pending/service-paused
 ```
 
-### 0.13.56 — PC 주요 화면 통일
+### 0.15.5 — 고객사 관리자 주요 화면 A-TYPE
 
 ```txt
-운영대시보드 / 작업지시서 / 협력업체 / 저장소 / 통계 / 멤버관리 / 환경설정
+- /admin
+- /admin/members
+- /admin/settings
+- /admin/files
+- /admin/stats
+- /admin/partners
 ```
 
-### 0.13.57 — Device policy 확장
+### 0.15.6 — 시스템관리자 주요 화면 A-TYPE
 
 ```txt
-pc/tablet-landscape/tablet-portrait/mobile
-작업지시서 device hook 확장
-태블릿 세로 규칙 반영
+- /system
+- /system/companies
+- /system/storage-usage
+- /system/audit-logs
+- /system/standards
 ```
 
-### 0.13.58 — Drawing orientation guard 정리
+## 4. 0.16.x — responsive / share / drawing foundation
+
+### 0.16.0 — DeviceKind foundation
 
 ```txt
-태블릿 가로 직접 그리기 차단 정책 문서와 코드 일치
-canvas draft 보존 점검
+- pc / tablet-landscape / tablet-portrait / mobile 판정
+- PC 브라우저 축소와 실제 mobile/tablet 구분
+- device hook 추가
 ```
 
-### 0.13.59 이후 — 태블릿/모바일 전용 화면 확장
+### 0.16.1 — 고객사 관리자 mobile/tablet layout
 
 ```txt
-태블릿 가로 / 태블릿 세로 / 모바일 하단 탭 / 모바일 카드 리스트 / 하단 시트/전체 시트
+- table → card list 전환
+- mobile bottom action
+- tablet portrait 1열 스택
 ```
 
-## 3. 리스크별 분리
+### 0.16.2 — 작업지시서 기기별 layout
+
+```txt
+- PC 3열
+- tablet landscape 2열
+- tablet portrait/mobile 목록/상세 분리
+```
+
+### 0.16.3 — Drawing orientation guard
+
+```txt
+- tablet landscape 입력 차단
+- tablet portrait 허용
+- canvas draft 보존
+```
+
+### 0.16.4 — Web Share / QR / 링크 복사
+
+```txt
+- 초대 링크 공유
+- QR 보기
+- 공유 API 미지원 fallback
+```
+
+### 0.16.5 — 작업지시서 PDF 공유 설계
+
+```txt
+- PDF 링크 생성
+- 링크 공유/복사/download
+- 권한 정책 확정
+```
+
+## 5. 0.17.x — DB/R2/docs cleanup
+
+```txt
+0.17.0 DB SQL 파일 정리 2차
+0.17.1 미사용 DB schema/table 후보 점검
+0.17.2 R2 key/preview/download/purge 정합성 점검
+0.17.3 repo cleanup
+0.17.4 full reset + smoke test + build 기준 확정
+```
+
+## 6. 리스크 분리
 
 Low risk:
 
 ```txt
-문서 / token alias / Admin common style / Empty/Error state
+문서 / token alias / static copy / empty state
 ```
 
 Medium risk:
 
 ```txt
-AdminShell / Login/Invite page / i18n key 이동 / device hook
+AdminShell / SystemShell / i18n key 이동 / route group / device hook
 ```
 
 High risk:
 
 ```txt
-WorkOrderWorkspace 구조 / R2/첨부/메모 / storage purge / permission/session/companyId / DB schema
+WorkOrderWorkspace 구조 / R2 / 첨부·메모 / storage purge / permission/session/companyId / DB schema
 ```
 
----
-
-## 4. 앱/PWA 관련 로드맵
-
-### 1단계 — 모바일/태블릿 웹 공유
+## 7. 다음 권장 작업
 
 ```txt
-- Web Share API 기반 공유
-- 링크 복사 fallback
-- QR 보기
-- PDF 링크 공유
+0.15.1 — Router/Layout 구조 정리 1차
 ```
-
-### 2단계 — PWA 검토
-
-```txt
-- 홈 화면 추가
-- manifest
-- 아이콘
-- offline fallback
-- 제한적 캐시 정책
-```
-
-### 3단계 — 앱 MVP 검토
-
-```txt
-- 푸시 알림이 필요할 때
-- 오프라인 입력이 필요할 때
-- 네이티브 카메라/파일 권한이 필요할 때
-- 앱스토어/플레이스토어 배포가 필요할 때
-```
-
-앱 개발은 PC A-TYPE 통일과 모바일/태블릿 웹 공유 기능 이후로 둔다.

@@ -25,6 +25,7 @@
 - `wafl-a-type/18_wafl-a-type-auth-session-policy.md` — 인증/세션/역할 판정 정책
 - `wafl-a-type/19_wafl-a-type-release-test-policy.md` — 패치/릴리즈/테스트 정책
 - `wafl-a-type/20_wafl-a-type-page-inventory.md` — route별 화면 인벤토리
+- `wafl-a-type/21_wafl-a-type-source-refactor-audit.md` — A-TYPE 적용 전 소스 구조 감사 및 리팩토링 방향
 
 ## 정리 정책
 
