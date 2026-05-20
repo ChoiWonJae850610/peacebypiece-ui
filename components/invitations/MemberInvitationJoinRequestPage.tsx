@@ -142,6 +142,17 @@ export default function MemberInvitationJoinRequestPage({
           <ATypePublicNotice tone="success">이 링크로 WAFL 참여 요청을 보낼 수 있습니다.</ATypePublicNotice>
         ) : null}
 
+        <dl className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-xs font-bold text-[var(--pbp-text-muted)]">초대한 고객사</dt>
+            <dd className="mt-1 truncate font-black text-[var(--pbp-text-primary)]">{companyName}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-bold text-[var(--pbp-text-muted)]">만료일</dt>
+            <dd className="mt-1 font-black text-[var(--pbp-text-primary)]">{expiresAtLabel}</dd>
+          </div>
+        </dl>
+
         <button
           type="button"
           disabled={!isJoinable}

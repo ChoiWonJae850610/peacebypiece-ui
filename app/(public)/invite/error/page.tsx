@@ -21,7 +21,7 @@ export default async function InviteErrorPage({ searchParams }: InviteErrorPageP
 
   return (
     <ATypePublicFrame
-      eyebrow="Invitation error"
+      eyebrow="초대 오류"
       title={
         <>
           초대 링크를

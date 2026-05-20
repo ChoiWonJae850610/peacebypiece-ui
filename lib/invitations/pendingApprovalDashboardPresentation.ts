@@ -196,14 +196,14 @@ export const PENDING_APPROVAL_POLICY_NOTES: PendingApprovalPolicyNote[] = [
 
 export function getPendingApprovalAccessTone(status: PendingApprovalAccessStatus): string {
   if (status === "available") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]";
   }
 
   if (status === "planned") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+    return "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]";
   }
 
-  return "border-stone-200 bg-stone-100 text-stone-500";
+  return "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]";
 }
 
 export interface PendingApprovalJoinRequestView {
@@ -232,17 +232,17 @@ export function getPendingApprovalRequestTypeLabel(type: PendingApprovalRequestT
 }
 
 export function getPendingApprovalStatusTone(status: PendingApprovalRequestStatus): string {
-  if (status === "approved") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "rejected") return "border-rose-200 bg-rose-50 text-rose-700";
-  if (status === "cancelled") return "border-stone-200 bg-stone-100 text-stone-500";
-  return "border-amber-200 bg-amber-50 text-amber-700";
+  if (status === "approved") return "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]";
+  if (status === "rejected") return "border-[var(--pbp-status-danger-bg)] bg-[var(--pbp-status-danger-bg)] text-[var(--pbp-status-danger-fg)]";
+  if (status === "cancelled") return "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]";
+  return "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]";
 }
 
 export function getPendingApprovalStatusPanelClassName(status: PendingApprovalRequestStatus): string {
-  if (status === "approved") return "border-emerald-200 bg-emerald-50";
-  if (status === "rejected") return "border-rose-200 bg-rose-50";
-  if (status === "cancelled") return "border-stone-200 bg-stone-50";
-  return "border-amber-200 bg-amber-50";
+  if (status === "approved") return "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)]";
+  if (status === "rejected") return "border-[var(--pbp-status-danger-bg)] bg-[var(--pbp-status-danger-bg)]";
+  if (status === "cancelled") return "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)]";
+  return "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)]";
 }
 
 export function getPendingApprovalStatusGuidance(

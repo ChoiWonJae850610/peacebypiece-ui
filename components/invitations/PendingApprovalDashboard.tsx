@@ -177,23 +177,23 @@ export default function PendingApprovalDashboard({
   }, [initialRequestId, initialApplicantEmail, initialRequestType]);
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#f5f5f4_48%,#eef2ff_100%)] px-4 py-5 text-stone-900 md:px-6 md:py-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <header className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-5 shadow-sm backdrop-blur">
+    <main className="relative min-h-screen overflow-hidden bg-[var(--pbp-bg-app)] px-4 py-5 text-[var(--pbp-text-primary)] md:px-6 md:py-8">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
+        <header className="rounded-[var(--pbp-radius-modal)] border border-[var(--pbp-border-soft)] bg-[color-mix(in_srgb,var(--pbp-surface-base)_94%,transparent)] px-5 py-5 shadow-[var(--pbp-shadow-modal-a-type)] backdrop-blur">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white">
+                <span className="rounded-full bg-[var(--pbp-brand-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-inverse)]">
                   WAFL
                 </span>
-                <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">
+                <span className="rounded-full border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
                   v{APP_VERSION}
                 </span>
               </div>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-stone-950">
+              <h1 className="mt-4 text-3xl font-black tracking-[-0.04em] text-[var(--pbp-text-primary)]">
                 {PENDING_APPROVAL_DASHBOARD_TITLE}
               </h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
                 {PENDING_APPROVAL_DASHBOARD_DESCRIPTION}
               </p>
             </div>
@@ -202,28 +202,29 @@ export default function PendingApprovalDashboard({
                 href="/workspace"
                 aria-label="승인 후 메인화면"
                 title="승인 후 메인화면"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] text-[var(--pbp-text-primary)] shadow-sm transition hover:bg-[var(--pbp-surface-soft)]"
               >
                 <HomeIcon />
               </Link>
-              <button
-                type="button"
-                disabled
-                title="로그아웃 연결 예정"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-stone-100 text-stone-400"
-              >
-                <span className="sr-only">로그아웃 연결 예정</span>
-                <LogoutIcon />
-              </button>
+              <form action="/api/auth/logout" method="post">
+                <button
+                  type="submit"
+                  title="로그아웃"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] text-[var(--pbp-text-primary)] shadow-sm transition hover:bg-[var(--pbp-surface-soft)]"
+                >
+                  <span className="sr-only">로그아웃</span>
+                  <LogoutIcon />
+                </button>
+              </form>
             </div>
           </div>
         </header>
 
-        <section className="rounded-[28px] border border-stone-200 bg-white/90 p-5 shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
+        <section className="rounded-[var(--pbp-radius-modal)] border border-[var(--pbp-border-soft)] bg-[color-mix(in_srgb,var(--pbp-surface-base)_92%,transparent)] p-5 shadow-[var(--pbp-shadow-card-a-type)] backdrop-blur">
+          <div className="flex flex-col gap-4 border-b border-[var(--pbp-border-soft)] pb-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-stone-950">{PENDING_APPROVAL_LOOKUP_TITLE}</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-500">
+              <h2 className="text-lg font-black tracking-[-0.02em] text-[var(--pbp-text-primary)]">{PENDING_APPROVAL_LOOKUP_TITLE}</h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
                 {PENDING_APPROVAL_LOOKUP_DESCRIPTION}
               </p>
             </div>
@@ -235,30 +236,30 @@ export default function PendingApprovalDashboard({
           </div>
           <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_180px_auto]">
             <label className="block">
-              <span className="text-xs font-semibold text-stone-500">requestId</span>
+              <span className="text-xs font-bold text-[var(--pbp-text-muted)]">requestId</span>
               <input
                 value={requestId}
                 onChange={(event) => setRequestId(event.target.value)}
                 placeholder="join_requests.id"
-                className="mt-2 w-full rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
+                className="mt-2 w-full rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-3 py-2 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-brand-soft)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--pbp-brand-muted)_55%,transparent)]"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-stone-500">신청 이메일</span>
+              <span className="text-xs font-bold text-[var(--pbp-text-muted)]">신청 이메일</span>
               <input
                 type="email"
                 value={applicantEmail}
                 onChange={(event) => setApplicantEmail(event.target.value)}
                 placeholder="applicant@example.com"
-                className="mt-2 w-full rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
+                className="mt-2 w-full rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-3 py-2 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-brand-soft)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--pbp-brand-muted)_55%,transparent)]"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-stone-500">신청 유형</span>
+              <span className="text-xs font-bold text-[var(--pbp-text-muted)]">신청 유형</span>
               <select
                 value={requestType}
                 onChange={(event) => setRequestType(normalizeType(event.target.value) ?? "")}
-                className="mt-2 w-full rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
+                className="mt-2 w-full rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-3 py-2 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-brand-soft)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--pbp-brand-muted)_55%,transparent)]"
               >
                 <option value="">전체</option>
                 <option value="member">멤버</option>
@@ -269,29 +270,29 @@ export default function PendingApprovalDashboard({
               type="button"
               onClick={() => lookupJoinRequest()}
               disabled={lookupState === "loading"}
-              className="self-end rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+              className="self-end rounded-full border border-[var(--pbp-brand-primary)] bg-[var(--pbp-brand-primary)] px-4 py-2 text-xs font-bold text-[var(--pbp-text-inverse)] transition hover:bg-[var(--pbp-brand-soft)] disabled:border-[var(--pbp-border-soft)] disabled:bg-[var(--pbp-surface-soft)] disabled:text-[var(--pbp-text-disabled)]"
             >
               {lookupState === "loading" ? "조회 중" : "상태 조회"}
             </button>
           </div>
-          <p className="mt-3 text-xs leading-5 text-stone-500">
+          <p className="mt-3 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
             {lookupMessage ?? PENDING_APPROVAL_LOOKUP_FALLBACK_MESSAGE}
           </p>
           {joinRequest ? (
-            <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-xs leading-5 text-stone-600">
-              <strong className="text-stone-950">{joinRequest.applicantName || joinRequest.applicantEmail}</strong>
-              <span className="mx-2 text-stone-300">·</span>
+            <div className="mt-4 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">
+              <strong className="text-[var(--pbp-text-primary)]">{joinRequest.applicantName || joinRequest.applicantEmail}</strong>
+              <span className="mx-2 text-[var(--pbp-border-strong)]">·</span>
               {getPendingApprovalRequestTypeLabel(joinRequest.requestType)}
-              <span className="mx-2 text-stone-300">·</span>
+              <span className="mx-2 text-[var(--pbp-border-strong)]">·</span>
               접수 {formatCreatedAt(joinRequest.createdAt)}
               {joinRequest.reviewedAt ? (
                 <>
-                  <span className="mx-2 text-stone-300">·</span>
+                  <span className="mx-2 text-[var(--pbp-border-strong)]">·</span>
                   검토 {formatCreatedAt(joinRequest.reviewedAt)}
                 </>
               ) : null}
-              {joinRequest.requestMemo ? <p className="mt-2 text-stone-500">메모: {joinRequest.requestMemo}</p> : null}
-              {joinRequest.rejectionReason ? <p className="mt-1 text-stone-500">거절 코드: {joinRequest.rejectionReason}</p> : null}
+              {joinRequest.requestMemo ? <p className="mt-2 text-[var(--pbp-text-muted)]">메모: {joinRequest.requestMemo}</p> : null}
+              {joinRequest.rejectionReason ? <p className="mt-1 text-[var(--pbp-text-muted)]">거절 코드: {joinRequest.rejectionReason}</p> : null}
             </div>
           ) : null}
         </section>
@@ -303,15 +304,15 @@ export default function PendingApprovalDashboard({
                 <span className={`inline-flex w-fit rounded-full border px-3 py-1.5 text-xs font-semibold ${getPendingApprovalStatusTone(joinRequest.status)}`}>
                   {getPendingApprovalStatusLabel(joinRequest.status)}
                 </span>
-                <h2 className="mt-4 text-lg font-semibold text-stone-950">{statusGuidance.title}</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{statusGuidance.description}</p>
-                <p className="mt-2 text-xs leading-5 text-stone-500">{statusGuidance.nextAction}</p>
+                <h2 className="mt-4 text-lg font-black tracking-[-0.02em] text-[var(--pbp-text-primary)]">{statusGuidance.title}</h2>
+                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">{statusGuidance.description}</p>
+                <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{statusGuidance.nextAction}</p>
               </div>
               {statusGuidance.primaryAction ? (
                 <Link
                   href={statusGuidance.primaryAction.href}
                   title={statusGuidance.primaryAction.description}
-                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-[var(--pbp-brand-primary)] bg-[var(--pbp-brand-primary)] px-4 py-2 text-xs font-bold text-[var(--pbp-text-inverse)] transition hover:bg-[var(--pbp-brand-soft)]"
                 >
                   {statusGuidance.primaryAction.label}
                 </Link>
@@ -324,19 +325,19 @@ export default function PendingApprovalDashboard({
           {summaryItems.map((item) => (
             <article
               key={item.id}
-              className="rounded-3xl border border-stone-200 bg-white/90 p-5 shadow-sm"
+              className="rounded-[var(--pbp-radius-modal)] border border-[var(--pbp-border-soft)] bg-[color-mix(in_srgb,var(--pbp-surface-base)_92%,transparent)] p-5 shadow-[var(--pbp-shadow-card-a-type)] backdrop-blur"
             >
-              <p className="text-xs font-semibold text-stone-500">{item.label}</p>
-              <p className="mt-2 truncate text-xl font-semibold text-stone-950">{item.value}</p>
-              <p className="mt-3 text-xs leading-5 text-stone-500">{item.description}</p>
+              <p className="text-xs font-bold text-[var(--pbp-text-muted)]">{item.label}</p>
+              <p className="mt-2 truncate text-xl font-semibold text-[var(--pbp-text-primary)]">{item.value}</p>
+              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">{item.description}</p>
             </article>
           ))}
         </section>
 
-        <section className="rounded-[28px] border border-stone-200 bg-white/90 p-5 shadow-sm">
-          <div className="border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">승인 전 접근 범위</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">
+        <section className="rounded-[var(--pbp-radius-modal)] border border-[var(--pbp-border-soft)] bg-[color-mix(in_srgb,var(--pbp-surface-base)_92%,transparent)] p-5 shadow-[var(--pbp-shadow-card-a-type)] backdrop-blur">
+          <div className="border-b border-[var(--pbp-border-soft)] pb-4">
+            <h2 className="text-lg font-black tracking-[-0.02em] text-[var(--pbp-text-primary)]">승인 전 접근 범위</h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
               승인 전 사용자는 신청 상태 확인과 개인 설정 정도만 접근할 수 있고, 고객사 업무 데이터는 차단합니다.
             </p>
           </div>
@@ -344,26 +345,26 @@ export default function PendingApprovalDashboard({
             {PENDING_APPROVAL_ACCESS_ITEMS.map((item) => (
               <article
                 key={item.id}
-                className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
+                className="rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
+                  <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{item.title}</h3>
                   <span
                     className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getPendingApprovalAccessTone(item.status)}`}
                   >
                     {item.statusLabel}
                   </span>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-stone-600">{item.description}</p>
+                <p className="mt-3 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">{item.description}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-stone-200 bg-white/90 p-5 shadow-sm">
-          <div className="border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">승인 처리 흐름</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">
+        <section className="rounded-[var(--pbp-radius-modal)] border border-[var(--pbp-border-soft)] bg-[color-mix(in_srgb,var(--pbp-surface-base)_92%,transparent)] p-5 shadow-[var(--pbp-shadow-card-a-type)] backdrop-blur">
+          <div className="border-b border-[var(--pbp-border-soft)] pb-4">
+            <h2 className="text-lg font-black tracking-[-0.02em] text-[var(--pbp-text-primary)]">승인 처리 흐름</h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
               가입 신청 접수 후 고객관리자가 승인하고 권한을 확정하기까지의 기준입니다.
             </p>
           </div>
@@ -371,13 +372,13 @@ export default function PendingApprovalDashboard({
             {PENDING_APPROVAL_STEPS.map((step, index) => (
               <article
                 key={step.id}
-                className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
+                className="rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] p-4 shadow-sm"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--pbp-brand-primary)] text-xs font-bold text-[var(--pbp-text-inverse)]">
                   {index + 1}
                 </span>
-                <h3 className="mt-4 text-sm font-semibold text-stone-950">{step.title}</h3>
-                <p className="mt-2 text-xs leading-5 text-stone-600">{step.description}</p>
+                <h3 className="mt-4 text-sm font-semibold text-[var(--pbp-text-primary)]">{step.title}</h3>
+                <p className="mt-2 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">{step.description}</p>
               </article>
             ))}
           </div>
@@ -387,10 +388,10 @@ export default function PendingApprovalDashboard({
           {PENDING_APPROVAL_POLICY_NOTES.map((note) => (
             <article
               key={note.id}
-              className="rounded-3xl border border-stone-200 bg-white/90 p-5 shadow-sm"
+              className="rounded-[var(--pbp-radius-modal)] border border-[var(--pbp-border-soft)] bg-[color-mix(in_srgb,var(--pbp-surface-base)_92%,transparent)] p-5 shadow-[var(--pbp-shadow-card-a-type)] backdrop-blur"
             >
-              <h2 className="text-sm font-semibold text-stone-950">{note.title}</h2>
-              <p className="mt-2 text-xs leading-5 text-stone-600">{note.description}</p>
+              <h2 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{note.title}</h2>
+              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">{note.description}</p>
             </article>
           ))}
         </section>

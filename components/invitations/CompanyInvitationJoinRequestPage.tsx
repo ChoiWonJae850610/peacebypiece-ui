@@ -146,6 +146,17 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
           <ATypePublicNotice tone="success">이 링크로 고객사 관리자 등록을 시작할 수 있습니다.</ATypePublicNotice>
         ) : null}
 
+        <dl className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-xs font-bold text-[var(--pbp-text-muted)]">초대 유형</dt>
+            <dd className="mt-1 font-black text-[var(--pbp-text-primary)]">고객사 관리자</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-bold text-[var(--pbp-text-muted)]">만료일</dt>
+            <dd className="mt-1 font-black text-[var(--pbp-text-primary)]">{expiresAtLabel}</dd>
+          </div>
+        </dl>
+
         <button
           type="button"
           disabled={!isJoinable}

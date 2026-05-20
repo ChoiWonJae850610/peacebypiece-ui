@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.23
+baseline_source: peacebypiece-ui-0.15.24
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.23
+현재 기준: 0.15.24
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -42,6 +42,7 @@ updated: 2026-05-20
 - 작업지시서 발주 flow 변경 설계
 - A-TYPE visual QA / raw color / hardcoded text 점검
 - PC visual 보정 2차
+- 초대/승인/pending public 화면 visual pass
 ```
 
 ## 2. 전환 원칙
@@ -85,6 +86,10 @@ updated: 2026-05-20
 0.15.21 — 작업지시서 발주 flow 변경 설계
 0.15.22 — A-TYPE visual QA / raw color / hardcoded text 점검
 0.15.23 — PC visual 보정 2차
+0.15.231 — A-TYPE visual 보정 문서의 Tailwind CSS 파싱 오류 수정
+0.15.232 — Tailwind source 감지 범위 명시로 CSS 파싱 오류 수정
+0.15.233 — 시스템관리자 화면 로그아웃 버튼 추가
+0.15.24 — 초대/승인/pending public 화면 visual pass
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -185,6 +190,23 @@ updated: 2026-05-20
 - 기능 구현은 하지 않는다.
 - API/DB/R2/권한/세션/companyId scope는 변경하지 않는다.
 - 초대/승인/pending public 화면은 0.15.24에서 별도 보정한다.
+```
+
+
+
+### 0.15.24 — 초대/승인/pending public 화면 visual pass
+
+```txt
+완료:
+- /pending 화면의 raw stone/white 기반 surface를 A-TYPE semantic token으로 보정
+- pending 상단 disabled logout icon을 실제 /api/auth/logout POST 버튼으로 연결
+- 고객사 관리자 초대 화면과 멤버 초대 화면에 초대 유형/고객사/만료일 요약 surface 추가
+- 초대 오류 화면 eyebrow 문구를 한국어로 정리
+- pending status/access tone class를 status semantic token 기반으로 보정
+
+주의:
+- 가입 신청 조회 API와 초대 검증 API는 변경하지 않는다.
+- OAuth redirect / 세션 생성 / 승인 처리 흐름은 변경하지 않는다.
 ```
 
 ## 5. 0.16.x — Device / Responsive 기반

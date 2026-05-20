@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.23
+baseline_source: peacebypiece-ui-0.15.24
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.10에서는 0.15.22 visual QA를 기준으로 PC 화면 공통 surface와 환경설정/시스템관리자 홈의 token 보정을 적용한다.
+v0.11에서는 0.15.24 public flow visual pass를 기준으로 초대/승인/pending 화면의 A-TYPE 표면감과 token 사용 기준을 보정한다.
 
 ```txt
 브랜드 톤
@@ -38,6 +38,7 @@ QA 체크리스트
 작업지시서 발주 flow 변경 설계
 A-TYPE visual QA / raw color / hardcoded text 점검
 PC visual 보정 2차
+초대/승인/pending public 화면 visual pass
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -62,6 +63,7 @@ PC visual 보정 2차
 - 작업지시서 발주 flow는 0.15.21 기준 자재 발주 준비/검토요청/직접발주/PDF 출력 시점을 분리해 설계했다.
 - 0.15.22 기준 visual QA에서 stone/white 직접 class, raw hex, hardcoded text 후보를 분류하고 0.15.23 이후 보정 순서를 정리했다.
 - 0.15.23 기준 공통 surface class와 환경설정/시스템관리자 홈의 PC visual token을 2차 보정했다.
+- 0.15.24 기준 초대/승인/pending public 화면의 raw stone/white class를 A-TYPE semantic token 중심으로 보정했다.
 ```
 
 ## 3. 문서 목록
@@ -114,6 +116,7 @@ PC visual 보정 2차
 44_wafl-a-type-workorder-order-flow.md
 45_wafl-a-type-visual-qa-audit.md
 46_wafl-a-type-pc-visual-tuning-2.md
+47_wafl-a-type-public-flow-visual-pass.md
 ```
 
 ## 4. 핵심 결정
