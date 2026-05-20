@@ -201,3 +201,11 @@ WorkOrderWorkspace 구조 / R2 / 첨부·메모 / storage purge / permission/ses
 ```txt
 0.15.5 — 고객사 관리자 주요 화면 A-TYPE
 ```
+
+
+### 0.15.5 — 고객사 관리자 홈 A-TYPE 적용 1차
+
+```txt
+운영 대시보드와 업무 바로가기 카드 구조를 A-TYPE 기준으로 정리한다.
+DB/API/R2/권한/세션 흐름은 변경하지 않는다.
+```

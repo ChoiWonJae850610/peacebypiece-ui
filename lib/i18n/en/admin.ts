@@ -178,6 +178,9 @@ export const adminEn = {
   },
   operationsDashboard: {
     title: "Operations Dashboard",
+    eyebrow: "Work order flow",
+    description: "Review review, ordering, inspection, and delayed inbound queues in one place.",
+    priorityEyebrow: "Queue",
     workorderStatusTitle: "Work order status",
     sourceDb: "Shows work queue items from DB.",
     sourceNotConfigured:
@@ -280,9 +283,10 @@ export const adminEn = {
     },
     permissionLabel: "Permission",
     managementCards: {
+      eyebrow: "Workspace",
       title: "Workspace shortcuts",
-      description: "",
-      cardCount: "",
+      description: "Frequently used customer-admin screens are grouped into the A-TYPE card structure.",
+      cardCount: "{count} screens",
     },
     memberCards: {
       title: "Member management",

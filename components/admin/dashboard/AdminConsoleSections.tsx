@@ -6,7 +6,6 @@ import { ADMIN_SURFACE_ITEM_CLASS } from "@/components/admin/common/adminSemanti
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
-  getVisibleAdminHomeMemberCards,
   getVisibleAdminHomePrimaryCards,
   type AdminWorkspaceCard,
   type AdminWorkspaceCardStatus,
@@ -38,7 +37,7 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
   const content = (
     <AdminCard
       as="article"
-      className={`${ADMIN_SURFACE_ITEM_CLASS} flex h-full min-h-[150px] p-5 transition hover:-translate-y-0.5 hover:border-[var(--pbp-border-strong)] hover:shadow-md sm:min-h-[162px] sm:p-6 lg:min-h-[174px]`}
+      className={`${ADMIN_SURFACE_ITEM_CLASS} flex h-full min-h-[150px] p-5 transition pbp-admin-card-interactive sm:min-h-[162px] sm:p-6 lg:min-h-[174px]`}
     >
       <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-4">
         <div className="min-w-0">
@@ -50,7 +49,7 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
         </div>
 
         {item.href ? (
-          <AdminStatusBadge tone="primary" className="w-fit rounded-2xl px-3.5 py-1.5 text-xs">
+          <AdminStatusBadge tone="brand" className="w-fit rounded-2xl px-3.5 py-1.5 text-xs">
             {text.openLabel}
           </AdminStatusBadge>
         ) : (
@@ -75,27 +74,27 @@ export default function AdminConsoleSections() {
   const t = useAdminTranslation();
   const cardAccessInput = { permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES };
   const primaryCards = getVisibleAdminHomePrimaryCards(cardAccessInput);
-  const memberCards = getVisibleAdminHomeMemberCards(cardAccessInput);
 
   return (
-    <>
-      <AdminSection title={t("adminConsole.managementCards.title", "업무 바로가기")} bodyClassName="mt-4">
-        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {primaryCards.map((item) => (
-            <AdminWorkspaceCardView key={item.id} item={item} />
-          ))}
-        </div>
-      </AdminSection>
-
-      {memberCards.length > 0 ? (
-        <AdminSection title={t("adminConsole.memberCards.title", "멤버 관리")} bodyClassName="mt-4">
-          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {memberCards.map((item) => (
-              <AdminWorkspaceCardView key={item.id} item={item} />
-            ))}
-          </div>
-        </AdminSection>
-      ) : null}
-    </>
+    <AdminSection
+      eyebrow={t("adminConsole.managementCards.eyebrow", "Workspace")}
+      title={t("adminConsole.managementCards.title", "업무 바로가기")}
+      description={t(
+        "adminConsole.managementCards.description",
+        "고객사 관리자가 자주 사용하는 화면을 A-TYPE 카드 구조로 정리했습니다.",
+      )}
+      actions={
+        <AdminStatusBadge tone="neutral">
+          {t("adminConsole.managementCards.cardCount", "{count}개 화면").replace("{count}", String(primaryCards.length))}
+        </AdminStatusBadge>
+      }
+      bodyClassName="mt-4"
+    >
+      <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {primaryCards.map((item) => (
+          <AdminWorkspaceCardView key={item.id} item={item} />
+        ))}
+      </div>
+    </AdminSection>
   );
 }

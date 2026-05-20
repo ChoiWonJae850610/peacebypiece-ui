@@ -108,3 +108,7 @@ QA 체크리스트
 - 확실히 중복되는 top-level legacy 문서는 삭제한다.
 - DB/R2/auth/release/page inventory 정책은 15~20 문서로 보완한다.
 ```
+
+```txt
+26_wafl-a-type-customer-admin-home-implementation.md
+```

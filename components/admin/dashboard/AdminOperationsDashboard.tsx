@@ -157,17 +157,29 @@ export default function AdminOperationsDashboard({
   const queueTitle = translateQueueTitle(selectedQueueId, t);
 
   return (
-    <AdminCard className="shrink-0 overflow-hidden">
-      <div className="flex items-center justify-between gap-3">
+    <AdminCard variant="base" className="shrink-0 overflow-hidden p-4 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="truncate text-lg font-semibold tracking-tight pbp-text-primary">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">
+            {t("operationsDashboard.eyebrow", "Work order flow")}
+          </p>
+          <h2 className="mt-1 truncate text-xl font-semibold tracking-tight pbp-text-primary">
             {t("operationsDashboard.workorderStatusTitle", "작업지시서 현황")}
           </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 pbp-text-muted">
+            {t(
+              "operationsDashboard.description",
+              "검토, 발주, 검수, 입고 지연 상태를 한 화면에서 확인합니다.",
+            )}
+          </p>
         </div>
+        <AdminLinkButton href="/worker" variant="primary" size="md">
+          {t("operationsDashboard.actions.openWorkorderShort", "업무화면")}
+        </AdminLinkButton>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:h-[360px] xl:grid-cols-[1.35fr_0.65fr]">
-        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[24px] border p-4 pbp-card-muted xl:h-full xl:min-h-0">
+      <div className="mt-5 grid gap-4 xl:h-[360px] xl:grid-cols-[1.35fr_0.65fr]">
+        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[var(--pbp-radius-card)] border p-4 pbp-card-muted xl:h-full xl:min-h-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
               <h2 className="truncate text-base font-semibold pbp-text-primary">
@@ -272,10 +284,18 @@ export default function AdminOperationsDashboard({
           </div>
         </section>
 
-        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[24px] border border-[var(--admin-theme-border)] bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] shadow-sm transition-colors xl:h-full xl:min-h-0">
-          <h2 className="text-base font-semibold">
-            {t("operationsDashboard.priorityTitle", "주요 대기 현황")}
-          </h2>
+        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[var(--pbp-radius-card)] border border-[var(--pbp-brand-muted)] bg-[var(--pbp-brand-primary)] p-4 text-[var(--pbp-text-inverse)] shadow-sm transition-colors xl:h-full xl:min-h-0">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+                {t("operationsDashboard.priorityEyebrow", "Queue")}
+              </p>
+              <h2 className="mt-1 text-base font-semibold">
+                {t("operationsDashboard.priorityTitle", "주요 대기 현황")}
+              </h2>
+            </div>
+            <AdminStatusBadge tone="inverse">{formatAdminDashboardCount(snapshot.insights.length, t)}</AdminStatusBadge>
+          </div>
           <div className="mt-4 grid min-h-0 flex-1 grid-rows-4 gap-3">
             {ADMIN_DASHBOARD_QUEUE_ORDER.map((queueId) => {
               const item = insightsById.get(queueId);
@@ -287,7 +307,7 @@ export default function AdminOperationsDashboard({
                   type="button"
                   onClick={() => setSelectedQueueId(queueId)}
                   aria-pressed={isActive}
-                  className={`min-h-0 overflow-hidden rounded-2xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-theme-ring)] ${isActive ? "border-[var(--admin-theme-text-on-surface)]/40 bg-[var(--admin-theme-text-on-surface)]/20 shadow-sm" : "border-transparent bg-[var(--admin-theme-text-on-surface)]/10 hover:bg-[var(--admin-theme-text-on-surface)]/15"}`}
+                  className={`min-h-0 overflow-hidden rounded-2xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${isActive ? "border-white/40 bg-white/20 shadow-sm" : "border-transparent bg-white/10 hover:bg-white/15"}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-semibold">
@@ -295,7 +315,7 @@ export default function AdminOperationsDashboard({
                     </span>
                     <span className="text-lg font-semibold">{item.value}</span>
                   </div>
-                  <p className="mt-1 max-h-8 overflow-hidden text-xs text-[var(--admin-theme-muted-on-surface)]">
+                  <p className="mt-1 max-h-8 overflow-hidden text-xs text-white/65">
                     {translateInsightDescription(queueId, item.description, t)}
                   </p>
                 </button>

@@ -175,6 +175,9 @@ export const adminKo = {
   },
   operationsDashboard: {
     title: "운영 대시보드",
+    eyebrow: "Work order flow",
+    description: "검토, 발주, 검수, 입고 지연 상태를 한 화면에서 확인합니다.",
+    priorityEyebrow: "Queue",
     workorderStatusTitle: "작업지시서 현황",
     sourceDb: "DB 기준 업무 대기 항목을 표시합니다.",
     sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.",
@@ -274,9 +277,10 @@ export const adminKo = {
     },
     permissionLabel: "권한",
     managementCards: {
+      eyebrow: "Workspace",
       title: "업무 바로가기",
-      description: "",
-      cardCount: "",
+      description: "고객사 관리자가 자주 사용하는 화면을 A-TYPE 카드 구조로 정리했습니다.",
+      cardCount: "{count}개 화면",
     },
     memberCards: {
       title: "멤버 관리",
