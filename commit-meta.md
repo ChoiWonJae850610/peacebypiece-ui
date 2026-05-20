@@ -1,19 +1,14 @@
-Version : 0.15.11
-Summary : 시스템관리자 기준정보 세부 화면 A-TYPE shell 1차 적용
-Description : 시스템관리자 기준정보 세부 화면 중 카테고리 규칙, 외주공정 유형, 단위 표준, 생산품 유형 기본 템플릿 화면에 SystemShell 기준 wrapper를 적용했다. 기존 URL과 기준정보 CRUD/API/DB 로직은 변경하지 않고 page-level main wrapper 중복과 일부 surface token 표현만 정리했다.
-
+Version : 0.15.12
+Summary : Workspace와 Worker 화면 구조 점검 및 workspace shell token 정리
+Description : Workspace/Worker 화면의 A-TYPE 적용 전 구조를 문서화하고, MemberWorkspaceShell과 MemberWorkspaceHome의 raw color 표현을 semantic token 기준으로 1차 정리했다. WorkOrderWorkspace는 high risk 영역으로 분리해 기능과 layout은 변경하지 않고 다음 DeviceKind 단계에서 다루도록 기준을 정리했다.
 수정 파일 목록 :
-- app/(system)/system/category-rules/page.tsx
-- components/system/standards/SystemProcessStandardsPage.tsx
-- components/system/standards/SystemProductTemplateStandardsPage.tsx
-- components/system/standards/SystemUnitStandardsPage.tsx
+- components/workspace/MemberWorkspaceShell.tsx
+- components/workspace/MemberWorkspaceHome.tsx
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
-
 추가 파일 목록 :
-- docs/wafl-a-type/32_wafl-a-type-system-standards-detail-screens.md
-
+- docs/wafl-a-type/33_wafl-a-type-workspace-worker-structure-audit.md
 삭제 파일 목록 :
 - 없음

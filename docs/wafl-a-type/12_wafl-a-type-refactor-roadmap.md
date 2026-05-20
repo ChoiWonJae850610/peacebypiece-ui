@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.11
+baseline_source: peacebypiece-ui-0.15.12
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.11
+현재 기준: 0.15.12
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -30,6 +30,7 @@ updated: 2026-05-20
 - 시스템관리자 확장 화면 A-TYPE 1차
 - 고객사 관리자 통계정보 A-TYPE 1차
 - 시스템관리자 기준정보 세부 화면 A-TYPE 1차
+- Workspace / Worker 화면 구조 점검 1차
 ```
 
 ## 2. 전환 원칙
@@ -205,7 +206,7 @@ WorkOrderWorkspace 구조 / R2 / 첨부·메모 / storage purge / permission/ses
 ## 7. 다음 권장 작업
 
 ```txt
-0.15.10 — 고객사 관리자 통계정보 A-TYPE 구조 정리
+0.15.12 — Workspace / Worker 화면 구조 점검
 ```
 
 ### 0.15.5 — 고객사 관리자 홈 A-TYPE 적용 1차
@@ -291,4 +292,14 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - /system/standards/product-templates SystemShell 적용
 - 기준정보 세부 화면의 top-level wrapper 중복 제거
 - DB/API/저장 로직 변경 없음
+```
+
+
+### 0.15.12 — Workspace / Worker 화면 구조 점검
+
+```txt
+- MemberWorkspaceShell semantic token 1차 정리
+- MemberWorkspaceHome semantic token 1차 정리
+- /worker WorkOrderWorkspace는 기능 변경 없이 구조 리스크만 문서화
+- 33번 Workspace/Worker 구조 점검 문서 추가
 ```

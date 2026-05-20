@@ -14,10 +14,10 @@ import type { MemberPermissionCode } from "@/lib/permissions";
 
 function getStatusClassName(status: MemberWorkspaceCardStatus) {
   if (status === "available") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]";
   }
 
-  return "border-stone-200 bg-stone-100 text-stone-500";
+  return "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]";
 }
 
 type MemberWorkspaceHomeProps = {
@@ -33,28 +33,28 @@ export default function MemberWorkspaceHome({
   const copy = i18n.common.workspaceHome;
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#f5f5f4_48%,#eef2ff_100%)] px-4 py-5 text-stone-900 md:px-6 md:py-8">
+    <main className="min-h-screen bg-[var(--pbp-bg-app)] px-4 py-5 text-[var(--pbp-text-primary)] md:px-6 md:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <header className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-5 shadow-sm backdrop-blur">
+        <header className="rounded-[30px] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)]/95 px-5 py-5 shadow-[var(--pbp-shadow-card)] backdrop-blur">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white">
+                <span className="rounded-full bg-[var(--pbp-brand-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-inverse)]">
                   WAFL
                 </span>
                 {companyName ? (
-                  <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">
+                  <span className="rounded-full bg-[var(--pbp-surface-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-secondary)]">
                     {companyName}
                   </span>
                 ) : null}
-                <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">
+                <span className="rounded-full bg-[var(--pbp-surface-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-secondary)]">
                   v{APP_VERSION}
                 </span>
               </div>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-stone-950">
+              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[var(--pbp-text-primary)]">
                 {copy.title}
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-secondary)]">
                 {copy.description}
               </p>
             </div>
@@ -67,12 +67,12 @@ export default function MemberWorkspaceHome({
           if (cards.length === 0) return null;
 
           return (
-            <section key={section} className="rounded-[28px] border border-stone-200 bg-white/80 p-4 shadow-sm">
+            <section key={section} className="rounded-[28px] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)]/85 p-4 shadow-[var(--pbp-shadow-card)]">
               <div className="mb-3">
-                <h2 className="text-sm font-semibold text-stone-950">
+                <h2 className="text-sm font-semibold text-[var(--pbp-text-primary)]">
                   {copy.sections[section].title}
                 </h2>
-                <p className="mt-1 text-xs leading-5 text-stone-500">
+                <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-secondary)]">
                   {copy.sections[section].description}
                 </p>
               </div>
@@ -84,14 +84,14 @@ export default function MemberWorkspaceHome({
                   return (
                     <article
                       key={card.id}
-                      className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
+                      className="rounded-3xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] p-5 shadow-[var(--pbp-shadow-card)]"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <h3 className="text-base font-semibold text-stone-950">
+                          <h3 className="text-base font-semibold text-[var(--pbp-text-primary)]">
                             {cardCopy.label}
                           </h3>
-                          <p className="mt-3 text-sm leading-6 text-stone-600">
+                          <p className="mt-3 text-sm leading-6 text-[var(--pbp-text-secondary)]">
                             {cardCopy.description}
                           </p>
                         </div>
@@ -106,12 +106,12 @@ export default function MemberWorkspaceHome({
                         {card.status === "available" ? (
                           <Link
                             href={card.href}
-                            className="inline-flex rounded-xl border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800"
+                            className="inline-flex rounded-xl border border-[var(--pbp-brand-primary)] bg-[var(--pbp-brand-primary)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-inverse)] hover:bg-[var(--pbp-brand-primary-hover)]"
                           >
                             {copy.openLabel}
                           </Link>
                         ) : (
-                          <span className="inline-flex rounded-xl border border-stone-200 bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-500">
+                          <span className="inline-flex rounded-xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
                             {copy.plannedLabel}
                           </span>
                         )}

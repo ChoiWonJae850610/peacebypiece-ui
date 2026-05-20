@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.11
+baseline_source: peacebypiece-ui-0.15.12
 status: updated
 updated: 2026-05-20
 ---
@@ -87,6 +87,7 @@ QA 체크리스트
 30_wafl-a-type-system-admin-extended-screens.md
 31_wafl-a-type-admin-stats-screen.md
 32_wafl-a-type-system-standards-detail-screens.md
+33_wafl-a-type-workspace-worker-structure-audit.md
 ```
 
 ## 4. 핵심 결정
@@ -149,7 +150,18 @@ QA 체크리스트
 
 ```txt
 32_wafl-a-type-system-standards-detail-screens.md
+33_wafl-a-type-workspace-worker-structure-audit.md
 - 시스템관리자 기준정보 세부 화면의 SystemShell 적용 기준
 - category-rules/processes/units/product-templates의 page-level wrapper 중복 제거
 - 기준정보 CRUD/API/DB 로직은 변경하지 않고 화면 shell 기준만 정리
+```
+
+
+## 0.15.12 업데이트
+
+```txt
+33_wafl-a-type-workspace-worker-structure-audit.md
+- Workspace/Worker 화면 구조 점검
+- MemberWorkspaceShell/Home의 A-TYPE semantic token 1차 적용
+- WorkOrderWorkspace는 high risk 영역으로 분리하고 DeviceKind 이후 본격 정리
 ```
