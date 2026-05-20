@@ -385,7 +385,6 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.27 — system 화면 개발자성 문구 정리
 0.15.28 — admin 화면 개발자성 placeholder 정리
 0.16.0 — DeviceKind foundation
 ```

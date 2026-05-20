@@ -78,7 +78,7 @@ export default function SystemAccessStabilityCheckpoint() {
       <header className={SYSTEM_HEADER_PANEL_CLASS}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <p className={SYSTEM_EYEBROW_CLASS}>SYSTEM ACCESS CHECKPOINT</p>
+            <p className={SYSTEM_EYEBROW_CLASS}>SYSTEM ACCESS REVIEW</p>
             <h1 className={SYSTEM_TITLE_CLASS}>
               {SYSTEM_ACCESS_CHECKPOINT_SUMMARY.title}
             </h1>
@@ -133,7 +133,7 @@ export default function SystemAccessStabilityCheckpoint() {
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium text-[var(--pbp-text-subtle)]">
                     <span className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-1">
-                      owner: {item.owner}
+                      담당 영역: {item.owner}
                     </span>
                     {item.route ? (
                       <AdminLinkButton
@@ -155,9 +155,9 @@ export default function SystemAccessStabilityCheckpoint() {
 
       <section className={SYSTEM_CARD_CLASS}>
         <div className="flex flex-col gap-2 border-b border-[var(--pbp-border)] pb-4">
-          <h2 className={SYSTEM_SECTION_TITLE_CLASS}>다음 실제 연결 후보</h2>
+          <h2 className={SYSTEM_SECTION_TITLE_CLASS}>다음 운영 보완 후보</h2>
           <p className={SYSTEM_BODY_TEXT_CLASS}>
-            0.10.70은 안정화 체크포인트이므로 신규 저장 동작을 만들지 않고, 다음 실제 연결 범위를 분리합니다.
+            시스템 운영 화면에서 추가로 보완할 항목을 분리해 확인합니다.
           </p>
         </div>
         <ol className="mt-4 grid gap-3 md:grid-cols-2">

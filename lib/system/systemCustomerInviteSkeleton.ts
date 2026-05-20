@@ -40,19 +40,19 @@ export interface SystemCustomerInviteApprovalRule {
 export const SYSTEM_CUSTOMER_INVITE_STEPS: SystemCustomerInviteStep[] = [
   {
     id: "customer-draft",
-    title: "고객사 초대 초안 작성",
+    title: "고객사 초대 정보 입력",
     description:
-      "회사명, 담당자, 연락처, 기본 요금제, 저장공간 한도를 입력하는 시스템관리자 전용 초대 초안입니다.",
+      "회사명, 담당자, 연락처, 기본 요금제, 저장공간 한도를 입력합니다.",
     status: "ready",
-    statusLabel: "화면 반영",
+    statusLabel: "운영 가능",
   },
   {
     id: "link-create",
     title: "초대 링크 생성",
     description:
-      "raw token은 생성 응답에서만 보여주고 DB에는 token_hash만 저장하는 정책으로 연결합니다.",
+      "초대 링크는 한 번 생성해 전달하고, 만료 전까지 다시 복사할 수 있습니다.",
     status: "ready",
-    statusLabel: "API 연결",
+    statusLabel: "운영 가능",
   },
   {
     id: "manual-share",
@@ -68,7 +68,7 @@ export const SYSTEM_CUSTOMER_INVITE_STEPS: SystemCustomerInviteStep[] = [
     description:
       "신청자가 가입 신청을 완료하면 시스템관리자가 회사명, 요금제, 저장공간, 고객관리자 권한을 확정합니다.",
     status: "locked",
-    statusLabel: "후속 연결",
+    statusLabel: "운영 예정",
   },
 ];
 
@@ -76,14 +76,14 @@ export const SYSTEM_CUSTOMER_INVITE_FIELDS: SystemCustomerInviteField[] = [
   {
     id: "scope",
     label: "초대 유형",
-    value: "system_to_company_admin",
+    value: "고객사 관리자 초대",
     description: "시스템관리자가 신규 고객사의 고객관리자 후보에게 보내는 초대입니다.",
   },
   {
     id: "role",
     label: "기본 역할",
     value: "고객관리자",
-    description: "role은 표시/기본 권한 묶음이며 실제 접근 제어는 permission_code 기준입니다.",
+    description: "승인 후 고객사 관리자 권한으로 업무 화면을 사용할 수 있습니다.",
   },
   {
     id: "expires",
@@ -93,9 +93,9 @@ export const SYSTEM_CUSTOMER_INVITE_FIELDS: SystemCustomerInviteField[] = [
   },
   {
     id: "token",
-    label: "토큰 저장",
-    value: "hash only",
-    description: "raw token은 DB에 저장하지 않고 token_hash만 저장합니다.",
+    label: "초대 보안"
+    value: "보안 저장",
+    description: "초대 링크 원문은 안전한 방식으로 관리합니다.",
   },
 ];
 
@@ -103,14 +103,14 @@ export const SYSTEM_CUSTOMER_INVITE_FORM_FIELDS: SystemCustomerInviteFormField[]
   {
     id: "company-name",
     label: "고객사명",
-    value: "샘플 고객사",
-    helper: "승인 시 companies.name 후보로 사용합니다.",
+    value: "신규 고객사",
+    helper: "승인 요청 시 사용할 고객사명을 입력합니다.",
     inputType: "text",
   },
   {
     id: "business-name",
     label: "사업자명",
-    value: "샘플 고객사 사업자명",
+    value: "신규 고객사 사업자명",
     helper: "승인 화면에서 최종 보정할 수 있는 사업자명 후보입니다.",
     inputType: "text",
   },
@@ -118,28 +118,28 @@ export const SYSTEM_CUSTOMER_INVITE_FORM_FIELDS: SystemCustomerInviteFormField[]
     id: "admin-name",
     label: "담당자명",
     value: "고객사 담당자",
-    helper: "가입 신청자 표시명과 대조할 기준값입니다.",
+    helper: "초대 대상 담당자 이름을 입력합니다.",
     inputType: "text",
   },
   {
     id: "admin-email",
     label: "담당자 이메일",
     value: "customer-admin@example.com",
-    helper: "Google 로그인 이메일과 대조할 초대 이메일 후보입니다.",
+    helper: "초대 안내를 전달할 이메일을 입력합니다.",
     inputType: "email",
   },
   {
     id: "plan-code",
     label: "기본 요금제",
     value: "starter",
-    helper: "승인 시 companies.plan_code 후보로 연결합니다.",
+    helper: "승인 후 적용할 기본 요금제를 선택합니다.",
     inputType: "select",
   },
   {
     id: "storage-limit",
     label: "저장공간 한도",
     value: "5GB",
-    helper: "승인 시 companies.storage_limit_bytes 후보로 연결합니다.",
+    helper: "승인 후 적용할 저장공간 한도를 선택합니다.",
     inputType: "select",
   },
 ];
@@ -148,19 +148,19 @@ export const SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS: SystemCustomerInviteResultAc
   {
     id: "create-invite",
     label: "초대 링크 생성",
-    helper: "invitations API로 raw token을 생성하고 DB에는 token_hash만 저장합니다.",
+    helper: "고객사 관리자에게 전달할 초대 링크를 생성합니다.",
     state: "ready",
   },
   {
     id: "copy-link",
     label: "링크 복사",
-    helper: "생성된 inviteUrl을 클립보드에 복사합니다. 자동 이메일/SMS 발송은 하지 않습니다.",
+    helper: "생성된 초대 링크를 복사합니다. 필요한 채널로 직접 전달합니다.",
     state: "disabled",
   },
   {
     id: "open-preview",
-    label: "가입 신청 화면 미리보기",
-    helper: "/invite/company/[token] 고객사 가입 신청 화면을 미리 봅니다.",
+    label: "가입 신청 화면 확인",
+    helper: "초대 대상자가 보게 될 가입 신청 화면을 확인합니다.",
     state: "ready",
     href: "/invite/company/preview-system-company-token",
   },
@@ -169,28 +169,28 @@ export const SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS: SystemCustomerInviteResultAc
 export const SYSTEM_CUSTOMER_INVITE_APPROVAL_RULES: SystemCustomerInviteApprovalRule[] = [
   {
     id: "no-company-before-approval",
-    title: "승인 전 회사 미생성",
+    title: "승인 후 고객사 생성",
     description:
-      "초대 링크 접속과 가입 신청만으로 companies를 생성하지 않습니다. 시스템관리자가 승인할 때 고객사를 생성합니다.",
+      "초대 대상자가 가입 신청을 완료하면 시스템관리자가 검토 후 고객사를 생성합니다.",
   },
   {
     id: "company-admin-permissions",
-    title: "고객관리자 권한 직접 부여",
+    title: "고객관리자 권한 부여",
     description:
-      "승인 시 company_members와 member_permissions를 함께 확정하며 role enum 단독 제어를 사용하지 않습니다.",
+      "승인 시 고객사 관리자에게 필요한 기본 권한을 함께 부여합니다.",
   },
   {
     id: "standards-initialization",
-    title: "초기 기준정보 복사 연결",
+    title: "초기 기준정보 준비",
     description:
-      "고객사 생성이 확정되면 시스템 기준정보를 고객사 초기 기준정보로 복사하는 0.10.51 설계와 연결합니다.",
+      "고객사 생성 후 업무에 필요한 기본 기준정보를 사용할 수 있게 준비합니다.",
   },
 ];
 
 export const SYSTEM_CUSTOMER_INVITE_POLICY_NOTES = [
-  "이메일/SMS/카카오 자동 발송은 연결하지 않습니다.",
+  "자동 발송 기능이 활성화되기 전까지는 링크 복사 방식으로 전달합니다.",
   "초대 링크와 QR을 생성해 시스템관리자가 카톡, 문자, 이메일로 직접 전달하는 방식을 우선 사용합니다.",
   "시스템관리자는 고객사 내부 멤버로 자동 등록되지 않습니다.",
-  "초대 token 원문은 저장하지 않고 token_hash만 저장합니다.",
-  "초대 수락 후에도 시스템관리자 승인 전에는 고객사와 고객관리자 멤버십을 생성하지 않습니다.",
+  "초대 링크는 안전한 방식으로 관리합니다.",
+  "초대 수락 후에도 시스템관리자 승인 전에는 서비스 사용을 시작하지 않습니다.",
 ] as const;

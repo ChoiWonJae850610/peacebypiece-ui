@@ -373,8 +373,8 @@ const SYSTEM_COMPANY_ERROR_MESSAGES: Record<string, string> = {
   COMPANY_MEMBER_CREATE_FAILED: "고객사 관리자 멤버십 생성에 실패했습니다.",
   MEMBER_PERMISSION_REQUIRED: "고객사 관리자에게 부여할 권한이 없습니다.",
   SYSTEM_ADMIN_SESSION_REQUIRED: "시스템관리자 로그인이 필요합니다.",
-  POSTGRES_PARAMETER_TYPE_ERROR: "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 아래 단계 정보를 확인해 주세요.",
-  "could not determine data type of parameter $2": "승인 처리 중 DB 파라미터 타입 오류가 발생했습니다. 아래 단계 정보를 확인해 주세요.",
+  POSTGRES_PARAMETER_TYPE_ERROR: "승인 처리 중 오류가 발생했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요.",
+  "could not determine data type of parameter $2": "승인 처리 중 오류가 발생했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요.",
 };
 
 function resolveSystemCompanyErrorMessage(errorCode: string | null | undefined, fallback: string): string {
@@ -842,8 +842,8 @@ export default function SystemCompanyApprovalConsole() {
     await copySystemInvitationLink(latestCopyableInvitation);
     setSystemInviteMessage(
       deliveryMethod === "email"
-        ? "실제 이메일 발송은 다음 단계에서 연결합니다. 현재는 최신 초대 링크를 복사했습니다."
-        : "실제 문자/카톡 발송은 다음 단계에서 연결합니다. 현재는 최신 초대 링크를 복사했습니다.",
+        ? "이메일 전송 기능은 준비 중입니다. 현재는 초대 링크를 복사했습니다."
+        : "문자/카카오톡 전송 기능은 준비 중입니다. 현재는 초대 링크를 복사했습니다.",
     );
   }
 
@@ -1095,7 +1095,7 @@ export default function SystemCompanyApprovalConsole() {
               ) : null}
 
               <p className={`mt-4 ${SYSTEM_SMALL_TEXT_CLASS}`}>
-                발송 버튼은 현재 최신 사용 가능 링크를 복사하는 준비 단계입니다. 실제 이메일/SMS 발송은 후속 기능에서 연결합니다.
+                전송 기능이 활성화되기 전까지는 생성된 초대 링크를 복사해 전달합니다.
               </p>
             </article>
 

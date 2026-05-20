@@ -54,17 +54,18 @@
 - `wafl-a-type/47_wafl-a-type-public-flow-visual-pass.md` — 초대/승인/pending public 화면 visual pass
 - `wafl-a-type/48_wafl-a-type-developer-ui-copy-audit.md` — 개발자성 UI/문구 전수 감사
 - `wafl-a-type/49_wafl-a-type-public-auth-copy-ux.md` — public/auth 문구 UX 정리 2차
+- `wafl-a-type/50_wafl-a-type-system-copy-ux.md` — system 화면 개발자성 문구 정리
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.26부터 기준 문서는 `docs/wafl-a-type/` 안의 00~49 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.27부터 기준 문서는 `docs/wafl-a-type/` 안의 00~50 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.26
+현재 기준: 0.15.27
 PC A-TYPE 전환과 SaaS 운영 IA 정리 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

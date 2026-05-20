@@ -35,7 +35,7 @@ const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
     render: (company) => (
       <div className="space-y-1">
         <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{company.name}</p>
-        <p className="text-[10px] font-medium text-[var(--pbp-text-subtle)]">{company.id}</p>
+        <p className="text-[10px] font-medium text-[var(--pbp-text-subtle)]">{company.policySourceLabel}</p>
       </div>
     ),
   },
@@ -87,13 +87,13 @@ const companyPlanFieldColumns: AdminTableColumn<SystemCompanyPlanField>[] = [
     render: (field) => (
       <div className="space-y-1">
         <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{field.label}</p>
-        <p className="text-[10px] font-medium text-[var(--pbp-text-subtle)]">{field.id}</p>
+        
       </div>
     ),
   },
   {
     key: "value",
-    label: "현재 preview 값",
+    label: "현재 입력값",
     render: (field) => (
       <input
         value={field.value}
@@ -105,7 +105,7 @@ const companyPlanFieldColumns: AdminTableColumn<SystemCompanyPlanField>[] = [
   {
     key: "description",
     label: "연결 기준",
-    render: (field) => <p className="text-xs leading-5 text-stone-500">{field.description}</p>,
+    render: (field) => <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{field.description}</p>,
   },
 ];
 
@@ -123,9 +123,7 @@ export default function SystemCompanyPlanSkeleton() {
                   고객별 요금제 / 용량 관리
                 </h1>
                 <p className={SYSTEM_SUBTITLE_CLASS}>
-                  시스템관리자가 고객사별 plan을 선택하고 저장용량, 멤버 수, 가격 override를
-                  조정하는 설계 화면입니다. 기본 요금제 정책은 lib/billing 기준을 사용하고,
-                  실제 결제 자동화와 업로드 차단은 후속 단계로 분리합니다.
+                  시스템관리자가 고객사별 요금제, 저장용량, 멤버 수, 월 이용 금액을 확인하고 조정하는 운영 화면입니다.
                 </p>
               </div>
             </div>
@@ -150,7 +148,7 @@ export default function SystemCompanyPlanSkeleton() {
                   <h2 className="text-base font-semibold text-stone-950">
                     {plan.name}
                   </h2>
-                  <p className="text-xs font-medium text-stone-500">{plan.code}</p>
+                  <p className="text-xs font-medium text-stone-500">{plan.statusLabel}</p>
                 </div>
                 <AdminStatusBadge>{plan.statusLabel}</AdminStatusBadge>
               </div>
@@ -177,9 +175,9 @@ export default function SystemCompanyPlanSkeleton() {
 
         <section className={SYSTEM_CARD_CLASS}>
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>요금제·용량 관리 설계 기준</h2>
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>요금제·용량 운영 기준</h2>
             <p className={SYSTEM_BODY_TEXT_CLASS}>
-              하드코딩된 저장공간 값 대신 billing policy와 고객사별 assignment를 분리해서 관리합니다.
+              기본 요금제와 고객사별 예외 한도를 분리해 안전하게 관리합니다.
             </p>
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-4">
@@ -200,10 +198,9 @@ export default function SystemCompanyPlanSkeleton() {
 
         <section className={SYSTEM_CARD_CLASS}>
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객별 요금제 변경 preview</h2>
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객별 요금제 변경</h2>
             <p className={SYSTEM_BODY_TEXT_CLASS}>
-              시스템관리자가 고객사별 plan, 저장공간, 멤버 수, 가격 override를 한 화면에서 확인한 뒤 저장하는 구조입니다.
-              현재는 저장 전 preview이며 실제 API 연결 전까지 버튼은 비활성 상태로 유지합니다.
+              고객사별 현재 요금제와 변경 예정 값을 한 화면에서 확인합니다. 저장 기능은 운영 정책 확정 후 활성화합니다.
             </p>
           </div>
 
@@ -215,7 +212,7 @@ export default function SystemCompanyPlanSkeleton() {
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.companyName}
                   </h3>
                   <p className="mt-1 text-xs text-stone-500">
-                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.companyId}
+                    요금제 변경 대상 고객사
                   </p>
                 </div>
                 <AdminStatusBadge>{SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.policySourceLabel}</AdminStatusBadge>
@@ -295,8 +292,8 @@ export default function SystemCompanyPlanSkeleton() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <AdminButton disabled>고객사 요금제 변경 저장 준비중</AdminButton>
-            <AdminButton disabled>변경 이력 기록 준비중</AdminButton>
+            <AdminButton disabled>요금제 변경 저장</AdminButton>
+            <AdminButton disabled>변경 이력 확인</AdminButton>
           </div>
         </section>
 
@@ -308,7 +305,7 @@ export default function SystemCompanyPlanSkeleton() {
                 items={SYSTEM_COMPANY_PLAN_COMPANIES}
                 columns={companyPlanColumns}
                 getRowKey={(company) => company.id}
-                emptyLabel="요금제 preview 고객사가 없습니다."
+                emptyLabel="요금제 관리 대상 고객사가 없습니다."
                 gridTemplateColumns="1.1fr 0.7fr 1fr 0.9fr 1.2fr"
                 rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-[11px] md:items-center"
               />
@@ -318,10 +315,10 @@ export default function SystemCompanyPlanSkeleton() {
           <section className={SYSTEM_CARD_CLASS}>
             <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
               <h2 className={SYSTEM_SECTION_TITLE_CLASS}>
-                요금제 수정 준비 영역
+                요금제 변경 입력
               </h2>
               <p className={SYSTEM_BODY_TEXT_CLASS}>
-                company_plan_assignments와 company_plan_override 정책에 연결될 입력 영역입니다.
+                요금제, 저장공간, 멤버 수, 금액 조정값을 확인합니다.
               </p>
             </div>
 
@@ -330,15 +327,15 @@ export default function SystemCompanyPlanSkeleton() {
                 items={SYSTEM_COMPANY_PLAN_FIELDS}
                 columns={companyPlanFieldColumns}
                 getRowKey={(field) => field.id}
-                emptyLabel="요금제 수정 preview 필드가 없습니다."
+                emptyLabel="요금제 변경 항목이 없습니다."
                 gridTemplateColumns="0.8fr 0.9fr 1.3fr"
                 rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-[11px] md:items-center"
               />
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              <AdminButton disabled>요금제 변경 저장 준비중</AdminButton>
-              <AdminButton disabled>사용량 snapshot 새로고침 준비중</AdminButton>
+              <AdminButton disabled>요금제 변경 저장</AdminButton>
+              <AdminButton disabled>사용량 새로고침</AdminButton>
             </div>
           </section>
         </section>

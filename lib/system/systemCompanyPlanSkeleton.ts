@@ -74,7 +74,7 @@ const sampleAssignments: CompanyPlanAssignment[] = [
     override: {
       storageLimitBytes: 8 * 1024 * 1024 * 1024,
       memberLimit: 5,
-      memo: "초기 테스트 고객사 storage/member override 예시",
+      memo: "초기 도입 고객사 예외 한도 예시",
     },
   },
 ];
@@ -96,8 +96,8 @@ const sampleUsageByCompanyId: Record<
 };
 
 const sampleCompanyNamesById: Record<string, string> = {
-  "sample-company": "샘플 고객사",
-  "sample-company-2": "샘플 브랜드 B",
+  "sample-company": "A 고객사",
+  "sample-company-2": "B 고객사",
 };
 
 function formatBytes(bytes: number): string {
@@ -116,14 +116,14 @@ function formatKrw(priceKrw: number): string {
 
 function getPlanDescription(plan: PlanDefinition): string {
   if (plan.code === "starter") {
-    return "초기 소규모 고객사 기준 요금제 초안입니다.";
+    return "초기 소규모 고객사 기준 요금제입니다.";
   }
 
   if (plan.code === "team") {
-    return "팀 단위 운영 고객사 기준 요금제 초안입니다.";
+    return "팀 단위 운영 고객사 기준 요금제입니다.";
   }
 
-  return "대용량/다인원 고객사 기준 요금제 초안입니다.";
+  return "대용량 또는 다인원 고객사 기준 요금제입니다.";
 }
 
 function findPlanById(planId: string): PlanDefinition {
@@ -153,10 +153,10 @@ function getOverrideLabel(policy: ResolvedCompanyPlanPolicy): string {
   ].filter(Boolean);
 
   if (labels.length === 0) {
-    return "override 없음";
+    return "기본 한도 적용";
   }
 
-  return `${labels.join(" · ")} override 적용`;
+  return `${labels.join(" · ")} 예외 한도 적용`;
 }
 
 export const SYSTEM_COMPANY_PLAN_OPTIONS: SystemCompanyPlanOption[] =
@@ -193,21 +193,21 @@ export const SYSTEM_COMPANY_PLAN_COMPANIES: SystemCompanyPlanCompany[] =
       memberUsageLabel: `${usage.memberCount}명 / ${policy.memberLimit}명`,
       memberRiskLabel: memberExceeded ? "초과" : "정상",
       overrideLabel: getOverrideLabel(policy),
-      policySourceLabel: `storage:${policy.source.storage} · member:${policy.source.member} · price:${policy.source.price}`,
+      policySourceLabel: policy.source.storage === "override" || policy.source.member === "override" || policy.source.price === "override" ? "예외 한도 적용" : "기본 요금제 적용",
     };
   });
 
 
 const samplePlanChangeDraft = {
   companyId: "sample-company-2",
-  companyName: "샘플 브랜드 B",
+  companyName: "B 고객사",
   currentAssignment: sampleAssignments[1],
   nextPlanCode: "team",
   storageLimitBytesOverride: 80 * 1024 * 1024 * 1024,
   memberLimitOverride: 20,
   priceKrwOverride: 99000,
   effectiveDate: "2026-06-01",
-  memo: "초기 도입 고객사 한시 override 예시",
+  memo: "초기 도입 고객사 한시 예외 한도 예시",
 };
 
 export const SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW =
@@ -224,65 +224,65 @@ export const SYSTEM_COMPANY_PLAN_FIELDS: SystemCompanyPlanField[] = [
     id: "plan",
     label: "적용 요금제",
     value: "Team",
-    description: "company_plan_assignments.plan_id와 연결될 선택 영역입니다.",
+    description: "고객사에 적용할 요금제를 선택합니다.",
   },
   {
     id: "storage",
-    label: "저장용량 override",
+    label: "저장용량 예외 한도"
     value: "80GB",
     description:
-      "plan storage 정책을 기본값으로 사용하고 고객사별 예외 한도만 override로 저장합니다.",
+      "기본 저장용량을 기준으로 필요한 고객사에만 예외 한도를 적용합니다.",
   },
   {
     id: "member",
-    label: "멤버 수 override",
+    label: "멤버 수 예외 한도"
     value: "20명",
     description:
-      "role/permission 수가 아니라 승인된 company_members 수 기준으로 한도를 계산합니다.",
+      "승인된 멤버 수를 기준으로 이용 한도를 계산합니다.",
   },
   {
     id: "price",
-    label: "가격 override",
+    label: "월 이용 금액 예외"
     value: "별도 협의",
-    description: "결제 자동화가 아니라 운영자가 관리하는 계약 정책 값입니다.",
+    description: "고객사별 계약 조건에 따라 조정되는 월 이용 금액입니다.",
   },
 ];
 
 export const SYSTEM_COMPANY_PLAN_POLICY_STEPS: SystemCompanyPlanPolicyStep[] = [
   {
     id: "plan-master",
-    title: "요금제 master",
+    title: "기본 요금제"
     statusLabel: "기준 확정",
     description:
-      "Starter, Team, Business 기본 정책은 lib/billing/defaultPlans를 단일 출처로 사용합니다.",
+      "Starter, Team, Business 기본 정책을 한 기준으로 관리합니다.",
   },
   {
     id: "company-assignment",
     title: "고객사 배정",
-    statusLabel: "변경 화면 준비",
+    statusLabel: "운영 준비"
     description:
-      "company_plan_assignments에서 고객사별 현재 plan과 적용 기간을 관리합니다.",
+      "고객사별 현재 요금제와 적용 기간을 관리합니다.",
   },
   {
     id: "override-policy",
-    title: "예외 한도",
-    statusLabel: "입력 구조 준비",
+    title: "예외 한도"
+    statusLabel: "운영 준비"
     description:
-      "저장용량, 멤버 수, 가격만 override 대상으로 두고 기능 플래그는 plan 기준을 우선합니다.",
+      "저장용량, 멤버 수, 가격만 고객사별 예외값으로 관리합니다.",
   },
   {
     id: "usage-snapshot",
-    title: "사용량 snapshot",
-    statusLabel: "후속 연결",
+    title: "사용량 현황"
+    statusLabel: "운영 예정"
     description:
-      "초기에는 DB attachment metadata 기준 snapshot을 사용하고 R2 inventory는 후속 검토합니다.",
+      "저장소 사용량과 멤버 사용량을 요금제 한도와 함께 확인합니다.",
   },
 ];
 
 export const SYSTEM_COMPANY_PLAN_POLICY_NOTES = [
   "고객관리자는 읽기 전용으로 현재 plan과 한도만 확인합니다.",
   "시스템관리자만 고객사별 plan과 override를 변경합니다.",
-  "0.10.73 기준 변경 입력은 preview이며 실제 저장은 company_plan_assignments API 연결 후 활성화합니다.",
+  "요금제 변경 저장은 운영 정책과 권한 확인 후 활성화합니다.",
   "저장공간 사용률이 85% 이상이면 주의, 한도 초과는 초과 상태로 표시합니다.",
-  "업로드 차단과 초과 과금 정책은 실제 결제 연동 이후 결정합니다.",
+  "업로드 제한과 초과 사용 정책은 요금제 운영 기준에 맞춰 별도로 확정합니다.",
 ] as const;

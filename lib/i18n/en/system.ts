@@ -39,7 +39,7 @@ export const systemEn = {
     description: "Area for system admins to create tenant-admin invitations and track acceptance status.",
     inviteeLabel: "Invitee",
     emailLabel: "Email",
-    tokenLabel: "Invite token",
+    tokenLabel: "Invite reference",
     linkLabel: "Invite link",
     requestedByLabel: "Requested by",
     acceptedAtLabel: "Accepted at",
@@ -49,7 +49,7 @@ export const systemEn = {
   },
   internalInviteSection: {
     title: "Customer internal user invites",
-    description: "A system preview for customer admins inviting designers and inspectors, then verifying company_users links and role permissions.",
+    description: "A system area for customer admins to invite designers and inspectors and review role permissions.",
     inviterLabel: "Inviting admin",
     inviteeLabel: "Invitee",
     roleLabel: "Role",
@@ -71,7 +71,7 @@ export const systemEn = {
 
   storageUsage: {
     pageEyebrow: "SYSTEM STORAGE PURGE",
-    pageTitle: "R2 purge candidates",
+    pageTitle: "Storage deletion candidates",
     pageDescription: "Review file and work-order deletion candidates under the shared trash policy. Work-order candidates are shown as bundle rows, and documents, designs, and memos are handled in the same purge flow.",
     consoleLink: "System console",
     summary: {
@@ -82,7 +82,7 @@ export const systemEn = {
       quotaTitle: "Default quota",
       fileUnit: "Files",
       workOrderUnit: "Work orders",
-      retryDescriptionPrefix: "Candidates to retry after Worker, permission, or network failure",
+      retryDescriptionPrefix: "Items that need another deletion attempt after a processing error",
       sizeDescriptionPrefix: "File candidates and work-order bundle attachments · companies",
       thumbnailDescription: "Deleted with the original object during R2 purge.",
       quotaDescription: "admin/files and system/storage-usage reference the same central quota policy.",
@@ -90,7 +90,7 @@ export const systemEn = {
     list: {
       title: "Purge candidate list",
       description: "File candidates are permanently deleted from R2 through the Worker. Work-order candidates are shown as bundle rows, and documents, designs, and memos are handled together.",
-      empty: "There are no R2 purge candidates.",
+      empty: "There are no Storage deletion candidates.",
       emptyDescription: "Items appear here after a customer admin requests permanent deletion or the 30-day retention period passes.",
       refresh: "Refresh",
       pending: "Processing",
@@ -102,7 +102,7 @@ export const systemEn = {
       memoCount: "Memos",
       sourceKeyTitle: "Original",
       thumbnailKeyTitle: "Thumbnail",
-      keyHeader: "R2 key",
+      keyHeader: "Storage path",
       companyWorkOrderHeader: "Company / work order",
       deletedAtLabel: "Deleted at",
       purgeDueAtLabel: "Due at",
@@ -166,7 +166,7 @@ export const systemEn = {
     baselineTitle: "Stats operation baseline",
     baselineDescription: "Caching, summary-table, and performance criteria removed from customer-admin stats are managed as system-admin operating criteria.",
     baselineHiddenBadge: "Hidden from customer screens",
-    cacheTitle: "Stats API caching policy",
+    cacheTitle: "Stats aggregation policy",
     noCache: "No cache",
     aggregateTitle: "Summary table review",
     performanceTitle: "Performance measurement criteria",

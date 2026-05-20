@@ -132,7 +132,7 @@ export default function SystemCustomerInviteSkeleton() {
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
             <h2 className="text-lg font-semibold text-stone-950">초대 정보 입력</h2>
             <p className="text-sm leading-6 text-stone-600">
-              실제 저장 전 단계에서는 입력 필드, 기본값, 승인 시 연결될 DB 컬럼 후보를 화면에 고정합니다.
+              고객사 관리자에게 보낼 초대 링크를 만들고 만료일과 상태를 확인합니다.
             </p>
           </div>
 
@@ -209,9 +209,9 @@ export default function SystemCustomerInviteSkeleton() {
 
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">초대 결과 액션</h2>
+              <h2 className="text-lg font-semibold text-stone-950">초대 결과</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                실제 초대 생성 API 연결 후 활성화할 버튼의 위치와 의미를 먼저 고정합니다.
+                초대 링크를 만든 뒤 복사하거나 전송할 수 있는 작업을 확인합니다.
               </p>
             </div>
             <div className="mt-5 space-y-3">

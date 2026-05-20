@@ -352,3 +352,14 @@ PC visual 보정 2차
 - OAuth/초대 검증/승인 조회 API/DB/R2 흐름 변경 없음
 ```
 
+### 0.15.27 업데이트
+
+```txt
+50_wafl-a-type-system-copy-ux.md
+- system 화면 개발자성 문구 정리
+- /system, /system/companies, /system/billing, /system/invites, /system/standards/seed-status, /system/access-checkpoint 대상
+- preview / seed / fallback / DB / API / Worker / R2 / 내부 테이블명 노출 완화
+- 시스템관리자에게 필요한 운영 상태와 최종 액션 중심으로 문구 정리
+- DB/API/R2/권한/세션 변경 없음
+```
+
