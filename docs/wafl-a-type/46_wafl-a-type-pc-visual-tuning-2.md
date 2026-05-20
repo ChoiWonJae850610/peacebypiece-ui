@@ -84,7 +84,7 @@ components/admin/settings/AdminUserAccessPreview.tsx
 ```txt
 - border-stone-* → border-[var(--pbp-border)] 또는 border-[var(--pbp-border-strong)]
 - bg-stone-* / bg-white → bg-[var(--pbp-surface)] / bg-[var(--pbp-surface-muted)]
-- text-stone-* → text-[var(--pbp-text-primary|muted|subtle|secondary)]
+- text-stone-* → pbp text token 계열(primary / muted / subtle / secondary)
 - inverse block 내부 white 표현 → pbp inverse token 기반 color-mix
 ```
 

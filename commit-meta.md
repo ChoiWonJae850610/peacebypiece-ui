@@ -1,26 +1,18 @@
 Version :
-0.15.23
+0.15.231
 
 Summary :
-PC visual 보정 2차 적용
+A-TYPE visual 보정 문서의 Tailwind CSS 파싱 오류 수정
 
 Description :
-공통 admin surface, storage, stats semantic class의 radius와 그림자 리듬을 보정하고 환경설정 세부 컴포넌트와 시스템관리자 홈의 직접 색상 class를 semantic token 기반으로 정리했다. 기능, API, DB, R2, 권한, 세션 흐름은 변경하지 않았다.
+0.15.23 문서에 포함된 Tailwind arbitrary value 형태의 예시 문구가 CSS 생성 과정에서 잘못 스캔되어 globals.css 파싱 오류를 유발할 수 있어, 해당 문구를 일반 설명형 텍스트로 변경했다. 앱 버전도 0.15.231로 갱신했다.
 
 수정 파일 목록 :
-- components/admin/common/adminSemanticClassNames.ts
-- components/admin/settings/AdminCompanySettingsForm.tsx
-- components/admin/settings/AdminOrganizationSettingsSummary.tsx
-- components/admin/settings/AdminPolicyOverview.tsx
-- components/admin/settings/AdminUserAccessPreview.tsx
-- components/system/SystemConsoleShell.tsx
-- docs/README.md
-- docs/wafl-a-type/00_wafl-a-type-doc-index.md
-- docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
+- docs/wafl-a-type/46_wafl-a-type-pc-visual-tuning-2.md
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/wafl-a-type/46_wafl-a-type-pc-visual-tuning-2.md
+없음
 
 삭제 파일 목록 :
 없음
