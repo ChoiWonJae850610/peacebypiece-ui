@@ -1,4 +1,8 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@source "../app";
+@source "../components";
+@source "../lib";
+@source "../types";
 
 /* Default theme fallback mirror. Initial runtime variables are now also applied
    from lib/theme/themes/defaultLight.ts through app/layout.tsx and PbpThemeProvider.

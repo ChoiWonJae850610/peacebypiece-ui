@@ -1,14 +1,14 @@
 Version :
-0.15.231
+0.15.232
 
 Summary :
-A-TYPE visual 보정 문서의 Tailwind CSS 파싱 오류 수정
+Tailwind source 감지 범위 명시로 CSS 파싱 오류 수정
 
 Description :
-0.15.23 문서에 포함된 Tailwind arbitrary value 형태의 예시 문구가 CSS 생성 과정에서 잘못 스캔되어 globals.css 파싱 오류를 유발할 수 있어, 해당 문구를 일반 설명형 텍스트로 변경했다. 앱 버전도 0.15.231로 갱신했다.
+Tailwind CSS v4 자동 source 감지가 문서 파일의 class 예시까지 스캔해 잘못된 arbitrary class를 생성하지 않도록 globals.css에서 source 범위를 app, components, lib, types로 명시했다. APP_VERSION도 0.15.232로 갱신했다.
 
 수정 파일 목록 :
-- docs/wafl-a-type/46_wafl-a-type-pc-visual-tuning-2.md
+- app/globals.css
 - lib/constants/app.ts
 
 추가 파일 목록 :
