@@ -87,7 +87,7 @@ export type MemberListPreview = {
   email: string;
   phone: string;
   roleId: MemberRolePreviewId;
-  status: "approved" | "pending" | "suspended";
+  status: AdminCompanyMemberRecord["status"];
   permissionCount: number;
   permissionCodes: readonly MemberPermissionCode[];
   approvedAtLabel: string;
@@ -284,7 +284,7 @@ export function toMemberListPreview(member: AdminCompanyMemberRecord): MemberLis
     email: member.email?.trim() || "-",
     phone: member.phone?.trim() || "-",
     roleId: member.roleTemplateCode,
-    status: member.status === "suspended" ? "suspended" : member.status === "pending" ? "pending" : "approved",
+    status: member.status,
     permissionCount: member.permissionCount,
     permissionCodes: member.permissionCodes,
     approvedAtLabel: toCompactDateTimeLabel(member.approvedAt),
