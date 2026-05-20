@@ -285,6 +285,10 @@ export const adminKo = {
     title: "운영 대시보드",
     eyebrow: "Work order flow",
     description: "검토, 발주, 검수, 입고 지연 상태를 한 화면에서 확인합니다.",
+    visualTitle: "오늘 처리할 흐름을 먼저 확인하세요.",
+    visualDescription: "검토, 발주, 검수, 입고 지연 상태를 한 화면에서 정리하고 바로 작업지시서 업무 화면으로 이동합니다.",
+    visualHelper: "대기 상태를 선택하면 목록이 바뀝니다.",
+    selectedQueueEyebrow: "Selected queue",
     priorityEyebrow: "Queue",
     workorderStatusTitle: "작업지시서 현황",
     sourceDb: "DB 기준 업무 대기 항목을 표시합니다.",
@@ -388,7 +392,7 @@ export const adminKo = {
       eyebrow: "Workspace",
       title: "업무 바로가기",
       description:
-        "고객사 관리자가 자주 사용하는 화면을 A-TYPE 카드 구조로 정리했습니다.",
+        "고객사 관리자가 자주 사용하는 화면을 화면 단위 카드로 정리했습니다.",
       cardCount: "{count}개 화면",
     },
     memberCards: {

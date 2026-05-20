@@ -315,3 +315,14 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - /system/standards/seed-status SystemShell 적용
 - 기능/API/DB 로직 변경 없음
 ```
+
+
+### 0.15.14 — 고객사 관리자 홈 visual pass
+
+```txt
+- /admin 작업지시서 현황을 큰 brand hero block으로 보정
+- 주요 대기 현황을 2x2 queue card로 보정
+- 선택 queue 목록을 별도 surface 영역으로 분리
+- 업무 바로가기 작업지시서 카드를 featured card로 강조
+- 기능/API/DB/R2/권한/세션 로직 변경 없음
+```

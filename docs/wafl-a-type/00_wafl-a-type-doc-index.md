@@ -89,6 +89,7 @@ QA 체크리스트
 32_wafl-a-type-system-standards-detail-screens.md
 33_wafl-a-type-workspace-worker-structure-audit.md
 34_wafl-a-type-system-admin-remaining-screens.md
+35_wafl-a-type-customer-admin-home-visual-pass.md
 ```
 
 ## 4. 핵심 결정
@@ -177,4 +178,16 @@ QA 체크리스트
 - /system/standards/regression SystemShell 적용
 - /system/standards/seed-status SystemShell 적용
 - 개발 점검 화면의 page-level wrapper 중복 제거와 semantic token 1차 보정
+```
+
+---
+
+## 0.15.14 추가
+
+```txt
+35_wafl-a-type-customer-admin-home-visual-pass.md
+- 고객사 관리자 홈의 작업지시서 현황 hero visual pass
+- 주요 대기 현황 2x2 queue card 정리
+- 업무 바로가기 featured card 적용
+- 기능/API/DB/R2/권한/세션 변경 없음
 ```

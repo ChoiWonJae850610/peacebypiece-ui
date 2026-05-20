@@ -262,6 +262,11 @@ export const adminEn = {
     eyebrow: "Work order flow",
     description:
       "Review review, ordering, inspection, and delayed inbound queues in one place.",
+    visualTitle: "Check the flow that needs attention today.",
+    visualDescription:
+      "Review, order, inspection, and inbound delay queues are grouped so you can move directly into work-order handling.",
+    visualHelper: "Select a queue to update the list.",
+    selectedQueueEyebrow: "Selected queue",
     priorityEyebrow: "Queue",
     workorderStatusTitle: "Work order status",
     sourceDb: "Shows work queue items from DB.",
@@ -368,7 +373,7 @@ export const adminEn = {
       eyebrow: "Workspace",
       title: "Workspace shortcuts",
       description:
-        "Frequently used customer-admin screens are grouped into the A-TYPE card structure.",
+        "Frequently used customer-admin screens are arranged as screen-level action cards.",
       cardCount: "{count} screens",
     },
     memberCards: {
