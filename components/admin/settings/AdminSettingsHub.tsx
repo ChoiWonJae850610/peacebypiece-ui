@@ -29,7 +29,7 @@ const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badgeTone: A
   blue: {
     card: "pbp-admin-card-interactive",
     badgeTone: "info",
-    dot: "bg-[var(--pbp-status-neutral)]",
+    dot: "bg-[var(--pbp-status-neutral-bg)]",
   },
   amber: {
     card: "pbp-admin-card-interactive",
@@ -102,7 +102,7 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
           {overview.metrics.map((metric) => (
             <div key={metric.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
               <p className="text-[11px] font-semibold pbp-text-subtle">{metric.label}</p>
-              <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
+              <p className="mt-2 text-lg font-semibold pbp-text-primary">{metric.value}</p>
               <p className="mt-2 text-xs leading-5 pbp-text-muted">{metric.description}</p>
             </div>
           ))}
@@ -191,7 +191,7 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
           {overview.metrics.map((metric) => (
             <div key={metric.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
               <p className="text-[11px] font-semibold pbp-text-subtle">{metric.label}</p>
-              <p className="mt-2 text-base font-semibold text-stone-950 sm:text-lg">{metric.value}</p>
+              <p className="mt-2 text-base font-semibold pbp-text-primary sm:text-lg">{metric.value}</p>
               <p className="mt-2 text-xs leading-5 pbp-text-muted">{metric.description}</p>
             </div>
           ))}
@@ -245,7 +245,7 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
               }
             }}
             rows={4}
-            className="mt-3 min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-white px-3 py-2 text-sm leading-6 text-stone-900 outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
+            className="mt-3 min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
             placeholder={t("settings.accountRequest.placeholder", "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.")}
           />
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -278,7 +278,7 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
       ) : null}
 
       {requestFeedback ? (
-        <div className={`${ADMIN_SURFACE_ITEM_CLASS} rounded-[22px] text-sm font-semibold ${requestState === "failed" ? "text-rose-700" : "text-emerald-700"}`}>
+        <div className={`${ADMIN_SURFACE_ITEM_CLASS} rounded-[22px] text-sm font-semibold ${requestState === "failed" ? "text-[var(--pbp-status-danger-fg)]" : "text-[var(--pbp-status-success-fg)]"}`}>
           {requestFeedback}
         </div>
       ) : null}
@@ -417,6 +417,7 @@ export default function AdminSettingsHub() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0 sm:pr-1">
       <AdminSection
+        eyebrow={t("settings.hub.eyebrow", "Admin settings")}
         title={t("settings.hub.title", "환경설정")}
         description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 개발 건의를 한 화면에서 전환해 확인합니다.")}
         actions={

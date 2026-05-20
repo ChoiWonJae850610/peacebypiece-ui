@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
-version: 0.9
-baseline_source: peacebypiece-ui-0.15.4
+version: 1.0
+baseline_source: peacebypiece-ui-0.15.6
 status: updated
 updated: 2026-05-20
 ---
@@ -111,4 +111,5 @@ QA 체크리스트
 
 ```txt
 26_wafl-a-type-customer-admin-home-implementation.md
+27_wafl-a-type-customer-admin-management-screens.md
 ```

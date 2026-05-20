@@ -33,6 +33,7 @@ import {
   ADMIN_TABLE_ROW_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminSection } from "@/components/admin/common/AdminSection";
 import {
   AdminModal,
   AdminModalFooterActions,
@@ -1324,21 +1325,21 @@ export default function AdminMemberManagementDashboard() {
         }))}
       />
 
-      <section className="rounded-3xl border p-4 shadow-sm pbp-admin-card">
-        <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] pbp-text-subtle">
-              {t("memberManagement.eyebrow", "멤버 권한")}
-            </p>
-            <h2 className="mt-1 text-lg font-semibold pbp-text-primary">
-              {t(
-                tabPreviews.find((tab) => tab.id === activeTab)?.labelKey ??
-                  "memberManagement.title",
-                tabPreviews.find((tab) => tab.id === activeTab)
-                  ?.fallbackLabel ?? "멤버 관리",
-              )}
-            </h2>
-          </div>
+      <AdminSection
+        eyebrow={t("memberManagement.eyebrow", "멤버 권한")}
+        title={t(
+          tabPreviews.find((tab) => tab.id === activeTab)?.labelKey ??
+            "memberManagement.title",
+          tabPreviews.find((tab) => tab.id === activeTab)?.fallbackLabel ??
+            "멤버 관리",
+        )}
+        description={t(
+          tabPreviews.find((tab) => tab.id === activeTab)?.descriptionKey ??
+            "memberManagement.description",
+          tabPreviews.find((tab) => tab.id === activeTab)?.fallbackDescription ??
+            "초대, 승인, 권한, 재직 상태를 한 화면에서 관리합니다.",
+        )}
+        actions={
           <AdminSegmentedTabs
             items={tabPreviews.map((tab) => ({
               id: tab.id,
@@ -1348,9 +1349,11 @@ export default function AdminMemberManagementDashboard() {
             activeId={activeTab}
             onChange={setActiveTab}
           />
-        </div>
-
-        <div className="mt-4">
+        }
+        bodyClassName="mt-4"
+        className="shrink-0"
+      >
+        <div>
           {activeTab === "invite" ? (
             <section
               id="member-invite-builder"
@@ -1608,7 +1611,7 @@ export default function AdminMemberManagementDashboard() {
           ) : null}
 
         </div>
-      </section>
+      </AdminSection>
 
       <AdminModal
         open={Boolean(selectedMemberId && memberDetailDraft)}

@@ -1249,6 +1249,9 @@ export const adminKo = {
     qualityRateColumn: "검수/불량률",
   },
   settings: {
+    hub: {
+      eyebrow: "Admin settings",
+    },
     accountRequest: {
       open: "요청 작성",
       description: "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.",

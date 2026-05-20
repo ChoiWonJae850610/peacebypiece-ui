@@ -1285,6 +1285,9 @@ export const adminEn = {
     qualityRateColumn: "Inspection/defect rate",
   },
   settings: {
+    hub: {
+      eyebrow: "Admin settings",
+    },
     accountRequest: {
       open: "Write request",
       description: "Describe the requested change and reason. It will be submitted for system-admin review.",
