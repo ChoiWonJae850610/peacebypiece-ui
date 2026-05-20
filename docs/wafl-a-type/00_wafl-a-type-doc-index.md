@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.24
+baseline_source: peacebypiece-ui-0.15.25
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.11에서는 0.15.24 public flow visual pass를 기준으로 초대/승인/pending 화면의 A-TYPE 표면감과 token 사용 기준을 보정한다.
+v0.12에서는 0.15.25 기준으로 pending 화면을 사용자용 상태 안내 화면으로 단순화하고, 전체 화면의 개발자성 UI/문구 정리 기준을 추가한다.
 
 ```txt
 브랜드 톤
@@ -39,6 +39,7 @@ QA 체크리스트
 A-TYPE visual QA / raw color / hardcoded text 점검
 PC visual 보정 2차
 초대/승인/pending public 화면 visual pass
+개발자성 UI/문구 전수 감사
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -64,6 +65,7 @@ PC visual 보정 2차
 - 0.15.22 기준 visual QA에서 stone/white 직접 class, raw hex, hardcoded text 후보를 분류하고 0.15.23 이후 보정 순서를 정리했다.
 - 0.15.23 기준 공통 surface class와 환경설정/시스템관리자 홈의 PC visual token을 2차 보정했다.
 - 0.15.24 기준 초대/승인/pending public 화면의 raw stone/white class를 A-TYPE semantic token 중심으로 보정했다.
+- 0.15.25 기준 pending 화면의 requestId/permission_code 등 내부 용어와 개발자성 대시보드 구성을 제거하고 사용자용 상태 안내 화면으로 단순화했다.
 ```
 
 ## 3. 문서 목록
@@ -117,6 +119,7 @@ PC visual 보정 2차
 45_wafl-a-type-visual-qa-audit.md
 46_wafl-a-type-pc-visual-tuning-2.md
 47_wafl-a-type-public-flow-visual-pass.md
+48_wafl-a-type-developer-ui-copy-audit.md
 ```
 
 ## 4. 핵심 결정
@@ -317,3 +320,24 @@ PC visual 보정 2차
 - /system hero chip/CTA의 inverse token 정리
 - 기능/API/DB/R2/권한/세션 변경 없음
 ```
+
+### 0.15.24 업데이트
+
+```txt
+47_wafl-a-type-public-flow-visual-pass.md
+- 초대/승인/pending public 화면 visual pass 기준
+- public 화면의 A-TYPE semantic token 적용 범위 정리
+- OAuth/초대 검증/승인 조회 API/DB/R2 흐름 변경 없음
+```
+
+### 0.15.25 업데이트
+
+```txt
+48_wafl-a-type-developer-ui-copy-audit.md
+- 개발자성 UI/문구 전수 감사 기준
+- /pending 화면을 사용자용 승인 대기 상태 안내로 단순화
+- requestId / join_requests / permission_code 등 내부 용어 노출 제거
+- public/system/admin/workspace 화면별 후속 정리 대상 분류
+- OAuth/초대 검증/승인 조회 API/DB/R2 흐름 변경 없음
+```
+

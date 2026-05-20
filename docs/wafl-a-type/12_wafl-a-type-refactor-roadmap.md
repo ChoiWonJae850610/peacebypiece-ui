@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.24
+baseline_source: peacebypiece-ui-0.15.25
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.24
+현재 기준: 0.15.25
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -43,6 +43,7 @@ updated: 2026-05-20
 - A-TYPE visual QA / raw color / hardcoded text 점검
 - PC visual 보정 2차
 - 초대/승인/pending public 화면 visual pass
+- 개발자성 UI/문구 전수 감사와 pending 사용자용 화면 단순화
 ```
 
 ## 2. 전환 원칙
@@ -90,6 +91,7 @@ updated: 2026-05-20
 0.15.232 — Tailwind source 감지 범위 명시로 CSS 파싱 오류 수정
 0.15.233 — 시스템관리자 화면 로그아웃 버튼 추가
 0.15.24 — 초대/승인/pending public 화면 visual pass
+0.15.25 — 개발자성 UI/문구 전수 감사와 pending 사용자용 화면 단순화
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -195,6 +197,7 @@ updated: 2026-05-20
 
 
 ### 0.15.24 — 초대/승인/pending public 화면 visual pass
+0.15.25 — 개발자성 UI/문구 전수 감사와 pending 사용자용 화면 단순화
 
 ```txt
 완료:
@@ -207,6 +210,21 @@ updated: 2026-05-20
 주의:
 - 가입 신청 조회 API와 초대 검증 API는 변경하지 않는다.
 - OAuth redirect / 세션 생성 / 승인 처리 흐름은 변경하지 않는다.
+```
+
+
+### 0.15.25 — 개발자성 UI/문구 전수 감사와 pending 사용자용 화면 단순화
+
+```txt
+완료:
+- /pending 화면에서 requestId, join_requests.id, permission_code 등 내부 용어를 제거
+- 가입 대기 사용자가 보는 화면을 상태 안내 중심으로 단순화
+- 상태 새로고침과 로그아웃만 남기고 개발자성 조회 대시보드 제거
+- public/system/admin/workspace 화면의 추가 개발자성 문구 정리 후보를 문서화
+
+주의:
+- OAuth, 초대 검증, 승인 조회 API, DB/R2 흐름은 변경하지 않는다.
+- 전수 정리는 한 번에 제거하지 않고 public → system → admin 순서로 나눈다.
 ```
 
 ## 5. 0.16.x — Device / Responsive 기반
@@ -351,6 +369,8 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.24 — 초대/승인/pending public 화면 visual pass
-0.15.25 — 모달/스켈레톤 raw color 보정
+0.15.26 — public/auth 문구 UX 정리 2차
+0.15.27 — system 화면 개발자성 문구 정리
+0.15.28 — admin 화면 개발자성 placeholder 정리
+0.16.0 — DeviceKind foundation
 ```
