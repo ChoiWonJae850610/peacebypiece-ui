@@ -47,7 +47,7 @@ function HeaderRefreshButton({ label }: { label: string }) {
       variant="ghost"
       aria-label={label}
       title={label}
-      className="h-7 min-h-0 w-7 border-transparent bg-white/10 px-0 py-0 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] hover:bg-white/15 hover:text-[var(--admin-theme-text-on-surface)]"
+      className="h-7 min-h-0 w-7 border-transparent bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-0 py-0 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] hover:bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_15%,transparent)] hover:text-[var(--admin-theme-text-on-surface)]"
     >
       <span aria-hidden="true">↻</span>
     </AdminButton>
@@ -105,31 +105,31 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
             </div>
           </div>
           <div className="mt-6 grid gap-2.5 sm:grid-cols-4">
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+            <div className="rounded-2xl bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-3">
               <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.status}</p>
-              <p className="mt-2 text-sm font-semibold text-white">{text.summaryCards.statusValue}</p>
+              <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-inverse)]">{text.summaryCards.statusValue}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+            <div className="rounded-2xl bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-3">
               <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.joinedAt}</p>
-              <p className="mt-2 text-sm font-semibold text-white">{companyDate.joinedAt}</p>
+              <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-inverse)]">{companyDate.joinedAt}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+            <div className="rounded-2xl bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-3">
               <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.age}</p>
-              <p className="mt-2 text-sm font-semibold text-white">{companyDate.age}</p>
+              <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-inverse)]">{companyDate.age}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+            <div className="rounded-2xl bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-3">
               <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.members}</p>
-              <p className="mt-2 text-sm font-semibold text-white">{text.summaryCards.memberValue}</p>
+              <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-inverse)]">{text.summaryCards.memberValue}</p>
             </div>
           </div>
         </section>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-3.5">
+          <div className="rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3.5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-stone-950">{text.themeTitle}</p>
-                <p className="mt-1 text-xs font-semibold text-stone-500">{text.themeCurrentPrefix}{currentTheme.label}</p>
+                <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{text.themeTitle}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--pbp-text-muted)]">{text.themeCurrentPrefix}{currentTheme.label}</p>
               </div>
               <span className={`h-8 w-8 rounded-2xl shadow-sm ring-1 ring-white ${currentTheme.swatchClassName}`} />
             </div>
@@ -141,7 +141,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
                   title={option.label}
                   onClick={() => saveNextSettings(withAdminSettingsUiDraft(draft, { themeColor: option.value }))}
                   disabled={saveState === "saving"}
-                  className={`h-9 rounded-2xl border transition disabled:cursor-not-allowed disabled:opacity-60 ${draft.ui.themeColor === option.value ? "border-stone-950 bg-white" : "border-stone-200 bg-white/70 hover:bg-white"}`}
+                  className={`h-9 rounded-2xl border transition disabled:cursor-not-allowed disabled:opacity-60 ${draft.ui.themeColor === option.value ? "border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]/70 hover:bg-[var(--pbp-surface)]"}`}
                 >
                   <span className={`mx-auto block h-5 w-5 rounded-full ${option.swatchClassName}`} />
                 </button>
@@ -149,10 +149,10 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-3.5">
+          <div className="rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3.5">
             <div>
-              <p className="text-sm font-semibold text-stone-950">{text.languageTitle}</p>
-              <p className="mt-1 text-xs font-semibold text-stone-500">{text.languageCurrentPrefix}{currentLanguage.label}</p>
+              <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{text.languageTitle}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--pbp-text-muted)]">{text.languageCurrentPrefix}{currentLanguage.label}</p>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {ADMIN_LANGUAGE_OPTIONS.map((option) => (
@@ -161,7 +161,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
                   type="button"
                   onClick={() => saveNextSettings(withAdminSettingsUiDraft(draft, { language: option.value }))}
                   disabled={saveState === "saving"}
-                  className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${draft.ui.language === option.value ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
+                  className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${draft.ui.language === option.value ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-secondary)] hover:bg-[var(--pbp-surface-muted)]"}`}
                 >
                   {option.label}
                 </button>

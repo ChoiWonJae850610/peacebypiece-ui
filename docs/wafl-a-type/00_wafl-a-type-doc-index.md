@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.22
+baseline_source: peacebypiece-ui-0.15.23
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.9에서는 0.15.x visual pass 이후 남은 raw color class, hardcoded text, PC 화면 보정 후보를 점검한다.
+v0.10에서는 0.15.22 visual QA를 기준으로 PC 화면 공통 surface와 환경설정/시스템관리자 홈의 token 보정을 적용한다.
 
 ```txt
 브랜드 톤
@@ -37,6 +37,7 @@ QA 체크리스트
 원단/부자재 발주 데이터 모델
 작업지시서 발주 flow 변경 설계
 A-TYPE visual QA / raw color / hardcoded text 점검
+PC visual 보정 2차
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -60,6 +61,7 @@ A-TYPE visual QA / raw color / hardcoded text 점검
 - 원단/부자재 발주는 0.15.20 기준 데이터 모델과 권한 matrix를 상세화했으나 DB schema는 아직 반영하지 않았다.
 - 작업지시서 발주 flow는 0.15.21 기준 자재 발주 준비/검토요청/직접발주/PDF 출력 시점을 분리해 설계했다.
 - 0.15.22 기준 visual QA에서 stone/white 직접 class, raw hex, hardcoded text 후보를 분류하고 0.15.23 이후 보정 순서를 정리했다.
+- 0.15.23 기준 공통 surface class와 환경설정/시스템관리자 홈의 PC visual token을 2차 보정했다.
 ```
 
 ## 3. 문서 목록
@@ -111,6 +113,7 @@ A-TYPE visual QA / raw color / hardcoded text 점검
 43_wafl-a-type-material-order-data-model.md
 44_wafl-a-type-workorder-order-flow.md
 45_wafl-a-type-visual-qa-audit.md
+46_wafl-a-type-pc-visual-tuning-2.md
 ```
 
 ## 4. 핵심 결정
@@ -297,5 +300,17 @@ A-TYPE visual QA / raw color / hardcoded text 점검
 - bg-white / border-stone / text-stone / raw hex / 한국어 문자열 탐지 결과 정리
 - theme/print/chart/drawing 색상과 일반 화면 색상 class를 분리
 - 0.15.23 이후 PC visual 보정 후보를 /admin/settings, /admin/members, /admin/files, /admin/stats, /system으로 정리
+- 기능/API/DB/R2/권한/세션 변경 없음
+```
+
+
+### 0.15.23 업데이트
+
+```txt
+46_wafl-a-type-pc-visual-tuning-2.md
+- PC visual 보정 2차
+- 공통 admin surface/storage/stats semantic class의 radius/그림자/token 리듬 보정
+- /admin/settings 세부 컴포넌트의 stone/white 직접 class를 semantic token으로 치환
+- /system hero chip/CTA의 inverse token 정리
 - 기능/API/DB/R2/권한/세션 변경 없음
 ```

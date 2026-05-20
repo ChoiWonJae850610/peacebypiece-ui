@@ -1,15 +1,15 @@
 export const ADMIN_SURFACE_PANEL_CLASS =
-  "rounded-3xl border p-5 shadow-sm pbp-admin-card";
+  "rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_SURFACE_PANEL_COMPACT_CLASS =
-  "rounded-3xl border p-3 shadow-sm pbp-admin-card";
+  "rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_SURFACE_MUTED_PANEL_CLASS =
-  "rounded-3xl border p-5 shadow-sm pbp-card-muted";
+  "rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-5 shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_SURFACE_SUBTLE_BOX_CLASS =
-  "rounded-2xl border p-3 pbp-card-muted";
+  "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3";
 export const ADMIN_SURFACE_ITEM_CLASS =
-  "rounded-2xl border p-4 shadow-sm pbp-admin-card";
+  "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_FIELD_CONTAINER_CLASS =
-  "block rounded-2xl border p-4 pbp-card-muted";
+  "block rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4";
 export const ADMIN_INPUT_CLASS =
   "mt-2 w-full rounded-xl border bg-[var(--pbp-field-search-surface)] px-3 py-2 text-sm text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)]";
 export const ADMIN_TABLE_HEADER_CLASS =
@@ -23,13 +23,13 @@ export const ADMIN_INACTIVE_TAB_CLASS =
 export const ADMIN_SELECT_INPUT_CLASS =
   "rounded-full border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-2.5 py-1.5 text-xs font-medium text-[var(--pbp-text-muted)] shadow-sm outline-none transition focus:border-[var(--pbp-focus-ring)]";
 export const ADMIN_STORAGE_PANEL_CLASS =
-  "rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm md:rounded-[24px]";
+  "rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)] md:rounded-[28px]";
 export const ADMIN_STORAGE_PANEL_TIGHT_CLASS =
-  "rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm md:rounded-[22px]";
+  "rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)] md:rounded-[24px]";
 export const ADMIN_STORAGE_CARD_CLASS =
-  "rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] md:rounded-[24px]";
+  "rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)] md:rounded-[24px]";
 export const ADMIN_STORAGE_CARD_MUTED_CLASS =
-  "rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] md:rounded-[24px]";
+  "rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] shadow-[var(--pbp-shadow-card)] md:rounded-[24px]";
 export const ADMIN_STORAGE_SUBTLE_BOX_CLASS =
   "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]";
 export const ADMIN_STORAGE_PILL_CLASS =
@@ -62,15 +62,15 @@ export const ADMIN_STORAGE_CHECKBOX_IDLE_CLASS =
   "border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] text-transparent";
 
 export const ADMIN_STATS_PANEL_CLASS =
-  "rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm sm:rounded-[24px]";
+  "rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)] sm:rounded-[28px]";
 export const ADMIN_STATS_PANEL_TIGHT_CLASS =
-  "rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm sm:rounded-[20px]";
+  "rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)] sm:rounded-[22px]";
 export const ADMIN_STATS_MUTED_PANEL_CLASS =
-  "rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] shadow-sm sm:rounded-[22px]";
+  "rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] shadow-[var(--pbp-shadow-card)] sm:rounded-[24px]";
 export const ADMIN_STATS_SUBTLE_BOX_CLASS =
   "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]";
 export const ADMIN_STATS_ITEM_CLASS =
-  "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm";
+  "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_STATS_ITEM_MUTED_CLASS =
   "rounded-2xl bg-[var(--pbp-surface-muted)]";
 export const ADMIN_STATS_SELECTED_ITEM_CLASS =

@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.22
+baseline_source: peacebypiece-ui-0.15.23
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.22
+현재 기준: 0.15.23
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -41,6 +41,7 @@ updated: 2026-05-20
 - 원단/부자재 발주 데이터 모델 상세 설계
 - 작업지시서 발주 flow 변경 설계
 - A-TYPE visual QA / raw color / hardcoded text 점검
+- PC visual 보정 2차
 ```
 
 ## 2. 전환 원칙
@@ -83,6 +84,7 @@ updated: 2026-05-20
 0.15.20 — 원단/부자재 발주 데이터 모델 상세 설계
 0.15.21 — 작업지시서 발주 flow 변경 설계
 0.15.22 — A-TYPE visual QA / raw color / hardcoded text 점검
+0.15.23 — PC visual 보정 2차
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -136,6 +138,7 @@ updated: 2026-05-20
 ```
 
 ### 0.15.22 — A-TYPE visual QA / raw color / hardcoded text 점검
+0.15.23 — PC visual 보정 2차
 
 ```txt
 완료:
@@ -166,6 +169,22 @@ updated: 2026-05-20
 - /admin/files
 - /admin/stats
 - /system
+```
+
+
+### 0.15.23 — PC visual 보정 2차
+
+```txt
+완료:
+- admin 공통 surface/storage/stats semantic class의 radius, border, shadow 리듬 보정
+- /admin/settings 세부 컴포넌트의 stone/white 직접 class를 semantic token으로 치환
+- /system hero chip/CTA의 inverse token 기반 표현 정리
+- /admin/members, /admin/files, /admin/stats는 공통 semantic class 보정을 통해 화면 간 표면감을 맞춤
+
+주의:
+- 기능 구현은 하지 않는다.
+- API/DB/R2/권한/세션/companyId scope는 변경하지 않는다.
+- 초대/승인/pending public 화면은 0.15.24에서 별도 보정한다.
 ```
 
 ## 5. 0.16.x — Device / Responsive 기반
@@ -310,6 +329,6 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.23 — PC visual 보정 2차
 0.15.24 — 초대/승인/pending public 화면 visual pass
+0.15.25 — 모달/스켈레톤 raw color 보정
 ```

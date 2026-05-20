@@ -50,17 +50,18 @@
 - `wafl-a-type/43_wafl-a-type-material-order-data-model.md` — 원단/부자재 발주 데이터 모델 상세 설계
 - `wafl-a-type/44_wafl-a-type-workorder-order-flow.md` — 작업지시서 발주 flow 변경 설계
 - `wafl-a-type/45_wafl-a-type-visual-qa-audit.md` — A-TYPE visual QA / raw color / hardcoded text 점검
+- `wafl-a-type/46_wafl-a-type-pc-visual-tuning-2.md` — PC visual 보정 2차
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.22부터 기준 문서는 `docs/wafl-a-type/` 안의 00~45 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.23부터 기준 문서는 `docs/wafl-a-type/` 안의 00~46 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.22
+현재 기준: 0.15.23
 PC A-TYPE 전환과 SaaS 운영 IA 정리 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

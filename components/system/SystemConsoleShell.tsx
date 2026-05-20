@@ -109,14 +109,14 @@ export default function SystemConsoleShell() {
         <div className="relative grid gap-6 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] xl:p-7">
           <header className="rounded-[32px] border border-[var(--pbp-brand-muted)] bg-[var(--pbp-brand-primary)] p-6 text-[var(--pbp-text-inverse)] shadow-[var(--pbp-shadow-card)] sm:p-8">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+              <span className="rounded-full border border-[color:color-mix(in_srgb,var(--pbp-text-inverse)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:color-mix(in_srgb,var(--pbp-text-inverse)_70%,transparent)]">
                 {system.eyebrow}
               </span>
-              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/80">
+              <span className="rounded-full border border-[color:color-mix(in_srgb,var(--pbp-text-inverse)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-1 text-[11px] font-semibold text-[color:color-mix(in_srgb,var(--pbp-text-inverse)_80%,transparent)]">
                 {system.versionLabel} v{APP_VERSION}
               </span>
               {devSystemEntryEnabled ? (
-                <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/80">
+                <span className="rounded-full border border-[color:color-mix(in_srgb,var(--pbp-text-inverse)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-1 text-[11px] font-semibold text-[color:color-mix(in_srgb,var(--pbp-text-inverse)_80%,transparent)]">
                   {system.devEntryLabel}
                 </span>
               ) : null}
@@ -126,7 +126,7 @@ export default function SystemConsoleShell() {
               <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl lg:text-5xl">
                 {system.title}
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/72 sm:text-base">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--pbp-text-inverse)]/72 sm:text-base">
                 {system.description}
               </p>
             </div>
@@ -140,7 +140,7 @@ export default function SystemConsoleShell() {
               </Link>
               <Link
                 href="/system/audit-logs"
-                className="rounded-full border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white/82 transition hover:bg-white/15"
+                className="rounded-full border border-[color:color-mix(in_srgb,var(--pbp-text-inverse)_25%,transparent)] bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-5 py-3 text-sm font-semibold text-[var(--pbp-text-inverse)] opacity-80 transition hover:bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_15%,transparent)]"
               >
                 감사 로그 확인
               </Link>
