@@ -27,60 +27,141 @@ export const adminEn = {
   },
   permissions: {
     workorder: {
-      read: { label: "Read", description: "View work order lists and details." },
+      read: {
+        label: "Read",
+        description: "View work order lists and details.",
+      },
       create: { label: "Create", description: "Create new work orders." },
-      update: { label: "Edit", description: "Edit work order information and contents." },
-      delete: { label: "Request deletion", description: "Move work orders to trash or request deletion." },
-      restore: { label: "Restore", description: "Restore deleted work orders." },
-      statusReview: { label: "Review status", description: "Move work orders into review steps." },
-      statusOrder: { label: "Order status", description: "Change order and production progress status." },
-      statusInspect: { label: "Inspection status", description: "Change inbound inspection and defect status." },
-      statusComplete: { label: "Complete", description: "Mark work orders as completed." },
+      update: {
+        label: "Edit",
+        description: "Edit work order information and contents.",
+      },
+      delete: {
+        label: "Request deletion",
+        description: "Move work orders to trash or request deletion.",
+      },
+      restore: {
+        label: "Restore",
+        description: "Restore deleted work orders.",
+      },
+      statusReview: {
+        label: "Review status",
+        description: "Move work orders into review steps.",
+      },
+      statusOrder: {
+        label: "Order status",
+        description: "Change order and production progress status.",
+      },
+      statusInspect: {
+        label: "Inspection status",
+        description: "Change inbound inspection and defect status.",
+      },
+      statusComplete: {
+        label: "Complete",
+        description: "Mark work orders as completed.",
+      },
     },
     partner: {
       read: { label: "Read", description: "View partner lists and details." },
       create: { label: "Create", description: "Create new partners." },
       update: { label: "Edit", description: "Edit partner details and roles." },
-      delete: { label: "Disable/delete", description: "Disable partners or request deletion." },
-      manage: { label: "Legacy manage", description: "Legacy aggregate partner management permission from earlier versions." },
+      delete: {
+        label: "Disable/delete",
+        description: "Disable partners or request deletion.",
+      },
+      manage: {
+        label: "Legacy manage",
+        description:
+          "Legacy aggregate partner management permission from earlier versions.",
+      },
     },
     storage: {
       read: { label: "Read", description: "View storage files and usage." },
-      deleteRequest: { label: "Request deletion", description: "Request deletion for files and trash items." },
+      deleteRequest: {
+        label: "Request deletion",
+        description: "Request deletion for files and trash items.",
+      },
       restore: { label: "Restore", description: "Restore files from trash." },
     },
     stats: {
-      read: { label: "Read", description: "View statistics and operation metrics." },
+      read: {
+        label: "Read",
+        description: "View statistics and operation metrics.",
+      },
     },
     settings: {
-      read: { label: "Read", description: "View settings and company configuration." },
-      manage: { label: "Edit", description: "Edit settings and company policies." },
+      read: {
+        label: "Read",
+        description: "View settings and company configuration.",
+      },
+      manage: {
+        label: "Edit",
+        description: "Edit settings and company policies.",
+      },
     },
     standards: {
-      read: { label: "Read", description: "View unit, process, and item standards." },
+      read: {
+        label: "Read",
+        description: "View unit, process, and item standards.",
+      },
       create: { label: "Create", description: "Create new standards." },
-      update: { label: "Edit", description: "Edit standard labels, order, and active status." },
-      delete: { label: "Delete/disable", description: "Delete or disable standards." },
-      manage: { label: "Legacy manage", description: "Legacy aggregate standards management permission from earlier versions." },
+      update: {
+        label: "Edit",
+        description: "Edit standard labels, order, and active status.",
+      },
+      delete: {
+        label: "Delete/disable",
+        description: "Delete or disable standards.",
+      },
+      manage: {
+        label: "Legacy manage",
+        description:
+          "Legacy aggregate standards management permission from earlier versions.",
+      },
     },
     member: {
       read: { label: "Read", description: "View members and approval queues." },
-      invite: { label: "Invite", description: "Create member invitation links." },
+      invite: {
+        label: "Invite",
+        description: "Create member invitation links.",
+      },
       approve: { label: "Approve", description: "Approve join requests." },
       reject: { label: "Reject", description: "Reject join requests." },
-      permissionUpdate: { label: "Edit permissions", description: "Edit member roles and detailed permissions." },
-      suspend: { label: "Change status", description: "Suspend or reactivate members." },
+      permissionUpdate: {
+        label: "Edit permissions",
+        description: "Edit member roles and detailed permissions.",
+      },
+      suspend: {
+        label: "Change status",
+        description: "Suspend or reactivate members.",
+      },
     },
     audit: {
-      readCompany: { label: "Read audit logs", description: "View company-level change history." },
+      readCompany: {
+        label: "Read audit logs",
+        description: "View company-level change history.",
+      },
     },
     personalSettings: {
-      manage: { label: "Personal settings", description: "Change the member's own language, theme, and personal settings." },
+      manage: {
+        label: "Personal settings",
+        description:
+          "Change the member's own language, theme, and personal settings.",
+      },
     },
     system: {
-      standardManage: { label: "System standards", description: "Manage system-only standards." },
-      companyInvite: { label: "Invite companies", description: "Create system-admin company invitations." },
-      companyApprove: { label: "Approve companies", description: "Approve system-admin company join requests." },
+      standardManage: {
+        label: "System standards",
+        description: "Manage system-only standards.",
+      },
+      companyInvite: {
+        label: "Invite companies",
+        description: "Create system-admin company invitations.",
+      },
+      companyApprove: {
+        label: "Approve companies",
+        description: "Approve system-admin company join requests.",
+      },
     },
   },
   filesPage: {
@@ -179,7 +260,8 @@ export const adminEn = {
   operationsDashboard: {
     title: "Operations Dashboard",
     eyebrow: "Work order flow",
-    description: "Review review, ordering, inspection, and delayed inbound queues in one place.",
+    description:
+      "Review review, ordering, inspection, and delayed inbound queues in one place.",
     priorityEyebrow: "Queue",
     workorderStatusTitle: "Work order status",
     sourceDb: "Shows work queue items from DB.",
@@ -285,12 +367,14 @@ export const adminEn = {
     managementCards: {
       eyebrow: "Workspace",
       title: "Workspace shortcuts",
-      description: "Frequently used customer-admin screens are grouped into the A-TYPE card structure.",
+      description:
+        "Frequently used customer-admin screens are grouped into the A-TYPE card structure.",
       cardCount: "{count} screens",
     },
     memberCards: {
       title: "Member management",
-      description: "Handle member invitations, join approvals, roles, and permissions in a separate card.",
+      description:
+        "Handle member invitations, join approvals, roles, and permissions in a separate card.",
     },
     futurePermissions: {
       title: "Master data",
@@ -320,7 +404,8 @@ export const adminEn = {
       },
       "member-management": {
         label: "Member management",
-        description: "Manage member invitations, join approvals, roles, and permissions.",
+        description:
+          "Manage member invitations, join approvals, roles, and permissions.",
       },
       "standard-units": {
         label: "Standard units",
@@ -353,12 +438,15 @@ export const adminEn = {
     },
     detailModal: {
       title: "Member details",
-      description: "Click a member row to manage work order, partner, standards, and order authority.",
+      description:
+        "Click a member row to manage work order, partner, standards, and order authority.",
       permissionGroupCount: "{count} permissions",
       permissionGroupSelectedCount: "{selected}/{total} selected",
       selectedPermissionCount: "{count} selected",
-      roleTemplateHelper: "A role is only the starting value. Adjust the actual work permissions with the four options below.",
-      policyNotice: "Removing your own permission-management access or the last administrator access is blocked when saving.",
+      roleTemplateHelper:
+        "A role is only the starting value. Adjust the actual work permissions with the four options below.",
+      policyNotice:
+        "Removing your own permission-management access or the last administrator access is blocked when saving.",
       summary: {
         title: "Selected member",
         role: "Role",
@@ -366,9 +454,11 @@ export const adminEn = {
       },
       sections: {
         profile: "Profile",
-        profileDescription: "Name and contact are saved against the same-company member record.",
+        profileDescription:
+          "Name and contact are saved against the same-company member record.",
         permissions: "Workspace permissions",
-        permissionsDescription: "Unchecked items remain read-only. Checked items allow writing and management. Stats are always readable by default.",
+        permissionsDescription:
+          "Unchecked items remain read-only. Checked items allow writing and management. Stats are always readable by default.",
       },
       fields: {
         name: "Name",
@@ -379,19 +469,23 @@ export const adminEn = {
       simplePermissions: {
         workorderManage: {
           label: "Work order management",
-          description: "When off, the member can only view assigned work orders. When on, the member can create, edit, delete, and request review.",
+          description:
+            "When off, the member can only view assigned work orders. When on, the member can create, edit, delete, and request review.",
         },
         partnerManage: {
           label: "Partner management",
-          description: "When off, the member can only view partners. When on, the member can create, edit, deactivate, and request deletion.",
+          description:
+            "When off, the member can only view partners. When on, the member can create, edit, deactivate, and request deletion.",
         },
         standardsManage: {
           label: "Standards management",
-          description: "When off, the member can only view standards. When on, the member can create, edit, deactivate, and request deletion.",
+          description:
+            "When off, the member can only view standards. When on, the member can create, edit, deactivate, and request deletion.",
         },
         workorderOrderDirect: {
           label: "Order authority",
-          description: "Allows admin-level direct order requests without the review step.",
+          description:
+            "Allows admin-level direct order requests without the review step.",
         },
       },
       actions: {
@@ -403,7 +497,8 @@ export const adminEn = {
       },
       errors: {
         permissionRequired: "Select at least one permission.",
-        selfPermissionBlocked: "You cannot remove your own permission-editing permission.",
+        selfPermissionBlocked:
+          "You cannot remove your own permission-editing permission.",
         selfStatusBlocked: "You cannot change your own active status.",
         lastAdminBlocked: "The last admin permission cannot be removed.",
         updateFailed: "Could not save member information.",
@@ -450,7 +545,8 @@ export const adminEn = {
       sendPolicy: {
         email: "Send the invitation link by email.",
         phone: "Send the invitation link by SMS.",
-        linkOnly: "Create an invitation link for copying. Actual email/SMS delivery will be connected later.",
+        linkOnly:
+          "Create an invitation link for copying. Actual email/SMS delivery will be connected later.",
       },
       actions: {
         copy: "Copy link",
@@ -467,8 +563,10 @@ export const adminEn = {
         load: "Could not load invitation links.",
         create: "Could not create the invitation link.",
         revoke: "Could not cancel the invitation link.",
-        route: "Could not create the member invitation link. Try again shortly.",
-        policy: "Could not verify the member invitation conditions. Try again with a company administrator account.",
+        route:
+          "Could not create the member invitation link. Try again shortly.",
+        policy:
+          "Could not verify the member invitation conditions. Try again with a company administrator account.",
         notFound: "The invitation link could not be found.",
       },
     },
@@ -476,7 +574,8 @@ export const adminEn = {
     memberDirectory: {
       eyebrow: "Member management",
       title: "Member management",
-      description: "Review and process pending approvals and all members in one list.",
+      description:
+        "Review and process pending approvals and all members in one list.",
       none: "None",
       filters: {
         search: "Search",
@@ -580,7 +679,8 @@ export const adminEn = {
     summary: {
       activeMembers: {
         label: "Active",
-        description: "Approved members currently working in the company workspace.",
+        description:
+          "Approved members currently working in the company workspace.",
       },
       pendingApprovals: {
         label: "Pending approval",
@@ -597,7 +697,8 @@ export const adminEn = {
     },
     sections: {
       members: "Member management",
-      membersDescription: "Manage pending approvals and all members in one list.",
+      membersDescription:
+        "Manage pending approvals and all members in one list.",
       invitations: "Invitation links",
       invitationsDescription:
         "Review usable, accepted, expired, and cancelled links, then copy or cancel them.",
@@ -1145,7 +1246,8 @@ export const adminEn = {
     unknownLabel: "Needs Review",
   },
   topbar: {
-    personalSettingsDescription: "Personal settings only change language and theme.",
+    personalSettingsDescription:
+      "Personal settings only change language and theme.",
     actions: {
       home: "Home",
       personalSettings: "Personal settings",
@@ -1210,6 +1312,14 @@ export const adminEn = {
     factoryTooltipQuality: "Quality issue candidates {count} / {target}",
     factoryTooltipQualityExamples: "Quality issue candidates: {items}",
     factoryTooltipQualityNone: "Quality issue candidates: none",
+    statsOverviewEyebrow: "Current overview",
+    statsOverviewTitle: "Operational cumulative metrics",
+    statsOverviewDescription:
+      "Review cumulative production, delay, quality, and storage usage for the current company first.",
+    statsAnalysisEyebrow: "Analysis",
+    statsAnalysisDescription:
+      "Switch between production mix, partner performance, and period flow with tabs.",
+    selectedPeriodBadgeLabel: "Selected period",
     currentProducedLabel: "Cumulative production",
     currentReorderDescription: "Reorders {count}",
     currentDelayRateLabel: "Cumulative delay rate",
@@ -1290,16 +1400,21 @@ export const adminEn = {
     },
     accountRequest: {
       open: "Write request",
-      description: "Describe the requested change and reason. It will be submitted for system-admin review.",
-      placeholder: "Example: The business name changed. Enter the before/after information and reason.",
-      validation: "Enter at least 10 characters. This is submitted as a review request and is not applied immediately.",
+      description:
+        "Describe the requested change and reason. It will be submitted for system-admin review.",
+      placeholder:
+        "Example: The business name changed. Enter the before/after information and reason.",
+      validation:
+        "Enter at least 10 characters. This is submitted as a review request and is not applied immediately.",
       submit: "Submit request",
-      submitted: "The request has been submitted and will be reviewed by the system admin.",
+      submitted:
+        "The request has been submitted and will be reviewed by the system admin.",
       failed: "Could not submit the request. Try again later.",
     },
     billing: {
       emptyTitle: "Could not load billing information.",
-      emptyDescription: "No settings data is available for the current signed-in company, or you do not have access.",
+      emptyDescription:
+        "No settings data is available for the current signed-in company, or you do not have access.",
     },
   },
   settingsForm: {
@@ -1833,29 +1948,40 @@ export const adminEn = {
   companyOnboarding: {
     eyebrow: "Company onboarding",
     title: "Enter company information",
-    description: "Enter company information and administrator contact details before using the customer admin workspace. The admin workspace remains blocked until this profile is completed.",
+    description:
+      "Enter company information and administrator contact details before using the customer admin workspace. The admin workspace remains blocked until this profile is completed.",
     logout: "Log out",
     requiredNoticeTitle: "Required company information is missing.",
-    requiredNoticeDescription: "After saving the company name, business name, address, admin name, and phone number, the company moves to system approval pending status.",
-    saved: "Company information has been saved. The workspace becomes available after system admin approval.",
+    requiredNoticeDescription:
+      "After saving the company name, business name, address, admin name, and phone number, the company moves to system approval pending status.",
+    saved:
+      "Company information has been saved. The workspace becomes available after system admin approval.",
     saving: "Saving",
     submit: "Save and request approval",
-    addressApiNote: "After selecting a search result, enter the address detail manually. If search is unavailable, postal code and address can still be entered manually.",
+    addressApiNote:
+      "After selecting a search result, enter the address detail manually. If search is unavailable, postal code and address can still be entered manually.",
     addressSearch: {
       label: "Road-name address search",
       placeholder: "Enter a road name, building name, or lot number",
-      description: "Searches the official road-name address API and fills postal code, road address, and jibun address.",
+      description:
+        "Searches the official road-name address API and fills postal code, road address, and jibun address.",
       button: "Search address",
       loading: "Searching",
-      empty: "No address results found. Try another keyword or enter the address manually.",
+      empty:
+        "No address results found. Try another keyword or enter the address manually.",
       postalCodeLabel: "Postal code",
       errors: {
         keywordRequired: "Enter a search keyword.",
-        notConfigured: "The road-name address API key is not configured. Use manual entry instead.",
-        failed: "Address search failed. Try again later or enter the address manually.",
-        providerRejected: "The road-name address API key or registered URL could not be verified. Use manual entry instead.",
-        upstreamFailed: "Could not connect to the road-name address search server. Try again later or enter the address manually.",
-        responseInvalid: "The road-name address response could not be verified. Use manual entry instead.",
+        notConfigured:
+          "The road-name address API key is not configured. Use manual entry instead.",
+        failed:
+          "Address search failed. Try again later or enter the address manually.",
+        providerRejected:
+          "The road-name address API key or registered URL could not be verified. Use manual entry instead.",
+        upstreamFailed:
+          "Could not connect to the road-name address search server. Try again later or enter the address manually.",
+        responseInvalid:
+          "The road-name address response could not be verified. Use manual entry instead.",
       },
     },
     sections: {
@@ -1897,7 +2023,8 @@ export const adminEn = {
       pro: "Pro",
       trial: "Free trial · 7 days",
     },
-    planReadOnlyDescription: "The default trial plan is applied automatically during initial company registration. Plan changes are requested after approval from settings.",
+    planReadOnlyDescription:
+      "The default trial plan is applied automatically during initial company registration. Plan changes are requested after approval from settings.",
     fileUploads: {
       select: "Select file",
       replace: "Replace",
@@ -1905,32 +2032,38 @@ export const adminEn = {
       uploading: "The selected file will upload when you submit for approval.",
       deleting: "Deleting file.",
       uploadedAt: "Uploaded at",
-      confirmReplace: "Delete the current file and replace it with the new file?",
+      confirmReplace:
+        "Delete the current file and replace it with the new file?",
       confirmDelete: "Delete the uploaded file?",
       saveBlocked: "You cannot submit while file processing is in progress.",
       note: "Company logo and business registration files are optional. Selected files upload to R2 together with company information only when you submit for approval.",
       logo: {
         label: "Company logo",
-        description: "JPG, PNG, and WEBP files are supported. The maximum size is 5 MB.",
+        description:
+          "JPG, PNG, and WEBP files are supported. The maximum size is 5 MB.",
         empty: "No company logo has been uploaded.",
       },
       businessLicense: {
         label: "Business registration certificate",
-        description: "JPG, PNG, WEBP, and PDF files are supported. The maximum size is 10 MB.",
+        description:
+          "JPG, PNG, WEBP, and PDF files are supported. The maximum size is 10 MB.",
         empty: "No business registration certificate has been uploaded.",
       },
     },
     loading: {
       title: "Checking company information status.",
-      description: "The admin workspace is temporarily blocked while the required onboarding status is checked.",
+      description:
+        "The admin workspace is temporarily blocked while the required onboarding status is checked.",
     },
     pending: {
       title: "Waiting for approval.",
-      description: "Company information has been submitted. The workspace will become available after a system administrator reviews and approves the company.",
+      description:
+        "Company information has been submitted. The workspace will become available after a system administrator reviews and approves the company.",
     },
     trialExpired: {
       title: "The free trial has ended.",
-      description: "Select a plan or ask the system administrator to extend access. Members should contact the customer administrator.",
+      description:
+        "Select a plan or ask the system administrator to extend access. Members should contact the customer administrator.",
       action: "View plans",
     },
     errors: {
@@ -1952,53 +2085,72 @@ export const adminEn = {
     eyebrow: "WAFL ACCESS",
     sessionRequired: {
       title: "Sign-in is required.",
-      description: "To use the workspace, sign in again with an invitation link or a registered account.",
-      notice: "If a new Google account enters directly without an invitation link, onboarding cannot continue. Ask the company admin or system admin for an invitation link.",
+      description:
+        "To use the workspace, sign in again with an invitation link or a registered account.",
+      notice:
+        "If a new Google account enters directly without an invitation link, onboarding cannot continue. Ask the company admin or system admin for an invitation link.",
     },
     profileRequiredAdmin: {
       title: "Company information is required.",
-      description: "The company admin must submit company details and required files before requesting approval.",
-      notice: "Company details are not finalized in DB/R2 until the approval request is submitted. Return to the input screen and submit the required information.",
+      description:
+        "The company admin must submit company details and required files before requesting approval.",
+      notice:
+        "Company details are not finalized in DB/R2 until the approval request is submitted. Return to the input screen and submit the required information.",
     },
     profileRequiredMember: {
       title: "This account is not ready for workspace access.",
-      description: "Regular members cannot submit company information or request company approval.",
-      notice: "Ask the company admin to check the company approval status and member approval status.",
+      description:
+        "Regular members cannot submit company information or request company approval.",
+      notice:
+        "Ask the company admin to check the company approval status and member approval status.",
     },
     approvalPendingAdmin: {
       title: "Company approval is pending.",
-      description: "Company information has been submitted and is waiting for system-admin review.",
-      notice: "Core workspace screens such as work orders, storage, and member management are unavailable before approval.",
+      description:
+        "Company information has been submitted and is waiting for system-admin review.",
+      notice:
+        "Core workspace screens such as work orders, storage, and member management are unavailable before approval.",
     },
     approvalPendingMember: {
       title: "Company or member approval is pending.",
-      description: "Regular members cannot use the workspace while approval is pending.",
-      notice: "Ask the company admin to check the approval status. After approval, sign in again to enter the workspace.",
+      description:
+        "Regular members cannot use the workspace while approval is pending.",
+      notice:
+        "Ask the company admin to check the approval status. After approval, sign in again to enter the workspace.",
     },
     rejectedAdmin: {
       title: "The company request was rejected.",
-      description: "The system admin rejected the company request or requested resubmission.",
-      notice: "Check the rejection reason and request resubmission from the system admin. Workspace features are unavailable on this screen.",
+      description:
+        "The system admin rejected the company request or requested resubmission.",
+      notice:
+        "Check the rejection reason and request resubmission from the system admin. Workspace features are unavailable on this screen.",
     },
     rejectedMember: {
       title: "The company request has not been approved.",
-      description: "Because the company request was rejected, member accounts cannot use the workspace.",
+      description:
+        "Because the company request was rejected, member accounts cannot use the workspace.",
       notice: "Ask the company admin to check the company approval status.",
     },
     subscriptionAdmin: {
       title: "Plan or service status needs review.",
-      description: "Workspace access is restricted because the free trial ended or the billing/subscription status needs review.",
-      notice: "Company admins can check the current status on the subscription screen and request service reactivation from the system admin.",
+      description:
+        "Workspace access is restricted because the free trial ended or the billing/subscription status needs review.",
+      notice:
+        "Company admins can check the current status on the subscription screen and request service reactivation from the system admin.",
     },
     subscriptionMember: {
       title: "Service access is paused.",
-      description: "Regular member workspace access is restricted because the free trial ended or the billing status needs review.",
-      notice: "Regular members cannot change plans. Ask the company admin to check the service status.",
+      description:
+        "Regular member workspace access is restricted because the free trial ended or the billing status needs review.",
+      notice:
+        "Regular members cannot change plans. Ask the company admin to check the service status.",
     },
     unknown: {
       title: "Access status needs review.",
-      description: "The company status for this account could not be determined clearly.",
-      notice: "If the same screen appears after signing in again, contact the company admin or system admin.",
+      description:
+        "The company status for this account could not be determined clearly.",
+      notice:
+        "If the same screen appears after signing in again, contact the company admin or system admin.",
     },
     labels: {
       company: "Company",
@@ -2048,16 +2200,19 @@ export const adminEn = {
       trialEndsAt: "Trial ends",
     },
     metricDescriptions: {
-      currentStatus: "Calculated from company subscription_status and trial_ends_at.",
+      currentStatus:
+        "Calculated from company subscription_status and trial_ends_at.",
       trialStartedAt: "The free-trial start timestamp set at approval.",
-      trialEndsAt: "Core workspace access is restricted after this time passes.",
+      trialEndsAt:
+        "Core workspace access is restricted after this time passes.",
     },
     unsetDateLabel: "Not set",
     planStatus: {
       active: "Available",
       preparing: "Preparing",
     },
-    planDescription: "Until payment integration is connected, the system admin handles plan changes and service reactivation.",
+    planDescription:
+      "Until payment integration is connected, the system admin handles plan changes and service reactivation.",
     storageLabel: "Storage",
     memberLabel: " members",
     freePriceLabel: "Free",
@@ -2068,5 +2223,4 @@ export const adminEn = {
       "The next step will block core API requests using the same trial-expiration status.",
     ],
   },
-
 } as const;

@@ -25,60 +25,168 @@ export const adminKo = {
   },
   permissions: {
     workorder: {
-      read: { label: "조회", description: "작업지시서 목록과 상세를 볼 수 있습니다." },
-      create: { label: "생성", description: "새 작업지시서를 등록할 수 있습니다." },
-      update: { label: "수정", description: "작업지시서의 기본 정보와 내용을 수정할 수 있습니다." },
-      delete: { label: "삭제 요청", description: "작업지시서를 휴지통으로 보내거나 삭제 요청할 수 있습니다." },
-      restore: { label: "복원", description: "삭제한 작업지시서를 복원할 수 있습니다." },
-      statusReview: { label: "검토 상태 변경", description: "작업지시서를 검토 단계로 넘길 수 있습니다." },
-      statusOrder: { label: "발주 상태 변경", description: "발주·생산 진행 상태를 변경할 수 있습니다." },
-      statusInspect: { label: "검수 상태 변경", description: "입고 검수와 불량 확인 상태를 변경할 수 있습니다." },
-      statusComplete: { label: "완료 처리", description: "작업지시서를 완료 상태로 변경할 수 있습니다." },
+      read: {
+        label: "조회",
+        description: "작업지시서 목록과 상세를 볼 수 있습니다.",
+      },
+      create: {
+        label: "생성",
+        description: "새 작업지시서를 등록할 수 있습니다.",
+      },
+      update: {
+        label: "수정",
+        description: "작업지시서의 기본 정보와 내용을 수정할 수 있습니다.",
+      },
+      delete: {
+        label: "삭제 요청",
+        description:
+          "작업지시서를 휴지통으로 보내거나 삭제 요청할 수 있습니다.",
+      },
+      restore: {
+        label: "복원",
+        description: "삭제한 작업지시서를 복원할 수 있습니다.",
+      },
+      statusReview: {
+        label: "검토 상태 변경",
+        description: "작업지시서를 검토 단계로 넘길 수 있습니다.",
+      },
+      statusOrder: {
+        label: "발주 상태 변경",
+        description: "발주·생산 진행 상태를 변경할 수 있습니다.",
+      },
+      statusInspect: {
+        label: "검수 상태 변경",
+        description: "입고 검수와 불량 확인 상태를 변경할 수 있습니다.",
+      },
+      statusComplete: {
+        label: "완료 처리",
+        description: "작업지시서를 완료 상태로 변경할 수 있습니다.",
+      },
     },
     partner: {
-      read: { label: "조회", description: "협력업체 목록과 상세를 볼 수 있습니다." },
-      create: { label: "등록", description: "새 협력업체를 등록할 수 있습니다." },
-      update: { label: "수정", description: "협력업체 기본 정보와 역할을 수정할 수 있습니다." },
-      delete: { label: "비활성/삭제", description: "협력업체를 비활성화하거나 삭제 요청할 수 있습니다." },
-      manage: { label: "기존 통합 관리", description: "이전 버전에서 사용하던 협력업체 통합 관리 권한입니다." },
+      read: {
+        label: "조회",
+        description: "협력업체 목록과 상세를 볼 수 있습니다.",
+      },
+      create: {
+        label: "등록",
+        description: "새 협력업체를 등록할 수 있습니다.",
+      },
+      update: {
+        label: "수정",
+        description: "협력업체 기본 정보와 역할을 수정할 수 있습니다.",
+      },
+      delete: {
+        label: "비활성/삭제",
+        description: "협력업체를 비활성화하거나 삭제 요청할 수 있습니다.",
+      },
+      manage: {
+        label: "기존 통합 관리",
+        description: "이전 버전에서 사용하던 협력업체 통합 관리 권한입니다.",
+      },
     },
     storage: {
-      read: { label: "조회", description: "저장소 파일과 사용량을 볼 수 있습니다." },
-      deleteRequest: { label: "삭제 요청", description: "파일과 휴지통 항목의 삭제를 요청할 수 있습니다." },
-      restore: { label: "복원", description: "휴지통 파일을 복원할 수 있습니다." },
+      read: {
+        label: "조회",
+        description: "저장소 파일과 사용량을 볼 수 있습니다.",
+      },
+      deleteRequest: {
+        label: "삭제 요청",
+        description: "파일과 휴지통 항목의 삭제를 요청할 수 있습니다.",
+      },
+      restore: {
+        label: "복원",
+        description: "휴지통 파일을 복원할 수 있습니다.",
+      },
     },
     stats: {
-      read: { label: "조회", description: "통계정보 화면과 운영 지표를 볼 수 있습니다." },
+      read: {
+        label: "조회",
+        description: "통계정보 화면과 운영 지표를 볼 수 있습니다.",
+      },
     },
     settings: {
-      read: { label: "조회", description: "환경설정과 회사 설정을 볼 수 있습니다." },
-      manage: { label: "수정", description: "환경설정과 회사 정책을 수정할 수 있습니다." },
+      read: {
+        label: "조회",
+        description: "환경설정과 회사 설정을 볼 수 있습니다.",
+      },
+      manage: {
+        label: "수정",
+        description: "환경설정과 회사 정책을 수정할 수 있습니다.",
+      },
     },
     standards: {
-      read: { label: "조회", description: "단위, 공정, 품목 기준정보를 볼 수 있습니다." },
-      create: { label: "등록", description: "새 기준정보 항목을 등록할 수 있습니다." },
-      update: { label: "수정", description: "기준정보 항목의 이름, 정렬, 사용 상태를 수정할 수 있습니다." },
-      delete: { label: "삭제/비활성", description: "기준정보 항목을 삭제하거나 비활성 처리할 수 있습니다." },
-      manage: { label: "기존 통합 관리", description: "이전 버전에서 사용하던 기준정보 통합 관리 권한입니다." },
+      read: {
+        label: "조회",
+        description: "단위, 공정, 품목 기준정보를 볼 수 있습니다.",
+      },
+      create: {
+        label: "등록",
+        description: "새 기준정보 항목을 등록할 수 있습니다.",
+      },
+      update: {
+        label: "수정",
+        description:
+          "기준정보 항목의 이름, 정렬, 사용 상태를 수정할 수 있습니다.",
+      },
+      delete: {
+        label: "삭제/비활성",
+        description: "기준정보 항목을 삭제하거나 비활성 처리할 수 있습니다.",
+      },
+      manage: {
+        label: "기존 통합 관리",
+        description: "이전 버전에서 사용하던 기준정보 통합 관리 권한입니다.",
+      },
     },
     member: {
-      read: { label: "조회", description: "멤버 목록과 승인 대기 목록을 볼 수 있습니다." },
-      invite: { label: "초대", description: "멤버 초대 링크를 생성할 수 있습니다." },
-      approve: { label: "승인", description: "가입 신청을 승인할 수 있습니다." },
+      read: {
+        label: "조회",
+        description: "멤버 목록과 승인 대기 목록을 볼 수 있습니다.",
+      },
+      invite: {
+        label: "초대",
+        description: "멤버 초대 링크를 생성할 수 있습니다.",
+      },
+      approve: {
+        label: "승인",
+        description: "가입 신청을 승인할 수 있습니다.",
+      },
       reject: { label: "거절", description: "가입 신청을 거절할 수 있습니다." },
-      permissionUpdate: { label: "권한 수정", description: "멤버의 역할과 세부 권한을 수정할 수 있습니다." },
-      suspend: { label: "상태 변경", description: "멤버를 비활성화하거나 다시 사용할 수 있게 변경할 수 있습니다." },
+      permissionUpdate: {
+        label: "권한 수정",
+        description: "멤버의 역할과 세부 권한을 수정할 수 있습니다.",
+      },
+      suspend: {
+        label: "상태 변경",
+        description:
+          "멤버를 비활성화하거나 다시 사용할 수 있게 변경할 수 있습니다.",
+      },
     },
     audit: {
-      readCompany: { label: "감사 로그 조회", description: "회사 단위 변경 이력을 볼 수 있습니다." },
+      readCompany: {
+        label: "감사 로그 조회",
+        description: "회사 단위 변경 이력을 볼 수 있습니다.",
+      },
     },
     personalSettings: {
-      manage: { label: "개인설정", description: "본인의 언어, 테마 등 개인 설정을 변경할 수 있습니다." },
+      manage: {
+        label: "개인설정",
+        description: "본인의 언어, 테마 등 개인 설정을 변경할 수 있습니다.",
+      },
     },
     system: {
-      standardManage: { label: "시스템 기준정보", description: "시스템 전용 기준정보를 관리할 수 있습니다." },
-      companyInvite: { label: "회사 초대", description: "시스템관리자 전용 회사 초대를 생성할 수 있습니다." },
-      companyApprove: { label: "회사 승인", description: "시스템관리자 전용 회사 가입 요청을 승인할 수 있습니다." },
+      standardManage: {
+        label: "시스템 기준정보",
+        description: "시스템 전용 기준정보를 관리할 수 있습니다.",
+      },
+      companyInvite: {
+        label: "회사 초대",
+        description: "시스템관리자 전용 회사 초대를 생성할 수 있습니다.",
+      },
+      companyApprove: {
+        label: "회사 승인",
+        description: "시스템관리자 전용 회사 가입 요청을 승인할 수 있습니다.",
+      },
     },
   },
   filesPage: {
@@ -279,12 +387,14 @@ export const adminKo = {
     managementCards: {
       eyebrow: "Workspace",
       title: "업무 바로가기",
-      description: "고객사 관리자가 자주 사용하는 화면을 A-TYPE 카드 구조로 정리했습니다.",
+      description:
+        "고객사 관리자가 자주 사용하는 화면을 A-TYPE 카드 구조로 정리했습니다.",
       cardCount: "{count}개 화면",
     },
     memberCards: {
       title: "멤버 관리",
-      description: "멤버 초대, 가입 승인, 역할 권한 관리는 별도 카드에서 처리합니다.",
+      description:
+        "멤버 초대, 가입 승인, 역할 권한 관리는 별도 카드에서 처리합니다.",
     },
     futurePermissions: {
       title: "기준정보",
@@ -344,12 +454,15 @@ export const adminKo = {
     },
     detailModal: {
       title: "멤버 권한 관리",
-      description: "멤버 로우를 클릭해 작업지시서, 협력업체, 기준정보, 발주 권한을 관리합니다.",
+      description:
+        "멤버 로우를 클릭해 작업지시서, 협력업체, 기준정보, 발주 권한을 관리합니다.",
       permissionGroupCount: "권한 {count}개",
       permissionGroupSelectedCount: "{selected}/{total}개 선택",
       selectedPermissionCount: "{count}개 선택",
-      roleTemplateHelper: "역할은 시작값입니다. 실제 업무 권한은 아래 4개 항목으로 단순하게 조정합니다.",
-      policyNotice: "개인설정은 별도 권한 없이 모든 로그인 사용자가 접근할 수 있습니다.",
+      roleTemplateHelper:
+        "역할은 시작값입니다. 실제 업무 권한은 아래 4개 항목으로 단순하게 조정합니다.",
+      policyNotice:
+        "개인설정은 별도 권한 없이 모든 로그인 사용자가 접근할 수 있습니다.",
       summary: {
         title: "선택 멤버",
         role: "역할",
@@ -357,9 +470,11 @@ export const adminKo = {
       },
       sections: {
         profile: "기본 정보",
-        profileDescription: "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
+        profileDescription:
+          "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
         permissions: "업무 권한",
-        permissionsDescription: "체크 해제 시 조회만 가능하고, 체크 시 해당 업무의 작성과 관리 작업을 허용합니다. 통계는 기본 조회 권한으로 제공합니다.",
+        permissionsDescription:
+          "체크 해제 시 조회만 가능하고, 체크 시 해당 업무의 작성과 관리 작업을 허용합니다. 통계는 기본 조회 권한으로 제공합니다.",
       },
       fields: {
         name: "이름",
@@ -370,19 +485,23 @@ export const adminKo = {
       simplePermissions: {
         workorderManage: {
           label: "작업지시서 관리",
-          description: "해제하면 본인 담당 작업지시서 조회만 가능하고, 선택하면 생성·수정·삭제·검토요청이 가능합니다.",
+          description:
+            "해제하면 본인 담당 작업지시서 조회만 가능하고, 선택하면 생성·수정·삭제·검토요청이 가능합니다.",
         },
         partnerManage: {
           label: "협력업체 관리",
-          description: "해제하면 협력업체 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
+          description:
+            "해제하면 협력업체 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
         },
         standardsManage: {
           label: "기준정보 관리",
-          description: "해제하면 기준정보 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
+          description:
+            "해제하면 기준정보 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
         },
         workorderOrderDirect: {
           label: "발주 권한",
-          description: "선택하면 관리자급으로 검토 없이 바로 발주 요청까지 진행할 수 있습니다.",
+          description:
+            "선택하면 관리자급으로 검토 없이 바로 발주 요청까지 진행할 수 있습니다.",
         },
       },
       actions: {
@@ -394,7 +513,8 @@ export const adminKo = {
       },
       errors: {
         permissionRequired: "권한은 최소 1개 이상 선택해야 합니다.",
-        selfPermissionBlocked: "본인의 권한 수정 권한은 직접 제거할 수 없습니다.",
+        selfPermissionBlocked:
+          "본인의 권한 수정 권한은 직접 제거할 수 없습니다.",
         selfStatusBlocked: "본인의 사용 상태는 직접 변경할 수 없습니다.",
         lastAdminBlocked: "마지막 관리자 권한은 제거할 수 없습니다.",
         updateFailed: "멤버 정보를 저장하지 못했습니다.",
@@ -441,7 +561,8 @@ export const adminKo = {
       sendPolicy: {
         email: "초대 링크를 이메일로 발송합니다.",
         phone: "초대 링크를 문자/SMS로 발송합니다.",
-        linkOnly: "초대 링크를 생성해 복사할 수 있게 준비합니다. 실제 이메일/SMS 발송은 추후 기능에서 연결합니다.",
+        linkOnly:
+          "초대 링크를 생성해 복사할 수 있게 준비합니다. 실제 이메일/SMS 발송은 추후 기능에서 연결합니다.",
       },
       actions: {
         copy: "링크 복사",
@@ -458,8 +579,10 @@ export const adminKo = {
         load: "초대 링크 목록을 불러오지 못했습니다.",
         create: "초대 링크를 생성하지 못했습니다.",
         revoke: "초대 링크를 취소하지 못했습니다.",
-        route: "멤버 초대 링크를 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.",
-        policy: "멤버 초대 조건을 확인할 수 없습니다. 회사 관리자 권한으로 다시 시도해 주세요.",
+        route:
+          "멤버 초대 링크를 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        policy:
+          "멤버 초대 조건을 확인할 수 없습니다. 회사 관리자 권한으로 다시 시도해 주세요.",
         notFound: "해당 초대 링크를 찾을 수 없습니다.",
       },
     },
@@ -538,7 +661,11 @@ export const adminKo = {
     },
     joinRequestStatuses: { pending: "승인 대기" },
     invitationMethods: { email: "이메일", phone: "문자" },
-    memberStatuses: { approved: "재직중", pending: "승인 대기", suspended: "비활성" },
+    memberStatuses: {
+      approved: "재직중",
+      pending: "승인 대기",
+      suspended: "비활성",
+    },
     invitationStatuses: {
       draft: "초안",
       active: "활성",
@@ -787,15 +914,18 @@ export const adminKo = {
       },
       partners: {
         label: "협력업체",
-        description: "업무홈 협력업체 카드 노출과 조회/등록/수정/비활성 권한입니다.",
+        description:
+          "업무홈 협력업체 카드 노출과 조회/등록/수정/비활성 권한입니다.",
       },
       workflow: {
         label: "작업흐름",
-        description: "검토, 발주, 검수, 완료 같은 작업지시서 상태 전환 권한입니다.",
+        description:
+          "검토, 발주, 검수, 완료 같은 작업지시서 상태 전환 권한입니다.",
       },
       standards: {
         label: "기준정보",
-        description: "업무홈 기준정보 카드 노출과 기준정보 조회/등록/수정/비활성 권한입니다.",
+        description:
+          "업무홈 기준정보 카드 노출과 기준정보 조회/등록/수정/비활성 권한입니다.",
       },
       storage: {
         label: "저장소 관리",
@@ -1181,6 +1311,14 @@ export const adminKo = {
     factoryTooltipQuality: "검수/불량 후보 {count} / {target} 기준",
     factoryTooltipQualityExamples: "검수/불량 후보: {items}",
     factoryTooltipQualityNone: "검수/불량 후보: 없음",
+    statsOverviewEyebrow: "Current overview",
+    statsOverviewTitle: "운영 누적 지표",
+    statsOverviewDescription:
+      "현재 회사 기준의 누적 생산, 납기, 검수, 저장소 사용량을 먼저 확인합니다.",
+    statsAnalysisEyebrow: "Analysis",
+    statsAnalysisDescription:
+      "생산 구성, 업체 성과, 기간별 흐름을 탭으로 전환해 확인합니다.",
+    selectedPeriodBadgeLabel: "선택 기간",
     currentProducedLabel: "누적 생산",
     currentReorderDescription: "리오더 {count}",
     currentDelayRateLabel: "누적 납기 지연율",
@@ -1254,16 +1392,20 @@ export const adminKo = {
     },
     accountRequest: {
       open: "요청 작성",
-      description: "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.",
-      placeholder: "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.",
-      validation: "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.",
+      description:
+        "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.",
+      placeholder:
+        "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.",
+      validation:
+        "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.",
       submit: "요청 접수",
       submitted: "요청이 접수되었습니다. 시스템관리자 검토 후 처리됩니다.",
       failed: "요청을 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.",
     },
     billing: {
       emptyTitle: "요금제 정보를 불러오지 못했습니다.",
-      emptyDescription: "현재 로그인 회사 기준의 설정 데이터가 없거나 조회 권한이 없습니다.",
+      emptyDescription:
+        "현재 로그인 회사 기준의 설정 데이터가 없거나 조회 권한이 없습니다.",
     },
   },
   settingsForm: {
@@ -1778,29 +1920,39 @@ export const adminKo = {
   companyOnboarding: {
     eyebrow: "고객사 등록",
     title: "회사 정보를 입력해주세요",
-    description: "고객사 관리자 계정의 첫 사용을 위해 회사 정보와 관리자 연락처를 입력합니다. 입력을 완료하기 전에는 관리자 화면을 사용할 수 없습니다.",
+    description:
+      "고객사 관리자 계정의 첫 사용을 위해 회사 정보와 관리자 연락처를 입력합니다. 입력을 완료하기 전에는 관리자 화면을 사용할 수 없습니다.",
     logout: "로그아웃",
     requiredNoticeTitle: "필수 정보 입력이 필요합니다.",
-    requiredNoticeDescription: "회사명, 사업자명, 주소, 관리자 이름과 연락처를 저장하면 시스템관리자 승인 대기 상태로 전환됩니다.",
-    saved: "회사 정보를 저장했습니다. 시스템관리자 승인 후 정상 이용할 수 있습니다.",
+    requiredNoticeDescription:
+      "회사명, 사업자명, 주소, 관리자 이름과 연락처를 저장하면 시스템관리자 승인 대기 상태로 전환됩니다.",
+    saved:
+      "회사 정보를 저장했습니다. 시스템관리자 승인 후 정상 이용할 수 있습니다.",
     saving: "저장 중",
     submit: "회사 정보 저장 및 승인 요청",
-    addressApiNote: "주소 검색 결과를 선택해도 상세주소는 직접 입력해야 합니다. 검색이 되지 않으면 우편번호와 주소를 수동 입력할 수 있습니다.",
+    addressApiNote:
+      "주소 검색 결과를 선택해도 상세주소는 직접 입력해야 합니다. 검색이 되지 않으면 우편번호와 주소를 수동 입력할 수 있습니다.",
     addressSearch: {
       label: "도로명주소 검색",
       placeholder: "도로명, 건물명, 지번을 입력하세요",
-      description: "공식 도로명주소 검색 API를 통해 우편번호, 도로명주소, 지번주소를 가져옵니다.",
+      description:
+        "공식 도로명주소 검색 API를 통해 우편번호, 도로명주소, 지번주소를 가져옵니다.",
       button: "주소 검색",
       loading: "검색 중",
       empty: "검색 결과가 없습니다. 검색어를 바꾸거나 직접 입력해 주세요.",
       postalCodeLabel: "우편번호",
       errors: {
         keywordRequired: "검색어를 입력해 주세요.",
-        notConfigured: "도로명주소 API 승인키가 설정되지 않았습니다. 수동 입력을 사용해 주세요.",
-        failed: "주소 검색에 실패했습니다. 잠시 후 다시 시도하거나 수동 입력해 주세요.",
-        providerRejected: "도로명주소 승인키 또는 등록 URL을 확인할 수 없습니다. 수동 입력을 사용해 주세요.",
-        upstreamFailed: "도로명주소 검색 서버와 연결하지 못했습니다. 잠시 후 다시 시도하거나 수동 입력해 주세요.",
-        responseInvalid: "도로명주소 검색 응답을 확인할 수 없습니다. 수동 입력을 사용해 주세요.",
+        notConfigured:
+          "도로명주소 API 승인키가 설정되지 않았습니다. 수동 입력을 사용해 주세요.",
+        failed:
+          "주소 검색에 실패했습니다. 잠시 후 다시 시도하거나 수동 입력해 주세요.",
+        providerRejected:
+          "도로명주소 승인키 또는 등록 URL을 확인할 수 없습니다. 수동 입력을 사용해 주세요.",
+        upstreamFailed:
+          "도로명주소 검색 서버와 연결하지 못했습니다. 잠시 후 다시 시도하거나 수동 입력해 주세요.",
+        responseInvalid:
+          "도로명주소 검색 응답을 확인할 수 없습니다. 수동 입력을 사용해 주세요.",
       },
     },
     sections: {
@@ -1842,7 +1994,8 @@ export const adminKo = {
       pro: "Pro",
       trial: "무료(Trial) 7일",
     },
-    planReadOnlyDescription: "최초 고객사 등록 시 기본 체험 요금제가 자동 적용됩니다. 실제 요금제 변경은 승인 후 환경설정에서 요청합니다.",
+    planReadOnlyDescription:
+      "최초 고객사 등록 시 기본 체험 요금제가 자동 적용됩니다. 실제 요금제 변경은 승인 후 환경설정에서 요청합니다.",
     fileUploads: {
       select: "파일 선택",
       replace: "교체",
@@ -1856,26 +2009,31 @@ export const adminKo = {
       note: "회사 로고와 사업자등록증은 선택 항목입니다. 선택한 파일은 승인 요청을 누를 때 회사 정보와 함께 R2에 업로드됩니다.",
       logo: {
         label: "회사 로고",
-        description: "JPG, PNG, WEBP 파일을 업로드할 수 있습니다. 최대 5MB까지 허용됩니다.",
+        description:
+          "JPG, PNG, WEBP 파일을 업로드할 수 있습니다. 최대 5MB까지 허용됩니다.",
         empty: "업로드된 회사 로고가 없습니다.",
       },
       businessLicense: {
         label: "사업자등록증",
-        description: "JPG, PNG, WEBP, PDF 파일을 업로드할 수 있습니다. 최대 10MB까지 허용됩니다.",
+        description:
+          "JPG, PNG, WEBP, PDF 파일을 업로드할 수 있습니다. 최대 10MB까지 허용됩니다.",
         empty: "업로드된 사업자등록증이 없습니다.",
       },
     },
     loading: {
       title: "회사 정보 상태를 확인하고 있습니다.",
-      description: "필수 회사 정보 입력 여부를 확인하는 동안 관리자 화면 사용을 잠시 막습니다.",
+      description:
+        "필수 회사 정보 입력 여부를 확인하는 동안 관리자 화면 사용을 잠시 막습니다.",
     },
     pending: {
       title: "승인 대기 중입니다.",
-      description: "회사 정보 입력이 완료되었습니다. 시스템관리자가 고객사 정보를 확인하고 승인하면 관리자 화면을 사용할 수 있습니다.",
+      description:
+        "회사 정보 입력이 완료되었습니다. 시스템관리자가 고객사 정보를 확인하고 승인하면 관리자 화면을 사용할 수 있습니다.",
     },
     trialExpired: {
       title: "무료 체험 기간이 종료되었습니다.",
-      description: "서비스를 계속 이용하려면 요금제를 선택하거나 시스템관리자에게 이용 연장을 요청해야 합니다. 일반 멤버는 고객사 관리자에게 문의해야 합니다.",
+      description:
+        "서비스를 계속 이용하려면 요금제를 선택하거나 시스템관리자에게 이용 연장을 요청해야 합니다. 일반 멤버는 고객사 관리자에게 문의해야 합니다.",
       action: "요금제 확인하기",
     },
     errors: {
@@ -1897,53 +2055,71 @@ export const adminKo = {
     eyebrow: "WAFL ACCESS",
     sessionRequired: {
       title: "로그인이 필요합니다.",
-      description: "업무 화면을 사용하려면 초대 링크 또는 등록된 계정으로 다시 로그인해야 합니다.",
-      notice: "초대 링크 없이 새 Google 계정으로 직접 접근한 경우 가입을 진행할 수 없습니다. 고객사 관리자 또는 시스템관리자에게 초대 링크를 요청해 주세요.",
+      description:
+        "업무 화면을 사용하려면 초대 링크 또는 등록된 계정으로 다시 로그인해야 합니다.",
+      notice:
+        "초대 링크 없이 새 Google 계정으로 직접 접근한 경우 가입을 진행할 수 없습니다. 고객사 관리자 또는 시스템관리자에게 초대 링크를 요청해 주세요.",
     },
     profileRequiredAdmin: {
       title: "회사 정보 입력이 필요합니다.",
-      description: "고객사 관리자 계정은 회사 정보와 필수 첨부파일을 제출한 뒤 승인 요청을 진행해야 합니다.",
-      notice: "회사 정보는 승인 요청 버튼을 누르기 전까지 DB/R2에 최종 저장되지 않습니다. 입력 화면으로 돌아가 필수 정보를 제출해 주세요.",
+      description:
+        "고객사 관리자 계정은 회사 정보와 필수 첨부파일을 제출한 뒤 승인 요청을 진행해야 합니다.",
+      notice:
+        "회사 정보는 승인 요청 버튼을 누르기 전까지 DB/R2에 최종 저장되지 않습니다. 입력 화면으로 돌아가 필수 정보를 제출해 주세요.",
     },
     profileRequiredMember: {
       title: "아직 사용할 수 없는 계정입니다.",
-      description: "일반 멤버 계정에서는 회사 정보 입력이나 승인 요청을 처리할 수 없습니다.",
-      notice: "고객사 관리자에게 회사 승인 상태와 멤버 승인 상태를 확인해 달라고 요청해 주세요.",
+      description:
+        "일반 멤버 계정에서는 회사 정보 입력이나 승인 요청을 처리할 수 없습니다.",
+      notice:
+        "고객사 관리자에게 회사 승인 상태와 멤버 승인 상태를 확인해 달라고 요청해 주세요.",
     },
     approvalPendingAdmin: {
       title: "가입 승인 대기 중입니다.",
-      description: "회사 정보 제출이 완료되었고 시스템관리자 검토를 기다리는 상태입니다.",
-      notice: "승인 전에는 작업지시서, 저장소, 멤버관리 등 주요 업무 화면을 사용할 수 없습니다.",
+      description:
+        "회사 정보 제출이 완료되었고 시스템관리자 검토를 기다리는 상태입니다.",
+      notice:
+        "승인 전에는 작업지시서, 저장소, 멤버관리 등 주요 업무 화면을 사용할 수 없습니다.",
     },
     approvalPendingMember: {
       title: "회사 또는 멤버 승인을 기다리고 있습니다.",
-      description: "승인 대기 상태에서는 일반 멤버가 업무 화면을 사용할 수 없습니다.",
-      notice: "고객사 관리자에게 승인 상태를 확인해 주세요. 승인 완료 후 다시 로그인하면 업무 화면으로 이동합니다.",
+      description:
+        "승인 대기 상태에서는 일반 멤버가 업무 화면을 사용할 수 없습니다.",
+      notice:
+        "고객사 관리자에게 승인 상태를 확인해 주세요. 승인 완료 후 다시 로그인하면 업무 화면으로 이동합니다.",
     },
     rejectedAdmin: {
       title: "가입 신청이 거절되었습니다.",
-      description: "시스템관리자가 회사 가입 신청을 거절했거나 재입력을 요청한 상태입니다.",
-      notice: "거절 사유를 확인한 뒤 시스템관리자의 재입력 요청이 필요합니다. 현재 화면에서는 업무 기능을 사용할 수 없습니다.",
+      description:
+        "시스템관리자가 회사 가입 신청을 거절했거나 재입력을 요청한 상태입니다.",
+      notice:
+        "거절 사유를 확인한 뒤 시스템관리자의 재입력 요청이 필요합니다. 현재 화면에서는 업무 기능을 사용할 수 없습니다.",
     },
     rejectedMember: {
       title: "회사 가입 신청이 승인되지 않았습니다.",
-      description: "소속 회사의 가입 신청이 거절되어 멤버 계정도 업무 화면을 사용할 수 없습니다.",
+      description:
+        "소속 회사의 가입 신청이 거절되어 멤버 계정도 업무 화면을 사용할 수 없습니다.",
       notice: "고객사 관리자에게 회사 승인 상태를 확인해 주세요.",
     },
     subscriptionAdmin: {
       title: "요금제 또는 서비스 상태 확인이 필요합니다.",
-      description: "무료체험이 종료되었거나 결제/구독 상태 문제로 주요 업무 화면 접근이 제한되었습니다.",
-      notice: "고객사 관리자는 요금제 화면에서 현재 상태를 확인하고 시스템관리자에게 서비스 재개를 요청할 수 있습니다.",
+      description:
+        "무료체험이 종료되었거나 결제/구독 상태 문제로 주요 업무 화면 접근이 제한되었습니다.",
+      notice:
+        "고객사 관리자는 요금제 화면에서 현재 상태를 확인하고 시스템관리자에게 서비스 재개를 요청할 수 있습니다.",
     },
     subscriptionMember: {
       title: "서비스 이용 대기 중입니다.",
-      description: "무료체험 만료 또는 결제 상태 문제로 일반 멤버의 업무 화면 접근이 제한되었습니다.",
-      notice: "일반 멤버는 요금제 변경을 처리할 수 없습니다. 고객사 관리자에게 서비스 상태 확인을 요청해 주세요.",
+      description:
+        "무료체험 만료 또는 결제 상태 문제로 일반 멤버의 업무 화면 접근이 제한되었습니다.",
+      notice:
+        "일반 멤버는 요금제 변경을 처리할 수 없습니다. 고객사 관리자에게 서비스 상태 확인을 요청해 주세요.",
     },
     unknown: {
       title: "접근 상태 확인이 필요합니다.",
       description: "현재 계정의 회사 상태를 명확히 확인하지 못했습니다.",
-      notice: "다시 로그인해도 같은 화면이 나오면 고객사 관리자 또는 시스템관리자에게 문의해 주세요.",
+      notice:
+        "다시 로그인해도 같은 화면이 나오면 고객사 관리자 또는 시스템관리자에게 문의해 주세요.",
     },
     labels: {
       company: "회사",
@@ -1993,7 +2169,8 @@ export const adminKo = {
       trialEndsAt: "체험 종료",
     },
     metricDescriptions: {
-      currentStatus: "회사 subscription_status와 trial_ends_at 기준으로 계산합니다.",
+      currentStatus:
+        "회사 subscription_status와 trial_ends_at 기준으로 계산합니다.",
       trialStartedAt: "승인 시점에 시작된 무료체험 기준입니다.",
       trialEndsAt: "종료 시각이 지났으면 주요 업무 화면 접근을 제한합니다.",
     },
@@ -2002,7 +2179,8 @@ export const adminKo = {
       active: "사용 가능",
       preparing: "준비중",
     },
-    planDescription: "정식 결제 연동 전까지는 시스템관리자가 요금제 변경과 이용 재개를 처리합니다.",
+    planDescription:
+      "정식 결제 연동 전까지는 시스템관리자가 요금제 변경과 이용 재개를 처리합니다.",
     storageLabel: "저장공간",
     memberLabel: "명",
     freePriceLabel: "무료",
@@ -2013,5 +2191,4 @@ export const adminKo = {
       "다음 단계에서 주요 API 요청도 trial 만료 상태를 기준으로 차단합니다.",
     ],
   },
-
 } as const;

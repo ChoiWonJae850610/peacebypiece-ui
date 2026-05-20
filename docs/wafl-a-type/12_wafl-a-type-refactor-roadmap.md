@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.9
+baseline_source: peacebypiece-ui-0.15.10
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.9
+현재 기준: 0.15.10
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -28,6 +28,7 @@ updated: 2026-05-20
 - 고객사 관리자 멤버관리/환경설정 A-TYPE 1차
 - 시스템관리자 주요 화면 A-TYPE 1차
 - 시스템관리자 확장 화면 A-TYPE 1차
+- 고객사 관리자 통계정보 A-TYPE 1차
 ```
 
 ## 2. 전환 원칙
@@ -203,9 +204,8 @@ WorkOrderWorkspace 구조 / R2 / 첨부·메모 / storage purge / permission/ses
 ## 7. 다음 권장 작업
 
 ```txt
-0.15.9 — 시스템관리자 주요 화면 A-TYPE 2차 또는 /admin/stats A-TYPE 정리
+0.15.10 — 고객사 관리자 통계정보 A-TYPE 구조 정리
 ```
-
 
 ### 0.15.5 — 고객사 관리자 홈 A-TYPE 적용 1차
 
@@ -213,7 +213,6 @@ WorkOrderWorkspace 구조 / R2 / 첨부·메모 / storage purge / permission/ses
 운영 대시보드와 업무 바로가기 카드 구조를 A-TYPE 기준으로 정리한다.
 DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 ```
-
 
 ### 0.15.6 — 고객사 관리자 주요 화면 A-TYPE 2차
 
@@ -234,14 +233,12 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - 기능 로직 변경 없이 화면 구조와 공통 컴포넌트 기준 정리
 ```
 
-
 ## 0.15.7 업데이트
 
 ```txt
 28_wafl-a-type-customer-admin-data-screens.md
 - 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
 ```
-
 
 ### 0.15.8 — 시스템관리자 주요 화면 A-TYPE 1차
 
@@ -253,7 +250,6 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - 기능/API/R2/권한/세션 흐름은 변경하지 않는다.
 - 29번 시스템관리자 화면 적용 기준 문서 추가
 ```
-
 
 ### 0.15.9 — 시스템관리자 주요 화면 A-TYPE 2차
 
@@ -275,4 +271,11 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - /system/standards/processes
 - /system/standards/units
 - /system/standards/product-templates
+```
+
+### 0.15.10 — 고객사 관리자 통계정보 A-TYPE 1차
+
+```txt
+/admin/stats의 누적 운영 지표와 작업흐름분석을 AdminSection 구조로 분리한다.
+통계 계산, 기간 필터, Recharts 렌더링, DB query는 변경하지 않는다.
 ```

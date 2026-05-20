@@ -14,6 +14,7 @@ import {
 } from "@/components/admin/common/AdminDateRangePicker";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import { AdminSection } from "@/components/admin/common/AdminSection";
 import {
   ADMIN_STATS_ACCENT_BAR_CLASS,
   ADMIN_STATS_ACCENT_TEXT_CLASS,
@@ -231,6 +232,18 @@ export default function AdminStatsDashboard({
       pageText.customDateRangeCalendarAria,
     ),
   };
+  const statsOverviewEyebrow = pt("statsOverviewEyebrow", "Current overview");
+  const statsOverviewTitle = pt("statsOverviewTitle", "운영 누적 지표");
+  const statsOverviewDescription = pt(
+    "statsOverviewDescription",
+    "현재 회사 기준의 누적 생산, 납기, 검수, 저장소 사용량을 먼저 확인합니다.",
+  );
+  const statsAnalysisEyebrow = pt("statsAnalysisEyebrow", "Analysis");
+  const statsAnalysisDescription = pt(
+    "statsAnalysisDescription",
+    "생산 구성, 업체 성과, 기간별 흐름을 탭으로 전환해 확인합니다.",
+  );
+  const selectedPeriodBadgeLabel = pt("selectedPeriodBadgeLabel", "선택 기간");
   const updateCustomStartDate = (value: string) => {
     if (!value) {
       setCustomStartDate("");
@@ -370,7 +383,10 @@ export default function AdminStatsDashboard({
         ) / 10
       : 0;
   const zeroPercentLabel = "0%";
-  const workorderSuffix = pt("workorderCountSuffix", pageText.workorderCountSuffix);
+  const workorderSuffix = pt(
+    "workorderCountSuffix",
+    pageText.workorderCountSuffix,
+  );
   const formatCurrentRateBasis = (count: number, target: number) => {
     const normalizedTarget = Math.max(0, Math.round(target));
     if (normalizedTarget <= 0) {
@@ -379,7 +395,10 @@ export default function AdminStatsDashboard({
 
     return pt("currentRateBasis", pageText.currentRateBasis)
       .replace("{count}", formatAdminStatsCount(count, workorderSuffix))
-      .replace("{target}", formatAdminStatsCount(normalizedTarget, workorderSuffix));
+      .replace(
+        "{target}",
+        formatAdminStatsCount(normalizedTarget, workorderSuffix),
+      );
   };
   const currentSummaryCards = [
     {
@@ -659,242 +678,273 @@ export default function AdminStatsDashboard({
   );
 
   return (
-    <>
-      <AdminSummaryMetricCards cards={currentSummaryCards} />
-
-      <section
-        className={`${ADMIN_STATS_PANEL_CLASS} overflow-hidden px-2 py-2 sm:px-2.5 sm:py-2.5`}
+    <div className="grid gap-4">
+      <AdminSection
+        eyebrow={statsOverviewEyebrow}
+        title={statsOverviewTitle}
+        description={statsOverviewDescription}
+        bodyClassName="mt-4"
       >
-        <div className="flex flex-wrap items-center justify-start border-b border-[var(--pbp-border)] pb-1.5 sm:justify-end">
-          <AdminSegmentedTabs
-            items={statsSectionTabs.map((item) => ({
-              id: item.key,
-              label: item.label,
-              title: item.description,
-            }))}
-            activeId={activeStatsSection}
-            onChange={changeStatsSection}
-          />
-        </div>
+        <AdminSummaryMetricCards cards={currentSummaryCards} />
+      </AdminSection>
 
-        <div className="mt-2 min-h-[284px] overflow-hidden">
-          <div
-            key={activeStatsSection}
-            className={`transform-gpu transition-[opacity,transform] duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none ${isStatsSectionAnimating ? (statsSectionDirection >= 0 ? "translate-x-3 opacity-0" : "-translate-x-3 opacity-0") : "translate-x-0 opacity-100"}`}
-          >
-            {activeStatsSection === "production" ? (
-              <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
-                <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
-                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
-                    <div>
-                      <p
-                        className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
-                      >
-                        {pt(
-                          "productionMixEyebrow",
-                          pageText.productionMixEyebrow,
-                        )}
-                      </p>
-                      <h2
-                        className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
-                      >
-                        {pt("productionMixTitle", pageText.productionMixTitle)}
-                      </h2>
-                    </div>
-                    <div className="flex w-full overflow-x-auto rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1 sm:w-auto">
-                      {(["first", "second"] as const).map((key) => (
-                        <AdminButton
-                          key={key}
-                          type="button"
-                          onClick={() => {
-                            setCategoryDepth(key);
-                            setSelectedCategoryLabel(null);
-                          }}
-                          variant={
-                            categoryDepth === key ? "secondary" : "ghost"
-                          }
-                          size="sm"
-                          className="min-h-7 shrink-0 px-3 py-1 text-xs"
+      <AdminSection
+        eyebrow={statsAnalysisEyebrow}
+        title={pt("workflowAnalysisTitle", pageText.workflowAnalysisTitle)}
+        description={statsAnalysisDescription}
+        actions={
+          <AdminStatusBadge tone="neutral">
+            {selectedPeriodBadgeLabel}: {activePeriodLabel}
+          </AdminStatusBadge>
+        }
+        bodyClassName="mt-4"
+      >
+        <div
+          className={`${ADMIN_STATS_PANEL_CLASS} overflow-hidden px-2 py-2 sm:px-2.5 sm:py-2.5`}
+        >
+          <div className="flex flex-wrap items-center justify-start border-b border-[var(--pbp-border)] pb-1.5 sm:justify-end">
+            <AdminSegmentedTabs
+              items={statsSectionTabs.map((item) => ({
+                id: item.key,
+                label: item.label,
+                title: item.description,
+              }))}
+              activeId={activeStatsSection}
+              onChange={changeStatsSection}
+            />
+          </div>
+
+          <div className="mt-2 min-h-[284px] overflow-hidden">
+            <div
+              key={activeStatsSection}
+              className={`transform-gpu transition-[opacity,transform] duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none ${isStatsSectionAnimating ? (statsSectionDirection >= 0 ? "translate-x-3 opacity-0" : "-translate-x-3 opacity-0") : "translate-x-0 opacity-100"}`}
+            >
+              {activeStatsSection === "production" ? (
+                <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
+                  <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
+                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+                      <div>
+                        <p
+                          className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
                         >
-                          {categoryDepthLabels[key]}
-                        </AdminButton>
-                      ))}
+                          {pt(
+                            "productionMixEyebrow",
+                            pageText.productionMixEyebrow,
+                          )}
+                        </p>
+                        <h2
+                          className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
+                        >
+                          {pt(
+                            "productionMixTitle",
+                            pageText.productionMixTitle,
+                          )}
+                        </h2>
+                      </div>
+                      <div className="flex w-full overflow-x-auto rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1 sm:w-auto">
+                        {(["first", "second"] as const).map((key) => (
+                          <AdminButton
+                            key={key}
+                            type="button"
+                            onClick={() => {
+                              setCategoryDepth(key);
+                              setSelectedCategoryLabel(null);
+                            }}
+                            variant={
+                              categoryDepth === key ? "secondary" : "ghost"
+                            }
+                            size="sm"
+                            className="min-h-7 shrink-0 px-3 py-1 text-xs"
+                          >
+                            {categoryDepthLabels[key]}
+                          </AdminButton>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-1.5 min-w-0 flex-1">
-                    <AdminBasicDonutChart
-                      points={selectedCategoryDepthBars}
-                      totalLabel={pt(
-                        "workorderCountSuffix",
-                        pageText.workorderCountSuffix,
-                      )}
-                      valueSuffix={pt(
-                        "workorderCountSuffix",
-                        pageText.workorderCountSuffix,
-                      )}
-                      emptyLabel={pt(
-                        "productionMixEmpty",
-                        pageText.productionMixEmpty,
-                      )}
-                      compact
-                      selectedLabel={normalizedSelectedCategoryLabel}
-                      onSelectPoint={setSelectedCategoryLabel}
-                    />
-                  </div>
-                  <p
-                    className={`mt-1 text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-                  >
-                    {selectedCategoryDepthLabel} ·{" "}
-                    {formatAdminStatsCount(
-                      selectedCategoryDepthTotal,
-                      pt("workorderCountSuffix", pageText.workorderCountSuffix),
-                    )}
-                  </p>
-                  {normalizedSelectedCategoryLabel ? (
-                    <p
-                      className={`mt-0.5 text-[11px] font-semibold ${ADMIN_STATS_ACCENT_TEXT_CLASS}`}
-                    >
-                      {pt("selectedItemLabel", pageText.selectedItemLabel)}:{" "}
-                      {normalizedSelectedCategoryLabel}
-                    </p>
-                  ) : null}
-                </AdminCard>
-
-                {renderBarList(
-                  categoryDetailTitle,
-                  categoryDetailPoints,
-                  categoryDetailEmptyLabel,
-                )}
-              </div>
-            ) : null}
-
-            {activeStatsSection === "factory" ? (
-              <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
-                {renderBarList(
-                  pt(
-                    "factoryPerformanceTitle",
-                    pageText.factoryPerformanceTitle,
-                  ),
-                  viewModel.factoryProductionBars,
-                  pt(
-                    "factoryPerformanceEmpty",
-                    pageText.factoryPerformanceEmpty,
-                  ),
-                )}
-                <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
-                  <p
-                    className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
-                  >
-                    {pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}
-                  </p>
-                  <h2
-                    className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
-                  >
-                    {pt("delayQualityTitle", pageText.delayQualityTitle)}
-                  </h2>
-                  <AdminTable
-                    items={translatedStats.factoryPerformance.slice(0, 5)}
-                    columns={factoryPerformanceColumns}
-                    getRowKey={(item) => item.label}
-                    emptyLabel={pt(
-                      "factoryPerformanceEmpty",
-                      pageText.factoryPerformanceEmpty,
-                    )}
-                    className="mt-3 min-h-[218px] rounded-2xl border-[var(--pbp-border)]"
-                    gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
-                    rowBaseClassName="grid w-full min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
-                    headerClassName="hidden min-w-[420px] gap-3 bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)] md:grid md:min-w-0"
-                  />
-                </AdminCard>
-              </div>
-            ) : null}
-
-            {activeStatsSection === "period" ? (
-              <div>
-                <div
-                  className={`${ADMIN_STATS_PANEL_TIGHT_CLASS} flex flex-col items-stretch gap-2 px-2.5 py-2 sm:px-3 lg:flex-row lg:items-center lg:justify-between`}
-                >
-                  <div>
-                    <h3
-                      className={`text-sm font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
-                    >
-                      {pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}
-                    </h3>
-                  </div>
-                  <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
-                    <div className="w-full min-w-0 flex-1 sm:w-auto sm:min-w-[280px] sm:max-w-[440px] sm:flex-none">
-                      <AdminDateRangePicker
-                        startDate={customStartDate}
-                        endDate={customEndDate}
-                        maxDateValue={todayDateValue}
-                        labels={dateRangeLabels}
-                        locale={locale}
-                        onStartDateChange={updateCustomStartDate}
-                        onEndDateChange={updateCustomEndDate}
+                    <div className="mt-1.5 min-w-0 flex-1">
+                      <AdminBasicDonutChart
+                        points={selectedCategoryDepthBars}
+                        totalLabel={pt(
+                          "workorderCountSuffix",
+                          pageText.workorderCountSuffix,
+                        )}
+                        valueSuffix={pt(
+                          "workorderCountSuffix",
+                          pageText.workorderCountSuffix,
+                        )}
+                        emptyLabel={pt(
+                          "productionMixEmpty",
+                          pageText.productionMixEmpty,
+                        )}
+                        compact
+                        selectedLabel={normalizedSelectedCategoryLabel}
+                        onSelectPoint={setSelectedCategoryLabel}
                       />
                     </div>
-                    {activePeriodOptions.map((item) => (
+                    <p
+                      className={`mt-1 text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}
+                    >
+                      {selectedCategoryDepthLabel} ·{" "}
+                      {formatAdminStatsCount(
+                        selectedCategoryDepthTotal,
+                        pt(
+                          "workorderCountSuffix",
+                          pageText.workorderCountSuffix,
+                        ),
+                      )}
+                    </p>
+                    {normalizedSelectedCategoryLabel ? (
+                      <p
+                        className={`mt-0.5 text-[11px] font-semibold ${ADMIN_STATS_ACCENT_TEXT_CLASS}`}
+                      >
+                        {pt("selectedItemLabel", pageText.selectedItemLabel)}:{" "}
+                        {normalizedSelectedCategoryLabel}
+                      </p>
+                    ) : null}
+                  </AdminCard>
+
+                  {renderBarList(
+                    categoryDetailTitle,
+                    categoryDetailPoints,
+                    categoryDetailEmptyLabel,
+                  )}
+                </div>
+              ) : null}
+
+              {activeStatsSection === "factory" ? (
+                <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
+                  {renderBarList(
+                    pt(
+                      "factoryPerformanceTitle",
+                      pageText.factoryPerformanceTitle,
+                    ),
+                    viewModel.factoryProductionBars,
+                    pt(
+                      "factoryPerformanceEmpty",
+                      pageText.factoryPerformanceEmpty,
+                    ),
+                  )}
+                  <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
+                    <p
+                      className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
+                    >
+                      {pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}
+                    </p>
+                    <h2
+                      className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
+                    >
+                      {pt("delayQualityTitle", pageText.delayQualityTitle)}
+                    </h2>
+                    <AdminTable
+                      items={translatedStats.factoryPerformance.slice(0, 5)}
+                      columns={factoryPerformanceColumns}
+                      getRowKey={(item) => item.label}
+                      emptyLabel={pt(
+                        "factoryPerformanceEmpty",
+                        pageText.factoryPerformanceEmpty,
+                      )}
+                      className="mt-3 min-h-[218px] rounded-2xl border-[var(--pbp-border)]"
+                      gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
+                      rowBaseClassName="grid w-full min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
+                      headerClassName="hidden min-w-[420px] gap-3 bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)] md:grid md:min-w-0"
+                    />
+                  </AdminCard>
+                </div>
+              ) : null}
+
+              {activeStatsSection === "period" ? (
+                <div>
+                  <div
+                    className={`${ADMIN_STATS_PANEL_TIGHT_CLASS} flex flex-col items-stretch gap-2 px-2.5 py-2 sm:px-3 lg:flex-row lg:items-center lg:justify-between`}
+                  >
+                    <div>
+                      <h3
+                        className={`text-sm font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
+                      >
+                        {pt(
+                          "periodAnalysisTitle",
+                          pageText.periodAnalysisTitle,
+                        )}
+                      </h3>
+                    </div>
+                    <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
+                      <div className="w-full min-w-0 flex-1 sm:w-auto sm:min-w-[280px] sm:max-w-[440px] sm:flex-none">
+                        <AdminDateRangePicker
+                          startDate={customStartDate}
+                          endDate={customEndDate}
+                          maxDateValue={todayDateValue}
+                          labels={dateRangeLabels}
+                          locale={locale}
+                          onStartDateChange={updateCustomStartDate}
+                          onEndDateChange={updateCustomEndDate}
+                        />
+                      </div>
+                      {activePeriodOptions.map((item) => (
+                        <AdminLinkButton
+                          key={item.key}
+                          href={buildPeriodSectionHref(item.href)}
+                          aria-current={item.active ? "page" : undefined}
+                          variant={item.active ? "primary" : "secondary"}
+                          size="sm"
+                          className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
+                        >
+                          {translateAdminStatsLabel(item.label, t)}
+                        </AdminLinkButton>
+                      ))}
                       <AdminLinkButton
-                        key={item.key}
-                        href={buildPeriodSectionHref(item.href)}
-                        aria-current={item.active ? "page" : undefined}
-                        variant={item.active ? "primary" : "secondary"}
+                        href={buildPeriodSectionHref("/admin/stats?period=30d")}
+                        variant="secondary"
                         size="sm"
                         className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
                       >
-                        {translateAdminStatsLabel(item.label, t)}
+                        {pt("customReset", pageText.customReset)}
                       </AdminLinkButton>
-                    ))}
-                    <AdminLinkButton
-                      href={buildPeriodSectionHref("/admin/stats?period=30d")}
-                      variant="secondary"
-                      size="sm"
-                      className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
+                      <AdminLinkButton
+                        href={customPeriodHref}
+                        aria-disabled={!isCustomPeriodValid}
+                        variant={isCustomPeriodValid ? "primary" : "secondary"}
+                        size="sm"
+                        className={`min-h-8 shrink-0 px-3 py-1.5 text-xs ${isCustomPeriodValid ? "" : "pointer-events-none opacity-50"}`}
+                      >
+                        {pt("customApplyShort", pageText.customApply)}
+                      </AdminLinkButton>
+                    </div>
+                  </div>
+                  {customPeriodMessage ? (
+                    <p
+                      className={`mt-3 text-xs font-semibold ${ADMIN_STATS_WARNING_TEXT_CLASS}`}
                     >
-                      {pt("customReset", pageText.customReset)}
-                    </AdminLinkButton>
-                    <AdminLinkButton
-                      href={customPeriodHref}
-                      aria-disabled={!isCustomPeriodValid}
-                      variant={isCustomPeriodValid ? "primary" : "secondary"}
-                      size="sm"
-                      className={`min-h-8 shrink-0 px-3 py-1.5 text-xs ${isCustomPeriodValid ? "" : "pointer-events-none opacity-50"}`}
-                    >
-                      {pt("customApplyShort", pageText.customApply)}
-                    </AdminLinkButton>
+                      {customPeriodMessage}
+                    </p>
+                  ) : null}
+                  <div className="mt-3 grid auto-rows-fr gap-3 xl:grid-cols-2">
+                    <PeriodTopCard
+                      eyebrow={pt(
+                        "periodTopEyebrow",
+                        pageText.reorderTopEyebrow,
+                      )}
+                      title={periodTopModeTitle[selectedPeriodTopMode]}
+                      basis={periodTopModeBasis[selectedPeriodTopMode]}
+                      items={selectedPeriodTopProducts}
+                      emptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
+                      valueSuffix={periodTopValueSuffix}
+                    />
+                    <PeriodSummaryCard
+                      title={pt(
+                        "periodSummaryTitle",
+                        pageText.periodSummaryTitle,
+                      )}
+                      items={periodSummaryItems}
+                      selectedKey={selectedPeriodTopMode}
+                      onSelect={setSelectedPeriodTopMode}
+                    />
                   </div>
                 </div>
-                {customPeriodMessage ? (
-                  <p
-                    className={`mt-3 text-xs font-semibold ${ADMIN_STATS_WARNING_TEXT_CLASS}`}
-                  >
-                    {customPeriodMessage}
-                  </p>
-                ) : null}
-                <div className="mt-3 grid auto-rows-fr gap-3 xl:grid-cols-2">
-                  <PeriodTopCard
-                    eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
-                    title={periodTopModeTitle[selectedPeriodTopMode]}
-                    basis={periodTopModeBasis[selectedPeriodTopMode]}
-                    items={selectedPeriodTopProducts}
-                    emptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
-                    valueSuffix={periodTopValueSuffix}
-                  />
-                  <PeriodSummaryCard
-                    title={pt(
-                      "periodSummaryTitle",
-                      pageText.periodSummaryTitle,
-                    )}
-                    items={periodSummaryItems}
-                    selectedKey={selectedPeriodTopMode}
-                    onSelect={setSelectedPeriodTopMode}
-                  />
-                </div>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         </div>
-      </section>
-    </>
+      </AdminSection>
+    </div>
   );
 }

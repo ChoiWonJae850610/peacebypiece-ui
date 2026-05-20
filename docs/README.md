@@ -35,17 +35,18 @@
 - `wafl-a-type/28_wafl-a-type-customer-admin-data-screens.md` — 고객사 관리자 저장소/통계/협력업체 A-TYPE 구현 기준
 - `wafl-a-type/29_wafl-a-type-system-admin-screens.md` — 시스템관리자 주요 화면 A-TYPE 구현 기준
 - `wafl-a-type/30_wafl-a-type-system-admin-extended-screens.md` — 시스템관리자 확장 화면 A-TYPE 구현 기준
+- `wafl-a-type/31_wafl-a-type-admin-stats-screen.md` — 고객사 관리자 통계정보 A-TYPE 구현 기준
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.9부터 기준 문서는 `docs/wafl-a-type/` 안의 00~30 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.10부터 기준 문서는 `docs/wafl-a-type/` 안의 00~31 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.9
+현재 기준: 0.15.10
 PC A-TYPE 전환 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

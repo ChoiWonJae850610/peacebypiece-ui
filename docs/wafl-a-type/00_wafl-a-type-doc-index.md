@@ -1,11 +1,10 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.9
+baseline_source: peacebypiece-ui-0.15.10
 status: updated
 updated: 2026-05-20
 ---
-
 
 # WAFL A-TYPE 최종 문서 세트 v0.4
 
@@ -86,6 +85,7 @@ QA 체크리스트
 28_wafl-a-type-customer-admin-data-screens.md
 29_wafl-a-type-system-admin-screens.md
 30_wafl-a-type-system-admin-extended-screens.md
+31_wafl-a-type-admin-stats-screen.md
 ```
 
 ## 4. 핵심 결정
@@ -119,7 +119,6 @@ QA 체크리스트
 27_wafl-a-type-customer-admin-management-screens.md
 ```
 
-
 ## 0.15.7 업데이트
 
 ```txt
@@ -128,11 +127,19 @@ QA 체크리스트
 - 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
 ```
 
-
 ## 0.15.9 업데이트
 
 ```txt
 30_wafl-a-type-system-admin-extended-screens.md
 - 시스템관리자 감사로그/요금제/기준정보 확장 화면의 SystemShell 적용 기준
 - 고객사 관리/저장소 사용량에 이어 시스템관리자 확장 화면도 같은 shell 책임으로 정리
+```
+
+## 0.15.10 업데이트
+
+```txt
+31_wafl-a-type-admin-stats-screen.md
+- 고객사 관리자 통계정보 화면의 A-TYPE section 적용 기준
+- 누적 운영 지표와 작업흐름분석을 별도 AdminSection으로 분리
+- 통계 계산/차트/필터 로직은 변경하지 않고 화면 구조만 정리
 ```
