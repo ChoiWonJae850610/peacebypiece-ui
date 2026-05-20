@@ -1,18 +1,18 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.13
+baseline_source: peacebypiece-ui-0.15.18
 status: updated
 updated: 2026-05-20
 ---
 
-# WAFL A-TYPE 최종 문서 세트 v0.4
+# WAFL A-TYPE 최종 문서 세트 v0.5
 
 ## 1. 문서 목적
 
-이 문서 세트는 `peacebypiece-ui-0.13.50` 소스와 WAFL A-TYPE 이미지 시안을 기준으로, UI를 제품 수준으로 통일하기 위한 기준을 정의한다. v0.4에서는 모바일/태블릿 웹 공유 정책, 작업지시서 PDF 공유, 초대 링크 공유, PWA/앱 전환 판단 기준을 추가한다.
+이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-A-TYPE은 단순 테마가 아니라 다음을 포함한다.
+v0.5에서는 SaaS 운영 기준을 추가한다.
 
 ```txt
 브랜드 톤
@@ -30,6 +30,9 @@ i18n/copy 정책
 리팩토링 로드맵
 QA 체크리스트
 공유/PWA/앱 전략
+시스템관리자/고객사관리자 운영 IA
+원단/부자재 발주 업무 흐름
+카드결제/청구/증빙 정책
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -49,6 +52,7 @@ QA 체크리스트
 - 태블릿 세로 규칙은 본 문서에서 별도로 정의
 - 작업지시서 직접 그리기 기능은 태블릿 가로모드에서 차단된 기존 결정을 반영
 - 로그인 문구는 최종 카피 확정 전까지 후보 문구로 관리
+- 결제/증빙/원단 발주 화면은 0.15.18 기준 문서화 단계이며 기능 구현 전이다.
 ```
 
 ## 3. 문서 목록
@@ -93,7 +97,9 @@ QA 체크리스트
 36_wafl-a-type-member-settings-visual-pass.md
 37_wafl-a-type-data-screens-visual-pass.md
 38_wafl-a-type-system-home-visual-pass.md
-- `wafl-a-type/38_wafl-a-type-system-home-visual-pass.md` — 시스템관리자 홈 visual pass
+39_wafl-a-type-service-operation-ia.md
+40_wafl-a-type-material-order-workflow.md
+41_wafl-a-type-billing-payment-evidence-policy.md
 ```
 
 ## 4. 핵심 결정
@@ -111,6 +117,10 @@ QA 체크리스트
 10. 앱 개발은 후순위로 두고, 모바일/태블릿 웹에서 Web Share API 기반 공유를 먼저 적용한다.
 11. 초대는 링크 공유, 작업지시서는 PDF 링크 공유를 기본 정책으로 한다.
 12. 유료 SMS/Kakao 자동 발송 API는 2단계 기능으로 보류한다.
+13. 시스템관리자 운영 IA는 고객사 업무 화면과 분리한다.
+14. 고객사관리자 결제/증빙 화면은 본인 회사 범위로 제한한다.
+15. 원단/부자재 발주는 작업지시서 내부 모달만으로 처리하지 않고 별도 업무 흐름으로 분리한다.
+16. 카드결제는 PG의 customerKey/billingKey 기반으로 처리하고 전체 카드번호/CVC/카드 비밀번호/주민등록번호/카드 유효기간 원문은 저장하지 않는다.
 ```
 
 ## 5. 0.14.9 문서 정리 기준
@@ -122,12 +132,9 @@ QA 체크리스트
 - DB/R2/auth/release/page inventory 정책은 15~20 문서로 보완한다.
 ```
 
-```txt
-26_wafl-a-type-customer-admin-home-implementation.md
-27_wafl-a-type-customer-admin-management-screens.md
-```
+## 6. 0.15.x 업데이트 기록
 
-## 0.15.7 업데이트
+### 0.15.7 업데이트
 
 ```txt
 28_wafl-a-type-customer-admin-data-screens.md
@@ -135,7 +142,7 @@ QA 체크리스트
 - 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
 ```
 
-## 0.15.9 업데이트
+### 0.15.9 업데이트
 
 ```txt
 30_wafl-a-type-system-admin-extended-screens.md
@@ -143,7 +150,7 @@ QA 체크리스트
 - 고객사 관리/저장소 사용량에 이어 시스템관리자 확장 화면도 같은 shell 책임으로 정리
 ```
 
-## 0.15.10 업데이트
+### 0.15.10 업데이트
 
 ```txt
 31_wafl-a-type-admin-stats-screen.md
@@ -152,7 +159,7 @@ QA 체크리스트
 - 통계 계산/차트/필터 로직은 변경하지 않고 화면 구조만 정리
 ```
 
-## 0.15.11 업데이트
+### 0.15.11 업데이트
 
 ```txt
 32_wafl-a-type-system-standards-detail-screens.md
@@ -162,8 +169,7 @@ QA 체크리스트
 - 기준정보 CRUD/API/DB 로직은 변경하지 않고 화면 shell 기준만 정리
 ```
 
-
-## 0.15.12 업데이트
+### 0.15.12 업데이트
 
 ```txt
 33_wafl-a-type-workspace-worker-structure-audit.md
@@ -172,8 +178,7 @@ QA 체크리스트
 - WorkOrderWorkspace는 high risk 영역으로 분리하고 DeviceKind 이후 본격 정리
 ```
 
-
-## 0.15.13 업데이트
+### 0.15.13 업데이트
 
 ```txt
 34_wafl-a-type-system-admin-remaining-screens.md
@@ -184,9 +189,7 @@ QA 체크리스트
 - 개발 점검 화면의 page-level wrapper 중복 제거와 semantic token 1차 보정
 ```
 
----
-
-## 0.15.14 추가
+### 0.15.14 업데이트
 
 ```txt
 35_wafl-a-type-customer-admin-home-visual-pass.md
@@ -196,16 +199,40 @@ QA 체크리스트
 - 기능/API/DB/R2/권한/세션 변경 없음
 ```
 
-- 36_wafl-a-type-member-settings-visual-pass.md
+### 0.15.15 업데이트
 
+```txt
+36_wafl-a-type-member-settings-visual-pass.md
+- 멤버관리/환경설정 visual pass 기준
+- 기능/API/DB/R2/권한/세션 변경 없음
+```
 
-## 0.15.16 추가
+### 0.15.16 업데이트
 
 ```txt
 37_wafl-a-type-data-screens-visual-pass.md
-38_wafl-a-type-system-home-visual-pass.md
-- `wafl-a-type/38_wafl-a-type-system-home-visual-pass.md` — 시스템관리자 홈 visual pass
 - 고객사 관리자 저장소/협력업체/통계 화면의 visual pass 기준
 - 저장소 요약 hero, 협력업체 network hero, 통계 누적 지표 hero 보정
+- 기능/API/DB/R2/권한/세션 변경 없음
+```
+
+### 0.15.17 업데이트
+
+```txt
+38_wafl-a-type-system-home-visual-pass.md
+- 시스템관리자 홈 visual pass 기준
+- 시스템 운영 hero, quick card, SystemStatsOverview 노출 기준
+- 기능/API/DB/R2/권한/세션 변경 없음
+```
+
+### 0.15.18 업데이트
+
+```txt
+39_wafl-a-type-service-operation-ia.md
+40_wafl-a-type-material-order-workflow.md
+41_wafl-a-type-billing-payment-evidence-policy.md
+- 시스템관리자/고객사관리자 SaaS 운영 IA
+- 원단/부자재 발주 업무 흐름
+- 카드결제/청구/증빙 정책
 - 기능/API/DB/R2/권한/세션 변경 없음
 ```

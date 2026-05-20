@@ -1,13 +1,22 @@
-Version : 0.15.17
-Summary : 시스템관리자 홈 A-TYPE visual pass 적용
-Description : 시스템관리자 홈에 큰 brand hero block과 주요 운영 quick card를 적용하고 시스템 운영 통계 overview를 홈에 노출했다. 기존 시스템관리자 navigation target과 DB/API/R2/권한/세션 로직은 유지하면서 /system 첫 화면의 시각 중심과 운영 진입성을 강화했다.
+Version :
+0.15.18
+
+Summary :
+운영 IA와 원단 부자재 발주 및 카드결제 증빙 정책 문서화
+
+Description :
+시스템관리자와 고객사관리자의 SaaS 운영 IA를 정리하고, 원단/부자재 발주 업무 흐름과 카드결제 중심 청구/증빙 정책을 문서로 추가했다. 문서 인덱스와 로드맵을 0.15.18 기준으로 갱신하고 APP_VERSION을 0.15.18로 올렸다.
+
 수정 파일 목록 :
-- components/system/SystemConsoleShell.tsx
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
+
 추가 파일 목록 :
-- docs/wafl-a-type/38_wafl-a-type-system-home-visual-pass.md
+- docs/wafl-a-type/39_wafl-a-type-service-operation-ia.md
+- docs/wafl-a-type/40_wafl-a-type-material-order-workflow.md
+- docs/wafl-a-type/41_wafl-a-type-billing-payment-evidence-policy.md
+
 삭제 파일 목록 :
-- 없음
+없음

@@ -41,22 +41,23 @@
 - `wafl-a-type/34_wafl-a-type-system-admin-remaining-screens.md` — 시스템관리자 잔여 화면 A-TYPE 구현 기준
 - `wafl-a-type/35_wafl-a-type-customer-admin-home-visual-pass.md` — 고객사 관리자 홈 visual pass 기준
 - `wafl-a-type/36_wafl-a-type-member-settings-visual-pass.md` — 멤버관리/환경설정 visual pass 기준
-- `wafl-a-type/37_wafl-a-type-data-screens-visual-pass.md
-38_wafl-a-type-system-home-visual-pass.md
-- `wafl-a-type/38_wafl-a-type-system-home-visual-pass.md` — 시스템관리자 홈 visual pass` — 저장소/협력업체/통계 visual pass 기준
+- `wafl-a-type/37_wafl-a-type-data-screens-visual-pass.md` — 저장소/협력업체/통계 visual pass 기준
+- `wafl-a-type/38_wafl-a-type-system-home-visual-pass.md` — 시스템관리자 홈 visual pass 기준
+- `wafl-a-type/39_wafl-a-type-service-operation-ia.md` — 시스템관리자/고객사관리자 서비스 운영 IA
+- `wafl-a-type/40_wafl-a-type-material-order-workflow.md` — 원단/부자재 발주 업무 흐름
+- `wafl-a-type/41_wafl-a-type-billing-payment-evidence-policy.md` — 카드결제/청구/증빙 정책
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.12부터 기준 문서는 `docs/wafl-a-type/` 안의 00~37 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.18부터 기준 문서는 `docs/wafl-a-type/` 안의 00~41 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.16
-PC A-TYPE 전환 우선
+현재 기준: 0.15.18
+PC A-TYPE 전환과 SaaS 운영 IA 정리 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
 ```
-

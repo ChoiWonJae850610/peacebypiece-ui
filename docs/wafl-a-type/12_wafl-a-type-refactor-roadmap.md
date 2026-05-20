@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.17
+baseline_source: peacebypiece-ui-0.15.18
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.17
+현재 기준: 0.15.18
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -34,6 +34,9 @@ updated: 2026-05-20
 - 시스템관리자 잔여 화면 A-TYPE 1차
 - 고객사 관리자 PC visual pass 1차
 - 시스템관리자 홈 visual pass
+- 서비스 운영 IA 문서화
+- 원단/부자재 발주 업무 흐름 문서화
+- 카드결제/청구/증빙 정책 문서화
 ```
 
 ## 2. 전환 원칙
@@ -45,297 +48,255 @@ updated: 2026-05-20
 - UI 전환 전 router/layout/shell 책임을 먼저 정리한다.
 - Admin* 공통 컴포넌트는 버리지 않고 A-TYPE 기준으로 승격한다.
 - PC 기준 안정화 후 tablet/mobile로 확장한다.
+- 운영 IA 문서화와 실제 기능 구현을 같은 패치에 섞지 않는다.
+- 결제/증빙/원단 발주 구현 전에는 저장 가능 데이터와 금지 데이터를 먼저 확인한다.
 ```
 
-## 3. 0.15.x — 소스 구조와 PC A-TYPE 기반
-
-### 0.15.0 — 소스 구조 감사
+## 3. 0.15.x — 소스 구조, PC A-TYPE, 운영 IA
 
 ```txt
-- app route 구조 감사
-- layout/shell 구조 감사
-- route group 적용 방향 정리
-- AdminShell/SystemShell 책임 분리
-- UI debt 후보 집계
-- 21번 감사 문서 추가
+0.15.0 — 소스 구조 감사
+0.15.1 — route group 기반 Router/Layout 구조 1차
+0.15.2 — AdminShell / SystemShell 책임 정리
+0.15.3 — Admin 공통 컴포넌트 A-TYPE variant 1차
+0.15.4 — Login / Invite / Error A-TYPE
+0.15.5 — 고객사 관리자 홈 A-TYPE 1차
+0.15.6 — 멤버관리 / 환경설정 A-TYPE 1차
+0.15.7 — 저장소 / 협력업체 A-TYPE surface 1차
+0.15.8 — 시스템관리자 주요 화면 A-TYPE shell 1차
+0.15.81 — /system/companies JSX 닫힘 오류 핫픽스
+0.15.9 — 시스템관리자 확장 화면 shell 1차
+0.15.10 — 고객사 관리자 통계정보 section 구조 정리
+0.15.11 — 시스템관리자 기준정보 세부 화면 shell 1차
+0.15.12 — Workspace / Worker 구조 점검
+0.15.13 — 시스템관리자 잔여 점검 화면 shell 적용
+0.15.14 — 고객사 관리자 홈 visual pass
+0.15.15 — 멤버관리 / 환경설정 visual pass
+0.15.16 — 저장소 / 협력업체 / 통계 visual pass
+0.15.17 — 시스템관리자 홈 visual pass
+0.15.18 — 운영 IA + 원단/부자재 발주 IA + 카드결제/증빙 정책 문서화
 ```
 
-### 0.15.5 — 고객사 관리자 주요 화면 A-TYPE
+## 4. 0.15.19 이후 추천 작업
+
+### 0.15.19 — 운영 IA 기반 홈/메뉴 매핑 1차
 
 ```txt
-- URL 유지
-- route group 도입 가능성 반영
-- public/admin/system/workspace 경계 정리
-- layout 중복 최소화
-- 직접 URL 접근 테스트
-```
+목표:
+- 시스템관리자 홈 메뉴를 실제 SaaS 운영 IA에 맞춰 재배치
+- 고객사관리자 홈/환경설정에서 billing/legal/material-orders 카드 배치 방향 정리
+- 미개발 기능은 준비 중 또는 설계 중 상태로 표시
 
-### 0.15.2 — AdminShell / SystemShell 책임 정리
-
-```txt
-- 고객사 관리자 shell과 시스템관리자 shell을 억지로 합치지 않음
-- 공통 primitive만 공유
-- AdminShell raw color/background token화
-- SystemShell 기본 wrapper 추가
-- SystemConsoleShell에 SystemShell 1차 적용
-- 23번 shell 책임 분리 문서 추가
-```
-
-### 0.15.3 — Admin 공통 컴포넌트 A-TYPE variant 1차
-
-```txt
-- AdminButton size lg 추가
-- AdminCard surface variant 추가
-- AdminStatusBadge tone을 A-TYPE semantic token으로 매핑
-- AdminEmptyState tone을 A-TYPE surface token으로 매핑
-- AdminFilterBar/AdminTable class 병합 기준 정리
-- adminComponentVariants.ts 추가
-- 24번 Admin component variant 구현 문서 추가
-```
-
-### 0.15.4 — Login / Invite / Error A-TYPE
-
-```txt
-- ATypePublicFrame / ATypePublicCard / ATypePublicNotice 추가
-- WaflLoginPage A-TYPE 문구와 semantic token 기준 정리
-- CompanyInvitationJoinRequestPage A-TYPE 구조 정리
-- MemberInvitationJoinRequestPage A-TYPE 구조 정리
-- invite error page A-TYPE 구조 정리
-- service-paused page A-TYPE public frame 적용
-- 25번 Login/Invite/Error 구현 문서 추가
-```
-
-### 0.15.5 — 고객사 관리자 주요 화면 A-TYPE
-
-```txt
+대상:
+- /system
 - /admin
-- /admin/members
 - /admin/settings
+- docs roadmap
+
+주의:
+- 실제 결제 기능 구현은 아직 하지 않는다.
+- 메뉴/카드 IA 반영 위주로 진행한다.
+```
+
+### 0.15.20 — 원단/부자재 발주 데이터 모델 상세 설계
+
+```txt
+목표:
+- material_purchase_orders 설계
+- material_purchase_order_items 설계
+- work_order_material_rows 설계
+- 작업지시서와 자재 발주 연결 방식 설계
+- 권한 matrix 설계
+- full_reset 반영 여부 검토
+
+산출:
+- 문서
+- 필요 시 DB schema 초안
+- 아직 코드 구현은 보류 가능
+```
+
+### 0.15.21 — 작업지시서 발주 flow 변경 설계
+
+```txt
+목표:
+- 기존 발주요청/PDF flow 재정의
+- 작업지시서 상태와 자재 발주 상태 분리
+- 발주요청 버튼 활성화 조건 설계
+- PDF 출력 시점 설계
+- 디자이너 검토요청/직접발주 권한 설계
+```
+
+### 0.15.22 — A-TYPE visual QA / raw color / hardcoded text 점검
+
+```txt
+목표:
+- 0.15.x visual pass 이후 전체 관리자 PC 화면 점검
+- raw color class 잔여 확인
+- hardcoded Korean text 잔여 확인
+- text-stone / border-stone / bg-white 남용 확인
+- 시안과 가장 다른 화면 목록 정리
+- 0.16.0 전 보정 후보 정리
+```
+
+### 0.15.23 — PC visual 보정 2차
+
+```txt
+목표:
+- 아직 사진 느낌이 약한 화면 재보정
+- hero block 강화
+- 카드 테두리 약화
+- 타이포 위계 강화
+- 여백/면/리듬감 재조정
+
+대상 후보:
+- /admin/settings
+- /admin/members
 - /admin/files
 - /admin/stats
-- /admin/partners
-```
-
-### 0.15.6 — 시스템관리자 주요 화면 A-TYPE
-
-```txt
 - /system
-- /system/companies
-- /system/storage-usage
-- /system/audit-logs
-- /system/standards
 ```
 
-## 4. 0.16.x — responsive / share / drawing foundation
+## 5. 0.16.x — Device / Responsive 기반
 
 ### 0.16.0 — DeviceKind foundation
 
 ```txt
-- pc / tablet-landscape / tablet-portrait / mobile 판정
-- PC 브라우저 축소와 실제 mobile/tablet 구분
-- device hook 추가
+- pc / tablet-landscape / tablet-portrait / mobile 판정 구조 추가
+- PC 축소와 실제 모바일/태블릿을 구분할 기반 준비
+- 모바일/태블릿 UI 작업의 바닥 공사
+
+파일 후보:
+- lib/device/deviceTypes.ts
+- lib/device/getDeviceKind.ts
+- lib/device/useDeviceKind.ts
+
+주의:
+- 모바일 UI를 바로 만들지 않는다.
+- 화면 레이아웃 대수정 없음
 ```
 
-### 0.16.1 — 고객사 관리자 mobile/tablet layout
+### 0.16.1 — Admin/Workspace shell에서 DeviceKind 읽기만 적용
 
 ```txt
-- table → card list 전환
-- mobile bottom action
-- tablet portrait 1열 스택
+- AdminShell
+- SystemShell
+- MemberWorkspaceShell
+- Worker layout
+- deviceKind 읽기만 적용
+- PC 화면 간섭 없는지 확인
 ```
 
-### 0.16.2 — 작업지시서 기기별 layout
+### 0.16.2 — 모바일/태블릿 레이아웃 QA 기준 추가
 
 ```txt
-- PC 3열
-- tablet landscape 2열
-- tablet portrait/mobile 목록/상세 분리
+- iPad Safari 기준
+- Android Chrome 기준
+- PC narrow width 기준
+- tablet portrait / landscape 기준
+- safe-area / keyboard / sheet 기준 문서화
 ```
 
-### 0.16.3 — Drawing orientation guard
+### 0.16.3 — 작업지시서 orientation guard 1차
 
 ```txt
-- tablet landscape 입력 차단
-- tablet portrait 허용
-- canvas draft 보존
+- 태블릿 가로 직접 그리기 차단
+- 태블릿 세로 안내
+- PC에서 잘못 차단되지 않게 보정
+- 회전 시 draft 보존 준비
 ```
 
-### 0.16.4 — Web Share / QR / 링크 복사
+### 0.16.4 — 모바일/태블릿 화면별 적용 시작
 
 ```txt
-- 초대 링크 공유
-- QR 보기
-- 공유 API 미지원 fallback
+대상:
+- /admin
+- /workspace
+- /worker
+- /invite
 ```
 
-### 0.16.5 — 작업지시서 PDF 공유 설계
+## 6. 0.17.x — 작업지시서 / Worker 본격 정리
 
 ```txt
-- PDF 링크 생성
-- 링크 공유/복사/download
-- 권한 정책 확정
+0.17.0 — Worker PC 화면 구조 감사
+0.17.1 — 작업지시서 PC visual pass 1차
+0.17.2 — 작업지시서 상세/첨부/메모 panel 정리
+0.17.3 — 작업지시서 직접 그리기 draft 보존 점검
+0.17.4 — 발주 요청 후 원단/부자재 구성 입력 flow 1차
+0.17.5 — 원단/부자재 발주 화면 1차
+0.17.6 — 작업지시서 PDF 공유 설계
+0.17.7 — 발주 PDF 출력 조건 연결
 ```
 
-## 5. 0.17.x — DB/R2/docs cleanup
+## 7. 0.18.x — 공유 / PDF / QR
 
 ```txt
-0.17.0 DB SQL 파일 정리 2차
-0.17.1 미사용 DB schema/table 후보 점검
-0.17.2 R2 key/preview/download/purge 정합성 점검
-0.17.3 repo cleanup
-0.17.4 full reset + smoke test + build 기준 확정
+0.18.0 — 초대 링크 공유 공통 유틸
+0.18.1 — 멤버 초대 Web Share / 링크 복사
+0.18.2 — 고객사 관리자 초대 Web Share / 링크 복사
+0.18.3 — QR 보기
+0.18.4 — 작업지시서 PDF 생성 설계
+0.18.5 — 작업지시서 PDF 링크 공유
+0.18.6 — PDF 권한/만료 정책
 ```
 
-## 6. 리스크 분리
+## 8. 0.19.x — DB / 문서 / 정리
 
+```txt
+0.19.0 — DB schema 사용 여부 점검
+0.19.1 — full_reset.sql 정리
+0.19.2 — smoke_test 강화
+0.19.3 — seed SQL 분류
+0.19.4 — legacy migration 삭제 후보 정리
+0.19.5 — R2 key 정책 최종 점검
+0.19.6 — 미사용 코드/문서 정리
+```
+
+## 9. 0.20.x — 운영 기능
+
+```txt
+0.20.0 — 고객사 계정 변경 요청 시스템관리자 검토
+0.20.1 — 고객사 비활성화/탈퇴 요청 검토
+0.20.2 — 요금제 실제 관리
+0.20.3 — 고객사 구독 관리
+0.20.4 — 카드 등록/변경 flow
+0.20.5 — 결제내역/영수증 보기
+0.20.6 — 결제 실패/미납 관리
+0.20.7 — 환불 관리
+0.20.8 — 증빙 관리
+0.20.9 — 정산자료 출력
+0.20.10 — 서비스 문서/공지사항 관리
+0.20.11 — 시스템 감사로그 실제 기록 강화
+```
+
+## 10. 리스크 분리
+
+```txt
 Low risk:
-
-```txt
-문서 / token alias / static copy / empty state
-```
+- 문서
+- token alias
+- static copy
+- empty state
+- route placeholder
 
 Medium risk:
-
-```txt
-AdminShell / SystemShell / i18n key 이동 / route group / device hook
-```
+- AdminShell / SystemShell
+- i18n key 이동
+- route group
+- device hook
+- 권한 helper 확장
 
 High risk:
-
-```txt
-WorkOrderWorkspace 구조 / R2 / 첨부·메모 / storage purge / permission/session/companyId / DB schema
+- WorkOrderWorkspace 구조
+- R2 / 첨부·메모 / storage purge
+- permission/session/companyId
+- DB schema
+- PG 결제 연동
+- PDF 생성/공유
 ```
 
-## 7. 다음 권장 작업
+## 11. 다음 권장 작업
 
 ```txt
-0.15.12 — Workspace / Worker 화면 구조 점검
-```
-
-### 0.15.5 — 고객사 관리자 홈 A-TYPE 적용 1차
-
-```txt
-운영 대시보드와 업무 바로가기 카드 구조를 A-TYPE 기준으로 정리한다.
-DB/API/R2/권한/세션 흐름은 변경하지 않는다.
-```
-
-### 0.15.6 — 고객사 관리자 주요 화면 A-TYPE 2차
-
-```txt
-- /admin/members 탭 shell을 AdminSection 기준으로 정리
-- 멤버관리 SummaryCards / SegmentedTabs / AdminPanelSection 구조 유지
-- /admin/settings hub에 A-TYPE eyebrow와 semantic token 기준 보정
-- raw stone/rose/emerald class 일부를 semantic token으로 치환
-- 27번 고객사 관리자 관리 화면 문서 추가
-```
-
-### 0.15.7 — 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차
-
-```txt
-- /admin/files
-- /admin/stats
-- /admin/partners
-- 기능 로직 변경 없이 화면 구조와 공통 컴포넌트 기준 정리
-```
-
-## 0.15.7 업데이트
-
-```txt
-28_wafl-a-type-customer-admin-data-screens.md
-- 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
-```
-
-### 0.15.8 — 시스템관리자 주요 화면 A-TYPE 1차
-
-```txt
-- /system 홈은 SystemShell 기준을 유지한다.
-- /system/companies 고객사 관리 화면을 SystemShell wrapper 기준으로 정리한다.
-- /system/storage-usage 저장소 관리 화면을 SystemShell wrapper 기준으로 정리한다.
-- 시스템관리자 화면은 고객사 관리자 AdminShell과 억지로 통합하지 않는다.
-- 기능/API/R2/권한/세션 흐름은 변경하지 않는다.
-- 29번 시스템관리자 화면 적용 기준 문서 추가
-```
-
-### 0.15.9 — 시스템관리자 주요 화면 A-TYPE 2차
-
-```txt
-- /system/audit-logs
-- /system/billing
-- /system/standards
-- SystemShell wrapper 기준 적용
-- raw stone/background class 일부를 semantic token 기준으로 보정
-- 감사로그/요금제/기준정보의 기능 로직은 변경하지 않는다.
-- 30번 시스템관리자 확장 화면 적용 기준 문서 추가
-```
-
-### 다음 후보 — /admin/stats 또는 시스템관리자 기준정보 세부 화면
-
-```txt
-- /admin/stats A-TYPE 구조 정리
-- /system/category-rules
-- /system/standards/processes
-- /system/standards/units
-- /system/standards/product-templates
-```
-
-### 0.15.10 — 고객사 관리자 통계정보 A-TYPE 1차
-
-```txt
-/admin/stats의 누적 운영 지표와 작업흐름분석을 AdminSection 구조로 분리한다.
-통계 계산, 기간 필터, Recharts 렌더링, DB query는 변경하지 않는다.
-```
-
-
-### 0.15.11 — 시스템관리자 기준정보 세부 화면 A-TYPE 1차
-
-```txt
-- /system/category-rules SystemShell 적용
-- /system/standards/processes SystemShell 적용
-- /system/standards/units SystemShell 적용
-- /system/standards/product-templates SystemShell 적용
-- 기준정보 세부 화면의 top-level wrapper 중복 제거
-- DB/API/저장 로직 변경 없음
-```
-
-
-### 0.15.12 — Workspace / Worker 화면 구조 점검
-
-```txt
-- MemberWorkspaceShell semantic token 1차 정리
-- MemberWorkspaceHome semantic token 1차 정리
-- /worker WorkOrderWorkspace는 기능 변경 없이 구조 리스크만 문서화
-- 33번 Workspace/Worker 구조 점검 문서 추가
-```
-
-
-### 0.15.13 — 시스템관리자 잔여 화면 A-TYPE 1차
-
-```txt
-- /system/invites redirect route 유지
-- /system/access-checkpoint SystemShell 적용
-- /system/standards/regression SystemShell 적용
-- /system/standards/seed-status SystemShell 적용
-- 기능/API/DB 로직 변경 없음
-```
-
-
-### 0.15.14 — 고객사 관리자 홈 visual pass
-0.15.15 — 멤버관리/환경설정 visual pass
-
-```txt
-- /admin 작업지시서 현황을 큰 brand hero block으로 보정
-- 주요 대기 현황을 2x2 queue card로 보정
-- 선택 queue 목록을 별도 surface 영역으로 분리
-- 업무 바로가기 작업지시서 카드를 featured card로 강조
-- 기능/API/DB/R2/권한/세션 로직 변경 없음
-```
-
-
-### 0.15.16 — 저장소/협력업체/통계 visual pass
-
-```txt
-- /admin/files 저장소 요약 영역을 Storage control hero로 강화
-- /admin/partners 협력업체 header와 summary cards를 Partner network hero로 묶음
-- /admin/stats 운영 누적 지표 section을 visual hero 성격으로 강화
-- 휴지통/협력업체 modal/통계 계산 로직 변경 없음
+0.15.19 — 운영 IA 기반 홈/메뉴 매핑 1차
 ```
