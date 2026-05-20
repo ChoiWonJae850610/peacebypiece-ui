@@ -113,3 +113,11 @@ QA 체크리스트
 26_wafl-a-type-customer-admin-home-implementation.md
 27_wafl-a-type-customer-admin-management-screens.md
 ```
+
+
+## 0.15.7 업데이트
+
+```txt
+28_wafl-a-type-customer-admin-data-screens.md
+- 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
+```

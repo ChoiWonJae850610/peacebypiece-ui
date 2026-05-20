@@ -42,7 +42,7 @@ export default function PartnerMasterFilters({
   ];
 
   return (
-    <AdminFilterBar className="mt-3 block shrink-0 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] px-3 py-3 transition-colors md:px-4">
+    <AdminFilterBar className="mt-3 block shrink-0 border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 transition-colors md:px-4">
       <div className="grid gap-4 lg:grid-cols-[220px_minmax(520px,1fr)_minmax(240px,0.7fr)_150px] lg:items-end lg:gap-4 xl:grid-cols-[230px_minmax(560px,1fr)_minmax(250px,0.7fr)_160px] xl:gap-5">
         <label className="min-w-0 space-y-2 lg:justify-self-start">
           <span className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
@@ -50,7 +50,7 @@ export default function PartnerMasterFilters({
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
             placeholder={filterText.searchPlaceholder}
-            className="h-11 w-full rounded-2xl border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-4 text-sm outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
+            className="h-11 w-full rounded-2xl border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-4 text-sm outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-4 focus:ring-[var(--pbp-focus-ring)]"
           />
         </label>
 

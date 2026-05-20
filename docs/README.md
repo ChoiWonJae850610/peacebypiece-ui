@@ -38,3 +38,11 @@
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 - `docs/wafl-a-type/26_wafl-a-type-customer-admin-home-implementation.md` — 고객사 관리자 홈 A-TYPE 적용 1차 기준
+
+
+## 0.15.7 업데이트
+
+```txt
+28_wafl-a-type-customer-admin-data-screens.md
+- 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
+```

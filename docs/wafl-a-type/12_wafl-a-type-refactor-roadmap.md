@@ -231,3 +231,11 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - /admin/partners
 - 기능 로직 변경 없이 화면 구조와 공통 컴포넌트 기준 정리
 ```
+
+
+## 0.15.7 업데이트
+
+```txt
+28_wafl-a-type-customer-admin-data-screens.md
+- 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
+```

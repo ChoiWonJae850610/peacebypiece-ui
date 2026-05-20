@@ -205,7 +205,7 @@ export default function AdminFilesPage() {
       title={t("filesPage.title", "저장소 관리")}
       contentMode="fixed-md"
     >
-      <section className="relative flex min-h-0 flex-1 flex-col overflow-visible rounded-[24px] border border-stone-200 bg-white p-2.5 shadow-sm md:overflow-hidden md:rounded-[30px] md:p-3">
+      <section className="relative flex min-h-0 flex-1 flex-col overflow-visible rounded-[24px] border p-2.5 shadow-sm pbp-admin-card md:overflow-hidden md:rounded-[30px] md:p-3">
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}

@@ -24,7 +24,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
   const controller = usePartnerMasterController(partnerText, capabilities);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:h-full md:max-h-full md:overflow-hidden md:p-5 xl:p-6">
+    <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[32px] border p-5 shadow-sm backdrop-blur pbp-admin-card md:h-full md:max-h-full md:overflow-hidden md:p-5 xl:p-6">
       <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
 
       <PartnerMasterSummaryCards summary={controller.listViewModel.summary} />

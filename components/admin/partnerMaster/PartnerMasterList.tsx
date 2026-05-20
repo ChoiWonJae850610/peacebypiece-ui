@@ -70,7 +70,7 @@ export default function PartnerMasterList({ items, isLoading = false, canUpdate 
 
   return (
     <AdminTable
-      className={`${className} rounded-[28px] bg-white shadow-sm`}
+      className={`${className} rounded-[28px] bg-[var(--pbp-surface)] shadow-sm`}
       items={sortedItems}
       isLoading={isLoading}
       loadingLabel={listText.loading}
@@ -80,7 +80,7 @@ export default function PartnerMasterList({ items, isLoading = false, canUpdate 
       rowClassName={(item) => [
         "px-4 py-3 md:gap-3 transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]",
         canUpdate ? "hover:bg-[var(--admin-theme-soft)]" : "",
-        item.isActive ? "bg-white" : "bg-[var(--pbp-surface-muted)]",
+        item.isActive ? "bg-[var(--pbp-surface)]" : "bg-[var(--pbp-surface-muted)]",
       ].join(" ")}
       onRowClick={canUpdate ? (item) => onEditPartner(item.id) : undefined}
       columns={[
