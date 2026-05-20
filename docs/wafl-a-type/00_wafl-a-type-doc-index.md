@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.6
+baseline_source: peacebypiece-ui-0.15.8
 status: updated
 updated: 2026-05-20
 ---
@@ -81,6 +81,10 @@ QA 체크리스트
 23_wafl-a-type-shell-responsibility.md
 24_wafl-a-type-admin-component-variants.md
 25_wafl-a-type-login-invite-error-implementation.md
+26_wafl-a-type-customer-admin-home-implementation.md
+27_wafl-a-type-customer-admin-management-screens.md
+28_wafl-a-type-customer-admin-data-screens.md
+29_wafl-a-type-system-admin-screens.md
 ```
 
 ## 4. 핵심 결정
@@ -119,5 +123,6 @@ QA 체크리스트
 
 ```txt
 28_wafl-a-type-customer-admin-data-screens.md
+29_wafl-a-type-system-admin-screens.md
 - 고객사 관리자 저장소/통계/협력업체 A-TYPE 1차 적용 기준
 ```

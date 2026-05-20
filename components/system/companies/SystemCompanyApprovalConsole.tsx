@@ -5,14 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import SystemShell from "@/components/system/layout/SystemShell";
 import {
   SYSTEM_CARD_CLASS,
   SYSTEM_DANGER_BOX_CLASS,
   SYSTEM_EYEBROW_CLASS,
   SYSTEM_HEADER_PANEL_CLASS,
   SYSTEM_MUTED_CARD_CLASS,
-  SYSTEM_PAGE_CLASS,
-  SYSTEM_PAGE_WIDE_CLASS,
   SYSTEM_SECTION_HEADER_CLASS,
   SYSTEM_SECTION_TITLE_CLASS,
   SYSTEM_SMALL_TEXT_CLASS,
@@ -983,8 +982,7 @@ export default function SystemCompanyApprovalConsole() {
   }, []);
 
   return (
-    <main className={SYSTEM_PAGE_CLASS}>
-      <div className={SYSTEM_PAGE_WIDE_CLASS}>
+    <SystemShell>
         <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
@@ -1290,6 +1288,6 @@ export default function SystemCompanyApprovalConsole() {
         </div>
       ) : null}
 
-    </main>
+    </SystemShell>
   );
 }

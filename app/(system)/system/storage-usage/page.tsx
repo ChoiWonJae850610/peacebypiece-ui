@@ -1,12 +1,11 @@
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { SystemStoragePurgeCandidatesClient } from "@/components/system/storage/SystemStoragePurgeCandidatesClient";
+import SystemShell from "@/components/system/layout/SystemShell";
 import {
   SYSTEM_CARD_CLASS,
   SYSTEM_EYEBROW_CLASS,
   SYSTEM_HEADER_PANEL_CLASS,
-  SYSTEM_PAGE_CLASS,
-  SYSTEM_PAGE_WIDE_CLASS,
   SYSTEM_SMALL_TEXT_CLASS,
   SYSTEM_SUBTITLE_CLASS,
   SYSTEM_TITLE_CLASS,
@@ -24,8 +23,7 @@ export default async function SystemStorageUsagePage() {
   const storageCopy = getI18n().system.storageUsage;
 
   return (
-    <main className={SYSTEM_PAGE_CLASS}>
-      <div className={SYSTEM_PAGE_WIDE_CLASS}>
+    <SystemShell>
         <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
@@ -81,7 +79,6 @@ export default async function SystemStorageUsagePage() {
         </section>
 
         <SystemStoragePurgeCandidatesClient candidates={candidates} />
-      </div>
-    </main>
+    </SystemShell>
   );
 }
