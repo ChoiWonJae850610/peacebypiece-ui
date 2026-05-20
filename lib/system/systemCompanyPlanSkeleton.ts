@@ -251,7 +251,7 @@ export const SYSTEM_COMPANY_PLAN_FIELDS: SystemCompanyPlanField[] = [
 export const SYSTEM_COMPANY_PLAN_POLICY_STEPS: SystemCompanyPlanPolicyStep[] = [
   {
     id: "plan-master",
-    title: "기본 요금제"
+    title: "기본 요금제",
     statusLabel: "기준 확정",
     description:
       "Starter, Team, Business 기본 정책을 한 기준으로 관리합니다.",
@@ -259,21 +259,21 @@ export const SYSTEM_COMPANY_PLAN_POLICY_STEPS: SystemCompanyPlanPolicyStep[] = [
   {
     id: "company-assignment",
     title: "고객사 배정",
-    statusLabel: "운영 준비"
+    statusLabel: "운영 준비",
     description:
       "고객사별 현재 요금제와 적용 기간을 관리합니다.",
   },
   {
     id: "override-policy",
-    title: "예외 한도"
-    statusLabel: "운영 준비"
+    title: "예외 한도",
+    statusLabel: "운영 준비",
     description:
       "저장용량, 멤버 수, 가격만 고객사별 예외값으로 관리합니다.",
   },
   {
     id: "usage-snapshot",
-    title: "사용량 현황"
-    statusLabel: "운영 예정"
+    title: "사용량 현황",
+    statusLabel: "운영 예정",
     description:
       "저장소 사용량과 멤버 사용량을 요금제 한도와 함께 확인합니다.",
   },

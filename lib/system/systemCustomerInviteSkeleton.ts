@@ -93,7 +93,7 @@ export const SYSTEM_CUSTOMER_INVITE_FIELDS: SystemCustomerInviteField[] = [
   },
   {
     id: "token",
-    label: "초대 보안"
+    label: "초대 보안",
     value: "보안 저장",
     description: "초대 링크 원문은 안전한 방식으로 관리합니다.",
   },
