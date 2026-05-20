@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.21
+baseline_source: peacebypiece-ui-0.15.22
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.21
+현재 기준: 0.15.22
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -40,6 +40,7 @@ updated: 2026-05-20
 - 운영 IA 기반 홈/메뉴 매핑 1차
 - 원단/부자재 발주 데이터 모델 상세 설계
 - 작업지시서 발주 flow 변경 설계
+- A-TYPE visual QA / raw color / hardcoded text 점검
 ```
 
 ## 2. 전환 원칙
@@ -81,6 +82,7 @@ updated: 2026-05-20
 0.15.19 — 운영 IA 기반 홈/메뉴 매핑 1차
 0.15.20 — 원단/부자재 발주 데이터 모델 상세 설계
 0.15.21 — 작업지시서 발주 flow 변경 설계
+0.15.22 — A-TYPE visual QA / raw color / hardcoded text 점검
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -136,13 +138,16 @@ updated: 2026-05-20
 ### 0.15.22 — A-TYPE visual QA / raw color / hardcoded text 점검
 
 ```txt
-목표:
-- 0.15.x visual pass 이후 전체 관리자 PC 화면 점검
-- raw color class 잔여 확인
-- hardcoded Korean text 잔여 확인
-- text-stone / border-stone / bg-white 남용 확인
-- 시안과 가장 다른 화면 목록 정리
-- 0.16.0 전 보정 후보 정리
+완료:
+- 0.15.x visual pass 이후 전체 관리자 PC 화면 점검 기준 정리
+- bg-white / border-stone / text-stone 탐지 상위 파일 정리
+- raw hex color의 정상 후보와 보정 후보 분리
+- hardcoded Korean text의 i18n 정상 영역과 화면 보정 후보 분리
+- 0.15.23 이후 PC visual 보정 후보 정리
+
+주의:
+- 실제 화면 class 보정은 아직 하지 않는다.
+- DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 ```
 
 ### 0.15.23 — PC visual 보정 2차
@@ -305,6 +310,6 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.22 — A-TYPE visual QA / raw color / hardcoded text 점검
 0.15.23 — PC visual 보정 2차
+0.15.24 — 초대/승인/pending public 화면 visual pass
 ```

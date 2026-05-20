@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.21
+baseline_source: peacebypiece-ui-0.15.22
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.8에서는 작업지시서 발주 flow와 원단/부자재 발주 업무의 연결 기준을 상세화한다.
+v0.9에서는 0.15.x visual pass 이후 남은 raw color class, hardcoded text, PC 화면 보정 후보를 점검한다.
 
 ```txt
 브랜드 톤
@@ -36,6 +36,7 @@ QA 체크리스트
 운영 IA 기반 홈/메뉴 매핑
 원단/부자재 발주 데이터 모델
 작업지시서 발주 flow 변경 설계
+A-TYPE visual QA / raw color / hardcoded text 점검
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -58,6 +59,7 @@ QA 체크리스트
 - 결제/증빙/원단 발주 화면은 0.15.19 기준 홈/메뉴 진입 구조만 반영했고 기능 구현 전이다.
 - 원단/부자재 발주는 0.15.20 기준 데이터 모델과 권한 matrix를 상세화했으나 DB schema는 아직 반영하지 않았다.
 - 작업지시서 발주 flow는 0.15.21 기준 자재 발주 준비/검토요청/직접발주/PDF 출력 시점을 분리해 설계했다.
+- 0.15.22 기준 visual QA에서 stone/white 직접 class, raw hex, hardcoded text 후보를 분류하고 0.15.23 이후 보정 순서를 정리했다.
 ```
 
 ## 3. 문서 목록
@@ -108,6 +110,7 @@ QA 체크리스트
 42_wafl-a-type-operation-menu-mapping.md
 43_wafl-a-type-material-order-data-model.md
 44_wafl-a-type-workorder-order-flow.md
+45_wafl-a-type-visual-qa-audit.md
 ```
 
 ## 4. 핵심 결정
@@ -131,6 +134,8 @@ QA 체크리스트
 16. 카드결제는 PG의 customerKey/billingKey 기반으로 처리하고 전체 카드번호/CVC/카드 비밀번호/주민등록번호/카드 유효기간 원문은 저장하지 않는다.
 17. 원단/부자재 발주는 work_order_material_rows, material_purchase_orders, material_purchase_order_items의 3계층 모델을 기본 설계로 둔다.
 18. 원단/부자재 발주 권한은 초기 UI에서는 단순화하되 내부 설계는 view/request/approve/direct/execute/receive/cancel로 확장 가능하게 둔다.
+19. raw color class는 theme/print/chart/drawing과 일반 화면을 분리해 점진적으로 제거한다.
+20. hardcoded Korean text는 i18n ko 파일과 사용자 화면 직접 문구를 구분해 보정한다.
 ```
 
 ## 5. 0.14.9 문서 정리 기준
@@ -281,3 +286,16 @@ QA 체크리스트
 - DB schema/API/화면 구현은 아직 제외
 ```
 
+
+
+
+### 0.15.22 업데이트
+
+```txt
+45_wafl-a-type-visual-qa-audit.md
+- A-TYPE visual QA / raw color / hardcoded text 점검
+- bg-white / border-stone / text-stone / raw hex / 한국어 문자열 탐지 결과 정리
+- theme/print/chart/drawing 색상과 일반 화면 색상 class를 분리
+- 0.15.23 이후 PC visual 보정 후보를 /admin/settings, /admin/members, /admin/files, /admin/stats, /system으로 정리
+- 기능/API/DB/R2/권한/세션 변경 없음
+```
