@@ -683,9 +683,16 @@ export default function AdminStatsDashboard({
         eyebrow={statsOverviewEyebrow}
         title={statsOverviewTitle}
         description={statsOverviewDescription}
-        bodyClassName="mt-4"
+        className="overflow-hidden border-[var(--pbp-border-strong)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-5 shadow-[var(--pbp-shadow-elevated)]"
+        headerClassName="items-end"
+        actions={
+          <AdminStatusBadge tone="brand">
+            {selectedPeriodBadgeLabel}: {activePeriodLabel}
+          </AdminStatusBadge>
+        }
+        bodyClassName="mt-5"
       >
-        <AdminSummaryMetricCards cards={currentSummaryCards} />
+        <AdminSummaryMetricCards cards={currentSummaryCards} gridClassName="grid gap-3 md:grid-cols-2 xl:grid-cols-4" />
       </AdminSection>
 
       <AdminSection

@@ -996,6 +996,10 @@ export const adminEn = {
     title: "Storage usage",
     description:
       "Review plan capacity, file status, and file types based on current data.",
+    visualEyebrow: "Storage control",
+    visualTitle: "Manage storage and trash in one view.",
+    visualDescription:
+      "Review usage, file types, and trash status before handling restore or delete actions.",
     periods: { 7: "7 days", 15: "15 days", 30: "30 days" },
     uploadAmount: "Upload amount",
     count: "Count",
@@ -1602,7 +1606,7 @@ export const adminEn = {
       moveToWorkspace: "Open Workspace",
     },
     header: {
-      eyebrow: "",
+      eyebrow: "Partner network",
       title: "Partner / Factory Management",
       description:
         "Manage partners, fabric vendors, and material vendors in one screen. Select a row to edit details.",

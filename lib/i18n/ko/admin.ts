@@ -998,6 +998,10 @@ export const adminKo = {
     title: "저장소 사용 현황",
     description:
       "요금제 용량, 파일 상태, 파일 유형을 현재 기준으로 확인합니다.",
+    visualEyebrow: "Storage control",
+    visualTitle: "저장공간과 휴지통을 한 화면에서 관리합니다.",
+    visualDescription:
+      "사용량, 파일 유형, 휴지통 상태를 먼저 확인하고 필요한 복원·삭제 작업만 처리합니다.",
     periods: { 7: "7일", 15: "15일", 30: "30일" },
     uploadAmount: "첨부량",
     count: "건수",
@@ -1586,7 +1590,7 @@ export const adminKo = {
       moveToWorkspace: "작업지시서 화면으로 이동",
     },
     header: {
-      eyebrow: "",
+      eyebrow: "Partner network",
       title: "협력업체 관리",
       description:
         "협력업체와 원단·부자재 거래처를 한 화면에서 관리합니다. 행을 선택하면 수정 모달이 열립니다.",

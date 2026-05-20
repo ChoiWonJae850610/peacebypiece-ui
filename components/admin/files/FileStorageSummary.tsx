@@ -279,10 +279,28 @@ export default function FileStorageSummary({
   const statusItems = buildFileStatusItems({ usageCards, t });
 
   return (
-    <section className="grid shrink-0 gap-3 md:gap-4 lg:grid-cols-3 xl:grid-cols-[minmax(250px,0.82fr)_minmax(280px,0.92fr)_minmax(360px,1.18fr)]">
-      <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
-      <FileOperationsCard items={statusItems} />
-      <DonutChart items={fileTypeDistribution} />
+    <section className="shrink-0 overflow-hidden rounded-[30px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:p-5">
+      <div className="flex flex-col gap-3 pb-4 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--pbp-brand-soft)]">
+            {t("filesSummary.visualEyebrow", "Storage control")}
+          </p>
+          <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--pbp-text-primary)] md:text-3xl">
+            {t("filesSummary.visualTitle", "저장공간과 휴지통을 한 화면에서 관리합니다.")}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-muted)]">
+            {t("filesSummary.visualDescription", "사용량, 파일 유형, 휴지통 상태를 먼저 확인하고 필요한 복원·삭제 작업만 처리합니다.")}
+          </p>
+        </div>
+        <span className="w-fit rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-xs font-bold text-[var(--pbp-text-muted)] shadow-sm">
+          {statusLabel}
+        </span>
+      </div>
+      <div className="grid gap-3 md:gap-4 lg:grid-cols-3 xl:grid-cols-[minmax(250px,0.82fr)_minmax(280px,0.92fr)_minmax(360px,1.18fr)]">
+        <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
+        <FileOperationsCard items={statusItems} />
+        <DonutChart items={fileTypeDistribution} />
+      </div>
     </section>
   );
 }

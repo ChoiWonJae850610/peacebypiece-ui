@@ -90,6 +90,8 @@ QA 체크리스트
 33_wafl-a-type-workspace-worker-structure-audit.md
 34_wafl-a-type-system-admin-remaining-screens.md
 35_wafl-a-type-customer-admin-home-visual-pass.md
+36_wafl-a-type-member-settings-visual-pass.md
+37_wafl-a-type-data-screens-visual-pass.md
 ```
 
 ## 4. 핵심 결정
@@ -193,3 +195,13 @@ QA 체크리스트
 ```
 
 - 36_wafl-a-type-member-settings-visual-pass.md
+
+
+## 0.15.16 추가
+
+```txt
+37_wafl-a-type-data-screens-visual-pass.md
+- 고객사 관리자 저장소/협력업체/통계 화면의 visual pass 기준
+- 저장소 요약 hero, 협력업체 network hero, 통계 누적 지표 hero 보정
+- 기능/API/DB/R2/권한/세션 변경 없음
+```

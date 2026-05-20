@@ -24,10 +24,12 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
   const controller = usePartnerMasterController(partnerText, capabilities);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[32px] border p-5 shadow-sm backdrop-blur pbp-admin-card md:h-full md:max-h-full md:overflow-hidden md:p-5 xl:p-6">
-      <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
+    <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-elevated)] md:h-full md:max-h-full md:overflow-hidden md:p-5 xl:p-6">
+      <div className="rounded-[30px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:p-5">
+        <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
 
-      <PartnerMasterSummaryCards summary={controller.listViewModel.summary} />
+        <PartnerMasterSummaryCards summary={controller.listViewModel.summary} className="mt-5" />
+      </div>
 
       <PartnerMasterFilters
         searchTerm={controller.searchTerm}

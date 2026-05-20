@@ -327,3 +327,13 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - 업무 바로가기 작업지시서 카드를 featured card로 강조
 - 기능/API/DB/R2/권한/세션 로직 변경 없음
 ```
+
+
+### 0.15.16 — 저장소/협력업체/통계 visual pass
+
+```txt
+- /admin/files 저장소 요약 영역을 Storage control hero로 강화
+- /admin/partners 협력업체 header와 summary cards를 Partner network hero로 묶음
+- /admin/stats 운영 누적 지표 section을 visual hero 성격으로 강화
+- 휴지통/협력업체 modal/통계 계산 로직 변경 없음
+```
