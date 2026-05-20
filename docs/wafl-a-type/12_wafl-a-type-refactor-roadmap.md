@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.8
+baseline_source: peacebypiece-ui-0.15.9
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.8
+현재 기준: 0.15.9
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -26,6 +26,8 @@ updated: 2026-05-20
 - Login / Invite / Error A-TYPE 1차
 - 고객사 관리자 홈 A-TYPE 1차
 - 고객사 관리자 멤버관리/환경설정 A-TYPE 1차
+- 시스템관리자 주요 화면 A-TYPE 1차
+- 시스템관리자 확장 화면 A-TYPE 1차
 ```
 
 ## 2. 전환 원칙
@@ -250,4 +252,27 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - 시스템관리자 화면은 고객사 관리자 AdminShell과 억지로 통합하지 않는다.
 - 기능/API/R2/권한/세션 흐름은 변경하지 않는다.
 - 29번 시스템관리자 화면 적용 기준 문서 추가
+```
+
+
+### 0.15.9 — 시스템관리자 주요 화면 A-TYPE 2차
+
+```txt
+- /system/audit-logs
+- /system/billing
+- /system/standards
+- SystemShell wrapper 기준 적용
+- raw stone/background class 일부를 semantic token 기준으로 보정
+- 감사로그/요금제/기준정보의 기능 로직은 변경하지 않는다.
+- 30번 시스템관리자 확장 화면 적용 기준 문서 추가
+```
+
+### 다음 후보 — /admin/stats 또는 시스템관리자 기준정보 세부 화면
+
+```txt
+- /admin/stats A-TYPE 구조 정리
+- /system/category-rules
+- /system/standards/processes
+- /system/standards/units
+- /system/standards/product-templates
 ```

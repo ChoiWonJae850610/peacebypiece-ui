@@ -1,5 +1,18 @@
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import SystemShell from "@/components/system/layout/SystemShell";
+import {
+  SYSTEM_BODY_TEXT_CLASS,
+  SYSTEM_CARD_CLASS,
+  SYSTEM_EYEBROW_CLASS,
+  SYSTEM_HEADER_PANEL_CLASS,
+  SYSTEM_MUTED_CARD_CLASS,
+  SYSTEM_SECTION_TITLE_CLASS,
+  SYSTEM_SMALL_TEXT_CLASS,
+  SYSTEM_SUBTITLE_CLASS,
+  SYSTEM_TITLE_CLASS,
+  SYSTEM_VALUE_TEXT_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PROCESS_STANDARD_SAMPLES,
@@ -12,22 +25,22 @@ import {
 
 function SampleRows({ rows, showSecondary = true }: { rows: SystemStandardSampleRow[]; showSecondary?: boolean }) {
   return (
-    <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-      <div className="grid grid-cols-[1fr_1fr_1.2fr_auto] gap-3 border-b border-stone-100 bg-stone-50 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">
+    <div className="mt-4 overflow-hidden rounded-2xl border border-[var(--pbp-border)]">
+      <div className="grid grid-cols-[1fr_1fr_1.2fr_auto] gap-3 border-b border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--pbp-text-subtle)]">
         <span>이름</span>
         <span>{showSecondary ? "코드/하위 예시" : "분류"}</span>
         <span>설명</span>
         <span className="text-right">상태</span>
       </div>
-      <div className="divide-y divide-stone-100 bg-white">
+      <div className="divide-y divide-[var(--pbp-border)] bg-[var(--pbp-surface)]">
         {rows.map((row) => (
           <div
             key={row.id}
-            className="grid grid-cols-[1fr_1fr_1.2fr_auto] gap-3 px-4 py-3 text-sm text-stone-700"
+            className="grid grid-cols-[1fr_1fr_1.2fr_auto] gap-3 px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
           >
-            <span className="font-semibold text-stone-950">{row.primary}</span>
-            <span className="text-xs text-stone-500">{row.secondary || "시스템 표준"}</span>
-            <span className="text-xs leading-5 text-stone-600">{row.description}</span>
+            <span className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{row.primary}</span>
+            <span className="text-xs text-[var(--pbp-text-subtle)]">{row.secondary || "시스템 표준"}</span>
+            <span className={SYSTEM_SMALL_TEXT_CLASS}>{row.description}</span>
             <AdminStatusBadge className="justify-self-end">{row.statusLabel}</AdminStatusBadge>
           </div>
         ))}
@@ -38,19 +51,18 @@ function SampleRows({ rows, showSecondary = true }: { rows: SystemStandardSample
 
 export default function SystemStandardsDesignPage() {
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+    <SystemShell>
+        <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+              <p className={SYSTEM_EYEBROW_CLASS}>
                 SYSTEM STANDARDS
               </p>
               <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-stone-950">
+                <h1 className={SYSTEM_TITLE_CLASS}>
                   시스템 기준정보 관리 설계
                 </h1>
-                <p className="max-w-3xl text-sm leading-6 text-stone-600">
+                <p className={SYSTEM_SUBTITLE_CLASS}>
                   고객관리자 기준정보 화면에서 단위 표준과 외주공정 유형을 사용 여부 선택형으로 전환했기 때문에,
                   시스템관리자가 관리할 표준 원장과 고객사별 사용 관계를 먼저 설계합니다.
                 </p>
@@ -71,14 +83,14 @@ export default function SystemStandardsDesignPage() {
           {SYSTEM_STANDARD_DESIGN_TABS.map((tab) => (
             <article
               key={tab.id}
-              className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
+              className={SYSTEM_CARD_CLASS}
             >
               <div className="flex items-center justify-between gap-3">
                 <AdminStatusBadge>{tab.label}</AdminStatusBadge>
                 <AdminStatusBadge tone="info">{tab.statusLabel}</AdminStatusBadge>
               </div>
               <h2 className="mt-4 text-lg font-semibold text-stone-950">{tab.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">{tab.description}</p>
+              <p className={`mt-2 ${SYSTEM_BODY_TEXT_CLASS}`}>{tab.description}</p>
               <p className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-600">
                 {tab.scopeLabel}
               </p>
@@ -102,9 +114,9 @@ export default function SystemStandardsDesignPage() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <article className={SYSTEM_CARD_CLASS}>
             <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">단위 표준 원장</h2>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>단위 표준 원장</h2>
               <p className="text-sm leading-6 text-stone-600">
                 시스템관리자가 한글명과 영문 코드/약어를 관리하고 고객사는 필요한 단위만 사용합니다.
               </p>
@@ -112,9 +124,9 @@ export default function SystemStandardsDesignPage() {
             <SampleRows rows={SYSTEM_UNIT_STANDARD_SAMPLES} />
           </article>
 
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <article className={SYSTEM_CARD_CLASS}>
             <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">외주공정 유형 원장</h2>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>외주공정 유형 원장</h2>
               <p className="text-sm leading-6 text-stone-600">
                 공정명 중복을 막기 위해 시스템 표준을 관리하고 고객사는 사용하는 공정만 선택합니다.
               </p>
@@ -167,9 +179,9 @@ export default function SystemStandardsDesignPage() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <article className={SYSTEM_CARD_CLASS}>
             <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">생산품 유형 기본 템플릿</h2>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>생산품 유형 기본 템플릿</h2>
               <p className="text-sm leading-6 text-stone-600">
                 생산품 유형은 고객사별 직접 관리를 유지하고, 시스템에서는 신규 고객사 생성 시 복사할 기본 템플릿만 설계합니다.
               </p>
@@ -177,24 +189,23 @@ export default function SystemStandardsDesignPage() {
             <SampleRows rows={SYSTEM_PRODUCT_TEMPLATE_SAMPLES} />
           </article>
 
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">정책 메모</h2>
+          <article className={SYSTEM_CARD_CLASS}>
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>정책 메모</h2>
             <ul className="mt-4 grid gap-3">
               {SYSTEM_STANDARDS_POLICY_NOTES.map((note) => (
                 <li
                   key={note}
-                  className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-600"
+                  className={SYSTEM_MUTED_CARD_CLASS + " text-sm leading-6 text-[var(--pbp-text-muted)]"}
                 >
                   {note}
                 </li>
               ))}
             </ul>
-            <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
+            <div className="mt-5 rounded-2xl border border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] p-4 text-xs leading-5 text-[var(--pbp-status-warning)]">
               0.10.38에서 DB schema와 seed 기준을 확정했습니다. 0.10.51에서는 고객사 신규 생성 시 생산품 유형 기본 템플릿을 고객사 item_categories로 복사하고 단위·외주공정 사용 연결을 초기화하는 설계 화면을 추가했습니다.
             </div>
           </article>
         </section>
-      </div>
-    </main>
+    </SystemShell>
   );
 }

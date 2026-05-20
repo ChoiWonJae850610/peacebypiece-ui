@@ -15,6 +15,18 @@ import {
   type SystemCompanyPlanField,
 } from "@/lib/system/systemCompanyPlanSkeleton";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import SystemShell from "@/components/system/layout/SystemShell";
+import {
+  SYSTEM_BODY_TEXT_CLASS,
+  SYSTEM_CARD_CLASS,
+  SYSTEM_EYEBROW_CLASS,
+  SYSTEM_HEADER_PANEL_CLASS,
+  SYSTEM_MUTED_CARD_CLASS,
+  SYSTEM_SECTION_TITLE_CLASS,
+  SYSTEM_SUBTITLE_CLASS,
+  SYSTEM_TITLE_CLASS,
+  SYSTEM_VALUE_TEXT_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 
 const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
   {
@@ -22,8 +34,8 @@ const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
     label: "고객사",
     render: (company) => (
       <div className="space-y-1">
-        <p className="font-semibold text-stone-950">{company.name}</p>
-        <p className="text-[10px] font-medium text-stone-500">{company.id}</p>
+        <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{company.name}</p>
+        <p className="text-[10px] font-medium text-[var(--pbp-text-subtle)]">{company.id}</p>
       </div>
     ),
   },
@@ -37,7 +49,7 @@ const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
     label: "저장공간",
     render: (company) => (
       <div className="space-y-1 text-xs text-stone-600">
-        <p className="font-semibold text-stone-900">{company.storageUsageLabel}</p>
+        <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{company.storageUsageLabel}</p>
         <AdminStatusBadge tone={company.storageRiskLabel === "초과" ? "danger" : company.storageRiskLabel === "주의" ? "warning" : "success"} size="xs">
           {company.storageRiskLabel}
         </AdminStatusBadge>
@@ -49,7 +61,7 @@ const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
     label: "멤버",
     render: (company) => (
       <div className="space-y-1 text-xs text-stone-600">
-        <p className="font-semibold text-stone-900">{company.memberUsageLabel}</p>
+        <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{company.memberUsageLabel}</p>
         <AdminStatusBadge tone={company.memberRiskLabel === "초과" ? "danger" : "success"} size="xs">
           {company.memberRiskLabel}
         </AdminStatusBadge>
@@ -61,8 +73,8 @@ const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
     label: "정책",
     render: (company) => (
       <div className="space-y-1 text-xs text-stone-600">
-        <p className="font-semibold text-stone-900">{company.overrideLabel}</p>
-        <p className="leading-5 text-stone-500">{company.policySourceLabel}</p>
+        <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{company.overrideLabel}</p>
+        <p className="leading-5 text-[var(--pbp-text-subtle)]">{company.policySourceLabel}</p>
       </div>
     ),
   },
@@ -74,8 +86,8 @@ const companyPlanFieldColumns: AdminTableColumn<SystemCompanyPlanField>[] = [
     label: "필드",
     render: (field) => (
       <div className="space-y-1">
-        <p className="font-semibold text-stone-950">{field.label}</p>
-        <p className="text-[10px] font-medium text-stone-500">{field.id}</p>
+        <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{field.label}</p>
+        <p className="text-[10px] font-medium text-[var(--pbp-text-subtle)]">{field.id}</p>
       </div>
     ),
   },
@@ -86,7 +98,7 @@ const companyPlanFieldColumns: AdminTableColumn<SystemCompanyPlanField>[] = [
       <input
         value={field.value}
         readOnly
-        className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
+        className="w-full rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2 text-sm text-[var(--pbp-text-muted)]"
       />
     ),
   },
@@ -99,19 +111,18 @@ const companyPlanFieldColumns: AdminTableColumn<SystemCompanyPlanField>[] = [
 
 export default function SystemCompanyPlanSkeleton() {
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+    <SystemShell contentClassName="mx-auto flex max-w-6xl flex-col gap-4 sm:gap-6">
+        <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+              <p className={SYSTEM_EYEBROW_CLASS}>
                 SYSTEM BILLING
               </p>
               <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-stone-950">
+                <h1 className={SYSTEM_TITLE_CLASS}>
                   고객별 요금제 / 용량 관리
                 </h1>
-                <p className="max-w-3xl text-sm leading-6 text-stone-600">
+                <p className={SYSTEM_SUBTITLE_CLASS}>
                   시스템관리자가 고객사별 plan을 선택하고 저장용량, 멤버 수, 가격 override를
                   조정하는 설계 화면입니다. 기본 요금제 정책은 lib/billing 기준을 사용하고,
                   실제 결제 자동화와 업로드 차단은 후속 단계로 분리합니다.
@@ -146,15 +157,15 @@ export default function SystemCompanyPlanSkeleton() {
               <dl className="mt-4 grid gap-2 text-xs text-stone-600">
                 <div className="flex justify-between gap-3">
                   <dt>가격</dt>
-                  <dd className="font-semibold text-stone-900">{plan.priceLabel}</dd>
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{plan.priceLabel}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>저장용량</dt>
-                  <dd className="font-semibold text-stone-900">{plan.storageLabel}</dd>
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{plan.storageLabel}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>멤버</dt>
-                  <dd className="font-semibold text-stone-900">{plan.memberLabel}</dd>
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{plan.memberLabel}</dd>
                 </div>
               </dl>
               <p className="mt-4 text-xs leading-5 text-stone-500">
@@ -164,10 +175,10 @@ export default function SystemCompanyPlanSkeleton() {
           ))}
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <section className={SYSTEM_CARD_CLASS}>
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">요금제·용량 관리 설계 기준</h2>
-            <p className="text-sm leading-6 text-stone-600">
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>요금제·용량 관리 설계 기준</h2>
+            <p className={SYSTEM_BODY_TEXT_CLASS}>
               하드코딩된 저장공간 값 대신 billing policy와 고객사별 assignment를 분리해서 관리합니다.
             </p>
           </div>
@@ -187,10 +198,10 @@ export default function SystemCompanyPlanSkeleton() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <section className={SYSTEM_CARD_CLASS}>
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">고객별 요금제 변경 preview</h2>
-            <p className="text-sm leading-6 text-stone-600">
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객별 요금제 변경 preview</h2>
+            <p className={SYSTEM_BODY_TEXT_CLASS}>
               시스템관리자가 고객사별 plan, 저장공간, 멤버 수, 가격 override를 한 화면에서 확인한 뒤 저장하는 구조입니다.
               현재는 저장 전 preview이며 실제 API 연결 전까지 버튼은 비활성 상태로 유지합니다.
             </p>
@@ -212,37 +223,37 @@ export default function SystemCompanyPlanSkeleton() {
               <dl className="mt-4 grid gap-2 text-xs text-stone-600">
                 <div className="flex justify-between gap-3">
                   <dt>현재 요금제</dt>
-                  <dd className="font-semibold text-stone-900">
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.currentPlanLabel}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>변경 요금제</dt>
-                  <dd className="font-semibold text-stone-900">
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.nextPlanLabel}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>저장공간</dt>
-                  <dd className="font-semibold text-stone-900">
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.storageChangeLabel}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>멤버</dt>
-                  <dd className="font-semibold text-stone-900">
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.memberChangeLabel}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>금액</dt>
-                  <dd className="font-semibold text-stone-900">
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.priceChangeLabel}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>적용 시작일</dt>
-                  <dd className="font-semibold text-stone-900">
+                  <dd className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.effectiveDateLabel}
                   </dd>
                 </div>
@@ -290,8 +301,8 @@ export default function SystemCompanyPlanSkeleton() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-          <aside className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">고객사 목록</h2>
+          <aside className={SYSTEM_CARD_CLASS}>
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객사 목록</h2>
             <div className="mt-4">
               <AdminTable
                 items={SYSTEM_COMPANY_PLAN_COMPANIES}
@@ -304,12 +315,12 @@ export default function SystemCompanyPlanSkeleton() {
             </div>
           </aside>
 
-          <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <section className={SYSTEM_CARD_CLASS}>
             <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>
                 요금제 수정 준비 영역
               </h2>
-              <p className="text-sm leading-6 text-stone-600">
+              <p className={SYSTEM_BODY_TEXT_CLASS}>
                 company_plan_assignments와 company_plan_override 정책에 연결될 입력 영역입니다.
               </p>
             </div>
@@ -332,20 +343,19 @@ export default function SystemCompanyPlanSkeleton() {
           </section>
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-stone-950">운영 정책 메모</h2>
+        <section className={SYSTEM_CARD_CLASS}>
+          <h2 className={SYSTEM_SECTION_TITLE_CLASS}>운영 정책 메모</h2>
           <ul className="mt-4 grid gap-3 lg:grid-cols-4">
             {SYSTEM_COMPANY_PLAN_POLICY_NOTES.map((note) => (
               <li
                 key={note}
-                className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-xs leading-5 text-stone-600"
+                className={SYSTEM_MUTED_CARD_CLASS + " text-xs leading-5 text-[var(--pbp-text-muted)]"}
               >
                 {note}
               </li>
             ))}
           </ul>
         </section>
-      </div>
-    </main>
+    </SystemShell>
   );
 }
