@@ -41,7 +41,9 @@
 - `wafl-a-type/34_wafl-a-type-system-admin-remaining-screens.md` — 시스템관리자 잔여 화면 A-TYPE 구현 기준
 - `wafl-a-type/35_wafl-a-type-customer-admin-home-visual-pass.md` — 고객사 관리자 홈 visual pass 기준
 - `wafl-a-type/36_wafl-a-type-member-settings-visual-pass.md` — 멤버관리/환경설정 visual pass 기준
-- `wafl-a-type/37_wafl-a-type-data-screens-visual-pass.md` — 저장소/협력업체/통계 visual pass 기준
+- `wafl-a-type/37_wafl-a-type-data-screens-visual-pass.md
+38_wafl-a-type-system-home-visual-pass.md
+- `wafl-a-type/38_wafl-a-type-system-home-visual-pass.md` — 시스템관리자 홈 visual pass` — 저장소/협력업체/통계 visual pass 기준
 
 ## 정리 정책
 
