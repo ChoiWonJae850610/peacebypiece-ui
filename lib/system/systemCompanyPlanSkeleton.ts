@@ -228,7 +228,7 @@ export const SYSTEM_COMPANY_PLAN_FIELDS: SystemCompanyPlanField[] = [
   },
   {
     id: "storage",
-    label: "저장용량 예외 한도"
+    label: "저장용량 예외 한도",
     value: "80GB",
     description:
       "기본 저장용량을 기준으로 필요한 고객사에만 예외 한도를 적용합니다.",
