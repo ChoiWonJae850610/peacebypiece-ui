@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
-version: 0.8
-baseline_source: peacebypiece-ui-0.15.3
+version: 0.9
+baseline_source: peacebypiece-ui-0.15.4
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.3
+현재 기준: 0.15.4
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -23,6 +23,7 @@ updated: 2026-05-20
 - route group 기반 Router/Layout 구조 1차 정리
 - AdminShell/SystemShell 책임 분리 1차
 - Admin 공통 컴포넌트 variant 1차
+- Login / Invite / Error A-TYPE 1차
 ```
 
 ## 2. 전환 원칙
@@ -49,7 +50,7 @@ updated: 2026-05-20
 - 21번 감사 문서 추가
 ```
 
-### 0.15.1 — Router/Layout 구조 정리 1차
+### 0.15.5 — 고객사 관리자 주요 화면 A-TYPE
 
 ```txt
 - URL 유지
@@ -85,11 +86,13 @@ updated: 2026-05-20
 ### 0.15.4 — Login / Invite / Error A-TYPE
 
 ```txt
-- WaflLoginPage
-- CompanyInvitationJoinRequestPage
-- MemberInvitationJoinRequestPage
-- invite error
-- pending/service-paused
+- ATypePublicFrame / ATypePublicCard / ATypePublicNotice 추가
+- WaflLoginPage A-TYPE 문구와 semantic token 기준 정리
+- CompanyInvitationJoinRequestPage A-TYPE 구조 정리
+- MemberInvitationJoinRequestPage A-TYPE 구조 정리
+- invite error page A-TYPE 구조 정리
+- service-paused page A-TYPE public frame 적용
+- 25번 Login/Invite/Error 구현 문서 추가
 ```
 
 ### 0.15.5 — 고객사 관리자 주요 화면 A-TYPE
@@ -196,5 +199,5 @@ WorkOrderWorkspace 구조 / R2 / 첨부·메모 / storage purge / permission/ses
 ## 7. 다음 권장 작업
 
 ```txt
-0.15.1 — Router/Layout 구조 정리 1차
+0.15.5 — 고객사 관리자 주요 화면 A-TYPE
 ```

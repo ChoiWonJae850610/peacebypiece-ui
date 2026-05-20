@@ -1,3 +1,8 @@
+import {
+  ATypePublicCard,
+  ATypePublicFrame,
+  ATypePublicNotice,
+} from "@/components/public/ATypePublicFrame";
 import { resolveInviteAuthErrorMessage } from "@/lib/invitations/invitationErrorPresentation";
 
 type InviteErrorPageProps = {
@@ -15,12 +20,28 @@ export default async function InviteErrorPage({ searchParams }: InviteErrorPageP
   const error = readError(params);
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[#FFF7E3] px-5 py-10 text-[#2A2016]">
-      <section className="w-full max-w-md rounded-[2rem] border border-[#E1AF68]/70 bg-white/80 p-7 shadow-[0_24px_70px_rgba(89,53,18,0.14)]">
-        <p className="text-sm font-black tracking-[0.18em] text-[#9C6424]">WAFL</p>
-        <h1 className="mt-4 text-2xl font-black tracking-[-0.04em]">초대장을 열 수 없어요.</h1>
-        <p className="mt-3 text-sm font-semibold leading-6 text-[#6F5030]">{resolveInviteAuthErrorMessage(error)}</p>
-      </section>
-    </main>
+    <ATypePublicFrame
+      eyebrow="Invitation error"
+      title={
+        <>
+          초대 링크를
+          <br />
+          열 수 없습니다.
+        </>
+      }
+      description="초대 링크가 만료되었거나 로그인 처리 중 필요한 정보가 누락되었습니다."
+      heroItems={["초대 링크", "만료 상태", "로그인 확인", "재요청"]}
+      footer={<p>초대 링크가 필요하면 관리자에게 새 링크 생성을 요청해 주세요.</p>}
+    >
+      <ATypePublicCard eyebrow="초대 오류" title="링크 상태를 확인해 주세요.">
+        <ATypePublicNotice tone="danger">{resolveInviteAuthErrorMessage(error)}</ATypePublicNotice>
+        <a
+          href="/login"
+          className="flex w-full items-center justify-center rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-5 py-4 text-sm font-black text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-soft)]"
+        >
+          로그인 화면으로 이동
+        </a>
+      </ATypePublicCard>
+    </ATypePublicFrame>
   );
 }

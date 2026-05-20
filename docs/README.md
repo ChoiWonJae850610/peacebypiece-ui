@@ -29,9 +29,10 @@
 - `wafl-a-type/22_wafl-a-type-router-layout-implementation.md` — route group 기반 Router/Layout 구현 기준
 - `wafl-a-type/23_wafl-a-type-shell-responsibility.md` — Admin/System/Workspace shell 책임 분리 기준
 - `wafl-a-type/24_wafl-a-type-admin-component-variants.md` — Admin 공통 컴포넌트 variant 구현 기준
+- `wafl-a-type/25_wafl-a-type-login-invite-error-implementation.md` — Login/Invite/Error A-TYPE 구현 기준
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.14.9부터 기준 문서는 `docs/wafl-a-type/` 안의 00~24 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.14.9부터 기준 문서는 `docs/wafl-a-type/` 안의 00~25 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.

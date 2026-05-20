@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  ATypePublicCard,
+  ATypePublicFrame,
+  ATypePublicNotice,
+  GoogleMark,
+} from "@/components/public/ATypePublicFrame";
 import { resolveMemberInvitationErrorMessage } from "@/lib/invitations/invitationErrorPresentation";
 
 interface MemberInvitationJoinRequestPageProps {
@@ -9,7 +15,6 @@ interface MemberInvitationJoinRequestPageProps {
 }
 
 type SubmitState = "idle" | "redirecting";
-
 type VerifyState = "idle" | "loading" | "valid" | "invalid";
 
 type PublicMemberInvitation = {
@@ -32,9 +37,9 @@ type VerifyInvitationPayload = {
 };
 
 function formatDate(value?: string | null): string {
-  if (!value) return "만료일을 확인하고 있어요.";
+  if (!value) return "만료일을 확인하고 있습니다.";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "만료일을 확인하고 있어요.";
+  if (Number.isNaN(date.getTime())) return "만료일을 확인하고 있습니다.";
   return new Intl.DateTimeFormat("ko-KR", {
     year: "numeric",
     month: "long",
@@ -46,27 +51,6 @@ function formatDate(value?: string | null): string {
 
 function readCompanyName(invitation: PublicMemberInvitation | null): string {
   return invitation?.companyName || invitation?.customerName || "초대한 고객사";
-}
-
-function GoogleMark() {
-  return (
-    <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-xs font-black text-[#2B2118] shadow-sm">
-      G
-    </span>
-  );
-}
-
-function WaffleGridMark() {
-  return (
-    <div aria-hidden="true" className="grid h-12 w-12 grid-cols-3 gap-1 rounded-2xl bg-[#B8742B] p-2 shadow-[inset_0_0_0_1px_rgba(62,39,18,0.22)]">
-      {Array.from({ length: 9 }).map((_, index) => (
-        <span
-          key={index}
-          className="rounded-[0.35rem] bg-[#FFE7A8] shadow-[inset_0_-1px_0_rgba(62,39,18,0.16)]"
-        />
-      ))}
-    </div>
-  );
 }
 
 export default function MemberInvitationJoinRequestPage({
@@ -102,7 +86,7 @@ export default function MemberInvitationJoinRequestPage({
       } catch (error) {
         if ((error as Error).name === "AbortError") return;
         setVerifyState("invalid");
-        setMessage("초대장을 불러오는 중 문제가 생겼어요.");
+        setMessage("초대장을 불러오는 중 문제가 발생했습니다.");
       }
     }
 
@@ -114,6 +98,12 @@ export default function MemberInvitationJoinRequestPage({
   const companyName = readCompanyName(invitation);
   const expiresAtLabel = formatDate(invitation?.expiresAt);
   const isJoinable = verifyState === "valid" && submitState !== "redirecting";
+  const invitationStatusLabel =
+    verifyState === "valid"
+      ? "사용 가능한 초대 링크"
+      : verifyState === "invalid"
+        ? "초대 링크 확인 실패"
+        : "초대 링크 확인 중";
 
   function handleGoogleJoin() {
     if (!isJoinable) return;
@@ -122,81 +112,50 @@ export default function MemberInvitationJoinRequestPage({
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#FFF7E3] px-5 py-6 text-[#2A2016] sm:px-8 sm:py-8 lg:px-10">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.2] [background-image:linear-gradient(#D89B43_1px,transparent_1px),linear-gradient(90deg,#D89B43_1px,transparent_1px)] [background-size:58px_58px]" />
-      <div className="pointer-events-none absolute left-[-8rem] top-[-6rem] h-80 w-80 rounded-full bg-[#F3C05E]/35 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-7rem] right-[-8rem] h-96 w-96 rounded-full bg-[#9F6227]/25 blur-3xl" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/30 blur-3xl" />
+    <ATypePublicFrame
+      eyebrow="Member invitation"
+      title={
+        <>
+          WAFL 멤버
+          <br />
+          참여를 요청하세요.
+        </>
+      }
+      description={`${companyName}에서 보낸 초대 링크입니다. Google 계정으로 본인 확인을 진행하면 관리자 승인 대기 상태로 등록됩니다.`}
+      heroItems={["멤버 초대", "권한 템플릿", "승인 대기", "작업 참여"]}
+      footer={
+        <p>
+          {expiresAtLabel} 이후 이 초대 링크는 사용할 수 없습니다.
+        </p>
+      }
+    >
+      <ATypePublicCard eyebrow="초대 상태" title={invitationStatusLabel}>
+        {verifyState === "loading" ? (
+          <ATypePublicNotice tone="neutral">초대장을 확인하고 있습니다.</ATypePublicNotice>
+        ) : null}
 
-      <section className="relative mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col justify-between gap-8 lg:min-h-[calc(100vh-4rem)]">
-        <header className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <WaffleGridMark />
-            <div>
-              <p className="text-2xl font-black tracking-[-0.04em] text-[#2A2016]">WAFL</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9C6424]">
-                Work Assignment Flow
-              </p>
-            </div>
-          </div>
-        </header>
+        {verifyState === "invalid" ? (
+          <ATypePublicNotice tone="danger">{message ?? "초대 링크를 확인할 수 없습니다."}</ATypePublicNotice>
+        ) : null}
 
-        <div className="grid flex-1 items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.54fr)] lg:gap-14">
-          <article className="max-w-3xl space-y-8 sm:space-y-10">
-            <div className="space-y-5 sm:space-y-6">
-              <h1 className="text-5xl font-black leading-[0.95] tracking-[-0.07em] text-[#2A2016] sm:text-6xl lg:text-7xl">
-                {companyName}에서
-                <br />
-                당신을
-                <br className="sm:hidden" /> 초대했어요.
-              </h1>
-            </div>
+        {verifyState === "valid" ? (
+          <ATypePublicNotice tone="success">이 링크로 WAFL 참여 요청을 보낼 수 있습니다.</ATypePublicNotice>
+        ) : null}
 
-            <div className="space-y-5 text-3xl font-black leading-tight tracking-[-0.04em] text-[#4A321C] sm:text-4xl lg:text-5xl">
-              <p>함께 시작해요.</p>
-              <p>
-                <span className="inline-block rounded-[1.2rem] bg-[#FFE1A6]/85 px-3 py-1 text-[#7A4516] shadow-[0_12px_34px_rgba(184,116,43,0.2)] ring-1 ring-[#D89B43]/25 sm:px-4">
-                  와플
-                </span>
-                에서.
-              </p>
-            </div>
-          </article>
+        <button
+          type="button"
+          disabled={!isJoinable}
+          onClick={handleGoogleJoin}
+          className="flex w-full items-center justify-center gap-3 rounded-[var(--pbp-radius-xl)] bg-[var(--pbp-action-primary-surface)] px-5 py-4 text-sm font-black text-[var(--pbp-action-primary-text)] shadow-[var(--pbp-shadow-elevated-a-type)] transition hover:-translate-y-0.5 hover:bg-[var(--pbp-action-primary-surface-hover)] disabled:translate-y-0 disabled:bg-[var(--pbp-text-disabled)] disabled:text-[var(--pbp-text-secondary)]"
+        >
+          <GoogleMark />
+          {submitState === "redirecting" ? "Google로 이동 중" : "Google로 계속하기"}
+        </button>
 
-          <aside className="w-full rounded-[2rem] border border-[#E1AF68]/60 bg-[#FFFDF7]/75 p-5 shadow-[0_24px_70px_rgba(89,53,18,0.14)] backdrop-blur sm:p-6 lg:p-7">
-            <div className="space-y-5">
-              {verifyState === "loading" ? (
-                <div className="rounded-3xl bg-[#FFF4D8] px-5 py-4 text-sm font-bold text-[#8B5A24]">
-                  초대장을 확인하고 있어요.
-                </div>
-              ) : null}
-
-              {verifyState === "invalid" ? (
-                <div className="rounded-3xl border border-[#E08A70]/70 bg-[#FFF1EA] px-5 py-4 text-sm font-bold text-[#9B3F24]">
-                  {message ?? "초대 링크를 확인할 수 없어요."}
-                </div>
-              ) : null}
-
-              <button
-                  type="button"
-                  disabled={!isJoinable}
-                  onClick={handleGoogleJoin}
-                  className="flex w-full items-center justify-center gap-3 rounded-[1.4rem] bg-[#2A2016] px-5 py-4 text-sm font-black text-[#FFF8E7] shadow-[0_14px_30px_rgba(72,42,16,0.22)] transition hover:-translate-y-0.5 hover:bg-[#3A2A1B] disabled:translate-y-0 disabled:bg-[#D8CDBB] disabled:text-[#857464]"
-                >
-                  <GoogleMark />
-                  {submitState === "redirecting" ? "Google로 이동 중" : "Google로 계속하기"}
-                </button>
-            </div>
-          </aside>
-        </div>
-
-        <footer className="relative flex flex-col gap-3 text-xs font-semibold leading-5 text-[#8B6A45] sm:flex-row sm:items-end sm:justify-start">
-          <p>
-            {expiresAtLabel} 이후
-            <br />이 초대장은 사라집니다.
-          </p>
-        </footer>
-      </section>
-    </main>
+        <p className="text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
+          초대 승인 전에는 고객사 업무 화면에 접근할 수 없습니다. 승인 상태는 승인 대기 화면에서 확인할 수 있습니다.
+        </p>
+      </ATypePublicCard>
+    </ATypePublicFrame>
   );
 }
