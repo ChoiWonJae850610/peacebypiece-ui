@@ -1,14 +1,15 @@
-Version : 0.15.12
-Summary : Workspace와 Worker 화면 구조 점검 및 workspace shell token 정리
-Description : Workspace/Worker 화면의 A-TYPE 적용 전 구조를 문서화하고, MemberWorkspaceShell과 MemberWorkspaceHome의 raw color 표현을 semantic token 기준으로 1차 정리했다. WorkOrderWorkspace는 high risk 영역으로 분리해 기능과 layout은 변경하지 않고 다음 DeviceKind 단계에서 다루도록 기준을 정리했다.
+Version : 0.15.13
+Summary : 시스템관리자 잔여 점검 화면 A-TYPE shell 적용
+Description : 시스템관리자 잔여 화면 중 access-checkpoint, standards regression, standards seed-status에 SystemShell을 적용하고 page-level wrapper 중복을 제거했다. /system/invites는 /system/companies redirect route로 유지하는 기준을 문서화했으며, 기능/API/DB 로직은 변경하지 않았다.
 수정 파일 목록 :
-- components/workspace/MemberWorkspaceShell.tsx
-- components/workspace/MemberWorkspaceHome.tsx
+- components/system/access/SystemAccessStabilityCheckpoint.tsx
+- components/system/standards/SystemStandardsRegressionPage.tsx
+- components/system/standards/SystemStandardsSeedStatusPage.tsx
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/wafl-a-type/33_wafl-a-type-workspace-worker-structure-audit.md
+- docs/wafl-a-type/34_wafl-a-type-system-admin-remaining-screens.md
 삭제 파일 목록 :
-- 없음
+없음

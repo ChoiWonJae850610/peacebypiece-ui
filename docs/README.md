@@ -38,6 +38,7 @@
 - `wafl-a-type/31_wafl-a-type-admin-stats-screen.md` — 고객사 관리자 통계정보 A-TYPE 구현 기준
 - `wafl-a-type/32_wafl-a-type-system-standards-detail-screens.md` — 시스템관리자 기준정보 세부 화면 A-TYPE 구현 기준
 - `wafl-a-type/33_wafl-a-type-workspace-worker-structure-audit.md` — Workspace/Worker 화면 구조 점검
+- `wafl-a-type/34_wafl-a-type-system-admin-remaining-screens.md` — 시스템관리자 잔여 화면 A-TYPE 구현 기준
 
 ## 정리 정책
 
@@ -48,7 +49,7 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.12
+현재 기준: 0.15.13
 PC A-TYPE 전환 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

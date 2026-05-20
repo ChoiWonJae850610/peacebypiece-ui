@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.12
+baseline_source: peacebypiece-ui-0.15.13
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.12
+현재 기준: 0.15.13
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -31,6 +31,7 @@ updated: 2026-05-20
 - 고객사 관리자 통계정보 A-TYPE 1차
 - 시스템관리자 기준정보 세부 화면 A-TYPE 1차
 - Workspace / Worker 화면 구조 점검 1차
+- 시스템관리자 잔여 화면 A-TYPE 1차
 ```
 
 ## 2. 전환 원칙
@@ -302,4 +303,15 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 - MemberWorkspaceHome semantic token 1차 정리
 - /worker WorkOrderWorkspace는 기능 변경 없이 구조 리스크만 문서화
 - 33번 Workspace/Worker 구조 점검 문서 추가
+```
+
+
+### 0.15.13 — 시스템관리자 잔여 화면 A-TYPE 1차
+
+```txt
+- /system/invites redirect route 유지
+- /system/access-checkpoint SystemShell 적용
+- /system/standards/regression SystemShell 적용
+- /system/standards/seed-status SystemShell 적용
+- 기능/API/DB 로직 변경 없음
 ```
