@@ -54,7 +54,7 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-[112px] w-full min-w-0 flex-col justify-between rounded-[22px] border p-4 text-left shadow-sm transition hover:-translate-y-0.5 sm:min-h-[118px] ${tone.card} ${
+      className={`flex min-h-[132px] w-full min-w-0 flex-col justify-between rounded-[28px] border p-5 text-left shadow-[var(--pbp-shadow-card)] transition hover:-translate-y-0.5 sm:min-h-[140px] ${tone.card} ${
         active ? "ring-2 ring-[var(--pbp-focus-ring)]/20" : ""
       }`}
     >
@@ -415,20 +415,20 @@ export default function AdminSettingsHub() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0 sm:pr-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-0 sm:pr-1">
       <AdminSection
         eyebrow={t("settings.hub.eyebrow", "Admin settings")}
         title={t("settings.hub.title", "환경설정")}
         description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 개발 건의를 한 화면에서 전환해 확인합니다.")}
         actions={
-          <p className="w-full rounded-2xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs font-semibold leading-5 pbp-text-muted sm:w-auto">
+          <p className="w-full rounded-full border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-2 text-xs font-semibold leading-5 pbp-text-muted shadow-sm sm:w-auto">
             {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}
           </p>
         }
-        density="compact"
-        className="shrink-0"
+        density="default"
+        className="shrink-0 overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,var(--pbp-surface-base)_0%,var(--pbp-surface-soft)_58%,var(--pbp-brand-muted)_145%)]"
       >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
             <SettingsMenuCard key={item.id} item={item} active={activeMenuId === item.id} onClick={() => setActiveMenuId(item.id)} />
           ))}

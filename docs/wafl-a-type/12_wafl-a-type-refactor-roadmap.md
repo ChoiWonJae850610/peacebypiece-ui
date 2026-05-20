@@ -318,6 +318,7 @@ DB/API/R2/권한/세션 흐름은 변경하지 않는다.
 
 
 ### 0.15.14 — 고객사 관리자 홈 visual pass
+0.15.15 — 멤버관리/환경설정 visual pass
 
 ```txt
 - /admin 작업지시서 현황을 큰 brand hero block으로 보정

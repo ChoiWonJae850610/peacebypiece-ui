@@ -191,3 +191,5 @@ QA 체크리스트
 - 업무 바로가기 featured card 적용
 - 기능/API/DB/R2/권한/세션 변경 없음
 ```
+
+- 36_wafl-a-type-member-settings-visual-pass.md

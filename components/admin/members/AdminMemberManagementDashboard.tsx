@@ -1310,20 +1310,39 @@ export default function AdminMemberManagementDashboard() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
-      <AdminSummaryMetricCards
-        cards={summaryCards.map((card) => ({
-          id: card.id,
-          label: t(`memberManagement.summary.${card.id}.label`, card.id),
-          value: card.value,
-          helper: t(`memberManagement.summary.${card.id}.description`, ""),
-          badge: (
-            <AdminStatusBadge tone={getStatusTone(card.status)}>
-              {t(`memberManagement.statuses.${card.status}`, card.status)}
-            </AdminStatusBadge>
-          ),
-        }))}
-      />
+    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto pr-1">
+      <section className="overflow-hidden rounded-[32px] border border-[var(--pbp-border-soft)] bg-[linear-gradient(135deg,var(--pbp-surface-base)_0%,var(--pbp-surface-soft)_48%,var(--pbp-brand-muted)_140%)] p-5 shadow-[var(--pbp-shadow-card)] sm:p-6">
+        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--pbp-brand-soft)]">
+              {t("memberManagement.visualHero.eyebrow", "Team operation")}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-[-0.03em] pbp-text-primary sm:text-3xl">
+              {t("memberManagement.visualHero.title", "멤버와 권한 흐름을 한 화면에서 관리하세요")}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 pbp-text-muted">
+              {t("memberManagement.visualHero.description", "초대 링크, 가입 승인, 재직 상태, 화면별 권한을 같은 기준으로 확인합니다.")}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <AdminStatusBadge tone="brand">{t("memberManagement.visualHero.badge.role", "역할 기반")}</AdminStatusBadge>
+            <AdminStatusBadge tone="info">{t("memberManagement.visualHero.badge.permission", "권한 관리")}</AdminStatusBadge>
+          </div>
+        </div>
+        <AdminSummaryMetricCards
+          cards={summaryCards.map((card) => ({
+            id: card.id,
+            label: t(`memberManagement.summary.${card.id}.label`, card.id),
+            value: card.value,
+            helper: t(`memberManagement.summary.${card.id}.description`, ""),
+            badge: (
+              <AdminStatusBadge tone={getStatusTone(card.status)}>
+                {t(`memberManagement.statuses.${card.status}`, card.status)}
+              </AdminStatusBadge>
+            ),
+          }))}
+        />
+      </section>
 
       <AdminSection
         eyebrow={t("memberManagement.eyebrow", "멤버 권한")}
@@ -1351,13 +1370,13 @@ export default function AdminMemberManagementDashboard() {
           />
         }
         bodyClassName="mt-4"
-        className="shrink-0"
+        className="shrink-0 rounded-[30px]"
       >
         <div>
           {activeTab === "invite" ? (
             <section
               id="member-invite-builder"
-              className="grid items-stretch gap-4 lg:grid-cols-[0.9fr_1.1fr]"
+              className="grid items-stretch gap-5 lg:grid-cols-[0.95fr_1.05fr]"
             >
               <AdminPanelSection
                 className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
@@ -1495,7 +1514,7 @@ export default function AdminMemberManagementDashboard() {
               ).replace("{count}", String(memberDirectoryRows.length))}
               contentClassName="flex min-h-0 flex-1 flex-col pt-4"
             >
-              <div className="mb-3 grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1fr)_180px_190px]">
+              <div className="mb-4 grid shrink-0 gap-3 rounded-[24px] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-3 lg:grid-cols-[minmax(0,1fr)_180px_190px]">
                 <label className={ADMIN_FIELD_CONTAINER_CLASS}>
                   <span className="text-xs font-semibold pbp-text-muted">
                     {t("memberManagement.memberDirectory.filters.search", "검색")}

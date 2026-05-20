@@ -430,6 +430,15 @@ export const adminEn = {
     },
   },
   memberManagement: {
+    visualHero: {
+      eyebrow: "Team operation",
+      title: "Manage members and permission flow in one place",
+      description: "Review invitation links, join approvals, employment status, and screen permissions under one shared standard.",
+      badge: {
+        role: "Role based",
+        permission: "Permission control",
+      },
+    },
     title: "Member management",
     description:
       "Manage company member invitations, join approvals, and direct permission assignment.",

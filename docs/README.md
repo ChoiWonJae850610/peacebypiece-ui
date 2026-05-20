@@ -55,3 +55,5 @@ PC A-TYPE 전환 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
 ```
+
+- `docs/wafl-a-type/36_wafl-a-type-member-settings-visual-pass.md` — 멤버관리/환경설정 visual pass 기준

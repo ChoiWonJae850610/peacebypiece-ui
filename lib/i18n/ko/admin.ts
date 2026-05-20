@@ -445,6 +445,15 @@ export const adminKo = {
     },
   },
   memberManagement: {
+    visualHero: {
+      eyebrow: "Team operation",
+      title: "멤버와 권한 흐름을 한 화면에서 관리하세요",
+      description: "초대 링크, 가입 승인, 재직 상태, 화면별 권한을 같은 기준으로 확인합니다.",
+      badge: {
+        role: "역할 기반",
+        permission: "권한 관리",
+      },
+    },
     title: "멤버 관리",
     description:
       "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리합니다.",
