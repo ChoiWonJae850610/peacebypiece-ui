@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Material Order Workflow
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.20
+baseline_source: peacebypiece-ui-0.15.21
 status: planned
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 원단/부자재 발주는 작업지시서 안의 단순 PDF 모달이 아니라 별도 업무 화면으로 분리한다.
 
-0.15.18에서는 작업지시서, 원단/부자재 row, 협력업체, 발주 상태, 권한, PDF 출력 시점을 연결하는 설계 기준을 정리했다. 0.15.20에서는 상세 데이터 모델을 `43_wafl-a-type-material-order-data-model.md`로 분리해 확장한다.
+0.15.18에서는 작업지시서, 원단/부자재 row, 협력업체, 발주 상태, 권한, PDF 출력 시점을 연결하는 설계 기준을 정리했다. 0.15.20에서는 상세 데이터 모델을 `43_wafl-a-type-material-order-data-model.md`로 분리해 확장했고, 0.15.21에서는 작업지시서 발주 flow 변경 기준을 `44_wafl-a-type-workorder-order-flow.md`로 분리해 정리한다.
 
 ```txt
 적용 성격:
@@ -284,8 +284,10 @@ High risk:
 ```txt
 상세 설계 기준:
 - 43_wafl-a-type-material-order-data-model.md
+- 44_wafl-a-type-workorder-order-flow.md
 
-0.15.20 결정:
+0.15.21 결정:
+- 작업지시서 발주 flow 변경 설계는 44번 문서를 기준으로 한다.
 - DB schema는 아직 추가하지 않는다.
 - full_reset.sql은 아직 수정하지 않는다.
 - work_order_material_rows / material_purchase_orders / material_purchase_order_items 3계층 모델을 후속 구현 기준으로 둔다.

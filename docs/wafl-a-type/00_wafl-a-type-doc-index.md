@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.20
+baseline_source: peacebypiece-ui-0.15.21
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.7에서는 원단/부자재 발주 데이터 모델과 권한 matrix를 상세화한다.
+v0.8에서는 작업지시서 발주 flow와 원단/부자재 발주 업무의 연결 기준을 상세화한다.
 
 ```txt
 브랜드 톤
@@ -35,6 +35,7 @@ QA 체크리스트
 카드결제/청구/증빙 정책
 운영 IA 기반 홈/메뉴 매핑
 원단/부자재 발주 데이터 모델
+작업지시서 발주 flow 변경 설계
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -56,6 +57,7 @@ QA 체크리스트
 - 로그인 문구는 최종 카피 확정 전까지 후보 문구로 관리
 - 결제/증빙/원단 발주 화면은 0.15.19 기준 홈/메뉴 진입 구조만 반영했고 기능 구현 전이다.
 - 원단/부자재 발주는 0.15.20 기준 데이터 모델과 권한 matrix를 상세화했으나 DB schema는 아직 반영하지 않았다.
+- 작업지시서 발주 flow는 0.15.21 기준 자재 발주 준비/검토요청/직접발주/PDF 출력 시점을 분리해 설계했다.
 ```
 
 ## 3. 문서 목록
@@ -105,6 +107,7 @@ QA 체크리스트
 41_wafl-a-type-billing-payment-evidence-policy.md
 42_wafl-a-type-operation-menu-mapping.md
 43_wafl-a-type-material-order-data-model.md
+44_wafl-a-type-workorder-order-flow.md
 ```
 
 ## 4. 핵심 결정
@@ -265,3 +268,16 @@ QA 체크리스트
 - 작업지시서와 자재 발주 연결 방식 및 full_reset 반영 여부 검토
 - DB schema/API/화면 구현은 아직 제외
 ```
+
+
+### 0.15.21 업데이트
+
+```txt
+44_wafl-a-type-workorder-order-flow.md
+- 작업지시서 발주요청/PDF flow 재정의
+- 작업지시서 상태와 자재 발주 상태 분리
+- 자재 발주 준비/검토요청/직접발주 버튼 역할 정리
+- PDF 출력 시점을 작업지시서/초안/확정/공유 PDF로 분리
+- DB schema/API/화면 구현은 아직 제외
+```
+

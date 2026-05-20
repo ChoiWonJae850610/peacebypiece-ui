@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Material Order Data Model
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.20
+baseline_source: peacebypiece-ui-0.15.21
 status: draft
 updated: 2026-05-20
 ---
@@ -520,15 +520,17 @@ High risk:
 - R2 발주 PDF 저장/만료 정책
 ```
 
-## 14. 0.15.21로 넘길 결정
+## 14. 0.15.21 결정 반영
 
-다음 버전에서는 작업지시서 발주 flow 변경 설계를 별도로 다룬다.
+작업지시서 발주 flow 변경 설계는 `44_wafl-a-type-workorder-order-flow.md`로 분리한다.
 
 ```txt
-0.15.21에서 결정할 것:
-- 기존 발주요청 버튼을 유지할지, 자재 발주 준비 버튼으로 바꿀지
-- 작업지시서 상태에 자재 발주 대기/발주 준비 완료를 언제 표시할지
-- PDF 출력 버튼을 어디에 둘지
-- 디자이너 검토요청과 관리자 직접발주를 UI에서 어떻게 나눌지
-- 발주 준비 미완료 상태의 안내 문구를 어떻게 표시할지
+0.15.21 결정:
+- 작업지시서 발주 버튼은 실제 발주 완료가 아니라 자재 발주 준비 진입 역할로 재정의한다.
+- 작업지시서 상태와 자재 발주 상태를 같은 enum으로 합치지 않는다.
+- 발주 준비 가능 여부는 selector/helper에서 계산한다.
+- 검토요청과 직접발주 권한은 materials.order.request / materials.order.direct 계열로 분리한다.
+- PDF는 작업지시서 PDF, 자재 발주 초안 PDF, 자재 발주 확정 PDF, 공유 PDF로 목적을 분리한다.
 ```
+
+후속 구현에서는 이 문서의 데이터 모델과 44번 문서의 flow 기준을 함께 사용한다.
