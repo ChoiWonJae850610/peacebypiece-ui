@@ -474,17 +474,17 @@ export const adminKo = {
       statusFilters: {
         all: "전체",
         pending: "승인 대기",
-        approved: "사용 중",
-        suspended: "비활성",
+        approved: "재직중",
+        suspended: "퇴사/비활성",
         withdrawalRequested: "탈퇴 요청",
       },
       roleFilters: { all: "전체" },
       statuses: {
         pending: "승인 대기",
-        approved: "사용 중",
-        suspended: "비활성",
+        approved: "재직중",
+        suspended: "퇴사/비활성",
         withdrawalRequested: "탈퇴 요청",
-        withdrawn: "탈퇴 완료",
+        withdrawn: "퇴사 완료",
         rejected: "거절됨",
       },
     },
@@ -534,7 +534,7 @@ export const adminKo = {
     },
     joinRequestStatuses: { pending: "승인 대기" },
     invitationMethods: { email: "이메일", phone: "문자" },
-    memberStatuses: { approved: "사용 중", pending: "승인 대기", suspended: "비활성" },
+    memberStatuses: { approved: "재직중", pending: "승인 대기", suspended: "비활성" },
     invitationStatuses: {
       draft: "초안",
       active: "활성",
@@ -560,17 +560,17 @@ export const adminKo = {
       requiredPermissions: "필요 권한: {permissions}",
     },
     summary: {
-      members: {
-        label: "전체 멤버",
-        description: "승인된 멤버와 정지 멤버를 포함합니다.",
+      activeMembers: {
+        label: "재직중",
+        description: "승인되어 현재 업무에 참여 중인 멤버입니다.",
       },
-      invitations: {
-        label: "초대 대기",
-        description: "이메일/문자로 발송한 활성 초대입니다.",
-      },
-      joinRequests: {
+      pendingApprovals: {
         label: "승인 대기",
-        description: "가입 신청 후 고객관리자 승인을 기다리는 사용자입니다.",
+        description: "가입 신청 또는 멤버 승인 처리를 기다리는 사용자입니다.",
+      },
+      inactiveMembers: {
+        label: "퇴사/비활성",
+        description: "퇴사 처리 또는 비활성 상태로 관리되는 멤버입니다.",
       },
       permissionTemplates: {
         label: "권한 템플릿",

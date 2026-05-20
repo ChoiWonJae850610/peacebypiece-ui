@@ -484,16 +484,16 @@ export const adminEn = {
         all: "All",
         pending: "Pending approval",
         approved: "Active",
-        suspended: "Inactive",
+        suspended: "Left/inactive",
         withdrawalRequested: "Withdrawal requested",
       },
       roleFilters: { all: "All" },
       statuses: {
         pending: "Pending approval",
         approved: "Active",
-        suspended: "Inactive",
+        suspended: "Left/inactive",
         withdrawalRequested: "Withdrawal requested",
-        withdrawn: "Withdrawn",
+        withdrawn: "Left",
         rejected: "Rejected",
       },
     },
@@ -574,17 +574,17 @@ export const adminEn = {
       requiredPermissions: "Required permissions: {permissions}",
     },
     summary: {
-      members: {
-        label: "Members",
-        description: "Includes approved and suspended members.",
+      activeMembers: {
+        label: "Active",
+        description: "Approved members currently working in the company workspace.",
       },
-      invitations: {
-        label: "Pending invitations",
-        description: "Active invitation links and QR invitation candidates.",
+      pendingApprovals: {
+        label: "Pending approval",
+        description: "Users waiting for join-request or member approval.",
       },
-      joinRequests: {
-        label: "Approval queue",
-        description: "Users waiting for customer-admin approval after joining.",
+      inactiveMembers: {
+        label: "Left/inactive",
+        description: "Members managed as resigned or inactive.",
       },
       permissionTemplates: {
         label: "Permission templates",

@@ -791,39 +791,61 @@ export default function AdminMemberManagementDashboard() {
     ],
     [inviteRoleOptions, joinRequestRoleDrafts, reviewingJoinRequestId, t],
   );
-  const summaryCards = useMemo(
-    () =>
-      baseSummaryCards.map((card) =>
-        card.id === "members"
-          ? {
-              ...card,
-              value: String(members.length),
-              status: memberListLoadStatus === "loaded" ? "ready" : card.status,
-            }
-          : card.id === "invitations"
-            ? {
-                ...card,
-                value: String(invitations.length),
-                status: invitations.length > 0 ? "pending" : card.status,
-              }
-            : card.id === "joinRequests"
-              ? {
-                  ...card,
-                  value: String(joinRequests.length),
-                  status:
-                    joinRequestLoadStatus === "loaded" ? "ready" : card.status,
-                }
-              : card,
-      ),
-    [
-      baseSummaryCards,
-      invitations.length,
-      joinRequestLoadStatus,
-      joinRequests.length,
-      memberListLoadStatus,
-      members.length,
-    ],
-  );
+  const summaryCards = useMemo(() => {
+    const activeMemberCount = members.filter(
+      (member) => member.status === "approved",
+    ).length;
+    const pendingApprovalCount =
+      joinRequests.length +
+      members.filter((member) => member.status === "pending").length;
+    const inactiveMemberCount = members.filter(
+      (member) => member.status === "suspended" || member.status === "rejected",
+    ).length;
+    const membersLoaded = memberListLoadStatus === "loaded";
+    const approvalsLoaded = membersLoaded && joinRequestLoadStatus === "loaded";
+
+    return baseSummaryCards.map((card) => {
+      if (card.id === "activeMembers") {
+        return {
+          ...card,
+          value: String(activeMemberCount),
+          status: membersLoaded ? "ready" : card.status,
+        };
+      }
+
+      if (card.id === "pendingApprovals") {
+        return {
+          ...card,
+          value: String(pendingApprovalCount),
+          status: approvalsLoaded
+            ? pendingApprovalCount > 0
+              ? "pending"
+              : "ready"
+            : card.status,
+        };
+      }
+
+      if (card.id === "inactiveMembers") {
+        return {
+          ...card,
+          value: String(inactiveMemberCount),
+          status: membersLoaded
+            ? inactiveMemberCount > 0
+              ? "pending"
+              : "ready"
+            : card.status,
+        };
+      }
+
+      return card;
+    });
+  }, [
+    baseSummaryCards,
+    joinRequestLoadStatus,
+    joinRequests.length,
+    memberListLoadStatus,
+    members,
+  ]);
   const canSubmitInvite = canCreateInvite && !isCreatingInvite;
   const tabPreviews: MemberManagementTabPreview[] = [
     {
