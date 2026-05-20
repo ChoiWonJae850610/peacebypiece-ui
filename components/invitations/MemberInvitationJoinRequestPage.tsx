@@ -113,7 +113,7 @@ export default function MemberInvitationJoinRequestPage({
 
   return (
     <ATypePublicFrame
-      eyebrow="Member invitation"
+      eyebrow="멤버 초대"
       title={
         <>
           WAFL 멤버
@@ -121,8 +121,8 @@ export default function MemberInvitationJoinRequestPage({
           참여를 요청하세요.
         </>
       }
-      description={`${companyName}에서 보낸 초대 링크입니다. Google 계정으로 본인 확인을 진행하면 관리자 승인 대기 상태로 등록됩니다.`}
-      heroItems={["멤버 초대", "권한 템플릿", "승인 대기", "작업 참여"]}
+      description={`${companyName}에서 보낸 초대 링크입니다. Google 계정으로 본인 확인을 진행하면 멤버 참여 요청이 접수됩니다.`}
+      heroItems={["멤버 초대", "본인 확인", "승인 요청", "작업 참여"]}
       footer={
         <p>
           {expiresAtLabel} 이후 이 초대 링크는 사용할 수 없습니다.
@@ -164,7 +164,7 @@ export default function MemberInvitationJoinRequestPage({
         </button>
 
         <p className="text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
-          초대 승인 전에는 고객사 업무 화면에 접근할 수 없습니다. 승인 상태는 승인 대기 화면에서 확인할 수 있습니다.
+          관리자 승인이 완료되면 초대한 회사의 업무 화면을 사용할 수 있습니다.
         </p>
       </ATypePublicCard>
     </ATypePublicFrame>

@@ -1,22 +1,26 @@
 Version :
-0.15.25
+0.15.26
 
 Summary :
-개발자성 UI 문구 감사와 pending 화면 단순화
+public/auth 화면 사용자용 문구 정리 2차
 
 Description :
-승인 대기 pending 화면에서 requestId, join_requests, permission_code 등 내부 구현 용어와 개발자성 조회 대시보드를 제거하고 사용자용 상태 안내 화면으로 단순화했다. 전체 화면의 개발자성 UI/문구 정리 기준과 후속 정리 대상을 문서화했다.
+로그인, 초대 오류, 고객사 관리자 초대, 멤버 초대, 서비스 제한 화면에 남은 개발자성 문구와 내부 용어를 사용자용 안내 문구로 정리했다. OAuth, 초대 검증, 승인 조회 API, DB/R2 흐름은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/invitations/PendingApprovalDashboard.tsx
-- lib/invitations/pendingApprovalDashboardPresentation.ts
+- components/auth/WaflLoginPage.tsx
+- components/invitations/CompanyInvitationJoinRequestPage.tsx
+- components/invitations/MemberInvitationJoinRequestPage.tsx
+- app/(public)/invite/error/page.tsx
+- app/(public)/service-paused/page.tsx
+- lib/invitations/invitationErrorPresentation.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/wafl-a-type/48_wafl-a-type-developer-ui-copy-audit.md
+- docs/wafl-a-type/49_wafl-a-type-public-auth-copy-ux.md
 
 삭제 파일 목록 :
 없음

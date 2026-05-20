@@ -341,3 +341,14 @@ PC visual 보정 2차
 - OAuth/초대 검증/승인 조회 API/DB/R2 흐름 변경 없음
 ```
 
+
+### 0.15.26 업데이트
+
+```txt
+49_wafl-a-type-public-auth-copy-ux.md
+- public/auth 계열 화면의 사용자용 문구 UX 2차 정리
+- 로그인/초대 오류/고객사 초대/멤버 초대/서비스 제한 화면의 내부 용어 노출 완화
+- Client ID / Secret / DB / OAuth / 토큰 / scope / permission template / Trial 7일 표현 제거
+- OAuth/초대 검증/승인 조회 API/DB/R2 흐름 변경 없음
+```
+

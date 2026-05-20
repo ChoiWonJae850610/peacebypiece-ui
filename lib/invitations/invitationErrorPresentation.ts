@@ -16,8 +16,8 @@ const INVITATION_ERROR_MESSAGES = {
     member: "이미 사용된 초대 링크예요.",
   },
   scopeMismatch: {
-    company: "초대 링크의 사용 범위가 맞지 않아요.",
-    member: "초대 링크의 사용 범위가 맞지 않아요.",
+    company: "이 링크로는 고객사 관리자 등록을 진행할 수 없어요.",
+    member: "이 링크로는 멤버 참여 요청을 진행할 수 없어요.",
   },
   fallback: {
     company: "고객사 초대 링크를 확인할 수 없어요.",
@@ -26,9 +26,9 @@ const INVITATION_ERROR_MESSAGES = {
 } as const;
 
 const INVITATION_AUTH_ERROR_MESSAGES: Record<string, string> = {
-  GOOGLE_OAUTH_CLIENT_ID_REQUIRED: "Google 로그인 설정이 아직 연결되지 않았습니다.",
-  GOOGLE_OAUTH_CLIENT_SECRET_REQUIRED: "Google 로그인 보안 설정이 아직 연결되지 않았습니다.",
-  INVITATION_TOKEN_REQUIRED: "초대 토큰이 없는 링크입니다.",
+  GOOGLE_OAUTH_CLIENT_ID_REQUIRED: "Google 로그인을 시작할 수 없습니다. 관리자에게 문의해 주세요.",
+  GOOGLE_OAUTH_CLIENT_SECRET_REQUIRED: "Google 로그인을 완료할 수 없습니다. 관리자에게 문의해 주세요.",
+  INVITATION_TOKEN_REQUIRED: "초대 링크 정보가 올바르지 않습니다. 새 초대 링크를 요청해 주세요.",
 };
 
 function normalizeErrorCode(errorCode: string | null | undefined): string {

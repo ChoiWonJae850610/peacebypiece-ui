@@ -6,7 +6,6 @@ import {
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { getCompanyAccessState } from "@/lib/billing/companyAccessRepository";
 import { buildServicePausedViewModel } from "@/lib/billing/companyAccessPresentation";
-import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +22,7 @@ export default async function ServicePausedPage() {
 
   return (
     <ATypePublicFrame
-      eyebrow={`${viewModel.eyebrow} · WAFL v${APP_VERSION}`}
+      eyebrow={viewModel.eyebrow}
       title={
         <>
           {viewModel.title}

@@ -117,7 +117,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
 
   return (
     <ATypePublicFrame
-      eyebrow="Company admin invitation"
+      eyebrow="고객사 관리자 초대"
       title={
         <>
           고객사 관리자
@@ -125,8 +125,8 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
           등록을 시작하세요.
         </>
       }
-      description="Google 계정으로 본인 확인을 진행한 뒤 회사 정보와 담당자 정보를 입력하고 승인 요청을 보낼 수 있습니다."
-      heroItems={["회사 정보", "대표 관리자", "승인 요청", "Trial 7일"]}
+      description="Google 계정으로 본인 확인을 진행한 뒤 회사 정보와 담당자 정보를 입력해 가입 승인을 요청합니다."
+      heroItems={["회사 정보", "담당자 정보", "승인 요청", "관리자 검토"]}
       footer={
         <p>
           {expiresAtLabel} 이후 이 초대 링크는 사용할 수 없습니다.
@@ -168,7 +168,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
         </button>
 
         <p className="text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
-          Google 로그인 이메일과 초대 이메일 일치 여부는 검사하지 않습니다. 회사 정보 입력은 로그인 후 관리자 화면에서 진행합니다.
+          로그인 후 필요한 회사 정보를 입력하고 가입 승인을 요청할 수 있습니다.
         </p>
       </ATypePublicCard>
     </ATypePublicFrame>

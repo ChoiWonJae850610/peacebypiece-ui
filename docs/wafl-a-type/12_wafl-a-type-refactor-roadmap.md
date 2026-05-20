@@ -227,6 +227,22 @@ updated: 2026-05-20
 - 전수 정리는 한 번에 제거하지 않고 public → system → admin 순서로 나눈다.
 ```
 
+
+### 0.15.26 — public/auth 문구 UX 정리 2차
+
+```txt
+완료:
+- 로그인 화면의 개발자성 오류 문구를 사용자용 안내로 완화
+- 초대 오류 화면에서 토큰/OAuth/scope 계열 내부 원인 표현을 제거
+- 고객사 관리자 초대 화면에서 영문 eyebrow, Trial 7일, 이메일 일치 검사 설명을 제거
+- 멤버 초대 화면에서 permission template 계열 표현을 제거
+- 서비스 제한 화면의 public eyebrow에서 앱 버전 노출을 제거
+
+주의:
+- OAuth redirect, 초대 검증 API, 가입 신청 조회 API, DB/R2 흐름은 변경하지 않는다.
+- system/admin 화면의 개발자성 문구는 후속 버전에서 분리 정리한다.
+```
+
 ## 5. 0.16.x — Device / Responsive 기반
 
 ### 0.16.0 — DeviceKind foundation
@@ -369,7 +385,6 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.26 — public/auth 문구 UX 정리 2차
 0.15.27 — system 화면 개발자성 문구 정리
 0.15.28 — admin 화면 개발자성 placeholder 정리
 0.16.0 — DeviceKind foundation
