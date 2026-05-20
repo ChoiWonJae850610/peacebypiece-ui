@@ -235,14 +235,14 @@ export const SYSTEM_COMPANY_PLAN_FIELDS: SystemCompanyPlanField[] = [
   },
   {
     id: "member",
-    label: "멤버 수 예외 한도"
+    label: "멤버 수 예외 한도",
     value: "20명",
     description:
       "승인된 멤버 수를 기준으로 이용 한도를 계산합니다.",
   },
   {
     id: "price",
-    label: "월 이용 금액 예외"
+    label: "월 이용 금액 예외",
     value: "별도 협의",
     description: "고객사별 계약 조건에 따라 조정되는 월 이용 금액입니다.",
   },
