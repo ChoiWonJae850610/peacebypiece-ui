@@ -4,6 +4,13 @@ export const systemEn = {
   description: "Manage customers, storage, logs, plans and quotas, standards, and category rules from one operations menu.",
   devEntryLabel: "Dev system-admin entry",
   versionLabel: "Version",
+  shell: {
+    title: "System admin",
+    description: "Super-admin area for tenant operations and platform settings.",
+    home: "System home",
+    version: "Version",
+    logout: "Log out",
+  },
   moveToWorkspace: "Go to workspace",
   openCategoryRules: "Open category rules",
   cards: {

@@ -1,14 +1,16 @@
 Version :
-0.15.232
+0.15.233
 
 Summary :
-Tailwind source 감지 범위 명시로 CSS 파싱 오류 수정
+시스템관리자 화면 로그아웃 버튼 추가
 
 Description :
-Tailwind CSS v4 자동 source 감지가 문서 파일의 class 예시까지 스캔해 잘못된 arbitrary class를 생성하지 않도록 globals.css에서 source 범위를 app, components, lib, types로 명시했다. APP_VERSION도 0.15.232로 갱신했다.
+시스템관리자 공통 shell 상단에 로그아웃 버튼을 추가해 시스템관리자 테스트 중 세션을 바로 종료할 수 있도록 했다. 로그아웃 문구는 system i18n 리소스로 분리했고 기존 /api/auth/logout 흐름을 그대로 사용한다.
 
 수정 파일 목록 :
-- app/globals.css
+- components/system/layout/SystemShell.tsx
+- lib/i18n/ko/system.ts
+- lib/i18n/en/system.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

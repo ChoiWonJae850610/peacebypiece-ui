@@ -4,6 +4,13 @@ export const systemKo = {
   description: "고객사 관리, 저장소, 로그, 요금제·용량, 기준정보, 카테고리 규칙을 운영 메뉴로 관리합니다.",
   devEntryLabel: "개발용 시스템관리자 진입",
   versionLabel: "버전",
+  shell: {
+    title: "시스템관리자",
+    description: "고객사 운영과 시스템 기준을 점검하는 최고관리자 화면입니다.",
+    home: "시스템 홈",
+    version: "버전",
+    logout: "로그아웃",
+  },
   moveToWorkspace: "작업지시서 화면으로 이동",
   openCategoryRules: "카테고리 규칙 화면 열기",
   cards: {
