@@ -292,6 +292,35 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
   );
 }
 
+function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
+  const t = useAdminTranslation();
+  const notice = ADMIN_SETTINGS_NOTICE_BY_ID[noticeId];
+
+  return (
+    <AdminSection
+      title={notice.title}
+      description={notice.description}
+      actions={<AdminStatusBadge tone="maintenance">{t("common.preparing", "준비중")}</AdminStatusBadge>}
+      className="min-h-[320px]"
+      bodyClassName="mt-4 space-y-4"
+    >
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {notice.items.map((item) => (
+            <div key={item} className={`${ADMIN_SURFACE_ITEM_CLASS} text-sm font-semibold pbp-text-primary`}>
+              {item}
+            </div>
+          ))}
+        </div>
+        <div className={ADMIN_SURFACE_ITEM_CLASS}>
+          <p className="text-xs font-semibold pbp-text-subtle">{t("settings.notice.nextStepTitle", "적용 예정")}</p>
+          <p className="mt-2 text-sm leading-6 pbp-text-muted">{notice.nextStep}</p>
+        </div>
+      </div>
+    </AdminSection>
+  );
+}
+
 function FeedbackPanel() {
   const t = useAdminTranslation();
   const feedback = ADMIN_SETTINGS_NOTICE_BY_ID.feedback;
@@ -407,6 +436,10 @@ export default function AdminSettingsHub() {
       return <AccountSettingsPanel overview={accountOverview} loadState={accountLoadState} />;
     }
 
+    if (activeMenuId === "legal") {
+      return <SettingsNoticePanel noticeId="legal" />;
+    }
+
     if (activeMenuId === "feedback") {
       return <FeedbackPanel />;
     }
@@ -419,7 +452,7 @@ export default function AdminSettingsHub() {
       <AdminSection
         eyebrow={t("settings.hub.eyebrow", "Admin settings")}
         title={t("settings.hub.title", "환경설정")}
-        description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 개발 건의를 한 화면에서 전환해 확인합니다.")}
+        description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 약관·정책, 개발 건의를 한 화면에서 전환해 확인합니다.")}
         actions={
           <p className="w-full rounded-full border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-2 text-xs font-semibold leading-5 pbp-text-muted shadow-sm sm:w-auto">
             {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}
@@ -428,7 +461,7 @@ export default function AdminSettingsHub() {
         density="default"
         className="shrink-0 overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,var(--pbp-surface-base)_0%,var(--pbp-surface-soft)_58%,var(--pbp-brand-muted)_145%)]"
       >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
             <SettingsMenuCard key={item.id} item={item} active={activeMenuId === item.id} onClick={() => setActiveMenuId(item.id)} />
           ))}

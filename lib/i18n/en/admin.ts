@@ -412,6 +412,21 @@ export const adminEn = {
         description:
           "Manage member invitations, join approvals, roles, and permissions.",
       },
+      "material-orders": {
+        label: "Fabric and subsidiary orders",
+        description:
+          "Reserved for the material ordering workspace connected to work orders.",
+      },
+      billing: {
+        label: "Billing and payments",
+        description:
+          "Reserved for plan, card, payment history, receipt, and evidence screens.",
+      },
+      legal: {
+        label: "Terms and policies",
+        description:
+          "Reserved for terms, privacy, refund, and data retention policy screens.",
+      },
       "standard-units": {
         label: "Standard units",
         description:

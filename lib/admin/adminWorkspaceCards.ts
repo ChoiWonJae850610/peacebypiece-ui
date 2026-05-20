@@ -83,6 +83,36 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     status: "available",
     statusLabel: "관리",
   },
+  {
+    id: "material-orders",
+    label: "원단/부자재 발주",
+    description: "작업지시서와 연결된 원단·부자재 발주 업무 화면으로 확장할 예정입니다.",
+    permission: ADMIN_WORKSPACE_PERMISSIONS.workorderAccess,
+    requiredMemberPermissions: ["workorder.read"],
+    href: null,
+    status: "planned",
+    statusLabel: "설계 중",
+  },
+  {
+    id: "billing",
+    label: "요금·결제",
+    description: "현재 요금제, 카드 등록/변경, 결제내역, 영수증 화면으로 분리할 예정입니다.",
+    permission: ADMIN_WORKSPACE_PERMISSIONS.organizationSettingsManage,
+    requiredMemberPermissions: ["settings.read"],
+    href: null,
+    status: "planned",
+    statusLabel: "준비 중",
+  },
+  {
+    id: "legal",
+    label: "약관·정책",
+    description: "이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책을 고객사 범위에서 확인할 예정입니다.",
+    permission: ADMIN_WORKSPACE_PERMISSIONS.organizationSettingsManage,
+    requiredMemberPermissions: ["settings.read"],
+    href: null,
+    status: "planned",
+    statusLabel: "준비 중",
+  },
 ];
 
 export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
@@ -121,10 +151,13 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
 
 export const ADMIN_HOME_PRIMARY_CARD_IDS = [
   "workorder-entry",
+  "material-orders",
   "partners",
   "files",
   "stats",
   "member-management",
+  "billing",
+  "legal",
 ] as const;
 
 export const ADMIN_HOME_MEMBER_CARD_IDS = [] as const;

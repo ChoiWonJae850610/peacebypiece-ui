@@ -429,6 +429,21 @@ export const adminKo = {
         label: "멤버 관리",
         description: "멤버 초대, 가입 승인, 역할 권한을 관리합니다.",
       },
+      "material-orders": {
+        label: "원단/부자재 발주",
+        description:
+          "작업지시서와 연결된 원단·부자재 발주 업무 화면으로 확장할 예정입니다.",
+      },
+      billing: {
+        label: "요금·결제",
+        description:
+          "현재 요금제, 카드 등록/변경, 결제내역, 영수증 화면으로 분리할 예정입니다.",
+      },
+      legal: {
+        label: "약관·정책",
+        description:
+          "이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책을 고객사 범위에서 확인할 예정입니다.",
+      },
       "standard-units": {
         label: "단위표준",
         description:

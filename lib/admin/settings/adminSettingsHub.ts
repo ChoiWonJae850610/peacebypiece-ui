@@ -1,4 +1,4 @@
-export type AdminSettingsMenuId = "standards" | "billing" | "account" | "feedback";
+export type AdminSettingsMenuId = "standards" | "billing" | "account" | "legal" | "feedback";
 
 export type AdminSettingsMenuTone = "blue" | "amber" | "emerald" | "violet";
 
@@ -37,6 +37,14 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
     detailItems: ["현재 요금제", "저장공간 한도", "변경 요청"],
   },
   {
+    id: "legal",
+    title: "약관·정책",
+    description: "이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책 표시 위치를 확인합니다.",
+    statusLabel: "준비 중",
+    tone: "violet",
+    detailItems: ["이용약관", "개인정보", "환불정책"],
+  },
+  {
     id: "feedback",
     title: "개발 건의",
     description: "개선 요청과 오류 제보를 시스템 개발자에게 전달합니다.",
@@ -58,6 +66,12 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
     description: "회사 정보, 대표 로그인 이메일, 계정 상태, 탈퇴·비활성화 요청 범위를 조직 설정과 개인 설정으로 나누어 안내합니다.",
     nextStep: "회사 정보 변경, 계정 비활성화, 관리자 교체 요청은 시스템관리자 검토 요청 흐름으로 확장합니다.",
     items: ["회사 정보 확인", "대표 로그인 이메일 확인", "회사 정보 변경 요청", "계정 비활성화 요청"],
+  },
+  legal: {
+    title: "약관·정책은 고객사가 조회할 수 있는 별도 영역으로 분리합니다.",
+    description: "정식 화면 구현 전까지 환경설정에서 이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책의 노출 위치를 안내합니다.",
+    nextStep: "/admin/legal route를 추가한 뒤 시스템관리자가 작성한 최신 서비스 문서를 고객사 범위에서 조회하도록 연결합니다.",
+    items: ["이용약관", "개인정보처리방침", "환불정책", "데이터 보관·삭제정책"],
   },
   feedback: {
     title: "개발 건의는 이메일로 접수합니다.",

@@ -18,6 +18,7 @@ import { APP_VERSION } from "@/lib/constants/app";
 import { isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import { getI18n } from "@/lib/i18n";
 import {
+  SYSTEM_CONSOLE_HERO_OPERATION_CARDS,
   SYSTEM_CONSOLE_NAVIGATION_SECTIONS,
   type SystemConsoleNavigationCard,
   type SystemConsoleNavigationTone,
@@ -33,29 +34,6 @@ type SystemNavigationToneClassName = {
   href: string;
 };
 
-const SYSTEM_HERO_OPERATION_CARDS = [
-  {
-    id: "companies",
-    label: "고객사 운영",
-    value: "초대·승인",
-    description: "가입 요청과 고객사 상태를 먼저 확인합니다.",
-    href: "/system/companies",
-  },
-  {
-    id: "storage",
-    label: "저장소 삭제",
-    value: "Purge",
-    description: "삭제 요청과 R2 처리 후보를 점검합니다.",
-    href: "/system/storage-usage",
-  },
-  {
-    id: "logs",
-    label: "감사 로그",
-    value: "Audit",
-    description: "중요 변경 이력과 운영 흔적을 추적합니다.",
-    href: "/system/audit-logs",
-  },
-] as const;
 
 function getNavigationToneClassName(tone: SystemConsoleNavigationTone): SystemNavigationToneClassName {
   if (tone === "primary") {
@@ -170,7 +148,7 @@ export default function SystemConsoleShell() {
           </header>
 
           <aside className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            {SYSTEM_HERO_OPERATION_CARDS.map((item) => (
+            {SYSTEM_CONSOLE_HERO_OPERATION_CARDS.map((item) => (
               <Link
                 key={item.id}
                 href={item.href}
@@ -181,7 +159,7 @@ export default function SystemConsoleShell() {
                     {item.label}
                   </p>
                   <span className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--pbp-text-muted)]">
-                    {item.value}
+                    {item.statusLabel}
                   </span>
                 </div>
                 <p className="mt-4 text-sm leading-6 text-[var(--pbp-text-muted)]">

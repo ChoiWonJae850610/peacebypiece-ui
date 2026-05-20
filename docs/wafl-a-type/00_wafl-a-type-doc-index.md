@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.18
+baseline_source: peacebypiece-ui-0.15.19
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.5에서는 SaaS 운영 기준을 추가한다.
+v0.6에서는 SaaS 운영 기준을 홈/메뉴 매핑으로 1차 연결한다.
 
 ```txt
 브랜드 톤
@@ -33,6 +33,7 @@ QA 체크리스트
 시스템관리자/고객사관리자 운영 IA
 원단/부자재 발주 업무 흐름
 카드결제/청구/증빙 정책
+운영 IA 기반 홈/메뉴 매핑
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -52,7 +53,7 @@ QA 체크리스트
 - 태블릿 세로 규칙은 본 문서에서 별도로 정의
 - 작업지시서 직접 그리기 기능은 태블릿 가로모드에서 차단된 기존 결정을 반영
 - 로그인 문구는 최종 카피 확정 전까지 후보 문구로 관리
-- 결제/증빙/원단 발주 화면은 0.15.18 기준 문서화 단계이며 기능 구현 전이다.
+- 결제/증빙/원단 발주 화면은 0.15.19 기준 홈/메뉴 진입 구조만 반영했고 기능 구현 전이다.
 ```
 
 ## 3. 문서 목록
@@ -100,6 +101,7 @@ QA 체크리스트
 39_wafl-a-type-service-operation-ia.md
 40_wafl-a-type-material-order-workflow.md
 41_wafl-a-type-billing-payment-evidence-policy.md
+42_wafl-a-type-operation-menu-mapping.md
 ```
 
 ## 4. 핵심 결정
@@ -235,4 +237,14 @@ QA 체크리스트
 - 원단/부자재 발주 업무 흐름
 - 카드결제/청구/증빙 정책
 - 기능/API/DB/R2/권한/세션 변경 없음
+```
+
+
+### 0.15.19 업데이트
+
+```txt
+42_wafl-a-type-operation-menu-mapping.md
+- 0.15.18 운영 IA를 시스템관리자 홈 섹션과 고객사관리자 홈 카드에 1차 매핑
+- 고객사관리자 환경설정에 약관·정책 준비 카드 추가
+- 결제/증빙/원단 발주 기능 구현은 후속 버전으로 유지
 ```
