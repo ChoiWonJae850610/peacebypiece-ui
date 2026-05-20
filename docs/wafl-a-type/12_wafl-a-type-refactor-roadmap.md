@@ -1,13 +1,23 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
-version: 0.4
-baseline_source: peacebypiece-ui-0.13.50
+version: 0.5
+baseline_source: peacebypiece-ui-0.14.8
 status: draft-final
-updated: 2026-05-18
+updated: 2026-05-20
 ---
 
 
 # 12. A-TYPE 전환 로드맵
+
+## 0. 현재 진행 기준 업데이트
+
+```txt
+현재 기준: 0.14.8
+완료: A-TYPE 문서 00~14 반영, semantic token 1차 정리
+이번 보완: docs 기준 문서 00~20 체계화, legacy version note 정리
+다음 우선순위: Admin 공통 컴포넌트 A-TYPE variant 정리 → 로그인/초대/에러 화면 → 고객사 관리자 주요 화면 → 시스템관리자 주요 화면 → DeviceKind/모바일/태블릿
+```
+
 
 ## 1. 기준
 

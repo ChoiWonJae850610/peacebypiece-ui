@@ -1,9 +1,9 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
-version: 0.4
-baseline_source: peacebypiece-ui-0.13.50
+version: 0.5
+baseline_source: peacebypiece-ui-0.14.8
 status: draft-final
-updated: 2026-05-18
+updated: 2026-05-20
 ---
 
 
@@ -69,6 +69,12 @@ QA 체크리스트
 12_wafl-a-type-refactor-roadmap.md
 13_wafl-a-type-qa-checklist.md
 14_wafl-a-type-share-pwa-app-strategy.md
+15_wafl-a-type-data-permission-policy.md
+16_wafl-a-type-db-schema-policy.md
+17_wafl-a-type-r2-file-policy.md
+18_wafl-a-type-auth-session-policy.md
+19_wafl-a-type-release-test-policy.md
+20_wafl-a-type-page-inventory.md
 ```
 
 ## 4. 핵심 결정
@@ -86,4 +92,13 @@ QA 체크리스트
 10. 앱 개발은 후순위로 두고, 모바일/태블릿 웹에서 Web Share API 기반 공유를 먼저 적용한다.
 11. 초대는 링크 공유, 작업지시서는 PDF 링크 공유를 기본 정책으로 한다.
 12. 유료 SMS/Kakao 자동 발송 API는 2단계 기능으로 보류한다.
+```
+
+## 5. 0.14.9 문서 정리 기준
+
+```txt
+- 기준 문서는 docs/wafl-a-type/00~20으로 통일한다.
+- 과거 버전별 작업 메모는 기준 문서로 사용하지 않는다.
+- 확실히 중복되는 top-level legacy 문서는 삭제한다.
+- DB/R2/auth/release/page inventory 정책은 15~20 문서로 보완한다.
 ```
