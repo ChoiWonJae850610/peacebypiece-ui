@@ -64,7 +64,7 @@ export function buildAdminAdvancedStatsPreviewCards(input: AdminAdvancedStatsPre
       statusLabel: categoryTopValue > 0 ? "연결됨" : "준비",
       metricLabel: "3차 분류 기준",
       metricValue: buildMetricValue(input.categoryTopLabel, categoryTopValue),
-      description: "실제 DB 집계 기준으로 생산 유형별 작업지시서 분포를 비교합니다.",
+      description: "운영 데이터 기준으로 생산 유형별 작업지시서 분포를 비교합니다.",
     },
     {
       key: "factory-performance",
@@ -74,7 +74,7 @@ export function buildAdminAdvancedStatsPreviewCards(input: AdminAdvancedStatsPre
       statusLabel: factoryTopValue > 0 ? "연결됨" : "준비",
       metricLabel: "공장별 발주 건수",
       metricValue: buildMetricValue(input.factoryTopLabel, factoryTopValue),
-      description: "공장별 발주 건수 preview를 먼저 연결하고, 수량/비용/납기 지표는 후속 버전에서 확장합니다.",
+      description: "공장별 발주 건수를 먼저 확인하고, 수량/비용/납기 지표는 단계적으로 확장합니다.",
     },
     {
       key: "reorder-ranking",
@@ -84,7 +84,7 @@ export function buildAdminAdvancedStatsPreviewCards(input: AdminAdvancedStatsPre
       statusLabel: reorderTopValue > 0 ? "연결됨" : "준비",
       metricLabel: `리오더 합계 ${formatAdminPreviewCount(input.totalReorderCount)}`,
       metricValue: buildMetricValue(input.reorderTopLabel, reorderTopValue),
-      description: "2차 이상 반복 생산 흐름을 분리해 리오더 preview로 표시합니다.",
+      description: "2차 이상 반복 생산 흐름을 분리해 리오더 지표로 표시합니다.",
     },
     {
       key: "quality-risk",
@@ -101,9 +101,9 @@ export function buildAdminAdvancedStatsPreviewCards(input: AdminAdvancedStatsPre
 
 export const ADMIN_STATS_FEATURE_GATE_NOTES = [
   "Basic은 상태별 작업지시서, 기본 저장소, 최근 작업 흐름만 노출합니다.",
-  "Standard 이상은 생산품유형과 협력업체 성과 preview를 실제 DB 집계 기준으로 노출합니다.",
-  "Growth 이상은 리오더 preview를 연결하고, Premium 이상은 검수/불량과 export 기능을 확장하는 기준으로 둡니다.",
-  "현재 버전의 잠금은 화면 기준 preview이며, API 차단은 permission/feature gate 버전에서 별도 적용합니다.",
+  "Standard 이상은 생산품유형과 협력업체 성과 지표를 운영 데이터 기준으로 노출합니다.",
+  "Growth 이상은 리오더 지표를 연결하고, Premium 이상은 검수/불량과 내보내기 기능을 확장하는 기준으로 둡니다.",
+  "현재 잠금 표시는 화면 안내 기준이며, 실제 제한 기준은 권한 정책 버전에서 별도 적용합니다.",
 ] as const;
 
 
@@ -134,6 +134,6 @@ export const ADMIN_PREMIUM_STATS_READINESS_ITEMS: AdminPremiumStatsReadinessItem
     title: "통계 내보내기",
     statusLabel: "준비 필요",
     dataSource: "현재 화면 집계값은 표시용 snapshot 중심이며, export 전용 DTO와 권한 차단이 아직 없습니다.",
-    nextAction: "permission/feature gate 작업 후 CSV export API와 감사 로그를 함께 설계합니다.",
+    nextAction: "권한 정책 작업 후 CSV 내보내기와 감사 기록 기준을 함께 설계합니다.",
   },
 ];

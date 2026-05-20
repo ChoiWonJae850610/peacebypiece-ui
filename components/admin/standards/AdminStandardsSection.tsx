@@ -183,7 +183,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         setSelectedActiveProcessDefinition(null);
       })
       .catch(() => {
-        setProcessFormError(t("standards.section.saveProcessFailed", "저장에 실패했습니다. DB 연결 상태를 확인하세요."));
+        setProcessFormError(t("standards.section.saveProcessFailed", "저장에 실패했습니다. 연결 상태를 확인하세요."));
       })
       .finally(() => setIsSavingProcesses(false));
   }, [isSavingProcesses, processDraftDefinitions, t]);
@@ -197,7 +197,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         setUnitDefinitions(Array.isArray(payload.units) ? payload.units : nextUnits);
         setIsUnitModalOpen(false);
       })
-      .catch(() => setStandardFormError(t("standards.section.saveUnitFailed", "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
+      .catch(() => setStandardFormError(t("standards.section.saveUnitFailed", "단위 저장에 실패했습니다. 연결 상태를 확인하세요.")))
       .finally(() => setIsSavingUnits(false));
   }, [canManageStandards, t]);
 
@@ -210,7 +210,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : nextCategories);
         setIsItemCategoryModalOpen(false);
       })
-      .catch(() => setStandardFormError(t("standards.section.saveItemFailed", "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
+      .catch(() => setStandardFormError(t("standards.section.saveItemFailed", "품목 저장에 실패했습니다. 연결 상태를 확인하세요.")))
       .finally(() => setIsSavingItemCategories(false));
   }, [canManageStandards, t]);
 
@@ -229,7 +229,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
   ];
 
   const inUseSuffix = t("standards.common.inUseSuffix", "개 사용중");
-  const emptyDbLabel = t("standards.common.emptyDbLabel", "DB 항목 없음");
+  const emptyDbLabel = t("standards.common.emptyDbLabel", "등록된 항목 없음");
 
   const standardActionStatusLabel = canManageStandards
     ? t("standards.common.manage", "관리")
@@ -280,7 +280,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         </div>
         {hasMissingDbStandards ? (
           <div className="mt-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
-            {t("standards.section.missingSeedNotice", "DB 기준정보 seed가 비어 있거나 일부 부족합니다. 시스템관리자 > 기준정보 seed 상태에서 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 확인하세요.")}
+            {t("standards.section.missingSeedNotice", "기준정보가 비어 있거나 일부 부족합니다. 시스템관리자 기준정보에서 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 확인하세요.")}
           </div>
         ) : null}
         <div className="mt-2.5">{renderActionGrid(standardActions)}</div>

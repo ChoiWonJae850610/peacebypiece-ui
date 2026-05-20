@@ -159,8 +159,8 @@ export function createAdminWorkOrderTrashIdRequiredMessage(): string {
 
 export function createAdminWorkOrderTrashNotConnectedMessage(action: AdminTrashActionType): string {
   return action === "restore"
-    ? "작업지시서 복원 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 문서/디자인/메모를 같은 트랜잭션에서 복원해야 합니다."
-    : "작업지시서 선택 삭제 API는 아직 실제 DB/R2 처리 로직에 연결되지 않았습니다. R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.";
+    ? "작업지시서 복원 처리는 아직 운영 처리 기준을 확정하는 단계입니다. 작업지시서와 문서/디자인/메모를 함께 복원해야 합니다."
+    : "작업지시서 선택 삭제 처리는 아직 운영 처리 기준을 확정하는 단계입니다. 시스템관리자 실제 삭제 흐름에서 최종 처리해야 합니다.";
 }
 
 export function createAdminWorkOrderTrashNotFoundMessage(action: AdminTrashActionType): string {
@@ -226,7 +226,7 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
   {
     id: "sample-attachment-1",
     workorderId: "sample-workorder-1",
-    workorderTitle: "샘플 작업지시서 A",
+    workorderTitle: "확인용 작업지시서 A",
     fileName: "design-reference.png",
     fileType: "디자인",
     fileKind: "design",
@@ -244,7 +244,7 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
   {
     id: "sample-attachment-2",
     workorderId: "sample-workorder-2",
-    workorderTitle: "샘플 작업지시서 B",
+    workorderTitle: "확인용 작업지시서 B",
     fileName: "production-note.pdf",
     fileType: "문서",
     fileKind: "document",
@@ -262,7 +262,7 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
   {
     id: "sample-attachment-3",
     workorderId: "sample-workorder-3",
-    workorderTitle: "샘플 작업지시서 C",
+    workorderTitle: "확인용 작업지시서 C",
     fileName: "factory-reference.xlsx",
     fileType: "문서",
     fileKind: "document",
@@ -285,7 +285,7 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     id: "sample-trash-1",
     attachmentId: "sample-attachment-4",
     workorderId: "sample-workorder-1",
-    workorderTitle: "샘플 작업지시서 A",
+    workorderTitle: "확인용 작업지시서 A",
     fileName: "removed-reference.pdf",
     fileType: "문서",
     fileKind: "document",
@@ -315,7 +315,7 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     id: "sample-trash-2",
     attachmentId: "sample-attachment-5",
     workorderId: "sample-workorder-2",
-    workorderTitle: "샘플 작업지시서 B",
+    workorderTitle: "확인용 작업지시서 B",
     fileName: "old-detail-image.jpg",
     fileType: "디자인",
     fileKind: "design",
@@ -431,7 +431,7 @@ export function buildAdminSelectAllIds<T extends { id: string }>(items: T[], cur
 }
 
 export function getAdminFilePolicySourceLabel(dataSource: AdminFileDataSource): string {
-  return dataSource === "db" ? "company_settings DB" : "샘플 정책";
+  return dataSource === "db" ? "회사 설정 기준" : "기본 정책";
 }
 
 export function buildAdminFilePolicyUpdateInput(policySettings: AdminStoragePolicySettings) {

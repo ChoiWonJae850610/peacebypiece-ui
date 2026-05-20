@@ -385,6 +385,6 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.28 — admin 화면 개발자성 placeholder 정리
 0.16.0 — DeviceKind foundation
+0.16.1 — Admin/Workspace shell에서 DeviceKind 읽기만 적용
 ```

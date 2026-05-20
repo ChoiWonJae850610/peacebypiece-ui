@@ -35,7 +35,7 @@ export default function AdminCompletionAuditPanel({ summary }: AdminCompletionAu
           <AdminStatusBadge tone="neutral">{t("completionAudit.chips.legacyRemoved", "이전 경로 제거")} {summary.removedLegacyCount}</AdminStatusBadge>
           <AdminStatusBadge tone="neutral">{t("completionAudit.chips.legacyKept", "이전 경로 유지")} {summary.retainedLegacyCount}</AdminStatusBadge>
           <AdminStatusBadge tone="neutral">{t("completionAudit.chips.db", "데이터")} {summary.dbConnectedCount}+{summary.dbWatchCount}</AdminStatusBadge>
-          <AdminStatusBadge tone="neutral">{t("completionAudit.chips.sample", "샘플")} {summary.mockRemoveReadyCount}/{summary.mockRetainedCount}</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">{t("completionAudit.chips.sample", "초기자료")} {summary.mockRemoveReadyCount}/{summary.mockRetainedCount}</AdminStatusBadge>
           <AdminStatusBadge tone="neutral">{t("completionAudit.chips.finalAudit", "마감점검")} {summary.finalAuditWatchCount}/{summary.finalAuditTotalCount}</AdminStatusBadge>
         </div>
       </div>

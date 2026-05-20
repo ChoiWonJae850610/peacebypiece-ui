@@ -197,18 +197,18 @@ export const adminKo = {
       trash: "휴지통",
       storage: "용량 관리",
     },
-    snapshotLoadFailed: "파일 목록 DB 조회 실패",
-    snapshotLoadFailedWithMessage: "파일 목록 DB 조회 실패: {message}",
+    snapshotLoadFailed: "파일 목록 불러오기 실패",
+    snapshotLoadFailedWithMessage: "파일 목록 불러오기 실패: {message}",
   },
   auditSummary: {
     title: "관리자 점검",
     closedDescription:
-      "대시보드는 운영 통계를 우선 표시하고, DB/구조 점검은 필요할 때만 펼쳐 확인합니다.",
+      "대시보드는 운영 통계를 우선 표시하고, 점검 항목은 필요할 때만 펼쳐 확인합니다.",
     open: "점검 펼치기",
     chips: {
       db: "데이터",
       domain: "구조",
-      sample: "샘플",
+      sample: "초기자료",
       finalAudit: "마감점검",
     },
     close: "점검 닫기",
@@ -222,7 +222,7 @@ export const adminKo = {
       legacyRemoved: "이전 경로 제거",
       legacyKept: "이전 경로 유지",
       db: "데이터",
-      sample: "샘플",
+      sample: "초기자료",
       finalAudit: "마감점검",
     },
     decision: "완료 판정",
@@ -240,19 +240,19 @@ export const adminKo = {
       partner: "협력업체",
       attachmentMemo: "메모/첨부",
     },
-    repositoryModes: { db: "실제 데이터", mock: "샘플 데이터" },
+    repositoryModes: { db: "실제 데이터", mock: "초기자료" },
     statuses: {
       "db-connected": "실제 데이터 사용",
       "db-prepared": "데이터 연결 준비",
       "fallback-guarded": "안전 표시 보호",
-      "mock-only": "샘플 데이터",
+      "mock-only": "초기자료",
       "not-applicable": "대상 아님",
     },
     sourceTypes: {
       "actual-db": "실제 데이터 조회/저장",
       "db-with-fallback": "실제 데이터 조회 + 안전 표시",
       "db-prepared-fallback": "데이터 연결 준비 + 안전 표시",
-      "mock-only": "샘플 데이터",
+      "mock-only": "초기자료",
       "not-applicable": "대상 아님",
     },
   },
@@ -279,7 +279,7 @@ export const adminKo = {
     statistics: "통계정보",
     history: "히스토리",
     settings: "환경설정",
-    dbConnected: "DB 상태 점검",
+    dbConnected: "데이터 상태 점검",
   },
   operationsDashboard: {
     title: "운영 대시보드",
@@ -291,9 +291,9 @@ export const adminKo = {
     selectedQueueEyebrow: "Selected queue",
     priorityEyebrow: "Queue",
     workorderStatusTitle: "작업지시서 현황",
-    sourceDb: "DB 기준 업무 대기 항목을 표시합니다.",
-    sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.",
-    sourceError: "DB 조회 실패로 0건으로 표시됩니다.",
+    sourceDb: "운영 데이터 기준 업무 대기 항목을 표시합니다.",
+    sourceNotConfigured: "연결됨 설정이 없어 0건으로 표시됩니다.",
+    sourceError: "불러오기 실패로 0건으로 표시됩니다.",
     periodAria: "대시보드 기간 선택",
     periods: { today: "오늘", week: "이번주", month: "이번달" },
     todayWorkTitle: "검토·발주 대기",
@@ -304,7 +304,7 @@ export const adminKo = {
     statusFlowTitle: "상태 흐름",
     statusDistributionTitle: "상태 분포",
     todayCheckTitle: "오늘 체크",
-    previewEmpty: "미리보기",
+    previewEmpty: "확인",
     attachmentLabel: "첨부",
     factoryLabel: "공장",
     quantityLabel: "수량",
@@ -382,9 +382,9 @@ export const adminKo = {
     actions: { open: "열기" },
     statuses: {
       available: "사용 가능",
-      planned: "준비 중",
+      planned: "운영 예정",
       linked: "화면 연결",
-      api: "API 준비",
+      api: "서비스 준비",
       legacy: "기존 기능",
     },
     permissionLabel: "권한",
@@ -647,17 +647,17 @@ export const adminKo = {
       eyebrow: "가입 신청 승인",
       title: "멤버 승인/권한 부여 화면",
       description:
-        "가입 신청자를 확인하고 승인 또는 거절하기 전에 role template 기준 권한을 직접 조정하는 1차 화면입니다.",
+        "가입 신청자를 확인하고 승인 또는 거절하기 전에 필요한 권한을 조정하는 화면입니다.",
       previewApplicant: {
         name: "김디자이너",
         email: "designer@example.com",
         description:
-          "초대 링크로 가입 신청한 멤버를 승인하기 전 상태 예시입니다.",
+          "초대 링크로 가입 신청한 멤버를 승인하기 전 상태입니다.",
       },
       steps: {
         review: {
           label: "신청 확인",
-          description: "초대 token과 신청자 정보를 확인합니다.",
+          description: "초대 신청자 정보를 확인합니다.",
         },
         permission: {
           label: "권한 선택",
@@ -674,10 +674,10 @@ export const adminKo = {
       },
       permissionChecklistTitle: "권한 체크리스트",
       permissionChecklistDescription:
-        "기본 권한 묶음은 시작값이고 승인 저장 시 permission_code 목록을 직접 저장합니다.",
+        "기본 권한 묶음은 시작값이며 승인 저장 시 선택한 권한을 함께 저장합니다.",
       actionsTitle: "승인 처리 액션",
       actionsDescription:
-        "가입 신청 승인/거절과 승인된 멤버 권한 저장 API가 실제 DB와 연결되어 있습니다.",
+        "가입 신청 승인/거절과 승인된 멤버 권한 저장을 처리합니다.",
       actions: {
         approve: { label: "승인" },
         reject: { label: "거절" },
@@ -685,7 +685,7 @@ export const adminKo = {
       },
       guardTitle: "저장 전제",
       guardDescription:
-        "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장합니다. 승인된 멤버의 권한 수정은 전체 교체 방식으로 저장합니다.",
+        "승인 시 멤버 상태를 재직중으로 변경하고 선택 권한을 저장합니다. 승인된 멤버의 권한 수정은 저장 시 전체 기준으로 반영합니다.",
     },
     joinRequestStatuses: { pending: "승인 대기" },
     invitationMethods: { email: "이메일", phone: "문자" },
@@ -706,16 +706,16 @@ export const adminKo = {
     },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
     sourceState: {
-      dbPending: "DB 연결 예정",
-      dbLoading: "DB 조회 중",
-      dbConnected: "DB 연결",
-      dbFailed: "DB 조회 실패",
+      dbPending: "연결 준비",
+      dbLoading: "불러오는 중",
+      dbConnected: "연결됨",
+      dbFailed: "불러오기 실패",
     },
     permissionGuards: {
       visible: "노출",
       hidden: "숨김",
       blocked: "권한 부족",
-      allowedButDbPending: "권한 충족 · DB 연결 예정",
+      allowedButDbPending: "권한 충족 · 연결 준비",
       requiredPermissions: "필요 권한: {permissions}",
     },
     summary: {
@@ -732,8 +732,8 @@ export const adminKo = {
         description: "퇴사 처리 또는 비활성 상태로 관리되는 멤버입니다.",
       },
       permissionTemplates: {
-        label: "권한 템플릿",
-        description: "기본 역할 묶음으로 사용할 권한 preset입니다.",
+        label: "역할별 권한",
+        description: "역할별 기본 권한 묶음입니다.",
       },
     },
     sections: {
@@ -747,20 +747,20 @@ export const adminKo = {
         "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.",
       roles: "역할 기본값",
       rolesDescription:
-        "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 코드 기준으로 확장합니다.",
-      nextSteps: "다음 구현 범위",
+        "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 기준으로 관리합니다.",
+      nextSteps: "운영 적용 범위",
       workspaceCards: "메인화면 카드 권한",
       workspaceCardsDescription:
-        "관리자가 권한을 부여하면 해당 멤버의 메인화면에 표시될 카드 후보입니다.",
+        "관리자가 권한을 부여하면 해당 멤버의 메인화면에 표시될 카드입니다.",
       permissionGroups: "권한 그룹",
       permissionGroupsDescription:
-        "실제 DB 권한 테이블을 만들 때 사용할 권한 그룹 기준입니다.",
+        "권한을 업무 범위별로 묶어 관리하기 위한 기준입니다.",
       permissionCatalog: "권한 카탈로그",
       permissionCatalogDescription:
-        "DB permission_catalog와 role template에 넣을 permission_code 기준입니다.",
+        "권한 목록과 역할별 기본값을 관리하기 위한 기준입니다.",
       permissionMatrix: "권한 매트릭스",
       permissionMatrixDescription:
-        "role은 기본 체크값이고 실제 저장과 접근 제어는 permission_code 직접 부여 기준입니다.",
+        "역할은 기본 체크값이고 실제 접근 제어는 선택 권한 기준으로 관리합니다.",
     },
     tables: {
       members: {
@@ -840,17 +840,17 @@ export const adminKo = {
       members: {
         title: "멤버 목록을 불러오는 중입니다",
         description:
-          "company_members와 승인 대기 신청을 실제 DB 기준으로 조회하고 있습니다.",
+          "멤버와 승인 대기 신청을 불러오고 있습니다.",
       },
       memberDirectory: {
         title: "멤버 목록을 불러오는 중입니다",
         description:
-          "company_members와 승인 대기 신청을 실제 DB 기준으로 조회하고 있습니다.",
+          "멤버와 승인 대기 신청을 불러오고 있습니다.",
       },
       joinRequests: {
         title: "승인 대기 신청을 불러오는 중입니다",
         description:
-          "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다.",
+          "승인 대기 신청 목록을 불러오고 있습니다.",
       },
     },
     loadErrors: {
@@ -1295,7 +1295,7 @@ export const adminKo = {
       partners: "협력업체 · 공장 · 외주처",
       dashboard: "작업지시서 · 협력업체 · 파일 사용량",
       settings: "기준 설정 · 저장 정책 · 로그 이벤트",
-      members: "멤버 초대 · 역할 · 권한 설계",
+      members: "멤버 초대 · 역할 · 권한 관리",
       history: "상태 변경 · 주요 작업 기록",
     },
   },
@@ -1303,10 +1303,10 @@ export const adminKo = {
     title: "통계정보",
     description: "기간별 작업 · 협력업체 · 파일 사용량 · 생산 단계 통계",
     workorderFlowTitle: "작업지시서 현황",
-    dbSourceDescription: "DB 기준 상태별 작업량",
+    dbSourceDescription: "운영 데이터 기준 상태별 작업량",
     dbNotConfiguredDescription:
-      "DB 연결 설정이 없어 실제 데이터 0건으로 표시됩니다.",
-    dbErrorDescription: "DB 조회 실패로 실제 데이터 0건으로 표시됩니다.",
+      "운영 데이터 연결 상태를 확인할 수 없어 0건으로 표시됩니다.",
+    dbErrorDescription: "운영 데이터를 불러오지 못해 0건으로 표시됩니다.",
     currentMonth: "이번달",
     partnersTitle: "협력업체 분포",
     partnerCountSuffix: "개",
@@ -1442,7 +1442,7 @@ export const adminKo = {
   },
   settingsForm: {
     title: "조직 설정",
-    sampleCompanyName: "샘플 고객사",
+    sampleCompanyName: "확인용 고객사",
     planLabel: "요금제: 기본요금제",
     joinedPending: "가입일 준비중",
     updatedPending: "최근 설정 준비중",
@@ -1457,7 +1457,7 @@ export const adminKo = {
     },
     summaryCards: {
       status: "운영 상태",
-      statusValue: "DB 연결",
+      statusValue: "연결됨",
       joinedAt: "가입일",
       age: "사용 기간",
       members: "회원",
@@ -1471,7 +1471,7 @@ export const adminKo = {
       badge: "조직 설정",
       title: "회사 운영 설정",
       description:
-        "이 화면은 고객사 전체에 적용되는 파일, 저장소, 알림, 기준정보, 멤버 권한 정책을 관리하는 영역입니다. 개인 언어와 색상은 개인 설정에서 변경합니다.",
+        "고객사 전체에 적용되는 파일, 저장소, 알림, 기준정보, 멤버 권한 정책을 관리하는 영역입니다. 개인 언어와 색상은 개인 설정에서 변경합니다.",
       scopeTitle: "조직 설정 범위",
       scopeDescription:
         "고객관리자가 회사 단위로 관리해야 하는 설정만 이 화면에 남깁니다.",
@@ -1506,26 +1506,26 @@ export const adminKo = {
         "member-permissions": {
           title: "멤버 권한",
           description:
-            "멤버가 볼 수 있는 카드와 기능을 권한 코드 기준으로 분리하는 후속 영역입니다.",
+            "멤버가 볼 수 있는 카드와 기능을 권한 기준으로 분리하는 영역입니다.",
         },
       },
-      statusLabels: { active: "사용중", fixed: "고정", planned: "후속" },
+      statusLabels: { active: "사용중", fixed: "고정", planned: "운영 예정" },
       personalSettings: {
         title: "개인 설정은 분리됨",
         description:
           "언어, 색상, 화면 밀도, 기본 진입 화면은 회사 전체 정책이 아니라 사용자별 선호 설정입니다.",
-        note: "고객관리자와 일반 멤버는 상단 사람 아이콘의 개인 설정 모달에서 언어와 테마를 변경합니다. 이후 DB 사용자 설정으로 옮길 수 있도록 모달 구조를 유지합니다.",
+        note: "고객관리자와 일반 멤버는 상단 사람 아이콘의 개인 설정 모달에서 언어와 테마를 변경합니다.",
         actionLabel: "개인 설정 열기",
       },
     },
   },
   userAccessPreview: {
-    title: "사용자/권한 테스트 구조",
+    title: "사용자 권한 현황",
     description:
-      "사용자 구조와 현재 권한 기준이 맞는지 환경설정에서 확인하는 준비 패널입니다.",
+      "사용자 역할과 권한 상태를 환경설정에서 확인하는 영역입니다.",
     sourceStates: {
-      "db-connected": "실제 사용자 조회",
-      "db-prepared": "사용자 구조 준비",
+      "db-connected": "사용자 조회",
+      "db-prepared": "사용자 정보 준비",
       unavailable: "사용자 조회 불가",
     },
     userCountLabel: "사용자",
@@ -1535,10 +1535,10 @@ export const adminKo = {
     roleModal: {
       title: "사용자 권한 관리",
       description: "환경설정에서 역할별 권한 결과를 점검하는 모달입니다.",
-      sectionTitle: "역할 변경 테스트",
+      sectionTitle: "역할 변경 확인",
       sectionDescription:
-        "역할 버튼을 바꾸면 중앙 권한 기준으로 권한 뱃지가 즉시 재계산됩니다. 현재 단계에서는 저장 없이 화면 검증만 수행합니다.",
-      previewBadge: "권한 미리보기",
+        "역할 버튼을 바꾸면 권한 뱃지가 즉시 재계산됩니다. 저장 전 변경 결과를 확인할 수 있습니다.",
+      previewBadge: "권한 확인",
       resetButton: "초기값 복원",
       closeButton: "확인",
     },
@@ -1547,17 +1547,17 @@ export const adminKo = {
       canEditInventory: "재고수정",
       canSeeCostSections: "원가조회",
     },
-    checklistTitle: "전환 체크리스트",
+    checklistTitle: "운영 체크리스트",
     checklist: {
-      "users-table": "users 테이블 SQL 준비",
-      "company-users-table": "company_users 역할 연결 SQL 준비",
-      "role-policy": "중앙 role / permission policy 연결",
-      "db-user-query": "사용자/역할 실제 DB 조회",
-      "login-adapter": "실제 로그인 adapter 연결",
+      "users-table": "사용자 계정 정보 준비",
+      "company-users-table": "회사 멤버 역할 연결",
+      "role-policy": "역할별 권한 기준 연결",
+      "db-user-query": "사용자와 역할 목록 조회",
+      "login-adapter": "로그인 계정 연결",
     },
     status: { ready: "준비", pending: "대기" },
     nextStep:
-      "다음 단계에서는 관리자 권한 변경 모달과 실제 로그인 연결 구조를 정리합니다.",
+      "다음 단계에서는 멤버 권한 변경과 로그인 계정 연결 기준을 정리합니다.",
   },
   notificationSection: {
     items: {
@@ -1592,8 +1592,8 @@ export const adminKo = {
     },
     title: "알림 이벤트 설정",
     description:
-      "현재는 상태 저장만 연결되어 있으며 실제 발송은 아직 연결되지 않았습니다.",
-    badge: "테스트",
+      "알림 항목별 사용 여부를 관리합니다.",
+    badge: "준비",
     toggleOn: "ON",
     toggleOff: "OFF",
   },
@@ -1719,7 +1719,7 @@ export const adminKo = {
       usageActive: "사용",
       usageInactive: "미사용",
       usageSrLabel: "협력업체 사용 상태",
-      saveFailed: "저장에 실패했습니다. DB 연결 상태를 확인하세요.",
+      saveFailed: "저장에 실패했습니다. 연결됨 상태를 확인하세요.",
       outsourcingDescription:
         "이 협력업체가 외주처라면 공정을 연결해 작업지시서에서 바로 필터링할 수 있게 합니다.",
       outsourcingActive: "외주 사용",
@@ -1791,7 +1791,7 @@ export const adminKo = {
     summaries: {
       totalWorkorders: {
         label: "전체 작업지시서",
-        description: "DB 기준 전체 작업지시서 수",
+        description: "운영 데이터 기준 전체 작업지시서 수",
       },
       partnerCount: { label: "협력업체 수", description: "활성 협력업체 수" },
       fileUsage: { label: "파일 사용량", description: "현재 첨부파일 사용량" },
@@ -1850,9 +1850,9 @@ export const adminKo = {
     section: {
       policyTitle: "정책 관리",
       standardTitle: "기준 관리",
-      saveProcessFailed: "저장에 실패했습니다. DB 연결 상태를 확인하세요.",
-      saveUnitFailed: "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.",
-      saveItemFailed: "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.",
+      saveProcessFailed: "저장에 실패했습니다. 연결됨 상태를 확인하세요.",
+      saveUnitFailed: "단위 저장에 실패했습니다. 연결됨 상태를 확인하세요.",
+      saveItemFailed: "품목 저장에 실패했습니다. 연결됨 상태를 확인하세요.",
       logEventsTitle: "로그 이벤트",
     },
     actions: {
@@ -2097,7 +2097,7 @@ export const adminKo = {
       description:
         "고객사 관리자 계정은 회사 정보와 필수 첨부파일을 제출한 뒤 승인 요청을 진행해야 합니다.",
       notice:
-        "회사 정보는 승인 요청 버튼을 누르기 전까지 DB/R2에 최종 저장되지 않습니다. 입력 화면으로 돌아가 필수 정보를 제출해 주세요.",
+        "회사 정보는 승인 요청 버튼을 누르기 전까지 최종 저장되지 않습니다. 입력 화면으로 돌아가 필수 정보를 제출해 주세요.",
     },
     profileRequiredMember: {
       title: "아직 사용할 수 없는 계정입니다.",
@@ -2218,9 +2218,9 @@ export const adminKo = {
     freePriceLabel: "무료",
     monthlyPriceSuffix: "원 / 월",
     policyNotes: [
-      "이번 단계에서는 결제 API를 연결하지 않고 화면 진입과 안내 흐름만 정리합니다.",
+      "이번 단계에서는 결제 화면 진입과 안내 흐름만 정리합니다.",
       "고객사 관리자는 요금제 갱신 화면으로 이동하고, 멤버는 서비스 대기 화면으로 이동합니다.",
-      "다음 단계에서 주요 API 요청도 trial 만료 상태를 기준으로 차단합니다.",
+      "다음 단계에서 주요 요청도 trial 만료 상태를 기준으로 차단합니다.",
     ],
   },
 } as const;

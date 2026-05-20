@@ -341,7 +341,7 @@ function FeedbackPanel() {
         <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">{t("settings.feedback.emailLabel", "Feedback email")}</p>
         <p className="mt-1 font-mono text-base font-semibold pbp-text-primary">{ADMIN_FEEDBACK_CONTACT_EMAIL}</p>
         <p className="mt-2 text-xs leading-5 pbp-text-muted">
-          {t("settings.feedback.mailDescription", "현재는 DB 저장 없이 사용자의 기본 메일 앱으로 개선 요청, 오류 제보, 기능 제안 내용을 작성하는 방식으로 접수합니다.")}
+          {t("settings.feedback.mailDescription", "개선 요청, 오류 제보, 기능 제안 내용을 기본 메일 앱으로 작성해 전달합니다.")}
         </p>
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
@@ -452,7 +452,7 @@ export default function AdminSettingsHub() {
       <AdminSection
         eyebrow={t("settings.hub.eyebrow", "Admin settings")}
         title={t("settings.hub.title", "환경설정")}
-        description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 약관·정책, 개발 건의를 한 화면에서 전환해 확인합니다.")}
+        description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 약관·정책, 개선 요청을 한 화면에서 전환해 확인합니다.")}
         actions={
           <p className="w-full rounded-full border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-2 text-xs font-semibold leading-5 pbp-text-muted shadow-sm sm:w-auto">
             {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}

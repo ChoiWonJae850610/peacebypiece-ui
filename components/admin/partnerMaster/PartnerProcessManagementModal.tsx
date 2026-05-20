@@ -99,7 +99,7 @@ export default function PartnerProcessManagementModal({
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={processText.title}
-      description={t("partnerMaster.processManagement.description", "시스템관리자가 제공하는 외주공정 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 공정 유형이 필요하면 개발 건의 또는 관리자 문의로 요청하세요.")}
+      description={t("partnerMaster.processManagement.description", "시스템관리자가 제공하는 외주공정 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 공정 유형이 필요하면 개선 요청 또는 관리자 문의로 요청하세요.")}
       categoryLabel={t("standards.common.systemSelectableCategory", "시스템 표준 선택형 기준정보")}
       maxWidthClass="md:max-w-3xl"
       footer={

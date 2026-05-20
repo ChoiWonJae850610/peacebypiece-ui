@@ -19,7 +19,7 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
   return {
     companyName: null,
     dataSource: "db",
-    dataSourceLabel: "DB 대기",
+    dataSourceLabel: "연결 대기",
     usageCards: [
       { label: "totalUsage", value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}`, description: "Checking plan capacity" },
       { label: "activeFiles", value: "0 items", description: "0MB used" },

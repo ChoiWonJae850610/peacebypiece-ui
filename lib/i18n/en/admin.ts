@@ -172,19 +172,19 @@ export const adminEn = {
       trash: "Recycle Bin",
       storage: "Storage policy",
     },
-    snapshotLoadFailed: "Could not load file list from DB",
+    snapshotLoadFailed: "Could not load the file list",
     snapshotLoadFailedWithMessage:
-      "Could not load file list from DB: {message}",
+      "Could not load the file list: {message}",
   },
   auditSummary: {
     title: "Admin Audit",
     closedDescription:
-      "The dashboard prioritizes operating metrics, while DB and structure checks stay collapsed until needed.",
+      "The dashboard prioritizes operating metrics, while operational checks stay collapsed until needed.",
     open: "Open audit",
     chips: {
       db: "Data",
       domain: "Structure",
-      sample: "Samples",
+      initial: "Initials",
       finalAudit: "Final check",
     },
     close: "Close audit",
@@ -198,7 +198,7 @@ export const adminEn = {
       legacyRemoved: "Legacy removed",
       legacyKept: "Legacy kept",
       db: "Data",
-      sample: "Samples",
+      initial: "Initials",
       finalAudit: "Final check",
     },
     decision: "Completion decision",
@@ -216,19 +216,19 @@ export const adminEn = {
       partner: "Partners",
       attachmentMemo: "Memos/attachments",
     },
-    repositoryModes: { db: "Live data", mock: "Sample data" },
+    repositoryModes: { db: "Live data", mock: "Initial data" },
     statuses: {
       "db-connected": "Live data",
-      "db-prepared": "DB prepared",
-      "fallback-guarded": "Safe display protected",
-      "mock-only": "Sample data",
+      "db-prepared": "Data prepared",
+      "fallback-guarded": "Safe display",
+      "mock-only": "Initial data",
       "not-applicable": "N/A",
     },
     sourceTypes: {
-      "actual-db": "Live DB read/write",
-      "db-with-fallback": "Live DB + safe display",
-      "db-prepared-fallback": "DB prepared + safe display",
-      "mock-only": "Sample data",
+      "actual-db": "Live read/write",
+      "db-with-fallback": "Live data + safe display",
+      "db-prepared-fallback": "Data prepared + safe display",
+      "mock-only": "Initial data",
       "not-applicable": "N/A",
     },
   },
@@ -255,7 +255,7 @@ export const adminEn = {
     statistics: "Statistics",
     history: "History",
     settings: "Settings",
-    dbConnected: "DB status audit",
+    dbConnected: "Data status audit",
   },
   operationsDashboard: {
     title: "Operations Dashboard",
@@ -269,7 +269,7 @@ export const adminEn = {
     selectedQueueEyebrow: "Selected queue",
     priorityEyebrow: "Queue",
     workorderStatusTitle: "Work order status",
-    sourceDb: "Shows work queue items from DB.",
+    sourceDb: "Shows work queue items from operating data.",
     sourceNotConfigured:
       "No database connection is configured, so values are shown as zero.",
     sourceError: "Database lookup failed, so values are shown as zero.",
@@ -283,7 +283,7 @@ export const adminEn = {
     statusFlowTitle: "Status flow",
     statusDistributionTitle: "Status distribution",
     todayCheckTitle: "Today check",
-    previewEmpty: "Preview",
+    checkEmpty: "Check",
     attachmentLabel: "Files",
     factoryLabel: "Factory",
     quantityLabel: "Qty",
@@ -365,7 +365,7 @@ export const adminEn = {
       available: "Available",
       planned: "Preparing",
       linked: "Connected",
-      api: "API ready",
+      api: "service ready",
       legacy: "Existing",
     },
     permissionLabel: "Permission",
@@ -547,7 +547,7 @@ export const adminEn = {
       },
       permissions: {
         label: "Permissions",
-        description: "Manage permission codes and home card visibility.",
+        description: "Manage permission settings and home card visibility.",
         count: "{count} permissions",
       },
     },
@@ -634,11 +634,11 @@ export const adminEn = {
       title: "Member approval and permission assignment",
       description:
         "A first-pass screen for reviewing a join request and adjusting role-template permissions before approval or rejection.",
-      previewApplicant: {
+      checkApplicant: {
         name: "Designer Kim",
         email: "designer@example.com",
         description:
-          "A preview state for a member who applied through an invitation link.",
+          "A check state for a member who applied through an invitation link.",
       },
       steps: {
         review: {
@@ -661,10 +661,10 @@ export const adminEn = {
       },
       permissionChecklistTitle: "Permission checklist",
       permissionChecklistDescription:
-        "Role templates are only starting values; approval stores the direct permission_code list.",
+        "Role templates are only starting values; approval stores the direct permission setting list.",
       actionsTitle: "Approval actions",
       actionsDescription:
-        "Join-request approval/rejection and approved-member permission writes are connected to the live DB.",
+        "Join-request approval/rejection and approved-member permission writes are connected to the live data.",
       actions: {
         approve: { label: "Approve" },
         reject: { label: "Reject" },
@@ -693,16 +693,16 @@ export const adminEn = {
     },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: {
-      dbPending: "DB connection planned",
-      dbLoading: "Loading DB",
-      dbConnected: "DB connected",
-      dbFailed: "DB load failed",
+      dbPending: "Connection planned",
+      dbLoading: "Loading data",
+      dbConnected: "Connected",
+      dbFailed: "Load failed",
     },
     permissionGuards: {
       visible: "Visible",
       hidden: "Hidden",
       blocked: "Permission missing",
-      allowedButDbPending: "Allowed · DB connection planned",
+      allowedButDbPending: "Allowed · connection planned",
       requiredPermissions: "Required permissions: {permissions}",
     },
     summary: {
@@ -736,20 +736,20 @@ export const adminEn = {
         "Approve or reject users who applied through an invitation link.",
       roles: "Role defaults",
       rolesDescription:
-        "Roles are used as default permission bundles, while screen exposure will expand by permission code.",
+        "Roles are used as default permission bundles, while screen exposure will expand by permission setting.",
       nextSteps: "Next implementation scope",
       workspaceCards: "Home card permissions",
       workspaceCardsDescription:
         "Cards that can appear on a member home screen when an admin grants the corresponding permissions.",
       permissionGroups: "Permission groups",
       permissionGroupsDescription:
-        "Permission group standards for a future DB-backed permission table.",
+        "Permission group standards for a future saved permission table.",
       permissionCatalog: "Permission catalog",
       permissionCatalogDescription:
-        "permission_code standards for DB permission_catalog and role templates.",
+        "permission setting standards for permission_catalog and role templates.",
       permissionMatrix: "Permission matrix",
       permissionMatrixDescription:
-        "Roles are default check presets; actual storage and access control use directly granted permission_code values.",
+        "Roles are default check presets; actual storage and access control use directly granted permission setting values.",
     },
     tables: {
       members: {
@@ -829,16 +829,16 @@ export const adminEn = {
       members: {
         title: "Loading members",
         description:
-          "Loading company_members and pending join requests from the DB.",
+          "Loading company_members and pending join requests from the data.",
       },
       memberDirectory: {
         title: "Loading members",
         description:
-          "Loading company_members and pending join requests from the DB.",
+          "Loading company_members and pending join requests from the data.",
       },
       joinRequests: {
         title: "Loading join requests",
-        description: "Loading the join_requests.pending list from the DB.",
+        description: "Loading the join_requests.pending list from the data.",
       },
     },
     loadErrors: {
@@ -1123,8 +1123,8 @@ export const adminEn = {
     },
     emptyTrashConfirmTitle: "Empty trash",
     emptyTrashConfirmDescription: "Request deletion for all items in trash?",
-    workorderPurgePreview: "Review deletion scope",
-    workorderRestorePreview: "Review restore scope",
+    workorderPurgeCheck: "Review deletion scope",
+    workorderRestoreCheck: "Review restore scope",
     workorderActionGuardTitle: "Review the processing scope by work order.",
     workorderRestoreConnectedNotice:
       "Restoring the work order also restores the deleted documents, designs, and memos.",
@@ -1141,8 +1141,8 @@ export const adminEn = {
       file: "File trash details",
     },
     detail: {
-      openPreview: "Open file preview",
-      previewFailed: "Preview failed",
+      openCheck: "Open file check",
+      checkFailed: "Check failed",
       workorderActionHint:
         "Restoring the work order also restores the deleted documents, designs, and memos.",
       fileActionHint: "Restore or request deletion for this file only.",
@@ -1303,7 +1303,7 @@ export const adminEn = {
     description:
       "Period work · partners · file usage · production stage statistics",
     workorderFlowTitle: "Work Order Status",
-    dbSourceDescription: "Status volume based on DB data",
+    dbSourceDescription: "Status volume based on data data",
     dbNotConfiguredDescription:
       "No database connection is configured, so real data is shown as zero.",
     dbErrorDescription:
@@ -1452,7 +1452,7 @@ export const adminEn = {
   },
   settingsForm: {
     title: "Organization Settings",
-    sampleCompanyName: "Sample customer",
+    initialCompanyName: "Initial customer",
     planLabel: "Plan: Basic",
     joinedPending: "Join date pending",
     updatedPending: "Recent setting pending",
@@ -1467,7 +1467,7 @@ export const adminEn = {
     },
     summaryCards: {
       status: "Operation status",
-      statusValue: "DB connected",
+      statusValue: "Connected",
       joinedAt: "Joined",
       age: "Usage period",
       members: "Members",
@@ -1516,7 +1516,7 @@ export const adminEn = {
         "member-permissions": {
           title: "Member permissions",
           description:
-            "A later area for controlling which cards and features members can access by permission code.",
+            "A later area for controlling which cards and features members can access by permission setting.",
         },
       },
       statusLabels: { active: "Active", fixed: "Fixed", planned: "Planned" },
@@ -1524,15 +1524,15 @@ export const adminEn = {
         title: "Personal settings are separate",
         description:
           "Language, color, screen density, and default home are per-user preferences, not company-wide policy.",
-        note: "Customer admins and members change language and theme from the personal settings modal opened by the top user icon. The modal structure can later move to DB-backed user settings.",
+        note: "Customer admins and members change language and theme from the personal settings modal opened by the top user icon. The modal structure can later move to saved user settings.",
         actionLabel: "Open personal settings",
       },
     },
   },
-  userAccessPreview: {
+  userAccessCheck: {
     title: "User / Permission Test Structure",
     description:
-      "A preparation panel for checking whether the DB user structure and current permission policy match before real login is connected.",
+      "A preparation panel for checking whether the data user structure and current permission policy match before real login is connected.",
     sourceStates: {
       "db-connected": "Live user query",
       "db-prepared": "User structure prepared",
@@ -1548,8 +1548,8 @@ export const adminEn = {
         "A test modal for checking role-based permissions from Settings before real login is connected.",
       sectionTitle: "Role change test",
       sectionDescription:
-        "Changing a role recalculates permission badges through the central role policy. This step only validates the screen and does not save to DB yet.",
-      previewBadge: "Permission preview",
+        "Changing a role recalculates permission badges through the central role policy. This step only validates the screen and does not save to data yet.",
+      checkBadge: "Permission check",
       resetButton: "Reset",
       closeButton: "Confirm",
     },
@@ -1563,7 +1563,7 @@ export const adminEn = {
       "users-table": "users table SQL prepared",
       "company-users-table": "company_users role mapping SQL prepared",
       "role-policy": "Central role / permission policy connected",
-      "db-user-query": "Query users and roles from DB",
+      "db-user-query": "Query users and roles from data",
       "login-adapter": "Real login adapter connected",
     },
     status: { ready: "Ready", pending: "Pending" },
@@ -1813,7 +1813,7 @@ export const adminEn = {
     summaries: {
       totalWorkorders: {
         label: "Total work orders",
-        description: "Total work orders from DB",
+        description: "Total work orders from data",
       },
       partnerCount: { label: "Partners", description: "Active partner count" },
       fileUsage: {
@@ -1997,7 +1997,7 @@ export const adminEn = {
       label: "Road-name address search",
       placeholder: "Enter a road name, building name, or lot number",
       description:
-        "Searches the official road-name address API and fills postal code, road address, and jibun address.",
+        "Searches the official road-name address service and fills postal code, road address, and jibun address.",
       button: "Search address",
       loading: "Searching",
       empty:
@@ -2006,11 +2006,11 @@ export const adminEn = {
       errors: {
         keywordRequired: "Enter a search keyword.",
         notConfigured:
-          "The road-name address API key is not configured. Use manual entry instead.",
+          "The road-name address service key is not configured. Use manual entry instead.",
         failed:
           "Address search failed. Try again later or enter the address manually.",
         providerRejected:
-          "The road-name address API key or registered URL could not be verified. Use manual entry instead.",
+          "The road-name address service key or registered URL could not be verified. Use manual entry instead.",
         upstreamFailed:
           "Could not connect to the road-name address search server. Try again later or enter the address manually.",
         responseInvalid:
@@ -2128,7 +2128,7 @@ export const adminEn = {
       description:
         "The company admin must submit company details and required files before requesting approval.",
       notice:
-        "Company details are not finalized in DB/R2 until the approval request is submitted. Return to the input screen and submit the required information.",
+        "Company details are not finalized in data/R2 until the approval request is submitted. Return to the input screen and submit the required information.",
     },
     profileRequiredMember: {
       title: "This account is not ready for workspace access.",
@@ -2251,9 +2251,9 @@ export const adminEn = {
     freePriceLabel: "Free",
     monthlyPriceSuffix: " KRW / month",
     policyNotes: [
-      "This step does not connect payment APIs; it only organizes screen routing and guidance.",
+      "This step does not connect payment services; it only organizes screen routing and guidance.",
       "Company admins move to the subscription screen, while members move to the service-paused screen.",
-      "The next step will block core API requests using the same trial-expiration status.",
+      "The next step will block core service requests using the same trial-expiration status.",
     ],
   },
 } as const;

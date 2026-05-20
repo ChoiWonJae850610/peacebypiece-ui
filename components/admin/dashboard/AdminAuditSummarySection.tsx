@@ -39,7 +39,7 @@ export default function AdminAuditSummarySection({ dbCompletionSummary, completi
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-stone-500">
             <AdminStatusBadge tone="neutral">{t("auditSummary.chips.db", "데이터")} {completionAuditSummary.dbConnectedCount}+{completionAuditSummary.dbWatchCount}</AdminStatusBadge>
             <AdminStatusBadge tone="neutral">{t("auditSummary.chips.domain", "구조")} {completionAuditSummary.readyDomainCount}/{completionAuditSummary.totalDomainCount}</AdminStatusBadge>
-            <AdminStatusBadge tone="neutral">{t("auditSummary.chips.sample", "샘플")} {completionAuditSummary.mockRemoveReadyCount}/{completionAuditSummary.mockRetainedCount}</AdminStatusBadge>
+            <AdminStatusBadge tone="neutral">{t("auditSummary.chips.sample", "초기자료")} {completionAuditSummary.mockRemoveReadyCount}/{completionAuditSummary.mockRetainedCount}</AdminStatusBadge>
             <AdminStatusBadge tone="neutral">{t("auditSummary.chips.finalAudit", "마감점검")} {completionAuditSummary.finalAuditWatchCount}/{completionAuditSummary.finalAuditTotalCount}</AdminStatusBadge>
             <AdminButton
               type="button"

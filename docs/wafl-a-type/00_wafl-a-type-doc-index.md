@@ -363,3 +363,14 @@ PC visual 보정 2차
 - DB/API/R2/권한/세션 변경 없음
 ```
 
+
+### 0.15.28 업데이트
+
+```txt
+51_wafl-a-type-admin-copy-ux.md
+- admin 화면 개발자성 placeholder 정리
+- /admin, /admin/settings, /admin/members, /admin/files, /admin/stats 대상
+- 설계 중/준비 중/개발중/DB/API/permission_code/role template/샘플/preview 표현 완화
+- 고객사 관리자에게 필요한 운영 상태와 다음 액션 중심으로 문구 정리
+- DB/API/R2/권한/세션 변경 없음
+```

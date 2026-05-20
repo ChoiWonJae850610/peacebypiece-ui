@@ -43,7 +43,7 @@ export default function AdminPolicyOverview({ settings }: AdminPolicyOverviewPro
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-[var(--pbp-text-primary)]">{t("settings.policyOverview.title", "고객사 관리자 정책")}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--pbp-text-muted)]">
-            {t("settings.policyOverview.description", "삭제방식, 용량 한도, 휴지통 포함 여부, 개발중 기능을 환경설정 메인에서 먼저 확인합니다. 실제 권한 편집 UI는 permission seed와 API 차단이 준비된 뒤 연결합니다.")}
+            {t("settings.policyOverview.description", "삭제방식, 용량 한도, 휴지통 포함 여부와 조직 운영 기준을 환경설정 메인에서 먼저 확인합니다.")}
           </p>
         </div>
         <span className="w-fit rounded-full bg-[var(--pbp-brand-primary)] px-3 py-1 text-xs font-semibold text-[var(--pbp-text-inverse)]">{t("settings.policyOverview.versionBadge", "0.9.216 기준")}</span>
@@ -83,7 +83,7 @@ export default function AdminPolicyOverview({ settings }: AdminPolicyOverviewPro
         </div>
 
         <div className="rounded-3xl border border-amber-100 bg-amber-50 p-4">
-          <h3 className="text-sm font-semibold text-amber-950">{t("settings.policyOverview.developmentFeatureTitle", "개발중 기능")}</h3>
+          <h3 className="text-sm font-semibold text-amber-950">{t("settings.policyOverview.developmentFeatureTitle", "운영 준비 항목")}</h3>
           <div className="mt-3 grid gap-2">
             {viewModel.developmentFeatures.map((item) => (
               <div key={item.id} className="rounded-2xl border border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-surface)] p-3">
@@ -101,7 +101,7 @@ export default function AdminPolicyOverview({ settings }: AdminPolicyOverviewPro
       </section>
 
       <section className="mt-4 rounded-3xl border border-[var(--pbp-brand-muted)] bg-[var(--pbp-brand-primary)] p-4 text-[var(--pbp-text-inverse)]">
-        <h3 className="text-sm font-semibold">{t("settings.policyOverview.nextStepTitle", "후속 연결 기준")}</h3>
+        <h3 className="text-sm font-semibold">{t("settings.policyOverview.nextStepTitle", "운영 적용 기준")}</h3>
         <ul className="mt-3 grid gap-2 lg:grid-cols-3">
           {viewModel.nextSteps.map((item) => (
             <li key={item} className="rounded-2xl bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-3 text-xs leading-5 text-[var(--pbp-text-inverse)] opacity-75">

@@ -137,7 +137,7 @@ export function getAdminDashboardStatusPanel(): AdminDashboardStatusPanel {
 }
 
 export const ADMIN_STAT_SUMMARIES: AdminSummaryCard[] = [
-  { label: "전체 작업지시서", value: "37", href: "/worker", description: "mock 기준 전체 작업 수", accent: "bg-blue-50 text-blue-700" },
+  { label: "전체 작업지시서", value: "37", href: "/worker", description: "현재 기준 전체 작업 수", accent: "bg-blue-50 text-blue-700" },
   { label: "협력업체 수", value: "35", href: "/admin/partners", description: "공장/원단/부자재/외주 합계", accent: "bg-emerald-50 text-emerald-700" },
   { label: "파일 사용량", value: "9MB", href: "/admin/files", description: "현재 첨부파일 사용량", accent: "bg-violet-50 text-violet-700" },
   { label: "완료된 작업지시서", value: "9", href: "/worker", description: "이번달 완료 처리", accent: "bg-stone-100 text-stone-700" },

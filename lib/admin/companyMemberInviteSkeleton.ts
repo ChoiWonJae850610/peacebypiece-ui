@@ -66,7 +66,7 @@ export const COMPANY_MEMBER_INVITE_POLICY_NOTES: CompanyMemberInvitePolicyNote[]
   },
   {
     title: "관리자 초대 제외",
-    description: "고객관리자 추가 초대는 추후 별도 권한 정책으로 분리합니다.",
+    description: "고객관리자 추가 초대는 별도 운영 정책으로 분리합니다.",
   },
   {
     title: "링크 우선",
