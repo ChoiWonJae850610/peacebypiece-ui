@@ -58,7 +58,7 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     label: "통계정보",
     description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.statsView,
-    requiredMemberPermissions: ["stats.read"],
+    requiredMemberPermissions: [],
     href: "/admin/stats",
     status: "available",
     statusLabel: "조회",

@@ -167,7 +167,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const scopeResult = await requirePartnerCompanyScope("standards.update");
+  const scopeResult = await requirePartnerCompanyScope("standards.manage");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {

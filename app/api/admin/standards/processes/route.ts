@@ -4,8 +4,7 @@ import { buildOutsourcingProcessDbInputs, mapOutsourcingProcessRecordsToDefiniti
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
 import type { PartnerRepository, PartnerWritableRepository } from "@/lib/partners/partnerRepository";
-import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
-import { requireApiPermission } from "@/lib/permissions";
+import { requireAdminSettingsCompanyPermission } from "@/lib/admin/settings/sessionScope";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 
 function isProcessRequestBody(value: unknown): value is { processDefinitions?: OutsourcingProcessDefinition[] } {
@@ -27,14 +26,8 @@ async function buildStandardProcessesResponse(companyId: string, companyName: st
   };
 }
 
-export async function GET(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "standards.read",
-    routeLabel: "admin.standards.processes.read",
-  });
-  if (permissionDenied) return permissionDenied;
-
-  const scopeResult = await requireAdminSettingsCompanyScope();
+export async function GET(_request: NextRequest) {
+  const scopeResult = await requireAdminSettingsCompanyPermission("standards.read");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
@@ -53,13 +46,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "standards.update",
-    routeLabel: "admin.standards.processes.update",
-  });
-  if (permissionDenied) return permissionDenied;
-
-  const scopeResult = await requireAdminSettingsCompanyScope();
+  const scopeResult = await requireAdminSettingsCompanyPermission("standards.manage");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {

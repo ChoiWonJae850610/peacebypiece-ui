@@ -1,17 +1,18 @@
 Version :
-0.14.5
+0.14.6
 
 Summary :
-멤버관리 상단 상태 카드 기준 정리
+고객사 관리자 권한 API guard 기준 보정
 
 Description :
-고객사 관리자 멤버관리 화면의 상단 요약 카드를 재직중, 승인 대기, 퇴사/비활성 기준으로 정리했다. 초대 링크 개수 중심의 요약 대신 실제 조직 인원 상태를 우선 보여주도록 변경하고, 한국어와 영어 문구를 함께 정리했다.
+기준정보 API가 request header preview 권한 대신 실제 로그인 세션의 고객사 멤버 권한을 확인하도록 수정했다. 기준정보 작성성 작업은 standards.manage 권한으로 통일하고, 협력업체 화면의 외주공정 저장도 같은 권한 기준을 사용하도록 보정했다. 통계 카드는 멤버 권한 체크 없이 기본 조회 카드로 노출되도록 정리했다.
 
 수정 파일 목록 :
-- components/admin/members/AdminMemberManagementDashboard.tsx
-- lib/admin/members/memberManagementPresentation.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- app/api/admin/standards/route.ts
+- app/api/admin/standards/processes/route.ts
+- app/api/admin/partners/route.ts
+- lib/admin/settings/sessionScope.ts
+- lib/admin/adminWorkspaceCards.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

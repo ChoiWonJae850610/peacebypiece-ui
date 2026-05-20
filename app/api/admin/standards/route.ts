@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAdminStandards, replaceAdminStandards } from "@/lib/admin/settings/standardsRepository";
-import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
-import { requireApiPermission } from "@/lib/permissions";
+import { requireAdminSettingsCompanyPermission } from "@/lib/admin/settings/sessionScope";
 import type { AdminStandardsPayload } from "@/lib/admin/settings/standardsTypes";
 
 function isRequestBody(value: unknown): value is Partial<AdminStandardsPayload> {
   return typeof value === "object" && value !== null;
 }
 
-export async function GET(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "standards.read",
-    routeLabel: "admin.standards.read",
-  });
-  if (permissionDenied) return permissionDenied;
-
-  const scopeResult = await requireAdminSettingsCompanyScope();
+export async function GET(_request: NextRequest) {
+  const scopeResult = await requireAdminSettingsCompanyPermission("standards.read");
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
@@ -30,14 +23,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const scopeResult = await requireAdminSettingsCompanyScope();
+  const scopeResult = await requireAdminSettingsCompanyPermission("standards.manage");
   if (!scopeResult.ok) return scopeResult.response;
-
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: "standards.update",
-    routeLabel: "admin.standards.update",
-  });
-  if (permissionDenied) return permissionDenied;
 
   try {
     const payload = (await request.json()) as unknown;
