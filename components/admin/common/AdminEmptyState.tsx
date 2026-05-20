@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { adminSurfaceVariantClassNames, joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 
 type AdminEmptyStateTone = "neutral" | "danger" | "warning";
 
@@ -11,14 +12,14 @@ type AdminEmptyStateProps = {
 };
 
 const toneClassNames: Record<AdminEmptyStateTone, string> = {
-  neutral: "border-stone-200 bg-white text-stone-600",
-  danger: "border-red-100 bg-red-50 text-red-700",
-  warning: "border-amber-100 bg-amber-50 text-amber-800",
+  neutral: adminSurfaceVariantClassNames.base,
+  danger: adminSurfaceVariantClassNames.danger,
+  warning: adminSurfaceVariantClassNames.warning,
 };
 
 export function AdminEmptyState({ title, description, action, tone = "neutral", className = "" }: AdminEmptyStateProps) {
   return (
-    <section className={`rounded-[28px] border p-5 shadow-sm ${toneClassNames[tone]} ${className}`}>
+    <section className={joinAdminClassNames("rounded-[28px] border p-5 shadow-[var(--pbp-shadow-card)]", toneClassNames[tone], className)}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold">{title}</p>

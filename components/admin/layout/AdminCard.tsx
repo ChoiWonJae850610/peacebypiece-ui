@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { adminSurfaceVariantClassNames, joinAdminClassNames, type AdminSurfaceVariant } from "@/components/admin/common/adminComponentVariants";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminCardProps = {
   children: ReactNode;
   className?: string;
+  variant?: AdminSurfaceVariant;
 };
 
-export function AdminCard({ children, className = "" }: AdminCardProps) {
-  return <section className={`min-w-0 rounded-[28px] p-5 pbp-admin-card ${className}`}>{children}</section>;
+export function AdminCard({ children, className = "", variant = "base" }: AdminCardProps) {
+  const variantClassName = variant === "base" ? "pbp-admin-card" : adminSurfaceVariantClassNames[variant];
+
+  return <section className={joinAdminClassNames("min-w-0 rounded-[28px] border p-5", variantClassName, className)}>{children}</section>;
 }
 
 type AdminStatCardProps = {

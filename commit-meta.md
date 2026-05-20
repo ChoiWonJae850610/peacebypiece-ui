@@ -1,15 +1,19 @@
-Version : 0.15.2
-Summary : AdminShell과 SystemShell 책임 분리 기준 정리
-Description : 고객사 관리자 AdminShell의 raw background를 A-TYPE token 기준으로 보정하고 시스템관리자 전용 SystemShell wrapper를 추가해 /system 홈에 1차 적용했다. route layout과 shell의 책임을 분리하는 문서를 추가하고 A-TYPE 문서 인덱스와 로드맵을 0.15.2 기준으로 갱신했다.
+Version : 0.15.3
+Summary : Admin 공통 컴포넌트 A-TYPE variant 1차 정리
+Description : AdminButton, AdminCard, AdminStatusBadge, AdminEmptyState, AdminFilterBar, AdminTable의 A-TYPE variant/tone 기준을 1차 정리했다. 공통 variant helper를 추가해 status/surface tone을 semantic token으로 묶고, Admin 공통 컴포넌트 구현 기준 문서를 추가했다.
 수정 파일 목록 :
-- components/admin/layout/AdminShell.tsx
-- components/system/SystemConsoleShell.tsx
+- components/admin/common/AdminButton.tsx
+- components/admin/common/AdminStatusBadge.tsx
+- components/admin/common/AdminEmptyState.tsx
+- components/admin/common/AdminFilterBar.tsx
+- components/admin/common/AdminTable.tsx
+- components/admin/layout/AdminCard.tsx
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 추가 파일 목록 :
-- components/system/layout/SystemShell.tsx
-- docs/wafl-a-type/23_wafl-a-type-shell-responsibility.md
+- components/admin/common/adminComponentVariants.ts
+- docs/wafl-a-type/24_wafl-a-type-admin-component-variants.md
 삭제 파일 목록 :
 - 없음

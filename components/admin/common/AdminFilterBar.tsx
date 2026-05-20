@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 
 type AdminFilterBarProps = {
   children: ReactNode;
@@ -7,7 +8,7 @@ type AdminFilterBarProps = {
 
 export default function AdminFilterBar({ children, className = "" }: AdminFilterBarProps) {
   return (
-    <div className={["flex flex-wrap items-center gap-2 rounded-[24px] p-2.5 pbp-admin-filter-bar", className].filter(Boolean).join(" ")}>
+    <div className={joinAdminClassNames("flex flex-wrap items-center gap-2 rounded-[24px] p-2.5 pbp-admin-filter-bar", className)}>
       {children}
     </div>
   );

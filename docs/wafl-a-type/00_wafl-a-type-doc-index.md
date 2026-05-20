@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
-version: 0.7
-baseline_source: peacebypiece-ui-0.15.1
+version: 0.8
+baseline_source: peacebypiece-ui-0.15.3
 status: updated
 updated: 2026-05-20
 ---
@@ -79,6 +79,7 @@ QA 체크리스트
 21_wafl-a-type-source-refactor-audit.md
 22_wafl-a-type-router-layout-implementation.md
 23_wafl-a-type-shell-responsibility.md
+24_wafl-a-type-admin-component-variants.md
 ```
 
 ## 4. 핵심 결정

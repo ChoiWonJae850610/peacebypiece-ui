@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import { adminKo } from "@/lib/i18n/ko/admin";
+import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 
 type AdminTableProps<TItem> = {
   items: readonly TItem[];
@@ -40,7 +41,7 @@ export default function AdminTable<TItem>({
   const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid";
 
   return (
-    <div className={["flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]", className].filter(Boolean).join(" ")}>
+    <div className={joinAdminClassNames("flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]", className)}>
       <div className={tableHeaderClassName} style={gridStyle}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
@@ -61,9 +62,9 @@ export default function AdminTable<TItem>({
           </div>
         ) : (
           items.map((item) => {
-            const mergedRowClassName = [baseRowClassName, rowClassName?.(item)].filter(Boolean).join(" ");
+            const mergedRowClassName = joinAdminClassNames(baseRowClassName, rowClassName?.(item));
             const cells = columns.map((column) => (
-              <div key={column.key} className={["min-w-0", column.className].filter(Boolean).join(" ")}>{column.render(item)}</div>
+              <div key={column.key} className={joinAdminClassNames("min-w-0", column.className)}>{column.render(item)}</div>
             ));
 
             if (onRowClick) {
@@ -79,7 +80,7 @@ export default function AdminTable<TItem>({
                       onRowClick(item);
                     }
                   }}
-                  className={[mergedRowClassName, "cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)]"].join(" ")}
+                  className={joinAdminClassNames(mergedRowClassName, "cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)]")}
                   style={gridStyle}
                 >
                   {cells}

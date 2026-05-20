@@ -1,7 +1,8 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 
 export type AdminButtonVariant = "primary" | "secondary" | "danger" | "ghost";
-export type AdminButtonSize = "sm" | "md";
+export type AdminButtonSize = "sm" | "md" | "lg";
 
 type AdminButtonBaseProps = {
   children: ReactNode;
@@ -23,6 +24,7 @@ const variantClassNames: Record<AdminButtonVariant, string> = {
 const sizeClassNames: Record<AdminButtonSize, string> = {
   sm: "min-h-9 px-4 py-2 text-sm",
   md: "min-h-10 px-5 py-2.5 text-sm",
+  lg: "min-h-12 px-6 py-3 text-sm",
 };
 
 export function getAdminButtonClassName({
@@ -34,7 +36,12 @@ export function getAdminButtonClassName({
   size?: AdminButtonSize;
   className?: string;
 } = {}) {
-  return `inline-flex shrink-0 items-center justify-center rounded-full border font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${sizeClassNames[size]} ${variantClassNames[variant]} ${className}`.trim();
+  return joinAdminClassNames(
+    "inline-flex shrink-0 items-center justify-center rounded-full border font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
+    sizeClassNames[size],
+    variantClassNames[variant],
+    className,
+  );
 }
 
 export function AdminButton({ children, variant = "secondary", size = "sm", className = "", type = "button", ...props }: AdminButtonProps) {

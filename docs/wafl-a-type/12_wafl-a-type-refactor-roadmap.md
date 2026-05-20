@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
-version: 0.7
-baseline_source: peacebypiece-ui-0.15.1
+version: 0.8
+baseline_source: peacebypiece-ui-0.15.3
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.1
+현재 기준: 0.15.3
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -21,6 +21,8 @@ updated: 2026-05-20
 - semantic token 1차
 - legacy docs 정리
 - route group 기반 Router/Layout 구조 1차 정리
+- AdminShell/SystemShell 책임 분리 1차
+- Admin 공통 컴포넌트 variant 1차
 ```
 
 ## 2. 전환 원칙
@@ -71,11 +73,13 @@ updated: 2026-05-20
 ### 0.15.3 — Admin 공통 컴포넌트 A-TYPE variant 1차
 
 ```txt
-- AdminButton
-- AdminCard
-- AdminStatusBadge
-- AdminEmptyState
-- AdminFilterBar
+- AdminButton size lg 추가
+- AdminCard surface variant 추가
+- AdminStatusBadge tone을 A-TYPE semantic token으로 매핑
+- AdminEmptyState tone을 A-TYPE surface token으로 매핑
+- AdminFilterBar/AdminTable class 병합 기준 정리
+- adminComponentVariants.ts 추가
+- 24번 Admin component variant 구현 문서 추가
 ```
 
 ### 0.15.4 — Login / Invite / Error A-TYPE
