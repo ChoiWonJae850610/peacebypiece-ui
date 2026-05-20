@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import SystemShell from "@/components/system/layout/SystemShell";
+
 import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
 import {
   SYSTEM_NAV_DEFAULT_CARD_CLASS,
@@ -7,8 +9,6 @@ import {
   SYSTEM_NAV_MAINTENANCE_CARD_CLASS,
   SYSTEM_NAV_PRIMARY_CARD_CLASS,
   SYSTEM_NAV_WARNING_CARD_CLASS,
-  SYSTEM_PAGE_CLASS,
-  SYSTEM_PAGE_WIDE_CLASS,
   SYSTEM_SECTION_HEADER_CLASS,
   SYSTEM_SUBTITLE_CLASS,
   SYSTEM_TITLE_CLASS,
@@ -95,9 +95,8 @@ export default function SystemConsoleShell() {
   const devSystemEntryEnabled = isDevSystemAdminEntryEnabled();
 
   return (
-    <main className={SYSTEM_PAGE_CLASS}>
-      <div className={SYSTEM_PAGE_WIDE_CLASS}>
-        <AdminCard as="header" className="p-4 sm:p-6">
+    <SystemShell>
+      <AdminCard as="header" className="p-4 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <p className={SYSTEM_EYEBROW_CLASS}>
@@ -136,7 +135,6 @@ export default function SystemConsoleShell() {
             ))}
           </AdminSection>
         ))}
-      </div>
-    </main>
+    </SystemShell>
   );
 }

@@ -24,7 +24,7 @@ export default function AdminShell({ companyName, appVersion, title, description
 
   return (
     <AdminThemeScope>
-      <main className="fixed inset-0 overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#f5f5f4_45%,#eef2ff_100%)] p-3 text-stone-900 sm:p-4 md:p-6 lg:p-8">
+      <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
         <div className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
           <AdminTopbar companyName={companyName} appVersion={appVersion} title={title} description={description} />
           <div className={contentFrameClassName}>

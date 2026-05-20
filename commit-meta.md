@@ -1,93 +1,15 @@
-Version : 0.15.1
-Summary : route group 기반 Router/Layout 구조 1차 정리
-Description : A-TYPE 적용 전 라우터와 레이아웃 책임을 분리하기 위해 public/admin/system/workspace 영역을 Next.js route group으로 재배치했다. 사용자에게 보이는 URL은 유지하면서 내부 폴더 구조만 정리하고, Router/Layout 구현 기준 문서를 추가했다.
+Version : 0.15.2
+Summary : AdminShell과 SystemShell 책임 분리 기준 정리
+Description : 고객사 관리자 AdminShell의 raw background를 A-TYPE token 기준으로 보정하고 시스템관리자 전용 SystemShell wrapper를 추가해 /system 홈에 1차 적용했다. route layout과 shell의 책임을 분리하는 문서를 추가하고 A-TYPE 문서 인덱스와 로드맵을 0.15.2 기준으로 갱신했다.
 수정 파일 목록 :
+- components/admin/layout/AdminShell.tsx
+- components/system/SystemConsoleShell.tsx
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 추가 파일 목록 :
-- app/(admin)/admin/files/page.tsx
-- app/(admin)/admin/history/page.tsx
-- app/(admin)/admin/invites/page.tsx
-- app/(admin)/admin/layout.tsx
-- app/(admin)/admin/members/page.tsx
-- app/(admin)/admin/page.tsx
-- app/(admin)/admin/partners/page.tsx
-- app/(admin)/admin/settings/page.tsx
-- app/(admin)/admin/stats/page.tsx
-- app/(admin)/admin/subscription/page.tsx
-- app/(admin)/admin/units/page.tsx
-- app/(public)/invite/company/[token]/page.tsx
-- app/(public)/invite/error/page.tsx
-- app/(public)/invite/member/[token]/page.tsx
-- app/(public)/login/page.tsx
-- app/(public)/page.tsx
-- app/(public)/pending/page.tsx
-- app/(public)/service-paused/page.tsx
-- app/(system)/system/access-checkpoint/page.tsx
-- app/(system)/system/audit-logs/page.tsx
-- app/(system)/system/billing/page.tsx
-- app/(system)/system/category-rules/CategoryRulesManager.tsx
-- app/(system)/system/category-rules/page.tsx
-- app/(system)/system/companies/page.tsx
-- app/(system)/system/invites/page.tsx
-- app/(system)/system/layout.tsx
-- app/(system)/system/page.tsx
-- app/(system)/system/standards/customer-onboarding/page.tsx
-- app/(system)/system/standards/page.tsx
-- app/(system)/system/standards/processes/page.tsx
-- app/(system)/system/standards/product-templates/page.tsx
-- app/(system)/system/standards/regression/page.tsx
-- app/(system)/system/standards/seed-status/page.tsx
-- app/(system)/system/standards/units/page.tsx
-- app/(system)/system/storage-usage/page.tsx
-- app/(workspace)/worker/layout.tsx
-- app/(workspace)/worker/page.tsx
-- app/(workspace)/workspace/layout.tsx
-- app/(workspace)/workspace/page.tsx
-- app/(workspace)/workspace/partners/page.tsx
-- app/(workspace)/workspace/standards/page.tsx
-- docs/wafl-a-type/22_wafl-a-type-router-layout-implementation.md
+- components/system/layout/SystemShell.tsx
+- docs/wafl-a-type/23_wafl-a-type-shell-responsibility.md
 삭제 파일 목록 :
-- app/page.tsx
-- app/login/page.tsx
-- app/pending/page.tsx
-- app/service-paused/page.tsx
-- app/invite/company/[token]/page.tsx
-- app/invite/error/page.tsx
-- app/invite/member/[token]/page.tsx
-- app/admin/files/page.tsx
-- app/admin/history/page.tsx
-- app/admin/invites/page.tsx
-- app/admin/layout.tsx
-- app/admin/members/page.tsx
-- app/admin/page.tsx
-- app/admin/partners/page.tsx
-- app/admin/settings/page.tsx
-- app/admin/stats/page.tsx
-- app/admin/subscription/page.tsx
-- app/admin/units/page.tsx
-- app/system/access-checkpoint/page.tsx
-- app/system/audit-logs/page.tsx
-- app/system/billing/page.tsx
-- app/system/category-rules/CategoryRulesManager.tsx
-- app/system/category-rules/page.tsx
-- app/system/companies/page.tsx
-- app/system/invites/page.tsx
-- app/system/layout.tsx
-- app/system/page.tsx
-- app/system/standards/customer-onboarding/page.tsx
-- app/system/standards/page.tsx
-- app/system/standards/processes/page.tsx
-- app/system/standards/product-templates/page.tsx
-- app/system/standards/regression/page.tsx
-- app/system/standards/seed-status/page.tsx
-- app/system/standards/units/page.tsx
-- app/system/storage-usage/page.tsx
-- app/worker/layout.tsx
-- app/worker/page.tsx
-- app/workspace/layout.tsx
-- app/workspace/page.tsx
-- app/workspace/partners/page.tsx
-- app/workspace/standards/page.tsx
+- 없음

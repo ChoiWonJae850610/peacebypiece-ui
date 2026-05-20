@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
-version: 0.6
-baseline_source: peacebypiece-ui-0.14.9
+version: 0.7
+baseline_source: peacebypiece-ui-0.15.1
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.14.9
+현재 기준: 0.15.1
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -20,6 +20,7 @@ updated: 2026-05-20
 - A-TYPE 문서 00~20 정리
 - semantic token 1차
 - legacy docs 정리
+- route group 기반 Router/Layout 구조 1차 정리
 ```
 
 ## 2. 전환 원칙
@@ -62,7 +63,9 @@ updated: 2026-05-20
 - 고객사 관리자 shell과 시스템관리자 shell을 억지로 합치지 않음
 - 공통 primitive만 공유
 - AdminShell raw color/background token화
-- System semantic class와 A-TYPE token 매칭
+- SystemShell 기본 wrapper 추가
+- SystemConsoleShell에 SystemShell 1차 적용
+- 23번 shell 책임 분리 문서 추가
 ```
 
 ### 0.15.3 — Admin 공통 컴포넌트 A-TYPE variant 1차
