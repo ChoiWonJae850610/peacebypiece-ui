@@ -5,6 +5,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
+import SystemShell from "@/components/system/layout/SystemShell";
+import {
+  SYSTEM_BODY_TEXT_CLASS,
+  SYSTEM_EYEBROW_CLASS,
+  SYSTEM_HEADER_PANEL_CLASS,
+  SYSTEM_MUTED_CARD_CLASS,
+  SYSTEM_PANEL_CLASS,
+  SYSTEM_SECTION_TITLE_CLASS,
+  SYSTEM_SUBTITLE_CLASS,
+  SYSTEM_TITLE_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PRODUCT_TEMPLATE_POLICY,
@@ -105,17 +116,17 @@ function CategoryEditForm({
   isSaving: boolean;
 }) {
   return (
-    <div className="grid gap-2 rounded-xl border border-stone-200 bg-white p-2 sm:grid-cols-[1fr_72px_auto]">
+    <div className="grid gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 sm:grid-cols-[1fr_72px_auto]">
       <input
         value={value.name}
         onChange={(event) => onChange({ ...value, name: event.target.value })}
-        className="rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-xs font-semibold text-stone-700 outline-none focus:border-stone-400"
+        className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-xs font-semibold text-[var(--pbp-text-primary)] outline-none focus:border-[var(--pbp-accent)]"
         placeholder="분류명"
       />
       <input
         value={value.sortOrder}
         onChange={(event) => onChange({ ...value, sortOrder: event.target.value })}
-        className="rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-right text-xs text-stone-600 outline-none focus:border-stone-400"
+        className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-right text-xs text-[var(--pbp-text-muted)] outline-none focus:border-[var(--pbp-accent)]"
         placeholder="정렬"
       />
       <div className="flex items-center justify-end gap-1">
@@ -152,20 +163,20 @@ function TemplateTreePreview({
   const { topLevelCount, secondLevelCount, thirdLevelCount } = getTemplateCounts(template);
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <div className="flex flex-col gap-3 border-b border-stone-100 pb-3 lg:flex-row lg:items-start lg:justify-between">
+    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">
+      <div className="flex flex-col gap-3 border-b border-[var(--pbp-border-soft)] pb-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-stone-950">{template.name}</h3>
+            <h3 className="text-base font-semibold text-[var(--pbp-text-primary)]">{template.name}</h3>
             <AdminStatusBadge tone={statusTones[template.status]}>
               {SYSTEM_PRODUCT_TEMPLATE_STATUS_LABELS[template.status]}
             </AdminStatusBadge>
             {template.isDefault ? <AdminStatusBadge tone="info">기본값</AdminStatusBadge> : null}
           </div>
-          <p className="mt-1 text-sm leading-6 text-stone-600">{template.description}</p>
-          <p className="mt-1 font-mono text-[11px] font-semibold text-stone-500">{template.code}</p>
+          <p className={`mt-1 ${SYSTEM_BODY_TEXT_CLASS}`}>{template.description}</p>
+          <p className="mt-1 font-mono text-[11px] font-semibold text-[var(--pbp-text-subtle)]">{template.code}</p>
         </div>
-        <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-stone-600">
+        <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-[var(--pbp-text-muted)]">
           <AdminStatusBadge tone="neutral">1차 {topLevelCount}개</AdminStatusBadge>
           <AdminStatusBadge tone="neutral">2차 {secondLevelCount}개</AdminStatusBadge>
           <AdminStatusBadge tone="neutral">3차 {thirdLevelCount}개</AdminStatusBadge>
@@ -177,7 +188,7 @@ function TemplateTreePreview({
         {template.tree.map((top) => {
           const isTopEditing = editingCategory?.id === top.id;
           return (
-            <div key={top.id} className="rounded-2xl border border-stone-100 bg-stone-50 p-3">
+            <div key={top.id} className="rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-muted)] p-3">
               {isTopEditing ? (
                 <CategoryEditForm
                   value={editingCategory}
@@ -188,7 +199,7 @@ function TemplateTreePreview({
                 />
               ) : (
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-stone-950">{top.name}</p>
+                  <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{top.name}</p>
                   <div className="flex items-center gap-1">
                     <AdminButton type="button" variant="secondary" size="sm" onClick={() => onStartEditCategory(top)} disabled={isSaving} className="min-h-7 px-2 py-0.5 text-[11px]">
                       수정
@@ -204,7 +215,7 @@ function TemplateTreePreview({
                 {top.children.map((second) => {
                   const isSecondEditing = editingCategory?.id === second.id;
                   return (
-                    <div key={second.id} className="rounded-xl border border-stone-200 bg-white p-3">
+                    <div key={second.id} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3">
                       {isSecondEditing ? (
                         <CategoryEditForm
                           value={editingCategory}
@@ -215,7 +226,7 @@ function TemplateTreePreview({
                         />
                       ) : (
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-semibold text-stone-700">{second.name}</p>
+                          <p className="text-xs font-semibold text-[var(--pbp-text-primary)]">{second.name}</p>
                           <div className="flex items-center gap-1">
                             <AdminButton type="button" variant="secondary" size="sm" onClick={() => onStartEditCategory(second)} disabled={isSaving} className="min-h-7 px-2 py-0.5 text-[11px]">
                               수정
@@ -244,8 +255,8 @@ function TemplateTreePreview({
                           }
 
                           return (
-                            <div key={leaf.id} className="flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 pl-2 text-[11px] font-medium text-stone-600">
-                              <span className={leaf.isActive === false ? "text-stone-400" : "text-stone-600"} title={leaf.description}>
+                            <div key={leaf.id} className="flex items-center gap-1 rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] pl-2 text-[11px] font-medium text-[var(--pbp-text-muted)]">
+                              <span className={leaf.isActive === false ? "text-stone-400" : "text-[var(--pbp-text-muted)]"} title={leaf.description}>
                                 {leaf.name}
                               </span>
                               <AdminButton type="button" variant="ghost" size="sm" onClick={() => onStartEditCategory(leaf)} disabled={isSaving} className="min-h-7 px-1.5 py-1 text-[10px]">
@@ -492,14 +503,13 @@ export default function SystemProductTemplateStandardsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5">
-        <header className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+    <SystemShell>
+        <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">SYSTEM STANDARD TEMPLATE</p>
-              <h1 className="text-2xl font-semibold text-stone-950">생산품 유형 기본 템플릿</h1>
-              <p className="max-w-3xl text-sm leading-6 text-stone-600">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--pbp-text-subtle)]">SYSTEM STANDARD TEMPLATE</p>
+              <h1 className={SYSTEM_TITLE_CLASS}>생산품 유형 기본 템플릿</h1>
+              <p className={SYSTEM_SUBTITLE_CLASS}>
                 신규 고객사 생성 시 복사할 생산품 유형 기본 템플릿 원장을 관리합니다. 고객사별 생산품 유형은 복사 후 고객관리자가 직접 조정합니다.
               </p>
             </div>
@@ -512,11 +522,11 @@ export default function SystemProductTemplateStandardsPage() {
         </header>
 
         <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
+          <article className={SYSTEM_PANEL_CLASS}>
+            <div className="flex flex-col gap-3 border-b border-[var(--pbp-border-soft)] pb-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-stone-950">시스템 생산품 유형 템플릿 원장</h2>
-                <p className="mt-1 text-sm leading-6 text-stone-600">
+                <h2 className={SYSTEM_SECTION_TITLE_CLASS}>시스템 생산품 유형 템플릿 원장</h2>
+                <p className={`mt-1 ${SYSTEM_BODY_TEXT_CLASS}`}>
                   총 {records.length}개 중 활성 {activeCount}개입니다. 1차 → 2차 → 3차 분류는 각 항목의 수정 버튼으로 이름과 정렬값을 바꿀 수 있습니다.
                 </p>
               </div>
@@ -525,19 +535,19 @@ export default function SystemProductTemplateStandardsPage() {
               </AdminButton>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3">
+            <div className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
               <div className="grid gap-2 md:grid-cols-[0.8fr_0.85fr_1fr_120px_120px]">
-                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} placeholder="템플릿명" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
-                <input value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))} placeholder="코드 예: apparel-basic" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
-                <input value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="설명" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
-                <input value={form.sortOrder} onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
+                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} placeholder="템플릿명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <input value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))} placeholder="코드 예: apparel-basic" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <input value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="설명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <input value={form.sortOrder} onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
                 <AdminButton type="button" variant="primary" onClick={createTemplate} disabled={isSaving || !form.code.trim() || !form.name.trim()} className="rounded-xl">
                   템플릿 추가
                 </AdminButton>
               </div>
             </div>
 
-            <p className="mt-3 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-600">{message}</p>
+            <p className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{message}</p>
 
             <div className="mt-4 grid gap-4">
               {records.length === 0 && !isLoading ? (
@@ -549,13 +559,13 @@ export default function SystemProductTemplateStandardsPage() {
               {records.map((template) => {
                 const isEditing = editingId === template.id && editingForm;
                 return (
-                  <div key={template.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                  <div key={template.id} className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
                     {isEditing ? (
                       <div className="grid gap-2 md:grid-cols-[0.8fr_0.8fr_1fr_90px_120px]">
-                        <input value={editingForm.name} onChange={(event) => setEditingForm((current) => current ? { ...current, name: event.target.value } : current)} className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-sm" />
-                        <input value={editingForm.code} onChange={(event) => setEditingForm((current) => current ? { ...current, code: event.target.value } : current)} className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-sm" />
-                        <input value={editingForm.description} onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)} className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-sm" />
-                        <input value={editingForm.sortOrder} onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)} className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-right text-sm" />
+                        <input value={editingForm.name} onChange={(event) => setEditingForm((current) => current ? { ...current, name: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
+                        <input value={editingForm.code} onChange={(event) => setEditingForm((current) => current ? { ...current, code: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
+                        <input value={editingForm.description} onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
+                        <input value={editingForm.sortOrder} onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-right text-sm" />
                         <div className="flex justify-end gap-1">
                           <AdminButton type="button" variant="primary" size="sm" onClick={() => saveTemplate(template)} disabled={isSaving} className="min-h-7 px-3 py-1 text-xs">저장</AdminButton>
                           <AdminButton type="button" variant="secondary" size="sm" onClick={() => { setEditingId(null); setEditingForm(null); }} className="min-h-7 px-3 py-1 text-xs">취소</AdminButton>
@@ -588,49 +598,48 @@ export default function SystemProductTemplateStandardsPage() {
           </article>
 
           <aside className="flex flex-col gap-4">
-            <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-stone-950">분류 추가</h2>
+            <article className={SYSTEM_PANEL_CLASS}>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>분류 추가</h2>
               <div className="mt-4 grid gap-2">
-                <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400">
+                <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]">
                   {records.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
                 </select>
-                <select value={categoryForm.level} onChange={(event) => setCategoryForm({ ...EMPTY_CATEGORY_FORM, level: event.target.value as CategoryFormState["level"] })} className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400">
+                <select value={categoryForm.level} onChange={(event) => setCategoryForm({ ...EMPTY_CATEGORY_FORM, level: event.target.value as CategoryFormState["level"] })} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]">
                   <option value="1">1차 분류</option>
                   <option value="2">2차 분류</option>
                   <option value="3">3차 분류</option>
                 </select>
                 {categoryForm.level !== "1" ? (
-                  <select value={categoryForm.parentId} onChange={(event) => setCategoryForm((current) => ({ ...current, parentId: event.target.value }))} className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400">
+                  <select value={categoryForm.parentId} onChange={(event) => setCategoryForm((current) => ({ ...current, parentId: event.target.value }))} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]">
                     <option value="">상위 분류 선택</option>
                     {categoryOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                   </select>
                 ) : null}
-                <input value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} placeholder="분류명" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
-                <input value={categoryForm.sortOrder} onChange={(event) => setCategoryForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
+                <input value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} placeholder="분류명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <input value={categoryForm.sortOrder} onChange={(event) => setCategoryForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
                 <AdminButton type="button" variant="primary" onClick={createCategory} disabled={isSaving || !selectedTemplate || !categoryForm.name.trim() || (categoryForm.level !== "1" && !categoryForm.parentId)} className="rounded-xl">
                   분류 추가
                 </AdminButton>
               </div>
             </article>
 
-            <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-stone-950">1차 연결 범위</h2>
+            <article className={SYSTEM_PANEL_CLASS}>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>1차 연결 범위</h2>
               <ul className="mt-4 grid gap-3">
                 {SYSTEM_PRODUCT_TEMPLATE_POLICY.map((note) => (
-                  <li key={note} className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-600">{note}</li>
+                  <li key={note} className={`${SYSTEM_MUTED_CARD_CLASS} text-sm leading-6 text-[var(--pbp-text-muted)]`}>{note}</li>
                 ))}
               </ul>
             </article>
 
-            <article className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-800 shadow-sm">
-              <h2 className="font-semibold text-amber-900">후속 구현 메모</h2>
+            <article className="rounded-3xl border border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] p-5 text-sm leading-6 text-[var(--pbp-status-warning)] shadow-sm">
+              <h2 className="font-semibold text-[var(--pbp-status-warning)]">후속 구현 메모</h2>
               <p className="mt-2">
                 템플릿 원장 CRUD를 먼저 연결했습니다. 신규 고객사 생성 시 템플릿을 고객사 기준정보로 복사하는 흐름은 후속 단계에서 연결합니다.
               </p>
             </article>
           </aside>
         </section>
-      </div>
-    </main>
+    </SystemShell>
   );
 }

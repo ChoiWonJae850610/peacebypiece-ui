@@ -4,6 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
+import SystemShell from "@/components/system/layout/SystemShell";
+import {
+  SYSTEM_BODY_TEXT_CLASS,
+  SYSTEM_EYEBROW_CLASS,
+  SYSTEM_HEADER_PANEL_CLASS,
+  SYSTEM_MUTED_CARD_CLASS,
+  SYSTEM_PANEL_CLASS,
+  SYSTEM_SECTION_TITLE_CLASS,
+  SYSTEM_SUBTITLE_CLASS,
+  SYSTEM_TITLE_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS,
@@ -179,16 +190,15 @@ export default function SystemProcessStandardsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5">
-        <header className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+    <SystemShell>
+        <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">
+              <p className={SYSTEM_EYEBROW_CLASS}>
                 SYSTEM STANDARD MASTER
               </p>
-              <h1 className="text-2xl font-semibold text-stone-950">외주공정 유형 관리</h1>
-              <p className="max-w-3xl text-sm leading-6 text-stone-600">
+              <h1 className={SYSTEM_TITLE_CLASS}>외주공정 유형 관리</h1>
+              <p className={SYSTEM_SUBTITLE_CLASS}>
                 시스템관리자가 고객사 공통 외주공정 유형 원장을 추가·수정하고 활성 상태를 관리합니다. 고객사는 이 원장 중 필요한 공정만 사용합니다.
               </p>
             </div>
@@ -201,11 +211,11 @@ export default function SystemProcessStandardsPage() {
         </header>
 
         <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
+          <article className={SYSTEM_PANEL_CLASS}>
+            <div className="flex flex-col gap-3 border-b border-[var(--pbp-border-soft)] pb-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-stone-950">시스템 외주공정 유형 원장</h2>
-                <p className="mt-1 text-sm leading-6 text-stone-600">
+                <h2 className={SYSTEM_SECTION_TITLE_CLASS}>시스템 외주공정 유형 원장</h2>
+                <p className={`mt-1 ${SYSTEM_BODY_TEXT_CLASS}`}>
                   총 {records.length}개 중 활성 {activeCount}개입니다. 코드 중복은 허용하지 않습니다.
                 </p>
               </div>
@@ -214,24 +224,24 @@ export default function SystemProcessStandardsPage() {
               </AdminButton>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3">
+            <div className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
               <div className="grid gap-2 md:grid-cols-[0.8fr_0.8fr_0.8fr_120px]">
                 <input
                   value={form.name}
                   onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                   placeholder="공정명"
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+                  className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
                 <input
                   value={form.code}
                   onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))}
                   placeholder="시스템 코드 예: printing"
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+                  className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
                 <select
                   value={form.category}
                   onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+                  className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 >
                   {Object.entries(SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -243,7 +253,7 @@ export default function SystemProcessStandardsPage() {
                   value={form.sortOrder}
                   onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))}
                   placeholder="정렬"
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+                  className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
               </div>
               <div className="mt-2 grid gap-2 md:grid-cols-[1fr_1fr_120px]">
@@ -251,13 +261,13 @@ export default function SystemProcessStandardsPage() {
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
                   placeholder="설명"
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+                  className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
                 <input
                   value={form.example}
                   onChange={(event) => setForm((current) => ({ ...current, example: event.target.value }))}
                   placeholder="사용 예시"
-                  className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+                  className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
                 <AdminButton
                   onClick={createRecord}
@@ -271,10 +281,10 @@ export default function SystemProcessStandardsPage() {
               </div>
             </div>
 
-            <p className="mt-3 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-600">{message}</p>
+            <p className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{message}</p>
 
-            <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-              <div className="grid grid-cols-[0.65fr_0.65fr_0.75fr_1.15fr_0.75fr_0.45fr_0.75fr] gap-3 border-b border-stone-100 bg-stone-50 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">
+            <div className="mt-4 overflow-hidden rounded-2xl border border-[var(--pbp-border)]">
+              <div className="grid grid-cols-[0.65fr_0.65fr_0.75fr_1.15fr_0.75fr_0.45fr_0.75fr] gap-3 border-b border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-muted)] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--pbp-text-subtle)]">
                 <span>공정명</span>
                 <span>코드</span>
                 <span>분류</span>
@@ -283,30 +293,30 @@ export default function SystemProcessStandardsPage() {
                 <span className="text-right">정렬</span>
                 <span className="text-right">상태/수정</span>
               </div>
-              <div className="max-h-[460px] divide-y divide-stone-100 overflow-y-auto bg-white">
+              <div className="max-h-[460px] divide-y divide-stone-100 overflow-y-auto bg-[var(--pbp-surface)]">
                 {records.map((row) => {
                   const isEditing = editingId === row.id && editingForm;
                   return (
                     <div
                       key={row.id}
-                      className="grid grid-cols-[0.65fr_0.65fr_0.75fr_1.15fr_0.75fr_0.45fr_0.75fr] gap-3 px-4 py-3 text-sm text-stone-700"
+                      className="grid grid-cols-[0.65fr_0.65fr_0.75fr_1.15fr_0.75fr_0.45fr_0.75fr] gap-3 px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
                     >
                       {isEditing ? (
                         <>
                           <input
                             value={editingForm.name}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, name: event.target.value } : current)}
-                            className="rounded-lg border border-stone-200 px-2 py-1 text-sm"
+                            className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
                           <input
                             value={editingForm.code}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, code: event.target.value } : current)}
-                            className="rounded-lg border border-stone-200 px-2 py-1 text-sm"
+                            className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
                           <select
                             value={editingForm.category}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, category: event.target.value } : current)}
-                            className="rounded-lg border border-stone-200 px-2 py-1 text-sm"
+                            className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           >
                             {Object.entries(SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS).map(([value, label]) => (
                               <option key={value} value={value}>
@@ -317,17 +327,17 @@ export default function SystemProcessStandardsPage() {
                           <input
                             value={editingForm.description}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)}
-                            className="rounded-lg border border-stone-200 px-2 py-1 text-sm"
+                            className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
                           <input
                             value={editingForm.example}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, example: event.target.value } : current)}
-                            className="rounded-lg border border-stone-200 px-2 py-1 text-sm"
+                            className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
                           <input
                             value={editingForm.sortOrder}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)}
-                            className="rounded-lg border border-stone-200 px-2 py-1 text-right text-sm"
+                            className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-right text-sm"
                           />
                           <div className="flex justify-end gap-1">
                             <AdminButton
@@ -351,12 +361,12 @@ export default function SystemProcessStandardsPage() {
                         </>
                       ) : (
                         <>
-                          <span className="font-semibold text-stone-950">{row.name}</span>
-                          <span className="font-mono text-xs font-semibold text-stone-600">{row.code}</span>
-                          <span className="text-xs text-stone-500">{SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS[row.category] || row.category}</span>
-                          <span className="text-xs leading-5 text-stone-600">{row.description}</span>
-                          <span className="text-xs text-stone-500">{row.example}</span>
-                          <span className="text-right text-xs text-stone-500">{row.sortOrder}</span>
+                          <span className="font-semibold text-[var(--pbp-text-primary)]">{row.name}</span>
+                          <span className="font-mono text-xs font-semibold text-[var(--pbp-text-muted)]">{row.code}</span>
+                          <span className="text-xs text-[var(--pbp-text-subtle)]">{SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS[row.category] || row.category}</span>
+                          <span className="text-xs leading-5 text-[var(--pbp-text-muted)]">{row.description}</span>
+                          <span className="text-xs text-[var(--pbp-text-subtle)]">{row.example}</span>
+                          <span className="text-right text-xs text-[var(--pbp-text-subtle)]">{row.sortOrder}</span>
                           <div className="flex items-center justify-end gap-1">
                             <button
                               type="button"
@@ -388,13 +398,13 @@ export default function SystemProcessStandardsPage() {
           </article>
 
           <aside className="flex flex-col gap-4">
-            <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-stone-950">1차 연결 범위</h2>
+            <article className={SYSTEM_PANEL_CLASS}>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>1차 연결 범위</h2>
               <ul className="mt-4 grid gap-3">
                 {SYSTEM_PROCESS_STANDARD_POLICY.map((note) => (
                   <li
                     key={note}
-                    className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-600"
+                    className={`${SYSTEM_MUTED_CARD_CLASS} text-sm leading-6 text-[var(--pbp-text-muted)]`}
                   >
                     {note}
                   </li>
@@ -402,15 +412,14 @@ export default function SystemProcessStandardsPage() {
               </ul>
             </article>
 
-            <article className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-800 shadow-sm">
-              <h2 className="font-semibold text-amber-900">후속 구현 메모</h2>
+            <article className="rounded-3xl border border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] p-5 text-sm leading-6 text-[var(--pbp-status-warning)] shadow-sm">
+              <h2 className="font-semibold text-[var(--pbp-status-warning)]">후속 구현 메모</h2>
               <p className="mt-2">
                 외주공정 유형 원장 CRUD를 먼저 연결했습니다. 고객사별 사용 여부 저장과 고객관리자 화면 반영은 후속 단계에서 연결합니다.
               </p>
             </article>
           </aside>
         </section>
-      </div>
-    </main>
+    </SystemShell>
   );
 }

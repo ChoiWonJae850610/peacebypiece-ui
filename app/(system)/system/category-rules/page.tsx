@@ -2,12 +2,12 @@
 
 import { useRef } from "react";
 import { APP_VERSION } from "@/lib/constants/app";
+import SystemShell from "@/components/system/layout/SystemShell";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   SYSTEM_EYEBROW_CLASS,
   SYSTEM_HEADER_PANEL_CLASS,
-  SYSTEM_PAGE_CLASS,
   SYSTEM_TITLE_CLASS,
 } from "@/components/system/systemSemanticClassNames";
 import { getI18n } from "@/lib/i18n";
@@ -61,8 +61,7 @@ export default function SystemCategoryRulesPage() {
   const managerRef = useRef<CategoryRulesManagerHandle | null>(null);
 
   return (
-    <main className={SYSTEM_PAGE_CLASS}>
-      <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-6">
+    <SystemShell contentClassName="mx-auto flex w-full max-w-[1680px] flex-col gap-6">
         <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
@@ -100,7 +99,6 @@ export default function SystemCategoryRulesPage() {
         </header>
 
         <CategoryRulesManager ref={managerRef} text={categoryRuleText} />
-      </div>
-    </main>
+    </SystemShell>
   );
 }
