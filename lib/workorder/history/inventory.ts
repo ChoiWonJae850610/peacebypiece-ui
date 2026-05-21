@@ -1,4 +1,5 @@
 import { INVENTORY_CHANGE_TYPE, isInventoryChangeType } from "@/lib/constants/workorderDomain";
+import { HISTORY_CATEGORY } from "@/lib/constants/workorderHistory";
 import type { HistoryLog, InventoryChange, InventoryLog } from "@/types/workorder";
 
 function parseInventoryChanges(log: HistoryLog): InventoryChange[] {
@@ -27,7 +28,7 @@ function extractDelta(changes: InventoryChange[]) {
 
 export function toInventoryLogs(scopedHistoryLogs: HistoryLog[]): InventoryLog[] {
   return scopedHistoryLogs
-    .filter((item) => item.category === "inventory")
+    .filter((item) => item.category === HISTORY_CATEGORY.inventory)
     .map((item) => {
       const changes = parseInventoryChanges(item);
       return {

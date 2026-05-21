@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.37
+baseline_source: peacebypiece-ui-0.15.38
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.15에서는 0.15.37 기준으로 작업지시서 workflow action type 사용을 상수 중심으로 정리한다.
+v0.15에서는 0.15.38 기준으로 작업지시서 history category/filter/tone과 memo history action 사용을 상수 중심으로 정리한다.
 
 ```txt
 브랜드 톤
@@ -456,3 +456,15 @@ workorder action type constants 정리 1차
 
 - 0.15.36 기준 작업지시서 workflow 상태값의 직접 문자열 사용을 줄이기 위해 `WORKFLOW_STATE`와 `DISPLAY_STAGE` 상수를 추가했다.
 - DB 저장값과 API 응답 포맷은 변경하지 않았다.
+
+
+### 0.15.38 업데이트
+
+```txt
+61_wafl-a-type-workorder-history-reason-constants.md
+- workorder action/result/history reason 상수화 후보 조사 및 history constants 1차
+- lib/constants/workorderHistory.ts 추가
+- HISTORY_CATEGORY / HISTORY_FILTER / HISTORY_TONE / MEMO_HISTORY_ACTION 기준 추가
+- history builders, history filter, inventory history projection의 category/tone/filter 직접 문자열 사용 축소
+- DB 저장값/API 응답/R2/권한/세션 변경 없음
+```

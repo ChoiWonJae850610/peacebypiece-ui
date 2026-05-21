@@ -1,4 +1,5 @@
 import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
+import { HISTORY_CATEGORY, HISTORY_TONE } from "@/lib/constants/workorderHistory";
 import { createHistoryLog, defaultHistoryText, formatTemplate, type DetailLine, type HistoryText } from "@/lib/workorder/history/builders/shared";
 import type { InventoryChange } from "@/types/workorder";
 
@@ -22,12 +23,12 @@ export function createInventoryHistoryLog(
     message: text.messages.inventoryChanged,
     user,
     workOrderId,
-    category: "inventory",
+    category: HISTORY_CATEGORY.inventory,
     tone: activeChanges.some((item) => item.type === INVENTORY_CHANGE_TYPE.deduction)
-      ? "rose"
+      ? HISTORY_TONE.rose
       : activeChanges.some((item) => item.type === INVENTORY_CHANGE_TYPE.adjustment)
-        ? "amber"
-        : "emerald",
+        ? HISTORY_TONE.amber
+        : HISTORY_TONE.emerald,
     detailLines: [
       ...detailLines,
       ...(payload.memo?.trim() ? [{ label: text.detailLabels.memo, value: payload.memo.trim() }] : []),
@@ -47,8 +48,8 @@ export function createInspectionCompleteHistoryLog(
     message: text.messages.inspectionCompleted,
     user,
     workOrderId,
-    category: "inventory",
-    tone: "emerald",
+    category: HISTORY_CATEGORY.inventory,
+    tone: HISTORY_TONE.emerald,
     detailLines: [
       {
         label: INVENTORY_CHANGE_TYPE.inbound,

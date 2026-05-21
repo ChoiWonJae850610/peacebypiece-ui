@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.37
+baseline_source: peacebypiece-ui-0.15.38
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.37
+현재 기준: 0.15.38
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -495,4 +495,16 @@ High risk:
 - admin storage selector의 lifecycle normalize 로직을 storage domain helper로 위임
 - workorder 상태값은 기존 workorderStates 기준을 유지하고 후속 정리 후보로 문서화
 - DB schema/API/R2/권한/세션 변경 없음
+```
+
+
+### 0.15.38 업데이트
+
+```txt
+61_wafl-a-type-workorder-history-reason-constants.md
+- workorder action/result/history reason 상수화 후보 조사 및 history constants 1차
+- HISTORY_CATEGORY / HISTORY_FILTER / HISTORY_TONE / MEMO_HISTORY_ACTION 추가
+- HistoryCategory/HistoryTone/HistoryFilter type은 constants 기반 value type으로 변경
+- workorder history builders와 filter의 category/tone/filter 직접 문자열 사용 축소
+- DB 저장값/API 응답/R2/권한/세션 변경 없음
 ```

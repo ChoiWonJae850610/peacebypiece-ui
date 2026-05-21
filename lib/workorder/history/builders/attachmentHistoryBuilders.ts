@@ -1,3 +1,4 @@
+import { HISTORY_CATEGORY, HISTORY_TONE } from "@/lib/constants/workorderHistory";
 import { createHistoryLog, defaultHistoryText, formatTemplate, type HistoryText } from "@/lib/workorder/history/builders/shared";
 
 export function createAttachmentUploadHistoryLog(
@@ -12,8 +13,8 @@ export function createAttachmentUploadHistoryLog(
     message: scope === "design" ? text.messages.designAttachmentUploaded : text.messages.officialAttachmentUploaded,
     user,
     workOrderId,
-    category: "attachment",
-    tone: "blue",
+    category: HISTORY_CATEGORY.attachment,
+    tone: HISTORY_TONE.blue,
     summary: `${formatTemplate(scope === "design" ? text.detailLabels.summaryDesignAttachmentCountFormat : text.detailLabels.summaryOfficialAttachmentCountFormat, { count: attachments.length })}${text.actorSeparator}${user}`,
     detailLines: attachments.map((attachment, index) => ({
       label: formatTemplate(text.detailLabels.fileCountFormat, { index: index + 1 }),
@@ -34,8 +35,8 @@ export function createAttachmentDeleteHistoryLog(
     message: text.messages.attachmentDeleted,
     user,
     workOrderId,
-    category: "attachment",
-    tone: "rose",
+    category: HISTORY_CATEGORY.attachment,
+    tone: HISTORY_TONE.rose,
     detailLines: [
       { label: text.detailLabels.file, value: attachment.name },
       {

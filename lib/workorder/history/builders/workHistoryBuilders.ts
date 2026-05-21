@@ -1,3 +1,4 @@
+import { HISTORY_CATEGORY, HISTORY_TONE, MEMO_HISTORY_ACTION, type MemoHistoryActionValue } from "@/lib/constants/workorderHistory";
 import { createHistoryLog, defaultHistoryText, type DetailLine, type HistoryText } from "@/lib/workorder/history/builders/shared";
 import type { HistoryLog } from "@/types/workorder";
 
@@ -23,8 +24,8 @@ export function createCreationHistoryLog(
     message: text.messages.created,
     user,
     workOrderId,
-    category: "work",
-    tone: "blue",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.blue,
     detailLines: [
       ...buildWorkOrderIdentityDetailLines(payload.title, text),
       { label: text.detailLabels.author, value: user },
@@ -44,8 +45,8 @@ export function createUpdateHistoryLog(
     message: text.messages.updated,
     user,
     workOrderId,
-    category: "work",
-    tone: "stone",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.stone,
     detailLines,
     text,
   });
@@ -64,8 +65,8 @@ export function createStatusHistoryLog(
     message: text.messages.statusChanged,
     user,
     workOrderId,
-    category: "work",
-    tone: "violet",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.violet,
     transition: { from, to },
     detailLines: [{ label: text.detailLabels.changed, value: `${from}${text.transitionArrow}${to}` }],
     text,
@@ -75,20 +76,20 @@ export function createStatusHistoryLog(
 export function createMemoHistoryLog(
   user: string,
   workOrderId: string,
-  payload: { action: "thread" | "reply"; content: string },
+  payload: { action: MemoHistoryActionValue; content: string },
   text: HistoryText = defaultHistoryText,
 ) {
-  const action = payload.action === "thread" ? text.actions.memoThreadCreated : text.actions.memoReplyCreated;
+  const action = payload.action === MEMO_HISTORY_ACTION.thread ? text.actions.memoThreadCreated : text.actions.memoReplyCreated;
   const trimmedContent = payload.content.trim();
   const summary = ``;
 
   return createHistoryLog({
     action,
-    message: payload.action === "thread" ? text.messages.memoThreadCreated : text.messages.memoReplyCreated,
+    message: payload.action === MEMO_HISTORY_ACTION.thread ? text.messages.memoThreadCreated : text.messages.memoReplyCreated,
     user,
     workOrderId,
-    category: "work",
-    tone: "blue",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.blue,
     summary,
     detailLines: [
       { label: text.detailLabels.content, value: trimmedContent },
@@ -108,8 +109,8 @@ export function createReorderHistoryLog(
     message: text.messages.reorderCreated,
     user,
     workOrderId,
-    category: "work",
-    tone: "blue",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.blue,
     detailLines: [
       ...buildWorkOrderIdentityDetailLines(payload.nextTitle, text),
       { label: text.detailLabels.original, value: formatHistoryTitle(payload.sourceTitle) },
@@ -129,8 +130,8 @@ export function createFactoryOrderRequestHistoryLog(
     message: text.messages.factoryOrderRequested,
     user,
     workOrderId,
-    category: "work",
-    tone: "violet",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.violet,
     detailLines: [
       { label: text.detailLabels.factory ?? "공장", value: payload.factoryName || "-" },
       { label: text.detailLabels.quantity ?? "수량", value: `${payload.quantity.toLocaleString()}장` },
@@ -151,8 +152,8 @@ export function createReinspectionRequestHistoryLog(
     message: text.messages.reinspectionRequested,
     user,
     workOrderId,
-    category: "work",
-    tone: "emerald",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.emerald,
     transition: { from: payload.from, to: payload.to },
     detailLines: [
       { label: text.detailLabels.changed, value: `${payload.from}${text.transitionArrow}${payload.to}` },
@@ -173,8 +174,8 @@ export function createDeletionHistoryLog(
     message: text.messages.deleted,
     user,
     workOrderId,
-    category: "work",
-    tone: "stone",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.stone,
     detailLines: [
       ...buildWorkOrderIdentityDetailLines(payload.title, text),
       { label: text.detailLabels.author, value: user },
@@ -200,8 +201,8 @@ export function createTitleRenameHistoryLog(
     message: payload.appliedToGroup ? text.messages.titleRenamedSeries : text.messages.titleRenamed,
     user,
     workOrderId,
-    category: "work",
-    tone: "blue",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.blue,
     detailLines,
     text,
   });
@@ -219,8 +220,8 @@ export function createManagerChangeHistoryLog(
     message: text.messages.managerChanged,
     user,
     workOrderId,
-    category: "work",
-    tone: "blue",
+    category: HISTORY_CATEGORY.work,
+    tone: HISTORY_TONE.blue,
     detailLines: [
       { label: text.detailLabels.previous, value: from || "-" },
       { label: text.detailLabels.changed, value: to || "-" },
@@ -263,8 +264,8 @@ export function createWorkOrderKindChangeHistoryLog(
     message,
     user,
     workOrderId,
-    category: "work",
-    tone: payload.toKind === "rework" ? "violet" : "blue",
+    category: HISTORY_CATEGORY.work,
+    tone: payload.toKind === "rework" ? HISTORY_TONE.violet : HISTORY_TONE.blue,
     summary: `${action}: ${formatHistoryTitle(payload.fromTitle)}${text.transitionArrow}${formatHistoryTitle(payload.toTitle)}${text.actorSeparator}${user}`,
     detailLines: [
       { label: text.detailLabels.previous, value: formatHistoryTitle(payload.fromTitle) },

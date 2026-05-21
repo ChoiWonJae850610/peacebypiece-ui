@@ -1,3 +1,4 @@
+import { MEMO_HISTORY_ACTION } from "@/lib/constants/workorderHistory";
 import type { UserProfile, WorkOrder } from "@/types/workorder";
 import { appendMemoReplyToWorkOrder, appendMemoThreadToWorkOrder } from "@/lib/workorder/memo/memoMutations";
 import { createMemoHistoryLog } from "@/lib/workorder/history/builders";
@@ -17,7 +18,7 @@ export function buildMemoThreadResult(payload: {
     nextWorkOrder: result.nextWorkOrder,
     historyLogs: [
       createMemoHistoryLog(payload.currentUser.name, payload.workOrder.id, {
-        action: "thread",
+        action: MEMO_HISTORY_ACTION.thread,
         content: result.trimmed,
       }, payload.historyText ?? defaultHistoryText),
     ],
@@ -42,7 +43,7 @@ export function buildMemoReplyResult(payload: {
     nextWorkOrder: result.nextWorkOrder,
     historyLogs: [
       createMemoHistoryLog(payload.currentUser.name, payload.workOrder.id, {
-        action: "reply",
+        action: MEMO_HISTORY_ACTION.reply,
         content: result.trimmed,
       }, payload.historyText ?? defaultHistoryText),
     ],
