@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
+import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { restoreWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
@@ -42,6 +45,12 @@ export async function POST(request: NextRequest) {
   if (!scopeResult.ok) return scopeResult.response;
 
   try {
+    assertServiceCanUseSideEffect({
+      serviceCode: WORKORDER_SERVICE_CODE.workOrderRestore,
+      resource: WORKORDER_SERVICE_RESOURCE.workOrders,
+      operation: WORKORDER_SERVICE_OPERATION.restore,
+    });
+
     const { companyId } = scopeResult.companyScope;
     const payload = (await request.json().catch(() => null)) as WorkOrderRestoreRequest | null;
     const actorId = readText(payload?.restoredBy);

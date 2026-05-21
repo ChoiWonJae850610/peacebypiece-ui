@@ -1,15 +1,24 @@
-Version : 0.15.54
-Summary : 작업지시서 serviceCode guard 1차 적용
-Description : serviceCode side effect matrix를 생산구성 state patch 저장 직전 guard에 연결하고, 허용되지 않은 반려/취소/메모/첨부/삭제 계열에서 생산구성 replace payload가 섞여도 저장 전에 제거하도록 보강했습니다. DB schema/API/R2 동작은 변경하지 않았습니다.
+Version : 0.15.55
+Summary : 작업지시서 side effect route guard 1차 적용
+Description : 메모, 첨부/R2, 저장소 복원/삭제 요청, purge worker route에 serviceCode 기반 resource/operation guard를 연결했습니다. 생산구성 replace guard와 별도로 route 단위 DB/R2 side effect를 serviceCode matrix 기준으로 확인하도록 보강했습니다. DB schema, R2 key, 권한/세션 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
-- lib/constants/app.ts
-- lib/hooks/workorder/workorderRepositoryMutations.ts
-- lib/workorder/productionCompositionPolicy.ts
+- app/api/admin/files/trash/purge/route.ts
+- app/api/admin/files/trash/purge-worker/route.ts
+- app/api/admin/files/trash/restore/route.ts
+- app/api/admin/files/workorders/purge/route.ts
+- app/api/admin/files/workorders/restore/route.ts
+- app/api/system/storage-usage/purge/route.ts
+- app/api/workorders/attachments/delete/route.ts
+- app/api/workorders/attachments/primary/route.ts
+- app/api/workorders/attachments/upload/complete/route.ts
+- app/api/workorders/attachments/upload/route.ts
+- app/api/workorders/memos/route.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
-추가 파일 목록 :
+- lib/constants/app.ts
 - lib/workorder/serviceCodeGuards.ts
-- docs/wafl-a-type/77_wafl-a-type-workorder-service-guard-first-pass.md
+추가 파일 목록 :
+- docs/wafl-a-type/78_wafl-a-type-workorder-side-effect-route-guards.md
 삭제 파일 목록 :
 - 없음

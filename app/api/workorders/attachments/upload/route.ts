@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createR2PresignedPutUrl } from "@/lib/storage/r2/r2Client";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
+import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
 import { createWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createWorkOrderAttachmentThumbnailKey, isImageContentType } from "@/lib/storage/r2/r2ThumbnailKeys";
@@ -26,6 +29,27 @@ function readText(value: unknown): string | null {
 
 function normalizeScope(value: unknown): AttachmentScope {
   return normalizeAttachmentUploadScope(value);
+}
+
+
+function getAttachmentPrepareServiceCode(scope: AttachmentScope) {
+  return scope === "design"
+    ? WORKORDER_SERVICE_CODE.designAttachmentPrepare
+    : WORKORDER_SERVICE_CODE.fileAttachmentPrepare;
+}
+
+function assertAttachmentUploadPrepareAllowed(scope: AttachmentScope): void {
+  const serviceCode = getAttachmentPrepareServiceCode(scope);
+  assertServiceCanUseSideEffect({
+    serviceCode,
+    resource: WORKORDER_SERVICE_RESOURCE.attachments,
+    operation: WORKORDER_SERVICE_OPERATION.insert,
+  });
+  assertServiceCanUseSideEffect({
+    serviceCode,
+    resource: WORKORDER_SERVICE_RESOURCE.r2Objects,
+    operation: WORKORDER_SERVICE_OPERATION.r2Put,
+  });
 }
 
 function normalizeFile(input: PrepareUploadFileInput) {
@@ -99,6 +123,8 @@ export async function POST(request: NextRequest) {
 
     if (!workOrderId) return NextResponse.json({ uploadTargets: [], error: "WORK_ORDER_ID_REQUIRED" }, { status: 400 });
     if (files.length === 0) return NextResponse.json({ uploadTargets: [], error: "FILES_REQUIRED" }, { status: 400 });
+
+    assertAttachmentUploadPrepareAllowed(scope);
 
     const belongsToCompany = await workOrderBelongsToCompany({ workOrderId, companyId });
     if (!belongsToCompany) {

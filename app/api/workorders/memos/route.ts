@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
+import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
@@ -124,6 +127,12 @@ export async function POST(request: NextRequest) {
     if (!content) return NextResponse.json({ error: "MEMO_CONTENT_REQUIRED" }, { status: 400 });
     if (target === "reply" && !threadId) return NextResponse.json({ error: "THREAD_ID_REQUIRED" }, { status: 400 });
 
+    assertServiceCanUseSideEffect({
+      serviceCode: WORKORDER_SERVICE_CODE.memoCreate,
+      resource: WORKORDER_SERVICE_RESOURCE.memos,
+      operation: WORKORDER_SERVICE_OPERATION.insert,
+    });
+
     const repository = await createAttachmentMemoRepository();
     if (!isWritableRepository(repository)) {
       return NextResponse.json({ error: "MEMO_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
@@ -179,6 +188,12 @@ export async function PATCH(request: NextRequest) {
     if (!memoId) return NextResponse.json({ error: "MEMO_ID_REQUIRED" }, { status: 400 });
     if (!content) return NextResponse.json({ error: "MEMO_CONTENT_REQUIRED" }, { status: 400 });
 
+    assertServiceCanUseSideEffect({
+      serviceCode: WORKORDER_SERVICE_CODE.memoUpdate,
+      resource: WORKORDER_SERVICE_RESOURCE.memos,
+      operation: WORKORDER_SERVICE_OPERATION.update,
+    });
+
     const repository = await createAttachmentMemoRepository();
     if (!isWritableRepository(repository)) {
       return NextResponse.json({ error: "MEMO_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
@@ -205,6 +220,12 @@ export async function DELETE(request: NextRequest) {
     const memoId = readText(payload?.memoId);
 
     if (!memoId) return NextResponse.json({ error: "MEMO_ID_REQUIRED" }, { status: 400 });
+
+    assertServiceCanUseSideEffect({
+      serviceCode: WORKORDER_SERVICE_CODE.memoDelete,
+      resource: WORKORDER_SERVICE_RESOURCE.memos,
+      operation: WORKORDER_SERVICE_OPERATION.softDelete,
+    });
 
     const repository = await createAttachmentMemoRepository();
     if (!isWritableRepository(repository)) {

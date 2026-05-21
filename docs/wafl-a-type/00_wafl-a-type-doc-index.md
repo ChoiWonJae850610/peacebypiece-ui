@@ -581,3 +581,14 @@ workorder action type constants 정리 1차
 - 반려/취소/되돌리기/메모/첨부/삭제/복원/purge 계열에서 생산구성 patch가 섞여도 저장 전에 제거
 - DB schema/API/R2 동작 변경 없음
 ```
+
+
+### 0.15.55 업데이트
+
+```txt
+78_wafl-a-type-workorder-side-effect-route-guards.md
+- 메모/첨부/R2/저장소 route에 serviceCode side effect guard를 1차 연결
+- route별 resource/operation 조합이 serviceCode matrix를 통과하는지 저장 직전 확인
+- R2 실제 purge는 WO-S004 trashPurge serviceCode에서만 통과
+- DB schema/R2 key/권한/세션 흐름 변경 없음
+```

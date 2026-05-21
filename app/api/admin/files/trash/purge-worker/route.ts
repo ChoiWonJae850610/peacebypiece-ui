@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAdminFilePurgeWorker } from "@/lib/admin/files/purgeWorker";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { assertServiceCanPurgeR2Objects } from "@/lib/workorder/serviceCodeGuards";
 
 export const runtime = "nodejs";
 
@@ -40,6 +42,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    assertServiceCanPurgeR2Objects(WORKORDER_SERVICE_CODE.trashPurge);
+
     const result = await runAdminFilePurgeWorker({
       limit: readLimit(request),
       dryRun: readDryRun(request),

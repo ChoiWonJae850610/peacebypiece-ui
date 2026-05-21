@@ -647,3 +647,11 @@ High risk:
 - `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` replace 저장은 serviceCode가 replace operation과 생산구성 resource를 허용할 때만 가능하게 한다.
 - 반려/취소/되돌리기/메모/첨부/삭제/복원/purge 계열에서 생산구성 patch가 섞여도 저장 전에 제거한다.
 - 이번 단계는 guard 적용이며 DB schema/API/R2 동작은 변경하지 않는다.
+
+
+### 0.15.55 — 작업지시서 side effect route guard 1차
+
+- 메모/첨부/R2 upload prepare/complete/delete/대표 디자인 지정 route에 serviceCode guard를 연결한다.
+- 저장소 복원/삭제 요청/purge worker/system purge route에 serviceCode guard를 연결한다.
+- route가 수행하는 resource/operation이 side effect matrix 기준을 벗어나면 예외로 차단되도록 한다.
+- 이번 단계는 guard 연결이며 DB schema, R2 key, 권한/세션 흐름은 변경하지 않는다.

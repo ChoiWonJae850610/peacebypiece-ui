@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
+import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 
@@ -34,6 +37,12 @@ export async function POST(request: NextRequest) {
     if (!attachmentId) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_ID_REQUIRED" }, { status: 400 });
     }
+
+    assertServiceCanUseSideEffect({
+      serviceCode: WORKORDER_SERVICE_CODE.primaryDesignSet,
+      resource: WORKORDER_SERVICE_RESOURCE.attachments,
+      operation: WORKORDER_SERVICE_OPERATION.update,
+    });
 
     const repository = await createAttachmentMemoRepository();
     if (!isWritableRepository(repository)) {

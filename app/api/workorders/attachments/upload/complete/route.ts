@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
+import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
 import { isImageContentType, isWorkOrderAttachmentThumbnailKeyForScope } from "@/lib/storage/r2/r2ThumbnailKeys";
@@ -130,6 +133,12 @@ export async function POST(request: NextRequest) {
     if (uploadTargets.length === 0) {
       return NextResponse.json({ attachments: [], error: "UPLOAD_TARGETS_REQUIRED" }, { status: 400 });
     }
+
+    assertServiceCanUseSideEffect({
+      serviceCode: WORKORDER_SERVICE_CODE.attachmentUploadComplete,
+      resource: WORKORDER_SERVICE_RESOURCE.attachments,
+      operation: WORKORDER_SERVICE_OPERATION.insert,
+    });
 
     const belongsToCompany = await workOrderBelongsToCompany({ workOrderId, companyId });
     if (!belongsToCompany) {

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
+import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { queryDb } from "@/lib/db/client";
@@ -68,6 +71,12 @@ export async function POST(request: NextRequest) {
     if (!attachmentId) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_ID_REQUIRED" }, { status: 400 });
     }
+
+    assertServiceCanUseSideEffect({
+      serviceCode: WORKORDER_SERVICE_CODE.attachmentDeleteRequest,
+      resource: WORKORDER_SERVICE_RESOURCE.attachments,
+      operation: WORKORDER_SERVICE_OPERATION.softDelete,
+    });
 
     const scopeResult = await requireAdminFileCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;

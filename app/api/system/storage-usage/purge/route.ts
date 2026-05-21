@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { assertServiceCanPurgeR2Objects } from "@/lib/workorder/serviceCodeGuards";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { requireSystemAdminScope } from "@/lib/system/sessionScope";
 import { buildSystemStoragePurgeAuditLog } from "@/lib/system/audit/writeActions";
@@ -41,6 +43,8 @@ export async function POST(request: NextRequest) {
   if (!scope.ok) return scope.response;
 
   try {
+    assertServiceCanPurgeR2Objects(WORKORDER_SERVICE_CODE.trashPurge);
+
     const payload = (await request.json().catch(() => null)) as PurgeRequestPayload | null;
     const mode = payload?.mode === "all-due" ? "all-due" : "selected";
     const trashItemIds = readStringArray(payload?.trashItemIds);
