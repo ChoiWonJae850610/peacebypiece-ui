@@ -84,3 +84,5 @@ PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/s
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
 ```
+
+- `docs/wafl-a-type/65_wafl-a-type-workorder-live-production-draft.md` — 작업지시서 생산구성 숫자 입력값 실시간 draft 반영

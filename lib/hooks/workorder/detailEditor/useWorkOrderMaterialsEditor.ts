@@ -37,6 +37,16 @@ export function useWorkOrderMaterialsEditor({
     onUpdateWorkOrder(toMaterialsPatch(nextItems));
   };
 
+  const applyMaterialDraftValue = (nextValue: string, nextEditingCell: Exclude<EditableCell, null>) => {
+    const nextItems = commitMaterialItemsEdit({
+      materialItems,
+      editingCell: nextEditingCell,
+      nextValue,
+    });
+    setMaterialItems(nextItems);
+    onUpdateWorkOrder(toMaterialsPatch(nextItems));
+  };
+
   const addMaterial = () => {
     const nextItems = [...materialItems, createNewMaterialItem()];
     setMaterialItems(nextItems);
@@ -55,6 +65,7 @@ export function useWorkOrderMaterialsEditor({
   return {
     materialItems,
     commitMaterialEdit,
+    applyMaterialDraftValue,
     addMaterial,
     removeMaterial,
   };

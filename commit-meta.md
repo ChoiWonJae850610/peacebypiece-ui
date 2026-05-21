@@ -1,22 +1,22 @@
 Version :
-0.15.41
+0.15.42
 
 Summary :
-작업지시서 생산구성 활성 입력값 반영 보강
+작업지시서 생산구성 숫자 입력값 실시간 반영 보강
 
 Description :
-작업지시서 상세 화면에서 원단, 부자재, 외주공정의 수량과 단가를 입력한 직후 검토 요청 또는 임시저장을 누를 때 현재 편집 중인 값을 먼저 반영하도록 수정했다. 검토 요청 실행 전에 pending detail edit을 commit하고 다음 tick에서 workflow action을 실행해 생산구성 수량과 단가가 0으로 저장되는 위험을 줄였다.
+작업지시서 원단, 부자재, 외주공정, 공장 발주 row의 수량과 단가 계열 숫자 입력값이 검토요청 직전 누락되지 않도록 현재 편집 중인 숫자 값을 작업지시서 draft patch에 즉시 반영하도록 보강했다. 생산구성 숫자 입력 회귀 테스트 문서도 추가했다.
 
 수정 파일 목록 :
-- components/workorder/detail/WorkOrderDetailContainer.tsx
 - lib/hooks/workorder/useWorkOrderDetailEditor.ts
+- lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/wafl-a-type/64_wafl-a-type-workorder-pending-edit-flush.md
+- docs/wafl-a-type/65_wafl-a-type-workorder-live-production-draft.md
 
 삭제 파일 목록 :
 없음

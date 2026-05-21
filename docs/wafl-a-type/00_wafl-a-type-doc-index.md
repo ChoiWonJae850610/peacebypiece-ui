@@ -494,3 +494,5 @@ workorder action type constants 정리 1차
 - DB schema/API/R2/권한/세션 변경 없음
 ```
 
+
+- `docs/wafl-a-type/65_wafl-a-type-workorder-live-production-draft.md` — 작업지시서 생산구성 숫자 입력값 실시간 draft 반영

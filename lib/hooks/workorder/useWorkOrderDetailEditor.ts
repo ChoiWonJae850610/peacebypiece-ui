@@ -82,7 +82,7 @@ export function useWorkOrderDetailEditor({
   const {
     editingCell,
     editingValue,
-    startEdit,
+    startEdit: startEditingCell,
     cancelEdit,
   } = useWorkOrderEditingSession();
   const [inspectionModalOpen, setInspectionModalOpen] = useState(false);
@@ -92,6 +92,7 @@ export function useWorkOrderDetailEditor({
   const {
     materialItems,
     commitMaterialEdit,
+    applyMaterialDraftValue,
     addMaterial,
     removeMaterial,
   } = useWorkOrderMaterialsEditor({
@@ -153,6 +154,59 @@ export function useWorkOrderDetailEditor({
       ...extraPatch,
       ...toOrderEntriesPatch(nextItems, currentWorkflowState),
     });
+  };
+
+  const isSameEditingCell = (
+    section: "order" | "material" | "outsourcing",
+    rowId: string,
+    field: string,
+  ) => editingCell?.section === section && editingCell.rowId === rowId && editingCell.field === field;
+
+  const isLiveNumericEditField = (section: "order" | "material" | "outsourcing", field: string) => {
+    if (section === "order") {
+      return field === "quantity" || field === "laborCost" || field === "lossCost";
+    }
+
+    return field === "quantity" || field === "unitCost";
+  };
+
+  const startEdit = (
+    section: "order" | "material" | "outsourcing",
+    rowId: string,
+    field: string,
+    value: string,
+  ) => {
+    const shouldApplyLiveDraft = isSameEditingCell(section, rowId, field) && isLiveNumericEditField(section, field);
+
+    startEditingCell(section, rowId, field, value);
+
+    if (!shouldApplyLiveDraft) {
+      return;
+    }
+
+    const nextEditingCell = { section, rowId, field };
+
+    if (section === "order") {
+      const nextItems = commitOrderItemsEdit({
+        orderItems,
+        editingCell: nextEditingCell,
+        nextValue: value,
+        currentWorkflowState,
+        factoryOptions,
+      });
+      setOrderItems(nextItems);
+      syncOrderEntries(nextItems);
+      return;
+    }
+
+    if (section === "material") {
+      applyMaterialDraftValue(value, nextEditingCell);
+      return;
+    }
+
+    const nextItems = commitOutsourcingItemsEdit({ outsourcingItems, editingCell: nextEditingCell, nextValue: value });
+    setOutsourcingItems(nextItems);
+    onUpdateWorkOrder(toOutsourcingPatch(nextItems));
   };
 
   const commitEdit = (nextValueOverride?: string) => {
