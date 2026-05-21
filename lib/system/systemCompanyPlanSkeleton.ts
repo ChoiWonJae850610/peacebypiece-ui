@@ -14,6 +14,7 @@ import {
   type CompanyPlanChangePreview,
   type CompanyPlanChangeValidationItem,
 } from "@/lib/billing";
+import { getUsageRiskLabelKo, getUsageRiskTone, resolveUsageRiskCode, type UsageRiskCode, type UsageRiskTone } from "@/lib/domain/usageRisk";
 
 export interface SystemCompanyPlanOption {
   id: string;
@@ -31,9 +32,13 @@ export interface SystemCompanyPlanCompany {
   name: string;
   currentPlan: string;
   storageUsageLabel: string;
+  storageRisk: UsageRiskCode;
   storageRiskLabel: string;
+  storageRiskTone: UsageRiskTone;
   memberUsageLabel: string;
+  memberRisk: UsageRiskCode;
   memberRiskLabel: string;
+  memberRiskTone: UsageRiskTone;
   overrideLabel: string;
   policySourceLabel: string;
 }
@@ -133,18 +138,6 @@ function findPlanById(planId: string): PlanDefinition {
   );
 }
 
-function getUsageRiskLabel(ratio: number, exceeded: boolean): string {
-  if (exceeded) {
-    return "초과";
-  }
-
-  if (ratio >= 0.85) {
-    return "주의";
-  }
-
-  return "정상";
-}
-
 function getOverrideLabel(policy: ResolvedCompanyPlanPolicy): string {
   const labels = [
     policy.source.storage === "override" ? "저장용량" : null,
@@ -183,15 +176,28 @@ export const SYSTEM_COMPANY_PLAN_COMPANIES: SystemCompanyPlanCompany[] =
     const storageRatio = getStorageUsageRatio(usage.usedBytes, policy);
     const storageExceeded = isStorageUsageExceeded(usage.usedBytes, policy);
     const memberExceeded = isMemberLimitExceeded(usage.memberCount, policy);
+    const storageRisk = resolveUsageRiskCode({
+      ratio: storageRatio,
+      exceeded: storageExceeded,
+    });
+    const memberRisk = resolveUsageRiskCode({
+      ratio: usage.memberCount / Math.max(1, policy.memberLimit),
+      exceeded: memberExceeded,
+      warningThreshold: 1,
+    });
 
     return {
       id: assignment.companyId,
       name: sampleCompanyNamesById[assignment.companyId] ?? assignment.companyId,
       currentPlan: policy.planName,
       storageUsageLabel: `${formatBytes(usage.usedBytes)} / ${formatBytes(policy.storageLimitBytes)}`,
-      storageRiskLabel: getUsageRiskLabel(storageRatio, storageExceeded),
+      storageRisk,
+      storageRiskLabel: getUsageRiskLabelKo(storageRisk),
+      storageRiskTone: getUsageRiskTone(storageRisk),
       memberUsageLabel: `${usage.memberCount}명 / ${policy.memberLimit}명`,
-      memberRiskLabel: memberExceeded ? "초과" : "정상",
+      memberRisk,
+      memberRiskLabel: getUsageRiskLabelKo(memberRisk),
+      memberRiskTone: getUsageRiskTone(memberRisk),
       overrideLabel: getOverrideLabel(policy),
       policySourceLabel: policy.source.storage === "override" || policy.source.member === "override" || policy.source.price === "override" ? "예외 한도 적용" : "기본 요금제 적용",
     };

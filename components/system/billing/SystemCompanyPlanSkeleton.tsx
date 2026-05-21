@@ -50,7 +50,7 @@ const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
     render: (company) => (
       <div className="space-y-1 text-xs text-stone-600">
         <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{company.storageUsageLabel}</p>
-        <AdminStatusBadge tone={company.storageRiskLabel === "초과" ? "danger" : company.storageRiskLabel === "주의" ? "warning" : "success"} size="xs">
+        <AdminStatusBadge tone={company.storageRiskTone} size="xs">
           {company.storageRiskLabel}
         </AdminStatusBadge>
       </div>
@@ -62,7 +62,7 @@ const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
     render: (company) => (
       <div className="space-y-1 text-xs text-stone-600">
         <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{company.memberUsageLabel}</p>
-        <AdminStatusBadge tone={company.memberRiskLabel === "초과" ? "danger" : "success"} size="xs">
+        <AdminStatusBadge tone={company.memberRiskTone} size="xs">
           {company.memberRiskLabel}
         </AdminStatusBadge>
       </div>

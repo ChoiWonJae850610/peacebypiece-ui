@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.29
+baseline_source: peacebypiece-ui-0.15.30
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.13에서는 0.15.29 기준으로 빌드 타입 오류를 수정하고, 문자열 비교/DB payload/하드코딩/중복 함수/i18n mismatch 후보를 전수 감사한다.
+v0.14에서는 0.15.30 기준으로 빌드 타입 오류를 수정하고, usage risk/file kind domain code를 도입해 한글 label 비교 일부를 제거한다.
 
 ```txt
 브랜드 톤
@@ -44,6 +44,7 @@ public/auth 문구 UX 정리 2차
 system 화면 개발자성 문구 정리
 admin 화면 개발자성 placeholder 정리
 코드 품질 / 도메인 구조 전수 감사
+domain constants/types 1차 정리
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -74,6 +75,7 @@ admin 화면 개발자성 placeholder 정리
 - 0.15.27 기준 system 화면의 raw token, token_hash, seed, SQL, permission_code 등 개발자성 문구를 운영자용 문구로 정리했다.
 - 0.15.28 기준 admin 화면의 설계 중, 준비 중, DB, API, permission_code, role template 등 개발자성 placeholder 문구를 운영자용 문구로 정리했다.
 - 0.15.29 기준 settingsForm i18n key mismatch 빌드 오류를 수정하고 문자열 비교, raw payload, 하드코딩, 중복 함수, any 사용 후보를 전수 감사했다.
+- 0.15.30 기준 userAccessPreview i18n key mismatch 빌드 오류를 수정하고 usage risk/file kind domain code를 도입했다.
 ```
 
 ## 3. 문서 목록
@@ -132,6 +134,7 @@ admin 화면 개발자성 placeholder 정리
 50_wafl-a-type-system-copy-ux.md
 51_wafl-a-type-admin-copy-ux.md
 52_wafl-a-type-code-quality-domain-audit.md
+53_wafl-a-type-domain-constants-types.md
 ```
 
 ## 4. 핵심 결정
@@ -385,4 +388,17 @@ admin 화면 개발자성 placeholder 정리
 - 설계 중/준비 중/개발중/DB/API/permission_code/role template/샘플/preview 표현 완화
 - 고객사 관리자에게 필요한 운영 상태와 다음 액션 중심으로 문구 정리
 - DB/API/R2/권한/세션 변경 없음
+```
+
+
+### 0.15.30 업데이트
+
+```txt
+53_wafl-a-type-domain-constants-types.md
+- domain constants/types 1차 정리
+- usage risk normal/warning/exceeded code 추가
+- file kind document/design/other code 추가
+- /system/billing의 위험도 badge 조건을 한글 label 비교에서 tone 기반으로 변경
+- /admin/files snapshot의 파일 유형 분류에서 한글 includes 비교 제거
+- AdminUserAccessPreview 영문 i18n key 누락 빌드 오류 수정
 ```

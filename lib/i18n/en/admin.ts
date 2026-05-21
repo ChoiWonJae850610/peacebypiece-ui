@@ -1570,6 +1570,46 @@ export const adminEn = {
     nextStep:
       "Next, connect this structure to the role management modal and real login flow.",
   },
+  userAccessPreview: {
+    title: "User access status",
+    description:
+      "Review user roles and permission status from organization settings.",
+    sourceStates: {
+      "db-connected": "Users loaded",
+      "db-prepared": "User information ready",
+      unavailable: "Users unavailable",
+    },
+    userCountLabel: "Users",
+    testUsersTitle: "Users by role",
+    readOnlyBadge: "Read-only",
+    manageRolesButton: "Manage permissions",
+    roleModal: {
+      title: "User permission management",
+      description: "Review how each role changes the available permissions.",
+      sectionTitle: "Role change review",
+      sectionDescription:
+        "Changing a role recalculates the permission badges immediately. Review the result before saving.",
+      previewBadge: "Permission check",
+      resetButton: "Restore initial values",
+      closeButton: "Confirm",
+    },
+    permissionLabels: {
+      canAssignRoles: "Manage permissions",
+      canEditInventory: "Edit inventory",
+      canSeeCostSections: "View cost",
+    },
+    checklistTitle: "Operations checklist",
+    checklist: {
+      "users-table": "User account information",
+      "company-users-table": "Company member role link",
+      "role-policy": "Role-based permission policy",
+      "db-user-query": "User and role lookup",
+      "login-adapter": "Login account connection",
+    },
+    status: { ready: "Ready", pending: "Pending" },
+    nextStep:
+      "The next step is to connect member permission changes with login accounts.",
+  },
   notificationSection: {
     items: {
       created: {

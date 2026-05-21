@@ -8,6 +8,7 @@ import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type { CompanyFilePolicySettings } from "@/lib/admin/settings/companyTypes";
 import type { AdminFileTrendPeriod, AdminFileTypeDistributionItem, AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminManagedFileItem, AdminStorageUsageSummary } from "@/lib/admin/files/types";
+import { FILE_KIND, getFileKindLabelKo, normalizeFileKind } from "@/lib/domain/fileKind";
 export const runtime = "nodejs";
 
 function getErrorMessage(error: unknown): string {
@@ -66,27 +67,15 @@ function isWithinTrendPeriod(uploadedAt: string, period: AdminFileTrendPeriod): 
 }
 
 function normalizeFileTypeLabel(fileType: string, fileName = ""): string {
-  const source = `${fileType || ""} ${fileName || ""}`.trim().toLowerCase();
-  const extension = fileName.includes(".") ? fileName.split(".").pop()?.toLowerCase() ?? "" : "";
-
-  if (
-    source.includes("image") ||
-    source.includes("img") ||
-    source.includes("design") ||
-    source.includes("디자인") ||
-    ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif", "ai", "psd"].includes(extension)
-  ) {
-    return "디자인";
-  }
-
-  return "문서";
+  const kind = normalizeFileKind({ fileType, fileName });
+  return getFileKindLabelKo(kind === FILE_KIND.other ? FILE_KIND.document : kind);
 }
 
 function buildFileTypeDistribution(items: AdminManagedFileItem[], period: AdminFileTrendPeriod): AdminFileTypeDistributionItem[] {
   const filteredItems = items.filter((item) => isWithinTrendPeriod(item.uploadedAt, period));
   const counts = new Map<string, number>([
-    ["문서", 0],
-    ["디자인", 0],
+    [getFileKindLabelKo(FILE_KIND.document), 0],
+    [getFileKindLabelKo(FILE_KIND.design), 0],
   ]);
 
   filteredItems.forEach((item) => {

@@ -18,12 +18,13 @@ import type {
 } from "@/lib/admin/adminFiles.types";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { buildResolvedStorageUsageSummary, getDefaultAdminStorageQuotaPolicy } from "@/lib/billing/storageQuotaPolicy";
+import { FILE_KIND, normalizeFileKind } from "@/lib/domain/fileKind";
 
 export type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 
 
 export function getAdminStorageFileKind(fileType: string | null | undefined): AdminStorageFileKind {
-  return fileType === "디자인" ? "design" : "document";
+  return normalizeFileKind({ fileType }) === FILE_KIND.design ? "design" : "document";
 }
 
 function formatTrashActionCount(label: string, count: number, unit: "건" | "개"): string {

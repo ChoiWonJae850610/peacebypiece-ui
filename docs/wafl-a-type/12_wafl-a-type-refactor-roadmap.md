@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.29
+baseline_source: peacebypiece-ui-0.15.30
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.29
+현재 기준: 0.15.30
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -48,6 +48,7 @@ updated: 2026-05-20
 - system 화면 개발자성 문구 정리
 - admin 화면 개발자성 placeholder 정리
 - 코드 품질 / 도메인 구조 전수 감사
+- domain constants/types 1차 정리
 ```
 
 ## 2. 전환 원칙
@@ -103,6 +104,7 @@ updated: 2026-05-20
 0.15.273 — 시스템 화면 객체 문법 오류 추가 수정
 0.15.28 — admin 화면 개발자성 placeholder 정리
 0.15.29 — 코드 품질 / 도메인 구조 전수 감사
+0.15.30 — domain constants/types 1차 정리
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -254,6 +256,20 @@ updated: 2026-05-20
 - system/admin 화면의 개발자성 문구는 후속 버전에서 분리 정리한다.
 ```
 
+
+
+### 0.15.30 — domain constants/types 1차 정리
+
+```txt
+완료:
+- AdminUserAccessPreview 영문 i18n key 누락으로 인한 type error 수정
+- usage risk normal/warning/exceeded domain code 추가
+- file kind document/design/other domain code 추가
+- /system/billing 위험도 badge 조건식을 한글 label 비교에서 tone 기반으로 변경
+- /admin/files snapshot 파일 유형 분류에서 한글 includes 비교 제거
+- adminFiles presentation의 디자인 파일 판정을 domain helper로 이동
+```
+
 ## 5. 0.16.x — Device / Responsive 기반
 
 ### 0.16.0 — DeviceKind foundation
@@ -396,7 +412,6 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.30 — domain constants/types 1차 정리
 0.15.31 — 중복 formatter/presentation 통합 1차
 0.15.32 — TSX 도메인 로직 분리 1차
 0.15.33 — DB 저장값 / JSON payload 감사
