@@ -333,6 +333,18 @@ updated: 2026-05-20
 - DB/API/R2/권한/세션 변경 없음
 ```
 
+
+### 0.15.32 업데이트
+
+```txt
+55_wafl-a-type-tsx-domain-logic-separation.md
+- TSX 도메인 로직 분리 1차
+- /system/companies 화면의 고객사 가입 신청 row 변환과 상태 표시 helper를 lib/system/systemCompanyApprovalPresentation.ts로 이동
+- 초대 링크 상태/복사/취소 가능 여부와 고객사 관리 필터 판정을 presentation 계층으로 분리
+- 화면 컴포넌트는 fetch, 이벤트 처리, table/modal 렌더링 중심으로 유지
+- DB/API/R2/권한/세션 변경 없음
+```
+
 ### 0.16.4 — 모바일/태블릿 화면별 적용 시작
 
 ```txt
@@ -426,9 +438,8 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.32 — TSX 도메인 로직 분리 1차
 0.15.33 — DB 저장값 / JSON payload 감사
-0.15.33 — DB 저장값 / JSON payload 감사
+0.15.34 — action/fetch handler 분리 후보 감사
 0.16.0 — DeviceKind foundation
 0.16.1 — Admin/Workspace shell에서 DeviceKind 읽기만 적용
 ```

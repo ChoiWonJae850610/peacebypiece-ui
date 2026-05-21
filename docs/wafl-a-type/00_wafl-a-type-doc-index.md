@@ -417,3 +417,13 @@ formatter/presentation 통합 1차
 - billing/admin/system/stats 일부 중복 formatter 제거
 - DB/API/R2/권한/세션 변경 없음
 ```
+
+### 0.15.32 업데이트
+
+```txt
+55_wafl-a-type-tsx-domain-logic-separation.md
+- TSX 도메인 로직 분리 1차
+- 시스템 고객사 승인 화면의 row 변환, 상태 판정, filter 판정, 초대 링크 상태 표시 helper를 presentation 계층으로 이동
+- components/system/companies/SystemCompanyApprovalConsole.tsx는 화면 조립과 이벤트 처리 중심으로 축소
+- DB/API/R2/권한/세션 변경 없음
+```
