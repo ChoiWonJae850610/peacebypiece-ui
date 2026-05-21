@@ -576,3 +576,14 @@ High risk:
 - DB `numeric` 계열 값이 node-postgres 조회 시 문자열로 반환되는 경우를 고려해 작업지시서 상세 조회 numeric mapper를 보강한다.
 - `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`에 저장된 수량·단가·금액 값을 화면 row로 복원할 때 `number | string | bigint`를 모두 안전하게 숫자로 변환한다.
 - 저장 경로와 schema는 변경하지 않고, 조회 복원 단계만 수정한다.
+
+
+### 0.15.47 — 생산구성 현재값 테이블 schema audit
+
+- `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`의 역할을 “작업지시서 현재 확정 생산구성”으로 재정의한다.
+- `is_active=false` row 누적 방식은 현재 목적에 맞지 않으므로 `spec_sheet_id` 기준 replace 저장 방식으로 전환하는 방향을 확정한다.
+- 세 테이블의 `company_name`, `is_active`, `deleted_at`, `created_at`, `updated_at`은 제거 후보로 분류한다.
+- `spec_sheet_materials.vendor`, `spec_sheet_outsourcing_lines.vendor`, `orders.factory_name` 같은 이름 중복 저장은 partner 조인 기준으로 정리하는 방향을 둔다.
+- `unit_price_basis`는 별도 컬럼으로 추가하지 않고, `unit_cost`를 단가 기준값으로 사용한다.
+- 과거 생산구성 이력은 현재값 테이블이 아니라 별도 `workorder_production_snapshots` 후보 테이블로 분리하는 방향을 정한다.
+- 이번 버전은 문서화/설계 기준 정리이며 DB schema와 repository 동작은 변경하지 않는다.

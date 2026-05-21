@@ -520,3 +520,4 @@ workorder action type constants 정리 1차
 - DB schema/API/R2/권한/세션 변경 없음
 ```
 - `69_wafl-a-type-production-composition-read-numeric.md` — 생산구성 조회 numeric 문자열 복원 기준
+- `70_wafl-a-type-production-tables-schema-audit.md` — 생산구성 현재값 테이블 schema audit

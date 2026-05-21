@@ -72,14 +72,14 @@
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~67 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~70 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.45
+현재 기준: 0.15.47
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -94,3 +94,5 @@ DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는
 - `wafl-a-type/68_wafl-a-type-production-composition-field-mapping.md` — 생산구성 숫자 필드 mapping 통합
 
 - 0.15.46: 생산구성 조회 단계에서 DB numeric 문자열 값을 수량·단가·금액으로 복원하는 기준을 보강했습니다.
+
+- `wafl-a-type/70_wafl-a-type-production-tables-schema-audit.md` — 생산구성 현재값 테이블 schema audit

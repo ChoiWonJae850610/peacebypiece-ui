@@ -1,13 +1,11 @@
-Version : 0.15.46
-Summary : 생산구성 조회 numeric 문자열 복원
-Description : DB에는 저장된 생산구성 수량·단가·금액이 화면 조회 시 0으로 표시되는 문제를 수정했습니다. PostgreSQL numeric 계열 값이 문자열로 반환되는 경우를 고려해 작업지시서 상세 조회 mapper의 숫자 변환 기준을 number/string/bigint 모두 처리하도록 보강했습니다. 저장 경로, DB schema, API 응답 포맷, R2, 권한, 세션 흐름은 변경하지 않았습니다.
+Version : 0.15.47
+Summary : 생산구성 현재값 테이블 schema audit 문서화
+Description : orders, spec_sheet_materials, spec_sheet_outsourcing_lines를 현재 확정 생산구성 테이블로 재정의하고 is_active/deleted_at/created_at/updated_at 등 제거 후보와 replace 저장 방식, 조인/인덱스 방향, snapshot/history 분리 기준을 문서화했습니다.
 수정 파일 목록 :
-- lib/workorder/repository/dbWorkOrderRepository.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/wafl-a-type/69_wafl-a-type-production-composition-read-numeric.md
+- docs/wafl-a-type/70_wafl-a-type-production-tables-schema-audit.md
 삭제 파일 목록 :
-- 없음
