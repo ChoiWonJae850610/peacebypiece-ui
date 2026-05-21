@@ -514,7 +514,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
         throw error;
       }
     },
-    saveWorkOrder: async (workOrder) => {
+    saveWorkOrder: async (workOrder, options) => {
       try {
         const response = await fetch("/api/workorders", {
           method: "PATCH",
@@ -522,7 +522,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({ workOrder }),
+          body: JSON.stringify({ workOrder, serviceCode: options?.serviceCode ?? null, auditActor: options?.auditActor ?? null }),
         });
 
         const { workOrder: savedWorkOrder } = await parseResponse<{
@@ -553,7 +553,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
         throw error;
       }
     },
-    saveWorkOrders: async (workOrders) => {
+    saveWorkOrders: async (workOrders, options) => {
       try {
         const response = await fetch("/api/workorders", {
           method: "PATCH",
@@ -561,7 +561,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({ workOrders }),
+          body: JSON.stringify({ workOrders, serviceCode: options?.serviceCode ?? null, auditActor: options?.auditActor ?? null }),
         });
 
         const { workOrders: savedWorkOrders } = await parseResponse<{

@@ -79,9 +79,9 @@ export function createDbWorkorderRepository(
     saveWorkOrder: () => {
       throw createNotConfiguredError("saveWorkOrder");
     },
-    saveWorkOrderAsync: async (workOrder) => {
+    saveWorkOrderAsync: async (workOrder, options) => {
       if (!adapter?.saveWorkOrder) throw createNotConfiguredError("saveWorkOrder");
-      return adapter.saveWorkOrder(workOrder);
+      return adapter.saveWorkOrder(workOrder, options);
     },
     saveWorkOrderStatePatch: () => {
       throw createNotConfiguredError("saveWorkOrderStatePatch");
@@ -93,9 +93,9 @@ export function createDbWorkorderRepository(
     saveWorkOrders: () => {
       throw createNotConfiguredError("saveWorkOrders");
     },
-    saveWorkOrdersAsync: async (workOrders) => {
+    saveWorkOrdersAsync: async (workOrders, options) => {
       if (!adapter?.saveWorkOrders) throw createNotConfiguredError("saveWorkOrders");
-      return adapter.saveWorkOrders(workOrders);
+      return adapter.saveWorkOrders(workOrders, options);
     },
     deleteWorkOrder: () => {
       throw createNotConfiguredError("deleteWorkOrder");

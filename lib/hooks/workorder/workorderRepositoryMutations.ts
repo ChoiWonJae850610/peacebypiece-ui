@@ -42,6 +42,7 @@ export async function persistCreatedWorkOrderWithHistory(
     workOrder: WorkOrder;
     historyLogs?: HistoryLog[];
     auditActor?: UserProfile | null;
+    serviceCode?: WorkOrderServiceCodeValue | null;
   },
 ) {
   const nextWorkOrder = await repository.createWorkOrderAsync(stampPersistedWorkOrder(payload.workOrder));
@@ -162,6 +163,7 @@ export async function persistWorkOrderWithHistory(
     workOrder: WorkOrder;
     historyLogs?: HistoryLog[];
     auditActor?: UserProfile | null;
+    serviceCode?: WorkOrderServiceCodeValue | null;
   },
 ) {
   const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
@@ -171,7 +173,10 @@ export async function persistWorkOrderWithHistory(
         auditActor: { id: payload.auditActor.id, name: payload.auditActor.name, role: payload.auditActor.role },
       } as WorkOrder)
     : stampedWorkOrder;
-  const nextWorkOrder = await repository.saveWorkOrderAsync(workOrderWithAuditActor);
+  const nextWorkOrder = await repository.saveWorkOrderAsync(workOrderWithAuditActor, {
+    serviceCode: payload.serviceCode ?? null,
+    auditActor: payload.auditActor ?? null,
+  });
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
@@ -184,6 +189,7 @@ export async function persistWorkOrdersWithHistory(
     workOrders: WorkOrder[];
     historyLogs?: HistoryLog[];
     auditActor?: UserProfile | null;
+    serviceCode?: WorkOrderServiceCodeValue | null;
   },
 ) {
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
@@ -193,7 +199,10 @@ export async function persistWorkOrdersWithHistory(
         auditActor: { id: payload.auditActor!.id, name: payload.auditActor!.name, role: payload.auditActor!.role },
       } as WorkOrder))
     : stampedWorkOrders;
-  const nextWorkOrders = await repository.saveWorkOrdersAsync(workOrdersWithAuditActor);
+  const nextWorkOrders = await repository.saveWorkOrdersAsync(workOrdersWithAuditActor, {
+    serviceCode: payload.serviceCode ?? null,
+    auditActor: payload.auditActor ?? null,
+  });
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }

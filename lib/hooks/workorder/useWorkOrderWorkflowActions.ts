@@ -25,6 +25,7 @@ import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrder
 import { getOrderTypeFromWorkOrderKind, getWorkOrderReorderGroupId } from "@/lib/workorder/reorder/helpers";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { isImmediateDbField } from "@/lib/workorder/storagePolicy";
+import { getWorkOrderImmediatePatchServiceCode } from "@/lib/workorder/serviceCodeForWorkOrderPatch";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import {
@@ -501,6 +502,7 @@ export function useWorkOrderWorkflowActions({
       const normalizedNextWorkOrder = nextWorkOrders.find((item) => item.id === workOrderId) ?? result.nextWorkOrder;
       const nextHistoryLogs = result.historyLogs;
       const shouldPersistImmediately = (Object.keys(patch) as (keyof WorkOrder)[]).some(isImmediateDbField);
+      const serviceCode = getWorkOrderImmediatePatchServiceCode(patch);
 
       setWorkOrders(nextWorkOrders);
 
@@ -516,6 +518,7 @@ export function useWorkOrderWorkflowActions({
           workOrder: normalizedNextWorkOrder,
           historyLogs: nextHistoryLogs,
           auditActor: currentUser,
+          serviceCode,
         });
         const persistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrderId, persistedWorkOrder);
         setWorkOrders(persistedWorkOrders);

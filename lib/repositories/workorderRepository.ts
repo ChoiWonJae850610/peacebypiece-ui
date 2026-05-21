@@ -1,4 +1,5 @@
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
+import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 export type WorkorderWorkspaceState = PersistedWorkOrderState;
@@ -23,6 +24,11 @@ export type WorkorderRepositoryCapabilities = {
   appendHistoryLogs: boolean;
   saveUsers: boolean;
   savePermissions: boolean;
+};
+
+export type WorkorderMutationOptions = {
+  serviceCode?: WorkOrderServiceCodeValue | null;
+  auditActor?: Pick<UserProfile, "id" | "name" | "role"> | null;
 };
 
 export type WorkorderRepositoryInfo = {
@@ -57,12 +63,12 @@ export type WorkorderRepository = {
   saveWorkspaceSessionAsync(payload: WorkorderWorkspaceSession): Promise<WorkorderWorkspaceSession>;
   createWorkOrder(workOrder: WorkOrder): WorkOrder;
   createWorkOrderAsync(workOrder: WorkOrder): Promise<WorkOrder>;
-  saveWorkOrder(workOrder: WorkOrder): WorkOrder;
-  saveWorkOrderAsync(workOrder: WorkOrder): Promise<WorkOrder>;
+  saveWorkOrder(workOrder: WorkOrder, options?: WorkorderMutationOptions): WorkOrder;
+  saveWorkOrderAsync(workOrder: WorkOrder, options?: WorkorderMutationOptions): Promise<WorkOrder>;
   saveWorkOrderStatePatch(patch: WorkOrderStatePatch): WorkOrder;
   saveWorkOrderStatePatchAsync(patch: WorkOrderStatePatch): Promise<WorkOrder>;
-  saveWorkOrders(workOrders: WorkOrder[]): WorkOrder[];
-  saveWorkOrdersAsync(workOrders: WorkOrder[]): Promise<WorkOrder[]>;
+  saveWorkOrders(workOrders: WorkOrder[], options?: WorkorderMutationOptions): WorkOrder[];
+  saveWorkOrdersAsync(workOrders: WorkOrder[], options?: WorkorderMutationOptions): Promise<WorkOrder[]>;
   deleteWorkOrder(workOrderId: string): string;
   deleteWorkOrderAsync(workOrderId: string): Promise<string>;
   appendHistoryLogs(historyLogs: HistoryLog[]): HistoryLog[];

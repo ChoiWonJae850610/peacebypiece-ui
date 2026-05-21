@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { canEditManagerInWorkflow, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
@@ -88,6 +89,7 @@ export function useWorkOrderAdminActions({
         workOrder: nextPersistableWorkOrder,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
+        serviceCode: WORKORDER_SERVICE_CODE.assigneeImmediateSave,
       }).then((persistedWorkOrder) => {
         setPersistedWorkOrders((prev) => replaceWorkOrderById(prev, workOrder.id, persistedWorkOrder));
         setWorkOrders((prev) => prev.map((item) => (

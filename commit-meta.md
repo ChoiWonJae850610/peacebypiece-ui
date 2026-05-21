@@ -1,11 +1,22 @@
-Version : 0.15.61
-Summary : 작업지시서 화면 serviceCode 연결 상태 점검 문서화
-Description : 작업지시서 화면의 실제 버튼/액션별 serviceCode 연결 여부를 현재 코드 기준으로 점검하고, 연결 완료/부분 연결/미연결 항목과 후속 연결 우선순위를 문서화했습니다. DB schema, API, R2, 권한, 세션 흐름은 변경하지 않았습니다.
+Version : 0.15.62
+Summary : 작업지시서 serviceCode 누락 액션 1차 연결
+Description : 제목 변경, 담당자 변경, 즉시 저장 patch 경로에 serviceCode 전달 기준을 연결하고 full save/bulk save API 경로가 serviceCode를 수신할 수 있게 보강했습니다. 생산구성 replace 정책, DB schema, R2 동작은 변경하지 않았습니다.
 수정 파일 목록 :
+- lib/constants/app.ts
+- lib/repositories/workorderRepository.ts
+- lib/repositories/workorderRepositoryAdapter.ts
+- lib/repositories/dbWorkorderRepository.ts
+- lib/repositories/dbWorkorderHttpAdapter.ts
+- lib/hooks/workorder/workorderRepositoryMutations.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/hooks/workorder/useWorkOrderAdminActions.ts
+- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
+- lib/workorder/api/workOrderRouteHandlers.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
-- lib/constants/app.ts
 추가 파일 목록 :
-- docs/wafl-a-type/84_wafl-a-type-workorder-service-code-screen-action-audit.md
+- lib/workorder/serviceCodeForWorkOrderPatch.ts
+- docs/wafl-a-type/85_wafl-a-type-workorder-service-code-first-wire.md
 삭제 파일 목록 :
+- 없음

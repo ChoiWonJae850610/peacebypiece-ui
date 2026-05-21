@@ -613,3 +613,5 @@ workorder action type constants 정리 1차
 - [83_wafl-a-type-workorder-review-reject-regression.md](./83_wafl-a-type-workorder-review-reject-regression.md) — 0.15.60 검토요청/반려/재검토요청 회귀 테스트 기준
 
 - [84_wafl-a-type-workorder-service-code-screen-action-audit.md](./84_wafl-a-type-workorder-service-code-screen-action-audit.md) — 0.15.61 작업지시서 화면 액션별 serviceCode 연결 상태 점검
+
+- [85_wafl-a-type-workorder-service-code-first-wire.md](./85_wafl-a-type-workorder-service-code-first-wire.md) — 0.15.62 작업지시서 serviceCode 누락 액션 1차 연결

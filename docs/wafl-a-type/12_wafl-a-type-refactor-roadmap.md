@@ -706,3 +706,13 @@ High risk:
 - 담당자 변경, 제목 변경, 기본정보/분류 변경, 발주정보 저장, 생산구성 저장, 리오더 생성은 후속 연결 필요 항목으로 분류한다.
 - 0.15.62에서는 serviceCode 누락 액션 1차 연결을 진행하고, 그 뒤 orders replace 저장 정책을 정리한다.
 - 이번 단계는 문서화이며 DB schema/API/R2 동작은 변경하지 않는다.
+
+
+## 0.15.62 — 작업지시서 serviceCode 누락 액션 1차 연결
+
+- 제목 변경 full save 경로에 `WO-I001` serviceCode를 전달한다.
+- 담당자 변경 full save 경로에 `WO-I002` serviceCode를 전달한다.
+- 작업지시서 상세의 즉시 저장 patch 경로에 patch field 기준 serviceCode mapping helper를 연결한다.
+- inventory 즉시 저장은 기존 `WO-I004` 기준을 유지한다.
+- full save HTTP adapter와 `/api/workorders` PATCH route가 `serviceCode`를 받을 수 있게 하되, DB schema/R2 동작은 변경하지 않는다.
+- 이번 단계는 serviceCode 추적성 보강이며 생산구성 replace 정책은 기존 guard 기준을 유지한다.

@@ -780,11 +780,14 @@ export async function handlePatchWorkOrders(request: Request) {
       workOrder?: WorkOrder;
       workOrders?: WorkOrder[];
       auditActor?: WorkOrderAuditActor | null;
+      serviceCode?: string | null;
     }>(request);
 
     if (!body) {
       return createInvalidPayloadResponse("Invalid JSON payload.");
     }
+
+    const serviceCode = isWorkOrderServiceCode(body.serviceCode) ? body.serviceCode : null;
 
     if (Array.isArray(body.workOrders)) {
       if (
@@ -869,7 +872,7 @@ export async function handlePatchWorkOrders(request: Request) {
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
 
-      return NextResponse.json({ workOrders });
+      return NextResponse.json({ workOrders, meta: { mode: "bulk-save", serviceCode } });
     }
 
     if (!body.workOrder || typeof body.workOrder !== "object") {
@@ -925,7 +928,7 @@ export async function handlePatchWorkOrders(request: Request) {
 
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
 
-    return NextResponse.json({ workOrder });
+    return NextResponse.json({ workOrder, meta: { mode: "workorder-save", serviceCode } });
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to save work order.");
     logDbRequestOutcome(

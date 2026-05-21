@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import {
   createCreationHistoryLog,
@@ -375,7 +376,10 @@ export function useWorkOrderLifecycleActions({
             persistedRenameResult.affectedWorkOrderIds.includes(item.id),
           );
           const savedChangedWorkOrders = persistedChangedWorkOrders.length > 0
-            ? await repository.saveWorkOrdersAsync(persistedChangedWorkOrders)
+            ? await repository.saveWorkOrdersAsync(persistedChangedWorkOrders, {
+                serviceCode: WORKORDER_SERVICE_CODE.titleImmediateSave,
+                auditActor: currentUser,
+              })
             : [];
           if (nextHistoryLogs.length > 0) {
             await repository.appendHistoryLogsAsync(nextHistoryLogs);
