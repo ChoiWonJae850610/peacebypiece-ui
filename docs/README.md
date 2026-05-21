@@ -79,7 +79,7 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.44
+현재 기준: 0.15.45
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -90,3 +90,5 @@ DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는
 - `wafl-a-type/66_wafl-a-type-workorder-production-snapshot-action.md` — 작업지시서 생산구성 workflow action snapshot 보강
 
 - `wafl-a-type/67_wafl-a-type-production-composition-commit-policy.md` — 생산구성 확정 저장 정책과 workflow snapshot 보정
+
+- `wafl-a-type/68_wafl-a-type-production-composition-field-mapping.md` — 생산구성 숫자 필드 mapping 통합

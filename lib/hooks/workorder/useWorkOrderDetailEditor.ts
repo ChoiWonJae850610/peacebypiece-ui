@@ -22,6 +22,7 @@ import { useWorkOrderEditingSession } from "@/lib/hooks/workorder/detailEditor/u
 import { usePartnerWorkOrderOptions } from "@/lib/hooks/partners/usePartnerWorkOrderOptions";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
+import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
 import { getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
 import { REWORK_TO_MAIN_APPEND_ROUND, getWorkOrderKindFromOrderType, isReworkToMainTransition, isWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import {
@@ -403,7 +404,7 @@ export function useWorkOrderDetailEditor({
         })
       : outsourcingItems;
 
-    return {
+    return normalizeProductionCompositionForWorkflowSnapshot({
       ...workOrder,
       category1: basicInfo.category1,
       category2: basicInfo.category2,
@@ -414,7 +415,7 @@ export function useWorkOrderDetailEditor({
       orderEntries: snapshotOrderItems,
       materials: snapshotMaterials,
       outsourcing: snapshotOutsourcing,
-    };
+    });
   };
 
   return {

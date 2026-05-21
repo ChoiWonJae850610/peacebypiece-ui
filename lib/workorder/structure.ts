@@ -1,6 +1,7 @@
 import type { Material } from "@/types/material";
 import type { Attachment, MemoReply, MemoThread, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
 import { ORDER_ENTRY_TARGET_TYPE, toOrderEntryTargetType } from "@/lib/constants/workorderDomain";
+import { normalizeProductionMaterialRows, normalizeProductionOutsourcingRows } from "@/lib/workorder/productionCompositionSnapshot";
 
 import { buildChildEntityId } from "@/lib/workorder/normalizeRules";
 
@@ -16,14 +17,14 @@ export function normalizeOrderEntriesForStorage(workOrderId: string, orderEntrie
 }
 
 export function normalizeMaterialsForStorage(workOrderId: string, materials: Material[] | undefined): Material[] {
-  return (materials ?? []).map((material, index) => ({
+  return normalizeProductionMaterialRows(materials).map((material, index) => ({
     ...material,
     id: String(material.id ?? "").trim() || buildChildEntityId(workOrderId, "mat", index),
   }));
 }
 
 export function normalizeOutsourcingForStorage(workOrderId: string, rows: Outsourcing[] | undefined): Outsourcing[] {
-  return (rows ?? []).map((row, index) => ({
+  return normalizeProductionOutsourcingRows(rows).map((row, index) => ({
     ...row,
     id: String(row.id ?? "").trim() || buildChildEntityId(workOrderId, "out", index),
   }));

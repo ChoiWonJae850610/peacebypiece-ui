@@ -2,6 +2,7 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
+import { normalizeProductionOrderEntries } from "@/lib/workorder/productionCompositionSnapshot";
 import type { OrderEntry, WorkOrder } from "@/types/workorder";
 
 const FACTORY_ORDER_TABLE = "orders";
@@ -150,7 +151,7 @@ function resolveFactoryOrderStatus(workOrder: WorkOrder, entry: OrderEntry): str
 }
 
 function toFactoryOrderEntries(workOrder: WorkOrder): OrderEntry[] {
-  return (workOrder.orderEntries ?? []).filter((entry) => {
+  return normalizeProductionOrderEntries(workOrder.orderEntries, workOrder.workflowState).filter((entry) => {
     if (!entry) return false;
     const targetType = entry.targetType ?? ORDER_ENTRY_TARGET_TYPE.factory;
     if (targetType !== ORDER_ENTRY_TARGET_TYPE.factory) return false;

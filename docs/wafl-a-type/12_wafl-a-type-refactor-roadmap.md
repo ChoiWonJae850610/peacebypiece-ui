@@ -564,3 +564,10 @@ High risk:
 - 빌드 오류가 발생한 material snapshot helper import 누락을 수정한다.
 - 생산구성은 검토요청, 검토완료, 발주/검수 진행 등 앞으로 진행되는 workflow 이벤트에서만 확정 저장한다.
 - 반려/취소성 흐름에서는 입력 중 draft를 새 확정값으로 저장하지 않는 정책을 둔다.
+
+
+## 0.15.45 — 생산구성 숫자 필드 mapping 통합
+
+- 입력 timing 보정만으로 해결되지 않은 수량/단가 0 fallback 문제를 field mapping 관점에서 정리한다.
+- 생산구성 숫자 필드 alias를 `productionCompositionSnapshot`에서 중앙 처리한다.
+- 다음 단계에서 저장 전 payload와 DB row를 비교할 수 있도록 기준 helper를 둔다.

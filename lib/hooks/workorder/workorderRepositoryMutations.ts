@@ -1,5 +1,6 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 import { shouldCommitProductionComposition } from "@/lib/workorder/productionCompositionPolicy";
+import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
 import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 function stampPersistedWorkOrder(workOrder: WorkOrder): WorkOrder {
@@ -75,20 +76,21 @@ function shouldIncludeProductionCompositionInStatePatch(workOrder: WorkOrder): b
 }
 
 function buildWorkOrderStatePatch(workOrder: WorkOrder, auditActor?: UserProfile | null): WorkOrderStatePatch {
-  const shouldIncludeProductionComposition = shouldIncludeProductionCompositionInStatePatch(workOrder);
+  const normalizedWorkOrder = normalizeProductionCompositionForWorkflowSnapshot(workOrder);
+  const shouldIncludeProductionComposition = shouldIncludeProductionCompositionInStatePatch(normalizedWorkOrder);
 
   return {
-    id: workOrder.id,
-    workflowState: workOrder.workflowState,
-    lastSavedAt: workOrder.lastSavedAt,
-    inventoryQuantity: workOrder.inventoryQuantity,
-    inventoryStatus: workOrder.inventoryStatus,
-    factoryOrderRequest: workOrder.factoryOrderRequest ?? null,
-    orderEntries: workOrder.orderEntries ?? [],
+    id: normalizedWorkOrder.id,
+    workflowState: normalizedWorkOrder.workflowState,
+    lastSavedAt: normalizedWorkOrder.lastSavedAt,
+    inventoryQuantity: normalizedWorkOrder.inventoryQuantity,
+    inventoryStatus: normalizedWorkOrder.inventoryStatus,
+    factoryOrderRequest: normalizedWorkOrder.factoryOrderRequest ?? null,
+    orderEntries: normalizedWorkOrder.orderEntries ?? [],
     ...(shouldIncludeProductionComposition
       ? {
-          materials: workOrder.materials ?? [],
-          outsourcing: workOrder.outsourcing ?? [],
+          materials: normalizedWorkOrder.materials ?? [],
+          outsourcing: normalizedWorkOrder.outsourcing ?? [],
         }
       : {}),
     auditActor: auditActor

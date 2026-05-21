@@ -1,6 +1,7 @@
 import { MATERIAL_TYPE, MATERIAL_UNIT, normalizeMaterialUnitValue } from "@/lib/constants/material";
 import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import { recalculateMaterial } from "@/lib/workorder/detail/detailCalculations";
+import { normalizeProductionMaterialRows } from "@/lib/workorder/productionCompositionSnapshot";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import { createDefaultMaterial } from "@/lib/workorder/material/materialDefaults";
 import type { EditableCell } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -47,6 +48,6 @@ export function createNewMaterialItem() {
 
 export function toMaterialsPatch(materialItems: Material[]): Partial<WorkOrder> {
   return {
-    materials: materialItems.map((item) => recalculateMaterial({ ...item, unit: normalizeMaterialUnitValue(item.unit) })),
+    materials: normalizeProductionMaterialRows(materialItems.map((item) => recalculateMaterial({ ...item, unit: normalizeMaterialUnitValue(item.unit) }))),
   };
 }

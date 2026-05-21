@@ -509,3 +509,13 @@ workorder action type constants 정리 1차
 ```
 
 - `67_wafl-a-type-production-composition-commit-policy.md` — 생산구성 확정 저장 정책과 workflow snapshot 보정
+
+### 0.15.45 업데이트
+
+```txt
+68_wafl-a-type-production-composition-field-mapping.md
+- 생산구성 숫자 필드 mapping 통합
+- 원단/부자재/외주/공장 row의 quantity/unitCost/amount 계열 alias를 중앙 helper에서 normalize
+- workflow snapshot, state patch, DB sync 직전까지 같은 기준을 사용
+- DB schema/API/R2/권한/세션 변경 없음
+```

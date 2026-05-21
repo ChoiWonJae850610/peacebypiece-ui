@@ -8,6 +8,7 @@ import {
 } from "@/lib/constants/workorderOptions";
 import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
+import { normalizeProductionOrderEntries, normalizeProductionOutsourcingRows } from "@/lib/workorder/productionCompositionSnapshot";
 import { createId, sanitizeOrderEntry, sanitizeSelectValue, toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import { getOrderSubmissionSnapshotFromSources, getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
 import type { EditableCell, OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -107,7 +108,7 @@ export function createNewOutsourcingItem() {
 }
 
 export function toOrderEntriesPatch(orderItems: OrderEntryState[], currentWorkflowState: WorkflowState): Partial<WorkOrder> {
-  const normalizedOrderEntries = orderItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState));
+  const normalizedOrderEntries = normalizeProductionOrderEntries(orderItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState)), currentWorkflowState);
   const representativeEntry = getRepresentativeOrderEntry(normalizedOrderEntries);
   const submissionSnapshot = getOrderSubmissionSnapshotFromSources({ representativeEntry });
 
@@ -133,6 +134,6 @@ export function toOrderEntriesPatch(orderItems: OrderEntryState[], currentWorkfl
 
 export function toOutsourcingPatch(outsourcingItems: Outsourcing[]): Partial<WorkOrder> {
   return {
-    outsourcing: outsourcingItems.map((item) => recalculateOutsourcing(item)),
+    outsourcing: normalizeProductionOutsourcingRows(outsourcingItems.map((item) => recalculateOutsourcing(item))),
   };
 }

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { normalizeMaterialUnitValue } from "@/lib/constants/material";
+import { normalizeProductionMaterialRows } from "@/lib/workorder/productionCompositionSnapshot";
 import { queryDb } from "@/lib/db/client";
 import type { Material } from "@/types/material";
 import type { WorkOrder } from "@/types/workorder";
@@ -105,7 +106,7 @@ function normalizeMaterialForDb(material: Material): Material {
 }
 
 function toMaterialRows(workOrder: WorkOrder): Material[] {
-  return (workOrder.materials ?? []).map(normalizeMaterialForDb).filter((material) => {
+  return normalizeProductionMaterialRows(workOrder.materials).map(normalizeMaterialForDb).filter((material) => {
     if (!material) return false;
     return Boolean(
       normalizeText(material.type) ||

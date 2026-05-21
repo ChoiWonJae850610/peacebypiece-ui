@@ -1,6 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { normalizeProductionOutsourcingRows } from "@/lib/workorder/productionCompositionSnapshot";
 import type { Outsourcing, WorkOrder } from "@/types/workorder";
 
 const SPEC_SHEET_OUTSOURCING_TABLE = "spec_sheet_outsourcing_lines";
@@ -102,7 +103,7 @@ function normalizeOutsourcingForDb(item: Outsourcing): Outsourcing {
 }
 
 function toOutsourcingRows(workOrder: WorkOrder): Outsourcing[] {
-  return (workOrder.outsourcing ?? []).map(normalizeOutsourcingForDb).filter((item) => {
+  return normalizeProductionOutsourcingRows(workOrder.outsourcing).map(normalizeOutsourcingForDb).filter((item) => {
     if (!item) return false;
     return Boolean(
       normalizeText(item.process) ||
