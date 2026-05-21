@@ -64,18 +64,19 @@
 - `wafl-a-type/57_wafl-a-type-db-domain-status-constants.md` — DB domain status constants 1차
 - `wafl-a-type/58_wafl-a-type-member-workorder-storage-status-candidates.md` — member/workorder/storage status constants 후보 조사
 - `wafl-a-type/59_wafl-a-type-workorder-status-usage-cleanup.md` — workorder status usage 정리 1차
+- `wafl-a-type/60_wafl-a-type-workorder-action-type-constants.md` — workorder action type constants 정리 1차
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~58 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~60 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.34
-PC A-TYPE 전환, SaaS 운영 IA, DB 저장값 / JSON payload 감사 우선
+현재 기준: 0.15.37
+PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action 상수화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
 ```

@@ -37,6 +37,7 @@ import {
 } from "@/lib/workorder/workflow";
 import { normalizeRoles } from "@/lib/constants/roles";
 import { canReinspectInWorkflow, isWorkflowState } from "@/lib/constants/workorderStates";
+import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -45,7 +46,7 @@ import type {
   UseWorkOrderActionsParams,
 } from "./useWorkOrderActionTypes";
 
-const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === "request_order";
+const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === WORKFLOW_ACTION_TYPE.requestOrder;
 
 type FactoryPartnerApiItem = {
   id?: unknown;

@@ -4,6 +4,7 @@ import {
   type DisplayStageValue,
   type WorkflowStateValue,
 } from "@/lib/constants/workorderStates";
+import type { WorkflowActionTypeValue } from "@/lib/constants/workflowActions";
 
 export type WorkflowState = WorkflowStateValue;
 export type DisplayStage = DisplayStageValue;
@@ -11,7 +12,7 @@ export type DisplayStage = DisplayStageValue;
 export type WorkflowAction = {
   label: string;
   nextState: WorkflowState;
-  actionType?: "request_review" | "cancel_review_request" | "reject_review" | "cancel_review_approval" | "approve_review" | "request_order" | "complete_inspection" | "request_reinspection";
+  actionType?: WorkflowActionTypeValue;
 };
 
 export type HistoryCategory = "work" | "inventory" | "attachment";

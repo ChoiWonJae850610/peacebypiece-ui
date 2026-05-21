@@ -1,3 +1,5 @@
+import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
+import { DISPLAY_STAGE } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getStageTextTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateDisplayStageLabel, translateWorkflowActionLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -5,7 +7,7 @@ import type { DisplayStage } from "@/types/workflow";
 import type { WorkflowAction } from "@/types/workorder";
 
 function getStageStepFillTone(stage: DisplayStage) {
-  return stage === "completed" ? "bg-[var(--pbp-workorder-status-completed-bg)]" : getStageDotTone(stage);
+  return stage === DISPLAY_STAGE.completed ? "bg-[var(--pbp-workorder-status-completed-bg)]" : getStageDotTone(stage);
 }
 
 function getProcessingLabel(label: string, format: string) {
@@ -37,12 +39,12 @@ export default function WorkOrderActionSection({
   const currentIndex = stages.indexOf(currentStage);
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
-  const primaryActionIndex = actions.findIndex((action) => action.actionType !== "reject_review");
+  const primaryActionIndex = actions.findIndex((action) => action.actionType !== WORKFLOW_ACTION_TYPE.rejectReview);
   const doneTrackTone = "bg-[var(--pbp-selected-border)]";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
-    { label: stageGroupsCopy.making, stages: ["draft", "review_requested", "review_completed"] },
-    { label: stageGroupsCopy.production, stages: ["request_order"] },
-    { label: stageGroupsCopy.inspection, stages: ["inspection", "completed"] },
+    { label: stageGroupsCopy.making, stages: [DISPLAY_STAGE.draft, DISPLAY_STAGE.reviewRequested, DISPLAY_STAGE.reviewCompleted] },
+    { label: stageGroupsCopy.production, stages: [DISPLAY_STAGE.requestOrder] },
+    { label: stageGroupsCopy.inspection, stages: [DISPLAY_STAGE.inspection, DISPLAY_STAGE.completed] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
 
@@ -52,9 +54,9 @@ export default function WorkOrderActionSection({
         <div className="min-w-0">
           <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
         </div>
-        {actions.length > 0 || (currentStage === "draft" && onSave) ? (
+        {actions.length > 0 || (currentStage === DISPLAY_STAGE.draft && onSave) ? (
           <div className="flex flex-wrap justify-end gap-2">
-            {currentStage === "draft" && onSave ? (
+            {currentStage === DISPLAY_STAGE.draft && onSave ? (
               <button
                 type="button"
                 onClick={onSave}
@@ -94,7 +96,7 @@ export default function WorkOrderActionSection({
           {stages.map((stage, index) => {
             const isDone = index <= currentIndex;
             const isCurrent = stage === currentStage;
-            const isCompletedStage = stage === "completed";
+            const isCompletedStage = stage === DISPLAY_STAGE.completed;
             return (
               <div key={stage} className="relative flex flex-col items-center gap-2 text-center">
                 {index < stages.length - 1 ? (

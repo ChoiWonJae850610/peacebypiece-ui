@@ -1,4 +1,5 @@
 import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
+import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import {
   getOrderInspectionStatusForCompletion,
   getOrderInspectionStatusForNewOrderEntry,
@@ -91,7 +92,7 @@ export function buildInventoryChanges(payload: {
 
 export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: WorkflowAction): WorkOrder {
   if (isWorkflowState(action.nextState, WORKFLOW_STATE.inspection)) {
-    const resetForReinspection = action.actionType === "request_reinspection";
+    const resetForReinspection = action.actionType === WORKFLOW_ACTION_TYPE.requestReinspection;
     const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
       inspectionStatus: resetForReinspection

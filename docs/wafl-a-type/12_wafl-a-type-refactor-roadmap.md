@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.36
+baseline_source: peacebypiece-ui-0.15.37
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.36
+현재 기준: 0.15.37
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -54,6 +54,7 @@ updated: 2026-05-20
 - DB 저장값 / JSON payload 감사
 - member/workorder/storage status constants 후보 조사
 - workorder status usage 정리 1차
+- workorder action type constants 정리 1차
 ```
 
 ## 2. 전환 원칙
@@ -462,6 +463,7 @@ High risk:
 - DB 저장값 / JSON payload 감사
 - member/workorder/storage status constants 후보 조사
 - workorder status usage 정리 1차
+- workorder action type constants 정리 1차
 - system_audit_logs.metadata는 허용하되 raw body/secret/token 저장 금지 기준 정리
 - company_account_requests.request_payload는 high priority 정리 대상으로 분류
 - app/api/workorders/status/route.ts legacy payload column candidates는 사용 여부 확인 후 정리 후보로 분류
