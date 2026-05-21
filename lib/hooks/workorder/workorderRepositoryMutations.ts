@@ -1,6 +1,7 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import { shouldCommitProductionComposition } from "@/lib/workorder/productionCompositionPolicy";
+import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
 import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
@@ -92,7 +93,7 @@ function buildWorkOrderStatePatch(
   const normalizedWorkOrder = normalizeProductionCompositionForWorkflowSnapshot(workOrder);
   const shouldIncludeProductionComposition = shouldIncludeProductionCompositionInStatePatch(normalizedWorkOrder, serviceCode);
 
-  return {
+  const statePatch: WorkOrderStatePatch = {
     id: normalizedWorkOrder.id,
     workflowState: normalizedWorkOrder.workflowState,
     lastSavedAt: normalizedWorkOrder.lastSavedAt,
@@ -110,6 +111,8 @@ function buildWorkOrderStatePatch(
       ? { id: auditActor.id, name: auditActor.name, role: auditActor.role }
       : null,
   };
+
+  return guardProductionCompositionPatchByServiceCode(statePatch, serviceCode);
 }
 
 export async function persistWorkOrderStatePatchWithHistory(

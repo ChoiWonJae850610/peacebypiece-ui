@@ -639,3 +639,11 @@ High risk:
 - serviceCode별 direction, resource, operation, production replace 허용 여부, R2 delete 허용 여부를 코드로 조회할 수 있게 한다.
 - 메모/첨부/R2/삭제/복원/purge 계열이 생산구성 replace 저장과 섞이지 않도록 후속 guard 기준을 만든다.
 - 이번 단계는 기준 코드와 문서 추가이며 DB schema/API/R2 동작은 변경하지 않는다.
+
+
+### 0.15.54 — 작업지시서 serviceCode guard 1차 적용
+
+- serviceCode side effect matrix를 생산구성 state patch 저장 직전 guard에 연결한다.
+- `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` replace 저장은 serviceCode가 replace operation과 생산구성 resource를 허용할 때만 가능하게 한다.
+- 반려/취소/되돌리기/메모/첨부/삭제/복원/purge 계열에서 생산구성 patch가 섞여도 저장 전에 제거한다.
+- 이번 단계는 guard 적용이며 DB schema/API/R2 동작은 변경하지 않는다.

@@ -570,3 +570,14 @@ workorder action type constants 정리 1차
 - 메모/첨부/R2/삭제/복원/purge 계열이 생산구성 replace와 섞이지 않도록 후속 guard 기준 마련
 - DB schema/API/R2 동작 변경 없음
 ```
+
+
+### 0.15.54 업데이트
+
+```txt
+77_wafl-a-type-workorder-service-guard-first-pass.md
+- serviceCode side effect matrix를 실제 state patch 저장 직전 guard에 연결
+- 생산구성 replace는 serviceCode가 replace operation과 생산구성 resource를 모두 허용할 때만 통과
+- 반려/취소/되돌리기/메모/첨부/삭제/복원/purge 계열에서 생산구성 patch가 섞여도 저장 전에 제거
+- DB schema/API/R2 동작 변경 없음
+```

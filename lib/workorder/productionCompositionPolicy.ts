@@ -1,5 +1,6 @@
 import { WORKFLOW_STATE, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
-import { canReplaceProductionCompositionByServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
+import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
+import { canServiceReplaceProductionComposition } from "@/lib/workorder/serviceCodeGuards";
 import type { WorkflowState } from "@/types/workflow";
 import type { WorkOrder } from "@/types/workorder";
 
@@ -28,7 +29,7 @@ export function hasProductionCompositionDraft(workOrder: WorkOrder): boolean {
 export function shouldCommitProductionCompositionForServiceCode(
   serviceCode: WorkOrderServiceCodeValue | null | undefined,
 ): boolean {
-  return canReplaceProductionCompositionByServiceCode(serviceCode);
+  return canServiceReplaceProductionComposition(serviceCode);
 }
 
 export function shouldCommitProductionComposition(

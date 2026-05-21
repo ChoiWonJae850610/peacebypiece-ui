@@ -74,6 +74,7 @@
 - `wafl-a-type/74_wafl-a-type-workorder-db-r2-call-audit.md` — 작업지시서 DB/R2 호출 위치 전수조사
 - `wafl-a-type/75_wafl-a-type-workorder-service-code-constants.md` — 작업지시서 서비스 코드 상수와 생산구성 replace allowlist
 - `wafl-a-type/76_wafl-a-type-workorder-service-side-effect-matrix.md` — 작업지시서 serviceCode side effect matrix
+- `wafl-a-type/77_wafl-a-type-workorder-service-guard-first-pass.md` — 작업지시서 serviceCode guard 1차 적용
 
 ## 정리 정책
 
