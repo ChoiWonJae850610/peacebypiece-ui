@@ -4,6 +4,7 @@ import type {
 } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
+import { formatPbpBinaryBytes } from "@/lib/utils/formatters";
 
 export type FileStatusItem = {
   label: string;
@@ -67,13 +68,13 @@ export function formatCountWithUnit(
 }
 
 export function formatStorageBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "0MB";
-  if (bytes >= 1024 * 1024 * 1024)
-    return `${(bytes / 1024 / 1024 / 1024).toFixed(2)}GB`;
-  if (bytes >= 1024 * 1024)
-    return `${Math.max(0.01, bytes / 1024 / 1024).toFixed(2)}MB`;
-  if (bytes >= 1024) return `${Math.ceil(bytes / 1024)}KB`;
-  return `${bytes}B`;
+  return formatPbpBinaryBytes(bytes, {
+    zeroLabel: "0MB",
+    gbFractionDigits: 2,
+    mbFractionDigits: 2,
+    kbFractionDigits: 0,
+    minimumMbValue: 0.01,
+  });
 }
 
 export function buildFileStatusItems(input: {

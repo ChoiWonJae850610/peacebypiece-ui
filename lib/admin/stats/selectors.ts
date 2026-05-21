@@ -9,6 +9,7 @@ import {
   ADMIN_WORKORDER_FLOW_BUCKETS,
 } from "@/lib/constants/adminStats";
 import { getI18n } from "@/lib/i18n";
+import { formatPbpBinaryBytes, formatPbpInteger } from "@/lib/utils/formatters";
 
 const adminStatsText = getI18n().admin.statsUi;
 
@@ -27,15 +28,16 @@ export function toAdminStatNumber(value: string | number | null | undefined): nu
 }
 
 export function formatAdminStatInteger(value: number): string {
-  return new Intl.NumberFormat("ko-KR").format(Math.max(0, Math.round(value)));
+  return formatPbpInteger(value);
 }
 
 export function formatAdminBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "0B";
-  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
-  if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
-  return `${Math.round(bytes)}B`;
+  return formatPbpBinaryBytes(bytes, {
+    zeroLabel: "0B",
+    gbFractionDigits: 1,
+    mbFractionDigits: 0,
+    kbFractionDigits: 0,
+  });
 }
 
 export function readAdminCount(row: AdminCountRow | undefined): number {

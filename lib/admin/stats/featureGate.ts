@@ -1,3 +1,5 @@
+import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
+
 export type AdminStatsFeatureKey =
   | "stats.category"
   | "stats.factory"
@@ -40,8 +42,7 @@ export type AdminAdvancedStatsPreviewInput = {
 };
 
 function formatAdminPreviewCount(value: number | undefined, suffix = "건") {
-  const normalized = Number.isFinite(value) ? Math.max(0, Math.round(value ?? 0)) : 0;
-  return `${normalized.toLocaleString("ko-KR")}${suffix}`;
+  return formatPbpNumberWithUnit(value, suffix);
 }
 
 function buildMetricValue(label: string | undefined, value: number | undefined) {

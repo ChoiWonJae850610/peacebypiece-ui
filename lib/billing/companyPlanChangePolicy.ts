@@ -1,5 +1,6 @@
 import { DEFAULT_PLAN_DEFINITIONS } from "./defaultPlans";
 import { formatStorageBytes } from "./storageQuotaPolicy";
+import { formatPbpKrw, formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import type { CompanyPlanAssignment, PlanDefinition } from "./planTypes";
 
 export type CompanyPlanChangeFieldId =
@@ -57,14 +58,6 @@ function findPlanByCode(planCode: string): PlanDefinition {
   return DEFAULT_PLAN_DEFINITIONS.find((plan) => plan.code === planCode) ?? DEFAULT_PLAN_DEFINITIONS[0];
 }
 
-function formatKrw(value: number): string {
-  return `${value.toLocaleString("ko-KR")}원 / 월`;
-}
-
-function formatMemberLimit(value: number): string {
-  return `${value.toLocaleString("ko-KR")}명`;
-}
-
 export function getCompanyPlanChangePreview(draft: CompanyPlanChangeDraft): CompanyPlanChangePreview {
   const currentPlan = findPlanById(draft.currentAssignment.planId);
   const nextPlan = findPlanByCode(draft.nextPlanCode);
@@ -78,8 +71,8 @@ export function getCompanyPlanChangePreview(draft: CompanyPlanChangeDraft): Comp
     currentPlanLabel: `${currentPlan.name} (${currentPlan.code})`,
     nextPlanLabel: `${nextPlan.name} (${nextPlan.code})`,
     storageChangeLabel: `${formatStorageBytes(currentPlan.storage.includedStorageBytes)} → ${formatStorageBytes(nextStorageLimitBytes)}`,
-    memberChangeLabel: `${formatMemberLimit(currentPlan.members.includedMembers)} → ${formatMemberLimit(nextMemberLimit)}`,
-    priceChangeLabel: `${formatKrw(currentPlan.priceKrw)} → ${formatKrw(nextPriceKrw)}`,
+    memberChangeLabel: `${formatPbpNumberWithUnit(currentPlan.members.includedMembers, "명")} → ${formatPbpNumberWithUnit(nextMemberLimit, "명")}`,
+    priceChangeLabel: `${formatPbpKrw(currentPlan.priceKrw, { monthly: true })} → ${formatPbpKrw(nextPriceKrw, { monthly: true })}`,
     effectiveDateLabel: draft.effectiveDate,
     policySourceLabel: draft.storageLimitBytesOverride || draft.memberLimitOverride || draft.priceKrwOverride
       ? "요금제 + 고객사 override"
@@ -154,7 +147,7 @@ export function getCompanyPlanChangeValidationItems(draft: CompanyPlanChangeDraf
       label: "멤버 상한",
       statusLabel: nextPlan.members.maxMembers && nextMemberLimit > nextPlan.members.maxMembers ? "확인 필요" : "통과",
       description: nextPlan.members.maxMembers
-        ? `요금제 상한 ${formatMemberLimit(nextPlan.members.maxMembers)} 이내인지 확인합니다.`
+        ? `요금제 상한 ${formatPbpNumberWithUnit(nextPlan.members.maxMembers, "명")} 이내인지 확인합니다.`
         : "Business 이상은 별도 멤버 상한 없이 운영자 override를 허용합니다.",
     },
     {

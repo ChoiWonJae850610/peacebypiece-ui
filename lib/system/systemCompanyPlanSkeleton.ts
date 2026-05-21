@@ -15,6 +15,7 @@ import {
   type CompanyPlanChangeValidationItem,
 } from "@/lib/billing";
 import { getUsageRiskLabelKo, getUsageRiskTone, resolveUsageRiskCode, type UsageRiskCode, type UsageRiskTone } from "@/lib/domain/usageRisk";
+import { formatPbpBinaryBytes, formatPbpKrw, formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 
 export interface SystemCompanyPlanOption {
   id: string;
@@ -105,18 +106,11 @@ const sampleCompanyNamesById: Record<string, string> = {
   "sample-company-2": "B 고객사",
 };
 
-function formatBytes(bytes: number): string {
-  const gib = bytes / 1024 / 1024 / 1024;
-
-  if (gib >= 10) {
-    return `${Math.round(gib)}GB`;
-  }
-
-  return `${Math.round(gib * 10) / 10}GB`;
-}
-
-function formatKrw(priceKrw: number): string {
-  return `${priceKrw.toLocaleString("ko-KR")}원 / 월`;
+function formatSystemPlanStorageBytes(bytes: number): string {
+  return formatPbpBinaryBytes(bytes, {
+    zeroLabel: "0GB",
+    gbFractionDigits: bytes >= 10 * 1024 ** 3 ? 0 : 1,
+  });
 }
 
 function getPlanDescription(plan: PlanDefinition): string {
@@ -158,9 +152,9 @@ export const SYSTEM_COMPANY_PLAN_OPTIONS: SystemCompanyPlanOption[] =
     name: plan.name,
     code: plan.code,
     statusLabel: plan.status,
-    priceLabel: formatKrw(plan.priceKrw),
-    storageLabel: formatBytes(plan.storage.includedStorageBytes),
-    memberLabel: `${plan.members.includedMembers}명`,
+    priceLabel: formatPbpKrw(plan.priceKrw, { monthly: true }),
+    storageLabel: formatSystemPlanStorageBytes(plan.storage.includedStorageBytes),
+    memberLabel: formatPbpNumberWithUnit(plan.members.includedMembers, "명"),
     description: getPlanDescription(plan),
   }));
 
@@ -190,11 +184,11 @@ export const SYSTEM_COMPANY_PLAN_COMPANIES: SystemCompanyPlanCompany[] =
       id: assignment.companyId,
       name: sampleCompanyNamesById[assignment.companyId] ?? assignment.companyId,
       currentPlan: policy.planName,
-      storageUsageLabel: `${formatBytes(usage.usedBytes)} / ${formatBytes(policy.storageLimitBytes)}`,
+      storageUsageLabel: `${formatSystemPlanStorageBytes(usage.usedBytes)} / ${formatSystemPlanStorageBytes(policy.storageLimitBytes)}`,
       storageRisk,
       storageRiskLabel: getUsageRiskLabelKo(storageRisk),
       storageRiskTone: getUsageRiskTone(storageRisk),
-      memberUsageLabel: `${usage.memberCount}명 / ${policy.memberLimit}명`,
+      memberUsageLabel: `${formatPbpNumberWithUnit(usage.memberCount, "명")} / ${formatPbpNumberWithUnit(policy.memberLimit, "명")}`,
       memberRisk,
       memberRiskLabel: getUsageRiskLabelKo(memberRisk),
       memberRiskTone: getUsageRiskTone(memberRisk),

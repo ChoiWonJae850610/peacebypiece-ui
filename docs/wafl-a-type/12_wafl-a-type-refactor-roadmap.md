@@ -319,6 +319,20 @@ updated: 2026-05-20
 - 회전 시 draft 보존 준비
 ```
 
+
+
+### 0.15.31 업데이트
+
+```txt
+54_wafl-a-type-formatter-presentation-consolidation.md
+- formatter/presentation 통합 1차
+- lib/utils/formatters.ts 추가
+- 숫자, 금액, 수량+단위, 저장공간 용량 formatter를 공통 유틸로 1차 통합
+- billing/admin/system/stats 일부 formatter 중복 제거
+- 기존 공개 함수명은 유지하고 내부 구현만 공통 formatter로 위임
+- DB/API/R2/권한/세션 변경 없음
+```
+
 ### 0.16.4 — 모바일/태블릿 화면별 적용 시작
 
 ```txt
@@ -412,8 +426,8 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
-0.15.31 — 중복 formatter/presentation 통합 1차
 0.15.32 — TSX 도메인 로직 분리 1차
+0.15.33 — DB 저장값 / JSON payload 감사
 0.15.33 — DB 저장값 / JSON payload 감사
 0.16.0 — DeviceKind foundation
 0.16.1 — Admin/Workspace shell에서 DeviceKind 읽기만 적용

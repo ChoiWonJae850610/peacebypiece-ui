@@ -1,6 +1,7 @@
 import { DEFAULT_PLAN_DEFINITIONS } from "@/lib/billing/defaultPlans";
 import { DEFAULT_PLAN_CODES } from "@/lib/billing/planPolicy";
 import { BYTES_PER_GB, formatStorageBytes } from "@/lib/billing/storageQuotaPolicy";
+import { formatPbpKrw, formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 
 export type AdminBillingPlanMetric = {
   id: string;
@@ -44,14 +45,6 @@ export type AdminBillingPlanOverviewInput = {
   } | null;
   ok?: boolean | null;
 };
-
-function formatKrw(value: number): string {
-  return `${value.toLocaleString("ko-KR")}원`;
-}
-
-function formatMemberLimit(value: number): string {
-  return `${value.toLocaleString("ko-KR")}명`;
-}
 
 function normalizeStorageLimitBytes(input: AdminBillingPlanOverviewInput | undefined, fallbackBytes: number): number {
   const storageLimitGb = input?.settings?.filePolicy?.storageLimitGb;
@@ -117,13 +110,13 @@ export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewIn
       {
         id: "member-limit",
         label: "멤버 한도",
-        value: fallbackPlan ? formatMemberLimit(fallbackPlan.members.includedMembers) : "3명",
+        value: fallbackPlan ? formatPbpNumberWithUnit(fallbackPlan.members.includedMembers, "명") : "3명",
         description: "승인된 company_members 수와 실제 멤버 한도 override는 후속 버전에서 연결합니다.",
       },
       {
         id: "monthly-price",
         label: "월 이용료",
-        value: fallbackPlan ? formatKrw(fallbackPlan.priceKrw) : "29,000원",
+        value: fallbackPlan ? formatPbpKrw(fallbackPlan.priceKrw) : "29,000원",
         description: "정식 결제 연동 전까지는 참고용 정책값으로만 사용합니다.",
       },
     ],

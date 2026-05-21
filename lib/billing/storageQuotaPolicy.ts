@@ -1,4 +1,5 @@
 import type { CompanyFilePolicySettings } from "@/lib/admin/settings/companyTypes";
+import { formatPbpBinaryBytes } from "@/lib/utils/formatters";
 import { DEFAULT_PLAN_DEFINITIONS } from "./defaultPlans";
 import type { ResolvedCompanyPlanPolicy } from "./planTypes";
 
@@ -42,11 +43,12 @@ export const DEFAULT_ADMIN_STORAGE_QUOTA_BYTES =
   starterPlan?.storage.includedStorageBytes ?? 5 * BYTES_PER_GB;
 
 export function formatStorageBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) return "0B";
-  if (bytes >= BYTES_PER_GB) return `${(bytes / BYTES_PER_GB).toFixed(1)}GB`;
-  if (bytes >= 1024 ** 2) return `${Math.round(bytes / (1024 ** 2))}MB`;
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
-  return `${Math.round(bytes)}B`;
+  return formatPbpBinaryBytes(bytes, {
+    zeroLabel: "0B",
+    gbFractionDigits: 1,
+    mbFractionDigits: 0,
+    kbFractionDigits: 0,
+  });
 }
 
 export function normalizeStorageWarningThresholdPercent(value: number | null | undefined): number {
