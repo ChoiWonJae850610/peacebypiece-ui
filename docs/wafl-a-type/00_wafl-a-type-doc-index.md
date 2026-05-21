@@ -483,3 +483,14 @@ workorder action type constants 정리 1차
 - 리오더/재작업/첨부 업로드/대표 디자인 조건의 직접 문자열 비교 일부 축소
 - DB 저장값/API 응답/R2/권한/세션 변경 없음
 ```
+
+### 0.15.41 업데이트
+
+```txt
+64_wafl-a-type-workorder-pending-edit-flush.md
+- 작업지시서 생산구성 활성 입력값 검토요청 전 반영 보강
+- 원단/부자재/외주 수량 및 단가 입력 중 검토요청/임시저장을 눌러도 현재 편집값을 먼저 commit하도록 조정
+- WorkOrderDetailContainer에서 workflow action/save 실행 전 detail editor pending edit을 flush
+- DB schema/API/R2/권한/세션 변경 없음
+```
+

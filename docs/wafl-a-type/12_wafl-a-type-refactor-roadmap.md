@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.40
+현재 기준: 0.15.41
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -533,3 +533,14 @@ High risk:
 - 검토 요청 후 관리자 화면에서 공장/원단/부자재/외주공정 row가 누락되지 않도록 보강
 - DB schema/API route/R2/권한/세션 변경 없음
 ```
+
+### 0.15.41 업데이트
+
+```txt
+64_wafl-a-type-workorder-pending-edit-flush.md
+- 작업지시서 생산구성 활성 입력값 검토요청 전 반영 보강
+- 원단/부자재/외주 수량 및 단가 input이 blur commit 되기 전에 workflow action이 실행되는 위험을 줄임
+- 임시저장과 검토요청 실행 전 pending detail edit을 먼저 commit한 뒤 action을 지연 실행
+- DB/API/R2/권한/세션 변경 없음
+```
+

@@ -51,6 +51,16 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     disclosureModel.onSetOutsourcingOpen(nextOpen);
   };
 
+  const runAfterPendingDetailFlush = (callback: () => void) => {
+    const didFlush = editor.flushPendingDetailEdit();
+    if (didFlush && typeof window !== "undefined") {
+      window.setTimeout(callback, 0);
+      return;
+    }
+
+    callback();
+  };
+
   const viewModel = buildWorkOrderDetailViewModel({
     workOrder,
     basicInfo: editor.basicInfo,
@@ -88,12 +98,12 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     outsourcingVendorOptionsById: editor.outsourcingVendorOptionsById,
     outsourcingProcessOptions: editor.outsourcingProcessOptions,
     costSummary: editor.costSummary,
-    onSave: isWorkspaceWriteLocked ? () => undefined : actionModel.onSave,
+    onSave: isWorkspaceWriteLocked ? () => undefined : () => runAfterPendingDetailFlush(actionModel.onSave),
     onOpenBasicInfoModal: isWorkspaceWriteLocked ? () => undefined : editor.handleOpenBasicInfoModal,
     onOpenManagerAssignModal: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenManagerAssignModal,
     onOpenInventoryEditor: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenInventoryEditor,
     onRenameWorkOrderTitle: isWorkspaceWriteLocked ? () => undefined : actionModel.onRenameWorkOrderTitle,
-    onAction: actionModel.onAction,
+    onAction: (action) => runAfterPendingDetailFlush(() => actionModel.onAction(action)),
     onToggleBasicInfo: disclosureModel.onToggleBasicInfo,
     onStartEdit: isWorkspaceWriteLocked ? () => undefined : editor.startEdit,
     onCommitEdit: isWorkspaceWriteLocked ? () => undefined : editor.commitEdit,

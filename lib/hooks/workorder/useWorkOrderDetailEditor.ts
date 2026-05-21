@@ -200,6 +200,15 @@ export function useWorkOrderDetailEditor({
     cancelEdit();
   };
 
+  const flushPendingDetailEdit = () => {
+    if (!editingCell) {
+      return false;
+    }
+
+    commitEdit();
+    return true;
+  };
+
   const addOrderEntry = () => {
     const nextItems = [
       ...orderItems,
@@ -336,6 +345,7 @@ export function useWorkOrderDetailEditor({
     startEdit,
     cancelEdit,
     commitEdit,
+    flushPendingDetailEdit,
     addOrderEntry,
     removeOrderEntry,
     handleOpenInspectionModal,
