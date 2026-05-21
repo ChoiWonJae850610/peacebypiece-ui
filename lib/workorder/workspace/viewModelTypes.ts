@@ -107,7 +107,7 @@ export type BuildWorkspaceViewModelArgs = {
   onDeleteWorkOrder: (id: string) => void;
   onReorderWorkOrder: (id: string) => void;
   onReworkWorkOrder: (id: string) => void;
-  onWorkflowAction: (action: WorkflowAction) => void;
+  onWorkflowAction: (action: WorkflowAction, workOrderOverride?: WorkOrder) => void;
   onUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) => void;
   onRenameWorkOrderTitle: (nextTitle: string) => void;
   onConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) => void;
@@ -180,7 +180,7 @@ export type BaseWorkspaceViewModelArgs = {
   getAttachmentPermissions: GetAttachmentPermissions;
   i18n: ReturnType<typeof getI18n>;
   onSave: () => void;
-  onWorkflowAction: (action: WorkflowAction) => void;
+  onWorkflowAction: (action: WorkflowAction, workOrderOverride?: WorkOrder) => void;
   onUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) => void;
   onRenameWorkOrderTitle: (nextTitle: string) => void;
   onCompleteInspection: DetailProps["onCompleteInspection"];

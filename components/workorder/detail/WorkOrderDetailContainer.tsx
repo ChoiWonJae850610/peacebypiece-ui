@@ -61,6 +61,12 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     callback();
   };
 
+  const runActionWithCurrentDetailDraft = (action: Parameters<typeof actionModel.onAction>[0]) => {
+    const run = () => actionModel.onAction(action, editor.getDraftWorkOrderSnapshot());
+
+    runAfterPendingDetailFlush(run);
+  };
+
   const viewModel = buildWorkOrderDetailViewModel({
     workOrder,
     basicInfo: editor.basicInfo,
@@ -103,7 +109,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     onOpenManagerAssignModal: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenManagerAssignModal,
     onOpenInventoryEditor: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenInventoryEditor,
     onRenameWorkOrderTitle: isWorkspaceWriteLocked ? () => undefined : actionModel.onRenameWorkOrderTitle,
-    onAction: (action) => runAfterPendingDetailFlush(() => actionModel.onAction(action)),
+    onAction: isWorkspaceWriteLocked ? () => undefined : runActionWithCurrentDetailDraft,
     onToggleBasicInfo: disclosureModel.onToggleBasicInfo,
     onStartEdit: isWorkspaceWriteLocked ? () => undefined : editor.startEdit,
     onCommitEdit: isWorkspaceWriteLocked ? () => undefined : editor.commitEdit,

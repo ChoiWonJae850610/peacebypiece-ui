@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.40
+baseline_source: peacebypiece-ui-0.15.43
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.15에서는 0.15.40 기준으로 작업지시서 history category/filter/tone, memo history action, workorder kind, attachment scope 사용을 상수 중심으로 정리하고 생산구성 저장 누락 흐름을 보강한다.
+v0.15에서는 0.15.43 기준으로 작업지시서 history category/filter/tone, memo history action, workorder kind, attachment scope 사용을 상수 중심으로 정리하고 생산구성 저장 누락 흐름을 보강한다.
 
 ```txt
 브랜드 톤
@@ -496,3 +496,14 @@ workorder action type constants 정리 1차
 
 
 - `docs/wafl-a-type/65_wafl-a-type-workorder-live-production-draft.md` — 작업지시서 생산구성 숫자 입력값 실시간 draft 반영
+
+
+### 0.15.43 업데이트
+
+```txt
+66_wafl-a-type-workorder-production-snapshot-action.md
+- 작업지시서 생산구성 workflow action snapshot 보강
+- 검토요청 실행 시 detail editor local state와 현재 editingValue를 action override로 전달
+- 원단/부자재/외주/공장 수량·단가가 0으로 떨어지는 문제 보정
+- DB schema/API/R2/권한/세션 변경 없음
+```

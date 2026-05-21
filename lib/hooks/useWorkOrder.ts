@@ -339,8 +339,8 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
         workOrders: coreState.workOrders,
         selectedId: coreState.selectedId,
       }),
-    handleWorkflowAction: (action: WorkflowAction) =>
-      actionState.handleWorkflowAction(coreState.selectedWorkOrder, action),
+    handleWorkflowAction: (action: WorkflowAction, workOrderOverride?: WorkOrder) =>
+      actionState.handleWorkflowAction(workOrderOverride ?? coreState.selectedWorkOrder, action),
     handleUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) =>
       actionState.handleUpdateSelectedWorkOrder({
         workOrderId: coreState.selectedWorkOrder.id,

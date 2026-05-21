@@ -17,6 +17,7 @@ import {
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { buildWorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
 import type { RoleType } from "@/types/permission";
+import type { WorkOrder } from "@/types/workorder";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
@@ -217,10 +218,11 @@ export default function WorkOrderWorkspace({
 
   const handleWorkflowActionWithProcessing = async (
     action: Parameters<typeof actions.handleWorkflowAction>[0],
+    workOrderOverride?: WorkOrder,
   ) => {
     setWorkflowProcessingLabel(action.label);
     try {
-      await actions.handleWorkflowAction(action);
+      await actions.handleWorkflowAction(action, workOrderOverride);
     } finally {
       setWorkflowProcessingLabel(null);
     }

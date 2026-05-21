@@ -376,6 +376,46 @@ export function useWorkOrderDetailEditor({
     setBasicInfoModalOpen(false);
   };
 
+  const getDraftWorkOrderSnapshot = (): WorkOrder => {
+    const normalizedEditingValue = editingValue.trim();
+    const snapshotOrderItems = editingCell?.section === "order"
+      ? commitOrderItemsEdit({
+          orderItems,
+          editingCell,
+          nextValue: normalizedEditingValue,
+          currentWorkflowState,
+          factoryOptions,
+        })
+      : orderItems;
+    const snapshotMaterials = editingCell?.section === "material"
+      ? commitMaterialItemsEdit({
+          materialItems,
+          editingCell,
+          nextValue: normalizedEditingValue,
+        })
+      : materialItems;
+    const snapshotOutsourcing = editingCell?.section === "outsourcing"
+      ? commitOutsourcingItemsEdit({
+          outsourcingItems,
+          editingCell,
+          nextValue: normalizedEditingValue,
+        })
+      : outsourcingItems;
+
+    return {
+      ...workOrder,
+      category1: basicInfo.category1,
+      category2: basicInfo.category2,
+      category3: basicInfo.category3,
+      category1Id: basicInfo.category1Id ?? null,
+      category2Id: basicInfo.category2Id ?? null,
+      category3Id: basicInfo.category3Id ?? null,
+      orderEntries: snapshotOrderItems,
+      materials: snapshotMaterials,
+      outsourcing: snapshotOutsourcing,
+    };
+  };
+
   return {
     basicInfo,
     orderItems,
@@ -393,6 +433,7 @@ export function useWorkOrderDetailEditor({
     costSummary,
     canOpenInspectionModal,
     productionSectionOpen,
+    getDraftWorkOrderSnapshot,
     materialVendorOptionsById,
     outsourcingVendorOptionsById,
     outsourcingProcessOptions,

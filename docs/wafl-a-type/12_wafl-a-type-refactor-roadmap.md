@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.39
+baseline_source: peacebypiece-ui-0.15.43
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.41
+현재 기준: 0.15.43
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -546,3 +546,14 @@ High risk:
 
 
 - `docs/wafl-a-type/65_wafl-a-type-workorder-live-production-draft.md` — 작업지시서 생산구성 숫자 입력값 실시간 draft 반영
+
+
+### 0.15.43 업데이트
+
+```txt
+66_wafl-a-type-workorder-production-snapshot-action.md
+- 작업지시서 생산구성 workflow action snapshot 보강
+- workflow action 실행 시 부모 selectedWorkOrder 반영 타이밍에 의존하지 않고 editor snapshot을 전달
+- 활성 편집 셀의 editingValue까지 snapshot에 포함
+- DB/API/R2/권한/세션 변경 없음
+```
