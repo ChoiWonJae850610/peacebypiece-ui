@@ -1442,7 +1442,7 @@ export const adminKo = {
   },
   settingsForm: {
     title: "조직 설정",
-    sampleCompanyName: "확인용 고객사",
+    fallbackCompanyName: "고객사",
     planLabel: "요금제: 기본요금제",
     joinedPending: "가입일 준비중",
     updatedPending: "최근 설정 준비중",

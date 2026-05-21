@@ -1452,7 +1452,7 @@ export const adminEn = {
   },
   settingsForm: {
     title: "Organization Settings",
-    initialCompanyName: "Initial customer",
+    fallbackCompanyName: "Customer",
     planLabel: "Plan: Basic",
     joinedPending: "Join date pending",
     updatedPending: "Recent setting pending",

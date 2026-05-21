@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.25
+baseline_source: peacebypiece-ui-0.15.29
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.25
+현재 기준: 0.15.29
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -44,6 +44,10 @@ updated: 2026-05-20
 - PC visual 보정 2차
 - 초대/승인/pending public 화면 visual pass
 - 개발자성 UI/문구 전수 감사와 pending 사용자용 화면 단순화
+- public/auth 문구 UX 정리 2차
+- system 화면 개발자성 문구 정리
+- admin 화면 개발자성 placeholder 정리
+- 코드 품질 / 도메인 구조 전수 감사
 ```
 
 ## 2. 전환 원칙
@@ -92,6 +96,13 @@ updated: 2026-05-20
 0.15.233 — 시스템관리자 화면 로그아웃 버튼 추가
 0.15.24 — 초대/승인/pending public 화면 visual pass
 0.15.25 — 개발자성 UI/문구 전수 감사와 pending 사용자용 화면 단순화
+0.15.26 — public/auth 문구 UX 정리 2차
+0.15.27 — system 화면 개발자성 문구 정리
+0.15.271 — 시스템 요금제 화면 빌드 문법 오류 수정
+0.15.272 — 시스템 요금제 화면의 남은 객체 문법 오류 수정
+0.15.273 — 시스템 화면 객체 문법 오류 추가 수정
+0.15.28 — admin 화면 개발자성 placeholder 정리
+0.15.29 — 코드 품질 / 도메인 구조 전수 감사
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -385,6 +396,10 @@ High risk:
 ## 11. 다음 권장 작업
 
 ```txt
+0.15.30 — domain constants/types 1차 정리
+0.15.31 — 중복 formatter/presentation 통합 1차
+0.15.32 — TSX 도메인 로직 분리 1차
+0.15.33 — DB 저장값 / JSON payload 감사
 0.16.0 — DeviceKind foundation
 0.16.1 — Admin/Workspace shell에서 DeviceKind 읽기만 적용
 ```

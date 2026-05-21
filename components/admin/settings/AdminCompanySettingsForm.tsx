@@ -57,7 +57,7 @@ function HeaderRefreshButton({ label }: { label: string }) {
 export default function AdminCompanySettingsForm({ initialSettings, companyName }: AdminCompanySettingsFormProps) {
   const { i18n, setLocale } = useI18n();
   const text = i18n.admin.settingsForm;
-  const displayCompanyName = companyName ?? text.sampleCompanyName;
+  const displayCompanyName = companyName ?? text.fallbackCompanyName;
   const [draft, setDraft] = useState<CompanySettings>(initialSettings);
   const [saveState, setSaveState] = useState<AdminSettingSaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

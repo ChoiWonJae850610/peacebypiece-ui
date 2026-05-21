@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.25
+baseline_source: peacebypiece-ui-0.15.29
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.12에서는 0.15.25 기준으로 pending 화면을 사용자용 상태 안내 화면으로 단순화하고, 전체 화면의 개발자성 UI/문구 정리 기준을 추가한다.
+v0.13에서는 0.15.29 기준으로 빌드 타입 오류를 수정하고, 문자열 비교/DB payload/하드코딩/중복 함수/i18n mismatch 후보를 전수 감사한다.
 
 ```txt
 브랜드 톤
@@ -40,6 +40,10 @@ A-TYPE visual QA / raw color / hardcoded text 점검
 PC visual 보정 2차
 초대/승인/pending public 화면 visual pass
 개발자성 UI/문구 전수 감사
+public/auth 문구 UX 정리 2차
+system 화면 개발자성 문구 정리
+admin 화면 개발자성 placeholder 정리
+코드 품질 / 도메인 구조 전수 감사
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -66,6 +70,10 @@ PC visual 보정 2차
 - 0.15.23 기준 공통 surface class와 환경설정/시스템관리자 홈의 PC visual token을 2차 보정했다.
 - 0.15.24 기준 초대/승인/pending public 화면의 raw stone/white class를 A-TYPE semantic token 중심으로 보정했다.
 - 0.15.25 기준 pending 화면의 requestId/permission_code 등 내부 용어와 개발자성 대시보드 구성을 제거하고 사용자용 상태 안내 화면으로 단순화했다.
+- 0.15.26 기준 public/auth 화면의 Client ID, 토큰, permission template 등 내부 표현을 사용자용 문구로 정리했다.
+- 0.15.27 기준 system 화면의 raw token, token_hash, seed, SQL, permission_code 등 개발자성 문구를 운영자용 문구로 정리했다.
+- 0.15.28 기준 admin 화면의 설계 중, 준비 중, DB, API, permission_code, role template 등 개발자성 placeholder 문구를 운영자용 문구로 정리했다.
+- 0.15.29 기준 settingsForm i18n key mismatch 빌드 오류를 수정하고 문자열 비교, raw payload, 하드코딩, 중복 함수, any 사용 후보를 전수 감사했다.
 ```
 
 ## 3. 문서 목록
@@ -120,6 +128,10 @@ PC visual 보정 2차
 46_wafl-a-type-pc-visual-tuning-2.md
 47_wafl-a-type-public-flow-visual-pass.md
 48_wafl-a-type-developer-ui-copy-audit.md
+49_wafl-a-type-public-auth-copy-ux.md
+50_wafl-a-type-system-copy-ux.md
+51_wafl-a-type-admin-copy-ux.md
+52_wafl-a-type-code-quality-domain-audit.md
 ```
 
 ## 4. 핵심 결정
