@@ -1,14 +1,13 @@
-Version : 0.15.48
-Summary : 생산구성 원단·외주 현재값 replace 저장 1차
-Description : spec_sheet_materials와 spec_sheet_outsourcing_lines 저장 방식을 is_active=false 누적 방식에서 spec_sheet_id 기준 삭제 후 현재 row 재삽입 방식으로 변경했습니다. 삭제와 삽입은 transaction으로 묶어 중간 실패 시 rollback되도록 했고, 기존 schema 컬럼은 유지한 채 현재값 테이블 저장 정책만 우선 정리했습니다.
+Version : 0.15.49
+Summary : 반려/취소성 workflow 생산구성 보존
+Description : 생산구성 replace 저장을 확정 이벤트에서만 수행하도록 state patch 포함 범위를 정리하고, 저장 결과 merge 시 요청 patch에 포함된 생산구성 필드만 화면 state에 반영하도록 보강했습니다. 반려/취소/되돌리기성 workflow에서는 기존 원단·부자재·외주공정 row를 유지합니다.
 수정 파일 목록 :
-- lib/workorder/repository/dbSpecSheetMaterialRepository.ts
-- lib/workorder/repository/dbSpecSheetOutsourcingRepository.ts
+- lib/hooks/workorder/workorderRepositoryMutations.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/wafl-a-type/71_wafl-a-type-production-replace-save.md
+- docs/wafl-a-type/72_wafl-a-type-production-reject-preserve.md
 삭제 파일 목록 :
 - 없음

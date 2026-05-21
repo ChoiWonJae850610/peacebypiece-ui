@@ -522,3 +522,4 @@ workorder action type constants 정리 1차
 - `69_wafl-a-type-production-composition-read-numeric.md` — 생산구성 조회 numeric 문자열 복원 기준
 - `70_wafl-a-type-production-tables-schema-audit.md` — 생산구성 현재값 테이블 schema audit
 - `71_wafl-a-type-production-replace-save.md` — 생산구성 현재값 replace 저장 1차
+- `72_wafl-a-type-production-reject-preserve.md` — 반려/취소성 workflow의 생산구성 보존 기준

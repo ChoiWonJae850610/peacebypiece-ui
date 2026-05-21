@@ -50,7 +50,12 @@ export async function persistCreatedWorkOrderWithHistory(
 }
 
 
-function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPatch: WorkOrder): WorkOrder {
+function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPatch: WorkOrder, requestedPatch: WorkOrderStatePatch): WorkOrder {
+  const hasFactoryOrderRequestPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "factoryOrderRequest");
+  const hasOrderEntriesPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "orderEntries");
+  const hasMaterialsPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "materials");
+  const hasOutsourcingPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "outsourcing");
+
   return {
     ...currentWorkOrder,
     workflowState: savedPatch.workflowState ?? currentWorkOrder.workflowState,
@@ -61,12 +66,12 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
     inventoryStatus: Object.prototype.hasOwnProperty.call(savedPatch, "inventoryStatus")
       ? savedPatch.inventoryStatus
       : currentWorkOrder.inventoryStatus,
-    factoryOrderRequest: Object.prototype.hasOwnProperty.call(savedPatch, "factoryOrderRequest")
+    factoryOrderRequest: hasFactoryOrderRequestPatch
       ? (savedPatch.factoryOrderRequest ?? null)
       : currentWorkOrder.factoryOrderRequest,
-    orderEntries: Array.isArray(savedPatch.orderEntries) ? savedPatch.orderEntries : currentWorkOrder.orderEntries,
-    materials: Array.isArray(savedPatch.materials) ? savedPatch.materials : currentWorkOrder.materials,
-    outsourcing: Array.isArray(savedPatch.outsourcing) ? savedPatch.outsourcing : currentWorkOrder.outsourcing,
+    orderEntries: hasOrderEntriesPatch && Array.isArray(savedPatch.orderEntries) ? savedPatch.orderEntries : currentWorkOrder.orderEntries,
+    materials: hasMaterialsPatch && Array.isArray(savedPatch.materials) ? savedPatch.materials : currentWorkOrder.materials,
+    outsourcing: hasOutsourcingPatch && Array.isArray(savedPatch.outsourcing) ? savedPatch.outsourcing : currentWorkOrder.outsourcing,
     hasDetailSnapshot: currentWorkOrder.hasDetailSnapshot,
   };
 }
@@ -85,10 +90,10 @@ function buildWorkOrderStatePatch(workOrder: WorkOrder, auditActor?: UserProfile
     lastSavedAt: normalizedWorkOrder.lastSavedAt,
     inventoryQuantity: normalizedWorkOrder.inventoryQuantity,
     inventoryStatus: normalizedWorkOrder.inventoryStatus,
-    factoryOrderRequest: normalizedWorkOrder.factoryOrderRequest ?? null,
-    orderEntries: normalizedWorkOrder.orderEntries ?? [],
     ...(shouldIncludeProductionComposition
       ? {
+          factoryOrderRequest: normalizedWorkOrder.factoryOrderRequest ?? null,
+          orderEntries: normalizedWorkOrder.orderEntries ?? [],
           materials: normalizedWorkOrder.materials ?? [],
           outsourcing: normalizedWorkOrder.outsourcing ?? [],
         }
@@ -108,11 +113,12 @@ export async function persistWorkOrderStatePatchWithHistory(
   },
 ) {
   const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
-  const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(stampedWorkOrder, payload.auditActor));
+  const statePatch = buildWorkOrderStatePatch(stampedWorkOrder, payload.auditActor);
+  const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
-  return mergeStatePatchResultIntoWorkOrder(stampedWorkOrder, savedPatch);
+  return mergeStatePatchResultIntoWorkOrder(stampedWorkOrder, savedPatch, statePatch);
 }
 
 export async function persistWorkOrderStatePatchesWithHistory(
@@ -126,8 +132,9 @@ export async function persistWorkOrderStatePatchesWithHistory(
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
   const nextWorkOrders: WorkOrder[] = [];
   for (const workOrder of stampedWorkOrders) {
-    const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(workOrder, payload.auditActor));
-    nextWorkOrders.push(mergeStatePatchResultIntoWorkOrder(workOrder, savedPatch));
+    const statePatch = buildWorkOrderStatePatch(workOrder, payload.auditActor);
+    const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
+    nextWorkOrders.push(mergeStatePatchResultIntoWorkOrder(workOrder, savedPatch, statePatch));
   }
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);

@@ -596,3 +596,12 @@ High risk:
 - 삭제 후 insert 흐름은 transaction으로 묶어 중간 실패 시 rollback되게 한다.
 - 기존 schema의 `is_active`, `deleted_at`, `company_name` 컬럼은 이번 단계에서 제거하지 않고 호환만 유지한다.
 - `orders` 저장 방식과 full_reset.sql 컬럼 정리는 다음 단계에서 진행한다.
+
+
+### 0.15.49 — 반려/취소성 workflow 생산구성 보존
+
+- 0.15.48에서 `spec_sheet_materials`, `spec_sheet_outsourcing_lines`를 replace 저장으로 변경하면서 반려 시 빈 생산구성 patch가 전달될 경우 현재 row가 삭제될 수 있는 경로를 차단한다.
+- 생산구성 replace 저장은 검토요청/검토완료/발주요청/완료처럼 앞으로 진행되는 확정 이벤트에서만 patch에 포함한다.
+- 반려/취소/되돌리기성 상태 변경에서는 workflow 상태와 history만 저장하고, 기존 원단/부자재/외주공정 row는 유지한다.
+- 저장 결과를 local state에 merge할 때도 요청 patch에 포함된 생산구성 필드만 반영하여, DB 응답의 빈 배열이 기존 화면 state를 덮어쓰지 않게 한다.
+- DB schema/API/R2/권한/세션 흐름은 변경하지 않는다.
