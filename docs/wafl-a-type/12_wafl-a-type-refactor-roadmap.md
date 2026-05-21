@@ -673,3 +673,10 @@ High risk:
 - 상세 snapshot이 없는 작업지시서 full save는 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`를 sync하지 않는다.
 - 생산구성 patch가 없는 state patch 응답에는 기존 DB 상세 생산구성을 병합해 화면 state가 빈 배열로 덮이지 않게 한다.
 - 반려/취소/되돌리기 workflow는 workflow/history만 변경하고 생산구성 현재값 테이블은 보존한다.
+
+
+## 0.15.58 — 작업지시서 생산구성 repository sync gate
+
+- Full work-order save 경로에서는 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` 동기화를 실행하지 않는다.
+- 생산구성 detail table replace는 serviceCode가 허용된 state patch에서만 실행한다.
+- 반려/취소/되돌리기 serviceCode는 workflow state/history만 저장하며 생산구성 row를 비활성화하거나 삭제하지 않는다.

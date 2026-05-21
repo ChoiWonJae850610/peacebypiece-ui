@@ -29,6 +29,7 @@ import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
 import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetOutsourcingRepository";
+import { canServiceReplaceProductionComposition } from "@/lib/workorder/serviceCodeGuards";
 
 const SPEC_SHEET_TABLE = "spec_sheets";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
@@ -1845,17 +1846,12 @@ export async function createDbWorkOrder(
   return persisted;
 }
 
-function hasProductionCompositionContent(workOrder: WorkOrder): boolean {
-  return Boolean(
-    workOrder.factoryOrderRequest ||
-      (workOrder.orderEntries?.length ?? 0) > 0 ||
-      (workOrder.materials?.length ?? 0) > 0 ||
-      (workOrder.outsourcing?.length ?? 0) > 0,
-  );
-}
-
-function shouldSyncProductionCompositionForFullWorkOrderSave(workOrder: WorkOrder): boolean {
-  return Boolean(workOrder.hasDetailSnapshot || hasProductionCompositionContent(workOrder));
+function shouldSyncProductionCompositionForFullWorkOrderSave(_workOrder: WorkOrder): boolean {
+  // Full work-order saves are used by immediate/basic field updates such as
+  // manager, title, category, and inventory changes. They must not mutate
+  // production-composition detail tables. Production rows are replaced only
+  // through serviceCode-guarded state patch saves.
+  return false;
 }
 
 function mergeWorkOrderWithExistingProductionDetails(
@@ -2256,8 +2252,9 @@ export async function updateDbWorkOrderStatePatch(
     hasFactoryOrderRequestPatch ||
     hasMaterialsPatch ||
     hasOutsourcingPatch;
+  const canSyncProductionComposition = canServiceReplaceProductionComposition(patch.serviceCode ?? null);
 
-  if (hasProductionCompositionPatch) {
+  if (hasProductionCompositionPatch && canSyncProductionComposition) {
     const existing = await findDbWorkOrderById(patch.id, scope);
     const patchedWorkOrder: WorkOrder = {
       ...(existing ?? mapped),

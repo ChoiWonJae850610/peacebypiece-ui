@@ -605,3 +605,5 @@ workorder action type constants 정리 1차
 - DB schema/R2 key/권한/세션 흐름 변경 없음
 ```
 - `80_wafl-a-type-workorder-reject-production-preserve.md` — 반려/취소 workflow 생산구성 보존 보강
+
+- [81_wafl-a-type-workorder-production-sync-gate.md](./81_wafl-a-type-workorder-production-sync-gate.md) — 0.15.58 반려 workflow에서 생산구성 repository sync 차단
