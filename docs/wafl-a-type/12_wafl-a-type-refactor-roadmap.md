@@ -725,3 +725,26 @@ High risk:
 - workflow action type별 serviceCode mapping을 명시 map으로 고정한다.
 - 발주정보 저장과 생산구성 저장은 explicit save scope 기준으로 `WO-P001`, `WO-P002`에 연결할 수 있게 기준 helper를 추가한다.
 - DB schema/API/R2 동작은 변경하지 않는다.
+
+
+## 0.15.64 — 공장 발주 orders 현재값 replace 저장 정리
+
+### 목표
+
+- `orders` 테이블 저장 방식을 `spec_sheet_id` 기준 현재값 replace로 정리한다.
+- 기존 `is_active=false` / `deleted_at` 누적 방식은 더 이상 저장 정책으로 사용하지 않는다.
+- 생산구성 replace 허용 serviceCode에서만 공장 발주 row를 갱신한다.
+- 반려/취소/되돌리기 계열은 공장 발주 row를 변경하지 않는다.
+
+### 적용 기준
+
+- 저장 시 기존 `orders` row를 `spec_sheet_id` 기준으로 삭제한다.
+- 현재 draft의 공장 발주 row만 다시 insert한다.
+- row가 2개이면 DB에도 현재 row 2개만 남는다.
+- row를 1개로 줄이면 DB도 현재 row 1개만 남는다.
+- 트랜잭션으로 delete/insert를 묶어 중간 실패 시 rollback한다.
+
+### 후속 작업
+
+- 0.15.65에서 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` 컬럼 정리 SQL을 설계한다.
+- 0.15.66에서 full_reset.sql과 repository mapping을 함께 정리한다.

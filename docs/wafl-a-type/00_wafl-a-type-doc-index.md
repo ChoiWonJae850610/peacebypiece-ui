@@ -617,3 +617,4 @@ workorder action type constants 정리 1차
 - [85_wafl-a-type-workorder-service-code-first-wire.md](./85_wafl-a-type-workorder-service-code-first-wire.md) — 0.15.62 작업지시서 serviceCode 누락 액션 1차 연결
 
 - [86_wafl-a-type-workorder-service-code-workflow-wire.md](./86_wafl-a-type-workorder-service-code-workflow-wire.md) — 0.15.63 작업지시서 workflow/save serviceCode 연결 보강
+- [87_wafl-a-type-factory-order-replace-save.md](./87_wafl-a-type-factory-order-replace-save.md) — 0.15.64 공장 발주 orders 현재값 replace 저장 정리

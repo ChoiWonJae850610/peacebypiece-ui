@@ -1,14 +1,13 @@
-Version : 0.15.63
-Summary : 작업지시서 workflow/save serviceCode 연결 보강
-Description : serviceCode 즉시 저장 field 판정의 WorkOrder 타입 불일치 빌드 오류를 수정하고, workflow action 및 명시 저장 scope의 serviceCode mapping 기준을 상수로 정리했습니다. DB schema, R2, 권한, 세션 흐름은 변경하지 않았습니다.
+Version : 0.15.64
+Summary : 공장 발주 orders 현재값 replace 저장 정리
+Description : orders 저장 방식을 spec_sheet_id 기준 DELETE 후 현재 공장 발주 row INSERT 방식으로 정리하고, is_active=false/deleted_at 누적 저장 경로를 제거했습니다. 트랜잭션으로 delete/insert를 묶어 실패 시 rollback되도록 했으며 관련 문서를 추가했습니다.
 수정 파일 목록 :
-- lib/constants/app.ts
-- lib/constants/workorderServiceCodes.ts
-- lib/workorder/serviceCodeForWorkOrderPatch.ts
+- lib/workorder/repository/dbFactoryOrderRepository.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
+- lib/constants/app.ts
 추가 파일 목록 :
-- docs/wafl-a-type/86_wafl-a-type-workorder-service-code-workflow-wire.md
+- docs/wafl-a-type/87_wafl-a-type-factory-order-replace-save.md
 삭제 파일 목록 :
 - 없음

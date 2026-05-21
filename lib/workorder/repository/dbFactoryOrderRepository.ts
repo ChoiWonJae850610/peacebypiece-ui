@@ -253,7 +253,6 @@ export async function syncDbFactoryOrdersForSpecSheet(
 
   const specSheetIdColumn = schema.specSheetIdColumn!;
   const entries = toFactoryOrderEntries(workOrder);
-  const activeIds = entries.map((entry, index) => buildFactoryOrderId(workOrder.id, entry, index));
   const requestedFactory = workOrder.factoryOrderRequest
     ? await resolveActiveFactoryPartnerByIdOrName({
         factoryId: workOrder.factoryOrderRequest.factoryId,
@@ -265,19 +264,16 @@ export async function syncDbFactoryOrdersForSpecSheet(
     throw new Error("FACTORY_PARTNER_ID_NOT_FOUND");
   }
 
-  if (entries.length === 0) {
+  await queryDb("BEGIN");
+
+  try {
     await queryDb(
-      `
-        ${schema.isActiveColumn
-          ? `UPDATE ${quoteIdentifier(FACTORY_ORDER_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = COALESCE(${quoteIdentifier(schema.deletedAtColumn)}, NOW())` : ""}${schema.updatedAtColumn ? `, ${quoteIdentifier(schema.updatedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE`
-          : `DELETE FROM ${quoteIdentifier(FACTORY_ORDER_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`}
-      `,
+      `DELETE FROM ${quoteIdentifier(FACTORY_ORDER_TABLE)}
+        WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`,
       [workOrder.id],
     );
-    return;
-  }
 
-  for (const [index, entry] of entries.entries()) {
+    for (const [index, entry] of entries.entries()) {
     const id = buildFactoryOrderId(workOrder.id, entry, index);
     const columns = ["id", specSheetIdColumn];
     const values: unknown[] = [id, workOrder.id];
@@ -356,13 +352,6 @@ export async function syncDbFactoryOrdersForSpecSheet(
       placeholders.push(`$${values.length}`);
     }
 
-    const updateAssignments = columns
-      .filter((column) => column !== "id")
-      .map((column) => `${quoteIdentifier(column)} = EXCLUDED.${quoteIdentifier(column)}`);
-
-    if (schema.updatedAtColumn && !columns.includes(schema.updatedAtColumn)) {
-      updateAssignments.push(`${quoteIdentifier(schema.updatedAtColumn)} = NOW()`);
-    }
 
     await queryDb(
       `
@@ -372,20 +361,14 @@ export async function syncDbFactoryOrdersForSpecSheet(
         VALUES (
           ${placeholders.join(", ")}
         )
-        ON CONFLICT (id) DO UPDATE SET
-          ${updateAssignments.join(",\n          ")}
       `,
       values,
     );
-  }
+    }
 
-  const inactiveParams: unknown[] = [workOrder.id, activeIds];
-  await queryDb(
-    `
-      ${schema.isActiveColumn
-        ? `UPDATE ${quoteIdentifier(FACTORY_ORDER_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = COALESCE(${quoteIdentifier(schema.deletedAtColumn)}, NOW())` : ""}${schema.updatedAtColumn ? `, ${quoteIdentifier(schema.updatedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE AND NOT (id = ANY($2::text[]))`
-        : `DELETE FROM ${quoteIdentifier(FACTORY_ORDER_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND NOT (id = ANY($2::text[]))`}
-    `,
-    inactiveParams,
-  );
+    await queryDb("COMMIT");
+  } catch (error) {
+    await queryDb("ROLLBACK");
+    throw error;
+  }
 }
