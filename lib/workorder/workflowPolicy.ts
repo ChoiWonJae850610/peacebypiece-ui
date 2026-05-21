@@ -1,6 +1,6 @@
 import { ROLE, isAdminRole, normalizeRoles } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
-import { canReinspectInWorkflow, isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
+import { WORKFLOW_STATE, canReinspectInWorkflow, isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
 import type { RoleType } from "@/types/permission";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
 import type { UserProfile } from "@/types/user";
@@ -33,7 +33,7 @@ export function canRequestReviewByPolicy(payload: Pick<WorkflowPolicyContext, "c
 
 export function canRequestFactoryOrderByPolicy(payload: Pick<WorkflowPolicyContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder" | "currentWorkflowState">) {
   if (isAdminRole(payload.currentRoles)) {
-    return isWorkflowStateAtLeast(payload.currentWorkflowState, "review_completed");
+    return isWorkflowStateAtLeast(payload.currentWorkflowState, WORKFLOW_STATE.reviewCompleted);
   }
   return hasWorkflowPermission(payload, "workorder.status.order");
 }
@@ -49,7 +49,7 @@ export function getAssignedManagerRoleByPolicy(workOrder: WorkOrder, users: User
 
 export function getReviewApprovalCancelNextStateByPolicy(workOrder: WorkOrder, users: UserProfile[] = []): WorkflowState {
   const assignedRole = getAssignedManagerRoleByPolicy(workOrder, users);
-  return assignedRole === ROLE.designer ? "review_requested" : "draft";
+  return assignedRole === ROLE.designer ? WORKFLOW_STATE.reviewRequested : WORKFLOW_STATE.draft;
 }
 
 export function getWorkflowStateAfterManagerChangeByPolicy(payload: {
@@ -57,8 +57,8 @@ export function getWorkflowStateAfterManagerChangeByPolicy(payload: {
   nextManagerRole: RoleType;
 }): WorkflowState {
   const managerWillBeAdmin = isAdminRole([payload.nextManagerRole]);
-  if (managerWillBeAdmin && (payload.currentWorkflowState === "review_requested" || payload.currentWorkflowState === "rejected")) {
-    return "draft";
+  if (managerWillBeAdmin && (payload.currentWorkflowState === WORKFLOW_STATE.reviewRequested || payload.currentWorkflowState === WORKFLOW_STATE.rejected)) {
+    return WORKFLOW_STATE.draft;
   }
   return payload.currentWorkflowState;
 }
@@ -66,23 +66,23 @@ export function getWorkflowStateAfterManagerChangeByPolicy(payload: {
 function buildAdminWorkflowActions(context: WorkflowPolicyContext): WorkflowPolicyActionMap {
   return {
     draft: [
-      { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" },
+      { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: WORKFLOW_STATE.reviewCompleted, actionType: "approve_review" },
     ],
     review_requested: [
-      { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "rejected", actionType: "reject_review" },
-      { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" },
+      { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: WORKFLOW_STATE.rejected, actionType: "reject_review" },
+      { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: WORKFLOW_STATE.reviewCompleted, actionType: "approve_review" },
     ],
     rejected: [
-      { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" },
+      { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: WORKFLOW_STATE.reviewCompleted, actionType: "approve_review" },
     ],
     review_completed: [
       { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: getReviewApprovalCancelNextStateByPolicy(context.workOrder, context.users), actionType: "cancel_review_approval" },
       ...(canRequestFactoryOrderByPolicy(context)
-        ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "inspection", actionType: "request_order" } satisfies WorkflowAction]
+        ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: WORKFLOW_STATE.inspection, actionType: "request_order" } satisfies WorkflowAction]
         : []),
     ],
     completed: canReinspectInWorkflow(context.currentWorkflowState)
-      ? [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "inspection", actionType: "request_reinspection" }]
+      ? [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: WORKFLOW_STATE.inspection, actionType: "request_reinspection" }]
       : [],
   };
 }
@@ -90,19 +90,19 @@ function buildAdminWorkflowActions(context: WorkflowPolicyContext): WorkflowPoli
 function buildMemberWorkflowActions(context: WorkflowPolicyContext): WorkflowPolicyActionMap {
   const canRequestReview = canRequestReviewByPolicy(context);
   const canDirectOrder = canDirectRequestFactoryOrderByPolicy(context);
-  const directOrderAction = { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "inspection", actionType: "request_order" } satisfies WorkflowAction;
+  const directOrderAction = { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: WORKFLOW_STATE.inspection, actionType: "request_order" } satisfies WorkflowAction;
 
   return {
     draft: [
-      ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" } satisfies WorkflowAction] : []),
+      ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: WORKFLOW_STATE.reviewRequested, actionType: "request_review" } satisfies WorkflowAction] : []),
       ...(canDirectOrder ? [directOrderAction] : []),
     ],
     review_requested: [
-      ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: "draft", actionType: "cancel_review_request" } satisfies WorkflowAction] : []),
+      ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: WORKFLOW_STATE.draft, actionType: "cancel_review_request" } satisfies WorkflowAction] : []),
       ...(canDirectOrder ? [directOrderAction] : []),
     ],
     rejected: [
-      ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" } satisfies WorkflowAction] : []),
+      ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: WORKFLOW_STATE.reviewRequested, actionType: "request_review" } satisfies WorkflowAction] : []),
       ...(canDirectOrder ? [directOrderAction] : []),
     ],
     review_completed: canDirectOrder ? [directOrderAction] : [],

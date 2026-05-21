@@ -63,6 +63,7 @@
 - `wafl-a-type/56_wafl-a-type-db-payload-storage-audit.md` — DB 저장값 / JSON payload 감사
 - `wafl-a-type/57_wafl-a-type-db-domain-status-constants.md` — DB domain status constants 1차
 - `wafl-a-type/58_wafl-a-type-member-workorder-storage-status-candidates.md` — member/workorder/storage status constants 후보 조사
+- `wafl-a-type/59_wafl-a-type-workorder-status-usage-cleanup.md` — workorder status usage 정리 1차
 
 ## 정리 정책
 

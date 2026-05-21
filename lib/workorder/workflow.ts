@@ -1,5 +1,6 @@
 import {
   LEGACY_ORDER_INSPECTION_STATUS_MAP,
+  WORKFLOW_STATE,
   canRequestFactoryOrderInWorkflow,
   getDefaultOrderInspectionStatusForWorkflowState,
   isOrderInspectionActive,
@@ -53,9 +54,9 @@ export function deriveWorkflowStateFromOrderEntries(baseState: WorkflowState, or
   const entries = orderEntries ?? [];
   if (entries.length === 0) return baseState;
   const statuses = entries.map((item) => sanitizeOrderInspectionStatus(item.inspectionStatus, baseState));
-  if (statuses.every(isOrderInspectionCompleted)) return "completed";
+  if (statuses.every(isOrderInspectionCompleted)) return WORKFLOW_STATE.completed;
   if (statuses.some(isOrderInspectionActive)) {
-    return "inspection";
+    return WORKFLOW_STATE.inspection;
   }
   return baseState;
 }

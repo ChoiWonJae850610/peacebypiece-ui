@@ -8,7 +8,7 @@ export {
 } from "@/lib/workorder/orderSubmission";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { isAdminRole, isDesignerRole, isInspectorRole } from "@/lib/constants/roles";
-import { canEditBeforeOrder, isWorkflowState, isWorkflowStateAtLeast, isWorkflowStateInRange } from "@/lib/constants/workorderStates";
+import { WORKFLOW_STATE, canEditBeforeOrder, isWorkflowState, isWorkflowStateAtLeast, isWorkflowStateInRange } from "@/lib/constants/workorderStates";
 import type { UserProfile } from "@/types/user";
 import { createWorkOrderListItem } from "@/lib/workorder/mappers/workOrderListItemMapper";
 import { calculateWorkOrderCosts } from "@/lib/workorder/derived/workOrderCostSummary";
@@ -39,7 +39,7 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
   if (isInspectorRole(currentUser)) {
     return workOrders.filter((item) => {
       const workflowState = (workflowStateById[item.id] ?? item.workflowState) as WorkOrder["workflowState"];
-      return isWorkflowStateInRange(workflowState, "inspection", "completed") && !isWorkflowState(workflowState, "completed");
+      return isWorkflowStateInRange(workflowState, WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed) && !isWorkflowState(workflowState, WORKFLOW_STATE.completed);
     });
   }
 
@@ -47,7 +47,7 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
 }
 
 export function isWorkOrderSideDraftEditable(workflowState: WorkOrder["workflowState"]) {
-  return !isWorkflowStateAtLeast(workflowState, "review_completed");
+  return !isWorkflowStateAtLeast(workflowState, WORKFLOW_STATE.reviewCompleted);
 }
 
 export function canEditWorkOrderAttachments(workflowState: WorkOrder["workflowState"], canSeeAttachments: boolean, canManageAttachments: boolean) {

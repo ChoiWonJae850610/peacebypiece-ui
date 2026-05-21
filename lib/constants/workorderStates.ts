@@ -1,19 +1,37 @@
+export const WORKFLOW_STATE = {
+  draft: "draft",
+  reviewRequested: "review_requested",
+  reviewCompleted: "review_completed",
+  inspection: "inspection",
+  completed: "completed",
+  rejected: "rejected",
+} as const;
+
+export const DISPLAY_STAGE = {
+  draft: "draft",
+  reviewRequested: "review_requested",
+  reviewCompleted: "review_completed",
+  requestOrder: "request_order",
+  inspection: "inspection",
+  completed: "completed",
+} as const;
+
 export const WORKFLOW_STATES = [
-  "draft",
-  "review_requested",
-  "review_completed",
-  "inspection",
-  "completed",
-  "rejected",
+  WORKFLOW_STATE.draft,
+  WORKFLOW_STATE.reviewRequested,
+  WORKFLOW_STATE.reviewCompleted,
+  WORKFLOW_STATE.inspection,
+  WORKFLOW_STATE.completed,
+  WORKFLOW_STATE.rejected,
 ] as const;
 
 export const DISPLAY_STAGES = [
-  "draft",
-  "review_requested",
-  "review_completed",
-  "request_order",
-  "inspection",
-  "completed",
+  DISPLAY_STAGE.draft,
+  DISPLAY_STAGE.reviewRequested,
+  DISPLAY_STAGE.reviewCompleted,
+  DISPLAY_STAGE.requestOrder,
+  DISPLAY_STAGE.inspection,
+  DISPLAY_STAGE.completed,
 ] as const;
 
 export const ORDER_INSPECTION_STATUSES = [
@@ -55,8 +73,8 @@ export function isOrderInspectionActive(status: OrderInspectionStatusValue | nul
 }
 
 export function getDefaultOrderInspectionStatusForWorkflowState(workflowState: WorkflowStateValue): OrderInspectionStatusValue {
-  if (workflowState === "inspection") return ORDER_INSPECTION_STATUS.inspectionInProgress;
-  if (workflowState === "completed") return ORDER_INSPECTION_STATUS.inspectionCompleted;
+  if (workflowState === WORKFLOW_STATE.inspection) return ORDER_INSPECTION_STATUS.inspectionInProgress;
+  if (workflowState === WORKFLOW_STATE.completed) return ORDER_INSPECTION_STATUS.inspectionCompleted;
   return ORDER_INSPECTION_STATUS.orderPending;
 }
 
@@ -82,12 +100,12 @@ export function getDisplayOrderInspectionStatus(status: OrderInspectionStatusVal
 
 
 export const STATUS_ORDER: Record<WorkflowStateValue, number> = {
-  draft: 0,
-  rejected: 0,
-  review_requested: 1,
-  review_completed: 2,
-  inspection: 3,
-  completed: 4,
+  [WORKFLOW_STATE.draft]: 0,
+  [WORKFLOW_STATE.rejected]: 0,
+  [WORKFLOW_STATE.reviewRequested]: 1,
+  [WORKFLOW_STATE.reviewCompleted]: 2,
+  [WORKFLOW_STATE.inspection]: 3,
+  [WORKFLOW_STATE.completed]: 4,
 };
 
 export function compareWorkflowStates(left: WorkflowStateValue, right: WorkflowStateValue) {
@@ -115,7 +133,7 @@ export function isWorkflowStateOneOf(state: WorkflowStateValue, targets: readonl
 }
 
 export function canEditBeforeOrder(state: WorkflowStateValue, isAdmin = false) {
-  return isWorkflowStateBefore(state, "review_requested") || isWorkflowState(state, "rejected") || (isAdmin && isWorkflowState(state, "review_requested"));
+  return isWorkflowStateBefore(state, WORKFLOW_STATE.reviewRequested) || isWorkflowState(state, WORKFLOW_STATE.rejected) || (isAdmin && isWorkflowState(state, WORKFLOW_STATE.reviewRequested));
 }
 
 export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin = false) {
@@ -124,30 +142,30 @@ export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin =
 
 export function canEditManagerInWorkflow(state: WorkflowStateValue, isReviewRequestLocked?: boolean) {
   const effectiveLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(state, true);
-  return !effectiveLocked || isWorkflowStateAtLeast(state, "completed");
+  return !effectiveLocked || isWorkflowStateAtLeast(state, WORKFLOW_STATE.completed);
 }
 
 export function canRequestFactoryOrderInWorkflow(state: WorkflowStateValue) {
-  return isWorkflowStateAtLeast(state, "review_completed") && !isWorkflowState(state, "review_requested");
+  return isWorkflowStateAtLeast(state, WORKFLOW_STATE.reviewCompleted) && !isWorkflowState(state, WORKFLOW_STATE.reviewRequested);
 }
 
 export function canReinspectInWorkflow(state: WorkflowStateValue) {
-  return isWorkflowState(state, "completed");
+  return isWorkflowState(state, WORKFLOW_STATE.completed);
 }
 
 export function canOpenInspectionModalInWorkflow(state: WorkflowStateValue) {
-  return isWorkflowState(state, "inspection");
+  return isWorkflowState(state, WORKFLOW_STATE.inspection);
 }
 
 export function getWorkflowStateScope(state: WorkflowStateValue, isAdmin = false): "draft" | "review_requested_admin" | "locked" {
-  if (isWorkflowState(state, "draft") || isWorkflowState(state, "rejected")) return "draft";
-  if (isAdmin && isWorkflowState(state, "review_requested")) return "review_requested_admin";
+  if (isWorkflowState(state, WORKFLOW_STATE.draft) || isWorkflowState(state, WORKFLOW_STATE.rejected)) return "draft";
+  if (isAdmin && isWorkflowState(state, WORKFLOW_STATE.reviewRequested)) return "review_requested_admin";
   return "locked";
 }
 
 export function getWorkflowLockedReasonKey(state: WorkflowStateValue, isAdmin = false): "reviewRequested" | "orderedOrLater" | null {
   if (!isWorkflowStateReviewLocked(state, isAdmin)) return null;
-  return isWorkflowState(state, "review_requested") ? "reviewRequested" : "orderedOrLater";
+  return isWorkflowState(state, WORKFLOW_STATE.reviewRequested) ? "reviewRequested" : "orderedOrLater";
 }
 
 export function isWorkflowStateInRange(state: WorkflowStateValue, minimum: WorkflowStateValue, maximum: WorkflowStateValue) {
@@ -159,12 +177,12 @@ export function isWorkflowStateEqualOrBefore(state: WorkflowStateValue, target: 
 }
 
 export const WORKFLOW_STATE_TO_STAGE: Record<WorkflowStateValue, DisplayStageValue> = {
-  draft: "draft",
-  review_requested: "review_requested",
-  review_completed: "review_completed",
-  inspection: "inspection",
-  completed: "completed",
-  rejected: "draft",
+  [WORKFLOW_STATE.draft]: DISPLAY_STAGE.draft,
+  [WORKFLOW_STATE.reviewRequested]: DISPLAY_STAGE.reviewRequested,
+  [WORKFLOW_STATE.reviewCompleted]: DISPLAY_STAGE.reviewCompleted,
+  [WORKFLOW_STATE.inspection]: DISPLAY_STAGE.inspection,
+  [WORKFLOW_STATE.completed]: DISPLAY_STAGE.completed,
+  [WORKFLOW_STATE.rejected]: DISPLAY_STAGE.draft,
 };
 
 export const WORKFLOW_STATE_BADGE_TONE: Record<WorkflowStateValue | DisplayStageValue, string> = {
@@ -197,10 +215,10 @@ export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageV
   rejected: "text-[var(--pbp-workorder-status-rejected-text)]",
 };
 
-export const MANAGER_ASSIGNABLE_STATES = ["draft", "rejected", "review_requested"] as const;
-export const INVENTORY_EDITABLE_STATES = ["inspection", "completed"] as const;
-export const REORDERABLE_WORKFLOW_STATES = ["inspection", "completed"] as const;
-export const DELETABLE_WORKFLOW_STATES = ["draft", "rejected", "review_requested"] as const;
+export const MANAGER_ASSIGNABLE_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested] as const;
+export const INVENTORY_EDITABLE_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
+export const REORDERABLE_WORKFLOW_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
+export const DELETABLE_WORKFLOW_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested] as const;
 
 export const WORKFLOW_ACTION_LABEL_KEYS = {
   requestReview: "requestReview",

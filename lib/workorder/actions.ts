@@ -4,6 +4,7 @@ import {
   getOrderInspectionStatusForNewOrderEntry,
   getOrderInspectionStatusForOrderRequest,
   getOrderInspectionStatusForReinspection,
+  WORKFLOW_STATE,
   isWorkflowState,
 } from "@/lib/constants/workorderStates";
 import {
@@ -70,7 +71,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     outsourcing: [],
     attachments: [],
     memoThreads: [],
-    workflowState: "draft",
+    workflowState: WORKFLOW_STATE.draft,
     lastSavedAt: payload.createdAt,
   });
 }
@@ -89,7 +90,7 @@ export function buildInventoryChanges(payload: {
 }
 
 export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: WorkflowAction): WorkOrder {
-  if (isWorkflowState(action.nextState, "inspection")) {
+  if (isWorkflowState(action.nextState, WORKFLOW_STATE.inspection)) {
     const resetForReinspection = action.actionType === "request_reinspection";
     const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
@@ -137,7 +138,7 @@ export function requestFactoryOrderForWorkOrder(
 
   return syncWorkOrderOrderSnapshot({
     ...workOrder,
-    workflowState: "inspection",
+    workflowState: WORKFLOW_STATE.inspection,
     orderEntries: nextOrderEntries,
     factoryOrderRequest: {
       ...payload,
@@ -196,7 +197,7 @@ export function completeInspectionForWorkOrder(
 
   return {
     ...workOrder,
-    workflowState: deriveWorkflowStateFromOrderEntries("inspection", nextOrderEntries),
+    workflowState: deriveWorkflowStateFromOrderEntries(WORKFLOW_STATE.inspection, nextOrderEntries),
     orderEntries: nextOrderEntries,
     inventoryQuantity: payload.nextInventoryQuantity,
     inventoryStatus: payload.nextInventoryQuantity > 0 ? INVENTORY_STATUS.normal : INVENTORY_STATUS.shortage,
@@ -371,7 +372,7 @@ export function cloneWorkOrderForReorder(
     manager: payload.managerName,
     createdById: payload.createdById,
     createdByRole: payload.createdByRole,
-    workflowState: "draft",
+    workflowState: WORKFLOW_STATE.draft,
     factoryOrderRequest: null,
     inventoryStatus: sourceWorkOrder.inventoryQuantity > 0 ? INVENTORY_STATUS.normal : sourceWorkOrder.inventoryStatus,
     orderEntries: cloneOrderEntries(sourceWorkOrder.orderEntries, nextOrderType),

@@ -1,14 +1,14 @@
-import type { WorkflowStateValue } from "@/lib/constants/workorderStates";
+import { WORKFLOW_STATE, type WorkflowStateValue } from "@/lib/constants/workorderStates";
 
 export const WORK_ORDER_LIST_STATUS_FILTERS = [
   "active",
   "all",
-  "completed",
-  "draft",
-  "review_requested",
-  "review_completed",
-  "inspection",
-  "rejected",
+  WORKFLOW_STATE.completed,
+  WORKFLOW_STATE.draft,
+  WORKFLOW_STATE.reviewRequested,
+  WORKFLOW_STATE.reviewCompleted,
+  WORKFLOW_STATE.inspection,
+  WORKFLOW_STATE.rejected,
 ] as const;
 
 export const WORK_ORDER_LIST_SORTS = [
@@ -67,12 +67,12 @@ export function getWorkOrderListStatusFilterOptions(
 ): WorkOrderListControlOption<WorkOrderListStatusFilter>[] {
   return [
     { value: "active", label: copy.statusFilters.active },
-    { value: "review_requested", label: copy.statusFilters.reviewRequested },
-    { value: "review_completed", label: copy.statusFilters.reviewCompleted },
-    { value: "inspection", label: copy.statusFilters.inspection },
-    { value: "draft", label: copy.statusFilters.draft },
-    { value: "rejected", label: copy.statusFilters.rejected },
-    { value: "completed", label: copy.statusFilters.completed },
+    { value: WORKFLOW_STATE.reviewRequested, label: copy.statusFilters.reviewRequested },
+    { value: WORKFLOW_STATE.reviewCompleted, label: copy.statusFilters.reviewCompleted },
+    { value: WORKFLOW_STATE.inspection, label: copy.statusFilters.inspection },
+    { value: WORKFLOW_STATE.draft, label: copy.statusFilters.draft },
+    { value: WORKFLOW_STATE.rejected, label: copy.statusFilters.rejected },
+    { value: WORKFLOW_STATE.completed, label: copy.statusFilters.completed },
     { value: "all", label: copy.statusFilters.all },
   ];
 }

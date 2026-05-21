@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.33
+baseline_source: peacebypiece-ui-0.15.36
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.15에서는 0.15.33 기준으로 TSX 도메인 로직 분리 후 DB 저장값과 JSON payload 저장 후보를 감사한다.
+v0.15에서는 0.15.36 기준으로 작업지시서 workflow 상태값 사용을 상수 중심으로 정리한다.
 
 ```txt
 브랜드 톤
@@ -48,6 +48,8 @@ domain constants/types 1차 정리
 formatter/presentation 통합 1차
 TSX 도메인 로직 분리 1차
 DB 저장값 / JSON payload 감사
+member/workorder/storage status constants 후보 조사
+workorder status usage 정리 1차
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -440,8 +442,15 @@ DB 저장값 / JSON payload 감사
 ```txt
 56_wafl-a-type-db-payload-storage-audit.md
 - DB 저장값 / JSON payload 감사
+member/workorder/storage status constants 후보 조사
+workorder status usage 정리 1차
 - raw token 미저장, metadata/jsonb 허용 범위, request_payload 주의 항목 정리
 - company_account_requests.request_payload, workorders/status legacy payload 후보, status text + check constraint 정리 필요성 분류
 - SystemCompanyApprovalConsole의 isPdfOnboardingFile import 누락 빌드 오류 수정
 - DB schema/API/R2/권한/세션 변경 없음
 ```
+
+## 0.15.36 추가 기록
+
+- 0.15.36 기준 작업지시서 workflow 상태값의 직접 문자열 사용을 줄이기 위해 `WORKFLOW_STATE`와 `DISPLAY_STAGE` 상수를 추가했다.
+- DB 저장값과 API 응답 포맷은 변경하지 않았다.
