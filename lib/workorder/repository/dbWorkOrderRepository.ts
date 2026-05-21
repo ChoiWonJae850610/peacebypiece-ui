@@ -1845,6 +1845,36 @@ export async function createDbWorkOrder(
   return persisted;
 }
 
+function hasProductionCompositionContent(workOrder: WorkOrder): boolean {
+  return Boolean(
+    workOrder.factoryOrderRequest ||
+      (workOrder.orderEntries?.length ?? 0) > 0 ||
+      (workOrder.materials?.length ?? 0) > 0 ||
+      (workOrder.outsourcing?.length ?? 0) > 0,
+  );
+}
+
+function shouldSyncProductionCompositionForFullWorkOrderSave(workOrder: WorkOrder): boolean {
+  return Boolean(workOrder.hasDetailSnapshot || hasProductionCompositionContent(workOrder));
+}
+
+function mergeWorkOrderWithExistingProductionDetails(
+  baseWorkOrder: WorkOrder,
+  existingWorkOrder: WorkOrder | null | undefined,
+): WorkOrder {
+  if (!existingWorkOrder) return baseWorkOrder;
+
+  return {
+    ...existingWorkOrder,
+    ...baseWorkOrder,
+    factoryOrderRequest: existingWorkOrder.factoryOrderRequest ?? null,
+    orderEntries: existingWorkOrder.orderEntries ?? [],
+    materials: existingWorkOrder.materials ?? [],
+    outsourcing: existingWorkOrder.outsourcing ?? [],
+    hasDetailSnapshot: existingWorkOrder.hasDetailSnapshot ?? baseWorkOrder.hasDetailSnapshot,
+  };
+}
+
 function isNotFoundWorkOrderError(error: unknown): boolean {
   return (
     error instanceof Error &&
@@ -2051,16 +2081,32 @@ export async function updateDbWorkOrder(
   }
 
   const mapped = mapSpecSheetRowToWorkOrder(updated);
-  const persisted = {
-    ...normalizedWorkOrder,
-    ...mapped,
-    orderEntries: normalizedWorkOrder.orderEntries ?? [],
-    materials: normalizedWorkOrder.materials ?? [],
-    outsourcing: normalizedWorkOrder.outsourcing ?? [],
-  };
-  await syncDbFactoryOrdersForSpecSheet(persisted, company);
-  await syncDbSpecSheetMaterialsForSpecSheet(persisted, company);
-  await syncDbSpecSheetOutsourcingForSpecSheet(persisted, company);
+  const shouldSyncProductionComposition = shouldSyncProductionCompositionForFullWorkOrderSave(normalizedWorkOrder);
+  const existingWithDetails = shouldSyncProductionComposition
+    ? null
+    : await findDbWorkOrderById(normalizedWorkOrder.id, scope);
+  const persisted = shouldSyncProductionComposition
+    ? {
+        ...normalizedWorkOrder,
+        ...mapped,
+        orderEntries: normalizedWorkOrder.orderEntries ?? [],
+        materials: normalizedWorkOrder.materials ?? [],
+        outsourcing: normalizedWorkOrder.outsourcing ?? [],
+      }
+    : mergeWorkOrderWithExistingProductionDetails(
+        {
+          ...normalizedWorkOrder,
+          ...mapped,
+        },
+        existingWithDetails,
+      );
+
+  if (shouldSyncProductionComposition) {
+    await syncDbFactoryOrdersForSpecSheet(persisted, company);
+    await syncDbSpecSheetMaterialsForSpecSheet(persisted, company);
+    await syncDbSpecSheetOutsourcingForSpecSheet(persisted, company);
+  }
+
   return persisted;
 }
 
@@ -2243,7 +2289,8 @@ export async function updateDbWorkOrderStatePatch(
     return patchedWorkOrder;
   }
 
-  return mapped;
+  const existingWithDetails = await findDbWorkOrderById(patch.id, scope);
+  return mergeWorkOrderWithExistingProductionDetails(mapped, existingWithDetails);
 }
 
 async function softDeleteAttachmentMemoBundleForWorkOrder(

@@ -664,3 +664,12 @@ High risk:
 - serviceCode가 생산구성 replace를 허용하지 않으면 서버에서 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` 관련 patch를 제거한다.
 - system audit source에 serviceCode를 포함해 DB side effect 추적성을 보강한다.
 - 이번 단계는 guard 보강이며 DB schema, R2 key, 권한/세션 흐름은 변경하지 않는다.
+
+
+### 0.15.57 — 반려/취소 workflow 생산구성 보존 보강
+
+- build error 원인인 audit source union type 불일치를 수정한다.
+- audit source는 `state-patch`로 유지하고 serviceCode는 별도 meta/payload 기준으로 추적한다.
+- 상세 snapshot이 없는 작업지시서 full save는 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`를 sync하지 않는다.
+- 생산구성 patch가 없는 state patch 응답에는 기존 DB 상세 생산구성을 병합해 화면 state가 빈 배열로 덮이지 않게 한다.
+- 반려/취소/되돌리기 workflow는 workflow/history만 변경하고 생산구성 현재값 테이블은 보존한다.

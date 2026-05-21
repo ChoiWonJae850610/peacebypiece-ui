@@ -1056,7 +1056,7 @@ export async function handlePatchWorkOrderState(
       {
         requestId: getAuditRequestId(request),
         ipAddress: getAuditIpAddress(request),
-        source: serviceCode ? `state-patch:${serviceCode}` : "state-patch",
+        source: "state-patch",
         auditActor: readAuditActor(guardedPatch.auditActor),
       },
     );

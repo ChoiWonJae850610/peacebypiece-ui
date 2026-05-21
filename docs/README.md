@@ -106,3 +106,4 @@ DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는
 - `wafl-a-type/71_wafl-a-type-production-replace-save.md` — 생산구성 현재값 replace 저장 1차
 
 - `wafl-a-type/79_wafl-a-type-workorder-state-patch-server-guard.md` — 작업지시서 state patch server guard 기준
+- `wafl-a-type/80_wafl-a-type-workorder-reject-production-preserve.md` — 반려/취소 workflow 생산구성 보존 보강

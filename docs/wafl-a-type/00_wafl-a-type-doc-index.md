@@ -604,3 +604,4 @@ workorder action type constants 정리 1차
 - system audit source에 serviceCode를 포함해 추적성 보강
 - DB schema/R2 key/권한/세션 흐름 변경 없음
 ```
+- `80_wafl-a-type-workorder-reject-production-preserve.md` — 반려/취소 workflow 생산구성 보존 보강
