@@ -614,3 +614,11 @@ High risk:
 - 검토요청/발주요청처럼 생산구성을 확정 저장해도 되는 액션과 반려/취소처럼 기존 생산구성을 보존해야 하는 액션을 분리한다.
 - 후속 단계에서 serviceCode constants와 repository mutation allowlist를 도입하기 위한 기준 문서로 사용한다.
 - DB schema/API/R2/권한/세션 흐름은 이번 단계에서 변경하지 않는다.
+
+
+### 0.15.51 — 작업지시서 DB/R2 호출 위치 전수조사
+
+- 0.15.50 서비스 액션 맵을 기준으로 실제 코드의 DB/R2 호출 위치를 조사한다.
+- 작업지시서 본체, workflow state patch, 생산구성 현재값 저장, 메모, 첨부/R2, 삭제/복원/purge 흐름을 서비스 코드와 연결한다.
+- 반려/취소/되돌리기 계열에서 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` replace 저장이 실행되면 안 된다는 금지 규칙을 실제 호출 경로 기준으로 명시한다.
+- 이번 단계는 문서화이며 DB schema/API/R2 동작은 변경하지 않는다.

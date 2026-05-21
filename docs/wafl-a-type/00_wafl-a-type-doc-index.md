@@ -535,3 +535,15 @@ workorder action type constants 정리 1차
 - 생산구성 replace 저장은 forward/명시 저장 액션에서만 허용하는 기준을 문서화
 - 실제 DB schema/API/R2 구현은 변경하지 않음
 ```
+
+
+### 0.15.51 업데이트
+
+```txt
+74_wafl-a-type-workorder-db-r2-call-audit.md
+- 작업지시서 관련 API / client / repository의 DB/R2 호출 위치를 현재 코드 기준으로 전수조사
+- 서비스 코드별 실제 호출 경로, 대상 테이블, query 유형, R2 영향 범위를 정리
+- 반려/취소 계열에서 생산구성 replace 저장이 타면 안 되는 지점을 별도 위험 항목으로 분리
+- 후속 serviceCode constants / allowlist 도입 전 기준 문서로 사용
+- 실제 DB schema/API/R2 구현은 변경하지 않음
+```

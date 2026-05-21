@@ -71,6 +71,7 @@
 - `wafl-a-type/64_wafl-a-type-workorder-pending-edit-flush.md` — 작업지시서 생산구성 활성 입력값 검토요청 전 반영 보강
 
 - `wafl-a-type/73_wafl-a-type-workorder-service-action-map.md` — 작업지시서 서비스 액션 맵
+- `wafl-a-type/74_wafl-a-type-workorder-db-r2-call-audit.md` — 작업지시서 DB/R2 호출 위치 전수조사
 
 ## 정리 정책
 
