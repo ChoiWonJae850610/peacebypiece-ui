@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.38
+baseline_source: peacebypiece-ui-0.15.39
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.38
+현재 기준: 0.15.39
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -507,4 +507,15 @@ High risk:
 - HistoryCategory/HistoryTone/HistoryFilter type은 constants 기반 value type으로 변경
 - workorder history builders와 filter의 category/tone/filter 직접 문자열 사용 축소
 - DB 저장값/API 응답/R2/권한/세션 변경 없음
+```
+
+
+### 0.15.39 업데이트
+
+```txt
+62_wafl-a-type-workorder-kind-attachment-scope-constants.md
+- WORK_ORDER_KIND / WORK_ORDER_ORDER_TYPE / ATTACHMENT_SCOPE 기준 추가
+- 작업지시서 종류와 첨부 scope 직접 문자열 사용을 일부 상수 기반으로 정리
+- types/workorder.ts의 AttachmentScope와 workOrderKind 타입을 constants value type에 연결
+- DB schema/API/R2 흐름은 변경하지 않음
 ```

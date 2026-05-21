@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { useI18n } from "@/lib/i18n";
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope, normalizeUploadableAttachmentScopeValue, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import {
   buildAttachmentDeleteResult,
   buildMemoReplyResult,
@@ -22,7 +23,7 @@ import { getAttachmentInputAccept, WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/wo
 import { createMemoReplyInDb, createMemoThreadInDb, deleteMemoInDb, updateMemoInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
-type UploadableAttachmentScope = "attachment" | "design";
+type UploadableAttachmentScope = UploadableAttachmentScopeValue;
 
 export function useWorkOrderAttachments({
   attachmentInputRef,
@@ -54,12 +55,12 @@ export function useWorkOrderAttachments({
   setToastMessage: Dispatch<SetStateAction<string | null>>;
 }) {
   const { i18n } = useI18n();
-  const [attachmentPickerScope, setAttachmentPickerScope] = useState<AttachmentScope>("attachment");
+  const [attachmentPickerScope, setAttachmentPickerScope] = useState<AttachmentScope>(ATTACHMENT_SCOPE.attachment);
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
 
-  const handleOpenAttachmentPicker = (scope: AttachmentScope = "attachment") => {
-    const normalizedScope = scope === "design" ? "design" : "attachment";
+  const handleOpenAttachmentPicker = (scope: AttachmentScope = ATTACHMENT_SCOPE.attachment) => {
+    const normalizedScope = normalizeUploadableAttachmentScopeValue(scope, ATTACHMENT_SCOPE.attachment);
     setAttachmentPickerScope(normalizedScope);
     openAttachmentPickerTrigger(
       attachmentInputRef,
@@ -87,16 +88,16 @@ export function useWorkOrderAttachments({
     }
 
     let persistedAttachments = uploadResult.attachments;
-    const shouldSetFirstDesignAsPrimary = scope === "design"
-      && !(selectedWorkOrder.attachments ?? []).some((attachment) => attachment.scope === "design" && attachment.type === "image" && attachment.isPrimary === true);
+    const shouldSetFirstDesignAsPrimary = isDesignAttachmentScope(scope)
+      && !(selectedWorkOrder.attachments ?? []).some((attachment) => isDesignAttachmentScope(attachment.scope) && attachment.type === "image" && attachment.isPrimary === true);
     const firstUploadedDesignImage = shouldSetFirstDesignAsPrimary
-      ? persistedAttachments.find((attachment) => attachment.scope === "design" && attachment.type === "image") ?? null
+      ? persistedAttachments.find((attachment) => isDesignAttachmentScope(attachment.scope) && attachment.type === "image") ?? null
       : null;
 
     if (firstUploadedDesignImage) {
       try {
         await setPrimaryDesignAttachmentInDb({ workOrderId: selectedWorkOrder.id, attachmentId: firstUploadedDesignImage.id });
-        persistedAttachments = persistedAttachments.map((attachment) => attachment.scope === "design"
+        persistedAttachments = persistedAttachments.map((attachment) => isDesignAttachmentScope(attachment.scope)
           ? { ...attachment, isPrimary: attachment.id === firstUploadedDesignImage.id }
           : attachment);
       } catch (error) {
@@ -134,7 +135,7 @@ export function useWorkOrderAttachments({
     }
 
     const files = readAttachmentInputFiles(event);
-    const scope = attachmentPickerScope === "design" ? "design" : "attachment";
+    const scope = normalizeUploadableAttachmentScopeValue(attachmentPickerScope, ATTACHMENT_SCOPE.attachment);
     clearAttachmentInputValue(event);
     await uploadAttachmentFileList(files, scope);
   };
@@ -163,8 +164,8 @@ export function useWorkOrderAttachments({
         deletedBy: currentUser.name,
       });
 
-      const nextPrimaryDesignAttachment = targetAttachment?.scope === "design" && targetAttachment.type === "image" && targetAttachment.isPrimary === true
-        ? (selectedWorkOrder.attachments ?? []).find((attachment) => attachment.id !== attachmentId && attachment.scope === "design" && attachment.type === "image") ?? null
+      const nextPrimaryDesignAttachment = targetAttachment && isDesignAttachmentScope(targetAttachment.scope) && targetAttachment.type === "image" && targetAttachment.isPrimary === true
+        ? (selectedWorkOrder.attachments ?? []).find((attachment) => attachment.id !== attachmentId && isDesignAttachmentScope(attachment.scope) && attachment.type === "image") ?? null
         : null;
 
       if (nextPrimaryDesignAttachment) {
@@ -193,7 +194,7 @@ export function useWorkOrderAttachments({
 
         return {
           ...result.nextWorkOrder,
-          attachments: (result.nextWorkOrder.attachments ?? []).map((attachment) => attachment.scope === "design"
+          attachments: (result.nextWorkOrder.attachments ?? []).map((attachment) => isDesignAttachmentScope(attachment.scope)
             ? { ...attachment, isPrimary: attachment.id === nextPrimaryDesignAttachment.id }
             : attachment),
         };
@@ -433,7 +434,7 @@ export function useWorkOrderAttachments({
 
   const handleSetPrimaryDesignAttachment = async (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
-    if (!targetAttachment || targetAttachment.scope !== "design" || targetAttachment.type !== "image") return;
+    if (!targetAttachment || !isDesignAttachmentScope(targetAttachment.scope) || targetAttachment.type !== "image") return;
     if (!canEditSideDraftContent || !canUploadOfficialAttachments) return;
 
     setSaveStatus("saving");
@@ -442,7 +443,7 @@ export function useWorkOrderAttachments({
       setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
         ? {
             ...item,
-            attachments: (item.attachments ?? []).map((attachment) => attachment.scope === "design"
+            attachments: (item.attachments ?? []).map((attachment) => isDesignAttachmentScope(attachment.scope)
               ? { ...attachment, isPrimary: attachment.id === attachmentId }
               : attachment),
           }
@@ -475,7 +476,7 @@ export function useWorkOrderAttachments({
     });
 
   return {
-    attachmentInputAccept: getAttachmentInputAccept(attachmentPickerScope === "design" ? "design" : "attachment"),
+    attachmentInputAccept: getAttachmentInputAccept(normalizeUploadableAttachmentScopeValue(attachmentPickerScope, ATTACHMENT_SCOPE.attachment)),
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
     handleAttachmentFileDrop,

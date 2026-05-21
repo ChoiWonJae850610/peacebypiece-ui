@@ -1,5 +1,8 @@
 import "server-only";
 
+import type { WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
+import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
+
 import { queryDb } from "@/lib/db/client";
 import { formatAdminStorageDate, formatAdminStorageDateTime } from "@/lib/admin/adminFiles.datePresentation";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
@@ -260,7 +263,7 @@ type AdminAttachmentRow = DbQueryResultRow & {
   workorder_title: string | null;
   workorder_base_title: string | null;
   workorder_reorder_round: string | number | null;
-  workorder_kind: "sample" | "main" | "rework" | null;
+  workorder_kind: WorkOrderKindValue | null;
   workorder_is_rework: boolean | null;
   original_name: string | null;
   mime_type: string | null;
@@ -288,7 +291,7 @@ type AdminTrashRow = DbQueryResultRow & {
   workorder_title: string | null;
   workorder_base_title: string | null;
   workorder_reorder_round: string | number | null;
-  workorder_kind: "sample" | "main" | "rework" | null;
+  workorder_kind: WorkOrderKindValue | null;
   workorder_is_rework: boolean | null;
   parent_workorder_deleted: boolean | null;
   parent_workorder_deleted_at: string | Date | null;
@@ -315,7 +318,7 @@ type AdminStorageWorkOrderRow = DbQueryResultRow & {
   title: string | null;
   base_title: string | null;
   reorder_round: string | number | null;
-  work_order_kind: "sample" | "main" | "rework" | null;
+  work_order_kind: WorkOrderKindValue | null;
   is_rework: boolean | null;
   status: string | null;
   updated_at: string | Date | null;
@@ -352,7 +355,7 @@ function formatAdminWorkOrderTitle(input: {
   title?: string | null;
   baseTitle?: string | null;
   reorderRound?: string | number | null;
-  workOrderKind?: "sample" | "main" | "rework" | null;
+  workOrderKind?: WorkOrderKindValue | null;
   isRework?: boolean | null;
 }): string {
   const title = String(input.title ?? "").trim();
@@ -360,7 +363,7 @@ function formatAdminWorkOrderTitle(input: {
   const rawRound = Number(input.reorderRound ?? 0);
   const reorderRound = Number.isFinite(rawRound) ? rawRound : 0;
   const workOrderKind =
-    input.workOrderKind ?? (reorderRound > 0 ? "main" : "sample");
+    input.workOrderKind ?? (reorderRound > 0 ? WORK_ORDER_KIND.main : WORK_ORDER_KIND.sample);
   return getWorkOrderDisplayTitle({
     title: title || undefined,
     baseTitle: baseTitle || undefined,

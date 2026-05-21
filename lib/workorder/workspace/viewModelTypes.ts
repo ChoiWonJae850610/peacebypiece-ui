@@ -1,3 +1,4 @@
+import type { UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import type { ComponentProps } from "react";
 import type { getI18n } from "@/lib/i18n";
 import SidebarContent from "@/components/layout/SidebarContent";
@@ -117,8 +118,8 @@ export type BuildWorkspaceViewModelArgs = {
   onOpenManagerAssignModal: () => void;
   onCloseManagerAssignModal: () => void;
   onChangeManager: (managerId: string) => void;
-  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
-  onUploadAttachmentFiles: (scope: "design" | "attachment", files: File[]) => void;
+  onOpenAttachmentPicker: (scope?: UploadableAttachmentScopeValue) => void;
+  onUploadAttachmentFiles: (scope: UploadableAttachmentScopeValue, files: File[]) => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment: (attachmentId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
@@ -184,8 +185,8 @@ export type BaseWorkspaceViewModelArgs = {
   onRenameWorkOrderTitle: (nextTitle: string) => void;
   onCompleteInspection: DetailProps["onCompleteInspection"];
   onOpenManagerAssignModal: () => void;
-  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
-  onUploadAttachmentFiles: (scope: "design" | "attachment", files: File[]) => void;
+  onOpenAttachmentPicker: (scope?: UploadableAttachmentScopeValue) => void;
+  onUploadAttachmentFiles: (scope: UploadableAttachmentScopeValue, files: File[]) => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment: (attachmentId: string) => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];

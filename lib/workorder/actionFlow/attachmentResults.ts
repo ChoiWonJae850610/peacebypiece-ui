@@ -1,3 +1,4 @@
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import type { Attachment, UserProfile, WorkOrder } from "@/types/workorder";
 import {
   applyDesignAttachmentFilesToWorkOrder,
@@ -15,11 +16,11 @@ export function buildAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   files: File[];
-  scope: "design" | "attachment";
+  scope: UploadableAttachmentScopeValue;
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
-  const result = payload.scope === "design"
+  const result = isDesignAttachmentScope(payload.scope)
     ? applyDesignAttachmentFilesToWorkOrder({
         workOrder: payload.workOrder,
         currentUser: payload.currentUser,
@@ -37,7 +38,7 @@ export function buildAttachmentUploadResult(payload: {
     nextWorkOrder: result.nextWorkOrder,
     historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, result.attachments, payload.scope, payload.historyText ?? defaultHistoryText)],
     saveStatus: "dirty",
-    toastMessage: payload.scope === "design"
+    toastMessage: isDesignAttachmentScope(payload.scope)
       ? ((payload.text ?? defaultActionFlowText) as ActionFlowText & { designAttachmentUploadedToast?: string }).designAttachmentUploadedToast ?? (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast
       : (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast,
   };
@@ -47,7 +48,7 @@ export function buildPersistedAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   attachments: Attachment[];
-  scope: "design" | "attachment";
+  scope: UploadableAttachmentScopeValue;
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
@@ -59,7 +60,7 @@ export function buildPersistedAttachmentUploadResult(payload: {
     nextWorkOrder,
     historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, payload.attachments, payload.scope, payload.historyText ?? defaultHistoryText)],
     saveStatus: "saved",
-    toastMessage: payload.scope === "design"
+    toastMessage: isDesignAttachmentScope(payload.scope)
       ? ((payload.text ?? defaultActionFlowText) as ActionFlowText & { designAttachmentUploadedToast?: string }).designAttachmentUploadedToast ?? (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast
       : (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast,
   };
@@ -72,7 +73,7 @@ export function buildOfficialAttachmentUploadResult(payload: {
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
-  return buildAttachmentUploadResult({ ...payload, scope: "attachment" });
+  return buildAttachmentUploadResult({ ...payload, scope: ATTACHMENT_SCOPE.attachment });
 }
 
 export function buildAttachmentDeleteResult(payload: {

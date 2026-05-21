@@ -1,5 +1,6 @@
 "use client";
 
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import { useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
@@ -9,7 +10,7 @@ import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
-type AttachmentPanelScope = "design" | "attachment";
+type AttachmentPanelScope = UploadableAttachmentScopeValue;
 
 function readDroppedFiles(event: DragEvent<HTMLElement>) {
   return Array.from(event.dataTransfer?.files ?? []).filter((file) => file.size > 0);
@@ -20,11 +21,11 @@ function hasDroppedFiles(event: DragEvent<HTMLElement>) {
 }
 
 function getUploadGuideLabel(scope: AttachmentPanelScope, ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"]) {
-  return scope === "design" ? ui.attachmentPanel.designUploadGuide : ui.attachmentPanel.attachmentUploadGuide;
+  return isDesignAttachmentScope(scope) ? ui.attachmentPanel.designUploadGuide : ui.attachmentPanel.attachmentUploadGuide;
 }
 
 function getUploadGuideDescription(scope: AttachmentPanelScope, ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"]) {
-  return scope === "design" ? ui.attachmentPanel.designUploadGuideDescription : ui.attachmentPanel.attachmentUploadGuideDescription;
+  return isDesignAttachmentScope(scope) ? ui.attachmentPanel.designUploadGuideDescription : ui.attachmentPanel.attachmentUploadGuideDescription;
 }
 
 function logAttachmentDropDebug(scope: AttachmentPanelScope, message: string, payload?: Record<string, unknown>) {
@@ -55,7 +56,7 @@ function AttachmentActionMenu({
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
   const [open, setOpen] = useState(false);
-  const canShowDrawingAction = scope === "design";
+  const canShowDrawingAction = isDesignAttachmentScope(scope);
   const canShowAdvancedDrawingAction = canShowDrawingAction && RUNTIME_VISIBILITY.showAdvancedDrawingTools;
 
   return (
@@ -378,7 +379,7 @@ export default function WorkOrderAttachmentPanel({
       )}
       </WorkOrderPanelCard>
     </div>
-    {uploadScope === "design" ? (
+    {isDesignAttachmentScope(uploadScope) ? (
       <>
         {RUNTIME_VISIBILITY.showAdvancedDrawingTools ? (
           <WorkOrderTldrawDrawingModal

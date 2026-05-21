@@ -1,3 +1,4 @@
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import { getAttachmentOwnerLabel, getAttachmentPreviewLabel, getAttachmentPreviewUrl, getAttachmentThumbnailUrl } from "@/lib/permissions/attachments";
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { Attachment } from "@/types/workorder";
@@ -13,11 +14,11 @@ export type AttachmentPanelItem = Pick<Attachment, "id" | "name" | "type" | "url
 };
 
 export type AttachmentPanelSection = {
-  key: "design" | "attachment";
+  key: UploadableAttachmentScopeValue;
   title: string;
   emptyText: string;
   addButtonLabel: string;
-  uploadScope: "design" | "attachment";
+  uploadScope: UploadableAttachmentScopeValue;
   items: AttachmentPanelItem[];
 };
 
@@ -49,7 +50,7 @@ export function buildAttachmentPanelItems(
       previewLabel: getAttachmentPreviewLabel(attachment),
       canDelete: permissions.canDelete,
       canPreview: permissions.canPreview,
-      canSetPrimary: attachment.scope === "design" && attachment.type === "image" && permissions.canDelete,
+      canSetPrimary: isDesignAttachmentScope(attachment.scope) && attachment.type === "image" && permissions.canDelete,
     };
   });
 }
@@ -67,19 +68,19 @@ export function buildAttachmentPanelSections(payload: {
 }): AttachmentPanelSection[] {
   return [
     {
-      key: "design",
+      key: ATTACHMENT_SCOPE.design,
       title: payload.designTitle,
       emptyText: payload.designEmptyText,
       addButtonLabel: payload.designAddButtonLabel,
-      uploadScope: "design",
+      uploadScope: ATTACHMENT_SCOPE.design,
       items: buildAttachmentPanelItems(payload.designAttachments, payload.getAttachmentPermissions),
     },
     {
-      key: "attachment",
+      key: ATTACHMENT_SCOPE.attachment,
       title: payload.officialTitle,
       emptyText: payload.officialEmptyText,
       addButtonLabel: payload.officialAddButtonLabel,
-      uploadScope: "attachment",
+      uploadScope: ATTACHMENT_SCOPE.attachment,
       items: buildAttachmentPanelItems(payload.officialAttachments, payload.getAttachmentPermissions),
     },
   ];

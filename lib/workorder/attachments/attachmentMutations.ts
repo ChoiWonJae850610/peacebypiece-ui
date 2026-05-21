@@ -1,3 +1,4 @@
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import { appendAttachments, removeAttachment } from "@/lib/workorder/actions";
 import { createDesignAttachments, createOfficialAttachments } from "@/lib/workorder/attachments/attachmentBuilders";
 import type { Attachment, UserProfile, WorkOrder } from "@/types/workorder";
@@ -6,11 +7,11 @@ function applyScopedAttachmentFilesToWorkOrder(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   files: File[];
-  scope: "design" | "attachment";
+  scope: UploadableAttachmentScopeValue;
 }) {
   if (payload.files.length === 0) return null;
 
-  const attachments = payload.scope == "design"
+  const attachments = isDesignAttachmentScope(payload.scope)
     ? createDesignAttachments(payload.files, payload.currentUser)
     : createOfficialAttachments(payload.files, payload.currentUser);
   const nextWorkOrder = appendAttachments([payload.workOrder], payload.workOrder.id, attachments)[0] ?? payload.workOrder;
@@ -23,7 +24,7 @@ export function applyDesignAttachmentFilesToWorkOrder(payload: {
   currentUser: UserProfile;
   files: File[];
 }) {
-  return applyScopedAttachmentFilesToWorkOrder({ ...payload, scope: "design" });
+  return applyScopedAttachmentFilesToWorkOrder({ ...payload, scope: ATTACHMENT_SCOPE.design });
 }
 
 export function applyOfficialAttachmentFilesToWorkOrder(payload: {
@@ -31,7 +32,7 @@ export function applyOfficialAttachmentFilesToWorkOrder(payload: {
   currentUser: UserProfile;
   files: File[];
 }) {
-  return applyScopedAttachmentFilesToWorkOrder({ ...payload, scope: "attachment" });
+  return applyScopedAttachmentFilesToWorkOrder({ ...payload, scope: ATTACHMENT_SCOPE.attachment });
 }
 
 export function deleteAttachmentFromWorkOrder(payload: {

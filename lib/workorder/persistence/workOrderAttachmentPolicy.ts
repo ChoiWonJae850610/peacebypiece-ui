@@ -1,6 +1,6 @@
-import type { AttachmentScope } from "@/types/workorder";
+import { ATTACHMENT_SCOPE, normalizeUploadableAttachmentScopeValue, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 
-export type WorkOrderAttachmentUploadScope = Extract<AttachmentScope, "design" | "attachment">;
+export type WorkOrderAttachmentUploadScope = UploadableAttachmentScopeValue;
 
 export const WORK_ORDER_ATTACHMENT_POLICY = {
   maxFilesPerWorkOrder: 20,
@@ -34,7 +34,7 @@ export const WORK_ORDER_ATTACHMENT_POLICY = {
 } as const;
 
 export function normalizeAttachmentUploadScope(value: unknown): WorkOrderAttachmentUploadScope {
-  return value === "design" ? "design" : "attachment";
+  return normalizeUploadableAttachmentScopeValue(String(value ?? ""), ATTACHMENT_SCOPE.attachment);
 }
 
 export function getAttachmentInputAccept(scope: WorkOrderAttachmentUploadScope): string {

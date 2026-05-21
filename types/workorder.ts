@@ -2,10 +2,11 @@ import type { Material } from "@/types/material";
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
 import type { InventoryChangeTypeValue, InventoryStatusValue, OrderEntryTargetTypeValue } from "@/lib/constants/workorderDomain";
+import type { AttachmentScopeValue, WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
 import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
-export type AttachmentScope = "design" | "attachment" | "memo";
+export type AttachmentScope = AttachmentScopeValue;
 
 export type AttachmentType = "image" | "pdf" | "file";
 
@@ -94,7 +95,7 @@ export type WorkOrder = {
   title: string;
   displayTitle?: string;
   baseTitle?: string;
-  workOrderKind?: "sample" | "main" | "rework";
+  workOrderKind?: WorkOrderKindValue;
   isDefectOrder?: boolean;
   reorderGroupId?: string;
   reorderRound?: number;

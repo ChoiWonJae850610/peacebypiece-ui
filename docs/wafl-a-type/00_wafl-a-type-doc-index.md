@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.38
+baseline_source: peacebypiece-ui-0.15.39
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.15에서는 0.15.38 기준으로 작업지시서 history category/filter/tone과 memo history action 사용을 상수 중심으로 정리한다.
+v0.15에서는 0.15.39 기준으로 작업지시서 history category/filter/tone, memo history action, workorder kind, attachment scope 사용을 상수 중심으로 정리한다.
 
 ```txt
 브랜드 톤
@@ -466,5 +466,17 @@ workorder action type constants 정리 1차
 - lib/constants/workorderHistory.ts 추가
 - HISTORY_CATEGORY / HISTORY_FILTER / HISTORY_TONE / MEMO_HISTORY_ACTION 기준 추가
 - history builders, history filter, inventory history projection의 category/tone/filter 직접 문자열 사용 축소
+- DB 저장값/API 응답/R2/권한/세션 변경 없음
+```
+
+
+### 0.15.39 업데이트
+
+```txt
+62_wafl-a-type-workorder-kind-attachment-scope-constants.md
+- workorder kind / attachment scope constants 정리 1차
+- lib/constants/workorderIdentity.ts 추가
+- WORK_ORDER_KIND / ATTACHMENT_SCOPE / UPLOADABLE_ATTACHMENT_SCOPES 기준 추가
+- 리오더/재작업/첨부 업로드/대표 디자인 조건의 직접 문자열 비교 일부 축소
 - DB 저장값/API 응답/R2/권한/세션 변경 없음
 ```

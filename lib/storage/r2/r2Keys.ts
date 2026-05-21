@@ -1,5 +1,6 @@
 import "server-only";
 import { randomUUID } from "crypto";
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope, isMemoAttachmentScope } from "@/lib/constants/workorderIdentity";
 import type { AttachmentScope } from "@/types/workorder";
 
 const SAFE_EXTENSION_PATTERN = /^[a-z0-9]{1,12}$/i;
@@ -25,12 +26,12 @@ function normalizeStorageKey(value: string): string {
 }
 
 export function normalizeAttachmentScopeForStorage(value: AttachmentScope | null | undefined): AttachmentScope {
-  return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
+  return isDesignAttachmentScope(value) ? ATTACHMENT_SCOPE.design : isMemoAttachmentScope(value) ? ATTACHMENT_SCOPE.memo : ATTACHMENT_SCOPE.attachment;
 }
 
 export function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" | "memos" {
-  if (scope === "design") return "design";
-  if (scope === "memo") return "memos";
+  if (isDesignAttachmentScope(scope)) return "design";
+  if (isMemoAttachmentScope(scope)) return "memos";
   return "attachments";
 }
 

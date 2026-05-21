@@ -1,5 +1,6 @@
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import WorkOrderSidePanelMobileAccordionSection from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAccordionSection";
+import { isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 
 type WorkOrderSidePanelMobileAttachmentSectionsProps = Pick<
@@ -52,7 +53,7 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
         attachments={section.items}
         uploadScope={section.uploadScope}
         onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
-        onOpenDesignDrawingModal={section.uploadScope === "design" ? onOpenDesignDrawingModal : undefined}
+        onOpenDesignDrawingModal={isDesignAttachmentScope(section.uploadScope) ? onOpenDesignDrawingModal : undefined}
         onUploadFiles={(files) => {
           if (typeof onUploadAttachmentFiles !== "function") return;
           onUploadAttachmentFiles(section.uploadScope, files);

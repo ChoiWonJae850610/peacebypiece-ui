@@ -4,6 +4,7 @@ import {
   normalizeStoredSeason,
 } from "@/lib/constants/workorderDefaults";
 import { ORDER_ENTRY_TARGET_TYPE, toInventoryStatus, toOrderEntryTargetType } from "@/lib/constants/workorderDomain";
+import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import {
   DEFAULT_FACTORY_OPTION,
   DEFAULT_ORDER_TYPE,
@@ -33,7 +34,7 @@ function normalizeWorkOrderKindFromStored(
   value: WorkOrder["workOrderKind"] | string | undefined | null,
   reorderRound?: number | null,
 ): WorkOrder["workOrderKind"] {
-  const fallback = Number(reorderRound ?? 1) > 1 ? "main" : "sample";
+  const fallback = Number(reorderRound ?? 1) > 1 ? WORK_ORDER_KIND.main : WORK_ORDER_KIND.sample;
   return normalizeStructuredWorkOrderKind(value, fallback);
 }
 
@@ -101,7 +102,7 @@ export function normalizeWorkOrderScalarFields(workOrder: WorkOrder): WorkOrder 
     ...workOrder,
     ...normalizedCategory,
     workOrderKind,
-    isDefectOrder: isWorkOrderKind(workOrderKind, "rework") ? Boolean(workOrder.isDefectOrder) : false,
+    isDefectOrder: isWorkOrderKind(workOrderKind, WORK_ORDER_KIND.rework) ? Boolean(workOrder.isDefectOrder) : false,
     season: normalizeStoredSeason(workOrder.season),
     priority: normalizeStoredPriority(workOrder.priority),
     vendor: normalizeStoredOptionalText(workOrder.vendor),

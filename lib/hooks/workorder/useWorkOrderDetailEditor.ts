@@ -5,6 +5,7 @@ import {
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
 import { ensurePartnerMasterItem } from "@/lib/admin/partner/persistence";
+import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import { isVendorRegistryType, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
 import { getOrderInspectionStatusForCompletion } from "@/lib/constants/workorderStates";
 import {
@@ -181,7 +182,7 @@ export function useWorkOrderDetailEditor({
       const isReworkToMain = isReworkToMainTransition(workOrder.workOrderKind, nextWorkOrderKind);
       syncOrderEntries(nextItems, {
         workOrderKind: nextWorkOrderKind,
-        isDefectOrder: isWorkOrderKind(nextWorkOrderKind, "rework"),
+        isDefectOrder: isWorkOrderKind(nextWorkOrderKind, WORK_ORDER_KIND.rework),
         ...(isReworkToMain ? { reorderRound: REWORK_TO_MAIN_APPEND_ROUND } : {}),
       });
     }

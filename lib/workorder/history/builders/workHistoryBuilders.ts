@@ -1,3 +1,4 @@
+import { WORK_ORDER_KIND, type WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
 import { HISTORY_CATEGORY, HISTORY_TONE, MEMO_HISTORY_ACTION, type MemoHistoryActionValue } from "@/lib/constants/workorderHistory";
 import { createHistoryLog, defaultHistoryText, type DetailLine, type HistoryText } from "@/lib/workorder/history/builders/shared";
 import type { HistoryLog } from "@/types/workorder";
@@ -231,9 +232,9 @@ export function createManagerChangeHistoryLog(
 }
 
 
-function getWorkOrderKindLabel(kind: "sample" | "main" | "rework", text: HistoryText) {
-  if (kind === "sample") return text.detailLabels.typeSample;
-  if (kind === "rework") return text.detailLabels.typeRework;
+function getWorkOrderKindLabel(kind: WorkOrderKindValue, text: HistoryText) {
+  if (kind === WORK_ORDER_KIND.sample) return text.detailLabels.typeSample;
+  if (kind === WORK_ORDER_KIND.rework) return text.detailLabels.typeRework;
   return text.detailLabels.typeMain;
 }
 
@@ -243,19 +244,19 @@ export function createWorkOrderKindChangeHistoryLog(
   payload: {
     fromTitle: string;
     toTitle: string;
-    fromKind: "sample" | "main" | "rework";
-    toKind: "sample" | "main" | "rework";
+    fromKind: WorkOrderKindValue;
+    toKind: WorkOrderKindValue;
   },
   text: HistoryText = defaultHistoryText,
 ) {
-  const action = payload.toKind === "rework"
+  const action = payload.toKind === WORK_ORDER_KIND.rework
     ? text.actions.reworkConverted
-    : payload.fromKind === "rework" && payload.toKind === "main"
+    : payload.fromKind === WORK_ORDER_KIND.rework && payload.toKind === WORK_ORDER_KIND.main
       ? text.actions.reworkRestored
       : text.actions.kindChanged;
-  const message = payload.toKind === "rework"
+  const message = payload.toKind === WORK_ORDER_KIND.rework
     ? text.messages.reworkConverted
-    : payload.fromKind === "rework" && payload.toKind === "main"
+    : payload.fromKind === WORK_ORDER_KIND.rework && payload.toKind === WORK_ORDER_KIND.main
       ? text.messages.reworkRestored
       : text.messages.kindChanged;
 
@@ -265,7 +266,7 @@ export function createWorkOrderKindChangeHistoryLog(
     user,
     workOrderId,
     category: HISTORY_CATEGORY.work,
-    tone: payload.toKind === "rework" ? HISTORY_TONE.violet : HISTORY_TONE.blue,
+    tone: payload.toKind === WORK_ORDER_KIND.rework ? HISTORY_TONE.violet : HISTORY_TONE.blue,
     summary: `${action}: ${formatHistoryTitle(payload.fromTitle)}${text.transitionArrow}${formatHistoryTitle(payload.toTitle)}${text.actorSeparator}${user}`,
     detailLines: [
       { label: text.detailLabels.previous, value: formatHistoryTitle(payload.fromTitle) },

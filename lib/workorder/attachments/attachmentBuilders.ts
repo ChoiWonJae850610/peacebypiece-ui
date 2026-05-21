@@ -1,10 +1,11 @@
 import { createAttachmentId, getAttachmentType } from "@/lib/permissions/attachments";
+import { ATTACHMENT_SCOPE, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import type { Attachment, UserProfile } from "@/types/workorder";
 
 function createScopedAttachments(
   files: File[],
   currentUser: Pick<UserProfile, "id" | "name">,
-  scope: "design" | "attachment",
+  scope: UploadableAttachmentScopeValue,
 ): Attachment[] {
   return files.map((file): Attachment => ({
     id: createAttachmentId(file.name),
@@ -18,10 +19,10 @@ function createScopedAttachments(
 }
 
 export function createDesignAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">): Attachment[] {
-  return createScopedAttachments(files, currentUser, "design");
+  return createScopedAttachments(files, currentUser, ATTACHMENT_SCOPE.design);
 }
 
 export function createOfficialAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">): Attachment[] {
-  return createScopedAttachments(files, currentUser, "attachment");
+  return createScopedAttachments(files, currentUser, ATTACHMENT_SCOPE.attachment);
 }
 

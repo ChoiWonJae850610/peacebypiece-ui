@@ -1,3 +1,4 @@
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import type { Attachment, AttachmentScope, AttachmentType, MemoReply, MemoThread, RoleType } from "@/types/workorder";
 
 export const ATTACHMENT_MEMO_DB_TABLE_SEQUENCE = [
@@ -88,11 +89,11 @@ export function inferAttachmentTypeFromMime(mimeType: string | null, fallbackNam
 }
 
 export function normalizeAttachmentScope(value: string | null | undefined): AttachmentScope {
-  if (value === "design") return "design";
-  return "attachment";
+  if (isDesignAttachmentScope(value)) return ATTACHMENT_SCOPE.design;
+  return ATTACHMENT_SCOPE.attachment;
 }
 
 export function normalizeAttachmentKindForDb(value: AttachmentScope | string | null | undefined): WorkOrderAttachmentKind {
-  if (value === "design") return "design";
+  if (isDesignAttachmentScope(value)) return "design";
   return "file";
 }

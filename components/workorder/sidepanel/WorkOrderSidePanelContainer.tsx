@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawingModal";
 import {
   readDesignDrawingModalOpenState,
@@ -15,7 +16,7 @@ import WorkOrderSidePanelTabletView from "@/components/workorder/sidepanel/views
 export default function WorkOrderSidePanelContainer(props: WorkOrderSidePanelProps) {
   const deviceType = useWorkOrderDeviceType();
   const [drawingModalOpen, setDrawingModalOpen] = useState(readDesignDrawingModalOpenState);
-  const hasDesignAttachmentSection = props.attachmentSections.some((section) => section.uploadScope === "design");
+  const hasDesignAttachmentSection = props.attachmentSections.some((section) => isDesignAttachmentScope(section.uploadScope));
   const canRenderDesignDrawingModal = !props.isEmpty && props.canSeeAttachments && hasDesignAttachmentSection;
 
   const openDesignDrawingModal = () => {
@@ -53,7 +54,7 @@ export default function WorkOrderSidePanelContainer(props: WorkOrderSidePanelPro
           onClose={closeDesignDrawingModal}
           onSaveDrawing={(file) => {
             closeDesignDrawingModal();
-            props.onUploadAttachmentFiles("design", [file]);
+            props.onUploadAttachmentFiles(ATTACHMENT_SCOPE.design, [file]);
           }}
           variant={deviceType}
         />

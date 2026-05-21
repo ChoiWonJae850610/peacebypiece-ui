@@ -1,5 +1,6 @@
 import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
+import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import {
   getOrderInspectionStatusForCompletion,
   getOrderInspectionStatusForNewOrderEntry,
@@ -45,7 +46,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
   return applyReorderIdentity({
     id,
     baseTitle: title,
-    workOrderKind: "sample",
+    workOrderKind: WORK_ORDER_KIND.sample,
     isDefectOrder: false,
     reorderGroupId: id,
     reorderRound: 0,
@@ -209,13 +210,13 @@ export function patchWorkOrder(
   workOrder: WorkOrder,
   patch: Partial<WorkOrder>,
 ): WorkOrder {
-  const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? "sample";
+  const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? WORK_ORDER_KIND.sample;
   const currentRound = getWorkOrderReorderRound(workOrder);
   const isTransitioningFromReworkToMain = isReworkToMainTransition(workOrder.workOrderKind, requestedKind);
   const nextRound = isTransitioningFromReworkToMain
     ? Math.max(currentRound + 1, REWORK_TO_MAIN_APPEND_ROUND)
     : Number(patch.reorderRound ?? currentRound);
-  const nextIsDefectOrder = isWorkOrderKind(requestedKind, "rework")
+  const nextIsDefectOrder = isWorkOrderKind(requestedKind, WORK_ORDER_KIND.rework)
     ? Boolean(patch.isDefectOrder ?? workOrder.isDefectOrder ?? true)
     : false;
 
@@ -357,7 +358,7 @@ export function cloneWorkOrderForReorder(
 ): WorkOrder {
   const baseTitle = resolveBaseTitle(sourceWorkOrder);
   const reorderRound = getNextReorderRound(workOrders, sourceWorkOrder);
-  const nextWorkOrderKind = getWorkOrderKind({ ...sourceWorkOrder, workOrderKind: "main" });
+  const nextWorkOrderKind = getWorkOrderKind({ ...sourceWorkOrder, workOrderKind: WORK_ORDER_KIND.main });
   const nextOrderType = getOrderTypeFromWorkOrderKind(nextWorkOrderKind);
 
   return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
@@ -392,7 +393,7 @@ export function convertWorkOrderToRework(sourceWorkOrder: WorkOrder): WorkOrder 
   return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
     ...sourceWorkOrder,
     baseTitle: resolveBaseTitle(sourceWorkOrder),
-    workOrderKind: "rework",
+    workOrderKind: WORK_ORDER_KIND.rework,
     isDefectOrder: true,
     reorderRound: getWorkOrderReorderRound(sourceWorkOrder),
     parentSpecSheetId: sourceWorkOrder.parentSpecSheetId ?? sourceWorkOrder.reorderedFromId ?? null,

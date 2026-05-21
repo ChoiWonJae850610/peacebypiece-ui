@@ -1,4 +1,5 @@
 import { ROLE, hasRole } from "@/lib/constants/roles";
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import { getI18n } from "@/lib/i18n";
 import type { Attachment, AttachmentScope, AttachmentType, UserProfile } from "@/types/workorder";
 
@@ -32,15 +33,15 @@ function readAttachmentStringField(attachment: Attachment | null | undefined, ..
 }
 
 export function getAttachmentScope(attachment: Attachment | null | undefined): AttachmentScope {
-  return (attachment?.scope ?? "attachment") as AttachmentScope;
+  return (attachment?.scope ?? ATTACHMENT_SCOPE.attachment) as AttachmentScope;
 }
 
 export function isDesignAttachment(attachment: Attachment | null | undefined): boolean {
-  return getAttachmentScope(attachment) === "design";
+  return isDesignAttachmentScope(getAttachmentScope(attachment));
 }
 
 export function isOfficialAttachment(attachment: Attachment | null | undefined): boolean {
-  return getAttachmentScope(attachment) === "attachment";
+  return getAttachmentScope(attachment) === ATTACHMENT_SCOPE.attachment;
 }
 
 

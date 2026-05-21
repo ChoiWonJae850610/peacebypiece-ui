@@ -1,6 +1,7 @@
 import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX, ORDER_REQUEST_PRINT_UNSUPPORTED } from "@/lib/constants/display";
 import { DEFAULT_WORKORDER_CATEGORY2, DEFAULT_WORKORDER_CATEGORY3 } from "@/lib/constants/workorderDefaults";
 import { getInventoryStatusLabel } from "@/lib/constants/workorderDomain";
+import type { WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
 import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
 import { getI18n } from "@/lib/i18n";
 import type { WorkOrderListItem } from "@/types/workorder";
@@ -32,7 +33,7 @@ export function getWorkOrderCardTone(state: WorkflowState) {
   return WORKFLOW_STATE_BADGE_TONE[state];
 }
 
-export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; displayTitle?: string | null; baseTitle?: string | null; reorderRound?: number | null; revision?: number | null; workOrderKind?: "sample" | "main" | "rework" | null; isDefectOrder?: boolean | null }) {
+export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; displayTitle?: string | null; baseTitle?: string | null; reorderRound?: number | null; revision?: number | null; workOrderKind?: WorkOrderKindValue | null; isDefectOrder?: boolean | null }) {
   return buildWorkOrderTitle({
     title: workOrder.title ?? undefined,
     displayTitle: workOrder.displayTitle ?? undefined,

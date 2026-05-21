@@ -1,4 +1,5 @@
 import { EMPTY_DISPLAY } from "@/lib/constants/display";
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import { MATERIAL_KIND, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import { getOrderEntriesByTargetType, getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -64,17 +65,17 @@ function sumBy<T>(items: T[], getter: (item: T) => number) {
 
 export function getRepresentativeImage(allAttachments: Attachment[]) {
   const primaryDesignImage = allAttachments.find(
-    (attachment) => attachment.type === "image" && attachment.scope === "design" && attachment.isPrimary === true,
+    (attachment) => attachment.type === "image" && isDesignAttachmentScope(attachment.scope) && attachment.isPrimary === true,
   );
   if (primaryDesignImage) return primaryDesignImage;
 
   const designImages = allAttachments.filter(
-    (attachment) => attachment.type === "image" && attachment.scope === "design",
+    (attachment) => attachment.type === "image" && isDesignAttachmentScope(attachment.scope),
   );
   if (designImages.length > 0) return designImages[0] ?? null;
 
   const officialImages = allAttachments.filter(
-    (attachment) => attachment.type === "image" && (attachment.scope ?? "attachment") === "attachment",
+    (attachment) => attachment.type === "image" && (attachment.scope ?? ATTACHMENT_SCOPE.attachment) === ATTACHMENT_SCOPE.attachment,
   );
   if (officialImages.length > 0) return officialImages[0] ?? null;
 

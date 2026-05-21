@@ -1,3 +1,4 @@
+import type { UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import type { AttachmentPanelSection } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import type { RoleType, WorkOrder } from "@/types/workorder";
 
@@ -9,9 +10,9 @@ export type WorkOrderSidePanelProps = {
   writeLocked?: boolean;
   writeLockMessage?: string;
   attachmentSections: AttachmentPanelSection[];
-  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
+  onOpenAttachmentPicker: (scope?: UploadableAttachmentScopeValue) => void;
   onOpenDesignDrawingModal?: () => void;
-  onUploadAttachmentFiles: (scope: "design" | "attachment", files: File[]) => void;
+  onUploadAttachmentFiles: (scope: UploadableAttachmentScopeValue, files: File[]) => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment: (attachmentId: string) => void;

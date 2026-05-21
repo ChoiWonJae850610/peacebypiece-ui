@@ -1,5 +1,6 @@
 import "server-only";
 
+import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import { queryDb } from "@/lib/db/client";
 import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import {
@@ -1678,7 +1679,7 @@ export async function createDbWorkOrder(
 
   if (schema.workOrderKindColumn) {
     columns.push(schema.workOrderKindColumn);
-    values.push(normalizedWorkOrder.workOrderKind ?? "sample");
+    values.push(normalizedWorkOrder.workOrderKind ?? WORK_ORDER_KIND.sample);
     placeholders.push(`$${values.length}`);
   }
 
@@ -1889,7 +1890,7 @@ export async function updateDbWorkOrder(
     assignments.push(
       `${quoteIdentifier(schema.workOrderKindColumn)} = $${values.length + 1}`,
     );
-    values.push(normalizedWorkOrder.workOrderKind ?? "sample");
+    values.push(normalizedWorkOrder.workOrderKind ?? WORK_ORDER_KIND.sample);
   }
 
   if (schema.reorderGroupIdColumn) {

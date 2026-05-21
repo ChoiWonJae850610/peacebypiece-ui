@@ -1,3 +1,4 @@
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import { HISTORY_CATEGORY, HISTORY_TONE } from "@/lib/constants/workorderHistory";
 import { createHistoryLog, defaultHistoryText, formatTemplate, type HistoryText } from "@/lib/workorder/history/builders/shared";
 
@@ -5,17 +6,17 @@ export function createAttachmentUploadHistoryLog(
   user: string,
   workOrderId: string,
   attachments: { name: string }[],
-  scope: "design" | "attachment" = "attachment",
+  scope: UploadableAttachmentScopeValue = ATTACHMENT_SCOPE.attachment,
   text: HistoryText = defaultHistoryText,
 ) {
   return createHistoryLog({
-    action: scope === "design" ? text.actions.designAttachmentUploaded : text.actions.officialAttachmentUploaded,
-    message: scope === "design" ? text.messages.designAttachmentUploaded : text.messages.officialAttachmentUploaded,
+    action: isDesignAttachmentScope(scope) ? text.actions.designAttachmentUploaded : text.actions.officialAttachmentUploaded,
+    message: isDesignAttachmentScope(scope) ? text.messages.designAttachmentUploaded : text.messages.officialAttachmentUploaded,
     user,
     workOrderId,
     category: HISTORY_CATEGORY.attachment,
     tone: HISTORY_TONE.blue,
-    summary: `${formatTemplate(scope === "design" ? text.detailLabels.summaryDesignAttachmentCountFormat : text.detailLabels.summaryOfficialAttachmentCountFormat, { count: attachments.length })}${text.actorSeparator}${user}`,
+    summary: `${formatTemplate(isDesignAttachmentScope(scope) ? text.detailLabels.summaryDesignAttachmentCountFormat : text.detailLabels.summaryOfficialAttachmentCountFormat, { count: attachments.length })}${text.actorSeparator}${user}`,
     detailLines: attachments.map((attachment, index) => ({
       label: formatTemplate(text.detailLabels.fileCountFormat, { index: index + 1 }),
       value: attachment.name,
@@ -41,7 +42,7 @@ export function createAttachmentDeleteHistoryLog(
       { label: text.detailLabels.file, value: attachment.name },
       {
         label: text.detailLabels.scope,
-        value: attachment.scope === "design" ? text.detailLabels.designAttachment : text.detailLabels.officialAttachment,
+        value: isDesignAttachmentScope(attachment.scope) ? text.detailLabels.designAttachment : text.detailLabels.officialAttachment,
       },
     ],
     text,
