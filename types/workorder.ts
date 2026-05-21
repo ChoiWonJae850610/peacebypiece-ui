@@ -4,6 +4,7 @@ import type { UserProfile } from "@/types/user";
 import type { InventoryChangeTypeValue, InventoryStatusValue, OrderEntryTargetTypeValue } from "@/lib/constants/workorderDomain";
 import type { AttachmentScopeValue, WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
 import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
+import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
 export type AttachmentScope = AttachmentScopeValue;
@@ -207,6 +208,7 @@ export type WorkOrderAuditActor = {
 export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "workflowState" | "lastSavedAt"> &
   Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries" | "materials" | "outsourcing">> & {
     auditActor?: WorkOrderAuditActor | null;
+    serviceCode?: WorkOrderServiceCodeValue | null;
   };
 
 export type WorkOrderStatePatchResult = WorkOrderStatePatch &

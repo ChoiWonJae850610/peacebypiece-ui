@@ -592,3 +592,15 @@ workorder action type constants 정리 1차
 - R2 실제 purge는 WO-S004 trashPurge serviceCode에서만 통과
 - DB schema/R2 key/권한/세션 흐름 변경 없음
 ```
+
+
+### 0.15.56 업데이트
+
+```txt
+79_wafl-a-type-workorder-state-patch-server-guard.md
+- 작업지시서 state patch에 serviceCode를 포함
+- 서버 route에서 serviceCode 유효성 확인
+- 생산구성 replace 미허용 serviceCode의 생산구성 patch를 서버에서 제거
+- system audit source에 serviceCode를 포함해 추적성 보강
+- DB schema/R2 key/권한/세션 흐름 변경 없음
+```

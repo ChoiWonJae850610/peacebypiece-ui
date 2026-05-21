@@ -655,3 +655,12 @@ High risk:
 - 저장소 복원/삭제 요청/purge worker/system purge route에 serviceCode guard를 연결한다.
 - route가 수행하는 resource/operation이 side effect matrix 기준을 벗어나면 예외로 차단되도록 한다.
 - 이번 단계는 guard 연결이며 DB schema, R2 key, 권한/세션 흐름은 변경하지 않는다.
+
+
+### 0.15.56 — 작업지시서 state patch server guard
+
+- 클라이언트가 보내는 작업지시서 state patch에 `serviceCode`를 포함한다.
+- `/api/workorders/[workOrderId]` PATCH route에서 serviceCode 유효성을 확인한다.
+- serviceCode가 생산구성 replace를 허용하지 않으면 서버에서 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` 관련 patch를 제거한다.
+- system audit source에 serviceCode를 포함해 DB side effect 추적성을 보강한다.
+- 이번 단계는 guard 보강이며 DB schema, R2 key, 권한/세션 흐름은 변경하지 않는다.

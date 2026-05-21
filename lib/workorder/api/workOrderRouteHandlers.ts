@@ -12,6 +12,8 @@ import {
   isDatabaseConfigured,
 } from "@/lib/db/client";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { isWorkOrderServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
+import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
@@ -949,6 +951,7 @@ export async function handlePatchWorkOrderState(
     const body = await readJsonBody<{
       patch?: Partial<WorkOrderStatePatch>;
       historyLogs?: unknown[];
+      serviceCode?: unknown;
     }>(request);
 
     if (!body) {
@@ -976,6 +979,24 @@ export async function handlePatchWorkOrderState(
       return createInvalidPayloadResponse("workflowState is required.");
     }
 
+    const rawServiceCode =
+      typeof body.serviceCode === "string"
+        ? body.serviceCode
+        : typeof body.patch.serviceCode === "string"
+          ? body.patch.serviceCode
+          : null;
+    const serviceCode: WorkOrderServiceCodeValue | null = isWorkOrderServiceCode(rawServiceCode)
+      ? rawServiceCode
+      : null;
+    if (rawServiceCode && !serviceCode) {
+      return createInvalidPayloadResponse("Invalid workOrder serviceCode.");
+    }
+
+    const guardedPatch = guardProductionCompositionPatchByServiceCode(
+      body.patch as WorkOrderStatePatch,
+      serviceCode,
+    );
+
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
 
@@ -990,7 +1011,7 @@ export async function handlePatchWorkOrderState(
       await requireWorkOrderStatePatchWorkflowPermission({
         session,
         previousWorkOrder,
-        patch: body.patch as Pick<WorkOrderStatePatch, "workflowState"> &
+        patch: guardedPatch as Pick<WorkOrderStatePatch, "workflowState"> &
           Partial<Pick<WorkOrderStatePatch, "factoryOrderRequest">>,
       });
     if (workflowPermissionResponse) return workflowPermissionResponse;
@@ -998,31 +1019,31 @@ export async function handlePatchWorkOrderState(
     const savedWorkOrder = await updateDbWorkOrderStatePatch(
       {
         id: workOrderId,
-        workflowState: body.patch.workflowState as WorkOrder["workflowState"],
+        workflowState: guardedPatch.workflowState as WorkOrder["workflowState"],
         lastSavedAt:
-          typeof body.patch.lastSavedAt === "string" &&
-          body.patch.lastSavedAt.trim()
-            ? body.patch.lastSavedAt
+          typeof guardedPatch.lastSavedAt === "string" &&
+          guardedPatch.lastSavedAt.trim()
+            ? guardedPatch.lastSavedAt
             : new Date().toISOString(),
         inventoryQuantity:
-          typeof body.patch.inventoryQuantity === "number"
-            ? body.patch.inventoryQuantity
+          typeof guardedPatch.inventoryQuantity === "number"
+            ? guardedPatch.inventoryQuantity
             : undefined,
-        inventoryStatus: body.patch.inventoryStatus,
+        inventoryStatus: guardedPatch.inventoryStatus,
         factoryOrderRequest: Object.prototype.hasOwnProperty.call(
-          body.patch,
+          guardedPatch,
           "factoryOrderRequest",
         )
-          ? (body.patch.factoryOrderRequest ?? null)
+          ? (guardedPatch.factoryOrderRequest ?? null)
           : undefined,
-        orderEntries: Array.isArray(body.patch.orderEntries)
-          ? body.patch.orderEntries
+        orderEntries: Array.isArray(guardedPatch.orderEntries)
+          ? guardedPatch.orderEntries
           : undefined,
-        materials: Array.isArray(body.patch.materials)
-          ? body.patch.materials
+        materials: Array.isArray(guardedPatch.materials)
+          ? guardedPatch.materials
           : undefined,
-        outsourcing: Array.isArray(body.patch.outsourcing)
-          ? body.patch.outsourcing
+        outsourcing: Array.isArray(guardedPatch.outsourcing)
+          ? guardedPatch.outsourcing
           : undefined,
       },
       scopeResult.scope,
@@ -1035,8 +1056,8 @@ export async function handlePatchWorkOrderState(
       {
         requestId: getAuditRequestId(request),
         ipAddress: getAuditIpAddress(request),
-        source: "state-patch",
-        auditActor: readAuditActor(body.patch.auditActor),
+        source: serviceCode ? `state-patch:${serviceCode}` : "state-patch",
+        auditActor: readAuditActor(guardedPatch.auditActor),
       },
     );
 
@@ -1061,7 +1082,7 @@ export async function handlePatchWorkOrderState(
 
     return NextResponse.json({
       patch: patchResult,
-      meta: { mode: "state-patch", hydrated: false },
+      meta: { mode: "state-patch", hydrated: false, serviceCode },
     });
   } catch (error) {
     const resolved = resolveDbErrorPayload(

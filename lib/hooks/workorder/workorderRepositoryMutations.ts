@@ -110,6 +110,7 @@ function buildWorkOrderStatePatch(
     auditActor: auditActor
       ? { id: auditActor.id, name: auditActor.name, role: auditActor.role }
       : null,
+    serviceCode: serviceCode ?? null,
   };
 
   return guardProductionCompositionPatchByServiceCode(statePatch, serviceCode);
