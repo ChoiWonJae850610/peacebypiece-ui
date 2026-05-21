@@ -16,6 +16,7 @@ import {
   toOrderEntriesPatch,
   toOutsourcingPatch,
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
+import { commitMaterialItemsEdit } from "@/lib/hooks/workorder/detailEditor/materialMutations";
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
 import { useWorkOrderEditingSession } from "@/lib/hooks/workorder/detailEditor/useWorkOrderEditingSession";
 import { usePartnerWorkOrderOptions } from "@/lib/hooks/partners/usePartnerWorkOrderOptions";

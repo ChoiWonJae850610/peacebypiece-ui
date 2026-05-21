@@ -1,4 +1,5 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
+import { shouldCommitProductionComposition } from "@/lib/workorder/productionCompositionPolicy";
 import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 function stampPersistedWorkOrder(workOrder: WorkOrder): WorkOrder {
@@ -70,11 +71,7 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
 }
 
 function shouldIncludeProductionCompositionInStatePatch(workOrder: WorkOrder): boolean {
-  return Boolean(
-    workOrder.hasDetailSnapshot ||
-      (workOrder.materials?.length ?? 0) > 0 ||
-      (workOrder.outsourcing?.length ?? 0) > 0,
-  );
+  return shouldCommitProductionComposition(workOrder);
 }
 
 function buildWorkOrderStatePatch(workOrder: WorkOrder, auditActor?: UserProfile | null): WorkOrderStatePatch {

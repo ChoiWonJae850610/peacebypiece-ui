@@ -557,3 +557,10 @@ High risk:
 - 활성 편집 셀의 editingValue까지 snapshot에 포함
 - DB/API/R2/권한/세션 변경 없음
 ```
+
+
+## 0.15.44 — 생산구성 확정 저장 정책 보정
+
+- 빌드 오류가 발생한 material snapshot helper import 누락을 수정한다.
+- 생산구성은 검토요청, 검토완료, 발주/검수 진행 등 앞으로 진행되는 workflow 이벤트에서만 확정 저장한다.
+- 반려/취소성 흐름에서는 입력 중 draft를 새 확정값으로 저장하지 않는 정책을 둔다.

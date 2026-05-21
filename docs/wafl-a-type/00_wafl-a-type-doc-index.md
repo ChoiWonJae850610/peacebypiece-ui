@@ -507,3 +507,5 @@ workorder action type constants 정리 1차
 - 원단/부자재/외주/공장 수량·단가가 0으로 떨어지는 문제 보정
 - DB schema/API/R2/권한/세션 변경 없음
 ```
+
+- `67_wafl-a-type-production-composition-commit-policy.md` — 생산구성 확정 저장 정책과 workflow snapshot 보정
