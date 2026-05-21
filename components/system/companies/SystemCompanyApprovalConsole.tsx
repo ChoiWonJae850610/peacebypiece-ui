@@ -42,6 +42,7 @@ import {
   getDefaultInvitationExpiresAt,
   getLoadStatusLabel,
   getLoadStatusTone,
+  isPdfOnboardingFile,
   isPreviewableImageFile,
   matchesCompanyManagementFilter,
   normalizePhoneInput,

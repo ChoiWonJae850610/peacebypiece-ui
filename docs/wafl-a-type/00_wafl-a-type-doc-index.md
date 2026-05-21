@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.31
+baseline_source: peacebypiece-ui-0.15.33
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.15에서는 0.15.31 기준으로 formatter/presentation 중복 구현을 1차 통합하고 숫자·금액·수량·저장공간 용량 formatter를 공통 유틸로 분리한다.
+v0.15에서는 0.15.33 기준으로 TSX 도메인 로직 분리 후 DB 저장값과 JSON payload 저장 후보를 감사한다.
 
 ```txt
 브랜드 톤
@@ -46,6 +46,8 @@ admin 화면 개발자성 placeholder 정리
 코드 품질 / 도메인 구조 전수 감사
 domain constants/types 1차 정리
 formatter/presentation 통합 1차
+TSX 도메인 로직 분리 1차
+DB 저장값 / JSON payload 감사
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -78,6 +80,8 @@ formatter/presentation 통합 1차
 - 0.15.29 기준 settingsForm i18n key mismatch 빌드 오류를 수정하고 문자열 비교, raw payload, 하드코딩, 중복 함수, any 사용 후보를 전수 감사했다.
 - 0.15.30 기준 userAccessPreview i18n key mismatch 빌드 오류를 수정하고 usage risk/file kind domain code를 도입했다.
 - 0.15.31 기준 숫자, 금액, 수량+단위, 저장공간 용량 formatter 중복 구현을 공통 유틸로 1차 통합했다.
+- 0.15.32 기준 시스템 고객사 승인 화면의 TSX 도메인 로직을 presentation 계층으로 1차 분리했다.
+- 0.15.33 기준 DB 저장값, JSON payload, metadata, raw token, reason/status 저장 후보를 감사하고 SystemCompanyApprovalConsole의 누락 import 빌드 오류를 수정했다.
 ```
 
 ## 3. 문서 목록
@@ -426,4 +430,16 @@ formatter/presentation 통합 1차
 - 시스템 고객사 승인 화면의 row 변환, 상태 판정, filter 판정, 초대 링크 상태 표시 helper를 presentation 계층으로 이동
 - components/system/companies/SystemCompanyApprovalConsole.tsx는 화면 조립과 이벤트 처리 중심으로 축소
 - DB/API/R2/권한/세션 변경 없음
+```
+
+
+### 0.15.33 업데이트
+
+```txt
+56_wafl-a-type-db-payload-storage-audit.md
+- DB 저장값 / JSON payload 감사
+- raw token 미저장, metadata/jsonb 허용 범위, request_payload 주의 항목 정리
+- company_account_requests.request_payload, workorders/status legacy payload 후보, status text + check constraint 정리 필요성 분류
+- SystemCompanyApprovalConsole의 isPdfOnboardingFile import 누락 빌드 오류 수정
+- DB schema/API/R2/권한/세션 변경 없음
 ```

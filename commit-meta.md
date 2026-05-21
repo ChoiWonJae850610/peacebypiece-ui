@@ -1,11 +1,11 @@
 Version :
-0.15.32
+0.15.33
 
 Summary :
-시스템 고객사 승인 화면의 TSX 도메인 로직 분리
+빌드 오류 수정과 DB 저장값 JSON payload 감사
 
 Description :
-시스템 고객사 승인 화면에 있던 고객사 가입 신청 row 변환, 상태 표시, 필터 판정, 초대 링크 상태 표시 helper를 system presentation 계층으로 이동했다. 화면 컴포넌트는 fetch, 이벤트 처리, table과 modal 렌더링 중심으로 유지하고 DB/API/R2/권한/세션 흐름은 변경하지 않았다.
+시스템 고객사 승인 화면에서 PDF 파일 판정 helper import가 누락되어 발생한 빌드 타입 오류를 수정했다. DB 저장값, JSON payload, metadata, raw token, reason/status 저장 후보를 감사하고 후속 정리 우선순위를 문서화했다.
 
 수정 파일 목록 :
 - components/system/companies/SystemCompanyApprovalConsole.tsx
@@ -15,8 +15,7 @@ Description :
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/wafl-a-type/55_wafl-a-type-tsx-domain-logic-separation.md
-- lib/system/systemCompanyApprovalPresentation.ts
+- docs/wafl-a-type/56_wafl-a-type-db-payload-storage-audit.md
 
 삭제 파일 목록 :
 없음

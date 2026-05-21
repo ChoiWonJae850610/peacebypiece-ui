@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Refactor Roadmap
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.30
+baseline_source: peacebypiece-ui-0.15.33
 status: draft-final
 updated: 2026-05-20
 ---
@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.30
+현재 기준: 0.15.33
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -49,6 +49,9 @@ updated: 2026-05-20
 - admin 화면 개발자성 placeholder 정리
 - 코드 품질 / 도메인 구조 전수 감사
 - domain constants/types 1차 정리
+- formatter/presentation 통합 1차
+- TSX 도메인 로직 분리 1차
+- DB 저장값 / JSON payload 감사
 ```
 
 ## 2. 전환 원칙
@@ -105,6 +108,9 @@ updated: 2026-05-20
 0.15.28 — admin 화면 개발자성 placeholder 정리
 0.15.29 — 코드 품질 / 도메인 구조 전수 감사
 0.15.30 — domain constants/types 1차 정리
+0.15.31 — formatter/presentation 통합 1차
+0.15.32 — TSX 도메인 로직 분리 1차
+0.15.33 — DB 저장값 / JSON payload 감사
 ```
 
 ## 4. 0.15.19 이후 추천 작업
@@ -442,4 +448,17 @@ High risk:
 0.15.34 — action/fetch handler 분리 후보 감사
 0.16.0 — DeviceKind foundation
 0.16.1 — Admin/Workspace shell에서 DeviceKind 읽기만 적용
+```
+
+
+### 0.15.33 업데이트
+
+```txt
+56_wafl-a-type-db-payload-storage-audit.md
+- DB 저장값 / JSON payload 감사
+- system_audit_logs.metadata는 허용하되 raw body/secret/token 저장 금지 기준 정리
+- company_account_requests.request_payload는 high priority 정리 대상으로 분류
+- app/api/workorders/status/route.ts legacy payload column candidates는 사용 여부 확인 후 정리 후보로 분류
+- status text + check constraint와 TypeScript domain constants 동기화 필요성 정리
+- isPdfOnboardingFile import 누락 빌드 오류 수정
 ```
