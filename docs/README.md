@@ -79,14 +79,14 @@
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~82 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~83 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.59
+현재 기준: 0.15.60
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -109,3 +109,5 @@ DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는
 - `wafl-a-type/80_wafl-a-type-workorder-reject-production-preserve.md` — 반려/취소 workflow 생산구성 보존 보강
 
 - `wafl-a-type/82_wafl-a-type-review-request-production-service-code-forward.md` — 검토요청 생산구성 serviceCode 전달 보강
+
+- `wafl-a-type/83_wafl-a-type-workorder-review-reject-regression.md` — 검토요청/반려/재검토요청 회귀 테스트 기준

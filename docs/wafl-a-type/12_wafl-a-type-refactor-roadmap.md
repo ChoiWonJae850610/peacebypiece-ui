@@ -688,3 +688,12 @@ High risk:
 - 검토요청 WO-F001은 orders/materials/outsourcing replace 저장을 허용한다.
 - 반려 WO-B001은 생산구성 replace 저장 금지 정책을 유지한다.
 - side effect matrix의 allowsProductionCompositionReplace를 생산구성 replace gate의 기준으로 사용한다.
+
+## 0.15.60 — 검토요청/반려/재검토요청 회귀 테스트 기준 고정
+
+- 검토요청, 반려, 재검토요청, 검토완료 흐름의 정상 동작 기준을 문서로 고정한다.
+- 검토요청과 재검토요청은 `WO-F001` 계열 forward workflow로 생산구성 현재값 replace 저장을 허용한다.
+- 반려는 `WO-B001` backward workflow로 workflow state, 반려 사유, history만 변경하고 생산구성 현재값 테이블은 변경하지 않는다.
+- `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`는 forward workflow 또는 명시 저장 액션에서만 변경되어야 한다.
+- 회귀 테스트 기준을 0.15.61 이후 serviceCode 연결 점검과 orders replace 전환 작업의 보호 기준으로 사용한다.
+

@@ -609,3 +609,5 @@ workorder action type constants 정리 1차
 - [81_wafl-a-type-workorder-production-sync-gate.md](./81_wafl-a-type-workorder-production-sync-gate.md) — 0.15.58 반려 workflow에서 생산구성 repository sync 차단
 
 - [82_wafl-a-type-review-request-production-service-code-forward.md](./82_wafl-a-type-review-request-production-service-code-forward.md) — 0.15.59 검토요청 생산구성 serviceCode 전달 보강
+
+- [83_wafl-a-type-workorder-review-reject-regression.md](./83_wafl-a-type-workorder-review-reject-regression.md) — 0.15.60 검토요청/반려/재검토요청 회귀 테스트 기준
