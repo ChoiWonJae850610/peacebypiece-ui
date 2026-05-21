@@ -547,3 +547,15 @@ workorder action type constants 정리 1차
 - 후속 serviceCode constants / allowlist 도입 전 기준 문서로 사용
 - 실제 DB schema/API/R2 구현은 변경하지 않음
 ```
+
+
+### 0.15.52 업데이트
+
+```txt
+75_wafl-a-type-workorder-service-code-constants.md
+- 작업지시서 서비스 액션 맵을 코드 상수로 1차 도입
+- workflow action을 service code로 변환하는 기준 helper 추가
+- 생산구성 replace 저장 allowlist를 service code 기준으로 분리
+- 반려/취소/되돌리기/메모/첨부/삭제 계열은 생산구성 replace 저장 금지 기준으로 둠
+- 누락된 app constants를 복원해 빌드 오류를 수정
+```

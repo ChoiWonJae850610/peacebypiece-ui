@@ -38,6 +38,7 @@ import {
 import { normalizeRoles } from "@/lib/constants/roles";
 import { canReinspectInWorkflow, isWorkflowState } from "@/lib/constants/workorderStates";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
+import { WORKORDER_SERVICE_CODE, getWorkOrderWorkflowServiceCode } from "@/lib/constants/workorderServiceCodes";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -149,6 +150,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
+        serviceCode: getWorkOrderWorkflowServiceCode({ actionType: action.actionType, nextState: action.nextState }),
       });
       const persistedWorkOrders = replaceWorkOrderById(workOrdersRef.current, workOrder.id, persistedWorkOrder);
 
@@ -200,6 +202,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
+        serviceCode: getWorkOrderWorkflowServiceCode({ actionType: action.actionType, nextState: action.nextState }),
       });
       const persistedWorkOrders = replaceWorkOrderById(workOrdersRef.current, workOrder.id, persistedWorkOrder);
 
@@ -352,6 +355,10 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
+        serviceCode: getWorkOrderWorkflowServiceCode({
+          actionType: pendingWorkflowAction.actionType,
+          nextState: pendingWorkflowAction.nextState,
+        }),
       });
       const persistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrder.id, nextPersistedWorkOrder);
       setWorkOrders(persistedWorkOrders);
@@ -394,6 +401,7 @@ export function useWorkOrderWorkflowActions({
         workOrders: persistCandidates,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
+        serviceCode: WORKORDER_SERVICE_CODE.inventoryImmediateSave,
       }).then((persistedCandidates) => {
         const persistedWorkOrders = mergeSavedWorkOrders(nextWorkOrders, persistedCandidates);
         setWorkOrders(persistedWorkOrders);
@@ -436,6 +444,7 @@ export function useWorkOrderWorkflowActions({
         workOrders: persistCandidates,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
+        serviceCode: WORKORDER_SERVICE_CODE.completeInspection,
       }).then((persistedCandidates) => {
         const persistedWorkOrders = mergeSavedWorkOrders(nextWorkOrders, persistedCandidates);
         setWorkOrders(persistedWorkOrders);

@@ -622,3 +622,12 @@ High risk:
 - 작업지시서 본체, workflow state patch, 생산구성 현재값 저장, 메모, 첨부/R2, 삭제/복원/purge 흐름을 서비스 코드와 연결한다.
 - 반려/취소/되돌리기 계열에서 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` replace 저장이 실행되면 안 된다는 금지 규칙을 실제 호출 경로 기준으로 명시한다.
 - 이번 단계는 문서화이며 DB schema/API/R2 동작은 변경하지 않는다.
+
+
+### 0.15.52 — 작업지시서 serviceCode constants / production replace allowlist
+
+- `lib/constants/app.ts`에서 누락된 storage/repository mode exports를 복원해 빌드 오류를 수정한다.
+- `lib/constants/workorderServiceCodes.ts`를 추가해 작업지시서 DB/R2 side effect를 serviceCode 기준으로 분류한다.
+- 생산구성 replace 저장 가능 액션을 serviceCode allowlist로 제한한다.
+- workflow action 저장 호출부에서 serviceCode를 넘겨 반려/취소성 workflow가 생산구성 replace 저장을 실행하지 않게 한다.
+- 이번 단계는 작업지시서 workflow state patch 경로 1차 적용이며, 메모/첨부/R2/purge 경로 serviceCode 확장은 후속 단계에서 진행한다.

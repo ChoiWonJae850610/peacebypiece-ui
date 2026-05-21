@@ -1,0 +1,166 @@
+import { WORKFLOW_ACTION_TYPE, type WorkflowActionTypeValue } from "@/lib/constants/workflowActions";
+import { WORKFLOW_STATE, type WorkflowStateValue } from "@/lib/constants/workorderStates";
+
+export const WORKORDER_SERVICE_CODE = {
+  titleImmediateSave: "WO-I001",
+  assigneeImmediateSave: "WO-I002",
+  basicInfoImmediateSave: "WO-I003",
+  inventoryImmediateSave: "WO-I004",
+
+  orderInfoSave: "WO-P001",
+  productionCompositionSave: "WO-P002",
+
+  requestReview: "WO-F001",
+  approveReview: "WO-F002",
+  requestOrder: "WO-F003",
+  completeInspection: "WO-F004",
+  completeWorkOrder: "WO-F005",
+
+  rejectReview: "WO-B001",
+  cancelOrder: "WO-B002",
+  revertWorkflow: "WO-B003",
+
+  memoCreate: "WO-M001",
+  memoUpdate: "WO-M002",
+  memoDelete: "WO-M003",
+
+  designAttachmentPrepare: "WO-A001",
+  fileAttachmentPrepare: "WO-A002",
+  attachmentUploadComplete: "WO-A003",
+  attachmentDeleteRequest: "WO-A004",
+  primaryDesignSet: "WO-A005",
+
+  workOrderDelete: "WO-S001",
+  workOrderRestore: "WO-S002",
+  attachmentMemoRestore: "WO-S003",
+  trashPurge: "WO-S004",
+
+  reorderCreate: "WO-R001",
+
+  listQuery: "WO-Q001",
+  detailQuery: "WO-Q002",
+  summaryQuery: "WO-Q003",
+} as const;
+
+export const WORKORDER_SERVICE_CODES = [
+  WORKORDER_SERVICE_CODE.titleImmediateSave,
+  WORKORDER_SERVICE_CODE.assigneeImmediateSave,
+  WORKORDER_SERVICE_CODE.basicInfoImmediateSave,
+  WORKORDER_SERVICE_CODE.inventoryImmediateSave,
+  WORKORDER_SERVICE_CODE.orderInfoSave,
+  WORKORDER_SERVICE_CODE.productionCompositionSave,
+  WORKORDER_SERVICE_CODE.requestReview,
+  WORKORDER_SERVICE_CODE.approveReview,
+  WORKORDER_SERVICE_CODE.requestOrder,
+  WORKORDER_SERVICE_CODE.completeInspection,
+  WORKORDER_SERVICE_CODE.completeWorkOrder,
+  WORKORDER_SERVICE_CODE.rejectReview,
+  WORKORDER_SERVICE_CODE.cancelOrder,
+  WORKORDER_SERVICE_CODE.revertWorkflow,
+  WORKORDER_SERVICE_CODE.memoCreate,
+  WORKORDER_SERVICE_CODE.memoUpdate,
+  WORKORDER_SERVICE_CODE.memoDelete,
+  WORKORDER_SERVICE_CODE.designAttachmentPrepare,
+  WORKORDER_SERVICE_CODE.fileAttachmentPrepare,
+  WORKORDER_SERVICE_CODE.attachmentUploadComplete,
+  WORKORDER_SERVICE_CODE.attachmentDeleteRequest,
+  WORKORDER_SERVICE_CODE.primaryDesignSet,
+  WORKORDER_SERVICE_CODE.workOrderDelete,
+  WORKORDER_SERVICE_CODE.workOrderRestore,
+  WORKORDER_SERVICE_CODE.attachmentMemoRestore,
+  WORKORDER_SERVICE_CODE.trashPurge,
+  WORKORDER_SERVICE_CODE.reorderCreate,
+  WORKORDER_SERVICE_CODE.listQuery,
+  WORKORDER_SERVICE_CODE.detailQuery,
+  WORKORDER_SERVICE_CODE.summaryQuery,
+] as const;
+export type WorkOrderServiceCodeValue = (typeof WORKORDER_SERVICE_CODES)[number];
+
+export const PRODUCTION_COMPOSITION_REPLACE_ALLOWED_SERVICE_CODES = [
+  WORKORDER_SERVICE_CODE.orderInfoSave,
+  WORKORDER_SERVICE_CODE.productionCompositionSave,
+  WORKORDER_SERVICE_CODE.requestReview,
+  WORKORDER_SERVICE_CODE.approveReview,
+  WORKORDER_SERVICE_CODE.requestOrder,
+  WORKORDER_SERVICE_CODE.completeInspection,
+  WORKORDER_SERVICE_CODE.completeWorkOrder,
+] as const satisfies readonly WorkOrderServiceCodeValue[];
+
+export const PRODUCTION_COMPOSITION_REPLACE_FORBIDDEN_SERVICE_CODES = [
+  WORKORDER_SERVICE_CODE.rejectReview,
+  WORKORDER_SERVICE_CODE.cancelOrder,
+  WORKORDER_SERVICE_CODE.revertWorkflow,
+  WORKORDER_SERVICE_CODE.memoCreate,
+  WORKORDER_SERVICE_CODE.memoUpdate,
+  WORKORDER_SERVICE_CODE.memoDelete,
+  WORKORDER_SERVICE_CODE.designAttachmentPrepare,
+  WORKORDER_SERVICE_CODE.fileAttachmentPrepare,
+  WORKORDER_SERVICE_CODE.attachmentUploadComplete,
+  WORKORDER_SERVICE_CODE.attachmentDeleteRequest,
+  WORKORDER_SERVICE_CODE.primaryDesignSet,
+  WORKORDER_SERVICE_CODE.workOrderDelete,
+  WORKORDER_SERVICE_CODE.workOrderRestore,
+  WORKORDER_SERVICE_CODE.attachmentMemoRestore,
+  WORKORDER_SERVICE_CODE.trashPurge,
+] as const satisfies readonly WorkOrderServiceCodeValue[];
+
+export function isWorkOrderServiceCode(value: string | null | undefined): value is WorkOrderServiceCodeValue {
+  return Boolean(value) && (WORKORDER_SERVICE_CODES as readonly string[]).includes(value as string);
+}
+
+export function canReplaceProductionCompositionByServiceCode(
+  serviceCode: WorkOrderServiceCodeValue | null | undefined,
+): boolean {
+  return Boolean(
+    serviceCode &&
+      (PRODUCTION_COMPOSITION_REPLACE_ALLOWED_SERVICE_CODES as readonly WorkOrderServiceCodeValue[]).includes(serviceCode),
+  );
+}
+
+export function isProductionCompositionReplaceForbiddenServiceCode(
+  serviceCode: WorkOrderServiceCodeValue | null | undefined,
+): boolean {
+  return Boolean(
+    serviceCode &&
+      (PRODUCTION_COMPOSITION_REPLACE_FORBIDDEN_SERVICE_CODES as readonly WorkOrderServiceCodeValue[]).includes(serviceCode),
+  );
+}
+
+export function getWorkOrderWorkflowServiceCode(payload: {
+  actionType?: WorkflowActionTypeValue;
+  nextState: WorkflowStateValue;
+}): WorkOrderServiceCodeValue {
+  switch (payload.actionType) {
+    case WORKFLOW_ACTION_TYPE.requestReview:
+      return WORKORDER_SERVICE_CODE.requestReview;
+    case WORKFLOW_ACTION_TYPE.approveReview:
+      return WORKORDER_SERVICE_CODE.approveReview;
+    case WORKFLOW_ACTION_TYPE.requestOrder:
+      return WORKORDER_SERVICE_CODE.requestOrder;
+    case WORKFLOW_ACTION_TYPE.completeInspection:
+      return WORKORDER_SERVICE_CODE.completeInspection;
+    case WORKFLOW_ACTION_TYPE.rejectReview:
+      return WORKORDER_SERVICE_CODE.rejectReview;
+    case WORKFLOW_ACTION_TYPE.cancelReviewRequest:
+    case WORKFLOW_ACTION_TYPE.cancelReviewApproval:
+    case WORKFLOW_ACTION_TYPE.requestReinspection:
+      return WORKORDER_SERVICE_CODE.revertWorkflow;
+    default:
+      break;
+  }
+
+  switch (payload.nextState) {
+    case WORKFLOW_STATE.reviewRequested:
+      return WORKORDER_SERVICE_CODE.requestReview;
+    case WORKFLOW_STATE.reviewCompleted:
+      return WORKORDER_SERVICE_CODE.approveReview;
+    case WORKFLOW_STATE.inspection:
+      return WORKORDER_SERVICE_CODE.requestOrder;
+    case WORKFLOW_STATE.completed:
+      return WORKORDER_SERVICE_CODE.completeWorkOrder;
+    case WORKFLOW_STATE.draft:
+    case WORKFLOW_STATE.rejected:
+    default:
+      return WORKORDER_SERVICE_CODE.revertWorkflow;
+  }
+}

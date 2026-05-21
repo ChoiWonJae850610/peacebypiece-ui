@@ -1,4 +1,5 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
+import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import { shouldCommitProductionComposition } from "@/lib/workorder/productionCompositionPolicy";
 import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
 import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
@@ -76,13 +77,20 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
   };
 }
 
-function shouldIncludeProductionCompositionInStatePatch(workOrder: WorkOrder): boolean {
-  return shouldCommitProductionComposition(workOrder);
+function shouldIncludeProductionCompositionInStatePatch(
+  workOrder: WorkOrder,
+  serviceCode?: WorkOrderServiceCodeValue | null,
+): boolean {
+  return shouldCommitProductionComposition(workOrder, serviceCode);
 }
 
-function buildWorkOrderStatePatch(workOrder: WorkOrder, auditActor?: UserProfile | null): WorkOrderStatePatch {
+function buildWorkOrderStatePatch(
+  workOrder: WorkOrder,
+  auditActor?: UserProfile | null,
+  serviceCode?: WorkOrderServiceCodeValue | null,
+): WorkOrderStatePatch {
   const normalizedWorkOrder = normalizeProductionCompositionForWorkflowSnapshot(workOrder);
-  const shouldIncludeProductionComposition = shouldIncludeProductionCompositionInStatePatch(normalizedWorkOrder);
+  const shouldIncludeProductionComposition = shouldIncludeProductionCompositionInStatePatch(normalizedWorkOrder, serviceCode);
 
   return {
     id: normalizedWorkOrder.id,
@@ -110,10 +118,11 @@ export async function persistWorkOrderStatePatchWithHistory(
     workOrder: WorkOrder;
     historyLogs?: HistoryLog[];
     auditActor?: UserProfile | null;
+    serviceCode?: WorkOrderServiceCodeValue | null;
   },
 ) {
   const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
-  const statePatch = buildWorkOrderStatePatch(stampedWorkOrder, payload.auditActor);
+  const statePatch = buildWorkOrderStatePatch(stampedWorkOrder, payload.auditActor, payload.serviceCode);
   const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
@@ -127,12 +136,13 @@ export async function persistWorkOrderStatePatchesWithHistory(
     workOrders: WorkOrder[];
     historyLogs?: HistoryLog[];
     auditActor?: UserProfile | null;
+    serviceCode?: WorkOrderServiceCodeValue | null;
   },
 ) {
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
   const nextWorkOrders: WorkOrder[] = [];
   for (const workOrder of stampedWorkOrders) {
-    const statePatch = buildWorkOrderStatePatch(workOrder, payload.auditActor);
+    const statePatch = buildWorkOrderStatePatch(workOrder, payload.auditActor, payload.serviceCode);
     const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
     nextWorkOrders.push(mergeStatePatchResultIntoWorkOrder(workOrder, savedPatch, statePatch));
   }
