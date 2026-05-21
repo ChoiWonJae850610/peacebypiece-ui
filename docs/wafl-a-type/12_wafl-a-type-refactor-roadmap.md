@@ -571,3 +571,8 @@ High risk:
 - 입력 timing 보정만으로 해결되지 않은 수량/단가 0 fallback 문제를 field mapping 관점에서 정리한다.
 - 생산구성 숫자 필드 alias를 `productionCompositionSnapshot`에서 중앙 처리한다.
 - 다음 단계에서 저장 전 payload와 DB row를 비교할 수 있도록 기준 helper를 둔다.
+
+### 0.15.46 — 생산구성 조회 numeric 문자열 복원
+- DB `numeric` 계열 값이 node-postgres 조회 시 문자열로 반환되는 경우를 고려해 작업지시서 상세 조회 numeric mapper를 보강한다.
+- `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`에 저장된 수량·단가·금액 값을 화면 row로 복원할 때 `number | string | bigint`를 모두 안전하게 숫자로 변환한다.
+- 저장 경로와 schema는 변경하지 않고, 조회 복원 단계만 수정한다.

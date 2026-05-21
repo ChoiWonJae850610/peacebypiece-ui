@@ -92,3 +92,5 @@ DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는
 - `wafl-a-type/67_wafl-a-type-production-composition-commit-policy.md` — 생산구성 확정 저장 정책과 workflow snapshot 보정
 
 - `wafl-a-type/68_wafl-a-type-production-composition-field-mapping.md` — 생산구성 숫자 필드 mapping 통합
+
+- 0.15.46: 생산구성 조회 단계에서 DB numeric 문자열 값을 수량·단가·금액으로 복원하는 기준을 보강했습니다.

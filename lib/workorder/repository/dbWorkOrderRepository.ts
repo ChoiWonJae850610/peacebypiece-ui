@@ -383,7 +383,21 @@ function readStringRowValue(value: unknown, fallback = ""): string {
 }
 
 function readNumberRowValue(value: unknown, fallback = 0): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+  if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, value);
+
+  if (typeof value === "string") {
+    const normalized = value.trim().replace(/,/g, "");
+    if (!normalized) return fallback;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
+  }
+
+  if (typeof value === "bigint") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
+  }
+
+  return fallback;
 }
 
 function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {

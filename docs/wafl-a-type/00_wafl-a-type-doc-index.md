@@ -519,3 +519,4 @@ workorder action type constants 정리 1차
 - workflow snapshot, state patch, DB sync 직전까지 같은 기준을 사용
 - DB schema/API/R2/권한/세션 변경 없음
 ```
+- `69_wafl-a-type-production-composition-read-numeric.md` — 생산구성 조회 numeric 문자열 복원 기준
