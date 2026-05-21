@@ -7,6 +7,15 @@ import type {
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import { formatPbpBinaryBytes } from "@/lib/utils/formatters";
+import {
+  COMPANY_ONBOARDING_STATUS,
+  COMPANY_SUBSCRIPTION_STATUS,
+  JOIN_REQUEST_STATUS,
+  INVITATION_STATUS,
+  isCompanyAccessLimitedStatus,
+  normalizeCompanyOnboardingStatus,
+  normalizeCompanySubscriptionStatusOrNull,
+} from "@/lib/domain/companyStatus";
 
 export type CompanyJoinRequestRow = {
   id: string;
@@ -93,39 +102,20 @@ export function toCompactDateTimeLabel(value: string | null | undefined): string
 }
 
 
-export function isCompanyOnboardingStatus(value: string | null | undefined): value is CompanyOnboardingStatus {
-  return value === "profile_required" || value === "approval_pending" || value === "active" || value === "rejected";
-}
-
-export function normalizeCompanyOnboardingStatus(value: string | null | undefined): CompanyOnboardingStatus | null {
-  return isCompanyOnboardingStatus(value) ? value : null;
-}
-
-export function isCompanySubscriptionStatus(value: string | null | undefined): value is CompanySubscriptionStatus {
-  return value === "trialing" || value === "trial_expired" || value === "active" || value === "past_due" || value === "canceled";
-}
-
-export function normalizeCompanySubscriptionStatus(value: string | null | undefined): CompanySubscriptionStatus | null {
-  return isCompanySubscriptionStatus(value) ? value : null;
-}
-
-export function isCompanyAccessLimitedStatus(status: CompanySubscriptionStatus | null): boolean {
-  return status === "trial_expired" || status === "past_due" || status === "canceled";
-}
 
 export function getCompanyManagementFilterLabel(filter: CompanyManagementFilter): string {
-  if (filter === "approval_pending") return "승인 대기";
+  if (filter === COMPANY_ONBOARDING_STATUS.approvalPending) return "승인 대기";
   if (filter === "approved") return "승인됨";
-  if (filter === "rejected") return "거절됨";
+  if (filter === COMPANY_ONBOARDING_STATUS.rejected) return "거절됨";
   if (filter === "reinput_required") return "재입력 필요";
   if (filter === "access_limited") return "이용제한";
   return "전체";
 }
 
 export function getCompanyManagementFilterDescription(filter: CompanyManagementFilter): string {
-  if (filter === "approval_pending") return "시스템관리자 검토가 필요한 고객사입니다.";
+  if (filter === COMPANY_ONBOARDING_STATUS.approvalPending) return "시스템관리자 검토가 필요한 고객사입니다.";
   if (filter === "approved") return "승인되어 업무 화면 접근이 가능한 고객사입니다.";
-  if (filter === "rejected") return "거절 상태이며 재입력 요청으로 되돌릴 수 있는 고객사입니다.";
+  if (filter === COMPANY_ONBOARDING_STATUS.rejected) return "거절 상태이며 재입력 요청으로 되돌릴 수 있는 고객사입니다.";
   if (filter === "reinput_required") return "회사 정보 재입력이 필요한 고객사입니다.";
   if (filter === "access_limited") return "체험 만료, 연체, 구독 중지 상태의 고객사입니다.";
   return "전체 고객사 가입 이력과 운영 상태입니다.";
@@ -133,10 +123,10 @@ export function getCompanyManagementFilterDescription(filter: CompanyManagementF
 
 export function matchesCompanyManagementFilter(request: CompanyJoinRequestRow, filter: CompanyManagementFilter): boolean {
   if (filter === "all") return true;
-  if (filter === "approval_pending") return request.onboardingStatus === "approval_pending" && request.joinRequestStatus === "pending";
-  if (filter === "approved") return request.onboardingStatus === "active" || request.joinRequestStatus === "approved";
-  if (filter === "rejected") return request.onboardingStatus === "rejected" || request.joinRequestStatus === "rejected";
-  if (filter === "reinput_required") return request.onboardingStatus === "profile_required" && request.joinRequestStatus !== "approved";
+  if (filter === COMPANY_ONBOARDING_STATUS.approvalPending) return request.onboardingStatus === COMPANY_ONBOARDING_STATUS.approvalPending && request.joinRequestStatus === JOIN_REQUEST_STATUS.pending;
+  if (filter === "approved") return request.onboardingStatus === COMPANY_ONBOARDING_STATUS.active || request.joinRequestStatus === JOIN_REQUEST_STATUS.approved;
+  if (filter === COMPANY_ONBOARDING_STATUS.rejected) return request.onboardingStatus === COMPANY_ONBOARDING_STATUS.rejected || request.joinRequestStatus === JOIN_REQUEST_STATUS.rejected;
+  if (filter === "reinput_required") return request.onboardingStatus === COMPANY_ONBOARDING_STATUS.profileRequired && request.joinRequestStatus !== JOIN_REQUEST_STATUS.approved;
   if (filter === "access_limited") return isCompanyAccessLimitedStatus(request.subscriptionStatus);
   return true;
 }
@@ -211,15 +201,15 @@ export function getCompanyJoinRequestStatus(joinRequest: JoinRequestRecord): {
   canReview: boolean;
   canRequestReinput: boolean;
 } {
-  if (joinRequest.status === "approved") {
+  if (joinRequest.status === JOIN_REQUEST_STATUS.approved) {
     return { label: "승인됨", tone: "success", canReview: false, canRequestReinput: false };
   }
 
-  if (joinRequest.status === "rejected" || joinRequest.companyOnboardingStatus === "rejected") {
+  if (joinRequest.status === JOIN_REQUEST_STATUS.rejected || joinRequest.companyOnboardingStatus === COMPANY_ONBOARDING_STATUS.rejected) {
     return { label: "거절됨", tone: "danger", canReview: false, canRequestReinput: true };
   }
 
-  if (joinRequest.companyOnboardingStatus === "approval_pending") {
+  if (joinRequest.companyOnboardingStatus === COMPANY_ONBOARDING_STATUS.approvalPending) {
     return { label: "승인 대기", tone: "warning", canReview: true, canRequestReinput: false };
   }
 
@@ -227,11 +217,11 @@ export function getCompanyJoinRequestStatus(joinRequest: JoinRequestRecord): {
 }
 
 export function getCompanyJoinRequestCurrentPlanLabel(joinRequest: JoinRequestRecord, requestedPlanCode: string): string {
-  if (joinRequest.companySubscriptionStatus === "trialing") return "Trial";
-  if (joinRequest.companySubscriptionStatus === "active") return requestedPlanCode || "이용중";
-  if (joinRequest.companySubscriptionStatus === "canceled") return "중지";
-  if (joinRequest.companySubscriptionStatus === "past_due") return "연체";
-  if (joinRequest.companySubscriptionStatus === "trial_expired") return "체험 만료";
+  if (joinRequest.companySubscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.trialing) return "Trial";
+  if (joinRequest.companySubscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.active) return requestedPlanCode || "이용중";
+  if (joinRequest.companySubscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.canceled) return "중지";
+  if (joinRequest.companySubscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.pastDue) return "연체";
+  if (joinRequest.companySubscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.trialExpired) return "체험 만료";
   return "-";
 }
 
@@ -246,7 +236,7 @@ export function toCompanyJoinRequestRow(joinRequest: JoinRequestRecord): Company
     parseCompanyMemoValue(joinRequest.requestMemo, "requestedPlanCode") ||
     "-";
   const onboardingStatus = normalizeCompanyOnboardingStatus(joinRequest.companyOnboardingStatus);
-  const subscriptionStatus = normalizeCompanySubscriptionStatus(joinRequest.companySubscriptionStatus);
+  const subscriptionStatus = normalizeCompanySubscriptionStatusOrNull(joinRequest.companySubscriptionStatus);
   const status = getCompanyJoinRequestStatus(joinRequest);
 
   return {
@@ -353,7 +343,7 @@ export function getInvitationState(invitation: InvitationRecord): {
   const expiresAtTime = new Date(invitation.expiresAt).getTime();
   const isExpired = Number.isFinite(expiresAtTime) && expiresAtTime <= Date.now();
 
-  if (invitation.status === "revoked") {
+  if (invitation.status === INVITATION_STATUS.revoked) {
     return { label: "취소됨", tone: "neutral", canCopy: false, canRevoke: false };
   }
 
@@ -361,11 +351,11 @@ export function getInvitationState(invitation: InvitationRecord): {
     return { label: "만료됨", tone: "danger", canCopy: false, canRevoke: false };
   }
 
-  if (invitation.status === "accepted") {
+  if (invitation.status === INVITATION_STATUS.accepted) {
     return { label: "사용됨", tone: "warning", canCopy: true, canRevoke: false };
   }
 
-  if (invitation.status === "active") {
+  if (invitation.status === INVITATION_STATUS.active) {
     return { label: "사용 가능", tone: "success", canCopy: true, canRevoke: true };
   }
 

@@ -61,6 +61,7 @@
 - `wafl-a-type/54_wafl-a-type-formatter-presentation-consolidation.md` — formatter/presentation 통합 1차
 - `wafl-a-type/55_wafl-a-type-tsx-domain-logic-separation.md` — TSX 도메인 로직 분리 1차
 - `wafl-a-type/56_wafl-a-type-db-payload-storage-audit.md` — DB 저장값 / JSON payload 감사
+- `wafl-a-type/57_wafl-a-type-db-domain-status-constants.md` — DB domain status constants 1차
 
 ## 정리 정책
 
@@ -71,7 +72,7 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.33
+현재 기준: 0.15.34
 PC A-TYPE 전환, SaaS 운영 IA, DB 저장값 / JSON payload 감사 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

@@ -11,11 +11,11 @@ import {
 import type {
   CompanyOnboardingFileMetadata,
   CompanyOnboardingProfile,
-  CompanyOnboardingStatus,
   CompanyOnboardingUpdateInput,
 } from "@/lib/admin/settings/companyTypes";
 import { listActiveCompanyOnboardingFileMetadata } from "@/lib/admin/settings/companyOnboardingFileRepository";
 import { invitationRepository } from "@/lib/invitations/invitationRepository";
+import { COMPANY_ONBOARDING_STATUS, INVITATION_STATUS, normalizeCompanyOnboardingStatus } from "@/lib/domain/companyStatus";
 
 type CompanyOnboardingRow = {
   company_id: string;
@@ -48,13 +48,6 @@ function normalizeNullableText(value: string | null | undefined): string | null 
   return normalized.length > 0 ? normalized : null;
 }
 
-function normalizeStatus(value: string | null | undefined): CompanyOnboardingStatus {
-  if (value === "active" || value === "approval_pending" || value === "profile_required" || value === "rejected") {
-    return value;
-  }
-
-  return "profile_required";
-}
 
 function toIso(value: string | Date | null | undefined): string | null {
   if (!value) return null;
@@ -92,7 +85,11 @@ function mapRow(row: CompanyOnboardingRow): CompanyOnboardingProfile {
     addressDetail: normalizeText(row.address_detail),
     addressExtra: normalizeText(row.address_extra),
     requestedPlanCode: normalizeText(row.requested_plan_code),
-    onboardingStatus: normalizeStatus(row.onboarding_status) === "rejected" ? "rejected" : profileComplete ? normalizeStatus(row.onboarding_status) : "profile_required",
+    onboardingStatus: normalizeCompanyOnboardingStatus(row.onboarding_status) === COMPANY_ONBOARDING_STATUS.rejected
+      ? COMPANY_ONBOARDING_STATUS.rejected
+      : profileComplete
+        ? normalizeCompanyOnboardingStatus(row.onboarding_status)
+        : COMPANY_ONBOARDING_STATUS.profileRequired,
     onboardingCompletedAt: toIso(row.onboarding_completed_at),
     subscriptionStatus: normalizeCompanySubscriptionStatus(row.subscription_status),
     trialStartedAt: toIso(row.trial_started_at),
@@ -191,7 +188,11 @@ async function findSubmissionInvitationId(session: WaflSessionPayload): Promise<
     const invitation = await invitationRepository.findInvitationByRawToken(token);
     if (!invitation) throw new Error("INVITATION_NOT_FOUND");
     if (invitation.scope !== "system_to_company_admin") throw new Error("INVITATION_SCOPE_MISMATCH");
-    if (invitation.status !== "pending" && invitation.status !== "active" && invitation.status !== "accepted") {
+    if (
+      invitation.status !== INVITATION_STATUS.pending &&
+      invitation.status !== INVITATION_STATUS.active &&
+      invitation.status !== INVITATION_STATUS.accepted
+    ) {
       throw new Error("INVITATION_NOT_ACTIVE");
     }
     if (new Date(invitation.expiresAt).getTime() <= Date.now()) throw new Error("INVITATION_EXPIRED");

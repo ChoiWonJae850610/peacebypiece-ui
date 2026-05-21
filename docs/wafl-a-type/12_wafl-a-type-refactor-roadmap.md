@@ -278,7 +278,8 @@ updated: 2026-05-20
 
 ## 5. 0.16.x — Device / Responsive 기반
 
-### 0.16.0 — DeviceKind foundation
+### 0.15.35 — member/workorder/storage status constants 후보 조사
+0.16.0 — DeviceKind foundation
 
 ```txt
 - pc / tablet-landscape / tablet-portrait / mobile 판정 구조 추가
@@ -445,7 +446,8 @@ High risk:
 
 ```txt
 0.15.33 — DB 저장값 / JSON payload 감사
-0.15.34 — action/fetch handler 분리 후보 감사
+0.15.34 — DB domain status constants 1차
+0.15.35 — member/workorder/storage status constants 후보 조사
 0.16.0 — DeviceKind foundation
 0.16.1 — Admin/Workspace shell에서 DeviceKind 읽기만 적용
 ```
@@ -461,4 +463,16 @@ High risk:
 - app/api/workorders/status/route.ts legacy payload column candidates는 사용 여부 확인 후 정리 후보로 분류
 - status text + check constraint와 TypeScript domain constants 동기화 필요성 정리
 - isPdfOnboardingFile import 누락 빌드 오류 수정
+```
+
+
+### 0.15.34 업데이트
+
+```txt
+57_wafl-a-type-db-domain-status-constants.md
+- DB domain status constants 1차
+- lib/domain/companyStatus.ts 추가
+- 회사 온보딩/구독/가입신청/초대 status 기준값과 normalize helper 정리
+- 시스템 고객사 승인 presentation과 고객사 온보딩 repository의 직접 문자열 비교 일부 축소
+- DB schema/API/R2/권한/세션 변경 없음
 ```

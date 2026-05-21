@@ -1,4 +1,5 @@
 import type { AdminCompanySummary } from "@/lib/admin/settings/companyTypes";
+import { COMPANY_ONBOARDING_STATUS, COMPANY_SUBSCRIPTION_STATUS } from "@/lib/domain/companyStatus";
 
 export type AdminAccountSettingsMetric = {
   id: string;
@@ -63,20 +64,20 @@ function formatDate(value: string | null | undefined): string {
 }
 
 function resolveCompanyStatusLabel(company: AdminCompanySummary | null | undefined): string {
-  if (company?.onboardingStatus === "active") return "승인됨";
-  if (company?.onboardingStatus === "approval_pending") return "승인 대기";
-  if (company?.onboardingStatus === "profile_required") return "회사 정보 필요";
-  if (company?.onboardingStatus === "rejected") return "거절됨";
+  if (company?.onboardingStatus === COMPANY_ONBOARDING_STATUS.active) return "승인됨";
+  if (company?.onboardingStatus === COMPANY_ONBOARDING_STATUS.approvalPending) return "승인 대기";
+  if (company?.onboardingStatus === COMPANY_ONBOARDING_STATUS.profileRequired) return "회사 정보 필요";
+  if (company?.onboardingStatus === COMPANY_ONBOARDING_STATUS.rejected) return "거절됨";
   if (company?.isActive === false) return "비활성";
   return "상태 확인";
 }
 
 function resolveSubscriptionLabel(company: AdminCompanySummary | null | undefined): string {
-  if (company?.subscriptionStatus === "trialing") return "체험 이용 중";
-  if (company?.subscriptionStatus === "active") return "정상 이용 중";
-  if (company?.subscriptionStatus === "trial_expired") return "체험 만료";
-  if (company?.subscriptionStatus === "past_due") return "결제 확인 필요";
-  if (company?.subscriptionStatus === "canceled") return "구독 취소";
+  if (company?.subscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.trialing) return "체험 이용 중";
+  if (company?.subscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.active) return "정상 이용 중";
+  if (company?.subscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.trialExpired) return "체험 만료";
+  if (company?.subscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.pastDue) return "결제 확인 필요";
+  if (company?.subscriptionStatus === COMPANY_SUBSCRIPTION_STATUS.canceled) return "구독 취소";
   return "요금 상태 확인";
 }
 
@@ -99,7 +100,7 @@ export function buildAdminAccountSettingsOverview(input: AdminAccountSettingsOve
     title: `${companyName} 계정 정보`,
     description: "회사 정보, 대표 로그인 계정, 상태, 변경 요청 범위를 한 곳에서 확인합니다. 개인 언어와 색상 테마는 개인설정에서 관리합니다.",
     statusLabel: resolveCompanyStatusLabel(company),
-    statusTone: company?.onboardingStatus === "active" ? "success" : "warning",
+    statusTone: company?.onboardingStatus === COMPANY_ONBOARDING_STATUS.active ? "success" : "warning",
     metrics: [
       {
         id: "company-name",
