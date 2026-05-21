@@ -82,6 +82,8 @@ DB 저장값 / JSON payload 감사
 - 0.15.31 기준 숫자, 금액, 수량+단위, 저장공간 용량 formatter 중복 구현을 공통 유틸로 1차 통합했다.
 - 0.15.32 기준 시스템 고객사 승인 화면의 TSX 도메인 로직을 presentation 계층으로 1차 분리했다.
 - 0.15.33 기준 DB 저장값, JSON payload, metadata, raw token, reason/status 저장 후보를 감사하고 SystemCompanyApprovalConsole의 누락 import 빌드 오류를 수정했다.
+- 0.15.34 기준 회사 온보딩, 구독, 가입 신청, 초대 status constants와 normalize helper를 추가했다.
+- 0.15.35 기준 member/storage status constants를 추가하고 workorder status 정리 후보를 문서화했다.
 ```
 
 ## 3. 문서 목록

@@ -62,10 +62,11 @@
 - `wafl-a-type/55_wafl-a-type-tsx-domain-logic-separation.md` — TSX 도메인 로직 분리 1차
 - `wafl-a-type/56_wafl-a-type-db-payload-storage-audit.md` — DB 저장값 / JSON payload 감사
 - `wafl-a-type/57_wafl-a-type-db-domain-status-constants.md` — DB domain status constants 1차
+- `wafl-a-type/58_wafl-a-type-member-workorder-storage-status-candidates.md` — member/workorder/storage status constants 후보 조사
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~56 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~58 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 

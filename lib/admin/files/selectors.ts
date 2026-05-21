@@ -3,11 +3,10 @@ import {
 } from "@/lib/admin/files/trashPolicy";
 import type { AdminFileSortKey, AdminManagedFileItem, AdminTrashFileItem } from "@/lib/admin/files/types";
 import { ADMIN_FILE_LIFECYCLE_STATUS, type AdminFileLifecycleStatus } from "@/lib/admin/files/types";
+import { normalizeAdminFileLifecycleStatusCode } from "@/lib/domain/storageStatus";
 
 export function normalizeAdminFileLifecycleStatus(status: AdminManagedFileItem["status"]): AdminFileLifecycleStatus {
-  if (status === "active" || status === ADMIN_FILE_LIFECYCLE_STATUS.ACTIVE) return ADMIN_FILE_LIFECYCLE_STATUS.ACTIVE;
-  if (status === "trashed" || status === "purged" || status === ADMIN_FILE_LIFECYCLE_STATUS.DELETED) return ADMIN_FILE_LIFECYCLE_STATUS.DELETED;
-  return ADMIN_FILE_LIFECYCLE_STATUS.TEMP;
+  return normalizeAdminFileLifecycleStatusCode(status);
 }
 
 export function selectActiveAdminManagedFiles(items: AdminManagedFileItem[]): AdminManagedFileItem[] {

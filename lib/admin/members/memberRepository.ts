@@ -2,6 +2,11 @@ import "server-only";
 
 import { isDatabaseConfigured, queryDb, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
 import {
+  ADMIN_COMPANY_MEMBER_STATUS,
+  isApprovedAdminCompanyMemberStatus,
+  normalizeAdminCompanyMemberStatusOrNull,
+} from "@/lib/domain/memberStatus";
+import {
   MEMBER_PERMISSION_CATALOG,
   MEMBER_ROLE_TEMPLATE_POLICIES,
   isMemberPermissionCode,
@@ -21,9 +26,6 @@ import type {
 } from "./memberTypes";
 
 const DEFAULT_MEMBER_LIST_LIMIT = 50;
-const MEMBER_STATUSES: readonly AdminCompanyMemberStatus[] = ["approved", "pending", "rejected", "suspended"] as const;
-
-
 type AdminCompanyMemberDbRow = {
   id: string;
   company_id: string;
@@ -48,7 +50,7 @@ function toIso(value: string | Date | null | undefined): string | null {
 }
 
 function readMemberStatus(value: string | null | undefined): AdminCompanyMemberStatus | null {
-  return MEMBER_STATUSES.includes(value as AdminCompanyMemberStatus) ? (value as AdminCompanyMemberStatus) : null;
+  return normalizeAdminCompanyMemberStatusOrNull(value);
 }
 
 function normalizeLimit(value: number | null | undefined): number {
@@ -218,8 +220,8 @@ async function assertAdminContinuity(
   nextStatus: AdminCompanyMemberStatus,
   nextPermissionCodes: readonly MemberPermissionCode[],
 ): Promise<void> {
-  const currentlyCanManageMembers = current.status === "approved" && current.permissionCodes.includes("member.permission.update");
-  const willManageMembers = nextStatus === "approved" && nextPermissionCodes.includes("member.permission.update");
+  const currentlyCanManageMembers = isApprovedAdminCompanyMemberStatus(current.status) && current.permissionCodes.includes("member.permission.update");
+  const willManageMembers = nextStatus === ADMIN_COMPANY_MEMBER_STATUS.approved && nextPermissionCodes.includes("member.permission.update");
 
   if (!currentlyCanManageMembers || willManageMembers) return;
 
@@ -384,8 +386,8 @@ async function updateDbCompanyMember(
     if (
       input.updatedByUserId &&
       current.userId === input.updatedByUserId &&
-      current.status === "approved" &&
-      nextStatus !== "approved"
+      isApprovedAdminCompanyMemberStatus(current.status) &&
+      nextStatus !== ADMIN_COMPANY_MEMBER_STATUS.approved
     ) {
       throw new Error("SELF_STATUS_UPDATE_BLOCKED");
     }
@@ -489,7 +491,7 @@ async function updateDbCompanyMemberPermissions(
       throw new Error("COMPANY_MEMBER_NOT_FOUND");
     }
 
-    if (current.status !== "approved") {
+    if (!isApprovedAdminCompanyMemberStatus(current.status)) {
       throw new Error("COMPANY_MEMBER_NOT_APPROVED");
     }
 

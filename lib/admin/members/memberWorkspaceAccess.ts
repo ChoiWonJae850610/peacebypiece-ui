@@ -5,6 +5,7 @@ import {
   getMemberRoleTemplatePermissions,
   type MemberPermissionCode,
 } from "@/lib/permissions";
+import { ADMIN_COMPANY_MEMBER_STATUS_FILTER } from "@/lib/domain/memberStatus";
 import { adminMemberRepository } from "./memberRepository";
 
 export async function resolveMemberWorkspacePermissionCodes(
@@ -21,7 +22,7 @@ export async function resolveMemberWorkspacePermissionCodes(
   try {
     const { members } = await adminMemberRepository.listCompanyMembers({
       companyId: session.companyId,
-      status: "all",
+      status: ADMIN_COMPANY_MEMBER_STATUS_FILTER.all,
       limit: 100,
     });
 

@@ -9,6 +9,10 @@ import {
   type MemberPermissionCode,
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
+import {
+  ADMIN_COMPANY_MEMBER_STATUS_FILTER,
+  type AdminCompanyMemberStatusFilter,
+} from "@/lib/domain/memberStatus";
 import { adminMemberRepository } from "./memberRepository";
 
 interface UpdateMemberBody {
@@ -16,7 +20,7 @@ interface UpdateMemberBody {
   updatedByUserId?: string | null;
   displayName?: string | null;
   phone?: string | null;
-  status?: "approved" | "pending" | "rejected" | "suspended" | null;
+  status?: Exclude<AdminCompanyMemberStatusFilter, "all"> | null;
   roleTemplateCode?: string | null;
   permissionCodes?: string[] | null;
 }
@@ -99,16 +103,16 @@ export async function handleListAdminMembers(request: Request) {
     if (!scope.ok) return scope.response;
 
     const companyId = scope.companyScope.companyId;
-    const status = url.searchParams.get("status")?.trim() || "approved";
+    const status = url.searchParams.get("status")?.trim() || ADMIN_COMPANY_MEMBER_STATUS_FILTER.approved;
     const limit = Number(url.searchParams.get("limit") ?? "50");
     const result = await adminMemberRepository.listCompanyMembers({
       companyId,
       status:
-        status === "all"
-          ? "all"
-          : status === "suspended"
-            ? "suspended"
-            : "approved",
+        status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.all
+          ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.all
+          : status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.suspended
+            ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.suspended
+            : ADMIN_COMPANY_MEMBER_STATUS_FILTER.approved,
       limit,
     });
 
