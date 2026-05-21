@@ -680,3 +680,11 @@ High risk:
 - Full work-order save 경로에서는 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` 동기화를 실행하지 않는다.
 - 생산구성 detail table replace는 serviceCode가 허용된 state patch에서만 실행한다.
 - 반려/취소/되돌리기 serviceCode는 workflow state/history만 저장하며 생산구성 row를 비활성화하거나 삭제하지 않는다.
+
+
+## 0.15.59 — 검토요청 생산구성 serviceCode 전달 보강
+
+- 서버 PATCH route에서 검증된 serviceCode를 repository state patch payload에 포함한다.
+- 검토요청 WO-F001은 orders/materials/outsourcing replace 저장을 허용한다.
+- 반려 WO-B001은 생산구성 replace 저장 금지 정책을 유지한다.
+- side effect matrix의 allowsProductionCompositionReplace를 생산구성 replace gate의 기준으로 사용한다.

@@ -607,3 +607,5 @@ workorder action type constants 정리 1차
 - `80_wafl-a-type-workorder-reject-production-preserve.md` — 반려/취소 workflow 생산구성 보존 보강
 
 - [81_wafl-a-type-workorder-production-sync-gate.md](./81_wafl-a-type-workorder-production-sync-gate.md) — 0.15.58 반려 workflow에서 생산구성 repository sync 차단
+
+- [82_wafl-a-type-review-request-production-service-code-forward.md](./82_wafl-a-type-review-request-production-service-code-forward.md) — 0.15.59 검토요청 생산구성 serviceCode 전달 보강

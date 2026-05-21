@@ -5,16 +5,11 @@ import {
   canWorkOrderServiceDeleteR2Object,
   canWorkOrderServiceTouchResource,
   canWorkOrderServiceUseOperation,
+  getWorkOrderServiceSideEffect,
   type WorkOrderServiceOperationValue,
   type WorkOrderServiceResourceValue,
 } from "@/lib/workorder/serviceCodeSideEffects";
 import type { WorkOrderStatePatch } from "@/types/workorder";
-
-const PRODUCTION_COMPOSITION_RESOURCES = [
-  WORKORDER_SERVICE_RESOURCE.factoryOrders,
-  WORKORDER_SERVICE_RESOURCE.materials,
-  WORKORDER_SERVICE_RESOURCE.outsourcing,
-] as const;
 
 const PRODUCTION_COMPOSITION_PATCH_KEYS = [
   "factoryOrderRequest",
@@ -58,15 +53,14 @@ export function canServiceReplaceProductionComposition(
   serviceCode: WorkOrderServiceCodeValue | null | undefined,
 ): boolean {
   if (!serviceCode) return false;
-  const canReplace = canWorkOrderServiceUseOperation({
+
+  const sideEffect = getWorkOrderServiceSideEffect(serviceCode);
+  if (!sideEffect.allowsProductionCompositionReplace) return false;
+
+  return canWorkOrderServiceUseOperation({
     serviceCode,
     operation: WORKORDER_SERVICE_OPERATION.replace,
   });
-  if (!canReplace) return false;
-
-  return PRODUCTION_COMPOSITION_RESOURCES.every((resource) =>
-    canWorkOrderServiceTouchResource({ serviceCode, resource }),
-  );
 }
 
 export function hasProductionCompositionPatch(patch: WorkOrderStatePatch): boolean {

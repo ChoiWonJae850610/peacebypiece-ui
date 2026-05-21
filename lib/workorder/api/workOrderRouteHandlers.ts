@@ -1045,6 +1045,7 @@ export async function handlePatchWorkOrderState(
         outsourcing: Array.isArray(guardedPatch.outsourcing)
           ? guardedPatch.outsourcing
           : undefined,
+        serviceCode,
       },
       scopeResult.scope,
     );
