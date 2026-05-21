@@ -605,3 +605,12 @@ High risk:
 - 반려/취소/되돌리기성 상태 변경에서는 workflow 상태와 history만 저장하고, 기존 원단/부자재/외주공정 row는 유지한다.
 - 저장 결과를 local state에 merge할 때도 요청 patch에 포함된 생산구성 필드만 반영하여, DB 응답의 빈 배열이 기존 화면 state를 덮어쓰지 않게 한다.
 - DB schema/API/R2/권한/세션 흐름은 변경하지 않는다.
+
+
+### 0.15.50 — 작업지시서 서비스 액션 맵
+
+- 작업지시서 화면에서 DB/R2를 변경하는 동작을 서비스 코드 기준으로 분류한다.
+- 즉시 저장, 생산구성 저장, forward workflow, backward workflow, 메모, 첨부/R2, 저장소/purge 액션을 구분한다.
+- 검토요청/발주요청처럼 생산구성을 확정 저장해도 되는 액션과 반려/취소처럼 기존 생산구성을 보존해야 하는 액션을 분리한다.
+- 후속 단계에서 serviceCode constants와 repository mutation allowlist를 도입하기 위한 기준 문서로 사용한다.
+- DB schema/API/R2/권한/세션 흐름은 이번 단계에서 변경하지 않는다.

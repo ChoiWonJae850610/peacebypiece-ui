@@ -70,6 +70,8 @@
 - `wafl-a-type/63_wafl-a-type-workorder-production-composition-persistence.md` — 작업지시서 생산구성 저장 흐름 보강
 - `wafl-a-type/64_wafl-a-type-workorder-pending-edit-flush.md` — 작업지시서 생산구성 활성 입력값 검토요청 전 반영 보강
 
+- `wafl-a-type/73_wafl-a-type-workorder-service-action-map.md` — 작업지시서 서비스 액션 맵
+
 ## 정리 정책
 
 과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~72 문서로 통일한다.
@@ -79,7 +81,7 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.49
+현재 기준: 0.15.50
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

@@ -523,3 +523,15 @@ workorder action type constants 정리 1차
 - `70_wafl-a-type-production-tables-schema-audit.md` — 생산구성 현재값 테이블 schema audit
 - `71_wafl-a-type-production-replace-save.md` — 생산구성 현재값 replace 저장 1차
 - `72_wafl-a-type-production-reject-preserve.md` — 반려/취소성 workflow의 생산구성 보존 기준
+
+
+### 0.15.50 업데이트
+
+```txt
+73_wafl-a-type-workorder-service-action-map.md
+- 작업지시서 화면의 DB/R2 변경 동작을 service code 기준으로 분류
+- 즉시 저장, 생산구성 저장, forward workflow, backward workflow, 메모, 첨부/R2, 저장소/purge 액션을 구분
+- 검토요청/발주요청과 반려/취소성 workflow가 건드려도 되는 테이블을 분리
+- 생산구성 replace 저장은 forward/명시 저장 액션에서만 허용하는 기준을 문서화
+- 실제 DB schema/API/R2 구현은 변경하지 않음
+```

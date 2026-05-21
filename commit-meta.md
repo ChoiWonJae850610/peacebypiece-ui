@@ -1,13 +1,12 @@
-Version : 0.15.49
-Summary : 반려/취소성 workflow 생산구성 보존
-Description : 생산구성 replace 저장을 확정 이벤트에서만 수행하도록 state patch 포함 범위를 정리하고, 저장 결과 merge 시 요청 patch에 포함된 생산구성 필드만 화면 state에 반영하도록 보강했습니다. 반려/취소/되돌리기성 workflow에서는 기존 원단·부자재·외주공정 row를 유지합니다.
+Version : 0.15.50
+Summary : 작업지시서 서비스 액션 맵 문서화
+Description : 작업지시서 화면에서 DB/R2를 변경하는 동작을 서비스 코드 기준으로 분류하고, 생산구성 replace 저장 허용/금지 액션과 메모·첨부·저장소 계열 side effect 기준을 문서화했습니다. 이번 버전은 기준 문서화 단계이며 DB schema/API/R2 구현은 변경하지 않습니다.
 수정 파일 목록 :
-- lib/hooks/workorder/workorderRepositoryMutations.ts
 - docs/README.md
 - docs/wafl-a-type/00_wafl-a-type-doc-index.md
 - docs/wafl-a-type/12_wafl-a-type-refactor-roadmap.md
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/wafl-a-type/72_wafl-a-type-production-reject-preserve.md
+- docs/wafl-a-type/73_wafl-a-type-workorder-service-action-map.md
 삭제 파일 목록 :
 - 없음
