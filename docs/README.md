@@ -67,6 +67,7 @@
 - `wafl-a-type/60_wafl-a-type-workorder-action-type-constants.md` — workorder action type constants 정리 1차
 - `wafl-a-type/61_wafl-a-type-workorder-history-reason-constants.md` — workorder action/result/history reason 상수화 후보 조사 및 history constants 1차
 - `wafl-a-type/62_wafl-a-type-workorder-kind-attachment-scope-constants.md` — workorder kind / attachment scope constants 정리 1차
+- `wafl-a-type/63_wafl-a-type-workorder-production-composition-persistence.md` — 작업지시서 생산구성 저장 흐름 보강
 
 ## 정리 정책
 
@@ -77,8 +78,8 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.39
-PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화 우선
+현재 기준: 0.15.40
+PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
 ```

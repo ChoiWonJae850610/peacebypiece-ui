@@ -63,11 +63,23 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
       ? (savedPatch.factoryOrderRequest ?? null)
       : currentWorkOrder.factoryOrderRequest,
     orderEntries: Array.isArray(savedPatch.orderEntries) ? savedPatch.orderEntries : currentWorkOrder.orderEntries,
+    materials: Array.isArray(savedPatch.materials) ? savedPatch.materials : currentWorkOrder.materials,
+    outsourcing: Array.isArray(savedPatch.outsourcing) ? savedPatch.outsourcing : currentWorkOrder.outsourcing,
     hasDetailSnapshot: currentWorkOrder.hasDetailSnapshot,
   };
 }
 
+function shouldIncludeProductionCompositionInStatePatch(workOrder: WorkOrder): boolean {
+  return Boolean(
+    workOrder.hasDetailSnapshot ||
+      (workOrder.materials?.length ?? 0) > 0 ||
+      (workOrder.outsourcing?.length ?? 0) > 0,
+  );
+}
+
 function buildWorkOrderStatePatch(workOrder: WorkOrder, auditActor?: UserProfile | null): WorkOrderStatePatch {
+  const shouldIncludeProductionComposition = shouldIncludeProductionCompositionInStatePatch(workOrder);
+
   return {
     id: workOrder.id,
     workflowState: workOrder.workflowState,
@@ -76,6 +88,12 @@ function buildWorkOrderStatePatch(workOrder: WorkOrder, auditActor?: UserProfile
     inventoryStatus: workOrder.inventoryStatus,
     factoryOrderRequest: workOrder.factoryOrderRequest ?? null,
     orderEntries: workOrder.orderEntries ?? [],
+    ...(shouldIncludeProductionComposition
+      ? {
+          materials: workOrder.materials ?? [],
+          outsourcing: workOrder.outsourcing ?? [],
+        }
+      : {}),
     auditActor: auditActor
       ? { id: auditActor.id, name: auditActor.name, role: auditActor.role }
       : null,

@@ -1018,6 +1018,12 @@ export async function handlePatchWorkOrderState(
         orderEntries: Array.isArray(body.patch.orderEntries)
           ? body.patch.orderEntries
           : undefined,
+        materials: Array.isArray(body.patch.materials)
+          ? body.patch.materials
+          : undefined,
+        outsourcing: Array.isArray(body.patch.outsourcing)
+          ? body.patch.outsourcing
+          : undefined,
       },
       scopeResult.scope,
     );
@@ -1042,6 +1048,8 @@ export async function handlePatchWorkOrderState(
       inventoryStatus: savedWorkOrder.inventoryStatus,
       factoryOrderRequest: savedWorkOrder.factoryOrderRequest ?? null,
       orderEntries: savedWorkOrder.orderEntries ?? [],
+      materials: savedWorkOrder.materials ?? [],
+      outsourcing: savedWorkOrder.outsourcing ?? [],
     };
 
     logDbRequestOutcome(

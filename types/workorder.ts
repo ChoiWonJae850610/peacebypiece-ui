@@ -205,7 +205,7 @@ export type WorkOrderAuditActor = {
 };
 
 export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "workflowState" | "lastSavedAt"> &
-  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries">> & {
+  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries" | "materials" | "outsourcing">> & {
     auditActor?: WorkOrderAuditActor | null;
   };
 

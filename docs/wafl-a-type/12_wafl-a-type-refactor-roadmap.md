@@ -11,7 +11,7 @@ updated: 2026-05-20
 ## 1. 현재 기준
 
 ```txt
-현재 기준: 0.15.39
+현재 기준: 0.15.40
 완료:
 - 고객사 초대/온보딩/승인 흐름 1차
 - 멤버 초대 링크 단순화
@@ -518,4 +518,18 @@ High risk:
 - 작업지시서 종류와 첨부 scope 직접 문자열 사용을 일부 상수 기반으로 정리
 - types/workorder.ts의 AttachmentScope와 workOrderKind 타입을 constants value type에 연결
 - DB schema/API/R2 흐름은 변경하지 않음
+```
+
+
+
+### 0.15.40 업데이트
+
+```txt
+63_wafl-a-type-workorder-production-composition-persistence.md
+- 작업지시서 생산구성 저장 흐름 보강
+- WorkOrderStatePatch에 materials/outsourcing 포함 가능
+- 클라이언트 state patch는 detail snapshot 또는 실제 row가 있을 때만 materials/outsourcing을 포함
+- 서버 state patch 저장은 patch에 포함된 생산구성만 해당 상세 테이블에 동기화
+- 검토 요청 후 관리자 화면에서 공장/원단/부자재/외주공정 row가 누락되지 않도록 보강
+- DB schema/API route/R2/권한/세션 변경 없음
 ```

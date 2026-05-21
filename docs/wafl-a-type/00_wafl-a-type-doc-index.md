@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE 문서 인덱스
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.39
+baseline_source: peacebypiece-ui-0.15.40
 status: updated
 updated: 2026-05-20
 ---
@@ -12,7 +12,7 @@ updated: 2026-05-20
 
 이 문서 세트는 WAFL A-TYPE 이미지 시안과 현재 PeaceByPiece/WAFL 소스를 기준으로, UI·운영 IA·업무 흐름·결제/증빙 정책을 제품 수준으로 통일하기 위한 기준을 정의한다.
 
-v0.15에서는 0.15.39 기준으로 작업지시서 history category/filter/tone, memo history action, workorder kind, attachment scope 사용을 상수 중심으로 정리한다.
+v0.15에서는 0.15.40 기준으로 작업지시서 history category/filter/tone, memo history action, workorder kind, attachment scope 사용을 상수 중심으로 정리하고 생산구성 저장 누락 흐름을 보강한다.
 
 ```txt
 브랜드 톤
@@ -51,6 +51,7 @@ DB 저장값 / JSON payload 감사
 member/workorder/storage status constants 후보 조사
 workorder status usage 정리 1차
 workorder action type constants 정리 1차
+작업지시서 생산구성 저장 흐름 보강
 ```
 
 ## 2. 기준 이미지 반영 사항
@@ -87,6 +88,7 @@ workorder action type constants 정리 1차
 - 0.15.33 기준 DB 저장값, JSON payload, metadata, raw token, reason/status 저장 후보를 감사하고 SystemCompanyApprovalConsole의 누락 import 빌드 오류를 수정했다.
 - 0.15.34 기준 회사 온보딩, 구독, 가입 신청, 초대 status constants와 normalize helper를 추가했다.
 - 0.15.35 기준 member/storage status constants를 추가하고 workorder status 정리 후보를 문서화했다.
+- 0.15.40 기준 검토 요청 등 state patch 저장 시 공장/원단/부자재/외주공정 생산구성이 누락되지 않도록 state patch와 DB 동기화 흐름을 보강했다.
 ```
 
 ## 3. 문서 목록
@@ -474,6 +476,7 @@ workorder action type constants 정리 1차
 
 ```txt
 62_wafl-a-type-workorder-kind-attachment-scope-constants.md
+63_wafl-a-type-workorder-production-composition-persistence.md
 - workorder kind / attachment scope constants 정리 1차
 - lib/constants/workorderIdentity.ts 추가
 - WORK_ORDER_KIND / ATTACHMENT_SCOPE / UPLOADABLE_ATTACHMENT_SCOPES 기준 추가

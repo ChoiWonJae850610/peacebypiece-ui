@@ -2183,8 +2183,21 @@ export async function updateDbWorkOrderStatePatch(
     patch,
     "factoryOrderRequest",
   );
+  const hasMaterialsPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "materials",
+  );
+  const hasOutsourcingPatch = Object.prototype.hasOwnProperty.call(
+    patch,
+    "outsourcing",
+  );
+  const hasProductionCompositionPatch =
+    hasOrderEntriesPatch ||
+    hasFactoryOrderRequestPatch ||
+    hasMaterialsPatch ||
+    hasOutsourcingPatch;
 
-  if (hasOrderEntriesPatch || hasFactoryOrderRequestPatch) {
+  if (hasProductionCompositionPatch) {
     const existing = await findDbWorkOrderById(patch.id, scope);
     const patchedWorkOrder: WorkOrder = {
       ...(existing ?? mapped),
@@ -2192,11 +2205,27 @@ export async function updateDbWorkOrderStatePatch(
       orderEntries: hasOrderEntriesPatch
         ? (patch.orderEntries ?? [])
         : (existing?.orderEntries ?? []),
+      materials: hasMaterialsPatch
+        ? (patch.materials ?? [])
+        : (existing?.materials ?? []),
+      outsourcing: hasOutsourcingPatch
+        ? (patch.outsourcing ?? [])
+        : (existing?.outsourcing ?? []),
       factoryOrderRequest: hasFactoryOrderRequestPatch
         ? (patch.factoryOrderRequest ?? null)
         : (existing?.factoryOrderRequest ?? null),
     };
-    await syncDbFactoryOrdersForSpecSheet(patchedWorkOrder, company);
+
+    if (hasOrderEntriesPatch || hasFactoryOrderRequestPatch) {
+      await syncDbFactoryOrdersForSpecSheet(patchedWorkOrder, company);
+    }
+    if (hasMaterialsPatch) {
+      await syncDbSpecSheetMaterialsForSpecSheet(patchedWorkOrder, company);
+    }
+    if (hasOutsourcingPatch) {
+      await syncDbSpecSheetOutsourcingForSpecSheet(patchedWorkOrder, company);
+    }
+
     return patchedWorkOrder;
   }
 
