@@ -1,6 +1,6 @@
 import "server-only";
 
-import { queryDb } from "@/lib/db/client";
+import { queryDb, withDbTransaction } from "@/lib/db/client";
 import { normalizeProductionOutsourcingRows } from "@/lib/workorder/productionCompositionSnapshot";
 import type { Outsourcing, WorkOrder } from "@/types/workorder";
 
@@ -204,129 +204,106 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(
 
   const specSheetIdColumn = schema.specSheetIdColumn!;
   const items = toOutsourcingRows(workOrder);
-  const activeIds = items.map((item, index) => buildSpecSheetOutsourcingId(workOrder.id, item, index));
+  const company = resolveWorkOrderCompanyContext(companyScope);
 
-  if (items.length === 0) {
-    await queryDb(
+  await withDbTransaction(async (client) => {
+    await client.query(
       `
-        ${schema.isActiveColumn
-          ? `UPDATE ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`
-          : `DELETE FROM ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`}
+        DELETE FROM ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)}
+        WHERE ${quoteIdentifier(specSheetIdColumn)} = $1
       `,
       [workOrder.id],
     );
-    return;
-  }
 
-  for (const [index, item] of items.entries()) {
-    const id = buildSpecSheetOutsourcingId(workOrder.id, item, index);
-    const columns = ["id", specSheetIdColumn];
-    const values: unknown[] = [id, workOrder.id];
-    const placeholders = ["$1", "$2"];
-    const company = resolveWorkOrderCompanyContext(companyScope);
+    for (const [index, item] of items.entries()) {
+      const id = buildSpecSheetOutsourcingId(workOrder.id, item, index);
+      const columns = ["id", specSheetIdColumn];
+      const values: unknown[] = [id, workOrder.id];
+      const placeholders = ["$1", "$2"];
 
-    if (schema.companyIdColumn) {
-      columns.push(schema.companyIdColumn);
-      values.push(company.companyId);
-      placeholders.push(`$${values.length}`);
+      if (schema.companyIdColumn) {
+        columns.push(schema.companyIdColumn);
+        values.push(company.companyId);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.companyNameColumn) {
+        columns.push(schema.companyNameColumn);
+        values.push(company.companyName);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.sourceOutsourcingIdColumn) {
+        columns.push(schema.sourceOutsourcingIdColumn);
+        values.push(item.id);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.processColumn) {
+        columns.push(schema.processColumn);
+        values.push(normalizeText(item.process) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.vendorColumn) {
+        columns.push(schema.vendorColumn);
+        values.push(normalizeText(item.vendor) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.quantityColumn) {
+        columns.push(schema.quantityColumn);
+        values.push(normalizeNumber(item.quantity));
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.unitColumn) {
+        columns.push(schema.unitColumn);
+        values.push(normalizeText(item.unitType) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.unitCostColumn) {
+        columns.push(schema.unitCostColumn);
+        values.push(normalizeNumber(item.unitCost));
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.totalCostColumn) {
+        columns.push(schema.totalCostColumn);
+        values.push(calculateOutsourcingTotalCost(item));
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.statusColumn) {
+        columns.push(schema.statusColumn);
+        values.push(normalizeText(item.status) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.isActiveColumn) {
+        columns.push(schema.isActiveColumn);
+        values.push(true);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.deletedAtColumn) {
+        columns.push(schema.deletedAtColumn);
+        values.push(null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      await client.query(
+        `
+          INSERT INTO ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)} (
+            ${columns.map(quoteIdentifier).join(", ")}
+          )
+          VALUES (
+            ${placeholders.join(", ")}
+          )
+        `,
+        values,
+      );
     }
-
-    if (schema.companyNameColumn) {
-      columns.push(schema.companyNameColumn);
-      values.push(company.companyName);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.sourceOutsourcingIdColumn) {
-      columns.push(schema.sourceOutsourcingIdColumn);
-      values.push(item.id);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.processColumn) {
-      columns.push(schema.processColumn);
-      values.push(normalizeText(item.process) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.vendorColumn) {
-      columns.push(schema.vendorColumn);
-      values.push(normalizeText(item.vendor) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.quantityColumn) {
-      columns.push(schema.quantityColumn);
-      values.push(normalizeNumber(item.quantity));
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.unitColumn) {
-      columns.push(schema.unitColumn);
-      values.push(normalizeText(item.unitType) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.unitCostColumn) {
-      columns.push(schema.unitCostColumn);
-      values.push(normalizeNumber(item.unitCost));
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.totalCostColumn) {
-      columns.push(schema.totalCostColumn);
-      values.push(calculateOutsourcingTotalCost(item));
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.statusColumn) {
-      columns.push(schema.statusColumn);
-      values.push(normalizeText(item.status) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-
-    if (schema.isActiveColumn) {
-      columns.push(schema.isActiveColumn);
-      values.push(true);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.deletedAtColumn) {
-      columns.push(schema.deletedAtColumn);
-      values.push(null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    const updateAssignments = columns
-      .filter((column) => column !== "id")
-      .map((column) => `${quoteIdentifier(column)} = EXCLUDED.${quoteIdentifier(column)}`);
-
-    if (schema.updatedAtColumn && !columns.includes(schema.updatedAtColumn)) {
-      updateAssignments.push(`${quoteIdentifier(schema.updatedAtColumn)} = NOW()`);
-    }
-
-    await queryDb(
-      `
-        INSERT INTO ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)} (
-          ${columns.map(quoteIdentifier).join(", ")}
-        )
-        VALUES (
-          ${placeholders.join(", ")}
-        )
-        ON CONFLICT (id) DO UPDATE SET
-          ${updateAssignments.join(",\n          ")}
-      `,
-      values,
-    );
-  }
-
-  await queryDb(
-    `
-      ${schema.isActiveColumn
-        ? `UPDATE ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND NOT (id = ANY($2::text[]))`
-        : `DELETE FROM ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND NOT (id = ANY($2::text[]))`}
-    `,
-    [workOrder.id, activeIds],
-  );
+  });
 }

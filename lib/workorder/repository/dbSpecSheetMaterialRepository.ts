@@ -2,7 +2,7 @@ import "server-only";
 
 import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import { normalizeProductionMaterialRows } from "@/lib/workorder/productionCompositionSnapshot";
-import { queryDb } from "@/lib/db/client";
+import { queryDb, withDbTransaction } from "@/lib/db/client";
 import type { Material } from "@/types/material";
 import type { WorkOrder } from "@/types/workorder";
 
@@ -206,129 +206,106 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(
 
   const specSheetIdColumn = schema.specSheetIdColumn!;
   const materials = toMaterialRows(workOrder);
-  const activeIds = materials.map((material, index) => buildSpecSheetMaterialId(workOrder.id, material, index));
+  const company = resolveWorkOrderCompanyContext(companyScope);
 
-  if (materials.length === 0) {
-    await queryDb(
+  await withDbTransaction(async (client) => {
+    await client.query(
       `
-        ${schema.isActiveColumn
-          ? `UPDATE ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`
-          : `DELETE FROM ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`}
+        DELETE FROM ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)}
+        WHERE ${quoteIdentifier(specSheetIdColumn)} = $1
       `,
       [workOrder.id],
     );
-    return;
-  }
 
-  for (const [index, material] of materials.entries()) {
-    const id = buildSpecSheetMaterialId(workOrder.id, material, index);
-    const columns = ["id", specSheetIdColumn];
-    const values: unknown[] = [id, workOrder.id];
-    const placeholders = ["$1", "$2"];
-    const company = resolveWorkOrderCompanyContext(companyScope);
+    for (const [index, material] of materials.entries()) {
+      const id = buildSpecSheetMaterialId(workOrder.id, material, index);
+      const columns = ["id", specSheetIdColumn];
+      const values: unknown[] = [id, workOrder.id];
+      const placeholders = ["$1", "$2"];
 
-    if (schema.companyIdColumn) {
-      columns.push(schema.companyIdColumn);
-      values.push(company.companyId);
-      placeholders.push(`$${values.length}`);
+      if (schema.companyIdColumn) {
+        columns.push(schema.companyIdColumn);
+        values.push(company.companyId);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.companyNameColumn) {
+        columns.push(schema.companyNameColumn);
+        values.push(company.companyName);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.materialTypeColumn) {
+        columns.push(schema.materialTypeColumn);
+        values.push(normalizeText(material.type) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.nameColumn) {
+        columns.push(schema.nameColumn);
+        values.push(normalizeText(material.name) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.vendorColumn) {
+        columns.push(schema.vendorColumn);
+        values.push(normalizeText(material.vendor) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.quantityColumn) {
+        columns.push(schema.quantityColumn);
+        values.push(normalizeNumber(material.quantity));
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.unitColumn) {
+        columns.push(schema.unitColumn);
+        values.push(normalizeText(normalizeMaterialUnitValue(material.unit)) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.unitCostColumn) {
+        columns.push(schema.unitCostColumn);
+        values.push(normalizeNumber(material.unitCost));
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.totalCostColumn) {
+        columns.push(schema.totalCostColumn);
+        values.push(calculateMaterialTotalCost(material));
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.statusColumn) {
+        columns.push(schema.statusColumn);
+        values.push(normalizeText(material.status) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.isActiveColumn) {
+        columns.push(schema.isActiveColumn);
+        values.push(true);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.deletedAtColumn) {
+        columns.push(schema.deletedAtColumn);
+        values.push(null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      await client.query(
+        `
+          INSERT INTO ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)} (
+            ${columns.map(quoteIdentifier).join(", ")}
+          )
+          VALUES (
+            ${placeholders.join(", ")}
+          )
+        `,
+        values,
+      );
     }
-
-    if (schema.companyNameColumn) {
-      columns.push(schema.companyNameColumn);
-      values.push(company.companyName);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.materialTypeColumn) {
-      columns.push(schema.materialTypeColumn);
-      values.push(normalizeText(material.type) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.nameColumn) {
-      columns.push(schema.nameColumn);
-      values.push(normalizeText(material.name) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.vendorColumn) {
-      columns.push(schema.vendorColumn);
-      values.push(normalizeText(material.vendor) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.quantityColumn) {
-      columns.push(schema.quantityColumn);
-      values.push(normalizeNumber(material.quantity));
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.unitColumn) {
-      columns.push(schema.unitColumn);
-      values.push(normalizeText(normalizeMaterialUnitValue(material.unit)) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.unitCostColumn) {
-      columns.push(schema.unitCostColumn);
-      values.push(normalizeNumber(material.unitCost));
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.totalCostColumn) {
-      columns.push(schema.totalCostColumn);
-      values.push(calculateMaterialTotalCost(material));
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.statusColumn) {
-      columns.push(schema.statusColumn);
-      values.push(normalizeText(material.status) || null);
-      placeholders.push(`$${values.length}`);
-    }
-
-
-    if (schema.isActiveColumn) {
-      columns.push(schema.isActiveColumn);
-      values.push(true);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.deletedAtColumn) {
-      columns.push(schema.deletedAtColumn);
-      values.push(null);
-      placeholders.push(`$${values.length}`);
-    }
-
-    const updateAssignments = columns
-      .filter((column) => column !== "id")
-      .map((column) => `${quoteIdentifier(column)} = EXCLUDED.${quoteIdentifier(column)}`);
-
-    if (schema.updatedAtColumn && !columns.includes(schema.updatedAtColumn)) {
-      updateAssignments.push(`${quoteIdentifier(schema.updatedAtColumn)} = NOW()`);
-    }
-
-    await queryDb(
-      `
-        INSERT INTO ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)} (
-          ${columns.map(quoteIdentifier).join(", ")}
-        )
-        VALUES (
-          ${placeholders.join(", ")}
-        )
-        ON CONFLICT (id) DO UPDATE SET
-          ${updateAssignments.join(",\n          ")}
-      `,
-      values,
-    );
-  }
-
-  await queryDb(
-    `
-      ${schema.isActiveColumn
-        ? `UPDATE ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND NOT (id = ANY($2::text[]))`
-        : `DELETE FROM ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND NOT (id = ANY($2::text[]))`}
-    `,
-    [workOrder.id, activeIds],
-  );
+  });
 }

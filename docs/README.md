@@ -79,7 +79,7 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.47
+현재 기준: 0.15.48
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -96,3 +96,4 @@ DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는
 - 0.15.46: 생산구성 조회 단계에서 DB numeric 문자열 값을 수량·단가·금액으로 복원하는 기준을 보강했습니다.
 
 - `wafl-a-type/70_wafl-a-type-production-tables-schema-audit.md` — 생산구성 현재값 테이블 schema audit
+- `wafl-a-type/71_wafl-a-type-production-replace-save.md` — 생산구성 현재값 replace 저장 1차

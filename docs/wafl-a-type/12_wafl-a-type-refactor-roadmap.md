@@ -587,3 +587,12 @@ High risk:
 - `unit_price_basis`는 별도 컬럼으로 추가하지 않고, `unit_cost`를 단가 기준값으로 사용한다.
 - 과거 생산구성 이력은 현재값 테이블이 아니라 별도 `workorder_production_snapshots` 후보 테이블로 분리하는 방향을 정한다.
 - 이번 버전은 문서화/설계 기준 정리이며 DB schema와 repository 동작은 변경하지 않는다.
+
+
+### 0.15.48 — 생산구성 현재값 replace 저장 1차
+
+- `spec_sheet_materials`, `spec_sheet_outsourcing_lines` 저장 방식을 `is_active=false` 누적 방식에서 `spec_sheet_id` 기준 replace 방식으로 변경한다.
+- 저장 시 기존 row를 먼저 삭제하고 현재 draft row를 다시 insert한다.
+- 삭제 후 insert 흐름은 transaction으로 묶어 중간 실패 시 rollback되게 한다.
+- 기존 schema의 `is_active`, `deleted_at`, `company_name` 컬럼은 이번 단계에서 제거하지 않고 호환만 유지한다.
+- `orders` 저장 방식과 full_reset.sql 컬럼 정리는 다음 단계에서 진행한다.
