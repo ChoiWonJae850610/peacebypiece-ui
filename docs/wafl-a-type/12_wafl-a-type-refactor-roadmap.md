@@ -748,3 +748,26 @@ High risk:
 
 - 0.15.65에서 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines` 컬럼 정리 SQL을 설계한다.
 - 0.15.66에서 full_reset.sql과 repository mapping을 함께 정리한다.
+
+## 0.15.65 — 생산구성 현재값 3개 테이블 컬럼 정리 SQL 설계
+
+### 목표
+
+- `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`를 현재 확정 생산구성 테이블로 단순화하는 SQL 설계 기준을 문서화한다.
+- `is_active`, `deleted_at`, `created_at`, `updated_at` 누적/soft-delete 성격 컬럼 제거 방향을 확정한다.
+- `company_name`, `factory_name`, `vendor`, row-level `status`의 제거/보류 판단을 분리한다.
+- active/deleted 조건 인덱스를 현재값 조회 인덱스로 교체할 기준을 둔다.
+
+### 적용 기준
+
+- 이번 단계는 설계 문서만 추가한다.
+- `full_reset.sql`과 repository mapping은 아직 변경하지 않는다.
+- 0.15.66에서 full_reset.sql, insert/select mapping, 조회 조건을 함께 수정한다.
+- vendor/factory name 조인 전환은 partner 기준정보 정책 확인 후 후속 단계에서 처리한다.
+
+### 후속 작업
+
+- 0.15.66에서 세 테이블 schema와 repository mapping을 동시에 정리한다.
+- 0.15.67에서 검토요청/반려/재검토요청 회귀 테스트와 DB row 수 확인을 진행한다.
+- 0.15.68 이후 partner 조인 전환과 production snapshot/history 테이블 설계를 진행한다.
+
