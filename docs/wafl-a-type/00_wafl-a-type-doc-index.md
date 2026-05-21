@@ -559,3 +559,14 @@ workorder action type constants 정리 1차
 - 반려/취소/되돌리기/메모/첨부/삭제 계열은 생산구성 replace 저장 금지 기준으로 둠
 - 누락된 app constants를 복원해 빌드 오류를 수정
 ```
+
+
+### 0.15.53 업데이트
+
+```txt
+76_wafl-a-type-workorder-service-side-effect-matrix.md
+- 작업지시서 serviceCode별 DB/R2 side effect matrix를 코드/문서 기준으로 추가
+- serviceCode direction, resource, operation, R2 delete 허용 여부를 분리
+- 메모/첨부/R2/삭제/복원/purge 계열이 생산구성 replace와 섞이지 않도록 후속 guard 기준 마련
+- DB schema/API/R2 동작 변경 없음
+```

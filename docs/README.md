@@ -73,17 +73,18 @@
 - `wafl-a-type/73_wafl-a-type-workorder-service-action-map.md` — 작업지시서 서비스 액션 맵
 - `wafl-a-type/74_wafl-a-type-workorder-db-r2-call-audit.md` — 작업지시서 DB/R2 호출 위치 전수조사
 - `wafl-a-type/75_wafl-a-type-workorder-service-code-constants.md` — 작업지시서 서비스 코드 상수와 생산구성 replace allowlist
+- `wafl-a-type/76_wafl-a-type-workorder-service-side-effect-matrix.md` — 작업지시서 serviceCode side effect matrix
 
 ## 정리 정책
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~72 문서로 통일한다.
+과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~76 문서로 통일한다.
 
 삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
 
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.52
+현재 기준: 0.15.53
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.

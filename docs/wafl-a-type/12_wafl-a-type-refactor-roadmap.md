@@ -631,3 +631,11 @@ High risk:
 - 생산구성 replace 저장 가능 액션을 serviceCode allowlist로 제한한다.
 - workflow action 저장 호출부에서 serviceCode를 넘겨 반려/취소성 workflow가 생산구성 replace 저장을 실행하지 않게 한다.
 - 이번 단계는 작업지시서 workflow state patch 경로 1차 적용이며, 메모/첨부/R2/purge 경로 serviceCode 확장은 후속 단계에서 진행한다.
+
+
+### 0.15.53 — 작업지시서 serviceCode side effect matrix
+
+- 0.15.52에서 추가한 serviceCode를 DB/R2 side effect 기준으로 확장한다.
+- serviceCode별 direction, resource, operation, production replace 허용 여부, R2 delete 허용 여부를 코드로 조회할 수 있게 한다.
+- 메모/첨부/R2/삭제/복원/purge 계열이 생산구성 replace 저장과 섞이지 않도록 후속 guard 기준을 만든다.
+- 이번 단계는 기준 코드와 문서 추가이며 DB schema/API/R2 동작은 변경하지 않는다.
