@@ -611,3 +611,5 @@ workorder action type constants 정리 1차
 - [82_wafl-a-type-review-request-production-service-code-forward.md](./82_wafl-a-type-review-request-production-service-code-forward.md) — 0.15.59 검토요청 생산구성 serviceCode 전달 보강
 
 - [83_wafl-a-type-workorder-review-reject-regression.md](./83_wafl-a-type-workorder-review-reject-regression.md) — 0.15.60 검토요청/반려/재검토요청 회귀 테스트 기준
+
+- [84_wafl-a-type-workorder-service-code-screen-action-audit.md](./84_wafl-a-type-workorder-service-code-screen-action-audit.md) — 0.15.61 작업지시서 화면 액션별 serviceCode 연결 상태 점검

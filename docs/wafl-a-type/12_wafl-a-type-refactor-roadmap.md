@@ -697,3 +697,12 @@ High risk:
 - `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`는 forward workflow 또는 명시 저장 액션에서만 변경되어야 한다.
 - 회귀 테스트 기준을 0.15.61 이후 serviceCode 연결 점검과 orders replace 전환 작업의 보호 기준으로 사용한다.
 
+
+
+## 0.15.61 — 작업지시서 화면 액션별 serviceCode 연결 상태 점검
+
+- 작업지시서 화면 버튼/액션별 serviceCode 연결 상태를 현재 코드 기준으로 점검한다.
+- 검토요청/반려/검토완료/발주요청/검수완료 계열은 serviceCode 연결 상태로 분류한다.
+- 담당자 변경, 제목 변경, 기본정보/분류 변경, 발주정보 저장, 생산구성 저장, 리오더 생성은 후속 연결 필요 항목으로 분류한다.
+- 0.15.62에서는 serviceCode 누락 액션 1차 연결을 진행하고, 그 뒤 orders replace 저장 정책을 정리한다.
+- 이번 단계는 문서화이며 DB schema/API/R2 동작은 변경하지 않는다.
