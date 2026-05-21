@@ -619,3 +619,4 @@ workorder action type constants 정리 1차
 - [86_wafl-a-type-workorder-service-code-workflow-wire.md](./86_wafl-a-type-workorder-service-code-workflow-wire.md) — 0.15.63 작업지시서 workflow/save serviceCode 연결 보강
 - [87_wafl-a-type-factory-order-replace-save.md](./87_wafl-a-type-factory-order-replace-save.md) — 0.15.64 공장 발주 orders 현재값 replace 저장 정리
 - [88_wafl-a-type-production-current-table-sql-design.md](./88_wafl-a-type-production-current-table-sql-design.md) — 0.15.65 생산구성 현재값 3개 테이블 컬럼 정리 SQL 설계
+- [89_wafl-a-type-production-current-table-schema-implementation.md](./89_wafl-a-type-production-current-table-schema-implementation.md) — 0.15.66 생산구성 현재값 3개 테이블 schema/repository mapping 1차 반영

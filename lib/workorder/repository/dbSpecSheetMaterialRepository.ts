@@ -9,7 +9,6 @@ import type { WorkOrder } from "@/types/workorder";
 const SPEC_SHEET_MATERIAL_TABLE = "spec_sheet_materials";
 
 const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
-const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
 const SPEC_SHEET_ID_COLUMN_CANDIDATES = ["spec_sheet_id", "work_order_id"] as const;
 const MATERIAL_TYPE_COLUMN_CANDIDATES = ["material_type", "type"] as const;
 const NAME_COLUMN_CANDIDATES = ["name", "material_name"] as const;
@@ -19,19 +18,13 @@ const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
 const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost"] as const;
 const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status"] as const;
-const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
-const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
-const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
-const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
 
 type WorkOrderCompanyContext = {
   companyId: string;
-  companyName?: string | null;
 };
 
 function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
   companyId: string;
-  companyName: string;
 } {
   const companyId = scope.companyId.trim();
   if (!companyId) {
@@ -40,7 +33,6 @@ function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
 
   return {
     companyId,
-    companyName: scope.companyName?.trim() || companyId,
   };
 }
 
@@ -54,7 +46,6 @@ type DbSpecSheetMaterialSchema = {
   hasTable: boolean;
   hasIdColumn: boolean;
   companyIdColumn: string | null;
-  companyNameColumn: string | null;
   specSheetIdColumn: string | null;
   materialTypeColumn: string | null;
   nameColumn: string | null;
@@ -64,10 +55,6 @@ type DbSpecSheetMaterialSchema = {
   unitCostColumn: string | null;
   totalCostColumn: string | null;
   statusColumn: string | null;
-  isActiveColumn: string | null;
-  deletedAtColumn: string | null;
-  createdAtColumn: string | null;
-  updatedAtColumn: string | null;
 };
 
 function quoteIdentifier(identifier: string): string {
@@ -140,7 +127,6 @@ async function readSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
       hasTable: false,
       hasIdColumn: false,
       companyIdColumn: null,
-      companyNameColumn: null,
       specSheetIdColumn: null,
       materialTypeColumn: null,
       nameColumn: null,
@@ -150,10 +136,6 @@ async function readSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
       unitCostColumn: null,
       totalCostColumn: null,
       statusColumn: null,
-      isActiveColumn: null,
-      deletedAtColumn: null,
-      createdAtColumn: null,
-      updatedAtColumn: null,
     };
   }
 
@@ -161,7 +143,6 @@ async function readSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
     hasTable: true,
     hasIdColumn: columnNames.includes("id"),
     companyIdColumn: findFirstMatchingColumn(columnNames, COMPANY_ID_COLUMN_CANDIDATES),
-    companyNameColumn: findFirstMatchingColumn(columnNames, COMPANY_NAME_COLUMN_CANDIDATES),
     specSheetIdColumn: findFirstMatchingColumn(columnNames, SPEC_SHEET_ID_COLUMN_CANDIDATES),
     materialTypeColumn: findFirstMatchingColumn(columnNames, MATERIAL_TYPE_COLUMN_CANDIDATES),
     nameColumn: findFirstMatchingColumn(columnNames, NAME_COLUMN_CANDIDATES),
@@ -171,10 +152,6 @@ async function readSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
     unitCostColumn: findFirstMatchingColumn(columnNames, UNIT_COST_COLUMN_CANDIDATES),
     totalCostColumn: findFirstMatchingColumn(columnNames, TOTAL_COST_COLUMN_CANDIDATES),
     statusColumn: findFirstMatchingColumn(columnNames, STATUS_COLUMN_CANDIDATES),
-    isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
-    deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
-    createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
-    updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
   };
 }
 
@@ -229,11 +206,6 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(
         placeholders.push(`$${values.length}`);
       }
 
-      if (schema.companyNameColumn) {
-        columns.push(schema.companyNameColumn);
-        values.push(company.companyName);
-        placeholders.push(`$${values.length}`);
-      }
 
       if (schema.materialTypeColumn) {
         columns.push(schema.materialTypeColumn);
@@ -283,17 +255,6 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(
         placeholders.push(`$${values.length}`);
       }
 
-      if (schema.isActiveColumn) {
-        columns.push(schema.isActiveColumn);
-        values.push(true);
-        placeholders.push(`$${values.length}`);
-      }
-
-      if (schema.deletedAtColumn) {
-        columns.push(schema.deletedAtColumn);
-        values.push(null);
-        placeholders.push(`$${values.length}`);
-      }
 
       await client.query(
         `

@@ -7,7 +7,6 @@ import type { Outsourcing, WorkOrder } from "@/types/workorder";
 const SPEC_SHEET_OUTSOURCING_TABLE = "spec_sheet_outsourcing_lines";
 
 const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
-const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
 const SPEC_SHEET_ID_COLUMN_CANDIDATES = ["spec_sheet_id", "work_order_id"] as const;
 const SOURCE_OUTSOURCING_ID_COLUMN_CANDIDATES = ["source_outsourcing_id", "outsourcing_id"] as const;
 const PROCESS_COLUMN_CANDIDATES = ["process", "process_type", "outsourcing_process"] as const;
@@ -17,19 +16,13 @@ const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
 const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost"] as const;
 const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status"] as const;
-const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
-const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
-const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
-const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
 
 type WorkOrderCompanyContext = {
   companyId: string;
-  companyName?: string | null;
 };
 
 function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
   companyId: string;
-  companyName: string;
 } {
   const companyId = scope.companyId.trim();
   if (!companyId) {
@@ -38,7 +31,6 @@ function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
 
   return {
     companyId,
-    companyName: scope.companyName?.trim() || companyId,
   };
 }
 
@@ -52,7 +44,6 @@ type DbSpecSheetOutsourcingSchema = {
   hasTable: boolean;
   hasIdColumn: boolean;
   companyIdColumn: string | null;
-  companyNameColumn: string | null;
   specSheetIdColumn: string | null;
   sourceOutsourcingIdColumn: string | null;
   processColumn: string | null;
@@ -62,10 +53,6 @@ type DbSpecSheetOutsourcingSchema = {
   unitCostColumn: string | null;
   totalCostColumn: string | null;
   statusColumn: string | null;
-  isActiveColumn: string | null;
-  deletedAtColumn: string | null;
-  createdAtColumn: string | null;
-  updatedAtColumn: string | null;
 };
 
 function quoteIdentifier(identifier: string): string {
@@ -138,7 +125,6 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
       hasTable: false,
       hasIdColumn: false,
       companyIdColumn: null,
-      companyNameColumn: null,
       specSheetIdColumn: null,
       sourceOutsourcingIdColumn: null,
       processColumn: null,
@@ -148,10 +134,6 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
       unitCostColumn: null,
       totalCostColumn: null,
       statusColumn: null,
-      isActiveColumn: null,
-      deletedAtColumn: null,
-      createdAtColumn: null,
-      updatedAtColumn: null,
     };
   }
 
@@ -159,7 +141,6 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
     hasTable: true,
     hasIdColumn: columnNames.includes("id"),
     companyIdColumn: findFirstMatchingColumn(columnNames, COMPANY_ID_COLUMN_CANDIDATES),
-    companyNameColumn: findFirstMatchingColumn(columnNames, COMPANY_NAME_COLUMN_CANDIDATES),
     specSheetIdColumn: findFirstMatchingColumn(columnNames, SPEC_SHEET_ID_COLUMN_CANDIDATES),
     sourceOutsourcingIdColumn: findFirstMatchingColumn(columnNames, SOURCE_OUTSOURCING_ID_COLUMN_CANDIDATES),
     processColumn: findFirstMatchingColumn(columnNames, PROCESS_COLUMN_CANDIDATES),
@@ -169,10 +150,6 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
     unitCostColumn: findFirstMatchingColumn(columnNames, UNIT_COST_COLUMN_CANDIDATES),
     totalCostColumn: findFirstMatchingColumn(columnNames, TOTAL_COST_COLUMN_CANDIDATES),
     statusColumn: findFirstMatchingColumn(columnNames, STATUS_COLUMN_CANDIDATES),
-    isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
-    deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
-    createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
-    updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
   };
 }
 
@@ -227,11 +204,6 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(
         placeholders.push(`$${values.length}`);
       }
 
-      if (schema.companyNameColumn) {
-        columns.push(schema.companyNameColumn);
-        values.push(company.companyName);
-        placeholders.push(`$${values.length}`);
-      }
 
       if (schema.sourceOutsourcingIdColumn) {
         columns.push(schema.sourceOutsourcingIdColumn);
@@ -281,17 +253,6 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(
         placeholders.push(`$${values.length}`);
       }
 
-      if (schema.isActiveColumn) {
-        columns.push(schema.isActiveColumn);
-        values.push(true);
-        placeholders.push(`$${values.length}`);
-      }
-
-      if (schema.deletedAtColumn) {
-        columns.push(schema.deletedAtColumn);
-        values.push(null);
-        placeholders.push(`$${values.length}`);
-      }
 
       await client.query(
         `

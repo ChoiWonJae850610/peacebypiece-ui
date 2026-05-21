@@ -1321,22 +1321,16 @@ function buildSpecSheetSummarySelectQuery(
         SELECT COUNT(*)::integer AS order_entry_count
         FROM orders o
         WHERE o.spec_sheet_id = s.id
-          AND COALESCE(o.is_active, true) = true
-          AND o.deleted_at IS NULL
       ) order_counts ON true
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS material_count
         FROM spec_sheet_materials m
         WHERE m.spec_sheet_id = s.id
-          AND COALESCE(m.is_active, true) = true
-          AND m.deleted_at IS NULL
       ) material_counts ON true
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS outsourcing_count
         FROM spec_sheet_outsourcing_lines ol
         WHERE ol.spec_sheet_id = s.id
-          AND COALESCE(ol.is_active, true) = true
-          AND ol.deleted_at IS NULL
       ) outsourcing_counts ON true
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS attachment_count
@@ -1500,9 +1494,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               status
          FROM orders
         WHERE spec_sheet_id = ANY($1::text[])
-          AND COALESCE(is_active, true) = true
-          AND deleted_at IS NULL
-        ORDER BY created_at ASC, id ASC`,
+        ORDER BY id ASC`,
       [uniqueIds],
     ),
     queryDb<DbMaterialRow>(
@@ -1518,9 +1510,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               status
          FROM spec_sheet_materials
         WHERE spec_sheet_id = ANY($1::text[])
-          AND COALESCE(is_active, true) = true
-          AND deleted_at IS NULL
-        ORDER BY created_at ASC, id ASC`,
+        ORDER BY id ASC`,
       [uniqueIds],
     ),
     queryDb<DbOutsourcingRow>(
@@ -1535,9 +1525,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               status
          FROM spec_sheet_outsourcing_lines
         WHERE spec_sheet_id = ANY($1::text[])
-          AND COALESCE(is_active, true) = true
-          AND deleted_at IS NULL
-        ORDER BY created_at ASC, id ASC`,
+        ORDER BY id ASC`,
       [uniqueIds],
     ),
   ]);

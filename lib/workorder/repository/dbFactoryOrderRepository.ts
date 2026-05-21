@@ -9,7 +9,6 @@ const FACTORY_ORDER_TABLE = "orders";
 
 const SOURCE_ORDER_ENTRY_ID_COLUMN_CANDIDATES = ["source_order_entry_id", "order_entry_id"] as const;
 const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
-const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
 const SPEC_SHEET_ID_COLUMN_CANDIDATES = ["spec_sheet_id", "work_order_id"] as const;
 const FACTORY_PARTNER_ID_COLUMN_CANDIDATES = ["factory_partner_id", "factory_id"] as const;
 const FACTORY_NAME_COLUMN_CANDIDATES = ["factory_name", "factory"] as const;
@@ -18,10 +17,6 @@ const DUE_DATE_COLUMN_CANDIDATES = ["due_date"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status", "workflow_state", "state"] as const;
 const LABOR_COST_COLUMN_CANDIDATES = ["labor_cost", "laborCost"] as const;
 const LOSS_COST_COLUMN_CANDIDATES = ["loss_cost", "lossCost"] as const;
-const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
-const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
-const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
-const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
 
 const FACTORY_ORDER_STATUS = {
   draft: "draft",
@@ -32,12 +27,10 @@ const FACTORY_ORDER_STATUS = {
 
 type WorkOrderCompanyContext = {
   companyId: string;
-  companyName?: string | null;
 };
 
 function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
   companyId: string;
-  companyName: string;
 } {
   const companyId = scope.companyId.trim();
   if (!companyId) {
@@ -46,7 +39,6 @@ function resolveWorkOrderCompanyContext(scope: WorkOrderCompanyContext): {
 
   return {
     companyId,
-    companyName: scope.companyName?.trim() || companyId,
   };
 }
 
@@ -60,7 +52,6 @@ type DbFactoryOrderSchema = {
   hasTable: boolean;
   hasIdColumn: boolean;
   companyIdColumn: string | null;
-  companyNameColumn: string | null;
   specSheetIdColumn: string | null;
   sourceOrderEntryIdColumn: string | null;
   factoryPartnerIdColumn: string | null;
@@ -71,10 +62,6 @@ type DbFactoryOrderSchema = {
   statusColumn: string | null;
   laborCostColumn: string | null;
   lossCostColumn: string | null;
-  isActiveColumn: string | null;
-  deletedAtColumn: string | null;
-  createdAtColumn: string | null;
-  updatedAtColumn: string | null;
 };
 
 function quoteIdentifier(identifier: string): string {
@@ -181,7 +168,6 @@ async function readFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
       hasTable: false,
       hasIdColumn: false,
       companyIdColumn: null,
-      companyNameColumn: null,
       specSheetIdColumn: null,
       sourceOrderEntryIdColumn: null,
       factoryPartnerIdColumn: null,
@@ -192,10 +178,6 @@ async function readFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
       statusColumn: null,
       laborCostColumn: null,
       lossCostColumn: null,
-      isActiveColumn: null,
-      deletedAtColumn: null,
-      createdAtColumn: null,
-      updatedAtColumn: null,
     };
   }
 
@@ -207,7 +189,6 @@ async function readFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
     hasTable: true,
     hasIdColumn: columnNames.includes("id"),
     companyIdColumn: findFirstMatchingColumn(columnNames, COMPANY_ID_COLUMN_CANDIDATES),
-    companyNameColumn: findFirstMatchingColumn(columnNames, COMPANY_NAME_COLUMN_CANDIDATES),
     specSheetIdColumn: findFirstMatchingColumn(columnNames, SPEC_SHEET_ID_COLUMN_CANDIDATES),
     sourceOrderEntryIdColumn: findFirstMatchingColumn(columnNames, SOURCE_ORDER_ENTRY_ID_COLUMN_CANDIDATES),
     factoryPartnerIdColumn: findFirstMatchingColumn(columnNames, FACTORY_PARTNER_ID_COLUMN_CANDIDATES),
@@ -218,10 +199,6 @@ async function readFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
     statusColumn: findFirstMatchingColumn(columnNames, STATUS_COLUMN_CANDIDATES),
     laborCostColumn: findFirstMatchingColumn(columnNames, LABOR_COST_COLUMN_CANDIDATES),
     lossCostColumn: findFirstMatchingColumn(columnNames, LOSS_COST_COLUMN_CANDIDATES),
-    isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
-    deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
-    createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
-    updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
   };
 }
 
@@ -286,11 +263,6 @@ export async function syncDbFactoryOrdersForSpecSheet(
       placeholders.push(`$${values.length}`);
     }
 
-    if (schema.companyNameColumn) {
-      columns.push(schema.companyNameColumn);
-      values.push(company.companyName);
-      placeholders.push(`$${values.length}`);
-    }
 
     if (schema.sourceOrderEntryIdColumn) {
       columns.push(schema.sourceOrderEntryIdColumn);
@@ -337,18 +309,6 @@ export async function syncDbFactoryOrdersForSpecSheet(
     if (schema.lossCostColumn) {
       columns.push(schema.lossCostColumn);
       values.push(normalizeQuantity(entry.lossCost));
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.isActiveColumn) {
-      columns.push(schema.isActiveColumn);
-      values.push(true);
-      placeholders.push(`$${values.length}`);
-    }
-
-    if (schema.deletedAtColumn) {
-      columns.push(schema.deletedAtColumn);
-      values.push(null);
       placeholders.push(`$${values.length}`);
     }
 

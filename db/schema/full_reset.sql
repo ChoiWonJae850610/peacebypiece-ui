@@ -554,7 +554,6 @@ CREATE TABLE spec_sheets (
 CREATE TABLE orders (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_order_entry_id text,
   factory_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
@@ -563,17 +562,12 @@ CREATE TABLE orders (
   due_date text,
   labor_cost integer NOT NULL DEFAULT 0,
   loss_cost integer NOT NULL DEFAULT 0,
-  status text NOT NULL DEFAULT 'draft',
-  is_active boolean NOT NULL DEFAULT true,
-  deleted_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  status text NOT NULL DEFAULT 'draft'
 );
 
 CREATE TABLE spec_sheet_materials (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_material_id text,
   material_type text,
@@ -583,11 +577,7 @@ CREATE TABLE spec_sheet_materials (
   unit text,
   unit_cost numeric NOT NULL DEFAULT 0,
   total_cost numeric NOT NULL DEFAULT 0,
-  status text,
-  is_active boolean NOT NULL DEFAULT true,
-  deleted_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  status text
 );
 
 CREATE TABLE material_stocks (
@@ -616,7 +606,6 @@ CREATE TABLE material_stocks (
 CREATE TABLE spec_sheet_outsourcing_lines (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_outsourcing_id text,
   process text,
@@ -625,11 +614,7 @@ CREATE TABLE spec_sheet_outsourcing_lines (
   unit text,
   unit_cost numeric NOT NULL DEFAULT 0,
   total_cost numeric NOT NULL DEFAULT 0,
-  status text,
-  is_active boolean NOT NULL DEFAULT true,
-  deleted_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  status text
 );
 
 -- =========================================
@@ -1802,15 +1787,12 @@ CREATE INDEX spec_sheets_delete_metadata_idx ON spec_sheets (delete_source, dele
 CREATE INDEX orders_spec_sheet_idx ON orders (spec_sheet_id);
 CREATE INDEX orders_company_spec_sheet_idx ON orders (company_id, spec_sheet_id);
 CREATE INDEX orders_factory_partner_idx ON orders (factory_partner_id);
-CREATE INDEX orders_active_idx ON orders (is_active, updated_at DESC, created_at DESC);
 CREATE INDEX orders_source_order_entry_idx ON orders (source_order_entry_id);
-CREATE INDEX orders_spec_sheet_active_idx ON orders (spec_sheet_id, is_active);
-CREATE INDEX orders_company_status_due_idx ON orders (company_id, status, due_date) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+CREATE INDEX orders_company_status_due_idx ON orders (company_id, status, due_date);
 
 CREATE INDEX spec_sheet_materials_spec_sheet_idx ON spec_sheet_materials (spec_sheet_id);
 CREATE INDEX spec_sheet_materials_company_spec_sheet_idx ON spec_sheet_materials (company_id, spec_sheet_id);
 CREATE INDEX spec_sheet_materials_type_idx ON spec_sheet_materials (material_type);
-CREATE INDEX spec_sheet_materials_active_idx ON spec_sheet_materials (is_active, updated_at DESC, created_at DESC);
 
 CREATE INDEX material_stocks_source_spec_sheet_idx ON material_stocks (source_spec_sheet_id);
 CREATE INDEX material_stocks_source_material_idx ON material_stocks (source_spec_sheet_material_id);
@@ -1820,7 +1802,6 @@ CREATE INDEX material_stocks_active_idx ON material_stocks (is_active, updated_a
 CREATE INDEX spec_sheet_outsourcing_lines_spec_sheet_idx ON spec_sheet_outsourcing_lines (spec_sheet_id);
 CREATE INDEX spec_sheet_outsourcing_lines_company_spec_sheet_idx ON spec_sheet_outsourcing_lines (company_id, spec_sheet_id);
 CREATE INDEX spec_sheet_outsourcing_lines_process_idx ON spec_sheet_outsourcing_lines (process);
-CREATE INDEX spec_sheet_outsourcing_lines_active_idx ON spec_sheet_outsourcing_lines (is_active, updated_at DESC, created_at DESC);
 
 CREATE INDEX attachments_order_idx ON attachments (order_id);
 CREATE INDEX attachments_order_type_active_idx ON attachments (order_id, type, is_active, created_at ASC);
@@ -1911,8 +1892,8 @@ CREATE INDEX spec_sheets_company_status_created_idx ON spec_sheets (company_id, 
 CREATE INDEX spec_sheets_company_reorder_created_idx ON spec_sheets (company_id, reorder_group_id, reorder_round, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
 CREATE INDEX spec_sheets_company_delete_status_idx ON spec_sheets (company_id, delete_status, deleted_at DESC);
 
-CREATE INDEX orders_company_factory_created_idx ON orders (company_id, factory_partner_id, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
-CREATE INDEX orders_company_created_idx ON orders (company_id, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+CREATE INDEX orders_company_factory_idx ON orders (company_id, factory_partner_id);
+CREATE INDEX orders_company_idx ON orders (company_id);
 
 CREATE INDEX attachments_company_deleted_type_idx ON attachments (company_id, deleted_at, type);
 CREATE INDEX attachments_company_size_idx ON attachments (company_id, size_bytes) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;

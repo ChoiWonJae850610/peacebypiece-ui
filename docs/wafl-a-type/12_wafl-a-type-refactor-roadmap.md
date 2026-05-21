@@ -771,3 +771,12 @@ High risk:
 - 0.15.67에서 검토요청/반려/재검토요청 회귀 테스트와 DB row 수 확인을 진행한다.
 - 0.15.68 이후 partner 조인 전환과 production snapshot/history 테이블 설계를 진행한다.
 
+
+## 0.15.66 — 생산구성 현재값 테이블 schema / repository mapping 1차 반영
+
+- `full_reset.sql`에서 `orders`, `spec_sheet_materials`, `spec_sheet_outsourcing_lines`의 현재값 테이블 기준 schema를 1차 정리한다.
+- 세 테이블에서 `company_name`, `is_active`, `deleted_at`, `created_at`, `updated_at`을 제거한다.
+- 제거된 컬럼에 의존하던 active/deleted/created 인덱스를 삭제하거나 단순화한다.
+- 세 detail sync repository에서 제거 컬럼 insert와 schema 탐지를 제거한다.
+- 작업지시서 detail 조회에서 제거된 active/deleted/created 조건을 사용하지 않는다.
+- `factory_name`, `vendor`, `status`는 partner/status 분리 정책 확정 전까지 유지한다.
