@@ -2,7 +2,7 @@ import { WORKORDER_SERVICE_CODE, type WorkOrderServiceCodeValue } from "@/lib/co
 import type { WorkOrder } from "@/types/workorder";
 
 const TITLE_FIELDS = ["title", "baseTitle", "displayTitle"] as const satisfies readonly (keyof WorkOrder)[];
-const ASSIGNEE_FIELDS = ["manager", "managerId", "managerRole"] as const satisfies readonly (keyof WorkOrder)[];
+const ASSIGNEE_FIELDS = ["manager", "managerId"] as const satisfies readonly (keyof WorkOrder)[];
 const BASIC_INFO_FIELDS = [
   "category1",
   "category2",
@@ -13,7 +13,6 @@ const BASIC_INFO_FIELDS = [
   "season",
   "priority",
   "workOrderKind",
-  "orderType",
   "dueDate",
   "vendor",
 ] as const satisfies readonly (keyof WorkOrder)[];

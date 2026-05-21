@@ -716,3 +716,12 @@ High risk:
 - inventory 즉시 저장은 기존 `WO-I004` 기준을 유지한다.
 - full save HTTP adapter와 `/api/workorders` PATCH route가 `serviceCode`를 받을 수 있게 하되, DB schema/R2 동작은 변경하지 않는다.
 - 이번 단계는 serviceCode 추적성 보강이며 생산구성 replace 정책은 기존 guard 기준을 유지한다.
+
+
+## 0.15.63 — 작업지시서 workflow/save serviceCode 연결 보강
+
+- `serviceCodeForWorkOrderPatch.ts`의 `keyof WorkOrder` 빌드 오류를 수정한다.
+- 실제 `WorkOrder` 타입에 없는 `managerRole`, `orderType` 필드를 즉시 저장 field 판정에서 제거한다.
+- workflow action type별 serviceCode mapping을 명시 map으로 고정한다.
+- 발주정보 저장과 생산구성 저장은 explicit save scope 기준으로 `WO-P001`, `WO-P002`에 연결할 수 있게 기준 helper를 추가한다.
+- DB schema/API/R2 동작은 변경하지 않는다.

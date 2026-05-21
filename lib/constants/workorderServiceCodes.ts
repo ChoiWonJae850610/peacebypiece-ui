@@ -126,27 +126,42 @@ export function isProductionCompositionReplaceForbiddenServiceCode(
   );
 }
 
+export const WORKORDER_EXPLICIT_SAVE_SCOPE = {
+  orderInfo: "order_info",
+  productionComposition: "production_composition",
+} as const;
+
+export type WorkOrderExplicitSaveScopeValue =
+  (typeof WORKORDER_EXPLICIT_SAVE_SCOPE)[keyof typeof WORKORDER_EXPLICIT_SAVE_SCOPE];
+
+export const WORKORDER_EXPLICIT_SAVE_SERVICE_CODE_BY_SCOPE = {
+  [WORKORDER_EXPLICIT_SAVE_SCOPE.orderInfo]: WORKORDER_SERVICE_CODE.orderInfoSave,
+  [WORKORDER_EXPLICIT_SAVE_SCOPE.productionComposition]: WORKORDER_SERVICE_CODE.productionCompositionSave,
+} as const satisfies Record<WorkOrderExplicitSaveScopeValue, WorkOrderServiceCodeValue>;
+
+export function getWorkOrderExplicitSaveServiceCode(
+  scope: WorkOrderExplicitSaveScopeValue,
+): WorkOrderServiceCodeValue {
+  return WORKORDER_EXPLICIT_SAVE_SERVICE_CODE_BY_SCOPE[scope];
+}
+
+export const WORKORDER_WORKFLOW_ACTION_SERVICE_CODE_MAP = {
+  [WORKFLOW_ACTION_TYPE.requestReview]: WORKORDER_SERVICE_CODE.requestReview,
+  [WORKFLOW_ACTION_TYPE.cancelReviewRequest]: WORKORDER_SERVICE_CODE.revertWorkflow,
+  [WORKFLOW_ACTION_TYPE.rejectReview]: WORKORDER_SERVICE_CODE.rejectReview,
+  [WORKFLOW_ACTION_TYPE.cancelReviewApproval]: WORKORDER_SERVICE_CODE.revertWorkflow,
+  [WORKFLOW_ACTION_TYPE.approveReview]: WORKORDER_SERVICE_CODE.approveReview,
+  [WORKFLOW_ACTION_TYPE.requestOrder]: WORKORDER_SERVICE_CODE.requestOrder,
+  [WORKFLOW_ACTION_TYPE.completeInspection]: WORKORDER_SERVICE_CODE.completeInspection,
+  [WORKFLOW_ACTION_TYPE.requestReinspection]: WORKORDER_SERVICE_CODE.revertWorkflow,
+} as const satisfies Record<WorkflowActionTypeValue, WorkOrderServiceCodeValue>;
+
 export function getWorkOrderWorkflowServiceCode(payload: {
   actionType?: WorkflowActionTypeValue;
   nextState: WorkflowStateValue;
 }): WorkOrderServiceCodeValue {
-  switch (payload.actionType) {
-    case WORKFLOW_ACTION_TYPE.requestReview:
-      return WORKORDER_SERVICE_CODE.requestReview;
-    case WORKFLOW_ACTION_TYPE.approveReview:
-      return WORKORDER_SERVICE_CODE.approveReview;
-    case WORKFLOW_ACTION_TYPE.requestOrder:
-      return WORKORDER_SERVICE_CODE.requestOrder;
-    case WORKFLOW_ACTION_TYPE.completeInspection:
-      return WORKORDER_SERVICE_CODE.completeInspection;
-    case WORKFLOW_ACTION_TYPE.rejectReview:
-      return WORKORDER_SERVICE_CODE.rejectReview;
-    case WORKFLOW_ACTION_TYPE.cancelReviewRequest:
-    case WORKFLOW_ACTION_TYPE.cancelReviewApproval:
-    case WORKFLOW_ACTION_TYPE.requestReinspection:
-      return WORKORDER_SERVICE_CODE.revertWorkflow;
-    default:
-      break;
+  if (payload.actionType) {
+    return WORKORDER_WORKFLOW_ACTION_SERVICE_CODE_MAP[payload.actionType];
   }
 
   switch (payload.nextState) {

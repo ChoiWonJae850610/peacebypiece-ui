@@ -86,7 +86,7 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.62
+현재 기준: 0.15.63
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
 tablet/mobile 전용 구현은 0.16.x 이후
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -113,3 +113,5 @@ DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는
 - `wafl-a-type/83_wafl-a-type-workorder-review-reject-regression.md` — 검토요청/반려/재검토요청 회귀 테스트 기준
 - `wafl-a-type/84_wafl-a-type-workorder-service-code-screen-action-audit.md` — 작업지시서 화면 액션별 serviceCode 연결 상태 점검
 - `wafl-a-type/85_wafl-a-type-workorder-service-code-first-wire.md` — 작업지시서 serviceCode 누락 액션 1차 연결
+- `wafl-a-type/86_wafl-a-type-workorder-service-code-workflow-wire.md` — 작업지시서 workflow/save serviceCode 연결 보강
+
