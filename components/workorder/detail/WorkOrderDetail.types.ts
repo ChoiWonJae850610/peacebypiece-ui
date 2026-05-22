@@ -56,7 +56,7 @@ export type WorkOrderDetailWorkflowModel = {
 };
 
 export type WorkOrderDetailActionModel = {
-  onSave: () => void;
+  onSave: (workOrderOverride?: WorkOrder) => void;
   onOpenInventoryEditor: () => void;
   onOpenManagerAssignModal: () => void;
   onAction: (action: WorkflowAction, workOrderOverride?: WorkOrder) => void;

@@ -104,7 +104,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     outsourcingVendorOptionsById: editor.outsourcingVendorOptionsById,
     outsourcingProcessOptions: editor.outsourcingProcessOptions,
     costSummary: editor.costSummary,
-    onSave: isWorkspaceWriteLocked ? () => undefined : () => runAfterPendingDetailFlush(actionModel.onSave),
+    onSave: isWorkspaceWriteLocked ? () => undefined : () => runAfterPendingDetailFlush(() => actionModel.onSave(editor.getDraftWorkOrderSnapshot())),
     onOpenBasicInfoModal: isWorkspaceWriteLocked ? () => undefined : editor.handleOpenBasicInfoModal,
     onOpenManagerAssignModal: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenManagerAssignModal,
     onOpenInventoryEditor: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenInventoryEditor,

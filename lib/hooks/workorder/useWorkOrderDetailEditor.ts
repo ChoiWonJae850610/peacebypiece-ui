@@ -416,15 +416,17 @@ export function useWorkOrderDetailEditor({
         })
       : outsourcingItems;
 
+    const snapshotOrderPatch = toOrderEntriesPatch(snapshotOrderItems, currentWorkflowState);
+
     return normalizeProductionCompositionForWorkflowSnapshot({
       ...workOrder,
+      ...snapshotOrderPatch,
       category1: basicInfo.category1,
       category2: basicInfo.category2,
       category3: basicInfo.category3,
       category1Id: basicInfo.category1Id ?? null,
       category2Id: basicInfo.category2Id ?? null,
       category3Id: basicInfo.category3Id ?? null,
-      orderEntries: snapshotOrderItems,
       materials: snapshotMaterials,
       outsourcing: snapshotOutsourcing,
     });

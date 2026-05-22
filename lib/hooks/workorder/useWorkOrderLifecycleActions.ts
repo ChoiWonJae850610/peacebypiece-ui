@@ -113,12 +113,13 @@ export function useWorkOrderLifecycleActions({
         task: async () => {
           setSaveStatus("saving");
           const serviceCode = getWorkOrderExplicitSaveServiceCode(WORKORDER_EXPLICIT_SAVE_SCOPE.productionComposition);
+          const workOrdersWithDraft = replaceWorkOrderById(workOrders, workOrder.id, workOrder);
           const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
             workOrder,
             auditActor: currentUser,
             serviceCode,
           });
-          const persistedWorkOrders = replaceWorkOrderById(workOrders, workOrder.id, persistedWorkOrder);
+          const persistedWorkOrders = replaceWorkOrderById(workOrdersWithDraft, workOrder.id, persistedWorkOrder);
 
           setWorkOrders(persistedWorkOrders);
           setPersistedWorkOrders(persistedWorkOrders);

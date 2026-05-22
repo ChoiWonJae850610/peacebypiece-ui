@@ -378,9 +378,9 @@ export default function WorkOrderWorkspace({
     showRepositoryBadges,
     showUserSwitchingTools,
     onSetHistoryFilter: history.setHistoryFilter,
-    onSave: () => {
+    onSave: (workOrderOverride) => {
       void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
-        actions.handleSave(),
+        actions.handleSave(workOrderOverride),
       );
     },
     onSelectWorkOrder: handleSelectWorkOrder,

@@ -101,7 +101,7 @@ export type BuildWorkspaceViewModelArgs = {
   showRepositoryBadges?: boolean;
   showUserSwitchingTools?: boolean;
   onSetHistoryFilter: (next: HistoryFilter) => void;
-  onSave: () => void;
+  onSave: (workOrderOverride?: WorkOrder) => void;
   onSelectWorkOrder: (id: string) => void;
   onCreateWorkOrder: ModalProps["createWorkOrder"]["onCreate"];
   onDeleteWorkOrder: (id: string) => void;
@@ -179,7 +179,7 @@ export type BaseWorkspaceViewModelArgs = {
   workspaceWriteLockMessage?: string;
   getAttachmentPermissions: GetAttachmentPermissions;
   i18n: ReturnType<typeof getI18n>;
-  onSave: () => void;
+  onSave: (workOrderOverride?: WorkOrder) => void;
   onWorkflowAction: (action: WorkflowAction, workOrderOverride?: WorkOrder) => void;
   onUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) => void;
   onRenameWorkOrderTitle: (nextTitle: string) => void;

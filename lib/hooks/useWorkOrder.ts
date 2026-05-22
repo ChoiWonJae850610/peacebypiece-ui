@@ -321,7 +321,8 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   };
 
   const actions = {
-    handleSave: () => actionState.handleSave(coreState.selectedWorkOrder, coreState.workOrders),
+    handleSave: (workOrderOverride?: WorkOrder) =>
+      actionState.handleSave(workOrderOverride ?? coreState.selectedWorkOrder, coreState.workOrders),
     handleSelectWorkOrder,
     canDeleteWorkOrder,
     handleCreateWorkOrder: (payload?: {
