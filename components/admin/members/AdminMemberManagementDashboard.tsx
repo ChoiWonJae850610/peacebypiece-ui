@@ -6,7 +6,7 @@ import {
   toMemberJoinRequestPreviews,
   toMemberListPreviews,
   getMemberManagementSummaryCards,
-  getMemberRolePreviews,
+  getAssignableMemberRolePreviews,
   type MemberJoinRequestLoadStatus,
   type MemberListLoadStatus,
   type MemberManagementStatus,
@@ -19,6 +19,7 @@ import {
   DEFAULT_MEMBER_BASE_READ_PERMISSION_CODES,
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
+  toAssignableMemberRoleTemplateCode,
   type MemberPermissionCode,
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
@@ -348,7 +349,7 @@ function buildMemberDetailDraft(member: AdminCompanyMemberRecord): MemberDetailD
     displayName: member.displayName?.trim() || member.name,
     phone: member.phone?.trim() || "",
     status: member.status,
-    roleTemplateCode: member.roleTemplateCode,
+    roleTemplateCode: toAssignableMemberRoleTemplateCode(member.roleTemplateCode),
     permissionCodes: normalizeSimplePermissionCodes(member.permissionCodes),
   };
 }
@@ -416,8 +417,7 @@ function resolveExpiresAt(expiresInDays: string): string {
 export default function AdminMemberManagementDashboard() {
   const t = useAdminTranslation();
   const baseSummaryCards = getMemberManagementSummaryCards();
-  const roles = getMemberRolePreviews();
-  const manageableRoles = roles.filter((role) => role.id !== "company_admin");
+  const manageableRoles = getAssignableMemberRolePreviews();
   const currentPermissionCodes =
     getMemberRoleTemplatePermissions("company_admin");
   const inviteRoleOptions = getMemberInviteRoleOptions();
@@ -988,10 +988,7 @@ export default function AdminMemberManagementDashboard() {
       previous
         ? {
             ...previous,
-            roleTemplateCode,
-            permissionCodes: normalizeSimplePermissionCodes(
-              getMemberRoleTemplatePermissions(roleTemplateCode),
-            ),
+            roleTemplateCode: toAssignableMemberRoleTemplateCode(roleTemplateCode),
           }
         : previous,
     );
@@ -1112,7 +1109,9 @@ export default function AdminMemberManagementDashboard() {
   }
 
   function getJoinRequestReviewRoleId(request: (typeof joinRequests)[number]): MemberPermissionRoleTemplateCode {
-    return joinRequestRoleDrafts[request.id] ?? request.requestedRoleId;
+    return toAssignableMemberRoleTemplateCode(
+      joinRequestRoleDrafts[request.id] ?? request.requestedRoleId,
+    );
   }
 
   async function handleReviewJoinRequest(
@@ -1191,8 +1190,8 @@ export default function AdminMemberManagementDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "company_to_member",
-          recipientRole: "viewer",
-          permissionPreset: "viewer",
+          recipientRole: "designer",
+          permissionPreset: "designer",
           expiresAt,
           createdByUserId: undefined,
         }),
@@ -1735,7 +1734,7 @@ export default function AdminMemberManagementDashboard() {
                   <p className="text-xs leading-5 pbp-text-muted">
                     {t(
                       "memberManagement.detailModal.roleTemplateHelper",
-                      "역할은 시작값입니다. 실제 업무 권한은 아래 4개 항목으로 단순하게 조정합니다.",
+                      "역할은 담당자 표시와 업무 구분에 사용합니다. 실제 권한은 아래 체크 항목으로 결정되며, 필요할 때만 역할 기본값을 적용합니다.",
                     )}
                   </p>
                   <AdminButton
@@ -1746,7 +1745,7 @@ export default function AdminMemberManagementDashboard() {
                   >
                     {t(
                       "memberManagement.detailModal.actions.resetRoleTemplate",
-                      "역할 기본값 적용",
+                      "선택 역할의 권한 기본값 적용",
                     )}
                   </AdminButton>
                 </div>

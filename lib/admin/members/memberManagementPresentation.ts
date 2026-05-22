@@ -1,6 +1,8 @@
 import {
   MEMBER_PERMISSION_CATALOG,
   MEMBER_ROLE_TEMPLATE_POLICIES,
+  getAssignableMemberRoleTemplatePolicies,
+  toAssignableMemberRoleTemplateCode,
   type MemberPermissionCode,
   type MemberPermissionGroupKey,
   type MemberPermissionRoleTemplateCode,
@@ -144,6 +146,13 @@ export const MEMBER_ROLE_PREVIEWS: readonly MemberRolePreview[] = MEMBER_ROLE_TE
   status: "ready",
 }));
 
+export const MEMBER_ASSIGNABLE_ROLE_PREVIEWS: readonly MemberRolePreview[] =
+  getAssignableMemberRoleTemplatePolicies().map((role) => ({
+    id: role.code,
+    permissionCount: role.permissionCodes.length,
+    status: "ready",
+  }));
+
 export const MEMBER_MANAGEMENT_PERMISSION_CARDS: readonly MemberPermissionCard[] = [
   { id: "workorder", requiredPermissions: ["workorder.read"], status: "ready" },
   { id: "workflow", requiredPermissions: ["workorder.status.review", "workorder.status.order", "workorder.status.inspect", "workorder.status.complete"], status: "ready" },
@@ -239,12 +248,14 @@ function isMemberRolePreviewId(value: string | null | undefined): value is Membe
 }
 
 function toMemberRolePreviewId(value: string | null | undefined): MemberRolePreviewId {
-  return isMemberRolePreviewId(value) ? value : "viewer";
+  return toAssignableMemberRoleTemplateCode(value);
 }
 
 function resolveRequestedRoleId(joinRequest: JoinRequestRecord): MemberRolePreviewId {
   const permissionPreset = joinRequest.invitation?.permissionPreset;
-  if (isMemberRolePreviewId(permissionPreset)) return permissionPreset;
+  if (isMemberRolePreviewId(permissionPreset)) {
+    return toAssignableMemberRoleTemplateCode(permissionPreset);
+  }
   return toMemberRolePreviewId(joinRequest.invitation?.recipientRole);
 }
 
@@ -283,7 +294,7 @@ export function toMemberListPreview(member: AdminCompanyMemberRecord): MemberLis
     name: member.name,
     email: member.email?.trim() || "-",
     phone: member.phone?.trim() || "-",
-    roleId: member.roleTemplateCode,
+    roleId: toAssignableMemberRoleTemplateCode(member.roleTemplateCode),
     status: member.status,
     permissionCount: member.permissionCount,
     permissionCodes: member.permissionCodes,
@@ -325,10 +336,15 @@ export function getMemberRolePreviews(): readonly MemberRolePreview[] {
   return MEMBER_ROLE_PREVIEWS;
 }
 
+export function getAssignableMemberRolePreviews(): readonly MemberRolePreview[] {
+  return MEMBER_ASSIGNABLE_ROLE_PREVIEWS;
+}
+
 export function getMemberInviteRoleOptions(): readonly MemberInviteRoleOption[] {
-  return MEMBER_ROLE_PREVIEWS
-    .filter((role) => role.id !== "company_admin")
-    .map((role) => ({ id: role.id, permissionCount: role.permissionCount }));
+  return MEMBER_ASSIGNABLE_ROLE_PREVIEWS.map((role) => ({
+    id: role.id,
+    permissionCount: role.permissionCount,
+  }));
 }
 
 export function getMemberInvitationSetupCards(): readonly MemberInvitationSetupCard[] {

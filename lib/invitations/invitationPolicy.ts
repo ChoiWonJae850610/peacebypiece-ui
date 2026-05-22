@@ -51,7 +51,6 @@ const COMPANY_ALLOWED_ROLES: InvitationRecipientRole[] = [
   "designer",
   "inspector",
   "inventory_manager",
-  "viewer",
 ];
 
 function isExpired(expiresAt?: string | null, now?: string | null): boolean {

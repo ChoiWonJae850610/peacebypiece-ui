@@ -156,6 +156,34 @@ export const MEMBER_ROLE_TEMPLATE_POLICIES: readonly MemberRoleTemplatePolicy[] 
   },
 ] as const;
 
+
+export const MEMBER_ASSIGNABLE_ROLE_TEMPLATE_CODES = [
+  "designer",
+  "inspector",
+  "inventory_manager",
+] as const satisfies readonly MemberPermissionRoleTemplateCode[];
+
+export type AssignableMemberPermissionRoleTemplateCode =
+  (typeof MEMBER_ASSIGNABLE_ROLE_TEMPLATE_CODES)[number];
+
+export function isAssignableMemberRoleTemplateCode(
+  value: string | null | undefined,
+): value is AssignableMemberPermissionRoleTemplateCode {
+  return MEMBER_ASSIGNABLE_ROLE_TEMPLATE_CODES.some((roleCode) => roleCode === value);
+}
+
+export function toAssignableMemberRoleTemplateCode(
+  value: string | null | undefined,
+): AssignableMemberPermissionRoleTemplateCode {
+  return isAssignableMemberRoleTemplateCode(value) ? value : "designer";
+}
+
+export function getAssignableMemberRoleTemplatePolicies(): readonly MemberRoleTemplatePolicy[] {
+  return MEMBER_ROLE_TEMPLATE_POLICIES.filter((role) =>
+    isAssignableMemberRoleTemplateCode(role.code),
+  );
+}
+
 export const MEMBER_PERMISSION_MATRIX_ROWS: readonly MemberPermissionMatrixRow[] = MEMBER_ROLE_TEMPLATE_POLICIES.flatMap((role) =>
   MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly).map((permission) => ({
     roleCode: role.code,

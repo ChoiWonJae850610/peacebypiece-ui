@@ -1,14 +1,12 @@
 export type CompanyMemberInviteRole =
   | "designer"
   | "inspector"
-  | "inventory_manager"
-  | "viewer";
+  | "inventory_manager";
 
 export type CompanyMemberInvitePreset =
   | "designer"
   | "inspector"
   | "inventory_manager"
-  | "viewer"
   | "custom";
 
 export interface CompanyMemberInviteRoleOption {
@@ -46,13 +44,6 @@ export const COMPANY_MEMBER_INVITE_ROLE_OPTIONS: CompanyMemberInviteRoleOption[]
     description: "재고 관리 중심 역할입니다.",
     permissions: ["inventory.manage"],
   },
-  {
-    role: "viewer",
-    label: "조회자",
-    preset: "viewer",
-    description: "조회와 통계 확인 중심의 제한 역할입니다.",
-    permissions: ["stats.view"],
-  },
 ];
 
 export const COMPANY_MEMBER_INVITE_POLICY_NOTES: CompanyMemberInvitePolicyNote[] = [
@@ -62,7 +53,7 @@ export const COMPANY_MEMBER_INVITE_POLICY_NOTES: CompanyMemberInvitePolicyNote[]
   },
   {
     title: "역할 제한",
-    description: "고객관리자는 디자이너, 검수담당자, 재고담당자, 조회자만 초대합니다.",
+    description: "고객관리자는 디자이너, 검수담당자, 재고담당자 역할만 선택하고 실제 권한은 체크 항목으로 조정합니다.",
   },
   {
     title: "관리자 초대 제외",

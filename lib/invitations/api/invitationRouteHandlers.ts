@@ -45,7 +45,7 @@ function toInvitationDraft(
   systemScope?: { userId: string } | null,
 ): InvitationDraft {
   const scope = body.scope ?? "company_to_member";
-  const recipientRole = body.recipientRole ?? (scope === "system_to_company_admin" ? "admin" : "viewer");
+  const recipientRole = body.recipientRole ?? (scope === "system_to_company_admin" ? "admin" : "designer");
   const permissionPreset =
     body.permissionPreset ??
     (recipientRole === "admin" ? "company_admin" : recipientRole);

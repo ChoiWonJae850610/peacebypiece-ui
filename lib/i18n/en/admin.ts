@@ -473,7 +473,7 @@ export const adminEn = {
       permissionGroupSelectedCount: "{selected}/{total} selected",
       selectedPermissionCount: "{count} selected",
       roleTemplateHelper:
-        "A role is only the starting value. Adjust the actual work permissions with the four options below.",
+        "Roles are used for assignee display and work grouping. Actual permissions are determined by the checked items below; apply role defaults only when needed.",
       policyNotice:
         "Removing your own permission-management access or the last administrator access is blocked when saving.",
       summary: {
@@ -520,7 +520,7 @@ export const adminEn = {
       actions: {
         save: "Save",
         saving: "Saving",
-        resetRoleTemplate: "Apply role defaults",
+        resetRoleTemplate: "Apply selected role defaults",
         selectGroup: "Select group",
         clearGroup: "Clear",
       },
@@ -610,7 +610,7 @@ export const adminEn = {
         search: "Search",
         searchPlaceholder: "Search name, email, or contact",
         status: "Status",
-        role: "Permission",
+        role: "Role"
       },
       statusFilters: {
         all: "All",
@@ -757,7 +757,7 @@ export const adminEn = {
           name: "Name",
           email: "Email",
           phone: "Contact",
-          role: "Permission",
+          role: "Role"
           status: "Status",
           requestedAt: "Requested",
           approvedAt: "Approved",
@@ -770,7 +770,7 @@ export const adminEn = {
           name: "Name",
           email: "Email",
           phone: "Contact",
-          role: "Permission",
+          role: "Role"
           status: "Status",
           requestedAt: "Requested",
           approvedAt: "Approved",
@@ -897,11 +897,6 @@ export const adminEn = {
         label: "Inventory/materials",
         description:
           "Default permission bundle for ordering, inbound status, outsourcing processes, and materials checks.",
-      },
-      viewer: {
-        label: "Read-only",
-        description:
-          "Candidate role for internal or external collaborators who only need to read work flow status.",
       },
     },
     nextSteps: {

@@ -488,7 +488,7 @@ export const adminKo = {
       permissionGroupSelectedCount: "{selected}/{total}개 선택",
       selectedPermissionCount: "{count}개 선택",
       roleTemplateHelper:
-        "역할은 시작값입니다. 실제 업무 권한은 아래 4개 항목으로 단순하게 조정합니다.",
+        "역할은 담당자 표시와 업무 구분에 사용합니다. 실제 권한은 아래 체크 항목으로 결정되며, 필요할 때만 역할 기본값을 적용합니다.",
       policyNotice:
         "개인설정은 별도 권한 없이 모든 로그인 사용자가 접근할 수 있습니다.",
       summary: {
@@ -535,7 +535,7 @@ export const adminKo = {
       actions: {
         save: "저장",
         saving: "저장 중",
-        resetRoleTemplate: "역할 기본값 적용",
+        resetRoleTemplate: "선택 역할의 권한 기본값 적용",
         selectGroup: "그룹 선택",
         clearGroup: "해제",
       },
@@ -624,7 +624,7 @@ export const adminKo = {
         search: "검색",
         searchPlaceholder: "이름, 이메일, 연락처 검색",
         status: "상태",
-        role: "권한",
+        role: "역할",
       },
       statusFilters: {
         all: "전체",
@@ -768,7 +768,7 @@ export const adminKo = {
           name: "이름",
           email: "이메일",
           phone: "연락처",
-          role: "권한",
+          role: "역할",
           status: "상태",
           requestedAt: "신청일",
           approvedAt: "승인일",
@@ -781,7 +781,7 @@ export const adminKo = {
           name: "이름",
           email: "이메일",
           phone: "연락처",
-          role: "권한",
+          role: "역할",
           status: "상태",
           requestedAt: "신청일",
           approvedAt: "승인일",
@@ -907,11 +907,6 @@ export const adminKo = {
         label: "재고/자재 담당",
         description:
           "발주, 입고, 외주공정, 자재 확인 중심의 기본 권한 묶음입니다.",
-      },
-      viewer: {
-        label: "조회 전용",
-        description:
-          "작업 흐름을 읽기 전용으로 확인하는 외부/내부 협업자 후보 역할입니다.",
       },
     },
     nextSteps: {
