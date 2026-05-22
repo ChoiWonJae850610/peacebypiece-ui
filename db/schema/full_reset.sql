@@ -1761,10 +1761,12 @@ CREATE INDEX item_categories_parent_idx ON item_categories (parent_id, sort_orde
 CREATE INDEX partners_active_name_idx ON partners (is_active, name);
 CREATE INDEX outsourcing_processes_company_active_idx ON outsourcing_processes (company_id, is_active, sort_order, name);
 CREATE INDEX partners_company_idx ON partners (company_id);
+CREATE INDEX partners_company_name_idx ON partners (company_id, name);
 CREATE INDEX partner_items_partner_id_idx ON partner_items (partner_id);
 CREATE INDEX partner_items_type_active_idx ON partner_items (item_type, is_active);
 CREATE INDEX partner_items_outsourcing_process_id_idx ON partner_items (outsourcing_process_id);
 CREATE INDEX partner_items_company_type_active_idx ON partner_items (company_id, item_type, is_active);
+CREATE INDEX partner_items_company_partner_type_idx ON partner_items (company_id, partner_id, item_type, is_active);
 
 CREATE INDEX spec_sheets_updated_at_idx ON spec_sheets (updated_at DESC, created_at DESC);
 CREATE INDEX spec_sheets_reorder_group_idx ON spec_sheets (reorder_group_id, reorder_round);
@@ -1789,10 +1791,13 @@ CREATE INDEX orders_company_spec_sheet_idx ON orders (company_id, spec_sheet_id)
 CREATE INDEX orders_factory_partner_idx ON orders (factory_partner_id);
 CREATE INDEX orders_source_order_entry_idx ON orders (source_order_entry_id);
 CREATE INDEX orders_company_status_due_idx ON orders (company_id, status, due_date);
+CREATE INDEX orders_company_factory_name_idx ON orders (company_id, factory_name);
 
 CREATE INDEX spec_sheet_materials_spec_sheet_idx ON spec_sheet_materials (spec_sheet_id);
 CREATE INDEX spec_sheet_materials_company_spec_sheet_idx ON spec_sheet_materials (company_id, spec_sheet_id);
 CREATE INDEX spec_sheet_materials_type_idx ON spec_sheet_materials (material_type);
+CREATE INDEX spec_sheet_materials_company_source_material_idx ON spec_sheet_materials (company_id, source_material_id);
+CREATE INDEX spec_sheet_materials_company_vendor_idx ON spec_sheet_materials (company_id, vendor);
 
 CREATE INDEX material_stocks_source_spec_sheet_idx ON material_stocks (source_spec_sheet_id);
 CREATE INDEX material_stocks_source_material_idx ON material_stocks (source_spec_sheet_material_id);
@@ -1802,6 +1807,8 @@ CREATE INDEX material_stocks_active_idx ON material_stocks (is_active, updated_a
 CREATE INDEX spec_sheet_outsourcing_lines_spec_sheet_idx ON spec_sheet_outsourcing_lines (spec_sheet_id);
 CREATE INDEX spec_sheet_outsourcing_lines_company_spec_sheet_idx ON spec_sheet_outsourcing_lines (company_id, spec_sheet_id);
 CREATE INDEX spec_sheet_outsourcing_lines_process_idx ON spec_sheet_outsourcing_lines (process);
+CREATE INDEX spec_sheet_outsourcing_lines_company_source_idx ON spec_sheet_outsourcing_lines (company_id, source_outsourcing_id);
+CREATE INDEX spec_sheet_outsourcing_lines_company_vendor_idx ON spec_sheet_outsourcing_lines (company_id, vendor);
 
 CREATE INDEX attachments_order_idx ON attachments (order_id);
 CREATE INDEX attachments_order_type_active_idx ON attachments (order_id, type, is_active, created_at ASC);

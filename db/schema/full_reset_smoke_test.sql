@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.15.67
+-- Version: 0.15.72
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -409,6 +409,13 @@ BEGIN
       ('spec_sheets_company_status_created_idx'),
       ('spec_sheets_company_reorder_created_idx'),
       ('orders_company_factory_idx'),
+      ('orders_company_factory_name_idx'),
+      ('spec_sheet_materials_company_source_material_idx'),
+      ('spec_sheet_materials_company_vendor_idx'),
+      ('spec_sheet_outsourcing_lines_company_source_idx'),
+      ('spec_sheet_outsourcing_lines_company_vendor_idx'),
+      ('partners_company_name_idx'),
+      ('partner_items_company_partner_type_idx'),
       ('attachments_company_size_idx'),
       ('company_workorder_daily_stats_company_date_idx'),
       ('company_workorder_monthly_stats_company_month_idx'),

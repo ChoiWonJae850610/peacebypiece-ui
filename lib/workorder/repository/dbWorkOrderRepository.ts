@@ -1320,17 +1320,20 @@ function buildSpecSheetSummarySelectQuery(
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS order_entry_count
         FROM orders o
-        WHERE o.spec_sheet_id = s.id
+        WHERE o.company_id = s.company_id
+          AND o.spec_sheet_id = s.id
       ) order_counts ON true
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS material_count
         FROM spec_sheet_materials m
-        WHERE m.spec_sheet_id = s.id
+        WHERE m.company_id = s.company_id
+          AND m.spec_sheet_id = s.id
       ) material_counts ON true
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS outsourcing_count
         FROM spec_sheet_outsourcing_lines ol
-        WHERE ol.spec_sheet_id = s.id
+        WHERE ol.company_id = s.company_id
+          AND ol.spec_sheet_id = s.id
       ) outsourcing_counts ON true
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS attachment_count
@@ -1476,10 +1479,13 @@ function getOrCreateDetailRows(
 
 async function loadNormalizedDetailRowsByWorkOrderIds(
   workOrderIds: string[],
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<Map<string, WorkOrderDetailRows>> {
   const uniqueIds = Array.from(new Set(workOrderIds.filter(Boolean)));
   const rowsByWorkOrderId = new Map<string, WorkOrderDetailRows>();
   if (uniqueIds.length === 0) return rowsByWorkOrderId;
+
+  const companyId = resolveWorkOrderCompanyId(scope);
 
   const [ordersResult, materialsResult, outsourcingResult] = await Promise.all([
     queryDb<DbOrderEntryRow>(
@@ -1493,9 +1499,10 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               loss_cost,
               status
          FROM orders
-        WHERE spec_sheet_id = ANY($1::text[])
+        WHERE company_id = $1
+          AND spec_sheet_id = ANY($2::text[])
         ORDER BY id ASC`,
-      [uniqueIds],
+      [companyId, uniqueIds],
     ),
     queryDb<DbMaterialRow>(
       `SELECT id,
@@ -1509,9 +1516,10 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               total_cost,
               status
          FROM spec_sheet_materials
-        WHERE spec_sheet_id = ANY($1::text[])
+        WHERE company_id = $1
+          AND spec_sheet_id = ANY($2::text[])
         ORDER BY id ASC`,
-      [uniqueIds],
+      [companyId, uniqueIds],
     ),
     queryDb<DbOutsourcingRow>(
       `SELECT id,
@@ -1524,9 +1532,10 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               total_cost,
               status
          FROM spec_sheet_outsourcing_lines
-        WHERE spec_sheet_id = ANY($1::text[])
+        WHERE company_id = $1
+          AND spec_sheet_id = ANY($2::text[])
         ORDER BY id ASC`,
-      [uniqueIds],
+      [companyId, uniqueIds],
     ),
   ]);
 
@@ -1582,9 +1591,11 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
 
 async function attachNormalizedDetailRows(
   workOrders: WorkOrder[],
+  scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder[]> {
   const rowsByWorkOrderId = await loadNormalizedDetailRowsByWorkOrderIds(
     workOrders.map((workOrder) => workOrder.id),
+    scope,
   );
 
   return workOrders.map((workOrder) => {
@@ -1611,7 +1622,7 @@ export async function findAllDbWorkOrders(
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder[]> {
   const rows = await loadActiveSpecSheetRows(scope);
-  return attachNormalizedDetailRows(rows.map(mapSpecSheetRowToWorkOrder));
+  return attachNormalizedDetailRows(rows.map(mapSpecSheetRowToWorkOrder), scope);
 }
 
 export async function findDbWorkOrderById(
@@ -1631,7 +1642,7 @@ export async function findDbWorkOrderById(
   if (!row) return null;
   const [hydrated] = await attachNormalizedDetailRows([
     mapSpecSheetRowToWorkOrder(row),
-  ]);
+  ], scope);
   return hydrated ?? mapSpecSheetRowToWorkOrder(row);
 }
 
