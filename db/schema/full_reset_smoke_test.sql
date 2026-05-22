@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.14.2
+-- Version: 0.15.67
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -408,7 +408,7 @@ BEGIN
       ('spec_sheets_company_created_idx'),
       ('spec_sheets_company_status_created_idx'),
       ('spec_sheets_company_reorder_created_idx'),
-      ('orders_company_factory_created_idx'),
+      ('orders_company_factory_idx'),
       ('attachments_company_size_idx'),
       ('company_workorder_daily_stats_company_date_idx'),
       ('company_workorder_monthly_stats_company_month_idx'),
@@ -431,7 +431,7 @@ BEGIN
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 
   IF missing_indexes IS NOT NULL THEN
-    RAISE EXCEPTION 'full_reset smoke test failed. Missing stats indexes: %', missing_indexes;
+    RAISE EXCEPTION 'full_reset smoke test failed. Missing required indexes: %', missing_indexes;
   END IF;
 END $$;
 
