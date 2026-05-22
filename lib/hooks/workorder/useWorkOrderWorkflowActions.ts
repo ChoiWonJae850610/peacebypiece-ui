@@ -142,6 +142,25 @@ export function useWorkOrderWorkflowActions({
     setSaveStatus("saved");
   }, [selectedId, setLastSavedAt, setSaveStatus]);
 
+  const syncDraftWorkOrderBeforeWorkflowAction = useCallback((draftWorkOrder: WorkOrder) => {
+    const existing = workOrdersRef.current.find((item) => item.id === draftWorkOrder.id);
+    if (!existing) return draftWorkOrder;
+
+    const nextWorkOrder = {
+      ...existing,
+      ...draftWorkOrder,
+      hasDetailSnapshot: draftWorkOrder.hasDetailSnapshot ?? existing.hasDetailSnapshot,
+    };
+    const nextWorkOrders = stabilizeWorkOrders(
+      workOrdersRef.current.map((item) => (item.id === draftWorkOrder.id ? nextWorkOrder : item)),
+    );
+
+    workOrdersRef.current = nextWorkOrders;
+    setWorkOrders(nextWorkOrders);
+
+    return nextWorkOrder;
+  }, [setWorkOrders]);
+
   const applyWorkflowAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction, toastMessageOverride?: string | null) => {
       const result = buildWorkflowActionResult({
@@ -230,11 +249,12 @@ export function useWorkOrderWorkflowActions({
 
   const handleWorkflowAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction) => {
+      const workflowDraft = syncDraftWorkOrderBeforeWorkflowAction(workOrder);
       let reviewWarningMessage: string | null = null;
 
       if (isWorkflowState(action.nextState, "review_requested")) {
         const validationMessage = getReviewRequestValidationMessage({
-          workOrder,
+          workOrder: workflowDraft,
           text: actionFlowText,
         });
         if (validationMessage) {
@@ -243,14 +263,14 @@ export function useWorkOrderWorkflowActions({
         }
 
         reviewWarningMessage = getReviewRequestWarningMessage({
-          workOrder,
+          workOrder: workflowDraft,
           text: actionFlowText,
         });
       }
 
       if (isWorkflowState(action.nextState, "review_completed")) {
         const validationMessage = getReviewApprovalValidationMessage({
-          workOrder,
+          workOrder: workflowDraft,
           text: actionFlowText,
         });
         if (validationMessage) {
@@ -259,27 +279,27 @@ export function useWorkOrderWorkflowActions({
         }
 
         reviewWarningMessage = getReviewApprovalWarningMessage({
-          workOrder,
+          workOrder: workflowDraft,
           text: actionFlowText,
         });
       }
 
-      const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
+      const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workflowDraft.workflowState, workflowDraft.orderEntries);
 
       if (isWorkflowState(action.nextState, "inspection") && canReinspectInWorkflow(effectiveWorkflowState)) {
-        await applyReinspectionAction(workOrder, action);
+        await applyReinspectionAction(workflowDraft, action);
         return;
       }
 
       if (requiresOrderRequestConfirmation(action)) {
-        const currentWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
+        const currentWorkflowState = deriveWorkflowStateFromOrderEntries(workflowDraft.workflowState, workflowDraft.orderEntries);
         const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
-        const submissionSnapshot = getOrderSubmissionSnapshot(workOrder);
+        const submissionSnapshot = getOrderSubmissionSnapshot(workflowDraft);
         const validationMessage = getFactoryOrderRequestValidationMessage({
           currentRoles,
           currentUser,
           currentUserId: currentUser.id,
-          workOrder,
+          workOrder: workflowDraft,
           currentWorkflowState,
           factoryName: submissionSnapshot.factoryName,
           quantity: submissionSnapshot.quantity,
@@ -295,9 +315,9 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      await applyWorkflowAction(workOrder, action, reviewWarningMessage);
+      await applyWorkflowAction(workflowDraft, action, reviewWarningMessage);
     },
-    [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage],
+    [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage, syncDraftWorkOrderBeforeWorkflowAction],
   );
 
   const handleConfirmOrderRequest = useCallback(

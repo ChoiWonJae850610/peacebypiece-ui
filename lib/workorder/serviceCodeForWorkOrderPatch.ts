@@ -11,10 +11,7 @@ const BASIC_INFO_FIELDS = [
   "category2Id",
   "category3Id",
   "season",
-  "priority",
   "workOrderKind",
-  "dueDate",
-  "vendor",
 ] as const satisfies readonly (keyof WorkOrder)[];
 const INVENTORY_FIELDS = ["inventoryQuantity", "inventoryStatus"] as const satisfies readonly (keyof WorkOrder)[];
 
