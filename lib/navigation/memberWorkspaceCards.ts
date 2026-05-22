@@ -24,7 +24,7 @@ export const MEMBER_WORKSPACE_CARDS: readonly MemberWorkspaceCard[] = [
     href: "/worker",
     status: MEMBER_WORKSPACE_CARD_STATUS.available,
     section: "work",
-    requiredPermissions: ["workorder.read", "workorder.create"],
+    requiredPermissions: ["workorder.read"],
   },
   {
     id: "partners",

@@ -129,7 +129,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
 
   const profileComplete = Boolean(profile?.profileComplete);
   const canSave = useMemo(() => {
-    return Boolean(draft.name.trim() && normalizePhoneNumber(draft.phone).length >= 10 && draft.birthday);
+    return Boolean(draft.name.trim() && normalizePhoneNumber(draft.phone).length >= 10);
   }, [draft]);
 
   useEffect(() => {
@@ -239,12 +239,22 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
         </label>
         <label className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.birthday}
-          <input
-            value={draft.birthday}
-            onChange={(event) => setDraft((current) => ({ ...current, birthday: event.target.value }))}
-            className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-accent)]"
-            type="date"
-          />
+          <div className="flex gap-2">
+            <input
+              value={draft.birthday}
+              onChange={(event) => setDraft((current) => ({ ...current, birthday: event.target.value }))}
+              className="min-w-0 flex-1 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-accent)]"
+              type="date"
+            />
+            <button
+              type="button"
+              onClick={() => setDraft((current) => ({ ...current, birthday: "" }))}
+              disabled={!draft.birthday}
+              className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-secondary)] transition hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {copy.profile.clearBirthday}
+            </button>
+          </div>
         </label>
         <div className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.email}

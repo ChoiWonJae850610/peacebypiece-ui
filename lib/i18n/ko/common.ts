@@ -64,8 +64,8 @@ export const commonKo = {
     loading: "저장된 개인 설정을 불러오는 중입니다.",
     profile: {
       title: "업무 프로필",
-      description: "이름, 연락처, 생년월일은 작업지시서 담당자와 멤버 목록에 표시되는 앱 내부 정보입니다.",
-      requiredNotice: "업무에서 사용할 기본 정보를 입력해주세요. 저장된 이름은 담당자 변경 목록과 업무 화면 표시명으로 사용됩니다.",
+      description: "이름과 연락처는 작업지시서 담당자와 멤버 목록에 표시되는 앱 내부 정보입니다. 생년월일은 선택 정보입니다.",
+      requiredNotice: "이름과 연락처는 필수입니다. 생년월일은 선택 입력이며 필요하면 비워둘 수 있습니다.",
       complete: "입력 완료",
       incomplete: "입력 필요",
       loading: "프로필 정보를 불러오는 중입니다.",
@@ -73,6 +73,7 @@ export const commonKo = {
       save: "프로필 저장",
       saving: "저장 중",
       saved: "프로필을 저장했습니다.",
+      clearBirthday: "삭제",
       fields: {
         name: "이름",
         phone: "연락처",

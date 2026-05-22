@@ -1,5 +1,4 @@
 import {
-  canCreateWorkOrderByRoles,
   canUploadOfficialAttachmentsByRoles,
   isAdminRole,
   normalizeRoles,
@@ -46,8 +45,8 @@ export function buildWorkOrderDerivedState({
   const currentRole = currentUser.role;
   const isAdmin = isAdminRole(currentRoles);
   const canWriteWorkOrder = isAdmin || hasMemberPermission(currentUser, "workorder.update");
-  const canCreateWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create") || canCreateWorkOrderByRoles(currentRoles));
-  const canReorderWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create") || canCreateWorkOrderByRoles(currentRoles));
+  const canCreateWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create"));
+  const canReorderWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create"));
   const permissionTargetUser = users.find((user) => user.id === permissionTargetUserId) ?? users[0] ?? currentUser;
   const workflowStateById = deriveWorkflowStateById(workOrders);
   const currentWorkflowState = deriveWorkflowStateFromOrderEntries(selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries);

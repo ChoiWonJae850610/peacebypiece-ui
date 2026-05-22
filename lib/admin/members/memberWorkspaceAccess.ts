@@ -3,6 +3,7 @@ import "server-only";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import {
   getMemberRoleTemplatePermissions,
+  mergeDefaultMemberBaseReadPermissions,
   type MemberPermissionCode,
 } from "@/lib/permissions";
 import { ADMIN_COMPANY_MEMBER_STATUS_FILTER } from "@/lib/domain/memberStatus";
@@ -26,8 +27,8 @@ export async function resolveMemberWorkspacePermissionCodes(
       limit: 100,
     });
 
-    return members.find((member) => member.id === session.companyMemberId)?.permissionCodes ?? [];
+    return mergeDefaultMemberBaseReadPermissions(members.find((member) => member.id === session.companyMemberId)?.permissionCodes ?? []);
   } catch {
-    return [];
+    return mergeDefaultMemberBaseReadPermissions([]);
   }
 }

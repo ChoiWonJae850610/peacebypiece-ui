@@ -9,6 +9,15 @@ export type MemberPermissionAccessInput = {
   permissionCodes?: readonly (MemberPermissionCode | string)[] | null;
 };
 
+export const DEFAULT_MEMBER_BASE_READ_PERMISSION_CODES = [
+  "workorder.read",
+  "partner.read",
+  "standards.read",
+  "stats.read",
+  "storage.read",
+  "personal_settings.manage",
+] as const satisfies readonly MemberPermissionCode[];
+
 export function isMemberPermissionCode(value: string): value is MemberPermissionCode {
   return MEMBER_PERMISSION_CATALOG.some((permission) => permission.code === value);
 }
@@ -22,6 +31,15 @@ export function normalizeMemberPermissionCodes(input: MemberPermissionAccessInpu
       ),
     ),
   );
+}
+
+
+export function mergeDefaultMemberBaseReadPermissions(
+  permissionCodes: readonly (MemberPermissionCode | string)[] | null | undefined,
+): readonly MemberPermissionCode[] {
+  return normalizeMemberPermissionCodes({
+    permissionCodes: [...DEFAULT_MEMBER_BASE_READ_PERMISSION_CODES, ...(permissionCodes ?? [])],
+  });
 }
 
 export function hasMemberPermission(input: MemberPermissionAccessInput, permissionCode: MemberPermissionCode): boolean {

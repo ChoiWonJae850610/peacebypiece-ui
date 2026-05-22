@@ -64,8 +64,8 @@ export const commonEn = {
     loading: "Loading saved personal settings.",
     profile: {
       title: "Work profile",
-      description: "Name, contact, and birthday are app profile fields used in assignee lists and member views.",
-      requiredNotice: "Enter the basic information used at work. The saved name is used as the display name in assignee lists and work screens.",
+      description: "Name and contact are app profile fields used in assignee lists and member views. Birthday is optional.",
+      requiredNotice: "Name and contact are required. Birthday is optional and can be left empty.",
       complete: "Complete",
       incomplete: "Required",
       loading: "Loading profile information.",
@@ -73,6 +73,7 @@ export const commonEn = {
       save: "Save profile",
       saving: "Saving",
       saved: "Profile saved.",
+      clearBirthday: "Clear",
       fields: {
         name: "Name",
         phone: "Contact",

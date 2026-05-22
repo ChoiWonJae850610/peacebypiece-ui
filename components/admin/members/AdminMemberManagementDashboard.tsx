@@ -16,6 +16,7 @@ import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
+  DEFAULT_MEMBER_BASE_READ_PERMISSION_CODES,
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
   type MemberPermissionCode,
@@ -169,14 +170,7 @@ type SimplePermissionControl = {
   readPermissionCodes?: readonly MemberPermissionCode[];
 };
 
-const MEMBER_BASE_READ_PERMISSION_CODES: readonly MemberPermissionCode[] = [
-  "workorder.read",
-  "partner.read",
-  "standards.read",
-  "stats.read",
-  "storage.read",
-  "personal_settings.manage",
-];
+const MEMBER_BASE_READ_PERMISSION_CODES: readonly MemberPermissionCode[] = DEFAULT_MEMBER_BASE_READ_PERMISSION_CODES;
 
 const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
   {

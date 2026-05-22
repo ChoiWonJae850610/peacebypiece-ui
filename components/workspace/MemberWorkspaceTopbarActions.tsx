@@ -36,6 +36,8 @@ function LogoutIcon() {
   );
 }
 
+const INCOMPLETE_PROFILE_PROMPT_SESSION_KEY = "pbp.incompleteProfilePromptShown";
+
 function buildWorkspaceIconButtonClassName(className = "") {
   return `pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white/80 text-stone-700 shadow-sm transition hover:border-stone-300 hover:bg-white hover:text-stone-950 ${className}`.trim();
 }
@@ -68,7 +70,11 @@ export default function MemberWorkspaceTopbarActions({
         if (!response.ok) return;
         const payload = (await response.json()) as { profile?: { profileComplete?: boolean } | null };
         if (alive && payload.profile && !payload.profile.profileComplete) {
-          setPersonalSettingsOpen(true);
+          const promptAlreadyShown = window.sessionStorage.getItem(INCOMPLETE_PROFILE_PROMPT_SESSION_KEY) === "1";
+          if (!promptAlreadyShown) {
+            window.sessionStorage.setItem(INCOMPLETE_PROFILE_PROMPT_SESSION_KEY, "1");
+            setPersonalSettingsOpen(true);
+          }
         }
       } catch {
         // 개인 프로필 안내는 보조 UX이므로 조회 실패 시 상단 버튼만 유지합니다.

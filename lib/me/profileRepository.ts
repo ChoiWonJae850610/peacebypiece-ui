@@ -67,7 +67,7 @@ function mapProfileRow(row: PersonalProfileRow, session: WaflSessionPayload): Pe
     companyName: row.company_name ?? session.companyName,
     companyMemberId: row.company_member_id ?? session.companyMemberId,
     roleTemplateCode: row.role_template_code,
-    profileComplete: Boolean(normalizeName(name) && normalizePhoneNumber(phone).length >= 10 && birthday),
+    profileComplete: Boolean(normalizeName(name) && normalizePhoneNumber(phone).length >= 10),
   };
 }
 
@@ -111,7 +111,7 @@ export async function updatePersonalProfile(
   const normalizedPhone = normalizePhoneNumber(String(input.phone ?? ""));
   const normalizedBirthday = normalizeBirthday(input.birthday);
 
-  if (!normalizedName || normalizedPhone.length < 10 || !normalizedBirthday) {
+  if (!normalizedName || normalizedPhone.length < 10) {
     throw new Error("PERSONAL_PROFILE_REQUIRED_FIELDS");
   }
 
