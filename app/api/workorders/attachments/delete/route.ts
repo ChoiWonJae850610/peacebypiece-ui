@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiPermission } from "@/lib/permissions";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { resolveWorkOrderServiceCodeForRequest } from "@/lib/workorder/serviceCodeRequest";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
@@ -18,6 +19,7 @@ export const runtime = "nodejs";
 type AttachmentDeleteRequest = {
   attachmentId?: unknown;
   deletedBy?: unknown;
+  serviceCode?: unknown;
 };
 
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
@@ -30,6 +32,19 @@ function readText(value: unknown): string | null {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
+}
+
+
+function createServiceCodeErrorResponse(result: Extract<ReturnType<typeof resolveWorkOrderServiceCodeForRequest>, { ok: false }>): NextResponse {
+  return NextResponse.json(
+    {
+      attachmentId: null,
+      error: result.error,
+      expectedServiceCode: result.expected,
+      receivedServiceCode: result.received,
+    },
+    { status: 400 },
+  );
 }
 
 
@@ -72,8 +87,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_ID_REQUIRED" }, { status: 400 });
     }
 
+    const serviceCodeResult = resolveWorkOrderServiceCodeForRequest({
+      expected: WORKORDER_SERVICE_CODE.attachmentDeleteRequest,
+      received: payload?.serviceCode,
+    });
+    if (!serviceCodeResult.ok) return createServiceCodeErrorResponse(serviceCodeResult);
+
     assertServiceCanUseSideEffect({
-      serviceCode: WORKORDER_SERVICE_CODE.attachmentDeleteRequest,
+      serviceCode: serviceCodeResult.serviceCode,
       resource: WORKORDER_SERVICE_RESOURCE.attachments,
       operation: WORKORDER_SERVICE_OPERATION.softDelete,
     });

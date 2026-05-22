@@ -1,3 +1,4 @@
+import { WORKORDER_SERVICE_CODE, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import type { MemoReply, MemoThread, UserProfile, WorkOrder } from "@/types/workorder";
 
 export type MemoPersistApiResult = {
@@ -21,6 +22,7 @@ async function persistMemo(payload: {
   currentUser: Pick<UserProfile, "id" | "name" | "role">;
   threadId?: string;
   content: string;
+  serviceCode: WorkOrderServiceCodeValue;
 }): Promise<MemoPersistApiResult> {
   const response = await fetch("/api/workorders/memos", {
     method: "POST",
@@ -36,6 +38,7 @@ async function persistMemo(payload: {
       authorName: payload.currentUser.name,
       authorRole: payload.currentUser.role,
       content: payload.content,
+      serviceCode: payload.serviceCode,
     }),
   });
 
@@ -53,7 +56,7 @@ export async function createMemoThreadInDb(payload: {
   currentUser: Pick<UserProfile, "id" | "name" | "role">;
   content: string;
 }): Promise<MemoThread> {
-  const result = await persistMemo({ ...payload, target: "thread" });
+  const result = await persistMemo({ ...payload, target: "thread", serviceCode: WORKORDER_SERVICE_CODE.memoCreate });
   if (!result.thread) throw new Error("MEMO_THREAD_RESPONSE_MISSING");
   return result.thread;
 }
@@ -64,7 +67,7 @@ export async function createMemoReplyInDb(payload: {
   threadId: string;
   content: string;
 }): Promise<MemoReply> {
-  const result = await persistMemo({ ...payload, target: "reply" });
+  const result = await persistMemo({ ...payload, target: "reply", serviceCode: WORKORDER_SERVICE_CODE.memoCreate });
   if (!result.reply) throw new Error("MEMO_REPLY_RESPONSE_MISSING");
   return result.reply;
 }
@@ -76,7 +79,7 @@ export async function updateMemoInDb(payload: { memoId: string; content: string 
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({ memoId: payload.memoId, content: payload.content }),
+    body: JSON.stringify({ memoId: payload.memoId, content: payload.content, serviceCode: WORKORDER_SERVICE_CODE.memoUpdate }),
   });
   const result = await readJson<MemoPersistApiResult>(response, { error: "INVALID_MEMO_RESPONSE" });
   if (!response.ok) {
@@ -91,7 +94,7 @@ export async function deleteMemoInDb(payload: { memoId: string; target: MemoPers
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({ memoId: payload.memoId, target: payload.target }),
+    body: JSON.stringify({ memoId: payload.memoId, target: payload.target, serviceCode: WORKORDER_SERVICE_CODE.memoDelete }),
   });
   const result = await readJson<MemoPersistApiResult>(response, { error: "INVALID_MEMO_RESPONSE" });
   if (!response.ok) {

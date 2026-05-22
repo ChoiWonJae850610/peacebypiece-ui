@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { resolveWorkOrderServiceCodeForRequest } from "@/lib/workorder/serviceCodeRequest";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
@@ -21,16 +22,19 @@ type MemoCreateRequest = {
   authorName?: unknown;
   authorRole?: unknown;
   content?: unknown;
+  serviceCode?: unknown;
 };
 
 type MemoUpdateRequest = {
   memoId?: unknown;
   content?: unknown;
+  serviceCode?: unknown;
 };
 
 type MemoDeleteRequest = {
   target?: unknown;
   memoId?: unknown;
+  serviceCode?: unknown;
 };
 
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
@@ -91,6 +95,18 @@ async function requireMemoCompanyAccess(): Promise<NextResponse | null> {
   return createCompanyApiAccessBlockedResponse(companyId);
 }
 
+
+function createServiceCodeErrorResponse(result: Extract<ReturnType<typeof resolveWorkOrderServiceCodeForRequest>, { ok: false }>): NextResponse {
+  return NextResponse.json(
+    {
+      error: result.error,
+      expectedServiceCode: result.expected,
+      receivedServiceCode: result.received,
+    },
+    { status: 400 },
+  );
+}
+
 export async function GET(request: NextRequest) {
   const blockedResponse = await requireMemoCompanyAccess();
   if (blockedResponse) return blockedResponse;
@@ -127,8 +143,14 @@ export async function POST(request: NextRequest) {
     if (!content) return NextResponse.json({ error: "MEMO_CONTENT_REQUIRED" }, { status: 400 });
     if (target === "reply" && !threadId) return NextResponse.json({ error: "THREAD_ID_REQUIRED" }, { status: 400 });
 
+    const serviceCodeResult = resolveWorkOrderServiceCodeForRequest({
+      expected: WORKORDER_SERVICE_CODE.memoCreate,
+      received: payload?.serviceCode,
+    });
+    if (!serviceCodeResult.ok) return createServiceCodeErrorResponse(serviceCodeResult);
+
     assertServiceCanUseSideEffect({
-      serviceCode: WORKORDER_SERVICE_CODE.memoCreate,
+      serviceCode: serviceCodeResult.serviceCode,
       resource: WORKORDER_SERVICE_RESOURCE.memos,
       operation: WORKORDER_SERVICE_OPERATION.insert,
     });
@@ -188,8 +210,14 @@ export async function PATCH(request: NextRequest) {
     if (!memoId) return NextResponse.json({ error: "MEMO_ID_REQUIRED" }, { status: 400 });
     if (!content) return NextResponse.json({ error: "MEMO_CONTENT_REQUIRED" }, { status: 400 });
 
+    const serviceCodeResult = resolveWorkOrderServiceCodeForRequest({
+      expected: WORKORDER_SERVICE_CODE.memoUpdate,
+      received: payload?.serviceCode,
+    });
+    if (!serviceCodeResult.ok) return createServiceCodeErrorResponse(serviceCodeResult);
+
     assertServiceCanUseSideEffect({
-      serviceCode: WORKORDER_SERVICE_CODE.memoUpdate,
+      serviceCode: serviceCodeResult.serviceCode,
       resource: WORKORDER_SERVICE_RESOURCE.memos,
       operation: WORKORDER_SERVICE_OPERATION.update,
     });
@@ -221,8 +249,14 @@ export async function DELETE(request: NextRequest) {
 
     if (!memoId) return NextResponse.json({ error: "MEMO_ID_REQUIRED" }, { status: 400 });
 
+    const serviceCodeResult = resolveWorkOrderServiceCodeForRequest({
+      expected: WORKORDER_SERVICE_CODE.memoDelete,
+      received: payload?.serviceCode,
+    });
+    if (!serviceCodeResult.ok) return createServiceCodeErrorResponse(serviceCodeResult);
+
     assertServiceCanUseSideEffect({
-      serviceCode: WORKORDER_SERVICE_CODE.memoDelete,
+      serviceCode: serviceCodeResult.serviceCode,
       resource: WORKORDER_SERVICE_RESOURCE.memos,
       operation: WORKORDER_SERVICE_OPERATION.softDelete,
     });

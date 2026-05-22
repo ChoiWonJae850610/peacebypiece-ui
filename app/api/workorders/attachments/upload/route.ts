@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createR2PresignedPutUrl } from "@/lib/storage/r2/r2Client";
-import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { resolveWorkOrderServiceCodeForRequest, getAttachmentPrepareServiceCodeByScope } from "@/lib/workorder/serviceCodeRequest";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
@@ -17,7 +17,7 @@ import type { AttachmentScope } from "@/types/workorder";
 export const runtime = "nodejs";
 
 type PrepareUploadFileInput = { name?: unknown; type?: unknown; size?: unknown };
-type PrepareUploadRequest = { workOrderId?: unknown; scope?: unknown; files?: unknown };
+type PrepareUploadRequest = { workOrderId?: unknown; scope?: unknown; files?: unknown; serviceCode?: unknown };
 
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
   return "countActiveAttachmentsByWorkOrderId" in repository;
@@ -32,14 +32,19 @@ function normalizeScope(value: unknown): AttachmentScope {
 }
 
 
-function getAttachmentPrepareServiceCode(scope: AttachmentScope) {
-  return scope === "design"
-    ? WORKORDER_SERVICE_CODE.designAttachmentPrepare
-    : WORKORDER_SERVICE_CODE.fileAttachmentPrepare;
+function createServiceCodeErrorResponse(result: Extract<ReturnType<typeof resolveWorkOrderServiceCodeForRequest>, { ok: false }>): NextResponse {
+  return NextResponse.json(
+    {
+      uploadTargets: [],
+      error: result.error,
+      expectedServiceCode: result.expected,
+      receivedServiceCode: result.received,
+    },
+    { status: 400 },
+  );
 }
 
-function assertAttachmentUploadPrepareAllowed(scope: AttachmentScope): void {
-  const serviceCode = getAttachmentPrepareServiceCode(scope);
+function assertAttachmentUploadPrepareAllowed(serviceCode: ReturnType<typeof getAttachmentPrepareServiceCodeByScope>): void {
   assertServiceCanUseSideEffect({
     serviceCode,
     resource: WORKORDER_SERVICE_RESOURCE.attachments,
@@ -124,7 +129,13 @@ export async function POST(request: NextRequest) {
     if (!workOrderId) return NextResponse.json({ uploadTargets: [], error: "WORK_ORDER_ID_REQUIRED" }, { status: 400 });
     if (files.length === 0) return NextResponse.json({ uploadTargets: [], error: "FILES_REQUIRED" }, { status: 400 });
 
-    assertAttachmentUploadPrepareAllowed(scope);
+    const serviceCodeResult = resolveWorkOrderServiceCodeForRequest({
+      expected: getAttachmentPrepareServiceCodeByScope(scope),
+      received: payload?.serviceCode,
+    });
+    if (!serviceCodeResult.ok) return createServiceCodeErrorResponse(serviceCodeResult);
+
+    assertAttachmentUploadPrepareAllowed(serviceCodeResult.serviceCode);
 
     const belongsToCompany = await workOrderBelongsToCompany({ workOrderId, companyId });
     if (!belongsToCompany) {

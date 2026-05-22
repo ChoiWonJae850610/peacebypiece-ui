@@ -1,20 +1,26 @@
 Version :
-0.15.69
+0.15.70
 
 Summary :
-작업지시서 저장 액션 serviceCode 연결 보정
+메모와 첨부 API serviceCode 요청 기준 정리
 
 Description :
-작업지시서 저장 버튼이 생산구성 현재값을 serviceCode 기반 state patch로 저장하도록 보정했다. 분류 등 기본정보는 즉시 저장 필드로 정리하고, 발주정보/생산구성은 명시 저장 흐름으로 분리했다. 검수완료와 완료처리 serviceCode가 생산구성 현재값 replace를 허용하도록 side effect matrix를 보정했다.
+작업지시서 메모와 첨부 관련 클라이언트 호출부에서 serviceCode를 명시적으로 전달하도록 정리했다. API route에서는 요청 serviceCode가 기대값과 다르면 차단하도록 공통 검증 유틸을 추가하고, 메모 생성/수정/삭제, 첨부 업로드 준비/완료, 첨부 삭제 요청, 대표 디자인 지정 흐름의 side effect 검증 기준을 명확히 했다.
 
 수정 파일 목록 :
+- app/api/workorders/attachments/delete/route.ts
+- app/api/workorders/attachments/primary/route.ts
+- app/api/workorders/attachments/upload/complete/route.ts
+- app/api/workorders/attachments/upload/route.ts
+- app/api/workorders/memos/route.ts
 - lib/constants/app.ts
-- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
-- lib/workorder/serviceCodeSideEffects.ts
-- lib/workorder/storagePolicy.ts
+- lib/workorder/attachments/attachmentDeleteApiClient.ts
+- lib/workorder/attachments/attachmentPrimaryApiClient.ts
+- lib/workorder/attachments/attachmentUploadApiClient.ts
+- lib/workorder/memo/memoApiClient.ts
 
 추가 파일 목록 :
-없음
+- lib/workorder/serviceCodeRequest.ts
 
 삭제 파일 목록 :
 없음

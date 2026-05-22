@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { resolveWorkOrderServiceCodeForRequest } from "@/lib/workorder/serviceCodeRequest";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
@@ -31,6 +32,7 @@ type CompleteUploadRequest = {
   ownerName?: unknown;
   scope?: unknown;
   uploadTargets?: unknown;
+  serviceCode?: unknown;
 };
 
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
@@ -63,6 +65,19 @@ function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { comp
     fileSize,
     thumbnailStorageKey: thumbnailStorageKey && isImageContentType(contentType) ? thumbnailStorageKey : null,
   };
+}
+
+
+function createServiceCodeErrorResponse(result: Extract<ReturnType<typeof resolveWorkOrderServiceCodeForRequest>, { ok: false }>): NextResponse {
+  return NextResponse.json(
+    {
+      attachments: [],
+      error: result.error,
+      expectedServiceCode: result.expected,
+      receivedServiceCode: result.received,
+    },
+    { status: 400 },
+  );
 }
 
 
@@ -134,8 +149,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachments: [], error: "UPLOAD_TARGETS_REQUIRED" }, { status: 400 });
     }
 
+    const serviceCodeResult = resolveWorkOrderServiceCodeForRequest({
+      expected: WORKORDER_SERVICE_CODE.attachmentUploadComplete,
+      received: payload?.serviceCode,
+    });
+    if (!serviceCodeResult.ok) return createServiceCodeErrorResponse(serviceCodeResult);
+
     assertServiceCanUseSideEffect({
-      serviceCode: WORKORDER_SERVICE_CODE.attachmentUploadComplete,
+      serviceCode: serviceCodeResult.serviceCode,
       resource: WORKORDER_SERVICE_RESOURCE.attachments,
       operation: WORKORDER_SERVICE_OPERATION.insert,
     });

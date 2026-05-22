@@ -1,3 +1,5 @@
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { ATTACHMENT_SCOPE } from "@/lib/constants/workorderIdentity";
 import { createAttachmentThumbnailFile } from "@/lib/workorder/attachments/attachmentThumbnails";
 import { validateAttachmentFile, validateAttachmentFileCount, normalizeAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { Attachment, AttachmentScope, UserProfile, WorkOrder } from "@/types/workorder";
@@ -53,6 +55,13 @@ function logThumbnailUploadSkipped(error: unknown, target: AttachmentUploadTarge
   });
 }
 
+
+function getAttachmentPrepareServiceCode(scope: AttachmentScope) {
+  return scope === ATTACHMENT_SCOPE.design
+    ? WORKORDER_SERVICE_CODE.designAttachmentPrepare
+    : WORKORDER_SERVICE_CODE.fileAttachmentPrepare;
+}
+
 async function prepareWorkOrderAttachmentUploads(payload: {
   workOrder: Pick<WorkOrder, "id" | "attachments">;
   files: File[];
@@ -66,6 +75,7 @@ async function prepareWorkOrderAttachmentUploads(payload: {
     body: JSON.stringify({
       workOrderId: payload.workOrder.id,
       scope: payload.scope,
+      serviceCode: getAttachmentPrepareServiceCode(payload.scope),
       files: payload.files.map((file) => ({
         name: file.name,
         type: file.type || "application/octet-stream",
@@ -127,6 +137,7 @@ async function completeWorkOrderAttachmentUploads(payload: {
       ownerId: payload.currentUser.id,
       ownerName: payload.currentUser.name,
       scope: payload.scope,
+      serviceCode: WORKORDER_SERVICE_CODE.attachmentUploadComplete,
       uploadTargets: payload.uploadTargets.map((target) => ({
         storageKey: target.storageKey,
         fileName: target.fileName,

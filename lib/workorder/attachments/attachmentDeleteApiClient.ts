@@ -1,3 +1,4 @@
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 export type AttachmentDeleteApiResult = {
   attachmentId: string | null;
   error?: string;
@@ -15,7 +16,7 @@ export async function deleteWorkOrderAttachmentInDb(input: { attachmentId: strin
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(input),
+    body: JSON.stringify({ ...input, serviceCode: WORKORDER_SERVICE_CODE.attachmentDeleteRequest }),
   });
 
   const result = await readJson<AttachmentDeleteApiResult>(response, { attachmentId: null, error: "INVALID_ATTACHMENT_DELETE_RESPONSE" });
