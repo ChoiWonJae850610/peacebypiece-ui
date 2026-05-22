@@ -1,8 +1,11 @@
-Version : 0.15.75.1
-Summary : 작업지시서 사용자 목록 로딩 함수 누락 보정
-Description : 0.15.75 정리 과정에서 누락된 작업지시서 담당자 목록 로딩 함수를 복구하여 빌드 오류와 작업지시서 업무화면 목록 로딩 실패를 보정합니다.
+Version : 0.15.76
+Summary : 작업지시서 생성 목록 상세 hydration 흐름 정리
+Description : 작업지시서 summary/detail/create snapshot 표시 기준을 공통 유틸로 분리하고, 상세 재조회 결과가 로컬 draft-only 입력값을 덮지 않도록 목록/상세 hydration 병합 정책을 정리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - lib/repositories/dbWorkorderHttpAdapter.ts
+- lib/hooks/workorder/useWorkOrderCoreState.ts
+- lib/hooks/workorder/workorderRepositoryMutations.ts
 추가 파일 목록 :
+- lib/workorder/workOrderHydration.ts
 삭제 파일 목록 :

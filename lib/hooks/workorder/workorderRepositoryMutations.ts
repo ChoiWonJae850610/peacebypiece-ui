@@ -4,6 +4,7 @@ import { shouldCommitProductionComposition } from "@/lib/workorder/productionCom
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
 import { WORKORDER_DRAFT_ONLY_DB_FIELDS } from "@/lib/workorder/storagePolicy";
+import { markWorkOrderDetailSnapshot } from "@/lib/workorder/workOrderHydration";
 import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 function stampPersistedWorkOrder(workOrder: WorkOrder): WorkOrder {
@@ -69,10 +70,7 @@ export async function persistCreatedWorkOrderWithHistory(
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
-  return {
-    ...nextWorkOrder,
-    hasDetailSnapshot: true,
-  };
+  return markWorkOrderDetailSnapshot(nextWorkOrder);
 }
 
 

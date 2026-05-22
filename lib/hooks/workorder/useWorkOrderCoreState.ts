@@ -15,6 +15,10 @@ import { buildUserRoleState } from "@/lib/constants/roles";
 import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 import { hasWorkOrderDraftChanges } from "@/lib/workorder/draftState";
+import {
+  mergeDetailSnapshotIntoWorkOrders,
+  replaceWithDetailSnapshot,
+} from "@/lib/workorder/workOrderHydration";
 
 const EMPTY_CURRENT_USER: UserProfile = {
   id: "",
@@ -247,18 +251,10 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
         if (!normalizedDetail) return;
 
         setWorkOrdersState((current) =>
-          stabilizeWorkOrders(
-            current.map((item) =>
-              item.id === normalizedDetail.id ? { ...item, ...normalizedDetail, hasDetailSnapshot: true } : item,
-            ),
-          ),
+          stabilizeWorkOrders(mergeDetailSnapshotIntoWorkOrders(current, normalizedDetail)),
         );
         setPersistedWorkOrders((current) =>
-          stabilizeWorkOrders(
-            current.map((item) =>
-              item.id === normalizedDetail.id ? { ...item, ...normalizedDetail, hasDetailSnapshot: true } : item,
-            ),
-          ),
+          stabilizeWorkOrders(replaceWithDetailSnapshot(current, normalizedDetail)),
         );
       })
       .catch((error) => {

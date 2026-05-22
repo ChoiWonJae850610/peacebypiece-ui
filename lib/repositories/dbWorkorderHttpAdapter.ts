@@ -23,6 +23,10 @@ import {
   resolveWorkOrderSessionUserId,
   type WorkOrderSessionUser,
 } from "@/lib/workorder/sessionUserProfile";
+import {
+  markWorkOrderDetailSnapshot,
+  markWorkOrderSummarySnapshot,
+} from "@/lib/workorder/workOrderHydration";
 
 type DbApiErrorBody = {
   message?: string;
@@ -189,7 +193,7 @@ async function loadWorkOrderSummariesFromApi(): Promise<WorkOrder[]> {
   );
 
   const result = await parseResponse<WorkOrderSummaryLoadResponse>(response);
-  return (result.workOrders ?? []).map(createSummaryWorkOrder);
+  return (result.workOrders ?? []).map((summary) => markWorkOrderSummarySnapshot(createSummaryWorkOrder(summary)));
 }
 
 async function loadWorkOrderDetailFromApi(
@@ -214,10 +218,7 @@ async function loadWorkOrderDetailFromApi(
     throw emptyBodyError;
   }
 
-  return {
-    ...result.workOrder,
-    hasDetailSnapshot: true,
-  };
+  return markWorkOrderDetailSnapshot(result.workOrder);
 }
 
 async function saveWorkOrderStatePatchToApi(
@@ -469,7 +470,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           connected: true,
           code: "READY",
         });
-        return createdWorkOrder;
+        return markWorkOrderDetailSnapshot(createdWorkOrder);
       } catch (error) {
         reportDbError("create", error);
         throw error;
