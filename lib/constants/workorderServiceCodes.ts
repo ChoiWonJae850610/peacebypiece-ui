@@ -76,6 +76,9 @@ export const WORKORDER_SERVICE_CODES = [
 ] as const;
 export type WorkOrderServiceCodeValue = (typeof WORKORDER_SERVICE_CODES)[number];
 
+export function isWorkOrderServiceCode(value: unknown): value is WorkOrderServiceCodeValue {
+  return typeof value === "string" && WORKORDER_SERVICE_CODES.includes(value as WorkOrderServiceCodeValue);
+}
 
 export const WORKORDER_EXPLICIT_SAVE_SCOPE = {
   orderInfo: "order_info",
