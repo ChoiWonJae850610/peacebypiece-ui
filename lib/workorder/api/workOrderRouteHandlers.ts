@@ -747,8 +747,10 @@ export async function handlePostWorkOrders(request: Request) {
     const createdWorkOrder = await createDbWorkOrder(workOrderToCreate, scopeResult.scope);
     await replaceWorkOrderMemoThreads(workOrderToCreate);
 
-    const workOrder =
-      await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder);
+    const workOrder = {
+      ...(await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder)),
+      hasDetailSnapshot: true,
+    };
     await writeWorkOrderCreatedHistory(workOrder, scopeResult.scope.companyId);
 
     logDbRequestOutcome("POST", true, "READY", workOrder.id);

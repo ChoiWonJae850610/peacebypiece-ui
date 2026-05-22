@@ -49,7 +49,10 @@ export async function persistCreatedWorkOrderWithHistory(
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
-  return nextWorkOrder;
+  return {
+    ...nextWorkOrder,
+    hasDetailSnapshot: true,
+  };
 }
 
 
