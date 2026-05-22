@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import {
   canDeleteWorkOrder,
@@ -12,8 +12,10 @@ import { useWorkOrderAttachments } from "@/lib/hooks/workorder/useWorkOrderAttac
 import { useWorkOrderHistory } from "@/lib/hooks/workorder/useWorkOrderHistory";
 import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
 import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderActionRuntime";
-import type { WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
+import { useWorkOrderSessionProfile } from "@/lib/hooks/workorder/useWorkOrderSessionProfile";
+import { hasMemberPermission } from "@/lib/permissions";
 
 type UseWorkOrderOptions = {
   initialWorkOrderId?: string | null;
@@ -33,10 +35,24 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     initialSearchQuery: options.initialSearchQuery,
   });
 
+  const sessionProfile = useWorkOrderSessionProfile();
+  const effectiveCurrentUser = useMemo<UserProfile>(() => {
+    if (!sessionProfile?.id) return coreState.currentUser;
+
+    return {
+      ...coreState.currentUser,
+      ...sessionProfile,
+      companyMemberId: sessionProfile.companyMemberId ?? coreState.currentUser.companyMemberId ?? null,
+      name: sessionProfile.name || coreState.currentUser.name,
+      permissionCodes: sessionProfile.permissionCodes ?? [],
+    };
+  }, [coreState.currentUser, sessionProfile]);
+  const effectiveCurrentUserId = coreState.currentUserId || sessionProfile?.id || "";
+
   const derivedState = useWorkOrderDerived({
     users: coreState.users,
-    currentUser: coreState.currentUser,
-    currentUserId: coreState.currentUserId,
+    currentUser: effectiveCurrentUser,
+    currentUserId: effectiveCurrentUserId,
     permissionTargetUserId: coreState.permissionTargetUserId,
     workOrders: coreState.workOrders,
     selectedWorkOrder: coreState.selectedWorkOrder,
@@ -47,14 +63,14 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   const historyState = useWorkOrderHistory({
     historyLogs: coreState.historyLogs,
     selectedWorkOrderId: coreState.selectedWorkOrder.id,
-    currentUser: coreState.currentUser,
+    currentUser: effectiveCurrentUser,
     isAdmin: derivedState.isAdmin,
     workOrders: coreState.workOrders,
   });
 
   const actionState = useWorkOrderActions({
-    currentUser: coreState.currentUser,
-    canCreateWorkOrder: derivedState.canCreateWorkOrder,
+    currentUser: effectiveCurrentUser,
+    canCreateWorkOrder: derivedState.canCreateWorkOrder || hasMemberPermission(effectiveCurrentUser, "workorder.create"),
     canReorderWorkOrder: derivedState.canReorderWorkOrder,
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     workOrders: coreState.workOrders,
@@ -157,7 +173,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
     canSeeAttachments: derivedState.canSeeAttachments,
     isReviewRequestLocked: derivedState.isReviewRequestLocked,
-    currentUser: coreState.currentUser,
+    currentUser: effectiveCurrentUser,
     selectedWorkOrder: coreState.selectedWorkOrder,
     attachmentPreviewId: uiState.attachmentPreviewId,
     setAttachmentPreviewId: uiState.setAttachmentPreviewId,
@@ -214,11 +230,11 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
 
   const identity = {
     users: coreState.users,
-    currentUserId: coreState.currentUserId,
+    currentUserId: effectiveCurrentUserId,
     setCurrentUserId: coreState.setCurrentUserId,
     permissionTargetUserId: derivedState.permissionTargetUser?.id ?? coreState.users[0]?.id ?? "",
     setPermissionTargetUserId: coreState.setPermissionTargetUserId,
-    currentUser: coreState.currentUser,
+    currentUser: effectiveCurrentUser,
     currentRole: derivedState.currentRole,
     isAdmin: derivedState.isAdmin,
   };
@@ -250,7 +266,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   };
 
   const permissions = {
-    canCreateWorkOrder: derivedState.canCreateWorkOrder,
+    canCreateWorkOrder: derivedState.canCreateWorkOrder || hasMemberPermission(effectiveCurrentUser, "workorder.create"),
     canEditSideDraftContent: derivedState.canEditSideDraftContent,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
     canEditMemo: derivedState.canEditMemo,
