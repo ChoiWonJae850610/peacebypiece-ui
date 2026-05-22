@@ -757,7 +757,7 @@ export const adminEn = {
           name: "Name",
           email: "Email",
           phone: "Contact",
-          role: "Role"
+          role: "Role",
           status: "Status",
           requestedAt: "Requested",
           approvedAt: "Approved",
@@ -770,7 +770,7 @@ export const adminEn = {
           name: "Name",
           email: "Email",
           phone: "Contact",
-          role: "Role"
+          role: "Role",
           status: "Status",
           requestedAt: "Requested",
           approvedAt: "Approved",

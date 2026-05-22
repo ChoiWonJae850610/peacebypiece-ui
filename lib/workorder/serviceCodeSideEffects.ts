@@ -372,6 +372,16 @@ export function canWorkOrderServiceUseOperation(input: {
   return getWorkOrderServiceOperations(input.serviceCode).includes(input.operation);
 }
 
+
+export function canWorkOrderServiceReplaceProductionComposition(
+  serviceCode: WorkOrderServiceCodeValue | null | undefined,
+): boolean {
+  if (!serviceCode) return false;
+  const sideEffect = WORKORDER_SERVICE_SIDE_EFFECTS[serviceCode];
+  if (!sideEffect.allowsProductionCompositionReplace) return false;
+  return sideEffect.operations.includes(WORKORDER_SERVICE_OPERATION.replace);
+}
+
 export function canWorkOrderServiceDeleteR2Object(
   serviceCode: WorkOrderServiceCodeValue | null | undefined,
 ): boolean {

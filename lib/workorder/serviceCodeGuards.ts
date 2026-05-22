@@ -3,9 +3,9 @@ import {
   WORKORDER_SERVICE_OPERATION,
   WORKORDER_SERVICE_RESOURCE,
   canWorkOrderServiceDeleteR2Object,
+  canWorkOrderServiceReplaceProductionComposition,
   canWorkOrderServiceTouchResource,
   canWorkOrderServiceUseOperation,
-  getWorkOrderServiceSideEffect,
   type WorkOrderServiceOperationValue,
   type WorkOrderServiceResourceValue,
 } from "@/lib/workorder/serviceCodeSideEffects";
@@ -52,15 +52,7 @@ export function assertServiceCanPurgeR2Objects(serviceCode: WorkOrderServiceCode
 export function canServiceReplaceProductionComposition(
   serviceCode: WorkOrderServiceCodeValue | null | undefined,
 ): boolean {
-  if (!serviceCode) return false;
-
-  const sideEffect = getWorkOrderServiceSideEffect(serviceCode);
-  if (!sideEffect.allowsProductionCompositionReplace) return false;
-
-  return canWorkOrderServiceUseOperation({
-    serviceCode,
-    operation: WORKORDER_SERVICE_OPERATION.replace,
-  });
+  return canWorkOrderServiceReplaceProductionComposition(serviceCode);
 }
 
 export function hasProductionCompositionPatch(patch: WorkOrderStatePatch): boolean {

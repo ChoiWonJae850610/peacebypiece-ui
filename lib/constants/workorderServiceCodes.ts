@@ -76,55 +76,6 @@ export const WORKORDER_SERVICE_CODES = [
 ] as const;
 export type WorkOrderServiceCodeValue = (typeof WORKORDER_SERVICE_CODES)[number];
 
-export const PRODUCTION_COMPOSITION_REPLACE_ALLOWED_SERVICE_CODES = [
-  WORKORDER_SERVICE_CODE.orderInfoSave,
-  WORKORDER_SERVICE_CODE.productionCompositionSave,
-  WORKORDER_SERVICE_CODE.requestReview,
-  WORKORDER_SERVICE_CODE.approveReview,
-  WORKORDER_SERVICE_CODE.requestOrder,
-  WORKORDER_SERVICE_CODE.completeInspection,
-  WORKORDER_SERVICE_CODE.completeWorkOrder,
-] as const satisfies readonly WorkOrderServiceCodeValue[];
-
-export const PRODUCTION_COMPOSITION_REPLACE_FORBIDDEN_SERVICE_CODES = [
-  WORKORDER_SERVICE_CODE.rejectReview,
-  WORKORDER_SERVICE_CODE.cancelOrder,
-  WORKORDER_SERVICE_CODE.revertWorkflow,
-  WORKORDER_SERVICE_CODE.memoCreate,
-  WORKORDER_SERVICE_CODE.memoUpdate,
-  WORKORDER_SERVICE_CODE.memoDelete,
-  WORKORDER_SERVICE_CODE.designAttachmentPrepare,
-  WORKORDER_SERVICE_CODE.fileAttachmentPrepare,
-  WORKORDER_SERVICE_CODE.attachmentUploadComplete,
-  WORKORDER_SERVICE_CODE.attachmentDeleteRequest,
-  WORKORDER_SERVICE_CODE.primaryDesignSet,
-  WORKORDER_SERVICE_CODE.workOrderDelete,
-  WORKORDER_SERVICE_CODE.workOrderRestore,
-  WORKORDER_SERVICE_CODE.attachmentMemoRestore,
-  WORKORDER_SERVICE_CODE.trashPurge,
-] as const satisfies readonly WorkOrderServiceCodeValue[];
-
-export function isWorkOrderServiceCode(value: string | null | undefined): value is WorkOrderServiceCodeValue {
-  return Boolean(value) && (WORKORDER_SERVICE_CODES as readonly string[]).includes(value as string);
-}
-
-export function canReplaceProductionCompositionByServiceCode(
-  serviceCode: WorkOrderServiceCodeValue | null | undefined,
-): boolean {
-  return Boolean(
-    serviceCode &&
-      (PRODUCTION_COMPOSITION_REPLACE_ALLOWED_SERVICE_CODES as readonly WorkOrderServiceCodeValue[]).includes(serviceCode),
-  );
-}
-
-export function isProductionCompositionReplaceForbiddenServiceCode(
-  serviceCode: WorkOrderServiceCodeValue | null | undefined,
-): boolean {
-  return Boolean(
-    serviceCode &&
-      (PRODUCTION_COMPOSITION_REPLACE_FORBIDDEN_SERVICE_CODES as readonly WorkOrderServiceCodeValue[]).includes(serviceCode),
-  );
-}
 
 export const WORKORDER_EXPLICIT_SAVE_SCOPE = {
   orderInfo: "order_info",

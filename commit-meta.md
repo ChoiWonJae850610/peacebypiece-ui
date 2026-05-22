@@ -1,22 +1,20 @@
 Version :
-0.15.67.2
+0.15.68
 
 Summary :
-멤버 역할과 권한 체크 기준 분리
+작업지시서 serviceCode 정리와 빌드 문법 오류 수정
 
 Description :
-멤버 역할은 담당자 표시와 업무 구분용으로 유지하고 실제 접근 권한은 권한 체크 항목으로 결정되도록 정리했다. 조회 전용 역할은 신규 선택지에서 제거하고 디자이너, 검수 담당, 재고/자재 담당만 배정 가능한 역할로 제한했다. 역할 변경 시 권한이 자동 변경되지 않게 하고, 명시적으로 역할 기본값을 적용할 때만 체크 항목을 바꾸도록 수정했다.
+영문 관리자 i18n의 누락 쉼표로 발생한 빌드 문법 오류를 수정하고, 작업지시서 serviceCode의 생산구성 replace 판단을 side effect matrix 기준으로 단일화했다. 작업지시서 저장 mutation과 workflow action의 serviceCode 처리도 공통 helper 중심으로 정리했다.
 
 수정 파일 목록 :
-- lib/permissions/memberPermissionMatrix.ts
-- lib/admin/members/memberManagementPresentation.ts
-- components/admin/members/AdminMemberManagementDashboard.tsx
-- lib/invitations/invitationPolicy.ts
-- lib/invitations/api/invitationRouteHandlers.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
 - lib/constants/app.ts
-- lib/admin/companyMemberInviteSkeleton.ts
+- lib/constants/workorderServiceCodes.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/hooks/workorder/workorderRepositoryMutations.ts
+- lib/i18n/en/admin.ts
+- lib/workorder/serviceCodeGuards.ts
+- lib/workorder/serviceCodeSideEffects.ts
 
 추가 파일 목록 :
 없음

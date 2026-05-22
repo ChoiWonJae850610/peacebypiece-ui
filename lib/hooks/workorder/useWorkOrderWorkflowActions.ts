@@ -50,6 +50,13 @@ import type {
 
 const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === WORKFLOW_ACTION_TYPE.requestOrder;
 
+function getServiceCodeForWorkflowAction(action: WorkflowAction) {
+  return getWorkOrderWorkflowServiceCode({
+    actionType: action.actionType,
+    nextState: action.nextState,
+  });
+}
+
 type FactoryPartnerApiItem = {
   id?: unknown;
   name?: unknown;
@@ -151,7 +158,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
-        serviceCode: getWorkOrderWorkflowServiceCode({ actionType: action.actionType, nextState: action.nextState }),
+        serviceCode: getServiceCodeForWorkflowAction(action),
       });
       const persistedWorkOrders = replaceWorkOrderById(workOrdersRef.current, workOrder.id, persistedWorkOrder);
 
@@ -203,7 +210,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
-        serviceCode: getWorkOrderWorkflowServiceCode({ actionType: action.actionType, nextState: action.nextState }),
+        serviceCode: getServiceCodeForWorkflowAction(action),
       });
       const persistedWorkOrders = replaceWorkOrderById(workOrdersRef.current, workOrder.id, persistedWorkOrder);
 
@@ -356,10 +363,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
         auditActor: currentUser,
-        serviceCode: getWorkOrderWorkflowServiceCode({
-          actionType: pendingWorkflowAction.actionType,
-          nextState: pendingWorkflowAction.nextState,
-        }),
+        serviceCode: getServiceCodeForWorkflowAction(pendingWorkflowAction),
       });
       const persistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrder.id, nextPersistedWorkOrder);
       setWorkOrders(persistedWorkOrders);

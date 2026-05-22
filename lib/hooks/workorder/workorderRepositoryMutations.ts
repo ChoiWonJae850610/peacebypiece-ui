@@ -79,11 +79,17 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
   };
 }
 
-function shouldIncludeProductionCompositionInStatePatch(
+function buildProductionCompositionStatePatch(
   workOrder: WorkOrder,
   serviceCode?: WorkOrderServiceCodeValue | null,
-): boolean {
-  return shouldCommitProductionComposition(workOrder, serviceCode);
+): Pick<WorkOrderStatePatch, "factoryOrderRequest" | "orderEntries" | "materials" | "outsourcing"> | Record<string, never> {
+  if (!shouldCommitProductionComposition(workOrder, serviceCode)) return {};
+  return {
+    factoryOrderRequest: workOrder.factoryOrderRequest ?? null,
+    orderEntries: workOrder.orderEntries ?? [],
+    materials: workOrder.materials ?? [],
+    outsourcing: workOrder.outsourcing ?? [],
+  };
 }
 
 function buildWorkOrderStatePatch(
@@ -92,7 +98,7 @@ function buildWorkOrderStatePatch(
   serviceCode?: WorkOrderServiceCodeValue | null,
 ): WorkOrderStatePatch {
   const normalizedWorkOrder = normalizeProductionCompositionForWorkflowSnapshot(workOrder);
-  const shouldIncludeProductionComposition = shouldIncludeProductionCompositionInStatePatch(normalizedWorkOrder, serviceCode);
+  const productionCompositionPatch = buildProductionCompositionStatePatch(normalizedWorkOrder, serviceCode);
 
   const statePatch: WorkOrderStatePatch = {
     id: normalizedWorkOrder.id,
@@ -100,14 +106,7 @@ function buildWorkOrderStatePatch(
     lastSavedAt: normalizedWorkOrder.lastSavedAt,
     inventoryQuantity: normalizedWorkOrder.inventoryQuantity,
     inventoryStatus: normalizedWorkOrder.inventoryStatus,
-    ...(shouldIncludeProductionComposition
-      ? {
-          factoryOrderRequest: normalizedWorkOrder.factoryOrderRequest ?? null,
-          orderEntries: normalizedWorkOrder.orderEntries ?? [],
-          materials: normalizedWorkOrder.materials ?? [],
-          outsourcing: normalizedWorkOrder.outsourcing ?? [],
-        }
-      : {}),
+    ...productionCompositionPatch,
     auditActor: auditActor
       ? { id: auditActor.id, name: auditActor.name, role: auditActor.role }
       : null,
