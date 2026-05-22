@@ -84,6 +84,7 @@ async function listFromCompanyMembers(
 ): Promise<UserProfile[]> {
   const result = await queryDb<AdminUserAccessRow>(
     `SELECT users.id,
+            company_members.id AS company_member_id,
             users.name,
             users.email,
             company_members.display_name,

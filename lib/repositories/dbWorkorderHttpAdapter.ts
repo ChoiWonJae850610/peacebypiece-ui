@@ -64,6 +64,7 @@ type CurrentUserResponse = {
     email?: string | null;
     role?: string | null;
     companyMemberId?: string | null;
+    permissionCodes?: readonly string[] | null;
   } | null;
 };
 
@@ -92,13 +93,36 @@ function toWorkOrderRoleFromSessionRole(role: string | null | undefined): UserPr
   return role === "company_admin" || role === "system_admin" ? "admin" : "designer";
 }
 
-function isSessionUserProfile(
+function normalizeSessionPermissionCodes(
+  permissionCodes: readonly string[] | null | undefined,
+): readonly string[] {
+  if (!Array.isArray(permissionCodes)) return [];
+  return Array.from(
+    new Set(
+      permissionCodes
+        .map((permissionCode) => String(permissionCode ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function applySessionPermissionCodes(
   user: UserProfile,
-  sessionUser: CurrentUserResponse["user"] | null,
-): boolean {
-  if (!sessionUser?.id) return false;
-  if (user.id === sessionUser.id) return true;
-  return Boolean(sessionUser.companyMemberId && user.companyMemberId === sessionUser.companyMemberId);
+  sessionUser: CurrentUserResponse["user"],
+): UserProfile {
+  const sessionPermissionCodes = normalizeSessionPermissionCodes(
+    sessionUser?.permissionCodes,
+  );
+  const sessionCompanyMemberId = sessionUser?.companyMemberId?.trim() || null;
+
+  return {
+    ...user,
+    companyMemberId: user.companyMemberId ?? sessionCompanyMemberId,
+    permissionCodes:
+      sessionPermissionCodes.length > 0
+        ? sessionPermissionCodes
+        : user.permissionCodes ?? [],
+  };
 }
 
 function ensureSessionUserProfile(
@@ -106,15 +130,26 @@ function ensureSessionUserProfile(
   sessionUser: CurrentUserResponse["user"] | null,
 ): UserProfile[] {
   if (!sessionUser?.id) return users;
-  if (users.some((user) => isSessionUserProfile(user, sessionUser))) return users;
+
+  const sessionCompanyMemberId = sessionUser.companyMemberId?.trim() || null;
+  const matchedIndex = users.findIndex((user) =>
+    user.id === sessionUser.id ||
+    Boolean(sessionCompanyMemberId && user.companyMemberId === sessionCompanyMemberId),
+  );
+
+  if (matchedIndex >= 0) {
+    return users.map((user, index) =>
+      index === matchedIndex ? applySessionPermissionCodes(user, sessionUser) : user,
+    );
+  }
 
   const role = toWorkOrderRoleFromSessionRole(sessionUser.role);
   return [
     {
       id: sessionUser.id,
-      companyMemberId: sessionUser.companyMemberId ?? null,
+      companyMemberId: sessionCompanyMemberId,
       name: sessionUser.name?.trim() || sessionUser.email?.trim() || sessionUser.id,
-      permissionCodes: [],
+      permissionCodes: normalizeSessionPermissionCodes(sessionUser.permissionCodes),
       role,
       team: role,
       roles: [role],
@@ -147,9 +182,16 @@ function resolveSessionUserId(
   sessionUser: CurrentUserResponse["user"] | null,
 ) {
   if (!sessionUser?.id) return "";
+  if (users.some((user) => user.id === sessionUser.id)) {
+    return sessionUser.id;
+  }
 
-  const matchedUser = users.find((user) => isSessionUserProfile(user, sessionUser));
-  return matchedUser?.id ?? "";
+  const sessionCompanyMemberId = sessionUser.companyMemberId?.trim();
+  if (sessionCompanyMemberId) {
+    return users.find((user) => user.companyMemberId === sessionCompanyMemberId)?.id ?? "";
+  }
+
+  return "";
 }
 
 function mergeMemoThreads(

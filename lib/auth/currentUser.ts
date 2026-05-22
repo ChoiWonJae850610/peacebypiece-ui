@@ -8,6 +8,7 @@ export type WaflCurrentUser = {
   companyId: string | null;
   companyName: string | null;
   companyMemberId: string | null;
+  permissionCodes?: readonly string[];
   profileComplete?: boolean;
 };
 

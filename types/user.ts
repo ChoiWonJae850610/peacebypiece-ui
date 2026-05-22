@@ -2,8 +2,8 @@ import type { PermissionSet, RoleType } from "@/types/permission";
 
 export type UserProfile = {
   id: string;
-  name: string;
   companyMemberId?: string | null;
+  name: string;
   permissionCodes?: readonly string[];
   team: RoleType;
   role: RoleType;

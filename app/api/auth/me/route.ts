@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
 import type { WaflCurrentUserResponse } from "@/lib/auth/currentUser";
+import { resolveMemberWorkspacePermissionCodes } from "@/lib/admin/members/memberWorkspaceAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,10 @@ export async function GET() {
     return NextResponse.json<WaflCurrentUserResponse>({ authenticated: false }, { status: 401, headers: { "Cache-Control": "no-store" } });
   }
 
-  const profile = session.companyId ? await getPersonalProfile(session) : null;
+  const [profile, permissionCodes] = await Promise.all([
+    session.companyId ? getPersonalProfile(session) : null,
+    session.companyId ? resolveMemberWorkspacePermissionCodes(session) : Promise.resolve([]),
+  ]);
 
   return NextResponse.json<WaflCurrentUserResponse>(
     {
@@ -26,6 +30,7 @@ export async function GET() {
         companyId: session.companyId,
         companyName: profile?.companyName ?? session.companyName,
         companyMemberId: session.companyMemberId,
+        permissionCodes,
         profileComplete: profile?.profileComplete ?? false,
       },
     },
