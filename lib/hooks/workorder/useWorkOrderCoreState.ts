@@ -77,9 +77,14 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   const repositoryDefaultSelectedId = useMemo(() => repository.getDefaultSelectedId(), [repository]);
   const initialCurrentUserId = useMemo(() => repository.getDefaultCurrentUserId(), [repository]);
   const initialPermissionTargetUserId = useMemo(() => repository.getDefaultPermissionTargetId(), [repository]);
+  const initialCurrentUser = useMemo(
+    () => initialUsers.find((user) => user.id === initialCurrentUserId) ?? initialUsers[0] ?? EMPTY_CURRENT_USER,
+    [initialCurrentUserId, initialUsers],
+  );
 
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(initialCurrentUser);
   const [permissionTargetUserId, setPermissionTargetUserId] = useState(initialPermissionTargetUserId);
   const normalizedInitialWorkOrders = useMemo(() => stabilizeWorkOrders(normalizeWorkOrderDataList(initialWorkOrders)), [initialWorkOrders]);
   const [workOrders, setWorkOrdersState] = useState<WorkOrder[]>(normalizedInitialWorkOrders);
@@ -126,6 +131,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
         const nextState = loadedState ?? repository.createInitialState();
         setUsers(nextState.users);
         setCurrentUserId(nextState.currentUserId);
+        setCurrentUser(nextState.currentUser ?? nextState.users.find((user) => user.id === nextState.currentUserId) ?? nextState.users[0] ?? EMPTY_CURRENT_USER);
         setPermissionTargetUserId(nextState.permissionTargetUserId);
         const normalizedLoadedWorkOrders = stabilizeWorkOrders(normalizeWorkOrderDataList(nextState.workOrders));
         setWorkOrdersState(normalizedLoadedWorkOrders);
@@ -214,11 +220,6 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
         detailLoadInFlightIdsRef.current.delete(selectedId);
       });
   }, [isSelectedWorkOrderDetailLoading, repository, repositoryStatus, selectedId]);
-
-  const currentUser = useMemo(
-    () => users.find((user) => user.id === currentUserId) ?? users[0] ?? EMPTY_CURRENT_USER,
-    [users, currentUserId],
-  );
 
   useEffect(() => {
     const currentSelectedWorkOrder = selectedId ? workOrders.find((item) => item.id === selectedId) ?? null : null;

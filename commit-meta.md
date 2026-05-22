@@ -1,22 +1,16 @@
-Version :
-0.15.73.2
-
-Summary :
-작업지시서 생성 버튼 권한 hydration 보정
-
-Description :
-작업지시서 화면에서 현재 세션 멤버의 권한 체크값이 사용자 목록과 정확히 합쳐지지 않아 작업지시서 생성 버튼이 숨겨질 수 있는 문제를 보정했다. /api/auth/me가 현재 멤버 권한 코드를 함께 반환하고, 작업지시서 클라이언트 repository가 세션 권한과 companyMemberId를 현재 사용자 프로필에 병합하도록 수정했다.
-
+Version : 0.15.73.3
+Summary : 작업지시서 현재 사용자 권한 소스 단일화
+Description : 작업지시서 workspace의 currentUser를 /api/auth/me 기준으로 별도 보존하도록 정리하고, 담당자 목록 users와 현재 로그인 사용자 권한 판단 소스를 분리했습니다. /api/auth/me 응답에 roleTemplateCode를 포함해 현재 사용자 역할 변환을 안정화했으며, 담당자 목록 조회 쿼리의 company_member_id 그룹 기준을 보정했습니다.
 수정 파일 목록 :
 - app/api/auth/me/route.ts
-- lib/auth/currentUser.ts
 - lib/admin/settings/userAccessRepository.ts
+- lib/auth/currentUser.ts
 - lib/constants/app.ts
+- lib/data/mock/types.ts
+- lib/hooks/workorder/useWorkOrderCoreState.ts
 - lib/repositories/dbWorkorderHttpAdapter.ts
-- types/user.ts
-
+- lib/repositories/dbWorkorderRepository.ts
 추가 파일 목록 :
-없음
-
+- 없음
 삭제 파일 목록 :
-없음
+- 없음

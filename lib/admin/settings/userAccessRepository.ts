@@ -101,7 +101,7 @@ async function listFromCompanyMembers(
         AND company_members.status = 'approved'
         AND COALESCE(company_members.role_template_code, 'viewer') <> 'company_admin'
         AND COALESCE(users.is_active, true) = true
-      GROUP BY users.id, users.name, users.email, company_members.display_name
+      GROUP BY users.id, users.name, users.email, company_members.id, company_members.display_name
       ORDER BY COALESCE(NULLIF(company_members.display_name, ''), NULLIF(users.name, ''), users.email, users.id) ASC`,
     [companyId],
   );

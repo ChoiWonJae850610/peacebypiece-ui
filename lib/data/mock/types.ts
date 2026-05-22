@@ -2,6 +2,7 @@ import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export type PersistedWorkOrderState = {
   users: UserProfile[];
+  currentUser?: UserProfile | null;
   workOrders: WorkOrder[];
   historyLogs: HistoryLog[];
   selectedId: string;

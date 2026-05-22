@@ -30,6 +30,7 @@ export async function GET() {
         companyId: session.companyId,
         companyName: profile?.companyName ?? session.companyName,
         companyMemberId: session.companyMemberId,
+        roleTemplateCode: profile?.roleTemplateCode ?? null,
         permissionCodes,
         profileComplete: profile?.profileComplete ?? false,
       },

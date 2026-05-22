@@ -13,6 +13,7 @@ function createNotConfiguredError(methodName: string) {
 
 const EMPTY_DB_WORKORDER_STATE: InitialWorkorderRepositoryState = {
   users: [],
+  currentUser: null,
   workOrders: [],
   historyLogs: [],
   selectedId: "",
