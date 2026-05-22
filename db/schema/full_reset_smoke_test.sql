@@ -651,6 +651,23 @@ BEGIN
   END IF;
 END $$;
 
+
+DO $$
+DECLARE
+  legacy_production_columns text[];
+BEGIN
+  SELECT array_agg(format('%s.%s', table_name, column_name) ORDER BY table_name, column_name)
+  INTO legacy_production_columns
+  FROM information_schema.columns
+  WHERE table_schema = current_schema()
+    AND table_name IN ('orders', 'spec_sheet_materials', 'spec_sheet_outsourcing_lines')
+    AND column_name IN ('company_name', 'is_active', 'deleted_at', 'created_at', 'updated_at');
+
+  IF legacy_production_columns IS NOT NULL THEN
+    RAISE EXCEPTION 'full_reset smoke test failed. Legacy production current-table columns remain: %', legacy_production_columns;
+  END IF;
+END $$;
+
 SELECT
   'full_reset smoke test passed' AS result,
   (SELECT count(*) FROM companies) AS companies,

@@ -306,8 +306,6 @@ export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope
                 COUNT(*)::text AS count_value
            FROM orders
           WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true
           GROUP BY 1
           ORDER BY COUNT(*) DESC
           LIMIT 6`,
@@ -401,8 +399,6 @@ export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope
            FROM spec_sheets s
            LEFT JOIN orders o ON o.spec_sheet_id = s.id
             AND o.company_id = s.company_id
-            AND o.deleted_at IS NULL
-            AND COALESCE(o.is_active, true) = true
           WHERE s.company_id = $1
             AND s.deleted_at IS NULL
             AND COALESCE(s.is_active, true) = true
@@ -423,8 +419,6 @@ export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope
               FROM spec_sheets s
               LEFT JOIN orders o ON o.spec_sheet_id = s.id
                AND o.company_id = s.company_id
-               AND o.deleted_at IS NULL
-               AND COALESCE(o.is_active, true) = true
              WHERE s.company_id = $1
                AND s.deleted_at IS NULL
                AND COALESCE(s.is_active, true) = true
@@ -477,8 +471,6 @@ export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope
            FROM orders o
            LEFT JOIN spec_sheets s ON s.id = o.spec_sheet_id
           WHERE o.company_id = $1
-            AND o.deleted_at IS NULL
-            AND COALESCE(o.is_active, true) = true
           GROUP BY 1
           ORDER BY COUNT(*) DESC
           LIMIT 5`,
@@ -525,8 +517,6 @@ export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope
         `SELECT COUNT(*)::text AS count_value
            FROM orders
           WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true
             AND ${dueDateExpression} IS NOT NULL`,
         [companyId],
       ),
@@ -534,8 +524,6 @@ export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope
         `SELECT COUNT(*)::text AS count_value
            FROM orders
           WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true
             AND ${dueDateExpression} IS NOT NULL
             AND ${dueDateExpression} < CURRENT_DATE
             AND status <> 'completed'`,

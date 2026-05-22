@@ -580,9 +580,7 @@ export async function getAdminOperationalDashboardSnapshots(companyId: string): 
         queryDb<OrderDueRow>(
           `SELECT spec_sheet_id, due_date, factory_name, quantity
            FROM orders
-          WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true`,
+          WHERE company_id = $1`,
           [companyId],
         ),
         queryDb<AttachmentSummaryRow>(
