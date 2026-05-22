@@ -11,14 +11,18 @@ import type {
   WorkOrderStatePatchResult,
   WorkOrderSummary,
 } from "@/types/workorder";
-import { buildUserRoleState } from "@/lib/constants/roles";
-import type { RoleType } from "@/types/permission";
 import {
   DEFAULT_WORK_ORDER_LIST_SORT,
   DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
   normalizeWorkOrderListSort,
   normalizeWorkOrderListStatusFilter,
 } from "@/lib/workorder/list/workOrderListControls";
+import {
+  createWorkOrderSessionProfile,
+  ensureWorkOrderSessionProfile,
+  resolveWorkOrderSessionUserId,
+  type WorkOrderSessionUser,
+} from "@/lib/workorder/sessionUserProfile";
 
 type DbApiErrorBody = {
   message?: string;
@@ -60,15 +64,7 @@ type UserAccessResponse = {
 
 type CurrentUserResponse = {
   authenticated?: boolean;
-  user?: {
-    id?: string | null;
-    name?: string | null;
-    email?: string | null;
-    role?: string | null;
-    roleTemplateCode?: string | null;
-    companyMemberId?: string | null;
-    permissionCodes?: readonly string[] | null;
-  } | null;
+  user?: WorkOrderSessionUser | null;
 };
 
 async function loadCurrentUserFromSession(): Promise<CurrentUserResponse["user"] | null> {
@@ -90,107 +86,6 @@ async function loadCurrentUserFromSession(): Promise<CurrentUserResponse["user"]
     }
     return null;
   }
-}
-
-const SESSION_ROLE_TEMPLATE_TO_WORKORDER_ROLE: Record<string, RoleType | null> = {
-  company_admin: "admin",
-  designer: "designer",
-  inspector: "inspector",
-  inventory_manager: "inspector",
-  viewer: null,
-};
-
-function toWorkOrderRoleFromSession(
-  sessionUser: CurrentUserResponse["user"],
-): RoleType {
-  const roleTemplateCode = sessionUser?.roleTemplateCode?.trim();
-  if (roleTemplateCode && roleTemplateCode in SESSION_ROLE_TEMPLATE_TO_WORKORDER_ROLE) {
-    return SESSION_ROLE_TEMPLATE_TO_WORKORDER_ROLE[roleTemplateCode] ?? "designer";
-  }
-
-  return sessionUser?.role === "company_admin" || sessionUser?.role === "system_admin"
-    ? "admin"
-    : "designer";
-}
-
-function normalizeSessionPermissionCodes(
-  permissionCodes: readonly string[] | null | undefined,
-): readonly string[] {
-  if (!Array.isArray(permissionCodes)) return [];
-  return Array.from(
-    new Set(
-      permissionCodes
-        .map((permissionCode) => String(permissionCode ?? "").trim())
-        .filter(Boolean),
-    ),
-  );
-}
-
-function createSessionUserProfile(
-  sessionUser: CurrentUserResponse["user"] | null,
-): UserProfile | null {
-  if (!sessionUser?.id) return null;
-
-  const role = toWorkOrderRoleFromSession(sessionUser);
-  return {
-    id: sessionUser.id,
-    companyMemberId: sessionUser.companyMemberId?.trim() || null,
-    name: sessionUser.name?.trim() || sessionUser.email?.trim() || sessionUser.id,
-    permissionCodes: normalizeSessionPermissionCodes(sessionUser.permissionCodes),
-    ...buildUserRoleState([role]),
-  };
-}
-
-function mergeSessionUserProfile(
-  user: UserProfile,
-  sessionProfile: UserProfile,
-): UserProfile {
-  return {
-    ...user,
-    id: sessionProfile.id,
-    companyMemberId: sessionProfile.companyMemberId ?? user.companyMemberId ?? null,
-    name: sessionProfile.name || user.name,
-    permissionCodes: sessionProfile.permissionCodes ?? [],
-    role: sessionProfile.role,
-    team: sessionProfile.team,
-    roles: sessionProfile.roles,
-    permissions: sessionProfile.permissions,
-  };
-}
-
-function ensureSessionUserProfile(
-  users: UserProfile[],
-  sessionProfile: UserProfile | null,
-): UserProfile[] {
-  if (!sessionProfile?.id) return users;
-
-  const matchedIndex = users.findIndex((user) =>
-    user.id === sessionProfile.id ||
-    Boolean(sessionProfile.companyMemberId && user.companyMemberId === sessionProfile.companyMemberId),
-  );
-
-  if (matchedIndex >= 0) {
-    return users.map((user, index) =>
-      index === matchedIndex ? mergeSessionUserProfile(user, sessionProfile) : user,
-    );
-  }
-
-  return [sessionProfile, ...users];
-}
-
-async function loadUserProfilesForWorkspace(): Promise<UserProfile[]> {
-  const response = await fetch("/api/admin/settings/users", {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
-
-  const result = await parseResponse<UserAccessResponse>(response);
-  return Array.isArray(result.users) ? result.users : [];
-}
-
-function resolveSessionUserId(sessionProfile: UserProfile | null) {
-  return sessionProfile?.id ?? "";
 }
 
 function mergeMemoThreads(
@@ -507,10 +402,10 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           loadUserProfilesForWorkspace(),
           loadCurrentUserFromSession(),
         ]);
-        const sessionProfile = createSessionUserProfile(sessionUser);
-        const users = ensureSessionUserProfile(loadedUsers, sessionProfile);
+        const sessionProfile = createWorkOrderSessionProfile(sessionUser);
+        const users = ensureWorkOrderSessionProfile(loadedUsers, sessionProfile);
         const currentUser = sessionProfile ?? users[0] ?? null;
-        const currentUserId = resolveSessionUserId(currentUser);
+        const currentUserId = resolveWorkOrderSessionUserId(currentUser);
         const selectedId = summaryWorkOrders[0]?.id ?? "";
         const workOrders = summaryWorkOrders;
         const permissionTargetUserId = currentUserId || users[0]?.id || "";

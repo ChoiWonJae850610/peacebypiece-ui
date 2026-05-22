@@ -1,11 +1,13 @@
-Version : 0.15.74
-Summary : 작업지시서 제목 저장 시 미저장 생산정보 draft 보존
-Description : 작업지시서 제목 즉시 저장 결과를 로컬 상태에 병합할 때 발주정보, 원단/부자재, 외주, 메모/첨부 등 draft-only 필드를 보존하도록 정리했습니다. 제목 변경만으로 상세 편집 draft가 재초기화되지 않도록 상세 editor 초기화 effect를 필드 단위로 분리했습니다.
+Version : 0.15.75
+Summary : 작업지시서 현재 사용자 권한 흐름 정리
+Description : /api/auth/me 기반 작업지시서 세션 사용자 프로필 생성/병합 로직을 공통 유틸로 분리하고, 생성 버튼과 생성 액션이 동일한 derived 권한 기준을 사용하도록 정리했습니다. 담당자 목록 users는 병합 대상 목록으로만 유지하고 currentUser 권한 판단은 세션 프로필 기준으로 단일화했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
-- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
-- lib/hooks/workorder/useWorkOrderDetailEditor.ts
-- lib/hooks/workorder/workorderRepositoryMutations.ts
+- lib/hooks/useWorkOrder.ts
+- lib/hooks/workorder/derived/buildWorkOrderDerivedState.ts
+- lib/hooks/workorder/useWorkOrderSessionProfile.ts
+- lib/repositories/dbWorkorderHttpAdapter.ts
 추가 파일 목록 :
+- lib/workorder/sessionUserProfile.ts
 삭제 파일 목록 :
+- 없음

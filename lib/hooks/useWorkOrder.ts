@@ -15,7 +15,7 @@ import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderAct
 import type { UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { useWorkOrderSessionProfile } from "@/lib/hooks/workorder/useWorkOrderSessionProfile";
-import { hasMemberPermission } from "@/lib/permissions";
+import { mergeCurrentUserWithSessionProfile } from "@/lib/workorder/sessionUserProfile";
 
 type UseWorkOrderOptions = {
   initialWorkOrderId?: string | null;
@@ -36,18 +36,11 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   });
 
   const sessionProfile = useWorkOrderSessionProfile();
-  const effectiveCurrentUser = useMemo<UserProfile>(() => {
-    if (!sessionProfile?.id) return coreState.currentUser;
-
-    return {
-      ...coreState.currentUser,
-      ...sessionProfile,
-      companyMemberId: sessionProfile.companyMemberId ?? coreState.currentUser.companyMemberId ?? null,
-      name: sessionProfile.name || coreState.currentUser.name,
-      permissionCodes: sessionProfile.permissionCodes ?? [],
-    };
-  }, [coreState.currentUser, sessionProfile]);
-  const effectiveCurrentUserId = coreState.currentUserId || sessionProfile?.id || "";
+  const effectiveCurrentUser = useMemo<UserProfile>(
+    () => mergeCurrentUserWithSessionProfile(coreState.currentUser, sessionProfile),
+    [coreState.currentUser, sessionProfile],
+  );
+  const effectiveCurrentUserId = sessionProfile?.id || coreState.currentUserId || "";
 
   const derivedState = useWorkOrderDerived({
     users: coreState.users,
@@ -70,7 +63,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
 
   const actionState = useWorkOrderActions({
     currentUser: effectiveCurrentUser,
-    canCreateWorkOrder: derivedState.canCreateWorkOrder || hasMemberPermission(effectiveCurrentUser, "workorder.create"),
+    canCreateWorkOrder: derivedState.canCreateWorkOrder,
     canReorderWorkOrder: derivedState.canReorderWorkOrder,
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     workOrders: coreState.workOrders,
@@ -266,7 +259,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   };
 
   const permissions = {
-    canCreateWorkOrder: derivedState.canCreateWorkOrder || hasMemberPermission(effectiveCurrentUser, "workorder.create"),
+    canCreateWorkOrder: derivedState.canCreateWorkOrder,
     canEditSideDraftContent: derivedState.canEditSideDraftContent,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
     canEditMemo: derivedState.canEditMemo,
