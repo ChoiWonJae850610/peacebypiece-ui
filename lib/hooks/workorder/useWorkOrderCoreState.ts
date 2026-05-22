@@ -59,6 +59,55 @@ type UseWorkOrderCoreStateOptions = {
   initialSearchQuery?: string;
 };
 
+
+function hasPermissionCodes(user: UserProfile | null | undefined): boolean {
+  return Array.isArray(user?.permissionCodes) && user.permissionCodes.length > 0;
+}
+
+function findMatchingUserProfile(input: {
+  users: UserProfile[];
+  currentUser: UserProfile | null | undefined;
+  currentUserId: string;
+}): UserProfile | null {
+  const currentUserId = input.currentUserId.trim();
+  const currentCompanyMemberId = input.currentUser?.companyMemberId?.trim() ?? "";
+  const currentId = input.currentUser?.id?.trim() ?? "";
+
+  return input.users.find((user) => {
+    const userId = user.id.trim();
+    const companyMemberId = user.companyMemberId?.trim() ?? "";
+
+    return (
+      Boolean(currentId && userId === currentId) ||
+      Boolean(currentUserId && userId === currentUserId) ||
+      Boolean(currentCompanyMemberId && companyMemberId === currentCompanyMemberId) ||
+      Boolean(currentUserId && companyMemberId === currentUserId)
+    );
+  }) ?? null;
+}
+
+function mergeCurrentUserWithDirectoryProfile(input: {
+  currentUser: UserProfile;
+  users: UserProfile[];
+  currentUserId: string;
+}): UserProfile {
+  const matchedUser = findMatchingUserProfile(input);
+  if (!matchedUser) return input.currentUser;
+
+  const baseUser = input.currentUser.id ? input.currentUser : matchedUser;
+  const permissionCodes = hasPermissionCodes(input.currentUser)
+    ? input.currentUser.permissionCodes
+    : matchedUser.permissionCodes ?? [];
+
+  return {
+    ...matchedUser,
+    ...baseUser,
+    companyMemberId: baseUser.companyMemberId ?? matchedUser.companyMemberId ?? null,
+    name: baseUser.name || matchedUser.name,
+    permissionCodes,
+  };
+}
+
 function resolveInitialSelectedId(input: {
   requestedId: string | null;
   fallbackId: string;
@@ -238,6 +287,11 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     [users, permissionTargetUserId],
   );
 
+  const effectiveCurrentUser = useMemo(
+    () => mergeCurrentUserWithDirectoryProfile({ currentUser, users, currentUserId }),
+    [currentUser, currentUserId, users],
+  );
+
   return {
     users,
     setUsers,
@@ -266,7 +320,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     setSaveStatus,
     lastSavedAt,
     setLastSavedAt,
-    currentUser,
+    currentUser: effectiveCurrentUser,
     repositoryStatus,
     repositoryError,
   };

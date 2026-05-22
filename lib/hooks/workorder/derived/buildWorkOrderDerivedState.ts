@@ -40,13 +40,20 @@ export function buildWorkOrderDerivedState({
   searchQuery,
   attachmentPreviewId,
 }: BuildWorkOrderDerivedStateParams) {
-  const hasSessionUser = Boolean(currentUser.id);
+  const currentUserDirectoryProfile = users.find((user) =>
+    user.id === currentUser.id ||
+    user.id === currentUserId ||
+    Boolean(currentUser.companyMemberId && user.companyMemberId === currentUser.companyMemberId) ||
+    Boolean(user.companyMemberId && user.companyMemberId === currentUserId),
+  ) ?? null;
+  const permissionSourceUser = currentUser.permissionCodes?.length ? currentUser : currentUserDirectoryProfile ?? currentUser;
+  const hasSessionUser = Boolean(currentUser.id || currentUserId);
   const currentRoles = hasSessionUser ? normalizeRoles(currentUser.roles, currentUser.role) : [];
   const currentRole = currentUser.role;
   const isAdmin = isAdminRole(currentRoles);
-  const canWriteWorkOrder = isAdmin || hasMemberPermission(currentUser, "workorder.update");
-  const canCreateWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create"));
-  const canReorderWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create"));
+  const canWriteWorkOrder = isAdmin || hasMemberPermission(permissionSourceUser, "workorder.update");
+  const canCreateWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(permissionSourceUser, "workorder.create"));
+  const canReorderWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(permissionSourceUser, "workorder.create"));
   const permissionTargetUser = users.find((user) => user.id === permissionTargetUserId) ?? users[0] ?? currentUser;
   const workflowStateById = deriveWorkflowStateById(workOrders);
   const currentWorkflowState = deriveWorkflowStateFromOrderEntries(selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries);
