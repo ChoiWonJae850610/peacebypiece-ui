@@ -63,6 +63,7 @@ type CurrentUserResponse = {
     name?: string | null;
     email?: string | null;
     role?: string | null;
+    companyMemberId?: string | null;
   } | null;
 };
 
@@ -91,17 +92,27 @@ function toWorkOrderRoleFromSessionRole(role: string | null | undefined): UserPr
   return role === "company_admin" || role === "system_admin" ? "admin" : "designer";
 }
 
+function isSessionUserProfile(
+  user: UserProfile,
+  sessionUser: CurrentUserResponse["user"] | null,
+): boolean {
+  if (!sessionUser?.id) return false;
+  if (user.id === sessionUser.id) return true;
+  return Boolean(sessionUser.companyMemberId && user.companyMemberId === sessionUser.companyMemberId);
+}
+
 function ensureSessionUserProfile(
   users: UserProfile[],
   sessionUser: CurrentUserResponse["user"] | null,
 ): UserProfile[] {
   if (!sessionUser?.id) return users;
-  if (users.some((user) => user.id === sessionUser.id)) return users;
+  if (users.some((user) => isSessionUserProfile(user, sessionUser))) return users;
 
   const role = toWorkOrderRoleFromSessionRole(sessionUser.role);
   return [
     {
       id: sessionUser.id,
+      companyMemberId: sessionUser.companyMemberId ?? null,
       name: sessionUser.name?.trim() || sessionUser.email?.trim() || sessionUser.id,
       permissionCodes: [],
       role,
@@ -133,13 +144,12 @@ async function loadUserProfilesForWorkspace(): Promise<UserProfile[]> {
 
 function resolveSessionUserId(
   users: UserProfile[],
-  sessionUserId: string | null,
+  sessionUser: CurrentUserResponse["user"] | null,
 ) {
-  if (sessionUserId && users.some((user) => user.id === sessionUserId)) {
-    return sessionUserId;
-  }
+  if (!sessionUser?.id) return "";
 
-  return "";
+  const matchedUser = users.find((user) => isSessionUserProfile(user, sessionUser));
+  return matchedUser?.id ?? "";
 }
 
 function mergeMemoThreads(
@@ -457,7 +467,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           loadCurrentUserFromSession(),
         ]);
         const users = ensureSessionUserProfile(loadedUsers, sessionUser);
-        const currentUserId = resolveSessionUserId(users, sessionUser?.id ?? null);
+        const currentUserId = resolveSessionUserId(users, sessionUser);
         const selectedId = summaryWorkOrders[0]?.id ?? "";
         const workOrders = summaryWorkOrders;
         const permissionTargetUserId = currentUserId || users[0]?.id || "";

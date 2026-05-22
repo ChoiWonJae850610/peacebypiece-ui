@@ -7,6 +7,7 @@ import type { UserProfile } from "@/types/user";
 
 type AdminUserAccessRow = Record<string, unknown> & {
   id: string;
+  company_member_id: string;
   name: string | null;
   email: string | null;
   display_name: string | null;
@@ -71,6 +72,7 @@ function mapUserAccessRow(row: AdminUserAccessRow): UserProfile | null {
 
   return {
     id: row.id,
+    companyMemberId: row.company_member_id,
     name: normalizeDisplayName(row.display_name, row.name, row.email, row.id),
     permissionCodes: normalizePermissionCodeList(row.permission_codes),
     ...buildUserRoleState(roles),

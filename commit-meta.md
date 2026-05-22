@@ -1,26 +1,20 @@
 Version :
-0.15.73
+0.15.73.1
 
 Summary :
-생산구성 partner 조인 전환 기반 정리
+작업지시서 화면 현재 사용자 매칭 기준 보정
 
 Description :
-원단·부자재와 외주공정 현재값 테이블에 거래처 조인용 vendor_partner_id 기반을 추가하고, 기존 vendor 문자열은 표시 snapshot으로 유지하도록 schema, repository, 타입, 문서를 정리했다. 작업지시서 상세 hydration과 저장 repository가 vendorPartnerId를 보존할 수 있게 보정했다.
+작업지시서 화면에서 세션 사용자와 멤버 권한 목록의 사용자를 사용자 ID뿐 아니라 companyMemberId로도 매칭하도록 보정했다. 멤버 권한에서 작업지시서 관리가 체크된 디자이너가 현재 사용자로 정확히 선택되어 작업지시서 생성 버튼이 표시될 수 있도록 사용자 접근 프로필에 companyMemberId를 포함했다.
 
 수정 파일 목록 :
-- db/schema/full_reset.sql
-- db/schema/full_reset_smoke_test.sql
-- docs/wafl-a-type/90_wafl-a-type-production-join-audit.md
 - lib/constants/app.ts
-- lib/workorder/material/materialDefaults.ts
-- lib/workorder/repository/dbSpecSheetMaterialRepository.ts
-- lib/workorder/repository/dbSpecSheetOutsourcingRepository.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
-- types/material.ts
-- types/workorder.ts
+- lib/admin/settings/userAccessRepository.ts
+- lib/repositories/dbWorkorderHttpAdapter.ts
+- types/user.ts
 
 추가 파일 목록 :
-- docs/wafl-a-type/91_wafl-a-type-production-partner-join-transition.md
+없음
 
 삭제 파일 목록 :
 없음
