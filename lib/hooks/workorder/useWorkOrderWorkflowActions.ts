@@ -16,6 +16,7 @@ import {
   persistWorkOrderWithHistory,
   persistWorkOrderStatePatchWithHistory,
   mergeSavedWorkOrders,
+  mergeSavedWorkOrdersPreservingDraftOnlyFields,
   persistWorkOrderStatePatchesWithHistory,
   replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
@@ -544,10 +545,11 @@ export function useWorkOrderWorkflowActions({
           auditActor: currentUser,
           serviceCode,
         });
-        const persistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrderId, persistedWorkOrder);
-        setWorkOrders(persistedWorkOrders);
-        setPersistedWorkOrders(persistedWorkOrders);
-        syncSelectedWorkOrderSaveState(persistedWorkOrders);
+        const nextLocalWorkOrders = mergeSavedWorkOrdersPreservingDraftOnlyFields(nextWorkOrders, [persistedWorkOrder]);
+        const nextPersistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrderId, persistedWorkOrder);
+        setWorkOrders(nextLocalWorkOrders);
+        setPersistedWorkOrders(nextPersistedWorkOrders);
+        syncSelectedWorkOrderSaveState(nextPersistedWorkOrders);
         if (nextHistoryLogs?.length) {
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
         }

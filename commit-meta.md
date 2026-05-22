@@ -1,8 +1,11 @@
-Version : 0.15.73.9
-Summary : 작업지시서 목록 요약 조회 company scope 컬럼 누락 보정
-Description : 작업지시서 목록 요약 CTE에서 company_id/company_name을 선택하지 않아 summary count 조인에서 s.company_id 오류가 발생하던 문제를 수정했습니다. 상세/목록 select base에 company scope 컬럼을 명시하고 앱 버전을 0.15.73.9로 갱신했습니다.
+Version : 0.15.74
+Summary : 작업지시서 제목 저장 시 미저장 생산정보 draft 보존
+Description : 작업지시서 제목 즉시 저장 결과를 로컬 상태에 병합할 때 발주정보, 원단/부자재, 외주, 메모/첨부 등 draft-only 필드를 보존하도록 정리했습니다. 제목 변경만으로 상세 편집 draft가 재초기화되지 않도록 상세 editor 초기화 effect를 필드 단위로 분리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
+- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/hooks/workorder/useWorkOrderDetailEditor.ts
+- lib/hooks/workorder/workorderRepositoryMutations.ts
 추가 파일 목록 :
 삭제 파일 목록 :

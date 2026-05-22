@@ -28,6 +28,7 @@ import { createWorkOrderActionFailure, executeWorkOrderAsyncAction } from "@/lib
 import {
   getLastSavedAtForWorkOrder,
   mergeSavedWorkOrders,
+  mergeSavedWorkOrdersPreservingDraftOnlyFields,
   persistCreatedWorkOrderWithHistory,
   persistWorkOrderStatePatchWithHistory,
   persistWorkOrderWithHistory,
@@ -393,7 +394,7 @@ export function useWorkOrderLifecycleActions({
           }
 
           const nextPersistedWorkOrders = mergeSavedWorkOrders(persistedRenameResult.nextWorkOrders, savedChangedWorkOrders);
-          const nextLocalWorkOrders = mergeSavedWorkOrders(localRenameResult.nextWorkOrders, savedChangedWorkOrders);
+          const nextLocalWorkOrders = mergeSavedWorkOrdersPreservingDraftOnlyFields(localRenameResult.nextWorkOrders, savedChangedWorkOrders);
 
           setPersistedWorkOrders(nextPersistedWorkOrders);
           setWorkOrders(nextLocalWorkOrders);

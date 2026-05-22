@@ -105,12 +105,24 @@ export function useWorkOrderDetailEditor({
   });
 
   useEffect(() => {
-    const nextOrderEntries = getInitialOrderEntries(workOrder);
+    const nextBasicInfo = getInitialBasicInfo(workOrder);
 
-    setBasicInfo(getInitialBasicInfo(workOrder));
-    setBasicInfoDraft(getInitialBasicInfo(workOrder));
-    setOrderItems(nextOrderEntries);
-  }, [workOrder]);
+    setBasicInfo(nextBasicInfo);
+    setBasicInfoDraft(nextBasicInfo);
+  }, [
+    workOrder.id,
+    workOrder.category1,
+    workOrder.category2,
+    workOrder.category3,
+    workOrder.category1Id,
+    workOrder.category2Id,
+    workOrder.category3Id,
+    workOrder.season,
+  ]);
+
+  useEffect(() => {
+    setOrderItems(getInitialOrderEntries(workOrder));
+  }, [workOrder.id, workOrder.orderEntries, workOrder.workflowState]);
 
   useEffect(() => {
     setOutsourcingItems((workOrder.outsourcing ?? []).map(recalculateOutsourcing));
