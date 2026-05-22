@@ -1,12 +1,8 @@
-Version : 0.15.73.8
-Summary : 작업지시서 발주정보 저장 정책과 검토요청 draft 동기화 보정
-Description : 발주정보의 vendor/dueDate/priority를 draft 비교 대상에 유지하도록 타입 오류를 수정하고, 즉시 저장 serviceCode 판정에서 제외했습니다. 검토요청/발주요청 직전에 상세 화면 draft를 작업지시서 상태에 먼저 동기화해 공장/수량/날짜 입력값이 workflow 검증에 누락되지 않도록 보정했습니다.
+Version : 0.15.73.9
+Summary : 작업지시서 목록 요약 조회 company scope 컬럼 누락 보정
+Description : 작업지시서 목록 요약 CTE에서 company_id/company_name을 선택하지 않아 summary count 조인에서 s.company_id 오류가 발생하던 문제를 수정했습니다. 상세/목록 select base에 company scope 컬럼을 명시하고 앱 버전을 0.15.73.9로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/storagePolicy.ts
-- lib/workorder/serviceCodeForWorkOrderPatch.ts
-- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/workorder/repository/dbWorkOrderRepository.ts
 추가 파일 목록 :
-- 없음
 삭제 파일 목록 :
-- 없음

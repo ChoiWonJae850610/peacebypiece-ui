@@ -181,6 +181,8 @@ const MEMO_COLUMN_CANDIDATES = ["memo"] as const;
 type DbSpecSheetRow = {
   id: string;
   title: string;
+  company_id?: string | null;
+  company_name?: string | null;
   workflow_state: string | null;
   last_saved_at: string | null;
   work_order_kind: WorkOrder["workOrderKind"] | null;
@@ -1076,6 +1078,8 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
       SELECT
         ${sourceAlias}.id,
         ${sourceAlias}.title,
+        ${buildSourceAliasSelection(sourceAlias, schema.companyIdColumn, "company_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.companyNameColumn, "company_name", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.workflowStateColumn, "workflow_state", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.lastSavedAtColumn, "last_saved_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.workOrderKindColumn, "work_order_kind", "NULL")},
@@ -1119,6 +1123,8 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
       SELECT
         ${sourceAlias}.id,
         ${sourceAlias}.title,
+        ${buildSourceAliasSelection(sourceAlias, schema.companyIdColumn, "company_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.companyNameColumn, "company_name", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.workflowStateColumn, "workflow_state", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.lastSavedAtColumn, "last_saved_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.workOrderKindColumn, "work_order_kind", "NULL")},
