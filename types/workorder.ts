@@ -57,6 +57,7 @@ export type Outsourcing = {
   id: string;
   process: string;
   vendor: string;
+  vendorPartnerId?: string | null;
   quantity: number;
   unitType: string;
   unitCost: number;

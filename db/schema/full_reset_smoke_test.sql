@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.15.72
+-- Version: 0.15.73
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -205,6 +205,32 @@ BEGIN
   END IF;
 END $$;
 
+
+
+DO $$
+DECLARE
+  missing_production_join_columns text[];
+BEGIN
+  SELECT array_agg(table_name || '.' || column_name ORDER BY table_name, column_name)
+  INTO missing_production_join_columns
+  FROM (
+    VALUES
+      ('orders', 'factory_partner_id'),
+      ('spec_sheet_materials', 'vendor_partner_id'),
+      ('spec_sheet_outsourcing_lines', 'vendor_partner_id')
+  ) AS required_columns(table_name, column_name)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns c
+    WHERE c.table_schema = current_schema()
+      AND c.table_name = required_columns.table_name
+      AND c.column_name = required_columns.column_name
+  );
+
+  IF missing_production_join_columns IS NOT NULL THEN
+    RAISE EXCEPTION 'full_reset smoke test failed. Missing production partner join columns: %', missing_production_join_columns;
+  END IF;
+END $$;
 
 DO $$
 DECLARE
@@ -411,8 +437,10 @@ BEGIN
       ('orders_company_factory_idx'),
       ('orders_company_factory_name_idx'),
       ('spec_sheet_materials_company_source_material_idx'),
+      ('spec_sheet_materials_company_vendor_partner_idx'),
       ('spec_sheet_materials_company_vendor_idx'),
       ('spec_sheet_outsourcing_lines_company_source_idx'),
+      ('spec_sheet_outsourcing_lines_company_vendor_partner_idx'),
       ('spec_sheet_outsourcing_lines_company_vendor_idx'),
       ('partners_company_name_idx'),
       ('partner_items_company_partner_type_idx'),

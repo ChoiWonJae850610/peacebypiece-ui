@@ -570,6 +570,7 @@ CREATE TABLE spec_sheet_materials (
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_material_id text,
+  vendor_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
   material_type text,
   name text,
   vendor text,
@@ -608,6 +609,7 @@ CREATE TABLE spec_sheet_outsourcing_lines (
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_outsourcing_id text,
+  vendor_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
   process text,
   vendor text,
   quantity numeric NOT NULL DEFAULT 0,
@@ -1797,6 +1799,7 @@ CREATE INDEX spec_sheet_materials_spec_sheet_idx ON spec_sheet_materials (spec_s
 CREATE INDEX spec_sheet_materials_company_spec_sheet_idx ON spec_sheet_materials (company_id, spec_sheet_id);
 CREATE INDEX spec_sheet_materials_type_idx ON spec_sheet_materials (material_type);
 CREATE INDEX spec_sheet_materials_company_source_material_idx ON spec_sheet_materials (company_id, source_material_id);
+CREATE INDEX spec_sheet_materials_company_vendor_partner_idx ON spec_sheet_materials (company_id, vendor_partner_id);
 CREATE INDEX spec_sheet_materials_company_vendor_idx ON spec_sheet_materials (company_id, vendor);
 
 CREATE INDEX material_stocks_source_spec_sheet_idx ON material_stocks (source_spec_sheet_id);
@@ -1808,6 +1811,7 @@ CREATE INDEX spec_sheet_outsourcing_lines_spec_sheet_idx ON spec_sheet_outsourci
 CREATE INDEX spec_sheet_outsourcing_lines_company_spec_sheet_idx ON spec_sheet_outsourcing_lines (company_id, spec_sheet_id);
 CREATE INDEX spec_sheet_outsourcing_lines_process_idx ON spec_sheet_outsourcing_lines (process);
 CREATE INDEX spec_sheet_outsourcing_lines_company_source_idx ON spec_sheet_outsourcing_lines (company_id, source_outsourcing_id);
+CREATE INDEX spec_sheet_outsourcing_lines_company_vendor_partner_idx ON spec_sheet_outsourcing_lines (company_id, vendor_partner_id);
 CREATE INDEX spec_sheet_outsourcing_lines_company_vendor_idx ON spec_sheet_outsourcing_lines (company_id, vendor);
 
 CREATE INDEX attachments_order_idx ON attachments (order_id);

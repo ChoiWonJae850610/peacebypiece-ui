@@ -13,6 +13,7 @@ export type Material = {
   type: MaterialKind;
   name: string;
   vendor: string;
+  vendorPartnerId?: string | null;
   vendorRef?: MaterialVendorRef | null;
   quantity: number;
   unit: MaterialUnitValue;

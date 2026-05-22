@@ -11,6 +11,7 @@ const SPEC_SHEET_ID_COLUMN_CANDIDATES = ["spec_sheet_id", "work_order_id"] as co
 const SOURCE_OUTSOURCING_ID_COLUMN_CANDIDATES = ["source_outsourcing_id", "outsourcing_id"] as const;
 const PROCESS_COLUMN_CANDIDATES = ["process", "process_type", "outsourcing_process"] as const;
 const VENDOR_COLUMN_CANDIDATES = ["vendor", "vendor_name"] as const;
+const VENDOR_PARTNER_ID_COLUMN_CANDIDATES = ["vendor_partner_id"] as const;
 const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
 const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
 const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost"] as const;
@@ -48,6 +49,7 @@ type DbSpecSheetOutsourcingSchema = {
   sourceOutsourcingIdColumn: string | null;
   processColumn: string | null;
   vendorColumn: string | null;
+  vendorPartnerIdColumn: string | null;
   quantityColumn: string | null;
   unitColumn: string | null;
   unitCostColumn: string | null;
@@ -129,6 +131,7 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
       sourceOutsourcingIdColumn: null,
       processColumn: null,
       vendorColumn: null,
+      vendorPartnerIdColumn: null,
       quantityColumn: null,
       unitColumn: null,
       unitCostColumn: null,
@@ -145,6 +148,7 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
     sourceOutsourcingIdColumn: findFirstMatchingColumn(columnNames, SOURCE_OUTSOURCING_ID_COLUMN_CANDIDATES),
     processColumn: findFirstMatchingColumn(columnNames, PROCESS_COLUMN_CANDIDATES),
     vendorColumn: findFirstMatchingColumn(columnNames, VENDOR_COLUMN_CANDIDATES),
+    vendorPartnerIdColumn: findFirstMatchingColumn(columnNames, VENDOR_PARTNER_ID_COLUMN_CANDIDATES),
     quantityColumn: findFirstMatchingColumn(columnNames, QUANTITY_COLUMN_CANDIDATES),
     unitColumn: findFirstMatchingColumn(columnNames, UNIT_COLUMN_CANDIDATES),
     unitCostColumn: findFirstMatchingColumn(columnNames, UNIT_COST_COLUMN_CANDIDATES),
@@ -220,6 +224,12 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(
       if (schema.vendorColumn) {
         columns.push(schema.vendorColumn);
         values.push(normalizeText(item.vendor) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.vendorPartnerIdColumn) {
+        columns.push(schema.vendorPartnerIdColumn);
+        values.push(normalizeText(item.vendorPartnerId) || null);
         placeholders.push(`$${values.length}`);
       }
 

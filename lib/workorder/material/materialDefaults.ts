@@ -11,6 +11,7 @@ export function createDefaultMaterial(overrides: Partial<Material> = {}): Materi
     type: overrides.type || MATERIAL_TYPE.unselected,
     name: overrides.name || DEFAULT_NEW_MATERIAL_NAME,
     vendor: overrides.vendor || "",
+    vendorPartnerId: overrides.vendorPartnerId ?? null,
     vendorRef: overrides.vendorRef ?? null,
     quantity: typeof overrides.quantity === "number" && Number.isFinite(overrides.quantity) ? overrides.quantity : 0,
     unit: normalizeMaterialUnitValue(overrides.unit || MATERIAL_UNIT.yard),

@@ -1,4 +1,4 @@
-# 생산구성 현재값 테이블 조인 기준 점검 1차 (0.15.72)
+# 생산구성 현재값 테이블 조인 기준 점검 1차 (0.15.72~0.15.73)
 
 ## 목적
 
@@ -94,3 +94,17 @@
 3. partner 삭제/비활성 시 기존 작업지시서 표시 방식을 결정
 4. `vendor`를 snapshot 이름으로 유지할지, `vendor_snapshot_name`처럼 의미를 바꿀지 결정
 5. full_reset 반영 범위와 repository mapping 변경 범위를 분리
+
+
+## 0.15.73 결정 보강
+
+0.15.73에서는 `spec_sheet_materials`와 `spec_sheet_outsourcing_lines`에 `vendor_partner_id`를 추가해 partner 조인 전환의 최소 기반을 만든다.
+
+원칙:
+- `vendor_partner_id`는 거래처 조인용 선택 FK다.
+- `vendor` 문자열은 당장 제거하지 않고 표시 snapshot 이름으로 유지한다.
+- 화면이 아직 partner id를 안정적으로 넘기지 못하는 경우 `vendor_partner_id`는 `NULL`일 수 있다.
+- 기존 수기 입력 거래처명은 `vendor`에 남긴다.
+- partner 삭제 시 기존 작업지시서 표시는 보존되어야 하므로 FK는 `ON DELETE SET NULL`을 사용한다.
+
+따라서 0.15.73은 문자열 컬럼 제거가 아니라, 다음 UI 전환을 위한 schema/repository 준비 단계다.

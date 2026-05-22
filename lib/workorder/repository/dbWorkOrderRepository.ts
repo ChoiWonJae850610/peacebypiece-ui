@@ -1441,6 +1441,7 @@ type DbMaterialRow = {
   material_type: Material["type"] | null;
   name: string | null;
   vendor: string | null;
+  vendor_partner_id: string | null;
   quantity: number | null;
   unit: Material["unit"] | null;
   unit_cost: number | null;
@@ -1453,6 +1454,7 @@ type DbOutsourcingRow = {
   spec_sheet_id: string;
   process: string | null;
   vendor: string | null;
+  vendor_partner_id: string | null;
   quantity: number | null;
   unit: string | null;
   unit_cost: number | null;
@@ -1510,6 +1512,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               material_type,
               name,
               vendor,
+              vendor_partner_id,
               quantity,
               unit,
               unit_cost,
@@ -1526,6 +1529,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               spec_sheet_id,
               process,
               vendor,
+              vendor_partner_id,
               quantity,
               unit,
               unit_cost,
@@ -1562,6 +1566,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       type: row.material_type || "기타",
       name: row.name || "",
       vendor: row.vendor || "",
+      vendorPartnerId: row.vendor_partner_id ?? null,
       quantity: readNumberRowValue(row.quantity),
       unit: normalizeMaterialUnitValue(row.unit || "개"),
       unitCost: readNumberRowValue(row.unit_cost),
@@ -1578,6 +1583,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       id: row.id,
       process: row.process || "",
       vendor: row.vendor || "",
+      vendorPartnerId: row.vendor_partner_id ?? null,
       quantity: readNumberRowValue(row.quantity),
       unitType: row.unit || "",
       unitCost: readNumberRowValue(row.unit_cost),

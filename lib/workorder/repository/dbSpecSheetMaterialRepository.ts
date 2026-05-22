@@ -13,6 +13,7 @@ const SPEC_SHEET_ID_COLUMN_CANDIDATES = ["spec_sheet_id", "work_order_id"] as co
 const MATERIAL_TYPE_COLUMN_CANDIDATES = ["material_type", "type"] as const;
 const NAME_COLUMN_CANDIDATES = ["name", "material_name"] as const;
 const VENDOR_COLUMN_CANDIDATES = ["vendor", "vendor_name"] as const;
+const VENDOR_PARTNER_ID_COLUMN_CANDIDATES = ["vendor_partner_id"] as const;
 const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
 const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
 const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost"] as const;
@@ -50,6 +51,7 @@ type DbSpecSheetMaterialSchema = {
   materialTypeColumn: string | null;
   nameColumn: string | null;
   vendorColumn: string | null;
+  vendorPartnerIdColumn: string | null;
   quantityColumn: string | null;
   unitColumn: string | null;
   unitCostColumn: string | null;
@@ -131,6 +133,7 @@ async function readSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
       materialTypeColumn: null,
       nameColumn: null,
       vendorColumn: null,
+      vendorPartnerIdColumn: null,
       quantityColumn: null,
       unitColumn: null,
       unitCostColumn: null,
@@ -147,6 +150,7 @@ async function readSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
     materialTypeColumn: findFirstMatchingColumn(columnNames, MATERIAL_TYPE_COLUMN_CANDIDATES),
     nameColumn: findFirstMatchingColumn(columnNames, NAME_COLUMN_CANDIDATES),
     vendorColumn: findFirstMatchingColumn(columnNames, VENDOR_COLUMN_CANDIDATES),
+    vendorPartnerIdColumn: findFirstMatchingColumn(columnNames, VENDOR_PARTNER_ID_COLUMN_CANDIDATES),
     quantityColumn: findFirstMatchingColumn(columnNames, QUANTITY_COLUMN_CANDIDATES),
     unitColumn: findFirstMatchingColumn(columnNames, UNIT_COLUMN_CANDIDATES),
     unitCostColumn: findFirstMatchingColumn(columnNames, UNIT_COST_COLUMN_CANDIDATES),
@@ -222,6 +226,12 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(
       if (schema.vendorColumn) {
         columns.push(schema.vendorColumn);
         values.push(normalizeText(material.vendor) || null);
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.vendorPartnerIdColumn) {
+        columns.push(schema.vendorPartnerIdColumn);
+        values.push(normalizeText(material.vendorPartnerId) || null);
         placeholders.push(`$${values.length}`);
       }
 
