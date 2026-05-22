@@ -166,6 +166,18 @@ function buildSummaryQueryStringFromLocation(): string {
   return `?status=${encodeURIComponent(status)}&sort=${encodeURIComponent(sort)}`;
 }
 
+
+async function loadUserProfilesForWorkspace(): Promise<UserProfile[]> {
+  const response = await fetch("/api/admin/settings/users", {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  const result = await parseResponse<UserAccessResponse>(response);
+  return Array.isArray(result.users) ? result.users : [];
+}
+
 async function loadWorkOrderSummariesFromApi(): Promise<WorkOrder[]> {
   const response = await fetch(
     `/api/workorders/summary${buildSummaryQueryStringFromLocation()}`,
