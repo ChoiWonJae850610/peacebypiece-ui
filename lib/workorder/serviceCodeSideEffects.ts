@@ -163,16 +163,28 @@ export const WORKORDER_SERVICE_SIDE_EFFECTS = {
   [WORKORDER_SERVICE_CODE.completeInspection]: createSideEffect({
     code: WORKORDER_SERVICE_CODE.completeInspection,
     direction: WORKORDER_SERVICE_DIRECTION.forwardWorkflow,
-    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.history],
-    operations: [WORKORDER_SERVICE_OPERATION.update, WORKORDER_SERVICE_OPERATION.insert],
+    resources: [
+      WORKORDER_SERVICE_RESOURCE.workOrders,
+      WORKORDER_SERVICE_RESOURCE.factoryOrders,
+      WORKORDER_SERVICE_RESOURCE.materials,
+      WORKORDER_SERVICE_RESOURCE.outsourcing,
+      WORKORDER_SERVICE_RESOURCE.history,
+    ],
+    operations: [WORKORDER_SERVICE_OPERATION.update, WORKORDER_SERVICE_OPERATION.replace, WORKORDER_SERVICE_OPERATION.insert],
     allowsProductionCompositionReplace: true,
     allowsR2Delete: false,
   }),
   [WORKORDER_SERVICE_CODE.completeWorkOrder]: createSideEffect({
     code: WORKORDER_SERVICE_CODE.completeWorkOrder,
     direction: WORKORDER_SERVICE_DIRECTION.forwardWorkflow,
-    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.history],
-    operations: [WORKORDER_SERVICE_OPERATION.update, WORKORDER_SERVICE_OPERATION.insert],
+    resources: [
+      WORKORDER_SERVICE_RESOURCE.workOrders,
+      WORKORDER_SERVICE_RESOURCE.factoryOrders,
+      WORKORDER_SERVICE_RESOURCE.materials,
+      WORKORDER_SERVICE_RESOURCE.outsourcing,
+      WORKORDER_SERVICE_RESOURCE.history,
+    ],
+    operations: [WORKORDER_SERVICE_OPERATION.update, WORKORDER_SERVICE_OPERATION.replace, WORKORDER_SERVICE_OPERATION.insert],
     allowsProductionCompositionReplace: true,
     allowsR2Delete: false,
   }),
@@ -371,7 +383,6 @@ export function canWorkOrderServiceUseOperation(input: {
 }): boolean {
   return getWorkOrderServiceOperations(input.serviceCode).includes(input.operation);
 }
-
 
 export function canWorkOrderServiceReplaceProductionComposition(
   serviceCode: WorkOrderServiceCodeValue | null | undefined,

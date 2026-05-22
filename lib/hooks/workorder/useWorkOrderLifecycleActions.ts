@@ -2,7 +2,11 @@
 
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
-import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import {
+  WORKORDER_EXPLICIT_SAVE_SCOPE,
+  WORKORDER_SERVICE_CODE,
+  getWorkOrderExplicitSaveServiceCode,
+} from "@/lib/constants/workorderServiceCodes";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import {
   createCreationHistoryLog,
@@ -25,6 +29,7 @@ import {
   getLastSavedAtForWorkOrder,
   mergeSavedWorkOrders,
   persistCreatedWorkOrderWithHistory,
+  persistWorkOrderStatePatchWithHistory,
   persistWorkOrderWithHistory,
   persistWorkOrdersWithHistory,
   replaceWorkOrderById,
@@ -106,16 +111,17 @@ export function useWorkOrderLifecycleActions({
         }),
         task: async () => {
           setSaveStatus("saving");
-          const previousPersistedWorkOrder = persistedWorkOrders.find((item) => item.id === workOrder.id) ?? workOrder;
-          const locallySavedWorkOrder = {
-            ...workOrder,
-            lastSavedAt: previousPersistedWorkOrder.lastSavedAt,
-          };
-          const locallySavedWorkOrders = replaceWorkOrderById(workOrders, workOrder.id, locallySavedWorkOrder);
+          const serviceCode = getWorkOrderExplicitSaveServiceCode(WORKORDER_EXPLICIT_SAVE_SCOPE.productionComposition);
+          const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
+            workOrder,
+            auditActor: currentUser,
+            serviceCode,
+          });
+          const persistedWorkOrders = replaceWorkOrderById(workOrders, workOrder.id, persistedWorkOrder);
 
-          setWorkOrders(locallySavedWorkOrders);
-          setPersistedWorkOrders(locallySavedWorkOrders);
-          setLastSavedAt(previousPersistedWorkOrder.lastSavedAt ?? null);
+          setWorkOrders(persistedWorkOrders);
+          setPersistedWorkOrders(persistedWorkOrders);
+          setLastSavedAt(persistedWorkOrder.lastSavedAt ?? null);
           setSaveStatus("saved");
           setToastMessage(lifecycleText.saveCompletedToast);
           setActionFailure?.("save", null);
@@ -123,7 +129,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, persistedWorkOrders, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser, lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(
@@ -224,6 +230,7 @@ export function useWorkOrderLifecycleActions({
             workOrder: createdWorkOrder,
             historyLogs: nextHistoryLogs,
             auditActor: currentUser,
+            serviceCode: WORKORDER_SERVICE_CODE.reorderCreate,
           });
           setWorkOrders((prev) => upsertWorkOrderAtStart(prev, persistedCreatedWorkOrder));
           setPersistedWorkOrders((prev) => upsertWorkOrderAtStart(prev, persistedCreatedWorkOrder));

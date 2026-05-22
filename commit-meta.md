@@ -1,15 +1,17 @@
 Version :
-0.15.68.2
+0.15.69
 
 Summary :
-멤버 권한 화면 역할 preview 빌드 오류 수정
+작업지시서 저장 액션 serviceCode 연결 보정
 
 Description :
-멤버 권한 상세 모달에서 제거된 roles 변수를 참조하던 역할 preview 계산을 실제 사용 중인 manageableRoles 기준으로 수정했다. 앱 버전도 0.15.68.2로 갱신했다.
+작업지시서 저장 버튼이 생산구성 현재값을 serviceCode 기반 state patch로 저장하도록 보정했다. 분류 등 기본정보는 즉시 저장 필드로 정리하고, 발주정보/생산구성은 명시 저장 흐름으로 분리했다. 검수완료와 완료처리 serviceCode가 생산구성 현재값 replace를 허용하도록 side effect matrix를 보정했다.
 
 수정 파일 목록 :
-- components/admin/members/AdminMemberManagementDashboard.tsx
 - lib/constants/app.ts
+- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
+- lib/workorder/serviceCodeSideEffects.ts
+- lib/workorder/storagePolicy.ts
 
 추가 파일 목록 :
 없음
