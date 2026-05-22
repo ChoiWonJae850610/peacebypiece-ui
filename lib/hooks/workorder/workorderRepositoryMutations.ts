@@ -3,7 +3,7 @@ import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderService
 import { shouldCommitProductionComposition } from "@/lib/workorder/productionCompositionPolicy";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
-import { WORKORDER_DRAFT_ONLY_DB_FIELDS } from "@/lib/workorder/storagePolicy";
+import { mergePersistedWorkOrderPreservingLocalDraft } from "@/lib/workorder/workOrderDraftMerge";
 import { markWorkOrderDetailSnapshot } from "@/lib/workorder/workOrderHydration";
 import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
@@ -30,22 +30,12 @@ export function mergeSavedWorkOrders(workOrders: WorkOrder[], savedWorkOrders: W
   return workOrders.map((item) => savedById.get(item.id) ?? item);
 }
 
-function restoreDraftOnlyFields(localWorkOrder: WorkOrder, savedWorkOrder: WorkOrder): WorkOrder {
-  return WORKORDER_DRAFT_ONLY_DB_FIELDS.reduce<WorkOrder>((next, field) => {
-    return { ...next, [field]: localWorkOrder[field] };
-  }, {
-    ...localWorkOrder,
-    ...savedWorkOrder,
-    hasDetailSnapshot: localWorkOrder.hasDetailSnapshot ?? savedWorkOrder.hasDetailSnapshot,
-  });
-}
-
 export function mergeSavedWorkOrdersPreservingDraftOnlyFields(workOrders: WorkOrder[], savedWorkOrders: WorkOrder[]): WorkOrder[] {
   if (savedWorkOrders.length === 0) return workOrders;
   const savedById = new Map(savedWorkOrders.map((item) => [item.id, item]));
   return workOrders.map((item) => {
     const saved = savedById.get(item.id);
-    return saved ? restoreDraftOnlyFields(item, saved) : item;
+    return saved ? mergePersistedWorkOrderPreservingLocalDraft(item, saved) : item;
   });
 }
 

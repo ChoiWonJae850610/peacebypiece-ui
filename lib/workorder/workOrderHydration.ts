@@ -1,4 +1,4 @@
-import { WORKORDER_DRAFT_ONLY_DB_FIELDS } from "@/lib/workorder/storagePolicy";
+import { mergeWorkOrderDetailSnapshotPreservingLocalDraft } from "@/lib/workorder/workOrderDraftMerge";
 import type { WorkOrder } from "@/types/workorder";
 
 export function markWorkOrderSummarySnapshot(workOrder: WorkOrder): WorkOrder {
@@ -15,15 +15,6 @@ export function markWorkOrderDetailSnapshot(workOrder: WorkOrder): WorkOrder {
   };
 }
 
-function restoreLocalDraftOnlyFields(localWorkOrder: WorkOrder, nextWorkOrder: WorkOrder): WorkOrder {
-  return WORKORDER_DRAFT_ONLY_DB_FIELDS.reduce<WorkOrder>((merged, field) => {
-    return {
-      ...merged,
-      [field]: localWorkOrder[field],
-    };
-  }, nextWorkOrder);
-}
-
 export function mergeDetailSnapshotIntoLocalWorkOrder(
   localWorkOrder: WorkOrder,
   detailSnapshot: WorkOrder,
@@ -37,7 +28,7 @@ export function mergeDetailSnapshotIntoLocalWorkOrder(
     return mergedSnapshot;
   }
 
-  return restoreLocalDraftOnlyFields(localWorkOrder, mergedSnapshot);
+  return mergeWorkOrderDetailSnapshotPreservingLocalDraft(localWorkOrder, mergedSnapshot);
 }
 
 export function mergeDetailSnapshotIntoWorkOrders(

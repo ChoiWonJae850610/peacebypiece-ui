@@ -35,6 +35,7 @@ export const WORKORDER_DRAFT_ONLY_DB_FIELDS = [
 ] as const satisfies readonly (keyof WorkOrder)[];
 
 const immediateFieldSet = new Set<keyof WorkOrder>(WORKORDER_IMMEDIATE_DB_FIELDS);
+const draftOnlyFieldSet = new Set<keyof WorkOrder>(WORKORDER_DRAFT_ONLY_DB_FIELDS);
 
 type DraftComparableWorkOrder = Omit<WorkOrder, (typeof WORKORDER_IMMEDIATE_DB_FIELDS)[number]>;
 
@@ -43,7 +44,7 @@ export function isImmediateDbField(field: keyof WorkOrder): boolean {
 }
 
 export function isDraftOnlyDbField(field: keyof WorkOrder): boolean {
-  return !isImmediateDbField(field);
+  return draftOnlyFieldSet.has(field);
 }
 
 export function getDraftComparableWorkOrder(workOrder: WorkOrder | null | undefined): DraftComparableWorkOrder | null {
