@@ -381,9 +381,7 @@ export const workorderEn = {
       title: "Progress",
       fallbackGroup: "Progress",
       rejectKeyword: "Reject",
-      saveDraftLabel: "Save draft",
       processingFormat: "Processing {label}...",
-      saveDraftHint: "Input changes and draft save stay local only, and the DB is updated only from workflow action buttons.",
     },
     detailGroups: {
       cost: { eyebrow: "Cost", title: "Cost summary", description: "Review fabric, trim, outsourcing, labor, and loss costs first." },

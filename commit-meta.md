@@ -1,14 +1,11 @@
-Version : 0.15.77
-Summary : 발주정보 draft 저장 흐름 보정
-Description : 작업지시서 저장 버튼이 상세 화면의 현재 발주정보, 원단정보, 외주정보 draft snapshot을 직접 저장하도록 연결하고, workflow 검증에 사용하는 draft snapshot의 대표 발주정보 요약값을 보강했습니다. 저장 전 편집값은 로컬 draft로 유지하며, 명시 저장 버튼에서만 생산구성 저장 serviceCode로 DB에 반영되도록 정리했습니다.
+Version : 0.15.78
+Summary : 작업지시서 임시 저장 버튼 제거
+Description : 진행 단계 영역의 임시 저장 버튼을 제거하고 관련 i18n 문구와 action props 전달을 정리했습니다. 발주정보/생산구성 입력값은 별도 임시 저장 버튼 없이 workflow 액션에서 현재 draft 기준으로 처리하는 흐름을 유지합니다.
 수정 파일 목록 :
-- components/workorder/detail/WorkOrderDetail.types.ts
-- components/workorder/detail/WorkOrderDetailContainer.tsx
-- components/workorder/WorkOrderWorkspace.tsx
+- components/workorder/detail/WorkOrderActionSection.tsx
+- lib/workorder/presentation/workOrderDetailSectionProps.ts
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
 - lib/constants/app.ts
-- lib/hooks/useWorkOrder.ts
-- lib/hooks/workorder/useWorkOrderDetailEditor.ts
-- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
-- lib/workorder/workspace/viewModelTypes.ts
 추가 파일 목록 :
 삭제 파일 목록 :

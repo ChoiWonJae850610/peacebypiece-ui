@@ -381,9 +381,7 @@ export const workorderKo = {
       title: "진행 단계",
       fallbackGroup: "진행",
       rejectKeyword: "반려",
-      saveDraftLabel: "임시 저장",
       processingFormat: "{label} 중입니다...",
-      saveDraftHint: "입력 변경과 임시 저장은 로컬 상태에만 반영되며, 상태 변경 버튼에서만 DB에 저장됩니다.",
     },
     detailGroups: {
       cost: { eyebrow: "비용", title: "비용 요약", description: "원단, 부자재, 외주, 공임, 로스 비용을 먼저 확인합니다." },

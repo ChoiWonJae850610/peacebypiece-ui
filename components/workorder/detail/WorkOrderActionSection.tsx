@@ -20,7 +20,6 @@ export default function WorkOrderActionSection({
   currentStage,
   actions,
   onAction,
-  onSave,
   workflowProcessingLabel = null,
   isWorkspaceWriteLocked = false,
 }: {
@@ -28,7 +27,6 @@ export default function WorkOrderActionSection({
   currentStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
-  onSave?: (() => void) | null;
   workflowProcessingLabel?: string | null;
   isWorkspaceWriteLocked?: boolean;
   workspaceWriteLockMessage?: string;
@@ -54,19 +52,8 @@ export default function WorkOrderActionSection({
         <div className="min-w-0">
           <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
         </div>
-        {actions.length > 0 || (currentStage === DISPLAY_STAGE.draft && onSave) ? (
+        {actions.length > 0 ? (
           <div className="flex flex-wrap justify-end gap-2">
-            {currentStage === DISPLAY_STAGE.draft && onSave ? (
-              <button
-                type="button"
-                onClick={onSave}
-                disabled={isActionLocked}
-                className="pbp-action-secondary rounded-xl border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
-                title={copy.saveDraftHint}
-              >
-                {copy.saveDraftLabel}
-              </button>
-            ) : null}
             {actions.map((action, index) => {
               const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
               const isProcessingTarget = workflowProcessingLabel === action.label;

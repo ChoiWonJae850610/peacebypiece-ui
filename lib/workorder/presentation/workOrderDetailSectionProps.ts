@@ -147,7 +147,6 @@ export function buildActionSectionProps({
   isWorkspaceWriteLocked,
   workspaceWriteLockMessage,
   onAction,
-  onSave,
 }: BuildWorkOrderDetailViewModelArgs): ActionProps {
   return {
     stages: visibleStages,
@@ -157,7 +156,6 @@ export function buildActionSectionProps({
     isWorkspaceWriteLocked,
     workspaceWriteLockMessage,
     onAction,
-    onSave,
   };
 }
 
