@@ -642,8 +642,10 @@ export default function AdminMemberManagementDashboard() {
     [memberRecords, selectedMemberId],
   );
   const selectedMemberRolePreview = useMemo(
-    () => roles.find((role) => role.id === memberDetailDraft?.roleTemplateCode) ?? null,
-    [memberDetailDraft?.roleTemplateCode, roles],
+    () =>
+      manageableRoles.find((role) => role.id === memberDetailDraft?.roleTemplateCode) ??
+      null,
+    [manageableRoles, memberDetailDraft?.roleTemplateCode],
   );
   const selectedMemberStatusOptions = useMemo(
     () => getMemberDetailStatusOptions(selectedMemberRecord?.status),

@@ -1,15 +1,15 @@
 Version :
-0.15.68.1
+0.15.68.2
 
 Summary :
-작업지시서 serviceCode 타입 가드 누락 빌드 오류 수정
+멤버 권한 화면 역할 preview 빌드 오류 수정
 
 Description :
-작업지시서 API route에서 참조하는 isWorkOrderServiceCode 타입 가드 export를 복구하여 0.15.68 빌드 실패 원인을 보정했다. APP_VERSION을 0.15.68.1로 갱신했다.
+멤버 권한 상세 모달에서 제거된 roles 변수를 참조하던 역할 preview 계산을 실제 사용 중인 manageableRoles 기준으로 수정했다. 앱 버전도 0.15.68.2로 갱신했다.
 
 수정 파일 목록 :
+- components/admin/members/AdminMemberManagementDashboard.tsx
 - lib/constants/app.ts
-- lib/constants/workorderServiceCodes.ts
 
 추가 파일 목록 :
 없음
