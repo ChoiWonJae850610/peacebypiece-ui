@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from "react";
+import { useEffect, type ReactNode, type RefObject } from "react";
 
 type MobileSectionStackProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
@@ -6,6 +6,7 @@ type MobileSectionStackProps = {
   drawer: ReactNode;
   detail: ReactNode;
   sidePanel: ReactNode;
+  scrollResetKey: string;
 };
 
 export default function MobileSectionStack({
@@ -14,7 +15,11 @@ export default function MobileSectionStack({
   drawer,
   detail,
   sidePanel,
+  scrollResetKey,
 }: MobileSectionStackProps) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+  }, [scrollResetKey]);
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
       <div ref={appShellRef} className="min-h-screen overflow-x-hidden">

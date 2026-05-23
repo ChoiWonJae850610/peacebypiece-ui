@@ -20,6 +20,7 @@ export default function WorkOrderDetailTabletView({
   return (
     <TabletSplitLayout
       appShellRef={appShellRef}
+      scrollResetKey={selectedId}
       sidebar={<SidebarContent {...sidebarListProps} homeNavigation={homeNavigation} />}
       detail={(
         <>

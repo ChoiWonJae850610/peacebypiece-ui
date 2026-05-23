@@ -59,8 +59,8 @@ export default function OutsourcingSection({
     <div className="min-w-0">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white">
-          <table className="min-w-[700px] w-full table-fixed text-left">
+        <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:overflow-x-hidden">
+          <table className="w-full min-w-[700px] table-fixed text-left xl:min-w-0">
             <colgroup>
               <col className="w-[19%]" />
               <col className="w-[19%]" />

@@ -22,6 +22,7 @@ export default function WorkOrderDetailMobileView({
   return (
     <MobileSectionStack
       appShellRef={appShellRef}
+      scrollResetKey={selectedId}
       topBar={<MobileTopBar {...mobileTopBarProps} homeNavigation={homeNavigation} />}
       drawer={<MobileDrawer {...mobileDrawerProps} />}
       detail={isLoading ? (

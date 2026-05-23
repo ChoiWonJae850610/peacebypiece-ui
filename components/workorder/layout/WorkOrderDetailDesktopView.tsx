@@ -20,6 +20,7 @@ export default function WorkOrderDetailDesktopView({
   return (
     <DesktopWorkspaceLayout
       appShellRef={appShellRef}
+      scrollResetKey={selectedId}
       sidebar={<SidebarContent {...sidebarListProps} homeNavigation={homeNavigation} />}
       detail={(
         <>
