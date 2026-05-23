@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { HistoryLog, WorkOrder } from "@/types/workorder";
 import {
   mergeSavedWorkOrders,
@@ -17,6 +17,13 @@ export type WorkflowActionSideEffectSetters = {
   setHistoryLogs: Dispatch<SetStateAction<HistoryLog[]>>;
   setToastMessage: Dispatch<SetStateAction<string | null>>;
   setInventoryEditorOpen?: Dispatch<SetStateAction<boolean>>;
+};
+
+export type WorkflowWorkOrderStateSetters = {
+  workOrdersRef: MutableRefObject<WorkOrder[]>;
+  setWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
+  setPersistedWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
+  syncSelectedWorkOrderSaveState: (nextWorkOrders: WorkOrder[]) => void;
 };
 
 export function replaceWorkflowPersistedWorkOrder(
@@ -100,4 +107,27 @@ export function buildSharedProductionPersistSuccessState({
     localWorkOrders: mergedWorkOrders,
     persistedWorkOrders: mergedWorkOrders,
   };
+}
+
+
+export type ApplySharedProductionPersistSuccessInput = SharedProductionPersistSuccessInput & {
+  state: WorkflowWorkOrderStateSetters;
+};
+
+export function applySharedProductionPersistSuccess({
+  optimisticWorkOrders,
+  persistedWorkOrders,
+  state,
+}: ApplySharedProductionPersistSuccessInput): SharedProductionPersistSuccessResult {
+  const result = buildSharedProductionPersistSuccessState({
+    optimisticWorkOrders,
+    persistedWorkOrders,
+  });
+
+  state.workOrdersRef.current = result.localWorkOrders;
+  state.setWorkOrders(result.localWorkOrders);
+  state.setPersistedWorkOrders(result.persistedWorkOrders);
+  state.syncSelectedWorkOrderSaveState(result.persistedWorkOrders);
+
+  return result;
 }

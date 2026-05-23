@@ -18,9 +18,9 @@ import {
   persistWorkOrderStatePatchesWithHistory,
 } from "./workorderRepositoryMutations";
 import {
+  applySharedProductionPersistSuccess,
   applyWorkflowActionSideEffects,
   buildImmediatePatchPersistSuccessState,
-  buildSharedProductionPersistSuccessState,
   markWorkflowPersistFailed,
   markWorkflowPersistStarted,
   replaceWorkflowPersistedWorkOrder,
@@ -401,14 +401,16 @@ export function useWorkOrderWorkflowActions({
         auditActor: currentUser,
         serviceCode: WORKORDER_SERVICE_CODE.inventoryImmediateSave,
       }).then((persistedCandidates) => {
-        const { localWorkOrders, persistedWorkOrders } = buildSharedProductionPersistSuccessState({
+        applySharedProductionPersistSuccess({
           optimisticWorkOrders: nextWorkOrders,
           persistedWorkOrders: persistedCandidates,
+          state: {
+            workOrdersRef,
+            setWorkOrders,
+            setPersistedWorkOrders,
+            syncSelectedWorkOrderSaveState,
+          },
         });
-        workOrdersRef.current = localWorkOrders;
-        setWorkOrders(localWorkOrders);
-        setPersistedWorkOrders(persistedWorkOrders);
-        syncSelectedWorkOrderSaveState(persistedWorkOrders);
       }).catch((error) => {
         markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
       });
@@ -445,14 +447,16 @@ export function useWorkOrderWorkflowActions({
         auditActor: currentUser,
         serviceCode: WORKORDER_SERVICE_CODE.completeInspection,
       }).then((persistedCandidates) => {
-        const { localWorkOrders, persistedWorkOrders } = buildSharedProductionPersistSuccessState({
+        applySharedProductionPersistSuccess({
           optimisticWorkOrders: nextWorkOrders,
           persistedWorkOrders: persistedCandidates,
+          state: {
+            workOrdersRef,
+            setWorkOrders,
+            setPersistedWorkOrders,
+            syncSelectedWorkOrderSaveState,
+          },
         });
-        workOrdersRef.current = localWorkOrders;
-        setWorkOrders(localWorkOrders);
-        setPersistedWorkOrders(persistedWorkOrders);
-        syncSelectedWorkOrderSaveState(persistedWorkOrders);
       }).catch((error) => {
         markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
       });
