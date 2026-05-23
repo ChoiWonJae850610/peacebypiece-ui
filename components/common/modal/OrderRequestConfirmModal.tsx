@@ -12,23 +12,6 @@ import { useI18n } from "@/lib/i18n";
 import { isDebugFeatureEnabled } from "@/lib/runtime/runtimeMode";
 import type { WorkOrder } from "@/types/workorder";
 
-function ArrowNextIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-      <path d="M4.75 10h9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="m10.75 6 4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-      <path d="m5 10.25 3.25 3.25L15 6.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function getProcessingLabel(label: string, format: string) {
   const compactLabel = label.replace(/\s+/g, "");
   return format.replace("{label}", compactLabel);
@@ -105,7 +88,7 @@ export default function OrderRequestConfirmModal({
             aria-label={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? copy.requestedBadge : MODAL_ACTION_LABELS.proceedOrderRequest}
             title={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? copy.requestedBadge : MODAL_ACTION_LABELS.proceedOrderRequest}
           >
-            {isSubmittingOrderRequest ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : requested ? <CheckIcon /> : <ArrowNextIcon />}
+            {isSubmittingOrderRequest ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
             <span>{requested ? copy.requestedBadge : MODAL_ACTION_LABELS.proceedOrderRequest}</span>
           </button>
         </div>
