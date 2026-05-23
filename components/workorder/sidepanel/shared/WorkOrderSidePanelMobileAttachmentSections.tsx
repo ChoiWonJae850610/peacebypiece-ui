@@ -14,6 +14,8 @@ type WorkOrderSidePanelMobileAttachmentSectionsProps = Pick<
   | "onPreviewAttachment"
   | "onDeleteAttachment"
   | "onSetPrimaryDesignAttachment"
+  | "canGenerateOrderRequestPdf"
+  | "onGenerateOrderRequestPdf"
   | "writeLocked"
   | "writeLockMessage"
 > & {
@@ -30,6 +32,8 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  canGenerateOrderRequestPdf,
+  onGenerateOrderRequestPdf,
   writeLocked = false,
   writeLockMessage,
   collapseLabel,

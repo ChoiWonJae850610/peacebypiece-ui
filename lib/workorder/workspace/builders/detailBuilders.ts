@@ -1,5 +1,8 @@
 import { formatRecentKstDateTime } from "@/lib/workorder/presentation/dateTimePresentation";
 import { buildAttachmentPanelSections } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
+import { isWorkflowStateAtLeast, WORKFLOW_STATE } from "@/lib/constants/workorderStates";
+import { isGeneratedOrderRequestPdfAttachment } from "@/lib/workorder/generatedDocuments";
+import { canRequestFactoryOrderByPolicy } from "@/lib/workorder/workflowPolicy";
 import type { DetailProps, DetailViewModelArgs, SidePanelProps, SidePanelViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 import type { UserProfile, WorkOrder } from "@/types/workorder";
 
@@ -120,6 +123,7 @@ export function buildSidePanelProps({
   currentRole,
   users,
   selectedWorkOrder,
+  currentWorkflowState,
   currentUser,
   i18n,
   isWorkspaceWriteLocked,
@@ -129,6 +133,7 @@ export function buildSidePanelProps({
   onUploadAttachmentFiles,
   onRequestDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  onGenerateOrderRequestPdf,
   onCreateMemoThread,
   onCreateMemoReply,
   onUpdateMemoThread,
@@ -136,6 +141,20 @@ export function buildSidePanelProps({
   onUpdateMemoReply,
   onDeleteMemoReply,
 }: SidePanelViewModelArgs): SidePanelProps {
+  const hasGeneratedOrderRequestPdf = officialAttachments.some((attachment) => isGeneratedOrderRequestPdfAttachment(attachment));
+  const canGenerateOrderRequestPdf =
+    hasVisibleWorkOrders &&
+    canSeeAttachments &&
+    !hasGeneratedOrderRequestPdf &&
+    isWorkflowStateAtLeast(currentWorkflowState, WORKFLOW_STATE.inspection) &&
+    canRequestFactoryOrderByPolicy({
+      currentRoles: currentUser.roles,
+      currentUser,
+      currentUserId: currentUser.id,
+      currentWorkflowState,
+      workOrder: selectedWorkOrder,
+    });
+
   return {
     isEmpty: !hasVisibleWorkOrders,
     canSeeAttachments,
@@ -159,6 +178,8 @@ export function buildSidePanelProps({
     onPreviewAttachment: () => undefined,
     onDeleteAttachment: onRequestDeleteAttachment,
     onSetPrimaryDesignAttachment,
+    canGenerateOrderRequestPdf,
+    onGenerateOrderRequestPdf: () => onGenerateOrderRequestPdf(selectedWorkOrder.id),
     currentRole,
     users: users ?? [],
     workOrder: applyLatestManagerDisplayName(selectedWorkOrder, users),

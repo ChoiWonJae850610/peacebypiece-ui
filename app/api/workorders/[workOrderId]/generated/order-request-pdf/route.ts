@@ -36,6 +36,27 @@ function readText(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
+function toErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error ?? "UNKNOWN_ERROR");
+}
+
+function logOrderRequestPdfError(stage: string, error: unknown) {
+  console.error(`[ORDER_REQUEST_PDF:${stage}]`, error);
+}
+
+function createOrderRequestPdfErrorResponse(stage: string, error: unknown, status = 500) {
+  return NextResponse.json(
+    {
+      ok: false,
+      attachment: null,
+      error: `ORDER_REQUEST_PDF_${stage}_FAILED`,
+      message: toErrorMessage(error),
+      stage,
+    },
+    { status },
+  );
+}
+
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
   return "createAttachment" in repository;
 }
@@ -165,7 +186,14 @@ export async function POST(request: Request, context: RouteContext) {
 
   const createdAt = new Date();
   const fileId = randomUUID();
-  const pdf = buildOrderRequestServerPdf({ workOrder, requestNote });
+  let pdf: Buffer;
+  try {
+    pdf = buildOrderRequestServerPdf({ workOrder, requestNote });
+  } catch (error) {
+    logOrderRequestPdfError("GENERATE", error);
+    return createOrderRequestPdfErrorResponse("GENERATE", error);
+  }
+
   const fileName = createOrderRequestPdfDisplayName({
     workOrderTitle: workOrder.title,
     managerName: workOrder.manager || scopeResult.actorName,
@@ -177,7 +205,12 @@ export async function POST(request: Request, context: RouteContext) {
     fileId,
   });
 
-  await putGeneratedPdfObject({ storageKey, pdf });
+  try {
+    await putGeneratedPdfObject({ storageKey, pdf });
+  } catch (error) {
+    logOrderRequestPdfError("UPLOAD", error);
+    return createOrderRequestPdfErrorResponse("UPLOAD", error);
+  }
 
   const provisionalAttachment = createGeneratedOrderRequestAttachment({
     id: fileId,
@@ -187,19 +220,26 @@ export async function POST(request: Request, context: RouteContext) {
     actorName: scopeResult.actorName,
   });
 
-  const created = await repository.createAttachment({
-    order_id: workOrderId,
-    attachment: provisionalAttachment,
-    storage_provider: "r2",
-    storage_key: storageKey,
-    content_type: "application/pdf",
-    file_size: pdf.byteLength,
-    source_type: ATTACHMENT_SOURCE_TYPE.system,
-    generated_document_type: GENERATED_DOCUMENT_TYPE.orderRequestPdf,
-  });
+  let createdId = fileId;
+  try {
+    const created = await repository.createAttachment({
+      order_id: workOrderId,
+      attachment: provisionalAttachment,
+      storage_provider: "r2",
+      storage_key: storageKey,
+      content_type: "application/pdf",
+      file_size: pdf.byteLength,
+      source_type: ATTACHMENT_SOURCE_TYPE.system,
+      generated_document_type: GENERATED_DOCUMENT_TYPE.orderRequestPdf,
+    });
+    createdId = created.id;
+  } catch (error) {
+    logOrderRequestPdfError("REGISTER", error);
+    return createOrderRequestPdfErrorResponse("REGISTER", error);
+  }
 
   const attachment = createGeneratedOrderRequestAttachment({
-    id: created.id,
+    id: createdId,
     fileName,
     storageKey,
     actorId: scopeResult.actorId,

@@ -171,6 +171,7 @@ export function buildWorkspaceViewModel(
       onUploadAttachmentFiles: args.onUploadAttachmentFiles,
       onRequestDeleteAttachment: args.onRequestDeleteAttachment,
       onSetPrimaryDesignAttachment: args.onSetPrimaryDesignAttachment,
+      onGenerateOrderRequestPdf: args.onGenerateOrderRequestPdf,
       onCreateMemoThread: args.onCreateMemoThread,
       onCreateMemoReply: args.onCreateMemoReply,
       onUpdateMemoThread: args.onUpdateMemoThread,

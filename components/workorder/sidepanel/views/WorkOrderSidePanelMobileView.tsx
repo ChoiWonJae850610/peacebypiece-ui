@@ -43,6 +43,8 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
           onPreviewAttachment={props.onPreviewAttachment}
           onDeleteAttachment={props.onDeleteAttachment}
           onSetPrimaryDesignAttachment={props.onSetPrimaryDesignAttachment}
+          canGenerateOrderRequestPdf={props.canGenerateOrderRequestPdf}
+          onGenerateOrderRequestPdf={props.onGenerateOrderRequestPdf}
           writeLocked={props.writeLocked}
           writeLockMessage={props.writeLockMessage}
           collapseLabel={collapseLabel}

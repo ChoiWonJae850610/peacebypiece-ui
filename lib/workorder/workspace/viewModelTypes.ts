@@ -124,6 +124,7 @@ export type BuildWorkspaceViewModelArgs = {
   onUploadAttachmentFiles: (scope: UploadableAttachmentScopeValue, files: File[]) => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment: (attachmentId: string) => void;
+  onGenerateOrderRequestPdf: (workOrderId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
   onAttachmentDeleteConfirm: () => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
@@ -239,7 +240,9 @@ export type DetailViewModelArgs = BaseWorkspaceViewModelArgs & {
   onSetInventoryEditorOpen: (next: boolean) => void;
 };
 
-export type SidePanelViewModelArgs = BaseWorkspaceViewModelArgs;
+export type SidePanelViewModelArgs = BaseWorkspaceViewModelArgs & {
+  onGenerateOrderRequestPdf: (workOrderId: string) => void;
+};
 
 export type ModalViewModelArgs = {
   i18n: ReturnType<typeof getI18n>;

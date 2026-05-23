@@ -8,6 +8,7 @@ import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorS
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
+import { isGeneratedOrderRequestPdfAttachment } from "@/lib/workorder/generatedDocuments";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
 type AttachmentPanelScope = UploadableAttachmentScopeValue;
@@ -216,6 +217,8 @@ export default function WorkOrderAttachmentPanel({
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  canGenerateOrderRequestPdf = false,
+  onGenerateOrderRequestPdf,
   writeLocked = false,
   writeLockMessage,
   variant = "desktop",
@@ -233,6 +236,8 @@ export default function WorkOrderAttachmentPanel({
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment?: (attachmentId: string) => void;
+  canGenerateOrderRequestPdf?: boolean;
+  onGenerateOrderRequestPdf?: () => void;
   writeLocked?: boolean;
   writeLockMessage?: string;
   variant?: "desktop" | "tablet" | "mobile";
@@ -279,6 +284,9 @@ export default function WorkOrderAttachmentPanel({
 
   const isMobile = variant === "mobile";
   const isTablet = variant === "tablet";
+  const isOfficialAttachmentScope = !isDesignAttachmentScope(uploadScope);
+  const hasGeneratedOrderRequestPdf = attachments.some((attachment) => isGeneratedOrderRequestPdfAttachment(attachment));
+  const showGenerateOrderRequestPdfAction = isOfficialAttachmentScope && canGenerateOrderRequestPdf && !hasGeneratedOrderRequestPdf;
 
   return (
     <>
@@ -307,6 +315,21 @@ export default function WorkOrderAttachmentPanel({
           />
         ) : null}
       </div>
+      {showGenerateOrderRequestPdfAction ? (
+        <div className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left shadow-sm">
+          <div className="text-[13px] font-semibold pbp-text-primary">{ui.attachmentPanel.orderRequestPdfMissingTitle}</div>
+          <p className="mt-1 text-xs leading-5 pbp-text-muted">{ui.attachmentPanel.orderRequestPdfMissingDescription}</p>
+          <button
+            type="button"
+            onClick={() => { if (!writeLocked) onGenerateOrderRequestPdf?.(); }}
+            disabled={writeLocked || typeof onGenerateOrderRequestPdf !== "function"}
+            title={writeLocked ? writeLockMessage : undefined}
+            className="pbp-interactive-button pbp-action-secondary mt-3 inline-flex h-8 items-center justify-center rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {ui.attachmentPanel.generateOrderRequestPdfButton}
+          </button>
+        </div>
+      ) : null}
       {attachments.length > 0 ? (
         <div className={isMobile ? "mt-2.5 min-w-0 space-y-1.5" : "mt-2.5 min-w-0 space-y-2"}>
           {attachments.map((attachment) => (

@@ -70,3 +70,11 @@ export function createOrderRequestPdfStorageKey(input: {
 export function getGeneratedOrderRequestAttachmentScope(): AttachmentScope {
   return ATTACHMENT_SCOPE.attachment;
 }
+
+export function isGeneratedOrderRequestPdfAttachment(input: { generatedDocumentType?: string | null; sourceType?: string | null } | null | undefined): boolean {
+  return Boolean(
+    input &&
+      input.sourceType === ATTACHMENT_SOURCE_TYPE.system &&
+      input.generatedDocumentType === GENERATED_DOCUMENT_TYPE.orderRequestPdf,
+  );
+}

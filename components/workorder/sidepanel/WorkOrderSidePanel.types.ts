@@ -16,6 +16,8 @@ export type WorkOrderSidePanelProps = {
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment: (attachmentId: string) => void;
+  canGenerateOrderRequestPdf: boolean;
+  onGenerateOrderRequestPdf: () => void;
   currentRole: RoleType;
   users: UserProfile[];
   workOrder: WorkOrder;

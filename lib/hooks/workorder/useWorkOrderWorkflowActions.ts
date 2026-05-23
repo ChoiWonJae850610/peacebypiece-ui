@@ -111,6 +111,7 @@ type GeneratedOrderRequestPdfResult = {
   attachment?: Attachment | null;
   error?: string;
   message?: string;
+  stage?: string;
 };
 
 async function createGeneratedOrderRequestPdfAttachment(input: {
@@ -129,10 +130,32 @@ async function createGeneratedOrderRequestPdfAttachment(input: {
 
   const result = (await response.json().catch(() => null)) as GeneratedOrderRequestPdfResult | null;
   if (!response.ok || !result?.ok || !result.attachment) {
-    throw new Error(result?.message || result?.error || "ORDER_REQUEST_PDF_CREATE_FAILED");
+    const errorCode = result?.error || "ORDER_REQUEST_PDF_CREATE_FAILED";
+    const stageSuffix = result?.stage ? `:${result.stage}` : "";
+    const message = result?.message ? `${errorCode}${stageSuffix} ${result.message}` : `${errorCode}${stageSuffix}`;
+    throw new Error(message);
   }
 
   return result.attachment;
+}
+
+function getOrderRequestPdfFailureToast(text: {
+  factoryOrderPdfFailedToast: string;
+  factoryOrderPdfUploadFailedToast?: string;
+  factoryOrderPdfRegisterFailedToast?: string;
+  factoryOrderPdfGenerateFailedToast?: string;
+}, error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  if (message.includes("ORDER_REQUEST_PDF_UPLOAD_FAILED")) {
+    return text.factoryOrderPdfUploadFailedToast ?? text.factoryOrderPdfFailedToast;
+  }
+  if (message.includes("ORDER_REQUEST_PDF_REGISTER_FAILED")) {
+    return text.factoryOrderPdfRegisterFailedToast ?? text.factoryOrderPdfFailedToast;
+  }
+  if (message.includes("ORDER_REQUEST_PDF_GENERATE_FAILED")) {
+    return text.factoryOrderPdfGenerateFailedToast ?? text.factoryOrderPdfFailedToast;
+  }
+  return text.factoryOrderPdfFailedToast;
 }
 
 function appendGeneratedAttachment(workOrder: WorkOrder, attachment: Attachment | null): WorkOrder {
@@ -575,7 +598,7 @@ export function useWorkOrderWorkflowActions({
           }
         } catch (pdfError) {
           console.warn("[ORDER_REQUEST_PDF_CREATE_FAILED]", pdfError);
-          setToastMessage(actionFlowText.factoryOrderPdfFailedToast);
+          setToastMessage(getOrderRequestPdfFailureToast(actionFlowText, pdfError));
         }
       } catch (error) {
         markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
@@ -650,6 +673,31 @@ export function useWorkOrderWorkflowActions({
     },
     [actionFlowText, currentUser.name, historyText, persistSharedProductionChange, setHistoryLogs, setToastMessage],
   );
+
+  const handleGenerateOrderRequestPdf = useCallback(async (workOrderId: string) => {
+    const currentWorkOrder = workOrdersRef.current.find((item) => item.id === workOrderId);
+    if (!currentWorkOrder) return;
+
+    try {
+      const generatedAttachment = await createGeneratedOrderRequestPdfAttachment({
+        workOrderId,
+        requestNote: currentWorkOrder.factoryOrderRequest?.requestNote ?? null,
+      });
+      if (!generatedAttachment) return;
+
+      const nextWorkOrders = stabilizeWorkOrders(
+        workOrdersRef.current.map((item) => (item.id === workOrderId ? appendGeneratedAttachment(item, generatedAttachment) : item)),
+      );
+      workOrdersRef.current = nextWorkOrders;
+      setWorkOrders(nextWorkOrders);
+      setPersistedWorkOrders(nextWorkOrders);
+      syncSelectedWorkOrderSaveState(nextWorkOrders);
+      setToastMessage(actionFlowText.factoryOrderPdfRegeneratedToast ?? actionFlowText.factoryOrderPdfSavedToast);
+    } catch (pdfError) {
+      console.warn("[ORDER_REQUEST_PDF_REGENERATE_FAILED]", pdfError);
+      setToastMessage(getOrderRequestPdfFailureToast(actionFlowText, pdfError));
+    }
+  }, [actionFlowText, setPersistedWorkOrders, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState]);
 
   const handleUpdateSelectedWorkOrder = useCallback(
     async ({ workOrderId, patch, isReviewRequestLocked }: UpdateSelectedWorkOrderInput) => {
@@ -749,6 +797,7 @@ export function useWorkOrderWorkflowActions({
     },
     handleInventoryApply,
     handleCompleteInspection,
+    handleGenerateOrderRequestPdf,
     handleUpdateSelectedWorkOrder,
   };
 }

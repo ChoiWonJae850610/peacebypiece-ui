@@ -460,6 +460,12 @@ export default function WorkOrderWorkspace({
         () => attachments.handleSetPrimaryDesignAttachment(attachmentId),
       );
     },
+    onGenerateOrderRequestPdf: (workOrderId) => {
+      void runWithWorkspaceWriteLock(
+        lifecycleCopy.attachmentProcessingLabel,
+        () => actions.handleGenerateOrderRequestPdf(workOrderId),
+      );
+    },
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
     onCreateMemoThread: (content) => {

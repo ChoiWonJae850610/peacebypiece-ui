@@ -13,6 +13,8 @@ type WorkOrderSidePanelAttachmentSectionsProps = Pick<
   | "onPreviewAttachment"
   | "onDeleteAttachment"
   | "onSetPrimaryDesignAttachment"
+  | "canGenerateOrderRequestPdf"
+  | "onGenerateOrderRequestPdf"
   | "writeLocked"
   | "writeLockMessage"
 > & {
@@ -29,6 +31,8 @@ export default function WorkOrderSidePanelAttachmentSections({
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  canGenerateOrderRequestPdf,
+  onGenerateOrderRequestPdf,
   writeLocked = false,
   writeLockMessage,
   variant,
@@ -52,6 +56,8 @@ export default function WorkOrderSidePanelAttachmentSections({
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
       onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
+      canGenerateOrderRequestPdf={canGenerateOrderRequestPdf}
+      onGenerateOrderRequestPdf={onGenerateOrderRequestPdf}
       writeLocked={writeLocked}
       writeLockMessage={writeLockMessage}
       variant={variant}

@@ -35,6 +35,10 @@ export default function WorkOrderSidePanelTabletView(props: WorkOrderSidePanelPr
           onPreviewAttachment={props.onPreviewAttachment}
           onDeleteAttachment={props.onDeleteAttachment}
           onSetPrimaryDesignAttachment={props.onSetPrimaryDesignAttachment}
+          canGenerateOrderRequestPdf={props.canGenerateOrderRequestPdf}
+          onGenerateOrderRequestPdf={props.onGenerateOrderRequestPdf}
+          writeLocked={props.writeLocked}
+          writeLockMessage={props.writeLockMessage}
           variant="tablet"
         />
       </SidePanelSectionStack>
