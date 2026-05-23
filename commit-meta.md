@@ -1,13 +1,10 @@
-Version : 0.15.96.1
-Summary : 발주서 PDF 재생성 빌드 및 실행 오류 보정
-Description : 빌드 오류를 유발한 generated PDF 첨부 ID 타입을 보정하고, 작업지시서 facade에 발주서 PDF 생성 핸들러를 노출했습니다. PC 넓은 화면의 첨부파일 패널에도 발주서 PDF 생성 버튼이 보이도록 전달 누락을 보정했으며, 현재 R2 Worker가 허용하는 첨부파일 경로로 발주서 PDF storage key를 맞췄습니다.
+Version : 0.15.97
+Summary : 발주서 PDF 빌드 오류 및 양식 1차 정렬
+Description : 발주서 PDF 재생성 토스트 타입 오류를 보정하고, 서버 PDF 템플릿을 기존 발주요청 모달 구성에 가깝게 제목/요약/대표 이미지 영역/발주 메모/원단/부자재/외주공정 섹션 구조로 재정렬했습니다. 실제 대표 이미지 삽입은 후속 단계로 남겼습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts
-- lib/workorder/generatedDocuments.ts
-- components/workorder/sidepanel/shared/WorkOrderSidePanelSections.tsx
-- components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAttachmentSections.tsx
-- lib/hooks/useWorkOrder.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/workorder/serverOrderRequestPdf.ts
 추가 파일 목록 :
 - 없음
 삭제 파일 목록 :

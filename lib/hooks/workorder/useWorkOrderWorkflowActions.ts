@@ -692,7 +692,7 @@ export function useWorkOrderWorkflowActions({
       setWorkOrders(nextWorkOrders);
       setPersistedWorkOrders(nextWorkOrders);
       syncSelectedWorkOrderSaveState(nextWorkOrders);
-      setToastMessage(actionFlowText.factoryOrderPdfRegeneratedToast ?? actionFlowText.factoryOrderPdfSavedToast);
+      setToastMessage(actionFlowText.factoryOrderPdfSavedToast);
     } catch (pdfError) {
       console.warn("[ORDER_REQUEST_PDF_REGENERATE_FAILED]", pdfError);
       setToastMessage(getOrderRequestPdfFailureToast(actionFlowText, pdfError));
