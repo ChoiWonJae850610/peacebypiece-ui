@@ -1,14 +1,9 @@
-name = "waflow-pdf-generator"
-main = "pdf-generator-worker.js"
-compatibility_date = "2026-05-24"
-
-# Cloudflare Browser Rendering binding.
-# In Cloudflare Workers, enable Browser Rendering and bind it as BROWSER.
-[browser]
-binding = "BROWSER"
-
-[vars]
-# Optional. If set, the app must send Authorization: Bearer <token>.
-# Keep the real value in Worker secrets, not in this file.
-# WAFLOW_PDF_GENERATOR_TOKEN = ""
-WAFLOW_PDF_GENERATOR_TIMEOUT_MS = "30000"
+# Deprecated example.
+# Use cloudflare/pdf-generator-worker/wrangler.toml instead.
+#
+# The PDF generator requires @cloudflare/puppeteer and Browser Rendering binding.
+# Deploy with:
+#   cd cloudflare/pdf-generator-worker
+#   npm install
+#   npx wrangler secret put WAFLOW_PDF_GENERATOR_TOKEN
+#   npx wrangler deploy

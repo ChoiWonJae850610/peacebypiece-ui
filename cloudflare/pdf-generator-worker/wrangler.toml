@@ -1,0 +1,14 @@
+name = "waflow-pdf-generator"
+main = "src/index.js"
+compatibility_date = "2026-05-24"
+
+# Cloudflare Browser Rendering binding.
+# This binding is required because src/index.js calls puppeteer.launch(env.BROWSER).
+[browser]
+binding = "BROWSER"
+
+[vars]
+WAFLOW_PDF_GENERATOR_TIMEOUT_MS = "30000"
+
+# Set the real token as a secret, not as a plain var:
+# npx wrangler secret put WAFLOW_PDF_GENERATOR_TOKEN

@@ -1,4 +1,4 @@
-// Deprecated deployment entrypoint: do not paste this file into Cloudflare Dashboard Edit Code. Use cloudflare/pdf-generator-worker/ with Wrangler.
+// Wrangler 배포용 PDF Generator Worker입니다. Cloudflare Dashboard 코드 편집기에 단일 파일로 붙여넣지 말고, 이 폴더에서 npm install 후 npx wrangler deploy로 배포하세요.
 import puppeteer from "@cloudflare/puppeteer";
 
 const WORKER_VERSION = "0.16.1.1";

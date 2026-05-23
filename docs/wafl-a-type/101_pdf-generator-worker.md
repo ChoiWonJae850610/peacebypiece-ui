@@ -1,66 +1,99 @@
-# 0.16.1 PDF Generator Worker 1차
+# 0.16.1.1 PDF Generator Worker Wrangler 배포 구조 보정
 
 ## 목적
 
-발주서 PDF를 앱 서버에서 좌표 기반으로 직접 그리지 않고, HTML 문서를 PDF로 변환하는 전용 Generator로 분리한다.
+0.16.1에서 추가한 PDF Generator Worker는 `@cloudflare/puppeteer`를 사용한다. 이 파일은 Cloudflare Dashboard의 `Edit code` 화면에 단일 JS로 붙여넣으면 모듈을 찾지 못한다.
 
-0.16.1에서는 Cloudflare Browser Rendering 기반 Worker 예시를 추가한다. 앱은 기존 `WAFLOW_PDF_GENERATOR_URL`로 이 Worker를 호출하고, Worker는 HTML을 받아 `application/pdf`를 반환한다.
+따라서 0.16.1.1에서는 PDF Generator Worker를 Wrangler 배포용 패키지 구조로 정리한다.
 
-## 추가 파일
+## 사용하지 않을 방식
 
 ```text
-cloudflare/pdf-generator-worker.js
-cloudflare/pdf-generator-worker.wrangler.example.toml
+Cloudflare Dashboard
+→ Worker
+→ Edit code
+→ pdf-generator-worker.js 붙여넣기
 ```
 
-## 호출 계약
+이 방식은 다음 오류가 날 수 있다.
 
-Request:
+```text
+No such module "@cloudflare/puppeteer" imported from "worker.js"
+```
+
+## 사용할 방식
+
+```text
+cloudflare/pdf-generator-worker/
+  package.json
+  wrangler.toml
+  src/index.js
+  README.md
+```
+
+## 배포 순서
+
+PowerShell 기준:
+
+```powershell
+cd C:\CWJ_Project\peacebypiece-2.0\cloudflare\pdf-generator-worker
+npm install
+npx wrangler login
+npx wrangler secret put WAFLOW_PDF_GENERATOR_TOKEN
+npx wrangler deploy
+```
+
+`WAFLOW_PDF_GENERATOR_TOKEN`은 앱 `.env.local`에 넣을 값과 동일하게 둔다.
+
+## 앱 환경변수
+
+```env
+WAFLOW_PDF_GENERATOR_URL="https://waflow-pdf-generator.<account>.workers.dev"
+WAFLOW_PDF_GENERATOR_TOKEN="Worker에 secret으로 넣은 같은 값"
+WAFLOW_PDF_GENERATOR_TIMEOUT_MS="30000"
+```
+
+## Worker 역할
+
+```text
+Next.js 앱
+→ PDF Generator Worker: HTML을 PDF로 변환
+→ Next.js 앱: 반환된 PDF를 기존 R2 업로드 흐름으로 저장
+→ Neon attachments row 등록
+```
+
+## 기존 R2 Worker와의 관계
+
+기존 `peacebypiece-r2-upload` Worker는 수정하지 않는다.
+
+```text
+peacebypiece-r2-upload
+- R2 업로드/다운로드 담당
+
+waflow-pdf-generator
+- HTML → PDF 변환 담당
+```
+
+두 Worker를 분리하면 PDF 생성 실패가 기존 첨부파일 업로드/다운로드 흐름에 영향을 덜 준다.
+
+## 확인
+
+배포 후 아래 URL을 브라우저에서 열어 JSON 응답을 확인한다.
+
+```text
+https://waflow-pdf-generator.<account>.workers.dev/health
+```
+
+예상 응답:
 
 ```json
 {
-  "html": "<!doctype html>...",
-  "fileName": "발주서_작업지시서_2026-05-24_0000_담당자.pdf",
-  "format": "A4",
-  "orientation": "portrait"
+  "ok": true,
+  "service": "waflow-pdf-generator",
+  "version": "0.16.1.1"
 }
 ```
 
-Response:
+## 다음 단계
 
-```text
-HTTP 200
-Content-Type: application/pdf
-body: PDF binary
-```
-
-## 보안
-
-Worker에 `WAFLOW_PDF_GENERATOR_TOKEN` 또는 `PDF_GENERATOR_TOKEN`을 설정하면 앱은 동일한 토큰을 `WAFLOW_PDF_GENERATOR_TOKEN`에 설정해야 한다.
-
-앱에서 보내는 헤더:
-
-```text
-Authorization: Bearer <WAFLOW_PDF_GENERATOR_TOKEN>
-```
-
-## 배포 후 앱 환경변수
-
-```env
-WAFLOW_PDF_GENERATOR_URL="https://your-pdf-generator.your-domain.workers.dev"
-WAFLOW_PDF_GENERATOR_TOKEN="same-secret-as-worker"
-```
-
-## Worker 설정 요약
-
-1. Cloudflare Workers 프로젝트를 만든다.
-2. Browser Rendering을 활성화하고 binding 이름을 `BROWSER`로 둔다.
-3. `cloudflare/pdf-generator-worker.js`를 Worker main으로 배포한다.
-4. 필요하면 Worker secret으로 `WAFLOW_PDF_GENERATOR_TOKEN`을 설정한다.
-5. 앱 `.env.local` 또는 Vercel 환경변수에 `WAFLOW_PDF_GENERATOR_URL`을 설정한다.
-
-## 현재 한계
-
-- Worker 배포 자동화는 아직 포함하지 않는다.
-- 대표 이미지 실제 삽입은 HTML 템플릿이 이미지 URL을 안정적으로 제공한 뒤 별도 보정한다.
-- 앱 내부 fallback PDF는 Generator 미설정 환경의 안전장치로 유지한다.
+0.16.2에서 실제 Worker URL을 앱 `.env.local`에 연결하고, 발주서 PDF 재생성 버튼으로 HTML → PDF 변환 결과를 확인한다.
