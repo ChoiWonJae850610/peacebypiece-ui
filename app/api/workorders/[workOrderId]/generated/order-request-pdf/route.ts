@@ -76,7 +76,7 @@ export async function POST(request: Request, context: RouteContext) {
   const pdf = buildOrderRequestServerPdf({ workOrder, requestNote });
   const fileName = createOrderRequestPdfDisplayName({
     workOrderTitle: workOrder.title,
-    managerName: workOrder.managerName || scopeResult.actorName,
+    managerName: workOrder.manager || scopeResult.actorName,
     createdAt: new Date(),
   });
 

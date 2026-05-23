@@ -70,7 +70,15 @@ async function getWorkOrderCompanyContext(workOrderId: string): Promise<WorkOrde
   };
 }
 
+function getAttachmentAuthorDisplayName(authorId: string | null | undefined): string | null {
+  const normalized = String(authorId ?? "").trim();
+  if (!normalized || isUuid(normalized)) return null;
+  return normalized;
+}
+
 function mapAttachmentRow(row: AttachmentRow): Attachment {
+  const ownerName = getAttachmentAuthorDisplayName(row.author_id);
+
   return {
     id: row.id,
     name: row.original_name,
@@ -84,7 +92,7 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
     previewUrl: createAttachmentFileProxyUrl(row.storage_key),
     scope: normalizeAttachmentScope(row.type),
     ownerId: row.author_id,
-    ownerName: row.author_id,
+    ownerName,
     isPrimary: row.is_primary === true,
     sourceType: row.source_type ?? "user",
     generatedDocumentType: row.generated_document_type ?? null,
