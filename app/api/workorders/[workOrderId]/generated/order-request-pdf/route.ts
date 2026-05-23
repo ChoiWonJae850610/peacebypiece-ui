@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { renderPdfWithExternalGenerator } from "@/lib/generated-documents/pdfGeneratorClient";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl, putR2Object } from "@/lib/storage/r2/r2Client";
@@ -17,7 +18,7 @@ import {
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderRepository";
-import { buildOrderRequestServerPdf } from "@/lib/workorder/serverOrderRequestPdf";
+import { buildOrderRequestServerPdf, buildOrderRequestServerPdfHtml } from "@/lib/workorder/serverOrderRequestPdf";
 import type { Attachment } from "@/types/workorder";
 
 export const runtime = "nodejs";
@@ -186,19 +187,34 @@ export async function POST(request: Request, context: RouteContext) {
 
   const createdAt = new Date();
   const fileId = randomUUID();
-  let pdf: Buffer;
-  try {
-    pdf = buildOrderRequestServerPdf({ workOrder, requestNote });
-  } catch (error) {
-    logOrderRequestPdfError("GENERATE", error);
-    return createOrderRequestPdfErrorResponse("GENERATE", error);
-  }
-
   const fileName = createOrderRequestPdfDisplayName({
     workOrderTitle: workOrder.title,
     managerName: workOrder.manager || scopeResult.actorName,
     createdAt,
   });
+
+  let pdf: Buffer;
+  try {
+    const html = buildOrderRequestServerPdfHtml({ workOrder, requestNote });
+    const externalResult = await renderPdfWithExternalGenerator({
+      html,
+      fileName,
+      format: "A4",
+      orientation: "portrait",
+    });
+
+    if (externalResult.ok) {
+      pdf = externalResult.pdf;
+    } else if (externalResult.reason === "not_configured") {
+      pdf = buildOrderRequestServerPdf({ workOrder, requestNote });
+    } else {
+      throw new Error(externalResult.message);
+    }
+  } catch (error) {
+    logOrderRequestPdfError("GENERATE", error);
+    return createOrderRequestPdfErrorResponse("GENERATE", error);
+  }
+
   const storageKey = createOrderRequestPdfStorageKey({
     companyId: scopeResult.scope.companyId,
     workOrderId,

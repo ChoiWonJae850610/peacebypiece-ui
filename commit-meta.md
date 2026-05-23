@@ -1,10 +1,14 @@
-Version : 0.15.98
-Summary : 발주서 PDF 모달형 세로 양식 보정
-Description : 발주서 PDF를 기존 발주요청 모달의 세로형 양식에 가깝게 재구성했습니다. 상단 요약, 대표 이미지/요청사항 2단 영역, 원단/부자재/외주 내역 표를 A4 portrait 기준으로 배치하고 기존 텍스트 나열형 PDF를 제거했습니다. PDF 자동 첨부/재생성 흐름은 유지했습니다.
+Version : 0.15.99
+Summary : 발주서 PDF 생성 구조를 HTML 기반 외부 Generator 준비 구조로 전환
+Description : 발주서 PDF를 좌표 기반 직접 그리기 방식에서 HTML 문서 기반 PDF Generator 연동 구조로 전환할 수 있도록 HTML 템플릿, 외부 Generator 클라이언트, 환경변수 예시, 설계 문서를 추가했습니다. PDF Generator URL이 설정된 환경에서는 HTML을 외부 Generator로 전송해 application/pdf 응답을 사용하고, 미설정 환경에서는 기존 내부 PDF fallback을 유지합니다.
 수정 파일 목록 :
 - lib/constants/app.ts
+- app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts
 - lib/workorder/serverOrderRequestPdf.ts
+- .env.example
 추가 파일 목록 :
-- 없음
+- lib/generated-documents/pdfGeneratorClient.ts
+- lib/generated-documents/order-request/orderRequestHtmlDocument.ts
+- docs/wafl-a-type/99_order-request-pdf-generator.md
 삭제 파일 목록 :
-- 없음
+없음

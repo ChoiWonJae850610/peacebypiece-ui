@@ -1,5 +1,6 @@
 import "server-only";
 
+import { buildOrderRequestHtmlDocument } from "@/lib/generated-documents/order-request/orderRequestHtmlDocument";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
@@ -333,6 +334,13 @@ function createOrderRequestPdfStream(workOrder: WorkOrder, requestNote?: string 
   });
 
   return ctx.commands.join("\n");
+}
+
+export function buildOrderRequestServerPdfHtml(input: {
+  workOrder: WorkOrder;
+  requestNote?: string | null;
+}): string {
+  return buildOrderRequestHtmlDocument(input);
 }
 
 export function buildOrderRequestServerPdf(input: {
