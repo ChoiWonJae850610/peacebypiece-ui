@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
+import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
@@ -44,6 +45,8 @@ export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderD
     <>
       <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-white px-5 py-5 shadow-sm">
         <WorkOrderHeaderSection {...viewModel.headerProps} />
+
+        {viewModel.rejectionReasonNoticeProps ? <div className="mt-4"><RejectionReasonNotice {...viewModel.rejectionReasonNoticeProps} /></div> : null}
 
         <WorkOrderActionSection {...viewModel.actionProps} />
 

@@ -86,6 +86,18 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
     orderEntries: hasOrderEntriesPatch && Array.isArray(savedPatch.orderEntries) ? savedPatch.orderEntries : currentWorkOrder.orderEntries,
     materials: hasMaterialsPatch && Array.isArray(savedPatch.materials) ? savedPatch.materials : currentWorkOrder.materials,
     outsourcing: hasOutsourcingPatch && Array.isArray(savedPatch.outsourcing) ? savedPatch.outsourcing : currentWorkOrder.outsourcing,
+    rejectionReason: Object.prototype.hasOwnProperty.call(savedPatch, "rejectionReason")
+      ? (savedPatch.rejectionReason ?? null)
+      : currentWorkOrder.rejectionReason,
+    rejectedAt: Object.prototype.hasOwnProperty.call(savedPatch, "rejectedAt")
+      ? (savedPatch.rejectedAt ?? null)
+      : currentWorkOrder.rejectedAt,
+    rejectedByUserId: Object.prototype.hasOwnProperty.call(savedPatch, "rejectedByUserId")
+      ? (savedPatch.rejectedByUserId ?? null)
+      : currentWorkOrder.rejectedByUserId,
+    rejectedByName: Object.prototype.hasOwnProperty.call(savedPatch, "rejectedByName")
+      ? (savedPatch.rejectedByName ?? null)
+      : currentWorkOrder.rejectedByName,
     hasDetailSnapshot: currentWorkOrder.hasDetailSnapshot,
   };
 }
@@ -117,6 +129,10 @@ function buildWorkOrderStatePatch(
     lastSavedAt: normalizedWorkOrder.lastSavedAt,
     inventoryQuantity: normalizedWorkOrder.inventoryQuantity,
     inventoryStatus: normalizedWorkOrder.inventoryStatus,
+    rejectionReason: normalizedWorkOrder.rejectionReason ?? null,
+    rejectedAt: normalizedWorkOrder.rejectedAt ?? null,
+    rejectedByUserId: normalizedWorkOrder.rejectedByUserId ?? null,
+    rejectedByName: normalizedWorkOrder.rejectedByName ?? null,
     ...productionCompositionPatch,
     auditActor: auditActor
       ? { id: auditActor.id, name: auditActor.name, role: auditActor.role }

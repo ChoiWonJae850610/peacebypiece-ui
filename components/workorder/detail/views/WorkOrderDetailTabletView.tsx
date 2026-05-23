@@ -1,4 +1,5 @@
 import TabletSplitLayout from "@/components/workorder/detail/layout/TabletSplitLayout";
+import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailTabletCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletCostSummarySection";
 import WorkOrderDetailTabletActionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection";
 import WorkOrderDetailTabletHeaderSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletHeaderSection";
@@ -16,6 +17,7 @@ export default function WorkOrderDetailTabletView({
     <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
       <TabletSplitLayout>
         <WorkOrderDetailTabletHeaderSection {...viewModel.headerProps} />
+        {viewModel.rejectionReasonNoticeProps ? <RejectionReasonNotice {...viewModel.rejectionReasonNoticeProps} /> : null}
         <WorkOrderDetailTabletActionSection {...viewModel.actionProps} />
         <WorkOrderDetailTabletOrderInfoSection {...viewModel.orderInfoProps} />
         {viewModel.showCostSummary ? <WorkOrderDetailTabletCostSummarySection {...viewModel.costSummaryProps} /> : null}

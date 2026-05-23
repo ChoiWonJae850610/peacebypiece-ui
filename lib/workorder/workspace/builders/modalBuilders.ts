@@ -1,6 +1,7 @@
 import type { ModalProps, ModalViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 
 export function buildModalProps({
+  i18n,
   isAdmin,
   inventoryEditorOpen,
   permissionModalOpen,
@@ -9,6 +10,7 @@ export function buildModalProps({
   inventoryLogModalOpen,
   orderRequestConfirmOpen,
   workflowValidationModal,
+  rejectReviewReasonModal,
   users,
   currentUserId,
   permissionTargetUserId,
@@ -45,6 +47,15 @@ export function buildModalProps({
 
   return {
     workflowValidation: workflowValidationModal,
+    rejectReviewReason: {
+      ...rejectReviewReasonModal,
+      title: i18n.common.ui.modal.rejectReviewReason.title,
+      description: i18n.common.ui.modal.rejectReviewReason.description,
+      fieldLabel: i18n.common.ui.modal.rejectReviewReason.fieldLabel,
+      placeholder: i18n.common.ui.modal.rejectReviewReason.placeholder,
+      cancelLabel: i18n.common.ui.modal.rejectReviewReason.cancelLabel,
+      confirmLabel: i18n.common.ui.modal.rejectReviewReason.confirmLabel,
+    },
     orderRequestConfirm: {
       open: orderRequestConfirmOpen,
       workOrder: selectedWorkOrder,

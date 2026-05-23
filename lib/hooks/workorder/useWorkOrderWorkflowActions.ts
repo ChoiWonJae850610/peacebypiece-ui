@@ -56,6 +56,11 @@ import type {
 } from "./useWorkOrderActionTypes";
 
 const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === WORKFLOW_ACTION_TYPE.requestOrder;
+const requiresWorkflowValidation = (action: WorkflowAction) =>
+  action.actionType === WORKFLOW_ACTION_TYPE.requestReview ||
+  action.actionType === WORKFLOW_ACTION_TYPE.approveReview ||
+  action.actionType === WORKFLOW_ACTION_TYPE.requestOrder;
+const requiresRejectReasonInput = (action: WorkflowAction) => action.actionType === WORKFLOW_ACTION_TYPE.rejectReview;
 
 type PendingWorkflowValidation = {
   workOrder: WorkOrder;
@@ -139,6 +144,7 @@ export function useWorkOrderWorkflowActions({
   const workflowStateLabels = i18n.workorder.workflowStates as Record<string, string>;
   const workflowValidationText = i18n.common.ui.modal.workflowValidation;
   const [pendingWorkflowValidation, setPendingWorkflowValidation] = useState<PendingWorkflowValidation | null>(null);
+  const [pendingRejectReviewAction, setPendingRejectReviewAction] = useState<{ workOrder: WorkOrder; action: WorkflowAction } | null>(null);
   const workOrdersRef = useRef(workOrders);
 
   useEffect(() => {
@@ -182,7 +188,7 @@ export function useWorkOrderWorkflowActions({
   }, [setPersistedWorkOrders, setWorkOrders, syncSelectedWorkOrderSaveState]);
 
   const applyWorkflowAction = useCallback(
-    async (workOrder: WorkOrder, action: WorkflowAction, toastMessageOverride?: string | null) => {
+    async (workOrder: WorkOrder, action: WorkflowAction, toastMessageOverride?: string | null, rejectionReason?: string | null) => {
       const result = buildWorkflowActionResult({
         workOrder,
         action,
@@ -191,6 +197,8 @@ export function useWorkOrderWorkflowActions({
         historyText,
         workflowStateLabels,
         toastMessageOverride: toastMessageOverride ?? undefined,
+        rejectionReason,
+        rejectedByUserId: currentUser.id,
       });
       markWorkflowPersistStarted(setSaveStatus);
       try {
@@ -372,7 +380,7 @@ export function useWorkOrderWorkflowActions({
           return;
         }
 
-        const validationIssues = getValidationIssues(orderGateResult.workOrder);
+        const validationIssues = requiresWorkflowValidation(action) ? getValidationIssues(orderGateResult.workOrder) : [];
         if (openWorkflowValidationIfNeeded({
           workOrder: orderGateResult.workOrder,
           action,
@@ -388,7 +396,12 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      const validationIssues = getValidationIssues(gatedWorkflowDraft);
+      if (requiresRejectReasonInput(action)) {
+        setPendingRejectReviewAction({ workOrder: gatedWorkflowDraft, action });
+        return;
+      }
+
+      const validationIssues = requiresWorkflowValidation(action) ? getValidationIssues(gatedWorkflowDraft) : [];
       if (openWorkflowValidationIfNeeded({
         workOrder: gatedWorkflowDraft,
         action,
@@ -403,6 +416,18 @@ export function useWorkOrderWorkflowActions({
     },
     [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser, getValidationIssues, openWorkflowValidationIfNeeded, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage, syncDraftWorkOrderBeforeWorkflowAction],
   );
+
+  const handleCloseRejectReviewReason = useCallback(() => {
+    setPendingRejectReviewAction(null);
+  }, []);
+
+  const handleConfirmRejectReviewReason = useCallback(async (reason: string) => {
+    const pending = pendingRejectReviewAction;
+    if (!pending) return;
+
+    setPendingRejectReviewAction(null);
+    await applyWorkflowAction(pending.workOrder, pending.action, null, reason);
+  }, [applyWorkflowAction, pendingRejectReviewAction]);
 
   const handleConfirmWorkflowValidation = useCallback(async () => {
     const pending = pendingWorkflowValidation;
@@ -640,6 +665,11 @@ export function useWorkOrderWorkflowActions({
     handleWorkflowAction,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
+    rejectReviewReasonModal: {
+      open: pendingRejectReviewAction !== null,
+      onClose: handleCloseRejectReviewReason,
+      onConfirm: handleConfirmRejectReviewReason,
+    },
     workflowValidationModal: {
       open: pendingWorkflowValidation !== null,
       issues: pendingWorkflowValidation?.issues ?? [],

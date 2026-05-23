@@ -230,6 +230,14 @@ export const commonEn = {
           zeroAmount: "The amount is 0. Please check labor cost, loss cost, and material amounts.",
         },
       },
+      rejectReviewReason: {
+        title: "Rejection reason",
+        description: "The reason is optional. You can reject without entering a reason.",
+        fieldLabel: "Reason",
+        placeholder: "Enter what needs to be revised.",
+        cancelLabel: "Cancel",
+        confirmLabel: "Reject",
+      },
       orderRequestConfirm: {
         title: "Confirm order request",
         description: "Factory orders can be requested only after review approval.",

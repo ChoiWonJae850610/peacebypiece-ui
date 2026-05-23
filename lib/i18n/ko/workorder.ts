@@ -383,6 +383,10 @@ export const workorderKo = {
       rejectKeyword: "반려",
       processingFormat: "{label} 중입니다...",
     },
+    rejectionReasonNotice: {
+      title: "반려 사유",
+      emptyReason: "별도 사유 없이 반려되었습니다.",
+    },
     detailGroups: {
       cost: { eyebrow: "비용", title: "비용 요약", description: "원단, 부자재, 외주, 공임, 로스 비용을 먼저 확인합니다." },
       order: { eyebrow: "발주", title: "발주 정보", description: "공장별 발주 수량, 납기일, 공임과 로스 비용을 관리합니다." },

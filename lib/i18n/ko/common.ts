@@ -230,6 +230,14 @@ export const commonKo = {
           zeroAmount: "금액이 0원입니다. 공임비, 로스비, 원단/부자재 금액을 확인해주세요.",
         },
       },
+      rejectReviewReason: {
+        title: "반려 사유",
+        description: "사유는 선택 입력입니다. 입력하지 않아도 반려할 수 있습니다.",
+        fieldLabel: "사유",
+        placeholder: "수정이 필요한 내용을 입력하세요.",
+        cancelLabel: "취소",
+        confirmLabel: "반려",
+      },
       orderRequestConfirm: {
         title: "발주 요청 확인",
         description: "검토완료 상태에서만 공장 발주 요청을 진행할 수 있습니다.",

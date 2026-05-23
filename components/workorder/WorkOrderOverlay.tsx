@@ -7,6 +7,7 @@ import InventoryEditor from "@/components/common/modal/InventoryEditor";
 import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
 import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
 import OrderRequestConfirmModal from "@/components/common/modal/OrderRequestConfirmModal";
+import RejectReviewReasonModal from "@/components/common/modal/RejectReviewReasonModal";
 import WorkflowValidationModal from "@/components/common/modal/WorkflowValidationModal";
 import PermissionModal from "@/components/common/modal/PermissionModal";
 
@@ -27,6 +28,7 @@ type WorkOrderOverlayProps = {
     createWorkOrder: ComponentProps<typeof CreateWorkOrderModal>;
     permission: ComponentProps<typeof PermissionModal>;
     workflowValidation: ComponentProps<typeof WorkflowValidationModal>;
+    rejectReviewReason: ComponentProps<typeof RejectReviewReasonModal>;
   };
 };
 
@@ -42,6 +44,7 @@ export default function WorkOrderOverlay({
   return (
     <>
       <WorkflowValidationModal {...modalProps.workflowValidation} />
+      <RejectReviewReasonModal {...modalProps.rejectReviewReason} />
       <OrderRequestConfirmModal {...modalProps.orderRequestConfirm} />
       <AttachmentPreviewModal {...modalProps.attachmentPreview} />
       <AttachmentDeleteConfirmModal {...modalProps.attachmentDeleteConfirm} />

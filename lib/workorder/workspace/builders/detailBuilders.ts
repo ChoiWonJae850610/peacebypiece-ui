@@ -72,6 +72,8 @@ export function buildDetailProps({
     lastSavedAt: formatRecentKstDateTime(lastSavedAt),
     currentInventoryQuantity,
     currentUserName: currentUser.name,
+    currentUserId: currentUser.id,
+    currentUserCompanyMemberId: currentUser.companyMemberId ?? null,
     currentUserRole: currentRole,
     canRenameTitle,
     canEditInventory: canOpenInventoryEditor,

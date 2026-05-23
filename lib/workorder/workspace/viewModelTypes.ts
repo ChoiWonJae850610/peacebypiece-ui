@@ -33,6 +33,7 @@ export type BuildWorkspaceViewModelArgs = {
   inventoryLogModalOpen: boolean;
   orderRequestConfirmOpen: boolean;
   workflowValidationModal: ModalProps["workflowValidation"];
+  rejectReviewReasonModal: Pick<ModalProps["rejectReviewReason"], "open" | "onClose" | "onConfirm">;
   users: UserProfile[];
   currentUserId: string;
   permissionTargetUserId: string;
@@ -241,6 +242,7 @@ export type DetailViewModelArgs = BaseWorkspaceViewModelArgs & {
 export type SidePanelViewModelArgs = BaseWorkspaceViewModelArgs;
 
 export type ModalViewModelArgs = {
+  i18n: ReturnType<typeof getI18n>;
   isAdmin: boolean;
   inventoryEditorOpen: boolean;
   permissionModalOpen: boolean;
@@ -249,6 +251,7 @@ export type ModalViewModelArgs = {
   inventoryLogModalOpen: boolean;
   orderRequestConfirmOpen: boolean;
   workflowValidationModal: ModalProps["workflowValidation"];
+  rejectReviewReasonModal: Pick<ModalProps["rejectReviewReason"], "open" | "onClose" | "onConfirm">;
   users: UserProfile[];
   currentUserId: string;
   permissionTargetUserId: string;

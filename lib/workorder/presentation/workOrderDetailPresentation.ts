@@ -2,6 +2,7 @@ import {
   buildActionSectionProps,
   buildCostSummarySectionProps,
   buildHeaderSectionProps,
+  buildRejectionReasonNoticeProps,
   buildOrderInfoSectionProps,
   buildProductionCompositionSectionProps,
   type BuildWorkOrderDetailViewModelArgs,
@@ -18,6 +19,7 @@ export function buildWorkOrderDetailViewModel(args: BuildWorkOrderDetailViewMode
 
   return {
     headerProps: buildHeaderSectionProps(args),
+    rejectionReasonNoticeProps: buildRejectionReasonNoticeProps(args),
     actionProps: buildActionSectionProps(args),
     orderInfoProps: buildOrderInfoSectionProps(args, orderInfoHubPolicy),
     productionCompositionProps: buildProductionCompositionSectionProps(args),

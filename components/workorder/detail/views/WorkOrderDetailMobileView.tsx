@@ -1,4 +1,5 @@
 import MobileSectionStack from "@/components/workorder/detail/layout/MobileSectionStack";
+import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailMobileCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileCostSummarySection";
 import WorkOrderDetailMobileActionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileActionSection";
 import WorkOrderDetailMobileHeaderSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileHeaderSection";
@@ -16,6 +17,7 @@ export default function WorkOrderDetailMobileView({
     <div className="min-w-0 overflow-x-hidden rounded-[24px] border border-stone-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4">
       <MobileSectionStack>
         <WorkOrderDetailMobileHeaderSection {...viewModel.headerProps} />
+        {viewModel.rejectionReasonNoticeProps ? <RejectionReasonNotice {...viewModel.rejectionReasonNoticeProps} /> : null}
         <WorkOrderDetailMobileActionSection {...viewModel.actionProps} />
         {viewModel.showCostSummary ? <WorkOrderDetailMobileCostSummarySection {...viewModel.costSummaryProps} /> : null}
         <WorkOrderDetailMobileOrderInfoSection {...viewModel.orderInfoProps} />

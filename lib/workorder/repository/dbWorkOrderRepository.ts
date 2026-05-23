@@ -177,6 +177,10 @@ const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
 const INVENTORY_QUANTITY_COLUMN_CANDIDATES = ["inventory_quantity"] as const;
 const INVENTORY_STATUS_COLUMN_CANDIDATES = ["inventory_status"] as const;
 const MEMO_COLUMN_CANDIDATES = ["memo"] as const;
+const REJECTION_REASON_COLUMN_CANDIDATES = ["rejection_reason"] as const;
+const REJECTED_AT_COLUMN_CANDIDATES = ["rejected_at"] as const;
+const REJECTED_BY_USER_ID_COLUMN_CANDIDATES = ["rejected_by_user_id"] as const;
+const REJECTED_BY_NAME_COLUMN_CANDIDATES = ["rejected_by_name"] as const;
 
 type DbSpecSheetRow = {
   id: string;
@@ -210,6 +214,10 @@ type DbSpecSheetRow = {
   inventory_quantity?: number | null;
   inventory_status?: WorkOrder["inventoryStatus"] | null;
   memo?: string | null;
+  rejection_reason?: string | null;
+  rejected_at?: string | Date | null;
+  rejected_by_user_id?: string | null;
+  rejected_by_name?: string | null;
   order_entry_count?: number | null;
   material_count?: number | null;
   outsourcing_count?: number | null;
@@ -272,6 +280,10 @@ type DbSpecSheetSchema = {
   inventoryQuantityColumn: string | null;
   inventoryStatusColumn: string | null;
   memoColumn: string | null;
+  rejectionReasonColumn: string | null;
+  rejectedAtColumn: string | null;
+  rejectedByUserIdColumn: string | null;
+  rejectedByNameColumn: string | null;
   hasIdColumn: boolean;
   hasTitleColumn: boolean;
 };
@@ -440,6 +452,10 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     inventoryQuantity: readNumberRowValue(row.inventory_quantity),
     inventoryStatus: readInventoryStatusValue(row.inventory_status),
     memo: readStringRowValue(row.memo),
+    rejectionReason: row.rejection_reason ?? null,
+    rejectedAt: toIsoString(row.rejected_at) || null,
+    rejectedByUserId: row.rejected_by_user_id ?? null,
+    rejectedByName: row.rejected_by_name ?? null,
     materials: [],
     outsourcing: [],
     attachments: [],
@@ -845,6 +861,10 @@ function appendNormalizedWorkOrderUpdateAssignments(
     schema.memoColumn,
     workOrder.memo || null,
   );
+  pushUpdateAssignment(assignments, values, schema.rejectionReasonColumn, workOrder.rejectionReason ?? null);
+  pushUpdateAssignment(assignments, values, schema.rejectedAtColumn, workOrder.rejectedAt ?? null);
+  pushUpdateAssignment(assignments, values, schema.rejectedByUserIdColumn, workOrder.rejectedByUserId ?? null);
+  pushUpdateAssignment(assignments, values, schema.rejectedByNameColumn, workOrder.rejectedByName ?? null);
 }
 
 let specSheetSchemaCache: Promise<DbSpecSheetSchema> | null = null;
@@ -1041,6 +1061,10 @@ async function readSpecSheetSchema(): Promise<DbSpecSheetSchema> {
       INVENTORY_STATUS_COLUMN_CANDIDATES,
     ),
     memoColumn: findFirstMatchingColumn(columnNames, MEMO_COLUMN_CANDIDATES),
+    rejectionReasonColumn: findFirstMatchingColumn(columnNames, REJECTION_REASON_COLUMN_CANDIDATES),
+    rejectedAtColumn: findFirstMatchingColumn(columnNames, REJECTED_AT_COLUMN_CANDIDATES),
+    rejectedByUserIdColumn: findFirstMatchingColumn(columnNames, REJECTED_BY_USER_ID_COLUMN_CANDIDATES),
+    rejectedByNameColumn: findFirstMatchingColumn(columnNames, REJECTED_BY_NAME_COLUMN_CANDIDATES),
     hasIdColumn: columnNames.includes("id"),
     hasTitleColumn: columnNames.includes("title"),
   };
@@ -1107,6 +1131,10 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryStatusColumn, "inventory_status", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.memoColumn, "memo", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectionReasonColumn, "rejection_reason", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectedAtColumn, "rejected_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectedByNameColumn, "rejected_by_name", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.isActiveColumn, "is_active", "TRUE")},
         ${buildSourceAliasSelection(sourceAlias, schema.deletedAtColumn, "deleted_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.createdAtColumn, "created_at", "NULL")},
@@ -1152,6 +1180,10 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryStatusColumn, "inventory_status", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.memoColumn, "memo", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectionReasonColumn, "rejection_reason", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectedAtColumn, "rejected_at", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL")},
+        ${buildSourceAliasSelection(sourceAlias, schema.rejectedByNameColumn, "rejected_by_name", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.isActiveColumn, "is_active", "TRUE")},
         ${buildSourceAliasSelection(sourceAlias, schema.deletedAtColumn, "deleted_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.createdAtColumn, "created_at", "NULL")},
@@ -1827,6 +1859,10 @@ export async function createDbWorkOrder(
       "NULL",
     ),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
+    buildAliasSelection(schema.rejectionReasonColumn, "rejection_reason", "NULL"),
+    buildAliasSelection(schema.rejectedAtColumn, "rejected_at", "NULL"),
+    buildAliasSelection(schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL"),
+    buildAliasSelection(schema.rejectedByNameColumn, "rejected_by_name", "NULL"),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
@@ -2070,6 +2106,10 @@ export async function updateDbWorkOrder(
       "NULL",
     ),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
+    buildAliasSelection(schema.rejectionReasonColumn, "rejection_reason", "NULL"),
+    buildAliasSelection(schema.rejectedAtColumn, "rejected_at", "NULL"),
+    buildAliasSelection(schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL"),
+    buildAliasSelection(schema.rejectedByNameColumn, "rejected_by_name", "NULL"),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
@@ -2173,6 +2213,27 @@ export async function updateDbWorkOrderStatePatch(
     values.push(patch.inventoryStatus ?? "unchecked");
   }
 
+
+  if (schema.rejectionReasonColumn && Object.prototype.hasOwnProperty.call(patch, "rejectionReason")) {
+    assignments.push(`${quoteIdentifier(schema.rejectionReasonColumn)} = $${values.length + 1}`);
+    values.push(patch.rejectionReason ?? null);
+  }
+
+  if (schema.rejectedAtColumn && Object.prototype.hasOwnProperty.call(patch, "rejectedAt")) {
+    assignments.push(`${quoteIdentifier(schema.rejectedAtColumn)} = $${values.length + 1}`);
+    values.push(patch.rejectedAt ?? null);
+  }
+
+  if (schema.rejectedByUserIdColumn && Object.prototype.hasOwnProperty.call(patch, "rejectedByUserId")) {
+    assignments.push(`${quoteIdentifier(schema.rejectedByUserIdColumn)} = $${values.length + 1}`);
+    values.push(patch.rejectedByUserId ?? null);
+  }
+
+  if (schema.rejectedByNameColumn && Object.prototype.hasOwnProperty.call(patch, "rejectedByName")) {
+    assignments.push(`${quoteIdentifier(schema.rejectedByNameColumn)} = $${values.length + 1}`);
+    values.push(patch.rejectedByName ?? null);
+  }
+
   if (assignments.length === 0) {
     const existing = await findDbWorkOrderById(patch.id, scope);
     if (!existing)
@@ -2226,6 +2287,10 @@ export async function updateDbWorkOrderStatePatch(
       "NULL",
     ),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
+    buildAliasSelection(schema.rejectionReasonColumn, "rejection_reason", "NULL"),
+    buildAliasSelection(schema.rejectedAtColumn, "rejected_at", "NULL"),
+    buildAliasSelection(schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL"),
+    buildAliasSelection(schema.rejectedByNameColumn, "rejected_by_name", "NULL"),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),

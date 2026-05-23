@@ -1,3 +1,4 @@
+import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import type { FactoryOrderRequest, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 import type { InventoryChangeInput, InspectionCompleteInput } from "@/lib/hooks/workorder/useWorkOrderActionTypes";
 import {
@@ -35,13 +36,32 @@ export function buildWorkflowActionResult(payload: {
   historyText?: ActionFlowHistoryText;
   workflowStateLabels?: Record<string, string>;
   toastMessageOverride?: string;
+  rejectionReason?: string | null;
+  rejectedByUserId?: string | null;
 }): WorkOrderActionFlowResult {
   const targetWorkOrder = shouldPruneDraftRowsForWorkflowState(payload.action.nextState)
     ? pruneDraftRows(payload.workOrder)
     : payload.workOrder;
 
+  const transitionedWorkOrder = applyWorkflowActionToWorkOrder(targetWorkOrder, payload.action);
+  const nextWorkOrder = payload.action.actionType === WORKFLOW_ACTION_TYPE.rejectReview
+    ? {
+        ...transitionedWorkOrder,
+        rejectionReason: payload.rejectionReason?.trim() || null,
+        rejectedAt: new Date().toISOString(),
+        rejectedByUserId: payload.rejectedByUserId ?? null,
+        rejectedByName: payload.actorName,
+      }
+    : {
+        ...transitionedWorkOrder,
+        rejectionReason: null,
+        rejectedAt: null,
+        rejectedByUserId: null,
+        rejectedByName: null,
+      };
+
   return {
-    nextWorkOrder: applyWorkflowActionToWorkOrder(targetWorkOrder, payload.action),
+    nextWorkOrder,
     historyLogs: [
       createStatusHistoryLog(
         payload.actorName,

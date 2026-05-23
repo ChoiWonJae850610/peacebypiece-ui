@@ -135,6 +135,10 @@ export type WorkOrder = {
   hasDetailSnapshot?: boolean;
   summaryAttachmentCount?: number;
   summaryMemoThreadCount?: number;
+  rejectionReason?: string | null;
+  rejectedAt?: string | null;
+  rejectedByUserId?: string | null;
+  rejectedByName?: string | null;
 };
 
 export type WorkOrderListItem = Pick<
@@ -207,7 +211,7 @@ export type WorkOrderAuditActor = {
 };
 
 export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "workflowState" | "lastSavedAt"> &
-  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries" | "materials" | "outsourcing">> & {
+  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries" | "materials" | "outsourcing" | "rejectionReason" | "rejectedAt" | "rejectedByUserId" | "rejectedByName">> & {
     auditActor?: WorkOrderAuditActor | null;
     serviceCode?: WorkOrderServiceCodeValue | null;
   };

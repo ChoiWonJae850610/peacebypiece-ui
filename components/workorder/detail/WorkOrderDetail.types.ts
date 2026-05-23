@@ -14,6 +14,8 @@ export type WorkOrderDetailPersistenceModel = {
 
 export type WorkOrderDetailIdentityModel = {
   currentUserName: string;
+  currentUserId?: string | null;
+  currentUserCompanyMemberId?: string | null;
   currentUserRole: RoleType;
 };
 

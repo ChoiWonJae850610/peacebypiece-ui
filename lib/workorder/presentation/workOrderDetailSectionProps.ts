@@ -4,6 +4,7 @@ import { getAvailableOrderTypeOptions } from "@/lib/constants/workorderOptions";
 import { canEditManagerInWorkflow } from "@/lib/constants/workorderStates";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
+import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
@@ -14,6 +15,7 @@ import { getWorkOrderBaseTitle } from "@/lib/workorder/reorder/helpers";
 import type { WorkOrder } from "@/types/workorder";
 
 type HeaderProps = ComponentProps<typeof WorkOrderHeaderSection>;
+type RejectionReasonNoticeProps = ComponentProps<typeof RejectionReasonNotice>;
 type ActionProps = ComponentProps<typeof WorkOrderActionSection>;
 type CostSummaryProps = ComponentProps<typeof WorkOrderCostSummarySection>;
 type OrderInfoProps = ComponentProps<typeof OrderInfoSection>;
@@ -48,6 +50,9 @@ export type BuildWorkOrderDetailViewModelArgs = {
   workflowProcessingLabel?: ActionProps["workflowProcessingLabel"];
   isWorkspaceWriteLocked?: boolean;
   workspaceWriteLockMessage?: string;
+  showRejectionReasonNotice?: boolean;
+  rejectionReasonNoticeTitle?: string;
+  rejectionReasonNoticeEmptyText?: string;
   fabricTotal: number;
   subsidiaryTotal: number;
   outsourcingTotal: number;
@@ -92,6 +97,7 @@ export type BuildWorkOrderDetailViewModelArgs = {
 
 export type WorkOrderDetailViewModel = {
   headerProps: HeaderProps;
+  rejectionReasonNoticeProps: RejectionReasonNoticeProps | null;
   actionProps: ActionProps;
   orderInfoProps: OrderInfoProps;
   productionCompositionProps: ProductionCompositionProps;
@@ -136,6 +142,21 @@ export function buildHeaderSectionProps({
     onRenameTitle: onRenameWorkOrderTitle,
     locked: isReviewRequestLocked || Boolean(isWorkspaceWriteLocked),
     managerLocked: Boolean(isWorkspaceWriteLocked) || !canEditManagerInWorkflow(currentWorkflowState, isReviewRequestLocked),
+  };
+}
+
+export function buildRejectionReasonNoticeProps({
+  workOrder,
+  showRejectionReasonNotice,
+  rejectionReasonNoticeTitle = "반려 사유",
+  rejectionReasonNoticeEmptyText = "별도 사유 없이 반려되었습니다.",
+}: BuildWorkOrderDetailViewModelArgs): RejectionReasonNoticeProps | null {
+  if (!showRejectionReasonNotice) return null;
+
+  return {
+    title: rejectionReasonNoticeTitle,
+    emptyReasonText: rejectionReasonNoticeEmptyText,
+    reason: workOrder.rejectionReason,
   };
 }
 

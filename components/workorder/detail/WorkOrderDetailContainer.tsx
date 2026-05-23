@@ -6,6 +6,8 @@ import WorkOrderDetailViewSwitch from "@/components/workorder/detail/views/WorkO
 import { buildWorkOrderDetailContainerModels } from "@/components/workorder/detail/workOrderDetailContainerModels";
 import { useWorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
 import { useWorkOrderDetailEditor } from "@/lib/hooks/workorder/useWorkOrderDetailEditor";
+import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
+import { useI18n } from "@/lib/i18n";
 import { buildWorkOrderDetailViewModel } from "@/lib/workorder/presentation/workOrderDetailPresentation";
 
 export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
@@ -15,7 +17,10 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     isEmpty = false,
   } = props;
   const deviceType = useWorkOrderDeviceType();
+  const { i18n } = useI18n();
   const isWorkspaceWriteLocked = Boolean(props.isWorkspaceWriteLocked || props.workflowProcessingLabel);
+  const currentUserOwnerIds = [props.currentUserId, props.currentUserCompanyMemberId].map((value) => value?.trim()).filter(Boolean);
+  const isRejectedManager = workOrder.workflowState === WORKFLOW_STATE.rejected && Boolean(workOrder.managerId) && currentUserOwnerIds.includes(workOrder.managerId ?? "");
 
   const {
     persistenceModel,
@@ -89,6 +94,9 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     workflowProcessingLabel: workflowModel.workflowProcessingLabel,
     isWorkspaceWriteLocked,
     workspaceWriteLockMessage: props.workspaceWriteLockMessage,
+    showRejectionReasonNotice: isRejectedManager,
+    rejectionReasonNoticeTitle: i18n.workorder.ui.rejectionReasonNotice.title,
+    rejectionReasonNoticeEmptyText: i18n.workorder.ui.rejectionReasonNotice.emptyReason,
     fabricTotal: costModel.fabricTotal,
     subsidiaryTotal: costModel.subsidiaryTotal,
     outsourcingTotal: costModel.outsourcingTotal,

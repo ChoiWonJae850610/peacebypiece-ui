@@ -401,6 +401,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       actionState.handleConfirmOrderRequest(coreState.selectedWorkOrder, payload),
     handleCloseOrderRequestConfirm: actionState.handleCloseOrderRequestConfirm,
     workflowValidationModal: actionState.workflowValidationModal,
+    rejectReviewReasonModal: actionState.rejectReviewReasonModal,
     handleInventoryApply: (payload: {
       inboundQuantity: number;
       adjustmentQuantity: number;
@@ -550,6 +551,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     handleConfirmOrderRequest: actions.handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
     workflowValidationModal: actions.workflowValidationModal,
+    rejectReviewReasonModal: actions.rejectReviewReasonModal,
     handleInventoryApply: actions.handleInventoryApply,
     handleCompleteInspection: actions.handleCompleteInspection,
     handleApplyRoles: actions.handleApplyRoles,

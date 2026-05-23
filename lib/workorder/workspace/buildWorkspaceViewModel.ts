@@ -182,6 +182,7 @@ export function buildWorkspaceViewModel(
   );
 
   const modalProps = buildModalProps({
+    i18n: args.i18n,
     isAdmin: args.isAdmin,
     inventoryEditorOpen: args.inventoryEditorOpen,
     permissionModalOpen: args.permissionModalOpen,
@@ -190,6 +191,7 @@ export function buildWorkspaceViewModel(
     inventoryLogModalOpen: args.inventoryLogModalOpen,
     orderRequestConfirmOpen: args.orderRequestConfirmOpen,
     workflowValidationModal: args.workflowValidationModal,
+    rejectReviewReasonModal: args.rejectReviewReasonModal,
     users: args.users,
     currentUserId: args.currentUserId,
     permissionTargetUserId: args.permissionTargetUserId,

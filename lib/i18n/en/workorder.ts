@@ -383,6 +383,10 @@ export const workorderEn = {
       rejectKeyword: "Reject",
       processingFormat: "Processing {label}...",
     },
+    rejectionReasonNotice: {
+      title: "Rejection reason",
+      emptyReason: "Rejected without a written reason.",
+    },
     detailGroups: {
       cost: { eyebrow: "Cost", title: "Cost summary", description: "Review fabric, trim, outsourcing, labor, and loss costs first." },
       order: { eyebrow: "Order", title: "Order info", description: "Manage factory order quantities, due dates, labor, and loss costs." },

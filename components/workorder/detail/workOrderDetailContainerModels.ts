@@ -23,6 +23,8 @@ export function buildWorkOrderDetailContainerModels({
   saveStatus,
   lastSavedAt,
   currentUserName,
+  currentUserId,
+  currentUserCompanyMemberId,
   currentUserRole,
   canRenameTitle = false,
   canEditInventory,
@@ -63,6 +65,8 @@ export function buildWorkOrderDetailContainerModels({
     },
     identityModel: {
       currentUserName,
+      currentUserId,
+      currentUserCompanyMemberId,
       currentUserRole,
     },
     permissionModel: {
