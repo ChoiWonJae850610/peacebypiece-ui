@@ -54,11 +54,12 @@ function isImageLikeAttachment(attachment: Attachment): boolean {
 
 function resolveRepresentativeImage(workOrder: WorkOrder): Attachment | null {
   const attachments = workOrder.attachments ?? [];
+  const imageCandidates = attachments.filter((attachment) => attachment.storageKey && isImageLikeAttachment(attachment));
   const representativeImage = getRepresentativeImage(attachments);
   if (representativeImage?.storageKey && isImageLikeAttachment(representativeImage)) return representativeImage;
 
-  const fallbackImage = attachments.find((attachment) => attachment.storageKey && isImageLikeAttachment(attachment));
-  return fallbackImage ?? null;
+  const primaryImage = imageCandidates.find((attachment) => attachment.isPrimary === true);
+  return primaryImage ?? imageCandidates[0] ?? null;
 }
 
 function toDataUrl(contentType: string, body: Buffer): string {
@@ -143,9 +144,19 @@ export async function resolveOrderRequestRepresentativeImageDataUrl(workOrder: W
   const storageKey = representativeImage?.storageKey?.trim();
 
   if (!representativeImage || !storageKey) {
+    const attachments = workOrder.attachments ?? [];
     console.warn("[ORDER_REQUEST_PDF:IMAGE_SKIPPED]", {
       reason: "REPRESENTATIVE_IMAGE_NOT_FOUND",
-      attachmentCount: workOrder.attachments?.length ?? 0,
+      attachmentCount: attachments.length,
+      imageCandidateCount: attachments.filter(isImageLikeAttachment).length,
+      attachmentNames: attachments.slice(0, 5).map((attachment) => ({
+        id: attachment.id,
+        name: attachment.name,
+        type: attachment.type,
+        scope: attachment.scope,
+        isPrimary: attachment.isPrimary,
+        hasStorageKey: Boolean(attachment.storageKey),
+      })),
     });
     return null;
   }

@@ -196,8 +196,14 @@ export async function POST(request: Request, context: RouteContext) {
 
   let pdf: Buffer;
   try {
-    const representativeImageDataUrl = await resolveOrderRequestRepresentativeImageDataUrl(workOrder);
-    const html = buildOrderRequestServerPdfHtml({ workOrder, requestNote, representativeImageDataUrl });
+    const snapshot = await repository.listSnapshotByWorkOrderId(workOrderId);
+    const documentWorkOrder = {
+      ...workOrder,
+      attachments: snapshot.attachments,
+      memoThreads: snapshot.memoThreads,
+    };
+    const representativeImageDataUrl = await resolveOrderRequestRepresentativeImageDataUrl(documentWorkOrder);
+    const html = buildOrderRequestServerPdfHtml({ workOrder: documentWorkOrder, requestNote, representativeImageDataUrl });
     const externalResult = await renderPdfWithExternalGenerator({
       html,
       fileName,
@@ -208,7 +214,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (externalResult.ok) {
       pdf = externalResult.pdf;
     } else if (externalResult.reason === "not_configured") {
-      pdf = buildOrderRequestServerPdf({ workOrder, requestNote });
+      pdf = buildOrderRequestServerPdf({ workOrder: documentWorkOrder, requestNote });
     } else {
       throw new Error(externalResult.message);
     }
