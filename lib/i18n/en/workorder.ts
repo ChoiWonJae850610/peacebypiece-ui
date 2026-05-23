@@ -115,6 +115,8 @@ export const workorderEn = {
     workflowChangedToastFormat: '"{label}" has been applied.',
     inventoryAppliedToast: "Inventory update has been applied.",
     factoryOrderRequestedToast: "Factory order request has been recorded.",
+    factoryOrderPdfSavedToast: "Factory order request completed. The order PDF has been saved to attachments.",
+    factoryOrderPdfFailedToast: "Factory order request completed, but the order PDF could not be saved.",
     factoryOrderAlreadyRequestedToast: "This work order has already been requested.",
     factoryOrderRequiresApprovalToast: "You can request an order after review approval.",
     factoryOrderFactoryRequiredToast: "Please select a factory.",

@@ -1,11 +1,13 @@
-Version : 0.15.94.1
-Summary : 발주서 PDF 빌드 오류 및 첨부 작성자 표시 보정
-Description : 발주서 PDF 생성 API에서 존재하지 않는 managerName 참조를 manager 기준으로 수정하고, 첨부파일 작성자 표시에서 UUID가 그대로 노출되지 않도록 보정했습니다. APP_VERSION을 0.15.94.1로 갱신했습니다.
+Version : 0.15.95
+Summary : 발주서 PDF 빌드 오류 보정 및 자동 첨부 1차 연결
+Description : NextResponse Buffer 타입 오류를 제거하고, 발주요청 완료 후 서버에서 발주서 PDF를 생성해 R2에 업로드한 뒤 시스템 생성 첨부파일로 등록하는 1차 흐름을 연결했습니다. PDF 생성 실패 시 발주요청 자체는 유지하고 실패 토스트를 표시합니다.
 수정 파일 목록 :
-- lib/constants/app.ts
 - app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts
-- lib/workorder/persistence/dbAttachmentMemoRepository.ts
+- lib/constants/app.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
 추가 파일 목록 :
-- 없음
+없음
 삭제 파일 목록 :
-- 없음
+없음

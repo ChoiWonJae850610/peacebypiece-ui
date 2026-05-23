@@ -115,6 +115,8 @@ export const workorderKo = {
     workflowChangedToastFormat: '"{label}" 처리되었습니다.',
     inventoryAppliedToast: "재고 수정이 반영되었습니다.",
     factoryOrderRequestedToast: "공장 발주 요청이 반영되었습니다.",
+    factoryOrderPdfSavedToast: "발주요청이 완료되었습니다. 발주서 PDF가 첨부파일에 저장되었습니다.",
+    factoryOrderPdfFailedToast: "발주요청은 완료되었지만 발주서 PDF 저장에 실패했습니다.",
     factoryOrderAlreadyRequestedToast: "이미 발주된 작업입니다.",
     factoryOrderRequiresApprovalToast: "검토 완료 후 발주할 수 있습니다.",
     factoryOrderFactoryRequiredToast: "공장을 선택해주세요.",

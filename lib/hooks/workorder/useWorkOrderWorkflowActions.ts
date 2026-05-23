@@ -47,7 +47,7 @@ import {
   hasBlockingWorkflowValidationIssue,
   type WorkflowValidationIssue,
 } from "@/lib/workorder/workflowValidationIssues";
-import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { Attachment, FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
   InventoryChangeInput,
@@ -103,6 +103,47 @@ async function resolveActiveFactoryPartnerIdByName(factoryName: string): Promise
   }
 
   return findPartnerIdByNameAndTypes(factoryName, ["factory"]);
+}
+
+
+type GeneratedOrderRequestPdfResult = {
+  ok?: boolean;
+  attachment?: Attachment | null;
+  error?: string;
+  message?: string;
+};
+
+async function createGeneratedOrderRequestPdfAttachment(input: {
+  workOrderId: string;
+  requestNote?: string | null;
+}): Promise<Attachment | null> {
+  const response = await fetch(`/api/workorders/${encodeURIComponent(input.workOrderId)}/generated/order-request-pdf`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      requestNote: input.requestNote ?? null,
+    }),
+  });
+
+  const result = (await response.json().catch(() => null)) as GeneratedOrderRequestPdfResult | null;
+  if (!response.ok || !result?.ok || !result.attachment) {
+    throw new Error(result?.message || result?.error || "ORDER_REQUEST_PDF_CREATE_FAILED");
+  }
+
+  return result.attachment;
+}
+
+function appendGeneratedAttachment(workOrder: WorkOrder, attachment: Attachment | null): WorkOrder {
+  if (!attachment) return workOrder;
+  const attachments = workOrder.attachments ?? [];
+  if (attachments.some((item) => item.id === attachment.id)) return workOrder;
+
+  return {
+    ...workOrder,
+    attachments: [...attachments, attachment],
+  };
 }
 
 type UseWorkOrderWorkflowActionsParams = Pick<
@@ -512,11 +553,30 @@ export function useWorkOrderWorkflowActions({
         });
         workOrdersRef.current = nextWorkOrders;
         setWorkOrders(nextWorkOrders);
-        applyPersistedWorkflowWorkOrder(workOrder.id, nextPersistedWorkOrder);
+        const persistedWorkOrders = applyPersistedWorkflowWorkOrder(workOrder.id, nextPersistedWorkOrder);
         applyWorkflowActionSideEffects(result, {
           setHistoryLogs,
           setToastMessage,
         });
+
+        try {
+          const generatedAttachment = await createGeneratedOrderRequestPdfAttachment({
+            workOrderId: workOrder.id,
+            requestNote: normalizedRequestNote,
+          });
+          if (generatedAttachment) {
+            const withGeneratedAttachment = stabilizeWorkOrders(
+              persistedWorkOrders.map((item) => (item.id === workOrder.id ? appendGeneratedAttachment(item, generatedAttachment) : item)),
+            );
+            workOrdersRef.current = withGeneratedAttachment;
+            setWorkOrders(withGeneratedAttachment);
+            setPersistedWorkOrders(withGeneratedAttachment);
+            setToastMessage(actionFlowText.factoryOrderPdfSavedToast);
+          }
+        } catch (pdfError) {
+          console.warn("[ORDER_REQUEST_PDF_CREATE_FAILED]", pdfError);
+          setToastMessage(actionFlowText.factoryOrderPdfFailedToast);
+        }
       } catch (error) {
         markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
         throw error;
@@ -525,7 +585,7 @@ export function useWorkOrderWorkflowActions({
         setOrderRequestConfirmOpen(false);
       }
     },
-    [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.id, currentUser.name, historyText, pendingWorkflowAction, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.id, currentUser.name, historyText, pendingWorkflowAction, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCloseOrderRequestConfirm = useCallback(() => {
