@@ -28,19 +28,15 @@ import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { isImmediateDbField } from "@/lib/workorder/storagePolicy";
 import { getWorkOrderImmediatePatchServiceCode } from "@/lib/workorder/serviceCodeForWorkOrderPatch";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
-import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
-import {
-  deriveWorkflowStateFromOrderEntries,
-  getFactoryOrderRequestValidationMessage,
-  getReviewApprovalValidationMessage,
-  getReviewApprovalWarningMessage,
-  getReviewRequestValidationMessage,
-  getReviewRequestWarningMessage,
-} from "@/lib/workorder/workflow";
-import { normalizeRoles } from "@/lib/constants/roles";
 import { canReinspectInWorkflow, isWorkflowState } from "@/lib/constants/workorderStates";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
-import { WORKORDER_SERVICE_CODE, getWorkOrderWorkflowServiceCode } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import {
+  getFactoryOrderWorkflowGateResult,
+  getReviewWorkflowGateResult,
+  getServiceCodeForWorkflowAction,
+  normalizeWorkOrderForWorkflowGate,
+} from "@/lib/workorder/workflowActionGate";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -50,13 +46,6 @@ import type {
 } from "./useWorkOrderActionTypes";
 
 const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === WORKFLOW_ACTION_TYPE.requestOrder;
-
-function getServiceCodeForWorkflowAction(action: WorkflowAction) {
-  return getWorkOrderWorkflowServiceCode({
-    actionType: action.actionType,
-    nextState: action.nextState,
-  });
-}
 
 type FactoryPartnerApiItem = {
   id?: unknown;
@@ -145,12 +134,13 @@ export function useWorkOrderWorkflowActions({
 
   const syncDraftWorkOrderBeforeWorkflowAction = useCallback((draftWorkOrder: WorkOrder) => {
     const existing = workOrdersRef.current.find((item) => item.id === draftWorkOrder.id);
-    if (!existing) return draftWorkOrder;
+    const normalizedDraftWorkOrder = normalizeWorkOrderForWorkflowGate(draftWorkOrder);
+    if (!existing) return normalizedDraftWorkOrder;
 
     const nextWorkOrder = {
       ...existing,
-      ...draftWorkOrder,
-      hasDetailSnapshot: draftWorkOrder.hasDetailSnapshot ?? existing.hasDetailSnapshot,
+      ...normalizedDraftWorkOrder,
+      hasDetailSnapshot: normalizedDraftWorkOrder.hasDetailSnapshot ?? existing.hasDetailSnapshot,
     };
     const nextWorkOrders = stabilizeWorkOrders(
       workOrdersRef.current.map((item) => (item.id === draftWorkOrder.id ? nextWorkOrder : item)),
@@ -251,63 +241,34 @@ export function useWorkOrderWorkflowActions({
   const handleWorkflowAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction) => {
       const workflowDraft = syncDraftWorkOrderBeforeWorkflowAction(workOrder);
-      let reviewWarningMessage: string | null = null;
+      const reviewGateResult = getReviewWorkflowGateResult({
+        workOrder: workflowDraft,
+        action,
+        text: actionFlowText,
+      });
 
-      if (isWorkflowState(action.nextState, "review_requested")) {
-        const validationMessage = getReviewRequestValidationMessage({
-          workOrder: workflowDraft,
-          text: actionFlowText,
-        });
-        if (validationMessage) {
-          setToastMessage(validationMessage);
-          return;
-        }
-
-        reviewWarningMessage = getReviewRequestWarningMessage({
-          workOrder: workflowDraft,
-          text: actionFlowText,
-        });
+      if (reviewGateResult.validationMessage) {
+        setToastMessage(reviewGateResult.validationMessage);
+        return;
       }
 
-      if (isWorkflowState(action.nextState, "review_completed")) {
-        const validationMessage = getReviewApprovalValidationMessage({
-          workOrder: workflowDraft,
-          text: actionFlowText,
-        });
-        if (validationMessage) {
-          setToastMessage(validationMessage);
-          return;
-        }
-
-        reviewWarningMessage = getReviewApprovalWarningMessage({
-          workOrder: workflowDraft,
-          text: actionFlowText,
-        });
-      }
-
-      const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workflowDraft.workflowState, workflowDraft.orderEntries);
+      const reviewWarningMessage = reviewGateResult.warningMessage;
+      const effectiveWorkflowState = reviewGateResult.effectiveWorkflowState;
+      const gatedWorkflowDraft = reviewGateResult.workOrder;
 
       if (isWorkflowState(action.nextState, "inspection") && canReinspectInWorkflow(effectiveWorkflowState)) {
-        await applyReinspectionAction(workflowDraft, action);
+        await applyReinspectionAction(gatedWorkflowDraft, action);
         return;
       }
 
       if (requiresOrderRequestConfirmation(action)) {
-        const currentWorkflowState = deriveWorkflowStateFromOrderEntries(workflowDraft.workflowState, workflowDraft.orderEntries);
-        const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
-        const submissionSnapshot = getOrderSubmissionSnapshot(workflowDraft);
-        const validationMessage = getFactoryOrderRequestValidationMessage({
-          currentRoles,
+        const orderGateResult = getFactoryOrderWorkflowGateResult({
+          workOrder: gatedWorkflowDraft,
           currentUser,
-          currentUserId: currentUser.id,
-          workOrder: workflowDraft,
-          currentWorkflowState,
-          factoryName: submissionSnapshot.factoryName,
-          quantity: submissionSnapshot.quantity,
           text: actionFlowText,
         });
-        if (validationMessage) {
-          setToastMessage(validationMessage);
+        if (orderGateResult.validationMessage) {
+          setToastMessage(orderGateResult.validationMessage);
           return;
         }
 
@@ -316,37 +277,35 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      await applyWorkflowAction(workflowDraft, action, reviewWarningMessage);
+      await applyWorkflowAction(gatedWorkflowDraft, action, reviewWarningMessage);
     },
-    [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage, syncDraftWorkOrderBeforeWorkflowAction],
+    [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage, syncDraftWorkOrderBeforeWorkflowAction],
   );
 
   const handleConfirmOrderRequest = useCallback(
     async (workOrder: WorkOrder, payload: { factoryName: string; quantity: number }) => {
       if (!pendingWorkflowAction) return;
 
-      const currentWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
-      const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
-      const validationMessage = getFactoryOrderRequestValidationMessage({
-        currentRoles,
+      const normalizedFactoryName = payload.factoryName.trim();
+      const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
+      const normalizedWorkOrder = normalizeWorkOrderForWorkflowGate(workOrder);
+      const validationResult = getFactoryOrderWorkflowGateResult({
+        workOrder: {
+          ...normalizedWorkOrder,
+          vendor: normalizedFactoryName,
+          quantity: normalizedQuantity,
+        },
         currentUser,
-        currentUserId: currentUser.id,
-        workOrder,
-        currentWorkflowState,
-        factoryName: payload.factoryName,
-        quantity: payload.quantity,
         text: actionFlowText,
       });
 
-      if (validationMessage) {
-        setToastMessage(validationMessage);
+      if (validationResult.validationMessage) {
+        setToastMessage(validationResult.validationMessage);
         setPendingWorkflowAction(null);
         setOrderRequestConfirmOpen(false);
         return;
       }
 
-      const normalizedFactoryName = payload.factoryName.trim();
-      const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
       const requestedAt = new Date().toISOString();
       const factoryId = await resolveActiveFactoryPartnerIdByName(normalizedFactoryName);
       if (!factoryId) {
@@ -356,7 +315,7 @@ export function useWorkOrderWorkflowActions({
         return;
       }
       const result = buildFactoryOrderRequestResult({
-        workOrder,
+        workOrder: normalizedWorkOrder,
         actorName: currentUser.name,
         input: {
           factoryId,

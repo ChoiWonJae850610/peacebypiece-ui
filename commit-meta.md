@@ -1,13 +1,10 @@
-Version : 0.15.81
-Summary : 생산구성 현재값 partner company scope 정리
-Description : 생산구성 현재값 replace 저장의 company scope를 보강하고, 원단/부자재 및 외주 상세 조회에서 vendorPartnerId 기반 partner 표시 fallback을 정리했습니다.
+Version : 0.15.82
+Summary : 작업지시서 workflow serviceCode production gate 정리
+Description : 작업지시서 workflow action 실행 전 검증과 serviceCode 계산을 공통 gate 유틸로 분리하고, workflow 검증 전 생산구성 snapshot 정규화를 적용해 검토요청/발주요청 검증 기준을 정리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/repository/dbFactoryOrderRepository.ts
-- lib/workorder/repository/dbSpecSheetMaterialRepository.ts
-- lib/workorder/repository/dbSpecSheetOutsourcingRepository.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
 추가 파일 목록 :
-- docs/wafl-a-type/93_wafl-a-type-production-current-partner-scope-audit.md
+- lib/workorder/workflowActionGate.ts
+- docs/wafl-a-type/94_wafl-a-type-workflow-servicecode-production-gate-audit.md
 삭제 파일 목록 :
-- 없음
