@@ -144,6 +144,7 @@ export type WorkspaceViewModel = {
 export type BaseWorkspaceViewModelArgs = {
   version: string;
   currentUser: UserProfile;
+  users: UserProfile[];
   currentRole: RoleType;
   selectedWorkOrder: WorkOrder;
   hasVisibleWorkOrders: boolean;

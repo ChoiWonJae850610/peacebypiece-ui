@@ -13,9 +13,26 @@ import { useWorkOrderHistory } from "@/lib/hooks/workorder/useWorkOrderHistory";
 import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
 import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderActionRuntime";
 import type { UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
+import { canEditManagerInWorkflow, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { useWorkOrderSessionProfile } from "@/lib/hooks/workorder/useWorkOrderSessionProfile";
-import { mergeCurrentUserWithSessionProfile } from "@/lib/workorder/sessionUserProfile";
+import { ensureWorkOrderSessionProfile, mergeCurrentUserWithSessionProfile } from "@/lib/workorder/sessionUserProfile";
+
+
+async function loadLatestWorkspaceUserProfiles(): Promise<UserProfile[]> {
+  const response = await fetch("/api/admin/settings/users", {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("WORKSPACE_USER_PROFILES_LOAD_FAILED");
+  }
+
+  const result = (await response.json().catch(() => null)) as { users?: UserProfile[] } | null;
+  return Array.isArray(result?.users) ? result.users : [];
+}
 
 type UseWorkOrderOptions = {
   initialWorkOrderId?: string | null;
@@ -41,6 +58,11 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     [coreState.currentUser, sessionProfile],
   );
   const effectiveCurrentUserId = sessionProfile?.id || coreState.currentUserId || "";
+
+  useEffect(() => {
+    if (!sessionProfile?.id) return;
+    coreState.setUsers((current) => ensureWorkOrderSessionProfile(current, sessionProfile));
+  }, [coreState.setUsers, sessionProfile]);
 
   const derivedState = useWorkOrderDerived({
     users: coreState.users,
@@ -148,13 +170,25 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   );
 
   const handleOpenManagerAssignModal = useCallback(() => {
-    actionState.handleOpenManagerAssignModal({
-      canChangeManager: derivedState.canChangeManager,
-      isReviewRequestLocked: derivedState.isReviewRequestLocked,
-      currentWorkflowState: derivedState.currentWorkflowState,
-    });
+    const reviewLocked = derivedState.isReviewRequestLocked ?? isWorkflowStateReviewLocked(derivedState.currentWorkflowState ?? "draft", true);
+    const canEditManager = canEditManagerInWorkflow(derivedState.currentWorkflowState ?? "draft", reviewLocked);
+    if (!derivedState.canChangeManager || !canEditManager) return;
+
+    void loadLatestWorkspaceUserProfiles()
+      .then((latestUsers) => {
+        if (latestUsers.length > 0) coreState.setUsers(latestUsers);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        actionState.handleOpenManagerAssignModal({
+          canChangeManager: derivedState.canChangeManager,
+          isReviewRequestLocked: derivedState.isReviewRequestLocked,
+          currentWorkflowState: derivedState.currentWorkflowState,
+        });
+      });
   }, [
     actionState,
+    coreState.setUsers,
     derivedState.canChangeManager,
     derivedState.currentWorkflowState,
     derivedState.isReviewRequestLocked,

@@ -184,6 +184,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
       const payload = (await response.json()) as { profile: PersonalProfile | null };
       setProfile(payload.profile);
       setDraft(buildProfileDraft(payload.profile));
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("wafl-profile-updated"));
       setMessage(copy.profile.saved);
       await refreshCurrentUser();
     } catch {

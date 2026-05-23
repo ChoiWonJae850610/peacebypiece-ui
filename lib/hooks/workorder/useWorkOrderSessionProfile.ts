@@ -43,10 +43,18 @@ export function useWorkOrderSessionProfile(): UserProfile | null {
       }
     }
 
+    const handleProfileRefresh = () => {
+      void loadSessionProfile();
+    };
+
     void loadSessionProfile();
+    window.addEventListener("focus", handleProfileRefresh);
+    window.addEventListener("wafl-profile-updated", handleProfileRefresh);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", handleProfileRefresh);
+      window.removeEventListener("wafl-profile-updated", handleProfileRefresh);
     };
   }, []);
 

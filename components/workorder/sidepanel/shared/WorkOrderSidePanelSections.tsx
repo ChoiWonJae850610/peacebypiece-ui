@@ -21,6 +21,7 @@ export default function WorkOrderSidePanelSections({
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
   currentRole,
+  users,
   workOrder,
   currentUserName,
   currentUserId,
@@ -56,6 +57,7 @@ export default function WorkOrderSidePanelSections({
       currentUserId={currentUserId}
       currentUserName={currentUserName}
       currentUserRole={currentRole}
+      users={users}
       onCreateThread={onCreateMemoThread}
       onCreateReply={onCreateMemoReply}
       onUpdateThread={onUpdateMemoThread}

@@ -19,6 +19,7 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
             currentUserId={props.currentUserId}
             currentUserName={props.currentUserName}
             currentUserRole={props.currentRole}
+            users={props.users}
             onCreateThread={props.onCreateMemoThread}
             onCreateReply={props.onCreateMemoReply}
             onUpdateThread={props.onUpdateMemoThread}

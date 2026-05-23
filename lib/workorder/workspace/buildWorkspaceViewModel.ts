@@ -61,6 +61,7 @@ export function buildWorkspaceViewModel(
     version,
     i18n: args.i18n,
     currentUser: args.currentUser,
+    users: args.users,
     currentRole: args.currentRole,
     selectedWorkOrder: args.selectedWorkOrder,
     hasVisibleWorkOrders: args.hasVisibleWorkOrders,
@@ -124,6 +125,7 @@ export function buildWorkspaceViewModel(
     buildSidePanelProps({
       version,
       currentUser: args.currentUser,
+      users: args.users,
       currentRole: args.currentRole,
       selectedWorkOrder: args.selectedWorkOrder,
       hasVisibleWorkOrders: args.hasVisibleWorkOrders,

@@ -4,7 +4,7 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
 import { getMemoDisplayContent, getVisibleMemoReplies, getVisibleMemoThreads, isDeletedMemoItem } from "@/lib/workorder/presentation/memoPresentation";
-import type { MemoReply, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
+import type { MemoReply, MemoThread, RoleType, UserProfile, WorkOrder } from "@/types/workorder";
 
 const MEMO_MAX_LENGTH = 50;
 
@@ -22,10 +22,30 @@ function formatMemoTimestamp(value: string) {
   ].join(".") + ` ${padMemoDatePart(date.getHours())}:${padMemoDatePart(date.getMinutes())}`;
 }
 
-function getMemoAuthorDisplayName(authorName: string, authorRole: RoleType, copy: { adminAuthorFallback: string; unknownAuthorFallback: string }) {
-  if (authorRole === "admin") return copy.adminAuthorFallback;
-  const normalized = authorName.trim();
-  return normalized || copy.unknownAuthorFallback;
+function normalizeMemoAuthorKey(value: string | null | undefined) {
+  return (value ?? "").trim();
+}
+
+function findMemoAuthorProfile(authorId: string, users: UserProfile[]) {
+  const normalizedAuthorId = normalizeMemoAuthorKey(authorId);
+  if (!normalizedAuthorId || normalizedAuthorId === "system") return null;
+
+  return users.find((user) => {
+    const userId = normalizeMemoAuthorKey(user.id);
+    const companyMemberId = normalizeMemoAuthorKey(user.companyMemberId);
+    return userId === normalizedAuthorId || companyMemberId === normalizedAuthorId;
+  }) ?? null;
+}
+
+function getMemoAuthorDisplayName(author: { authorId: string; authorName: string; authorRole: RoleType }, users: UserProfile[], copy: { adminAuthorFallback: string; unknownAuthorFallback: string }) {
+  const matchedProfile = findMemoAuthorProfile(author.authorId, users);
+  const matchedName = matchedProfile?.name?.trim();
+  if (matchedName) return matchedName;
+
+  const normalizedName = author.authorName.trim();
+  if (normalizedName && normalizedName !== author.authorId) return normalizedName;
+
+  return copy.unknownAuthorFallback;
 }
 
 function normalizeMemoInput(value: string) {
@@ -146,6 +166,7 @@ function MemoThreadCard({
   writeLockMessage,
   currentUserId,
   currentUserRole,
+  users,
   workOrderId,
   variant = "desktop",
 }: {
@@ -160,6 +181,7 @@ function MemoThreadCard({
   writeLockMessage?: string;
   currentUserId: string;
   currentUserRole: RoleType;
+  users: UserProfile[];
   workOrderId: string;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
@@ -219,7 +241,7 @@ function MemoThreadCard({
     <div className={isMobile ? "pbp-sidepanel-item min-w-0 rounded-2xl border p-2.5 shadow-sm" : "pbp-sidepanel-item min-w-0 rounded-2xl border p-3 shadow-sm"}>
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 pbp-text-primary" : "truncate text-sm font-semibold pbp-text-primary"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole, ui.memo)}</div>
+          <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 pbp-text-primary" : "truncate text-sm font-semibold pbp-text-primary"}>{getMemoAuthorDisplayName(thread, users, ui.memo)}</div>
           <div className="mt-0.5 text-[11px] pbp-text-muted">{formatMemoTimestamp(thread.createdAt)}</div>
         </div>
         <MemoItemActions
@@ -265,7 +287,7 @@ function MemoThreadCard({
           return (
             <div key={`${thread.id}-${reply.id}-${replyIndex}`} className="min-w-0 pl-2 text-[var(--pbp-text-muted)] sm:pl-3">
               <div className="flex min-w-0 items-start justify-between gap-2">
-                <div className="min-w-0 break-words text-[11px] leading-4 pbp-text-muted">{ui.memo.replyMarker} {getMemoAuthorDisplayName(reply.authorName, reply.authorRole, ui.memo)} · {formatMemoTimestamp(reply.createdAt)}</div>
+                <div className="min-w-0 break-words text-[11px] leading-4 pbp-text-muted">{ui.memo.replyMarker} {getMemoAuthorDisplayName(reply, users, ui.memo)} · {formatMemoTimestamp(reply.createdAt)}</div>
                 <MemoItemActions canMutate={canMutateAuthor(reply.authorId) && !writeLocked} disabledReason={writeLockMessage} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
@@ -313,6 +335,7 @@ export default function WorkOrderMemoPanel({
   currentUserId,
   currentUserName,
   currentUserRole,
+  users,
   onCreateThread,
   onCreateReply,
   onUpdateThread,
@@ -328,6 +351,7 @@ export default function WorkOrderMemoPanel({
   currentUserId: string;
   currentUserName: string;
   currentUserRole: RoleType;
+  users: UserProfile[];
   onCreateThread: (content: string) => void;
   onCreateReply: (threadId: string, content: string) => void;
   onUpdateThread: (threadId: string, content: string) => void;
@@ -365,7 +389,7 @@ export default function WorkOrderMemoPanel({
         <span className="pbp-sidepanel-count-badge rounded-full px-2 py-1 text-[11px] font-medium">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
       </div>
       <div className={isMobile ? "pbp-workorder-editable-panel mt-2.5 min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
-        <div className="text-[11px] pbp-text-muted">{getMemoAuthorDisplayName(currentUserName, currentUserRole, ui.memo)}</div>
+        <div className="text-[11px] pbp-text-muted">{getMemoAuthorDisplayName({ authorId: currentUserId, authorName: currentUserName, authorRole: currentUserRole }, users, ui.memo)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>
@@ -387,6 +411,7 @@ export default function WorkOrderMemoPanel({
             writeLockMessage={writeLockMessage}
             currentUserId={currentUserId}
             currentUserRole={currentUserRole}
+            users={users}
           />
         )) : <div className="pbp-empty-state min-w-0 rounded-xl border border-dashed px-3 py-5 text-center text-sm">{ui.memo.empty}</div>}
       </div>
