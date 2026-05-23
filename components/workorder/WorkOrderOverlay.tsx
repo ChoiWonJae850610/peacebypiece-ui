@@ -64,7 +64,7 @@ export default function WorkOrderOverlay({
         disabled={writeLocked}
       />
       {writeLocked && writeLockMessage ? (
-        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[70] flex justify-center px-4 md:bottom-6 md:justify-end md:px-8">
+        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[70] flex justify-center px-4 md:bottom-6 md:justify-center md:px-8">
           <div className="pbp-toast pbp-toast--processing inline-flex min-h-11 max-w-[min(92vw,420px)] items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold leading-5" role="status" aria-live="polite">
             <span className="pbp-toast__spinner" aria-hidden="true" />
             <span className="min-w-0 truncate text-left">{writeLockMessage}</span>
