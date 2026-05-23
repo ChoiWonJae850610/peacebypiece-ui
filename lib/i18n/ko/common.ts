@@ -283,6 +283,8 @@ export const commonKo = {
         representativeImageEmpty: "대표 이미지가 없습니다.",
         requestNoteTitle: "요청사항",
         requestNotePlaceholder: "발주 요청 시 전달할 메모를 입력하세요.",
+        orderRequestProcessingTitle: "발주서 PDF 생성 중",
+        orderRequestProcessingMessage: "발주요청을 완료하고 발주서 PDF를 첨부파일에 저장하고 있습니다.",
         fabricTableTitle: "원단 내역",
         subsidiaryTableTitle: "부자재 내역",
         outsourcingTableTitle: "외주 내역",

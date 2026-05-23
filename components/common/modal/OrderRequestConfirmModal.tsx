@@ -13,7 +13,7 @@ import { isDebugFeatureEnabled } from "@/lib/runtime/runtimeMode";
 import type { WorkOrder } from "@/types/workorder";
 
 
-const ORDER_REQUEST_NOTE_MAX_LINES = 13;
+const ORDER_REQUEST_NOTE_MAX_LINES = 10;
 const ORDER_REQUEST_NOTE_MAX_CHARS = 400;
 
 function limitRequestNote(value: string) {
@@ -112,6 +112,9 @@ export default function OrderRequestConfirmModal({
         preview={preview}
         copy={copy}
         currencySuffix={currencySuffix}
+        isProcessing={isSubmittingOrderRequest}
+        processingTitle={copy.orderRequestProcessingTitle}
+        processingMessage={copy.orderRequestProcessingMessage}
         requestNote={requestNote}
         onRequestNoteChange={handleRequestNoteChange}
         requestNoteMaxLines={ORDER_REQUEST_NOTE_MAX_LINES}

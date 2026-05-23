@@ -44,6 +44,9 @@ type OrderRequestDocumentPreviewProps = {
   preview: OrderRequestDocumentPreview;
   copy: OrderRequestConfirmCopy;
   currencySuffix: string;
+  isProcessing: boolean;
+  processingTitle: string;
+  processingMessage: string;
   requestNote: string;
   onRequestNoteChange: (next: string) => void;
   requestNoteMaxLines: number;
@@ -230,6 +233,9 @@ export default function OrderRequestDocumentPreviewPanel({
   preview,
   copy,
   currencySuffix,
+  isProcessing,
+  processingTitle,
+  processingMessage,
   requestNote,
   onRequestNoteChange,
   requestNoteMaxLines,
@@ -267,7 +273,18 @@ export default function OrderRequestDocumentPreviewPanel({
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[1040px] overflow-hidden rounded-sm border border-stone-500 bg-white text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+    <div className="relative mx-auto w-full max-w-[1040px] overflow-hidden rounded-sm border border-stone-500 bg-white text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+
+      {isProcessing ? (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/72 backdrop-blur-[2px]" role="status" aria-live="polite">
+          <div className="flex min-w-[260px] max-w-[360px] flex-col items-center rounded-2xl border border-stone-300 bg-white px-6 py-5 text-center shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
+            <span className="h-9 w-9 animate-spin rounded-full border-4 border-stone-300 border-t-stone-900" aria-hidden="true" />
+            <span className="mt-4 text-sm font-bold text-stone-900">{processingTitle}</span>
+            <span className="mt-1 text-xs leading-5 text-stone-500">{processingMessage}</span>
+          </div>
+        </div>
+      ) : null}
+
       <div className="border-b border-stone-400 px-5 py-5">
         <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
           <div className="min-w-0 pt-1 text-left">

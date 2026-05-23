@@ -4,7 +4,7 @@ import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
 
 
-const ORDER_REQUEST_PRINT_NOTE_MAX_LINES = 13;
+const ORDER_REQUEST_PRINT_NOTE_MAX_LINES = 10;
 const ORDER_REQUEST_PRINT_NOTE_MAX_CHARS = 400;
 
 function limitRequestNoteForPrint(value: string) {

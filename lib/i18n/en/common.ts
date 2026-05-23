@@ -283,6 +283,8 @@ export const commonEn = {
         representativeImageEmpty: "No representative image.",
         requestNoteTitle: "Request note",
         requestNotePlaceholder: "Enter notes to send with this order request.",
+        orderRequestProcessingTitle: "Generating order PDF",
+        orderRequestProcessingMessage: "Completing the order request and saving the order PDF to attachments.",
         fabricTableTitle: "Fabric details",
         subsidiaryTableTitle: "Subsidiary material details",
         outsourcingTableTitle: "Outsourcing details",
