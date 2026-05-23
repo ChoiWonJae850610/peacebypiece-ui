@@ -3,11 +3,11 @@ import { buildAttachmentPanelSections } from "@/lib/workorder/presentation/workO
 import type { DetailProps, DetailViewModelArgs, SidePanelProps, SidePanelViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 import type { UserProfile, WorkOrder } from "@/types/workorder";
 
-function findUserDisplayName(users: UserProfile[], userId: string | null | undefined) {
+function findUserDisplayName(users: UserProfile[] | undefined, userId: string | null | undefined) {
   const normalizedUserId = (userId ?? "").trim();
   if (!normalizedUserId) return null;
 
-  const matched = users.find((user) => {
+  const matched = (users ?? []).find((user) => {
     const id = user.id.trim();
     const companyMemberId = user.companyMemberId?.trim() ?? "";
     return id === normalizedUserId || companyMemberId === normalizedUserId;
@@ -17,7 +17,7 @@ function findUserDisplayName(users: UserProfile[], userId: string | null | undef
   return name || null;
 }
 
-function applyLatestManagerDisplayName(workOrder: WorkOrder, users: UserProfile[]): WorkOrder {
+function applyLatestManagerDisplayName(workOrder: WorkOrder, users: UserProfile[] | undefined): WorkOrder {
   const nextManagerName = findUserDisplayName(users, workOrder.managerId);
   if (!nextManagerName || nextManagerName === workOrder.manager) return workOrder;
   return { ...workOrder, manager: nextManagerName };
@@ -158,6 +158,7 @@ export function buildSidePanelProps({
     onDeleteAttachment: onRequestDeleteAttachment,
     onSetPrimaryDesignAttachment,
     currentRole,
+    users: users ?? [],
     workOrder: applyLatestManagerDisplayName(selectedWorkOrder, users),
     currentUserName: currentUser.name,
     currentUserId: currentUser.id,

@@ -1,19 +1,10 @@
-Version : 0.15.89
-Summary : 작업지시서 사용자 표시명 동기화 보정
-Description : 프로필 이름 변경 후 작업지시서 메모/담당자 표시명에 최신 사용자명이 반영되도록 보정하고, 담당자 변경 모달을 열 때 최신 멤버 목록을 재조회합니다. 메모 작성자 표시에서 관리자 역할을 무조건 대표로 치환하던 fallback을 제거하고 authorId 기준 사용자 프로필명을 우선 표시하도록 정리했습니다.
+Version : 0.15.89.1
+Summary : 작업지시서 사용자 표시명 패치 오류 보정
+Description : 0.15.89에서 사이드패널 view model에 users 전달이 누락되어 발생한 타입 체크 오류와 메모 패널 users undefined 런타임 오류를 함께 보정했습니다. 사이드패널 props에 최신 users 배열을 전달하고, 메모 작성자/담당자 표시명 resolve 로직이 users 미전달 상황에서도 안전하게 동작하도록 방어 처리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/hooks/useWorkOrder.ts
-- lib/hooks/workorder/useWorkOrderSessionProfile.ts
-- components/me/PersonalSettingsPage.tsx
-- components/workorder/sidepanel/WorkOrderMemoPanel.tsx
-- components/workorder/sidepanel/WorkOrderSidePanel.types.ts
-- components/workorder/sidepanel/shared/WorkOrderSidePanelSections.tsx
-- components/workorder/sidepanel/views/WorkOrderSidePanelMobileView.tsx
-- components/workorder/sidepanel/views/WorkOrderSidePanelTabletView.tsx
 - lib/workorder/workspace/builders/detailBuilders.ts
-- lib/workorder/workspace/buildWorkspaceViewModel.ts
-- lib/workorder/workspace/viewModelTypes.ts
+- components/workorder/sidepanel/WorkOrderMemoPanel.tsx
 추가 파일 목록 :
 - 없음
 삭제 파일 목록 :

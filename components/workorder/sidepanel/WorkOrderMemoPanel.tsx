@@ -26,18 +26,18 @@ function normalizeMemoAuthorKey(value: string | null | undefined) {
   return (value ?? "").trim();
 }
 
-function findMemoAuthorProfile(authorId: string, users: UserProfile[]) {
+function findMemoAuthorProfile(authorId: string, users: UserProfile[] | undefined) {
   const normalizedAuthorId = normalizeMemoAuthorKey(authorId);
   if (!normalizedAuthorId || normalizedAuthorId === "system") return null;
 
-  return users.find((user) => {
+  return (users ?? []).find((user) => {
     const userId = normalizeMemoAuthorKey(user.id);
     const companyMemberId = normalizeMemoAuthorKey(user.companyMemberId);
     return userId === normalizedAuthorId || companyMemberId === normalizedAuthorId;
   }) ?? null;
 }
 
-function getMemoAuthorDisplayName(author: { authorId: string; authorName: string; authorRole: RoleType }, users: UserProfile[], copy: { adminAuthorFallback: string; unknownAuthorFallback: string }) {
+function getMemoAuthorDisplayName(author: { authorId: string; authorName: string; authorRole: RoleType }, users: UserProfile[] | undefined, copy: { adminAuthorFallback: string; unknownAuthorFallback: string }) {
   const matchedProfile = findMemoAuthorProfile(author.authorId, users);
   const matchedName = matchedProfile?.name?.trim();
   if (matchedName) return matchedName;
@@ -181,7 +181,7 @@ function MemoThreadCard({
   writeLockMessage?: string;
   currentUserId: string;
   currentUserRole: RoleType;
-  users: UserProfile[];
+  users?: UserProfile[];
   workOrderId: string;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
@@ -351,7 +351,7 @@ export default function WorkOrderMemoPanel({
   currentUserId: string;
   currentUserName: string;
   currentUserRole: RoleType;
-  users: UserProfile[];
+  users?: UserProfile[];
   onCreateThread: (content: string) => void;
   onCreateReply: (threadId: string, content: string) => void;
   onUpdateThread: (threadId: string, content: string) => void;
