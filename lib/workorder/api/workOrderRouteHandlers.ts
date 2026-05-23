@@ -1050,6 +1050,18 @@ export async function handlePatchWorkOrderState(
         outsourcing: Array.isArray(guardedPatch.outsourcing)
           ? guardedPatch.outsourcing
           : undefined,
+        rejectionReason: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectionReason")
+          ? (guardedPatch.rejectionReason ?? null)
+          : undefined,
+        rejectedAt: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedAt")
+          ? (guardedPatch.rejectedAt ?? null)
+          : undefined,
+        rejectedByUserId: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedByUserId")
+          ? (guardedPatch.rejectedByUserId ?? null)
+          : undefined,
+        rejectedByName: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedByName")
+          ? (guardedPatch.rejectedByName ?? null)
+          : undefined,
         serviceCode,
       },
       scopeResult.scope,
@@ -1077,6 +1089,10 @@ export async function handlePatchWorkOrderState(
       orderEntries: savedWorkOrder.orderEntries ?? [],
       materials: savedWorkOrder.materials ?? [],
       outsourcing: savedWorkOrder.outsourcing ?? [],
+      rejectionReason: savedWorkOrder.rejectionReason ?? null,
+      rejectedAt: savedWorkOrder.rejectedAt ?? null,
+      rejectedByUserId: savedWorkOrder.rejectedByUserId ?? null,
+      rejectedByName: savedWorkOrder.rejectedByName ?? null,
     };
 
     logDbRequestOutcome(
