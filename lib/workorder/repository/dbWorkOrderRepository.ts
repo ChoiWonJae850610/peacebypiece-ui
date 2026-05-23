@@ -1448,6 +1448,7 @@ type DbMaterialRow = {
   name: string | null;
   vendor: string | null;
   vendor_partner_id: string | null;
+  vendor_partner_name: string | null;
   quantity: number | null;
   unit: Material["unit"] | null;
   unit_cost: number | null;
@@ -1461,6 +1462,7 @@ type DbOutsourcingRow = {
   process: string | null;
   vendor: string | null;
   vendor_partner_id: string | null;
+  vendor_partner_name: string | null;
   quantity: number | null;
   unit: string | null;
   unit_cost: number | null;
@@ -1513,38 +1515,46 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       [companyId, uniqueIds],
     ),
     queryDb<DbMaterialRow>(
-      `SELECT id,
-              spec_sheet_id,
-              material_type,
-              name,
-              vendor,
-              vendor_partner_id,
-              quantity,
-              unit,
-              unit_cost,
-              total_cost,
-              status
-         FROM spec_sheet_materials
-        WHERE company_id = $1
-          AND spec_sheet_id = ANY($2::text[])
-        ORDER BY id ASC`,
+      `SELECT m.id,
+              m.spec_sheet_id,
+              m.material_type,
+              m.name,
+              m.vendor,
+              m.vendor_partner_id,
+              p.name AS vendor_partner_name,
+              m.quantity,
+              m.unit,
+              m.unit_cost,
+              m.total_cost,
+              m.status
+         FROM spec_sheet_materials m
+         LEFT JOIN partners p
+           ON p.id = m.vendor_partner_id
+          AND p.company_id = m.company_id
+        WHERE m.company_id = $1
+          AND m.spec_sheet_id = ANY($2::text[])
+        ORDER BY m.id ASC`,
       [companyId, uniqueIds],
     ),
     queryDb<DbOutsourcingRow>(
-      `SELECT id,
-              spec_sheet_id,
-              process,
-              vendor,
-              vendor_partner_id,
-              quantity,
-              unit,
-              unit_cost,
-              total_cost,
-              status
-         FROM spec_sheet_outsourcing_lines
-        WHERE company_id = $1
-          AND spec_sheet_id = ANY($2::text[])
-        ORDER BY id ASC`,
+      `SELECT ol.id,
+              ol.spec_sheet_id,
+              ol.process,
+              ol.vendor,
+              ol.vendor_partner_id,
+              p.name AS vendor_partner_name,
+              ol.quantity,
+              ol.unit,
+              ol.unit_cost,
+              ol.total_cost,
+              ol.status
+         FROM spec_sheet_outsourcing_lines ol
+         LEFT JOIN partners p
+           ON p.id = ol.vendor_partner_id
+          AND p.company_id = ol.company_id
+        WHERE ol.company_id = $1
+          AND ol.spec_sheet_id = ANY($2::text[])
+        ORDER BY ol.id ASC`,
       [companyId, uniqueIds],
     ),
   ]);
@@ -1571,7 +1581,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       id: row.id,
       type: row.material_type || "기타",
       name: row.name || "",
-      vendor: row.vendor || "",
+      vendor: row.vendor || row.vendor_partner_name || "",
       vendorPartnerId: row.vendor_partner_id ?? null,
       quantity: readNumberRowValue(row.quantity),
       unit: normalizeMaterialUnitValue(row.unit || "개"),
@@ -1588,7 +1598,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
     ).outsourcing.push({
       id: row.id,
       process: row.process || "",
-      vendor: row.vendor || "",
+      vendor: row.vendor || row.vendor_partner_name || "",
       vendorPartnerId: row.vendor_partner_id ?? null,
       quantity: readNumberRowValue(row.quantity),
       unitType: row.unit || "",

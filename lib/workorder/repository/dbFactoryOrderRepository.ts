@@ -90,14 +90,24 @@ type FactoryPartnerResolution = {
   name: string;
 };
 
-async function resolveActiveFactoryPartnerByIdOrName(payload: { factoryId?: string | null; factoryName?: string | null }): Promise<FactoryPartnerResolution | null> {
+async function resolveActiveFactoryPartnerByIdOrName(
+  payload: { factoryId?: string | null; factoryName?: string | null },
+  companyScope: WorkOrderCompanyContext,
+): Promise<FactoryPartnerResolution | null> {
   const factoryId = normalizeText(payload.factoryId);
   const factoryName = normalizeText(payload.factoryName);
 
   if (!factoryId && !factoryName) return null;
 
-  const conditions: string[] = ["p.is_active = true", "pi.is_active = true", "pi.item_type = 'factory'"];
-  const params: unknown[] = [];
+  const company = resolveWorkOrderCompanyContext(companyScope);
+  const conditions: string[] = [
+    "p.company_id = $1",
+    "pi.company_id = $1",
+    "p.is_active = true",
+    "pi.is_active = true",
+    "pi.item_type = 'factory'",
+  ];
+  const params: unknown[] = [company.companyId];
 
   if (factoryId) {
     params.push(factoryId);
@@ -230,11 +240,15 @@ export async function syncDbFactoryOrdersForSpecSheet(
 
   const specSheetIdColumn = schema.specSheetIdColumn!;
   const entries = toFactoryOrderEntries(workOrder);
+  const company = resolveWorkOrderCompanyContext(companyScope);
   const requestedFactory = workOrder.factoryOrderRequest
-    ? await resolveActiveFactoryPartnerByIdOrName({
-        factoryId: workOrder.factoryOrderRequest.factoryId,
-        factoryName: workOrder.factoryOrderRequest.factoryName,
-      })
+    ? await resolveActiveFactoryPartnerByIdOrName(
+        {
+          factoryId: workOrder.factoryOrderRequest.factoryId,
+          factoryName: workOrder.factoryOrderRequest.factoryName,
+        },
+        company,
+      )
     : null;
 
   if (workOrder.factoryOrderRequest && !requestedFactory) {
@@ -246,8 +260,9 @@ export async function syncDbFactoryOrdersForSpecSheet(
   try {
     await queryDb(
       `DELETE FROM ${quoteIdentifier(FACTORY_ORDER_TABLE)}
-        WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`,
-      [workOrder.id],
+        WHERE ${quoteIdentifier(specSheetIdColumn)} = $1
+          ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = $2` : ""}`,
+      schema.companyIdColumn ? [workOrder.id, company.companyId] : [workOrder.id],
     );
 
     for (const [index, entry] of entries.entries()) {
@@ -255,8 +270,6 @@ export async function syncDbFactoryOrdersForSpecSheet(
     const columns = ["id", specSheetIdColumn];
     const values: unknown[] = [id, workOrder.id];
     const placeholders = ["$1", "$2"];
-    const company = resolveWorkOrderCompanyContext(companyScope);
-
     if (schema.companyIdColumn) {
       columns.push(schema.companyIdColumn);
       values.push(company.companyId);

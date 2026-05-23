@@ -101,6 +101,7 @@ function toMaterialRows(workOrder: WorkOrder): Material[] {
       normalizeText(material.type) ||
       normalizeText(material.name) ||
       normalizeText(material.vendor) ||
+      normalizeText(material.vendorPartnerId) ||
       normalizeNumber(material.quantity) > 0 ||
       normalizeNumber(material.unitCost) > 0 ||
       normalizeNumber(material.totalCost) > 0,
@@ -194,8 +195,9 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(
       `
         DELETE FROM ${quoteIdentifier(SPEC_SHEET_MATERIAL_TABLE)}
         WHERE ${quoteIdentifier(specSheetIdColumn)} = $1
+          ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = $2` : ""}
       `,
-      [workOrder.id],
+      schema.companyIdColumn ? [workOrder.id, company.companyId] : [workOrder.id],
     );
 
     for (const [index, material] of materials.entries()) {

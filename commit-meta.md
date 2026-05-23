@@ -1,8 +1,13 @@
-Version : 0.15.80
-Summary : 작업지시서 회귀 테스트 체크리스트 문서화
-Description : 0.15.73.3부터 0.15.79까지 발생한 작업지시서 생성, 권한, 상세 hydration, draft 보존, 검토요청 회귀 케이스를 문서화하고 APP_VERSION을 0.15.80으로 갱신합니다.
+Version : 0.15.81
+Summary : 생산구성 현재값 partner company scope 정리
+Description : 생산구성 현재값 replace 저장의 company scope를 보강하고, 원단/부자재 및 외주 상세 조회에서 vendorPartnerId 기반 partner 표시 fallback을 정리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
+- lib/workorder/repository/dbFactoryOrderRepository.ts
+- lib/workorder/repository/dbSpecSheetMaterialRepository.ts
+- lib/workorder/repository/dbSpecSheetOutsourcingRepository.ts
+- lib/workorder/repository/dbWorkOrderRepository.ts
 추가 파일 목록 :
-- docs/wafl-a-type/92_wafl-a-type-workorder-regression-checklist.md
+- docs/wafl-a-type/93_wafl-a-type-production-current-partner-scope-audit.md
 삭제 파일 목록 :
+- 없음

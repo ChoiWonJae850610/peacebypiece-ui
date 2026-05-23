@@ -97,6 +97,7 @@ function toOutsourcingRows(workOrder: WorkOrder): Outsourcing[] {
     return Boolean(
       normalizeText(item.process) ||
       normalizeText(item.vendor) ||
+      normalizeText(item.vendorPartnerId) ||
       normalizeText(item.unitType) ||
       normalizeText(item.status) ||
       normalizeNumber(item.quantity) > 0 ||
@@ -192,8 +193,9 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(
       `
         DELETE FROM ${quoteIdentifier(SPEC_SHEET_OUTSOURCING_TABLE)}
         WHERE ${quoteIdentifier(specSheetIdColumn)} = $1
+          ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = $2` : ""}
       `,
-      [workOrder.id],
+      schema.companyIdColumn ? [workOrder.id, company.companyId] : [workOrder.id],
     );
 
     for (const [index, item] of items.entries()) {
