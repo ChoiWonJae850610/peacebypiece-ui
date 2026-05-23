@@ -462,7 +462,7 @@ export default function WorkOrderWorkspace({
     },
     onGenerateOrderRequestPdf: (workOrderId) => {
       void runWithWorkspaceWriteLock(
-        lifecycleCopy.attachmentProcessingLabel,
+        lifecycleCopy.orderRequestPdfProcessingLabel ?? lifecycleCopy.attachmentProcessingLabel,
         () => actions.handleGenerateOrderRequestPdf(workOrderId),
       );
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
@@ -11,6 +11,16 @@ import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/ord
 import { useI18n } from "@/lib/i18n";
 import { isDebugFeatureEnabled } from "@/lib/runtime/runtimeMode";
 import type { WorkOrder } from "@/types/workorder";
+
+
+const ORDER_REQUEST_NOTE_MAX_LINES = 13;
+const ORDER_REQUEST_NOTE_MAX_CHARS = 400;
+
+function limitRequestNote(value: string) {
+  const normalized = value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalized.split("\n").slice(0, ORDER_REQUEST_NOTE_MAX_LINES);
+  return lines.join("\n").slice(0, ORDER_REQUEST_NOTE_MAX_CHARS);
+}
 
 function getProcessingLabel(label: string, format: string) {
   const compactLabel = label.replace(/\s+/g, "");
@@ -54,6 +64,10 @@ export default function OrderRequestConfirmModal({
 
   const preview = useMemo(() => getOrderRequestDocumentPreview(workOrder, currentPageIndex), [currentPageIndex, workOrder]);
   const showOrderRequestDocumentDebug = isDebugFeatureEnabled("orderRequestDocumentDebug");
+
+  const handleRequestNoteChange = useCallback((next: string) => {
+    setRequestNote(limitRequestNote(next));
+  }, []);
 
   const handleSubmitOrderRequest = async () => {
     if (!canSubmit || isSubmittingOrderRequest) return;
@@ -99,7 +113,9 @@ export default function OrderRequestConfirmModal({
         copy={copy}
         currencySuffix={currencySuffix}
         requestNote={requestNote}
-        onRequestNoteChange={setRequestNote}
+        onRequestNoteChange={handleRequestNoteChange}
+        requestNoteMaxLines={ORDER_REQUEST_NOTE_MAX_LINES}
+        requestNoteMaxChars={ORDER_REQUEST_NOTE_MAX_CHARS}
         currentPageIndex={currentPageIndex}
         onPageIndexChange={setCurrentPageIndex}
         fallbackFactoryName={confirmedFactoryName}

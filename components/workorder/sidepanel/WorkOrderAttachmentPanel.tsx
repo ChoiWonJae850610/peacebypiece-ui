@@ -324,9 +324,10 @@ export default function WorkOrderAttachmentPanel({
             onClick={() => { if (!writeLocked) onGenerateOrderRequestPdf?.(); }}
             disabled={writeLocked || typeof onGenerateOrderRequestPdf !== "function"}
             title={writeLocked ? writeLockMessage : undefined}
-            className="pbp-interactive-button pbp-action-secondary mt-3 inline-flex h-8 items-center justify-center rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+            className="pbp-interactive-button pbp-action-secondary mt-3 inline-flex h-8 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {ui.attachmentPanel.generateOrderRequestPdfButton}
+            {writeLocked ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
+            <span>{writeLocked && writeLockMessage ? writeLockMessage : ui.attachmentPanel.generateOrderRequestPdfButton}</span>
           </button>
         </div>
       ) : null}

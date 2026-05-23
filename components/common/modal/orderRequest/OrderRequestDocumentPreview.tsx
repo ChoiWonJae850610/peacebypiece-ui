@@ -45,7 +45,9 @@ type OrderRequestDocumentPreviewProps = {
   copy: OrderRequestConfirmCopy;
   currencySuffix: string;
   requestNote: string;
-  onRequestNoteChange: Dispatch<SetStateAction<string>>;
+  onRequestNoteChange: (next: string) => void;
+  requestNoteMaxLines: number;
+  requestNoteMaxChars: number;
   currentPageIndex: number;
   onPageIndexChange: Dispatch<SetStateAction<number>>;
   fallbackFactoryName: string;
@@ -230,6 +232,8 @@ export default function OrderRequestDocumentPreviewPanel({
   currencySuffix,
   requestNote,
   onRequestNoteChange,
+  requestNoteMaxLines,
+  requestNoteMaxChars,
   currentPageIndex,
   onPageIndexChange,
   fallbackFactoryName,
@@ -303,12 +307,20 @@ export default function OrderRequestDocumentPreviewPanel({
           <div className="flex min-h-[360px] flex-col overflow-hidden border border-stone-400 bg-white">
             <div className="flex h-10 shrink-0 items-center border-b border-stone-300 bg-stone-100 px-3 text-sm font-bold text-stone-900">{copy.requestNoteTitle}</div>
             <div className="flex flex-1 p-4">
-              <textarea
-                value={requestNote}
-                onChange={(event) => onRequestNoteChange(event.target.value)}
-                placeholder={copy.requestNotePlaceholder}
-                className="min-h-[300px] flex-1 resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
-              />
+              <div className="flex min-h-[300px] flex-1 flex-col gap-2">
+                <textarea
+                  value={requestNote}
+                  onChange={(event) => onRequestNoteChange(event.target.value)}
+                  placeholder={copy.requestNotePlaceholder}
+                  rows={requestNoteMaxLines}
+                  maxLength={requestNoteMaxChars}
+                  className="min-h-0 flex-1 resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
+                />
+                <div className="flex items-center justify-between text-[11px] leading-4 text-stone-500">
+                  <span>{requestNote.split("\n").length} / {requestNoteMaxLines}줄</span>
+                  <span>{requestNote.length} / {requestNoteMaxChars}</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
