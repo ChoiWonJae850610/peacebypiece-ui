@@ -20,7 +20,12 @@ import {
   persistWorkOrderStatePatchesWithHistory,
   replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
-import { replaceWorkflowPersistedWorkOrder } from "./workflowActionStateSync";
+import {
+  applyWorkflowActionSideEffects,
+  markWorkflowPersistFailed,
+  markWorkflowPersistStarted,
+  replaceWorkflowPersistedWorkOrder,
+} from "./workflowActionStateSync";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partner/persistence";
 import { createReinspectionRequestHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -173,22 +178,23 @@ export function useWorkOrderWorkflowActions({
         workflowStateLabels,
         toastMessageOverride: toastMessageOverride ?? undefined,
       });
-      setSaveStatus("saving");
-      const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
-        workOrder: result.nextWorkOrder,
-        historyLogs: result.historyLogs,
-        auditActor: currentUser,
-        serviceCode: getServiceCodeForWorkflowAction(action),
-      });
-      applyPersistedWorkflowWorkOrder(workOrder.id, persistedWorkOrder);
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.openInventoryEditor) {
-        setInventoryEditorOpen(true);
-      }
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
+      markWorkflowPersistStarted(setSaveStatus);
+      try {
+        const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
+          workOrder: result.nextWorkOrder,
+          historyLogs: result.historyLogs,
+          auditActor: currentUser,
+          serviceCode: getServiceCodeForWorkflowAction(action),
+        });
+        applyPersistedWorkflowWorkOrder(workOrder.id, persistedWorkOrder);
+        applyWorkflowActionSideEffects(result, {
+          setHistoryLogs,
+          setInventoryEditorOpen,
+          setToastMessage,
+        });
+      } catch (error) {
+        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
+        throw error;
       }
     },
     [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, workflowStateLabels],
@@ -221,20 +227,23 @@ export function useWorkOrderWorkflowActions({
           historyText,
         ),
       ];
-      setSaveStatus("saving");
-      const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
-        workOrder: result.nextWorkOrder,
-        historyLogs: result.historyLogs,
-        auditActor: currentUser,
-        serviceCode: getServiceCodeForWorkflowAction(action),
-      });
-      setInventoryEditorOpen(false);
-      applyPersistedWorkflowWorkOrder(workOrder.id, persistedWorkOrder);
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
+      markWorkflowPersistStarted(setSaveStatus);
+      try {
+        const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
+          workOrder: result.nextWorkOrder,
+          historyLogs: result.historyLogs,
+          auditActor: currentUser,
+          serviceCode: getServiceCodeForWorkflowAction(action),
+        });
+        setInventoryEditorOpen(false);
+        applyPersistedWorkflowWorkOrder(workOrder.id, persistedWorkOrder);
+        applyWorkflowActionSideEffects(result, {
+          setHistoryLogs,
+          setToastMessage,
+        });
+      } catch (error) {
+        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
+        throw error;
       }
     },
     [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, workflowStateLabels],
@@ -340,24 +349,28 @@ export function useWorkOrderWorkflowActions({
       const nextWorkOrders = stabilizeWorkOrders(
         workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)),
       );
-      setSaveStatus("saving");
-      const nextPersistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
-        workOrder: result.nextWorkOrder,
-        historyLogs: result.historyLogs,
-        auditActor: currentUser,
-        serviceCode: getServiceCodeForWorkflowAction(pendingWorkflowAction),
-      });
-      workOrdersRef.current = nextWorkOrders;
-      setWorkOrders(nextWorkOrders);
-      applyPersistedWorkflowWorkOrder(workOrder.id, nextPersistedWorkOrder);
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      markWorkflowPersistStarted(setSaveStatus);
+      try {
+        const nextPersistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
+          workOrder: result.nextWorkOrder,
+          historyLogs: result.historyLogs,
+          auditActor: currentUser,
+          serviceCode: getServiceCodeForWorkflowAction(pendingWorkflowAction),
+        });
+        workOrdersRef.current = nextWorkOrders;
+        setWorkOrders(nextWorkOrders);
+        applyPersistedWorkflowWorkOrder(workOrder.id, nextPersistedWorkOrder);
+        applyWorkflowActionSideEffects(result, {
+          setHistoryLogs,
+          setToastMessage,
+        });
+      } catch (error) {
+        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
+        throw error;
+      } finally {
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
       }
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
-      }
-      setPendingWorkflowAction(null);
-      setOrderRequestConfirmOpen(false);
     },
     [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.id, currentUser.name, historyText, pendingWorkflowAction, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setSaveStatus, setToastMessage, setWorkOrders],
   );
@@ -382,7 +395,7 @@ export function useWorkOrderWorkflowActions({
 
       const nextWorkOrders = applySharedInventoryAdjustment(workOrdersRef.current, currentWorkOrder, result.appliedChanges ?? []);
       const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
-      setSaveStatus("saving");
+      markWorkflowPersistStarted(setSaveStatus);
       void persistWorkOrderStatePatchesWithHistory(repository, {
         workOrders: persistCandidates,
         historyLogs: result.historyLogs,
@@ -394,16 +407,13 @@ export function useWorkOrderWorkflowActions({
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
       }).catch((error) => {
-        setSaveStatus("dirty");
-        setToastMessage(error instanceof Error ? error.message : null);
+        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
       });
       setWorkOrders(nextWorkOrders);
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
-      }
+      applyWorkflowActionSideEffects(result, {
+        setHistoryLogs,
+        setToastMessage,
+      });
     },
     [actionFlowText, currentUser, currentUser.name, getInventorySyncCandidates, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
@@ -425,7 +435,7 @@ export function useWorkOrderWorkflowActions({
         nextInventoryQuantity,
       });
       const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
-      setSaveStatus("saving");
+      markWorkflowPersistStarted(setSaveStatus);
       void persistWorkOrderStatePatchesWithHistory(repository, {
         workOrders: persistCandidates,
         historyLogs: result.historyLogs,
@@ -437,16 +447,13 @@ export function useWorkOrderWorkflowActions({
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
       }).catch((error) => {
-        setSaveStatus("dirty");
-        setToastMessage(error instanceof Error ? error.message : null);
+        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
       });
       setWorkOrders(nextWorkOrders);
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
-      }
+      applyWorkflowActionSideEffects(result, {
+        setHistoryLogs,
+        setToastMessage,
+      });
     },
     [actionFlowText, currentUser, currentUser.name, getInventorySyncCandidates, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
@@ -496,7 +503,7 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      setSaveStatus("saving");
+      markWorkflowPersistStarted(setSaveStatus);
 
       try {
         const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
@@ -514,7 +521,7 @@ export function useWorkOrderWorkflowActions({
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
         }
       } catch (error) {
-        setSaveStatus("dirty");
+        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
         throw error;
       }
     },
