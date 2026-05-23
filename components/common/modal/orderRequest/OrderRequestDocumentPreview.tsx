@@ -331,7 +331,7 @@ export default function OrderRequestDocumentPreviewPanel({
                   placeholder={copy.requestNotePlaceholder}
                   rows={requestNoteMaxLines}
                   maxLength={requestNoteMaxChars}
-                  className="min-h-0 flex-1 resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
+                  className="min-h-0 flex-1 resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition [overflow-wrap:anywhere] focus:border-stone-500"
                 />
                 <div className="flex items-center justify-between text-[11px] leading-4 text-stone-500">
                   <span>{requestNote.split("\n").length} / {requestNoteMaxLines}줄</span>

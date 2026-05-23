@@ -75,6 +75,7 @@ export default function OrderRequestConfirmModal({
     setIsSubmittingOrderRequest(true);
     try {
       await onConfirm({ factoryName: confirmedFactoryName, quantity: confirmedQuantity, requestNote: requestNote.trim() || null });
+      onClose();
     } finally {
       setIsSubmittingOrderRequest(false);
     }
