@@ -13,6 +13,12 @@ type PdfGeneratorRequest = {
   orientation?: "portrait" | "landscape";
 };
 
+function readPdfGeneratorTimeoutMs(): number {
+  const value = Number(process.env.WAFLOW_PDF_GENERATOR_TIMEOUT_MS ?? 30000);
+  if (!Number.isFinite(value) || value <= 0) return 30000;
+  return Math.min(Math.max(value, 5000), 60000);
+}
+
 function readPdfGeneratorUrl(): string | null {
   const value = process.env.WAFLOW_PDF_GENERATOR_URL?.trim();
   return value && value.length > 0 ? value : null;
@@ -39,10 +45,13 @@ export async function renderPdfWithExternalGenerator(input: PdfGeneratorRequest)
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let response: Response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), readPdfGeneratorTimeoutMs());
   try {
     response = await fetch(url, {
       method: "POST",
       headers,
+      signal: controller.signal,
       body: JSON.stringify({
         html: input.html,
         fileName: input.fileName,
@@ -56,6 +65,8 @@ export async function renderPdfWithExternalGenerator(input: PdfGeneratorRequest)
       reason: "invalid_response",
       message: error instanceof Error ? error.message : String(error ?? "PDF_GENERATOR_FETCH_FAILED"),
     };
+  } finally {
+    clearTimeout(timeout);
   }
 
   if (!response.ok) {

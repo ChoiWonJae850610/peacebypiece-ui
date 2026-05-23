@@ -1,10 +1,13 @@
-Version : 0.16.0
-Summary : 발주서 HTML 미리보기 검증 경로 추가
-Description : 발주서 PDF Generator 연결 전에 기존 발주요청 인쇄 양식을 브라우저에서 검증할 수 있도록 HTML 미리보기 API를 추가하고, PDF Generator 입력 HTML을 기존 발주요청 인쇄 HTML 빌더와 동일한 구조로 정리했습니다.
+Version : 0.16.1
+Summary : PDF Generator Worker 1차 구현
+Description : 발주서 HTML을 PDF로 변환하는 Cloudflare Browser Rendering 기반 PDF Generator Worker 예시와 배포 설정 문서를 추가하고, 앱의 외부 PDF Generator 호출에 timeout 설정을 보강하였습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/generated-documents/order-request/orderRequestHtmlDocument.ts
+- lib/generated-documents/pdfGeneratorClient.ts
+- .env.example
 추가 파일 목록 :
-- app/api/workorders/[workOrderId]/generated/order-request-html/route.ts
-- docs/wafl-a-type/100_order-request-html-preview.md
+- cloudflare/pdf-generator-worker.js
+- cloudflare/pdf-generator-worker.wrangler.example.toml
+- docs/wafl-a-type/101_pdf-generator-worker.md
 삭제 파일 목록 :
+- 없음
