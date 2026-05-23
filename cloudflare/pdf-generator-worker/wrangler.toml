@@ -1,6 +1,7 @@
 name = "waflow-pdf-generator"
 main = "src/index.js"
-compatibility_date = "2026-05-24"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
 
 # Cloudflare Browser Rendering binding.
 # This binding is required because src/index.js calls puppeteer.launch(env.BROWSER).

@@ -105,6 +105,7 @@ export function buildOrderRequestPrintHtml(
   workOrder: WorkOrder,
   options?: {
     requestNote?: string | null;
+    representativeImageDataUrl?: string | null;
     autoPrint?: boolean;
     showPrintToolbar?: boolean;
     closeAfterPrint?: boolean;
@@ -115,6 +116,7 @@ export function buildOrderRequestPrintHtml(
     ? String(options.requestNote ?? "").trim()
     : initialPreview.requestNote;
   const requestNoteLabel = requestNote || "요청사항이 없습니다.";
+  const representativeImageDataUrl = String(options?.representativeImageDataUrl ?? "").trim();
 
   const documentsHtml = initialPreview.documents.map((documentUnit, index) => {
     const preview = getOrderRequestDocumentPreview(workOrder, index);
@@ -153,7 +155,7 @@ export function buildOrderRequestPrintHtml(
             <section class="hero-section">
               <div class="section-head">대표 이미지</div>
               <div class="hero-body">
-                ${preview.representativeImage ? `<div class="image-frame"><img src="${escapeHtml(preview.representativeImage.url)}" alt="${escapeHtml(preview.representativeImage.name)}" /></div>` : `<div class="empty-hero">대표 이미지가 없습니다.</div>`}
+                ${preview.representativeImage ? `<div class="image-frame">${representativeImageDataUrl ? `<img src="${escapeHtml(representativeImageDataUrl)}" alt="${escapeHtml(preview.representativeImage.name)}" />` : `<div class="empty-hero">대표 이미지를 불러오지 못했습니다.</div>`}</div>` : `<div class="empty-hero">대표 이미지가 없습니다.</div>`}
               </div>
             </section>
             <section class="hero-section hero-side">

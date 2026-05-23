@@ -339,6 +339,7 @@ function createOrderRequestPdfStream(workOrder: WorkOrder, requestNote?: string 
 export function buildOrderRequestServerPdfHtml(input: {
   workOrder: WorkOrder;
   requestNote?: string | null;
+  representativeImageDataUrl?: string | null;
 }): string {
   return buildOrderRequestHtmlDocument(input);
 }

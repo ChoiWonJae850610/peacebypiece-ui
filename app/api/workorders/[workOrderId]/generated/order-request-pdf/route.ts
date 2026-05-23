@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { renderPdfWithExternalGenerator } from "@/lib/generated-documents/pdfGeneratorClient";
+import { resolveOrderRequestRepresentativeImageDataUrl } from "@/lib/generated-documents/order-request/orderRequestRepresentativeImage";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl, putR2Object } from "@/lib/storage/r2/r2Client";
@@ -195,7 +196,8 @@ export async function POST(request: Request, context: RouteContext) {
 
   let pdf: Buffer;
   try {
-    const html = buildOrderRequestServerPdfHtml({ workOrder, requestNote });
+    const representativeImageDataUrl = await resolveOrderRequestRepresentativeImageDataUrl(workOrder);
+    const html = buildOrderRequestServerPdfHtml({ workOrder, requestNote, representativeImageDataUrl });
     const externalResult = await renderPdfWithExternalGenerator({
       html,
       fileName,

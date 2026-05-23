@@ -1,15 +1,14 @@
-Version : 0.16.1.1
-Summary : PDF Generator Worker Wrangler 배포 구조 보정
-Description : Cloudflare Dashboard 코드 편집기에 단일 파일을 붙여넣는 방식에서 발생하는 @cloudflare/puppeteer 모듈 오류를 피하기 위해 PDF Generator Worker를 Wrangler 배포용 패키지 구조로 정리하였습니다. 기존 R2 Worker는 건드리지 않고 PDF 전용 Worker를 별도 배포할 수 있도록 package.json, wrangler.toml, src/index.js, README를 추가하고 관련 문서를 갱신했습니다.
+Version : 0.16.2
+Summary : 발주서 PDF 대표 이미지 삽입 연결
+Description : 발주서 PDF/HTML 미리보기 생성 시 R2 대표 디자인 이미지를 서버에서 base64 data URL로 변환해 HTML 템플릿에 삽입합니다. 대표 이미지 로딩 실패 시 기존 PDF 생성 흐름은 유지하고 안내 문구로 대체합니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- cloudflare/pdf-generator-worker.js
-- cloudflare/pdf-generator-worker.wrangler.example.toml
-- docs/wafl-a-type/101_pdf-generator-worker.md
+- app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts
+- app/api/workorders/[workOrderId]/generated/order-request-html/route.ts
+- lib/generated-documents/order-request/orderRequestHtmlDocument.ts
+- lib/workorder/presentation/orderRequestDocumentPrint.ts
+- lib/workorder/serverOrderRequestPdf.ts
 추가 파일 목록 :
-- cloudflare/pdf-generator-worker/package.json
-- cloudflare/pdf-generator-worker/wrangler.toml
-- cloudflare/pdf-generator-worker/src/index.js
-- cloudflare/pdf-generator-worker/README.md
+- lib/generated-documents/order-request/orderRequestRepresentativeImage.ts
 삭제 파일 목록 :
 - 없음

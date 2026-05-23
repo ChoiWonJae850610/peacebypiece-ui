@@ -4,6 +4,7 @@ import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { buildOrderRequestHtmlDocument } from "@/lib/generated-documents/order-request/orderRequestHtmlDocument";
+import { resolveOrderRequestRepresentativeImageDataUrl } from "@/lib/generated-documents/order-request/orderRequestRepresentativeImage";
 import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderRepository";
 
 export const runtime = "nodejs";
@@ -73,7 +74,8 @@ export async function GET(request: Request, context: RouteContext) {
 
   const url = new URL(request.url);
   const requestNote = readText(url.searchParams.get("requestNote"));
-  const html = buildOrderRequestHtmlDocument({ workOrder, requestNote });
+  const representativeImageDataUrl = await resolveOrderRequestRepresentativeImageDataUrl(workOrder);
+  const html = buildOrderRequestHtmlDocument({ workOrder, requestNote, representativeImageDataUrl });
 
   return new NextResponse(html, {
     status: 200,
