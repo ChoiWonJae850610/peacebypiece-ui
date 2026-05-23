@@ -1,9 +1,8 @@
-Version : 0.15.97
-Summary : 발주서 PDF 빌드 오류 및 양식 1차 정렬
-Description : 발주서 PDF 재생성 토스트 타입 오류를 보정하고, 서버 PDF 템플릿을 기존 발주요청 모달 구성에 가깝게 제목/요약/대표 이미지 영역/발주 메모/원단/부자재/외주공정 섹션 구조로 재정렬했습니다. 실제 대표 이미지 삽입은 후속 단계로 남겼습니다.
+Version : 0.15.98
+Summary : 발주서 PDF 모달형 세로 양식 보정
+Description : 발주서 PDF를 기존 발주요청 모달의 세로형 양식에 가깝게 재구성했습니다. 상단 요약, 대표 이미지/요청사항 2단 영역, 원단/부자재/외주 내역 표를 A4 portrait 기준으로 배치하고 기존 텍스트 나열형 PDF를 제거했습니다. PDF 자동 첨부/재생성 흐름은 유지했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
 - lib/workorder/serverOrderRequestPdf.ts
 추가 파일 목록 :
 - 없음
