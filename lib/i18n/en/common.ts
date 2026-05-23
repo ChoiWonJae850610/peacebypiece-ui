@@ -213,6 +213,23 @@ export const commonEn = {
         currentManagerLabel: "Current manager",
         currentBadge: "Current",
       },
+      workflowValidation: {
+        title: "Confirm before continuing",
+        blockingDescription: "Please fix the following items before moving to the next step.",
+        warningDescription: "The following items need review. You can continue if they are intentional.",
+        blockingLabel: "Blocking items",
+        warningLabel: "Items to review",
+        cancelLabel: "Go back and edit",
+        confirmLabel: "Continue anyway",
+        fixLabel: "Review and edit",
+        issues: {
+          missingDesign: "There is no primary design. Please register a primary design before continuing.",
+          missingAttachment: "There are no attachment files. Add required documents before continuing if needed.",
+          missingFabric: "There is no fabric information. This is shown as a warning until material mapping is connected.",
+          missingSubsidiary: "There is no subsidiary material information. This is shown as a warning until material mapping is connected.",
+          zeroAmount: "The amount is 0. Please check labor cost, loss cost, and material amounts.",
+        },
+      },
       orderRequestConfirm: {
         title: "Confirm order request",
         description: "Factory orders can be requested only after review approval.",

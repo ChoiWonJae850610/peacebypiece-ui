@@ -32,6 +32,7 @@ export type BuildWorkspaceViewModelArgs = {
   managerAssignModalOpen: boolean;
   inventoryLogModalOpen: boolean;
   orderRequestConfirmOpen: boolean;
+  workflowValidationModal: ModalProps["workflowValidation"];
   users: UserProfile[];
   currentUserId: string;
   permissionTargetUserId: string;
@@ -247,6 +248,7 @@ export type ModalViewModelArgs = {
   managerAssignModalOpen: boolean;
   inventoryLogModalOpen: boolean;
   orderRequestConfirmOpen: boolean;
+  workflowValidationModal: ModalProps["workflowValidation"];
   users: UserProfile[];
   currentUserId: string;
   permissionTargetUserId: string;

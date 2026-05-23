@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
   buildFactoryOrderRequestResult,
@@ -42,6 +42,11 @@ import {
   getServiceCodeForWorkflowAction,
   normalizeWorkOrderForWorkflowGate,
 } from "@/lib/workorder/workflowActionGate";
+import {
+  getWorkflowValidationIssues,
+  hasBlockingWorkflowValidationIssue,
+  type WorkflowValidationIssue,
+} from "@/lib/workorder/workflowValidationIssues";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -51,6 +56,14 @@ import type {
 } from "./useWorkOrderActionTypes";
 
 const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === WORKFLOW_ACTION_TYPE.requestOrder;
+
+type PendingWorkflowValidation = {
+  workOrder: WorkOrder;
+  action: WorkflowAction;
+  issues: WorkflowValidationIssue[];
+  toastMessageOverride?: string | null;
+  nextStep: "apply" | "orderRequestConfirm";
+};
 
 type FactoryPartnerApiItem = {
   id?: unknown;
@@ -124,6 +137,8 @@ export function useWorkOrderWorkflowActions({
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
   const workflowStateLabels = i18n.workorder.workflowStates as Record<string, string>;
+  const workflowValidationText = i18n.common.ui.modal.workflowValidation;
+  const [pendingWorkflowValidation, setPendingWorkflowValidation] = useState<PendingWorkflowValidation | null>(null);
   const workOrdersRef = useRef(workOrders);
 
   useEffect(() => {
@@ -255,6 +270,30 @@ export function useWorkOrderWorkflowActions({
     ],
   );
 
+  const getValidationIssues = useCallback(
+    (workOrder: WorkOrder) => getWorkflowValidationIssues(workOrder, {
+      missingDesign: workflowValidationText.issues.missingDesign,
+      missingAttachment: workflowValidationText.issues.missingAttachment,
+      missingFabric: workflowValidationText.issues.missingFabric,
+      missingSubsidiary: workflowValidationText.issues.missingSubsidiary,
+      zeroAmount: workflowValidationText.issues.zeroAmount,
+    }),
+    [workflowValidationText],
+  );
+
+  const openWorkflowValidationIfNeeded = useCallback(
+    (payload: Omit<PendingWorkflowValidation, "issues"> & { issues: WorkflowValidationIssue[] }) => {
+      if (payload.issues.length === 0) return false;
+      setPendingWorkflowValidation(payload);
+      return true;
+    },
+    [],
+  );
+
+  const handleCloseWorkflowValidation = useCallback(() => {
+    setPendingWorkflowValidation(null);
+  }, []);
+
   const applyReinspectionAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction) => {
       const result = buildWorkflowActionResult({
@@ -333,15 +372,52 @@ export function useWorkOrderWorkflowActions({
           return;
         }
 
+        const validationIssues = getValidationIssues(orderGateResult.workOrder);
+        if (openWorkflowValidationIfNeeded({
+          workOrder: orderGateResult.workOrder,
+          action,
+          issues: validationIssues,
+          toastMessageOverride: reviewWarningMessage,
+          nextStep: "orderRequestConfirm",
+        })) {
+          return;
+        }
+
         setPendingWorkflowAction(action);
         setOrderRequestConfirmOpen(true);
         return;
       }
 
+      const validationIssues = getValidationIssues(gatedWorkflowDraft);
+      if (openWorkflowValidationIfNeeded({
+        workOrder: gatedWorkflowDraft,
+        action,
+        issues: validationIssues,
+        toastMessageOverride: reviewWarningMessage,
+        nextStep: "apply",
+      })) {
+        return;
+      }
+
       await applyWorkflowAction(gatedWorkflowDraft, action, reviewWarningMessage);
     },
-    [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage, syncDraftWorkOrderBeforeWorkflowAction],
+    [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser, getValidationIssues, openWorkflowValidationIfNeeded, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage, syncDraftWorkOrderBeforeWorkflowAction],
   );
+
+  const handleConfirmWorkflowValidation = useCallback(async () => {
+    const pending = pendingWorkflowValidation;
+    if (!pending || hasBlockingWorkflowValidationIssue(pending.issues)) return;
+
+    setPendingWorkflowValidation(null);
+
+    if (pending.nextStep === "orderRequestConfirm") {
+      setPendingWorkflowAction(pending.action);
+      setOrderRequestConfirmOpen(true);
+      return;
+    }
+
+    await applyWorkflowAction(pending.workOrder, pending.action, pending.toastMessageOverride);
+  }, [applyWorkflowAction, pendingWorkflowValidation, setOrderRequestConfirmOpen, setPendingWorkflowAction]);
 
   const handleConfirmOrderRequest = useCallback(
     async (workOrder: WorkOrder, payload: { factoryName: string; quantity: number }) => {
@@ -564,6 +640,21 @@ export function useWorkOrderWorkflowActions({
     handleWorkflowAction,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
+    workflowValidationModal: {
+      open: pendingWorkflowValidation !== null,
+      issues: pendingWorkflowValidation?.issues ?? [],
+      title: workflowValidationText.title,
+      description: pendingWorkflowValidation && hasBlockingWorkflowValidationIssue(pendingWorkflowValidation.issues)
+        ? workflowValidationText.blockingDescription
+        : workflowValidationText.warningDescription,
+      blockingLabel: workflowValidationText.blockingLabel,
+      warningLabel: workflowValidationText.warningLabel,
+      cancelLabel: workflowValidationText.cancelLabel,
+      confirmLabel: workflowValidationText.confirmLabel,
+      fixLabel: workflowValidationText.fixLabel,
+      onClose: handleCloseWorkflowValidation,
+      onConfirm: handleConfirmWorkflowValidation,
+    },
     handleInventoryApply,
     handleCompleteInspection,
     handleUpdateSelectedWorkOrder,

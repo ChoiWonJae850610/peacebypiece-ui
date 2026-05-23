@@ -309,6 +309,7 @@ export default function WorkOrderWorkspace({
     managerAssignModalOpen: ui.managerAssignModalOpen,
     inventoryLogModalOpen: ui.inventoryLogModalOpen,
     orderRequestConfirmOpen: ui.orderRequestConfirmOpen,
+    workflowValidationModal: actions.workflowValidationModal,
     users: identity.users,
     currentUserId: identity.currentUserId,
     permissionTargetUserId: identity.permissionTargetUserId,

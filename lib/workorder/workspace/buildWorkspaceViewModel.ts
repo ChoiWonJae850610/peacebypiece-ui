@@ -189,6 +189,7 @@ export function buildWorkspaceViewModel(
     managerAssignModalOpen: args.managerAssignModalOpen,
     inventoryLogModalOpen: args.inventoryLogModalOpen,
     orderRequestConfirmOpen: args.orderRequestConfirmOpen,
+    workflowValidationModal: args.workflowValidationModal,
     users: args.users,
     currentUserId: args.currentUserId,
     permissionTargetUserId: args.permissionTargetUserId,

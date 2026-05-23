@@ -213,6 +213,23 @@ export const commonKo = {
         currentManagerLabel: "현재 담당자",
         currentBadge: "현재",
       },
+      workflowValidation: {
+        title: "진행 전 확인이 필요합니다",
+        blockingDescription: "아래 항목은 먼저 수정해야 다음 단계로 진행할 수 있습니다.",
+        warningDescription: "아래 항목은 확인이 필요합니다. 문제가 없다면 그대로 진행할 수 있습니다.",
+        blockingLabel: "진행 차단 항목",
+        warningLabel: "확인 필요 항목",
+        cancelLabel: "돌아가서 수정",
+        confirmLabel: "그래도 진행",
+        fixLabel: "확인 후 수정",
+        issues: {
+          missingDesign: "대표 디자인이 없습니다. 대표 디자인을 등록한 뒤 진행해주세요.",
+          missingAttachment: "첨부파일이 없습니다. 필요한 문서가 있다면 등록 후 진행해주세요.",
+          missingFabric: "원단 정보가 없습니다. 기준정보 매핑 전까지는 경고로 표시합니다.",
+          missingSubsidiary: "부자재 정보가 없습니다. 기준정보 매핑 전까지는 경고로 표시합니다.",
+          zeroAmount: "금액이 0원입니다. 공임비, 로스비, 원단/부자재 금액을 확인해주세요.",
+        },
+      },
       orderRequestConfirm: {
         title: "발주 요청 확인",
         description: "검토완료 상태에서만 공장 발주 요청을 진행할 수 있습니다.",

@@ -8,6 +8,7 @@ export function buildModalProps({
   managerAssignModalOpen,
   inventoryLogModalOpen,
   orderRequestConfirmOpen,
+  workflowValidationModal,
   users,
   currentUserId,
   permissionTargetUserId,
@@ -43,6 +44,7 @@ export function buildModalProps({
   const attachmentPermissions = getAttachmentPermissions(selectedAttachment);
 
   return {
+    workflowValidation: workflowValidationModal,
     orderRequestConfirm: {
       open: orderRequestConfirmOpen,
       workOrder: selectedWorkOrder,
