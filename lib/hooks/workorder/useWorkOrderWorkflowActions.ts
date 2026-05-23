@@ -16,12 +16,11 @@ import {
   persistWorkOrderWithHistory,
   persistWorkOrderStatePatchWithHistory,
   mergeSavedWorkOrders,
-  mergeSavedWorkOrdersPreservingDraftOnlyFields,
   persistWorkOrderStatePatchesWithHistory,
-  replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
 import {
   applyWorkflowActionSideEffects,
+  buildImmediatePatchPersistSuccessState,
   markWorkflowPersistFailed,
   markWorkflowPersistStarted,
   replaceWorkflowPersistedWorkOrder,
@@ -512,14 +511,15 @@ export function useWorkOrderWorkflowActions({
           auditActor: currentUser,
           serviceCode,
         });
-        const nextLocalWorkOrders = mergeSavedWorkOrdersPreservingDraftOnlyFields(nextWorkOrders, [persistedWorkOrder]);
-        const nextPersistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrderId, persistedWorkOrder);
-        setWorkOrders(nextLocalWorkOrders);
-        setPersistedWorkOrders(nextPersistedWorkOrders);
-        syncSelectedWorkOrderSaveState(nextPersistedWorkOrders);
-        if (nextHistoryLogs?.length) {
-          setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
-        }
+        const { localWorkOrders, persistedWorkOrders } = buildImmediatePatchPersistSuccessState({
+          baseWorkOrders: nextWorkOrders,
+          workOrderId,
+          persistedWorkOrder,
+        });
+        setWorkOrders(localWorkOrders);
+        setPersistedWorkOrders(persistedWorkOrders);
+        syncSelectedWorkOrderSaveState(persistedWorkOrders);
+        applyWorkflowActionSideEffects({ historyLogs: nextHistoryLogs }, { setHistoryLogs, setToastMessage });
       } catch (error) {
         markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
         throw error;

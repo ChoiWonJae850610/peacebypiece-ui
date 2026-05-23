@@ -1,5 +1,9 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { HistoryLog, WorkOrder } from "@/types/workorder";
+import {
+  mergeSavedWorkOrdersPreservingDraftOnlyFields,
+  replaceWorkOrderById,
+} from "./workorderRepositoryMutations";
 import type { SaveStatus } from "./useWorkOrderActionTypes";
 
 export type WorkflowActionSideEffectPayload = {
@@ -50,4 +54,26 @@ export function applyWorkflowActionSideEffects(
   if (payload.toastMessage) {
     setters.setToastMessage(payload.toastMessage);
   }
+}
+
+export type ImmediatePatchPersistSuccessInput = {
+  baseWorkOrders: WorkOrder[];
+  workOrderId: string;
+  persistedWorkOrder: WorkOrder;
+};
+
+export type ImmediatePatchPersistSuccessResult = {
+  localWorkOrders: WorkOrder[];
+  persistedWorkOrders: WorkOrder[];
+};
+
+export function buildImmediatePatchPersistSuccessState({
+  baseWorkOrders,
+  workOrderId,
+  persistedWorkOrder,
+}: ImmediatePatchPersistSuccessInput): ImmediatePatchPersistSuccessResult {
+  return {
+    localWorkOrders: mergeSavedWorkOrdersPreservingDraftOnlyFields(baseWorkOrders, [persistedWorkOrder]),
+    persistedWorkOrders: replaceWorkOrderById(baseWorkOrders, workOrderId, persistedWorkOrder),
+  };
 }
