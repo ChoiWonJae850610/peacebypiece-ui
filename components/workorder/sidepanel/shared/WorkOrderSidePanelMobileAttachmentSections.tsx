@@ -65,6 +65,8 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
         onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
+        canGenerateOrderRequestPdf={canGenerateOrderRequestPdf}
+        onGenerateOrderRequestPdf={onGenerateOrderRequestPdf}
         writeLocked={writeLocked}
         writeLockMessage={writeLockMessage}
         variant="mobile"

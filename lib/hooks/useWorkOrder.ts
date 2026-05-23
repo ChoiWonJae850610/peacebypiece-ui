@@ -400,6 +400,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     handleConfirmOrderRequest: (payload: { factoryName: string; quantity: number; requestNote?: string | null }) =>
       actionState.handleConfirmOrderRequest(coreState.selectedWorkOrder, payload),
     handleCloseOrderRequestConfirm: actionState.handleCloseOrderRequestConfirm,
+    handleGenerateOrderRequestPdf: actionState.handleGenerateOrderRequestPdf,
     workflowValidationModal: actionState.workflowValidationModal,
     rejectReviewReasonModal: actionState.rejectReviewReasonModal,
     handleInventoryApply: (payload: {
@@ -550,6 +551,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     handleRenameWorkOrderTitle: actions.handleRenameWorkOrderTitle,
     handleConfirmOrderRequest: actions.handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
+    handleGenerateOrderRequestPdf: actions.handleGenerateOrderRequestPdf,
     workflowValidationModal: actions.workflowValidationModal,
     rejectReviewReasonModal: actions.rejectReviewReasonModal,
     handleInventoryApply: actions.handleInventoryApply,

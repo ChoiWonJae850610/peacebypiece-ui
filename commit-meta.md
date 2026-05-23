@@ -1,24 +1,13 @@
-Version : 0.15.96
-Summary : 발주서 PDF 재생성 버튼 및 실패 원인 구분 보정
-Description : 발주요청 이후 발주서 PDF가 생성되지 않은 작업지시서의 첨부파일 영역에서 PDF 생성을 다시 실행할 수 있도록 버튼을 추가하고, PDF 생성/업로드/첨부 등록 실패 단계를 API 응답과 toast에서 구분하도록 보정했습니다.
+Version : 0.15.96.1
+Summary : 발주서 PDF 재생성 빌드 및 실행 오류 보정
+Description : 빌드 오류를 유발한 generated PDF 첨부 ID 타입을 보정하고, 작업지시서 facade에 발주서 PDF 생성 핸들러를 노출했습니다. PC 넓은 화면의 첨부파일 패널에도 발주서 PDF 생성 버튼이 보이도록 전달 누락을 보정했으며, 현재 R2 Worker가 허용하는 첨부파일 경로로 발주서 PDF storage key를 맞췄습니다.
 수정 파일 목록 :
-- app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts
-- components/workorder/WorkOrderWorkspace.tsx
-- components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
-- components/workorder/sidepanel/WorkOrderSidePanel.types.ts
-- components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections.tsx
-- components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAttachmentSections.tsx
-- components/workorder/sidepanel/views/WorkOrderSidePanelMobileView.tsx
-- components/workorder/sidepanel/views/WorkOrderSidePanelTabletView.tsx
 - lib/constants/app.ts
-- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
-- lib/i18n/en/workorder.ts
-- lib/i18n/ko/workorder.ts
+- app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts
 - lib/workorder/generatedDocuments.ts
-- lib/workorder/presentation/workOrderWorkspacePresentation.ts
-- lib/workorder/workspace/buildWorkspaceViewModel.ts
-- lib/workorder/workspace/builders/detailBuilders.ts
-- lib/workorder/workspace/viewModelTypes.ts
+- components/workorder/sidepanel/shared/WorkOrderSidePanelSections.tsx
+- components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAttachmentSections.tsx
+- lib/hooks/useWorkOrder.ts
 추가 파일 목록 :
 - 없음
 삭제 파일 목록 :

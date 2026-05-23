@@ -64,7 +64,7 @@ export function createOrderRequestPdfStorageKey(input: {
   const workOrderId = sanitizeStorageSegment(input.workOrderId);
   const fileId = sanitizeStorageSegment(input.fileId);
 
-  return `companies/${companyId}/workorders/${workOrderId}/generated/order-request/${fileId}.pdf`;
+  return `companies/${companyId}/workorders/${workOrderId}/attachments/${fileId}.pdf`;
 }
 
 export function getGeneratedOrderRequestAttachmentScope(): AttachmentScope {

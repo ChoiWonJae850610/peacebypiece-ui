@@ -220,7 +220,7 @@ export async function POST(request: Request, context: RouteContext) {
     actorName: scopeResult.actorName,
   });
 
-  let createdId = fileId;
+  let createdId: string = fileId;
   try {
     const created = await repository.createAttachment({
       order_id: workOrderId,

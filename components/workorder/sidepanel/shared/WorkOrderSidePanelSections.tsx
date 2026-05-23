@@ -20,6 +20,8 @@ export default function WorkOrderSidePanelSections({
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  canGenerateOrderRequestPdf,
+  onGenerateOrderRequestPdf,
   currentRole,
   users,
   workOrder,
@@ -45,6 +47,8 @@ export default function WorkOrderSidePanelSections({
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
       onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
+      canGenerateOrderRequestPdf={canGenerateOrderRequestPdf}
+      onGenerateOrderRequestPdf={onGenerateOrderRequestPdf}
       writeLocked={writeLocked}
       writeLockMessage={writeLockMessage}
       variant={variant}
