@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { HistoryLog, WorkOrder } from "@/types/workorder";
 import {
+  mergeSavedWorkOrders,
   mergeSavedWorkOrdersPreservingDraftOnlyFields,
   replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
@@ -75,5 +76,28 @@ export function buildImmediatePatchPersistSuccessState({
   return {
     localWorkOrders: mergeSavedWorkOrdersPreservingDraftOnlyFields(baseWorkOrders, [persistedWorkOrder]),
     persistedWorkOrders: replaceWorkOrderById(baseWorkOrders, workOrderId, persistedWorkOrder),
+  };
+}
+
+
+export type SharedProductionPersistSuccessInput = {
+  optimisticWorkOrders: WorkOrder[];
+  persistedWorkOrders: WorkOrder[];
+};
+
+export type SharedProductionPersistSuccessResult = {
+  localWorkOrders: WorkOrder[];
+  persistedWorkOrders: WorkOrder[];
+};
+
+export function buildSharedProductionPersistSuccessState({
+  optimisticWorkOrders,
+  persistedWorkOrders,
+}: SharedProductionPersistSuccessInput): SharedProductionPersistSuccessResult {
+  const mergedWorkOrders = mergeSavedWorkOrders(optimisticWorkOrders, persistedWorkOrders);
+
+  return {
+    localWorkOrders: mergedWorkOrders,
+    persistedWorkOrders: mergedWorkOrders,
   };
 }

@@ -15,12 +15,12 @@ import {
   getSelectedWorkOrderForSaveState,
   persistWorkOrderWithHistory,
   persistWorkOrderStatePatchWithHistory,
-  mergeSavedWorkOrders,
   persistWorkOrderStatePatchesWithHistory,
 } from "./workorderRepositoryMutations";
 import {
   applyWorkflowActionSideEffects,
   buildImmediatePatchPersistSuccessState,
+  buildSharedProductionPersistSuccessState,
   markWorkflowPersistFailed,
   markWorkflowPersistStarted,
   replaceWorkflowPersistedWorkOrder,
@@ -401,8 +401,12 @@ export function useWorkOrderWorkflowActions({
         auditActor: currentUser,
         serviceCode: WORKORDER_SERVICE_CODE.inventoryImmediateSave,
       }).then((persistedCandidates) => {
-        const persistedWorkOrders = mergeSavedWorkOrders(nextWorkOrders, persistedCandidates);
-        setWorkOrders(persistedWorkOrders);
+        const { localWorkOrders, persistedWorkOrders } = buildSharedProductionPersistSuccessState({
+          optimisticWorkOrders: nextWorkOrders,
+          persistedWorkOrders: persistedCandidates,
+        });
+        workOrdersRef.current = localWorkOrders;
+        setWorkOrders(localWorkOrders);
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
       }).catch((error) => {
@@ -441,8 +445,12 @@ export function useWorkOrderWorkflowActions({
         auditActor: currentUser,
         serviceCode: WORKORDER_SERVICE_CODE.completeInspection,
       }).then((persistedCandidates) => {
-        const persistedWorkOrders = mergeSavedWorkOrders(nextWorkOrders, persistedCandidates);
-        setWorkOrders(persistedWorkOrders);
+        const { localWorkOrders, persistedWorkOrders } = buildSharedProductionPersistSuccessState({
+          optimisticWorkOrders: nextWorkOrders,
+          persistedWorkOrders: persistedCandidates,
+        });
+        workOrdersRef.current = localWorkOrders;
+        setWorkOrders(localWorkOrders);
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
       }).catch((error) => {
