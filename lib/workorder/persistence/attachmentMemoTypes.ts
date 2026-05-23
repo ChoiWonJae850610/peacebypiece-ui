@@ -12,6 +12,12 @@ export type AttachmentStorageProvider = (typeof ATTACHMENT_STORAGE_PROVIDER_VALU
 
 export type WorkOrderAttachmentKind = "design" | "file";
 
+export const ATTACHMENT_SOURCE_TYPES = ["user", "system"] as const;
+export type AttachmentSourceType = (typeof ATTACHMENT_SOURCE_TYPES)[number];
+
+export const GENERATED_DOCUMENT_TYPES = ["order_request_pdf"] as const;
+export type GeneratedDocumentType = (typeof GENERATED_DOCUMENT_TYPES)[number];
+
 export type WorkOrderAttachmentDbRecord = {
   id: string;
   order_id: string;
@@ -26,6 +32,8 @@ export type WorkOrderAttachmentDbRecord = {
   deleted_at: string | null;
   created_at: string;
   is_primary?: boolean | null;
+  source_type?: AttachmentSourceType | string | null;
+  generated_document_type?: GeneratedDocumentType | string | null;
 };
 
 export type WorkOrderMemoDbRecord = {
@@ -59,6 +67,8 @@ export type CreateAttachmentRecordInput = {
   content_type?: string | null;
   file_size?: number | null;
   is_primary?: boolean | null;
+  source_type?: AttachmentSourceType | string | null;
+  generated_document_type?: GeneratedDocumentType | string | null;
 };
 
 export type CreateMemoThreadRecordInput = {

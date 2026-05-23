@@ -19,6 +19,7 @@ function normalizeFactoryOrderRequest(
   const requestedById = value.requestedById?.trim() || null;
   const requestedAt = value.requestedAt?.trim() ?? "";
   const quantity = Number.isFinite(value.quantity) ? Number(value.quantity) : 0;
+  const requestNote = value.requestNote?.trim() || null;
 
   return {
     factoryId,
@@ -27,6 +28,7 @@ function normalizeFactoryOrderRequest(
     requestedAt,
     requestedBy,
     requestedById,
+    requestNote,
   };
 }
 

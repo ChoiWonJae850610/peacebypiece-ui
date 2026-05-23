@@ -397,7 +397,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
         workOrder: coreState.selectedWorkOrder,
         nextTitle,
       }),
-    handleConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) =>
+    handleConfirmOrderRequest: (payload: { factoryName: string; quantity: number; requestNote?: string | null }) =>
       actionState.handleConfirmOrderRequest(coreState.selectedWorkOrder, payload),
     handleCloseOrderRequestConfirm: actionState.handleCloseOrderRequestConfirm,
     workflowValidationModal: actionState.workflowValidationModal,

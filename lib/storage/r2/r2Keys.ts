@@ -5,6 +5,7 @@ import type { AttachmentScope } from "@/types/workorder";
 
 const SAFE_EXTENSION_PATTERN = /^[a-z0-9]{1,12}$/i;
 const WORK_ORDER_ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
+const WORK_ORDER_GENERATED_DOCUMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/generated\/order-request\/[^/]+\.pdf$/i;
 const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
 
 function getFileExtension(filename: string): string {
@@ -82,6 +83,7 @@ export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
   const normalized = normalizeStorageKey(key);
   return (
     WORK_ORDER_ATTACHMENT_KEY_PATTERN.test(normalized) ||
+    WORK_ORDER_GENERATED_DOCUMENT_KEY_PATTERN.test(normalized) ||
     WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalized)
   );
 }
@@ -90,7 +92,7 @@ export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
 export type ParsedWorkOrderAttachmentStorageKey = {
   companyId: string;
   workOrderId: string;
-  directory: "design" | "attachments" | "memos";
+  directory: "design" | "attachments" | "memos" | "generated/order-request";
   fileName: string;
   isThumbnail: boolean;
 };
@@ -98,6 +100,28 @@ export type ParsedWorkOrderAttachmentStorageKey = {
 export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrderAttachmentStorageKey | null {
   const normalized = normalizeStorageKey(key);
   const segments = normalized.split("/");
+
+  if (segments.length === 7) {
+    const [root, companyId, workorders, workOrderId, generated, documentType, fileName] = segments;
+    if (
+      root === "companies" &&
+      workorders === "workorders" &&
+      generated === "generated" &&
+      documentType === "order-request" &&
+      companyId &&
+      workOrderId &&
+      fileName &&
+      fileName.toLowerCase().endsWith(".pdf")
+    ) {
+      return {
+        companyId,
+        workOrderId,
+        directory: "generated/order-request",
+        fileName,
+        isThumbnail: false,
+      };
+    }
+  }
 
   if (segments.length === 6) {
     const [root, companyId, workorders, workOrderId, directory, fileName] = segments;

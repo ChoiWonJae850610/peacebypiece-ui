@@ -445,11 +445,12 @@ export function useWorkOrderWorkflowActions({
   }, [applyWorkflowAction, pendingWorkflowValidation, setOrderRequestConfirmOpen, setPendingWorkflowAction]);
 
   const handleConfirmOrderRequest = useCallback(
-    async (workOrder: WorkOrder, payload: { factoryName: string; quantity: number }) => {
+    async (workOrder: WorkOrder, payload: { factoryName: string; quantity: number; requestNote?: string | null }) => {
       if (!pendingWorkflowAction) return;
 
       const normalizedFactoryName = payload.factoryName.trim();
       const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
+      const normalizedRequestNote = payload.requestNote?.trim() || null;
       const normalizedWorkOrder = normalizeWorkOrderForWorkflowGate(workOrder);
       const validationResult = getFactoryOrderWorkflowGateResult({
         workOrder: {
@@ -486,6 +487,7 @@ export function useWorkOrderWorkflowActions({
           requestedAt,
           requestedBy: currentUser.name,
           requestedById: currentUser.id,
+          requestNote: normalizedRequestNote,
         } satisfies FactoryOrderRequest,
         text: actionFlowText,
         historyText,

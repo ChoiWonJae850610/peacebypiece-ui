@@ -86,6 +86,8 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
     ownerId: row.author_id,
     ownerName: row.author_id,
     isPrimary: row.is_primary === true,
+    sourceType: row.source_type ?? "user",
+    generatedDocumentType: row.generated_document_type ?? null,
   };
 }
 
@@ -163,6 +165,8 @@ function mapAttachmentInput(input: CreateAttachmentRecordInput) {
     size_bytes: toNumberOrNull(input.file_size),
     author_id: input.attachment.ownerId ?? input.attachment.ownerName ?? null,
     is_primary: input.is_primary ?? input.attachment.isPrimary ?? false,
+    source_type: input.source_type ?? input.attachment.sourceType ?? "user",
+    generated_document_type: input.generated_document_type ?? input.attachment.generatedDocumentType ?? null,
   };
 }
 
@@ -271,6 +275,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   size_bytes,
                   author_id,
                   is_primary,
+                  source_type,
+                  generated_document_type,
                   is_active,
                   deleted_at,
                   created_at
@@ -332,9 +338,11 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
            mime_type,
            size_bytes,
            author_id,
-           is_primary
+           is_primary,
+           source_type,
+           generated_document_type
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
          RETURNING id,
                    order_id,
                    type,
@@ -345,6 +353,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    size_bytes,
                    author_id,
                    is_primary,
+                   source_type,
+                   generated_document_type,
                    is_active,
                    deleted_at,
                    created_at`,
@@ -361,6 +371,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
           next.size_bytes,
           next.author_id,
           next.is_primary,
+          next.source_type,
+          next.generated_document_type,
         ],
       );
 
@@ -444,6 +456,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                 size_bytes,
                 author_id,
                 is_primary,
+                source_type,
+                generated_document_type,
                 is_active,
                 deleted_at,
                 created_at
@@ -479,6 +493,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                 size_bytes,
                 author_id,
                 is_primary,
+                source_type,
+                generated_document_type,
                 is_active,
                 deleted_at,
                 created_at
@@ -572,6 +588,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                       size_bytes,
                       author_id,
                       is_primary,
+                      source_type,
+                      generated_document_type,
                       is_active,
                       deleted_at,
                       deleted_by,
@@ -633,6 +651,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                 size_bytes,
                 author_id,
                 is_primary,
+                source_type,
+                generated_document_type,
                 is_active,
                 deleted_at,
                 created_at

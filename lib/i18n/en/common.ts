@@ -164,7 +164,7 @@ export const commonEn = {
     },
     modalActions: {
       completeInspection: "Complete inspection",
-      proceedOrderRequest: "Proceed order request",
+      proceedOrderRequest: "Request order",
       exportPdf: "Export PDF",
     },
     layout: {

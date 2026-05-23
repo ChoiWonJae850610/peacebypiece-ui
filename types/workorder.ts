@@ -26,6 +26,8 @@ export type Attachment = {
   linkedThreadId?: string | null;
   linkedReplyId?: string | null;
   isPrimary?: boolean | null;
+  sourceType?: "user" | "system" | string | null;
+  generatedDocumentType?: string | null;
 };
 
 export type MemoReply = {
@@ -74,6 +76,7 @@ export type FactoryOrderRequest = {
   requestedAt: string;
   requestedBy: string;
   requestedById?: string | null;
+  requestNote?: string | null;
 };
 
 export type OrderEntry = {

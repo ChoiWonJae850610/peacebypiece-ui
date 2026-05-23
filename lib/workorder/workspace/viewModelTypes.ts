@@ -112,7 +112,7 @@ export type BuildWorkspaceViewModelArgs = {
   onWorkflowAction: (action: WorkflowAction, workOrderOverride?: WorkOrder) => void;
   onUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) => void;
   onRenameWorkOrderTitle: (nextTitle: string) => void;
-  onConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) => void;
+  onConfirmOrderRequest: (payload: { factoryName: string; quantity: number; requestNote?: string | null }) => void;
   onCloseOrderRequestConfirm: () => void;
   onInventoryApply: ModalProps["inventoryEditor"]["onApply"];
   onCompleteInspection: DetailProps["onCompleteInspection"];
@@ -274,7 +274,7 @@ export type ModalViewModelArgs = {
   showUserSwitchingTools?: boolean;
   onSetHistoryFilter: (next: HistoryFilter) => void;
   onCreateWorkOrder: ModalProps["createWorkOrder"]["onCreate"];
-  onConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) => void;
+  onConfirmOrderRequest: (payload: { factoryName: string; quantity: number; requestNote?: string | null }) => void;
   onCloseOrderRequestConfirm: () => void;
   onInventoryApply: ModalProps["inventoryEditor"]["onApply"];
   onApplyRoles: ModalProps["permission"]["onApplyRoles"];

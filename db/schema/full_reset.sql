@@ -651,6 +651,8 @@ CREATE TABLE attachments (
   size_bytes bigint,
   author_id text,
   is_primary boolean NOT NULL DEFAULT false,
+  source_type text NOT NULL DEFAULT 'user',
+  generated_document_type text,
   thumbnail_key text,
   thumbnail_url text,
   preview_url text,
@@ -1840,6 +1842,7 @@ CREATE INDEX attachments_purge_after_idx ON attachments(purge_after_at);
 CREATE INDEX attachments_deleted_purge_after_idx ON attachments(purge_after_at) WHERE deleted_at IS NOT NULL;
 CREATE INDEX attachments_company_active_idx ON attachments(company_id, created_at DESC) WHERE is_active = true AND deleted_at IS NULL;
 CREATE INDEX attachments_company_type_created_idx ON attachments (company_id, type, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+CREATE INDEX attachments_generated_document_idx ON attachments (company_id, order_id, generated_document_type, created_at DESC) WHERE source_type = 'system' AND generated_document_type IS NOT NULL AND deleted_at IS NULL AND COALESCE(is_active, true) = true;
 
 CREATE UNIQUE INDEX attachment_trash_items_pending_attachment_unique_idx ON attachment_trash_items (attachment_id) WHERE purge_status IN ('pending', 'purge_requested') AND restored_at IS NULL AND purged_at IS NULL;
 CREATE INDEX attachment_trash_items_attachment_idx ON attachment_trash_items (attachment_id);

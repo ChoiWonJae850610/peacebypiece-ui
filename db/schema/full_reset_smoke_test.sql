@@ -125,6 +125,8 @@ BEGIN
       ('attachments', 'delete_parent_type'),
       ('attachments', 'delete_parent_id'),
       ('attachments', 'delete_batch_id'),
+      ('attachments', 'source_type'),
+      ('attachments', 'generated_document_type'),
       ('attachment_trash_items', 'delete_source'),
       ('attachment_trash_items', 'delete_scope'),
       ('attachment_trash_items', 'delete_parent_type'),

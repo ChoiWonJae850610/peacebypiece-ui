@@ -164,7 +164,7 @@ export const commonKo = {
     },
     modalActions: {
       completeInspection: "검수 완료",
-      proceedOrderRequest: "발주 요청 진행",
+      proceedOrderRequest: "발주요청",
       exportPdf: "PDF 출력",
     },
     layout: {
