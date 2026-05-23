@@ -518,6 +518,26 @@ body {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--pbp-status-danger-fg) 18%, transparent);
 }
 
+.pbp-toast--processing {
+  background: color-mix(in srgb, var(--pbp-toast-background) 96%, transparent);
+}
+
+.pbp-toast__spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--pbp-toast-accent, var(--pbp-brand-soft)) 26%, transparent);
+  border-top-color: var(--pbp-toast-accent, var(--pbp-brand-soft));
+  animation: pbp-toast-spin 0.75s linear infinite;
+}
+
+@keyframes pbp-toast-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .pbp-modal-overlay {
   background: var(--pbp-modal-overlay);
 }
