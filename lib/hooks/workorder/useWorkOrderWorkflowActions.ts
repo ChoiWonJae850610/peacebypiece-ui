@@ -35,7 +35,7 @@ import { getWorkOrderImmediatePatchServiceCode } from "@/lib/workorder/serviceCo
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { canReinspectInWorkflow, isWorkflowState } from "@/lib/constants/workorderStates";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
-import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_CODE, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import {
   getFactoryOrderWorkflowGateResult,
   getReviewWorkflowGateResult,
@@ -203,6 +203,57 @@ export function useWorkOrderWorkflowActions({
     const currentGroupId = getWorkOrderReorderGroupId(currentWorkOrder);
     return nextWorkOrders.filter((item) => item.id === currentWorkOrder.id || getWorkOrderReorderGroupId(item) === currentGroupId);
   }, []);
+
+  const persistSharedProductionChange = useCallback(
+    ({
+      currentWorkOrder,
+      nextWorkOrders,
+      historyLogs,
+      serviceCode,
+    }: {
+      currentWorkOrder: WorkOrder;
+      nextWorkOrders: WorkOrder[];
+      historyLogs: Parameters<typeof persistWorkOrderStatePatchesWithHistory>[1]["historyLogs"];
+      serviceCode: WorkOrderServiceCodeValue;
+    }) => {
+      const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
+      markWorkflowPersistStarted(setSaveStatus);
+      workOrdersRef.current = nextWorkOrders;
+      setWorkOrders(nextWorkOrders);
+
+      void persistWorkOrderStatePatchesWithHistory(repository, {
+        workOrders: persistCandidates,
+        historyLogs,
+        auditActor: currentUser,
+        serviceCode,
+      })
+        .then((persistedCandidates) => {
+          applySharedProductionPersistSuccess({
+            optimisticWorkOrders: nextWorkOrders,
+            persistedWorkOrders: persistedCandidates,
+            state: {
+              workOrdersRef,
+              setWorkOrders,
+              setPersistedWorkOrders,
+              syncSelectedWorkOrderSaveState,
+            },
+          });
+        })
+        .catch((error) => {
+          markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
+        });
+    },
+    [
+      currentUser,
+      getInventorySyncCandidates,
+      repository,
+      setPersistedWorkOrders,
+      setSaveStatus,
+      setToastMessage,
+      setWorkOrders,
+      syncSelectedWorkOrderSaveState,
+    ],
+  );
 
   const applyReinspectionAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction) => {
@@ -393,34 +444,18 @@ export function useWorkOrderWorkflowActions({
       if (!result) return;
 
       const nextWorkOrders = applySharedInventoryAdjustment(workOrdersRef.current, currentWorkOrder, result.appliedChanges ?? []);
-      const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
-      markWorkflowPersistStarted(setSaveStatus);
-      void persistWorkOrderStatePatchesWithHistory(repository, {
-        workOrders: persistCandidates,
+      persistSharedProductionChange({
+        currentWorkOrder,
+        nextWorkOrders,
         historyLogs: result.historyLogs,
-        auditActor: currentUser,
         serviceCode: WORKORDER_SERVICE_CODE.inventoryImmediateSave,
-      }).then((persistedCandidates) => {
-        applySharedProductionPersistSuccess({
-          optimisticWorkOrders: nextWorkOrders,
-          persistedWorkOrders: persistedCandidates,
-          state: {
-            workOrdersRef,
-            setWorkOrders,
-            setPersistedWorkOrders,
-            syncSelectedWorkOrderSaveState,
-          },
-        });
-      }).catch((error) => {
-        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
       });
-      setWorkOrders(nextWorkOrders);
       applyWorkflowActionSideEffects(result, {
         setHistoryLogs,
         setToastMessage,
       });
     },
-    [actionFlowText, currentUser, currentUser.name, getInventorySyncCandidates, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
+    [actionFlowText, currentUser.name, historyText, persistSharedProductionChange, setHistoryLogs, setToastMessage],
   );
 
   const handleCompleteInspection = useCallback(
@@ -439,34 +474,18 @@ export function useWorkOrderWorkflowActions({
         orderEntryId,
         nextInventoryQuantity,
       });
-      const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
-      markWorkflowPersistStarted(setSaveStatus);
-      void persistWorkOrderStatePatchesWithHistory(repository, {
-        workOrders: persistCandidates,
+      persistSharedProductionChange({
+        currentWorkOrder,
+        nextWorkOrders,
         historyLogs: result.historyLogs,
-        auditActor: currentUser,
         serviceCode: WORKORDER_SERVICE_CODE.completeInspection,
-      }).then((persistedCandidates) => {
-        applySharedProductionPersistSuccess({
-          optimisticWorkOrders: nextWorkOrders,
-          persistedWorkOrders: persistedCandidates,
-          state: {
-            workOrdersRef,
-            setWorkOrders,
-            setPersistedWorkOrders,
-            syncSelectedWorkOrderSaveState,
-          },
-        });
-      }).catch((error) => {
-        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
       });
-      setWorkOrders(nextWorkOrders);
       applyWorkflowActionSideEffects(result, {
         setHistoryLogs,
         setToastMessage,
       });
     },
-    [actionFlowText, currentUser, currentUser.name, getInventorySyncCandidates, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
+    [actionFlowText, currentUser.name, historyText, persistSharedProductionChange, setHistoryLogs, setToastMessage],
   );
 
   const handleUpdateSelectedWorkOrder = useCallback(
