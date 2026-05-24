@@ -10,6 +10,7 @@ import {
   createWorkspaceWorkorderMaterialLine,
   deleteWorkspaceWorkorderMaterialLine,
   listWorkspaceWorkorderMaterialLines,
+  updateWorkspaceWorkorderMaterialLineOrderStatus,
 } from "@/lib/materials/workorderMaterialLinesService";
 import type {
   MaterialOrderStatus,
@@ -110,6 +111,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(await createWorkspaceWorkorderMaterialLine(input));
   } catch {
     return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_CREATE_FAILED" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.status.order" });
+  if (!guard.ok) return guard.response;
+
+  try {
+    const body = await readRequestBody(request);
+    const workorderId = normalizeOptionalText(body.workorderId);
+    const lineId = normalizeOptionalText(body.lineId);
+    if (!workorderId || !lineId || !isEnumValue<MaterialOrderStatus>(MATERIAL_ORDER_STATUS_VALUES, body.orderStatus)) {
+      return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_STATUS_PAYLOAD_REQUIRED" }, { status: 400 });
+    }
+
+    return NextResponse.json(await updateWorkspaceWorkorderMaterialLineOrderStatus({
+      companyId: guard.scope.companyId,
+      workorderId,
+      lineId,
+      orderStatus: body.orderStatus,
+    }));
+  } catch {
+    return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_STATUS_UPDATE_FAILED" }, { status: 500 });
   }
 }
 

@@ -218,3 +218,20 @@ export async function deleteWorkorderMaterialLineForCompany(input: {
     [input.companyId, input.workorderId, input.lineId],
   );
 }
+
+export async function updateWorkorderMaterialLineOrderStatusForCompany(input: {
+  companyId: string;
+  workorderId: string;
+  lineId: string;
+  orderStatus: MaterialOrderStatus;
+}): Promise<void> {
+  await queryDb(
+    `UPDATE workorder_material_lines
+        SET order_status = $4,
+            updated_at = now()
+      WHERE company_id = $1
+        AND workorder_id = $2
+        AND id = $3`,
+    [input.companyId, input.workorderId, input.lineId, input.orderStatus],
+  );
+}

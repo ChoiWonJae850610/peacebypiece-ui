@@ -1,3 +1,4 @@
+import type { AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import type {
   MaterialKind,
   MaterialLifecycleStatus,
@@ -50,6 +51,15 @@ export const MATERIAL_ORDER_STATUS_LABELS: Record<MaterialOrderStatus, string> =
   cancelled: "취소",
 };
 
+export const MATERIAL_ORDER_STATUS_BADGE_TONES: Record<MaterialOrderStatus, AdminStatusBadgeTone> = {
+  not_requested: "neutral",
+  request_pending: "warning",
+  ordered: "info",
+  partially_received: "primary",
+  received: "success",
+  cancelled: "danger",
+};
+
 export const MATERIAL_UNIT_VALUES = [
   "yd",
   "m",
@@ -88,4 +98,4 @@ export const WORKORDER_MATERIAL_LINE_ROLE_LABELS: Record<WorkorderMaterialLineRo
   other: "기타",
 };
 
-export const MATERIAL_DATABASE_DESIGN_VERSION = "0.16.19" as const;
+export const MATERIAL_DATABASE_DESIGN_VERSION = "0.16.21" as const;

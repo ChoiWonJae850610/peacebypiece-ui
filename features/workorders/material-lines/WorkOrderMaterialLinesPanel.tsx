@@ -3,11 +3,13 @@
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   MATERIAL_KIND_LABELS,
+  MATERIAL_ORDER_STATUS_BADGE_TONES,
   MATERIAL_ORDER_STATUS_LABELS,
+  MATERIAL_ORDER_STATUS_VALUES,
   MATERIAL_UNIT_LABELS,
   WORKORDER_MATERIAL_LINE_ROLE_LABELS,
 } from "@/lib/materials/constants";
-import type { MaterialUnit, WorkorderMaterialLineRole } from "@/lib/materials/types";
+import type { MaterialOrderStatus, MaterialUnit, WorkorderMaterialLineRole } from "@/lib/materials/types";
 import { useWorkOrderMaterialLines } from "@/features/workorders/material-lines/useWorkOrderMaterialLines";
 
 const INPUT_CLASS_NAME = "min-h-9 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs text-stone-800 outline-none focus:border-stone-400";
@@ -143,7 +145,26 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
                 </div>
                 <div className="text-stone-600">{WORKORDER_MATERIAL_LINE_ROLE_LABELS[line.role]}</div>
                 <div className="text-stone-600">{line.requiredQuantity ?? "-"} {MATERIAL_UNIT_LABELS[line.unit]}</div>
-                <div><AdminStatusBadge tone="neutral">{MATERIAL_ORDER_STATUS_LABELS[line.orderStatus]}</AdminStatusBadge></div>
+                <div className="grid gap-1">
+                  <AdminStatusBadge tone={MATERIAL_ORDER_STATUS_BADGE_TONES[line.orderStatus]}>
+                    {MATERIAL_ORDER_STATUS_LABELS[line.orderStatus]}
+                  </AdminStatusBadge>
+                  <select
+                    className={INPUT_CLASS_NAME}
+                    value={line.orderStatus}
+                    onChange={(event) => {
+                      void controller.updateOrderStatus(line.id, event.target.value as MaterialOrderStatus);
+                    }}
+                    disabled={locked || isBusy}
+                    aria-label={`${line.material.name} 발주 상태`}
+                  >
+                    {MATERIAL_ORDER_STATUS_VALUES.map((status) => (
+                      <option key={status} value={status}>
+                        {MATERIAL_ORDER_STATUS_LABELS[status]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
                   type="button"
                   onClick={() => { void controller.deleteLine(line.id); }}

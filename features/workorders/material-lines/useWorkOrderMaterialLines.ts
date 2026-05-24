@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import type {
   Material,
+  MaterialOrderStatus,
   MaterialUnit,
   WorkorderMaterialLineRole,
   WorkorderMaterialLineWithMaterial,
@@ -32,7 +33,7 @@ export const EMPTY_WORKORDER_MATERIAL_LINE_DRAFT: WorkOrderMaterialLineDraft = {
 };
 
 async function requestWorkOrderMaterialLinesApi(
-  method: "GET" | "POST" | "DELETE",
+  method: "GET" | "POST" | "PATCH" | "DELETE",
   workorderId: string,
   body?: Record<string, unknown>,
 ): Promise<WorkOrderMaterialLinesApiResponse> {
@@ -159,6 +160,23 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
     }
   };
 
+
+  const updateOrderStatus = async (lineId: string, orderStatus: MaterialOrderStatus) => {
+    if (locked || !workorderId || !lineId) return;
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      const payload = await requestWorkOrderMaterialLinesApi("PATCH", workorderId, { workorderId, lineId, orderStatus });
+      setMaterials(Array.isArray(payload.materials) ? payload.materials : []);
+      setLines(Array.isArray(payload.lines) ? payload.lines : []);
+      setMessage("원단·부자재 발주 상태를 변경했습니다.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "WORKORDER_MATERIAL_LINE_STATUS_UPDATE_FAILED");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const deleteLine = async (lineId: string) => {
     if (locked || !workorderId || !lineId) return;
     setIsSaving(true);
@@ -187,6 +205,7 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
     selectMaterial,
     refresh,
     addLine,
+    updateOrderStatus,
     deleteLine,
   };
 }

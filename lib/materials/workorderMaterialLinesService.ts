@@ -5,9 +5,11 @@ import {
   createWorkorderMaterialLineForCompany,
   deleteWorkorderMaterialLineForCompany,
   listWorkorderMaterialLinesByCompany,
+  updateWorkorderMaterialLineOrderStatusForCompany,
 } from "@/lib/materials/workorderMaterialLinesRepository";
 import type {
   Material,
+  MaterialOrderStatus,
   WorkorderMaterialLineMutationInput,
   WorkorderMaterialLineWithMaterial,
 } from "@/lib/materials/types";
@@ -40,5 +42,15 @@ export async function deleteWorkspaceWorkorderMaterialLine(input: {
   lineId: string;
 }): Promise<WorkorderMaterialLinesResult> {
   await deleteWorkorderMaterialLineForCompany(input);
+  return listWorkspaceWorkorderMaterialLines({ companyId: input.companyId, workorderId: input.workorderId });
+}
+
+export async function updateWorkspaceWorkorderMaterialLineOrderStatus(input: {
+  companyId: string;
+  workorderId: string;
+  lineId: string;
+  orderStatus: MaterialOrderStatus;
+}): Promise<WorkorderMaterialLinesResult> {
+  await updateWorkorderMaterialLineOrderStatusForCompany(input);
   return listWorkspaceWorkorderMaterialLines({ companyId: input.companyId, workorderId: input.workorderId });
 }
