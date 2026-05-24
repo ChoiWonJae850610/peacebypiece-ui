@@ -1,15 +1,18 @@
 import "server-only";
 
 import { createHmac, timingSafeEqual } from "crypto";
+import type { WaflSessionRole } from "@/lib/auth/session";
 
 export const WAFL_DEV_TEST_CONTEXT_COOKIE = "wafl_dev_test_context";
+
+export type DevTestContextOverlayRole = Exclude<WaflSessionRole, "system_admin">;
 
 export type DevTestContextOverlayPayload = {
   originalUserId: string;
   targetUserId: string;
   targetCompanyId: string;
   targetCompanyMemberId: string;
-  targetRole: "company_admin" | "member";
+  targetRole: DevTestContextOverlayRole;
   issuedAt: string;
 };
 
@@ -19,6 +22,10 @@ function toBase64Url(value: string): string {
 
 function fromBase64Url(value: string): string {
   return Buffer.from(value, "base64url").toString("utf8");
+}
+
+function isDevTestContextOverlayRole(value: unknown): value is DevTestContextOverlayRole {
+  return value === "company_admin" || value === "member";
 }
 
 function readDevTestContextSecret(): string {
@@ -57,10 +64,10 @@ export function verifyDevTestContextCookieValue(value: string | null | undefined
 
   try {
     const parsed = JSON.parse(fromBase64Url(encodedPayload)) as Partial<DevTestContextOverlayPayload>;
-    if (!parsed.originalUserId || !parsed.targetUserId || !parsed.targetCompanyId || !parsed.targetCompanyMemberId || !parsed.targetRole || !parsed.issuedAt) {
+    if (!parsed.originalUserId || !parsed.targetUserId || !parsed.targetCompanyId || !parsed.targetCompanyMemberId || !parsed.issuedAt) {
       return null;
     }
-    if (parsed.targetRole !== "company_admin" && parsed.targetRole !== "member") return null;
+    if (!isDevTestContextOverlayRole(parsed.targetRole)) return null;
 
     return {
       originalUserId: parsed.originalUserId,

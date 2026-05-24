@@ -1,14 +1,14 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
-import type { WaflSessionRole } from "@/lib/auth/session";
+import type { DevTestContextOverlayRole } from "./session";
 
 export type DevTestContextTarget = {
   userId: string;
   companyId: string;
   companyName: string;
   companyMemberId: string;
-  role: WaflSessionRole;
+  role: DevTestContextOverlayRole;
   email: string;
   name: string;
   roleTemplateCode: string | null;
@@ -25,7 +25,7 @@ type DevTestContextTargetRow = {
   role_template_code: string | null;
 };
 
-function toSessionRole(roleTemplateCode: string | null): WaflSessionRole {
+function toSessionRole(roleTemplateCode: string | null): DevTestContextOverlayRole {
   return roleTemplateCode === "company_admin" ? "company_admin" : "member";
 }
 
