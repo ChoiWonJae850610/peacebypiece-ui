@@ -7,8 +7,8 @@ export {
   getSubmittableOrderEntries,
 } from "@/lib/workorder/orderSubmission";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
-import { isAdminRole, isDesignerRole, isInspectorRole } from "@/lib/constants/roles";
-import { WORKFLOW_STATE, canEditBeforeOrder, isWorkflowState, isWorkflowStateAtLeast, isWorkflowStateInRange } from "@/lib/constants/workorderStates";
+import { isAdminRole, isDesignerRole } from "@/lib/constants/roles";
+import { WORKFLOW_STATE, canEditBeforeOrder, isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
 import type { UserProfile } from "@/types/user";
 import { createWorkOrderListItem } from "@/lib/workorder/mappers/workOrderListItemMapper";
 import { calculateWorkOrderCosts } from "@/lib/workorder/derived/workOrderCostSummary";
@@ -23,27 +23,26 @@ export function deriveWorkflowStateById(workOrders: WorkOrder[]) {
 }
 
 
+function getUserScopeIds(currentUser: UserProfile) {
+  return new Set(
+    [currentUser.id, currentUser.companyMemberId]
+      .map((value) => value?.trim())
+      .filter((value): value is string => Boolean(value)),
+  );
+}
+
+function isManagedByCurrentUser(workOrder: WorkOrder, currentUser: UserProfile) {
+  const managerId = workOrder.managerId?.trim();
+  if (!managerId) return false;
+  return getUserScopeIds(currentUser).has(managerId);
+}
+
 export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowStateById: Record<string, string>, currentUser: UserProfile) {
   if (isAdminRole(currentUser)) {
     return workOrders;
   }
 
-  if (isDesignerRole(currentUser)) {
-    return workOrders.filter((item) => {
-      const workflowState = workflowStateById[item.id] ?? item.workflowState;
-      const isOwnedByCurrentUser = item.createdById === currentUser.id || (item.managerId ?? null) === currentUser.id;
-      return isOwnedByCurrentUser && canEditBeforeOrder(workflowState as WorkOrder["workflowState"]);
-    });
-  }
-
-  if (isInspectorRole(currentUser)) {
-    return workOrders.filter((item) => {
-      const workflowState = (workflowStateById[item.id] ?? item.workflowState) as WorkOrder["workflowState"];
-      return isWorkflowStateInRange(workflowState, WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed) && !isWorkflowState(workflowState, WORKFLOW_STATE.completed);
-    });
-  }
-
-  return workOrders;
+  return workOrders.filter((item) => isManagedByCurrentUser(item, currentUser));
 }
 
 export function isWorkOrderSideDraftEditable(workflowState: WorkOrder["workflowState"]) {

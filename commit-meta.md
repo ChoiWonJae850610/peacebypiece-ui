@@ -1,18 +1,10 @@
-Version : 0.16.29
-Summary : 작업지시서 담당자 기준과 자재 권한 분리 보정
-Description : 일반 멤버 작업지시서 목록 조회를 본인 담당자 기준으로 고정하고, 담당자 후보에 고객사 관리자를 포함합니다. 멤버 권한에 검수 가능, 원단·부자재 주문 가능, 원단·부자재 발주 가능 항목을 추가하고 자재 라인 API 권한을 주문/발주 권한으로 분리합니다.
+Version : 0.16.30
+Summary : 작업지시서 목록 사용자 범위 필터 보정
+Description : 일반 멤버 작업지시서 목록 필터를 역할/상태 기준이 아닌 담당자 기준으로 단순화했습니다. 디자이너가 검토요청 후에도 담당자가 유지되면 목록에 계속 표시되도록 클라이언트 selector의 canEditBeforeOrder 및 검수 역할 상태 범위 필터를 제거했습니다.
 수정 파일 목록 :
-- app/api/workorders/material-lines/route.ts
-- components/admin/members/AdminMemberManagementDashboard.tsx
-- db/schema/full_reset.sql
-- lib/admin/settings/userAccessRepository.ts
+- lib/workorder/selectors.ts
 - lib/constants/app.ts
-- lib/i18n/en/admin.ts
-- lib/i18n/ko/admin.ts
-- lib/materials/capabilities.ts
-- lib/permissions/memberPermissionMatrix.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
 추가 파일 목록 :
-- 없음
+없음
 삭제 파일 목록 :
-- 없음
+없음
