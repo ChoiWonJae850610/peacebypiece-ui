@@ -1,6 +1,7 @@
 export type MemberPermissionGroupKey =
   | "workorder"
   | "workflow"
+  | "material"
   | "partner"
   | "standards"
   | "storage"
@@ -28,6 +29,8 @@ export type MemberPermissionCode =
   | "workorder.status.order"
   | "workorder.status.inspect"
   | "workorder.status.complete"
+  | "material.order.request"
+  | "material.order.place"
   | "partner.read"
   | "partner.create"
   | "partner.update"
@@ -89,6 +92,8 @@ export const MEMBER_PERMISSION_CATALOG: readonly MemberPermissionCatalogItem[] =
   { code: "workorder.status.order", group: "workflow", labelKey: "permissions.workorder.statusOrder.label", descriptionKey: "permissions.workorder.statusOrder.description", systemOnly: false, sortOrder: 70 },
   { code: "workorder.status.inspect", group: "workflow", labelKey: "permissions.workorder.statusInspect.label", descriptionKey: "permissions.workorder.statusInspect.description", systemOnly: false, sortOrder: 80 },
   { code: "workorder.status.complete", group: "workflow", labelKey: "permissions.workorder.statusComplete.label", descriptionKey: "permissions.workorder.statusComplete.description", systemOnly: false, sortOrder: 90 },
+  { code: "material.order.request", group: "material", labelKey: "permissions.material.orderRequest.label", descriptionKey: "permissions.material.orderRequest.description", systemOnly: false, sortOrder: 100 },
+  { code: "material.order.place", group: "material", labelKey: "permissions.material.orderPlace.label", descriptionKey: "permissions.material.orderPlace.description", systemOnly: false, sortOrder: 105 },
   { code: "partner.read", group: "partner", labelKey: "permissions.partner.read.label", descriptionKey: "permissions.partner.read.description", systemOnly: false, sortOrder: 110 },
   { code: "partner.create", group: "partner", labelKey: "permissions.partner.create.label", descriptionKey: "permissions.partner.create.description", systemOnly: false, sortOrder: 120 },
   { code: "partner.update", group: "partner", labelKey: "permissions.partner.update.label", descriptionKey: "permissions.partner.update.description", systemOnly: false, sortOrder: 130 },
@@ -138,14 +143,14 @@ export const MEMBER_ROLE_TEMPLATE_POLICIES: readonly MemberRoleTemplatePolicy[] 
     labelKey: "memberManagement.roles.inspector.label",
     descriptionKey: "memberManagement.roles.inspector.description",
     sortOrder: 30,
-    permissionCodes: ["workorder.read", "partner.read", "standards.read", "storage.read", "stats.read", "personal_settings.manage"],
+    permissionCodes: ["workorder.read", "workorder.status.inspect", "partner.read", "standards.read", "storage.read", "stats.read", "personal_settings.manage"],
   },
   {
     code: "inventory_manager",
     labelKey: "memberManagement.roles.inventoryManager.label",
     descriptionKey: "memberManagement.roles.inventoryManager.description",
     sortOrder: 40,
-    permissionCodes: ["workorder.read", "partner.read", "partner.create", "partner.update", "partner.delete", "partner.manage", "standards.read", "standards.create", "standards.update", "standards.delete", "standards.manage", "storage.read", "stats.read", "personal_settings.manage"],
+    permissionCodes: ["workorder.read", "material.order.request", "material.order.place", "partner.read", "partner.create", "partner.update", "partner.delete", "partner.manage", "standards.read", "standards.create", "standards.update", "standards.delete", "standards.manage", "storage.read", "stats.read", "personal_settings.manage"],
   },
   {
     code: "viewer",

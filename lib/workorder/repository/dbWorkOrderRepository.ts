@@ -107,23 +107,14 @@ function appendAssignedWorkOrderVisibilityPredicate(
     return;
   }
 
-  const ownerPredicates: string[] = [];
-  if (schema.createdByIdColumn) {
-    values.push(accessibleOwnerIds);
-    ownerPredicates.push(
-      `spec_sheet.${quoteIdentifier(schema.createdByIdColumn)} = ANY($${values.length}::text[])`,
-    );
+  if (!schema.managerIdColumn) {
+    predicates.push("FALSE");
+    return;
   }
 
-  if (schema.managerIdColumn) {
-    values.push(accessibleOwnerIds);
-    ownerPredicates.push(
-      `spec_sheet.${quoteIdentifier(schema.managerIdColumn)} = ANY($${values.length}::text[])`,
-    );
-  }
-
+  values.push(accessibleOwnerIds);
   predicates.push(
-    ownerPredicates.length > 0 ? `(${ownerPredicates.join(" OR ")})` : "FALSE",
+    `spec_sheet.${quoteIdentifier(schema.managerIdColumn)} = ANY($${values.length}::text[])`,
   );
 }
 

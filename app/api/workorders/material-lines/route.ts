@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.update" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: "material.order.request" });
   if (!guard.ok) return guard.response;
 
   try {
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.status.order" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: "material.order.place" });
   if (!guard.ok) return guard.response;
 
   try {
@@ -141,7 +141,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.update" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: "material.order.request" });
   if (!guard.ok) return guard.response;
 
   try {

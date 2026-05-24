@@ -61,6 +61,16 @@ export const adminEn = {
         description: "Mark work orders as completed.",
       },
     },
+    material: {
+      orderRequest: {
+        label: "Material order request",
+        description: "Create or edit fabric and material order requests on assigned work orders.",
+      },
+      orderPlace: {
+        label: "Material purchase order",
+        description: "Place fabric and material purchase orders and change purchase order status.",
+      },
+    },
     partner: {
       read: { label: "Read", description: "View partner lists and details." },
       create: { label: "Create", description: "Create new partners." },
@@ -512,9 +522,24 @@ export const adminEn = {
             "When off, the member can only view standards. When on, the member can create, edit, deactivate, and request deletion.",
         },
         workorderOrderDirect: {
-          label: "Order authority",
+          label: "Work order order authority",
           description:
-            "Allows admin-level direct order requests without the review step.",
+            "Allows requesting work order orders and changing work order order status.",
+        },
+        workorderReview: {
+          label: "Inspection authority",
+          description:
+            "Allows changing inspection status on assigned work orders.",
+        },
+        materialOrderRequest: {
+          label: "Material order request",
+          description:
+            "Allows creating or editing fabric and material order requests on assigned work orders.",
+        },
+        materialOrderPlace: {
+          label: "Material purchase order",
+          description:
+            "Allows placing fabric and material purchase orders and changing purchase order status.",
         },
       },
       actions: {

@@ -1,11 +1,17 @@
-Version : 0.16.28
-Summary : workspace 홈 카드와 메뉴 바 UI 정리
-Description : 가운데 workspace navigation bar 렌더링을 제거하고, 업무 홈 카드 크기를 동일하게 정리했습니다. 고객사 관리자 홈에서는 환경설정 안으로 들어갈 요금·결제와 약관·정책 카드를 제거하고, 일반 멤버 작업지시서 카드가 비활성처럼 보이지 않도록 카드 강조 스타일을 공통 카드 스타일로 통일했습니다.
+Version : 0.16.29
+Summary : 작업지시서 담당자 기준과 자재 권한 분리 보정
+Description : 일반 멤버 작업지시서 목록 조회를 본인 담당자 기준으로 고정하고, 담당자 후보에 고객사 관리자를 포함합니다. 멤버 권한에 검수 가능, 원단·부자재 주문 가능, 원단·부자재 발주 가능 항목을 추가하고 자재 라인 API 권한을 주문/발주 권한으로 분리합니다.
 수정 파일 목록 :
-- components/workspace/layout/WorkspaceTopbar.tsx
-- components/admin/dashboard/AdminConsoleSections.tsx
-- lib/admin/adminWorkspaceCards.ts
+- app/api/workorders/material-lines/route.ts
+- components/admin/members/AdminMemberManagementDashboard.tsx
+- db/schema/full_reset.sql
+- lib/admin/settings/userAccessRepository.ts
 - lib/constants/app.ts
+- lib/i18n/en/admin.ts
+- lib/i18n/ko/admin.ts
+- lib/materials/capabilities.ts
+- lib/permissions/memberPermissionMatrix.ts
+- lib/workorder/repository/dbWorkOrderRepository.ts
 추가 파일 목록 :
 - 없음
 삭제 파일 목록 :

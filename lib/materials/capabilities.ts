@@ -9,8 +9,8 @@ export async function buildMaterialCapabilityState(
 ): Promise<MaterialCapabilityState> {
   return {
     canManageMaterials: await hasWorkspaceApiPermission(session, "standards.manage"),
-    canManageWorkorderMaterialLines: await hasWorkspaceApiPermission(session, "workorder.update"),
-    canChangeWorkorderMaterialOrderStatus: await hasWorkspaceApiPermission(session, "workorder.status.order"),
+    canManageWorkorderMaterialLines: await hasWorkspaceApiPermission(session, "material.order.request"),
+    canChangeWorkorderMaterialOrderStatus: await hasWorkspaceApiPermission(session, "material.order.place"),
   };
 }
 

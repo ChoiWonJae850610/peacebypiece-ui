@@ -99,7 +99,6 @@ async function listFromCompanyMembers(
        LEFT JOIN member_permissions ON member_permissions.company_member_id = company_members.id
       WHERE company_members.company_id = $1
         AND company_members.status = 'approved'
-        AND COALESCE(company_members.role_template_code, 'viewer') <> 'company_admin'
         AND COALESCE(users.is_active, true) = true
       GROUP BY users.id, users.name, users.email, company_members.id, company_members.display_name
       ORDER BY COALESCE(NULLIF(company_members.display_name, ''), NULLIF(users.name, ''), users.email, users.id) ASC`,

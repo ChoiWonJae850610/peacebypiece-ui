@@ -63,6 +63,16 @@ export const adminKo = {
         description: "작업지시서를 완료 상태로 변경할 수 있습니다.",
       },
     },
+    material: {
+      orderRequest: {
+        label: "원단·부자재 주문 요청",
+        description: "담당 작업지시서에서 원단·부자재 주문 요청을 등록하거나 수정할 수 있습니다.",
+      },
+      orderPlace: {
+        label: "원단·부자재 발주 처리",
+        description: "원단·부자재 발주 처리와 발주 상태 변경을 진행할 수 있습니다.",
+      },
+    },
     partner: {
       read: {
         label: "조회",
@@ -527,9 +537,24 @@ export const adminKo = {
             "해제하면 기준정보 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
         },
         workorderOrderDirect: {
-          label: "발주 권한",
+          label: "작업지시서 발주 가능",
           description:
-            "선택하면 관리자급으로 검토 없이 바로 발주 요청까지 진행할 수 있습니다.",
+            "선택하면 작업지시서 발주 요청과 발주 상태 변경을 진행할 수 있습니다.",
+        },
+        workorderReview: {
+          label: "검수 가능",
+          description:
+            "선택하면 담당 작업지시서의 검수 상태를 변경할 수 있습니다.",
+        },
+        materialOrderRequest: {
+          label: "원단·부자재 주문 가능",
+          description:
+            "선택하면 담당 작업지시서에서 원단·부자재 주문 요청을 등록하거나 수정할 수 있습니다.",
+        },
+        materialOrderPlace: {
+          label: "원단·부자재 발주 가능",
+          description:
+            "선택하면 원단·부자재 발주 처리와 발주 상태 변경을 진행할 수 있습니다.",
         },
       },
       actions: {
