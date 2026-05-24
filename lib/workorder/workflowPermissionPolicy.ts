@@ -77,7 +77,9 @@ export function getWorkflowMutationPermissionCode(
   }
 
   if (input.nextWorkflowState === "completed") {
-    return "workorder.status.complete";
+    return previousWorkflowState === "inspection"
+      ? "workorder.status.inspect"
+      : "workorder.status.complete";
   }
 
   return null;

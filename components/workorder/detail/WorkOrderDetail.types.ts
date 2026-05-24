@@ -22,6 +22,7 @@ export type WorkOrderDetailIdentityModel = {
 export type WorkOrderDetailPermissionModel = {
   canRenameTitle?: boolean;
   canEditInventory: boolean;
+  canCompleteInspection: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
   canSeeCostSections: boolean;

@@ -50,6 +50,7 @@ type UseWorkOrderDetailEditorParams = {
   currentWorkflowState: WorkflowState;
   currentUserRole: RoleType;
   canEditInventory: boolean;
+  canCompleteInspection: boolean;
   fabricTotal: number;
   subsidiaryTotal: number;
   outsourcingTotal: number;
@@ -64,6 +65,7 @@ export function useWorkOrderDetailEditor({
   currentWorkflowState,
   currentUserRole,
   canEditInventory,
+  canCompleteInspection,
   fabricTotal,
   subsidiaryTotal,
   outsourcingTotal,
@@ -136,10 +138,10 @@ export function useWorkOrderDetailEditor({
   }), [fabricTotal, orderItems, outsourcingTotal, subsidiaryTotal]);
 
   const canOpenInspectionModal = useMemo(() => getCanOpenInspectionModal({
-    canEditInventory,
+    canCompleteInspection,
     currentWorkflowState,
     orderItems,
-  }), [canEditInventory, currentWorkflowState, orderItems]);
+  }), [canCompleteInspection, currentWorkflowState, orderItems]);
 
   const productionSectionOpen = useMemo(
     () => getProductionSectionOpen(materialOpen, outsourcingOpen),

@@ -37,6 +37,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     currentWorkflowState: workflowModel.currentWorkflowState,
     currentUserRole: identityModel.currentUserRole,
     canEditInventory: permissionModel.canEditInventory,
+    canCompleteInspection: permissionModel.canCompleteInspection,
     fabricTotal: costModel.fabricTotal,
     subsidiaryTotal: costModel.subsidiaryTotal,
     outsourcingTotal: costModel.outsourcingTotal,

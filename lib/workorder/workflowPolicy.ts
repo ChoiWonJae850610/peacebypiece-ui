@@ -18,13 +18,25 @@ export type WorkflowPolicyContext = {
 
 type WorkflowPolicyActionMap = Partial<Record<WorkflowState, WorkflowAction[]>>;
 
-function isWorkOrderManagedByCurrentUser(workOrder: WorkOrder, currentUserId: string) {
-  return workOrder.createdById === currentUserId || (workOrder.managerId ?? null) === currentUserId;
+function getCurrentUserOwnerIds(context: Pick<WorkflowPolicyContext, "currentUser" | "currentUserId">): string[] {
+  return Array.from(
+    new Set(
+      [context.currentUserId, context.currentUser?.id, context.currentUser?.companyMemberId]
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+}
+
+function isWorkOrderManagedByCurrentUser(workOrder: WorkOrder, context: Pick<WorkflowPolicyContext, "currentUser" | "currentUserId">) {
+  const managerId = workOrder.managerId?.trim() ?? "";
+  if (!managerId) return false;
+  return getCurrentUserOwnerIds(context).includes(managerId);
 }
 
 function hasWorkflowPermission(context: Pick<WorkflowPolicyContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder">, permissionCode: MemberPermissionCode) {
   if (isAdminRole(context.currentRoles)) return true;
-  if (!context.currentUser || !isWorkOrderManagedByCurrentUser(context.workOrder, context.currentUserId)) return false;
+  if (!context.currentUser || !isWorkOrderManagedByCurrentUser(context.workOrder, context)) return false;
   return hasMemberPermission(context.currentUser, permissionCode);
 }
 
@@ -41,6 +53,10 @@ export function canRequestFactoryOrderByPolicy(payload: Pick<WorkflowPolicyConte
 
 export function canDirectRequestFactoryOrderByPolicy(payload: Pick<WorkflowPolicyContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder">) {
   return hasWorkflowPermission(payload, "workorder.status.order");
+}
+
+export function canCompleteInspectionByPolicy(payload: Pick<WorkflowPolicyContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder">) {
+  return hasWorkflowPermission(payload, "workorder.status.inspect");
 }
 
 export function getAssignedManagerRoleByPolicy(workOrder: WorkOrder, users: UserProfile[] = []): RoleType {
@@ -100,7 +116,6 @@ function buildMemberWorkflowActions(context: WorkflowPolicyContext): WorkflowPol
     ],
     review_requested: [
       ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: WORKFLOW_STATE.draft, actionType: WORKFLOW_ACTION_TYPE.cancelReviewRequest } satisfies WorkflowAction] : []),
-      ...(canDirectOrder ? [directOrderAction] : []),
     ],
     rejected: [
       ...(canRequestReview ? [{ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: WORKFLOW_STATE.reviewRequested, actionType: WORKFLOW_ACTION_TYPE.requestReview } satisfies WorkflowAction] : []),

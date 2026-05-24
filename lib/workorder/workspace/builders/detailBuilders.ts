@@ -2,7 +2,7 @@ import { formatRecentKstDateTime } from "@/lib/workorder/presentation/dateTimePr
 import { buildAttachmentPanelSections } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import { isWorkflowStateAtLeast, WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { isGeneratedOrderRequestPdfAttachment } from "@/lib/workorder/generatedDocuments";
-import { canRequestFactoryOrderByPolicy } from "@/lib/workorder/workflowPolicy";
+import { canCompleteInspectionByPolicy, canRequestFactoryOrderByPolicy } from "@/lib/workorder/workflowPolicy";
 import type { DetailProps, DetailViewModelArgs, SidePanelProps, SidePanelViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 import type { UserProfile, WorkOrder } from "@/types/workorder";
 
@@ -80,6 +80,12 @@ export function buildDetailProps({
     currentUserRole: currentRole,
     canRenameTitle,
     canEditInventory: canOpenInventoryEditor,
+    canCompleteInspection: canCompleteInspectionByPolicy({
+      currentRoles: currentUser.roles,
+      currentUser,
+      currentUserId: currentUser.id,
+      workOrder: selectedWorkOrder,
+    }),
     canChangeManager,
     onOpenManagerAssignModal,
     canSeeProductionSections,

@@ -28,6 +28,7 @@ export function buildWorkOrderDetailContainerModels({
   currentUserRole,
   canRenameTitle = false,
   canEditInventory,
+  canCompleteInspection,
   canChangeManager,
   canSeeProductionSections,
   canSeeCostSections,
@@ -72,6 +73,7 @@ export function buildWorkOrderDetailContainerModels({
     permissionModel: {
       canRenameTitle,
       canEditInventory,
+      canCompleteInspection,
       canChangeManager,
       canSeeProductionSections,
       canSeeCostSections,

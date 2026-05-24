@@ -30,13 +30,13 @@ export function getCostSummaryValues(params: {
 }
 
 export function getCanOpenInspectionModal(params: {
-  canEditInventory: boolean;
+  canCompleteInspection: boolean;
   currentWorkflowState: WorkflowState;
   orderItems: OrderEntryState[];
 }): boolean {
-  const { canEditInventory, currentWorkflowState, orderItems } = params;
+  const { canCompleteInspection, currentWorkflowState, orderItems } = params;
 
-  return canEditInventory
+  return canCompleteInspection
     && canOpenInspectionModalInWorkflow(currentWorkflowState)
     && orderItems.some((item) => !isOrderInspectionCompleted(item.inspectionStatus));
 }
