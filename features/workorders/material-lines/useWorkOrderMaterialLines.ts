@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import type {
   Material,
+  MaterialCapabilityState,
   MaterialOrderStatus,
   MaterialUnit,
   WorkorderMaterialLineRole,
@@ -21,8 +22,23 @@ export type WorkOrderMaterialLineDraft = {
 type WorkOrderMaterialLinesApiResponse = {
   materials?: Material[];
   lines?: WorkorderMaterialLineWithMaterial[];
+  capabilities?: Partial<MaterialCapabilityState>;
   error?: string;
 };
+
+
+export const DEFAULT_WORKORDER_MATERIAL_LINE_CAPABILITIES: MaterialCapabilityState = {
+  canManageMaterials: false,
+  canManageWorkorderMaterialLines: false,
+  canChangeWorkorderMaterialOrderStatus: false,
+};
+
+function normalizeCapabilities(input?: Partial<MaterialCapabilityState> | null): MaterialCapabilityState {
+  return {
+    ...DEFAULT_WORKORDER_MATERIAL_LINE_CAPABILITIES,
+    ...(input ?? {}),
+  };
+}
 
 export const EMPTY_WORKORDER_MATERIAL_LINE_DRAFT: WorkOrderMaterialLineDraft = {
   materialId: "",
@@ -72,6 +88,7 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [capabilities, setCapabilities] = useState<MaterialCapabilityState>(DEFAULT_WORKORDER_MATERIAL_LINE_CAPABILITIES);
 
   const selectedMaterial = useMemo(
     () => materials.find((item) => item.id === draft.materialId) ?? null,
@@ -90,6 +107,7 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
         const nextMaterials = Array.isArray(payload.materials) ? payload.materials : [];
         setMaterials(nextMaterials);
         setLines(Array.isArray(payload.lines) ? payload.lines : []);
+        setCapabilities(normalizeCapabilities(payload.capabilities));
         setDraft((current) => normalizeInitialDraft(nextMaterials, current));
       })
       .catch((error) => {
@@ -128,6 +146,7 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
       const nextMaterials = Array.isArray(payload.materials) ? payload.materials : [];
       setMaterials(nextMaterials);
       setLines(Array.isArray(payload.lines) ? payload.lines : []);
+      setCapabilities(normalizeCapabilities(payload.capabilities));
       setDraft((current) => normalizeInitialDraft(nextMaterials, current));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "WORKORDER_MATERIAL_LINES_REFRESH_FAILED");
@@ -137,7 +156,7 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
   };
 
   const addLine = async () => {
-    if (locked || !workorderId || !draft.materialId) return;
+    if (locked || !capabilities.canManageWorkorderMaterialLines || !workorderId || !draft.materialId) return;
     setIsSaving(true);
     setMessage(null);
     try {
@@ -151,6 +170,7 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
       });
       setMaterials(Array.isArray(payload.materials) ? payload.materials : []);
       setLines(Array.isArray(payload.lines) ? payload.lines : []);
+      setCapabilities(normalizeCapabilities(payload.capabilities));
       setDraft((current) => ({ ...EMPTY_WORKORDER_MATERIAL_LINE_DRAFT, materialId: current.materialId, unit: current.unit, role: current.role }));
       setMessage("원단·부자재 기준정보를 작업지시서에 연결했습니다.");
     } catch (error) {
@@ -162,13 +182,14 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
 
 
   const updateOrderStatus = async (lineId: string, orderStatus: MaterialOrderStatus) => {
-    if (locked || !workorderId || !lineId) return;
+    if (locked || !capabilities.canChangeWorkorderMaterialOrderStatus || !workorderId || !lineId) return;
     setIsSaving(true);
     setMessage(null);
     try {
       const payload = await requestWorkOrderMaterialLinesApi("PATCH", workorderId, { workorderId, lineId, orderStatus });
       setMaterials(Array.isArray(payload.materials) ? payload.materials : []);
       setLines(Array.isArray(payload.lines) ? payload.lines : []);
+      setCapabilities(normalizeCapabilities(payload.capabilities));
       setMessage("원단·부자재 발주 상태를 변경했습니다.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "WORKORDER_MATERIAL_LINE_STATUS_UPDATE_FAILED");
@@ -178,13 +199,14 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
   };
 
   const deleteLine = async (lineId: string) => {
-    if (locked || !workorderId || !lineId) return;
+    if (locked || !capabilities.canManageWorkorderMaterialLines || !workorderId || !lineId) return;
     setIsSaving(true);
     setMessage(null);
     try {
       const payload = await requestWorkOrderMaterialLinesApi("DELETE", workorderId, { workorderId, lineId });
       setMaterials(Array.isArray(payload.materials) ? payload.materials : []);
       setLines(Array.isArray(payload.lines) ? payload.lines : []);
+      setCapabilities(normalizeCapabilities(payload.capabilities));
       setMessage("작업지시서 원단·부자재 연결을 삭제했습니다.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "WORKORDER_MATERIAL_LINE_DELETE_FAILED");
@@ -201,6 +223,7 @@ export function useWorkOrderMaterialLines(workorderId: string, locked = false) {
     isLoading,
     isSaving,
     message,
+    capabilities,
     updateDraft,
     selectMaterial,
     refresh,

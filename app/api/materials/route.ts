@@ -12,6 +12,7 @@ import {
   MATERIAL_LIFECYCLE_STATUS_VALUES,
   MATERIAL_UNIT_VALUES,
 } from "@/lib/materials/constants";
+import { withMaterialCapabilityState } from "@/lib/materials/capabilities";
 import type { MaterialKind, MaterialLifecycleStatus, MaterialMutationInput, MaterialUnit } from "@/lib/materials/types";
 
 type MaterialRequestBody = {
@@ -40,6 +41,8 @@ async function readMaterialRequestBody(request: NextRequest): Promise<MaterialRe
   const payload = (await request.json()) as unknown;
   return typeof payload === "object" && payload !== null ? (payload as MaterialRequestBody) : {};
 }
+
+
 
 function buildMaterialMutationInput(companyId: string, body: MaterialRequestBody): MaterialMutationInput | null {
   const code = normalizeOptionalText(body.code);
@@ -71,7 +74,7 @@ export async function GET() {
   if (!guard.ok) return guard.response;
 
   try {
-    return NextResponse.json(await listWorkspaceMaterials({ companyId: guard.scope.companyId }));
+    return NextResponse.json(await withMaterialCapabilityState(await listWorkspaceMaterials({ companyId: guard.scope.companyId }), guard.session));
   } catch {
     return NextResponse.json({ materials: [], error: "MATERIALS_LIST_UNAVAILABLE" }, { status: 500 });
   }
@@ -88,7 +91,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ materials: [], error: "MATERIAL_PAYLOAD_REQUIRED" }, { status: 400 });
     }
 
-    return NextResponse.json(await createWorkspaceMaterial(input));
+    return NextResponse.json(await withMaterialCapabilityState(await createWorkspaceMaterial(input), guard.session));
   } catch {
     return NextResponse.json({ materials: [], error: "MATERIAL_CREATE_FAILED" }, { status: 500 });
   }
@@ -106,7 +109,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ materials: [], error: "MATERIAL_UPDATE_PAYLOAD_REQUIRED" }, { status: 400 });
     }
 
-    return NextResponse.json(await updateWorkspaceMaterial(materialId, input));
+    return NextResponse.json(await withMaterialCapabilityState(await updateWorkspaceMaterial(materialId, input), guard.session));
   } catch {
     return NextResponse.json({ materials: [], error: "MATERIAL_UPDATE_FAILED" }, { status: 500 });
   }
@@ -123,7 +126,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ materials: [], error: "MATERIAL_DELETE_PAYLOAD_REQUIRED" }, { status: 400 });
     }
 
-    return NextResponse.json(await deleteWorkspaceMaterial({ companyId: guard.scope.companyId, materialId }));
+    return NextResponse.json(await withMaterialCapabilityState(await deleteWorkspaceMaterial({ companyId: guard.scope.companyId, materialId }), guard.session));
   } catch {
     return NextResponse.json({ materials: [], error: "MATERIAL_DELETE_FAILED" }, { status: 500 });
   }

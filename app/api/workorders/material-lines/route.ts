@@ -18,6 +18,7 @@ import type {
   WorkorderMaterialLineMutationInput,
   WorkorderMaterialLineRole,
 } from "@/lib/materials/types";
+import { withMaterialCapabilityState } from "@/lib/materials/capabilities";
 
 type WorkorderMaterialLineRequestBody = {
   workorderId?: unknown;
@@ -58,6 +59,8 @@ function readWorkorderIdFromRequest(request: NextRequest): string | null {
   return normalizeOptionalText(request.nextUrl.searchParams.get("workorderId"));
 }
 
+
+
 function buildMutationInput(companyId: string, body: WorkorderMaterialLineRequestBody): WorkorderMaterialLineMutationInput | null {
   const workorderId = normalizeOptionalText(body.workorderId);
   const materialId = normalizeOptionalText(body.materialId);
@@ -91,7 +94,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    return NextResponse.json(await listWorkspaceWorkorderMaterialLines({ companyId: guard.scope.companyId, workorderId }));
+    return NextResponse.json(await withMaterialCapabilityState(await listWorkspaceWorkorderMaterialLines({ companyId: guard.scope.companyId, workorderId }), guard.session));
   } catch {
     return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINES_LIST_UNAVAILABLE" }, { status: 500 });
   }
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_PAYLOAD_REQUIRED" }, { status: 400 });
     }
 
-    return NextResponse.json(await createWorkspaceWorkorderMaterialLine(input));
+    return NextResponse.json(await withMaterialCapabilityState(await createWorkspaceWorkorderMaterialLine(input), guard.session));
   } catch {
     return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_CREATE_FAILED" }, { status: 500 });
   }
@@ -126,12 +129,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_STATUS_PAYLOAD_REQUIRED" }, { status: 400 });
     }
 
-    return NextResponse.json(await updateWorkspaceWorkorderMaterialLineOrderStatus({
+    return NextResponse.json(await withMaterialCapabilityState(await updateWorkspaceWorkorderMaterialLineOrderStatus({
       companyId: guard.scope.companyId,
       workorderId,
       lineId,
       orderStatus: body.orderStatus,
-    }));
+    }), guard.session));
   } catch {
     return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_STATUS_UPDATE_FAILED" }, { status: 500 });
   }
@@ -149,7 +152,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_DELETE_PAYLOAD_REQUIRED" }, { status: 400 });
     }
 
-    return NextResponse.json(await deleteWorkspaceWorkorderMaterialLine({ companyId: guard.scope.companyId, workorderId, lineId }));
+    return NextResponse.json(await withMaterialCapabilityState(await deleteWorkspaceWorkorderMaterialLine({ companyId: guard.scope.companyId, workorderId, lineId }), guard.session));
   } catch {
     return NextResponse.json({ materials: [], lines: [], error: "WORKORDER_MATERIAL_LINE_DELETE_FAILED" }, { status: 500 });
   }

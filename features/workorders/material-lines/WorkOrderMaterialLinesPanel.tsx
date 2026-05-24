@@ -22,6 +22,8 @@ type WorkOrderMaterialLinesPanelProps = {
 export default function WorkOrderMaterialLinesPanel({ workorderId, locked = false }: WorkOrderMaterialLinesPanelProps) {
   const controller = useWorkOrderMaterialLines(workorderId, locked);
   const isBusy = controller.isLoading || controller.isSaving;
+  const canManageLines = !locked && controller.capabilities.canManageWorkorderMaterialLines;
+  const canChangeOrderStatus = !locked && controller.capabilities.canChangeWorkorderMaterialOrderStatus;
 
   return (
     <div className="rounded-2xl border border-stone-200 bg-stone-50/80 p-3">
@@ -30,6 +32,8 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="text-sm font-semibold text-stone-900">기준정보 연결</h4>
             <AdminStatusBadge tone="info">DB 연결</AdminStatusBadge>
+            <AdminStatusBadge tone={canManageLines ? "success" : "neutral"}>{canManageLines ? "연결 수정 가능" : "연결 조회 전용"}</AdminStatusBadge>
+            <AdminStatusBadge tone={canChangeOrderStatus ? "success" : "neutral"}>{canChangeOrderStatus ? "발주 상태 변경 가능" : "발주 상태 조회 전용"}</AdminStatusBadge>
           </div>
           <p className="mt-1 text-xs leading-5 text-stone-500">
             /workspace/materials에 등록한 원단·부자재 기준정보를 이 작업지시서에 연결합니다.
@@ -49,6 +53,13 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
         <p className="mt-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-500">{controller.message}</p>
       ) : null}
 
+      {!canManageLines || !canChangeOrderStatus ? (
+        <div className="mt-2 rounded-xl border border-dashed border-stone-300 bg-white px-3 py-2 text-xs leading-5 text-stone-500">
+          {!canManageLines ? <p>연결 추가/삭제는 작업지시서 수정 권한이 있는 사용자만 실행할 수 있습니다.</p> : null}
+          {!canChangeOrderStatus ? <p>발주 상태 변경은 발주 가능 권한이 있는 사용자만 실행할 수 있습니다.</p> : null}
+        </div>
+      ) : null}
+
       {controller.materials.length === 0 ? (
         <div className="mt-3 rounded-xl border border-dashed border-stone-300 bg-white px-3 py-5 text-center text-xs text-stone-500">
           연결 가능한 원단·부자재 기준정보가 없습니다. 먼저 원단·부자재 화면에서 기준 항목을 등록해야 합니다.
@@ -61,7 +72,7 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
               className={INPUT_CLASS_NAME}
               value={controller.draft.materialId}
               onChange={(event) => controller.selectMaterial(event.target.value)}
-              disabled={locked || isBusy}
+              disabled={!canManageLines || isBusy}
             >
               {controller.materials.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -76,7 +87,7 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
               className={INPUT_CLASS_NAME}
               value={controller.draft.role}
               onChange={(event) => controller.updateDraft({ role: event.target.value as WorkorderMaterialLineRole })}
-              disabled={locked || isBusy}
+              disabled={!canManageLines || isBusy}
             >
               {Object.entries(WORKORDER_MATERIAL_LINE_ROLE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
@@ -91,7 +102,7 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
               onChange={(event) => controller.updateDraft({ requiredQuantity: event.target.value })}
               inputMode="decimal"
               placeholder="0"
-              disabled={locked || isBusy}
+              disabled={!canManageLines || isBusy}
             />
           </label>
           <label className="grid gap-1 text-[11px] font-semibold text-stone-500">
@@ -100,7 +111,7 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
               className={INPUT_CLASS_NAME}
               value={controller.draft.unit}
               onChange={(event) => controller.updateDraft({ unit: event.target.value as MaterialUnit })}
-              disabled={locked || isBusy}
+              disabled={!canManageLines || isBusy}
             >
               {Object.entries(MATERIAL_UNIT_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
@@ -114,13 +125,13 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
               value={controller.draft.memo}
               onChange={(event) => controller.updateDraft({ memo: event.target.value })}
               placeholder="선택 입력"
-              disabled={locked || isBusy}
+              disabled={!canManageLines || isBusy}
             />
           </label>
           <button
             type="button"
             onClick={() => { void controller.addLine(); }}
-            disabled={locked || isBusy || !controller.draft.materialId}
+            disabled={!canManageLines || isBusy || !controller.draft.materialId}
             className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
           >
             연결
@@ -155,7 +166,7 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
                     onChange={(event) => {
                       void controller.updateOrderStatus(line.id, event.target.value as MaterialOrderStatus);
                     }}
-                    disabled={locked || isBusy}
+                    disabled={!canChangeOrderStatus || isBusy}
                     aria-label={`${line.material.name} 발주 상태`}
                   >
                     {MATERIAL_ORDER_STATUS_VALUES.map((status) => (
@@ -168,7 +179,7 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
                 <button
                   type="button"
                   onClick={() => { void controller.deleteLine(line.id); }}
-                  disabled={locked || isBusy}
+                  disabled={!canManageLines || isBusy}
                   className="pbp-interactive-button rounded-lg border border-stone-200 px-2 py-1 text-[11px] font-semibold text-stone-600 disabled:opacity-50"
                 >
                   연결 해제

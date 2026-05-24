@@ -1,16 +1,18 @@
 import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import { APP_VERSION } from "@/lib/constants/app";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
+import { buildMaterialCapabilityState } from "@/lib/materials/capabilities";
 import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import MaterialsWorkspacePage from "@/features/materials/MaterialsWorkspacePage";
 import { listWorkspaceMaterials } from "@/lib/materials/service";
-import type { Material } from "@/lib/materials/types";
+import type { Material, MaterialCapabilityState } from "@/lib/materials/types";
 
 export default async function WorkspaceMaterialsPageRoute() {
   const session = await requireWaflSessionForArea("workspace");
 
   let initialMaterials: Material[] = [];
   let initialError: string | null = null;
+  const initialCapabilities: MaterialCapabilityState = await buildMaterialCapabilityState(session);
 
   try {
     const result = await listWorkspaceMaterials({ companyId: session.companyId ?? "" });
@@ -27,7 +29,7 @@ export default async function WorkspaceMaterialsPageRoute() {
       title="원단·부자재"
       description="원단과 부자재 기준 정보를 작업지시서 연결 전 단계에서 검토합니다."
     >
-      <MaterialsWorkspacePage initialMaterials={initialMaterials} initialError={initialError} />
+      <MaterialsWorkspacePage initialMaterials={initialMaterials} initialCapabilities={initialCapabilities} initialError={initialError} />
     </WorkspaceShell>
   );
 }

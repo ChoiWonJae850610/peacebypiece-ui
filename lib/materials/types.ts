@@ -122,6 +122,13 @@ export type MaterialMutationInput = {
   memo?: string | null;
 };
 
+
+export type MaterialCapabilityState = {
+  canManageMaterials: boolean;
+  canManageWorkorderMaterialLines: boolean;
+  canChangeWorkorderMaterialOrderStatus: boolean;
+};
+
 export type MaterialMockItem = {
   id: string;
   kind: MaterialKind;

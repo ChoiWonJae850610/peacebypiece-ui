@@ -11,10 +11,11 @@ import {
   MATERIAL_LIFECYCLE_STATUS_LABELS,
   MATERIAL_UNIT_LABELS,
 } from "@/lib/materials/constants";
-import type { Material, MaterialKind, MaterialLifecycleStatus, MaterialUnit } from "@/lib/materials/types";
+import type { Material, MaterialCapabilityState, MaterialKind, MaterialLifecycleStatus, MaterialUnit } from "@/lib/materials/types";
 
 type MaterialsApiResponse = {
   materials?: Material[];
+  capabilities?: Partial<MaterialCapabilityState>;
   error?: string;
 };
 
@@ -29,6 +30,7 @@ type MaterialDraft = {
 
 type MaterialsWorkspacePageProps = {
   initialMaterials: Material[];
+  initialCapabilities?: Partial<MaterialCapabilityState> | null;
   initialError?: string | null;
 };
 
@@ -55,7 +57,7 @@ function getMaterialDescription(material: Material): string {
   return parts.length > 0 ? parts.join(" · ") : material.memo ?? "부자재 속성은 다음 단계에서 상세 입력으로 확장합니다.";
 }
 
-async function requestMaterialsApi(method: "GET" | "POST" | "PATCH" | "DELETE", body?: Record<string, unknown>): Promise<Material[]> {
+async function requestMaterialsApi(method: "GET" | "POST" | "PATCH" | "DELETE", body?: Record<string, unknown>): Promise<MaterialsApiResponse> {
   const response = await fetch("/api/materials", {
     method,
     cache: "no-store",
@@ -68,7 +70,10 @@ async function requestMaterialsApi(method: "GET" | "POST" | "PATCH" | "DELETE", 
     throw new Error(payload.error ?? "MATERIALS_API_ERROR");
   }
 
-  return Array.isArray(payload.materials) ? payload.materials : [];
+  return {
+    materials: Array.isArray(payload.materials) ? payload.materials : [],
+    capabilities: payload.capabilities,
+  };
 }
 
 function MaterialSummaryCards({ materials }: { materials: Material[] }) {
@@ -116,6 +121,7 @@ function MaterialEditor({
   draft,
   editingId,
   isSaving,
+  canManageMaterials,
   onChange,
   onCancel,
   onSubmit,
@@ -123,6 +129,7 @@ function MaterialEditor({
   draft: MaterialDraft;
   editingId: string | null;
   isSaving: boolean;
+  canManageMaterials: boolean;
   onChange: (draft: MaterialDraft) => void;
   onCancel: () => void;
   onSubmit: () => void;
@@ -142,22 +149,22 @@ function MaterialEditor({
       <div className="grid gap-3 lg:grid-cols-[0.8fr_1fr_1.2fr_0.8fr_0.8fr]">
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           구분
-          <select className={inputClassName} value={draft.kind} onChange={(event) => onChange({ ...draft, kind: event.target.value as MaterialKind })}>
+          <select className={inputClassName} value={draft.kind} onChange={(event) => onChange({ ...draft, kind: event.target.value as MaterialKind })} disabled={!canManageMaterials || isSaving}>
             <option value="fabric">원단</option>
             <option value="submaterial">부자재</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           코드
-          <input className={inputClassName} value={draft.code} onChange={(event) => onChange({ ...draft, code: event.target.value })} placeholder="FAB-001" />
+          <input className={inputClassName} value={draft.code} onChange={(event) => onChange({ ...draft, code: event.target.value })} placeholder="FAB-001" disabled={!canManageMaterials || isSaving} />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           품명
-          <input className={inputClassName} value={draft.name} onChange={(event) => onChange({ ...draft, name: event.target.value })} placeholder="코튼 트윌 / 단추" />
+          <input className={inputClassName} value={draft.name} onChange={(event) => onChange({ ...draft, name: event.target.value })} placeholder="코튼 트윌 / 단추" disabled={!canManageMaterials || isSaving} />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           단위
-          <select className={inputClassName} value={draft.unit} onChange={(event) => onChange({ ...draft, unit: event.target.value as MaterialUnit })}>
+          <select className={inputClassName} value={draft.unit} onChange={(event) => onChange({ ...draft, unit: event.target.value as MaterialUnit })} disabled={!canManageMaterials || isSaving}>
             {Object.entries(MATERIAL_UNIT_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}
@@ -165,7 +172,7 @@ function MaterialEditor({
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           상태
-          <select className={inputClassName} value={draft.lifecycleStatus} onChange={(event) => onChange({ ...draft, lifecycleStatus: event.target.value as MaterialLifecycleStatus })}>
+          <select className={inputClassName} value={draft.lifecycleStatus} onChange={(event) => onChange({ ...draft, lifecycleStatus: event.target.value as MaterialLifecycleStatus })} disabled={!canManageMaterials || isSaving}>
             {Object.entries(MATERIAL_LIFECYCLE_STATUS_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}
@@ -175,12 +182,12 @@ function MaterialEditor({
 
       <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
         메모
-        <textarea className={`${inputClassName} min-h-20 resize-y`} value={draft.memo} onChange={(event) => onChange({ ...draft, memo: event.target.value })} placeholder="간단한 원단/부자재 메모" />
+        <textarea className={`${inputClassName} min-h-20 resize-y`} value={draft.memo} onChange={(event) => onChange({ ...draft, memo: event.target.value })} placeholder="간단한 원단/부자재 메모" disabled={!canManageMaterials || isSaving} />
       </label>
 
       <div className="flex flex-wrap justify-end gap-2">
         {editingId ? <AdminButton onClick={onCancel}>취소</AdminButton> : null}
-        <AdminButton variant="primary" onClick={onSubmit} disabled={isSaving || !draft.code.trim() || !draft.name.trim()}>
+        <AdminButton variant="primary" onClick={onSubmit} disabled={!canManageMaterials || isSaving || !draft.code.trim() || !draft.name.trim()}>
           {isSaving ? "저장중" : editingId ? "수정 저장" : "등록"}
         </AdminButton>
       </div>
@@ -192,12 +199,14 @@ function MaterialList({
   kind,
   items,
   isSaving,
+  canManageMaterials,
   onEdit,
   onDelete,
 }: {
   kind: MaterialKind;
   items: Material[];
   isSaving: boolean;
+  canManageMaterials: boolean;
   onEdit: (item: Material) => void;
   onDelete: (item: Material) => void;
 }) {
@@ -241,8 +250,8 @@ function MaterialList({
                   <AdminStatusBadge tone={item.lifecycleStatus === "active" ? "success" : "neutral"}>{MATERIAL_LIFECYCLE_STATUS_LABELS[item.lifecycleStatus]}</AdminStatusBadge>
                 </div>
                 <div className="flex flex-wrap justify-end gap-2">
-                  <AdminButton size="sm" onClick={() => onEdit(item)} disabled={isSaving}>수정</AdminButton>
-                  <AdminButton size="sm" variant="danger" onClick={() => onDelete(item)} disabled={isSaving}>삭제</AdminButton>
+                  <AdminButton size="sm" onClick={() => onEdit(item)} disabled={!canManageMaterials || isSaving}>수정</AdminButton>
+                  <AdminButton size="sm" variant="danger" onClick={() => onDelete(item)} disabled={!canManageMaterials || isSaving}>삭제</AdminButton>
                 </div>
               </article>
             ))
@@ -253,12 +262,26 @@ function MaterialList({
   );
 }
 
-export default function MaterialsWorkspacePage({ initialMaterials, initialError = null }: MaterialsWorkspacePageProps) {
+const DEFAULT_MATERIAL_CAPABILITIES: MaterialCapabilityState = {
+  canManageMaterials: false,
+  canManageWorkorderMaterialLines: false,
+  canChangeWorkorderMaterialOrderStatus: false,
+};
+
+function normalizeMaterialCapabilities(input?: Partial<MaterialCapabilityState> | null): MaterialCapabilityState {
+  return {
+    ...DEFAULT_MATERIAL_CAPABILITIES,
+    ...(input ?? {}),
+  };
+}
+
+export default function MaterialsWorkspacePage({ initialMaterials, initialCapabilities = null, initialError = null }: MaterialsWorkspacePageProps) {
   const [materials, setMaterials] = useState<Material[]>(initialMaterials);
   const [draft, setDraft] = useState<MaterialDraft>(EMPTY_DRAFT);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(initialError);
+  const [capabilities, setCapabilities] = useState<MaterialCapabilityState>(() => normalizeMaterialCapabilities(initialCapabilities));
 
   const fabricItems = useMemo(() => materials.filter((item) => item.kind === "fabric"), [materials]);
   const submaterialItems = useMemo(() => materials.filter((item) => item.kind === "submaterial"), [materials]);
@@ -267,7 +290,9 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialError 
     setIsSaving(true);
     setMessage(null);
     try {
-      setMaterials(await requestMaterialsApi("GET"));
+      const payload = await requestMaterialsApi("GET");
+      setMaterials(payload.materials ?? []);
+      setCapabilities(normalizeMaterialCapabilities(payload.capabilities));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "MATERIALS_REFRESH_FAILED");
     } finally {
@@ -276,14 +301,19 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialError 
   };
 
   const handleSubmit = async () => {
+    if (!capabilities.canManageMaterials) {
+      setMessage("원단·부자재 기준정보를 수정할 권한이 없습니다.");
+      return;
+    }
     setIsSaving(true);
     setMessage(null);
     try {
-      const nextMaterials = await requestMaterialsApi(editingId ? "PATCH" : "POST", {
+      const payload = await requestMaterialsApi(editingId ? "PATCH" : "POST", {
         materialId: editingId,
         ...draft,
       });
-      setMaterials(nextMaterials);
+      setMaterials(payload.materials ?? []);
+      setCapabilities(normalizeMaterialCapabilities(payload.capabilities));
       setDraft(EMPTY_DRAFT);
       setEditingId(null);
       setMessage(editingId ? "원단·부자재 항목을 수정했습니다." : "원단·부자재 항목을 등록했습니다.");
@@ -295,6 +325,10 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialError 
   };
 
   const handleEdit = (item: Material) => {
+    if (!capabilities.canManageMaterials) {
+      setMessage("원단·부자재 기준정보를 수정할 권한이 없습니다.");
+      return;
+    }
     setEditingId(item.id);
     setDraft({
       kind: item.kind,
@@ -308,10 +342,16 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialError 
   };
 
   const handleDelete = async (item: Material) => {
+    if (!capabilities.canManageMaterials) {
+      setMessage("원단·부자재 기준정보를 삭제할 권한이 없습니다.");
+      return;
+    }
     setIsSaving(true);
     setMessage(null);
     try {
-      setMaterials(await requestMaterialsApi("DELETE", { materialId: item.id }));
+      const payload = await requestMaterialsApi("DELETE", { materialId: item.id });
+      setMaterials(payload.materials ?? []);
+      setCapabilities(normalizeMaterialCapabilities(payload.capabilities));
       if (editingId === item.id) {
         setEditingId(null);
         setDraft(EMPTY_DRAFT);
@@ -330,8 +370,9 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialError 
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <AdminStatusBadge tone="brand">0.16.18</AdminStatusBadge>
+              <AdminStatusBadge tone="brand">0.16.22</AdminStatusBadge>
               <AdminStatusBadge tone="success">DB/API 1차 연결</AdminStatusBadge>
+              <AdminStatusBadge tone={capabilities.canManageMaterials ? "success" : "neutral"}>{capabilities.canManageMaterials ? "관리 가능" : "조회 전용"}</AdminStatusBadge>
             </div>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight pbp-text-primary">원단·부자재 기준정보</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 pbp-text-muted">
@@ -345,11 +386,17 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialError 
       </section>
 
       <MaterialSummaryCards materials={materials} />
-      <MaterialEditor draft={draft} editingId={editingId} isSaving={isSaving} onChange={setDraft} onCancel={() => { setEditingId(null); setDraft(EMPTY_DRAFT); }} onSubmit={handleSubmit} />
+      {!capabilities.canManageMaterials ? (
+        <AdminCard className="border-dashed">
+          <p className="text-sm font-semibold pbp-text-primary">조회 전용 권한입니다.</p>
+          <p className="mt-1 text-sm leading-6 pbp-text-muted">원단·부자재 등록, 수정, 삭제는 기준정보 관리 권한이 있는 사용자만 실행할 수 있습니다.</p>
+        </AdminCard>
+      ) : null}
+      <MaterialEditor draft={draft} editingId={editingId} isSaving={isSaving} canManageMaterials={capabilities.canManageMaterials} onChange={setDraft} onCancel={() => { setEditingId(null); setDraft(EMPTY_DRAFT); }} onSubmit={handleSubmit} />
 
       <section className="grid gap-4 xl:grid-cols-2" aria-label="원단·부자재 목록">
-        <MaterialList kind="fabric" items={fabricItems} isSaving={isSaving} onEdit={handleEdit} onDelete={handleDelete} />
-        <MaterialList kind="submaterial" items={submaterialItems} isSaving={isSaving} onEdit={handleEdit} onDelete={handleDelete} />
+        <MaterialList kind="fabric" items={fabricItems} isSaving={isSaving} canManageMaterials={capabilities.canManageMaterials} onEdit={handleEdit} onDelete={handleDelete} />
+        <MaterialList kind="submaterial" items={submaterialItems} isSaving={isSaving} canManageMaterials={capabilities.canManageMaterials} onEdit={handleEdit} onDelete={handleDelete} />
       </section>
     </div>
   );
