@@ -1,5 +1,4 @@
 import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX, ORDER_REQUEST_PRINT_UNSUPPORTED } from "@/lib/constants/display";
-import { DEFAULT_WORKORDER_CATEGORY2, DEFAULT_WORKORDER_CATEGORY3 } from "@/lib/constants/workorderDefaults";
 import { getInventoryStatusLabel } from "@/lib/constants/workorderDomain";
 import type { WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
 import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
@@ -13,12 +12,7 @@ import { APP_VERSION } from "@/lib/constants/app";
 const i18n = getI18n();
 
 export function getCategoryPath(workOrder: Pick<WorkOrderListItem, "category1" | "category2" | "category3">) {
-  const categoryParts = [workOrder.category1, workOrder.category2, workOrder.category3].filter((value, index) => {
-    if (index === 1 && value === DEFAULT_WORKORDER_CATEGORY2) return false;
-    if (index === 2 && value === DEFAULT_WORKORDER_CATEGORY3) return false;
-    return true;
-  });
-  return joinDisplayParts(categoryParts);
+  return joinDisplayParts([workOrder.category1, workOrder.category2, workOrder.category3]);
 }
 
 export function getInventoryLabel(status: string | null | undefined) {
