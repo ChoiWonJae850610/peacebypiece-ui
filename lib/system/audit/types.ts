@@ -13,6 +13,7 @@ export type SystemAuditTargetType =
   | "invitation"
   | "plan"
   | "storage"
+  | "material"
   | "work_order"
   | "file"
   | "memo"

@@ -18,6 +18,7 @@ const TARGET_TYPES = new Set<SystemAuditTargetType>([
   "invitation",
   "plan",
   "storage",
+  "material",
   "work_order",
   "file",
   "memo",

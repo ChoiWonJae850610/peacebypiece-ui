@@ -1,16 +1,13 @@
-Version : 0.16.22
-Summary : 원단·부자재 권한 조건 연결
-Description : 원단·부자재 기준정보와 작업지시서 연결 패널에 서버 세션 기준 capability를 연결하고, 기준정보 관리/작업지시서 수정/발주 가능 권한에 따라 등록, 수정, 삭제, 연결, 발주 상태 변경 UI와 API 응답을 분리했습니다. 공통 capability helper를 추가했으며 DB schema, full_reset.sql, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.23
+Summary : 통계 저장소 감사로그 충돌 점검
+Description : 원단·부자재 구조 추가 이후 저장소, 통계, 시스템 감사로그 경계가 섞이지 않도록 점검 문서를 추가하고 시스템 체크포인트와 감사로그 target type을 보정했습니다. /system/storage-usage 안내 문구는 /workspace/files 기준으로 갱신했으며 R2, 첨부, 메모, 휴지통, purge 동작과 DB schema는 변경하지 않았습니다.
 수정 파일 목록 :
-- app/(workspace)/workspace/materials/page.tsx
-- app/api/materials/route.ts
-- app/api/workorders/material-lines/route.ts
-- features/materials/MaterialsWorkspacePage.tsx
-- features/workorders/material-lines/WorkOrderMaterialLinesPanel.tsx
-- features/workorders/material-lines/useWorkOrderMaterialLines.ts
+- app/(system)/system/audit-logs/page.tsx
 - lib/constants/app.ts
-- lib/materials/types.ts
+- lib/system/audit/types.ts
+- lib/system/storagePurgePresentation.ts
+- lib/system/systemAccessStabilityCheckpoint.ts
 추가 파일 목록 :
-- lib/materials/capabilities.ts
+- docs/workspace-system-integration-checkpoint.md
 삭제 파일 목록 :
 - 없음

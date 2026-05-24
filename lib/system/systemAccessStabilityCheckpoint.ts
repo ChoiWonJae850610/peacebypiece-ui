@@ -170,6 +170,50 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
       },
     ],
   },
+  {
+    id: "workspace-system-integration",
+    title: "Workspace / System 충돌 점검",
+    description:
+      "원단·부자재 기준정보가 추가된 이후 저장소, 통계, 감사로그 경계가 섞이지 않도록 점검합니다.",
+    items: [
+      {
+        id: "workspace-materials-route",
+        label: "원단·부자재 업무 화면",
+        description: "원단·부자재 기준정보는 /workspace/materials에서 관리하고 작업지시서 상세 연결 패널은 이 기준정보를 참조합니다.",
+        status: "ready",
+        statusLabel: "DB/API 1차 연결",
+        route: "/workspace/materials",
+        owner: "admin",
+      },
+      {
+        id: "workspace-storage-boundary",
+        label: "저장소 경계",
+        description: "0.16.23 기준 원단·부자재는 파일 업로드가 없으므로 /workspace/files와 /system/storage-usage의 R2 삭제/복원/purge 흐름에 포함하지 않습니다.",
+        status: "stable",
+        statusLabel: "영향 없음",
+        route: "/workspace/files",
+        owner: "admin",
+      },
+      {
+        id: "workspace-stats-boundary",
+        label: "통계 경계",
+        description: "원단·부자재 사용량과 발주 상태 통계는 후속 집계 정책으로 분리하고 기존 /workspace/stats 계산에는 즉시 섞지 않습니다.",
+        status: "deferred",
+        statusLabel: "후속 집계",
+        route: "/workspace/stats",
+        owner: "admin",
+      },
+      {
+        id: "system-audit-material-target",
+        label: "감사로그 material target",
+        description: "시스템 감사로그 target type에 material을 허용하되, 실제 원단·부자재 감사로그 기록은 후속 버전에서 별도 연결합니다.",
+        status: "ready",
+        statusLabel: "target 준비",
+        route: "/system/audit-logs",
+        owner: "system",
+      },
+    ],
+  },
 ];
 
 export const SYSTEM_ACCESS_CHECKPOINT_NEXT_ACTIONS = [
@@ -178,4 +222,6 @@ export const SYSTEM_ACCESS_CHECKPOINT_NEXT_ACTIONS = [
   "companies 생성과 company_members/member_permissions 저장 연결",
   "preview permission context 제거 후 session 기반 권한 조회로 전환",
   "주요 API의 requireApiPermission 적용 범위 확대",
+  "원단·부자재 감사로그 기록 연결 여부 결정",
+  "원단·부자재 통계 집계 편입 여부 결정",
 ] as const;
