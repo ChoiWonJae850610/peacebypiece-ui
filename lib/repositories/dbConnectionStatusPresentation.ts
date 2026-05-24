@@ -57,7 +57,7 @@ export function getDbConnectionStatusPresentation(
   };
 
   return {
-    label: errorLabels[status.code] ?? (status.fallbackActive ? "LOCAL FALLBACK" : "DB 미확인"),
+    label: errorLabels[status.code] ?? (status.fallbackActive ? "DB 확인 필요" : "DB 미확인"),
     toneClass: "border-amber-200 bg-amber-50 text-amber-700",
     title: baseTitle,
   };

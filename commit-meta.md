@@ -1,10 +1,16 @@
-Version : 0.16.12
-Summary : API 권한 보호 정리 1차
-Description : workspace API 공통 guard를 추가하고 작업지시서 API route handler의 세션, 회사 범위, 회사 접근 제한, 멤버 권한 확인 흐름을 공통 guard 기반으로 정리했습니다. 기존 작업지시서 API 동작과 DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.13
+Summary : fallback/mock/legacy 정리 1차
+Description : 관리자 점검/DB 연결 감사 메타데이터에서 fallback/mock 표현을 빈 상태/seed/fixture 기준으로 정리하고, /admin 화면 경로 감사 문자열을 /workspace 기준으로 갱신했습니다. DB 연결 상태 표시의 LOCAL FALLBACK 사용자 노출 문구를 DB 확인 필요로 보정했으며, 실제 API 경로와 DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
 수정 파일 목록 :
+- components/admin/dashboard/AdminDbConnectionAuditPanel.tsx
+- lib/admin/completionAudit.ts
+- lib/admin/dbCompletionAudit.ts
+- lib/admin/dbIntegration.ts
+- lib/admin/mockDataAudit.ts
+- lib/admin/structureAudit.ts
 - lib/constants/app.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
+- lib/repositories/dbConnectionStatusPresentation.ts
 추가 파일 목록 :
-- lib/auth/apiRouteGuards.ts
+- 없음
 삭제 파일 목록 :
 - 없음

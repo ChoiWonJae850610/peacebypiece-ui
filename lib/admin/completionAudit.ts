@@ -48,7 +48,7 @@ function toCompletionStatus(hasBlockedIssue: boolean, hasWatchIssue: boolean): A
 }
 
 function isDbWatchStatus(status: AdminDbScreenAuditStatus): boolean {
-  return status === "db-prepared" || status === "fallback-guarded";
+  return status === "db-prepared" || status === "empty-state-guarded";
 }
 
 function getCompletionDecision(status: AdminCompletionAuditStatus): Pick<AdminCompletionAuditSummary, "decision" | "decisionLabel" | "decisionSummary" | "nextScope"> {
@@ -65,7 +65,7 @@ function getCompletionDecision(status: AdminCompletionAuditStatus): Pick<AdminCo
     return {
       decision: "close-admin-v1",
       decisionLabel: "관리자 1차 완료",
-      decisionSummary: "차단 항목은 없고, 안전 표시/i18n/mock 정리 점검 항목만 남아 WorkOrder PC 화면 통일로 넘어갈 수 있습니다.",
+      decisionSummary: "차단 항목은 없고, 빈 상태/i18n/fixture 정리 점검 항목만 남아 WorkOrder PC 화면 통일로 넘어갈 수 있습니다.",
       nextScope: "WorkOrder/사용자 전환을 진행하면서 관리자 잔여 점검은 회귀 점검 항목으로 유지합니다.",
     };
   }
@@ -92,7 +92,7 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
     (domain) => domain.key !== "common" && !UI_STABILIZED_ADMIN_DOMAINS.includes(domain.key),
   );
   const mockAuditSummary = getAdminMockAuditSummary();
-  const mockRetainedCount = mockAuditSummary.seedRetainedCount + mockAuditSummary.fallbackRetainedCount;
+  const mockRetainedCount = mockAuditSummary.seedRetainedCount + mockAuditSummary.fixtureIsolatedCount;
   const finalAuditSummary = getAdminFinalAuditSummary();
 
   const items: AdminCompletionAuditItem[] = [
@@ -114,8 +114,8 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
       key: "db",
       label: "DB 연결 상태",
       status: dbWatchCount > 0 ? "watch" : "complete",
-      summary: `연결 ${dbConnectedCount}개 · 준비/안전 표시 ${dbWatchCount}개`,
-      detail: "모든 화면이 DB 전용 상태는 아니며, 일부는 DB 준비 또는 안전 표시 보호 상태입니다.",
+      summary: `연결 ${dbConnectedCount}개 · 준비/빈 상태 ${dbWatchCount}개`,
+      detail: "모든 화면이 DB 전용 상태는 아니며, 일부는 DB 준비 또는 빈 상태 보호 상태입니다.",
     },
     {
       key: "ui",
@@ -136,7 +136,7 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
       label: "샘플/초기값 정리",
       status: mockAuditSummary.blockedCount > 0 ? "blocked" : mockRetainedCount > 0 ? "watch" : "complete",
       summary: formatAdminMockAuditSummary(mockAuditSummary),
-      detail: "고객사 관리자 화면에서 제거할 샘플 표시, 신규 회사 초기값으로 유지할 기준값, 로그인 전환 전까지 필요한 대체 데이터를 구분합니다.",
+      detail: "고객사 관리자 화면에서 제거할 샘플 표시, 신규 회사 초기값으로 유지할 기준값, 테스트 전용 fixture를 구분합니다.",
     },
     {
       key: "finalAudit",

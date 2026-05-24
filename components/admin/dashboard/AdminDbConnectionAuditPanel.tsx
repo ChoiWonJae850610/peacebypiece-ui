@@ -14,14 +14,14 @@ type AdminT = ReturnType<typeof useAdminTranslation>;
 function getDbStatusTone(status: AdminDbScreenAuditStatus): AdminStatusBadgeTone {
   if (status === "db-connected") return "success";
   if (status === "db-prepared") return "warning";
-  if (status === "fallback-guarded") return "info";
+  if (status === "empty-state-guarded") return "info";
   return "neutral";
 }
 
 function getDbSourceTypeTone(sourceType: AdminDbScreenAuditSourceType): AdminStatusBadgeTone {
   if (sourceType === "actual-db") return "success";
-  if (sourceType === "db-with-fallback") return "info";
-  if (sourceType === "db-prepared-fallback") return "warning";
+  if (sourceType === "db-with-empty-state") return "info";
+  if (sourceType === "db-prepared-empty-state") return "warning";
   return "neutral";
 }
 

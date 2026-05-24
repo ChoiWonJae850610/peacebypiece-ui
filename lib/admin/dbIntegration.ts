@@ -1,6 +1,6 @@
 import type { AdminDomainKey } from "@/lib/admin/domainRegistry";
 
-export type AdminDbConnectionState = "db-ready" | "adapter-ready" | "mock-fallback" | "read-only-db";
+export type AdminDbConnectionState = "db-ready" | "adapter-ready" | "empty-state-guarded" | "read-only-db";
 
 export type AdminDbIntegrationPoint = {
   domain: Extract<AdminDomainKey, "stats" | "history" | "files" | "partner" | "settings">;
@@ -12,7 +12,7 @@ export type AdminDbIntegrationPoint = {
   apiRoutes: readonly string[];
   readBoundary: string;
   writeBoundary: string | null;
-  fallback: string | null;
+  emptyStatePolicy: string | null;
   nextDbAction: string;
 };
 
@@ -24,10 +24,10 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     tables: ["spec_sheets", "partners", "partner_items", "attachments"],
     repositoryPath: "lib/admin/stats/repository.ts",
     adapterPath: null,
-    apiRoutes: ["app/admin/stats/page.tsx"],
+    apiRoutes: ["app/(workspace)/workspace/stats/page.tsx"],
     readBoundary: "getAdminStatsSnapshot",
     writeBoundary: null,
-    fallback: "DB 미설정/조회 실패 시 빈 통계 snapshot 반환",
+    emptyStatePolicy: "DB 미설정/조회 실패 시 샘플 수치 없이 빈 통계 snapshot 반환",
     nextDbAction: "실제 DB 스키마 확정 후 status/item_type/attachment 컬럼명만 최종 검증",
   },
   {
@@ -37,10 +37,10 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     tables: ["history_logs", "users"],
     repositoryPath: "lib/admin/history/repository.ts",
     adapterPath: null,
-    apiRoutes: ["app/admin/history/page.tsx"],
+    apiRoutes: ["app/(workspace)/workspace/history/page.tsx"],
     readBoundary: "listAdminHistoryEvents",
     writeBoundary: "createAdminHistoryLogSafe",
-    fallback: "DB 미설정/조회 실패 시 빈 히스토리 목록 반환",
+    emptyStatePolicy: "DB 미설정/조회 실패 시 샘플 기록 없이 빈 히스토리 목록 반환",
     nextDbAction: "WorkOrder/파일/설정 actionFlow에서 history write 호출 누락 지점만 연결",
   },
   {
@@ -53,7 +53,7 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     apiRoutes: ["app/api/admin/files/snapshot/route.ts"],
     readBoundary: "listAdminFileManagementRows(sessionCompanyId)",
     writeBoundary: "admin file server actions(sessionCompanyId)",
-    fallback: null,
+    emptyStatePolicy: null,
     nextDbAction: "저장소 관리 화면에서 세션 회사 범위 회귀 테스트",
   },
   {
@@ -66,7 +66,7 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     apiRoutes: ["app/api/admin/partners/route.ts", "app/api/partners/factories/route.ts", "app/api/partners/workorder-options/route.ts"],
     readBoundary: "createPartnerRepository(sessionCompanyScope).list*",
     writeBoundary: "PartnerWritableRepository methods",
-    fallback: null,
+    emptyStatePolicy: null,
     nextDbAction: "관리자/작업지시서 거래처 선택 UI에서 세션 회사 범위 회귀 테스트",
   },
   {
@@ -79,7 +79,7 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     apiRoutes: ["app/api/admin/companies/route.ts", "app/api/admin/companies/current/route.ts", "app/api/admin/standards/route.ts"],
     readBoundary: "getCompanySettings / getAdminStandards",
     writeBoundary: "updateCompanySettings / replaceAdminStandards",
-    fallback: "DB 미설정 시 기본 회사 설정/기준정보 반환",
+    emptyStatePolicy: "DB 미설정 시 샘플 회사가 아니라 회사 기본 설정/기준정보 초기값 반환",
     nextDbAction: "초기 seed SQL과 company_id scope 기준만 최종 동기화",
   },
 ] as const;

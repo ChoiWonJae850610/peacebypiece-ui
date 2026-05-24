@@ -1,4 +1,4 @@
-export type AdminMockAuditStatus = "remove-ready" | "seed-retained" | "fallback-retained" | "blocked";
+export type AdminMockAuditStatus = "remove-ready" | "seed-retained" | "fixture-isolated" | "blocked";
 
 export type AdminMockAuditItem = {
   key: string;
@@ -12,7 +12,7 @@ export type AdminMockAuditItem = {
 export type AdminMockAuditSummary = {
   removeReadyCount: number;
   seedRetainedCount: number;
-  fallbackRetainedCount: number;
+  fixtureIsolatedCount: number;
   blockedCount: number;
   items: readonly AdminMockAuditItem[];
 };
@@ -29,10 +29,10 @@ const ADMIN_MOCK_AUDIT_ITEMS: readonly AdminMockAuditItem[] = [
   {
     key: "settings-user-access-preview",
     label: "환경설정 권한 미리보기",
-    status: "fallback-retained",
-    summary: "대체 데이터 유지",
-    detail: "로그인 adapter 전환 전까지 권한 버튼과 중앙 policy 결과를 확인할 테스트 사용자가 필요합니다.",
-    nextAction: "실제 사용자 조회가 안정화되면 테스트 사용자 대체 데이터 사용 범위를 제거합니다.",
+    status: "fixture-isolated",
+    summary: "fixture 격리 유지",
+    detail: "권한 버튼과 중앙 policy 결과 확인용 fixture는 실제 고객 화면이 아닌 테스트 경로로 격리합니다.",
+    nextAction: "실제 사용자 조회가 안정화되면 fixture 사용 범위를 테스트 전용으로만 유지하거나 제거합니다.",
   },
   {
     key: "partner-master-defaults",
@@ -53,9 +53,9 @@ const ADMIN_MOCK_AUDIT_ITEMS: readonly AdminMockAuditItem[] = [
   {
     key: "workorder-fixtures",
     label: "작업지시서 fixture 데이터",
-    status: "fallback-retained",
-    summary: "테스트 전용 유지",
-    detail: "작업지시서 DB 전환이 완전히 끝나기 전까지 로컬 개발/회귀 테스트용 fixture는 필요합니다.",
+    status: "fixture-isolated",
+    summary: "fixture 격리 유지",
+    detail: "작업지시서 로컬 개발/회귀 테스트용 fixture는 실제 고객 화면에 연결하지 않고 테스트/초기값 경로로 격리합니다.",
     nextAction: "고객 화면에는 노출하지 않고 테스트/초기값 경로로만 격리합니다.",
   },
 ];
@@ -66,12 +66,12 @@ export function getAdminMockAuditSummary(): AdminMockAuditSummary {
   return {
     removeReadyCount: items.filter((item) => item.status === "remove-ready").length,
     seedRetainedCount: items.filter((item) => item.status === "seed-retained").length,
-    fallbackRetainedCount: items.filter((item) => item.status === "fallback-retained").length,
+    fixtureIsolatedCount: items.filter((item) => item.status === "fixture-isolated").length,
     blockedCount: items.filter((item) => item.status === "blocked").length,
     items,
   };
 }
 
 export function formatAdminMockAuditSummary(summary: AdminMockAuditSummary): string {
-  return `제거 가능 ${summary.removeReadyCount}개 · 초기값 유지 ${summary.seedRetainedCount}개 · 대체 데이터 유지 ${summary.fallbackRetainedCount}개`;
+  return `제거 가능 ${summary.removeReadyCount}개 · 초기값 유지 ${summary.seedRetainedCount}개 · fixture 격리 유지 ${summary.fixtureIsolatedCount}개`;
 }
