@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
 
 import { WAFL_AUTH_SESSION_COOKIE } from "@/lib/auth/session";
+import { WAFL_DEV_TEST_CONTEXT_COOKIE } from "@/lib/dev/testContext/session";
 
 function createLogoutResponse(request: Request) {
   const response = NextResponse.redirect(new URL("/", request.url));
+  const secure = new URL(request.url).protocol === "https:";
   response.cookies.set(WAFL_AUTH_SESSION_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
-    secure: new URL(request.url).protocol === "https:",
+    secure,
+    path: "/",
+    maxAge: 0,
+  });
+  response.cookies.set(WAFL_DEV_TEST_CONTEXT_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
     path: "/",
     maxAge: 0,
   });
