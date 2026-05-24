@@ -88,4 +88,4 @@ export const WORKORDER_MATERIAL_LINE_ROLE_LABELS: Record<WorkorderMaterialLineRo
   other: "기타",
 };
 
-export const MATERIAL_DATABASE_DESIGN_VERSION = "0.16.17" as const;
+export const MATERIAL_DATABASE_DESIGN_VERSION = "0.16.18" as const;

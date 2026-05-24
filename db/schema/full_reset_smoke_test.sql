@@ -63,6 +63,10 @@ BEGIN
       ('history_logs', to_regclass('public.history_logs')),
       ('partners', to_regclass('public.partners')),
       ('partner_items', to_regclass('public.partner_items')),
+      ('materials', to_regclass('public.materials')),
+      ('material_attributes_fabric', to_regclass('public.material_attributes_fabric')),
+      ('material_attributes_submaterial', to_regclass('public.material_attributes_submaterial')),
+      ('workorder_material_lines', to_regclass('public.workorder_material_lines')),
       ('material_orders', to_regclass('public.material_orders')),
       ('material_order_lines', to_regclass('public.material_order_lines')),
       ('material_allocations', to_regclass('public.material_allocations'))
@@ -101,6 +105,19 @@ BEGIN
       ('spec_sheets', 'rejected_at'),
       ('spec_sheets', 'rejected_by_user_id'),
       ('spec_sheets', 'rejected_by_name'),
+      ('materials', 'company_id'),
+      ('materials', 'kind'),
+      ('materials', 'code'),
+      ('materials', 'name'),
+      ('materials', 'unit'),
+      ('materials', 'lifecycle_status'),
+      ('material_attributes_fabric', 'material_id'),
+      ('material_attributes_submaterial', 'material_id'),
+      ('workorder_material_lines', 'company_id'),
+      ('workorder_material_lines', 'workorder_id'),
+      ('workorder_material_lines', 'material_id'),
+      ('workorder_material_lines', 'role'),
+      ('workorder_material_lines', 'order_status'),
       ('company_workorder_daily_stats', 'stats_date'),
       ('company_workorder_daily_stats', 'created_workorder_count'),
       ('company_workorder_daily_stats', 'reorder_workorder_count'),
@@ -223,7 +240,8 @@ BEGIN
     VALUES
       ('orders', 'factory_partner_id'),
       ('spec_sheet_materials', 'vendor_partner_id'),
-      ('spec_sheet_outsourcing_lines', 'vendor_partner_id')
+      ('spec_sheet_outsourcing_lines', 'vendor_partner_id'),
+      ('workorder_material_lines', 'material_id')
   ) AS required_columns(table_name, column_name)
   WHERE NOT EXISTS (
     SELECT 1
@@ -351,6 +369,8 @@ DECLARE
   orphan_company_unit_standards integer;
   orphan_company_process_standards integer;
   orphan_template_categories integer;
+  orphan_materials integer;
+  orphan_workorder_material_lines integer;
 BEGIN
   SELECT count(*)
   INTO orphan_role_permissions
@@ -399,6 +419,20 @@ BEGIN
   LEFT JOIN system_product_type_templates spt ON spt.id = sptc.template_id
   WHERE spt.id IS NULL;
 
+  SELECT count(*)
+  INTO orphan_materials
+  FROM materials m
+  LEFT JOIN companies c ON c.id = m.company_id
+  WHERE c.id IS NULL;
+
+  SELECT count(*)
+  INTO orphan_workorder_material_lines
+  FROM workorder_material_lines wml
+  LEFT JOIN companies c ON c.id = wml.company_id
+  LEFT JOIN spec_sheets s ON s.id = wml.workorder_id
+  LEFT JOIN materials m ON m.id = wml.material_id
+  WHERE c.id IS NULL OR s.id IS NULL OR m.id IS NULL;
+
   IF orphan_role_permissions > 0 THEN
     RAISE EXCEPTION 'orphan role_permissions found: %', orphan_role_permissions;
   END IF;
@@ -426,6 +460,14 @@ BEGIN
   IF orphan_template_categories > 0 THEN
     RAISE EXCEPTION 'orphan system_product_type_template_categories found: %', orphan_template_categories;
   END IF;
+
+  IF orphan_materials > 0 THEN
+    RAISE EXCEPTION 'orphan materials found: %', orphan_materials;
+  END IF;
+
+  IF orphan_workorder_material_lines > 0 THEN
+    RAISE EXCEPTION 'orphan workorder_material_lines found: %', orphan_workorder_material_lines;
+  END IF;
 END $$;
 
 
@@ -450,6 +492,13 @@ BEGIN
       ('spec_sheet_outsourcing_lines_company_vendor_idx'),
       ('partners_company_name_idx'),
       ('partner_items_company_partner_type_idx'),
+      ('materials_company_kind_status_idx'),
+      ('materials_company_partner_idx'),
+      ('materials_company_code_idx'),
+      ('materials_company_name_idx'),
+      ('workorder_material_lines_company_workorder_idx'),
+      ('workorder_material_lines_company_material_idx'),
+      ('workorder_material_lines_company_order_status_idx'),
       ('attachments_company_size_idx'),
       ('company_workorder_daily_stats_company_date_idx'),
       ('company_workorder_monthly_stats_company_month_idx'),
