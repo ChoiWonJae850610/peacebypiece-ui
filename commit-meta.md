@@ -1,9 +1,9 @@
-Version : 0.16.38
-Summary : 실제 Google 테스트 계정 연결형 seed 추가
-Description : DB 검증용 테스트 seed와 별도로 실제 Gmail 주소를 연결할 수 있는 개발/test 전용 seed와 검증 SQL을 추가했습니다. Google 로그인 우회 없이 이메일 매칭 후 최초 로그인 시 google_sub가 연결되도록 구성하고, placeholder/중복 이메일/멤버십 상태를 검증하는 SQL을 함께 제공합니다.
+Version : 0.16.39
+Summary : 개발 전용 테스트 사용자 전환 설계 추가
+Description : 실제 Google 로그인 구조를 유지하면서 개발 환경에서만 테스트 fixture 업무 컨텍스트를 전환할 수 있는 설계 문서를 추가하고, 다음 구현 범위와 보안 차단 조건을 정리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 추가 파일 목록 :
-- db/test/scenario_google_login_seed.sql
-- db/test/verify_google_login_seed.sql
+- docs/dev-test-user-switching-design-0.16.39.md
 삭제 파일 목록 :
+- 없음
