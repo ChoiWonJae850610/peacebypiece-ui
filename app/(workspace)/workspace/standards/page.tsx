@@ -21,7 +21,7 @@ export default async function WorkspaceStandardsPage() {
 
   return (
     <WorkspaceShell
-      companyName={session.companyName}
+      companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
       title={pageText.title}
       description={pageText.description}
