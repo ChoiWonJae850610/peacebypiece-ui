@@ -5,7 +5,7 @@ import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constan
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
-import { getCategoryPath, getDisplayValueOrFallback, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
+import { getCategoryPath, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getWorkOrderStatusBadgeSemanticClass } from "@/lib/workorder/presentation/workOrderListSemanticPresentation";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
@@ -39,6 +39,7 @@ export default function WorkOrderListCard({
   const copy = i18n.workorder.ui.layout.workOrderListCard;
   const state = getWorkOrderState(workflowStateById, workOrder.id);
   const stateLabel = translateWorkflowStateLabel(state, i18n);
+  const categoryPath = getCategoryPath(workOrder) || copy.uncategorized;
   const active = workOrder.id === selectedId;
   const canShowReorder = canReorder && canReorderWorkOrder(workOrder) && isWorkflowStateOneOf(state, REORDERABLE_WORKFLOW_STATES);
   const canShowDelete = Boolean(onDelete) && (!canDelete || canDelete(state));
@@ -89,10 +90,9 @@ export default function WorkOrderListCard({
             </span>
           </div>
           <div className="pbp-workorder-list-muted mt-1.5 min-w-0 space-y-0.5 text-[11px] leading-4">
-            <div className="truncate">{getCategoryPath(workOrder) || copy.uncategorized}</div>
-            <div className="truncate">{copy.vendorLabel}: {getDisplayValueOrFallback(workOrder.vendor, copy.unspecified)}</div>
-            <div>{copy.dueDateLabel}: {getDisplayValueOrFallback(workOrder.dueDate, copy.unspecified)}</div>
-            <div>{copy.attachmentsLabel}: {workOrder.filesCount ?? 0}{copy.countSuffix}</div>
+            <div className="truncate" title={categoryPath}>{categoryPath}</div>
+            {workOrder.vendor ? <div className="truncate">{copy.vendorLabel}: {workOrder.vendor}</div> : null}
+            {workOrder.dueDate ? <div>{copy.dueDateLabel}: {workOrder.dueDate}</div> : null}
           </div>
         </button>
         <div className="relative shrink-0" ref={menuRef}>
