@@ -9,6 +9,7 @@ import {
   type AdminWorkspaceCard,
   type AdminWorkspaceCardStatus,
 } from "@/lib/admin/adminWorkspaceCards";
+import type { MemberPermissionCode } from "@/lib/permissions";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 function getStatusTone(status: AdminWorkspaceCardStatus) {
@@ -102,9 +103,13 @@ function AdminWorkspaceCardView({ item, index }: { item: AdminWorkspaceCard; ind
   );
 }
 
-export default function AdminConsoleSections() {
+type AdminConsoleSectionsProps = {
+  permissionCodes?: readonly MemberPermissionCode[] | null;
+};
+
+export default function AdminConsoleSections({ permissionCodes }: AdminConsoleSectionsProps) {
   const t = useAdminTranslation();
-  const cardAccessInput = { permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES };
+  const cardAccessInput = { permissionCodes: permissionCodes ?? ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES };
   const primaryCards = getVisibleAdminHomePrimaryCards(cardAccessInput);
 
   return (

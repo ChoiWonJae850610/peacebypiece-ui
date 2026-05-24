@@ -1,5 +1,7 @@
 import CompanyMemberInviteSkeleton from "@/components/admin/invitations/CompanyMemberInviteSkeleton";
+import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 
-export default function AdminInvitesPage() {
+export default async function AdminInvitesPage() {
+  await requireWorkspacePagePermission("member.invite");
   return <CompanyMemberInviteSkeleton />;
 }

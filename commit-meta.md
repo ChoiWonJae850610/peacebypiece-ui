@@ -1,15 +1,27 @@
-Version : 0.16.25
-Summary : 소스 구조 안정화 점검 및 문서 갱신
-Description : 0.16.4~0.16.25 구조 정리 구간의 실제 라우팅, 계층, DB, 원단·부자재 연결 상태를 문서 기준과 맞추고, 후속 rename/API 이동 후보와 누적 테스트 체크리스트를 분리했습니다. APP_VERSION을 0.16.25로 갱신했으며 기능, DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.26
+Summary : workspace 라우팅 권한과 메뉴 노출 보정
+Description : 비로그인 /system 개발 자동 진입을 명시 설정 없이는 차단하고, workspace 홈을 고객사 관리자와 일반 멤버로 분기했습니다. 일반 멤버는 보유 권한 기준의 업무 홈 카드만 표시되도록 조정하고, workspace 상단 메뉴에 원단·부자재를 포함한 실제 navigationItems를 렌더링했습니다. /workspace/storage 구 경로는 /workspace/files로 리다이렉트하며, 주요 workspace 페이지에 페이지 단위 권한 가드를 추가했습니다. APP_VERSION을 0.16.26으로 갱신했습니다.
 수정 파일 목록 :
+- app/(workspace)/workspace/page.tsx
+- app/(workspace)/workspace/files/page.tsx
+- app/(workspace)/workspace/history/page.tsx
+- app/(workspace)/workspace/invites/page.tsx
+- app/(workspace)/workspace/materials/page.tsx
+- app/(workspace)/workspace/members/page.tsx
+- app/(workspace)/workspace/partners/page.tsx
+- app/(workspace)/workspace/settings/page.tsx
+- app/(workspace)/workspace/stats/page.tsx
+- app/(workspace)/workspace/subscription/page.tsx
+- components/admin/dashboard/AdminConsoleSections.tsx
+- components/workspace/layout/WorkspaceTopbar.tsx
+- features/workorders/page/WorkordersWorkspacePage.tsx
+- lib/admin/adminWorkspaceCards.ts
+- lib/auth/routeGuard.ts
 - lib/constants/app.ts
-- docs/source-architecture.md
-- docs/routing-architecture.md
-- docs/refactoring-rules.md
-- docs/workspace-boundary.md
-- docs/database-architecture.md
+- lib/system/devSystemAdmin.ts
 추가 파일 목록 :
-- docs/source-stabilization-checkpoint-0.16.25.md
-- docs/structure-refactor-test-backlog-0.16.25.md
+- app/(workspace)/workspace/storage/page.tsx
+- components/admin/dashboard/AdminInvitationOnboardingEntry.tsx
+- components/admin/files/AdminFilesWorkspaceClient.tsx
 삭제 파일 목록 :
-없음
+- 없음

@@ -1,6 +1,6 @@
 import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import { APP_VERSION } from "@/lib/constants/app";
-import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
+import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 import { buildMaterialCapabilityState } from "@/lib/materials/capabilities";
 import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import MaterialsWorkspacePage from "@/features/materials/MaterialsWorkspacePage";
@@ -8,7 +8,7 @@ import { listWorkspaceMaterials } from "@/lib/materials/service";
 import type { Material, MaterialCapabilityState } from "@/lib/materials/types";
 
 export default async function WorkspaceMaterialsPageRoute() {
-  const session = await requireWaflSessionForArea("workspace");
+  const session = await requireWorkspacePagePermission("standards.read");
 
   let initialMaterials: Material[] = [];
   let initialError: string | null = null;

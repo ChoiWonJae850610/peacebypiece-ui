@@ -1,26 +1,32 @@
-import AdminOperationsDashboard from "@/components/admin/dashboard/AdminOperationsDashboard";
 import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import { redirect } from "next/navigation";
 
 import { APP_VERSION } from "@/lib/constants/app";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
+import AdminInvitationOnboardingEntry from "@/components/admin/dashboard/AdminInvitationOnboardingEntry";
 import AdminConsoleSections from "@/components/admin/dashboard/AdminConsoleSections";
+import AdminOperationsDashboard from "@/components/admin/dashboard/AdminOperationsDashboard";
+import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
 import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { getAdminOperationalDashboardSnapshots } from "@/lib/admin/adminOperations.repository";
+import type { WaflSessionPayload } from "@/lib/auth/session";
+import type { MemberPermissionCode } from "@/lib/permissions";
 
-function AdminInvitationOnboardingEntry() {
-  return (
-    <section className="rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-6 shadow-sm">
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--pbp-accent)]">Company onboarding</p>
-      <h2 className="mt-3 text-xl font-bold tracking-tight text-[var(--pbp-text-primary)]">고객사 정보를 입력해 주세요.</h2>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-muted)]">
-        초대 링크를 통해 Google 로그인한 상태입니다. 회사 정보와 관리자 정보를 입력하고 승인 요청을 완료하면 시스템관리자 검토 목록에 표시됩니다.
-      </p>
-    </section>
-  );
+async function readMemberPermissionCodes(session: WaflSessionPayload): Promise<readonly MemberPermissionCode[]> {
+  if (session.role === "company_admin") return [];
+  if (!session.companyId || !session.companyMemberId) return [];
+
+  const { members } = await adminMemberRepository.listCompanyMembers({
+    companyId: session.companyId,
+    status: "all",
+    limit: 200,
+  });
+  const member = members.find((item) => item.id === session.companyMemberId);
+
+  return member?.status === "approved" ? member.permissionCodes : [];
 }
 
-export default async function AdminPage() {
+export default async function WorkspacePage() {
   const session = await requireWaflSessionForArea("workspace");
   const companyId = session.companyId?.trim();
 
@@ -42,18 +48,34 @@ export default async function AdminPage() {
     );
   }
 
-  const snapshots = await getAdminOperationalDashboardSnapshots(companyId);
+  if (session.role === "company_admin") {
+    const snapshots = await getAdminOperationalDashboardSnapshots(companyId);
+
+    return (
+      <WorkspaceShell
+        companyName={session.companyName ?? ""}
+        appVersion={APP_VERSION}
+        navigationItems={getWorkspaceNavigationItems("/workspace")}
+        title="고객관리자 메인"
+      >
+        <AdminOperationsDashboard snapshots={snapshots} />
+
+        <AdminConsoleSections />
+      </WorkspaceShell>
+    );
+  }
+
+  const permissionCodes = await readMemberPermissionCodes(session);
 
   return (
     <WorkspaceShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
       navigationItems={getWorkspaceNavigationItems("/workspace")}
-      title="고객관리자 메인"
+      title="업무 홈"
+      description="권한이 부여된 업무 화면으로 이동합니다."
     >
-      <AdminOperationsDashboard snapshots={snapshots} />
-
-      <AdminConsoleSections />
+      <AdminConsoleSections permissionCodes={permissionCodes} />
     </WorkspaceShell>
   );
 }

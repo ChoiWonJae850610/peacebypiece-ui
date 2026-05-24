@@ -3,11 +3,11 @@ import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { listAdminHistoryEvents } from "@/lib/admin/history/repository";
 import { APP_VERSION } from "@/lib/constants/app";
-import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
+import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 import { getI18n } from "@/lib/i18n";
 
 export default async function AdminHistoryPage() {
-  const session = await requireWaflSessionForArea("workspace");
+  const session = await requireWorkspacePagePermission("audit.read.company");
   const companyId = session.companyId?.trim();
 
   if (!companyId) {

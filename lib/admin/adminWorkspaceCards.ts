@@ -54,6 +54,16 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     statusLabel: "관리",
   },
   {
+    id: "materials",
+    label: "원단·부자재",
+    description: "원단과 부자재 기준 정보를 조회하고 관리합니다.",
+    permission: ADMIN_WORKSPACE_PERMISSIONS.standardsRead,
+    requiredMemberPermissions: ["standards.read"],
+    href: "/workspace/materials",
+    status: "available",
+    statusLabel: "기준정보",
+  },
+  {
     id: "stats",
     label: "통계정보",
     description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다.",
@@ -151,8 +161,8 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
 
 export const ADMIN_HOME_PRIMARY_CARD_IDS = [
   "workorder-entry",
-  "material-orders",
   "partners",
+  "materials",
   "files",
   "stats",
   "member-management",

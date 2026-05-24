@@ -4,8 +4,10 @@ import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigatio
 import { APP_VERSION } from "@/lib/constants/app";
 import { getAdminMemberCompanyScope } from "@/lib/admin/members/sessionScope";
 import { getI18n } from "@/lib/i18n";
+import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 
 export default async function AdminMembersPage() {
+  await requireWorkspacePagePermission("member.read");
   const pageText = getI18n().admin.memberManagement;
   const companyScope = await getAdminMemberCompanyScope();
 

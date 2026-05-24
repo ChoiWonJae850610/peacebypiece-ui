@@ -17,10 +17,7 @@ function isExplicitlyDisabled(value: string | undefined): boolean {
 
 export function isDevSystemAdminEntryEnabled(): boolean {
   if (isExplicitlyDisabled(process.env.WAFL_DISABLE_SYSTEM_DEV_ENTRY)) return false;
-  if (isExplicitlyEnabled(process.env.WAFL_ENABLE_SYSTEM_DEV_ENTRY)) return true;
-  if (process.env.NEXT_PUBLIC_APP_RUNTIME_MODE === "development") return true;
-
-  return process.env.NODE_ENV !== "production";
+  return isExplicitlyEnabled(process.env.WAFL_ENABLE_SYSTEM_DEV_ENTRY);
 }
 
 export function createDevSystemAdminSession(): WaflSessionPayload {

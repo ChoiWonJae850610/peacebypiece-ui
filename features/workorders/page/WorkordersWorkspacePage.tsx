@@ -1,5 +1,5 @@
 import WorkOrderWorkspace from "@/components/workorder/WorkOrderWorkspace";
-import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 import { ROLE } from "@/lib/constants/roles";
 import type { RoleType } from "@/types/permission";
 import {
@@ -38,13 +38,13 @@ export default async function WorkordersWorkspacePage({
       : normalizeWorkOrderListStatusFilter(null);
   const initialListSort = normalizeWorkOrderListSort(readQueryValue(resolvedSearchParams?.sort));
   const initialSearchQuery = readQueryValue(resolvedSearchParams?.q) ?? "";
-  const session = await getCurrentWaflSession();
-  const initialHomeRole = resolveSessionHomeRole(session?.role);
+  const session = await requireWorkspacePagePermission("workorder.read");
+  const initialHomeRole = resolveSessionHomeRole(session.role);
 
   return (
     <WorkOrderWorkspace
       initialHomeRole={initialHomeRole}
-      initialCompanyName={session?.companyName ?? null}
+      initialCompanyName={session.companyName ?? null}
       initialWorkOrderId={initialWorkOrderId}
       initialListStatusFilter={initialListStatusFilter}
       initialListSort={initialListSort}

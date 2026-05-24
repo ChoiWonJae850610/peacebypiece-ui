@@ -8,6 +8,7 @@ import { normalizeAdminPeriodTopMode, normalizeAdminStatsPageSection } from "@/l
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 import { getAdminStatsCompanyScope } from "@/lib/admin/stats/sessionScope";
+import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 
 
 type AdminStatsPageProps = {
@@ -21,6 +22,7 @@ type AdminStatsPageProps = {
 };
 
 export default async function AdminStatsPage({ searchParams }: AdminStatsPageProps) {
+  await requireWorkspacePagePermission("stats.read");
   const pageText = getI18n().admin.dashboardPage;
   const companyScope = await getAdminStatsCompanyScope();
 

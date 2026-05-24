@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { getCompanyAccessState, resolveCompanyAccessBlockReason, type CompanyAccessBlockReason } from "@/lib/billing/companyAccessRepository";
-import { createDevSystemAdminSession, isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
+import { hasWorkspaceApiPermission } from "@/lib/auth/apiRouteGuards";
+import type { MemberPermissionCode } from "@/lib/permissions";
 
 type ProtectedArea = "workspace" | "system" | "worker" | "me";
 
@@ -15,8 +16,7 @@ type CompanyAccessGuardOptions = {
 
 function getRoleHomePath(role: WaflSessionRole): string {
   if (role === "system_admin") return "/system";
-  if (role === "company_admin") return "/workspace";
-  return "/workspace/workorders";
+  return "/workspace";
 }
 
 function getCompanyAccessBlockedPath(area: ProtectedArea, reason: CompanyAccessBlockReason): string {
@@ -46,10 +46,6 @@ export async function requireWaflSessionForArea(
 ): Promise<WaflSessionPayload> {
   const session = await getCurrentWaflSession();
   if (!session) {
-    if (area === "system" && isDevSystemAdminEntryEnabled()) {
-      return createDevSystemAdminSession();
-    }
-
     redirect("/?error=SESSION_REQUIRED");
   }
 
@@ -70,6 +66,23 @@ export async function requireWaflSessionForArea(
     if (blockedReason && !options.allowBlockedCompanyAccess) {
       redirect(getCompanyAccessBlockedPath(area, blockedReason));
     }
+  }
+
+  return session;
+}
+
+
+export async function requireWorkspacePagePermission(
+  permissionCode: MemberPermissionCode,
+  options: CompanyAccessGuardOptions = {},
+): Promise<WaflSessionPayload> {
+  const session = await requireWaflSessionForArea("workspace", options);
+
+  if (session.role === "company_admin") return session;
+
+  const hasPermission = await hasWorkspaceApiPermission(session, permissionCode);
+  if (!hasPermission) {
+    redirect("/workspace?error=WORKSPACE_PERMISSION_REQUIRED");
   }
 
   return session;

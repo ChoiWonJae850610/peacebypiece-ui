@@ -5,8 +5,10 @@ import AdminSettingsHub from "@/components/admin/settings/AdminSettingsHub";
 import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
+import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 
 export default async function AdminSettingsPage() {
+  await requireWorkspacePagePermission("settings.read");
   const companyScope = await getAdminSettingsCompanyScope();
 
   if (!companyScope) {
