@@ -559,6 +559,40 @@ function buildSourceAliasSelection(
   return `${sourceAlias}.${quoteIdentifier(columnName)} AS ${alias}`;
 }
 
+function buildCategoryNameSourceSelection(
+  sourceAlias: string,
+  sourceColumnName: string | null,
+  idColumnName: string | null,
+  categoryAlias: string,
+  alias: keyof DbSpecSheetRow,
+): string {
+  const sourceValueSql = sourceColumnName
+    ? `NULLIF(${sourceAlias}.${quoteIdentifier(sourceColumnName)}::text, '')`
+    : "NULL";
+  const categoryNameSql = idColumnName
+    ? `NULLIF(${categoryAlias}.name::text, '')`
+    : "NULL";
+
+  return `COALESCE(${categoryNameSql}, ${sourceValueSql}) AS ${alias}`;
+}
+
+function buildCategoryNameJoinSql(
+  sourceAlias: string,
+  categoryAlias: string,
+  idColumnName: string | null,
+  companyIdColumnName: string | null,
+): string {
+  if (!idColumnName) return "";
+
+  const companyPredicate = companyIdColumnName
+    ? `\n        AND ${categoryAlias}.company_id = ${sourceAlias}.${quoteIdentifier(companyIdColumnName)}`
+    : "";
+
+  return `
+      LEFT JOIN item_categories ${categoryAlias}
+        ON ${categoryAlias}.id = ${sourceAlias}.${quoteIdentifier(idColumnName)}${companyPredicate}`;
+}
+
 function buildManagerNameSourceSelection(
   schema: DbSpecSheetSchema,
   sourceAlias: string,
@@ -1107,9 +1141,9 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.category3IdColumn, "category3_id", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.displayTitleColumn, "display_title", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.baseTitleColumn, "base_title", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.category1Column, "category1", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.category2Column, "category2", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.category3Column, "category3", "NULL")},
+        ${buildCategoryNameSourceSelection(sourceAlias, schema.category1Column, schema.category1IdColumn, "category1_item", "category1")},
+        ${buildCategoryNameSourceSelection(sourceAlias, schema.category2Column, schema.category2IdColumn, "category2_item", "category2")},
+        ${buildCategoryNameSourceSelection(sourceAlias, schema.category3Column, schema.category3IdColumn, "category3_item", "category3")},
         ${buildSourceAliasSelection(sourceAlias, schema.seasonColumn, "season", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.priorityColumn, "priority", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.vendorColumn, "vendor", "NULL")},
@@ -1131,6 +1165,9 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.createdAtColumn, "created_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.updatedAtColumn, "updated_at", "NULL")}
       FROM ${quoteIdentifier(SPEC_SHEET_TABLE)} ${sourceAlias}
+      ${buildCategoryNameJoinSql(sourceAlias, "category1_item", schema.category1IdColumn, schema.companyIdColumn)}
+      ${buildCategoryNameJoinSql(sourceAlias, "category2_item", schema.category2IdColumn, schema.companyIdColumn)}
+      ${buildCategoryNameJoinSql(sourceAlias, "category3_item", schema.category3IdColumn, schema.companyIdColumn)}
       ${buildManagerDisplayJoinSql(schema, sourceAlias)}
     `;
 }
@@ -1156,9 +1193,9 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.category3IdColumn, "category3_id", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.displayTitleColumn, "display_title", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.baseTitleColumn, "base_title", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.category1Column, "category1", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.category2Column, "category2", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.category3Column, "category3", "NULL")},
+        ${buildCategoryNameSourceSelection(sourceAlias, schema.category1Column, schema.category1IdColumn, "category1_item", "category1")},
+        ${buildCategoryNameSourceSelection(sourceAlias, schema.category2Column, schema.category2IdColumn, "category2_item", "category2")},
+        ${buildCategoryNameSourceSelection(sourceAlias, schema.category3Column, schema.category3IdColumn, "category3_item", "category3")},
         ${buildSourceAliasSelection(sourceAlias, schema.seasonColumn, "season", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.priorityColumn, "priority", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.vendorColumn, "vendor", "NULL")},
@@ -1180,6 +1217,9 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.createdAtColumn, "created_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.updatedAtColumn, "updated_at", "NULL")}
       FROM ${quoteIdentifier(SPEC_SHEET_TABLE)} ${sourceAlias}
+      ${buildCategoryNameJoinSql(sourceAlias, "category1_item", schema.category1IdColumn, schema.companyIdColumn)}
+      ${buildCategoryNameJoinSql(sourceAlias, "category2_item", schema.category2IdColumn, schema.companyIdColumn)}
+      ${buildCategoryNameJoinSql(sourceAlias, "category3_item", schema.category3IdColumn, schema.companyIdColumn)}
       ${buildManagerDisplayJoinSql(schema, sourceAlias)}
     `;
 }
