@@ -21,7 +21,7 @@ function AdminInvitationOnboardingEntry() {
 }
 
 export default async function AdminPage() {
-  const session = await requireWaflSessionForArea("admin");
+  const session = await requireWaflSessionForArea("workspace");
   const companyId = session.companyId?.trim();
 
   if (!companyId) {

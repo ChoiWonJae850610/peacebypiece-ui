@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/workspaceStats";
+import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/adminStats";
 import {
   isDatabaseConfigured,
   queryDb,
@@ -19,7 +19,7 @@ import {
   type AdminDashboardTodayTask,
   type AdminOperationalDashboardSnapshot,
   type AdminOperationalDashboardSnapshots,
-} from "@/lib/admin/workspaceOperations.types";
+} from "@/lib/admin/adminOperations.types";
 
 export { ADMIN_DASHBOARD_PERIOD_OPTIONS };
 

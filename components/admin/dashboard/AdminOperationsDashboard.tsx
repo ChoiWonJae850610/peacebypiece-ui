@@ -12,7 +12,7 @@ import type {
   AdminDashboardTaskStatusKey,
   AdminDashboardTodayTask,
   AdminOperationalDashboardSnapshots,
-} from "@/lib/admin/workspaceOperations.types";
+} from "@/lib/admin/adminOperations.types";
 import {
   ADMIN_DASHBOARD_DEFAULT_QUEUE_ID,
   ADMIN_DASHBOARD_QUEUE_ORDER,
@@ -20,7 +20,7 @@ import {
   formatAdminDashboardDue,
   formatAdminDashboardQuantity,
   selectAdminDashboardQueueTasks,
-} from "@/lib/admin/workspaceOperations.presentation";
+} from "@/lib/admin/adminOperations.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminOperationsDashboardProps = {

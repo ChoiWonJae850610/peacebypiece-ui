@@ -7,7 +7,7 @@ import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 import { getI18n } from "@/lib/i18n";
 
 export default async function AdminHistoryPage() {
-  const session = await requireWaflSessionForArea("admin");
+  const session = await requireWaflSessionForArea("workspace");
   const companyId = session.companyId?.trim();
 
   if (!companyId) {

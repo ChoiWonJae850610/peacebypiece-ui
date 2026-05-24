@@ -5,13 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   AdminButton,
   AdminLinkButton,
-} from "@/components/workspace/common/AdminButton";
+} from "@/components/admin/common/AdminButton";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
 import {
   AdminDateRangePicker,
   getTodayAdminLocalDateValue,
-} from "@/components/workspace/common/AdminDateRangePicker";
+} from "@/components/admin/common/AdminDateRangePicker";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminSection } from "@/components/admin/common/AdminSection";
@@ -30,7 +30,7 @@ import {
   ADMIN_STATS_TRACK_CLASS,
   ADMIN_STATS_TRACK_INSET_CLASS,
   ADMIN_STATS_WARNING_TEXT_CLASS,
-} from "@/components/workspace/common/workspaceSemanticClassNames";
+} from "@/components/admin/common/adminSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";

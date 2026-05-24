@@ -7,7 +7,7 @@ import {
   ADMIN_PARTNER_DISTRIBUTION_BUCKETS,
   ADMIN_TRASH_COUNT_LIMIT,
   ADMIN_WORKORDER_FLOW_BUCKETS,
-} from "@/lib/constants/workspaceStats";
+} from "@/lib/constants/adminStats";
 import { getI18n } from "@/lib/i18n";
 import { formatPbpBinaryBytes, formatPbpInteger } from "@/lib/utils/formatters";
 

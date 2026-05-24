@@ -9,7 +9,7 @@ const i18n = getI18n();
 const pageText = i18n.admin.partnerMaster.page;
 
 export default async function AdminPartnersPage() {
-  const session = await requireWaflSessionForArea("admin");
+  const session = await requireWaflSessionForArea("workspace");
 
   return (
     <AdminShell

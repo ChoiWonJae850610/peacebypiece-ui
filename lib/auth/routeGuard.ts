@@ -7,7 +7,7 @@ import { getCompanyAccessState, resolveCompanyAccessBlockReason, type CompanyAcc
 import { createDevSystemAdminSession, isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
 
-type ProtectedArea = "admin" | "system" | "worker";
+type ProtectedArea = "workspace" | "system" | "worker" | "me";
 
 type CompanyAccessGuardOptions = {
   allowBlockedCompanyAccess?: boolean;
@@ -20,7 +20,7 @@ function getRoleHomePath(role: WaflSessionRole): string {
 }
 
 function getCompanyAccessBlockedPath(area: ProtectedArea, reason: CompanyAccessBlockReason): string {
-  if (area !== "admin") return "/service-paused";
+  if (area !== "workspace") return "/service-paused";
   if (reason === "rejected" || reason === "profile_required" || reason === "approval_pending") {
     return "/service-paused";
   }
@@ -30,13 +30,14 @@ function getCompanyAccessBlockedPath(area: ProtectedArea, reason: CompanyAccessB
 
 function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boolean {
   if (area === "system") return role === "system_admin";
-  if (area === "admin") return role === "company_admin";
-  return role === "member" || role === "company_admin";
+  if (area === "workspace" || area === "worker") return role === "member" || role === "company_admin";
+  if (area === "me") return role === "member" || role === "company_admin" || role === "system_admin";
+  return false;
 }
 
 function shouldCheckCompanyAccess(area: ProtectedArea, role: WaflSessionRole): boolean {
   if (area === "worker") return role === "member" || role === "company_admin";
-  return area === "admin" && role === "company_admin";
+  return area === "workspace" && role === "company_admin";
 }
 
 export async function requireWaflSessionForArea(

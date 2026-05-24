@@ -10,7 +10,7 @@ import { getI18n } from "@/lib/i18n";
 export const dynamic = "force-dynamic";
 
 export default async function AdminSubscriptionPage() {
-  const session = await requireWaflSessionForArea("admin", { allowBlockedCompanyAccess: true });
+  const session = await requireWaflSessionForArea("workspace", { allowBlockedCompanyAccess: true });
   const accessState = session.companyId ? await getCompanyAccessState(session.companyId) : null;
   const i18n = getI18n();
   const viewModel = buildAdminSubscriptionViewModel(accessState, i18n.admin.subscriptionPage);
