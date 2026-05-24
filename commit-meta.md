@@ -1,11 +1,11 @@
-Version : 0.16.10
-Summary : 작업지시서 service/repository 흐름 정리
-Description : 작업지시서 API route handler가 DB repository를 직접 호출하던 흐름을 service와 repository facade 계층으로 분리했습니다. 첨부/메모 snapshot hydration과 memo thread replace 처리는 service 계층으로 이동했고, API route는 요청 검증, 권한 확인, 감사 로그, 응답 조립 중심으로 축소했습니다. DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.11
+Summary : 작업지시서 capability 판단 중앙화 1차
+Description : 작업지시서 생성, 수정, 삭제, 복원, 상태 변경 권한 판단을 lib/permissions/workorderCapabilities.ts로 중앙화하고, 작업지시서 derived state가 해당 capability state를 사용하도록 정리했습니다. 기존 권한 정책과 화면 동작은 유지했으며 DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
+- lib/hooks/workorder/derived/buildWorkOrderDerivedState.ts
+- lib/permissions/index.ts
 추가 파일 목록 :
-- lib/workorder/repository/workOrderRepository.ts
-- lib/workorder/service/workOrderService.ts
+- lib/permissions/workorderCapabilities.ts
 삭제 파일 목록 :
 - 없음

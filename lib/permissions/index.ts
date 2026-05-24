@@ -4,3 +4,5 @@ export * from "./featureFlagPolicy";
 export * from "./memberPermissionMatrix";
 export * from "./permissionAccess";
 export * from "./apiPermissionGuard";
+
+export * from "./workorderCapabilities";

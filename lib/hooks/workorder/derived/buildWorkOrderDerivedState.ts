@@ -1,9 +1,8 @@
 import {
   canUploadOfficialAttachmentsByRoles,
-  isAdminRole,
   normalizeRoles,
 } from "@/lib/constants/roles";
-import { hasMemberPermission } from "@/lib/permissions";
+import { buildWorkOrderCapabilityState } from "@/lib/permissions/workorderCapabilities";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
 import { isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { getAttachmentCollectionPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
@@ -40,13 +39,11 @@ export function buildWorkOrderDerivedState({
   searchQuery,
   attachmentPreviewId,
 }: BuildWorkOrderDerivedStateParams) {
-  const hasSessionUser = Boolean(currentUser.id || currentUserId);
-  const currentRoles = hasSessionUser ? normalizeRoles(currentUser.roles, currentUser.role) : [];
+  const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
   const currentRole = currentUser.role;
-  const isAdmin = isAdminRole(currentRoles);
-  const canWriteWorkOrder = isAdmin || hasMemberPermission(currentUser, "workorder.update");
-  const canCreateWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create"));
-  const canReorderWorkOrder = hasSessionUser && (isAdmin || hasMemberPermission(currentUser, "workorder.create"));
+  const workOrderCapabilities = buildWorkOrderCapabilityState(currentUser, currentUserId);
+  const { isAdmin, canCreateWorkOrder, canReorderWorkOrder } = workOrderCapabilities;
+  const canWriteWorkOrder = workOrderCapabilities.canUpdateWorkOrder;
   const permissionTargetUser = users.find((user) => user.id === permissionTargetUserId) ?? users[0] ?? currentUser;
   const workflowStateById = deriveWorkflowStateById(workOrders);
   const currentWorkflowState = deriveWorkflowStateFromOrderEntries(selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries);
