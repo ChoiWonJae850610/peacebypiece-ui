@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import {
@@ -13,12 +14,15 @@ import {
 } from "@/lib/db/client";
 import { isWorkOrderServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
-import { getCurrentWaflSession } from "@/lib/auth/currentSession";
-import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
-import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
-import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
+import type { MemberPermissionCode } from "@/lib/permissions";
 import type { WaflSessionPayload } from "@/lib/auth/session";
+import {
+  createWorkspaceCompanyRequiredResponse,
+  createWorkspacePermissionRequiredResponse,
+  hasWorkspaceApiPermission,
+  requireWorkspaceApiGuard,
+} from "@/lib/auth/apiRouteGuards";
 import {
   createWorkOrderForCompany,
   deleteWorkOrderForCompany,
@@ -66,86 +70,32 @@ type WorkOrderRequestCompanyScopeResult =
   | { ok: true; scope: WorkOrderCompanyScope }
   | { ok: false; response: NextResponse };
 
-function createCompanySessionRequiredResponse() {
-  return NextResponse.json(
-    {
-      message: "Company session is required for work order requests.",
-      code: "COMPANY_SESSION_REQUIRED",
-    },
-    { status: 401 },
-  );
-}
-
-async function resolveWorkOrderRequestCompanyScope(): Promise<WorkOrderCompanyScope | null> {
-  const session = await getCurrentWaflSession();
-  if (!session) return null;
-
-  const companyId = session.companyId?.trim();
-  if (!companyId) return null;
-
-  return {
-    companyId,
-    companyName: session.companyName,
-    visibility:
-      session.role === "member"
-        ? {
-            mode: "assigned",
-            userId: session.userId,
-            companyMemberId: session.companyMemberId,
-          }
-        : { mode: "company" },
-  };
-}
-
 async function requireWorkOrderRequestCompanyScope(): Promise<WorkOrderRequestCompanyScopeResult> {
-  const scope = await resolveWorkOrderRequestCompanyScope();
-  if (!scope) {
-    return { ok: false, response: createCompanySessionRequiredResponse() };
-  }
-
-  const blockedResponse = await createCompanyApiAccessBlockedResponse(scope.companyId);
-  if (blockedResponse) {
-    return { ok: false, response: blockedResponse };
-  }
-
-  return { ok: true, scope };
+  const result = await requireWorkspaceApiGuard();
+  if (!result.ok) return result;
+  return { ok: true, scope: result.scope };
 }
+
+function createCompanySessionRequiredResponse() {
+  return createWorkspaceCompanyRequiredResponse();
+}
+
+function createWorkOrderPermissionRequiredResponse(permissionCode: MemberPermissionCode) {
+  return createWorkspacePermissionRequiredResponse(permissionCode);
+}
+
 async function hasCurrentWorkOrderPermission(
   session: WaflSessionPayload,
   permissionCode: MemberPermissionCode,
 ): Promise<boolean> {
-  if (session.role === "company_admin") return true;
-  if (session.role !== "member" || !session.companyId || !session.companyMemberId) return false;
-
-  const { members } = await adminMemberRepository.listCompanyMembers({
-    companyId: session.companyId,
-    status: "all",
-    limit: 200,
-  });
-  const member = members.find((item) => item.id === session.companyMemberId);
-  return Boolean(member && member.status === "approved" && hasMemberPermission(member, permissionCode));
-}
-
-function createWorkOrderPermissionRequiredResponse(permissionCode: MemberPermissionCode) {
-  return NextResponse.json(
-    {
-      message: "Current user does not have permission to access this work order action.",
-      code: "WORKORDER_PERMISSION_REQUIRED",
-      permissionCode,
-    },
-    { status: 403 },
-  );
+  return hasWorkspaceApiPermission(session, permissionCode);
 }
 
 async function requireCurrentWorkOrderPermission(
   permissionCode: MemberPermissionCode,
 ): Promise<NextResponse | null> {
-  const session = await getCurrentWaflSession();
-  if (!session) return createCompanySessionRequiredResponse();
-
-  return (await hasCurrentWorkOrderPermission(session, permissionCode))
-    ? null
-    : createWorkOrderPermissionRequiredResponse(permissionCode);
+  const result = await requireWorkspaceApiGuard({ permissionCode });
+  return result.ok ? null : result.response;
 }
 
 function hasOwnFactoryOrderRequest(value: object): boolean {
@@ -207,7 +157,7 @@ async function requireWorkOrderStatePatchWorkflowPermission(input: {
 
 async function applySessionActorDefaults(
   workOrder: WorkOrder,
-  sessionUser: Awaited<ReturnType<typeof getCurrentWaflSession>>,
+  sessionUser: WaflSessionPayload | null,
 ): Promise<WorkOrder> {
   if (!sessionUser) return workOrder;
 
