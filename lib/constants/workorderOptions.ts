@@ -1,6 +1,5 @@
 import { DEFAULT_UNSELECTED_OPTION, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
 import { MATERIAL_STATUS, MATERIAL_TYPE, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT, MATERIAL_UNIT_OPTIONS } from "@/lib/constants/material";
-import { DEFAULT_NEW_MATERIAL_NAME } from "@/lib/workorder/material/materialDefaults";
 
 export const OUTSOURCING_PROCESS_OPTIONS = [DEFAULT_UNSELECTED_OPTION, "재단", "봉제", "나염", "자수", "워싱", "후가공", "기타"] as const;
 export const OUTSOURCING_UNIT_OPTIONS = ["장", "개", "벌", "세트", "롤"] as const;
@@ -45,7 +44,7 @@ export const DEFAULT_PARTNER_OPTION = PARTNER_OPTIONS[0] as string;
 export const DEFAULT_FACTORY_OPTION = FACTORY_OPTIONS[0] as string;
 export const DEFAULT_REGISTRY_TYPE = REGISTRY_TYPE_OPTIONS[0];
 
-export { MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, DEFAULT_NEW_MATERIAL_NAME };
+export { MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS };
 export const DEFAULT_MATERIAL_STATUS = MATERIAL_STATUS.ready;
 export const DEFAULT_OUTSOURCING_STATUS = "대기" as const;
 
