@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
-import AdminShell from "@/components/admin/layout/AdminShell";
+import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import {
   runPurgeAllTrashItemsFlow,
   runTrashSelectionActionFlow,
@@ -14,11 +14,11 @@ import type {
   AdminFileManagementSnapshot,
   AdminTrashActionType,
 } from "@/lib/admin/files/types";
-import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
+import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
 
-const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/workspace/files");
+const FILE_ADMIN_NAVIGATION_ITEMS = getWorkspaceNavigationItems("/workspace/files");
 
 export default function AdminFilesPage() {
   const t = useAdminTranslation();
@@ -198,7 +198,7 @@ export default function AdminFilesPage() {
   }
 
   return (
-    <AdminShell
+    <WorkspaceShell
       companyName={snapshot.companyName ?? t("common.companyNameFallback", "회사")}
       appVersion={APP_VERSION}
       navigationItems={FILE_ADMIN_NAVIGATION_ITEMS}
@@ -236,6 +236,6 @@ export default function AdminFilesPage() {
           />
         </div>
       </section>
-    </AdminShell>
+    </WorkspaceShell>
   );
 }

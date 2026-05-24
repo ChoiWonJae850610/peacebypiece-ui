@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
-import MemberWorkspaceShell from "@/components/workspace/MemberWorkspaceShell";
+import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import { resolveMemberWorkspacePermissionCodes } from "@/lib/admin/members/memberWorkspaceAccess";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -12,7 +12,7 @@ const i18n = getI18n();
 const pageText = i18n.common.workspacePages.standards;
 
 export default async function WorkspaceStandardsPage() {
-  const session = await requireWaflSessionForArea("worker");
+  const session = await requireWaflSessionForArea("workspace");
   const permissionCodes = await resolveMemberWorkspacePermissionCodes(session);
   const permissionInput = { permissionCodes };
   const canRead = hasSomeMemberPermission(permissionInput, ["standards.read"]);
@@ -20,7 +20,7 @@ export default async function WorkspaceStandardsPage() {
   if (!canRead) redirect("/workspace");
 
   return (
-    <MemberWorkspaceShell
+    <WorkspaceShell
       companyName={session.companyName}
       appVersion={APP_VERSION}
       title={pageText.title}
@@ -32,6 +32,6 @@ export default async function WorkspaceStandardsPage() {
           canManage: hasSomeMemberPermission(permissionInput, ["standards.create", "standards.update", "standards.delete"]),
         }}
       />
-    </MemberWorkspaceShell>
+    </WorkspaceShell>
   );
 }

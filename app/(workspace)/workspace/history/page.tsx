@@ -1,6 +1,6 @@
 import AdminWorkOrderHistoryPage from "@/components/admin/history/AdminWorkOrderHistoryPage";
-import AdminShell from "@/components/admin/layout/AdminShell";
-import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
+import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
+import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { listAdminHistoryEvents } from "@/lib/admin/history/repository";
 import { APP_VERSION } from "@/lib/constants/app";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
@@ -19,13 +19,13 @@ export default async function AdminHistoryPage() {
   const historyEvents = await listAdminHistoryEvents(companyId);
 
   return (
-    <AdminShell
+    <WorkspaceShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/workspace/history")}
+      navigationItems={getWorkspaceNavigationItems("/workspace/history")}
       title={`${session.companyName ?? ""} · ${pageText.title}`}
     >
       <AdminWorkOrderHistoryPage initialHistoryEvents={historyEvents} />
-    </AdminShell>
+    </WorkspaceShell>
   );
 }

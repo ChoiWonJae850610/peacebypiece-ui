@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
 import AdminStatsDashboard from "@/components/admin/dashboard/AdminStatsDashboard";
-import AdminShell from "@/components/admin/layout/AdminShell";
-import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
+import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
+import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { getAdminStatsSnapshot } from "@/lib/admin/stats/repository";
 import { normalizeAdminPeriodTopMode, normalizeAdminStatsPageSection } from "@/lib/admin/stats/dashboardPresentation";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -39,14 +39,14 @@ export default async function AdminStatsPage({ searchParams }: AdminStatsPagePro
   const initialPeriodTopMode = normalizeAdminPeriodTopMode(resolvedSearchParams?.topMode);
 
   return (
-    <AdminShell
+    <WorkspaceShell
       companyName={companyScope.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/workspace/stats")}
+      navigationItems={getWorkspaceNavigationItems("/workspace/stats")}
       title={pageText.title}
       description={pageText.description}
     >
       <AdminStatsDashboard stats={stats} pageText={pageText} initialSection={initialSection} initialPeriodTopMode={initialPeriodTopMode} />
-    </AdminShell>
+    </WorkspaceShell>
   );
 }

@@ -1,20 +1,22 @@
-Version : 0.16.6
-Summary : 보호 라우트 정리 및 0.16.5 빌드 오류 보정
-Description : /workspace, /system, /me 보호 라우트 기준을 정리하고 /me/settings 직접 접근 화면을 추가했습니다. 0.16.5 빌드 실패 원인이던 workspace 이름의 잘못된 import 경로를 실제 존재하는 admin 공통 모듈 경로로 되돌렸습니다. 화면, DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.7
+Summary : Workspace Shell 구조 정리
+Description : 고객사 업무 영역의 공통 Shell, Topbar, Sidebar, navigation 정의를 workspace 계층으로 분리하고 workspace 라우트에서 WorkspaceShell과 중앙화된 workspace navigation을 사용하도록 정리했습니다. 기존 admin 공통 UI 구현은 호환 계층으로 유지했으며 화면, DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
 수정 파일 목록 :
+- app/(workspace)/workspace/files/page.tsx
 - app/(workspace)/workspace/history/page.tsx
-- app/(workspace)/workspace/layout.tsx
+- app/(workspace)/workspace/members/page.tsx
 - app/(workspace)/workspace/page.tsx
 - app/(workspace)/workspace/partners/page.tsx
+- app/(workspace)/workspace/settings/page.tsx
+- app/(workspace)/workspace/standards/page.tsx
+- app/(workspace)/workspace/stats/page.tsx
 - app/(workspace)/workspace/subscription/page.tsx
-- components/admin/dashboard/AdminOperationsDashboard.tsx
-- components/admin/dashboard/AdminStatsDashboard.tsx
-- lib/admin/adminOperations.repository.ts
-- lib/admin/stats/selectors.ts
-- lib/auth/routeGuard.ts
+- lib/admin/adminDashboard.presentation.ts
 - lib/constants/app.ts
 추가 파일 목록 :
-- app/me/layout.tsx
-- app/me/settings/page.tsx
+- components/workspace/layout/WorkspaceShell.tsx
+- components/workspace/layout/WorkspaceSidebar.tsx
+- components/workspace/layout/WorkspaceTopbar.tsx
+- lib/navigation/workspaceNavigation.ts
 삭제 파일 목록 :
-없음
+- 없음

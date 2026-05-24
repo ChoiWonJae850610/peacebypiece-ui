@@ -1,6 +1,6 @@
-import AdminShell from "@/components/admin/layout/AdminShell";
+import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import PartnerMasterSection from "@/components/admin/PartnerMasterSection";
-import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
+import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 import { getI18n } from "@/lib/i18n";
@@ -12,14 +12,14 @@ export default async function AdminPartnersPage() {
   const session = await requireWaflSessionForArea("workspace");
 
   return (
-    <AdminShell
+    <WorkspaceShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/workspace/partners")}
+      navigationItems={getWorkspaceNavigationItems("/workspace/partners")}
       title={pageText.title}
       contentMode="fixed-md"
     >
       <PartnerMasterSection />
-    </AdminShell>
+    </WorkspaceShell>
   );
 }

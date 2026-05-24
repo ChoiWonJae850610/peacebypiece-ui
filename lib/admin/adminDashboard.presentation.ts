@@ -1,4 +1,5 @@
 import { DEFAULT_ADMIN_STORAGE_QUOTA_BYTES, formatStorageBytes } from "@/lib/billing/storageQuotaPolicy";
+import { WORKSPACE_NAVIGATION_ITEMS, type WorkspaceNavigationItem } from "@/lib/navigation/workspaceNavigation";
 
 export type AdminDashboardRoute = string | null;
 
@@ -18,13 +19,7 @@ export type AdminDashboardItem = {
   statusLabel?: string;
 };
 
-export type AdminNavigationItem = {
-  label: string;
-  href: AdminDashboardRoute;
-  icon: string;
-  translationKey?: "dashboard" | "workorder" | "partners" | "storage" | "statistics" | "settings";
-  active?: boolean;
-};
+export type AdminNavigationItem = WorkspaceNavigationItem;
 
 export type AdminDashboardSection = {
   title: string;
@@ -86,14 +81,7 @@ export function getAdminDashboardMaxStageValue(): number {
   return Math.max(1, ...ADMIN_DASHBOARD_STAGE_FLOW.map((item) => item.value));
 }
 
-export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
-  { label: "대시보드", href: "/workspace", icon: "dashboard", translationKey: "dashboard" },
-  { label: "작업지시서", href: "/workspace/workorders", icon: "workorder", translationKey: "workorder" },
-  { label: "협력업체 관리", href: "/workspace/partners", icon: "partners", translationKey: "partners" },
-  { label: "저장소 관리", href: "/workspace/files", icon: "storage", translationKey: "storage" },
-  { label: "통계정보", href: "/workspace/stats", icon: "statistics", translationKey: "statistics" },
-  { label: "환경설정", href: "/workspace/settings", icon: "settings", translationKey: "settings" },
-];
+export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = WORKSPACE_NAVIGATION_ITEMS;
 
 export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
   {

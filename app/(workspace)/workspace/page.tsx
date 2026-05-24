@@ -1,11 +1,11 @@
 import AdminOperationsDashboard from "@/components/admin/dashboard/AdminOperationsDashboard";
-import AdminShell from "@/components/admin/layout/AdminShell";
+import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import { redirect } from "next/navigation";
 
 import { APP_VERSION } from "@/lib/constants/app";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 import AdminConsoleSections from "@/components/admin/dashboard/AdminConsoleSections";
-import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
+import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { getAdminOperationalDashboardSnapshots } from "@/lib/admin/adminOperations.repository";
 
 function AdminInvitationOnboardingEntry() {
@@ -30,30 +30,30 @@ export default async function AdminPage() {
     }
 
     return (
-      <AdminShell
+      <WorkspaceShell
         companyName=""
         appVersion={APP_VERSION}
-        navigationItems={getAdminNavigationItems("/workspace")}
+        navigationItems={getWorkspaceNavigationItems("/workspace")}
         title="고객사 정보 입력"
         description="초대 링크로 시작한 고객사 관리자 등록을 완료합니다."
       >
         <AdminInvitationOnboardingEntry />
-      </AdminShell>
+      </WorkspaceShell>
     );
   }
 
   const snapshots = await getAdminOperationalDashboardSnapshots(companyId);
 
   return (
-    <AdminShell
+    <WorkspaceShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/workspace")}
+      navigationItems={getWorkspaceNavigationItems("/workspace")}
       title="고객관리자 메인"
     >
       <AdminOperationsDashboard snapshots={snapshots} />
 
       <AdminConsoleSections />
-    </AdminShell>
+    </WorkspaceShell>
   );
 }
