@@ -11,7 +11,7 @@ export type SystemAccessCheckpointItem = {
   status: SystemAccessCheckpointStatus;
   statusLabel: string;
   route?: string;
-  owner: "admin" | "system" | "common" | "api" | "db";
+  owner: "workspace" | "system" | "common" | "api" | "db";
 };
 
 export type SystemAccessCheckpointGroup = {
@@ -43,7 +43,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         status: "stable",
         statusLabel: "화면 안정",
         route: "/workspace/members",
-        owner: "admin",
+        owner: "workspace",
       },
       {
         id: "member-invite-link-qr",
@@ -52,7 +52,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         status: "ready",
         statusLabel: "API 연결 전",
         route: "/workspace/members",
-        owner: "admin",
+        owner: "workspace",
       },
       {
         id: "member-join-request",
@@ -113,16 +113,16 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         status: "stable",
         statusLabel: "정책 정리",
         route: "/workspace/members",
-        owner: "admin",
+        owner: "workspace",
       },
       {
-        id: "admin-card-access",
-        label: "관리자 카드 노출 제한",
-        description: "관리자 메인 카드 노출을 permission_code 기준으로 필터링하는 구조를 추가했습니다.",
+        id: "workspace-card-access",
+        label: "workspace 카드 노출 제한",
+        description: "workspace 메인 카드 노출을 permission_code 기준으로 필터링하는 구조를 추가했습니다.",
         status: "partial",
         statusLabel: "preview 권한",
         route: "/workspace",
-        owner: "admin",
+        owner: "workspace",
       },
       {
         id: "api-permission-guard",
@@ -183,7 +183,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         status: "ready",
         statusLabel: "DB/API 1차 연결",
         route: "/workspace/materials",
-        owner: "admin",
+        owner: "workspace",
       },
       {
         id: "workspace-storage-boundary",
@@ -192,7 +192,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         status: "stable",
         statusLabel: "영향 없음",
         route: "/workspace/files",
-        owner: "admin",
+        owner: "workspace",
       },
       {
         id: "workspace-stats-boundary",
@@ -201,7 +201,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         status: "deferred",
         statusLabel: "후속 집계",
         route: "/workspace/stats",
-        owner: "admin",
+        owner: "workspace",
       },
       {
         id: "system-audit-material-target",

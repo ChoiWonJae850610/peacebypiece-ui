@@ -56,7 +56,7 @@ api       = 서버 요청 진입점
 - /system 경로는 /workspace로 이동하지 않는다.
 - /me/settings는 workspace 설정과 분리한다.
 - legacy /admin redirect는 기본적으로 두지 않는다.
-- 남은 /admin 참조는 단계적으로 제거한다.
+- 남은 /admin 화면 링크는 단계적으로 제거한다. API 경로와 admin 접두어 공통 컴포넌트는 0.16.24 기준 별도 rename 후보로 분리한다.
 ```
 
 ## 4. route guard 기준

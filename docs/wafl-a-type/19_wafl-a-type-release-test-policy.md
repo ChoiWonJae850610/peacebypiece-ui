@@ -85,11 +85,11 @@ seed만 필요한 경우:
 ```txt
 1. /login
 2. /system
-3. /admin
-4. /admin/members
-5. /admin/settings
-6. /admin/files
-7. /admin/stats
+3. /workspace
+4. /workspace/members
+5. /workspace/settings
+6. /workspace/files
+7. /workspace/stats
 8. /worker
 9. /invite/company/[token]
 10. /invite/member/[token]

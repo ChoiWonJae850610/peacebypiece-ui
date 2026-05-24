@@ -94,7 +94,7 @@ repository  = companyId scope 강제
 - mock member fallback
 - mock workorder fallback
 - legacy R2 key compatibility 유지
-- old /admin path 의존
+- old /admin 화면 path 의존
 - 실제 화면 경로에서 fixture 데이터 사용
 ```
 
@@ -177,7 +177,7 @@ Description :
 - DB schema를 실제로 변경해야 하는 경우
 - package.json/package-lock.json 변경이 필요한 경우
 - 기존 정상 R2/첨부/메모/휴지통/purge 흐름을 건드려야 하는 경우
-- /admin legacy redirect를 둘지 말지 선택이 필요한 경우
+- /admin legacy redirect를 둘지 말지 선택이 필요한 경우. 0.16.24 기준 기본 정책은 redirect를 두지 않고 /workspace 기준으로 정리한다.
 - 권한 정책이 기존 결정과 충돌하는 경우
 - 화면 IA가 기존 결정과 충돌하는 경우
 ```

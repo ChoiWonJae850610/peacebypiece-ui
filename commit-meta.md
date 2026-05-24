@@ -1,13 +1,15 @@
-Version : 0.16.23
-Summary : 통계 저장소 감사로그 충돌 점검
-Description : 원단·부자재 구조 추가 이후 저장소, 통계, 시스템 감사로그 경계가 섞이지 않도록 점검 문서를 추가하고 시스템 체크포인트와 감사로그 target type을 보정했습니다. /system/storage-usage 안내 문구는 /workspace/files 기준으로 갱신했으며 R2, 첨부, 메모, 휴지통, purge 동작과 DB schema는 변경하지 않았습니다.
+Version : 0.16.24
+Summary : dead code와 old path 정리 기준 보정
+Description : /admin 화면 라우트 전환 이후 남은 old path와 dead code 후보를 분류하는 정리 문서를 추가하고, 현재 참조용 라우팅/테스트/페이지 인벤토리 문서를 /workspace 기준으로 보정했습니다. 시스템 체크포인트의 담당 영역 표기는 admin에서 workspace로 변경했으며, 실제 API 경로, DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
 수정 파일 목록 :
-- app/(system)/system/audit-logs/page.tsx
+- docs/refactoring-rules.md
+- docs/routing-architecture.md
+- docs/wafl-a-type/18_wafl-a-type-auth-session-policy.md
+- docs/wafl-a-type/19_wafl-a-type-release-test-policy.md
+- docs/wafl-a-type/20_wafl-a-type-page-inventory.md
 - lib/constants/app.ts
-- lib/system/audit/types.ts
-- lib/system/storagePurgePresentation.ts
 - lib/system/systemAccessStabilityCheckpoint.ts
 추가 파일 목록 :
-- docs/workspace-system-integration-checkpoint.md
+- docs/dead-code-old-path-cleanup-0.16.24.md
 삭제 파일 목록 :
-- 없음
+없음

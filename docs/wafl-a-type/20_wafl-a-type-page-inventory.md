@@ -23,17 +23,17 @@ updated: 2026-05-20
 | `/system/settings` | 시스템 설정 | 시스템관리자 | Settings | 상단 설정 진입 |
 | `/system/invites` | 고객사 관리자 초대 | 시스템관리자 | Invite Page | 링크 공유 우선 |
 
-## 3. 고객사 관리자
+## 3. 고객사 업무공간
 
 | Route | 목적 | 사용자 | 템플릿 | 비고 |
 |---|---|---|---|---|
-| `/admin` | 고객사 관리자 홈 | 고객사 관리자 | Dashboard | 환경설정 카드는 제외, 톱니바퀴 진입 |
-| `/admin/members` | 멤버관리/초대/승인 | 고객사 관리자 | List + Invite | 고객사 관리자 계정은 권한 모달 대상 제외 |
-| `/admin/settings` | 고객사 설정 | 고객사 관리자 | Settings | 회사 정보 변경 요청 포함 |
-| `/admin/files` | 저장소 관리 | 고객사 관리자 | Summary + List | 휴지통/복원/삭제 요청 |
-| `/admin/stats` | 통계 | 고객사 관리자/승인 멤버 | Dashboard | companyId scope |
-| `/admin/partners` | 협력업체 관리 | 고객사 관리자/권한 멤버 | List Page | 작성성 작업은 권한 필요 |
-| `/admin/standards` | 기준정보 | 고객사 관리자/권한 멤버 | List Page | 작성성 작업은 기준정보 권한 필요 |
+| `/workspace` | 고객사 업무 홈 | 고객사 관리자/승인 멤버 | Dashboard | 업무 카드 중심 진입 |
+| `/workspace/members` | 멤버관리/초대/승인 | 고객사 관리자 | List + Invite | 고객사 관리자 계정은 권한 모달 대상 제외 |
+| `/workspace/settings` | 고객사 설정 | 고객사 관리자 | Settings | 회사 정보 변경 요청 포함 |
+| `/workspace/files` | 저장소 관리 | 고객사 관리자 | Summary + List | 휴지통/복원/삭제 요청 |
+| `/workspace/stats` | 통계 | 고객사 관리자/승인 멤버 | Dashboard | companyId scope |
+| `/workspace/partners` | 협력업체 관리 | 고객사 관리자/권한 멤버 | List Page | 작성성 작업은 권한 필요 |
+| `/workspace/standards` | 기준정보 | 고객사 관리자/권한 멤버 | List Page | 작성성 작업은 기준정보 권한 필요 |
 
 ## 4. 일반 멤버 / 작업자
 
