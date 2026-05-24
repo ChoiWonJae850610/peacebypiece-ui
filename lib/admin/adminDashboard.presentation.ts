@@ -94,7 +94,8 @@ export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
   {
     title: "운영 기준",
     items: [
-      { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/workspace/partners", icon: "▦" },
+      { label: "협력업체 관리", description: "공장, 거래처, 외주처 정보 관리", href: "/workspace/partners", icon: "▦" },
+      { label: "원단·부자재", description: "작업지시서 연결 전 원단과 부자재 기준 화면 확인", href: "/workspace/materials", icon: "▧", statusLabel: "목업" },
       { label: "환경설정", description: "파일 정책, 알림, 기준 설정 관리", href: "/workspace/settings", icon: "⚙" },
     ],
   },

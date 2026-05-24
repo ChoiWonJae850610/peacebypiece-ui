@@ -59,6 +59,18 @@ function SidebarIcon({ type, active }: SidebarIconProps) {
           <path d="M15 14h2" />
         </svg>
       );
+    case "materials":
+      return (
+        <svg {...baseProps}>
+          <path d="M5 5.5h14" />
+          <path d="M5 18.5h14" />
+          <path d="M7.5 5.5v13" />
+          <path d="M16.5 5.5v13" />
+          <path d="M9.5 9h5" />
+          <path d="M9.5 12h5" />
+          <path d="M9.5 15h5" />
+        </svg>
+      );
     case "storage":
       return (
         <svg {...baseProps}>

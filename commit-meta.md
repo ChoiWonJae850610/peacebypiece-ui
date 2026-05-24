@@ -1,11 +1,14 @@
-Version : 0.16.15
-Summary : DB 구조 정리 기준 문서화
-Description : payload/json뿐 아니라 조인 회피용 중복 필드, snapshot 허용 기준, 불필요 컬럼 후보, company scope 조인과 인덱스 우선 정책을 문서화했습니다. APP_VERSION을 0.16.15로 갱신했으며 DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.16
+Summary : 원단·부자재 UI 목업 구조 생성
+Description : /workspace/materials 화면과 features/materials 목업 구조를 추가하고 workspace navigation 및 대시보드 진입 카드를 연결했습니다. 임시 데이터는 features/materials/__fixtures__에만 격리했으며 실제 DB/API 연결, 작업지시서 상태 연결, 발주 상태 연결은 포함하지 않았습니다.
 수정 파일 목록 :
+- components/admin/layout/AdminSidebar.tsx
+- lib/admin/adminDashboard.presentation.ts
 - lib/constants/app.ts
+- lib/navigation/workspaceNavigation.ts
 추가 파일 목록 :
-- docs/database-architecture.md
-- docs/database-column-audit.md
-- docs/database-query-index-policy.md
+- app/(workspace)/workspace/materials/page.tsx
+- features/materials/MaterialsWorkspacePage.tsx
+- features/materials/__fixtures__/materialsMock.ts
 삭제 파일 목록 :
 - 없음
