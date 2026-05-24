@@ -2,8 +2,8 @@ import { ROLE } from "@/lib/constants/roles";
 import type { RoleType } from "@/types/permission";
 
 export const WORKSPACE_HOME_ROUTES = {
-  customerAdmin: "/admin",
-  member: "/workspace",
+  customerAdmin: "/workspace",
+  member: "/workspace/workorders",
   systemAdmin: "/system",
 } as const;
 

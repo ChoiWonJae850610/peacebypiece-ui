@@ -19,7 +19,7 @@ export default async function AdminSubscriptionPage() {
     <AdminShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/admin/subscription")}
+      navigationItems={getAdminNavigationItems("/workspace/subscription")}
       title={i18n.admin.subscriptionPage.shellTitle}
       description={i18n.admin.subscriptionPage.shellDescription}
     >

@@ -335,7 +335,7 @@ export const PBP_PERSONAL_THEME_REGRESSION_CHECKS = {
     expectedRefreshBehavior: "선택한 theme id가 새로고침 후에도 유지되어야 한다.",
   },
   navigation: {
-    admin: ["사람 아이콘은 개인 설정 모달", "톱니바퀴는 /admin/settings"],
+    admin: ["사람 아이콘은 개인 설정 모달", "톱니바퀴는 /workspace/settings"],
     worker: ["사람 아이콘은 개인 설정 모달", "개발 전용 톱니바퀴는 runtimeMode 규칙 유지"],
   },
   themeApplication: [
@@ -376,7 +376,7 @@ export const PBP_THEME_DIRECT_COLOR_CLASS_AUDIT_CHECKS = {
   purpose: "개인 theme 확장 전 직접 Tailwind 색상 class 잔여 후보를 의미별로 나누어 후속 치환 우선순위를 정리한다.",
   scannedAreas: [
     "components/workorder",
-    "components/admin",
+    "components/workspace",
     "components/me",
     "components/common",
     "app",
@@ -397,11 +397,11 @@ export const PBP_THEME_DIRECT_COLOR_CLASS_AUDIT_CHECKS = {
   adminCandidates: {
     summary: "관리자 화면은 아직 직접 색상 class 잔여가 가장 많아, theme 전환 폭을 넓히려면 관리자 기능 화면을 별도 묶음으로 순차 정리해야 한다.",
     highPriority: [
-      "components/admin/members/AdminMemberManagementDashboard.tsx",
-      "components/admin/settings/AdminSettingsHub.tsx",
-      "components/admin/files/FileStorageSummary.tsx",
-      "components/admin/dashboard/AdminStatsDashboard.tsx",
-      "components/admin/files/fileTrashSectionPresentation.tsx",
+      "components/workspace/members/AdminMemberManagementDashboard.tsx",
+      "components/workspace/settings/AdminSettingsHub.tsx",
+      "components/workspace/files/FileStorageSummary.tsx",
+      "components/workspace/dashboard/AdminStatsDashboard.tsx",
+      "components/workspace/files/fileTrashSectionPresentation.tsx",
     ],
     deferUntilFeatureQA: [
       "저장소/휴지통/purge 동작 관련 화면은 기능 회귀 위험이 있으므로 시각 token 정리는 별도 버전에서만 진행한다.",
@@ -480,7 +480,7 @@ export const PBP_RESPONSIVE_THEME_REGRESSION_CHECKS = {
     { label: "pc", width: "1280px 이상", checks: ["sidebar/list/detail density", "admin card grid balance", "chart/card contrast"] },
   ],
   themes: ["default-light", "beige-atelier", "cold-winter", "black-and-white", "soft-emerald"],
-  priorityScreens: ["/worker", "personal-settings-modal", "/admin", "/admin/files", "/admin/stats", "/system"],
+  priorityScreens: ["/workspace/workorders", "personal-settings-modal", "/workspace", "/workspace/files", "/workspace/stats", "/system"],
   status: {
     completedThisPass: [
       "theme 후보 5종의 PC/tablet/mobile 회귀 확인 항목을 고정 목록으로 분리",

@@ -100,11 +100,11 @@ function resolvePrimaryAction(input: {
   }
 
   if (input.session.role === "company_admin" && input.status === "profile_required") {
-    return { href: "/admin", label: input.copy.actions.goAdmin };
+    return { href: "/workspace", label: input.copy.actions.goAdmin };
   }
 
   if (input.session.role === "company_admin" && input.status === "subscription_blocked") {
-    return { href: "/admin/subscription", label: input.copy.actions.goSubscription };
+    return { href: "/workspace/subscription", label: input.copy.actions.goSubscription };
   }
 
   return { href: "/api/auth/logout", label: input.copy.actions.logout };

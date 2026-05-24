@@ -12,7 +12,7 @@ import type {
   AdminDashboardTaskStatusKey,
   AdminDashboardTodayTask,
   AdminOperationalDashboardSnapshots,
-} from "@/lib/admin/adminOperations.types";
+} from "@/lib/admin/workspaceOperations.types";
 import {
   ADMIN_DASHBOARD_DEFAULT_QUEUE_ID,
   ADMIN_DASHBOARD_QUEUE_ORDER,
@@ -20,7 +20,7 @@ import {
   formatAdminDashboardDue,
   formatAdminDashboardQuantity,
   selectAdminDashboardQueueTasks,
-} from "@/lib/admin/adminOperations.presentation";
+} from "@/lib/admin/workspaceOperations.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminOperationsDashboardProps = {
@@ -187,7 +187,7 @@ export default function AdminOperationsDashboard({
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <AdminLinkButton href="/worker" variant="secondary" size="lg" className="border-white/20 bg-white text-[var(--pbp-brand-primary)] hover:bg-white/90">
+            <AdminLinkButton href="/workspace/workorders" variant="secondary" size="lg" className="border-white/20 bg-white text-[var(--pbp-brand-primary)] hover:bg-white/90">
               {t("operationsDashboard.actions.openWorkorderShort", "업무화면")}
             </AdminLinkButton>
             <span className="inline-flex min-h-12 items-center rounded-full border border-white/20 bg-white/10 px-5 text-sm font-semibold text-white/75">
@@ -249,7 +249,7 @@ export default function AdminOperationsDashboard({
                 {formatAdminDashboardCount(selectedTasks.length, t)}
               </AdminStatusBadge>
               <Link
-                href="/worker"
+                href="/workspace/workorders"
                 aria-label={t(
                   "operationsDashboard.actions.openWorkorderWorkspace",
                   "작업지시서 업무 화면으로 이동",

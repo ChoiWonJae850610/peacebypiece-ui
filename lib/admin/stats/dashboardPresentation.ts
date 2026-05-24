@@ -238,5 +238,5 @@ export function buildAdminStatsRedirectUrl(params: Record<string, string | strin
     if (typeof value === "string") search.set(key, value);
   });
   const queryString = search.toString();
-  return queryString ? `/admin/stats?${queryString}` : "/admin/stats";
+  return queryString ? `/workspace/stats?${queryString}` : "/workspace/stats";
 }

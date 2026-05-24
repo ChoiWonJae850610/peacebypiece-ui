@@ -85,7 +85,7 @@ export function getPendingApprovalStatusGuidance(
       description: "이제 WAFL 업무 화면을 사용할 수 있습니다.",
       nextAction: "아래 버튼을 눌러 업무 화면으로 이동하세요.",
       primaryAction: {
-        href: type === "company" ? "/admin" : "/workspace",
+        href: type === "company" ? "/workspace" : "/workspace",
         label: "업무 화면으로 이동",
         description: "승인된 계정의 업무 화면으로 이동합니다.",
       },

@@ -738,7 +738,7 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
                   <p className="font-bold">{copy.trialExpired.title}</p>
                   <p className="mt-2">{copy.trialExpired.description}</p>
                   <a
-                    href="/admin/settings"
+                    href="/workspace/settings"
                     className="mt-4 inline-flex h-10 items-center justify-center rounded-2xl bg-[var(--pbp-accent)] px-4 text-sm font-bold text-white"
                   >
                     {copy.trialExpired.action}

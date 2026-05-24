@@ -13,7 +13,7 @@ export default async function AdminMembersPage() {
     <AdminShell
       companyName={companyScope?.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/admin/members")}
+      navigationItems={getAdminNavigationItems("/workspace/members")}
       title={pageText.title}
       description={pageText.description}
     >

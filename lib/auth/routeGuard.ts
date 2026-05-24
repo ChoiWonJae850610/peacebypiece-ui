@@ -15,8 +15,8 @@ type CompanyAccessGuardOptions = {
 
 function getRoleHomePath(role: WaflSessionRole): string {
   if (role === "system_admin") return "/system";
-  if (role === "company_admin") return "/admin";
-  return "/worker";
+  if (role === "company_admin") return "/workspace";
+  return "/workspace/workorders";
 }
 
 function getCompanyAccessBlockedPath(area: ProtectedArea, reason: CompanyAccessBlockReason): string {
@@ -25,7 +25,7 @@ function getCompanyAccessBlockedPath(area: ProtectedArea, reason: CompanyAccessB
     return "/service-paused";
   }
 
-  return "/admin/subscription";
+  return "/workspace/subscription";
 }
 
 function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boolean {

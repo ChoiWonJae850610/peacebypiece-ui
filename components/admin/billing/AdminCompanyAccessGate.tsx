@@ -9,7 +9,7 @@ type AdminCompanyAccessGateProps = {
   children: ReactNode;
 };
 
-const ADMIN_SUBSCRIPTION_PATH = "/admin/subscription";
+const ADMIN_SUBSCRIPTION_PATH = "/workspace/subscription";
 
 export default function AdminCompanyAccessGate({ accessBlocked, blockedPath = ADMIN_SUBSCRIPTION_PATH, children }: AdminCompanyAccessGateProps) {
   const pathname = usePathname();

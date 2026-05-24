@@ -42,7 +42,7 @@ export default async function AdminStatsPage({ searchParams }: AdminStatsPagePro
     <AdminShell
       companyName={companyScope.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/admin/stats")}
+      navigationItems={getAdminNavigationItems("/workspace/stats")}
       title={pageText.title}
       description={pageText.description}
     >

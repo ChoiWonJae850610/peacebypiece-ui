@@ -17,7 +17,7 @@ export default async function AdminSettingsPage() {
     <AdminShell
       companyName={companyScope.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/admin/settings")}
+      navigationItems={getAdminNavigationItems("/workspace/settings")}
       title="환경설정"
       description="회사 계정 정보, 기준정보, 요금제, 개발 건의를 관리합니다."
     >

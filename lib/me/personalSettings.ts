@@ -10,7 +10,7 @@ export type PersonalSettingsLanguage = CompanyLanguage;
 export type PersonalSettingsDensity = "comfortable" | "compact";
 export type PersonalSettingsDefaultHome = "workspace" | "workorder";
 
-export type PersonalSettingsHomeRoute = "/workspace" | "/worker";
+export type PersonalSettingsHomeRoute = "/workspace" | "/workspace/workorders";
 
 export type PersonalSettingsDraft = {
   language: PersonalSettingsLanguage;
@@ -104,7 +104,7 @@ export function readStoredPersonalSettings(storage: Storage | null | undefined):
 }
 
 export function resolvePersonalSettingsHomeRoute(defaultHome: PersonalSettingsDefaultHome): PersonalSettingsHomeRoute {
-  return defaultHome === "workorder" ? "/worker" : "/workspace";
+  return defaultHome === "workorder" ? "/workspace/workorders" : "/workspace";
 }
 
 export function applyPersonalSettingsToDocument(settings: PersonalSettingsDraft, documentElement: HTMLElement | null | undefined) {

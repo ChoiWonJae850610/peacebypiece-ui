@@ -128,7 +128,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
 
         <div key={reviveKey} className="relative z-30 flex shrink-0 flex-wrap gap-2">
           <Link
-            href="/admin"
+            href="/workspace"
             aria-label={t("topbar.actions.home", "홈")}
             title={t("topbar.actions.home", "홈")}
             className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
@@ -146,7 +146,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           </button>
           {canOpenAdminSettings ? (
             <Link
-              href="/admin/settings"
+              href="/workspace/settings"
               aria-label={t("topbar.actions.adminSettings", "환경설정")}
               title={t("topbar.actions.adminSettings", "환경설정")}
               className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"

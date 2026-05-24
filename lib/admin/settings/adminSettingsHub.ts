@@ -70,7 +70,7 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
   legal: {
     title: "약관·정책은 고객사가 조회할 수 있는 별도 영역으로 분리합니다.",
     description: "정식 화면 구현 전까지 환경설정에서 이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책의 노출 위치를 안내합니다.",
-    nextStep: "/admin/legal route를 추가한 뒤 시스템관리자가 작성한 최신 서비스 문서를 고객사 범위에서 조회하도록 연결합니다.",
+    nextStep: "/workspace/legal route를 추가한 뒤 시스템관리자가 작성한 최신 서비스 문서를 고객사 범위에서 조회하도록 연결합니다.",
     items: ["이용약관", "개인정보처리방침", "환불정책", "데이터 보관·삭제정책"],
   },
   feedback: {

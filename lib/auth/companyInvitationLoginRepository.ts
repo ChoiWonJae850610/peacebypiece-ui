@@ -264,7 +264,7 @@ export async function completeCompanyAdminInvitationLogin(
   await assertActiveCompanyAdminInvitation(rawToken);
 
   return {
-    redirectPath: "/admin",
+    redirectPath: "/workspace",
     session: {
       userId: `invitation:${profile.sub}`,
       companyId: null,

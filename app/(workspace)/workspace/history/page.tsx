@@ -22,7 +22,7 @@ export default async function AdminHistoryPage() {
     <AdminShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/admin/history")}
+      navigationItems={getAdminNavigationItems("/workspace/history")}
       title={`${session.companyName ?? ""} · ${pageText.title}`}
     >
       <AdminWorkOrderHistoryPage initialHistoryEvents={historyEvents} />

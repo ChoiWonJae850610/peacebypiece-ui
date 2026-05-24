@@ -18,7 +18,7 @@ import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
 
-const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/admin/files");
+const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/workspace/files");
 
 export default function AdminFilesPage() {
   const t = useAdminTranslation();

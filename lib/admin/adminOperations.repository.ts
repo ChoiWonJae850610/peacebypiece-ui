@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/adminStats";
+import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/workspaceStats";
 import {
   isDatabaseConfigured,
   queryDb,
@@ -19,7 +19,7 @@ import {
   type AdminDashboardTodayTask,
   type AdminOperationalDashboardSnapshot,
   type AdminOperationalDashboardSnapshots,
-} from "@/lib/admin/adminOperations.types";
+} from "@/lib/admin/workspaceOperations.types";
 
 export { ADMIN_DASHBOARD_PERIOD_OPTIONS };
 
@@ -474,7 +474,7 @@ function buildSnapshot(
       thumbnailUrl: previewUrls[0] ?? null,
       previewUrls,
       updatedLabel: formatUpdatedLabel(row.updated_at, now),
-      actionHref: `/worker?workOrderId=${encodeURIComponent(row.id)}`,
+      actionHref: `/workspace/workorders?workOrderId=${encodeURIComponent(row.id)}`,
       updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
     };
   };

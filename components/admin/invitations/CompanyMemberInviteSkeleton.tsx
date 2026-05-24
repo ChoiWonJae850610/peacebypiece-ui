@@ -36,7 +36,7 @@ export default function CompanyMemberInviteSkeleton() {
                 v{APP_VERSION}
               </span>
               <Link
-                href="/admin"
+                href="/workspace"
                 className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
               >
                 관리자 홈

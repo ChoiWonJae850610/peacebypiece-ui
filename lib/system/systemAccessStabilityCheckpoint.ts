@@ -42,7 +42,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         description: "멤버 목록, 초대 대기, 가입 신청 대기, 권한 요약 영역을 분리했습니다.",
         status: "stable",
         statusLabel: "화면 안정",
-        route: "/admin/members",
+        route: "/workspace/members",
         owner: "admin",
       },
       {
@@ -51,7 +51,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         description: "초대 대상, 기본 권한 묶음, 만료일, 링크·QR preview를 배치했습니다.",
         status: "ready",
         statusLabel: "API 연결 전",
-        route: "/admin/members",
+        route: "/workspace/members",
         owner: "admin",
       },
       {
@@ -112,7 +112,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         description: "권한 그룹과 role template 기본 체크값을 분리했습니다.",
         status: "stable",
         statusLabel: "정책 정리",
-        route: "/admin/members",
+        route: "/workspace/members",
         owner: "admin",
       },
       {
@@ -121,7 +121,7 @@ export const SYSTEM_ACCESS_CHECKPOINT_GROUPS: SystemAccessCheckpointGroup[] = [
         description: "관리자 메인 카드 노출을 permission_code 기준으로 필터링하는 구조를 추가했습니다.",
         status: "partial",
         statusLabel: "preview 권한",
-        route: "/admin",
+        route: "/workspace",
         owner: "admin",
       },
       {

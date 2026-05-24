@@ -7,7 +7,7 @@ import {
   ADMIN_PARTNER_DISTRIBUTION_BUCKETS,
   ADMIN_TRASH_COUNT_LIMIT,
   ADMIN_WORKORDER_FLOW_BUCKETS,
-} from "@/lib/constants/adminStats";
+} from "@/lib/constants/workspaceStats";
 import { getI18n } from "@/lib/i18n";
 import { formatPbpBinaryBytes, formatPbpInteger } from "@/lib/utils/formatters";
 
@@ -161,11 +161,11 @@ export function buildAdminPeriodRange(selectedPeriod: AdminStatsPeriodKey, start
 
 export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey, selectedRange?: AdminStatsPeriodRange) {
   const customHref = selectedRange?.isCustom
-    ? `/admin/stats?period=custom&startDate=${selectedRange.startDate}&endDate=${selectedRange.endDate}`
-    : "/admin/stats?period=custom";
+    ? `/workspace/stats?period=custom&startDate=${selectedRange.startDate}&endDate=${selectedRange.endDate}`
+    : "/workspace/stats?period=custom";
   return [
-    { key: "7d" as const, label: adminStatsText.periods.sevenDays, href: "/admin/stats?period=7d", active: selectedPeriod === "7d" },
-    { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/admin/stats?period=30d", active: selectedPeriod === "30d" },
+    { key: "7d" as const, label: adminStatsText.periods.sevenDays, href: "/workspace/stats?period=7d", active: selectedPeriod === "7d" },
+    { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/workspace/stats?period=30d", active: selectedPeriod === "30d" },
     { key: "custom" as const, label: selectedRange?.isCustom ? selectedRange.label : adminStatsText.periods.custom, href: customHref, active: selectedPeriod === "custom" },
   ];
 }

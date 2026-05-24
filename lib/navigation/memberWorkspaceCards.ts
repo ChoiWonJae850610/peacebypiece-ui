@@ -21,7 +21,7 @@ export type MemberWorkspaceCard = {
 export const MEMBER_WORKSPACE_CARDS: readonly MemberWorkspaceCard[] = [
   {
     id: "workorder",
-    href: "/worker",
+    href: "/workspace/workorders",
     status: MEMBER_WORKSPACE_CARD_STATUS.available,
     section: "work",
     requiredPermissions: ["workorder.read"],

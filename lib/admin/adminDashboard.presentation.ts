@@ -32,10 +32,10 @@ export type AdminDashboardSection = {
 };
 
 export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
-  { label: "작업중인 작업지시서", value: "0", href: "/worker", description: "발주 전 작업 대상", accent: "bg-blue-50 text-blue-700" },
-  { label: "검토 대기", value: "0", href: "/worker", description: "관리자 확인 필요", accent: "bg-amber-50 text-amber-700" },
-  { label: "입고 대기", value: "0", href: "/worker", description: "발주 이후 검수 전", accent: "bg-violet-50 text-violet-700" },
-  { label: "첨부파일 사용량", value: `0B / ${formatStorageBytes(DEFAULT_ADMIN_STORAGE_QUOTA_BYTES)}`, href: "/admin/files", description: "저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
+  { label: "작업중인 작업지시서", value: "0", href: "/workspace/workorders", description: "발주 전 작업 대상", accent: "bg-blue-50 text-blue-700" },
+  { label: "검토 대기", value: "0", href: "/workspace/workorders", description: "관리자 확인 필요", accent: "bg-amber-50 text-amber-700" },
+  { label: "입고 대기", value: "0", href: "/workspace/workorders", description: "발주 이후 검수 전", accent: "bg-violet-50 text-violet-700" },
+  { label: "첨부파일 사용량", value: `0B / ${formatStorageBytes(DEFAULT_ADMIN_STORAGE_QUOTA_BYTES)}`, href: "/workspace/files", description: "저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
 ];
 
 
@@ -87,27 +87,27 @@ export function getAdminDashboardMaxStageValue(): number {
 }
 
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
-  { label: "대시보드", href: "/admin", icon: "dashboard", translationKey: "dashboard" },
-  { label: "작업지시서", href: "/worker", icon: "workorder", translationKey: "workorder" },
-  { label: "협력업체 관리", href: "/admin/partners", icon: "partners", translationKey: "partners" },
-  { label: "저장소 관리", href: "/admin/files", icon: "storage", translationKey: "storage" },
-  { label: "통계정보", href: "/admin/stats", icon: "statistics", translationKey: "statistics" },
-  { label: "환경설정", href: "/admin/settings", icon: "settings", translationKey: "settings" },
+  { label: "대시보드", href: "/workspace", icon: "dashboard", translationKey: "dashboard" },
+  { label: "작업지시서", href: "/workspace/workorders", icon: "workorder", translationKey: "workorder" },
+  { label: "협력업체 관리", href: "/workspace/partners", icon: "partners", translationKey: "partners" },
+  { label: "저장소 관리", href: "/workspace/files", icon: "storage", translationKey: "storage" },
+  { label: "통계정보", href: "/workspace/stats", icon: "statistics", translationKey: "statistics" },
+  { label: "환경설정", href: "/workspace/settings", icon: "settings", translationKey: "settings" },
 ];
 
 export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
   {
     title: "작업지시서 운영",
     items: [
-      { label: "검토 대기 작업지시서", description: "관리자 확인이 필요한 작업지시서를 확인", href: "/worker", icon: "✓" },
-      { label: "작업중인 작업지시서", description: "발주 전 단계의 작업 흐름 확인", href: "/worker", icon: "□" },
+      { label: "검토 대기 작업지시서", description: "관리자 확인이 필요한 작업지시서를 확인", href: "/workspace/workorders", icon: "✓" },
+      { label: "작업중인 작업지시서", description: "발주 전 단계의 작업 흐름 확인", href: "/workspace/workorders", icon: "□" },
     ],
   },
   {
     title: "운영 기준",
     items: [
-      { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/admin/partners", icon: "▦" },
-      { label: "환경설정", description: "파일 정책, 알림, 기준 설정 관리", href: "/admin/settings", icon: "⚙" },
+      { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/workspace/partners", icon: "▦" },
+      { label: "환경설정", description: "파일 정책, 알림, 기준 설정 관리", href: "/workspace/settings", icon: "⚙" },
     ],
   },
 ];
@@ -122,9 +122,9 @@ export type AdminDashboardStatusPanel = {
 export const ADMIN_DASHBOARD_STATUS_PANEL: AdminDashboardStatusPanel = {
   title: "파일 / 시스템 상태",
   items: [
-    { label: "파일/용량 관리", description: "첨부파일 사용량, 휴지통, purge 상태 확인", href: "/admin/files", icon: "▤" },
-    { label: "통계 화면", description: "작업지시서, 협력업체, 파일 사용량 지표 확인", href: "/admin/stats", icon: "▥" },
-    { label: "알림 설정", description: "검토, 발주, 용량 이벤트 기준 설정", href: "/admin/settings", icon: "⚙" },
+    { label: "파일/용량 관리", description: "첨부파일 사용량, 휴지통, purge 상태 확인", href: "/workspace/files", icon: "▤" },
+    { label: "통계 화면", description: "작업지시서, 협력업체, 파일 사용량 지표 확인", href: "/workspace/stats", icon: "▥" },
+    { label: "알림 설정", description: "검토, 발주, 용량 이벤트 기준 설정", href: "/workspace/settings", icon: "⚙" },
   ],
 };
 
@@ -137,10 +137,10 @@ export function getAdminDashboardStatusPanel(): AdminDashboardStatusPanel {
 }
 
 export const ADMIN_STAT_SUMMARIES: AdminSummaryCard[] = [
-  { label: "전체 작업지시서", value: "37", href: "/worker", description: "현재 기준 전체 작업 수", accent: "bg-blue-50 text-blue-700" },
-  { label: "협력업체 수", value: "35", href: "/admin/partners", description: "공장/원단/부자재/외주 합계", accent: "bg-emerald-50 text-emerald-700" },
-  { label: "파일 사용량", value: "9MB", href: "/admin/files", description: "현재 첨부파일 사용량", accent: "bg-violet-50 text-violet-700" },
-  { label: "완료된 작업지시서", value: "9", href: "/worker", description: "이번달 완료 처리", accent: "bg-stone-100 text-stone-700" },
+  { label: "전체 작업지시서", value: "37", href: "/workspace/workorders", description: "현재 기준 전체 작업 수", accent: "bg-blue-50 text-blue-700" },
+  { label: "협력업체 수", value: "35", href: "/workspace/partners", description: "공장/원단/부자재/외주 합계", accent: "bg-emerald-50 text-emerald-700" },
+  { label: "파일 사용량", value: "9MB", href: "/workspace/files", description: "현재 첨부파일 사용량", accent: "bg-violet-50 text-violet-700" },
+  { label: "완료된 작업지시서", value: "9", href: "/workspace/workorders", description: "이번달 완료 처리", accent: "bg-stone-100 text-stone-700" },
 ];
 
 export const ADMIN_DASHBOARD_PLACEHOLDERS = [

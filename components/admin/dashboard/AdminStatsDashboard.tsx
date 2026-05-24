@@ -5,13 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   AdminButton,
   AdminLinkButton,
-} from "@/components/admin/common/AdminButton";
+} from "@/components/workspace/common/AdminButton";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
 import {
   AdminDateRangePicker,
   getTodayAdminLocalDateValue,
-} from "@/components/admin/common/AdminDateRangePicker";
+} from "@/components/workspace/common/AdminDateRangePicker";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminSection } from "@/components/admin/common/AdminSection";
@@ -30,7 +30,7 @@ import {
   ADMIN_STATS_TRACK_CLASS,
   ADMIN_STATS_TRACK_INSET_CLASS,
   ADMIN_STATS_WARNING_TEXT_CLASS,
-} from "@/components/admin/common/adminSemanticClassNames";
+} from "@/components/workspace/common/workspaceSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
@@ -364,8 +364,8 @@ export default function AdminStatsDashboard({
     isCustomEndSelectable;
   const customPeriodHref = buildPeriodSectionHref(
     isCustomPeriodValid
-      ? `/admin/stats?period=custom&startDate=${customStartDate}&endDate=${customEndDate}`
-      : "/admin/stats?period=30d",
+      ? `/workspace/stats?period=custom&startDate=${customStartDate}&endDate=${customEndDate}`
+      : "/workspace/stats?period=30d",
   );
   const customPeriodMessage = !isCustomPeriodOrderValid
     ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
@@ -899,7 +899,7 @@ export default function AdminStatsDashboard({
                         </AdminLinkButton>
                       ))}
                       <AdminLinkButton
-                        href={buildPeriodSectionHref("/admin/stats?period=30d")}
+                        href={buildPeriodSectionHref("/workspace/stats?period=30d")}
                         variant="secondary"
                         size="sm"
                         className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
