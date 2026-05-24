@@ -11,7 +11,6 @@ import {
   getSupportedDatabaseEnvKeys,
   isDatabaseConfigured,
 } from "@/lib/db/client";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { isWorkOrderServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
@@ -21,18 +20,18 @@ import { getPersonalProfile } from "@/lib/me/profileRepository";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import {
-  createDbWorkOrder,
-  deleteDbWorkOrder,
-  findAllDbWorkOrders,
-  findDbWorkOrderById,
-  findDbWorkOrderSummaries,
-  saveDbWorkOrder,
-  saveDbWorkOrders,
-  updateDbWorkOrderStatePatch,
+  createWorkOrderForCompany,
+  deleteWorkOrderForCompany,
+  getWorkOrderDetailByCompany,
+  listExistingWorkOrdersByCompany,
+  listWorkOrderSummariesByCompany,
+  listWorkOrdersByCompany,
+  saveWorkOrderForCompany,
+  saveWorkOrdersForCompany,
+  updateWorkOrderStateForCompany,
   type WorkOrderCompanyScope,
-} from "@/lib/workorder/repository/dbWorkOrderRepository";
+} from "@/lib/workorder/service/workOrderService";
 import type {
-  MemoThread,
   WorkOrder,
   WorkOrderAuditActor,
   WorkOrderStatePatch,
@@ -230,13 +229,6 @@ async function applySessionActorDefaults(
   };
 }
 
-type ReplaceMemoThreadsRepository = {
-  replaceMemoThreads: (
-    workOrderId: string,
-    memoThreads: MemoThread[],
-  ) => Promise<void>;
-};
-
 type WorkOrderAuditActorContext = {
   id: string;
   name: string;
@@ -357,35 +349,6 @@ function createDbErrorResponse(error: unknown, fallbackMessage: string) {
   return NextResponse.json(resolved.payload, { status: resolved.status });
 }
 
-function canReplaceMemoThreads(
-  repository: unknown,
-): repository is ReplaceMemoThreadsRepository {
-  return (
-    typeof repository === "object" &&
-    repository !== null &&
-    "replaceMemoThreads" in repository &&
-    typeof (repository as { replaceMemoThreads?: unknown })
-      .replaceMemoThreads === "function"
-  );
-}
-
-function mergeMemoThreads(
-  payloadThreads: MemoThread[] | undefined,
-  dbThreads: MemoThread[],
-): MemoThread[] {
-  const merged = new Map<string, MemoThread>();
-
-  for (const thread of payloadThreads ?? []) {
-    merged.set(thread.id, thread);
-  }
-
-  for (const thread of dbThreads) {
-    merged.set(thread.id, thread);
-  }
-
-  return Array.from(merged.values());
-}
-
 function buildWorkOrderMap(workOrders: WorkOrder[]): Map<string, WorkOrder> {
   return new Map(workOrders.map((workOrder) => [workOrder.id, workOrder]));
 }
@@ -466,80 +429,6 @@ async function writeWorkOrderStatusChangeLogs(
   }
 }
 
-async function hydrateWorkOrdersWithAttachmentMemoSnapshots(
-  workOrders: WorkOrder[],
-): Promise<WorkOrder[]> {
-  if (workOrders.length === 0) return workOrders;
-
-  try {
-    const repository = await createAttachmentMemoRepository();
-    const info = repository.getRepositoryInfo();
-
-    if (info.mode === "db" && !info.adapterConfigured) {
-      return workOrders;
-    }
-
-    const snapshots = await Promise.all(
-      workOrders.map((workOrder) =>
-        repository.listSnapshotByWorkOrderId(workOrder.id),
-      ),
-    );
-
-    return workOrders.map((workOrder, index) => {
-      const snapshot = snapshots[index];
-      if (!snapshot) return workOrder;
-
-      return {
-        ...workOrder,
-        attachments: snapshot.attachments,
-        memoThreads: mergeMemoThreads(
-          workOrder.memoThreads,
-          snapshot.memoThreads,
-        ),
-      };
-    });
-  } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Attachment snapshot hydration failed.";
-      console.warn("[attachment hydration] " + message);
-    }
-
-    return workOrders;
-  }
-}
-
-async function replaceWorkOrderMemoThreads(
-  workOrder: WorkOrder,
-): Promise<void> {
-  const repository = await createAttachmentMemoRepository();
-  const info = repository.getRepositoryInfo();
-
-  if (
-    info.mode !== "db" ||
-    !info.adapterConfigured ||
-    !canReplaceMemoThreads(repository)
-  ) {
-    return;
-  }
-
-  await repository.replaceMemoThreads(
-    workOrder.id,
-    workOrder.memoThreads ?? [],
-  );
-}
-
-async function hydrateWorkOrderWithAttachmentMemoSnapshot(
-  workOrder: WorkOrder,
-): Promise<WorkOrder> {
-  const [hydrated] = await hydrateWorkOrdersWithAttachmentMemoSnapshots([
-    workOrder,
-  ]);
-  return hydrated ?? workOrder;
-}
-
 function createInvalidPayloadResponse(message: string) {
   return NextResponse.json(
     { message, code: "INVALID_PAYLOAD" },
@@ -590,9 +479,7 @@ export async function handleGetWorkOrders() {
     const readPermissionResponse = await requireCurrentWorkOrderPermission("workorder.read");
     if (readPermissionResponse) return readPermissionResponse;
 
-    const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(
-      await findAllDbWorkOrders(scopeResult.scope),
-    );
+    const workOrders = await listWorkOrdersByCompany(scopeResult.scope);
     logDbRequestOutcome("GET", true, "READY", `rows=${workOrders.length}`);
 
     return NextResponse.json({ workOrders });
@@ -629,14 +516,14 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
     const readPermissionResponse = await requireCurrentWorkOrderPermission("workorder.read");
     if (readPermissionResponse) return readPermissionResponse;
 
-    const foundWorkOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
+    const workOrder = await getWorkOrderDetailByCompany(
+      workOrderId,
+      scopeResult.scope,
+    );
 
-    if (!foundWorkOrder) {
+    if (!workOrder) {
       return createWorkOrderNotFoundResponse(workOrderId);
     }
-
-    const workOrder =
-      await hydrateWorkOrderWithAttachmentMemoSnapshot(foundWorkOrder);
     logDbRequestOutcome("GET", true, "DETAIL_READY", workOrder.id);
 
     return NextResponse.json({
@@ -685,7 +572,10 @@ export async function handleGetWorkOrderSummaries(request?: Request) {
     const readPermissionResponse = await requireCurrentWorkOrderPermission("workorder.read");
     if (readPermissionResponse) return readPermissionResponse;
 
-    const workOrders = await findDbWorkOrderSummaries({ status, sort }, scopeResult.scope);
+    const workOrders = await listWorkOrderSummariesByCompany(
+      { status, sort },
+      scopeResult.scope,
+    );
     logDbRequestOutcome(
       "GET",
       true,
@@ -744,11 +634,8 @@ export async function handlePostWorkOrders(request: Request) {
       body.workOrder,
       session,
     );
-    const createdWorkOrder = await createDbWorkOrder(workOrderToCreate, scopeResult.scope);
-    await replaceWorkOrderMemoThreads(workOrderToCreate);
-
     const workOrder = {
-      ...(await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder)),
+      ...(await createWorkOrderForCompany(workOrderToCreate, scopeResult.scope)),
       hasDetailSnapshot: true,
     };
     await writeWorkOrderCreatedHistory(workOrder, scopeResult.scope.companyId);
@@ -817,13 +704,10 @@ export async function handlePatchWorkOrders(request: Request) {
       const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
       if (updatePermissionResponse) return updatePermissionResponse;
 
-      const previousWorkOrders = (
-        await Promise.all(
-          requestedWorkOrderIds.map((workOrderId) =>
-            findDbWorkOrderById(workOrderId, scopeResult.scope),
-          ),
-        )
-      ).filter((workOrder): workOrder is WorkOrder => Boolean(workOrder));
+      const previousWorkOrders = await listExistingWorkOrdersByCompany(
+        requestedWorkOrderIds,
+        scopeResult.scope,
+      );
       if (previousWorkOrders.length !== requestedWorkOrderIds.length) {
         return createWorkOrderNotFoundResponse(
           requestedWorkOrderIds.find(
@@ -849,10 +733,10 @@ export async function handlePatchWorkOrders(request: Request) {
         if (workflowPermissionResponse) return workflowPermissionResponse;
       }
 
-      const savedWorkOrders = await saveDbWorkOrders(body.workOrders, scopeResult.scope);
-
-      const workOrders =
-        await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
+      const workOrders = await saveWorkOrdersForCompany(
+        body.workOrders,
+        scopeResult.scope,
+      );
 
       await Promise.all(
         workOrders.map((workOrder) =>
@@ -893,7 +777,7 @@ export async function handlePatchWorkOrders(request: Request) {
     const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
     if (updatePermissionResponse) return updatePermissionResponse;
 
-    const previousWorkOrder = await findDbWorkOrderById(
+    const previousWorkOrder = await getWorkOrderDetailByCompany(
       body.workOrder.id,
       scopeResult.scope,
     );
@@ -910,10 +794,10 @@ export async function handlePatchWorkOrders(request: Request) {
       });
     if (workflowPermissionResponse) return workflowPermissionResponse;
 
-    const savedWorkOrder = await saveDbWorkOrder(body.workOrder, scopeResult.scope);
-
-    const workOrder =
-      await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
+    const workOrder = await saveWorkOrderForCompany(
+      body.workOrder,
+      scopeResult.scope,
+    );
     await writeWorkOrderStatusChangeLogs(
       previousWorkOrder ?? undefined,
       workOrder,
@@ -1005,7 +889,10 @@ export async function handlePatchWorkOrderState(
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
 
-    const previousWorkOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
+    const previousWorkOrder = await getWorkOrderDetailByCompany(
+      workOrderId,
+      scopeResult.scope,
+    );
     if (!previousWorkOrder) {
       return createWorkOrderNotFoundResponse(workOrderId);
     }
@@ -1021,7 +908,7 @@ export async function handlePatchWorkOrderState(
       });
     if (workflowPermissionResponse) return workflowPermissionResponse;
 
-    const savedWorkOrder = await updateDbWorkOrderStatePatch(
+    const savedWorkOrder = await updateWorkOrderStateForCompany(
       {
         id: workOrderId,
         workflowState: guardedPatch.workflowState as WorkOrder["workflowState"],
@@ -1143,17 +1030,15 @@ export async function handleDeleteWorkOrders(request: Request) {
     const deletePermissionResponse = await requireCurrentWorkOrderPermission("workorder.delete");
     if (deletePermissionResponse) return deletePermissionResponse;
 
-    const previousWorkOrder = await findDbWorkOrderById(
+    const previousWorkOrder = await getWorkOrderDetailByCompany(
       body.workOrderId,
       scopeResult.scope,
     );
     if (!previousWorkOrder) {
       return createWorkOrderNotFoundResponse(body.workOrderId);
     }
-    const previousSnapshot = previousWorkOrder
-      ? await hydrateWorkOrderWithAttachmentMemoSnapshot(previousWorkOrder)
-      : null;
-    const deletedWorkOrderId = await deleteDbWorkOrder(
+    const previousSnapshot = previousWorkOrder;
+    const deletedWorkOrderId = await deleteWorkOrderForCompany(
       body.workOrderId,
       scopeResult.scope,
     );
