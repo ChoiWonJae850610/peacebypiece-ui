@@ -160,4 +160,3 @@ export default function WorkOrderMaterialLinesPanel({ workorderId, locked = fals
     </div>
   );
 }
-TS
