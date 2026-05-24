@@ -7,6 +7,7 @@ import type { Material, Outsourcing } from "@/types/workorder";
 
 export default function ProductionCompositionSection({
   materials,
+  workorderId,
   outsourcing,
   open,
   onToggle,
@@ -29,6 +30,7 @@ export default function ProductionCompositionSection({
   locked = false,
 }: {
   materials: Material[];
+  workorderId: string;
   outsourcing: Outsourcing[];
   open: boolean;
   onToggle: () => void;
@@ -61,6 +63,7 @@ export default function ProductionCompositionSection({
         <div className="mt-3 grid gap-3">
           <MaterialSection
             materials={materials}
+            workorderId={workorderId}
             open={materialOpen}
             onToggle={onToggleMaterial}
             editingCell={editingCell}

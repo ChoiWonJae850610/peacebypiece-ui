@@ -206,6 +206,7 @@ export function buildOrderInfoSectionProps(
 }
 
 export function buildProductionCompositionSectionProps({
+  workOrder,
   materialItems,
   outsourcingItems,
   productionSectionOpen,
@@ -231,6 +232,7 @@ export function buildProductionCompositionSectionProps({
 }: BuildWorkOrderDetailViewModelArgs): ProductionCompositionProps {
   return {
     materials: materialItems,
+    workorderId: workOrder.id,
     outsourcing: outsourcingItems,
     open: productionSectionOpen,
     onToggle: onToggleProductionSection,

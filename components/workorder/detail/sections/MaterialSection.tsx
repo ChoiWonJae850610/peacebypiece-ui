@@ -16,9 +16,11 @@ import {
   type EditableSectionKey,
 } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/workorder";
+import WorkOrderMaterialLinesPanel from "@/features/workorders/material-lines/WorkOrderMaterialLinesPanel";
 
 export default function MaterialSection({
   materials,
+  workorderId,
   open,
   onToggle,
   editingCell,
@@ -32,6 +34,7 @@ export default function MaterialSection({
   locked = false,
 }: {
   materials: Material[];
+  workorderId: string;
   open: boolean;
   onToggle: () => void;
   editingCell: EditableCell;
@@ -114,6 +117,9 @@ export default function MaterialSection({
               )}
             </tbody>
           </table>
+          <div className="border-t border-stone-200 p-2">
+            <WorkOrderMaterialLinesPanel workorderId={workorderId} locked={locked} />
+          </div>
         </div>
       ) : null}
     </div>

@@ -87,6 +87,22 @@ export type WorkorderMaterialLine = {
   updatedAt: string;
 };
 
+
+export type WorkorderMaterialLineWithMaterial = WorkorderMaterialLine & {
+  material: Material;
+};
+
+export type WorkorderMaterialLineMutationInput = {
+  companyId: string;
+  workorderId: string;
+  materialId: string;
+  role: WorkorderMaterialLineRole;
+  requiredQuantity?: number | null;
+  unit: MaterialUnit;
+  orderStatus?: MaterialOrderStatus;
+  memo?: string | null;
+};
+
 export type MaterialRepositoryListParams = {
   companyId: string;
   kind?: MaterialKind;
