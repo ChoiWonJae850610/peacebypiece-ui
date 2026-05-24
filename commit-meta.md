@@ -1,16 +1,13 @@
-Version : 0.16.13
-Summary : fallback/mock/legacy 정리 1차
-Description : 관리자 점검/DB 연결 감사 메타데이터에서 fallback/mock 표현을 빈 상태/seed/fixture 기준으로 정리하고, /admin 화면 경로 감사 문자열을 /workspace 기준으로 갱신했습니다. DB 연결 상태 표시의 LOCAL FALLBACK 사용자 노출 문구를 DB 확인 필요로 보정했으며, 실제 API 경로와 DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.14
+Summary : trace/debug 흐름 추가
+Description : 개발 모드에서 작업지시서 버튼, API, service, repository 흐름을 추적할 수 있는 공통 trace 유틸을 추가하고 주요 작업지시서 액션과 API/service/query 흐름에 trace를 연결했습니다. production에서는 출력되지 않도록 제한했으며 개인정보, secret, token, 실제 URL 노출 방지용 redaction 기준을 포함했습니다. DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
 수정 파일 목록 :
-- components/admin/dashboard/AdminDbConnectionAuditPanel.tsx
-- lib/admin/completionAudit.ts
-- lib/admin/dbCompletionAudit.ts
-- lib/admin/dbIntegration.ts
-- lib/admin/mockDataAudit.ts
-- lib/admin/structureAudit.ts
+- features/workorders/controllers/useWorkOrderWorkspaceController.ts
 - lib/constants/app.ts
-- lib/repositories/dbConnectionStatusPresentation.ts
+- lib/workorder/api/workOrderRouteHandlers.ts
+- lib/workorder/repository/workOrderRepository.ts
+- lib/workorder/service/workOrderService.ts
 추가 파일 목록 :
-- 없음
+- lib/debug/trace.ts
 삭제 파일 목록 :
 - 없음

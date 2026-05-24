@@ -6,6 +6,7 @@ import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStat
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { useI18n } from "@/lib/i18n";
 import { buildWorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
+import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import {
   DEFAULT_WORK_ORDER_LIST_SORT,
@@ -101,11 +102,22 @@ export function useWorkOrderWorkspaceController({
   );
 
   const runWithWorkspaceWriteLock = async <T,>(message: string, task: () => T | Promise<T>) => {
-    if (isWorkspaceWriteLocked) return undefined;
+    if (isWorkspaceWriteLocked) {
+      traceWaflResult("workorder.workspace.writeLock", "skip", { reason: "locked" });
+      return undefined;
+    }
 
+    traceWaflFlow("action", "workorder.workspace.writeLock.start");
     setManualWriteLockMessage(message);
     try {
-      return await Promise.resolve(task());
+      const result = await Promise.resolve(task());
+      traceWaflResult("workorder.workspace.writeLock", "success");
+      return result;
+    } catch (error) {
+      traceWaflResult("workorder.workspace.writeLock", "error", {
+        message: error instanceof Error ? error.message : "unknown",
+      });
+      throw error;
     } finally {
       setManualWriteLockMessage(null);
     }
@@ -143,6 +155,7 @@ export function useWorkOrderWorkspaceController({
 
   const handleOpenWorkOrderDeleteConfirm = (workOrderId: string) => {
     if (isWorkspaceWriteLocked) return;
+    traceWaflFlow("action", "workorder.delete.openConfirm", { workOrderId });
     setPendingWorkOrderDeleteId(workOrderId);
   };
 
@@ -154,6 +167,7 @@ export function useWorkOrderWorkspaceController({
     if (isWorkspaceWriteLocked || !pendingWorkOrderDeleteId) return;
 
     const workOrderId = pendingWorkOrderDeleteId;
+    traceWaflFlow("action", "workorder.delete.confirm", { workOrderId });
     setPendingWorkOrderDeleteId(null);
     void runWithWorkspaceWriteLock(lifecycleCopy.deleteProcessingLabel, () =>
       actions.handleDeleteWorkOrder(workOrderId),
@@ -162,6 +176,7 @@ export function useWorkOrderWorkspaceController({
 
   const handleOpenAttachmentDeleteConfirm = (attachmentId: string) => {
     if (isWorkspaceWriteLocked) return;
+    traceWaflFlow("action", "workorder.attachment.delete.openConfirm", { attachmentId });
     setPendingAttachmentDeleteId(attachmentId);
   };
 
@@ -173,6 +188,7 @@ export function useWorkOrderWorkspaceController({
     if (isWorkspaceWriteLocked || !pendingAttachmentDeleteId) return;
 
     const attachmentId = pendingAttachmentDeleteId;
+    traceWaflFlow("action", "workorder.attachment.delete.confirm", { attachmentId });
     setPendingAttachmentDeleteId(null);
     void runWithWorkspaceWriteLock(lifecycleCopy.attachmentProcessingLabel, () =>
       attachments.handleDeleteAttachment(attachmentId),
@@ -183,6 +199,10 @@ export function useWorkOrderWorkspaceController({
     action: Parameters<typeof actions.handleWorkflowAction>[0],
     workOrderOverride?: WorkOrder,
   ) => {
+    traceWaflFlow("action", "workorder.workflow.submit", {
+      actionId: "id" in action ? String(action.id) : action.label,
+      workOrderId: workOrderOverride?.id ?? selection.selectedId,
+    });
     setWorkflowProcessingLabel(action.label);
     try {
       await actions.handleWorkflowAction(action, workOrderOverride);
@@ -222,18 +242,21 @@ export function useWorkOrderWorkspaceController({
   };
 
   const handleChangeWorkOrderSearchQuery = (nextSearchQuery: string) => {
+    traceWaflFlow("action", "workorder.list.search", { hasQuery: Boolean(nextSearchQuery.trim()) });
     replaceWorkOrderListQuery({ searchQuery: nextSearchQuery });
     selection.setSearchQuery(nextSearchQuery);
   };
 
   const handleChangeWorkOrderStatusFilter = (nextStatus: WorkOrderListStatusFilter) => {
     if (isWorkspaceWriteLocked) return;
+    traceWaflFlow("action", "workorder.list.statusFilter", { status: nextStatus });
     replaceWorkOrderListQuery({ status: nextStatus });
     selection.setListStatusFilter(nextStatus);
   };
 
   const handleChangeWorkOrderListSort = (nextSort: WorkOrderListSort) => {
     if (isWorkspaceWriteLocked) return;
+    traceWaflFlow("action", "workorder.list.sort", { sort: nextSort });
     replaceWorkOrderListQuery({ sort: nextSort });
     selection.setListSort(nextSort);
   };
@@ -241,6 +264,7 @@ export function useWorkOrderWorkspaceController({
   const handleResetWorkOrderListControls = () => {
     if (isWorkspaceWriteLocked) return;
 
+    traceWaflFlow("action", "workorder.list.resetControls");
     replaceWorkOrderListQuery({
       status: DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
       sort: DEFAULT_WORK_ORDER_LIST_SORT,
@@ -255,6 +279,7 @@ export function useWorkOrderWorkspaceController({
     if (isWorkspaceWriteLocked) return;
     if (workOrderId === selection.selectedId) return;
 
+    traceWaflFlow("action", "workorder.select", { workOrderId });
     replaceSelectedWorkOrderQuery(workOrderId);
     actions.handleSelectWorkOrder(workOrderId);
   };

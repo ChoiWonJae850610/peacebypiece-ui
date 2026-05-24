@@ -13,6 +13,7 @@ import {
   isDatabaseConfigured,
 } from "@/lib/db/client";
 import { isWorkOrderServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
+import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
 import type { MemberPermissionCode } from "@/lib/permissions";
@@ -294,11 +295,6 @@ function resolveDbErrorPayload(
   return { status: 500, payload: { message, code: "DB_REQUEST_FAILED" } };
 }
 
-function createDbErrorResponse(error: unknown, fallbackMessage: string) {
-  const resolved = resolveDbErrorPayload(error, fallbackMessage);
-  return NextResponse.json(resolved.payload, { status: resolved.status });
-}
-
 function buildWorkOrderMap(workOrders: WorkOrder[]): Map<string, WorkOrder> {
   return new Map(workOrders.map((workOrder) => [workOrder.id, workOrder]));
 }
@@ -419,6 +415,8 @@ async function readJsonBody<TBody>(request: Request): Promise<TBody | null> {
 }
 
 export async function handleGetWorkOrders() {
+  traceWaflFlow("api", "workorders.list.request");
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
@@ -431,6 +429,7 @@ export async function handleGetWorkOrders() {
 
     const workOrders = await listWorkOrdersByCompany(scopeResult.scope);
     logDbRequestOutcome("GET", true, "READY", `rows=${workOrders.length}`);
+    traceWaflResult("workorders.list", "success", { rows: workOrders.length });
 
     return NextResponse.json({ workOrders });
   } catch (error) {
@@ -445,12 +444,14 @@ export async function handleGetWorkOrders() {
       resolved.payload.message,
     );
 
+    traceWaflResult("workorders.list", "error", { message: resolved.payload.message });
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
 
 export async function handleGetWorkOrderDetail(workOrderId: string) {
   const startedAt = Date.now();
+  traceWaflFlow("api", "workorders.detail.request", { workOrderId });
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
@@ -476,6 +477,8 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
     }
     logDbRequestOutcome("GET", true, "DETAIL_READY", workOrder.id);
 
+    traceWaflResult("workorders.detail", "success", { workOrderId: workOrder.id });
+
     return NextResponse.json({
       workOrder: {
         ...workOrder,
@@ -500,12 +503,14 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
       resolved.payload.message,
     );
 
+    traceWaflResult("workorders.detail", "error", { message: resolved.payload.message });
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
 
 export async function handleGetWorkOrderSummaries(request?: Request) {
   const startedAt = Date.now();
+  traceWaflFlow("api", "workorders.summary.request");
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
@@ -533,6 +538,8 @@ export async function handleGetWorkOrderSummaries(request?: Request) {
       `rows=${workOrders.length};status=${status};sort=${sort}`,
     );
 
+    traceWaflResult("workorders.summary", "success", { rows: workOrders.length });
+
     return NextResponse.json({
       workOrders,
       meta: {
@@ -554,11 +561,14 @@ export async function handleGetWorkOrderSummaries(request?: Request) {
       resolved.payload.message,
     );
 
+    traceWaflResult("workorders.summary", "error", { message: resolved.payload.message });
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
 
 export async function handlePostWorkOrders(request: Request) {
+  traceWaflFlow("api", "workorders.create.request");
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
@@ -591,6 +601,7 @@ export async function handlePostWorkOrders(request: Request) {
     await writeWorkOrderCreatedHistory(workOrder, scopeResult.scope.companyId);
 
     logDbRequestOutcome("POST", true, "READY", workOrder.id);
+    traceWaflResult("workorders.create", "success", { workOrderId: workOrder.id });
 
     return NextResponse.json({ workOrder }, { status: 201 });
   } catch (error) {
@@ -605,11 +616,14 @@ export async function handlePostWorkOrders(request: Request) {
       resolved.payload.message,
     );
 
+    traceWaflResult("workorders.create", "error", { message: resolved.payload.message });
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
 
 export async function handlePatchWorkOrders(request: Request) {
+  traceWaflFlow("api", "workorders.save.request");
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
@@ -707,6 +721,7 @@ export async function handlePatchWorkOrders(request: Request) {
       );
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
+      traceWaflResult("workorders.bulkSave", "success", { rows: workOrders.length });
 
       return NextResponse.json({ workOrders, meta: { mode: "bulk-save", serviceCode } });
     }
@@ -763,6 +778,7 @@ export async function handlePatchWorkOrders(request: Request) {
     );
 
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
+    traceWaflResult("workorders.save", "success", { workOrderId: workOrder.id });
 
     return NextResponse.json({ workOrder, meta: { mode: "workorder-save", serviceCode } });
   } catch (error) {
@@ -774,6 +790,7 @@ export async function handlePatchWorkOrders(request: Request) {
       resolved.payload.message,
     );
 
+    traceWaflResult("workorders.save", "error", { message: resolved.payload.message });
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
@@ -782,6 +799,8 @@ export async function handlePatchWorkOrderState(
   workOrderId: string,
   request: Request,
 ) {
+  traceWaflFlow("api", "workorders.statePatch.request", { workOrderId });
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
@@ -939,6 +958,8 @@ export async function handlePatchWorkOrderState(
       `${savedWorkOrder.id}:state-patch`,
     );
 
+    traceWaflResult("workorders.statePatch", "success", { workOrderId: savedWorkOrder.id });
+
     return NextResponse.json({
       patch: patchResult,
       meta: { mode: "state-patch", hydrated: false, serviceCode },
@@ -955,11 +976,14 @@ export async function handlePatchWorkOrderState(
       `state-patch: ${resolved.payload.message}`,
     );
 
+    traceWaflResult("workorders.statePatch", "error", { message: resolved.payload.message });
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
 
 export async function handleDeleteWorkOrders(request: Request) {
+  traceWaflFlow("api", "workorders.delete.request");
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
@@ -1018,9 +1042,12 @@ export async function handleDeleteWorkOrders(request: Request) {
     );
 
     logDbRequestOutcome("DELETE", true, "READY", deletedWorkOrderId);
+    traceWaflResult("workorders.delete", "success", { workOrderId: deletedWorkOrderId });
 
     return NextResponse.json({ workOrderId: deletedWorkOrderId });
   } catch (error) {
-    return createDbErrorResponse(error, "Failed to delete work order.");
+    const resolved = resolveDbErrorPayload(error, "Failed to delete work order.");
+    traceWaflResult("workorders.delete", "error", { message: resolved.payload.message });
+    return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }
