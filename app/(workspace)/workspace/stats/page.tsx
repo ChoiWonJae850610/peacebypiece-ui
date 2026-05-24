@@ -22,7 +22,7 @@ type AdminStatsPageProps = {
 };
 
 export default async function AdminStatsPage({ searchParams }: AdminStatsPageProps) {
-  await requireWorkspacePagePermission("stats.read");
+  const session = await requireWorkspacePagePermission("stats.read");
   const pageText = getI18n().admin.dashboardPage;
   const companyScope = await getAdminStatsCompanyScope();
 
@@ -44,7 +44,7 @@ export default async function AdminStatsPage({ searchParams }: AdminStatsPagePro
     <WorkspaceShell
       companyName={companyScope.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/stats")}
+      navigationItems={getWorkspaceNavigationItems("/workspace/stats", { role: session.role })}
       title={pageText.title}
       description={pageText.description}
     >

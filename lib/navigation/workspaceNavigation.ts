@@ -1,4 +1,5 @@
 export type WorkspaceDashboardRoute = string | null;
+export type WorkspaceNavigationRole = "company_admin" | "member" | "system_admin";
 
 export type WorkspaceNavigationItem = {
   label: string;
@@ -18,8 +19,26 @@ export const WORKSPACE_NAVIGATION_ITEMS: WorkspaceNavigationItem[] = [
   { label: "환경설정", href: "/workspace/settings", icon: "settings", translationKey: "settings" },
 ];
 
-export function getWorkspaceNavigationItems(activeHref: string): WorkspaceNavigationItem[] {
-  return WORKSPACE_NAVIGATION_ITEMS.map((item) => ({
+export type WorkspaceNavigationOptions = {
+  role?: WorkspaceNavigationRole | null;
+};
+
+function canShowWorkspaceNavigationItem(
+  item: WorkspaceNavigationItem,
+  options: WorkspaceNavigationOptions,
+): boolean {
+  if (item.href === "/workspace/settings" && options.role === "member") {
+    return false;
+  }
+
+  return true;
+}
+
+export function getWorkspaceNavigationItems(
+  activeHref: string,
+  options: WorkspaceNavigationOptions = {},
+): WorkspaceNavigationItem[] {
+  return WORKSPACE_NAVIGATION_ITEMS.filter((item) => canShowWorkspaceNavigationItem(item, options)).map((item) => ({
     ...item,
     active: item.href === activeHref,
   }));

@@ -15,7 +15,7 @@ export default async function AdminPartnersPage() {
     <WorkspaceShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/partners")}
+      navigationItems={getWorkspaceNavigationItems("/workspace/partners", { role: session.role })}
       title={pageText.title}
       contentMode="fixed-md"
     >

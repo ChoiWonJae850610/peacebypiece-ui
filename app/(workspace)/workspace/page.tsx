@@ -39,7 +39,7 @@ export default async function WorkspacePage() {
       <WorkspaceShell
         companyName=""
         appVersion={APP_VERSION}
-        navigationItems={getWorkspaceNavigationItems("/workspace")}
+        navigationItems={getWorkspaceNavigationItems("/workspace", { role: session.role })}
         title="고객사 정보 입력"
         description="초대 링크로 시작한 고객사 관리자 등록을 완료합니다."
       >
@@ -55,12 +55,12 @@ export default async function WorkspacePage() {
       <WorkspaceShell
         companyName={session.companyName ?? ""}
         appVersion={APP_VERSION}
-        navigationItems={getWorkspaceNavigationItems("/workspace")}
+        navigationItems={getWorkspaceNavigationItems("/workspace", { role: session.role })}
         title="고객관리자 메인"
       >
         <AdminOperationsDashboard snapshots={snapshots} />
 
-        <AdminConsoleSections />
+        <AdminConsoleSections role={session.role} />
       </WorkspaceShell>
     );
   }
@@ -71,11 +71,11 @@ export default async function WorkspacePage() {
     <WorkspaceShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace")}
+      navigationItems={getWorkspaceNavigationItems("/workspace", { role: session.role })}
       title="업무 홈"
       description="권한이 부여된 업무 화면으로 이동합니다."
     >
-      <AdminConsoleSections permissionCodes={permissionCodes} />
+      <AdminConsoleSections permissionCodes={permissionCodes} role={session.role} />
     </WorkspaceShell>
   );
 }

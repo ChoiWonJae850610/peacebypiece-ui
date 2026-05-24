@@ -8,6 +8,7 @@ import {
   getVisibleAdminHomePrimaryCards,
   type AdminWorkspaceCard,
   type AdminWorkspaceCardStatus,
+  type AdminWorkspaceRole,
 } from "@/lib/admin/adminWorkspaceCards";
 import type { MemberPermissionCode } from "@/lib/permissions";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -105,11 +106,12 @@ function AdminWorkspaceCardView({ item, index }: { item: AdminWorkspaceCard; ind
 
 type AdminConsoleSectionsProps = {
   permissionCodes?: readonly MemberPermissionCode[] | null;
+  role?: AdminWorkspaceRole | null;
 };
 
-export default function AdminConsoleSections({ permissionCodes }: AdminConsoleSectionsProps) {
+export default function AdminConsoleSections({ permissionCodes, role }: AdminConsoleSectionsProps) {
   const t = useAdminTranslation();
-  const cardAccessInput = { permissionCodes: permissionCodes ?? ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES };
+  const cardAccessInput = { permissionCodes: permissionCodes ?? ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES, role };
   const primaryCards = getVisibleAdminHomePrimaryCards(cardAccessInput);
 
   return (

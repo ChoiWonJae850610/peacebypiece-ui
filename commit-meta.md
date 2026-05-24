@@ -1,27 +1,27 @@
-Version : 0.16.26
-Summary : workspace 라우팅 권한과 메뉴 노출 보정
-Description : 비로그인 /system 개발 자동 진입을 명시 설정 없이는 차단하고, workspace 홈을 고객사 관리자와 일반 멤버로 분기했습니다. 일반 멤버는 보유 권한 기준의 업무 홈 카드만 표시되도록 조정하고, workspace 상단 메뉴에 원단·부자재를 포함한 실제 navigationItems를 렌더링했습니다. /workspace/storage 구 경로는 /workspace/files로 리다이렉트하며, 주요 workspace 페이지에 페이지 단위 권한 가드를 추가했습니다. APP_VERSION을 0.16.26으로 갱신했습니다.
+Version : 0.16.27
+Summary : 개발용 시스템관리자 우회와 일반 멤버 환경설정 노출 정리
+Description : WAFL_ENABLE_SYSTEM_DEV_ENTRY 기반 시스템관리자 API 우회와 개발용 시스템관리자 상수를 제거하고, 실제 로그인 세션의 system_admin role만 시스템 API를 사용할 수 있도록 정리했습니다. 일반 멤버의 workspace 홈/홈 버튼 경로를 /workspace로 통일하고, 일반 멤버에게 환경설정 메뉴와 환경설정 홈 카드를 숨기며 /workspace/settings 직접 접근은 고객사 관리자만 허용하도록 보정했습니다. 원단·부자재 등 workspace 메뉴는 현재 로그인 role 기준 navigation을 전달하도록 정리했습니다.
 수정 파일 목록 :
-- app/(workspace)/workspace/page.tsx
 - app/(workspace)/workspace/files/page.tsx
 - app/(workspace)/workspace/history/page.tsx
-- app/(workspace)/workspace/invites/page.tsx
 - app/(workspace)/workspace/materials/page.tsx
 - app/(workspace)/workspace/members/page.tsx
+- app/(workspace)/workspace/page.tsx
 - app/(workspace)/workspace/partners/page.tsx
 - app/(workspace)/workspace/settings/page.tsx
 - app/(workspace)/workspace/stats/page.tsx
 - app/(workspace)/workspace/subscription/page.tsx
 - components/admin/dashboard/AdminConsoleSections.tsx
-- components/workspace/layout/WorkspaceTopbar.tsx
-- features/workorders/page/WorkordersWorkspacePage.tsx
-- lib/admin/adminWorkspaceCards.ts
-- lib/auth/routeGuard.ts
-- lib/constants/app.ts
-- lib/system/devSystemAdmin.ts
-추가 파일 목록 :
-- app/(workspace)/workspace/storage/page.tsx
-- components/admin/dashboard/AdminInvitationOnboardingEntry.tsx
 - components/admin/files/AdminFilesWorkspaceClient.tsx
-삭제 파일 목록 :
+- components/system/SystemConsoleShell.tsx
+- lib/admin/adminWorkspaceCards.ts
+- lib/auth/loginRepository.ts
+- lib/constants/app.ts
+- lib/invitations/invitationRepository.ts
+- lib/navigation/workspaceHomeRoutes.ts
+- lib/navigation/workspaceNavigation.ts
+- lib/system/sessionScope.ts
+추가 파일 목록 :
 - 없음
+삭제 파일 목록 :
+- lib/system/devSystemAdmin.ts

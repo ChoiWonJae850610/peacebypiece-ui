@@ -14,13 +14,15 @@ import type {
   AdminFileManagementSnapshot,
   AdminTrashActionType,
 } from "@/lib/admin/files/types";
-import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
+import type { WorkspaceNavigationItem } from "@/lib/navigation/workspaceNavigation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
 
-const FILE_ADMIN_NAVIGATION_ITEMS = getWorkspaceNavigationItems("/workspace/files");
+type AdminFilesWorkspaceClientProps = {
+  navigationItems: WorkspaceNavigationItem[];
+};
 
-export default function AdminFilesWorkspaceClient() {
+export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFilesWorkspaceClientProps) {
   const t = useAdminTranslation();
   const initialSnapshot = useMemo(
     () => getAdminFileManagementSnapshot(),
@@ -201,7 +203,7 @@ export default function AdminFilesWorkspaceClient() {
     <WorkspaceShell
       companyName={snapshot.companyName ?? t("common.companyNameFallback", "회사")}
       appVersion={APP_VERSION}
-      navigationItems={FILE_ADMIN_NAVIGATION_ITEMS}
+      navigationItems={navigationItems}
       title={t("filesPage.title", "저장소 관리")}
       contentMode="fixed-md"
     >

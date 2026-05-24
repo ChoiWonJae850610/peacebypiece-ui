@@ -25,7 +25,7 @@ export default async function WorkspaceMaterialsPageRoute() {
     <WorkspaceShell
       companyName={session.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/materials")}
+      navigationItems={getWorkspaceNavigationItems("/workspace/materials", { role: session.role })}
       title="원단·부자재"
       description="원단과 부자재 기준 정보를 작업지시서 연결 전 단계에서 검토합니다."
     >

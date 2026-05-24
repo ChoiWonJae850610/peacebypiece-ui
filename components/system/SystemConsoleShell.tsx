@@ -15,7 +15,6 @@ import {
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 
 import { APP_VERSION } from "@/lib/constants/app";
-import { isDevSystemAdminEntryEnabled } from "@/lib/system/devSystemAdmin";
 import { getI18n } from "@/lib/i18n";
 import {
   SYSTEM_CONSOLE_HERO_OPERATION_CARDS,
@@ -92,8 +91,6 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
 }
 
 export default function SystemConsoleShell() {
-  const devSystemEntryEnabled = isDevSystemAdminEntryEnabled();
-
   return (
     <SystemShell contentClassName="mx-auto flex max-w-7xl flex-col gap-5 sm:gap-6">
       <section className="relative overflow-hidden rounded-[38px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-elevated)]">
@@ -115,11 +112,6 @@ export default function SystemConsoleShell() {
               <span className="rounded-full border border-[color:color-mix(in_srgb,var(--pbp-text-inverse)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-1 text-[11px] font-semibold text-[color:color-mix(in_srgb,var(--pbp-text-inverse)_80%,transparent)]">
                 {system.versionLabel} v{APP_VERSION}
               </span>
-              {devSystemEntryEnabled ? (
-                <span className="rounded-full border border-[color:color-mix(in_srgb,var(--pbp-text-inverse)_20%,transparent)] bg-[color:color-mix(in_srgb,var(--pbp-text-inverse)_10%,transparent)] px-3 py-1 text-[11px] font-semibold text-[color:color-mix(in_srgb,var(--pbp-text-inverse)_80%,transparent)]">
-                  {system.devEntryLabel}
-                </span>
-              ) : null}
             </div>
 
             <div className="mt-8 max-w-3xl">

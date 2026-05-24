@@ -180,7 +180,7 @@ function resolveCompanyRole(user: LoginUserRow, membership: CompanyMembershipRow
 
 function resolveCompanyRedirect(role: WaflSessionRole): string {
   if (role === "company_admin") return "/workspace";
-  return "/workspace/workorders";
+  return "/workspace";
 }
 
 export async function completeGoogleLogin(profile: GoogleUserProfile): Promise<WaflLoginResult> {

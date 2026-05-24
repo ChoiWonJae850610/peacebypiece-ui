@@ -7,7 +7,7 @@ import { getI18n } from "@/lib/i18n";
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 
 export default async function AdminMembersPage() {
-  await requireWorkspacePagePermission("member.read");
+  const session = await requireWorkspacePagePermission("member.read");
   const pageText = getI18n().admin.memberManagement;
   const companyScope = await getAdminMemberCompanyScope();
 
@@ -15,7 +15,7 @@ export default async function AdminMembersPage() {
     <WorkspaceShell
       companyName={companyScope?.companyName ?? ""}
       appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/members")}
+      navigationItems={getWorkspaceNavigationItems("/workspace/members", { role: session.role })}
       title={pageText.title}
       description={pageText.description}
     >

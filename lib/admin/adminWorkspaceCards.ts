@@ -7,6 +7,7 @@ import {
 } from "@/lib/permissions";
 
 export type AdminWorkspacePermission = Extract<Permission, (typeof ADMIN_WORKSPACE_PERMISSIONS)[keyof typeof ADMIN_WORKSPACE_PERMISSIONS]>;
+export type AdminWorkspaceRole = "company_admin" | "member" | "system_admin";
 
 export type AdminWorkspaceCardStatus = "available" | "planned";
 
@@ -182,11 +183,16 @@ function filterAdminWorkspaceCardsByIds(
 
 export type AdminWorkspaceAccessInput = {
   permissionCodes?: readonly MemberPermissionCode[] | null;
+  role?: AdminWorkspaceRole | null;
 };
 
 export const ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES = getMemberRoleTemplatePermissions("company_admin");
 
 export function canAccessAdminWorkspaceCard(card: AdminWorkspaceCard, input: AdminWorkspaceAccessInput): boolean {
+  if (card.id === "settings" && input.role === "member") {
+    return false;
+  }
+
   return hasEveryMemberPermission({ permissionCodes: input.permissionCodes }, card.requiredMemberPermissions);
 }
 

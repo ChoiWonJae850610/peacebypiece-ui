@@ -1,7 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "crypto";
 
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
-import { DEV_SYSTEM_ADMIN_EMAIL, DEV_SYSTEM_ADMIN_NAME, DEV_SYSTEM_ADMIN_USER_ID } from "@/lib/system/devSystemAdmin";
 import { getDefaultInvitationExpiresAt } from "./invitationPolicy";
 import type {
   InvitationCreateResult,
@@ -112,28 +111,7 @@ function toInvitationRecord(row: InvitationDbRow): InvitationRecord {
 }
 
 
-async function ensureSystemInvitationCreator(draft: InvitationDraft): Promise<void> {
-  if (draft.scope !== "system_to_company_admin") return;
-  if (draft.createdBySystemUserId !== DEV_SYSTEM_ADMIN_USER_ID) return;
-
-  await queryDb(
-    `
-      INSERT INTO system_users (id, email, name, role, is_active)
-      VALUES ($1::text, $2::text, $3::text, 'system_admin', true)
-      ON CONFLICT (id) DO UPDATE
-         SET email = EXCLUDED.email,
-             name = EXCLUDED.name,
-             role = 'system_admin',
-             is_active = true,
-             updated_at = now()
-    `,
-    [DEV_SYSTEM_ADMIN_USER_ID, DEV_SYSTEM_ADMIN_EMAIL, DEV_SYSTEM_ADMIN_NAME],
-  );
-}
-
 async function createDbInvitation(draft: InvitationDraft, tokenHash: string, inviteUrlPath: string): Promise<InvitationRecord> {
-  await ensureSystemInvitationCreator(draft);
-
   const result = await queryDb<InvitationDbRow>(
     `
       INSERT INTO invitations (

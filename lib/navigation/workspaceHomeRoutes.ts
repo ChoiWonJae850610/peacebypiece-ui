@@ -3,7 +3,7 @@ import type { RoleType } from "@/types/permission";
 
 export const WORKSPACE_HOME_ROUTES = {
   customerAdmin: "/workspace",
-  member: "/workspace/workorders",
+  member: "/workspace",
   systemAdmin: "/system",
 } as const;
 
