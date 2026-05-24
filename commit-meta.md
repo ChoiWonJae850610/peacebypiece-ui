@@ -1,15 +1,15 @@
-Version : 0.16.24
-Summary : dead code와 old path 정리 기준 보정
-Description : /admin 화면 라우트 전환 이후 남은 old path와 dead code 후보를 분류하는 정리 문서를 추가하고, 현재 참조용 라우팅/테스트/페이지 인벤토리 문서를 /workspace 기준으로 보정했습니다. 시스템 체크포인트의 담당 영역 표기는 admin에서 workspace로 변경했으며, 실제 API 경로, DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
+Version : 0.16.25
+Summary : 소스 구조 안정화 점검 및 문서 갱신
+Description : 0.16.4~0.16.25 구조 정리 구간의 실제 라우팅, 계층, DB, 원단·부자재 연결 상태를 문서 기준과 맞추고, 후속 rename/API 이동 후보와 누적 테스트 체크리스트를 분리했습니다. APP_VERSION을 0.16.25로 갱신했으며 기능, DB schema, package.json, package-lock.json 변경은 포함하지 않았습니다.
 수정 파일 목록 :
-- docs/refactoring-rules.md
-- docs/routing-architecture.md
-- docs/wafl-a-type/18_wafl-a-type-auth-session-policy.md
-- docs/wafl-a-type/19_wafl-a-type-release-test-policy.md
-- docs/wafl-a-type/20_wafl-a-type-page-inventory.md
 - lib/constants/app.ts
-- lib/system/systemAccessStabilityCheckpoint.ts
+- docs/source-architecture.md
+- docs/routing-architecture.md
+- docs/refactoring-rules.md
+- docs/workspace-boundary.md
+- docs/database-architecture.md
 추가 파일 목록 :
-- docs/dead-code-old-path-cleanup-0.16.24.md
+- docs/source-stabilization-checkpoint-0.16.25.md
+- docs/structure-refactor-test-backlog-0.16.25.md
 삭제 파일 목록 :
 없음

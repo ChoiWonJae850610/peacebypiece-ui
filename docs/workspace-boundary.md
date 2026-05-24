@@ -1,6 +1,6 @@
 # Workspace Boundary
 
-기준 버전: 0.16.4
+기준 버전: 0.16.25
 상태: boundary baseline
 목적: 고객사 업무공간(workspace), 시스템관리자(system), 개인설정(me)의 책임 경계를 고정한다.
 
@@ -26,7 +26,7 @@
 /workspace
 /workspace/workorders
 /workspace/partners
-/workspace/storage
+/workspace/files
 /workspace/stats
 /workspace/members
 /workspace/settings
@@ -221,3 +221,29 @@ system 저장소 사용량은 서비스 운영자 관점의 전체 관리 화면
 - 원단·부자재가 저장소 사용량에 포함되는 범위 변경
 - 결제/청구/약관 재동의 정책 변경
 ```
+
+## 11. 0.16.25 기준 경계 점검 결론
+
+0.16.25 기준 경계는 다음처럼 본다.
+
+```txt
+workspace:
+- 고객사 업무 처리
+- 작업지시서
+- 원단·부자재 기준정보
+- 작업지시서별 원단·부자재 연결
+- 고객사 저장소/휴지통
+- 고객사 통계/멤버/설정
+
+system:
+- 시스템관리자 고객사 관리
+- 전체 저장소 사용량/삭제 처리
+- 감사로그
+- 요금/정책/운영 설정
+
+me:
+- 로그인 사용자 개인 프로필
+- 개인 언어/테마 설정
+```
+
+원단·부자재는 workspace 업무 데이터로 편입했지만, 0.16.25 기준 저장소 사용량·R2 파일·통계 집계·감사로그 실제 기록에는 아직 편입하지 않는다. 각 편입은 별도 버전에서 명시적으로 처리한다.

@@ -185,3 +185,18 @@ snapshot은 허용하되, 이름과 목적을 명확히 해야 한다.
 ```
 
 다음 schema 변경 버전에서는 이 문서의 기준에 따라 컬럼 제거/이름 변경/인덱스 조정을 작은 단위로 진행한다.
+
+## 13. 0.16.25 안정화 기준
+
+0.16.25 기준 DB 구조 정리 원칙은 다음으로 고정한다.
+
+```txt
+- 기준정보성 원단·부자재 데이터는 materials 계열 테이블에 둔다.
+- 작업지시서와 원단·부자재의 연결은 workorder_material_lines 계층에 둔다.
+- 발주 상태는 작업지시서 workflow status와 분리해서 material line order_status로 관리한다.
+- 실제 발주서/PDF에 넣을 당시 값 보존은 후속 snapshot 정책에서 별도 결정한다.
+- 현재 조회용 표시명 중복 저장은 기본적으로 금지하고 FK + index + repository query를 우선한다.
+- 통계 병목이 확인되기 전 summary/cache table을 먼저 만들지 않는다.
+```
+
+후속 DB 변경이 필요한 경우에는 `full_reset.sql`, `full_reset_smoke_test.sql`, service/repository, 문서를 같은 버전에서 맞춘다.

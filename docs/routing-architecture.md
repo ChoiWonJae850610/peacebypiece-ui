@@ -1,6 +1,6 @@
 # Routing Architecture
 
-기준 버전: 0.16.4
+기준 버전: 0.16.25
 상태: route baseline
 목적: public, workspace, system, me 영역의 URL 책임과 보호 기준을 고정한다.
 
@@ -23,7 +23,7 @@ api       = 서버 요청 진입점
 /workspace/workorders
 /workspace/workorders/[id]
 /workspace/partners
-/workspace/storage
+/workspace/files
 /workspace/stats
 /workspace/members
 /workspace/settings
@@ -175,3 +175,42 @@ app/api/*/route.ts
 - 개인설정 = me 의미
 - 기술 경로명이 사용자 문구에 노출되지 않게 한다
 ```
+
+## 10. 0.16.25 기준 라우팅 안정화 상태
+
+0.16.25 기준 현재 고객사 업무 화면은 `/workspace` route group 하위에서 운영한다.
+
+```txt
+현재 화면 route:
+- /workspace
+- /workspace/workorders
+- /workspace/materials
+- /workspace/partners
+- /workspace/files
+- /workspace/stats
+- /workspace/members
+- /workspace/settings
+- /workspace/standards
+- /workspace/invites
+- /workspace/subscription
+- /workspace/units
+- /workspace/history
+```
+
+현재 시스템관리자 화면은 `/system` route group 하위에서 운영한다.
+
+```txt
+현재 system route:
+- /system
+- /system/companies
+- /system/storage-usage
+- /system/audit-logs
+- /system/billing
+- /system/policies
+- /system/invites
+- /system/standards
+- /system/category-rules
+- /system/access-checkpoint
+```
+
+주의할 미정리 영역은 API 경로다. `/api/admin/*`는 0.16.25 기준 아직 삭제하거나 rename하지 않는다. 화면 URL과 API URL rename을 같은 단계에서 처리하면 저장소/휴지통/멤버/설정 회귀 위험이 크므로 후속 버전에서 alias → client 이동 → 제거 순서로 처리한다.

@@ -1,6 +1,6 @@
 # Source Architecture
 
-기준 버전: 0.16.4
+기준 버전: 0.16.25
 상태: structure baseline
 목적: WAFLOW / PeaceByPiece 소스 계층의 책임 경계를 고정한다.
 
@@ -215,3 +215,33 @@ JSON 허용 후보:
 - APP_VERSION, commit-meta.md Version, zip 파일명 버전을 일치시킨다.
 - npm run build는 ChatGPT/container에서 실행하지 않는다.
 ```
+
+## 11. 0.16.25 기준 실제 구조 안정화 상태
+
+0.16.4~0.16.25 구간에서 문서 기준과 실제 구조를 다음 상태로 맞춘다.
+
+```txt
+완료된 기준:
+- 고객사 업무 화면 기준 URL은 /workspace다.
+- 작업지시서 page.tsx는 features/workorders/page 진입 컴포넌트를 호출한다.
+- 작업지시서 주요 event 흐름은 controller hook으로 분리했다.
+- 작업지시서 API route는 service/repository facade를 경유한다.
+- 작업지시서 capability 판단은 lib/permissions/workorderCapabilities.ts에 중앙화했다.
+- workspace API guard 기준은 lib/auth/apiRouteGuards.ts에 둔다.
+- 원단·부자재 기준정보는 lib/materials service/repository/types/constants 계층을 사용한다.
+- 개발 trace는 lib/debug/trace.ts를 사용하고 production에서는 출력하지 않는다.
+```
+
+아직 rename 후보로 남겨둔 항목은 다음과 같다.
+
+```txt
+후속 후보:
+- components/admin/* 공통 UI prefix rename
+- lib/admin/* workspace domain prefix rename
+- app/api/admin/* → app/api/workspace/* alias/이전/삭제
+- 원단·부자재 감사로그 실제 기록 연결
+- 원단·부자재 통계 집계 연결
+- 원단·부자재 파일 첨부/R2 편입 여부 결정
+```
+
+0.16.25 이후에는 새 기능을 붙이기 전에 위 후보 중 현재 작업 목표와 직접 관련 있는 것만 작은 버전 단위로 처리한다.

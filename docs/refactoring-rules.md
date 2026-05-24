@@ -1,6 +1,6 @@
 # Refactoring Rules
 
-기준 버전: 0.16.4
+기준 버전: 0.16.25
 상태: working rules
 목적: WAFLOW / PeaceByPiece 리팩토링 중 지켜야 할 금지·허용 기준을 고정한다.
 
@@ -180,4 +180,34 @@ Description :
 - /admin legacy redirect를 둘지 말지 선택이 필요한 경우. 0.16.24 기준 기본 정책은 redirect를 두지 않고 /workspace 기준으로 정리한다.
 - 권한 정책이 기존 결정과 충돌하는 경우
 - 화면 IA가 기존 결정과 충돌하는 경우
+```
+
+## 12. 0.16.25 이후 작업 순서 규칙
+
+0.16.25 이후에는 구조 안정화 구간에서 생긴 다음 후보를 기능 개발과 섞지 않는다.
+
+```txt
+1. build/type 오류 보정은 다음 기능 작업과 함께 하되, 원인을 명시한다.
+2. API prefix rename은 /api/workspace alias 추가 → client fetch 이동 → /api/admin 제거 순서로 나눈다.
+3. components/admin, lib/admin rename은 import churn이 크므로 기능 변경과 분리한다.
+4. DB schema 변경은 full_reset.sql, smoke test, repository, service를 같은 버전에서 맞춘다.
+5. 원단·부자재 통계/감사로그/R2 편입은 각각 별도 버전으로 처리한다.
+6. 작업지시서 기존 발주 미리보기, 첨부, 메모, 휴지통, purge 흐름은 직접 목표가 아니면 유지한다.
+```
+
+특히 원단·부자재 기능은 현재 다음 단계에 있다.
+
+```txt
+완료:
+- /workspace/materials 기준정보 화면
+- materials DB/API 1차 연결
+- 작업지시서 상세 연결 line
+- line order_status 변경
+- 권한별 UI/API 조건 연결
+
+후속:
+- 실제 감사로그 기록
+- 통계 집계
+- 발주서/PDF snapshot 반영 여부
+- 파일 첨부/R2 편입 여부
 ```
