@@ -4,19 +4,12 @@ import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
   MATERIAL_MOCK_ITEMS,
   MATERIAL_SUMMARY_ITEMS,
-  type MaterialKind,
-  type MaterialMockItem,
 } from "@/features/materials/__fixtures__/materialsMock";
-
-const MATERIAL_KIND_LABELS: Record<MaterialKind, string> = {
-  fabric: "원단",
-  submaterial: "부자재",
-};
-
-const MATERIAL_KIND_DESCRIPTIONS: Record<MaterialKind, string> = {
-  fabric: "원단 폭, 혼용률, 거래처, 단위, 발주 상태를 이후 DB 구조와 연결합니다.",
-  submaterial: "단추, 지퍼, 라벨, 포장재 등 작업지시서 생산 구성에 필요한 항목을 분리합니다.",
-};
+import {
+  MATERIAL_KIND_DESCRIPTIONS,
+  MATERIAL_KIND_LABELS,
+} from "@/lib/materials/constants";
+import type { MaterialKind, MaterialMockItem } from "@/lib/materials/types";
 
 function MaterialSummaryCards() {
   return (

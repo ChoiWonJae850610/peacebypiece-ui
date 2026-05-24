@@ -1,14 +1,14 @@
-Version : 0.16.16
-Summary : 원단·부자재 UI 목업 구조 생성
-Description : /workspace/materials 화면과 features/materials 목업 구조를 추가하고 workspace navigation 및 대시보드 진입 카드를 연결했습니다. 임시 데이터는 features/materials/__fixtures__에만 격리했으며 실제 DB/API 연결, 작업지시서 상태 연결, 발주 상태 연결은 포함하지 않았습니다.
+Version : 0.16.17
+Summary : 원단·부자재 타입 및 DB 설계
+Description : 원단·부자재 기준정보와 작업지시서 연결을 위한 타입, 상수, DB 설계 문서, schema draft SQL을 추가했습니다. 실제 full_reset.sql과 DB schema는 변경하지 않았으며 fixture 타입은 lib/materials/types 기준을 사용하도록 정리했습니다.
 수정 파일 목록 :
-- components/admin/layout/AdminSidebar.tsx
-- lib/admin/adminDashboard.presentation.ts
-- lib/constants/app.ts
-- lib/navigation/workspaceNavigation.ts
-추가 파일 목록 :
-- app/(workspace)/workspace/materials/page.tsx
 - features/materials/MaterialsWorkspacePage.tsx
 - features/materials/__fixtures__/materialsMock.ts
+- lib/constants/app.ts
+추가 파일 목록 :
+- db/schema/materials_schema_draft.sql
+- docs/materials-database-design.md
+- lib/materials/constants.ts
+- lib/materials/types.ts
 삭제 파일 목록 :
-- 없음
+없음

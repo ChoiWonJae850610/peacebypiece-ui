@@ -1,23 +1,4 @@
-export type MaterialKind = "fabric" | "submaterial";
-
-export type MaterialMockItem = {
-  id: string;
-  kind: MaterialKind;
-  name: string;
-  code: string;
-  category: string;
-  supplierName: string;
-  unit: string;
-  stockLabel: string;
-  statusLabel: string;
-  memo: string;
-};
-
-export type MaterialSummaryItem = {
-  label: string;
-  value: string;
-  description: string;
-};
+import type { MaterialKind, MaterialMockItem, MaterialSummaryItem } from "@/lib/materials/types";
 
 export const MATERIAL_SUMMARY_ITEMS: MaterialSummaryItem[] = [
   {
