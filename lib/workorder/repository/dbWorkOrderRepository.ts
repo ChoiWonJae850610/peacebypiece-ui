@@ -89,6 +89,7 @@ import {
   REJECTED_BY_USER_ID_COLUMN_CANDIDATES,
   REJECTED_BY_NAME_COLUMN_CANDIDATES,
 } from "@/lib/workorder/repository/dbWorkOrderSchemaColumns";
+import type { DbColumnInfo, DbSpecSheetRow, DbSpecSheetSchema } from "@/lib/workorder/repository/dbWorkOrderRepositoryTypes";
 export type {
   WorkOrderCompanyScope,
   WorkOrderVisibilityScope,
@@ -128,112 +129,6 @@ function appendAssignedWorkOrderVisibilityPredicate(
   );
 }
 
-
-type DbSpecSheetRow = {
-  id: string;
-  title: string;
-  company_id?: string | null;
-  company_name?: string | null;
-  workflow_state: string | null;
-  last_saved_at: string | null;
-  work_order_kind: WorkOrder["workOrderKind"] | null;
-  reorder_group_id: string | null;
-  reorder_round: number | null;
-  parent_spec_sheet_id: string | null;
-  is_rework: boolean | null;
-  category1_id?: string | null;
-  category2_id?: string | null;
-  category3_id?: string | null;
-  display_title?: string | null;
-  base_title?: string | null;
-  category1?: string | null;
-  category2?: string | null;
-  category3?: string | null;
-  season?: string | null;
-  priority?: string | null;
-  vendor?: string | null;
-  manager?: string | null;
-  manager_id?: string | null;
-  created_by_id?: string | null;
-  created_by_role?: WorkOrder["createdByRole"] | null;
-  due_date?: string | null;
-  quantity?: number | null;
-  inventory_quantity?: number | null;
-  inventory_status?: WorkOrder["inventoryStatus"] | null;
-  memo?: string | null;
-  rejection_reason?: string | null;
-  rejected_at?: string | Date | null;
-  rejected_by_user_id?: string | null;
-  rejected_by_name?: string | null;
-  order_entry_count?: number | null;
-  material_count?: number | null;
-  outsourcing_count?: number | null;
-  attachment_count?: number | null;
-  memo_thread_count?: number | null;
-  is_active?: boolean | null;
-  deleted_at?: string | Date | null;
-  created_at?: string | Date | null;
-  updated_at?: string | Date | null;
-};
-
-type DbColumnInfo = {
-  column_name: string;
-  data_type: string;
-  udt_name: string;
-};
-
-type DbSpecSheetSchema = {
-  companyIdColumn: string | null;
-  companyNameColumn: string | null;
-  workflowStateColumn: string | null;
-  lastSavedAtColumn: string | null;
-  workOrderKindColumn: string | null;
-  reorderGroupIdColumn: string | null;
-  reorderRoundColumn: string | null;
-  parentSpecSheetIdColumn: string | null;
-  isReworkColumn: string | null;
-  createdAtColumn: string | null;
-  updatedAtColumn: string | null;
-  isActiveColumn: string | null;
-  deletedAtColumn: string | null;
-  deleteStatusColumn: string | null;
-  purgeStatusColumn: string | null;
-  purgeRequestedAtColumn: string | null;
-  purgedAtColumn: string | null;
-  purgedByColumn: string | null;
-  purgeRequestedByColumn: string | null;
-  deleteSourceColumn: string | null;
-  deleteScopeColumn: string | null;
-  deleteParentTypeColumn: string | null;
-  deleteParentIdColumn: string | null;
-  deleteBatchIdColumn: string | null;
-  category1IdColumn: string | null;
-  category2IdColumn: string | null;
-  category3IdColumn: string | null;
-  displayTitleColumn: string | null;
-  baseTitleColumn: string | null;
-  category1Column: string | null;
-  category2Column: string | null;
-  category3Column: string | null;
-  seasonColumn: string | null;
-  priorityColumn: string | null;
-  vendorColumn: string | null;
-  managerColumn: string | null;
-  managerIdColumn: string | null;
-  createdByIdColumn: string | null;
-  createdByRoleColumn: string | null;
-  dueDateColumn: string | null;
-  quantityColumn: string | null;
-  inventoryQuantityColumn: string | null;
-  inventoryStatusColumn: string | null;
-  memoColumn: string | null;
-  rejectionReasonColumn: string | null;
-  rejectedAtColumn: string | null;
-  rejectedByUserIdColumn: string | null;
-  rejectedByNameColumn: string | null;
-  hasIdColumn: boolean;
-  hasTitleColumn: boolean;
-};
 
 function toIsoString(value: string | Date | null | undefined): string {
   if (!value) return "";
