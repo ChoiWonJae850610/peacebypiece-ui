@@ -1,10 +1,10 @@
-Version : 0.16.81
-Summary : 멤버관리 단순 권한 컨트롤 모델 분리
-Description : AdminMemberManagementDashboard에 있던 단순 권한 컨트롤 타입, 목록, 권한 코드 정규화/토글 helper를 lib/admin/members/memberSimplePermissionControls.ts로 분리했습니다. 멤버관리 화면 동작, 권한 저장 정책, 작업지시서 repository 흐름은 변경하지 않았습니다.
+Version : 0.16.82
+Summary : 멤버관리 권한 상세 본문 컴포넌트 분리
+Description : 멤버관리 대형 TSX 분리 2차로 권한 상세 모달의 요약/역할/권한 체크 본문을 AdminMemberPermissionDetailBody 컴포넌트로 분리하고, 기존 권한 저장/역할 preset/체크 토글 동작은 유지했습니다.
 수정 파일 목록 :
-- components/admin/members/AdminMemberManagementDashboard.tsx
 - lib/constants/app.ts
+- components/admin/members/AdminMemberManagementDashboard.tsx
 추가 파일 목록 :
-- lib/admin/members/memberSimplePermissionControls.ts
+- components/admin/members/AdminMemberPermissionDetailBody.tsx
 삭제 파일 목록 :
 - 없음
