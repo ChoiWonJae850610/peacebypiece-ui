@@ -209,7 +209,7 @@ export const commonEn = {
       },
       managerAssign: {
         title: "Change manager",
-        description: "Manager can be changed only in draft and review-requested states.",
+        description: "Only company admins can change the manager before completion.",
         currentManagerLabel: "Current manager",
         currentBadge: "Current",
       },

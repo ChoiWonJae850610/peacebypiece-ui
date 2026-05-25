@@ -140,9 +140,8 @@ export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin =
   return !canEditBeforeOrder(state, isAdmin);
 }
 
-export function canEditManagerInWorkflow(state: WorkflowStateValue, isReviewRequestLocked?: boolean) {
-  const effectiveLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(state, true);
-  return !effectiveLocked || isWorkflowStateAtLeast(state, WORKFLOW_STATE.completed);
+export function canEditManagerInWorkflow(state: WorkflowStateValue, _isReviewRequestLocked?: boolean) {
+  return isWorkflowStateBefore(state, WORKFLOW_STATE.completed);
 }
 
 export function canRequestFactoryOrderInWorkflow(state: WorkflowStateValue) {
@@ -215,7 +214,7 @@ export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageV
   rejected: "text-[var(--pbp-workorder-status-rejected-text)]",
 };
 
-export const MANAGER_ASSIGNABLE_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested] as const;
+export const MANAGER_ASSIGNABLE_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested, WORKFLOW_STATE.reviewCompleted, WORKFLOW_STATE.inspection] as const;
 export const INVENTORY_EDITABLE_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
 export const REORDERABLE_WORKFLOW_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
 export const DELETABLE_WORKFLOW_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested] as const;
