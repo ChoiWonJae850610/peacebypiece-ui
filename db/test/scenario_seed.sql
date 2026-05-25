@@ -1,8 +1,8 @@
 -- WAFL / PeaceByPiece test scenario seed
--- Version: 0.16.43
+-- Version: 0.16.45
 -- Purpose:
 --   Create deterministic test companies, users, members, permissions, categories,
---   partners, materials, and workorders for manual DB verification.
+--   partners, partner capabilities, materials, and workorders for manual DB verification.
 --
 -- Usage:
 --   1) Apply db/schema/full_reset.sql first when using a fresh local DB.
@@ -305,6 +305,23 @@ VALUES
   ('test-a-partner-factory', 'test-company-a', 'TEST A 고객사', 'TEST A 봉제공장', '공장담당자', '010-0000-0001', 'factory-a@example.invalid', true),
   ('test-a-partner-material', 'test-company-a', 'TEST A 고객사', 'TEST A 원단처', '원단담당자', '010-0000-0002', 'material-a@example.invalid', true),
   ('test-b-partner-factory', 'test-company-b', 'TEST B 고객사', 'TEST B 봉제공장', '공장담당자', '010-0000-0003', 'factory-b@example.invalid', true);
+
+INSERT INTO partner_items (
+  id,
+  company_id,
+  company_name,
+  partner_id,
+  item_type,
+  item_name,
+  unit,
+  unit_cost,
+  memo,
+  is_active
+)
+VALUES
+  ('test-a-partner-item-factory-main', 'test-company-a', 'TEST A 고객사', 'test-a-partner-factory', 'factory', '봉제 공임', 'ea', 150000, '발주요청 공장 선택 검증용', true),
+  ('test-a-partner-item-material-main', 'test-company-a', 'TEST A 고객사', 'test-a-partner-material', 'fabric', '원단 공급', 'yd', 4500, '원단 거래처 선택 검증용', true),
+  ('test-b-partner-item-factory-main', 'test-company-b', 'TEST B 고객사', 'test-b-partner-factory', 'factory', '봉제 공임', 'ea', 80000, '회사 B 공장 범위 검증용', true);
 
 INSERT INTO materials (
   id,

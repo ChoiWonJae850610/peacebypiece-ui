@@ -1,5 +1,5 @@
 -- WAFL / PeaceByPiece workflow state verification
--- Version: 0.16.37
+-- Version: 0.16.45
 -- Run after db/test/scenario_seed.sql.
 
 -- Fixture coverage by workflow state.
@@ -62,3 +62,35 @@ WHERE id = 'test-a-wo-inspection'
   AND company_id = 'test-company-a'
   AND status = 'inspection'
   AND manager_id = 'test-a-inspector';
+
+
+-- Factory partner linkage required by order-request confirmation.
+SELECT
+  'order_request_factory_partner_linked' AS check_name,
+  count(*)::integer AS expected_one,
+  CASE WHEN count(*) = 1 THEN 'PASS' ELSE 'FAIL' END AS result
+FROM orders o
+JOIN partners p
+  ON p.id = o.factory_partner_id
+ AND p.company_id = o.company_id
+ AND p.is_active = true
+WHERE o.id = 'test-a-order-review-completed'
+  AND o.company_id = 'test-company-a'
+  AND o.spec_sheet_id = 'test-a-wo-review-completed'
+  AND o.factory_name = p.name;
+
+-- Factory partner must have a factory capability item so /api/partners/factories can return it.
+SELECT
+  'active_factory_partner_item_available' AS check_name,
+  count(*)::integer AS expected_one,
+  CASE WHEN count(*) = 1 THEN 'PASS' ELSE 'FAIL' END AS result
+FROM partners p
+JOIN partner_items pi
+  ON pi.partner_id = p.id
+ AND pi.company_id = p.company_id
+ AND pi.item_type = 'factory'
+ AND pi.is_active = true
+WHERE p.id = 'test-a-partner-factory'
+  AND p.company_id = 'test-company-a'
+  AND p.name = 'TEST A 봉제공장'
+  AND p.is_active = true;
