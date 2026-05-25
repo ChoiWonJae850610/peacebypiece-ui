@@ -41,6 +41,10 @@ import {
   updateDbWorkOrderRecord,
 } from "@/lib/workorder/repository/dbWorkOrderMutationFlows";
 import {
+  saveDbWorkOrderRecord,
+  saveDbWorkOrderRecords,
+} from "@/lib/workorder/repository/dbWorkOrderSaveFlows";
+import {
   mergeWorkOrderWithExistingProductionDetails,
   syncPatchedWorkOrderProductionComposition,
 } from "@/lib/workorder/repository/dbWorkOrderProductionSync";
@@ -132,13 +136,6 @@ export async function createDbWorkOrder(
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
   return createDbWorkOrderRecord(workOrder, scope);
-}
-
-function isNotFoundWorkOrderError(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    /spec_sheets row not found for id:/i.test(error.message)
-  );
 }
 
 export async function updateDbWorkOrder(
@@ -263,26 +260,21 @@ export async function saveDbWorkOrder(
   workOrder: WorkOrder,
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
-  try {
-    return await updateDbWorkOrder(workOrder, scope);
-  } catch (error) {
-    if (!isNotFoundWorkOrderError(error)) {
-      throw error;
-    }
-
-    return createDbWorkOrder(workOrder, scope);
-  }
+  return saveDbWorkOrderRecord({
+    workOrder,
+    scope,
+    createWorkOrder: createDbWorkOrder,
+    updateWorkOrder: updateDbWorkOrder,
+  });
 }
 
 export async function saveDbWorkOrders(
   workOrders: WorkOrder[],
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder[]> {
-  const savedWorkOrders: WorkOrder[] = [];
-
-  for (const workOrder of workOrders) {
-    savedWorkOrders.push(await saveDbWorkOrder(workOrder, scope));
-  }
-
-  return savedWorkOrders;
+  return saveDbWorkOrderRecords({
+    workOrders,
+    scope,
+    saveWorkOrder: saveDbWorkOrder,
+  });
 }
