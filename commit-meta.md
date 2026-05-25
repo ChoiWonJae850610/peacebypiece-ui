@@ -1,10 +1,10 @@
-Version : 0.16.82
-Summary : 멤버관리 권한 상세 본문 컴포넌트 분리
-Description : 멤버관리 대형 TSX 분리 2차로 권한 상세 모달의 요약/역할/권한 체크 본문을 AdminMemberPermissionDetailBody 컴포넌트로 분리하고, 기존 권한 저장/역할 preset/체크 토글 동작은 유지했습니다.
+Version : 0.16.83
+Summary : 멤버관리 멤버 목록 컬럼 빌더 분리
+Description : 멤버관리 대형 TSX의 멤버 목록 테이블 컬럼과 가입 승인 액션 렌더링을 별도 컴포넌트/빌더 파일로 분리했습니다. 권한 저장, 승인/거절 API, 역할 preset 정책, 작업지시서 권한 정책은 변경하지 않았습니다.
 수정 파일 목록 :
-- lib/constants/app.ts
 - components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/constants/app.ts
 추가 파일 목록 :
-- components/admin/members/AdminMemberPermissionDetailBody.tsx
+- components/admin/members/AdminMemberDirectoryTableColumns.tsx
 삭제 파일 목록 :
 - 없음
