@@ -29,7 +29,6 @@ import type { DbSpecSheetRow, DbSpecSheetSchema } from "@/lib/workorder/reposito
 import {
   mapSpecSheetRowToWorkOrder,
   mapSpecSheetRowToWorkOrderSummary,
-  normalizeDbWorkflowState,
   normalizeWorkOrderForDb,
 } from "@/lib/workorder/repository/dbWorkOrderRowMappers";
 import {
@@ -42,6 +41,7 @@ import {
   buildSpecSheetSummarySelectQuery,
 } from "@/lib/workorder/repository/dbWorkOrderSelectSql";
 import { buildSpecSheetReturningColumns } from "@/lib/workorder/repository/dbWorkOrderReturningColumns";
+import { buildWorkOrderStatePatchAssignments } from "@/lib/workorder/repository/dbWorkOrderStatePatchAssignments";
 import {
   appendNormalizedWorkOrderInsertColumns,
   appendNormalizedWorkOrderUpdateAssignments,
@@ -482,65 +482,10 @@ export async function updateDbWorkOrderStatePatch(
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
-  const normalizedWorkflowState = normalizeDbWorkflowState(patch.workflowState);
-  const lastSavedAt = patch.lastSavedAt || new Date().toISOString();
-  const assignments: string[] = [];
-  const values: unknown[] = [patch.id];
-
-  if (schema.workflowStateColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkflowState);
-  }
-
-  if (schema.lastSavedAtColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`,
-    );
-    values.push(lastSavedAt);
-  }
-
-  if (
-    schema.inventoryQuantityColumn &&
-    Object.prototype.hasOwnProperty.call(patch, "inventoryQuantity")
-  ) {
-    assignments.push(
-      `${quoteIdentifier(schema.inventoryQuantityColumn)} = $${values.length + 1}`,
-    );
-    values.push(patch.inventoryQuantity ?? 0);
-  }
-
-  if (
-    schema.inventoryStatusColumn &&
-    Object.prototype.hasOwnProperty.call(patch, "inventoryStatus")
-  ) {
-    assignments.push(
-      `${quoteIdentifier(schema.inventoryStatusColumn)} = $${values.length + 1}`,
-    );
-    values.push(patch.inventoryStatus ?? "unchecked");
-  }
-
-
-  if (schema.rejectionReasonColumn && Object.prototype.hasOwnProperty.call(patch, "rejectionReason")) {
-    assignments.push(`${quoteIdentifier(schema.rejectionReasonColumn)} = $${values.length + 1}`);
-    values.push(patch.rejectionReason ?? null);
-  }
-
-  if (schema.rejectedAtColumn && Object.prototype.hasOwnProperty.call(patch, "rejectedAt")) {
-    assignments.push(`${quoteIdentifier(schema.rejectedAtColumn)} = $${values.length + 1}`);
-    values.push(patch.rejectedAt ?? null);
-  }
-
-  if (schema.rejectedByUserIdColumn && Object.prototype.hasOwnProperty.call(patch, "rejectedByUserId")) {
-    assignments.push(`${quoteIdentifier(schema.rejectedByUserIdColumn)} = $${values.length + 1}`);
-    values.push(patch.rejectedByUserId ?? null);
-  }
-
-  if (schema.rejectedByNameColumn && Object.prototype.hasOwnProperty.call(patch, "rejectedByName")) {
-    assignments.push(`${quoteIdentifier(schema.rejectedByNameColumn)} = $${values.length + 1}`);
-    values.push(patch.rejectedByName ?? null);
-  }
+  const { assignments, values } = buildWorkOrderStatePatchAssignments(
+    schema,
+    patch,
+  );
 
   if (assignments.length === 0) {
     const existing = await findDbWorkOrderById(patch.id, scope);

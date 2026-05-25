@@ -1,12 +1,10 @@
-Version : 0.16.72
-Summary : 앱 상수 파일 비어짐으로 인한 빌드 및 런타임 오류 보정
-Description : lib/constants/app.ts가 빈 파일로 적용되어 APP_VERSION, 저장소 키, repository mode 상수 export가 모두 사라진 문제를 정상 상수 파일로 복구했습니다. 이번 패치는 빌드 및 런타임 오류 보정만 포함하며 기능 동작 정책은 변경하지 않습니다.
-
+Version : 0.16.73
+Summary : 작업지시서 repository state patch assignment 분리
+Description : 작업지시서 상태 패치 update assignment 생성 로직을 별도 helper로 분리하고 APP_VERSION을 0.16.73으로 갱신했습니다. DB query 정책, 권한/역할 정책, workflow 상태 정책, 버튼 표시 조건, DB schema는 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-
+- lib/workorder/repository/dbWorkOrderRepository.ts
 추가 파일 목록 :
-- 없음
-
+- lib/workorder/repository/dbWorkOrderStatePatchAssignments.ts
 삭제 파일 목록 :
 - 없음
