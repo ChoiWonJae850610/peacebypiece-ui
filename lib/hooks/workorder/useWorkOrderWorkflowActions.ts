@@ -33,7 +33,7 @@ import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { isImmediateDbField } from "@/lib/workorder/storagePolicy";
 import { getWorkOrderImmediatePatchServiceCode } from "@/lib/workorder/serviceCodeForWorkOrderPatch";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
-import { canReinspectInWorkflow, isWorkflowState } from "@/lib/constants/workorderStates";
+import { canReinspectInWorkflow, isWorkflowState, WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import { WORKORDER_SERVICE_CODE, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import {
@@ -428,7 +428,7 @@ export function useWorkOrderWorkflowActions({
       const effectiveWorkflowState = reviewGateResult.effectiveWorkflowState;
       const gatedWorkflowDraft = reviewGateResult.workOrder;
 
-      if (isWorkflowState(action.nextState, "inspection") && canReinspectInWorkflow(effectiveWorkflowState)) {
+      if (isWorkflowState(action.nextState, WORKFLOW_STATE.inspection) && canReinspectInWorkflow(effectiveWorkflowState)) {
         await applyReinspectionAction(gatedWorkflowDraft, action);
         return;
       }

@@ -13,7 +13,7 @@ import { useWorkOrderHistory } from "@/lib/hooks/workorder/useWorkOrderHistory";
 import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
 import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderActionRuntime";
 import type { UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
-import { canEditManagerInWorkflow, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
+import { canEditManagerInWorkflow, DEFAULT_WORKFLOW_STATE, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { useWorkOrderSessionProfile } from "@/lib/hooks/workorder/useWorkOrderSessionProfile";
 import { ensureWorkOrderSessionProfile, mergeCurrentUserWithSessionProfile } from "@/lib/workorder/sessionUserProfile";
@@ -170,8 +170,8 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   );
 
   const handleOpenManagerAssignModal = useCallback(() => {
-    const reviewLocked = derivedState.isReviewRequestLocked ?? isWorkflowStateReviewLocked(derivedState.currentWorkflowState ?? "draft", true);
-    const canEditManager = canEditManagerInWorkflow(derivedState.currentWorkflowState ?? "draft", reviewLocked);
+    const reviewLocked = derivedState.isReviewRequestLocked ?? isWorkflowStateReviewLocked(derivedState.currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, true);
+    const canEditManager = canEditManagerInWorkflow(derivedState.currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, reviewLocked);
     if (!derivedState.canChangeManager || !canEditManager) return;
 
     void loadLatestWorkspaceUserProfiles()

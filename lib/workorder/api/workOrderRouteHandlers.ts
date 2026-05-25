@@ -17,6 +17,7 @@ import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
 import type { MemberPermissionCode } from "@/lib/permissions";
+import { getSessionDefaultWorkOrderRole, isWorkOrderActorRole } from "@/lib/constants/roles";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import {
   createWorkspaceCompanyRequiredResponse,
@@ -162,10 +163,7 @@ async function applySessionActorDefaults(
 ): Promise<WorkOrder> {
   if (!sessionUser) return workOrder;
 
-  const sessionRole =
-    sessionUser.role === "company_admin" || sessionUser.role === "system_admin"
-      ? "admin"
-      : "designer";
+  const sessionRole = getSessionDefaultWorkOrderRole(sessionUser);
   const profile = sessionUser.companyId ? await getPersonalProfile(sessionUser) : null;
   const sessionDisplayName = profile?.name?.trim() || sessionUser.name;
   const managerId = workOrder.managerId || sessionUser.userId;
@@ -193,11 +191,7 @@ function readAuditActor(value: unknown): WorkOrderAuditActorContext | null {
   const name = typeof source.name === "string" ? source.name.trim() : "";
   const role = source.role;
 
-  if (
-    !id ||
-    !name ||
-    (role !== "admin" && role !== "designer" && role !== "inspector")
-  ) {
+  if (!id || !name || !isWorkOrderActorRole(role)) {
     return null;
   }
 

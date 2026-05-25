@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
-import { canEditManagerInWorkflow, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
+import { canEditManagerInWorkflow, DEFAULT_WORKFLOW_STATE, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistUsersWithPermissions, persistWorkOrderWithHistory, replaceWorkOrderById } from "./workorderRepositoryMutations";
@@ -43,8 +43,8 @@ export function useWorkOrderAdminActions({
 
   const handleOpenManagerAssignModal = useCallback(
     ({ canChangeManager, isReviewRequestLocked, currentWorkflowState }: Pick<ChangeManagerInput, "canChangeManager" | "isReviewRequestLocked" | "currentWorkflowState">) => {
-      const reviewLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(currentWorkflowState ?? "draft", true);
-      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", reviewLocked);
+      const reviewLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, true);
+      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, reviewLocked);
       if (!canChangeManager || !canEditManager) return;
       setManagerAssignModalOpen(true);
     },
@@ -57,8 +57,8 @@ export function useWorkOrderAdminActions({
 
   const handleChangeManager = useCallback(
     ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked, currentWorkflowState }: ChangeManagerInput) => {
-      const reviewLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(currentWorkflowState ?? "draft", true);
-      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", reviewLocked);
+      const reviewLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, true);
+      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, reviewLocked);
       if (!canChangeManager || !canEditManager) return;
       const nextManager = users.find((user) => user.id === managerId);
       if (!nextManager) return;

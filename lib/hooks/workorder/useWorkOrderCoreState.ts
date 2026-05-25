@@ -11,7 +11,8 @@ import {
   type WorkOrderListStatusFilter,
 } from "@/lib/workorder/list/workOrderListControls";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
-import { buildUserRoleState } from "@/lib/constants/roles";
+import { buildUserRoleState, ROLE } from "@/lib/constants/roles";
+import { DEFAULT_WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 import { hasWorkOrderDraftChanges } from "@/lib/workorder/draftState";
@@ -38,7 +39,7 @@ const createFallbackWorkOrder = (): WorkOrder => ({
   manager: "",
   managerId: null,
   createdById: "",
-  createdByRole: "admin",
+  createdByRole: ROLE.admin,
   dueDate: "",
   quantity: 0,
   laborCost: 0,
@@ -51,7 +52,7 @@ const createFallbackWorkOrder = (): WorkOrder => ({
   outsourcing: [],
   attachments: [],
   memoThreads: [],
-  workflowState: "draft",
+  workflowState: DEFAULT_WORKFLOW_STATE,
   lastSavedAt: "",
   factoryOrderRequest: null,
 });

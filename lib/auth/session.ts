@@ -2,6 +2,8 @@ import "server-only";
 
 import { createHmac, timingSafeEqual } from "crypto";
 
+import { isWaflSessionRole } from "@/lib/constants/sessionRoles";
+
 export const WAFL_AUTH_SESSION_COOKIE = "wafl_auth_session";
 
 export type WaflSessionRole = "company_admin" | "member" | "system_admin";
@@ -65,7 +67,7 @@ export function verifyWaflSessionCookieValue(value: string | null | undefined): 
   try {
     const parsed = JSON.parse(fromBase64Url(encodedPayload)) as Partial<WaflSessionPayload>;
     if (!parsed.userId || !parsed.email || !parsed.name || !parsed.role || !parsed.issuedAt) return null;
-    if (parsed.role !== "company_admin" && parsed.role !== "member" && parsed.role !== "system_admin") return null;
+    if (!isWaflSessionRole(parsed.role)) return null;
 
     return {
       userId: parsed.userId,

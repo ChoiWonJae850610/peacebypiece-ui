@@ -3,6 +3,8 @@ import "server-only";
 import { isDatabaseConfigured, queryDb, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
 import type { GoogleUserProfile } from "./googleOAuth";
 import type { WaflSessionPayload, WaflSessionRole } from "./session";
+import { SESSION_ROLE } from "@/lib/constants/sessionRoles";
+import { MEMBER_ROLE_TEMPLATE_CODE } from "@/lib/permissions/memberPermissionMatrix";
 
 type LoginUserRow = {
   id: string;
@@ -172,14 +174,14 @@ async function findPendingJoinRequest(email: string, googleSub: string): Promise
 }
 
 function resolveCompanyRole(user: LoginUserRow, membership: CompanyMembershipRow): WaflSessionRole {
-  if (user.role === "admin" || membership.role_template_code === "company_admin") {
-    return "company_admin";
+  if (user.role === "admin" || membership.role_template_code === MEMBER_ROLE_TEMPLATE_CODE.companyAdmin) {
+    return SESSION_ROLE.companyAdmin;
   }
-  return "member";
+  return SESSION_ROLE.member;
 }
 
 function resolveCompanyRedirect(role: WaflSessionRole): string {
-  if (role === "company_admin") return "/workspace";
+  if (role === SESSION_ROLE.companyAdmin) return "/workspace";
   return "/workspace";
 }
 
@@ -198,7 +200,7 @@ export async function completeGoogleLogin(profile: GoogleUserProfile): Promise<W
         companyId: null,
         companyMemberId: null,
         companyName: null,
-        role: "system_admin",
+        role: SESSION_ROLE.systemAdmin,
         email: normalizeEmail(systemUser.email),
         name: systemUser.name,
         issuedAt: new Date().toISOString(),

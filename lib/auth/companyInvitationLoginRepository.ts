@@ -7,8 +7,10 @@ import type { GoogleUserProfile } from "./googleOAuth";
 import type { WaflSessionPayload } from "./session";
 import { invitationRepository } from "@/lib/invitations/invitationRepository";
 import { getMemberRoleTemplatePermissions } from "@/lib/permissions";
+import { SESSION_ROLE } from "@/lib/constants/sessionRoles";
+import { MEMBER_ROLE_TEMPLATE_CODE } from "@/lib/permissions/memberPermissionMatrix";
 
-const COMPANY_ADMIN_ROLE_TEMPLATE_CODE = "company_admin" as const;
+const COMPANY_ADMIN_ROLE_TEMPLATE_CODE = MEMBER_ROLE_TEMPLATE_CODE.companyAdmin;
 
 type CompanyAdminInvitationLoginResult = {
   redirectPath: string;
@@ -270,7 +272,7 @@ export async function completeCompanyAdminInvitationLogin(
       companyId: null,
       companyMemberId: null,
       companyName: null,
-      role: "company_admin",
+      role: SESSION_ROLE.companyAdmin,
       email: normalizeEmail(profile.email),
       name: profile.name || normalizeEmail(profile.email),
       issuedAt: new Date().toISOString(),
@@ -337,7 +339,7 @@ export async function createCompanyAdminAccountFromInvitationSession(
       companyId: company.id,
       companyMemberId: member.id,
       companyName: company.name,
-      role: "company_admin",
+      role: SESSION_ROLE.companyAdmin,
       email: normalizeEmail(user.email ?? profile.email),
       name: user.name || profile.name,
       issuedAt: new Date().toISOString(),

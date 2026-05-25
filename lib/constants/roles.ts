@@ -87,6 +87,19 @@ export function isRoleType(value: unknown): value is RoleType {
   return value === ROLE.designer || value === ROLE.admin || value === ROLE.inspector;
 }
 
+
+export function isWorkOrderActorRole(value: unknown): value is RoleType {
+  return isRoleType(value);
+}
+
+export function toWorkOrderActorRole(value: unknown, fallback: RoleType = ROLE.designer): RoleType {
+  return isRoleType(value) ? value : fallback;
+}
+
+export function getSessionDefaultWorkOrderRole(role: { role: string }): RoleType {
+  return role.role === "company_admin" || role.role === "system_admin" ? ROLE.admin : ROLE.designer;
+}
+
 export function toRoleType(value: unknown): RoleType | null {
   if (isRoleType(value)) return value;
   if (typeof value === "string" && value in LEGACY_ROLE_MAP) return LEGACY_ROLE_MAP[value as keyof typeof LEGACY_ROLE_MAP];

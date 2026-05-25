@@ -12,12 +12,16 @@ export type MemberPermissionGroupKey =
   | "personal"
   | "system";
 
+export const MEMBER_ROLE_TEMPLATE_CODE = {
+  companyAdmin: "company_admin",
+  designer: "designer",
+  inspector: "inspector",
+  inventoryManager: "inventory_manager",
+  viewer: "viewer",
+} as const;
+
 export type MemberPermissionRoleTemplateCode =
-  | "company_admin"
-  | "designer"
-  | "inspector"
-  | "inventory_manager"
-  | "viewer";
+  (typeof MEMBER_ROLE_TEMPLATE_CODE)[keyof typeof MEMBER_ROLE_TEMPLATE_CODE];
 
 export type MemberPermissionCode =
   | "workorder.read"
@@ -125,35 +129,35 @@ export const MEMBER_PERMISSION_CATALOG: readonly MemberPermissionCatalogItem[] =
 
 export const MEMBER_ROLE_TEMPLATE_POLICIES: readonly MemberRoleTemplatePolicy[] = [
   {
-    code: "company_admin",
+    code: MEMBER_ROLE_TEMPLATE_CODE.companyAdmin,
     labelKey: "memberManagement.roles.companyAdmin.label",
     descriptionKey: "memberManagement.roles.companyAdmin.description",
     sortOrder: 10,
     permissionCodes: MEMBER_PERMISSION_CATALOG.filter((item) => !item.systemOnly).map((item) => item.code),
   },
   {
-    code: "designer",
+    code: MEMBER_ROLE_TEMPLATE_CODE.designer,
     labelKey: "memberManagement.roles.designer.label",
     descriptionKey: "memberManagement.roles.designer.description",
     sortOrder: 20,
     permissionCodes: ["workorder.read", "workorder.create", "workorder.update", "workorder.delete", "workorder.status.review", "partner.read", "standards.read", "storage.read", "stats.read", "personal_settings.manage"],
   },
   {
-    code: "inspector",
+    code: MEMBER_ROLE_TEMPLATE_CODE.inspector,
     labelKey: "memberManagement.roles.inspector.label",
     descriptionKey: "memberManagement.roles.inspector.description",
     sortOrder: 30,
     permissionCodes: ["workorder.read", "workorder.status.inspect", "partner.read", "standards.read", "storage.read", "stats.read", "personal_settings.manage"],
   },
   {
-    code: "inventory_manager",
+    code: MEMBER_ROLE_TEMPLATE_CODE.inventoryManager,
     labelKey: "memberManagement.roles.inventoryManager.label",
     descriptionKey: "memberManagement.roles.inventoryManager.description",
     sortOrder: 40,
     permissionCodes: ["workorder.read", "material.order.request", "material.order.place", "partner.read", "partner.create", "partner.update", "partner.delete", "partner.manage", "standards.read", "standards.create", "standards.update", "standards.delete", "standards.manage", "storage.read", "stats.read", "personal_settings.manage"],
   },
   {
-    code: "viewer",
+    code: MEMBER_ROLE_TEMPLATE_CODE.viewer,
     labelKey: "memberManagement.roles.viewer.label",
     descriptionKey: "memberManagement.roles.viewer.description",
     sortOrder: 50,
@@ -163,9 +167,9 @@ export const MEMBER_ROLE_TEMPLATE_POLICIES: readonly MemberRoleTemplatePolicy[] 
 
 
 export const MEMBER_ASSIGNABLE_ROLE_TEMPLATE_CODES = [
-  "designer",
-  "inspector",
-  "inventory_manager",
+  MEMBER_ROLE_TEMPLATE_CODE.designer,
+  MEMBER_ROLE_TEMPLATE_CODE.inspector,
+  MEMBER_ROLE_TEMPLATE_CODE.inventoryManager,
 ] as const satisfies readonly MemberPermissionRoleTemplateCode[];
 
 export type AssignableMemberPermissionRoleTemplateCode =
@@ -180,7 +184,7 @@ export function isAssignableMemberRoleTemplateCode(
 export function toAssignableMemberRoleTemplateCode(
   value: string | null | undefined,
 ): AssignableMemberPermissionRoleTemplateCode {
-  return isAssignableMemberRoleTemplateCode(value) ? value : "designer";
+  return isAssignableMemberRoleTemplateCode(value) ? value : MEMBER_ROLE_TEMPLATE_CODE.designer;
 }
 
 export function getAssignableMemberRoleTemplatePolicies(): readonly MemberRoleTemplatePolicy[] {

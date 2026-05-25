@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { getCompanyAccessState, resolveCompanyAccessBlockReason, type CompanyAccessBlockReason } from "@/lib/billing/companyAccessRepository";
 import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
+import { isCompanyAdminSessionRole, isSystemAdminSessionRole, isWorkspaceSessionRole, SESSION_ROLE } from "@/lib/constants/sessionRoles";
 import { hasWorkspaceApiPermission } from "@/lib/auth/apiRouteGuards";
 import type { MemberPermissionCode } from "@/lib/permissions";
 
@@ -15,7 +16,7 @@ type CompanyAccessGuardOptions = {
 };
 
 function getRoleHomePath(role: WaflSessionRole): string {
-  if (role === "system_admin") return "/system";
+  if (isSystemAdminSessionRole(role)) return "/system";
   return "/workspace";
 }
 
@@ -29,15 +30,15 @@ function getCompanyAccessBlockedPath(area: ProtectedArea, reason: CompanyAccessB
 }
 
 function canAccessProtectedArea(role: WaflSessionRole, area: ProtectedArea): boolean {
-  if (area === "system") return role === "system_admin";
-  if (area === "workspace" || area === "worker") return role === "member" || role === "company_admin";
-  if (area === "me") return role === "member" || role === "company_admin" || role === "system_admin";
+  if (area === "system") return isSystemAdminSessionRole(role);
+  if (area === "workspace" || area === "worker") return isWorkspaceSessionRole(role);
+  if (area === "me") return isWorkspaceSessionRole(role) || isSystemAdminSessionRole(role);
   return false;
 }
 
 function shouldCheckCompanyAccess(area: ProtectedArea, role: WaflSessionRole): boolean {
-  if (area === "worker") return role === "member" || role === "company_admin";
-  return area === "workspace" && role === "company_admin";
+  if (area === "worker") return isWorkspaceSessionRole(role);
+  return area === "workspace" && isCompanyAdminSessionRole(role);
 }
 
 export async function requireWaflSessionForArea(
@@ -78,7 +79,7 @@ export async function requireWorkspacePagePermission(
 ): Promise<WaflSessionPayload> {
   const session = await requireWaflSessionForArea("workspace", options);
 
-  if (session.role === "company_admin") return session;
+  if (session.role === SESSION_ROLE.companyAdmin) return session;
 
   const hasPermission = await hasWorkspaceApiPermission(session, permissionCode);
   if (!hasPermission) {

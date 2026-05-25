@@ -6,6 +6,7 @@ import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
 import { createCompanyApiAccessBlockedResponse, type CompanyApiAccessGuardOptions } from "@/lib/billing/companyApiAccessGuard";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import type { WaflSessionPayload } from "@/lib/auth/session";
+import { isCompanyAdminSessionRole, isMemberSessionRole, isSystemAdminSessionRole, isWorkspaceSessionRole } from "@/lib/constants/sessionRoles";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
 
 export type WorkspaceApiVisibilityScope =
@@ -109,7 +110,7 @@ function buildWorkspaceApiScope(session: WaflSessionPayload): WorkspaceApiCompan
     companyId,
     companyName: session.companyName,
     visibility:
-      session.role === "member"
+      isMemberSessionRole(session.role)
         ? {
             mode: "assigned",
             userId: session.userId,
@@ -123,8 +124,8 @@ export async function hasWorkspaceApiPermission(
   session: WaflSessionPayload,
   permissionCode: MemberPermissionCode,
 ): Promise<boolean> {
-  if (session.role === "company_admin") return true;
-  if (session.role !== "member" || !session.companyId || !session.companyMemberId) return false;
+  if (isCompanyAdminSessionRole(session.role)) return true;
+  if (!isMemberSessionRole(session.role) || !session.companyId || !session.companyMemberId) return false;
 
   const { members } = await adminMemberRepository.listCompanyMembers({
     companyId: session.companyId,
@@ -148,7 +149,7 @@ export async function requireWorkspaceApiGuard(
     return { ok: false, response: createApiSessionRequiredResponse("workspace") };
   }
 
-  if (session.role !== "company_admin" && session.role !== "member") {
+  if (!isWorkspaceSessionRole(session.role)) {
     return { ok: false, response: createWorkspaceCompanyRequiredResponse() };
   }
 
@@ -187,7 +188,7 @@ export async function requireSystemApiGuard(): Promise<SystemApiGuardResult> {
     return { ok: false, response: createApiSessionRequiredResponse("system") };
   }
 
-  if (session.role !== "system_admin") {
+  if (!isSystemAdminSessionRole(session.role)) {
     return { ok: false, response: createSystemAdminRequiredResponse() };
   }
 

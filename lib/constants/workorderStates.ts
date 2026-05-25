@@ -16,6 +16,8 @@ export const DISPLAY_STAGE = {
   completed: "completed",
 } as const;
 
+export const DEFAULT_WORKFLOW_STATE = WORKFLOW_STATE.draft;
+
 export const WORKFLOW_STATES = [
   WORKFLOW_STATE.draft,
   WORKFLOW_STATE.reviewRequested,
@@ -140,8 +142,12 @@ export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin =
   return !canEditBeforeOrder(state, isAdmin);
 }
 
-export function canEditManagerInWorkflow(state: WorkflowStateValue, _isReviewRequestLocked?: boolean) {
+export function canChangeWorkOrderAssigneeInWorkflow(state: WorkflowStateValue) {
   return isWorkflowStateBefore(state, WORKFLOW_STATE.completed);
+}
+
+export function canEditManagerInWorkflow(state: WorkflowStateValue, _isReviewRequestLocked?: boolean) {
+  return canChangeWorkOrderAssigneeInWorkflow(state);
 }
 
 export function canRequestFactoryOrderInWorkflow(state: WorkflowStateValue) {
