@@ -1044,7 +1044,7 @@ export async function updateDbWorkOrder(
       SET
         ${assignments.join(",\n        ")}
       WHERE id = $1
-        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(company.companyId)}` : ""}
+        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteLiteral(company.companyId)}` : ""}
       RETURNING
         ${returningColumns.join(",\n        ")}
     `,
@@ -1226,7 +1226,7 @@ export async function updateDbWorkOrderStatePatch(
       SET
         ${assignments.join(",\n        ")}
       WHERE id = $1
-        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(company.companyId)}` : ""}
+        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteLiteral(company.companyId)}` : ""}
       RETURNING
         ${returningColumns.join(",\n        ")}
     `,
@@ -1473,7 +1473,7 @@ export async function deleteDbWorkOrder(
         SET
           ${assignments.join(",\n          ")}
         WHERE id = $1
-          ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(resolveWorkOrderCompanyId(scope))}` : ""}
+          ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteLiteral(resolveWorkOrderCompanyId(scope))}` : ""}
         RETURNING id
       `,
       [workOrderId],
@@ -1492,7 +1492,7 @@ export async function deleteDbWorkOrder(
     `
       DELETE FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
       WHERE id = $1
-        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteSqlLiteral(resolveWorkOrderCompanyId(scope))}` : ""}
+        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteLiteral(resolveWorkOrderCompanyId(scope))}` : ""}
       RETURNING id
     `,
     [workOrderId],
