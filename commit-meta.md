@@ -1,12 +1,10 @@
-Version : 0.16.79
-Summary : 작업지시서 repository facade import 경계 정리
-Description : dbWorkOrderRepository.ts가 read/write repository를 통해 외부 공개 facade 역할만 수행하도록 정리하고, dbWorkOrderReadRepository와 dbWorkOrderWriteRepository가 facade 파일을 다시 참조하지 않도록 flow 파일을 직접 바라보게 수정했습니다. 순환 import 위험을 줄이고 repository 계층의 read/write/facade 경계를 명확히 했습니다.
+Version : 0.16.80
+Summary : 작업지시서 repository trace helper 분리
+Description : 작업지시서 repository 공개 계층의 query trace helper를 별도 파일로 분리하여 workOrderRepository.ts의 책임을 축소하고, dbWorkOrderRepository 계열 façade 정리 이후의 public repository 경계를 한 번 더 정리하였습니다. 기능 동작, DB schema, 권한, workflow 정책은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
-- lib/workorder/repository/dbWorkOrderReadRepository.ts
-- lib/workorder/repository/dbWorkOrderWriteRepository.ts
+- lib/workorder/repository/workOrderRepository.ts
 추가 파일 목록 :
-- 없음
+- lib/workorder/repository/workOrderRepositoryTrace.ts
 삭제 파일 목록 :
 - 없음
