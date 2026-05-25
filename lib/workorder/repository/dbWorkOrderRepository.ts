@@ -36,6 +36,7 @@ import {
   type WorkOrderCompanyScope,
   type WorkOrderVisibilityScope,
 } from "@/lib/workorder/repository/dbWorkOrderRepositoryScope";
+import { resolveCategoryIdsForDb } from "@/lib/workorder/repository/dbWorkOrderCategoryResolvers";
 import {
   COMPANY_ID_COLUMN_CANDIDATES,
   COMPANY_NAME_COLUMN_CANDIDATES,
