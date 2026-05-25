@@ -1,11 +1,13 @@
-Version : 0.16.57
-Summary : 작업지시서 repository 계약 타입 분리
-Description : 0.16.56 기준 작업지시서 repository read/write 경계에서 공통 조회 옵션 타입을 별도 contracts 파일로 분리하고, read repository가 상위 repository 타입을 다시 참조하지 않도록 import 경계를 보정하였습니다. APP_VERSION을 0.16.57로 갱신했습니다. npm run build 미실행 — 사용자가 로컬에서 확인.
+Version : 0.16.58
+Summary : 작업지시서 repository schema column 후보 상수 분리
+Description : 작업지시서 DB repository 내부에 누적되어 있던 spec_sheets 컬럼 후보 상수를 dbWorkOrderSchemaColumns로 분리하고, 기존 조회/저장/권한/워크플로우 동작은 변경하지 않았습니다. APP_VERSION을 0.16.58로 갱신했습니다.
+
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/repository/dbWorkOrderReadRepository.ts
-- lib/workorder/repository/workOrderRepository.ts
+- lib/workorder/repository/dbWorkOrderRepository.ts
+
 추가 파일 목록 :
-- lib/workorder/repository/workOrderRepositoryContracts.ts
+- lib/workorder/repository/dbWorkOrderSchemaColumns.ts
+
 삭제 파일 목록 :
 - 없음
