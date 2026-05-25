@@ -8,7 +8,7 @@ import {
   saveDbWorkOrders,
   updateDbWorkOrderStatePatch,
   type WorkOrderVisibilityScope,
-} from "@/lib/workorder/repository/dbWorkOrderRepository";
+} from "@/lib/workorder/repository/dbWorkOrderWriteRepository";
 import {
   findAllDbWorkOrders,
   findDbWorkOrderById,
