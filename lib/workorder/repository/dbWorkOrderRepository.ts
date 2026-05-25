@@ -32,59 +32,19 @@ import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFa
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
 import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetOutsourcingRepository";
 import { canServiceReplaceProductionComposition } from "@/lib/workorder/serviceCodeGuards";
+import {
+  normalizeWorkOrderVisibilityScope,
+  resolveWorkOrderCompanyId,
+  resolveWorkOrderCompanyScope,
+  type WorkOrderCompanyScope,
+  type WorkOrderVisibilityScope,
+} from "@/lib/workorder/repository/dbWorkOrderRepositoryScope";
+export type {
+  WorkOrderCompanyScope,
+  WorkOrderVisibilityScope,
+} from "@/lib/workorder/repository/dbWorkOrderRepositoryScope";
 
 const SPEC_SHEET_TABLE = "spec_sheets";
-export type WorkOrderVisibilityScope =
-  | { mode: "company" }
-  | {
-      mode: "assigned";
-      userId: string;
-      companyMemberId?: string | null;
-    };
-
-export type WorkOrderCompanyScope = {
-  companyId: string;
-  companyName?: string | null;
-  visibility?: WorkOrderVisibilityScope;
-};
-
-function resolveWorkOrderCompanyScope(scope?: WorkOrderCompanyScope | null): {
-  companyId: string;
-  companyName: string;
-} {
-  const companyId = scope?.companyId?.trim();
-  if (!companyId) {
-    throw new Error("COMPANY_SESSION_REQUIRED");
-  }
-
-  return {
-    companyId,
-    companyName: scope?.companyName?.trim() || companyId,
-  };
-}
-
-function resolveWorkOrderCompanyId(
-  scope?: WorkOrderCompanyScope | null,
-): string {
-  return resolveWorkOrderCompanyScope(scope).companyId;
-}
-
-function normalizeWorkOrderVisibilityScope(
-  scope?: WorkOrderCompanyScope | null,
-): WorkOrderVisibilityScope {
-  const visibility = scope?.visibility;
-  if (visibility?.mode !== "assigned") return { mode: "company" };
-
-  const userId = visibility.userId.trim();
-  if (!userId) return { mode: "company" };
-
-  return {
-    mode: "assigned",
-    userId,
-    companyMemberId: visibility.companyMemberId?.trim() || null,
-  };
-}
-
 function appendAssignedWorkOrderVisibilityPredicate(
   schema: DbSpecSheetSchema,
   predicates: string[],
