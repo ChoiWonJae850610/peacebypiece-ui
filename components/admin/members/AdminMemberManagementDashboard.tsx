@@ -50,6 +50,10 @@ import {
 } from "@/components/admin/layout/AdminModal";
 import AdminMemberPermissionDetailBody from "@/components/admin/members/AdminMemberPermissionDetailBody";
 import {
+  buildMemberInvitationTableColumns,
+  type PendingMemberInvitationRow,
+} from "@/components/admin/members/AdminMemberInvitationTableColumns";
+import {
   buildMemberDirectoryColumns,
   type JoinRequestReviewAction,
   type MemberDirectoryRow,
@@ -61,7 +65,6 @@ import {
 } from "@/components/admin/common/AdminStatusBadge";
 import AdminTable from "@/components/admin/common/AdminTable";
 import ToastMessage from "@/components/common/ToastMessage";
-import type { AdminTableColumn } from "@/lib/admin/common/types";
 
 function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
   if (status === "ready") return "success";
@@ -101,14 +104,6 @@ function getEmailMatchTone(
   return "neutral";
 }
 
-
-type PendingMemberInvitationRow = {
-  id: string;
-  inviteUrl: string;
-  expiresAt: string;
-  createdAt: string;
-  status: InvitationRecord["status"];
-};
 
 type MemberInvitationListResponse = {
   ok?: boolean;
@@ -165,15 +160,6 @@ function getMemberDetailStatusOptions(
   ];
 }
 
-function getPendingInvitationExpiresLabel(expiresAt: string): string {
-  const date = new Date(expiresAt);
-  if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-}
 
 function resolveMemberInvitationErrorMessage(
   t: ReturnType<typeof useAdminTranslation>,
@@ -356,111 +342,14 @@ export default function AdminMemberManagementDashboard() {
     [memberRecords],
   );
   const invitations = pendingInvitations;
-  const invitationTableColumns = useMemo<
-    AdminTableColumn<PendingMemberInvitationRow>[]
-  >(
-    () => [
-      {
-        key: "status",
-        label: t("memberManagement.tables.invitations.columns.status", "상태"),
-        className: "whitespace-nowrap",
-        render: (invitation) => (
-          <AdminStatusBadge
-            tone={
-              invitation.status === "revoked" ||
-              invitation.status === "cancelled"
-                ? "danger"
-                : invitation.status === "expired"
-                  ? "warning"
-                  : invitation.status === "accepted"
-                    ? "neutral"
-                    : "success"
-            }
-          >
-            {t(
-              `memberManagement.invitationStatuses.${invitation.status}`,
-              invitation.status,
-            )}
-          </AdminStatusBadge>
-        ),
-      },
-      {
-        key: "link",
-        label: t(
-          "memberManagement.tables.invitations.columns.link",
-          "초대 링크",
-        ),
-        className: "min-w-0",
-        render: (invitation) => (
-          <span
-            className="block truncate font-semibold pbp-text-primary"
-            title={invitation.inviteUrl}
-          >
-            {invitation.inviteUrl}
-          </span>
-        ),
-      },
-      {
-        key: "expires",
-        label: t(
-          "memberManagement.tables.invitations.columns.expires",
-          "만료일",
-        ),
-        className: "whitespace-nowrap",
-        render: (invitation) => (
-          <span className="pbp-text-muted">
-            {getPendingInvitationExpiresLabel(invitation.expiresAt)}
-          </span>
-        ),
-      },
-      {
-        key: "createdAt",
-        label: t(
-          "memberManagement.tables.invitations.columns.createdAt",
-          "생성일",
-        ),
-        className: "whitespace-nowrap",
-        render: (invitation) => (
-          <span className="pbp-text-muted">
-            {getPendingInvitationExpiresLabel(invitation.createdAt)}
-          </span>
-        ),
-      },
-      {
-        key: "actions",
-        label: t("memberManagement.tables.invitations.columns.actions", "작업"),
-        headerClassName: "text-center",
-        className: "flex justify-center gap-2",
-        render: (invitation) => (
-          <>
-            <AdminButton
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => void handleCopyInviteLink(invitation.inviteUrl)}
-            >
-              {t("memberManagement.inviteBuilder.actions.copy", "복사")}
-            </AdminButton>
-            <AdminButton
-              type="button"
-              variant="danger"
-              size="sm"
-              onClick={() => void handleCancelPendingInvitation(invitation)}
-              disabled={
-                revokingInviteId !== null ||
-                invitation.status === "accepted" ||
-                invitation.status === "revoked" ||
-                invitation.status === "cancelled"
-              }
-            >
-              {revokingInviteId === invitation.id
-                ? "…"
-                : t("memberManagement.inviteBuilder.actions.cancel", "취소")}
-            </AdminButton>
-          </>
-        ),
-      },
-    ],
+  const invitationTableColumns = useMemo(
+    () =>
+      buildMemberInvitationTableColumns({
+        t,
+        revokingInviteId,
+        onCopyInviteLink: handleCopyInviteLink,
+        onCancelInvitation: handleCancelPendingInvitation,
+      }),
     [revokingInviteId, t],
   );
   const joinRequests = useMemo(
