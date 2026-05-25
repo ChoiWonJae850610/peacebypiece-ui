@@ -1,10 +1,8 @@
-Version : 0.16.41
-Summary : Google 로그인 테스트 seed 단일 Gmail 허용 및 개발 테스트 콘솔 타입 오류 보정
-Description : scenario_google_login_seed.sql을 실제 Gmail 1개만 필수로 요구하도록 수정하고, 선택 fixture 사용자는 dev test console 전환 대상으로 유지되도록 verify SQL을 보정했습니다. Dev test context overlay role 타입을 system_admin 제외 타입으로 분리해 build type error를 보정했습니다.
+Version : 0.16.42
+Summary : Google 로그인 테스트 seed 승인 상태 보정
+Description : 실제 Gmail 1개로 개발 테스트 콘솔에 진입할 수 있도록 Google login seed가 TEST A 고객사 관리자와 승인 완료 상태를 강제 보정하고, pending join request로 승인대기 화면에 걸리지 않도록 정리했습니다. verify SQL에는 회사 활성/온보딩/구독/멤버 승인/pending blocker 확인 항목을 추가했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/dev/testContext/session.ts
-- lib/dev/testContext/repository.ts
 - db/test/scenario_google_login_seed.sql
 - db/test/verify_google_login_seed.sql
 추가 파일 목록 :

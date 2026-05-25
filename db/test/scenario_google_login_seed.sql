@@ -1,5 +1,5 @@
 -- WAFL / PeaceByPiece Google-login test seed bridge
--- Version: 0.16.41
+-- Version: 0.16.42
 -- Purpose:
 --   Connect at least one deterministic DB test user from db/test/scenario_seed.sql
 --   to a real Gmail account so the current Google OAuth login flow can enter the
@@ -12,12 +12,16 @@
 --      The other TEST_* placeholders are optional and may remain unchanged.
 --   4) Apply this file.
 --   5) Log in with the configured Gmail account. On first login, the app links google_sub.
+--   6) The configured Gmail must land directly in the approved TEST A customer admin session.
 --
 -- Important:
 --   - This file does not bypass Google login.
 --   - Use only in development/test databases.
 --   - Do not reuse the same Gmail address for multiple configured test users.
 --   - The script clears google_sub only for configured real Gmail rows.
+--   - The required Gmail is forced to the approved TEST A company-admin fixture.
+--   - Pending join requests for configured real Gmail addresses are cancelled so login
+--     cannot be redirected to the approval-pending screen.
 --   - Do not run this file against production data.
 
 BEGIN;
@@ -99,6 +103,48 @@ BEGIN
     RAISE EXCEPTION 'Run db/test/scenario_seed.sql before db/test/scenario_google_login_seed.sql.';
   END IF;
 END $$;
+
+-- Keep the Google bridge account out of the approval-pending path. The local
+-- dev test console requires one already-approved customer-admin session first.
+UPDATE companies
+SET
+  onboarding_status = 'active',
+  subscription_status = 'trialing',
+  billing_status = 'trial',
+  is_active = true,
+  onboarding_completed_at = COALESCE(onboarding_completed_at, now()),
+  trial_started_at = COALESCE(trial_started_at, now()),
+  trial_ends_at = COALESCE(trial_ends_at, now() + interval '7 days'),
+  updated_at = now()
+WHERE id IN (
+  SELECT DISTINCT u.company_id
+  FROM users u
+  JOIN _wafl_google_login_test_users seed ON seed.user_id = u.id
+);
+
+UPDATE company_users cu
+SET
+  is_active = true,
+  updated_at = now()
+FROM _wafl_google_login_test_users seed
+WHERE cu.user_id = seed.user_id;
+
+UPDATE company_members cm
+SET
+  status = 'approved',
+  approved_by = COALESCE(approved_by, 'test-a-admin'),
+  approved_at = COALESCE(approved_at, now()),
+  updated_at = now()
+FROM _wafl_google_login_test_users seed
+WHERE cm.user_id = seed.user_id;
+
+UPDATE join_requests jr
+SET
+  status = 'cancelled',
+  updated_at = now()
+FROM _wafl_google_login_test_users seed
+WHERE jr.status = 'pending'
+  AND lower(jr.applicant_email) = lower(seed.email);
 
 UPDATE users u
 SET
