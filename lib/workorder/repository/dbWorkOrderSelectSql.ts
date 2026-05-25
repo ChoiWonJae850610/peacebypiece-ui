@@ -244,11 +244,35 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
       ${buildManagerDisplayJoinSql(schema, sourceAlias)}
     `;
 }
-
 export function buildSpecSheetSelectQuery(
   schema: DbSpecSheetSchema,
   scope?: WorkOrderCompanyScope | null,
-): { sql: string; values: unknown[] }
+): { sql: string; values: unknown[] } {
+  const predicates: string[] = [];
+  const values: unknown[] = [];
+
+  if (schema.companyIdColumn) {
+    values.push(resolveWorkOrderCompanyId(scope));
+    predicates.push(
+      `spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $${values.length}`,
+    );
+  }
+
+  if (schema.isActiveColumn) {
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
+  }
+
+  appendAssignedWorkOrderVisibilityPredicate(schema, predicates, values, scope);
+
+  return {
+    sql: `
+      ${buildSpecSheetSelectBaseSql(schema)}
+      ${predicates.length > 0 ? `WHERE ${predicates.join("\n        AND ")}` : ""}
+      ORDER BY ${schema.updatedAtColumn ? `spec_sheet.${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `spec_sheet.${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}spec_sheet.id DESC
+    `,
+    values,
+  };
+}
 
 const DB_WORKFLOW_STATE_FILTER_VALUES: Record<
   Exclude<WorkOrderListStatusFilter, "active" | "all">,
@@ -361,10 +385,93 @@ function buildSpecSheetSummaryOrderBySql(
 
 export function buildSpecSheetSummarySelectQuery(
   schema: DbSpecSheetSchema,
-  options: WorkOrderSummaryQueryOptions = {}
+  options: WorkOrderSummaryQueryOptions = {},
+  scope?: WorkOrderCompanyScope | null,
+): { sql: string; values: unknown[] } {
+  const status = options.status ?? DEFAULT_WORK_ORDER_LIST_STATUS_FILTER;
+  const sort = options.sort ?? DEFAULT_WORK_ORDER_LIST_SORT;
+  const values: unknown[] = [];
+
+  return {
+    sql: `
+      WITH spec_sheet_summaries AS (
+        ${buildSpecSheetSummarySelectBaseSql(schema)}
+        ${buildSpecSheetSummaryWhereSql(schema, status, values, scope)}
+      )
+      SELECT
+        s.*,
+        COALESCE(order_counts.order_entry_count, 0)::integer AS order_entry_count,
+        COALESCE(material_counts.material_count, 0)::integer AS material_count,
+        COALESCE(outsourcing_counts.outsourcing_count, 0)::integer AS outsourcing_count,
+        COALESCE(attachment_counts.attachment_count, 0)::integer AS attachment_count,
+        COALESCE(memo_counts.memo_thread_count, 0)::integer AS memo_thread_count
+      FROM spec_sheet_summaries s
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS order_entry_count
+        FROM orders o
+        WHERE o.company_id = s.company_id
+          AND o.spec_sheet_id = s.id
+      ) order_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS material_count
+        FROM spec_sheet_materials m
+        WHERE m.company_id = s.company_id
+          AND m.spec_sheet_id = s.id
+      ) material_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS outsourcing_count
+        FROM spec_sheet_outsourcing_lines ol
+        WHERE ol.company_id = s.company_id
+          AND ol.spec_sheet_id = s.id
+      ) outsourcing_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS attachment_count
+        FROM attachments a
+        WHERE a.order_id = s.id
+          AND COALESCE(a.is_active, true) = true
+          AND a.deleted_at IS NULL
+      ) attachment_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS memo_thread_count
+        FROM memos memo
+        WHERE memo.order_id = s.id
+          AND memo.parent_id IS NULL
+          AND COALESCE(memo.is_active, true) = true
+          AND memo.deleted_at IS NULL
+      ) memo_counts ON true
+      ${buildSpecSheetSummaryOrderBySql(schema, sort)}
+    `,
+    values,
+  };
+}
 
 export function buildSpecSheetSelectByIdQuery(
   schema: DbSpecSheetSchema,
   workOrderId: string,
   scope?: WorkOrderCompanyScope | null,
-): { sql: string; values: unknown[] }
+): { sql: string; values: unknown[] } {
+  const values: unknown[] = [workOrderId];
+  const predicates = [`spec_sheet.id = $${values.length}`];
+
+  if (schema.companyIdColumn) {
+    values.push(resolveWorkOrderCompanyId(scope));
+    predicates.push(
+      `spec_sheet.${quoteIdentifier(schema.companyIdColumn)} = $${values.length}`,
+    );
+  }
+
+  if (schema.isActiveColumn) {
+    predicates.push(`spec_sheet.${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
+  }
+
+  appendAssignedWorkOrderVisibilityPredicate(schema, predicates, values, scope);
+
+  return {
+    sql: `
+      ${buildSpecSheetSelectBaseSql(schema)}
+      WHERE ${predicates.join("\n        AND ")}
+      LIMIT 1
+    `,
+    values,
+  };
+}
