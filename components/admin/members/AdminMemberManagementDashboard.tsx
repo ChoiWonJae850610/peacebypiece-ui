@@ -31,7 +31,6 @@ import {
   toggleSimplePermissionControl,
   type SimplePermissionControl,
 } from "@/lib/admin/members/memberSimplePermissionControls";
-import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
@@ -49,6 +48,7 @@ import {
   AdminModalFooterActions,
 } from "@/components/admin/layout/AdminModal";
 import AdminMemberPermissionDetailBody from "@/components/admin/members/AdminMemberPermissionDetailBody";
+import AdminMemberInviteBuilderPanel from "@/components/admin/members/AdminMemberInviteBuilderPanel";
 import {
   buildMemberInvitationTableColumns,
   type PendingMemberInvitationRow,
@@ -1031,89 +1031,17 @@ export default function AdminMemberManagementDashboard() {
               id="member-invite-builder"
               className="grid items-stretch gap-5 lg:grid-cols-[0.95fr_1.05fr]"
             >
-              <AdminPanelSection
+              <AdminMemberInviteBuilderPanel
+                t={t}
                 className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
-                eyebrow={t("memberManagement.inviteBuilder.eyebrow", "멤버 초대")}
-                title={t("memberManagement.inviteBuilder.title", "직원 초대 생성")}
-                description={t(
-                  "memberManagement.inviteBuilder.description",
-                  "초대 링크는 독립적으로 생성하고, 이메일과 휴대폰은 나중에 링크 전달 수단으로만 연결합니다.",
-                )}
                 contentClassName={MEMBER_INVITE_PANEL_CONTENT_CLASS}
-                footer={
-                  <div className="pt-3">
-                    <div className="flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold pbp-text-primary">
-                          {t(
-                            "memberManagement.inviteBuilder.sendPolicyTitle",
-                            "링크 생성 기준",
-                          )}
-                        </p>
-                        <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                          {t(
-                            "memberManagement.inviteBuilder.sendPolicy.linkOnly",
-                            "초대 링크를 생성해 복사할 수 있게 준비합니다. 실제 이메일/SMS 발송은 추후 기능에서 연결합니다.",
-                          )}
-                        </p>
-                        {inviteError ? (
-                          <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
-                            {inviteError}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                }
-              >
-                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px]">
-                  <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-                    <span className="text-xs font-semibold pbp-text-muted">
-                      {t(
-                        "memberManagement.inviteBuilder.fields.expires",
-                        "초대 만료",
-                      )}
-                    </span>
-                    <select
-                      value={expiresInDays}
-                      onChange={(event) => setExpiresInDays(event.target.value)}
-                      className={ADMIN_INPUT_CLASS}
-                    >
-                      <option value="3d">
-                        {t("memberManagement.inviteBuilder.expires.3d", "3일")}
-                      </option>
-                      <option value="7d">
-                        {t("memberManagement.inviteBuilder.expires.7d", "7일")}
-                      </option>
-                      <option value="14d">
-                        {t(
-                          "memberManagement.inviteBuilder.expires.14d",
-                          "14일",
-                        )}
-                      </option>
-                    </select>
-                  </label>
-                  <div className="flex items-end">
-                    <AdminButton
-                      onClick={handleCreateInvite}
-                      variant="primary"
-                      disabled={!canSubmitInvite}
-                      className="w-full"
-                    >
-                      {isCreatingInvite
-                        ? t(
-                            "memberManagement.inviteBuilder.actions.creating",
-                            "생성 중",
-                          )
-                        : t(
-                            "memberManagement.inviteBuilder.actions.create",
-                            "링크 생성",
-                          )}
-                    </AdminButton>
-                  </div>
-                </div>
-
-              </AdminPanelSection>
+                expiresInDays={expiresInDays}
+                inviteError={inviteError}
+                isCreatingInvite={isCreatingInvite}
+                canSubmitInvite={canSubmitInvite}
+                onExpiresInDaysChange={setExpiresInDays}
+                onCreateInvite={handleCreateInvite}
+              />
 
               <AdminPanelSection
                 className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
