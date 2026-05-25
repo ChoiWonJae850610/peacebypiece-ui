@@ -40,7 +40,11 @@ import {
   buildSpecSheetSelectQuery,
   buildSpecSheetSummarySelectQuery,
 } from "@/lib/workorder/repository/dbWorkOrderSelectSql";
-import { buildSpecSheetReturningColumns } from "@/lib/workorder/repository/dbWorkOrderReturningColumns";
+import {
+  buildSpecSheetInsertMutationSql,
+  buildSpecSheetStatePatchMutationSql,
+  buildSpecSheetUpdateMutationSql,
+} from "@/lib/workorder/repository/dbWorkOrderMutationSql";
 import { buildWorkOrderStatePatchAssignments } from "@/lib/workorder/repository/dbWorkOrderStatePatchAssignments";
 import {
   appendNormalizedWorkOrderInsertColumns,
@@ -258,19 +262,8 @@ export async function createDbWorkOrder(
     placeholders.push(`$${values.length}`);
   }
 
-  const returningColumns = buildSpecSheetReturningColumns(schema);
-
   const result = await queryDb<DbSpecSheetRow>(
-    `
-      INSERT INTO ${quoteIdentifier(SPEC_SHEET_TABLE)} (
-        ${columns.map(quoteIdentifier).join(", ")}
-      )
-      VALUES (
-        ${placeholders.join(", ")}
-      )
-      RETURNING
-        ${returningColumns.join(",\n        ")}
-    `,
+    buildSpecSheetInsertMutationSql(schema, columns, placeholders),
     values,
   );
 
@@ -424,18 +417,8 @@ export async function updateDbWorkOrder(
     values.push(null);
   }
 
-  const returningColumns = buildSpecSheetReturningColumns(schema);
-
   const result = await queryDb<DbSpecSheetRow>(
-    `
-      UPDATE ${quoteIdentifier(SPEC_SHEET_TABLE)}
-      SET
-        ${assignments.join(",\n        ")}
-      WHERE id = $1
-        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteLiteral(company.companyId)}` : ""}
-      RETURNING
-        ${returningColumns.join(",\n        ")}
-    `,
+    buildSpecSheetUpdateMutationSql(schema, assignments, company.companyId),
     values,
   );
 
@@ -494,19 +477,9 @@ export async function updateDbWorkOrderStatePatch(
     return existing;
   }
 
-  const returningColumns = buildSpecSheetReturningColumns(schema);
-
   const company = resolveWorkOrderCompanyScope(scope);
   const result = await queryDb<DbSpecSheetRow>(
-    `
-      UPDATE ${quoteIdentifier(SPEC_SHEET_TABLE)}
-      SET
-        ${assignments.join(",\n        ")}
-      WHERE id = $1
-        ${schema.companyIdColumn ? `AND ${quoteIdentifier(schema.companyIdColumn)} = ${quoteLiteral(company.companyId)}` : ""}
-      RETURNING
-        ${returningColumns.join(",\n        ")}
-    `,
+    buildSpecSheetStatePatchMutationSql(schema, assignments, company.companyId),
     values,
   );
 
