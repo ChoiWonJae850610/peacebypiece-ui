@@ -2,13 +2,6 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import {
-  DEFAULT_WORKFLOW_STATE,
-  WORKFLOW_STATE,
-} from "@/lib/constants/workorderStates";
-import {
-  DEFAULT_WORK_ORDER_LIST_SORT,
-  DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
-  isWorkflowStateStatusFilter,
   type WorkOrderListSort,
   type WorkOrderListStatusFilter,
 } from "@/lib/workorder/list/workOrderListControls";
@@ -18,17 +11,13 @@ import type {
   WorkOrderSummary,
 } from "@/types/workorder";
 import {
-  normalizeWorkOrderVisibilityScope,
   resolveWorkOrderCompanyScope,
   type WorkOrderCompanyScope,
-  type WorkOrderVisibilityScope,
 } from "@/lib/workorder/repository/dbWorkOrderRepositoryScope";
-import { resolveCategoryIdsForDb } from "@/lib/workorder/repository/dbWorkOrderCategoryResolvers";
-import type { DbSpecSheetRow, DbSpecSheetSchema } from "@/lib/workorder/repository/dbWorkOrderRepositoryTypes";
+import type { DbSpecSheetRow } from "@/lib/workorder/repository/dbWorkOrderRepositoryTypes";
 import {
   mapSpecSheetRowToWorkOrder,
   mapSpecSheetRowToWorkOrderSummary,
-  normalizeWorkOrderForDb,
 } from "@/lib/workorder/repository/dbWorkOrderRowMappers";
 import {
   assertMinimumSpecSheetSchema,
@@ -39,16 +28,8 @@ import {
   buildSpecSheetSelectQuery,
   buildSpecSheetSummarySelectQuery,
 } from "@/lib/workorder/repository/dbWorkOrderSelectSql";
-import {
-  buildSpecSheetInsertMutationSql,
-  buildSpecSheetStatePatchMutationSql,
-  buildSpecSheetUpdateMutationSql,
-} from "@/lib/workorder/repository/dbWorkOrderMutationSql";
+import { buildSpecSheetStatePatchMutationSql } from "@/lib/workorder/repository/dbWorkOrderMutationSql";
 import { buildWorkOrderStatePatchAssignments } from "@/lib/workorder/repository/dbWorkOrderStatePatchAssignments";
-import {
-  buildWorkOrderInsertMutationArgs,
-  buildWorkOrderUpdateMutationArgs,
-} from "@/lib/workorder/repository/dbWorkOrderAssignmentBuilders";
 import {
   buildSpecSheetCompanyScopePredicate,
   buildSoftDeleteSpecSheetAssignments,
@@ -56,9 +37,11 @@ import {
 } from "@/lib/workorder/repository/dbWorkOrderDeleteHelpers";
 import { attachNormalizedDetailRows } from "@/lib/workorder/repository/dbWorkOrderDetailRows";
 import {
+  createDbWorkOrderRecord,
+  updateDbWorkOrderRecord,
+} from "@/lib/workorder/repository/dbWorkOrderMutationFlows";
+import {
   mergeWorkOrderWithExistingProductionDetails,
-  shouldSyncProductionCompositionForFullWorkOrderSave,
-  syncCreatedWorkOrderProductionComposition,
   syncPatchedWorkOrderProductionComposition,
 } from "@/lib/workorder/repository/dbWorkOrderProductionSync";
 export type {
@@ -70,7 +53,6 @@ const SPEC_SHEET_TABLE = "spec_sheets";
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replaceAll('"', '""')}"`;
 }
-
 
 async function loadActiveSpecSheetRows(
   scope?: WorkOrderCompanyScope | null,
@@ -120,7 +102,10 @@ export async function findAllDbWorkOrders(
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder[]> {
   const rows = await loadActiveSpecSheetRows(scope);
-  return attachNormalizedDetailRows(rows.map(mapSpecSheetRowToWorkOrder), scope);
+  return attachNormalizedDetailRows(
+    rows.map(mapSpecSheetRowToWorkOrder),
+    scope,
+  );
 }
 
 export async function findDbWorkOrderById(
@@ -132,15 +117,13 @@ export async function findDbWorkOrderById(
 
   const query = buildSpecSheetSelectByIdQuery(schema, workOrderId, scope);
 
-  const result = await queryDb<DbSpecSheetRow>(
-    query.sql,
-    query.values,
-  );
+  const result = await queryDb<DbSpecSheetRow>(query.sql, query.values);
   const row = result.rows[0] ?? null;
   if (!row) return null;
-  const [hydrated] = await attachNormalizedDetailRows([
-    mapSpecSheetRowToWorkOrder(row),
-  ], scope);
+  const [hydrated] = await attachNormalizedDetailRows(
+    [mapSpecSheetRowToWorkOrder(row)],
+    scope,
+  );
   return hydrated ?? mapSpecSheetRowToWorkOrder(row);
 }
 
@@ -148,46 +131,7 @@ export async function createDbWorkOrder(
   workOrder: WorkOrder,
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
-  const schema = await loadSpecSheetSchema();
-  assertMinimumSpecSheetSchema(schema);
-
-  const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
-  const resolvedCategoryIds = await resolveCategoryIdsForDb(
-    normalizedBaseWorkOrder,
-    scope,
-  );
-  const normalizedWorkOrder = {
-    ...normalizedBaseWorkOrder,
-    ...resolvedCategoryIds,
-  };
-  const company = resolveWorkOrderCompanyScope(scope);
-  const { columns, values, placeholders } = buildWorkOrderInsertMutationArgs(
-    schema,
-    normalizedWorkOrder,
-    company,
-  );
-
-  const result = await queryDb<DbSpecSheetRow>(
-    buildSpecSheetInsertMutationSql(schema, columns, placeholders),
-    values,
-  );
-
-  const created = result.rows[0];
-
-  if (!created) {
-    throw new Error("Failed to create work order in DB.");
-  }
-
-  const mapped = mapSpecSheetRowToWorkOrder(created);
-  const persisted = {
-    ...normalizedWorkOrder,
-    ...mapped,
-    orderEntries: normalizedWorkOrder.orderEntries ?? [],
-    materials: normalizedWorkOrder.materials ?? [],
-    outsourcing: normalizedWorkOrder.outsourcing ?? [],
-  };
-  await syncCreatedWorkOrderProductionComposition(persisted, company);
-  return persisted;
+  return createDbWorkOrderRecord(workOrder, scope);
 }
 
 function isNotFoundWorkOrderError(error: unknown): boolean {
@@ -201,64 +145,7 @@ export async function updateDbWorkOrder(
   workOrder: WorkOrder,
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
-  const schema = await loadSpecSheetSchema();
-  assertMinimumSpecSheetSchema(schema);
-
-  const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
-  const resolvedCategoryIds = await resolveCategoryIdsForDb(
-    normalizedBaseWorkOrder,
-    scope,
-  );
-  const normalizedWorkOrder = {
-    ...normalizedBaseWorkOrder,
-    ...resolvedCategoryIds,
-  };
-  const company = resolveWorkOrderCompanyScope(scope);
-  const { assignments, values } = buildWorkOrderUpdateMutationArgs(
-    schema,
-    normalizedWorkOrder,
-    company,
-  );
-
-  const result = await queryDb<DbSpecSheetRow>(
-    buildSpecSheetUpdateMutationSql(schema, assignments, company.companyId),
-    values,
-  );
-
-  const updated = result.rows[0];
-
-  if (!updated) {
-    throw new Error(
-      `spec_sheets row not found for id: ${normalizedWorkOrder.id}`,
-    );
-  }
-
-  const mapped = mapSpecSheetRowToWorkOrder(updated);
-  const shouldSyncProductionComposition = shouldSyncProductionCompositionForFullWorkOrderSave(normalizedWorkOrder);
-  const existingWithDetails = shouldSyncProductionComposition
-    ? null
-    : await findDbWorkOrderById(normalizedWorkOrder.id, scope);
-  const persisted = shouldSyncProductionComposition
-    ? {
-        ...normalizedWorkOrder,
-        ...mapped,
-        orderEntries: normalizedWorkOrder.orderEntries ?? [],
-        materials: normalizedWorkOrder.materials ?? [],
-        outsourcing: normalizedWorkOrder.outsourcing ?? [],
-      }
-    : mergeWorkOrderWithExistingProductionDetails(
-        {
-          ...normalizedWorkOrder,
-          ...mapped,
-        },
-        existingWithDetails,
-      );
-
-  if (shouldSyncProductionComposition) {
-    await syncCreatedWorkOrderProductionComposition(persisted, company);
-  }
-
-  return persisted;
+  return updateDbWorkOrderRecord(workOrder, scope, findDbWorkOrderById);
 }
 
 export async function updateDbWorkOrderStatePatch(
@@ -292,20 +179,24 @@ export async function updateDbWorkOrderStatePatch(
   }
 
   const mapped = mapSpecSheetRowToWorkOrder(updated);
-  const patchedProductionWorkOrder = await syncPatchedWorkOrderProductionComposition({
-    patch,
-    mappedWorkOrder: mapped,
-    company,
-    scope,
-    findWorkOrderById: findDbWorkOrderById,
-  });
+  const patchedProductionWorkOrder =
+    await syncPatchedWorkOrderProductionComposition({
+      patch,
+      mappedWorkOrder: mapped,
+      company,
+      scope,
+      findWorkOrderById: findDbWorkOrderById,
+    });
 
   if (patchedProductionWorkOrder) {
     return patchedProductionWorkOrder;
   }
 
   const existingWithDetails = await findDbWorkOrderById(patch.id, scope);
-  return mergeWorkOrderWithExistingProductionDetails(mapped, existingWithDetails);
+  return mergeWorkOrderWithExistingProductionDetails(
+    mapped,
+    existingWithDetails,
+  );
 }
 
 export async function deleteDbWorkOrder(
