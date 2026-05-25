@@ -1,4 +1,6 @@
+import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import type { WorkOrder } from "@/types/workorder";
+import type { WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderRepositoryScope";
 import type { DbSpecSheetSchema } from "@/lib/workorder/repository/dbWorkOrderRepositoryTypes";
 
 function quoteIdentifier(identifier: string): string {
@@ -27,6 +29,103 @@ function pushUpdateAssignment(
   if (!columnName) return;
   assignments.push(`${quoteIdentifier(columnName)} = $${values.length + 1}`);
   values.push(value);
+}
+
+export type WorkOrderMutationCompanyScope = Pick<
+  WorkOrderCompanyScope,
+  "companyId" | "companyName"
+>;
+
+export type WorkOrderInsertMutationArgs = {
+  columns: string[];
+  values: unknown[];
+  placeholders: string[];
+};
+
+export type WorkOrderUpdateMutationArgs = {
+  assignments: string[];
+  values: unknown[];
+};
+
+export function buildWorkOrderInsertMutationArgs(
+  schema: DbSpecSheetSchema,
+  workOrder: WorkOrder,
+  company: WorkOrderMutationCompanyScope,
+): WorkOrderInsertMutationArgs {
+  const columns = ["id", "title"];
+  const values: unknown[] = [workOrder.id, workOrder.title];
+  const placeholders = ["$1", "$2"];
+
+  pushInsertColumn(columns, values, placeholders, schema.companyIdColumn, company.companyId);
+  pushInsertColumn(columns, values, placeholders, schema.companyNameColumn, company.companyName);
+  pushInsertColumn(columns, values, placeholders, schema.workflowStateColumn, workOrder.workflowState);
+  pushInsertColumn(columns, values, placeholders, schema.lastSavedAtColumn, workOrder.lastSavedAt);
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.workOrderKindColumn,
+    workOrder.workOrderKind ?? WORK_ORDER_KIND.sample,
+  );
+  pushInsertColumn(
+    columns,
+    values,
+    placeholders,
+    schema.reorderGroupIdColumn,
+    workOrder.reorderGroupId ?? workOrder.id,
+  );
+  pushInsertColumn(columns, values, placeholders, schema.reorderRoundColumn, workOrder.reorderRound ?? 0);
+  pushInsertColumn(columns, values, placeholders, schema.parentSpecSheetIdColumn, workOrder.parentSpecSheetId ?? null);
+  pushInsertColumn(columns, values, placeholders, schema.isReworkColumn, Boolean(workOrder.isDefectOrder));
+  pushInsertColumn(columns, values, placeholders, schema.category1IdColumn, workOrder.category1Id ?? null);
+  pushInsertColumn(columns, values, placeholders, schema.category2IdColumn, workOrder.category2Id ?? null);
+  pushInsertColumn(columns, values, placeholders, schema.category3IdColumn, workOrder.category3Id ?? null);
+
+  appendNormalizedWorkOrderInsertColumns(schema, workOrder, columns, values, placeholders);
+
+  pushInsertColumn(columns, values, placeholders, schema.isActiveColumn, true);
+  pushInsertColumn(columns, values, placeholders, schema.deletedAtColumn, null);
+
+  return { columns, values, placeholders };
+}
+
+export function buildWorkOrderUpdateMutationArgs(
+  schema: DbSpecSheetSchema,
+  workOrder: WorkOrder,
+  company: WorkOrderMutationCompanyScope,
+): WorkOrderUpdateMutationArgs {
+  const assignments = ["title = $2"];
+  const values: unknown[] = [workOrder.id, workOrder.title];
+
+  pushUpdateAssignment(assignments, values, schema.companyIdColumn, company.companyId);
+  pushUpdateAssignment(assignments, values, schema.companyNameColumn, company.companyName);
+  pushUpdateAssignment(assignments, values, schema.workflowStateColumn, workOrder.workflowState);
+  pushUpdateAssignment(assignments, values, schema.lastSavedAtColumn, workOrder.lastSavedAt);
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.workOrderKindColumn,
+    workOrder.workOrderKind ?? WORK_ORDER_KIND.sample,
+  );
+  pushUpdateAssignment(
+    assignments,
+    values,
+    schema.reorderGroupIdColumn,
+    workOrder.reorderGroupId ?? workOrder.id,
+  );
+  pushUpdateAssignment(assignments, values, schema.reorderRoundColumn, workOrder.reorderRound ?? 0);
+  pushUpdateAssignment(assignments, values, schema.parentSpecSheetIdColumn, workOrder.parentSpecSheetId ?? null);
+  pushUpdateAssignment(assignments, values, schema.isReworkColumn, Boolean(workOrder.isDefectOrder));
+  pushUpdateAssignment(assignments, values, schema.category1IdColumn, workOrder.category1Id ?? null);
+  pushUpdateAssignment(assignments, values, schema.category2IdColumn, workOrder.category2Id ?? null);
+  pushUpdateAssignment(assignments, values, schema.category3IdColumn, workOrder.category3Id ?? null);
+
+  appendNormalizedWorkOrderUpdateAssignments(schema, workOrder, assignments, values);
+
+  pushUpdateAssignment(assignments, values, schema.isActiveColumn, true);
+  pushUpdateAssignment(assignments, values, schema.deletedAtColumn, null);
+
+  return { assignments, values };
 }
 
 export function appendNormalizedWorkOrderInsertColumns(

@@ -1,6 +1,5 @@
 import "server-only";
 
-import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import { queryDb } from "@/lib/db/client";
 import {
   DEFAULT_WORKFLOW_STATE,
@@ -47,8 +46,8 @@ import {
 } from "@/lib/workorder/repository/dbWorkOrderMutationSql";
 import { buildWorkOrderStatePatchAssignments } from "@/lib/workorder/repository/dbWorkOrderStatePatchAssignments";
 import {
-  appendNormalizedWorkOrderInsertColumns,
-  appendNormalizedWorkOrderUpdateAssignments,
+  buildWorkOrderInsertMutationArgs,
+  buildWorkOrderUpdateMutationArgs,
 } from "@/lib/workorder/repository/dbWorkOrderAssignmentBuilders";
 import {
   buildSpecSheetCompanyScopePredicate,
@@ -70,10 +69,6 @@ export type {
 const SPEC_SHEET_TABLE = "spec_sheets";
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replaceAll('"', '""')}"`;
-}
-
-function quoteLiteral(value: string): string {
-  return `'${value.replaceAll("'", "''")}'`;
 }
 
 
@@ -165,102 +160,12 @@ export async function createDbWorkOrder(
     ...normalizedBaseWorkOrder,
     ...resolvedCategoryIds,
   };
-  const columns = ["id", "title"];
-  const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
-  const placeholders = ["$1", "$2"];
   const company = resolveWorkOrderCompanyScope(scope);
-
-  if (schema.companyIdColumn) {
-    columns.push(schema.companyIdColumn);
-    values.push(company.companyId);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.companyNameColumn) {
-    columns.push(schema.companyNameColumn);
-    values.push(company.companyName);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.workflowStateColumn) {
-    columns.push(schema.workflowStateColumn);
-    values.push(normalizedWorkOrder.workflowState);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.lastSavedAtColumn) {
-    columns.push(schema.lastSavedAtColumn);
-    values.push(normalizedWorkOrder.lastSavedAt);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.workOrderKindColumn) {
-    columns.push(schema.workOrderKindColumn);
-    values.push(normalizedWorkOrder.workOrderKind ?? WORK_ORDER_KIND.sample);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.reorderGroupIdColumn) {
-    columns.push(schema.reorderGroupIdColumn);
-    values.push(normalizedWorkOrder.reorderGroupId ?? normalizedWorkOrder.id);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.reorderRoundColumn) {
-    columns.push(schema.reorderRoundColumn);
-    values.push(normalizedWorkOrder.reorderRound ?? 0);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.parentSpecSheetIdColumn) {
-    columns.push(schema.parentSpecSheetIdColumn);
-    values.push(normalizedWorkOrder.parentSpecSheetId ?? null);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.isReworkColumn) {
-    columns.push(schema.isReworkColumn);
-    values.push(Boolean(normalizedWorkOrder.isDefectOrder));
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.category1IdColumn) {
-    columns.push(schema.category1IdColumn);
-    values.push(normalizedWorkOrder.category1Id ?? null);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.category2IdColumn) {
-    columns.push(schema.category2IdColumn);
-    values.push(normalizedWorkOrder.category2Id ?? null);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.category3IdColumn) {
-    columns.push(schema.category3IdColumn);
-    values.push(normalizedWorkOrder.category3Id ?? null);
-    placeholders.push(`$${values.length}`);
-  }
-
-  appendNormalizedWorkOrderInsertColumns(
+  const { columns, values, placeholders } = buildWorkOrderInsertMutationArgs(
     schema,
     normalizedWorkOrder,
-    columns,
-    values,
-    placeholders,
+    company,
   );
-
-  if (schema.isActiveColumn) {
-    columns.push(schema.isActiveColumn);
-    values.push(true);
-    placeholders.push(`$${values.length}`);
-  }
-
-  if (schema.deletedAtColumn) {
-    columns.push(schema.deletedAtColumn);
-    values.push(null);
-    placeholders.push(`$${values.length}`);
-  }
 
   const result = await queryDb<DbSpecSheetRow>(
     buildSpecSheetInsertMutationSql(schema, columns, placeholders),
@@ -308,114 +213,12 @@ export async function updateDbWorkOrder(
     ...normalizedBaseWorkOrder,
     ...resolvedCategoryIds,
   };
-  const assignments = ["title = $2"];
-  const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
   const company = resolveWorkOrderCompanyScope(scope);
-
-  if (schema.companyIdColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.companyIdColumn)} = $${values.length + 1}`,
-    );
-    values.push(company.companyId);
-  }
-
-  if (schema.companyNameColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.companyNameColumn)} = $${values.length + 1}`,
-    );
-    values.push(company.companyName);
-  }
-
-  if (schema.workflowStateColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.workflowState);
-  }
-
-  if (schema.lastSavedAtColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.lastSavedAt);
-  }
-
-  if (schema.workOrderKindColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.workOrderKindColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.workOrderKind ?? WORK_ORDER_KIND.sample);
-  }
-
-  if (schema.reorderGroupIdColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.reorderGroupIdColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.reorderGroupId ?? normalizedWorkOrder.id);
-  }
-
-  if (schema.reorderRoundColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.reorderRoundColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.reorderRound ?? 0);
-  }
-
-  if (schema.parentSpecSheetIdColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.parentSpecSheetIdColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.parentSpecSheetId ?? null);
-  }
-
-  if (schema.isReworkColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.isReworkColumn)} = $${values.length + 1}`,
-    );
-    values.push(Boolean(normalizedWorkOrder.isDefectOrder));
-  }
-
-  if (schema.category1IdColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.category1IdColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.category1Id ?? null);
-  }
-
-  if (schema.category2IdColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.category2IdColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.category2Id ?? null);
-  }
-
-  if (schema.category3IdColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.category3IdColumn)} = $${values.length + 1}`,
-    );
-    values.push(normalizedWorkOrder.category3Id ?? null);
-  }
-
-  appendNormalizedWorkOrderUpdateAssignments(
+  const { assignments, values } = buildWorkOrderUpdateMutationArgs(
     schema,
     normalizedWorkOrder,
-    assignments,
-    values,
+    company,
   );
-
-  if (schema.isActiveColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.isActiveColumn)} = $${values.length + 1}`,
-    );
-    values.push(true);
-  }
-
-  if (schema.deletedAtColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.deletedAtColumn)} = $${values.length + 1}`,
-    );
-    values.push(null);
-  }
 
   const result = await queryDb<DbSpecSheetRow>(
     buildSpecSheetUpdateMutationSql(schema, assignments, company.companyId),
