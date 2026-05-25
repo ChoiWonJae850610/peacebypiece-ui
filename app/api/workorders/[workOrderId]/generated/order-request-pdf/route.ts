@@ -18,7 +18,7 @@ import {
 } from "@/lib/workorder/generatedDocuments";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
-import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderRepository";
+import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 import { buildOrderRequestServerPdf, buildOrderRequestServerPdfHtml } from "@/lib/workorder/serverOrderRequestPdf";
 import type { Attachment } from "@/types/workorder";
 

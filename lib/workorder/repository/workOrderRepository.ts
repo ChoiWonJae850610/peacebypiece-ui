@@ -4,15 +4,17 @@ import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
 import {
   createDbWorkOrder,
   deleteDbWorkOrder,
-  findAllDbWorkOrders,
-  findDbWorkOrderById,
-  findDbWorkOrderSummaries,
   saveDbWorkOrder,
   saveDbWorkOrders,
   updateDbWorkOrderStatePatch,
-  type WorkOrderCompanyScope,
   type WorkOrderVisibilityScope,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
+import {
+  findAllDbWorkOrders,
+  findDbWorkOrderById,
+  findDbWorkOrderSummaries,
+  type WorkOrderCompanyScope,
+} from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 import type { WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
 import type {
   WorkOrderListSort,

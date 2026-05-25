@@ -6,7 +6,7 @@ import { isDatabaseConfigured } from "@/lib/db/client";
 import { buildOrderRequestHtmlDocument } from "@/lib/generated-documents/order-request/orderRequestHtmlDocument";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { resolveOrderRequestRepresentativeImageDataUrl } from "@/lib/generated-documents/order-request/orderRequestRepresentativeImage";
-import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderRepository";
+import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 
 export const runtime = "nodejs";
 
