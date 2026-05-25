@@ -2,6 +2,7 @@ import "server-only";
 
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import {
+  getCompanyAdminMemberRoleTemplateCode,
   getMemberRoleTemplatePermissions,
   mergeDefaultMemberBaseReadPermissions,
   type MemberPermissionCode,
@@ -13,7 +14,7 @@ export async function resolveMemberWorkspacePermissionCodes(
   session: WaflSessionPayload,
 ): Promise<readonly MemberPermissionCode[]> {
   if (session.role === "company_admin") {
-    return getMemberRoleTemplatePermissions("company_admin");
+    return getMemberRoleTemplatePermissions(getCompanyAdminMemberRoleTemplateCode());
   }
 
   if (session.role !== "member" || !session.companyId || !session.companyMemberId) {

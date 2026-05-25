@@ -17,6 +17,9 @@ import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
   DEFAULT_MEMBER_BASE_READ_PERMISSION_CODES,
+  MEMBER_PERMISSION_CODE,
+  getCompanyAdminMemberRoleTemplateCode,
+  getDefaultAssignableMemberRoleTemplateCode,
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
   toAssignableMemberRoleTemplateCode,
@@ -183,8 +186,13 @@ const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "작업지시서 관리",
     descriptionKey: "memberManagement.detailModal.simplePermissions.workorderManage.description",
     fallbackDescription: "해제하면 본인 담당 작업지시서 조회만 가능하고, 선택하면 생성·수정·삭제·검토요청이 가능합니다.",
-    readPermissionCodes: ["workorder.read"],
-    permissionCodes: ["workorder.create", "workorder.update", "workorder.delete", "workorder.status.review"],
+    readPermissionCodes: [MEMBER_PERMISSION_CODE.workorderRead],
+    permissionCodes: [
+      MEMBER_PERMISSION_CODE.workorderCreate,
+      MEMBER_PERMISSION_CODE.workorderUpdate,
+      MEMBER_PERMISSION_CODE.workorderDelete,
+      MEMBER_PERMISSION_CODE.workorderStatusReview,
+    ],
   },
   {
     id: "workorderReview",
@@ -192,7 +200,7 @@ const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "검수 가능",
     descriptionKey: "memberManagement.detailModal.simplePermissions.workorderReview.description",
     fallbackDescription: "선택하면 담당 작업지시서의 검수 상태를 변경할 수 있습니다.",
-    permissionCodes: ["workorder.status.inspect"],
+    permissionCodes: [MEMBER_PERMISSION_CODE.workorderStatusInspect],
   },
   {
     id: "workorderOrderDirect",
@@ -200,7 +208,7 @@ const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "작업지시서 발주 가능",
     descriptionKey: "memberManagement.detailModal.simplePermissions.workorderOrderDirect.description",
     fallbackDescription: "선택하면 작업지시서 발주 요청과 발주 상태 변경을 진행할 수 있습니다.",
-    permissionCodes: ["workorder.status.order"],
+    permissionCodes: [MEMBER_PERMISSION_CODE.workorderStatusOrder],
   },
   {
     id: "materialOrderRequest",
@@ -208,7 +216,7 @@ const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "원단·부자재 주문 가능",
     descriptionKey: "memberManagement.detailModal.simplePermissions.materialOrderRequest.description",
     fallbackDescription: "선택하면 담당 작업지시서에서 원단·부자재 주문 요청을 등록하거나 수정할 수 있습니다.",
-    permissionCodes: ["material.order.request"],
+    permissionCodes: [MEMBER_PERMISSION_CODE.materialOrderRequest],
   },
   {
     id: "materialOrderPlace",
@@ -216,7 +224,7 @@ const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "원단·부자재 발주 가능",
     descriptionKey: "memberManagement.detailModal.simplePermissions.materialOrderPlace.description",
     fallbackDescription: "선택하면 원단·부자재 발주 처리와 발주 상태 변경을 진행할 수 있습니다.",
-    permissionCodes: ["material.order.place"],
+    permissionCodes: [MEMBER_PERMISSION_CODE.materialOrderPlace],
   },
   {
     id: "partnerManage",
@@ -224,8 +232,13 @@ const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "협력업체 관리",
     descriptionKey: "memberManagement.detailModal.simplePermissions.partnerManage.description",
     fallbackDescription: "해제하면 협력업체 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
-    readPermissionCodes: ["partner.read"],
-    permissionCodes: ["partner.create", "partner.update", "partner.delete", "partner.manage"],
+    readPermissionCodes: [MEMBER_PERMISSION_CODE.partnerRead],
+    permissionCodes: [
+      MEMBER_PERMISSION_CODE.partnerCreate,
+      MEMBER_PERMISSION_CODE.partnerUpdate,
+      MEMBER_PERMISSION_CODE.partnerDelete,
+      MEMBER_PERMISSION_CODE.partnerManage,
+    ],
   },
   {
     id: "standardsManage",
@@ -233,8 +246,13 @@ const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "기준정보 관리",
     descriptionKey: "memberManagement.detailModal.simplePermissions.standardsManage.description",
     fallbackDescription: "해제하면 기준정보 조회만 가능하고, 선택하면 등록·수정·비활성·삭제 요청이 가능합니다.",
-    readPermissionCodes: ["standards.read"],
-    permissionCodes: ["standards.create", "standards.update", "standards.delete", "standards.manage"],
+    readPermissionCodes: [MEMBER_PERMISSION_CODE.standardsRead],
+    permissionCodes: [
+      MEMBER_PERMISSION_CODE.standardsCreate,
+      MEMBER_PERMISSION_CODE.standardsUpdate,
+      MEMBER_PERMISSION_CODE.standardsDelete,
+      MEMBER_PERMISSION_CODE.standardsManage,
+    ],
   },
 ] as const;
 
@@ -452,8 +470,9 @@ export default function AdminMemberManagementDashboard() {
   const t = useAdminTranslation();
   const baseSummaryCards = getMemberManagementSummaryCards();
   const manageableRoles = getAssignableMemberRolePreviews();
-  const currentPermissionCodes =
-    getMemberRoleTemplatePermissions("company_admin");
+  const currentPermissionCodes = getMemberRoleTemplatePermissions(
+    getCompanyAdminMemberRoleTemplateCode(),
+  );
   const inviteRoleOptions = getMemberInviteRoleOptions();
   const [activeTab, setActiveTab] = useState<MemberManagementTab>("invite");
   const [memberSearchQuery, setMemberSearchQuery] = useState("");
@@ -1226,8 +1245,8 @@ export default function AdminMemberManagementDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "company_to_member",
-          recipientRole: "designer",
-          permissionPreset: "designer",
+          recipientRole: getDefaultAssignableMemberRoleTemplateCode(),
+          permissionPreset: getDefaultAssignableMemberRoleTemplateCode(),
           expiresAt,
           createdByUserId: undefined,
         }),

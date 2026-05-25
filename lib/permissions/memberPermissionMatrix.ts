@@ -20,6 +20,50 @@ export const MEMBER_ROLE_TEMPLATE_CODE = {
   viewer: "viewer",
 } as const;
 
+export const DEFAULT_MEMBER_ROLE_TEMPLATE_CODE = MEMBER_ROLE_TEMPLATE_CODE.designer;
+export const COMPANY_ADMIN_MEMBER_ROLE_TEMPLATE_CODE = MEMBER_ROLE_TEMPLATE_CODE.companyAdmin;
+
+export const MEMBER_PERMISSION_CODE = {
+  workorderRead: "workorder.read",
+  workorderCreate: "workorder.create",
+  workorderUpdate: "workorder.update",
+  workorderDelete: "workorder.delete",
+  workorderRestore: "workorder.restore",
+  workorderStatusReview: "workorder.status.review",
+  workorderStatusOrder: "workorder.status.order",
+  workorderStatusInspect: "workorder.status.inspect",
+  workorderStatusComplete: "workorder.status.complete",
+  materialOrderRequest: "material.order.request",
+  materialOrderPlace: "material.order.place",
+  partnerRead: "partner.read",
+  partnerCreate: "partner.create",
+  partnerUpdate: "partner.update",
+  partnerDelete: "partner.delete",
+  partnerManage: "partner.manage",
+  storageRead: "storage.read",
+  storageDeleteRequest: "storage.delete.request",
+  storageRestore: "storage.restore",
+  statsRead: "stats.read",
+  settingsRead: "settings.read",
+  settingsManage: "settings.manage",
+  standardsRead: "standards.read",
+  standardsCreate: "standards.create",
+  standardsUpdate: "standards.update",
+  standardsDelete: "standards.delete",
+  standardsManage: "standards.manage",
+  memberRead: "member.read",
+  memberInvite: "member.invite",
+  memberApprove: "member.approve",
+  memberReject: "member.reject",
+  memberPermissionUpdate: "member.permission.update",
+  memberSuspend: "member.suspend",
+  auditReadCompany: "audit.read.company",
+  personalSettingsManage: "personal_settings.manage",
+  systemStandardManage: "system.standard.manage",
+  systemCompanyInvite: "system.company.invite",
+  systemCompanyApprove: "system.company.approve",
+} as const;
+
 export type MemberPermissionRoleTemplateCode =
   (typeof MEMBER_ROLE_TEMPLATE_CODE)[keyof typeof MEMBER_ROLE_TEMPLATE_CODE];
 
@@ -140,28 +184,69 @@ export const MEMBER_ROLE_TEMPLATE_POLICIES: readonly MemberRoleTemplatePolicy[] 
     labelKey: "memberManagement.roles.designer.label",
     descriptionKey: "memberManagement.roles.designer.description",
     sortOrder: 20,
-    permissionCodes: ["workorder.read", "workorder.create", "workorder.update", "workorder.delete", "workorder.status.review", "partner.read", "standards.read", "storage.read", "stats.read", "personal_settings.manage"],
+    permissionCodes: [
+      MEMBER_PERMISSION_CODE.workorderRead,
+      MEMBER_PERMISSION_CODE.workorderCreate,
+      MEMBER_PERMISSION_CODE.workorderUpdate,
+      MEMBER_PERMISSION_CODE.workorderDelete,
+      MEMBER_PERMISSION_CODE.workorderStatusReview,
+      MEMBER_PERMISSION_CODE.partnerRead,
+      MEMBER_PERMISSION_CODE.standardsRead,
+      MEMBER_PERMISSION_CODE.storageRead,
+      MEMBER_PERMISSION_CODE.statsRead,
+      MEMBER_PERMISSION_CODE.personalSettingsManage,
+    ],
   },
   {
     code: MEMBER_ROLE_TEMPLATE_CODE.inspector,
     labelKey: "memberManagement.roles.inspector.label",
     descriptionKey: "memberManagement.roles.inspector.description",
     sortOrder: 30,
-    permissionCodes: ["workorder.read", "workorder.status.inspect", "partner.read", "standards.read", "storage.read", "stats.read", "personal_settings.manage"],
+    permissionCodes: [
+      MEMBER_PERMISSION_CODE.workorderRead,
+      MEMBER_PERMISSION_CODE.workorderStatusInspect,
+      MEMBER_PERMISSION_CODE.partnerRead,
+      MEMBER_PERMISSION_CODE.standardsRead,
+      MEMBER_PERMISSION_CODE.storageRead,
+      MEMBER_PERMISSION_CODE.statsRead,
+      MEMBER_PERMISSION_CODE.personalSettingsManage,
+    ],
   },
   {
     code: MEMBER_ROLE_TEMPLATE_CODE.inventoryManager,
     labelKey: "memberManagement.roles.inventoryManager.label",
     descriptionKey: "memberManagement.roles.inventoryManager.description",
     sortOrder: 40,
-    permissionCodes: ["workorder.read", "material.order.request", "material.order.place", "partner.read", "partner.create", "partner.update", "partner.delete", "partner.manage", "standards.read", "standards.create", "standards.update", "standards.delete", "standards.manage", "storage.read", "stats.read", "personal_settings.manage"],
+    permissionCodes: [
+      MEMBER_PERMISSION_CODE.workorderRead,
+      MEMBER_PERMISSION_CODE.materialOrderRequest,
+      MEMBER_PERMISSION_CODE.materialOrderPlace,
+      MEMBER_PERMISSION_CODE.partnerRead,
+      MEMBER_PERMISSION_CODE.partnerCreate,
+      MEMBER_PERMISSION_CODE.partnerUpdate,
+      MEMBER_PERMISSION_CODE.partnerDelete,
+      MEMBER_PERMISSION_CODE.partnerManage,
+      MEMBER_PERMISSION_CODE.standardsRead,
+      MEMBER_PERMISSION_CODE.standardsCreate,
+      MEMBER_PERMISSION_CODE.standardsUpdate,
+      MEMBER_PERMISSION_CODE.standardsDelete,
+      MEMBER_PERMISSION_CODE.standardsManage,
+      MEMBER_PERMISSION_CODE.storageRead,
+      MEMBER_PERMISSION_CODE.statsRead,
+      MEMBER_PERMISSION_CODE.personalSettingsManage,
+    ],
   },
   {
     code: MEMBER_ROLE_TEMPLATE_CODE.viewer,
     labelKey: "memberManagement.roles.viewer.label",
     descriptionKey: "memberManagement.roles.viewer.description",
     sortOrder: 50,
-    permissionCodes: ["workorder.read", "partner.read", "standards.read", "personal_settings.manage"],
+    permissionCodes: [
+      MEMBER_PERMISSION_CODE.workorderRead,
+      MEMBER_PERMISSION_CODE.partnerRead,
+      MEMBER_PERMISSION_CODE.standardsRead,
+      MEMBER_PERMISSION_CODE.personalSettingsManage,
+    ],
   },
 ] as const;
 
@@ -184,7 +269,7 @@ export function isAssignableMemberRoleTemplateCode(
 export function toAssignableMemberRoleTemplateCode(
   value: string | null | undefined,
 ): AssignableMemberPermissionRoleTemplateCode {
-  return isAssignableMemberRoleTemplateCode(value) ? value : MEMBER_ROLE_TEMPLATE_CODE.designer;
+  return isAssignableMemberRoleTemplateCode(value) ? value : DEFAULT_MEMBER_ROLE_TEMPLATE_CODE;
 }
 
 export function getAssignableMemberRoleTemplatePolicies(): readonly MemberRoleTemplatePolicy[] {
@@ -211,4 +296,12 @@ export function getMemberRoleTemplatePermissionCount(roleCode: MemberPermissionR
 
 export function hasMemberRoleTemplatePermission(roleCode: MemberPermissionRoleTemplateCode, permissionCode: MemberPermissionCode): boolean {
   return MEMBER_PERMISSION_MATRIX_ROWS.some((row) => row.roleCode === roleCode && row.permissionCode === permissionCode && row.enabled);
+}
+
+export function getCompanyAdminMemberRoleTemplateCode(): MemberPermissionRoleTemplateCode {
+  return COMPANY_ADMIN_MEMBER_ROLE_TEMPLATE_CODE;
+}
+
+export function getDefaultAssignableMemberRoleTemplateCode(): AssignableMemberPermissionRoleTemplateCode {
+  return DEFAULT_MEMBER_ROLE_TEMPLATE_CODE;
 }

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { getMemberRoleTemplatePermissions, hasMemberPermission, isMemberPermissionCode } from "./permissionAccess";
-import type { MemberPermissionCode, MemberPermissionRoleTemplateCode } from "./memberPermissionMatrix";
+import { getCompanyAdminMemberRoleTemplateCode } from "./memberPermissionMatrix";
+import type { MemberPermissionCode } from "./memberPermissionMatrix";
 
 export type ApiPermissionGuardMode = "preview" | "enforce";
 
@@ -16,7 +17,7 @@ export type ApiPermissionContext = {
   source: "company-admin-preview" | "request-header-preview";
 };
 
-const PREVIEW_ROLE_TEMPLATE: MemberPermissionRoleTemplateCode = "company_admin";
+const PREVIEW_ROLE_TEMPLATE = getCompanyAdminMemberRoleTemplateCode();
 
 function readHeaderPermissionCodes(request: Request): readonly MemberPermissionCode[] {
   const rawHeader = request.headers.get("x-peacebypiece-permissions") ?? "";

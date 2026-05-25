@@ -1,5 +1,7 @@
 import {
   MEMBER_PERMISSION_CATALOG,
+  MEMBER_PERMISSION_CODE,
+  MEMBER_ROLE_TEMPLATE_CODE,
   MEMBER_ROLE_TEMPLATE_POLICIES,
   getAssignableMemberRoleTemplatePolicies,
   toAssignableMemberRoleTemplateCode,
@@ -154,14 +156,23 @@ export const MEMBER_ASSIGNABLE_ROLE_PREVIEWS: readonly MemberRolePreview[] =
   }));
 
 export const MEMBER_MANAGEMENT_PERMISSION_CARDS: readonly MemberPermissionCard[] = [
-  { id: "workorder", requiredPermissions: ["workorder.read"], status: "ready" },
-  { id: "workflow", requiredPermissions: ["workorder.status.review", "workorder.status.order", "workorder.status.inspect", "workorder.status.complete"], status: "ready" },
-  { id: "partners", requiredPermissions: ["partner.read"], status: "ready" },
-  { id: "standards", requiredPermissions: ["standards.read"], status: "ready" },
-  { id: "storage", requiredPermissions: ["storage.read"], status: "ready" },
-  { id: "stats", requiredPermissions: ["stats.read"], status: "ready" },
-  { id: "members", requiredPermissions: ["member.read"], status: "ready" },
-  { id: "organization-settings", requiredPermissions: ["settings.read"], status: "ready" },
+  { id: "workorder", requiredPermissions: [MEMBER_PERMISSION_CODE.workorderRead], status: "ready" },
+  {
+    id: "workflow",
+    requiredPermissions: [
+      MEMBER_PERMISSION_CODE.workorderStatusReview,
+      MEMBER_PERMISSION_CODE.workorderStatusOrder,
+      MEMBER_PERMISSION_CODE.workorderStatusInspect,
+      MEMBER_PERMISSION_CODE.workorderStatusComplete,
+    ],
+    status: "ready",
+  },
+  { id: "partners", requiredPermissions: [MEMBER_PERMISSION_CODE.partnerRead], status: "ready" },
+  { id: "standards", requiredPermissions: [MEMBER_PERMISSION_CODE.standardsRead], status: "ready" },
+  { id: "storage", requiredPermissions: [MEMBER_PERMISSION_CODE.storageRead], status: "ready" },
+  { id: "stats", requiredPermissions: [MEMBER_PERMISSION_CODE.statsRead], status: "ready" },
+  { id: "members", requiredPermissions: [MEMBER_PERMISSION_CODE.memberRead], status: "ready" },
+  { id: "organization-settings", requiredPermissions: [MEMBER_PERMISSION_CODE.settingsRead], status: "ready" },
 ] as const;
 
 export const MEMBER_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = [
@@ -213,13 +224,17 @@ export const MEMBER_APPROVAL_STEP_PREVIEWS: readonly MemberApprovalStepPreview[]
 ] as const;
 
 export const MEMBER_APPROVAL_ACTION_PREVIEWS: readonly MemberApprovalActionPreview[] = [
-  { id: "approve", status: "ready", requiredPermissions: ["member.approve", "member.permission.update"] },
-  { id: "reject", status: "ready", requiredPermissions: ["member.reject"] },
-  { id: "permissionUpdate", status: "ready", requiredPermissions: ["member.permission.update"] },
+  {
+    id: "approve",
+    status: "ready",
+    requiredPermissions: [MEMBER_PERMISSION_CODE.memberApprove, MEMBER_PERMISSION_CODE.memberPermissionUpdate],
+  },
+  { id: "reject", status: "ready", requiredPermissions: [MEMBER_PERMISSION_CODE.memberReject] },
+  { id: "permissionUpdate", status: "ready", requiredPermissions: [MEMBER_PERMISSION_CODE.memberPermissionUpdate] },
 ] as const;
 
 export const MEMBER_APPROVAL_PERMISSION_PREVIEWS: readonly MemberApprovalPermissionPreview[] = MEMBER_PERMISSION_CATALOG.filter((permission) =>
-  MEMBER_ROLE_TEMPLATE_POLICIES.find((role) => role.code === "designer")?.permissionCodes.includes(permission.code),
+  MEMBER_ROLE_TEMPLATE_POLICIES.find((role) => role.code === MEMBER_ROLE_TEMPLATE_CODE.designer)?.permissionCodes.includes(permission.code),
 ).map((permission) => ({
   code: permission.code,
   group: permission.group,

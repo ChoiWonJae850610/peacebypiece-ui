@@ -1,5 +1,6 @@
 import {
   MEMBER_PERMISSION_CATALOG,
+  MEMBER_PERMISSION_CODE,
   MEMBER_ROLE_TEMPLATE_POLICIES,
   type MemberPermissionCode,
   type MemberPermissionRoleTemplateCode,
@@ -10,12 +11,12 @@ export type MemberPermissionAccessInput = {
 };
 
 export const DEFAULT_MEMBER_BASE_READ_PERMISSION_CODES = [
-  "workorder.read",
-  "partner.read",
-  "standards.read",
-  "stats.read",
-  "storage.read",
-  "personal_settings.manage",
+  MEMBER_PERMISSION_CODE.workorderRead,
+  MEMBER_PERMISSION_CODE.partnerRead,
+  MEMBER_PERMISSION_CODE.standardsRead,
+  MEMBER_PERMISSION_CODE.statsRead,
+  MEMBER_PERMISSION_CODE.storageRead,
+  MEMBER_PERMISSION_CODE.personalSettingsManage,
 ] as const satisfies readonly MemberPermissionCode[];
 
 export function isMemberPermissionCode(value: string): value is MemberPermissionCode {

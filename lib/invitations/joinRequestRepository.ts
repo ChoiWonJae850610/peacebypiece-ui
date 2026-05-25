@@ -6,6 +6,7 @@ import {
   getMemberRoleTemplatePermissions,
   isMemberPermissionCode,
   type MemberPermissionCode,
+  getCompanyAdminMemberRoleTemplateCode,
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
 import {
@@ -1011,7 +1012,7 @@ type CompanyDbRow = {
   storage_limit_bytes: number | string | null;
 };
 
-const COMPANY_ADMIN_ROLE_TEMPLATE_CODE: MemberPermissionRoleTemplateCode = "company_admin";
+const COMPANY_ADMIN_ROLE_TEMPLATE_CODE = getCompanyAdminMemberRoleTemplateCode();
 
 function getUserRoleForRoleTemplate(roleTemplateCode: MemberPermissionRoleTemplateCode): string {
   return roleTemplateCode === COMPANY_ADMIN_ROLE_TEMPLATE_CODE ? "admin" : roleTemplateCode;
