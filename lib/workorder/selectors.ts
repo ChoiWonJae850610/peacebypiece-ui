@@ -7,7 +7,8 @@ export {
   getSubmittableOrderEntries,
 } from "@/lib/workorder/orderSubmission";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
-import { isAdminRole, isDesignerRole } from "@/lib/constants/roles";
+import { isAdminRole } from "@/lib/constants/roles";
+import { hasMemberPermission } from "@/lib/permissions/permissionAccess";
 import { WORKFLOW_STATE, canEditBeforeOrder, isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
 import type { UserProfile } from "@/types/user";
 import { createWorkOrderListItem } from "@/lib/workorder/mappers/workOrderListItemMapper";
@@ -59,7 +60,7 @@ export function canEditWorkOrderMemo(workflowState: WorkOrder["workflowState"]) 
 
 export function canRenameWorkOrderTitle(currentUser: UserProfile, workflowState: WorkOrder["workflowState"]) {
   if (isAdminRole(currentUser)) return true;
-  return isDesignerRole(currentUser) && canEditBeforeOrder(workflowState);
+  return hasMemberPermission(currentUser, "workorder.update") && canEditBeforeOrder(workflowState);
 }
 
 export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowStateById: Record<string, string>, searchQuery: string) {

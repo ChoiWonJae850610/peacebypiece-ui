@@ -245,6 +245,13 @@ function hasEverySimplePermissionCode(
   return nextPermissionCodes.every((code) => permissionCodes.includes(code));
 }
 
+function hasSomeSimplePermissionCode(
+  permissionCodes: readonly MemberPermissionCode[],
+  nextPermissionCodes: readonly MemberPermissionCode[],
+): boolean {
+  return nextPermissionCodes.some((code) => permissionCodes.includes(code));
+}
+
 function normalizeSimplePermissionCodes(
   permissionCodes: readonly MemberPermissionCode[],
 ): MemberPermissionCode[] {
@@ -272,7 +279,7 @@ function toggleSimplePermissionControl(
   permissionCodes: readonly MemberPermissionCode[],
   control: SimplePermissionControl,
 ): MemberPermissionCode[] {
-  return hasEverySimplePermissionCode(permissionCodes, control.permissionCodes)
+  return hasSomeSimplePermissionCode(permissionCodes, control.permissionCodes)
     ? removeSimplePermissionCodes(permissionCodes, control.permissionCodes)
     : mergeSimplePermissionCodes(permissionCodes, [
         ...(control.readPermissionCodes ?? []),
@@ -284,7 +291,7 @@ function countVisibleSimplePermissionControls(
   permissionCodes: readonly MemberPermissionCode[],
 ): number {
   return SIMPLE_PERMISSION_CONTROLS.filter((control) =>
-    hasEverySimplePermissionCode(permissionCodes, control.permissionCodes),
+    hasSomeSimplePermissionCode(permissionCodes, control.permissionCodes),
   ).length;
 }
 
@@ -1788,7 +1795,7 @@ export default function AdminMemberManagementDashboard() {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   {SIMPLE_PERMISSION_CONTROLS.map((control) => {
-                    const checked = hasEverySimplePermissionCode(
+                    const checked = hasSomeSimplePermissionCode(
                       memberDetailDraft.permissionCodes,
                       control.permissionCodes,
                     );

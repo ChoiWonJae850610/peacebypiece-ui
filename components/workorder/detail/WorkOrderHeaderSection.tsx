@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import InlineInfoItem from "@/components/common/ui/InlineInfoItem";
-import { canCreateWorkOrderByRoles } from "@/lib/constants/roles";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
@@ -60,13 +59,14 @@ export default function WorkOrderHeaderSection({
   const copy = i18n.workorder.ui.header;
   const common = i18n.workorder.ui.common;
   void onSave;
+  void currentUserRole;
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(editableTitle ?? title);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const managerValue = managerName || "-";
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
   const summaryValue = summaryText || "-";
-  const canEditSummary = !locked && canCreateWorkOrderByRoles([currentUserRole]) && typeof onOpenBasicInfoModal === "function";
+  const canEditSummary = !locked && canRenameTitle && typeof onOpenBasicInfoModal === "function";
   const recommendedCategory = WORKORDER_CATEGORY_RECOMMENDATION_ENABLED ? getRecommendedWorkOrderCategory(titleDraft.trim()) : null;
   const canEditManager = !managerLocked && canChangeManager;
   const canEditTitle = !locked && canRenameTitle && typeof onRenameTitle === "function";

@@ -40,8 +40,17 @@ function hasWorkflowPermission(context: Pick<WorkflowPolicyContext, "currentRole
   return hasMemberPermission(context.currentUser, permissionCode);
 }
 
+function hasEveryWorkflowPermission(
+  context: Pick<WorkflowPolicyContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder">,
+  permissionCodes: readonly MemberPermissionCode[],
+) {
+  if (isAdminRole(context.currentRoles)) return true;
+  if (!context.currentUser || !isWorkOrderManagedByCurrentUser(context.workOrder, context)) return false;
+  return permissionCodes.every((permissionCode) => hasMemberPermission(context.currentUser ?? {}, permissionCode));
+}
+
 export function canRequestReviewByPolicy(payload: Pick<WorkflowPolicyContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder">) {
-  return hasWorkflowPermission(payload, "workorder.status.review");
+  return hasEveryWorkflowPermission(payload, ["workorder.update", "workorder.status.review"]);
 }
 
 export function canRequestFactoryOrderByPolicy(payload: Pick<WorkflowPolicyContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder" | "currentWorkflowState">) {

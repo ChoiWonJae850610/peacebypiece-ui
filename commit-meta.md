@@ -1,11 +1,12 @@
-Version : 0.16.43
-Summary : 개발 테스트 seed 회사 프로필 완료 상태 보정
-Description : Google 로그인 테스트 계정과 dev test fixture 회사가 workspace 진입 시 고객사 등록/승인대기 모달에 걸리지 않도록 테스트 seed의 회사 필수 프로필 값과 관리자 전화번호를 보강했습니다. verify_google_login_seed.sql은 회사 프로필 누락 여부까지 확인하도록 확장했습니다. npm run build 미실행 — 사용자가 로컬에서 확인.
+Version : 0.16.44
+Summary : 작업지시서 관리 권한과 발주 권한 분리 보정
+Description : 작업지시서 관리 체크가 일부 권한 누락으로 꺼져 보이던 부분을 부분 권한 보유 시 활성 상태로 표시하도록 보정하고, 작업지시서 기본정보/제목 편집과 검토요청 표시를 역할 기반이 아닌 실제 권한 기반으로 제한했습니다. 발주 가능 권한은 발주요청에만 적용되도록 검토요청 정책을 workorder.update + workorder.status.review 기준으로 분리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- db/test/scenario_seed.sql
-- db/test/scenario_google_login_seed.sql
-- db/test/verify_google_login_seed.sql
+- lib/workorder/workflowPolicy.ts
+- lib/workorder/selectors.ts
+- components/workorder/detail/WorkOrderHeaderSection.tsx
+- components/admin/members/AdminMemberManagementDashboard.tsx
 추가 파일 목록 :
 - 없음
 삭제 파일 목록 :
