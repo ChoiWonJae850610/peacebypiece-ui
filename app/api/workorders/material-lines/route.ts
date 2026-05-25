@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import {
   MATERIAL_ORDER_STATUS_VALUES,
   MATERIAL_UNIT_VALUES,
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "material.order.request" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: MEMBER_PERMISSION_CODE.materialOrderRequest });
   if (!guard.ok) return guard.response;
 
   try {
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "material.order.place" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: MEMBER_PERMISSION_CODE.materialOrderPlace });
   if (!guard.ok) return guard.response;
 
   try {
@@ -141,7 +142,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "material.order.request" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: MEMBER_PERMISSION_CODE.materialOrderRequest });
   if (!guard.ok) return guard.response;
 
   try {

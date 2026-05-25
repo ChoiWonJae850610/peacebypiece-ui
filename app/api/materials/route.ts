@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import {
   createWorkspaceMaterial,
   deleteWorkspaceMaterial,
@@ -81,7 +82,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "standards.manage" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: MEMBER_PERMISSION_CODE.standardsManage });
   if (!guard.ok) return guard.response;
 
   try {
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "standards.manage" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: MEMBER_PERMISSION_CODE.standardsManage });
   if (!guard.ok) return guard.response;
 
   try {
@@ -116,7 +117,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const guard = await requireWorkspaceApiGuard({ permissionCode: "standards.manage" });
+  const guard = await requireWorkspaceApiGuard({ permissionCode: MEMBER_PERMISSION_CODE.standardsManage });
   if (!guard.ok) return guard.response;
 
   try {

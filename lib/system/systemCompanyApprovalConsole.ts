@@ -1,3 +1,4 @@
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 
 export type SystemCompanyApprovalStepStatus = "ready" | "planned" | "locked";
@@ -112,14 +113,14 @@ export const SYSTEM_COMPANY_APPROVAL_STEPS: readonly SystemCompanyApprovalStep[]
 ] as const;
 
 export const SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS: readonly SystemCompanyApprovalPermissionItem[] = [
-  { id: "workorder-read", label: "작업지시서 조회", permissionCode: "workorder.read", enabled: true },
-  { id: "workorder-manage", label: "작업지시서 생성·수정", permissionCode: "workorder.update", enabled: true },
-  { id: "partner-manage", label: "협력업체 관리", permissionCode: "partner.manage", enabled: true },
-  { id: "storage-manage", label: "저장소 조회·삭제 요청", permissionCode: "storage.delete.request", enabled: true },
-  { id: "stats-read", label: "통계 조회", permissionCode: "stats.read", enabled: true },
-  { id: "settings-manage", label: "환경설정 관리", permissionCode: "settings.manage", enabled: true },
-  { id: "member-manage", label: "멤버 초대·승인·권한 변경", permissionCode: "member.permission.update", enabled: true },
-  { id: "audit-read-company", label: "고객사 감사 로그 조회", permissionCode: "audit.read.company", enabled: true },
+  { id: "workorder-read", label: "작업지시서 조회", permissionCode: MEMBER_PERMISSION_CODE.workorderRead, enabled: true },
+  { id: "workorder-manage", label: "작업지시서 생성·수정", permissionCode: MEMBER_PERMISSION_CODE.workorderUpdate, enabled: true },
+  { id: "partner-manage", label: "협력업체 관리", permissionCode: MEMBER_PERMISSION_CODE.partnerManage, enabled: true },
+  { id: "storage-manage", label: "저장소 조회·삭제 요청", permissionCode: MEMBER_PERMISSION_CODE.storageDeleteRequest, enabled: true },
+  { id: "stats-read", label: "통계 조회", permissionCode: MEMBER_PERMISSION_CODE.statsRead, enabled: true },
+  { id: "settings-manage", label: "환경설정 관리", permissionCode: MEMBER_PERMISSION_CODE.settingsManage, enabled: true },
+  { id: "member-manage", label: "멤버 초대·승인·권한 변경", permissionCode: MEMBER_PERMISSION_CODE.memberPermissionUpdate, enabled: true },
+  { id: "audit-read-company", label: "고객사 감사 로그 조회", permissionCode: MEMBER_PERMISSION_CODE.auditReadCompany, enabled: true },
 ] as const;
 
 export const SYSTEM_COMPANY_APPROVAL_ACTIONS: readonly SystemCompanyApprovalAction[] = [

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiPermission } from "@/lib/permissions";
+import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
@@ -40,7 +40,7 @@ function getAuditIpAddress(request: NextRequest): string | null {
 
 export async function POST(request: NextRequest) {
   const permissionDenied = requireApiPermission(request, {
-    permissionCode: "storage.restore",
+    permissionCode: MEMBER_PERMISSION_CODE.storageRestore,
     routeLabel: "admin.files.trash.restore",
   });
   if (permissionDenied) return permissionDenied;

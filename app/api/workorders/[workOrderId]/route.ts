@@ -1,4 +1,4 @@
-import { requireApiPermission } from "@/lib/permissions";
+import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
 import { handleGetWorkOrderDetail, handlePatchWorkOrderState } from "@/lib/workorder/api/workOrderRouteHandlers";
 
 type WorkOrderDetailRouteContext = {
@@ -14,7 +14,7 @@ export async function GET(_request: Request, context: WorkOrderDetailRouteContex
 
 export async function PATCH(request: Request, context: WorkOrderDetailRouteContext) {
   const permissionDenied = requireApiPermission(request, {
-    permissionCode: "workorder.update",
+    permissionCode: MEMBER_PERMISSION_CODE.workorderUpdate,
     routeLabel: "workorders.detail.update",
   });
   if (permissionDenied) return permissionDenied;
