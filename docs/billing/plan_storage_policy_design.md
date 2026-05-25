@@ -1,6 +1,6 @@
 # PeaceByPiece 요금제 / 용량 정책 타입 설계
 
-Version: 0.9.65
+Version: 0.16.48
 Status: 타입 설계
 Scope: plan, company assignment, storage/member limit, override, usage snapshot
 Non-goal: 결제 자동화, 실제 과금, R2 실시간 사용량 집계, DB migration

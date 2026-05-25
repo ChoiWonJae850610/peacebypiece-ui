@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Source Refactor Audit
 version: 0.1
-baseline_source: peacebypiece-ui-0.14.9
+baseline_source: peacebypiece-ui-0.16.47
 status: draft-final
 updated: 2026-05-20
 ---

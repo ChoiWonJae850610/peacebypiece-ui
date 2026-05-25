@@ -1,7 +1,7 @@
 ---
 title: WAFL 코드 품질 / 도메인 구조 전수 감사
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.28
+baseline_source: peacebypiece-ui-0.16.47
 status: draft-audit
 updated: 2026-05-21
 ---

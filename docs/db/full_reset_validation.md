@@ -1,6 +1,6 @@
 # full_reset.sql 실행 검증 가이드
 
-Version: 0.9.74
+Version: 0.16.48
 
 ## 목적
 

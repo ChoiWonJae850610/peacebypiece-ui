@@ -1,6 +1,6 @@
 # Refactoring Rules
 
-기준 버전: 0.16.25
+기준 버전: 0.16.48
 상태: working rules
 목적: WAFLOW / PeaceByPiece 리팩토링 중 지켜야 할 금지·허용 기준을 고정한다.
 

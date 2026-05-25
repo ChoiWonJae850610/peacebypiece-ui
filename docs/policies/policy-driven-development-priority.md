@@ -1,8 +1,8 @@
 # 정책 기반 개발 우선순위 정리
 
 ## 문서 상태
-- Policy Version: P-0.91.34
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 정책 문서와 실제 개발 작업 연결용
 - 적용 대상: WAFL 정책 문서 기반 기능 개발 전체
 

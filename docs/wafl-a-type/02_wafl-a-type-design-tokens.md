@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Design Tokens
 version: 0.4
-baseline_source: peacebypiece-ui-0.13.50
+baseline_source: peacebypiece-ui-0.16.47
 status: draft-final
 updated: 2026-05-18
 ---

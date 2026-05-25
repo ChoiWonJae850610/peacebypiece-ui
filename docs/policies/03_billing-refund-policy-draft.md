@@ -1,8 +1,8 @@
 # 결제 및 환불 정책 초안
 
 ## 문서 상태
-- Policy Version: P-0.91.10
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 법무 검토 전 초안
 - 적용 대상: PeaceByPiece/WAFLOW 결제, 요금제, 무료 체험, 미납, 환불, 해지, 장기 미납 데이터 삭제
 - 적용 전 확인 필요: 실제 PG사, 사업자 정보, 요금제 최종명, 결제 UI, 법무/세무 검토

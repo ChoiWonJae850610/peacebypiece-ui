@@ -1,10 +1,10 @@
 # Policy Worklog
 
 ## Current Policy Version
-P-0.91.34
+0.16.48
 
 ## Based App Version
-0.15.73
+0.16.48
 
 ## Last Updated
 2026-05-23
@@ -15,9 +15,9 @@ P-0.91.34
 ## Rules
 
 ### Versioning
-- 앱 APP_VERSION은 정책 문서 패치에서 변경하지 않는다.
-- 정책 문서 버전은 P-0.91.x 형식으로 관리한다.
-- 정책 문서 zip은 docs 폴더만 포함한다.
+- 문서 기준 정리 시 APP_VERSION과 문서 기준 버전을 같은 값으로 관리한다.
+- 정책 문서 버전은 0.16.48 형식으로 관리한다.
+- 프로젝트 전체 압축본에는 docs/policies 문서를 포함한다.
 - 정책 문서 작업에서는 소스 코드, DB schema, package 파일을 수정하지 않는다.
 
 ### Required Status Files

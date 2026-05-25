@@ -1,7 +1,7 @@
 ---
 title: DB 저장값 / JSON payload 감사
 version: 0.15.33
-baseline_source: peacebypiece-ui-0.15.32
+baseline_source: peacebypiece-ui-0.16.47
 status: audit
 updated: 2026-05-21
 ---

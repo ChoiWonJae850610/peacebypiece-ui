@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE System Admin Extended Screens
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.9
+baseline_source: peacebypiece-ui-0.16.47
 status: implemented
 updated: 2026-05-20
 ---

@@ -1,7 +1,7 @@
 ---
 title: 작업지시서 서비스 액션 맵
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.49
+baseline_source: peacebypiece-ui-0.16.47
 status: draft
 updated: 2026-05-21
 ---

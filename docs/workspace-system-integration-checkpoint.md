@@ -1,6 +1,6 @@
 # Workspace / System Integration Checkpoint
 
-기준 버전: 0.16.23
+기준 버전: 0.16.48
 
 목적:
 - `/workspace/materials` 추가 이후 기존 저장소, 통계, 시스템 감사로그 흐름과 충돌하지 않는지 점검한다.

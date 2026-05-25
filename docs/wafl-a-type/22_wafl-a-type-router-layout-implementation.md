@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Router Layout Implementation
 version: 0.15.1
-baseline_source: peacebypiece-ui-0.15.0
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 audience: developer
 updated: 2026-05-20

@@ -1,7 +1,7 @@
 ---
 title: 작업지시서 서비스 코드 상수와 생산구성 replace allowlist
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.51
+baseline_source: peacebypiece-ui-0.16.47
 status: draft
 updated: 2026-05-21
 ---

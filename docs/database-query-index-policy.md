@@ -1,7 +1,7 @@
 # Database Query and Index Policy
 
-기준 버전: 0.16.15
-기준 원본: 0.16.14
+기준 버전: 0.16.48
+기준 원본: 0.16.47
 범위: 조인, 인덱스, denormalization, summary table 기준
 
 ## 1. 목적

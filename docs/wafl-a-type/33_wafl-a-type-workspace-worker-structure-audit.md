@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Workspace / Worker Structure Audit
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.12
+baseline_source: peacebypiece-ui-0.16.47
 status: draft-final
 updated: 2026-05-20
 ---

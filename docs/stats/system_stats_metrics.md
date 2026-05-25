@@ -1,6 +1,6 @@
 # PeaceByPiece 시스템관리자 통계 보완
 
-Version: 0.9.71
+Version: 0.16.48
 Status: metric skeleton
 Scope: 시스템관리자 통계 항목 확장
 Non-goal: 실제 DB 통계 쿼리, 차트 UI, 결제 자동화 통계

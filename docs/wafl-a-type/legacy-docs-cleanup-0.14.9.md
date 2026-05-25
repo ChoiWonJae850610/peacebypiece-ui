@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Legacy Docs Cleanup
 version: 0.14.9
-baseline_source: peacebypiece-ui-0.14.8
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-20
 ---

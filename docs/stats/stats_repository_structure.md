@@ -1,6 +1,6 @@
 # PeaceByPiece 통계 selector / repository 구조
 
-Version: 0.9.69
+Version: 0.16.48
 Status: 구조 skeleton
 Scope: admin stats, system stats, 공통 metric 타입과 repository 구조
 Non-goal: 실제 DB 통계 쿼리, 차트 UI, AI 분류 통계

@@ -1,6 +1,6 @@
 # 49. WAFL A-TYPE public/auth 문구 UX 정리 2차
 
-Version: 0.15.26
+Version: 0.16.48
 
 ## 목적
 

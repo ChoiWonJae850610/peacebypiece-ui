@@ -1,8 +1,8 @@
 # 개인정보처리방침 초안
 
 ## 문서 상태
-- Policy Version: P-0.91.18
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 법무 검토 전 초안
 - 적용 대상: WAFL 서비스
 - 적용 전 확인 필요: 사업자 정보, 개인정보 보호책임자, 위탁사, PG사, 보관기간, 고객지원 연락처

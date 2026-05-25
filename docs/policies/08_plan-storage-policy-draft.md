@@ -1,8 +1,8 @@
 # 요금제 및 저장소 정책 초안
 
 ## 문서 상태
-- Policy Version: P-0.91.8
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 법무 검토 전 초안
 - 적용 대상: PeaceByPiece/WAFLOW 요금제, 저장소, 멤버 수, 데이터 내보내기 제한
 

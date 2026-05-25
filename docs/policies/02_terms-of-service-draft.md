@@ -1,8 +1,8 @@
 # 이용약관 초안
 
 ## 문서 상태
-- Policy Version: P-0.91.18
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 법무 검토 전 초안
 - 적용 대상: WAFL 서비스
 - 적용 전 확인 필요: 사업자 정보, 서비스명 최종명, 도메인 소유권, 요금제, PG사, 고객지원 연락처, 법무 검토

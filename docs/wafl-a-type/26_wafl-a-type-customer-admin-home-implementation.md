@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Customer Admin Home Implementation
 version: 0.15.5
-baseline_source: peacebypiece-ui-0.15.4
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-20
 ---

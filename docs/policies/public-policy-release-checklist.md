@@ -1,8 +1,8 @@
 # 고객 공개 정책 문서 전체 목록 및 공개 전 체크리스트
 
 ## 문서 상태
-- Policy Version: P-0.91.28
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 고객 공개 v1.0 전환 전 최종 점검용
 - 적용 대상: WAFL 고객 공개 정책 문서 전체
 

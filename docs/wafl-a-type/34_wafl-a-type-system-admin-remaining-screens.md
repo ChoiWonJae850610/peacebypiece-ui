@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE System Admin Remaining Screens
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.13
+baseline_source: peacebypiece-ui-0.16.47
 status: updated
 updated: 2026-05-20
 ---

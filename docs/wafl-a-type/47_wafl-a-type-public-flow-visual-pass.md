@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Public Flow Visual Pass
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.24
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-20
 ---

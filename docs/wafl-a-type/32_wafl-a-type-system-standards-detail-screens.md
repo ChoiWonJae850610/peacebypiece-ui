@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE System Standards Detail Screens
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.11
+baseline_source: peacebypiece-ui-0.16.47
 status: implemented-1st
 updated: 2026-05-20
 ---

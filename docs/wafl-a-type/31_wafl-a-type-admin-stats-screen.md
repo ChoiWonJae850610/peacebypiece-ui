@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Customer Admin Stats Screen
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.10
+baseline_source: peacebypiece-ui-0.16.47
 status: implemented-first-pass
 updated: 2026-05-20
 ---

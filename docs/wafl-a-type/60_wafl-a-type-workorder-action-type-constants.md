@@ -1,7 +1,7 @@
 ---
 title: Workorder Action Type Constants 정리 1차
 version: 0.15.37
-baseline_source: peacebypiece-ui-0.15.36
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-21
 ---

@@ -1,8 +1,8 @@
 # 파일 및 저장소 보관 정책 초안
 
 ## 문서 상태
-- Policy Version: P-0.91.12
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 법무 검토 전 초안
 - 적용 대상: PeaceByPiece/WAFLOW 파일, 첨부파일, 디자인, 메모, 휴지통, 영구 삭제, 데이터 내보내기 export zip, 저장소 초과
 

@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE TSX Domain Logic Separation 1
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.31
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-21
 ---

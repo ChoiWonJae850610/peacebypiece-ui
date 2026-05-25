@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Visual QA / Raw Color / Hardcoded Text Audit
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.22
+baseline_source: peacebypiece-ui-0.16.47
 status: audit-complete
 updated: 2026-05-20
 ---

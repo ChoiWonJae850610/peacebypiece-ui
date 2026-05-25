@@ -1,6 +1,6 @@
 # Workspace Boundary
 
-기준 버전: 0.16.25
+기준 버전: 0.16.48
 상태: boundary baseline
 목적: 고객사 업무공간(workspace), 시스템관리자(system), 개인설정(me)의 책임 경계를 고정한다.
 

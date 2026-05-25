@@ -1,7 +1,7 @@
 ---
 title: WAFL domain constants/types 1차 정리
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.29
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-21
 ---

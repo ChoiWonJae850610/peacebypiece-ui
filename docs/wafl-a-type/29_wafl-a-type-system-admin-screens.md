@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE System Admin Screens
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.8
+baseline_source: peacebypiece-ui-0.16.47
 status: draft-final
 updated: 2026-05-20
 ---

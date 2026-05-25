@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Customer Admin Home Visual Pass
 version: 0.15.14
-baseline_source: peacebypiece-ui-0.15.13
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-20
 ---

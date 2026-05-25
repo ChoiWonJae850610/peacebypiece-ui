@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Login / Invite / Error Implementation
 version: 0.9
-baseline_source: peacebypiece-ui-0.15.4
+baseline_source: peacebypiece-ui-0.16.47
 status: updated
 updated: 2026-05-20
 ---

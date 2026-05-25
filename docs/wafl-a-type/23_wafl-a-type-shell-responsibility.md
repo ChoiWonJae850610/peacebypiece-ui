@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Shell Responsibility
 version: 0.1
-baseline_source: peacebypiece-ui-0.15.1
+baseline_source: peacebypiece-ui-0.16.47
 status: draft-final
 updated: 2026-05-20
 ---

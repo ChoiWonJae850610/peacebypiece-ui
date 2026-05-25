@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Service Operation IA
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.18
+baseline_source: peacebypiece-ui-0.16.47
 status: planned
 updated: 2026-05-20
 ---

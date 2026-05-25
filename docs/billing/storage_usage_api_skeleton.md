@@ -1,6 +1,6 @@
 # PeaceByPiece 스토리지 사용량 집계 API skeleton
 
-Version: 0.9.68
+Version: 0.16.48
 Status: API skeleton
 Scope: 고객사별 저장공간 사용량 조회/스냅샷 생성 route 구조
 Non-goal: R2 실시간 사용량 조회, 업로드 차단, 결제 자동화

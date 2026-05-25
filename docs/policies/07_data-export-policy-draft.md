@@ -1,8 +1,8 @@
 # 데이터 내보내기 정책 초안
 
 ## 문서 상태
-- Policy Version: P-0.91.5
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 법무 검토 전 초안
 
 ## 1. 목적

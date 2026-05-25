@@ -1,7 +1,7 @@
 ---
 title: 작업지시서 DB/R2 호출 위치 전수조사
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.50
+baseline_source: peacebypiece-ui-0.16.47
 status: draft
 updated: 2026-05-21
 ---

@@ -1,6 +1,6 @@
 # 50. WAFL A-TYPE system 화면 개발자성 문구 정리
 
-Version: 0.15.27
+Version: 0.16.48
 
 ## 목적
 

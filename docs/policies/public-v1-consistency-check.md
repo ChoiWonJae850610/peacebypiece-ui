@@ -1,8 +1,8 @@
 # 고객 공개 v1.0 정책 문서 정합성 점검
 
 ## 문서 상태
-- Policy Version: P-0.91.29
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 고객 공개 v1.0 초안 정합성 점검용
 - 적용 대상: docs/policies/public 하위 고객 공개 초안 문서
 

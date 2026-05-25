@@ -1,6 +1,6 @@
 # PeaceByPiece 초대 정책 모델 설계
 
-Version: 0.9.59
+Version: 0.16.48
 Status: 정책 모델 설계
 Scope: 시스템관리자 고객관리자 초대, 고객관리자 멤버 초대, 초대 링크/QR 흐름
 Non-goal: 실제 이메일 발송, 실제 토큰 발급 API, QR UI, 인증 연결

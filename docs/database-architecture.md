@@ -1,7 +1,7 @@
 # Database Architecture Policy
 
-기준 버전: 0.16.15
-기준 원본: 0.16.14
+기준 버전: 0.16.48
+기준 원본: 0.16.47
 범위: DB 구조, payload/json, 중복 컬럼, snapshot, 조인/인덱스, full_reset 정리 기준
 
 ## 1. 목적

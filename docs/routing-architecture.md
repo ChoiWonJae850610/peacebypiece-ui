@@ -1,6 +1,6 @@
 # Routing Architecture
 
-기준 버전: 0.16.25
+기준 버전: 0.16.48
 상태: route baseline
 목적: public, workspace, system, me 영역의 URL 책임과 보호 기준을 고정한다.
 

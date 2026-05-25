@@ -1,7 +1,7 @@
 ---
 title: WAFL A-TYPE Customer Admin Management Screens
 version: 0.1
-baseline_source: peacebypiece-ui-0.15.6
+baseline_source: peacebypiece-ui-0.16.47
 status: applied
 updated: 2026-05-20
 ---

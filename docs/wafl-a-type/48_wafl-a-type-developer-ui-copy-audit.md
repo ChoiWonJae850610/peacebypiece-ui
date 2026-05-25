@@ -1,7 +1,7 @@
 ---
 title: WAFL Developer-facing UI Copy Audit
 version: 1.0
-baseline_source: peacebypiece-ui-0.15.25
+baseline_source: peacebypiece-ui-0.16.47
 status: draft
 updated: 2026-05-20
 ---

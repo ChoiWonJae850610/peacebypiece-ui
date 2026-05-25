@@ -1,6 +1,6 @@
 # Source Architecture
 
-기준 버전: 0.16.25
+기준 버전: 0.16.48
 상태: structure baseline
 목적: WAFLOW / PeaceByPiece 소스 계층의 책임 경계를 고정한다.
 

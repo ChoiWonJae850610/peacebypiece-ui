@@ -1,6 +1,6 @@
 # PeaceByPiece 고객관리자 통계 보완
 
-Version: 0.9.70
+Version: 0.16.48
 Status: metric skeleton
 Scope: 고객관리자 통계 항목 확장
 Non-goal: 실제 DB 통계 쿼리, 차트 UI, AI 분류 통계

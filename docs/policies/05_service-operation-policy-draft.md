@@ -1,8 +1,8 @@
 # 서비스 운영 정책 초안
 
 ## 문서 상태
-- Policy Version: P-0.91.18
-- Based App Version: 0.15.73
+- Policy Version: 0.16.48
+- Based App Version: 0.16.48
 - 문서 성격: 법무 검토 전 초안
 - 적용 대상: WAFL 서비스 운영, 점검, 장애, 고객지원, 부정 이용, 서비스 변경, 운영자 접근
 
