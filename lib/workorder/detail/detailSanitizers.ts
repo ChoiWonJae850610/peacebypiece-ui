@@ -9,6 +9,7 @@ import {
   DEFAULT_PRIORITY_OPTION,
 } from "@/lib/constants/workorderOptions";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
+import { DEFAULT_WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 import {
   appendUniqueOption,
@@ -53,7 +54,7 @@ export function sanitizeInspectionStatus(value: string | undefined | null, workf
   return sanitizeWorkOrderInspectionStatus(value, workflowState);
 }
 
-export function sanitizeOrderEntry(item: Partial<OrderEntry>, fallback?: Partial<OrderEntry>, workflowState: WorkflowState = "draft"): OrderEntry {
+export function sanitizeOrderEntry(item: Partial<OrderEntry>, fallback?: Partial<OrderEntry>, workflowState: WorkflowState = DEFAULT_WORKFLOW_STATE): OrderEntry {
   const sanitized = sanitizeWorkOrderOrderEntry(item, fallback, workflowState);
   return {
     ...sanitized,

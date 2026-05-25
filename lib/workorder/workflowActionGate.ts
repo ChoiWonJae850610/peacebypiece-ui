@@ -1,6 +1,6 @@
 import { normalizeRoles } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
-import { isWorkflowState } from "@/lib/constants/workorderStates";
+import { WORKFLOW_STATE, isWorkflowState } from "@/lib/constants/workorderStates";
 import { WORKORDER_SERVICE_CODE, getWorkOrderWorkflowServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import {
   deriveWorkflowStateFromOrderEntries,
@@ -69,7 +69,7 @@ export function getReviewWorkflowGateResult(payload: {
   const workOrder = normalizeWorkOrderForWorkflowGate(payload.workOrder);
   const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
 
-  if (isWorkflowState(payload.action.nextState, "review_requested")) {
+  if (isWorkflowState(payload.action.nextState, WORKFLOW_STATE.reviewRequested)) {
     const validationMessage = getReviewRequestValidationMessage({
       workOrder,
       text: payload.text,

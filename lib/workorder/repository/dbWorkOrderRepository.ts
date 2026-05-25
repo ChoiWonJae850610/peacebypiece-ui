@@ -4,7 +4,9 @@ import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import { queryDb } from "@/lib/db/client";
 import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import {
+  DEFAULT_WORKFLOW_STATE,
   LEGACY_WORKFLOW_STATE_MAP,
+  WORKFLOW_STATE,
   WORKFLOW_STATES,
 } from "@/lib/constants/workorderStates";
 import {
@@ -32,8 +34,6 @@ import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/reposito
 import { canServiceReplaceProductionComposition } from "@/lib/workorder/serviceCodeGuards";
 
 const SPEC_SHEET_TABLE = "spec_sheets";
-const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
-
 export type WorkOrderVisibilityScope =
   | { mode: "company" }
   | {
@@ -519,6 +519,10 @@ function mapSpecSheetRowToWorkOrderSummary(
 
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replaceAll('"', '""')}"`;
+}
+
+function quoteLiteral(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`;
 }
 
 function findFirstMatchingColumn(
@@ -1311,12 +1315,12 @@ function buildSpecSheetSummaryWhereSql(
   appendAssignedWorkOrderVisibilityPredicate(schema, predicates, values, scope);
 
   if (schema.workflowStateColumn) {
-    const workflowColumn = `COALESCE(spec_sheet.${quoteIdentifier(schema.workflowStateColumn)}, 'draft')`;
+    const workflowColumn = `COALESCE(spec_sheet.${quoteIdentifier(schema.workflowStateColumn)}, ${quoteLiteral(DEFAULT_WORKFLOW_STATE)})`;
     if (status === "active") {
       predicates.push(
         `NOT (${buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES.completed)})`,
       );
-    } else if (status === "completed") {
+    } else if (status === WORKFLOW_STATE.completed) {
       predicates.push(
         buildWorkflowStateInSql(
           workflowColumn,
@@ -1331,7 +1335,7 @@ function buildSpecSheetSummaryWhereSql(
         ),
       );
     }
-  } else if (status === "completed") {
+  } else if (status === WORKFLOW_STATE.completed) {
     predicates.push("FALSE");
   }
 

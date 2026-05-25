@@ -23,7 +23,7 @@ import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrder
 import { getWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { isSameComparableText } from "@/lib/utils/compare";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
-import { canOpenInspectionModalInWorkflow, isWorkflowStateBefore, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
+import { WORKFLOW_STATE, canOpenInspectionModalInWorkflow, isWorkflowStateBefore, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { ROLE } from "@/lib/constants/roles";
 import { getWorkflowStateAfterManagerChangeByPolicy } from "@/lib/workorder/workflowPolicy";
 import type { RoleType } from "@/types/permission";
@@ -73,7 +73,7 @@ export function buildWorkflowActionResult(payload: {
       ),
     ],
     saveStatus: isWorkflowStateReviewLocked(payload.action.nextState, true) ? "dirty" : undefined,
-    openInventoryEditor: canOpenInspectionModalInWorkflow(payload.action.nextState) && isWorkflowStateBefore(payload.workOrder.workflowState, "completed"),
+    openInventoryEditor: canOpenInspectionModalInWorkflow(payload.action.nextState) && isWorkflowStateBefore(payload.workOrder.workflowState, WORKFLOW_STATE.completed),
     toastMessage: payload.toastMessageOverride ?? (payload.text ?? defaultActionFlowText).workflowChangedToastFormat.replace("{label}", payload.action.label),
   };
 }

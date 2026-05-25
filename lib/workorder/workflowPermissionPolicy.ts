@@ -1,4 +1,5 @@
-import type { MemberPermissionCode } from "@/lib/permissions";
+import { MEMBER_PERMISSION_CODE, type MemberPermissionCode } from "@/lib/permissions";
+import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import type { WorkOrder, WorkflowState } from "@/types/workorder";
 
 export type WorkOrderWorkflowPermissionInput = {
@@ -55,31 +56,31 @@ export function getWorkflowMutationPermissionCode(
       factoryOrderRequestTouched: input.factoryOrderRequestTouched,
     })
   ) {
-    return "workorder.status.order";
+    return MEMBER_PERMISSION_CODE.workorderStatusOrder;
   }
 
   const previousWorkflowState = input.previousWorkflowState ?? null;
   if (previousWorkflowState === input.nextWorkflowState) return null;
 
   if (
-    input.nextWorkflowState === "review_requested" ||
-    input.nextWorkflowState === "draft"
+    input.nextWorkflowState === WORKFLOW_STATE.reviewRequested ||
+    input.nextWorkflowState === WORKFLOW_STATE.draft
   ) {
-    return "workorder.status.review";
+    return MEMBER_PERMISSION_CODE.workorderStatusReview;
   }
 
   if (
-    input.nextWorkflowState === "review_completed" ||
-    input.nextWorkflowState === "rejected" ||
-    input.nextWorkflowState === "inspection"
+    input.nextWorkflowState === WORKFLOW_STATE.reviewCompleted ||
+    input.nextWorkflowState === WORKFLOW_STATE.rejected ||
+    input.nextWorkflowState === WORKFLOW_STATE.inspection
   ) {
-    return "workorder.status.order";
+    return MEMBER_PERMISSION_CODE.workorderStatusOrder;
   }
 
-  if (input.nextWorkflowState === "completed") {
-    return previousWorkflowState === "inspection"
-      ? "workorder.status.inspect"
-      : "workorder.status.complete";
+  if (input.nextWorkflowState === WORKFLOW_STATE.completed) {
+    return previousWorkflowState === WORKFLOW_STATE.inspection
+      ? MEMBER_PERMISSION_CODE.workorderStatusInspect
+      : MEMBER_PERMISSION_CODE.workorderStatusComplete;
   }
 
   return null;

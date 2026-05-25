@@ -1,8 +1,9 @@
 import { isEmptySelectionValue } from "@/lib/constants/workorderDomain";
+import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import type { WorkflowState } from "@/types/workflow";
 import type { WorkOrder } from "@/types/workorder";
 
-export const WORKFLOW_ROW_PRUNE_STATES: readonly WorkflowState[] = ["review_requested", "inspection"];
+export const WORKFLOW_ROW_PRUNE_STATES: readonly WorkflowState[] = [WORKFLOW_STATE.reviewRequested, WORKFLOW_STATE.inspection];
 
 export function shouldPruneDraftRowsForWorkflowState(nextState: WorkflowState) {
   return WORKFLOW_ROW_PRUNE_STATES.includes(nextState);

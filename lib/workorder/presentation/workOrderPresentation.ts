@@ -5,7 +5,7 @@ import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
 import { getI18n } from "@/lib/i18n";
 import type { WorkOrderListItem } from "@/types/workorder";
 import { buildWorkOrderTitle } from "@/lib/workorder/reorder/helpers";
-import { WORKFLOW_STATE_BADGE_TONE } from "@/lib/constants/workorderStates";
+import { DEFAULT_WORKFLOW_STATE, WORKFLOW_STATE_BADGE_TONE } from "@/lib/constants/workorderStates";
 import type { WorkflowState } from "@/types/workflow";
 import { APP_VERSION } from "@/lib/constants/app";
 
@@ -20,7 +20,7 @@ export function getInventoryLabel(status: string | null | undefined) {
 }
 
 export function getWorkOrderState(workflowStateById: Record<string, string>, workOrderId: string): WorkflowState {
-  return (workflowStateById[workOrderId] as WorkflowState | undefined) ?? "draft";
+  return (workflowStateById[workOrderId] as WorkflowState | undefined) ?? DEFAULT_WORKFLOW_STATE;
 }
 
 export function getWorkOrderCardTone(state: WorkflowState) {

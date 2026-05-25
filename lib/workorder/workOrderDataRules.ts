@@ -14,6 +14,7 @@ import {
 import { normalizeCategorySelection } from "@/lib/workorder/normalizeRules";
 import { getOrderTypeFromWorkOrderKind, isWorkOrderKind, normalizeWorkOrderKind as normalizeStructuredWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
+import { DEFAULT_WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 
 function toNonNegativeNumber(value: unknown, fallback = 0) {
@@ -48,7 +49,7 @@ export function sanitizeWorkOrderInspectionStatus(
 export function sanitizeWorkOrderOrderEntry(
   item: Partial<OrderEntry>,
   fallback?: Partial<OrderEntry>,
-  workflowState: WorkflowState = "draft",
+  workflowState: WorkflowState = DEFAULT_WORKFLOW_STATE,
 ): OrderEntry {
   return {
     id: item.id || fallback?.id || "",

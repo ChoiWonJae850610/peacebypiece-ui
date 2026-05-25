@@ -2,6 +2,7 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
+import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { normalizeProductionOrderEntries } from "@/lib/workorder/productionCompositionSnapshot";
 import type { OrderEntry, WorkOrder } from "@/types/workorder";
 
@@ -19,10 +20,10 @@ const LABOR_COST_COLUMN_CANDIDATES = ["labor_cost", "laborCost"] as const;
 const LOSS_COST_COLUMN_CANDIDATES = ["loss_cost", "lossCost"] as const;
 
 const FACTORY_ORDER_STATUS = {
-  draft: "draft",
+  draft: WORKFLOW_STATE.draft,
   requested: "requested",
-  inspection: "inspection",
-  completed: "completed",
+  inspection: WORKFLOW_STATE.inspection,
+  completed: WORKFLOW_STATE.completed,
 } as const;
 
 type WorkOrderCompanyContext = {
@@ -141,8 +142,8 @@ function normalizeDateValue(value: unknown, kind: DbFactoryOrderSchema["dueDateC
 }
 
 function resolveFactoryOrderStatus(workOrder: WorkOrder, entry: OrderEntry): string {
-  if (workOrder.workflowState === "completed" || entry.inspectionStatus === "inspection_completed") return FACTORY_ORDER_STATUS.completed;
-  if (workOrder.workflowState === "inspection") return FACTORY_ORDER_STATUS.inspection;
+  if (workOrder.workflowState === WORKFLOW_STATE.completed || entry.inspectionStatus === "inspection_completed") return FACTORY_ORDER_STATUS.completed;
+  if (workOrder.workflowState === WORKFLOW_STATE.inspection) return FACTORY_ORDER_STATUS.inspection;
   if (workOrder.factoryOrderRequest) return FACTORY_ORDER_STATUS.requested;
   return FACTORY_ORDER_STATUS.draft;
 }
