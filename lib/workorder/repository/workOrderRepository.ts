@@ -17,16 +17,14 @@ import {
 } from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 import type { WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
 import type {
-  WorkOrderListSort,
-  WorkOrderListStatusFilter,
-} from "@/lib/workorder/list/workOrderListControls";
+  WorkOrderSummaryQueryOptions,
+} from "@/lib/workorder/repository/workOrderRepositoryContracts";
 
 export type { WorkOrderCompanyScope, WorkOrderVisibilityScope };
-
-type WorkOrderSummaryQueryOptions = {
-  status: WorkOrderListStatusFilter;
-  sort: WorkOrderListSort;
-};
+export type {
+  WorkOrderListOptions,
+  WorkOrderSummaryQueryOptions,
+} from "@/lib/workorder/repository/workOrderRepositoryContracts";
 
 function traceQueryStart(name: string, payload?: Record<string, string | number | boolean | null | undefined>) {
   traceWaflFlow("query", name, payload);

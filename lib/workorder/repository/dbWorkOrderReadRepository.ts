@@ -2,20 +2,14 @@ import "server-only";
 
 import type { WorkOrder, WorkOrderSummary } from "@/types/workorder";
 import type {
-  WorkOrderListSort,
-  WorkOrderListStatusFilter,
-} from "@/lib/workorder/list/workOrderListControls";
+  WorkOrderListOptions,
+} from "@/lib/workorder/repository/workOrderRepositoryContracts";
 import {
   findAllDbWorkOrders as findAllDbWorkOrdersFromRepository,
   findDbWorkOrderById as findDbWorkOrderByIdFromRepository,
   findDbWorkOrderSummaries as findDbWorkOrderSummariesFromRepository,
   type WorkOrderCompanyScope,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
-
-type WorkOrderListOptions = {
-  status?: WorkOrderListStatusFilter;
-  sort?: WorkOrderListSort;
-};
 
 export type { WorkOrderCompanyScope };
 
