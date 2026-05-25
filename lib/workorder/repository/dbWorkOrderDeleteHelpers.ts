@@ -29,6 +29,10 @@ export function buildSpecSheetCompanyScopePredicate(
 export function buildSoftDeleteSpecSheetAssignments(
   schema: DbSpecSheetSchema,
 ): string[] {
+  if (!schema.isActiveColumn) {
+    return [];
+  }
+
   const assignments = [`${quoteIdentifier(schema.isActiveColumn)} = FALSE`];
 
   if (schema.deletedAtColumn) {

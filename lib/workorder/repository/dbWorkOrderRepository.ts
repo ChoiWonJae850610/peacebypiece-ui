@@ -23,10 +23,6 @@ import type {
   WorkOrderStatePatch,
   WorkOrderSummary,
 } from "@/types/workorder";
-import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
-import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
-import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetOutsourcingRepository";
-import { canServiceReplaceProductionComposition } from "@/lib/workorder/serviceCodeGuards";
 import {
   normalizeWorkOrderVisibilityScope,
   resolveWorkOrderCompanyId,
@@ -61,6 +57,12 @@ import {
   buildSoftDeleteSpecSheetAssignments,
   softDeleteAttachmentMemoBundleForWorkOrder,
 } from "@/lib/workorder/repository/dbWorkOrderDeleteHelpers";
+import {
+  mergeWorkOrderWithExistingProductionDetails,
+  shouldSyncProductionCompositionForFullWorkOrderSave,
+  syncCreatedWorkOrderProductionComposition,
+  syncPatchedWorkOrderProductionComposition,
+} from "@/lib/workorder/repository/dbWorkOrderProductionSync";
 export type {
   WorkOrderCompanyScope,
   WorkOrderVisibilityScope,
@@ -559,35 +561,8 @@ export async function createDbWorkOrder(
     materials: normalizedWorkOrder.materials ?? [],
     outsourcing: normalizedWorkOrder.outsourcing ?? [],
   };
-  await syncDbFactoryOrdersForSpecSheet(persisted, company);
-  await syncDbSpecSheetMaterialsForSpecSheet(persisted, company);
-  await syncDbSpecSheetOutsourcingForSpecSheet(persisted, company);
+  await syncCreatedWorkOrderProductionComposition(persisted, company);
   return persisted;
-}
-
-function shouldSyncProductionCompositionForFullWorkOrderSave(_workOrder: WorkOrder): boolean {
-  // Full work-order saves are used by immediate/basic field updates such as
-  // manager, title, category, and inventory changes. They must not mutate
-  // production-composition detail tables. Production rows are replaced only
-  // through serviceCode-guarded state patch saves.
-  return false;
-}
-
-function mergeWorkOrderWithExistingProductionDetails(
-  baseWorkOrder: WorkOrder,
-  existingWorkOrder: WorkOrder | null | undefined,
-): WorkOrder {
-  if (!existingWorkOrder) return baseWorkOrder;
-
-  return {
-    ...existingWorkOrder,
-    ...baseWorkOrder,
-    factoryOrderRequest: existingWorkOrder.factoryOrderRequest ?? null,
-    orderEntries: existingWorkOrder.orderEntries ?? [],
-    materials: existingWorkOrder.materials ?? [],
-    outsourcing: existingWorkOrder.outsourcing ?? [],
-    hasDetailSnapshot: existingWorkOrder.hasDetailSnapshot ?? baseWorkOrder.hasDetailSnapshot,
-  };
 }
 
 function isNotFoundWorkOrderError(error: unknown): boolean {
@@ -821,9 +796,7 @@ export async function updateDbWorkOrder(
       );
 
   if (shouldSyncProductionComposition) {
-    await syncDbFactoryOrdersForSpecSheet(persisted, company);
-    await syncDbSpecSheetMaterialsForSpecSheet(persisted, company);
-    await syncDbSpecSheetOutsourcingForSpecSheet(persisted, company);
+    await syncCreatedWorkOrderProductionComposition(persisted, company);
   }
 
   return persisted;
@@ -979,59 +952,16 @@ export async function updateDbWorkOrderStatePatch(
   }
 
   const mapped = mapSpecSheetRowToWorkOrder(updated);
-  const hasOrderEntriesPatch = Object.prototype.hasOwnProperty.call(
+  const patchedProductionWorkOrder = await syncPatchedWorkOrderProductionComposition({
     patch,
-    "orderEntries",
-  );
-  const hasFactoryOrderRequestPatch = Object.prototype.hasOwnProperty.call(
-    patch,
-    "factoryOrderRequest",
-  );
-  const hasMaterialsPatch = Object.prototype.hasOwnProperty.call(
-    patch,
-    "materials",
-  );
-  const hasOutsourcingPatch = Object.prototype.hasOwnProperty.call(
-    patch,
-    "outsourcing",
-  );
-  const hasProductionCompositionPatch =
-    hasOrderEntriesPatch ||
-    hasFactoryOrderRequestPatch ||
-    hasMaterialsPatch ||
-    hasOutsourcingPatch;
-  const canSyncProductionComposition = canServiceReplaceProductionComposition(patch.serviceCode ?? null);
+    mappedWorkOrder: mapped,
+    company,
+    scope,
+    findWorkOrderById: findDbWorkOrderById,
+  });
 
-  if (hasProductionCompositionPatch && canSyncProductionComposition) {
-    const existing = await findDbWorkOrderById(patch.id, scope);
-    const patchedWorkOrder: WorkOrder = {
-      ...(existing ?? mapped),
-      ...mapped,
-      orderEntries: hasOrderEntriesPatch
-        ? (patch.orderEntries ?? [])
-        : (existing?.orderEntries ?? []),
-      materials: hasMaterialsPatch
-        ? (patch.materials ?? [])
-        : (existing?.materials ?? []),
-      outsourcing: hasOutsourcingPatch
-        ? (patch.outsourcing ?? [])
-        : (existing?.outsourcing ?? []),
-      factoryOrderRequest: hasFactoryOrderRequestPatch
-        ? (patch.factoryOrderRequest ?? null)
-        : (existing?.factoryOrderRequest ?? null),
-    };
-
-    if (hasOrderEntriesPatch || hasFactoryOrderRequestPatch) {
-      await syncDbFactoryOrdersForSpecSheet(patchedWorkOrder, company);
-    }
-    if (hasMaterialsPatch) {
-      await syncDbSpecSheetMaterialsForSpecSheet(patchedWorkOrder, company);
-    }
-    if (hasOutsourcingPatch) {
-      await syncDbSpecSheetOutsourcingForSpecSheet(patchedWorkOrder, company);
-    }
-
-    return patchedWorkOrder;
+  if (patchedProductionWorkOrder) {
+    return patchedProductionWorkOrder;
   }
 
   const existingWithDetails = await findDbWorkOrderById(patch.id, scope);
