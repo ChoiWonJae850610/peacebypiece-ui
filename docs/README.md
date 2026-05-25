@@ -77,6 +77,21 @@
 - `wafl-a-type/77_wafl-a-type-workorder-service-guard-first-pass.md` — 작업지시서 serviceCode guard 1차 적용
 - `wafl-a-type/78_wafl-a-type-workorder-side-effect-route-guards.md` — 작업지시서 side effect route guard 1차
 
+
+## 정책/약관 문서
+
+정책/약관 문서는 `docs/policies/`에 보관한다. 이 문서 세트는 WAFL 고객 공개 문서, 내부 정책 초안, 정책 기반 개발 gap을 함께 관리한다.
+
+- `policies/README.md` — 정책 문서 인덱스
+- `policies/00_policy-ia.md` — 정책/약관 IA
+- `policies/01_privacy-policy-draft.md` — 개인정보처리방침 내부 초안
+- `policies/02_terms-of-service-draft.md` — 이용약관 내부 초안
+- `policies/03_billing-refund-policy-draft.md` — 결제 및 환불 정책 내부 초안
+- `policies/04_storage-data-retention-policy-draft.md` — 파일/저장소 보관 정책 내부 초안
+- `policies/public/` — 고객 공개용 v1 초안
+- `policies/90_policy-feature-gap.md` — 정책 문구와 구현 기능 간 gap 목록
+- `policies/91_policy-decisions.md` — 정책 결정 기록
+
 ## 정리 정책
 
 과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~83 문서로 통일한다.
@@ -86,9 +101,10 @@
 ## 현재 작업 기준
 
 ```txt
-현재 기준: 0.15.66
+현재 기준 앱 버전: 0.16.46
+현재 정책 문서 묶음: P-0.91.34
 PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
-tablet/mobile 전용 구현은 0.16.x 이후
+정책/약관 문서는 `docs/policies/` 기준으로 관리한다.
 DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
 ```
 

@@ -1,0 +1,202 @@
+# 고객 공개 v1.0 최종본 차단 조건 점검
+
+## 문서 상태
+- Policy Version: P-0.91.33
+- Based App Version: 0.15.73
+- 문서 성격: 고객 공개 v1.0 최종본 전환 차단 조건 점검용
+- 적용 대상: docs/policies/public 하위 고객 공개 초안 문서
+
+## 1. 목적
+이 문서는 WAFL 고객 공개 v1.0 정책 문서를 실제 공개본으로 전환하기 전에 남아 있으면 안 되는 차단 표현을 점검한다.
+
+현재 docs/policies/public 하위 문서들은 아직 초안 상태이므로 차단 표현이 남아 있는 것이 정상이다. 이 문서는 최종 공개본 생성 전 제거 작업을 위한 점검 기준으로 사용한다.
+
+## 2. 차단 조건
+다음 표현이 고객 공개 최종본에 남아 있으면 공개 불가로 본다.
+
+- 초안
+- draft
+- 확정 필요
+- 미정
+- 내부 기준 버전
+- P-0.91
+- 고객 공개 전
+- 변환 연습용
+- 법무 검토 전
+- Based App Version
+- Policy Version
+- PeaceByPiece
+- WAFLOW
+
+## 3. 문서별 차단 상태
+
+| 문서 | 차단 표현 수 | 상태 |
+| --- | ---: | --- |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 8 | 차단 |
+| docs/policies/public/data-export-policy-v1-draft.md | 8 | 차단 |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 9 | 차단 |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 8 | 차단 |
+| docs/policies/public/privacy-policy-v1-draft.md | 14 | 차단 |
+| docs/policies/public/service-operation-policy-v1-draft.md | 8 | 차단 |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 8 | 차단 |
+| docs/policies/public/terms-of-service-v1-draft.md | 11 | 차단 |
+
+## 4. 차단 표현별 발견 건수
+
+| 표현 | 발견 건수 |
+| --- | ---: |
+| 초안 | 33 |
+| 확정 필요 | 31 |
+| 내부 기준 버전 | 8 |
+| 고객 공개 전 | 2 |
+
+## 5. 차단 표현 위치
+
+| 문서 | 줄 | 차단 표현 | 현재 문장 |
+| --- | ---: | --- | --- |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 1 | 초안 | `# WAFL 결제 및 환불 정책 v1.0 초안` |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.22` |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 10 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 12 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, PG사, 결제 연동 방식, 시행일, 법무/세무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/billing-refund-policy-v1-draft.md | 157 | 확정 필요 | `본 결제 및 환불 정책은 [시행일 확정 필요]부터 시행합니다.` |
+| docs/policies/public/data-export-policy-v1-draft.md | 1 | 초안 | `# WAFL 데이터 내보내기 정책 v1.0 초안` |
+| docs/policies/public/data-export-policy-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/data-export-policy-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.24` |
+| docs/policies/public/data-export-policy-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/data-export-policy-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/data-export-policy-v1-draft.md | 9 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/data-export-policy-v1-draft.md | 11 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, 시행일, 도메인, 이메일 계정, 법무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/data-export-policy-v1-draft.md | 158 | 확정 필요 | `본 데이터 내보내기 정책은 [시행일 확정 필요]부터 시행합니다.` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 1 | 초안 | `# WAFL 요금제 및 저장소 정책 v1.0 초안` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.27` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 10 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 12 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, PG사, 결제 연동 방식, 시행일, 법무/세무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 25 | 초안 | `WAFL의 요금제 초안은 다음과 같습니다.` |
+| docs/policies/public/plan-storage-policy-v1-draft.md | 139 | 확정 필요 | `본 요금제 및 저장소 정책은 [시행일 확정 필요]부터 시행합니다.` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 1 | 초안 | `# WAFL 정책 변경 고지 및 동의 정책 v1.0 초안` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.26` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 10 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 12 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, 시행일, 도메인, 이메일 계정, 법무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/policy-notice-agreement-policy-v1-draft.md | 167 | 확정 필요 | `본 정책 변경 고지 및 동의 정책은 [시행일 확정 필요]부터 시행합니다.` |
+| docs/policies/public/privacy-policy-v1-draft.md | 1 | 초안 | `# WAFL 개인정보처리방침 v1.0 초안` |
+| docs/policies/public/privacy-policy-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/privacy-policy-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.21` |
+| docs/policies/public/privacy-policy-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/privacy-policy-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/privacy-policy-v1-draft.md | 8 | 확정 필요 | `- 대표자: [대표자명 확정 필요]` |
+| docs/policies/public/privacy-policy-v1-draft.md | 9 | 확정 필요 | `- 사업장 주소: [사업장 주소 확정 필요]` |
+| docs/policies/public/privacy-policy-v1-draft.md | 10 | 확정 필요 | `- 사업자등록번호: [사업자등록번호 확정 필요]` |
+| docs/policies/public/privacy-policy-v1-draft.md | 13 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/privacy-policy-v1-draft.md | 15 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, 도메인, 이메일 계정, 처리위탁사, 개인정보 보호책임자 또는 담당자, 시행일, 법무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/privacy-policy-v1-draft.md | 155 | 고객 공개 전 | `고객 공개 전 실제 사용 중인 처리위탁사를 확정하여 아래 표에 기재해야 합니다.` |
+| docs/policies/public/privacy-policy-v1-draft.md | 163 | 확정 필요 | `｜ [PG사 확정 필요] ｜ 결제 처리, 정기결제, 영수증 제공 ｜ 위탁계약 종료 시까지 ｜` |
+| docs/policies/public/privacy-policy-v1-draft.md | 165 | 고객 공개 전 | `실제 고객 공개 전에는 사용하지 않는 수탁사를 제거하고, 실제 사용하는 수탁사만 기재합니다.` |
+| docs/policies/public/privacy-policy-v1-draft.md | 214 | 확정 필요 | `본 개인정보처리방침은 [시행일 확정 필요]부터 시행합니다.` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 1 | 초안 | `# WAFL 서비스 운영 정책 v1.0 초안` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.25` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 9 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 11 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, 시행일, 도메인, 이메일 계정, 법무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/service-operation-policy-v1-draft.md | 160 | 확정 필요 | `본 서비스 운영 정책은 [시행일 확정 필요]부터 시행합니다.` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 1 | 초안 | `# WAFL 파일 및 저장소 보관 정책 v1.0 초안` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.23` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 9 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 11 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, 시행일, 도메인, 이메일 계정, 법무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/storage-retention-policy-v1-draft.md | 160 | 확정 필요 | `본 파일 및 저장소 보관 정책은 [시행일 확정 필요]부터 시행합니다.` |
+| docs/policies/public/terms-of-service-v1-draft.md | 1 | 초안 | `# WAFL 이용약관 v1.0 초안` |
+| docs/policies/public/terms-of-service-v1-draft.md | 4 | 초안 | `- 공개 버전: v1.0 초안` |
+| docs/policies/public/terms-of-service-v1-draft.md | 5 | 내부 기준 버전 | `- 내부 기준 버전: P-0.91.20` |
+| docs/policies/public/terms-of-service-v1-draft.md | 6 | 확정 필요 | `- 시행일: [시행일 확정 필요]` |
+| docs/policies/public/terms-of-service-v1-draft.md | 7 | 확정 필요 | `- 회사명: [사업자명 확정 필요]` |
+| docs/policies/public/terms-of-service-v1-draft.md | 8 | 확정 필요 | `- 대표자: [대표자명 확정 필요]` |
+| docs/policies/public/terms-of-service-v1-draft.md | 9 | 확정 필요 | `- 사업장 주소: [사업장 주소 확정 필요]` |
+| docs/policies/public/terms-of-service-v1-draft.md | 10 | 확정 필요 | `- 사업자등록번호: [사업자등록번호 확정 필요]` |
+| docs/policies/public/terms-of-service-v1-draft.md | 12 | 초안 | `- 문서 성격: 고객 공개 전 변환 연습용 초안` |
+| docs/policies/public/terms-of-service-v1-draft.md | 14 | 초안 | `본 문서는 고객 공개 전 검토용 초안입니다. 실제 공개 전 사업자 정보, 도메인, 이메일 계정, PG사, 시행일, 법무 검토 여부를 확정해야 합니다.` |
+| docs/policies/public/terms-of-service-v1-draft.md | 189 | 확정 필요 | `본 약관은 [시행일 확정 필요]부터 시행합니다.` |
+
+## 6. 차단 표현 처리 기준
+
+| 차단 표현 | 처리 기준 |
+| --- | --- |
+| 초안 | 최종 공개본에서는 제거하거나 “버전: v1.0”으로 변경 |
+| draft | 최종 공개 파일명에서 제거 |
+| 확정 필요 | 실제 확정값으로 치환 |
+| 미정 | 실제 확정값으로 치환하거나 고객 공개 가능한 문장으로 변경 |
+| 내부 기준 버전 | 제거 |
+| P-0.91 | 제거 |
+| 고객 공개 전 | 제거 |
+| 변환 연습용 | 제거 |
+| 법무 검토 전 | 제거 |
+| Based App Version | 제거 |
+| Policy Version | 제거 |
+| PeaceByPiece | WAFL로 치환하거나 제거 |
+| WAFLOW | WAFL로 치환 |
+
+## 7. 최종 공개본 전환 조건
+다음 조건을 모두 만족해야 고객 공개 v1.0 최종본으로 전환할 수 있다.
+
+1. 차단 표현 0건
+2. `-draft` 파일명 제거
+3. 문서 헤더를 공개본 형식으로 변환
+4. 시행일 실제값 입력
+5. 사업자명/대표자/주소/사업자등록번호 입력
+6. 개인정보 보호책임자 또는 담당자 입력
+7. 실제 PG사 입력
+8. 실제 처리위탁사 목록 확정
+9. 이메일 계정 수신/발신 테스트 완료
+10. 법무/세무 검토 여부 내부 기록 완료
+
+## 8. 최종 공개본 헤더 예시
+
+```text
+# WAFL 이용약관
+
+- 버전: v1.0
+- 시행일: 2026년 00월 00일
+- 회사명: [실제 사업자명]
+- 고객지원: support@wafl.co.kr
+```
+
+## 9. 파일명 전환 기준
+
+| 초안 파일명 | 최종 공개 파일명 |
+| --- | --- |
+| terms-of-service-v1-draft.md | terms-of-service-v1.md |
+| privacy-policy-v1-draft.md | privacy-policy-v1.md |
+| billing-refund-policy-v1-draft.md | billing-refund-policy-v1.md |
+| storage-retention-policy-v1-draft.md | storage-retention-policy-v1.md |
+| data-export-policy-v1-draft.md | data-export-policy-v1.md |
+| service-operation-policy-v1-draft.md | service-operation-policy-v1.md |
+| policy-notice-agreement-policy-v1-draft.md | policy-notice-agreement-policy-v1.md |
+| plan-storage-policy-v1-draft.md | plan-storage-policy-v1.md |
+
+## 10. 현재 판단
+
+```text
+고객 공개 v1.0 최종본 전환 가능 여부:
+불가
+
+이유:
+사업자 정보, 시행일, PG사, 개인정보 보호책임자, 처리위탁사, 이메일 계정 실제 설정, 법무/세무 검토가 아직 완료되지 않았고, 초안/확정 필요 표현이 남아 있음
+```
+
+## 11. 다음 작업
+다음 작업은 정책 문서 작업을 개발 작업으로 연결하기 위한 “정책 기반 개발 우선순위” 정리로 진행한다.
+
+추천:
+- P-0.91.34 — 정책 기반 개발 우선순위 정리

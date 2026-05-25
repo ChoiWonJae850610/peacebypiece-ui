@@ -1,0 +1,590 @@
+# Policy Worklog
+
+## Current Policy Version
+P-0.91.34
+
+## Based App Version
+0.15.73
+
+## Last Updated
+2026-05-23
+
+## Current Scope
+개인정보처리방침 초안에 사용자 결정사항을 반영하고, 확정/미확정/개발 필요사항을 별도 결정 문서로 정리한다.
+
+## Rules
+
+### Versioning
+- 앱 APP_VERSION은 정책 문서 패치에서 변경하지 않는다.
+- 정책 문서 버전은 P-0.91.x 형식으로 관리한다.
+- 정책 문서 zip은 docs 폴더만 포함한다.
+- 정책 문서 작업에서는 소스 코드, DB schema, package 파일을 수정하지 않는다.
+
+### Required Status Files
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/90_policy-feature-gap.md
+
+### Documentation Policy
+- 고객사에게 실제로 보여줄 문구와 내부 운영 기준을 구분한다.
+- 법무/세무/PG 확정 전 문구는 초안으로 표시한다.
+- 정책 문구에 아직 구현되지 않은 기능이 포함되면 90_policy-feature-gap.md에 기록한다.
+- 개인정보, 결제, 파일 보관, 해지, 데이터 삭제 관련 문구는 실제 구현 가능성과 함께 관리한다.
+
+## Completed
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/01_privacy-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## In Progress
+- 없음
+
+## Not Started
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/03_billing-refund-policy-draft.md
+- docs/policies/04_storage-data-retention-policy-draft.md
+- docs/policies/05_service-operation-policy-draft.md
+- docs/policies/06_policy-consent-change-notice-draft.md
+
+## Important Decisions
+- 정책 문서 전용 대화창에서는 전체 소스 zip이 아니라 docs 폴더 zip만 주고받는다.
+- docs/policies/POLICY_WORKLOG.md를 기준으로 정책 작업 진행도를 판단한다.
+- 앱 개발 대화창과 정책 문서 대화창은 별도 버전 라인을 가진다.
+- 정책 문서가 요구하는 미구현 기능은 개발 작업으로 바로 섞지 않고 feature gap으로 분리한다.
+
+## Feature Gaps Found
+- 정책/약관 고객사 열람 화면
+- 정책 버전 관리
+- 정책 변경 고지 및 재동의
+- 고객사 데이터 export
+- 결제 실패 후 서비스 제한 상태
+- 환불 요청 및 처리 상태
+- 세금계산서 요청/발행 상태 관리
+- 파일 보관기간 경과 후 영구 삭제 정책과 실제 purge 흐름 연결
+- 개인정보 처리 위탁사 확정 및 공개 기능
+- 정보주체 권리 행사 접수/처리 기능
+- 개인정보 파기 로그 및 증적 관리
+- 개인정보 보호책임자/고객지원 연락처 관리
+- 사업자등록정보 진위확인 및 대표자명 일치 검증
+- 해지 후 데이터 다운로드 미제공 정책 고지
+
+## Next Policy Version
+P-0.91.4
+
+## Next Policy Task
+이용약관 초안 작성
+
+
+## P-0.91.4 Summary
+사업자등록증 수동 확인, 해지 취소 기준, 데이터 내보내기 방식, Google Workspace 이메일 발송, 카드결제 증빙 및 세금계산서 미발행 결정을 반영했다.
+
+## P-0.91.4 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/01_privacy-policy-draft.md
+- docs/policies/07_data-export-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.5
+
+## Next Policy Task
+이용약관 초안 작성
+
+## P-0.91.5 Summary
+Google Workspace alias 기반 초기 이메일 운영, 데이터 내보내기 export job 방식, 로그인 필요 다운로드 링크, 해지 신청 상태 로그인 세션 최초 1회 팝업 결정을 반영했다.
+
+## P-0.91.5 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/01_privacy-policy-draft.md
+- docs/policies/07_data-export-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.6
+
+## Next Policy Task
+이용약관 초안 작성
+
+## P-0.91.6 Summary
+이용약관 초안을 추가했다. 고객사 승인, 멤버/권한, 카드결제, 해지, 데이터 내보내기, 파일 보관, 이용 제한, 책임 제한 조항을 현재 정책 결정사항 기준으로 정리했다.
+
+## P-0.91.6 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.7
+
+## Next Policy Task
+이용약관 검토 결정사항 반영 또는 결제 및 환불 정책 초안 작성
+
+## P-0.91.7 Summary
+무료 체험 7일/100MB, 무료 체험 중 데이터 내보내기 제한, 결제 실패 즉시 유료 업무 기능 제한, 요금제 변경, 저장소 초과, 환불 기준을 반영했다.
+
+## P-0.91.7 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.8
+
+## Next Policy Task
+결제 및 환불 정책 초안 작성
+
+## P-0.91.8 Summary
+요금제 가격/저장소/멤버 수/데이터 내보내기 횟수, VAT 포함 표시, 무료 체험 종료 안내, 저장소 초과 제한, 추가 저장소 정책을 반영했다.
+
+## P-0.91.8 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/08_plan-storage-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.9
+
+## Next Policy Task
+결제 및 환불 정책 초안 작성
+
+## P-0.91.9 Summary
+장기 미납 30/60/90일 기준, 업무 데이터 삭제 대상, 법정/분쟁 대응 기록 분리 보관 기준을 반영하고 결제 및 환불 정책 초안을 추가했다.
+
+## P-0.91.9 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/03_billing-refund-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.10
+
+## Next Policy Task
+결제 및 환불 정책 검토 결정사항 반영 또는 파일/저장소 보관 정책 초안 작성
+
+## P-0.91.10 Summary
+결제 실패/장기 미납 안내 문구, 환불 예외 수동 처리, 시스템관리자 데이터 삭제 로그 UI, 약관 변경 재동의 기준을 반영했다.
+
+## P-0.91.10 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/03_billing-refund-policy-draft.md
+- docs/policies/09_payment-notice-retention-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.11
+
+## Next Policy Task
+파일/저장소 보관 정책 초안 작성
+
+## P-0.91.11 Summary
+파일/저장소 보관 정책 초안을 추가했다. 휴지통 30일, 작업지시서 삭제 시 연결 데이터 처리, 고객사 휴지통 비우기, 시스템관리자 영구 삭제, export zip 7일 보관, 시스템관리자 파일 접근 조건을 정리했다.
+
+## P-0.91.11 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/01_privacy-policy-draft.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/04_storage-data-retention-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.12
+
+## Next Policy Task
+파일/저장소 보관 정책 검토 결정사항 반영 또는 서비스 운영 정책 초안 작성
+
+## P-0.91.12 Summary
+파일/저장소 보관 정책 검토 결정사항을 반영했다. 고객사 휴지통과 시스템관리자 삭제관리 구분, 휴지통 비우기 허용, 30일 경과 후 시스템관리자 확인 삭제, 시스템관리자 파일 접근 사유 필수, 백업 복구 제한 문구를 정리했다.
+
+## P-0.91.12 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/04_storage-data-retention-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.13
+
+## Next Policy Task
+서비스 운영 정책 초안 작성
+
+## P-0.91.13 Summary
+서비스 운영 정책 초안을 추가했다. 정기/긴급점검, 장애 대응, 외부 서비스 장애, 고객지원, 이메일 고지, 부정 이용, 불법 파일 대응, 서비스 변경/중단, 운영자 접근, 백업/복구, 정책 변경 및 재동의 기준을 정리했다.
+
+## P-0.91.13 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/05_service-operation-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.14
+
+## Next Policy Task
+서비스 운영 정책 검토 결정사항 반영 또는 정책 변경 고지/동의 정책 초안 작성
+
+## P-0.91.14 Summary
+서비스 운영 정책 검토 결정사항을 반영했다. 정기점검 특정 시간 미고정, 고객지원 영업일 순차 응대, 심각한 부정 이용 즉시 제한, 서비스 전체 종료 30일 전 고지, 장애 보상 원칙적 미제공 기준을 정리했다.
+
+## P-0.91.14 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/05_service-operation-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.15
+
+## Next Policy Task
+정책 변경 고지/동의 정책 초안 작성
+
+## P-0.91.15 Summary
+정책 변경 고지 및 동의 정책 초안을 추가했다. 재동의 필요 변경, 공지만 필요한 변경, 재동의하지 않은 경우의 기능 제한, 동의 이력 관리, 정책 변경 이력 공개 기준을 정리했다.
+
+## P-0.91.15 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/01_privacy-policy-draft.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/05_service-operation-policy-draft.md
+- docs/policies/06_policy-notice-agreement-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.16
+
+## Next Policy Task
+정책 문서 전체 정합성 점검 및 고객사 관리자 공개 화면 기준 정리
+
+## P-0.91.16 Summary
+정책 문서 전체 정합성 점검 및 고객사 관리자 공개 화면 기준을 정리했다. 고객사 관리자 정책 및 약관 메뉴, 일반 멤버 열람 범위, 정책 변경 이력 요약 표시, 재동의 접근 흐름, 내부 문서와 고객 공개 문서 분리 기준을 반영했다.
+
+## P-0.91.16 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/06_policy-notice-agreement-policy-draft.md
+- docs/policies/10_policy-public-display-policy-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.17
+
+## Next Policy Task
+정책 문서 전체 목차/상호참조 정리 또는 고객 공개 v1.0 전환 준비
+
+## P-0.91.17 Summary
+정책 문서 전체 목차와 상호참조를 정리했다. 내부 관리 문서와 고객 공개 후보 문서를 구분하고, 고객 공개 v1.0 전환 전 제거할 항목, 확정 필요사항, 개발 연결 우선순위를 정리했다.
+
+## P-0.91.17 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/11_policy-cross-reference-check.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.18
+
+## Next Policy Task
+고객 공개 v1.0 문서 변환 기준 작성
+
+## P-0.91.18 Summary
+고객 공개 서비스명을 WAFL로 확정하고, 고객 공개 문서에서는 PeaceByPiece 명칭을 제거하는 기준을 반영했다. 이메일 역할을 hello/support/no-reply/privacy/billing으로 분리하고, 고객지원 이메일을 support@wafl.co.kr로 정리했다.
+
+## P-0.91.18 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/01_privacy-policy-draft.md
+- docs/policies/02_terms-of-service-draft.md
+- docs/policies/05_service-operation-policy-draft.md
+- docs/policies/10_policy-public-display-policy-draft.md
+- docs/policies/11_policy-cross-reference-check.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.19
+
+## Next Policy Task
+고객 공개 v1.0 문서 변환 기준 작성
+
+## P-0.91.19 Summary
+고객 공개 v1.0 문서 변환 기준을 추가했다. 내부 정책 문서와 고객 공개 문서 분리, 고객 공개 문서에서 제거할 표현, 확정값 치환 기준, 공개 문서 작성 순서, 공개 전 체크리스트를 정리했다.
+
+## P-0.91.19 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/11_policy-cross-reference-check.md
+- docs/policies/12_public-v1-conversion-guide.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.20
+
+## Next Policy Task
+고객 공개 이용약관 v1.0 초안 작성
+
+## P-0.91.20 Summary
+고객 공개 WAFL 이용약관 v1.0 초안을 추가했다. 내부 정책 문서의 주요 결정을 고객 공개용 문장으로 변환하되, 사업자 정보, 시행일, PG사 등 미확정 항목은 공개 전 치환값으로 남겼다.
+
+## P-0.91.20 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/terms-of-service-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.21
+
+## Next Policy Task
+고객 공개 개인정보처리방침 v1.0 초안 작성
+
+## P-0.91.21 Summary
+고객 공개 WAFL 개인정보처리방침 v1.0 초안을 추가했다. 개인정보 처리 목적, 처리 항목, 보유기간, 파기, 데이터 내보내기, 처리위탁, 정보주체 권리, 시스템관리자 파일 접근, 문의처를 고객 공개용 문장으로 정리했다.
+
+## P-0.91.21 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/privacy-policy-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.22
+
+## Next Policy Task
+고객 공개 결제 및 환불 정책 v1.0 초안 작성
+
+## P-0.91.22 Summary
+고객 공개 WAFL 결제 및 환불 정책 v1.0 초안을 추가했다. 무료 체험, 요금제, 정기결제, 결제 실패, 장기 미납, 해지, 환불, 결제 증빙, 저장소 초과 기준을 고객 공개용 문장으로 정리했다.
+
+## P-0.91.22 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/billing-refund-policy-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.23
+
+## Next Policy Task
+고객 공개 파일 및 저장소 보관 정책 v1.0 초안 작성
+
+## P-0.91.23 Summary
+고객 공개 WAFL 파일 및 저장소 보관 정책 v1.0 초안을 추가했다. 저장소 초과, 고객사 휴지통 30일, 작업지시서 삭제 시 연결 데이터 처리, 휴지통 비우기, 영구 삭제, export zip 7일 보관, 백업/복구 제한, 시스템관리자 파일 접근 조건을 고객 공개용 문장으로 정리했다.
+
+## P-0.91.23 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/storage-retention-policy-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.24
+
+## Next Policy Task
+고객 공개 데이터 내보내기 정책 v1.0 초안 작성
+
+## P-0.91.24 Summary
+고객 공개 WAFL 데이터 내보내기 정책 v1.0 초안을 추가했다. 데이터 내보내기 이용 가능 조건, export zip 생성, 이메일 다운로드 링크, 로그인 필요 다운로드, 7일 만료, 포함/제외 대상, 요금제별 횟수 제한을 고객 공개용 문장으로 정리했다.
+
+## P-0.91.24 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/data-export-policy-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.25
+
+## Next Policy Task
+고객 공개 서비스 운영 정책 v1.0 초안 작성
+
+## P-0.91.25 Summary
+고객 공개 WAFL 서비스 운영 정책 v1.0 초안을 추가했다. 정기점검, 긴급점검, 장애 대응, 외부 서비스 장애, 고객지원, 이메일 및 고지, 부정 이용 대응, 서비스 변경/종료, 운영자 접근, 데이터 삭제 운영, 백업/복구, 장애 보상 기준을 고객 공개용 문장으로 정리했다.
+
+## P-0.91.25 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/service-operation-policy-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.26
+
+## Next Policy Task
+고객 공개 정책 변경 고지 및 동의 정책 v1.0 초안 작성
+
+## P-0.91.26 Summary
+고객 공개 WAFL 정책 변경 고지 및 동의 정책 v1.0 초안을 추가했다. 정책 버전 관리, 고지 방식, 재동의 필요/불필요 기준, 재동의하지 않은 경우의 기능 제한, 동의 이력 관리, 정책 변경 이력 공개 기준을 고객 공개용 문장으로 정리했다.
+
+## P-0.91.26 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/policy-notice-agreement-policy-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.27
+
+## Next Policy Task
+고객 공개 요금제 및 저장소 정책 v1.0 초안 작성
+
+## P-0.91.27 Summary
+고객 공개 WAFL 요금제 및 저장소 정책 v1.0 초안을 추가했다. Trial/Lite/Flow/Studio 요금제, VAT 포함 가격 표시, 추가 저장소, 저장소 사용량 안내/초과 제한, 멤버 수 제한, 데이터 내보내기 횟수 제한, 요금제 변경 기준을 고객 공개용 문장으로 정리했다.
+
+## P-0.91.27 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public/plan-storage-policy-v1-draft.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.28
+
+## Next Policy Task
+고객 공개 정책 문서 전체 목록 및 공개 전 체크리스트 정리
+
+## P-0.91.28 Summary
+고객 공개 정책 문서 전체 목록 및 공개 전 체크리스트를 추가했다. 고객 공개 v1.0 초안 문서 목록, 공개 전 치환값, 문서별 확인사항, 정책 화면 기준, 제거할 내부 표현, 공개 전 검토 순서, 문서 간 핵심 수치 정합성 기준을 정리했다.
+
+## P-0.91.28 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public-policy-release-checklist.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.29
+
+## Next Policy Task
+고객 공개 v1.0 정책 문서 정합성 점검
+
+## P-0.91.29 Summary
+고객 공개 v1.0 정책 문서 정합성 점검 문서를 추가했다. docs/policies/public 하위 초안 문서의 서비스명, 이메일, 요금제, 저장소, 휴지통, export zip, 장기 미납, 서비스 종료, 해지 취소 기준과 공개 전 제거/치환 필요 표현을 정리했다.
+
+## P-0.91.29 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public-v1-consistency-check.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.30
+
+## Next Policy Task
+고객 공개 v1.0 치환값 관리표 작성
+
+## P-0.91.30 Summary
+고객 공개 v1.0 치환값 관리표를 추가했다. 사업자 정보, 도메인/이메일, 결제/세무, 개인정보/처리위탁, 요금제, 데이터 보관/삭제, 운영/책임 제한 항목을 확정/예정/미정/검토 필요 상태로 구분했다.
+
+## P-0.91.30 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public-v1-replacement-values.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.31
+
+## Next Policy Task
+고객 공개 v1.0 공개 전 제거 표현 위치 추적
+
+## P-0.91.31 Summary
+고객 공개 v1.0 공개 전 제거 표현 위치 추적 문서를 추가했다. docs/policies/public 하위 초안 문서에서 초안, 내부 기준 버전, 확정 필요, 고객 공개 전 검토용 등 실제 공개본에서 제거하거나 치환해야 할 표현 위치를 정리했다.
+
+## P-0.91.31 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public-v1-removal-tracking.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.32
+
+## Next Policy Task
+고객 공개 v1.0 문서 헤더/파일명 기준 정리
+
+## P-0.91.32 Summary
+고객 공개 v1.0 문서 헤더 및 파일명 기준을 추가했다. 고객 공개 최종본 헤더 형식, 초안 헤더 제거 기준, `-draft` 파일명과 최종 공개 파일명 기준, 화면 표시명과 노출 순서, 최종 공개본 차단 조건을 정리했다.
+
+## P-0.91.32 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public-v1-header-filename-rules.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.33
+
+## Next Policy Task
+고객 공개 v1.0 최종본 차단 조건 점검
+
+## P-0.91.33 Summary
+고객 공개 v1.0 최종본 차단 조건 점검 문서를 추가했다. docs/policies/public 하위 문서에서 초안, draft, 확정 필요, 미정, 내부 기준 버전, P-0.91, 고객 공개 전, PeaceByPiece, WAFLOW 등 최종 공개본에 남아 있으면 안 되는 표현을 추적하고 현재 공개 전환 불가 상태를 명시했다.
+
+## P-0.91.33 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/public-v1-final-blocker-check.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.34
+
+## Next Policy Task
+정책 기반 개발 우선순위 정리
+
+## P-0.91.34 Summary
+정책 기반 개발 우선순위 문서를 추가했다. 정책 문서 공개 화면, 동의 이력, 고객사 승인 요청 필수 약관 동의, 요금제/무료체험/결제 실패 상태, 데이터 내보내기, 저장소/휴지통/삭제관리, 장기 미납, 정책 변경 재동의, 시스템관리자 파일 접근 로그, PG/영수증 연동 순서로 개발 필요사항을 정리했다.
+
+## P-0.91.34 Changed Documents
+- docs/policies/POLICY_WORKLOG.md
+- docs/policies/00_policy-ia.md
+- docs/policies/policy-driven-development-priority.md
+- docs/policies/90_policy-feature-gap.md
+- docs/policies/91_policy-decisions.md
+
+## Next Policy Version
+P-0.91.35
+
+## Next Policy Task
+정책 문서 작업 종료 또는 코드 작업 전환
