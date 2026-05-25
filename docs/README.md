@@ -1,136 +1,50 @@
-# PeaceByPiece / WAFL 문서 인덱스
+# WAFL / PeaceByPiece 문서 목록
 
-이 폴더는 프로젝트 운영 기준 문서를 보관한다.
+- 기준 앱 버전: `0.16.49`
+- 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 문서 파일명을 한글 중심으로 정리한다.
 
-## 현재 기준 문서
+## 1. 현재 기준 문서
 
-- `wafl-a-type/00_wafl-a-type-doc-index.md` — WAFL A-TYPE 문서 세트 인덱스
-- `wafl-a-type/01_wafl-a-type-source-audit.md` — 소스 분석 요약
-- `wafl-a-type/02_wafl-a-type-design-tokens.md` — 디자인 토큰
-- `wafl-a-type/03_wafl-a-type-component-spec.md` — 공통 컴포넌트
-- `wafl-a-type/04_wafl-a-type-device-layout-rules.md` — 기기별 화면 규칙
-- `wafl-a-type/05_wafl-a-type-page-templates.md` — 화면 템플릿
-- `wafl-a-type/06_wafl-a-type-state-empty-error-rules.md` — 상태/빈 상태/에러
-- `wafl-a-type/07_wafl-a-type-form-validation-rules.md` — 폼/검증/제출
-- `wafl-a-type/08_wafl-a-type-modal-drawer-sheet-rules.md` — 모달/드로어/시트
-- `wafl-a-type/09_wafl-a-type-permission-ui-rules.md` — 권한별 UI 노출
-- `wafl-a-type/10_wafl-a-type-i18n-copy-rules.md` — i18n/copy
-- `wafl-a-type/11_wafl-a-type-implementation-architecture.md` — 구현 아키텍처
-- `wafl-a-type/12_wafl-a-type-refactor-roadmap.md` — 전환 로드맵
-- `wafl-a-type/13_wafl-a-type-qa-checklist.md` — QA 체크리스트
-- `wafl-a-type/14_wafl-a-type-share-pwa-app-strategy.md` — 공유/PWA/앱 전략
-- `wafl-a-type/15_wafl-a-type-data-permission-policy.md` — 데이터/권한/API guard 정책
-- `wafl-a-type/16_wafl-a-type-db-schema-policy.md` — DB schema/reset/seed 정책
-- `wafl-a-type/17_wafl-a-type-r2-file-policy.md` — R2/파일 정책
-- `wafl-a-type/18_wafl-a-type-auth-session-policy.md` — 인증/세션/역할 판정 정책
-- `wafl-a-type/19_wafl-a-type-release-test-policy.md` — 패치/릴리즈/테스트 정책
-- `wafl-a-type/20_wafl-a-type-page-inventory.md` — route별 화면 인벤토리
-- `wafl-a-type/21_wafl-a-type-source-refactor-audit.md` — A-TYPE 적용 전 소스 구조 감사 및 리팩토링 방향
-- `wafl-a-type/22_wafl-a-type-router-layout-implementation.md` — route group 기반 Router/Layout 구현 기준
-- `wafl-a-type/23_wafl-a-type-shell-responsibility.md` — Admin/System/Workspace shell 책임 분리 기준
-- `wafl-a-type/24_wafl-a-type-admin-component-variants.md` — Admin 공통 컴포넌트 variant 구현 기준
-- `wafl-a-type/25_wafl-a-type-login-invite-error-implementation.md` — Login/Invite/Error A-TYPE 구현 기준
-- `wafl-a-type/26_wafl-a-type-customer-admin-home-implementation.md` — 고객사 관리자 홈 A-TYPE 구현 기준
-- `wafl-a-type/27_wafl-a-type-customer-admin-management-screens.md` — 고객사 관리자 멤버관리/환경설정 A-TYPE 구현 기준
-- `wafl-a-type/28_wafl-a-type-customer-admin-data-screens.md` — 고객사 관리자 저장소/통계/협력업체 A-TYPE 구현 기준
-- `wafl-a-type/29_wafl-a-type-system-admin-screens.md` — 시스템관리자 주요 화면 A-TYPE 구현 기준
-- `wafl-a-type/30_wafl-a-type-system-admin-extended-screens.md` — 시스템관리자 확장 화면 A-TYPE 구현 기준
-- `wafl-a-type/31_wafl-a-type-admin-stats-screen.md` — 고객사 관리자 통계정보 A-TYPE 구현 기준
-- `wafl-a-type/32_wafl-a-type-system-standards-detail-screens.md` — 시스템관리자 기준정보 세부 화면 A-TYPE 구현 기준
-- `wafl-a-type/33_wafl-a-type-workspace-worker-structure-audit.md` — Workspace/Worker 화면 구조 점검
-- `wafl-a-type/34_wafl-a-type-system-admin-remaining-screens.md` — 시스템관리자 잔여 화면 A-TYPE 구현 기준
-- `wafl-a-type/35_wafl-a-type-customer-admin-home-visual-pass.md` — 고객사 관리자 홈 visual pass 기준
-- `wafl-a-type/36_wafl-a-type-member-settings-visual-pass.md` — 멤버관리/환경설정 visual pass 기준
-- `wafl-a-type/37_wafl-a-type-data-screens-visual-pass.md` — 저장소/협력업체/통계 visual pass 기준
-- `wafl-a-type/38_wafl-a-type-system-home-visual-pass.md` — 시스템관리자 홈 visual pass 기준
-- `wafl-a-type/39_wafl-a-type-service-operation-ia.md` — 시스템관리자/고객사관리자 서비스 운영 IA
-- `wafl-a-type/40_wafl-a-type-material-order-workflow.md` — 원단/부자재 발주 업무 흐름
-- `wafl-a-type/41_wafl-a-type-billing-payment-evidence-policy.md` — 카드결제/청구/증빙 정책
-- `wafl-a-type/42_wafl-a-type-operation-menu-mapping.md` — 운영 IA 기반 홈/메뉴 매핑
-- `wafl-a-type/43_wafl-a-type-material-order-data-model.md` — 원단/부자재 발주 데이터 모델 상세 설계
-- `wafl-a-type/44_wafl-a-type-workorder-order-flow.md` — 작업지시서 발주 flow 변경 설계
-- `wafl-a-type/45_wafl-a-type-visual-qa-audit.md` — A-TYPE visual QA / raw color / hardcoded text 점검
-- `wafl-a-type/46_wafl-a-type-pc-visual-tuning-2.md` — PC visual 보정 2차
-- `wafl-a-type/47_wafl-a-type-public-flow-visual-pass.md` — 초대/승인/pending public 화면 visual pass
-- `wafl-a-type/48_wafl-a-type-developer-ui-copy-audit.md` — 개발자성 UI/문구 전수 감사
-- `wafl-a-type/49_wafl-a-type-public-auth-copy-ux.md` — public/auth 문구 UX 정리 2차
-- `wafl-a-type/50_wafl-a-type-system-copy-ux.md` — system 화면 개발자성 문구 정리
-- `wafl-a-type/51_wafl-a-type-admin-copy-ux.md` — admin 화면 개발자성 placeholder 정리
-- `wafl-a-type/52_wafl-a-type-code-quality-domain-audit.md` — 코드 품질 / 도메인 구조 전수 감사
-- `wafl-a-type/53_wafl-a-type-domain-constants-types.md` — domain constants/types 1차 정리
-- `wafl-a-type/54_wafl-a-type-formatter-presentation-consolidation.md` — formatter/presentation 통합 1차
-- `wafl-a-type/55_wafl-a-type-tsx-domain-logic-separation.md` — TSX 도메인 로직 분리 1차
-- `wafl-a-type/56_wafl-a-type-db-payload-storage-audit.md` — DB 저장값 / JSON payload 감사
-- `wafl-a-type/57_wafl-a-type-db-domain-status-constants.md` — DB domain status constants 1차
-- `wafl-a-type/58_wafl-a-type-member-workorder-storage-status-candidates.md` — member/workorder/storage status constants 후보 조사
-- `wafl-a-type/59_wafl-a-type-workorder-status-usage-cleanup.md` — workorder status usage 정리 1차
-- `wafl-a-type/60_wafl-a-type-workorder-action-type-constants.md` — workorder action type constants 정리 1차
-- `wafl-a-type/61_wafl-a-type-workorder-history-reason-constants.md` — workorder action/result/history reason 상수화 후보 조사 및 history constants 1차
-- `wafl-a-type/62_wafl-a-type-workorder-kind-attachment-scope-constants.md` — workorder kind / attachment scope constants 정리 1차
-- `wafl-a-type/63_wafl-a-type-workorder-production-composition-persistence.md` — 작업지시서 생산구성 저장 흐름 보강
-- `wafl-a-type/64_wafl-a-type-workorder-pending-edit-flush.md` — 작업지시서 생산구성 활성 입력값 검토요청 전 반영 보강
+현재 개발·테스트·리팩토링에서 우선 확인해야 하는 문서는 `docs/현재기준/`에 둔다.
 
-- `wafl-a-type/73_wafl-a-type-workorder-service-action-map.md` — 작업지시서 서비스 액션 맵
-- `wafl-a-type/74_wafl-a-type-workorder-db-r2-call-audit.md` — 작업지시서 DB/R2 호출 위치 전수조사
-- `wafl-a-type/75_wafl-a-type-workorder-service-code-constants.md` — 작업지시서 서비스 코드 상수와 생산구성 replace allowlist
-- `wafl-a-type/76_wafl-a-type-workorder-service-side-effect-matrix.md` — 작업지시서 serviceCode side effect matrix
-- `wafl-a-type/77_wafl-a-type-workorder-service-guard-first-pass.md` — 작업지시서 serviceCode guard 1차 적용
-- `wafl-a-type/78_wafl-a-type-workorder-side-effect-route-guards.md` — 작업지시서 side effect route guard 1차
+- [리팩토링 규칙](현재기준/리팩토링-규칙.md)
+- [소스 구조](현재기준/소스-구조.md)
+- [라우팅 구조](현재기준/라우팅-구조.md)
+- [데이터베이스 구조](현재기준/데이터베이스-구조.md)
+- [데이터베이스 쿼리·인덱스 정책](현재기준/데이터베이스-쿼리-인덱스-정책.md)
+- [작업지시서 상태 구조](현재기준/작업지시서-상태-구조.md)
+- [워크스페이스 경계](현재기준/워크스페이스-경계.md)
+- [초대 정책 설계](현재기준/초대-정책-설계.md)
+- [요금·저장소 정책 설계](현재기준/요금-저장소-정책-설계.md)
+- [원단·부자재 데이터베이스 설계](현재기준/원단-부자재-데이터베이스-설계.md)
+- [full-reset 검증](현재기준/full-reset-검증.md)
 
+## 2. 정책 문서
 
-## 정책/약관 문서
+서비스 약관, 개인정보처리방침, 요금·환불·저장소·데이터 보관 정책은 `docs/정책문서/`에 둔다.
 
-정책/약관 문서는 `docs/policies/`에 보관한다. 이 문서 세트는 WAFL 고객 공개 문서, 내부 정책 초안, 정책 기반 개발 gap을 함께 관리한다.
+- [정책 문서 README](정책문서/README.md)
+- [정책 문서 구성](정책문서/00-정책-문서-구성.md)
+- [정책 결정사항](정책문서/91-정책-결정사항.md)
+- [정책 기반 개발 우선순위](정책문서/정책기반-개발우선순위.md)
+- 고객 공개용 초안: `docs/정책문서/고객공개/`
 
-- `policies/README.md` — 정책 문서 인덱스
-- `policies/00_policy-ia.md` — 정책/약관 IA
-- `policies/01_privacy-policy-draft.md` — 개인정보처리방침 내부 초안
-- `policies/02_terms-of-service-draft.md` — 이용약관 내부 초안
-- `policies/03_billing-refund-policy-draft.md` — 결제 및 환불 정책 내부 초안
-- `policies/04_storage-data-retention-policy-draft.md` — 파일/저장소 보관 정책 내부 초안
-- `policies/public/` — 고객 공개용 v1 초안
-- `policies/90_policy-feature-gap.md` — 정책 문구와 구현 기능 간 gap 목록
-- `policies/91_policy-decisions.md` — 정책 결정 기록
+## 3. 보관 문서
 
-## 정리 정책
+과거 설계 기록, 점검 기록, WAFL A-Type 누적 문서는 `docs/보관문서/`에 둔다.
 
-과거 버전별 작업 메모는 현재 제품 기준과 충돌할 수 있으므로 기준 문서로 사용하지 않는다. 0.15.30부터 기준 문서는 `docs/wafl-a-type/` 안의 00~83 문서로 통일한다.
+- `docs/보관문서/wafl-a-type/`
+- `docs/보관문서/점검기록/`
+- `docs/보관문서/테스트기록/`
+- `docs/보관문서/설계초안/`
+- `docs/보관문서/DB기록/`
 
-삭제된 과거 문서 목록은 `wafl-a-type/legacy-docs-cleanup-0.14.9.md`에 기록한다.
+보관 문서는 삭제 대상이 아니라 과거 판단 근거로 유지한다. 현재 개발 기준으로 사용할 때는 먼저 `docs/현재기준/` 문서와 충돌 여부를 확인한다.
 
-## 현재 작업 기준
+## 4. 문서 파일명 규칙
 
-```txt
-현재 기준 앱 버전: 0.16.48
-현재 정책 문서 묶음: 0.16.48
-PC A-TYPE 전환, SaaS 운영 IA, 작업지시서 workflow/action/history/kind/scope 상수화와 생산구성 저장 안정화 우선
-정책/약관 문서는 `docs/policies/` 기준으로 관리한다.
-DB/API/R2/권한/세션 흐름은 직접 목표가 아니면 변경하지 않는다.
-```
-
-- `docs/wafl-a-type/65_wafl-a-type-workorder-live-production-draft.md` — 작업지시서 생산구성 숫자 입력값 실시간 draft 반영
-
-- `wafl-a-type/66_wafl-a-type-workorder-production-snapshot-action.md` — 작업지시서 생산구성 workflow action snapshot 보강
-
-- `wafl-a-type/67_wafl-a-type-production-composition-commit-policy.md` — 생산구성 확정 저장 정책과 workflow snapshot 보정
-
-- `wafl-a-type/68_wafl-a-type-production-composition-field-mapping.md` — 생산구성 숫자 필드 mapping 통합
-
-- 0.15.46: 생산구성 조회 단계에서 DB numeric 문자열 값을 수량·단가·금액으로 복원하는 기준을 보강했습니다.
-
-- `wafl-a-type/70_wafl-a-type-production-tables-schema-audit.md` — 생산구성 현재값 테이블 schema audit
-- `wafl-a-type/71_wafl-a-type-production-replace-save.md` — 생산구성 현재값 replace 저장 1차
-
-- `wafl-a-type/79_wafl-a-type-workorder-state-patch-server-guard.md` — 작업지시서 state patch server guard 기준
-- `wafl-a-type/80_wafl-a-type-workorder-reject-production-preserve.md` — 반려/취소 workflow 생산구성 보존 보강
-
-- `wafl-a-type/82_wafl-a-type-review-request-production-service-code-forward.md` — 검토요청 생산구성 serviceCode 전달 보강
-
-- `wafl-a-type/83_wafl-a-type-workorder-review-reject-regression.md` — 검토요청/반려/재검토요청 회귀 테스트 기준
-- `wafl-a-type/84_wafl-a-type-workorder-service-code-screen-action-audit.md` — 작업지시서 화면 액션별 serviceCode 연결 상태 점검
-- `wafl-a-type/85_wafl-a-type-workorder-service-code-first-wire.md` — 작업지시서 serviceCode 누락 액션 1차 연결
-- `wafl-a-type/86_wafl-a-type-workorder-service-code-workflow-wire.md` — 작업지시서 workflow/save serviceCode 연결 보강
-- `wafl-a-type/87_wafl-a-type-factory-order-replace-save.md` — 공장 발주 orders 현재값 replace 저장 정리
-- `wafl-a-type/88_wafl-a-type-production-current-table-sql-design.md` — 생산구성 현재값 3개 테이블 컬럼 정리 SQL 설계
-- `wafl-a-type/89_wafl-a-type-production-current-table-schema-implementation.md` — 생산구성 현재값 3개 테이블 schema/repository mapping 1차 반영
-
+- 신규 문서는 한글 파일명을 기본으로 한다.
+- 파일명은 길이를 과도하게 늘리지 않는다.
+- 공백 대신 하이픈(`-`)을 사용한다.
+- 버전 기록이 필요한 경우 파일명 끝에 `0.16.49`처럼 붙인다.
+- Git 관례상 최상위 인덱스 파일은 `README.md`를 유지한다.
