@@ -1,5 +1,5 @@
 -- WAFL / PeaceByPiece test scenario seed
--- Version: 0.16.37
+-- Version: 0.16.43
 -- Purpose:
 --   Create deterministic test companies, users, members, permissions, categories,
 --   partners, materials, and workorders for manual DB verification.
@@ -71,18 +71,70 @@ ON CONFLICT (permission_key) DO UPDATE SET
 INSERT INTO companies (
   id,
   name,
+  english_name,
   business_name,
   business_registration_number,
+  postal_code,
+  road_address,
+  jibun_address,
+  address_detail,
+  address_extra,
+  requested_plan_code,
   onboarding_status,
+  onboarding_completed_at,
   subscription_status,
   billing_status,
+  trial_started_at,
+  trial_ends_at,
   storage_limit_bytes,
   member_limit,
   is_active
 )
 VALUES
-  ('test-company-a', 'TEST A 고객사', 'TEST A 사업자', '000-00-00001', 'active', 'trialing', 'trial', 104857600, 10, true),
-  ('test-company-b', 'TEST B 고객사', 'TEST B 사업자', '000-00-00002', 'active', 'trialing', 'trial', 104857600, 10, true);
+  (
+    'test-company-a',
+    'TEST A 고객사',
+    'TEST A CUSTOMER',
+    'TEST A 사업자',
+    '000-00-00001',
+    '58328',
+    '전라남도 나주시 그린로 1',
+    '전라남도 나주시 빛가람동 000',
+    '205동 2202호',
+    '테스트 주소',
+    'basic',
+    'active',
+    now(),
+    'trialing',
+    'trial',
+    now(),
+    now() + interval '7 days',
+    104857600,
+    10,
+    true
+  ),
+  (
+    'test-company-b',
+    'TEST B 고객사',
+    'TEST B CUSTOMER',
+    'TEST B 사업자',
+    '000-00-00002',
+    '58328',
+    '전라남도 나주시 그린로 2',
+    '전라남도 나주시 빛가람동 001',
+    '101동 101호',
+    '테스트 주소',
+    'basic',
+    'active',
+    now(),
+    'trialing',
+    'trial',
+    now(),
+    now() + interval '7 days',
+    104857600,
+    10,
+    true
+  );
 
 -- Users.
 INSERT INTO users (
@@ -90,17 +142,19 @@ INSERT INTO users (
   company_id,
   email,
   name,
+  phone,
+  phone_source,
   role,
   is_active
 )
 VALUES
-  ('test-a-admin', 'test-company-a', 'test-a-admin@example.invalid', 'TEST A 관리자', 'admin', true),
-  ('test-a-designer', 'test-company-a', 'test-a-designer@example.invalid', 'TEST A 디자이너', 'designer', true),
-  ('test-a-inspector', 'test-company-a', 'test-a-inspector@example.invalid', 'TEST A 검수담당', 'inspector', true),
-  ('test-a-material', 'test-company-a', 'test-a-material@example.invalid', 'TEST A 자재담당', 'inventory_manager', true),
-  ('test-a-viewer', 'test-company-a', 'test-a-viewer@example.invalid', 'TEST A 조회전용', 'viewer', true),
-  ('test-b-admin', 'test-company-b', 'test-b-admin@example.invalid', 'TEST B 관리자', 'admin', true),
-  ('test-b-designer', 'test-company-b', 'test-b-designer@example.invalid', 'TEST B 디자이너', 'designer', true);
+  ('test-a-admin', 'test-company-a', 'test-a-admin@example.invalid', 'TEST A 관리자', '01000000001', 'user', 'admin', true),
+  ('test-a-designer', 'test-company-a', 'test-a-designer@example.invalid', 'TEST A 디자이너', '01000000002', 'user', 'designer', true),
+  ('test-a-inspector', 'test-company-a', 'test-a-inspector@example.invalid', 'TEST A 검수담당', '01000000003', 'user', 'inspector', true),
+  ('test-a-material', 'test-company-a', 'test-a-material@example.invalid', 'TEST A 자재담당', '01000000004', 'user', 'inventory_manager', true),
+  ('test-a-viewer', 'test-company-a', 'test-a-viewer@example.invalid', 'TEST A 조회전용', '01000000005', 'user', 'viewer', true),
+  ('test-b-admin', 'test-company-b', 'test-b-admin@example.invalid', 'TEST B 관리자', '01000000006', 'user', 'admin', true),
+  ('test-b-designer', 'test-company-b', 'test-b-designer@example.invalid', 'TEST B 디자이너', '01000000007', 'user', 'designer', true);
 
 UPDATE companies
 SET owner_user_id = CASE id

@@ -1,5 +1,5 @@
 -- WAFL / PeaceByPiece Google-login test seed verification
--- Version: 0.16.42
+-- Version: 0.16.43
 -- Purpose:
 --   Verify that db/test/scenario_google_login_seed.sql has one real Gmail bridge
 --   user that can enter the app immediately and open /dev/test-console.
@@ -46,6 +46,10 @@ WITH target_users AS (
     c.onboarding_status,
     c.subscription_status,
     c.billing_status,
+    c.postal_code,
+    c.road_address,
+    c.address_detail,
+    c.requested_plan_code,
     cm.id AS company_member_id,
     cm.status AS member_status,
     cm.role_template_code,
@@ -93,6 +97,10 @@ SELECT
         OR onboarding_status <> 'active'
         OR subscription_status NOT IN ('trialing', 'active')
         OR member_status <> 'approved'
+        OR postal_code IS NULL
+        OR road_address IS NULL
+        OR address_detail IS NULL
+        OR requested_plan_code IS NULL
       )
   ) + (SELECT COUNT(*) FROM pending_join_requests) AS access_blocker_count,
   COUNT(*) FILTER (WHERE is_configured_real_email = true AND google_sub IS NOT NULL) AS google_sub_linked_count,
@@ -125,6 +133,10 @@ WITH target_users AS (
     c.onboarding_status,
     c.subscription_status,
     c.billing_status,
+    c.postal_code,
+    c.road_address,
+    c.address_detail,
+    c.requested_plan_code,
     cm.id AS company_member_id,
     cm.status AS member_status,
     cm.role_template_code,
@@ -161,6 +173,10 @@ SELECT
   rows.role_template_code,
   rows.onboarding_status,
   rows.subscription_status,
+  rows.postal_code,
+  rows.road_address,
+  rows.address_detail,
+  rows.requested_plan_code,
   rows.pending_join_request_count,
   CASE
     WHEN rows.company_member_id IS NULL THEN 'MEMBERSHIP_MISSING'
@@ -170,6 +186,7 @@ SELECT
     WHEN rows.company_is_active IS NOT TRUE THEN 'COMPANY_INACTIVE'
     WHEN rows.onboarding_status <> 'active' THEN 'COMPANY_NOT_ACTIVE'
     WHEN rows.subscription_status NOT IN ('trialing', 'active') THEN 'SUBSCRIPTION_BLOCKED'
+    WHEN rows.postal_code IS NULL OR rows.road_address IS NULL OR rows.address_detail IS NULL OR rows.requested_plan_code IS NULL THEN 'COMPANY_PROFILE_INCOMPLETE'
     WHEN rows.pending_join_request_count > 0 THEN 'PENDING_JOIN_REQUEST_BLOCKER'
     WHEN rows.is_configured_real_email = false THEN 'DEV_CONSOLE_FIXTURE_ONLY'
     WHEN rows.google_sub IS NULL THEN 'READY_FOR_FIRST_GOOGLE_LOGIN'

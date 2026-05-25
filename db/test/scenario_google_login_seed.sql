@@ -1,5 +1,5 @@
 -- WAFL / PeaceByPiece Google-login test seed bridge
--- Version: 0.16.42
+-- Version: 0.16.43
 -- Purpose:
 --   Connect at least one deterministic DB test user from db/test/scenario_seed.sql
 --   to a real Gmail account so the current Google OAuth login flow can enter the
@@ -115,6 +115,15 @@ SET
   onboarding_completed_at = COALESCE(onboarding_completed_at, now()),
   trial_started_at = COALESCE(trial_started_at, now()),
   trial_ends_at = COALESCE(trial_ends_at, now() + interval '7 days'),
+  english_name = COALESCE(NULLIF(english_name, ''), CASE id WHEN 'test-company-a' THEN 'TEST A CUSTOMER' WHEN 'test-company-b' THEN 'TEST B CUSTOMER' ELSE english_name END),
+  business_name = COALESCE(NULLIF(business_name, ''), CASE id WHEN 'test-company-a' THEN 'TEST A 사업자' WHEN 'test-company-b' THEN 'TEST B 사업자' ELSE business_name END),
+  business_registration_number = COALESCE(NULLIF(business_registration_number, ''), CASE id WHEN 'test-company-a' THEN '000-00-00001' WHEN 'test-company-b' THEN '000-00-00002' ELSE business_registration_number END),
+  postal_code = COALESCE(NULLIF(postal_code, ''), '58328'),
+  road_address = COALESCE(NULLIF(road_address, ''), CASE id WHEN 'test-company-a' THEN '전라남도 나주시 그린로 1' WHEN 'test-company-b' THEN '전라남도 나주시 그린로 2' ELSE road_address END),
+  jibun_address = COALESCE(NULLIF(jibun_address, ''), CASE id WHEN 'test-company-a' THEN '전라남도 나주시 빛가람동 000' WHEN 'test-company-b' THEN '전라남도 나주시 빛가람동 001' ELSE jibun_address END),
+  address_detail = COALESCE(NULLIF(address_detail, ''), CASE id WHEN 'test-company-a' THEN '205동 2202호' WHEN 'test-company-b' THEN '101동 101호' ELSE address_detail END),
+  address_extra = COALESCE(NULLIF(address_extra, ''), '테스트 주소'),
+  requested_plan_code = COALESCE(NULLIF(requested_plan_code, ''), 'basic'),
   updated_at = now()
 WHERE id IN (
   SELECT DISTINCT u.company_id
@@ -150,6 +159,17 @@ UPDATE users u
 SET
   email = lower(seed.email),
   name = seed.display_name,
+  phone = COALESCE(NULLIF(u.phone, ''), CASE seed.user_id
+    WHEN 'test-a-admin' THEN '01000000001'
+    WHEN 'test-a-designer' THEN '01000000002'
+    WHEN 'test-a-inspector' THEN '01000000003'
+    WHEN 'test-a-material' THEN '01000000004'
+    WHEN 'test-a-viewer' THEN '01000000005'
+    WHEN 'test-b-admin' THEN '01000000006'
+    WHEN 'test-b-designer' THEN '01000000007'
+    ELSE '01000000000'
+  END),
+  phone_source = COALESCE(u.phone_source, 'user'),
   google_sub = NULL,
   google_picture_url = NULL,
   last_login_at = NULL,
