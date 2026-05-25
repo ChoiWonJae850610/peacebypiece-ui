@@ -1,42 +1,33 @@
 import "server-only";
 
-import {
-  type WorkOrderListSort,
-  type WorkOrderListStatusFilter,
-} from "@/lib/workorder/list/workOrderListControls";
 import type {
   WorkOrder,
   WorkOrderStatePatch,
   WorkOrderSummary,
 } from "@/types/workorder";
+import type { WorkOrderListOptions } from "@/lib/workorder/repository/workOrderRepositoryContracts";
 import type { WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderRepositoryScope";
 import {
-  findAllDbWorkOrderRecords,
-  findDbWorkOrderRecordById,
-  findDbWorkOrderSummaryRecords,
-} from "@/lib/workorder/repository/dbWorkOrderReadFlows";
-import { deleteDbWorkOrderRecord } from "@/lib/workorder/repository/dbWorkOrderDeleteFlows";
-import { updateDbWorkOrderStatePatchRecord } from "@/lib/workorder/repository/dbWorkOrderStatePatchFlows";
+  findAllDbWorkOrders as findAllDbWorkOrderRecords,
+  findDbWorkOrderById as findDbWorkOrderRecordById,
+  findDbWorkOrderSummaries as findDbWorkOrderSummaryRecords,
+} from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 import {
-  createDbWorkOrderRecord,
-  updateDbWorkOrderRecord,
-} from "@/lib/workorder/repository/dbWorkOrderMutationFlows";
-import {
-  saveDbWorkOrderRecord,
-  saveDbWorkOrderRecords,
-} from "@/lib/workorder/repository/dbWorkOrderSaveFlows";
+  createDbWorkOrder as createDbWorkOrderRecord,
+  deleteDbWorkOrder as deleteDbWorkOrderRecord,
+  saveDbWorkOrder as saveDbWorkOrderRecord,
+  saveDbWorkOrders as saveDbWorkOrderRecords,
+  updateDbWorkOrder as updateDbWorkOrderRecord,
+  updateDbWorkOrderStatePatch as updateDbWorkOrderStatePatchRecord,
+} from "@/lib/workorder/repository/dbWorkOrderWriteRepository";
+
 export type {
   WorkOrderCompanyScope,
   WorkOrderVisibilityScope,
 } from "@/lib/workorder/repository/dbWorkOrderRepositoryScope";
 
-type WorkOrderSummaryQueryOptions = {
-  status?: WorkOrderListStatusFilter;
-  sort?: WorkOrderListSort;
-};
-
 export async function findDbWorkOrderSummaries(
-  options: WorkOrderSummaryQueryOptions = {},
+  options: WorkOrderListOptions = {},
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrderSummary[]> {
   return findDbWorkOrderSummaryRecords(options, scope);
@@ -66,18 +57,14 @@ export async function updateDbWorkOrder(
   workOrder: WorkOrder,
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
-  return updateDbWorkOrderRecord(workOrder, scope, findDbWorkOrderById);
+  return updateDbWorkOrderRecord(workOrder, scope);
 }
 
 export async function updateDbWorkOrderStatePatch(
   patch: WorkOrderStatePatch,
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
-  return updateDbWorkOrderStatePatchRecord({
-    patch,
-    scope,
-    findWorkOrderById: findDbWorkOrderById,
-  });
+  return updateDbWorkOrderStatePatchRecord(patch, scope);
 }
 
 export async function deleteDbWorkOrder(
@@ -91,21 +78,12 @@ export async function saveDbWorkOrder(
   workOrder: WorkOrder,
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder> {
-  return saveDbWorkOrderRecord({
-    workOrder,
-    scope,
-    createWorkOrder: createDbWorkOrder,
-    updateWorkOrder: updateDbWorkOrder,
-  });
+  return saveDbWorkOrderRecord(workOrder, scope);
 }
 
 export async function saveDbWorkOrders(
   workOrders: WorkOrder[],
   scope?: WorkOrderCompanyScope | null,
 ): Promise<WorkOrder[]> {
-  return saveDbWorkOrderRecords({
-    workOrders,
-    scope,
-    saveWorkOrder: saveDbWorkOrder,
-  });
+  return saveDbWorkOrderRecords(workOrders, scope);
 }
