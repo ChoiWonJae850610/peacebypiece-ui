@@ -145,6 +145,7 @@ export async function GET(request: NextRequest) {
       await listWorkspaceMaterialOrders({
         companyId: guard.scope.companyId,
         status: readSearchStatus(request),
+        visibility: guard.scope.visibility,
       }),
     );
   } catch {
@@ -166,6 +167,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       await createWorkspaceMaterialOrder({
         companyId: guard.scope.companyId,
+        visibility: guard.scope.visibility,
         supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
         requestedByUserId: guard.session.userId,
         status,
@@ -200,6 +202,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       await updateWorkspaceMaterialOrderDetail({
         companyId: guard.scope.companyId,
+        visibility: guard.scope.visibility,
         materialOrderId,
         supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
         note: normalizeOptionalText(body.note),
@@ -234,6 +237,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(
       await updateWorkspaceMaterialOrderStatus({
         companyId: guard.scope.companyId,
+        visibility: guard.scope.visibility,
         materialOrderId,
         status,
         actorUserId: guard.session.userId,

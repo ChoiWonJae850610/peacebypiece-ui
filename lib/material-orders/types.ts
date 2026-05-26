@@ -66,9 +66,14 @@ export type MaterialOrder = {
   updatedAt: string;
 };
 
+export type MaterialOrderVisibilityScope =
+  | { mode: "company" }
+  | { mode: "assigned"; userId: string; companyMemberId?: string | null };
+
 export type MaterialOrderListParams = {
   companyId: string;
   status?: MaterialOrderStatus | null;
+  visibility?: MaterialOrderVisibilityScope;
 };
 
 export type MaterialOrderSupplier = {
@@ -109,6 +114,7 @@ export type MaterialOrderLineInput = {
 
 export type MaterialOrderCreateInput = {
   companyId: string;
+  visibility?: MaterialOrderVisibilityScope;
   supplierPartnerId?: string | null;
   requestedByUserId: string;
   status?: MaterialOrderStatus;
@@ -118,6 +124,7 @@ export type MaterialOrderCreateInput = {
 
 export type MaterialOrderUpdateInput = {
   companyId: string;
+  visibility?: MaterialOrderVisibilityScope;
   materialOrderId: string;
   supplierPartnerId?: string | null;
   note?: string | null;
@@ -126,6 +133,7 @@ export type MaterialOrderUpdateInput = {
 
 export type MaterialOrderStatusUpdateInput = {
   companyId: string;
+  visibility?: MaterialOrderVisibilityScope;
   materialOrderId: string;
   status: MaterialOrderStatus;
   actorUserId: string;

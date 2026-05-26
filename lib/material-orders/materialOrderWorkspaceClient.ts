@@ -1,4 +1,4 @@
-import type { WorkOrder } from "@/types/workorder";
+import type { WorkOrderSummary } from "@/types/workorder";
 import type {
   MaterialOrder,
   MaterialOrderCreateInput,
@@ -32,7 +32,7 @@ export type MaterialOrderWorkspaceWorkOrderCandidate = {
 };
 
 export type MaterialOrderWorkspaceWorkOrdersResult = {
-  workOrders: WorkOrder[];
+  workOrders: WorkOrderSummary[];
 };
 
 export function resolveMaterialOrderType(order: MaterialOrder): MaterialOrderLineItemType | null {
@@ -59,6 +59,24 @@ export function formatMaterialOrderStatusLabel(status: MaterialOrder["status"]):
       return "취소";
     default:
       return status;
+  }
+}
+
+export function resolveMaterialOrderStatusBadgeTone(status: MaterialOrder["status"]): "neutral" | "info" | "success" | "warning" | "danger" {
+  switch (status) {
+    case "draft":
+      return "neutral";
+    case "review_requested":
+      return "warning";
+    case "approved":
+      return "info";
+    case "order_placed":
+      return "success";
+    case "rejected":
+    case "cancelled":
+      return "danger";
+    default:
+      return "neutral";
   }
 }
 
@@ -157,8 +175,24 @@ export async function updateMaterialOrderDetail(input: {
   return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
 }
 
+export async function updateMaterialOrderStatus(input: {
+  materialOrderId: string;
+  status: MaterialOrder["status"];
+}): Promise<MaterialOrderWorkspaceMutationResult> {
+  const response = await fetch("/api/material-orders", {
+    method: "PATCH",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+
+  return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
+}
+
 export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrderWorkspaceWorkOrderCandidate[]> {
-  const response = await fetch("/api/workorders", {
+  const response = await fetch("/api/workorders/summary?status=inspection", {
     method: "GET",
     headers: { "Accept": "application/json" },
     cache: "no-store",
@@ -166,14 +200,20 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
   const payload = await readJsonResponse<MaterialOrderWorkspaceWorkOrdersResult>(response);
   const workOrders = Array.isArray(payload.workOrders) ? payload.workOrders : [];
 
-  return workOrders.map((workOrder) => ({
-    id: workOrder.id,
-    code: workOrder.displayTitle || workOrder.title || workOrder.id.slice(0, 8),
-    productName: workOrder.baseTitle || workOrder.title || "제목 없음",
-    reorderLabel: resolveReorderLabel(workOrder.reorderRound),
-    requestedMaterialLabel: "자재 배분 가능",
-    dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
-  }));
+  return workOrders
+    .filter((workOrder) => isOrderRequestedWorkOrder(workOrder.workflowState))
+    .map((workOrder) => ({
+      id: workOrder.id,
+      code: workOrder.displayTitle || workOrder.title || workOrder.id.slice(0, 8),
+      productName: workOrder.baseTitle || workOrder.title || "제목 없음",
+      reorderLabel: resolveReorderLabel(workOrder.reorderRound),
+      requestedMaterialLabel: workOrder.manager ? `담당 ${workOrder.manager}` : "발주 요청 작업지시서",
+      dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
+    }));
+}
+
+function isOrderRequestedWorkOrder(workflowState: string | undefined): boolean {
+  return workflowState === "inspection" || workflowState === "order_requested" || workflowState === "발주요청";
 }
 
 function resolveReorderLabel(reorderRound: number | undefined): string {

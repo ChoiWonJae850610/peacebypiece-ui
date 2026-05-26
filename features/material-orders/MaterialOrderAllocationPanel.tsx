@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
@@ -35,19 +37,43 @@ export default function MaterialOrderAllocationPanel({
 }: MaterialOrderAllocationPanelProps) {
   void guideItems;
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredCandidates = useMemo(() => {
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedSearchQuery) return candidates;
+
+    return candidates.filter((workOrder) => [
+      workOrder.code,
+      workOrder.productName,
+      workOrder.reorderLabel,
+      workOrder.requestedMaterialLabel,
+      workOrder.dueDateLabel,
+    ].join(" ").toLowerCase().includes(normalizedSearchQuery));
+  }, [candidates, searchQuery]);
+
   return (
     <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-2">
       <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--pbp-border)] pb-2">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Allocation</p>
-          <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 연결/배분</h2>
+          <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 연결</h2>
+          <p className="mt-1 text-xs leading-5 pbp-text-muted">발주요청 상태의 작업지시서만 표시됩니다.</p>
         </div>
         <AdminStatusBadge tone={lines.length > 0 ? "info" : "neutral"}>{lines.length}품목</AdminStatusBadge>
       </div>
 
+      <div className="mt-2 shrink-0 border-b border-[var(--pbp-border)] pb-2">
+        <input
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="작업지시서·제품·담당 검색"
+          className={fieldClassName("min-h-9 text-xs")}
+        />
+      </div>
+
       <div className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
         {loading ? (
-          <PanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." />
+          <PanelMessage title="불러오는 중" description="발주요청 상태 작업지시서를 조회하고 있습니다." />
         ) : errorMessage ? (
           <PanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
         ) : lines.length === 0 ? (
@@ -55,10 +81,12 @@ export default function MaterialOrderAllocationPanel({
         ) : candidates.length === 0 ? (
           <PanelMessage
             title="연결 가능한 작업지시서 없음"
-            description="같은 회사 범위에서 조회 가능한 작업지시서가 없거나 권한이 없습니다."
+            description="발주요청 상태이면서 현재 사용자가 조회할 수 있는 작업지시서가 없습니다."
           />
+        ) : filteredCandidates.length === 0 ? (
+          <PanelMessage title="검색 결과 없음" description="작업지시서 검색어를 조정해보세요." />
         ) : (
-          candidates.map((workOrder) => (
+          filteredCandidates.map((workOrder) => (
             <AllocationCandidateCard
               key={workOrder.id}
               workOrder={workOrder}
@@ -72,7 +100,7 @@ export default function MaterialOrderAllocationPanel({
       </div>
 
       <div className="mt-2 shrink-0 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
-        배분 입력 후 가운데 패널의 저장 버튼을 누르면 발주 품목과 작업지시서 배분이 함께 저장됩니다.
+        관리자에게는 회사 전체, 일반 멤버에게는 본인 담당 작업지시서만 표시됩니다.
       </div>
     </AdminCard>
   );

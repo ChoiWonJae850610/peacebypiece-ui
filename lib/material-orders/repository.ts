@@ -168,9 +168,29 @@ function mapOrderRow(
   };
 }
 
+function buildRequestedByVisibilityPredicate(
+  visibility: MaterialOrderListParams["visibility"],
+  values: unknown[],
+  columnSql = "orders.requested_by_user_id",
+): string {
+  if (visibility?.mode !== "assigned") return "";
+
+  const accessibleOwnerIds = Array.from(new Set([visibility.userId, visibility.companyMemberId]
+    .map((value) => value?.trim())
+    .filter((value): value is string => Boolean(value))));
+
+  if (accessibleOwnerIds.length === 0) return "AND FALSE";
+
+  values.push(accessibleOwnerIds);
+  return `AND ${columnSql} = ANY($${values.length}::text[])`;
+}
+
 function buildOrderWhere(params: MaterialOrderListParams): { sql: string; values: unknown[] } {
   const clauses = ["orders.company_id = $1"];
   const values: unknown[] = [params.companyId];
+
+  const visibilityPredicate = buildRequestedByVisibilityPredicate(params.visibility, values);
+  if (visibilityPredicate) clauses.push(visibilityPredicate.replace(/^AND\s+/, ""));
 
   if (params.status) {
     values.push(params.status);
@@ -481,6 +501,15 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
 
 export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUpdateInput): Promise<MaterialOrder | null> {
   const materialOrderId = await withDbTransaction(async (client) => {
+    const updateValues: unknown[] = [
+      input.companyId,
+      input.materialOrderId,
+      normalizeText(input.supplierPartnerId),
+      calculateTotalAmount(input.lines),
+      normalizeText(input.note),
+    ];
+    const visibilityPredicate = buildRequestedByVisibilityPredicate(input.visibility, updateValues);
+
     const orderResult = await client.query<{ id: string }>(
       `UPDATE material_orders
        SET supplier_partner_id = $3,
@@ -490,14 +519,9 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
        WHERE company_id = $1
          AND id = $2
          AND status = 'draft'
+         ${visibilityPredicate}
        RETURNING id`,
-      [
-        input.companyId,
-        input.materialOrderId,
-        normalizeText(input.supplierPartnerId),
-        calculateTotalAmount(input.lines),
-        normalizeText(input.note),
-      ],
+      updateValues,
     );
 
     const orderId = orderResult.rows[0]?.id;
@@ -542,22 +566,28 @@ export async function updateMaterialOrderStatusForCompany(
 ): Promise<MaterialOrder | null> {
   const approvedByUserId = input.status === "approved" ? input.actorUserId : null;
   const orderedAtSql = input.status === "order_placed" ? "now()" : "ordered_at";
+  const updateValues: unknown[] = [
+    input.companyId,
+    input.materialOrderId,
+    input.status,
+    approvedByUserId,
+  ];
+  const visibilityPredicate = buildRequestedByVisibilityPredicate(input.visibility, updateValues);
 
-  await queryDb(
+  const result = await queryDb<{ id: string }>(
     `UPDATE material_orders
      SET status = $3,
          approved_by_user_id = COALESCE($4, approved_by_user_id),
          ordered_at = ${orderedAtSql},
          updated_at = now()
      WHERE company_id = $1
-       AND id = $2`,
-    [
-      input.companyId,
-      input.materialOrderId,
-      input.status,
-      approvedByUserId,
-    ],
+       AND id = $2
+       ${visibilityPredicate}
+     RETURNING id`,
+    updateValues,
   );
+
+  if (!result.rows[0]?.id) throw new Error("MATERIAL_ORDER_STATUS_NOT_FOUND_OR_FORBIDDEN");
 
   return getMaterialOrderById({
     companyId: input.companyId,

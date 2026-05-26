@@ -42,7 +42,7 @@ export async function createWorkspaceMaterialOrder(
 
   return {
     materialOrder,
-    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId }),
+    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId, visibility: input.visibility }),
   };
 }
 
@@ -53,7 +53,7 @@ export async function updateWorkspaceMaterialOrderDetail(
 
   return {
     materialOrder,
-    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId }),
+    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId, visibility: input.visibility }),
   };
 }
 
@@ -64,6 +64,6 @@ export async function updateWorkspaceMaterialOrderStatus(
 
   return {
     materialOrder,
-    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId }),
+    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId, visibility: input.visibility }),
   };
 }

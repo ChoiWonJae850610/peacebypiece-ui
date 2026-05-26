@@ -14,8 +14,9 @@ import {
   formatMaterialOrderCode,
   formatMaterialOrderStatusLabel,
   formatMaterialOrderTypeLabel,
+  resolveMaterialOrderStatusBadgeTone,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import type { MaterialOrder, MaterialOrderSupplier } from "@/lib/material-orders/types";
+import type { MaterialOrder, MaterialOrderStatus, MaterialOrderSupplier } from "@/lib/material-orders/types";
 
 type MaterialOrderDetailPanelProps = {
   selectedOrder: MaterialOrder | null;
@@ -34,11 +35,14 @@ type MaterialOrderDetailPanelProps = {
   onChangeDestinationMemo: (memo: string) => void;
   onChangeOrderNote: (memo: string) => void;
   saving: boolean;
+  statusChanging: boolean;
   saveMessage: string | null;
+  statusMessage: string | null;
   onChangeLine: (lineId: string, patch: Partial<MaterialOrderDraftLine>) => void;
   onAddLine: () => void;
   onRemoveLine: (lineId: string) => void;
   onSave: () => void;
+  onChangeStatus: (status: MaterialOrderStatus) => void;
 };
 
 export default function MaterialOrderDetailPanel({
@@ -58,11 +62,14 @@ export default function MaterialOrderDetailPanel({
   onChangeDestinationMemo,
   onChangeOrderNote,
   saving,
+  statusChanging,
   saveMessage,
+  statusMessage,
   onChangeLine,
   onAddLine,
   onRemoveLine,
   onSave,
+  onChangeStatus,
 }: MaterialOrderDetailPanelProps) {
   const displayMaterialType = materialType;
 
@@ -77,14 +84,25 @@ export default function MaterialOrderDetailPanel({
           ) : null}
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-2">
-          {selectedOrder ? <AdminStatusBadge tone="neutral">{formatMaterialOrderStatusLabel(selectedOrder.status)}</AdminStatusBadge> : null}
+          {selectedOrder ? (
+            <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(selectedOrder.status)}>
+              {formatMaterialOrderStatusLabel(selectedOrder.status)}
+            </AdminStatusBadge>
+          ) : null}
           <AdminStatusBadge tone="info">{formatMaterialOrderTypeLabel(displayMaterialType)}</AdminStatusBadge>
         </div>
       </div>
 
       {selectedOrder ? (
         <>
-          <div className="mt-3 grid shrink-0 gap-2 xl:grid-cols-2">
+          <MaterialOrderStatusFlow
+            status={selectedOrder.status}
+            changing={statusChanging}
+            message={statusMessage}
+            onChangeStatus={onChangeStatus}
+          />
+
+          <div className="mt-2 grid shrink-0 gap-2 xl:grid-cols-2">
             <label className="grid gap-1 text-xs font-semibold pbp-text-subtle">
               발주 종류
               <select
@@ -198,7 +216,13 @@ export default function MaterialOrderDetailPanel({
               <AdminButton disabled={saving || selectedOrder.status !== "draft"} onClick={onSave}>
                 {saving ? "저장중" : "저장"}
               </AdminButton>
-              <AdminButton variant="primary" disabled>검토 요청 예정</AdminButton>
+              <AdminButton
+                variant="primary"
+                disabled={statusChanging || selectedOrder.status !== "draft"}
+                onClick={() => onChangeStatus("review_requested")}
+              >
+                검토 요청
+              </AdminButton>
             </div>
           </div>
         </>
@@ -279,6 +303,72 @@ function MaterialOrderLineRow({
         </AdminButton>
       </td>
     </tr>
+  );
+}
+
+function MaterialOrderStatusFlow({
+  status,
+  changing,
+  message,
+  onChangeStatus,
+}: {
+  status: MaterialOrderStatus;
+  changing: boolean;
+  message: string | null;
+  onChangeStatus: (status: MaterialOrderStatus) => void;
+}) {
+  const steps: Array<{ status: MaterialOrderStatus; label: string }> = [
+    { status: "draft", label: "작성중" },
+    { status: "review_requested", label: "검토요청" },
+    { status: "approved", label: "발주확정" },
+    { status: "order_placed", label: "발주완료" },
+  ];
+
+  return (
+    <div className="mt-2 shrink-0 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {steps.map((step, index) => (
+            <span key={step.status} className="inline-flex items-center gap-1.5">
+              <AdminStatusBadge
+                size="xs"
+                tone={step.status === status ? resolveMaterialOrderStatusBadgeTone(status) : "neutral"}
+              >
+                {step.label}
+              </AdminStatusBadge>
+              {index < steps.length - 1 ? <span className="text-xs pbp-text-subtle">→</span> : null}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-wrap justify-end gap-1.5">
+          <AdminButton
+            size="sm"
+            variant="ghost"
+            disabled={changing || status !== "review_requested"}
+            onClick={() => onChangeStatus("draft")}
+          >
+            검토 취소
+          </AdminButton>
+          <AdminButton
+            size="sm"
+            variant="ghost"
+            disabled={changing || status !== "review_requested"}
+            onClick={() => onChangeStatus("approved")}
+          >
+            발주 확정
+          </AdminButton>
+          <AdminButton
+            size="sm"
+            variant="primary"
+            disabled={changing || (status !== "approved" && status !== "review_requested")}
+            onClick={() => onChangeStatus("order_placed")}
+          >
+            발주 완료
+          </AdminButton>
+        </div>
+      </div>
+      {message ? <p className="mt-1.5 text-xs pbp-text-muted">{message}</p> : null}
+    </div>
   );
 }
 
