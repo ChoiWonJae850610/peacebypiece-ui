@@ -61,7 +61,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   return (
     <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-1">
       <div
-        className="grid h-full min-h-[640px] min-w-[1080px] gap-3"
+        className="grid h-full min-h-0 min-w-[1080px] gap-3"
         style={MATERIAL_ORDER_PANEL_GRID_STYLE}
       >
         <MaterialOrderListPanel

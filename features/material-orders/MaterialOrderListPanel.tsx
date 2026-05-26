@@ -17,8 +17,8 @@ export default function MaterialOrderListPanel({
   onSelectOrder,
 }: MaterialOrderListPanelProps) {
   return (
-    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-2.5">
-      <div className="flex items-start justify-between gap-3">
+    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-2">
+      <div className="flex shrink-0 items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Material orders</p>
           <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
@@ -26,7 +26,7 @@ export default function MaterialOrderListPanel({
         <AdminButton size="sm" disabled>새 발주</AdminButton>
       </div>
 
-      <div className="mt-3 flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
         {draftMaterialOrderList.map((order) => (
           <MaterialOrderListButton
             key={order.id}
