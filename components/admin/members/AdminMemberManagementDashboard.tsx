@@ -11,6 +11,12 @@ import {
   type MemberListLoadStatus,
   type MemberManagementStatus,
 } from "@/lib/admin/members/memberManagementPresentation";
+import {
+  buildMemberManagementSummaryViewModel,
+  buildMemberManagementTabPreviews,
+  filterMemberDirectoryRows,
+  type MemberManagementTab,
+} from "@/lib/admin/members/memberManagementViewModel";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
@@ -222,17 +228,6 @@ function getMemberDetailErrorCode(errorCode: string): string {
   return errorCode;
 }
 
-type MemberManagementTab = "invite" | "members";
-
-type MemberManagementTabPreview = {
-  id: MemberManagementTab;
-  labelKey: string;
-  fallbackLabel: string;
-  descriptionKey: string;
-  fallbackDescription: string;
-  countLabel: string;
-};
-
 function getLoadStatusLabelKey(
   status: MemberJoinRequestLoadStatus | MemberListLoadStatus,
 ): string {
@@ -374,23 +369,15 @@ export default function AdminMemberManagementDashboard() {
     return [...pendingRows, ...memberRows];
   }, [joinRequests, memberRecords, members]);
 
-  const filteredMemberDirectoryRows = useMemo(() => {
-    const query = memberSearchQuery.trim().toLowerCase();
-    return memberDirectoryRows.filter((row) => {
-      const matchesQuery =
-        !query ||
-        row.name.toLowerCase().includes(query) ||
-        row.email.toLowerCase().includes(query) ||
-        row.phone.toLowerCase().includes(query);
-      const matchesStatus =
-        memberStatusFilter === "all" || row.status === memberStatusFilter;
-      const matchesRole =
-        memberRoleFilter === "all" ||
-        (memberRoleFilter === "none" && !row.roleId) ||
-        row.roleId === memberRoleFilter;
-      return matchesQuery && matchesStatus && matchesRole;
-    });
-  }, [memberDirectoryRows, memberRoleFilter, memberSearchQuery, memberStatusFilter]);
+  const filteredMemberDirectoryRows = useMemo(
+    () =>
+      filterMemberDirectoryRows(memberDirectoryRows, {
+        searchQuery: memberSearchQuery,
+        statusFilter: memberStatusFilter,
+        roleFilter: memberRoleFilter,
+      }),
+    [memberDirectoryRows, memberRoleFilter, memberSearchQuery, memberStatusFilter],
+  );
 
   const selectedMemberRecord = useMemo(
     () =>
@@ -430,86 +417,34 @@ export default function AdminMemberManagementDashboard() {
       }),
     [inviteRoleOptions, reviewingJoinRequestId, t, joinRequestRoleDrafts],
   );
-  const summaryCards = useMemo(() => {
-    const activeMemberCount = members.filter(
-      (member) => member.status === "approved",
-    ).length;
-    const pendingApprovalCount =
-      joinRequests.length +
-      members.filter((member) => member.status === "pending").length;
-    const inactiveMemberCount = members.filter(
-      (member) => member.status === "suspended" || member.status === "rejected",
-    ).length;
-    const membersLoaded = memberListLoadStatus === "loaded";
-    const approvalsLoaded = membersLoaded && joinRequestLoadStatus === "loaded";
-
-    return baseSummaryCards.map((card) => {
-      if (card.id === "activeMembers") {
-        return {
-          ...card,
-          value: String(activeMemberCount),
-          status: membersLoaded ? "ready" : card.status,
-        };
-      }
-
-      if (card.id === "pendingApprovals") {
-        return {
-          ...card,
-          value: String(pendingApprovalCount),
-          status: approvalsLoaded
-            ? pendingApprovalCount > 0
-              ? "pending"
-              : "ready"
-            : card.status,
-        };
-      }
-
-      if (card.id === "inactiveMembers") {
-        return {
-          ...card,
-          value: String(inactiveMemberCount),
-          status: membersLoaded
-            ? inactiveMemberCount > 0
-              ? "pending"
-              : "ready"
-            : card.status,
-        };
-      }
-
-      return card;
-    });
-  }, [
-    baseSummaryCards,
-    joinRequestLoadStatus,
-    joinRequests.length,
-    memberListLoadStatus,
-    members,
-  ]);
+  const summaryCards = useMemo(
+    () =>
+      buildMemberManagementSummaryViewModel({
+        baseSummaryCards,
+        members,
+        joinRequests,
+        memberListLoadStatus,
+        joinRequestLoadStatus,
+      }),
+    [
+      baseSummaryCards,
+      joinRequestLoadStatus,
+      joinRequests,
+      memberListLoadStatus,
+      members,
+    ],
+  );
   const canSubmitInvite = canCreateInvite && !isCreatingInvite;
-  const tabPreviews: MemberManagementTabPreview[] = [
-    {
-      id: "invite",
-      labelKey: "memberManagement.tabs.invite.label",
-      fallbackLabel: "멤버 초대",
-      descriptionKey: "memberManagement.tabs.invite.description",
-      fallbackDescription: "이메일 또는 문자 초대를 생성합니다.",
-      countLabel: t(
-        "memberManagement.tabs.invite.count",
-        "초대 {count}건",
-      ).replace("{count}", String(invitations.length)),
-    },
-    {
-      id: "members",
-      labelKey: "memberManagement.tabs.members.label",
-      fallbackLabel: "멤버 관리",
-      descriptionKey: "memberManagement.tabs.members.description",
-      fallbackDescription: "승인 대기와 전체 멤버를 한 목록에서 관리합니다.",
-      countLabel: t(
-        "memberManagement.tabs.members.count",
-        "대상 {count}명",
-      ).replace("{count}", String(members.length + joinRequests.length)),
-    },
-  ];
+  const tabPreviews = useMemo(
+    () =>
+      buildMemberManagementTabPreviews({
+        t,
+        invitationCount: invitations.length,
+        memberCount: members.length,
+        joinRequestCount: joinRequests.length,
+      }),
+    [invitations.length, joinRequests.length, members.length, t],
+  );
 
   async function loadMemberInvitations() {
     try {
