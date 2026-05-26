@@ -177,9 +177,7 @@ export const ADMIN_HOME_PRIMARY_CARD_IDS = [
   "material-orders",
   "partners",
   "stats",
-  "standards",
   "files",
-  "settings",
   "member-management",
 ] as const;
 
