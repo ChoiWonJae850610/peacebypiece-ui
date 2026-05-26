@@ -50,12 +50,12 @@ export default function MaterialOrderDetailPanel({
   const filteredSupplierOptions = materialOrderSupplierOptions.filter((supplier) => supplier.materialType === materialType);
 
   return (
-    <AdminCard className="flex min-h-[420px] flex-[1_1_680px] flex-col p-4 lg:min-h-0 lg:min-w-[560px] lg:overflow-hidden">
+    <AdminCard className="flex min-h-[420px] min-w-0 flex-col p-4 lg:min-h-0 lg:overflow-hidden">
       <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Selected order</p>
           <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">선택 발주서 상세</h2>
-          <p className="mt-1 text-xs leading-5 pbp-text-muted">발주 기본 정보는 상단에 모으고, 품목은 표에서 빠르게 입력합니다.</p>
+          <p className="mt-1 text-xs leading-5 pbp-text-muted">공급처와 품목을 한 화면에서 빠르게 편집합니다.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <AdminStatusBadge tone="neutral">작성중</AdminStatusBadge>
@@ -63,7 +63,7 @@ export default function MaterialOrderDetailPanel({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 xl:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="mt-4 grid gap-3 xl:grid-cols-[180px_minmax(0,1fr)]">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
           <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
             발주 종류
@@ -122,13 +122,13 @@ export default function MaterialOrderDetailPanel({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold pbp-text-primary">품목 라인</h3>
-            <p className="mt-1 text-xs leading-5 pbp-text-muted">품목명, 단위, 수량, 단가만 입력합니다. 배분은 오른쪽 패널에서 처리합니다.</p>
+            <p className="mt-1 text-xs leading-5 pbp-text-muted">품목명, 단위, 수량, 단가만 입력합니다.</p>
           </div>
           <AdminButton onClick={onAddLine}>품목 추가</AdminButton>
         </div>
 
         <div className="mt-3 min-h-0 flex-1 overflow-auto rounded-3xl border border-[var(--pbp-border)]">
-          <table className="min-w-[680px] w-full border-collapse text-sm">
+          <table className="min-w-[640px] w-full border-collapse text-sm">
             <thead className="sticky top-0 z-10 bg-[var(--pbp-surface-soft)] text-xs font-semibold pbp-text-subtle">
               <tr>
                 <th className="px-4 py-3 text-left">품목명</th>
@@ -189,7 +189,7 @@ function MaterialOrderLineRow({
           value={line.itemName}
           onChange={(event) => onChangeLine(line.id, { itemName: event.target.value })}
           placeholder="예: 30수 면 블랙"
-          className={fieldClassName("min-w-[220px]")}
+          className={fieldClassName("min-w-[180px]")}
         />
       </td>
       <td className="px-3 py-3">
