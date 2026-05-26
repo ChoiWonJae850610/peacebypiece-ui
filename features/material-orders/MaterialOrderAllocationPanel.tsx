@@ -48,6 +48,7 @@ export default function MaterialOrderAllocationPanel({
       workOrder.reorderLabel,
       workOrder.managerLabel,
       workOrder.requestedMaterialLabel,
+      workOrder.materialReadinessLabel,
       workOrder.materialCountLabel,
       workOrder.dueDateLabel,
     ].join(" ").toLowerCase().includes(normalizedSearchQuery));
@@ -81,7 +82,7 @@ export default function MaterialOrderAllocationPanel({
         ) : candidates.length === 0 ? (
           <PanelMessage
             title="표시할 작업지시서 없음"
-            description="발주 요청 이후 자재 할당 대상 작업지시서가 없습니다."
+            description="자재 발주 대기 또는 진행중인 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
           <PanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." />
@@ -130,6 +131,8 @@ function AllocationCandidateCard({
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] pbp-text-muted">
+        <span>{workOrder.materialReadinessLabel}</span>
+        <span>·</span>
         <span>{workOrder.materialCountLabel}</span>
         <span>·</span>
         <span>{workOrder.dueDateLabel}</span>

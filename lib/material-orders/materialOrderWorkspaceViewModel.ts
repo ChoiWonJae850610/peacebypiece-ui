@@ -57,7 +57,7 @@ export function buildMaterialOrderWorkspaceViewModel(): MaterialOrderWorkspaceVi
         id: "inventory-items",
         label: "현재 재고 품목 수",
         value: "0개",
-        description: "입고 및 배분 후 남은 고객사 재고 lot을 연결할 예정입니다.",
+        description: "입고 및 할당 후 남은 고객사 재고 lot을 연결할 예정입니다.",
       },
       {
         id: "monthly-purchase",
@@ -82,7 +82,7 @@ export function buildMaterialOrderWorkspaceViewModel(): MaterialOrderWorkspaceVi
       {
         id: "inventory",
         label: "재고 현황",
-        description: "주문수량에서 작업지시서 배분 수량을 제외한 남은 수량을 고객사 재고로 표시합니다.",
+        description: "주문수량에서 작업지시서 할당 수량을 제외한 남은 수량을 고객사 재고로 표시합니다.",
         statusLabel: "예정",
       },
     ],
@@ -99,8 +99,8 @@ export function buildMaterialOrderWorkspaceViewModel(): MaterialOrderWorkspaceVi
       },
       {
         id: "workorder-allocation",
-        label: "작업지시서 배분",
-        description: "다음 단계에서 작업지시서 연결과 배분 수량 입력을 붙입니다. 발주 입력과 배분 입력을 분리합니다.",
+        label: "작업지시서 할당",
+        description: "작업지시서의 표시 단계는 유지하고, 내부 자재 발주 대기 상태를 기준으로 후보를 연결합니다.",
       },
     ],
     processSteps: [
@@ -113,6 +113,11 @@ export function buildMaterialOrderWorkspaceViewModel(): MaterialOrderWorkspaceVi
         id: "review",
         label: "검토요청",
         description: "발주 권한자 또는 고객사 관리자가 검토할 수 있도록 요청합니다.",
+      },
+      {
+        id: "material-order-pending",
+        label: "자재 발주 대기",
+        description: "화면 진행 단계는 발주요청 흐름으로 유지하고, 내부 readiness 상태로 원단·부자재 후보에 표시합니다.",
       },
       {
         id: "approved",

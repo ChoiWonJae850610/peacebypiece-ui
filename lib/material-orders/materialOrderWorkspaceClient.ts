@@ -1,5 +1,10 @@
-import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import type { WorkOrderSummary } from "@/types/workorder";
+import {
+  getMaterialOrderReadinessSummary,
+  isMaterialOrderCandidateWorkOrder,
+  resolveMaterialOrderReadinessStatus,
+  type MaterialOrderReadinessStatus,
+} from "@/lib/material-orders/materialOrderReadiness";
 import type {
   MaterialOrder,
   MaterialOrderCreateInput,
@@ -32,6 +37,8 @@ export type MaterialOrderWorkspaceWorkOrderCandidate = {
   requestedMaterialLabel: string;
   materialCountLabel: string;
   dueDateLabel: string;
+  materialReadinessStatus: MaterialOrderReadinessStatus;
+  materialReadinessLabel: string;
   materialItems: NonNullable<WorkOrderSummary["materialItems"]>;
 };
 
@@ -224,10 +231,11 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
   const workOrders = Array.isArray(payload.workOrders) ? payload.workOrders : [];
 
   return workOrders
-    .filter((workOrder) => isOrderRequestedWorkOrder(workOrder.workflowState))
-    .filter((workOrder) => resolveWorkOrderMaterialItems(workOrder).length > 0)
+    .filter(isMaterialOrderCandidateWorkOrder)
     .map((workOrder) => {
       const materialItems = resolveWorkOrderMaterialItems(workOrder);
+      const materialReadinessStatus = resolveMaterialOrderReadinessStatus(workOrder);
+      const materialReadinessSummary = getMaterialOrderReadinessSummary(materialReadinessStatus);
 
       return {
         id: workOrder.id,
@@ -238,6 +246,8 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
         requestedMaterialLabel: resolveWorkOrderMaterialSummary(workOrder.materialSummary, workOrder.materialCount),
         materialCountLabel: resolveWorkOrderMaterialCountLabel(workOrder),
         dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
+        materialReadinessStatus,
+        materialReadinessLabel: materialReadinessSummary.label,
         materialItems,
       };
     });
@@ -275,9 +285,6 @@ function resolveWorkOrderMaterialSummary(materialSummary: string | undefined, ma
   return count > 0 ? `원단·부자재 ${count}종` : "자재 할당 대기";
 }
 
-function isOrderRequestedWorkOrder(workflowState: string | undefined): boolean {
-  return workflowState === WORKFLOW_STATE.inspection || workflowState === WORKFLOW_STATE.reviewCompleted;
-}
 
 function resolveReorderLabel(reorderRound: number | undefined): string {
   if (!reorderRound || reorderRound <= 0) return "초도";

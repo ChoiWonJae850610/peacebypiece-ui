@@ -1,18 +1,13 @@
-Version : 0.17.15
-Summary : 원단·부자재 필요 자재 기반 품목 추가 흐름 정리
-Description : 우측 작업지시서 후보에서 자재가 없는 작업지시서를 제외하고, 작업지시서에 입력된 원단·부자재 필요 자재를 한 줄 단위로 표시해 발주 품목으로 바로 추가할 수 있도록 정리했습니다. 가운데 품목 라인은 우측 필요 자재에서 자동 생성되며 품목명, 단위, 수량과 해당 작업지시서 할당이 함께 반영됩니다. 작업지시서 summary 조회에는 자재 상세 JSON 요약을 추가했으며 DB schema와 package 파일은 변경하지 않았습니다.
+Version : 0.17.16
+Summary : 원단·부자재 발주 readiness 기반 정리
+Description : 작업지시서의 표시 진행 단계는 유지하면서 원단·부자재 발주 후보 판단을 내부 readiness 유틸로 분리했습니다. 발주 후보 패널에 자재 발주 대기/진행중 라벨을 노출하고, 0.17.16 기준 설계 문서를 추가했습니다. DB 스키마와 기존 작업지시서/R2/첨부/메모/휴지통/purge 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- features/material-orders/MaterialOrderDetailPanel.tsx
-- features/material-orders/MaterialOrderAllocationPanel.tsx
-- features/material-orders/MaterialOrderDraftEditor.tsx
-- lib/material-orders/materialOrderDraftCalculator.ts
 - lib/material-orders/materialOrderWorkspaceClient.ts
-- types/workorder.ts
-- lib/workorder/repository/dbWorkOrderRepositoryTypes.ts
-- lib/workorder/repository/dbWorkOrderRowMappers.ts
-- lib/workorder/repository/dbWorkOrderSelectSql.ts
+- lib/material-orders/materialOrderWorkspaceViewModel.ts
+- features/material-orders/MaterialOrderAllocationPanel.tsx
 추가 파일 목록 :
-- 없음
+- lib/material-orders/materialOrderReadiness.ts
+- docs/현재기준/0.17.16-material-order-readiness.md
 삭제 파일 목록 :
 - 없음
