@@ -22,6 +22,7 @@ type MaterialOrderRow = {
   supplier_partner_name: string | null;
   status: MaterialOrderStatus;
   requested_by_user_id: string | null;
+  requested_by_display_name: string | null;
   approved_by_user_id: string | null;
   ordered_at: Date | string | null;
   total_amount: string | number;
@@ -158,6 +159,7 @@ function mapOrderRow(
     supplierPartnerName: row.supplier_partner_name,
     status: row.status,
     requestedByUserId: row.requested_by_user_id,
+    requestedByDisplayName: row.requested_by_display_name,
     approvedByUserId: row.approved_by_user_id,
     orderedAt: toIsoStringOrNull(row.ordered_at),
     totalAmount: toNumber(row.total_amount),
@@ -208,6 +210,11 @@ const MATERIAL_ORDER_SELECT_SQL = `
     supplier.name AS supplier_partner_name,
     orders.status,
     orders.requested_by_user_id,
+    COALESCE(
+      NULLIF(requested_member.display_name, ''),
+      NULLIF(requested_user.name, ''),
+      NULLIF(requested_user.email, '')
+    ) AS requested_by_display_name,
     orders.approved_by_user_id,
     orders.ordered_at,
     orders.total_amount,
@@ -218,6 +225,11 @@ const MATERIAL_ORDER_SELECT_SQL = `
   LEFT JOIN partners supplier
     ON supplier.id = orders.supplier_partner_id
     AND supplier.company_id = orders.company_id
+  LEFT JOIN users requested_user
+    ON requested_user.id = orders.requested_by_user_id
+  LEFT JOIN company_members requested_member
+    ON requested_member.user_id = requested_user.id
+    AND requested_member.company_id = orders.company_id
 `;
 
 async function listOrderRows(params: MaterialOrderListParams): Promise<MaterialOrderRow[]> {

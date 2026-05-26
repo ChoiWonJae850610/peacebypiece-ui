@@ -57,6 +57,7 @@ export type MaterialOrder = {
   supplierPartnerName: string | null;
   status: MaterialOrderStatus;
   requestedByUserId: string | null;
+  requestedByDisplayName: string | null;
   approvedByUserId: string | null;
   orderedAt: string | null;
   totalAmount: number;

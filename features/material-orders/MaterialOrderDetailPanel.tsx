@@ -11,7 +11,10 @@ import {
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import {
-  formatMaterialOrderCode,
+  formatMaterialOrderDateLabel,
+  formatMaterialOrderDisplayTitle,
+  formatMaterialOrderPrimaryLineLabel,
+  formatMaterialOrderRequesterLabel,
   formatMaterialOrderStatusLabel,
   formatMaterialOrderTypeLabel,
   resolveMaterialOrderStatusBadgeTone,
@@ -72,15 +75,23 @@ export default function MaterialOrderDetailPanel({
   onChangeStatus,
 }: MaterialOrderDetailPanelProps) {
   const displayMaterialType = materialType;
+  const selectedOrderTitle = selectedOrder ? formatMaterialOrderDisplayTitle(selectedOrder) : "선택 발주서 상세";
+  const selectedOrderLineLabel = selectedOrder ? formatMaterialOrderPrimaryLineLabel(selectedOrder) : "";
+  const selectedOrderRequesterLabel = selectedOrder ? formatMaterialOrderRequesterLabel(selectedOrder) : "";
 
   return (
     <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3">
       <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Selected order</p>
-          <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">선택 발주서 상세</h2>
+          <h2 className="mt-1 truncate text-base font-semibold tracking-tight pbp-text-primary">{selectedOrderTitle}</h2>
           {selectedOrder ? (
-            <p className="mt-1 text-xs pbp-text-muted">{formatMaterialOrderCode(selectedOrder)} · {selectedOrder.supplierPartnerName ?? "공급처 미지정"}</p>
+            <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs pbp-text-muted">
+              <span className="font-medium pbp-text-primary">{selectedOrderLineLabel}</span>
+              <span>{formatMaterialOrderDateLabel(selectedOrder.createdAt)}</span>
+              <span>{selectedOrderRequesterLabel}</span>
+              <span>{formatMaterialOrderAmount(selectedOrder.totalAmount)}</span>
+            </div>
           ) : null}
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-2">

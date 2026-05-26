@@ -27,6 +27,7 @@ export type MaterialOrderWorkspaceWorkOrderCandidate = {
   code: string;
   productName: string;
   reorderLabel: string;
+  managerLabel: string;
   requestedMaterialLabel: string;
   dueDateLabel: string;
 };
@@ -41,6 +42,25 @@ export function resolveMaterialOrderType(order: MaterialOrder): MaterialOrderLin
 
 export function formatMaterialOrderCode(order: Pick<MaterialOrder, "id">): string {
   return `MO-${order.id.slice(0, 8).toUpperCase()}`;
+}
+
+export function formatMaterialOrderPrimaryLineLabel(order: Pick<MaterialOrder, "lines">): string {
+  const primaryLine = order.lines[0] ?? null;
+  if (!primaryLine?.itemName?.trim()) return "품목 미입력";
+
+  const extraCount = Math.max(0, order.lines.length - 1);
+  return extraCount > 0 ? `${primaryLine.itemName.trim()} 외 ${extraCount}건` : primaryLine.itemName.trim();
+}
+
+export function formatMaterialOrderDisplayTitle(order: MaterialOrder): string {
+  const materialType = resolveMaterialOrderType(order);
+  const typeLabel = formatMaterialOrderTypeLabel(materialType);
+  const supplierLabel = order.supplierPartnerName?.trim() || "공급처 미선택";
+  return `${typeLabel} · ${supplierLabel}`;
+}
+
+export function formatMaterialOrderRequesterLabel(order: Pick<MaterialOrder, "requestedByDisplayName">): string {
+  return order.requestedByDisplayName?.trim() || "담당자 미확인";
 }
 
 export function formatMaterialOrderStatusLabel(status: MaterialOrder["status"]): string {
@@ -204,12 +224,21 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
     .filter((workOrder) => isOrderRequestedWorkOrder(workOrder.workflowState))
     .map((workOrder) => ({
       id: workOrder.id,
-      code: workOrder.displayTitle || workOrder.title || workOrder.id.slice(0, 8),
+      code: workOrder.displayTitle || workOrder.title || "제목 없음",
       productName: workOrder.baseTitle || workOrder.title || "제목 없음",
       reorderLabel: resolveReorderLabel(workOrder.reorderRound),
-      requestedMaterialLabel: workOrder.manager ? `담당 ${workOrder.manager}` : "발주 요청 작업지시서",
+      managerLabel: workOrder.manager ? `담당 ${workOrder.manager}` : "담당자 미확인",
+      requestedMaterialLabel: resolveWorkOrderMaterialSummary(workOrder.materialSummary, workOrder.materialCount),
       dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
     }));
+}
+
+function resolveWorkOrderMaterialSummary(materialSummary: string | undefined, materialCount: number | undefined): string {
+  const normalizedSummary = materialSummary?.trim();
+  if (normalizedSummary) return normalizedSummary;
+
+  const count = typeof materialCount === "number" && Number.isFinite(materialCount) ? materialCount : 0;
+  return count > 0 ? `원단·부자재 ${count}건` : "자재 배분 대기";
 }
 
 function isOrderRequestedWorkOrder(workflowState: string | undefined): boolean {

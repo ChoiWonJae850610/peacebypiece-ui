@@ -402,6 +402,7 @@ export function buildSpecSheetSummarySelectQuery(
         s.*,
         COALESCE(order_counts.order_entry_count, 0)::integer AS order_entry_count,
         COALESCE(material_counts.material_count, 0)::integer AS material_count,
+        COALESCE(material_counts.material_summary, '')::text AS material_summary,
         COALESCE(outsourcing_counts.outsourcing_count, 0)::integer AS outsourcing_count,
         COALESCE(attachment_counts.attachment_count, 0)::integer AS attachment_count,
         COALESCE(memo_counts.memo_thread_count, 0)::integer AS memo_thread_count
@@ -413,7 +414,13 @@ export function buildSpecSheetSummarySelectQuery(
           AND o.spec_sheet_id = s.id
       ) order_counts ON true
       LEFT JOIN LATERAL (
-        SELECT COUNT(*)::integer AS material_count
+        SELECT
+          COUNT(*)::integer AS material_count,
+          STRING_AGG(
+            DISTINCT NULLIF(TRIM(COALESCE(m.name, '')), ''),
+            ', '
+            ORDER BY NULLIF(TRIM(COALESCE(m.name, '')), '')
+          ) AS material_summary
         FROM spec_sheet_materials m
         WHERE m.company_id = s.company_id
           AND m.spec_sheet_id = s.id

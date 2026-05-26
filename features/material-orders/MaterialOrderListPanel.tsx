@@ -5,8 +5,10 @@ import { AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   formatMaterialOrderAmount,
-  formatMaterialOrderCode,
   formatMaterialOrderDateLabel,
+  formatMaterialOrderDisplayTitle,
+  formatMaterialOrderPrimaryLineLabel,
+  formatMaterialOrderRequesterLabel,
   formatMaterialOrderStatusLabel,
   formatMaterialOrderTypeLabel,
   resolveMaterialOrderStatusBadgeTone,
@@ -66,10 +68,10 @@ export default function MaterialOrderListPanel({
       if (!normalizedSearchQuery) return true;
 
       const searchableText = [
-        formatMaterialOrderCode(order),
         formatMaterialOrderStatusLabel(order.status),
         formatMaterialOrderTypeLabel(materialType),
         order.supplierPartnerName,
+        order.requestedByDisplayName,
         ...order.lines.map((line) => line.itemName),
       ]
         .filter((value): value is string => Boolean(value))
@@ -96,7 +98,7 @@ export default function MaterialOrderListPanel({
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="발주번호·공급처·품목 검색"
+          placeholder="공급처·품목·담당 검색"
           className={filterFieldClassName()}
         />
         <div className="grid grid-cols-2 gap-1.5">
@@ -160,7 +162,9 @@ function MaterialOrderListButton({
   selected: boolean;
   onSelectOrder: (orderId: string) => void;
 }) {
-  const materialType = resolveMaterialOrderType(order);
+  const displayTitle = formatMaterialOrderDisplayTitle(order);
+  const primaryLineLabel = formatMaterialOrderPrimaryLineLabel(order);
+  const requesterLabel = formatMaterialOrderRequesterLabel(order);
 
   return (
     <button
@@ -174,17 +178,18 @@ function MaterialOrderListButton({
       ].join(" ")}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-sm font-semibold pbp-text-primary">{formatMaterialOrderCode(order)}</span>
+        <span className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</span>
         <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="xs">
           {formatMaterialOrderStatusLabel(order.status)}
         </AdminStatusBadge>
       </div>
-      <p className="mt-1.5 truncate text-xs font-medium pbp-text-primary">
-        {formatMaterialOrderTypeLabel(materialType)} · {order.supplierPartnerName ?? "공급처 미지정"}
-      </p>
-      <div className="mt-1.5 flex items-center justify-between gap-2 text-xs pbp-text-muted">
-        <span>{formatMaterialOrderDateLabel(order.createdAt)}</span>
-        <span>{formatMaterialOrderAmount(order.totalAmount)}</span>
+      <p className="mt-1.5 truncate text-xs font-medium pbp-text-primary">{primaryLineLabel}</p>
+      <div className="mt-1.5 grid gap-1 text-xs pbp-text-muted">
+        <div className="flex items-center justify-between gap-2">
+          <span>{formatMaterialOrderDateLabel(order.createdAt)}</span>
+          <span>{formatMaterialOrderAmount(order.totalAmount)}</span>
+        </div>
+        <div className="truncate">{requesterLabel}</div>
       </div>
     </button>
   );

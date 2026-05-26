@@ -46,6 +46,7 @@ export default function MaterialOrderAllocationPanel({
       workOrder.code,
       workOrder.productName,
       workOrder.reorderLabel,
+      workOrder.managerLabel,
       workOrder.requestedMaterialLabel,
       workOrder.dueDateLabel,
     ].join(" ").toLowerCase().includes(normalizedSearchQuery));
@@ -142,6 +143,7 @@ function AllocationCandidateCard({
         <AdminStatusBadge tone={selectedLine ? "success" : "warning"}>{selectedLine ? "연결됨" : "미연결"}</AdminStatusBadge>
       </div>
       <div className="mt-2 grid gap-1 text-xs pbp-text-muted">
+        <p>{workOrder.managerLabel}</p>
         <p>{workOrder.requestedMaterialLabel}</p>
         <p>{workOrder.dueDateLabel}</p>
       </div>
