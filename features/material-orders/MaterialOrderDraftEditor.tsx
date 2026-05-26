@@ -55,7 +55,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   }
 
   return (
-    <div className="grid min-h-[calc(100vh-190px)] gap-4 lg:grid-cols-[280px_minmax(0,1fr)_320px] 2xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row lg:overflow-hidden">
       <MaterialOrderListPanel
         selectedOrderId={selectedOrderId}
         onSelectOrder={setSelectedOrderId}

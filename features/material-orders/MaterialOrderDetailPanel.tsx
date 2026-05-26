@@ -50,7 +50,7 @@ export default function MaterialOrderDetailPanel({
   const filteredSupplierOptions = materialOrderSupplierOptions.filter((supplier) => supplier.materialType === materialType);
 
   return (
-    <AdminCard className="flex min-h-[calc(100vh-220px)] flex-col p-4">
+    <AdminCard className="flex min-h-[420px] flex-col p-4 lg:min-h-0 lg:min-w-0 lg:flex-1 lg:overflow-hidden">
       <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Selected order</p>
