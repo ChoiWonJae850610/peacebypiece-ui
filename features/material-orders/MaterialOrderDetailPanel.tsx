@@ -50,7 +50,7 @@ export default function MaterialOrderDetailPanel({
   const filteredSupplierOptions = materialOrderSupplierOptions.filter((supplier) => supplier.materialType === materialType);
 
   return (
-    <AdminCard className="flex min-h-[420px] flex-col p-4 lg:min-h-0 lg:min-w-0 lg:flex-1 lg:overflow-hidden">
+    <AdminCard className="flex min-h-[420px] flex-[1_1_680px] flex-col p-4 lg:min-h-0 lg:min-w-[560px] lg:overflow-hidden">
       <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Selected order</p>
@@ -128,7 +128,7 @@ export default function MaterialOrderDetailPanel({
         </div>
 
         <div className="mt-3 min-h-0 flex-1 overflow-auto rounded-3xl border border-[var(--pbp-border)]">
-          <table className="min-w-[720px] w-full border-collapse text-sm">
+          <table className="min-w-[680px] w-full border-collapse text-sm">
             <thead className="sticky top-0 z-10 bg-[var(--pbp-surface-soft)] text-xs font-semibold pbp-text-subtle">
               <tr>
                 <th className="px-4 py-3 text-left">품목명</th>

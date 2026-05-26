@@ -17,7 +17,7 @@ export default function MaterialOrderListPanel({
   onSelectOrder,
 }: MaterialOrderListPanelProps) {
   return (
-    <AdminCard className="flex min-h-[320px] flex-col p-4 lg:min-h-0 lg:w-[280px] lg:shrink-0 lg:overflow-hidden 2xl:w-[300px]">
+    <AdminCard className="flex min-h-[320px] flex-col p-3 lg:min-h-0 lg:w-[240px] lg:shrink-0 lg:overflow-hidden 2xl:w-[250px]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Material orders</p>
@@ -27,7 +27,7 @@ export default function MaterialOrderListPanel({
         <AdminButton size="sm" disabled>새 발주</AdminButton>
       </div>
 
-      <div className="mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className="mt-3 flex-1 space-y-2 overflow-y-auto pr-1">
         {draftMaterialOrderList.map((order) => (
           <MaterialOrderListButton
             key={order.id}
@@ -38,7 +38,7 @@ export default function MaterialOrderListPanel({
         ))}
       </div>
 
-      <div className="mt-4 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
+      <div className="mt-3 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
         현재는 화면 구조 확인용 로컬 목록입니다. 실제 목록은 repository/API 연결 후 회사별 발주서로 대체합니다.
       </div>
     </AdminCard>
@@ -59,7 +59,7 @@ function MaterialOrderListButton({
       type="button"
       onClick={() => onSelectOrder(order.id)}
       className={[
-        "w-full rounded-3xl border px-4 py-3 text-left transition",
+        "w-full rounded-2xl border px-3 py-2.5 text-left transition",
         selected
           ? "border-[var(--pbp-action-primary)] bg-[var(--pbp-surface-soft)] shadow-sm"
           : "border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] hover:bg-[var(--pbp-surface-soft)]",
@@ -70,7 +70,7 @@ function MaterialOrderListButton({
         <AdminStatusBadge tone={selected ? "info" : "neutral"}>{order.statusLabel}</AdminStatusBadge>
       </div>
       <p className="mt-2 text-xs font-medium pbp-text-primary">{materialTypeLabels[order.materialType]} · {order.supplierName}</p>
-      <div className="mt-3 flex items-center justify-between gap-3 text-xs pbp-text-muted">
+      <div className="mt-2 flex items-center justify-between gap-3 text-xs pbp-text-muted">
         <span>{order.createdAtLabel}</span>
         <span>{order.amountLabel}</span>
       </div>
