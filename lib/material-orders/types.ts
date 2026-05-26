@@ -71,6 +71,22 @@ export type MaterialOrderListParams = {
   status?: MaterialOrderStatus | null;
 };
 
+export type MaterialOrderSupplier = {
+  id: string;
+  name: string;
+  type: MaterialOrderLineItemType;
+  isActive: boolean;
+};
+
+export type MaterialOrderSupplierListParams = {
+  companyId: string;
+  type?: MaterialOrderLineItemType | null;
+};
+
+export type MaterialOrderSupplierListResult = {
+  suppliers: MaterialOrderSupplier[];
+};
+
 export type MaterialOrderAllocationInput = {
   workOrderId: string;
   allocatedQuantity: number;

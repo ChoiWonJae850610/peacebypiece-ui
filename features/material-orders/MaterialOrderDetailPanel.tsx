@@ -13,16 +13,22 @@ import {
   formatMaterialOrderStatusLabel,
   formatMaterialOrderTypeLabel,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import type { MaterialOrder } from "@/lib/material-orders/types";
+import type { MaterialOrder, MaterialOrderSupplier } from "@/lib/material-orders/types";
 
 type MaterialOrderDetailPanelProps = {
   selectedOrder: MaterialOrder | null;
   materialType: MaterialOrderDraftType;
+  supplierPartnerId: string | null;
+  suppliers: MaterialOrderSupplier[];
+  suppliersLoading: boolean;
+  suppliersError: string | null;
   destinationMemo: string;
   orderNote: string;
   lines: MaterialOrderDraftLine[];
   totals: MaterialOrderDraftTotals;
   onChangeMaterialType: (materialType: MaterialOrderDraftType) => void;
+  onChangeSupplierPartnerId: (partnerId: string | null) => void;
+  onRetrySuppliers: () => void;
   onChangeDestinationMemo: (memo: string) => void;
   onChangeOrderNote: (memo: string) => void;
   saving: boolean;
@@ -36,11 +42,17 @@ type MaterialOrderDetailPanelProps = {
 export default function MaterialOrderDetailPanel({
   selectedOrder,
   materialType,
+  supplierPartnerId,
+  suppliers,
+  suppliersLoading,
+  suppliersError,
   destinationMemo,
   orderNote,
   lines,
   totals,
   onChangeMaterialType,
+  onChangeSupplierPartnerId,
+  onRetrySuppliers,
   onChangeDestinationMemo,
   onChangeOrderNote,
   saving,
@@ -85,12 +97,28 @@ export default function MaterialOrderDetailPanel({
             </label>
             <label className="grid gap-1 text-xs font-semibold pbp-text-subtle">
               공급처
-              <input
-                value={selectedOrder.supplierPartnerName ?? ""}
-                readOnly
-                placeholder="공급처 선택은 다음 단계에서 연결"
-                className={fieldClassName("read-only:opacity-80")}
-              />
+              <select
+                value={supplierPartnerId ?? ""}
+                disabled={selectedOrder.status !== "draft" || suppliersLoading}
+                onChange={(event) => onChangeSupplierPartnerId(event.target.value || null)}
+                className={fieldClassName()}
+              >
+                <option value="">{resolveSupplierPlaceholder(suppliersLoading, suppliers.length)}</option>
+                {suppliers.map((supplier) => (
+                  <option key={`${supplier.type}-${supplier.id}`} value={supplier.id}>
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
+              {suppliersError ? (
+                <button
+                  type="button"
+                  onClick={onRetrySuppliers}
+                  className="w-fit text-[11px] font-semibold text-rose-600 underline-offset-2 hover:underline"
+                >
+                  공급처 조회 실패 · 다시 조회
+                </button>
+              ) : null}
             </label>
             <label className="grid gap-1 text-xs font-semibold pbp-text-subtle">
               전달/보관 메모
@@ -266,4 +294,10 @@ function fieldClassName(extra = "") {
     "min-h-9 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-sm pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]",
     extra,
   ].filter(Boolean).join(" ");
+}
+
+function resolveSupplierPlaceholder(loading: boolean, supplierCount: number): string {
+  if (loading) return "공급처 조회중";
+  if (supplierCount === 0) return "등록된 공급처 없음";
+  return "공급처 선택";
 }

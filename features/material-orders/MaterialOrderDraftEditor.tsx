@@ -14,13 +14,14 @@ import { createMaterialOrderDraftLine } from "@/lib/material-orders/materialOrde
 import {
   createEmptyMaterialOrder,
   fetchAllocationCandidateWorkOrders,
+  fetchMaterialOrderSuppliers,
   fetchMaterialOrders,
   resolveMaterialOrderType,
   toMaterialOrderWorkspaceError,
   updateMaterialOrderDetail,
   type MaterialOrderWorkspaceWorkOrderCandidate,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import type { MaterialOrder } from "@/lib/material-orders/types";
+import type { MaterialOrder, MaterialOrderSupplier } from "@/lib/material-orders/types";
 import type { MaterialOrderDraftGuideItem } from "@/lib/material-orders/materialOrderWorkspaceViewModel";
 
 type MaterialOrderDraftEditorProps = {
@@ -40,9 +41,13 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   const [savingOrder, setSavingOrder] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [workOrderCandidates, setWorkOrderCandidates] = useState<MaterialOrderWorkspaceWorkOrderCandidate[]>([]);
+  const [suppliers, setSuppliers] = useState<MaterialOrderSupplier[]>([]);
+  const [suppliersLoading, setSuppliersLoading] = useState(false);
+  const [suppliersError, setSuppliersError] = useState<string | null>(null);
   const [workOrdersLoading, setWorkOrdersLoading] = useState(true);
   const [workOrdersError, setWorkOrdersError] = useState<string | null>(null);
   const [materialType, setMaterialType] = useState<MaterialOrderDraftType>("fabric");
+  const [supplierPartnerId, setSupplierPartnerId] = useState<string | null>(null);
   const [destinationMemo, setDestinationMemo] = useState("");
   const [orderNote, setOrderNote] = useState("");
   const [lines, setLines] = useState<MaterialOrderDraftLine[]>([]);
@@ -88,14 +93,33 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     }
   }, []);
 
+  const refreshSuppliers = useCallback(async (nextMaterialType: MaterialOrderDraftType) => {
+    setSuppliersLoading(true);
+    setSuppliersError(null);
+
+    try {
+      setSuppliers(await fetchMaterialOrderSuppliers(nextMaterialType));
+    } catch (error) {
+      setSuppliersError(toMaterialOrderWorkspaceError(error, "공급처 목록을 불러오지 못했습니다."));
+      setSuppliers([]);
+    } finally {
+      setSuppliersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void refreshOrders();
     void refreshWorkOrderCandidates();
   }, [refreshOrders, refreshWorkOrderCandidates]);
 
   useEffect(() => {
+    void refreshSuppliers(materialType);
+  }, [materialType, refreshSuppliers]);
+
+  useEffect(() => {
     if (!selectedOrder) {
       setMaterialType("fabric");
+      setSupplierPartnerId(null);
       setDestinationMemo("");
       setOrderNote("");
       setLines([]);
@@ -103,6 +127,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     }
 
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "fabric");
+    setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
     setSaveMessage(null);
     setDestinationMemo("");
     setOrderNote(selectedOrder.note ?? "");
@@ -131,6 +156,11 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   }
 
 
+  function changeMaterialType(nextMaterialType: MaterialOrderDraftType) {
+    setMaterialType(nextMaterialType);
+    setSupplierPartnerId(null);
+  }
+
   async function saveSelectedOrderDetail() {
     if (!selectedOrder || selectedOrder.status !== "draft") return;
 
@@ -140,7 +170,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     try {
       const result = await updateMaterialOrderDetail({
         materialOrderId: selectedOrder.id,
-        supplierPartnerId: selectedOrder.supplierPartnerId,
+        supplierPartnerId,
         note: orderNote,
         lines: lines.map((line) => ({
           itemName: line.itemName,
@@ -192,11 +222,17 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
         <MaterialOrderDetailPanel
           selectedOrder={selectedOrder}
           materialType={materialType}
+          supplierPartnerId={supplierPartnerId}
+          suppliers={suppliers}
+          suppliersLoading={suppliersLoading}
+          suppliersError={suppliersError}
           destinationMemo={destinationMemo}
           orderNote={orderNote}
           lines={lines}
           totals={totals}
-          onChangeMaterialType={setMaterialType}
+          onChangeMaterialType={changeMaterialType}
+          onChangeSupplierPartnerId={setSupplierPartnerId}
+          onRetrySuppliers={() => void refreshSuppliers(materialType)}
           onChangeDestinationMemo={setDestinationMemo}
           onChangeOrderNote={setOrderNote}
           saving={savingOrder}

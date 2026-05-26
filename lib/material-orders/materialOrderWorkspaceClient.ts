@@ -1,5 +1,12 @@
 import type { WorkOrder } from "@/types/workorder";
-import type { MaterialOrder, MaterialOrderCreateInput, MaterialOrderLineInput, MaterialOrderLineItemType } from "@/lib/material-orders/types";
+import type {
+  MaterialOrder,
+  MaterialOrderCreateInput,
+  MaterialOrderLineInput,
+  MaterialOrderLineItemType,
+  MaterialOrderSupplier,
+  MaterialOrderSupplierListResult,
+} from "@/lib/material-orders/types";
 
 export type MaterialOrderWorkspaceListResult = {
   materialOrders: MaterialOrder[];
@@ -100,6 +107,18 @@ export async function fetchMaterialOrders(): Promise<MaterialOrder[]> {
   });
   const payload = await readJsonResponse<MaterialOrderWorkspaceListResult>(response);
   return Array.isArray(payload.materialOrders) ? payload.materialOrders : [];
+}
+
+
+export async function fetchMaterialOrderSuppliers(type: MaterialOrderLineItemType): Promise<MaterialOrderSupplier[]> {
+  const params = new URLSearchParams({ type });
+  const response = await fetch(`/api/material-orders/suppliers?${params.toString()}`, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+    cache: "no-store",
+  });
+  const payload = await readJsonResponse<MaterialOrderSupplierListResult>(response);
+  return Array.isArray(payload.suppliers) ? payload.suppliers : [];
 }
 
 export async function createEmptyMaterialOrder(): Promise<MaterialOrderWorkspaceMutationResult> {

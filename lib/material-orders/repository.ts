@@ -10,6 +10,8 @@ import type {
   MaterialOrderListParams,
   MaterialOrderStatus,
   MaterialOrderStatusUpdateInput,
+  MaterialOrderSupplier,
+  MaterialOrderSupplierListParams,
   MaterialOrderUpdateInput,
 } from "@/lib/material-orders/types";
 
@@ -44,6 +46,15 @@ type MaterialOrderLineRow = {
   note: string | null;
   created_at: Date | string;
   updated_at: Date | string;
+};
+
+
+
+type MaterialOrderSupplierRow = {
+  id: string;
+  name: string;
+  supplier_type: "fabric" | "submaterial";
+  is_active: boolean;
 };
 
 type MaterialOrderAllocationRow = {
@@ -275,6 +286,54 @@ function groupMaterialOrders(
   }
 
   return orderRows.map((row) => mapOrderRow(row, linesByOrderId));
+}
+
+
+function mapSupplierItemType(type: MaterialOrderSupplierListParams["type"]): "fabric" | "subsidiary" | null {
+  if (type === "fabric") return "fabric";
+  if (type === "submaterial") return "subsidiary";
+  return null;
+}
+
+function mapSupplierRow(row: MaterialOrderSupplierRow): MaterialOrderSupplier {
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.supplier_type,
+    isActive: row.is_active,
+  };
+}
+
+export async function listMaterialOrderSuppliersByCompany(
+  params: MaterialOrderSupplierListParams,
+): Promise<MaterialOrderSupplier[]> {
+  const values: unknown[] = [params.companyId];
+  const itemType = mapSupplierItemType(params.type);
+  const itemTypeFilter = itemType ? "AND pi.item_type = $2" : "AND pi.item_type IN ('fabric', 'subsidiary')";
+  if (itemType) values.push(itemType);
+
+  const result = await queryDb<MaterialOrderSupplierRow>(
+    `SELECT DISTINCT
+       p.id,
+       p.name,
+       CASE
+         WHEN pi.item_type = 'subsidiary' THEN 'submaterial'
+         ELSE 'fabric'
+       END AS supplier_type,
+       p.is_active
+     FROM partners p
+     INNER JOIN partner_items pi
+        ON pi.partner_id = p.id
+       AND pi.company_id = p.company_id
+     WHERE p.company_id = $1
+       AND p.is_active = true
+       AND pi.is_active = true
+       ${itemTypeFilter}
+     ORDER BY p.name ASC`,
+    values,
+  );
+
+  return result.rows.map(mapSupplierRow);
 }
 
 export async function listMaterialOrdersByCompany(params: MaterialOrderListParams): Promise<MaterialOrder[]> {

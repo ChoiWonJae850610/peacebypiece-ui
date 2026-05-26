@@ -3,6 +3,7 @@ import "server-only";
 import {
   createMaterialOrderForCompany,
   listMaterialOrdersByCompany,
+  listMaterialOrderSuppliersByCompany,
   updateMaterialOrderDetailForCompany,
   updateMaterialOrderStatusForCompany,
 } from "@/lib/material-orders/repository";
@@ -12,6 +13,8 @@ import type {
   MaterialOrderListResult,
   MaterialOrderMutationResult,
   MaterialOrderStatusUpdateInput,
+  MaterialOrderSupplierListParams,
+  MaterialOrderSupplierListResult,
   MaterialOrderUpdateInput,
 } from "@/lib/material-orders/types";
 
@@ -20,6 +23,15 @@ export async function listWorkspaceMaterialOrders(
 ): Promise<MaterialOrderListResult> {
   return {
     materialOrders: await listMaterialOrdersByCompany(params),
+  };
+}
+
+
+export async function listWorkspaceMaterialOrderSuppliers(
+  params: MaterialOrderSupplierListParams,
+): Promise<MaterialOrderSupplierListResult> {
+  return {
+    suppliers: await listMaterialOrderSuppliersByCompany(params),
   };
 }
 
