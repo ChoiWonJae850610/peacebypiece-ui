@@ -1,12 +1,12 @@
-Version : 0.16.95
-Summary : 원단·부자재 발주 작성 화면 1차 추가
-Description : 원단·부자재 발주 업무 화면에 로컬 draft 기반 발주 작성/상세 1차 UI를 추가했습니다. 공급처, 전달/보관 메모, 내부 메모, 품목 라인, 주문수량, 예정 배분수량, 단가, 금액 합계, 재고 예정 수량을 입력/확인할 수 있도록 구성했습니다. 계산 로직은 materialOrderDraftCalculator로 분리했고, API 저장/작업지시서 연결/DB schema/package 파일은 변경하지 않았습니다.
+Version : 0.16.96
+Summary : 원단·부자재 발주 작성 UI 단순화
+Description : 원단·부자재 발주 작성 화면에서 발주 종류를 먼저 선택하고 해당 종류의 공급처를 선택하는 구조로 정리했습니다. 품목 라인은 품목명, 단위, 주문수량, 단가만 입력하도록 단순화하고 색상, 규격, 예정 배분수량, 품목별 구분 입력을 제거했습니다. 배분 수량과 재고 예정 계산은 다음 작업지시서 배분 단계로 분리했습니다. DB schema, API, package 파일은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- features/material-orders/MaterialOrderWorkspacePage.tsx
-- lib/material-orders/materialOrderWorkspaceViewModel.ts
-추가 파일 목록 :
 - features/material-orders/MaterialOrderDraftEditor.tsx
 - lib/material-orders/materialOrderDraftCalculator.ts
+- lib/material-orders/materialOrderWorkspaceViewModel.ts
+추가 파일 목록 :
+- 없음
 삭제 파일 목록 :
 - 없음

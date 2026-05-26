@@ -76,7 +76,7 @@ export function buildMaterialOrderWorkspaceViewModel(): MaterialOrderWorkspaceVi
       {
         id: "editor",
         label: "발주 작성/상세",
-        description: "공급처, 품목, 주문수량, 작업지시서별 배분 수량을 입력하는 화면입니다.",
+        description: "발주 종류, 공급처, 품목명, 단위, 주문수량, 단가를 입력하는 화면입니다.",
         statusLabel: "예정",
       },
       {
@@ -90,17 +90,17 @@ export function buildMaterialOrderWorkspaceViewModel(): MaterialOrderWorkspaceVi
       {
         id: "supplier",
         label: "공급처 선택",
-        description: "협력업체관리의 공급처/거래처를 연결할 예정입니다. 현재는 화면 입력 구조만 먼저 고정합니다.",
+        description: "원단/부자재 발주 종류를 먼저 선택하고 해당 종류의 공급처만 표시할 예정입니다. 현재는 화면 입력 구조만 먼저 고정합니다.",
       },
       {
         id: "line-items",
         label: "품목 추가",
-        description: "품목명, 구분, 색상, 규격, 단위, 주문수량, 단가를 입력하고 금액을 즉시 계산합니다.",
+        description: "품목명, 단위, 주문수량, 단가만 입력하고 금액을 즉시 계산합니다. 색상과 규격은 초기 MVP에서 품목명에 함께 적습니다.",
       },
       {
         id: "workorder-allocation",
         label: "작업지시서 배분",
-        description: "다음 단계에서 작업지시서 연결과 배분 수량 입력을 붙입니다. 이번 단계는 발주 라인 입력까지만 고정합니다.",
+        description: "다음 단계에서 작업지시서 연결과 배분 수량 입력을 붙입니다. 발주 입력과 배분 입력을 분리합니다.",
       },
     ],
     processSteps: [

@@ -8,9 +8,9 @@ import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   calculateMaterialOrderDraftTotals,
   calculateMaterialOrderLineAmount,
-  calculateMaterialOrderPlannedInventoryQuantity,
   formatMaterialOrderAmount,
   type MaterialOrderDraftLine,
+  type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderDraftEditorProps = {
@@ -21,22 +21,46 @@ type MaterialOrderDraftEditorProps = {
   }[];
 };
 
-const itemTypeLabels: Record<MaterialOrderDraftLine["itemType"], string> = {
+type MaterialOrderSupplierOption = {
+  id: string;
+  materialType: MaterialOrderDraftType;
+  label: string;
+  helperText: string;
+};
+
+const materialTypeLabels: Record<MaterialOrderDraftType, string> = {
   fabric: "원단",
   submaterial: "부자재",
 };
 
+const supplierOptions: MaterialOrderSupplierOption[] = [
+  {
+    id: "fabric-supplier-a",
+    materialType: "fabric",
+    label: "A 원단",
+    helperText: "원단 공급처 예시입니다. 실제 거래처 필터는 다음 단계에서 DB와 연결합니다.",
+  },
+  {
+    id: "fabric-supplier-b",
+    materialType: "fabric",
+    label: "B 원단",
+    helperText: "원단 공급처 예시입니다.",
+  },
+  {
+    id: "submaterial-supplier-a",
+    materialType: "submaterial",
+    label: "A 부자재",
+    helperText: "부자재 공급처 예시입니다. 실제 거래처 필터는 다음 단계에서 DB와 연결합니다.",
+  },
+];
+
 const initialLines: MaterialOrderDraftLine[] = [
   {
     id: "draft-line-1",
-    itemName: "30수 면",
-    itemType: "fabric",
-    color: "블랙",
-    spec: "기본",
+    itemName: "30수 면 블랙",
     unit: "마",
     orderQuantity: 10,
     unitPrice: 0,
-    plannedAllocationQuantity: 3,
   },
 ];
 
@@ -44,13 +68,9 @@ function createEmptyLine(index: number): MaterialOrderDraftLine {
   return {
     id: `draft-line-${Date.now()}-${index}`,
     itemName: "",
-    itemType: "fabric",
-    color: "",
-    spec: "",
     unit: "마",
     orderQuantity: 0,
     unitPrice: 0,
-    plannedAllocationQuantity: 0,
   };
 }
 
@@ -67,12 +87,24 @@ function fieldClassName(extra = "") {
 }
 
 export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDraftEditorProps) {
-  const [supplierName, setSupplierName] = useState("");
+  const [materialType, setMaterialType] = useState<MaterialOrderDraftType>("fabric");
+  const [supplierId, setSupplierId] = useState("fabric-supplier-a");
   const [destinationMemo, setDestinationMemo] = useState("");
   const [orderNote, setOrderNote] = useState("");
   const [lines, setLines] = useState<MaterialOrderDraftLine[]>(initialLines);
 
+  const filteredSupplierOptions = useMemo(
+    () => supplierOptions.filter((supplier) => supplier.materialType === materialType),
+    [materialType],
+  );
+
+  const selectedSupplier = filteredSupplierOptions.find((supplier) => supplier.id === supplierId) ?? filteredSupplierOptions[0];
   const totals = useMemo(() => calculateMaterialOrderDraftTotals(lines), [lines]);
+
+  function updateMaterialType(nextMaterialType: MaterialOrderDraftType) {
+    setMaterialType(nextMaterialType);
+    setSupplierId(supplierOptions.find((supplier) => supplier.materialType === nextMaterialType)?.id ?? "");
+  }
 
   function updateLine(lineId: string, patch: Partial<MaterialOrderDraftLine>) {
     setLines((current) => current.map((line) => (line.id === lineId ? { ...line, ...patch } : line)));
@@ -90,7 +122,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     <AdminSection
       eyebrow="Draft editor"
       title="발주 작성/상세 1차"
-      description="공급처, 품목, 주문수량, 단가, 재고 예정 수량을 먼저 입력하는 화면입니다. 작업지시서 연결/배분 상세 저장은 다음 단계에서 붙입니다."
+      description="발주 종류와 공급처를 먼저 선택하고, 품목 라인은 품목명·단위·수량·단가만 입력합니다. 작업지시서 연결/배분 상세 저장은 다음 단계에서 붙입니다."
       actions={<AdminStatusBadge tone="warning">Local draft</AdminStatusBadge>}
       className="p-5"
       bodyClassName="mt-5"
@@ -101,14 +133,33 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
             <h3 className="text-sm font-semibold pbp-text-primary">발주 기본 정보</h3>
             <div className="mt-4 grid gap-3">
               <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
-                공급처
-                <input
-                  value={supplierName}
-                  onChange={(event) => setSupplierName(event.target.value)}
-                  placeholder="예: A 원단"
+                발주 종류
+                <select
+                  value={materialType}
+                  onChange={(event) => updateMaterialType(event.target.value as MaterialOrderDraftType)}
                   className={fieldClassName()}
-                />
+                >
+                  <option value="fabric">원단</option>
+                  <option value="submaterial">부자재</option>
+                </select>
               </label>
+              <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
+                공급처
+                <select
+                  value={selectedSupplier?.id ?? ""}
+                  onChange={(event) => setSupplierId(event.target.value)}
+                  className={fieldClassName()}
+                >
+                  {filteredSupplierOptions.map((supplier) => (
+                    <option key={supplier.id} value={supplier.id}>{supplier.label}</option>
+                  ))}
+                </select>
+              </label>
+              {selectedSupplier ? (
+                <p className="rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
+                  {selectedSupplier.helperText}
+                </p>
+              ) : null}
               <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
                 전달/보관 메모
                 <input
@@ -153,14 +204,13 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-semibold pbp-text-primary">품목 라인</h3>
-                <p className="mt-1 text-xs leading-5 pbp-text-muted">주문수량과 예정 배분 수량을 분리해 재고 예정 수량을 즉시 확인합니다.</p>
+                <p className="mt-1 text-xs leading-5 pbp-text-muted">{materialTypeLabels[materialType]} 발주 품목을 빠르게 입력합니다. 색상·규격은 필요하면 품목명에 함께 적고, 배분 수량은 작업지시서 연결 단계에서 입력합니다.</p>
               </div>
               <AdminButton onClick={addLine}>품목 추가</AdminButton>
             </div>
 
             <div className="mt-4 space-y-3">
               {lines.map((line, index) => {
-                const plannedInventoryQuantity = calculateMaterialOrderPlannedInventoryQuantity(line);
                 const lineAmount = calculateMaterialOrderLineAmount(line);
 
                 return (
@@ -171,11 +221,8 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
                         <p className="mt-1 text-sm font-semibold pbp-text-primary">{line.itemName || "품목명 미입력"}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <AdminStatusBadge tone="neutral">{itemTypeLabels[line.itemType]}</AdminStatusBadge>
-                        <AdminStatusBadge tone={plannedInventoryQuantity < 0 ? "danger" : "info"}>
-                          재고 예정 {plannedInventoryQuantity}
-                          {line.unit}
-                        </AdminStatusBadge>
+                        <AdminStatusBadge tone="neutral">{materialTypeLabels[materialType]}</AdminStatusBadge>
+                        <AdminStatusBadge tone="info">{line.orderQuantity}{line.unit}</AdminStatusBadge>
                         <AdminButton
                           variant="ghost"
                           onClick={() => removeLine(line.id)}
@@ -192,36 +239,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
                         <input
                           value={line.itemName}
                           onChange={(event) => updateLine(line.id, { itemName: event.target.value })}
-                          placeholder="예: 30수 면"
-                          className={fieldClassName()}
-                        />
-                      </label>
-                      <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
-                        구분
-                        <select
-                          value={line.itemType}
-                          onChange={(event) => updateLine(line.id, { itemType: event.target.value as MaterialOrderDraftLine["itemType"] })}
-                          className={fieldClassName()}
-                        >
-                          <option value="fabric">원단</option>
-                          <option value="submaterial">부자재</option>
-                        </select>
-                      </label>
-                      <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
-                        색상
-                        <input
-                          value={line.color}
-                          onChange={(event) => updateLine(line.id, { color: event.target.value })}
-                          placeholder="예: 블랙"
-                          className={fieldClassName()}
-                        />
-                      </label>
-                      <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
-                        규격
-                        <input
-                          value={line.spec}
-                          onChange={(event) => updateLine(line.id, { spec: event.target.value })}
-                          placeholder="예: 58인치"
+                          placeholder={materialType === "fabric" ? "예: 30수 면 블랙" : "예: YKK 3호 지퍼 아이보리"}
                           className={fieldClassName()}
                         />
                       </label>
@@ -246,17 +264,6 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
                         />
                       </label>
                       <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
-                        예정 배분수량
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={line.plannedAllocationQuantity}
-                          onChange={(event) => updateLine(line.id, { plannedAllocationQuantity: normalizeNumberInput(event.target.value) })}
-                          className={fieldClassName()}
-                        />
-                      </label>
-                      <label className="grid gap-1.5 text-xs font-semibold pbp-text-subtle">
                         단가
                         <input
                           type="number"
@@ -269,18 +276,14 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
                       </label>
                     </div>
 
-                    <div className="mt-4 grid gap-3 rounded-2xl bg-[var(--pbp-surface-soft)] p-3 text-xs md:grid-cols-3">
+                    <div className="mt-4 grid gap-3 rounded-2xl bg-[var(--pbp-surface-soft)] p-3 text-xs md:grid-cols-2">
                       <div>
                         <p className="font-semibold pbp-text-subtle">라인 금액</p>
                         <p className="mt-1 text-sm font-semibold pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</p>
                       </div>
                       <div>
                         <p className="font-semibold pbp-text-subtle">계산식</p>
-                        <p className="mt-1 text-sm font-semibold pbp-text-primary">주문 {line.orderQuantity}{line.unit} - 배분 {line.plannedAllocationQuantity}{line.unit}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold pbp-text-subtle">재고 예정</p>
-                        <p className="mt-1 text-sm font-semibold pbp-text-primary">{plannedInventoryQuantity}{line.unit}</p>
+                        <p className="mt-1 text-sm font-semibold pbp-text-primary">주문 {line.orderQuantity}{line.unit} × 단가 {formatMaterialOrderAmount(line.unitPrice)}</p>
                       </div>
                     </div>
                   </div>
@@ -290,7 +293,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           </AdminCard>
 
           <AdminCard className="p-4">
-            <div className="grid gap-3 md:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-3">
               <div>
                 <p className="text-xs font-semibold pbp-text-subtle">품목 수</p>
                 <p className="mt-1 text-lg font-semibold pbp-text-primary">{totals.lineCount}개</p>
@@ -300,13 +303,12 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
                 <p className="mt-1 text-lg font-semibold pbp-text-primary">{totals.totalOrderQuantity}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold pbp-text-subtle">배분 예정 합계</p>
-                <p className="mt-1 text-lg font-semibold pbp-text-primary">{totals.totalPlannedAllocationQuantity}</p>
-              </div>
-              <div>
                 <p className="text-xs font-semibold pbp-text-subtle">금액 합계</p>
                 <p className="mt-1 text-lg font-semibold pbp-text-primary">{formatMaterialOrderAmount(totals.totalAmount)}</p>
               </div>
+            </div>
+            <div className="mt-4 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
+              작업지시서별 배분 수량과 남은 재고 예정 수량은 다음 단계의 배분 입력 화면에서 계산합니다.
             </div>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
               <AdminButton disabled>임시 저장 예정</AdminButton>
