@@ -17,7 +17,7 @@ export default function MaterialOrderListPanel({
   onSelectOrder,
 }: MaterialOrderListPanelProps) {
   return (
-    <AdminCard className="flex min-h-[260px] flex-col p-2.5 lg:min-h-0 lg:w-auto lg:overflow-hidden">
+    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-2.5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Material orders</p>

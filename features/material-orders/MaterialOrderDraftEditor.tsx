@@ -23,6 +23,10 @@ type MaterialOrderDraftEditorProps = {
   guideItems: MaterialOrderDraftGuideItem[];
 };
 
+const MATERIAL_ORDER_PANEL_GRID_STYLE = {
+  gridTemplateColumns: "200px minmax(640px, 1fr) 250px",
+} as const;
+
 export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDraftEditorProps) {
   const [selectedOrderId, setSelectedOrderId] = useState(draftMaterialOrderList[0]?.id ?? "");
   const [materialType, setMaterialType] = useState<MaterialOrderDraftType>("fabric");
@@ -55,28 +59,33 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   }
 
   return (
-    <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[180px_minmax(0,1fr)_220px] lg:overflow-hidden 2xl:grid-cols-[190px_minmax(0,1fr)_230px]">
-      <MaterialOrderListPanel
-        selectedOrderId={selectedOrderId}
-        onSelectOrder={setSelectedOrderId}
-      />
-      <MaterialOrderDetailPanel
-        materialType={materialType}
-        supplierId={supplierId}
-        destinationMemo={destinationMemo}
-        orderNote={orderNote}
-        lines={lines}
-        totals={totals}
-        selectedSupplier={selectedSupplier}
-        onChangeMaterialType={updateMaterialType}
-        onChangeSupplierId={setSupplierId}
-        onChangeDestinationMemo={setDestinationMemo}
-        onChangeOrderNote={setOrderNote}
-        onChangeLine={updateLine}
-        onAddLine={addLine}
-        onRemoveLine={removeLine}
-      />
-      <MaterialOrderAllocationPanel guideItems={guideItems} />
+    <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-1">
+      <div
+        className="grid h-full min-h-[640px] min-w-[1120px] gap-3"
+        style={MATERIAL_ORDER_PANEL_GRID_STYLE}
+      >
+        <MaterialOrderListPanel
+          selectedOrderId={selectedOrderId}
+          onSelectOrder={setSelectedOrderId}
+        />
+        <MaterialOrderDetailPanel
+          materialType={materialType}
+          supplierId={supplierId}
+          destinationMemo={destinationMemo}
+          orderNote={orderNote}
+          lines={lines}
+          totals={totals}
+          selectedSupplier={selectedSupplier}
+          onChangeMaterialType={updateMaterialType}
+          onChangeSupplierId={setSupplierId}
+          onChangeDestinationMemo={setDestinationMemo}
+          onChangeOrderNote={setOrderNote}
+          onChangeLine={updateLine}
+          onAddLine={addLine}
+          onRemoveLine={removeLine}
+        />
+        <MaterialOrderAllocationPanel guideItems={guideItems} />
+      </div>
     </div>
   );
 }

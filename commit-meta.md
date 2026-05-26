@@ -1,6 +1,6 @@
-Version : 0.17.1
-Summary : 원단·부자재 3패널 가운데 작업 영역 확대
-Description : 원단·부자재 발주 화면의 3패널 shell을 grid 기반 비율로 재정리하고 왼쪽 발주서 목록과 오른쪽 작업지시서 연결 패널을 보조 패널 폭으로 축소했습니다. 가운데 발주서 상세 패널이 남은 폭을 우선 사용하도록 조정하고 좌우 패널의 안내 문구와 내부 여백을 줄였습니다. 오른쪽 단계 안내 카드는 제거해 배분 후보 목록 중심으로 정리했습니다. DB schema, API 저장 로직, package 파일은 변경하지 않았습니다.
+Version : 0.17.2
+Summary : 원단·부자재 3패널 레이아웃 강제 적용
+Description : 원단·부자재 발주 화면의 패널 배치가 breakpoint/Tailwind arbitrary grid 적용 여부에 따라 세로로 떨어지지 않도록 inline gridTemplateColumns 기반의 고정 3패널 shell로 변경했습니다. 왼쪽 발주서 목록, 가운데 발주 상세, 오른쪽 작업지시서 연결 패널이 PC 화면에서 항상 같은 행에 배치되도록 하고, 각 패널의 높이/overflow를 명시했습니다. DB schema, API 저장 로직, package 파일은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - features/material-orders/MaterialOrderDraftEditor.tsx

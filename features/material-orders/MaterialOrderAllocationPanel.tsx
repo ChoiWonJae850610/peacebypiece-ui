@@ -14,7 +14,7 @@ export default function MaterialOrderAllocationPanel({ guideItems }: MaterialOrd
   void guideItems;
 
   return (
-    <AdminCard className="flex min-h-[320px] flex-col p-2.5 lg:min-h-0 lg:w-auto lg:overflow-hidden">
+    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-2.5">
       <div className="flex items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Allocation</p>
