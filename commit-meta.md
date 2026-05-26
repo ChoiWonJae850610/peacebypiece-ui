@@ -1,15 +1,16 @@
-Version : 0.17.5
-Summary : 원단·부자재 실제 발주서 목록 연결
-Description : 원단·부자재 화면의 왼쪽 발주서 목록을 mock 데이터에서 실제 /api/material-orders 조회 기반으로 전환하고 새 발주 버튼으로 draft 발주서를 DB에 생성하도록 연결했습니다. 우측 작업지시서 연결 후보도 /api/workorders 실제 조회 결과를 표시하도록 변경했습니다. 기존 예시 발주서/예시 작업지시서/예시 공급처 목록 의존을 제거하고, 데이터가 없을 때는 빈 상태와 재조회 UI를 표시하도록 정리했습니다. DB schema, package 파일은 변경하지 않았습니다.
+Version : 0.17.6
+Summary : 작업지시서 자재 연결 UI 제거
+Description : 작업지시서 상세의 원단·부자재 기준정보 연결 패널과 작업지시서 기준 자재 연결 API/클라이언트 코드를 제거했습니다. 작업지시서는 생산 지시서 역할에 집중하고, 원단·부자재 발주와 작업지시서별 배분은 원단·부자재 발주 화면에서 처리하는 단방향 흐름으로 정리했습니다. dev/test-console용 full reset 이후 SQL 실행 순서 문서를 추가했습니다. DB schema와 package 파일은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- features/material-orders/MaterialOrderWorkspacePage.tsx
-- features/material-orders/MaterialOrderDraftEditor.tsx
-- features/material-orders/MaterialOrderListPanel.tsx
-- features/material-orders/MaterialOrderDetailPanel.tsx
-- features/material-orders/MaterialOrderAllocationPanel.tsx
-- lib/material-orders/materialOrderDraftWorkspace.ts
+- components/workorder/detail/sections/MaterialSection.tsx
+- components/workorder/detail/sections/ProductionCompositionSection.tsx
+- lib/workorder/presentation/workOrderDetailSectionProps.ts
 추가 파일 목록 :
-- lib/material-orders/materialOrderWorkspaceClient.ts
+- db/test/dev_test_console_reset_order.md
 삭제 파일 목록 :
-- 없음
+- app/api/workorders/material-lines/route.ts
+- features/workorders/material-lines/WorkOrderMaterialLinesPanel.tsx
+- features/workorders/material-lines/useWorkOrderMaterialLines.ts
+- lib/materials/workorderMaterialLinesRepository.ts
+- lib/materials/workorderMaterialLinesService.ts

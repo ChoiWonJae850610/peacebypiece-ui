@@ -16,11 +16,9 @@ import {
   type EditableSectionKey,
 } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/workorder";
-import WorkOrderMaterialLinesPanel from "@/features/workorders/material-lines/WorkOrderMaterialLinesPanel";
 
 export default function MaterialSection({
   materials,
-  workorderId,
   open,
   onToggle,
   editingCell,
@@ -34,7 +32,6 @@ export default function MaterialSection({
   locked = false,
 }: {
   materials: Material[];
-  workorderId: string;
   open: boolean;
   onToggle: () => void;
   editingCell: EditableCell;
@@ -117,8 +114,8 @@ export default function MaterialSection({
               )}
             </tbody>
           </table>
-          <div className="border-t border-stone-200 p-2">
-            <WorkOrderMaterialLinesPanel workorderId={workorderId} locked={locked} />
+          <div className="border-t border-stone-200 bg-stone-50/70 px-3 py-2 text-xs leading-5 text-stone-500">
+            원단·부자재 발주와 작업지시서별 배분은 원단·부자재 발주 화면에서 처리합니다.
           </div>
         </div>
       ) : null}
