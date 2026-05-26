@@ -54,37 +54,37 @@ export default function MaterialOrderAllocationPanel({
   }, [candidates, searchQuery]);
 
   return (
-    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-2">
-      <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--pbp-border)] pb-2">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Allocation</p>
-          <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 연결</h2>
-          <p className="mt-1 text-xs leading-5 pbp-text-muted">발주 요청 이후 자재 배분 대상 작업지시서를 표시합니다.</p>
+    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-3">
+      <div className="shrink-0 border-b border-[var(--pbp-border)] pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Allocation</p>
+            <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">작업지시서</h2>
+          </div>
+          <AdminStatusBadge tone={candidates.length > 0 ? "info" : "neutral"} size="xs">
+            {candidates.length}건
+          </AdminStatusBadge>
         </div>
-        <AdminStatusBadge tone={lines.length > 0 ? "info" : "neutral"}>{lines.length}품목</AdminStatusBadge>
-      </div>
-
-      <div className="mt-2 shrink-0 border-b border-[var(--pbp-border)] pb-2">
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="작업지시서·제품·담당 검색"
-          className={fieldClassName("min-h-9 text-xs")}
+          placeholder="제품·담당 검색"
+          className={fieldClassName("mt-3 min-h-9 text-xs")}
         />
       </div>
 
-      <div className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
         {loading ? (
-          <PanelMessage title="불러오는 중" description="자재 배분 대상 작업지시서를 조회하고 있습니다." />
+          <PanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." />
         ) : errorMessage ? (
           <PanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
         ) : candidates.length === 0 ? (
           <PanelMessage
-            title="연결 가능한 작업지시서 없음"
-            description="현재 사용자가 조회할 수 있는 자재 배분 대상 작업지시서가 없습니다."
+            title="표시할 작업지시서 없음"
+            description="발주 요청 이후 자재 배분 대상 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
-          <PanelMessage title="검색 결과 없음" description="작업지시서 검색어를 조정해보세요." />
+          <PanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." />
         ) : (
           filteredCandidates.map((workOrder) => (
             <AllocationCandidateCard
@@ -97,10 +97,6 @@ export default function MaterialOrderAllocationPanel({
             />
           ))
         )}
-      </div>
-
-      <div className="mt-2 shrink-0 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
-        관리자에게는 회사 전체, 일반 멤버에게는 본인 담당 작업지시서만 표시됩니다.
       </div>
     </AdminCard>
   );
@@ -133,59 +129,70 @@ function AllocationCandidateCard({
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-2">
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-3 transition hover:bg-[var(--pbp-surface-soft)]">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.code}</p>
-          <p className="mt-1 truncate text-xs pbp-text-muted">{workOrder.productName} · {workOrder.reorderLabel}</p>
+          <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
+          <p className="mt-1 truncate text-xs pbp-text-muted">{workOrder.reorderLabel} · {workOrder.managerLabel}</p>
         </div>
-        <AdminStatusBadge tone={selectedLine ? "success" : "warning"}>{selectedLine ? "연결됨" : "미연결"}</AdminStatusBadge>
+        <AdminStatusBadge tone={selectedLine ? "success" : "warning"} size="xs">
+          {selectedLine ? "배분" : "대기"}
+        </AdminStatusBadge>
       </div>
-      <div className="mt-2 grid gap-1 text-xs pbp-text-muted">
-        <p>{workOrder.managerLabel}</p>
-        <p className="font-semibold pbp-text-primary">{workOrder.materialCountLabel}</p>
-        <p>{workOrder.requestedMaterialLabel}</p>
-        <p>{workOrder.dueDateLabel}</p>
+
+      <div className="mt-3 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2">
+        <p className="text-sm font-semibold pbp-text-primary">{workOrder.materialCountLabel}</p>
+        <p className="mt-1 max-h-10 overflow-hidden text-xs leading-5 pbp-text-muted">{workOrder.requestedMaterialLabel}</p>
       </div>
-      <div className="mt-2 grid gap-2">
-        <select className={fieldClassName()} disabled={!editable || lines.length === 0} value={selectedLine?.id ?? ""} onChange={(event) => changeLine(event.target.value)}>
-          <option value="">품목 라인 선택</option>
+
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] pbp-text-muted">
+        <span>{workOrder.dueDateLabel}</span>
+        <span>·</span>
+        <span>{workOrder.code}</span>
+      </div>
+
+      <div className="mt-3 grid gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2">
+        <select className={fieldClassName("text-xs")} disabled={!editable || lines.length === 0} value={selectedLine?.id ?? ""} onChange={(event) => changeLine(event.target.value)}>
+          <option value="">배분할 품목 선택</option>
           {lines.map((line) => (
             <option key={line.id} value={line.id}>
               {line.itemName.trim() || "이름 없는 품목"} · 잔여 {calculateMaterialOrderLineRemainingQuantity(line)}{line.unit}
             </option>
           ))}
         </select>
-        {lines.length === 0 ? (
-          <p className="rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">가운데 패널에서 품목 라인을 추가하면 이 작업지시서에 배분할 수 있습니다.</p>
-        ) : null}
-        <input
-          type="number"
-          min={0}
-          className={fieldClassName()}
-          disabled={!editable || !selectedLine}
-          value={selectedAllocation?.allocatedQuantity ?? 0}
-          onChange={(event) => {
-            if (!selectedLine) return;
-            onChangeAllocation(selectedLine.id, workOrder.id, { allocatedQuantity: normalizeNumberInput(event.target.value) });
-          }}
-          placeholder="배분 수량"
-        />
-        <input
-          className={fieldClassName()}
-          disabled={!editable || !selectedLine}
-          value={selectedAllocation?.allocationNote ?? ""}
-          onChange={(event) => {
-            if (!selectedLine) return;
-            onChangeAllocation(selectedLine.id, workOrder.id, { allocationNote: event.target.value });
-          }}
-          placeholder="배분 메모"
-        />
-      </div>
-      {selectedLine ? (
-        <div className="mt-2 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
-          <span className="font-semibold pbp-text-primary">{selectedLine.itemName || "품목"}</span> 배분 {calculateMaterialOrderLineAllocatedQuantity(selectedLine)} / 잔여 {calculateMaterialOrderLineRemainingQuantity(selectedLine)} {selectedLine.unit}
+        <div className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] gap-2">
+          <input
+            type="number"
+            min={0}
+            className={fieldClassName("text-right text-xs")}
+            disabled={!editable || !selectedLine}
+            value={selectedAllocation?.allocatedQuantity ?? 0}
+            onChange={(event) => {
+              if (!selectedLine) return;
+              onChangeAllocation(selectedLine.id, workOrder.id, { allocatedQuantity: normalizeNumberInput(event.target.value) });
+            }}
+            placeholder="수량"
+          />
+          <input
+            className={fieldClassName("text-xs")}
+            disabled={!editable || !selectedLine}
+            value={selectedAllocation?.allocationNote ?? ""}
+            onChange={(event) => {
+              if (!selectedLine) return;
+              onChangeAllocation(selectedLine.id, workOrder.id, { allocationNote: event.target.value });
+            }}
+            placeholder="메모"
+          />
         </div>
+        {lines.length === 0 ? (
+          <p className="text-xs leading-5 pbp-text-muted">가운데 패널에서 품목 라인을 먼저 추가합니다.</p>
+        ) : null}
+      </div>
+
+      {selectedLine ? (
+        <p className="mt-2 text-xs leading-5 pbp-text-muted">
+          <span className="font-semibold pbp-text-primary">{selectedLine.itemName || "품목"}</span> 배분 {calculateMaterialOrderLineAllocatedQuantity(selectedLine)} / 잔여 {calculateMaterialOrderLineRemainingQuantity(selectedLine)} {selectedLine.unit}
+        </p>
       ) : null}
     </div>
   );
@@ -222,7 +229,7 @@ function normalizeNumberInput(value: string): number {
 
 function fieldClassName(extra = "") {
   return [
-    "min-h-10 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm pbp-text-primary outline-none transition placeholder:pbp-text-subtle disabled:opacity-70",
+    "min-h-9 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-sm pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-soft)] disabled:opacity-70",
     extra,
   ].filter(Boolean).join(" ");
 }
