@@ -1,6 +1,7 @@
 import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { buildMaterialOrderWorkspaceViewModel } from "@/lib/material-orders/materialOrderWorkspaceViewModel";
+import MaterialOrderDraftEditor from "@/features/material-orders/MaterialOrderDraftEditor";
 
 export default function MaterialOrderWorkspacePage() {
   const viewModel = buildMaterialOrderWorkspaceViewModel();
@@ -42,6 +43,8 @@ export default function MaterialOrderWorkspacePage() {
           ))}
         </div>
       </AdminSection>
+
+      <MaterialOrderDraftEditor guideItems={viewModel.draftGuideItems} />
 
       <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <AdminSection

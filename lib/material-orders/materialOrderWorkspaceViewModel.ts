@@ -18,9 +18,16 @@ export type MaterialOrderProcessStep = {
   description: string;
 };
 
+export type MaterialOrderDraftGuideItem = {
+  id: string;
+  label: string;
+  description: string;
+};
+
 export type MaterialOrderWorkspaceViewModel = {
   summaryCards: MaterialOrderSummaryCard[];
   tabs: MaterialOrderTab[];
+  draftGuideItems: MaterialOrderDraftGuideItem[];
   processSteps: MaterialOrderProcessStep[];
   deliveryDocumentGroups: string[];
 };
@@ -77,6 +84,23 @@ export function buildMaterialOrderWorkspaceViewModel(): MaterialOrderWorkspaceVi
         label: "재고 현황",
         description: "주문수량에서 작업지시서 배분 수량을 제외한 남은 수량을 고객사 재고로 표시합니다.",
         statusLabel: "예정",
+      },
+    ],
+    draftGuideItems: [
+      {
+        id: "supplier",
+        label: "공급처 선택",
+        description: "협력업체관리의 공급처/거래처를 연결할 예정입니다. 현재는 화면 입력 구조만 먼저 고정합니다.",
+      },
+      {
+        id: "line-items",
+        label: "품목 추가",
+        description: "품목명, 구분, 색상, 규격, 단위, 주문수량, 단가를 입력하고 금액을 즉시 계산합니다.",
+      },
+      {
+        id: "workorder-allocation",
+        label: "작업지시서 배분",
+        description: "다음 단계에서 작업지시서 연결과 배분 수량 입력을 붙입니다. 이번 단계는 발주 라인 입력까지만 고정합니다.",
       },
     ],
     processSteps: [
