@@ -1,6 +1,6 @@
 -- =========================================
 -- WAFL full DB reset schema
--- Version: 0.14.2
+-- Version: 0.16.93
 --
 -- 기준:
 -- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
@@ -27,6 +27,8 @@ DROP VIEW IF EXISTS expired_pending_invitations CASCADE;
 -- FK / index / dependent constraints are removed by CASCADE.
 -- =========================================
 
+DROP TABLE IF EXISTS material_order_allocations CASCADE;
+DROP TABLE IF EXISTS material_inventory_lots CASCADE;
 DROP TABLE IF EXISTS material_allocations CASCADE;
 DROP TABLE IF EXISTS workorder_material_lines CASCADE;
 DROP TABLE IF EXISTS material_attributes_submaterial CASCADE;
@@ -860,69 +862,95 @@ CREATE TABLE history_logs (
 );
 
 -- =========================================
--- 8) MATERIAL ORDER / ALLOCATION
+-- 8) MATERIAL ORDER / ALLOCATION / INVENTORY
 -- =========================================
 
 CREATE TABLE material_orders (
-  id text PRIMARY KEY,
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  company_name text NOT NULL,
-  order_no text,
-  vendor_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
+  supplier_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
   status text NOT NULL DEFAULT 'draft',
-  order_date date,
-  expected_received_date date,
-  received_date date,
-  memo text,
-  created_by_id text,
-  created_by_name text,
+  requested_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
+  approved_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
+  ordered_at timestamptz,
+  total_amount numeric(14, 2) NOT NULL DEFAULT 0,
+  note text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT material_orders_status_check CHECK (
-    status IN ('draft', 'requested', 'ordered', 'partially_received', 'received', 'cancelled')
-  )
+    status IN (
+      'draft',
+      'review_requested',
+      'approved',
+      'order_placed',
+      'rejected',
+      'cancelled'
+    )
+  ),
+  CONSTRAINT material_orders_total_amount_non_negative_check
+    CHECK (total_amount >= 0)
 );
 
 CREATE TABLE material_order_lines (
-  id text PRIMARY KEY,
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  company_name text NOT NULL,
   material_order_id text NOT NULL REFERENCES material_orders(id) ON DELETE CASCADE,
-  spec_sheet_id text REFERENCES spec_sheets(id) ON DELETE SET NULL,
-  spec_sheet_material_id text REFERENCES spec_sheet_materials(id) ON DELETE SET NULL,
   partner_item_id text REFERENCES partner_items(id) ON DELETE SET NULL,
-  material_type text NOT NULL,
-  name text NOT NULL,
-  unit text,
-  ordered_quantity numeric(14, 2) NOT NULL DEFAULT 0,
-  received_quantity numeric(14, 2) NOT NULL DEFAULT 0,
-  unit_cost numeric(14, 2) NOT NULL DEFAULT 0,
-  total_cost numeric(14, 2) NOT NULL DEFAULT 0,
-  memo text,
+  item_name text NOT NULL,
+  item_type text NOT NULL,
+  color text,
+  spec text,
+  unit text NOT NULL,
+  order_quantity numeric(14, 3) NOT NULL DEFAULT 0,
+  unit_price numeric(14, 2) NOT NULL DEFAULT 0,
+  amount numeric(14, 2) NOT NULL DEFAULT 0,
+  note text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT material_order_lines_type_check CHECK (material_type IN ('fabric', 'subsidiary'))
+  CONSTRAINT material_order_lines_item_type_check
+    CHECK (item_type IN ('fabric', 'submaterial')),
+  CONSTRAINT material_order_lines_quantity_non_negative_check
+    CHECK (order_quantity >= 0),
+  CONSTRAINT material_order_lines_price_non_negative_check
+    CHECK (unit_price >= 0),
+  CONSTRAINT material_order_lines_amount_non_negative_check
+    CHECK (amount >= 0)
 );
 
-CREATE TABLE material_allocations (
-  id text PRIMARY KEY,
+CREATE TABLE material_order_allocations (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  company_name text NOT NULL,
-  material_stock_id text REFERENCES material_stocks(id) ON DELETE SET NULL,
-  material_order_line_id text REFERENCES material_order_lines(id) ON DELETE SET NULL,
-  spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
-  spec_sheet_material_id text REFERENCES spec_sheet_materials(id) ON DELETE SET NULL,
-  material_type text NOT NULL,
-  name text NOT NULL,
-  unit text,
-  allocated_quantity numeric(14, 2) NOT NULL DEFAULT 0,
-  memo text,
-  allocated_by_id text,
-  allocated_by_name text,
-  allocated_at timestamptz NOT NULL DEFAULT now(),
+  material_order_line_id text NOT NULL REFERENCES material_order_lines(id) ON DELETE CASCADE,
+  work_order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
+  allocated_quantity numeric(14, 3) NOT NULL DEFAULT 0,
+  allocation_note text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT material_allocations_type_check CHECK (material_type IN ('fabric', 'subsidiary'))
+  CONSTRAINT material_order_allocations_quantity_non_negative_check
+    CHECK (allocated_quantity >= 0)
+);
+
+CREATE TABLE material_inventory_lots (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  material_order_line_id text REFERENCES material_order_lines(id) ON DELETE SET NULL,
+  item_name text NOT NULL,
+  unit text NOT NULL,
+  received_quantity numeric(14, 3) NOT NULL DEFAULT 0,
+  allocated_quantity numeric(14, 3) NOT NULL DEFAULT 0,
+  remaining_quantity numeric(14, 3) NOT NULL DEFAULT 0,
+  unit_price numeric(14, 2) NOT NULL DEFAULT 0,
+  note text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT material_inventory_lots_received_non_negative_check
+    CHECK (received_quantity >= 0),
+  CONSTRAINT material_inventory_lots_allocated_non_negative_check
+    CHECK (allocated_quantity >= 0),
+  CONSTRAINT material_inventory_lots_remaining_non_negative_check
+    CHECK (remaining_quantity >= 0),
+  CONSTRAINT material_inventory_lots_allocation_bounds_check
+    CHECK (allocated_quantity <= received_quantity)
 );
 
 -- =========================================
@@ -1943,19 +1971,37 @@ CREATE INDEX history_logs_company_action_idx ON history_logs (company_id, action
 CREATE INDEX history_logs_company_target_idx ON history_logs (company_id, target_type, target_id, created_at DESC);
 CREATE INDEX history_logs_user_idx ON history_logs (user_id, created_at DESC);
 
-CREATE INDEX material_orders_company_id_idx ON material_orders(company_id);
-CREATE INDEX material_orders_vendor_partner_id_idx ON material_orders(vendor_partner_id);
-CREATE INDEX material_orders_status_idx ON material_orders(status);
-CREATE INDEX material_order_lines_company_id_idx ON material_order_lines(company_id);
-CREATE INDEX material_order_lines_order_id_idx ON material_order_lines(material_order_id);
-CREATE INDEX material_order_lines_spec_sheet_id_idx ON material_order_lines(spec_sheet_id);
-CREATE INDEX material_order_lines_material_id_idx ON material_order_lines(spec_sheet_material_id);
-CREATE INDEX material_order_lines_partner_item_id_idx ON material_order_lines(partner_item_id);
-CREATE INDEX material_allocations_company_id_idx ON material_allocations(company_id);
-CREATE INDEX material_allocations_stock_id_idx ON material_allocations(material_stock_id);
-CREATE INDEX material_allocations_order_line_id_idx ON material_allocations(material_order_line_id);
-CREATE INDEX material_allocations_spec_sheet_id_idx ON material_allocations(spec_sheet_id);
-CREATE INDEX material_allocations_material_id_idx ON material_allocations(spec_sheet_material_id);
+CREATE INDEX material_orders_company_status_idx
+  ON material_orders (company_id, status, updated_at DESC);
+CREATE INDEX material_orders_supplier_partner_idx
+  ON material_orders (company_id, supplier_partner_id);
+CREATE INDEX material_orders_requested_by_idx
+  ON material_orders (company_id, requested_by_user_id);
+CREATE INDEX material_orders_approved_by_idx
+  ON material_orders (company_id, approved_by_user_id);
+CREATE INDEX material_orders_ordered_at_idx
+  ON material_orders (company_id, ordered_at DESC);
+
+CREATE INDEX material_order_lines_company_order_idx
+  ON material_order_lines (company_id, material_order_id);
+CREATE INDEX material_order_lines_partner_item_idx
+  ON material_order_lines (company_id, partner_item_id);
+CREATE INDEX material_order_lines_item_type_idx
+  ON material_order_lines (company_id, item_type);
+CREATE INDEX material_order_lines_item_name_idx
+  ON material_order_lines (company_id, lower(item_name));
+
+CREATE INDEX material_order_allocations_company_line_idx
+  ON material_order_allocations (company_id, material_order_line_id);
+CREATE INDEX material_order_allocations_company_work_order_idx
+  ON material_order_allocations (company_id, work_order_id);
+
+CREATE INDEX material_inventory_lots_company_line_idx
+  ON material_inventory_lots (company_id, material_order_line_id);
+CREATE INDEX material_inventory_lots_company_item_name_idx
+  ON material_inventory_lots (company_id, lower(item_name));
+CREATE INDEX material_inventory_lots_company_remaining_idx
+  ON material_inventory_lots (company_id, remaining_quantity);
 
 CREATE UNIQUE INDEX invitations_token_hash_unique_idx ON invitations (token_hash);
 CREATE INDEX invitations_company_id_idx ON invitations (company_id);

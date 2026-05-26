@@ -1,10 +1,10 @@
-Version : 0.16.92
-Summary : 관리자 업무홈 카드 노출 범위 정리
-Description : 관리자 업무홈 카드에서 기준정보와 환경설정을 제외하고 멤버관리가 6번째 카드로 표시되도록 홈 카드 노출 순서를 정리했습니다. 기준정보와 환경설정 route 및 설정 진입 흐름은 유지했고, DB schema와 package 파일은 변경하지 않았습니다.
+Version : 0.16.93
+Summary : 원단·부자재 DB schema 1차 반영
+Description : 원단·부자재 발주 업무를 위한 material_orders, material_order_lines, material_order_allocations, material_inventory_lots schema를 full_reset.sql에 반영하고 full_reset_smoke_test.sql 및 materials_schema_draft.sql을 갱신했습니다. 기존 업무홈/route skeleton, DB 저장 API, package 파일은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/admin/adminWorkspaceCards.ts
+- db/schema/full_reset.sql
+- db/schema/full_reset_smoke_test.sql
+- db/schema/materials_schema_draft.sql
 추가 파일 목록 :
-- 없음
 삭제 파일 목록 :
-- 없음

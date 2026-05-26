@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.15.73
+-- Version: 0.16.93
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -69,7 +69,8 @@ BEGIN
       ('workorder_material_lines', to_regclass('public.workorder_material_lines')),
       ('material_orders', to_regclass('public.material_orders')),
       ('material_order_lines', to_regclass('public.material_order_lines')),
-      ('material_allocations', to_regclass('public.material_allocations'))
+      ('material_order_allocations', to_regclass('public.material_order_allocations')),
+      ('material_inventory_lots', to_regclass('public.material_inventory_lots'))
   ) AS required_items(item_name, regclass_value)
   WHERE regclass_value IS NULL;
 
@@ -118,6 +119,27 @@ BEGIN
       ('workorder_material_lines', 'material_id'),
       ('workorder_material_lines', 'role'),
       ('workorder_material_lines', 'order_status'),
+      ('material_orders', 'company_id'),
+      ('material_orders', 'supplier_partner_id'),
+      ('material_orders', 'status'),
+      ('material_orders', 'requested_by_user_id'),
+      ('material_orders', 'approved_by_user_id'),
+      ('material_orders', 'ordered_at'),
+      ('material_orders', 'total_amount'),
+      ('material_order_lines', 'material_order_id'),
+      ('material_order_lines', 'partner_item_id'),
+      ('material_order_lines', 'item_name'),
+      ('material_order_lines', 'item_type'),
+      ('material_order_lines', 'order_quantity'),
+      ('material_order_lines', 'unit_price'),
+      ('material_order_lines', 'amount'),
+      ('material_order_allocations', 'material_order_line_id'),
+      ('material_order_allocations', 'work_order_id'),
+      ('material_order_allocations', 'allocated_quantity'),
+      ('material_inventory_lots', 'material_order_line_id'),
+      ('material_inventory_lots', 'received_quantity'),
+      ('material_inventory_lots', 'allocated_quantity'),
+      ('material_inventory_lots', 'remaining_quantity'),
       ('company_workorder_daily_stats', 'stats_date'),
       ('company_workorder_daily_stats', 'created_workorder_count'),
       ('company_workorder_daily_stats', 'reorder_workorder_count'),
