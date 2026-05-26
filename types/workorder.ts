@@ -198,6 +198,8 @@ export type WorkOrderSummary = Pick<
 > & {
   orderEntryCount: number;
   materialCount: number;
+  materialFabricCount?: number;
+  materialSubmaterialCount?: number;
   materialSummary?: string;
   outsourcingCount: number;
   attachmentCount: number;

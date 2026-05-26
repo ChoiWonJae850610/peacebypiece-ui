@@ -520,7 +520,11 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
       calculateTotalAmount(input.lines),
       normalizeText(input.note),
     ];
-    const visibilityPredicate = buildRequestedByVisibilityPredicate(input.visibility, updateValues);
+    const visibilityPredicate = buildRequestedByVisibilityPredicate(
+      input.visibility,
+      updateValues,
+      "requested_by_user_id",
+    );
 
     const orderResult = await client.query<{ id: string }>(
       `UPDATE material_orders
@@ -584,7 +588,11 @@ export async function updateMaterialOrderStatusForCompany(
     input.status,
     approvedByUserId,
   ];
-  const visibilityPredicate = buildRequestedByVisibilityPredicate(input.visibility, updateValues);
+  const visibilityPredicate = buildRequestedByVisibilityPredicate(
+    input.visibility,
+    updateValues,
+    "requested_by_user_id",
+  );
 
   const result = await queryDb<{ id: string }>(
     `UPDATE material_orders

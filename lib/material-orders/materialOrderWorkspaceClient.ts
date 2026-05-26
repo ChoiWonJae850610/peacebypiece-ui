@@ -1,3 +1,4 @@
+import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import type { WorkOrderSummary } from "@/types/workorder";
 import type {
   MaterialOrder,
@@ -29,6 +30,7 @@ export type MaterialOrderWorkspaceWorkOrderCandidate = {
   reorderLabel: string;
   managerLabel: string;
   requestedMaterialLabel: string;
+  materialCountLabel: string;
   dueDateLabel: string;
 };
 
@@ -212,7 +214,7 @@ export async function updateMaterialOrderStatus(input: {
 }
 
 export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrderWorkspaceWorkOrderCandidate[]> {
-  const response = await fetch("/api/workorders/summary?status=inspection", {
+  const response = await fetch("/api/workorders/summary?status=active", {
     method: "GET",
     headers: { "Accept": "application/json" },
     cache: "no-store",
@@ -229,8 +231,27 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
       reorderLabel: resolveReorderLabel(workOrder.reorderRound),
       managerLabel: workOrder.manager ? `담당 ${workOrder.manager}` : "담당자 미확인",
       requestedMaterialLabel: resolveWorkOrderMaterialSummary(workOrder.materialSummary, workOrder.materialCount),
+      materialCountLabel: resolveWorkOrderMaterialCountLabel(workOrder),
       dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
     }));
+}
+
+function resolveWorkOrderMaterialCountLabel(workOrder: WorkOrderSummary): string {
+  const fabricCount = typeof workOrder.materialFabricCount === "number" && Number.isFinite(workOrder.materialFabricCount)
+    ? workOrder.materialFabricCount
+    : 0;
+  const submaterialCount = typeof workOrder.materialSubmaterialCount === "number" && Number.isFinite(workOrder.materialSubmaterialCount)
+    ? workOrder.materialSubmaterialCount
+    : 0;
+
+  if (fabricCount > 0 || submaterialCount > 0) {
+    return `원단 ${fabricCount}개 · 부자재 ${submaterialCount}개`;
+  }
+
+  const totalCount = typeof workOrder.materialCount === "number" && Number.isFinite(workOrder.materialCount)
+    ? workOrder.materialCount
+    : 0;
+  return totalCount > 0 ? `원단·부자재 ${totalCount}개` : "원단·부자재 0개";
 }
 
 function resolveWorkOrderMaterialSummary(materialSummary: string | undefined, materialCount: number | undefined): string {
@@ -242,7 +263,7 @@ function resolveWorkOrderMaterialSummary(materialSummary: string | undefined, ma
 }
 
 function isOrderRequestedWorkOrder(workflowState: string | undefined): boolean {
-  return workflowState === "inspection" || workflowState === "order_requested" || workflowState === "발주요청";
+  return workflowState === WORKFLOW_STATE.inspection || workflowState === WORKFLOW_STATE.reviewCompleted;
 }
 
 function resolveReorderLabel(reorderRound: number | undefined): string {

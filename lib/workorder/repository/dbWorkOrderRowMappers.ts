@@ -183,6 +183,8 @@ export function mapSpecSheetRowToWorkOrderSummary(
     lastSavedAt,
     orderEntryCount: readCountValue(row.order_entry_count),
     materialCount: readCountValue(row.material_count),
+    materialFabricCount: readCountValue(row.material_fabric_count),
+    materialSubmaterialCount: readCountValue(row.material_submaterial_count),
     materialSummary: readStringRowValue(row.material_summary),
     outsourcingCount: readCountValue(row.outsourcing_count),
     attachmentCount: readCountValue(row.attachment_count),

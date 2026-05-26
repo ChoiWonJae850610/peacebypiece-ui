@@ -402,6 +402,8 @@ export function buildSpecSheetSummarySelectQuery(
         s.*,
         COALESCE(order_counts.order_entry_count, 0)::integer AS order_entry_count,
         COALESCE(material_counts.material_count, 0)::integer AS material_count,
+        COALESCE(material_counts.material_fabric_count, 0)::integer AS material_fabric_count,
+        COALESCE(material_counts.material_submaterial_count, 0)::integer AS material_submaterial_count,
         COALESCE(material_counts.material_summary, '')::text AS material_summary,
         COALESCE(outsourcing_counts.outsourcing_count, 0)::integer AS outsourcing_count,
         COALESCE(attachment_counts.attachment_count, 0)::integer AS attachment_count,
@@ -416,6 +418,12 @@ export function buildSpecSheetSummarySelectQuery(
       LEFT JOIN LATERAL (
         SELECT
           COUNT(*)::integer AS material_count,
+          COUNT(*) FILTER (
+            WHERE LOWER(COALESCE(m.material_type, '')) IN ('fabric', 'main_fabric', 'lining', '원단')
+          )::integer AS material_fabric_count,
+          COUNT(*) FILTER (
+            WHERE LOWER(COALESCE(m.material_type, '')) IN ('submaterial', 'subsidiary', 'trim', 'label', 'packaging', '부자재')
+          )::integer AS material_submaterial_count,
           STRING_AGG(
             DISTINCT NULLIF(TRIM(COALESCE(m.name, '')), ''),
             ', '

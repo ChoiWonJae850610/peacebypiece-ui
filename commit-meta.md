@@ -1,14 +1,12 @@
-Version : 0.17.11
-Summary : 원단·부자재 발주서 표시명과 작업지시서 후보 정보 정리
-Description : 원단·부자재 발주서 목록과 상세 화면에서 내부 발주번호 노출을 제거하고 발주 종류, 공급처, 대표 품목 기반 자동 표시명으로 정리했습니다. 발주서 목록에는 생성일, 상태, 금액, 담당자 정보를 보조 정보로 표시하고 담당자 조회를 위해 material order repository에 요청자 표시명을 추가했습니다. 우측 작업지시서 연결 패널은 발주요청 상태 작업지시서의 제품명, 리오더, 담당자, 원단·부자재 정보 요약이 보이도록 정리했습니다. DB schema와 package 파일은 변경하지 않았습니다.
+Version : 0.17.12
+Summary : 원단·부자재 저장 오류와 작업지시서 후보 조회 보정
+Description : 원단·부자재 발주 상세 저장/상태 변경 시 담당자 scope 조건이 UPDATE 쿼리에서 잘못된 alias를 참조하던 문제를 보정했습니다. 작업지시서 후보 목록은 공급처 선택과 무관하게 발주 요청 이후 자재 배분 대상 작업지시서를 표시하도록 조정하고, 후보 카드에 원단/부자재 개수 요약을 표시하도록 summary 조회 필드를 보강했습니다. API 실패 응답은 실제 오류 메시지를 포함하도록 보정해 이후 테스트 원인 확인이 쉬워지도록 했습니다. DB schema와 package 파일은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- features/material-orders/MaterialOrderListPanel.tsx
-- features/material-orders/MaterialOrderDetailPanel.tsx
-- features/material-orders/MaterialOrderAllocationPanel.tsx
-- lib/material-orders/materialOrderWorkspaceClient.ts
+- app/api/material-orders/route.ts
 - lib/material-orders/repository.ts
-- lib/material-orders/types.ts
+- lib/material-orders/materialOrderWorkspaceClient.ts
+- features/material-orders/MaterialOrderAllocationPanel.tsx
 - types/workorder.ts
 - lib/workorder/repository/dbWorkOrderRepositoryTypes.ts
 - lib/workorder/repository/dbWorkOrderRowMappers.ts

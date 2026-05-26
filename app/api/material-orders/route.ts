@@ -109,6 +109,27 @@ function resolveStatusPermission(status: MaterialOrderStatus) {
 }
 
 
+
+function createMaterialOrderUnhandledErrorResponse(
+  error: unknown,
+  fallbackMessage: string,
+  code: string,
+): NextResponse {
+  const message = error instanceof Error && error.message.trim()
+    ? error.message
+    : fallbackMessage;
+
+  return NextResponse.json(
+    {
+      ok: false,
+      message,
+      code,
+      error: code,
+    },
+    { status: 500 },
+  );
+}
+
 function createMaterialOrderApiErrorResponse(
   message: string,
   code: string,
@@ -148,8 +169,12 @@ export async function GET(request: NextRequest) {
         visibility: guard.scope.visibility,
       }),
     );
-  } catch {
-    return NextResponse.json({ materialOrders: [], error: "MATERIAL_ORDER_LIST_UNAVAILABLE" }, { status: 500 });
+  } catch (error) {
+    return createMaterialOrderUnhandledErrorResponse(
+      error,
+      "발주서 목록을 불러오지 못했습니다.",
+      "MATERIAL_ORDER_LIST_UNAVAILABLE",
+    );
   }
 }
 
@@ -175,8 +200,12 @@ export async function POST(request: NextRequest) {
         lines: normalizeMaterialOrderLines(body.lines),
       }),
     );
-  } catch {
-    return NextResponse.json({ materialOrder: null, materialOrders: [], error: "MATERIAL_ORDER_CREATE_FAILED" }, { status: 500 });
+  } catch (error) {
+    return createMaterialOrderUnhandledErrorResponse(
+      error,
+      "새 발주서를 만들지 못했습니다.",
+      "MATERIAL_ORDER_CREATE_FAILED",
+    );
   }
 }
 
@@ -209,8 +238,12 @@ export async function PUT(request: NextRequest) {
         lines: normalizeMaterialOrderLines(body.lines),
       }),
     );
-  } catch {
-    return NextResponse.json({ materialOrder: null, materialOrders: [], error: "MATERIAL_ORDER_DETAIL_UPDATE_FAILED" }, { status: 500 });
+  } catch (error) {
+    return createMaterialOrderUnhandledErrorResponse(
+      error,
+      "발주서 상세를 저장하지 못했습니다.",
+      "MATERIAL_ORDER_DETAIL_UPDATE_FAILED",
+    );
   }
 }
 
@@ -243,7 +276,11 @@ export async function PATCH(request: NextRequest) {
         actorUserId: guard.session.userId,
       }),
     );
-  } catch {
-    return NextResponse.json({ materialOrder: null, materialOrders: [], error: "MATERIAL_ORDER_STATUS_UPDATE_FAILED" }, { status: 500 });
+  } catch (error) {
+    return createMaterialOrderUnhandledErrorResponse(
+      error,
+      "발주서 상태를 변경하지 못했습니다.",
+      "MATERIAL_ORDER_STATUS_UPDATE_FAILED",
+    );
   }
 }

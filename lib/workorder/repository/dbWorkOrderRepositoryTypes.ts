@@ -38,6 +38,8 @@ export type DbSpecSheetRow = {
   rejected_by_name?: string | null;
   order_entry_count?: number | null;
   material_count?: number | null;
+  material_fabric_count?: number | null;
+  material_submaterial_count?: number | null;
   material_summary?: string | null;
   outsourcing_count?: number | null;
   attachment_count?: number | null;

@@ -48,6 +48,7 @@ export default function MaterialOrderAllocationPanel({
       workOrder.reorderLabel,
       workOrder.managerLabel,
       workOrder.requestedMaterialLabel,
+      workOrder.materialCountLabel,
       workOrder.dueDateLabel,
     ].join(" ").toLowerCase().includes(normalizedSearchQuery));
   }, [candidates, searchQuery]);
@@ -58,7 +59,7 @@ export default function MaterialOrderAllocationPanel({
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Allocation</p>
           <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 연결</h2>
-          <p className="mt-1 text-xs leading-5 pbp-text-muted">발주요청 상태의 작업지시서만 표시됩니다.</p>
+          <p className="mt-1 text-xs leading-5 pbp-text-muted">발주 요청 이후 자재 배분 대상 작업지시서를 표시합니다.</p>
         </div>
         <AdminStatusBadge tone={lines.length > 0 ? "info" : "neutral"}>{lines.length}품목</AdminStatusBadge>
       </div>
@@ -74,15 +75,13 @@ export default function MaterialOrderAllocationPanel({
 
       <div className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
         {loading ? (
-          <PanelMessage title="불러오는 중" description="발주요청 상태 작업지시서를 조회하고 있습니다." />
+          <PanelMessage title="불러오는 중" description="자재 배분 대상 작업지시서를 조회하고 있습니다." />
         ) : errorMessage ? (
           <PanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
-        ) : lines.length === 0 ? (
-          <PanelMessage title="품목 라인 없음" description="가운데 패널에서 품목 라인을 먼저 추가한 뒤 작업지시서에 배분합니다." />
         ) : candidates.length === 0 ? (
           <PanelMessage
             title="연결 가능한 작업지시서 없음"
-            description="발주요청 상태이면서 현재 사용자가 조회할 수 있는 작업지시서가 없습니다."
+            description="현재 사용자가 조회할 수 있는 자재 배분 대상 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
           <PanelMessage title="검색 결과 없음" description="작업지시서 검색어를 조정해보세요." />
@@ -144,11 +143,12 @@ function AllocationCandidateCard({
       </div>
       <div className="mt-2 grid gap-1 text-xs pbp-text-muted">
         <p>{workOrder.managerLabel}</p>
+        <p className="font-semibold pbp-text-primary">{workOrder.materialCountLabel}</p>
         <p>{workOrder.requestedMaterialLabel}</p>
         <p>{workOrder.dueDateLabel}</p>
       </div>
       <div className="mt-2 grid gap-2">
-        <select className={fieldClassName()} disabled={!editable} value={selectedLine?.id ?? ""} onChange={(event) => changeLine(event.target.value)}>
+        <select className={fieldClassName()} disabled={!editable || lines.length === 0} value={selectedLine?.id ?? ""} onChange={(event) => changeLine(event.target.value)}>
           <option value="">품목 라인 선택</option>
           {lines.map((line) => (
             <option key={line.id} value={line.id}>
@@ -156,6 +156,9 @@ function AllocationCandidateCard({
             </option>
           ))}
         </select>
+        {lines.length === 0 ? (
+          <p className="rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">가운데 패널에서 품목 라인을 추가하면 이 작업지시서에 배분할 수 있습니다.</p>
+        ) : null}
         <input
           type="number"
           min={0}
