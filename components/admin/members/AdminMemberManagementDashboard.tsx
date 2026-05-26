@@ -30,7 +30,6 @@ import {
   toggleSimplePermissionControl,
   type SimplePermissionControl,
 } from "@/lib/admin/members/memberSimplePermissionControls";
-import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
 import { AdminSection } from "@/components/admin/common/AdminSection";
@@ -39,8 +38,6 @@ import {
   AdminModalFooterActions,
 } from "@/components/admin/layout/AdminModal";
 import AdminMemberPermissionDetailBody from "@/components/admin/members/AdminMemberPermissionDetailBody";
-import AdminMemberInviteBuilderPanel from "@/components/admin/members/AdminMemberInviteBuilderPanel";
-import AdminMemberDirectoryControls from "@/components/admin/members/AdminMemberDirectoryControls";
 import {
   buildMemberInvitationTableColumns,
   type PendingMemberInvitationRow,
@@ -55,7 +52,8 @@ import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
 } from "@/components/admin/common/AdminStatusBadge";
-import AdminTable from "@/components/admin/common/AdminTable";
+import AdminMemberInvitationSection from "@/components/admin/members/AdminMemberInvitationSection";
+import AdminMemberDirectorySection from "@/components/admin/members/AdminMemberDirectorySection";
 import ToastMessage from "@/components/common/ToastMessage";
 
 function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
@@ -223,12 +221,6 @@ function getMemberDetailErrorCode(errorCode: string): string {
   }
   return errorCode;
 }
-
-const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
-const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-1 flex-col pt-4";
-const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
-  "flex min-h-0 flex-1 flex-col pt-4";
-const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-0 flex-1";
 
 type MemberManagementTab = "invite" | "members";
 
@@ -1019,130 +1011,40 @@ export default function AdminMemberManagementDashboard() {
       >
         <div>
           {activeTab === "invite" ? (
-            <section
-              id="member-invite-builder"
-              className="grid items-stretch gap-5 lg:grid-cols-[0.95fr_1.05fr]"
-            >
-              <AdminMemberInviteBuilderPanel
-                t={t}
-                className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
-                contentClassName={MEMBER_INVITE_PANEL_CONTENT_CLASS}
-                expiresInDays={expiresInDays}
-                inviteError={inviteError}
-                isCreatingInvite={isCreatingInvite}
-                canSubmitInvite={canSubmitInvite}
-                onExpiresInDaysChange={setExpiresInDays}
-                onCreateInvite={handleCreateInvite}
-              />
-
-              <AdminPanelSection
-                className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
-                title={t(
-                  "memberManagement.sections.invitations",
-                  "초대 링크 목록",
-                )}
-                description={t(
-                  "memberManagement.sections.invitationsDescription",
-                  "사용 가능, 사용됨, 만료됨, 취소됨 상태를 확인하고 링크를 복사하거나 취소합니다.",
-                )}
-                meta={t(
-                  "memberManagement.tabs.invite.count",
-                  "초대 {count}건",
-                ).replace("{count}", String(invitations.length))}
-                contentClassName={MEMBER_INVITATION_TABLE_CONTENT_CLASS}
-              >
-                <AdminTable
-                  items={invitations}
-                  columns={invitationTableColumns}
-                  getRowKey={(invitation) => invitation.id}
-                  emptyLabel={t(
-                    "memberManagement.empty.invitations.title",
-                    "생성된 초대가 없습니다",
-                  )}
-                  emptyDescription={t(
-                    "memberManagement.empty.invitations.description",
-                    "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
-                  )}
-                  gridTemplateColumns="84px minmax(180px,1fr) 90px 90px 140px"
-                  headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
-                  rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
-                  className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
-                />
-              </AdminPanelSection>
-            </section>
+            <AdminMemberInvitationSection
+              t={t}
+              invitations={invitations}
+              invitationTableColumns={invitationTableColumns}
+              expiresInDays={expiresInDays}
+              inviteError={inviteError}
+              isCreatingInvite={isCreatingInvite}
+              canSubmitInvite={canSubmitInvite}
+              onExpiresInDaysChange={setExpiresInDays}
+              onCreateInvite={handleCreateInvite}
+            />
           ) : null}
 
           {activeTab === "members" ? (
-            <AdminPanelSection
-              className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
-              eyebrow={t("memberManagement.memberDirectory.eyebrow", "멤버 관리")}
-              title={t("memberManagement.memberDirectory.title", "멤버 관리")}
-              description={t(
-                "memberManagement.memberDirectory.description",
-                "승인 대기와 전체 멤버를 한 목록에서 확인하고 처리합니다.",
-              )}
-              meta={t(
-                "memberManagement.tabs.members.count",
-                "대상 {count}명",
-              ).replace("{count}", String(memberDirectoryRows.length))}
-              contentClassName="flex min-h-0 flex-1 flex-col pt-4"
-            >
-              <AdminMemberDirectoryControls
-                t={t}
-                searchQuery={memberSearchQuery}
-                statusFilter={memberStatusFilter}
-                roleFilter={memberRoleFilter}
-                roleOptions={inviteRoleOptions}
-                onSearchQueryChange={setMemberSearchQuery}
-                onStatusFilterChange={setMemberStatusFilter}
-                onRoleFilterChange={setMemberRoleFilter}
-              />
-
-              {memberListLoadError ? (
-                <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-                  {t(
-                    "memberManagement.loadErrors.members",
-                    "멤버 목록을 불러오지 못했습니다.",
-                  )}{" "}
-                  {memberListLoadError}
-                </p>
-              ) : null}
-              {joinRequestLoadError ? (
-                <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-                  {t(
-                    "memberManagement.loadErrors.joinRequests",
-                    "승인 대기 신청 목록을 불러오지 못했습니다.",
-                  )}{" "}
-                  {joinRequestLoadError}
-                </p>
-              ) : null}
-              <AdminTable
-                items={filteredMemberDirectoryRows}
-                columns={memberDirectoryColumns}
-                getRowKey={(row) => row.id}
-                emptyLabel={t(
-                  "memberManagement.empty.memberDirectory.title",
-                  "표시할 멤버가 없습니다",
-                )}
-                emptyDescription={t(
-                  "memberManagement.empty.memberDirectory.description",
-                  "승인 대기 신청 또는 등록된 멤버가 생성되면 이 목록에 표시됩니다.",
-                )}
-                isLoading={
-                  memberListLoadStatus === "loading" ||
-                  joinRequestLoadStatus === "loading"
-                }
-                loadingLabel={t(
-                  "memberManagement.loading.memberDirectory.title",
-                  "멤버 목록을 불러오는 중입니다",
-                )}
-                gridTemplateColumns="minmax(120px,1fr) minmax(160px,1.2fr) 110px 110px 96px 110px 110px 120px 140px"
-                rowBaseClassName="grid w-full min-w-[1120px] gap-3 px-4 py-3 text-left text-xs md:items-center"
-                headerClassName="hidden min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
-                className="min-h-0 flex-1"
-                onRowClick={handleOpenMemberDetail}
-              />
-            </AdminPanelSection>
+            <AdminMemberDirectorySection
+              t={t}
+              memberDirectoryRows={memberDirectoryRows}
+              filteredMemberDirectoryRows={filteredMemberDirectoryRows}
+              memberDirectoryColumns={memberDirectoryColumns}
+              memberSearchQuery={memberSearchQuery}
+              memberStatusFilter={memberStatusFilter}
+              memberRoleFilter={memberRoleFilter}
+              inviteRoleOptions={inviteRoleOptions}
+              memberListLoadError={memberListLoadError}
+              joinRequestLoadError={joinRequestLoadError}
+              isLoading={
+                memberListLoadStatus === "loading" ||
+                joinRequestLoadStatus === "loading"
+              }
+              onSearchQueryChange={setMemberSearchQuery}
+              onStatusFilterChange={setMemberStatusFilter}
+              onRoleFilterChange={setMemberRoleFilter}
+              onOpenMemberDetail={handleOpenMemberDetail}
+            />
           ) : null}
 
         </div>
