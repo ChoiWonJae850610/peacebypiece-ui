@@ -39,14 +39,11 @@ type MaterialOrderDetailPanelProps = {
   onRetrySuppliers: () => void;
   onChangeDestinationMemo: (memo: string) => void;
   onChangeOrderNote: (memo: string) => void;
-  saving: boolean;
   statusChanging: boolean;
-  saveMessage: string | null;
   statusMessage: string | null;
   onChangeLine: (lineId: string, patch: Partial<MaterialOrderDraftLine>) => void;
   onAddLine: () => void;
   onRemoveLine: (lineId: string) => void;
-  onSave: () => void;
   onChangeStatus: (status: MaterialOrderStatus) => void;
 };
 
@@ -68,14 +65,11 @@ export default function MaterialOrderDetailPanel({
   onRetrySuppliers,
   onChangeDestinationMemo,
   onChangeOrderNote,
-  saving,
   statusChanging,
-  saveMessage,
   statusMessage,
   onChangeLine,
   onAddLine,
   onRemoveLine,
-  onSave,
   onChangeStatus,
 }: MaterialOrderDetailPanelProps) {
   const displayMaterialType = materialType;
@@ -111,18 +105,17 @@ export default function MaterialOrderDetailPanel({
       {selectedOrder ? (
         <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 pt-3">
           <div className="grid gap-3 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold pbp-text-primary">발주 기본 정보</p>
-                <p className="mt-0.5 text-xs pbp-text-muted">종류와 공급처를 먼저 고른 뒤 품목 라인을 저장합니다.</p>
-              </div>
-              <MaterialOrderStatusFlow
-                status={selectedOrder.status}
-                changing={statusChanging}
-                message={statusMessage}
-                onChangeStatus={onChangeStatus}
-              />
+            <div>
+              <p className="text-sm font-semibold pbp-text-primary">발주 기본 정보</p>
+              <p className="mt-0.5 text-xs pbp-text-muted">종류와 공급처를 고른 뒤 품목 라인을 입력하고 진행 단계 버튼으로 다음 상태를 처리합니다.</p>
             </div>
+
+            <MaterialOrderStatusFlow
+              status={selectedOrder.status}
+              changing={statusChanging}
+              message={statusMessage}
+              onChangeStatus={onChangeStatus}
+            />
 
             <div className="grid gap-2 xl:grid-cols-4">
               <FieldLabel label="발주 종류">
@@ -193,12 +186,12 @@ export default function MaterialOrderDetailPanel({
                 <thead className="sticky top-0 z-10 bg-[var(--pbp-surface-soft)] text-xs font-semibold pbp-text-subtle">
                   <tr>
                     <th className="px-3 py-2 text-left">품목명</th>
-                    <th className="px-2 py-2 text-left">단위</th>
-                    <th className="px-2 py-2 text-right">수량</th>
-                    <th className="px-2 py-2 text-right">단가</th>
-                    <th className="px-2 py-2 text-right">금액</th>
-                    <th className="px-2 py-2 text-center">배분</th>
-                    <th className="px-3 py-2 text-right">작업</th>
+                    <th className="px-2 py-2 text-center">단위</th>
+                    <th className="px-2 py-2 text-center">수량</th>
+                    <th className="px-2 py-2 text-center">단가</th>
+                    <th className="px-2 py-2 text-center">금액</th>
+                    <th className="px-2 py-2 text-center">할당</th>
+                    <th className="px-3 py-2 text-center">작업</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--pbp-border)]">
@@ -224,26 +217,11 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="grid shrink-0 gap-3 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="grid gap-2 text-sm sm:grid-cols-4">
-              <SummaryValue label="품목 수" value={`${totals.lineCount}개`} />
-              <SummaryValue label="주문수량" value={String(totals.totalOrderQuantity)} />
-              <SummaryValue label="배분/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
-              <SummaryValue label="금액 합계" value={formatMaterialOrderAmount(totals.totalAmount)} />
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-              {saveMessage ? <p className="self-center text-xs pbp-text-muted">{saveMessage}</p> : null}
-              <AdminButton disabled={saving || selectedOrder.status !== "draft"} onClick={onSave}>
-                {saving ? "저장중" : "저장"}
-              </AdminButton>
-              <AdminButton
-                variant="primary"
-                disabled={statusChanging || selectedOrder.status !== "draft"}
-                onClick={() => onChangeStatus("review_requested")}
-              >
-                검토 요청
-              </AdminButton>
-            </div>
+          <div className="grid shrink-0 grid-cols-4 gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2">
+            <SummaryValue label="품목" value={`${totals.lineCount}종`} />
+            <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
+            <SummaryValue label="할당/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
+            <SummaryValue label="합계" value={formatMaterialOrderAmount(totals.totalAmount)} />
           </div>
         </div>
       ) : (
@@ -289,7 +267,7 @@ function MaterialOrderLineRow({
           value={resolveUnitSelectValue(line.unit)}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { unit: event.target.value })}
-          className={fieldClassName("w-24")}
+          className={fieldClassName("w-20 text-center")}
         >
           <option value="">단위</option>
           {MATERIAL_ORDER_UNIT_OPTIONS.map((unit) => (
@@ -304,7 +282,7 @@ function MaterialOrderLineRow({
           value={line.orderQuantity}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { orderQuantity: normalizeNumberInput(event.target.value) })}
-          className={fieldClassName("w-24 text-right")}
+          className={fieldClassName("w-20 text-center")}
         />
       </td>
       <td className="px-2 py-2">
@@ -314,17 +292,23 @@ function MaterialOrderLineRow({
           value={line.unitPrice}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { unitPrice: normalizeNumberInput(event.target.value) })}
-          className={fieldClassName("w-28 text-right")}
+          className={fieldClassName("w-24 text-center")}
         />
       </td>
-      <td className="px-2 py-2 text-right font-semibold pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
+      <td className="px-2 py-2 text-center font-semibold pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
       <td className="px-2 py-2 text-center text-xs pbp-text-muted">
         <span className="font-semibold pbp-text-primary">{allocatedQuantity}</span> / {remainingQuantity}
       </td>
-      <td className="px-3 py-2 text-right">
-        <AdminButton size="sm" variant="ghost" disabled={!editable} onClick={() => onRemoveLine(line.id)}>
-          삭제
-        </AdminButton>
+      <td className="px-3 py-2 text-center">
+        <button
+          type="button"
+          disabled={!editable}
+          onClick={() => onRemoveLine(line.id)}
+          aria-label="품목 라인 삭제"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-lg font-semibold leading-none pbp-text-muted transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          −
+        </button>
       </td>
     </tr>
   );
@@ -344,48 +328,80 @@ function MaterialOrderStatusFlow({
   const steps: Array<{ status: MaterialOrderStatus; label: string }> = [
     { status: "draft", label: "작성중" },
     { status: "review_requested", label: "검토요청" },
-    { status: "approved", label: "발주확정" },
+    { status: "approved", label: "발주요청" },
     { status: "order_placed", label: "발주완료" },
   ];
+  const currentIndex = Math.max(0, steps.findIndex((step) => step.status === status));
+  const actions = resolveMaterialOrderStatusActions(status);
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-1.5">
-      {steps.map((step) => (
-        <AdminStatusBadge
-          key={step.status}
-          size="xs"
-          tone={step.status === status ? resolveMaterialOrderStatusBadgeTone(status) : "neutral"}
-        >
-          {step.label}
-        </AdminStatusBadge>
-      ))}
-      <AdminButton
-        size="sm"
-        variant="ghost"
-        disabled={changing || status !== "review_requested"}
-        onClick={() => onChangeStatus("draft")}
-      >
-        검토 취소
-      </AdminButton>
-      <AdminButton
-        size="sm"
-        variant="ghost"
-        disabled={changing || status !== "review_requested"}
-        onClick={() => onChangeStatus("approved")}
-      >
-        발주 확정
-      </AdminButton>
-      <AdminButton
-        size="sm"
-        variant="primary"
-        disabled={changing || (status !== "approved" && status !== "review_requested")}
-        onClick={() => onChangeStatus("order_placed")}
-      >
-        발주 완료
-      </AdminButton>
-      {message ? <p className="basis-full text-right text-xs pbp-text-muted">{message}</p> : null}
+    <div className="rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold pbp-text-primary">진행 단계</p>
+          <p className="mt-1 text-xs pbp-text-muted">작업지시서와 동일한 규격으로 상태를 처리합니다.</p>
+        </div>
+        {actions.length > 0 ? (
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            {actions.map((action, index) => (
+              <AdminButton
+                key={`${status}-${action.nextStatus}`}
+                size="sm"
+                variant={index === actions.length - 1 ? "primary" : "ghost"}
+                disabled={changing}
+                onClick={() => onChangeStatus(action.nextStatus)}
+              >
+                {action.label}
+              </AdminButton>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-4 grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+        {steps.map((step, index) => {
+          const isDone = index <= currentIndex;
+          const isCurrent = step.status === status;
+          return (
+            <div key={step.status} className="relative flex flex-col items-center gap-2 text-center">
+              {index < steps.length - 1 ? (
+                <div className={`absolute left-1/2 top-3 h-0.5 w-full ${isDone ? "bg-[var(--pbp-selected-border)]" : "bg-[var(--pbp-border)]"}`} aria-hidden="true" />
+              ) : null}
+              <div
+                className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
+                  isDone ? "border-transparent bg-[var(--pbp-selected-border)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
+                }`}
+              >
+                <span className={`h-2.5 w-2.5 rounded-full ${isDone ? "bg-white" : "bg-[var(--pbp-text-subtle)]"}`} />
+              </div>
+              <div className={`text-xs font-medium ${isCurrent ? "pbp-text-primary" : "pbp-text-muted"}`}>{step.label}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-2 text-xs pbp-text-muted">
+        <span>자재 발주</span>
+        <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
+      </div>
     </div>
   );
+}
+
+function resolveMaterialOrderStatusActions(status: MaterialOrderStatus): Array<{ label: string; nextStatus: MaterialOrderStatus }> {
+  switch (status) {
+    case "draft":
+      return [
+        { label: "검토 요청", nextStatus: "review_requested" },
+        { label: "발주 요청", nextStatus: "approved" },
+      ];
+    case "review_requested":
+      return [{ label: "검토 취소", nextStatus: "draft" }];
+    case "approved":
+      return [{ label: "발주 완료", nextStatus: "order_placed" }];
+    default:
+      return [];
+  }
 }
 
 function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
@@ -399,9 +415,9 @@ function FieldLabel({ label, children }: { label: string; children: ReactNode })
 
 function SummaryValue({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <p className="text-xs font-semibold pbp-text-subtle">{label}</p>
-      <p className="mt-0.5 text-base font-semibold pbp-text-primary">{value}</p>
+    <div className="min-w-0">
+      <p className="text-[11px] font-semibold pbp-text-subtle">{label}</p>
+      <p className="mt-0.5 truncate text-sm font-semibold pbp-text-primary">{value}</p>
     </div>
   );
 }

@@ -31,7 +31,7 @@ const MATERIAL_ORDER_STATUS_OPTIONS: Array<{ value: "all" | MaterialOrderStatus;
   { value: "all", label: "상태 전체" },
   { value: "draft", label: "작성중" },
   { value: "review_requested", label: "검토요청" },
-  { value: "approved", label: "승인" },
+  { value: "approved", label: "발주요청" },
   { value: "order_placed", label: "발주완료" },
   { value: "rejected", label: "반려" },
   { value: "cancelled", label: "취소" },

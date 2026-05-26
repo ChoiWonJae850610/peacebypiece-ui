@@ -72,7 +72,7 @@ export function formatMaterialOrderStatusLabel(status: MaterialOrder["status"]):
     case "review_requested":
       return "검토요청";
     case "approved":
-      return "승인";
+      return "발주요청";
     case "order_placed":
       return "발주완료";
     case "rejected":
@@ -245,13 +245,13 @@ function resolveWorkOrderMaterialCountLabel(workOrder: WorkOrderSummary): string
     : 0;
 
   if (fabricCount > 0 || submaterialCount > 0) {
-    return `원단 ${fabricCount}개 · 부자재 ${submaterialCount}개`;
+    return `원단 ${fabricCount}종 · 부자재 ${submaterialCount}종`;
   }
 
   const totalCount = typeof workOrder.materialCount === "number" && Number.isFinite(workOrder.materialCount)
     ? workOrder.materialCount
     : 0;
-  return totalCount > 0 ? `원단·부자재 ${totalCount}개` : "원단·부자재 0개";
+  return totalCount > 0 ? `원단·부자재 ${totalCount}종` : "원단·부자재 0종";
 }
 
 function resolveWorkOrderMaterialSummary(materialSummary: string | undefined, materialCount: number | undefined): string {
@@ -259,7 +259,7 @@ function resolveWorkOrderMaterialSummary(materialSummary: string | undefined, ma
   if (normalizedSummary) return normalizedSummary;
 
   const count = typeof materialCount === "number" && Number.isFinite(materialCount) ? materialCount : 0;
-  return count > 0 ? `원단·부자재 ${count}건` : "자재 배분 대기";
+  return count > 0 ? `원단·부자재 ${count}종` : "자재 할당 대기";
 }
 
 function isOrderRequestedWorkOrder(workflowState: string | undefined): boolean {

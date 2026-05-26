@@ -40,9 +40,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [creatingOrder, setCreatingOrder] = useState(false);
-  const [savingOrder, setSavingOrder] = useState(false);
   const [statusChanging, setStatusChanging] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [workOrderCandidates, setWorkOrderCandidates] = useState<MaterialOrderWorkspaceWorkOrderCandidate[]>([]);
   const [suppliers, setSuppliers] = useState<MaterialOrderSupplier[]>([]);
@@ -132,7 +130,6 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
 
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "fabric");
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
-    setSaveMessage(null);
     setStatusMessage(null);
     setDestinationMemo("");
     setOrderNote(selectedOrder.note ?? "");
@@ -171,39 +168,26 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     setSupplierPartnerId(null);
   }
 
-  async function saveSelectedOrderDetail() {
-    if (!selectedOrder || selectedOrder.status !== "draft") return;
+  function buildSelectedOrderDetailPayload() {
+    if (!selectedOrder) return null;
 
-    setSavingOrder(true);
-    setSaveMessage(null);
-
-    try {
-      const result = await updateMaterialOrderDetail({
-        materialOrderId: selectedOrder.id,
-        supplierPartnerId,
-        note: orderNote,
-        lines: lines.map((line) => ({
-          itemName: line.itemName,
-          itemType: materialType,
-          unit: line.unit,
-          orderQuantity: line.orderQuantity,
-          unitPrice: line.unitPrice,
-          allocations: line.allocations.map((allocation) => ({
-            workOrderId: allocation.workOrderId,
-            allocatedQuantity: allocation.allocatedQuantity,
-            allocationNote: allocation.allocationNote,
-          })),
+    return {
+      materialOrderId: selectedOrder.id,
+      supplierPartnerId,
+      note: orderNote,
+      lines: lines.map((line) => ({
+        itemName: line.itemName,
+        itemType: materialType,
+        unit: line.unit,
+        orderQuantity: line.orderQuantity,
+        unitPrice: line.unitPrice,
+        allocations: line.allocations.map((allocation) => ({
+          workOrderId: allocation.workOrderId,
+          allocatedQuantity: allocation.allocatedQuantity,
+          allocationNote: allocation.allocationNote,
         })),
-      });
-
-      setOrders(result.materialOrders);
-      setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-      setSaveMessage("저장되었습니다.");
-    } catch (error) {
-      setSaveMessage(toMaterialOrderWorkspaceError(error, "발주서 상세를 저장하지 못했습니다."));
-    } finally {
-      setSavingOrder(false);
-    }
+      })),
+    };
   }
 
 
@@ -214,13 +198,24 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     setStatusMessage(null);
 
     try {
+      let nextSelectedOrderId = selectedOrder.id;
+
+      if (selectedOrder.status === "draft") {
+        const detailPayload = buildSelectedOrderDetailPayload();
+        if (detailPayload) {
+          const detailResult = await updateMaterialOrderDetail(detailPayload);
+          nextSelectedOrderId = detailResult.materialOrder?.id ?? selectedOrder.id;
+          setOrders(detailResult.materialOrders);
+        }
+      }
+
       const result = await updateMaterialOrderStatus({
-        materialOrderId: selectedOrder.id,
+        materialOrderId: nextSelectedOrderId,
         status,
       });
 
       setOrders(result.materialOrders);
-      setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+      setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
       setStatusMessage("상태가 변경되었습니다.");
     } catch (error) {
       setStatusMessage(toMaterialOrderWorkspaceError(error, "발주서 상태를 변경하지 못했습니다."));
@@ -304,14 +299,11 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           onRetrySuppliers={() => void refreshSuppliers(materialType)}
           onChangeDestinationMemo={setDestinationMemo}
           onChangeOrderNote={setOrderNote}
-          saving={savingOrder}
           statusChanging={statusChanging}
-          saveMessage={saveMessage}
           statusMessage={statusMessage}
           onChangeLine={updateLine}
           onAddLine={addLine}
           onRemoveLine={removeLine}
-          onSave={() => void saveSelectedOrderDetail()}
           onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
         />
         <MaterialOrderAllocationPanel

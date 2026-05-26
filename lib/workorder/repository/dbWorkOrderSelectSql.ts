@@ -425,9 +425,29 @@ export function buildSpecSheetSummarySelectQuery(
             WHERE LOWER(COALESCE(m.material_type, '')) IN ('submaterial', 'subsidiary', 'trim', 'label', 'packaging', '부자재')
           )::integer AS material_submaterial_count,
           STRING_AGG(
-            DISTINCT NULLIF(TRIM(COALESCE(m.name, '')), ''),
+            DISTINCT NULLIF(
+              TRIM(
+                CONCAT_WS(
+                  ' ',
+                  NULLIF(TRIM(COALESCE(m.name, '')), ''),
+                  NULLIF(TRIM(to_char(COALESCE(m.quantity, 0), 'FM999999999999990.###')), ''),
+                  NULLIF(TRIM(COALESCE(m.unit, '')), '')
+                )
+              ),
+              ''
+            ),
             ', '
-            ORDER BY NULLIF(TRIM(COALESCE(m.name, '')), '')
+            ORDER BY NULLIF(
+              TRIM(
+                CONCAT_WS(
+                  ' ',
+                  NULLIF(TRIM(COALESCE(m.name, '')), ''),
+                  NULLIF(TRIM(to_char(COALESCE(m.quantity, 0), 'FM999999999999990.###')), ''),
+                  NULLIF(TRIM(COALESCE(m.unit, '')), '')
+                )
+              ),
+              ''
+            )
           ) AS material_summary
         FROM spec_sheet_materials m
         WHERE m.company_id = s.company_id
