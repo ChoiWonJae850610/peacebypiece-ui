@@ -17,6 +17,7 @@ import {
   fetchMaterialOrders,
   resolveMaterialOrderType,
   toMaterialOrderWorkspaceError,
+  updateMaterialOrderDetail,
   type MaterialOrderWorkspaceWorkOrderCandidate,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import type { MaterialOrder } from "@/lib/material-orders/types";
@@ -36,6 +37,8 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [creatingOrder, setCreatingOrder] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [workOrderCandidates, setWorkOrderCandidates] = useState<MaterialOrderWorkspaceWorkOrderCandidate[]>([]);
   const [workOrdersLoading, setWorkOrdersLoading] = useState(true);
   const [workOrdersError, setWorkOrdersError] = useState<string | null>(null);
@@ -100,6 +103,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     }
 
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "fabric");
+    setSaveMessage(null);
     setDestinationMemo("");
     setOrderNote(selectedOrder.note ?? "");
     setLines(selectedOrder.lines.map((line) => ({
@@ -123,6 +127,37 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
       setOrdersError(toMaterialOrderWorkspaceError(error, "새 발주서를 만들지 못했습니다."));
     } finally {
       setCreatingOrder(false);
+    }
+  }
+
+
+  async function saveSelectedOrderDetail() {
+    if (!selectedOrder || selectedOrder.status !== "draft") return;
+
+    setSavingOrder(true);
+    setSaveMessage(null);
+
+    try {
+      const result = await updateMaterialOrderDetail({
+        materialOrderId: selectedOrder.id,
+        supplierPartnerId: selectedOrder.supplierPartnerId,
+        note: orderNote,
+        lines: lines.map((line) => ({
+          itemName: line.itemName,
+          itemType: materialType,
+          unit: line.unit,
+          orderQuantity: line.orderQuantity,
+          unitPrice: line.unitPrice,
+        })),
+      });
+
+      setOrders(result.materialOrders);
+      setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+      setSaveMessage("저장되었습니다.");
+    } catch (error) {
+      setSaveMessage(toMaterialOrderWorkspaceError(error, "발주서 상세를 저장하지 못했습니다."));
+    } finally {
+      setSavingOrder(false);
     }
   }
 
@@ -164,9 +199,12 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           onChangeMaterialType={setMaterialType}
           onChangeDestinationMemo={setDestinationMemo}
           onChangeOrderNote={setOrderNote}
+          saving={savingOrder}
+          saveMessage={saveMessage}
           onChangeLine={updateLine}
           onAddLine={addLine}
           onRemoveLine={removeLine}
+          onSave={() => void saveSelectedOrderDetail()}
         />
         <MaterialOrderAllocationPanel
           guideItems={guideItems}

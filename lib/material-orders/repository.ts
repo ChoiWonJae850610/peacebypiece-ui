@@ -10,6 +10,7 @@ import type {
   MaterialOrderListParams,
   MaterialOrderStatus,
   MaterialOrderStatusUpdateInput,
+  MaterialOrderUpdateInput,
 } from "@/lib/material-orders/types";
 
 type MaterialOrderRow = {
@@ -405,6 +406,64 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
     if (!orderId) throw new Error("MATERIAL_ORDER_CREATE_FAILED");
 
     for (const line of input.lines ?? []) {
+      if (!line.itemName.trim() || !line.unit.trim()) continue;
+      const lineId = await insertMaterialOrderLine(client, input.companyId, orderId, line);
+      if (lineId) await insertMaterialOrderAllocations(client, input.companyId, lineId, line);
+    }
+
+    return orderId;
+  });
+
+  return getMaterialOrderById({
+    companyId: input.companyId,
+    materialOrderId,
+  });
+}
+
+export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUpdateInput): Promise<MaterialOrder | null> {
+  const materialOrderId = await withDbTransaction(async (client) => {
+    const orderResult = await client.query<{ id: string }>(
+      `UPDATE material_orders
+       SET supplier_partner_id = $3,
+           total_amount = $4,
+           note = $5,
+           updated_at = now()
+       WHERE company_id = $1
+         AND id = $2
+         AND status = 'draft'
+       RETURNING id`,
+      [
+        input.companyId,
+        input.materialOrderId,
+        normalizeText(input.supplierPartnerId),
+        calculateTotalAmount(input.lines),
+        normalizeText(input.note),
+      ],
+    );
+
+    const orderId = orderResult.rows[0]?.id;
+    if (!orderId) throw new Error("MATERIAL_ORDER_DRAFT_NOT_FOUND_OR_LOCKED");
+
+    await client.query(
+      `DELETE FROM material_order_allocations
+       WHERE company_id = $1
+         AND material_order_line_id IN (
+           SELECT id
+           FROM material_order_lines
+           WHERE company_id = $1
+             AND material_order_id = $2
+         )`,
+      [input.companyId, orderId],
+    );
+
+    await client.query(
+      `DELETE FROM material_order_lines
+       WHERE company_id = $1
+         AND material_order_id = $2`,
+      [input.companyId, orderId],
+    );
+
+    for (const line of input.lines) {
       if (!line.itemName.trim() || !line.unit.trim()) continue;
       const lineId = await insertMaterialOrderLine(client, input.companyId, orderId, line);
       if (lineId) await insertMaterialOrderAllocations(client, input.companyId, lineId, line);

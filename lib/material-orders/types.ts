@@ -100,6 +100,14 @@ export type MaterialOrderCreateInput = {
   lines?: MaterialOrderLineInput[];
 };
 
+export type MaterialOrderUpdateInput = {
+  companyId: string;
+  materialOrderId: string;
+  supplierPartnerId?: string | null;
+  note?: string | null;
+  lines: MaterialOrderLineInput[];
+};
+
 export type MaterialOrderStatusUpdateInput = {
   companyId: string;
   materialOrderId: string;

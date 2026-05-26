@@ -10,6 +10,7 @@ import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import {
   createWorkspaceMaterialOrder,
   listWorkspaceMaterialOrders,
+  updateWorkspaceMaterialOrderDetail,
   updateWorkspaceMaterialOrderStatus,
 } from "@/lib/material-orders/service";
 import {
@@ -174,6 +175,39 @@ export async function POST(request: NextRequest) {
     );
   } catch {
     return NextResponse.json({ materialOrder: null, materialOrders: [], error: "MATERIAL_ORDER_CREATE_FAILED" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  const guard = await requireWorkspaceApiGuard();
+  if (!guard.ok) return guard.response;
+
+  try {
+    const body = await readMaterialOrderRequestBody(request);
+    const materialOrderId = normalizeOptionalText(body.materialOrderId);
+
+    if (!materialOrderId) {
+      return createMaterialOrderApiErrorResponse(
+        "Material order id is required.",
+        "MATERIAL_ORDER_DETAIL_PAYLOAD_REQUIRED",
+        400,
+      );
+    }
+
+    const permitted = await hasWorkspaceApiPermission(guard.session, MEMBER_PERMISSION_CODE.materialOrderRequest);
+    if (!permitted) return createWorkspacePermissionRequiredResponse(MEMBER_PERMISSION_CODE.materialOrderRequest);
+
+    return NextResponse.json(
+      await updateWorkspaceMaterialOrderDetail({
+        companyId: guard.scope.companyId,
+        materialOrderId,
+        supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
+        note: normalizeOptionalText(body.note),
+        lines: normalizeMaterialOrderLines(body.lines),
+      }),
+    );
+  } catch {
+    return NextResponse.json({ materialOrder: null, materialOrders: [], error: "MATERIAL_ORDER_DETAIL_UPDATE_FAILED" }, { status: 500 });
   }
 }
 

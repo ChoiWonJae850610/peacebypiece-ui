@@ -1,5 +1,5 @@
 import type { WorkOrder } from "@/types/workorder";
-import type { MaterialOrder, MaterialOrderCreateInput, MaterialOrderLineItemType } from "@/lib/material-orders/types";
+import type { MaterialOrder, MaterialOrderCreateInput, MaterialOrderLineInput, MaterialOrderLineItemType } from "@/lib/material-orders/types";
 
 export type MaterialOrderWorkspaceListResult = {
   materialOrders: MaterialOrder[];
@@ -115,6 +115,24 @@ export async function createEmptyMaterialOrder(): Promise<MaterialOrderWorkspace
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+  });
+
+  return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
+}
+
+export async function updateMaterialOrderDetail(input: {
+  materialOrderId: string;
+  supplierPartnerId?: string | null;
+  note?: string | null;
+  lines: MaterialOrderLineInput[];
+}): Promise<MaterialOrderWorkspaceMutationResult> {
+  const response = await fetch("/api/material-orders", {
+    method: "PUT",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
   });
 
   return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);

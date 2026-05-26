@@ -3,6 +3,7 @@ import "server-only";
 import {
   createMaterialOrderForCompany,
   listMaterialOrdersByCompany,
+  updateMaterialOrderDetailForCompany,
   updateMaterialOrderStatusForCompany,
 } from "@/lib/material-orders/repository";
 import type {
@@ -11,6 +12,7 @@ import type {
   MaterialOrderListResult,
   MaterialOrderMutationResult,
   MaterialOrderStatusUpdateInput,
+  MaterialOrderUpdateInput,
 } from "@/lib/material-orders/types";
 
 export async function listWorkspaceMaterialOrders(
@@ -25,6 +27,17 @@ export async function createWorkspaceMaterialOrder(
   input: MaterialOrderCreateInput,
 ): Promise<MaterialOrderMutationResult> {
   const materialOrder = await createMaterialOrderForCompany(input);
+
+  return {
+    materialOrder,
+    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId }),
+  };
+}
+
+export async function updateWorkspaceMaterialOrderDetail(
+  input: MaterialOrderUpdateInput,
+): Promise<MaterialOrderMutationResult> {
+  const materialOrder = await updateMaterialOrderDetailForCompany(input);
 
   return {
     materialOrder,
