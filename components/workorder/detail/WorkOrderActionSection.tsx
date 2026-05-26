@@ -1,5 +1,5 @@
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
-import { DISPLAY_STAGE } from "@/lib/constants/workorderStates";
+import { DISPLAY_STAGE, WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getStageTextTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateDisplayStageLabel, translateWorkflowActionLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -18,6 +18,7 @@ function getProcessingLabel(label: string, format: string) {
 export default function WorkOrderActionSection({
   stages,
   currentStage,
+  currentWorkflowState,
   actions,
   onAction,
   workflowProcessingLabel = null,
@@ -25,6 +26,7 @@ export default function WorkOrderActionSection({
 }: {
   stages: DisplayStage[];
   currentStage: DisplayStage;
+  currentWorkflowState?: string | null;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
   workflowProcessingLabel?: string | null;
@@ -45,6 +47,7 @@ export default function WorkOrderActionSection({
     { label: stageGroupsCopy.inspection, stages: [DISPLAY_STAGE.inspection, DISPLAY_STAGE.completed] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
+  const showMaterialOrderPendingBadge = currentWorkflowState === WORKFLOW_STATE.materialOrderPending;
 
   return (
     <div className="pbp-workflow-panel mt-5 rounded-[24px] border p-4 shadow-sm">
@@ -109,6 +112,12 @@ export default function WorkOrderActionSection({
         <span>{stageGroups[currentGroupIndex]?.label ?? copy.fallbackGroup}</span>
         <span>·</span>
         <span>{translateDisplayStageLabel(currentStage, i18n)}</span>
+        {showMaterialOrderPendingBadge ? (
+          <>
+            <span>·</span>
+            <span className="rounded-full bg-[var(--pbp-workorder-status-request-order-bg)] px-2 py-0.5 font-semibold text-[var(--pbp-workorder-status-request-order-text)]">{copy.materialOrderPendingBadge}</span>
+          </>
+        ) : null}
       </div>
     </div>
   );

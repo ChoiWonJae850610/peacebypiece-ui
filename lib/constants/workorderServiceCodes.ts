@@ -123,6 +123,7 @@ export function getWorkOrderWorkflowServiceCode(payload: {
       return WORKORDER_SERVICE_CODE.requestReview;
     case WORKFLOW_STATE.reviewCompleted:
       return WORKORDER_SERVICE_CODE.approveReview;
+    case WORKFLOW_STATE.materialOrderPending:
     case WORKFLOW_STATE.inspection:
       return WORKORDER_SERVICE_CODE.requestOrder;
     case WORKFLOW_STATE.completed:

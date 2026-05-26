@@ -166,6 +166,7 @@ function readWorkOrderMaterialSummaryItems(value: unknown): WorkOrderSummary["ma
         itemType,
         quantity: readNumberRowValue(record.quantity),
         unit: readStringRowValue(record.unit),
+        unitCost: readNumberRowValue(record.unitCost),
       };
     })
     .filter((item): item is NonNullable<WorkOrderSummary["materialItems"]>[number] => Boolean(item));

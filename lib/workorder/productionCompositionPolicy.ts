@@ -7,6 +7,7 @@ import type { WorkOrder } from "@/types/workorder";
 export const PRODUCTION_COMPOSITION_COMMIT_WORKFLOW_STATES = [
   WORKFLOW_STATE.reviewRequested,
   WORKFLOW_STATE.reviewCompleted,
+  WORKFLOW_STATE.materialOrderPending,
   WORKFLOW_STATE.inspection,
   WORKFLOW_STATE.completed,
 ] as const;

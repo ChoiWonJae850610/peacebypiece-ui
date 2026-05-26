@@ -1,3 +1,4 @@
+import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateDisplayStageLabel, translateWorkflowActionLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -13,6 +14,7 @@ function getProcessingLabel(label: string, format: string) {
 export default function WorkOrderDetailMobileActionSection({
   stages,
   currentStage,
+  currentWorkflowState,
   actions,
   onAction,
   workflowProcessingLabel = null,
@@ -22,6 +24,7 @@ export default function WorkOrderDetailMobileActionSection({
   const copy = i18n.workorder.ui.actionSection;
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
+  const showMaterialOrderPendingBadge = currentWorkflowState === WORKFLOW_STATE.materialOrderPending;
 
   return (
     <section className="pbp-workflow-panel min-w-0 overflow-hidden rounded-2xl border p-3.5 sm:p-4">
@@ -42,6 +45,11 @@ export default function WorkOrderDetailMobileActionSection({
           );
         })}
       </div>
+      {showMaterialOrderPendingBadge ? (
+        <div className="mt-3 inline-flex w-fit rounded-full bg-[var(--pbp-workorder-status-request-order-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--pbp-workorder-status-request-order-text)]">
+          {copy.materialOrderPendingBadge}
+        </div>
+      ) : null}
       {actions.length > 0 ? (
         <div className="mt-4 grid gap-2">
           {actions.map((action, index) => {

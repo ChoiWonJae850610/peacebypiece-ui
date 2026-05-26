@@ -252,7 +252,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           itemName: material.itemName,
           unit: material.unit || "마",
           orderQuantity: material.quantity,
-          unitPrice: 0,
+          unitPrice: Number.isFinite(material.unitCost ?? 0) ? material.unitCost ?? 0 : 0,
           sourceWorkOrderId: workOrder.id,
           sourceMaterialKey: material.key,
           allocations: [

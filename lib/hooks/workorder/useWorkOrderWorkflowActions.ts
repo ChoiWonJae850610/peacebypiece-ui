@@ -33,6 +33,7 @@ import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { isImmediateDbField } from "@/lib/workorder/storagePolicy";
 import { getWorkOrderImmediatePatchServiceCode } from "@/lib/workorder/serviceCodeForWorkOrderPatch";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
+import { shouldCreateWorkOrderPdfAfterOrderRequest } from "@/lib/workorder/materialOrderReadiness";
 import { canReinspectInWorkflow, isWorkflowState, WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import { WORKORDER_SERVICE_CODE, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
@@ -582,23 +583,25 @@ export function useWorkOrderWorkflowActions({
           setToastMessage,
         });
 
-        try {
-          const generatedAttachment = await createGeneratedOrderRequestPdfAttachment({
-            workOrderId: workOrder.id,
-            requestNote: normalizedRequestNote,
-          });
-          if (generatedAttachment) {
-            const withGeneratedAttachment = stabilizeWorkOrders(
-              persistedWorkOrders.map((item) => (item.id === workOrder.id ? appendGeneratedAttachment(item, generatedAttachment) : item)),
-            );
-            workOrdersRef.current = withGeneratedAttachment;
-            setWorkOrders(withGeneratedAttachment);
-            setPersistedWorkOrders(withGeneratedAttachment);
-            setToastMessage(actionFlowText.factoryOrderPdfSavedToast);
+        if (shouldCreateWorkOrderPdfAfterOrderRequest(nextPersistedWorkOrder)) {
+          try {
+            const generatedAttachment = await createGeneratedOrderRequestPdfAttachment({
+              workOrderId: workOrder.id,
+              requestNote: normalizedRequestNote,
+            });
+            if (generatedAttachment) {
+              const withGeneratedAttachment = stabilizeWorkOrders(
+                persistedWorkOrders.map((item) => (item.id === workOrder.id ? appendGeneratedAttachment(item, generatedAttachment) : item)),
+              );
+              workOrdersRef.current = withGeneratedAttachment;
+              setWorkOrders(withGeneratedAttachment);
+              setPersistedWorkOrders(withGeneratedAttachment);
+              setToastMessage(actionFlowText.factoryOrderPdfSavedToast);
+            }
+          } catch (pdfError) {
+            console.warn("[ORDER_REQUEST_PDF_CREATE_FAILED]", pdfError);
+            setToastMessage(getOrderRequestPdfFailureToast(actionFlowText, pdfError));
           }
-        } catch (pdfError) {
-          console.warn("[ORDER_REQUEST_PDF_CREATE_FAILED]", pdfError);
-          setToastMessage(getOrderRequestPdfFailureToast(actionFlowText, pdfError));
         }
       } catch (error) {
         markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);

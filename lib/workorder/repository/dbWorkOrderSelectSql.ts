@@ -281,12 +281,11 @@ const DB_WORKFLOW_STATE_FILTER_VALUES: Record<
   draft: ["draft", "작성중"],
   review_requested: ["review_requested", "검토요청"],
   review_completed: ["review_completed", "review_approved", "검토완료"],
+  material_order_pending: ["material_order_pending", "order_requested", "발주요청"],
   inspection: [
     "inspection",
-    "order_requested",
     "in_production",
     "in_inspection",
-    "발주요청",
     "생산중",
     "검수중",
   ],
@@ -460,7 +459,8 @@ export function buildSpecSheetSummarySelectQuery(
                   ELSE 'fabric'
                 END,
                 'quantity', COALESCE(m.quantity, 0),
-                'unit', COALESCE(m.unit, '')
+                'unit', COALESCE(m.unit, ''),
+                'unitCost', COALESCE(m.unit_cost, 0)
               )
               ORDER BY COALESCE(m.name, ''), COALESCE(m.id::text, '')
             ) FILTER (WHERE NULLIF(TRIM(COALESCE(m.name, '')), '') IS NOT NULL),

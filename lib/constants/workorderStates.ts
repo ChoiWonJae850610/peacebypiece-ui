@@ -2,6 +2,7 @@ export const WORKFLOW_STATE = {
   draft: "draft",
   reviewRequested: "review_requested",
   reviewCompleted: "review_completed",
+  materialOrderPending: "material_order_pending",
   inspection: "inspection",
   completed: "completed",
   rejected: "rejected",
@@ -22,6 +23,7 @@ export const WORKFLOW_STATES = [
   WORKFLOW_STATE.draft,
   WORKFLOW_STATE.reviewRequested,
   WORKFLOW_STATE.reviewCompleted,
+  WORKFLOW_STATE.materialOrderPending,
   WORKFLOW_STATE.inspection,
   WORKFLOW_STATE.completed,
   WORKFLOW_STATE.rejected,
@@ -106,8 +108,9 @@ export const STATUS_ORDER: Record<WorkflowStateValue, number> = {
   [WORKFLOW_STATE.rejected]: 0,
   [WORKFLOW_STATE.reviewRequested]: 1,
   [WORKFLOW_STATE.reviewCompleted]: 2,
-  [WORKFLOW_STATE.inspection]: 3,
-  [WORKFLOW_STATE.completed]: 4,
+  [WORKFLOW_STATE.materialOrderPending]: 3,
+  [WORKFLOW_STATE.inspection]: 4,
+  [WORKFLOW_STATE.completed]: 5,
 };
 
 export function compareWorkflowStates(left: WorkflowStateValue, right: WorkflowStateValue) {
@@ -185,6 +188,7 @@ export const WORKFLOW_STATE_TO_STAGE: Record<WorkflowStateValue, DisplayStageVal
   [WORKFLOW_STATE.draft]: DISPLAY_STAGE.draft,
   [WORKFLOW_STATE.reviewRequested]: DISPLAY_STAGE.reviewRequested,
   [WORKFLOW_STATE.reviewCompleted]: DISPLAY_STAGE.reviewCompleted,
+  [WORKFLOW_STATE.materialOrderPending]: DISPLAY_STAGE.requestOrder,
   [WORKFLOW_STATE.inspection]: DISPLAY_STAGE.inspection,
   [WORKFLOW_STATE.completed]: DISPLAY_STAGE.completed,
   [WORKFLOW_STATE.rejected]: DISPLAY_STAGE.draft,
@@ -195,6 +199,7 @@ export const WORKFLOW_STATE_BADGE_TONE: Record<WorkflowStateValue | DisplayStage
   review_requested: "bg-[var(--pbp-workorder-status-review-requested-bg)] text-[var(--pbp-workorder-status-review-requested-text)]",
   review_completed: "bg-[var(--pbp-workorder-status-review-completed-bg)] text-[var(--pbp-workorder-status-review-completed-text)]",
   request_order: "bg-[var(--pbp-workorder-status-request-order-bg)] text-[var(--pbp-workorder-status-request-order-text)]",
+  material_order_pending: "bg-[var(--pbp-workorder-status-request-order-bg)] text-[var(--pbp-workorder-status-request-order-text)]",
   inspection: "bg-[var(--pbp-workorder-status-inspection-bg)] text-[var(--pbp-workorder-status-inspection-text)]",
   completed: "bg-[var(--pbp-workorder-status-completed-bg)] text-[var(--pbp-workorder-status-completed-text)]",
   rejected: "bg-[var(--pbp-workorder-status-rejected-bg)] text-[var(--pbp-workorder-status-rejected-text)]",
@@ -205,6 +210,7 @@ export const WORKFLOW_STATE_DOT_TONE: Record<WorkflowStateValue | DisplayStageVa
   review_requested: "bg-[var(--pbp-workorder-status-review-requested-dot)]",
   review_completed: "bg-[var(--pbp-workorder-status-review-completed-dot)]",
   request_order: "bg-[var(--pbp-workorder-status-request-order-dot)]",
+  material_order_pending: "bg-[var(--pbp-workorder-status-request-order-dot)]",
   inspection: "bg-[var(--pbp-workorder-status-inspection-dot)]",
   completed: "bg-[var(--pbp-workorder-status-completed-dot)]",
   rejected: "bg-[var(--pbp-workorder-status-rejected-dot)]",
@@ -215,12 +221,13 @@ export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageV
   review_requested: "text-[var(--pbp-workorder-status-review-requested-text)]",
   review_completed: "text-[var(--pbp-workorder-status-review-completed-text)]",
   request_order: "text-[var(--pbp-workorder-status-request-order-text)]",
+  material_order_pending: "text-[var(--pbp-workorder-status-request-order-text)]",
   inspection: "text-[var(--pbp-workorder-status-inspection-text)]",
   completed: "text-[var(--pbp-workorder-status-completed-bg)]",
   rejected: "text-[var(--pbp-workorder-status-rejected-text)]",
 };
 
-export const MANAGER_ASSIGNABLE_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested, WORKFLOW_STATE.reviewCompleted, WORKFLOW_STATE.inspection] as const;
+export const MANAGER_ASSIGNABLE_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested, WORKFLOW_STATE.reviewCompleted, WORKFLOW_STATE.materialOrderPending, WORKFLOW_STATE.inspection] as const;
 export const INVENTORY_EDITABLE_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
 export const REORDERABLE_WORKFLOW_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
 export const DELETABLE_WORKFLOW_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested] as const;
@@ -240,12 +247,12 @@ export const LEGACY_WORKFLOW_STATE_MAP = {
   "검토요청": "review_requested",
   "검토완료": "review_completed",
   "반려": "rejected",
-  "발주요청": "inspection",
+  "발주요청": "material_order_pending",
   "생산중": "inspection",
   "검수중": "inspection",
   "완료": "completed",
   review_approved: "review_completed",
-  order_requested: "inspection",
+  order_requested: "material_order_pending",
   in_production: "inspection",
   in_inspection: "inspection",
 } as const;

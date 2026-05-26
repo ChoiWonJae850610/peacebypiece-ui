@@ -24,6 +24,7 @@ import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle,
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import { syncWorkOrderOrderSnapshot } from "@/lib/workorder/orderSubmission";
+import { resolveOrderRequestWorkflowState } from "@/lib/workorder/materialOrderReadiness";
 import type { Attachment, FactoryOrderRequest, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
@@ -133,14 +134,18 @@ export function requestFactoryOrderForWorkOrder(
   workOrder: WorkOrder,
   payload: FactoryOrderRequest,
 ): WorkOrder {
+  const nextWorkflowState = resolveOrderRequestWorkflowState(workOrder);
+  const shouldMoveToInspection = isWorkflowState(nextWorkflowState, WORKFLOW_STATE.inspection);
   const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
     ...entry,
-    inspectionStatus: getOrderInspectionStatusForOrderRequest(entry.inspectionStatus),
+    inspectionStatus: shouldMoveToInspection
+      ? getOrderInspectionStatusForOrderRequest(entry.inspectionStatus)
+      : entry.inspectionStatus ?? getOrderInspectionStatusForNewOrderEntry(),
   }));
 
   return syncWorkOrderOrderSnapshot({
     ...workOrder,
-    workflowState: WORKFLOW_STATE.inspection,
+    workflowState: nextWorkflowState,
     orderEntries: nextOrderEntries,
     factoryOrderRequest: {
       ...payload,

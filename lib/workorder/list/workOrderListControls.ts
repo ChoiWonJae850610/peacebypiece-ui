@@ -7,6 +7,7 @@ export const WORK_ORDER_LIST_STATUS_FILTERS = [
   WORKFLOW_STATE.draft,
   WORKFLOW_STATE.reviewRequested,
   WORKFLOW_STATE.reviewCompleted,
+  WORKFLOW_STATE.materialOrderPending,
   WORKFLOW_STATE.inspection,
   WORKFLOW_STATE.rejected,
 ] as const;
@@ -50,6 +51,7 @@ export type WorkOrderListControlCopy = {
     draft: string;
     reviewRequested: string;
     reviewCompleted: string;
+    materialOrderPending: string;
     inspection: string;
     rejected: string;
   };
@@ -69,6 +71,7 @@ export function getWorkOrderListStatusFilterOptions(
     { value: "active", label: copy.statusFilters.active },
     { value: WORKFLOW_STATE.reviewRequested, label: copy.statusFilters.reviewRequested },
     { value: WORKFLOW_STATE.reviewCompleted, label: copy.statusFilters.reviewCompleted },
+    { value: WORKFLOW_STATE.materialOrderPending, label: copy.statusFilters.materialOrderPending },
     { value: WORKFLOW_STATE.inspection, label: copy.statusFilters.inspection },
     { value: WORKFLOW_STATE.draft, label: copy.statusFilters.draft },
     { value: WORKFLOW_STATE.rejected, label: copy.statusFilters.rejected },

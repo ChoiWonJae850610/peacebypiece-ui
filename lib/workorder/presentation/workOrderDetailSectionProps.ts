@@ -163,6 +163,7 @@ export function buildRejectionReasonNoticeProps({
 export function buildActionSectionProps({
   visibleStages,
   currentDisplayStage,
+  currentWorkflowState,
   actions,
   workflowProcessingLabel,
   isWorkspaceWriteLocked,
@@ -172,6 +173,7 @@ export function buildActionSectionProps({
   return {
     stages: visibleStages,
     currentStage: currentDisplayStage,
+    currentWorkflowState,
     actions,
     workflowProcessingLabel,
     isWorkspaceWriteLocked,

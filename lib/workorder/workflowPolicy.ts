@@ -104,7 +104,7 @@ function buildAdminWorkflowActions(context: WorkflowPolicyContext): WorkflowPoli
     review_completed: [
       { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: getReviewApprovalCancelNextStateByPolicy(context.workOrder, context.users), actionType: WORKFLOW_ACTION_TYPE.cancelReviewApproval },
       ...(canRequestFactoryOrderByPolicy(context)
-        ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: WORKFLOW_STATE.inspection, actionType: WORKFLOW_ACTION_TYPE.requestOrder } satisfies WorkflowAction]
+        ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: WORKFLOW_STATE.materialOrderPending, actionType: WORKFLOW_ACTION_TYPE.requestOrder } satisfies WorkflowAction]
         : []),
     ],
     completed: canReinspectInWorkflow(context.currentWorkflowState)
@@ -116,7 +116,7 @@ function buildAdminWorkflowActions(context: WorkflowPolicyContext): WorkflowPoli
 function buildMemberWorkflowActions(context: WorkflowPolicyContext): WorkflowPolicyActionMap {
   const canRequestReview = canRequestReviewByPolicy(context);
   const canDirectOrder = canDirectRequestFactoryOrderByPolicy(context);
-  const directOrderAction = { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: WORKFLOW_STATE.inspection, actionType: WORKFLOW_ACTION_TYPE.requestOrder } satisfies WorkflowAction;
+  const directOrderAction = { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: WORKFLOW_STATE.materialOrderPending, actionType: WORKFLOW_ACTION_TYPE.requestOrder } satisfies WorkflowAction;
 
   return {
     draft: [

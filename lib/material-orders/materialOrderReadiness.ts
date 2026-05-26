@@ -30,12 +30,8 @@ export function resolveMaterialOrderReadinessStatus(workOrder: Pick<WorkOrderSum
 
   if (!hasMaterialItems) return MATERIAL_ORDER_READINESS_STATUS.notReady;
 
-  if (workOrder.workflowState === WORKFLOW_STATE.reviewCompleted) {
+  if (workOrder.workflowState === WORKFLOW_STATE.materialOrderPending) {
     return MATERIAL_ORDER_READINESS_STATUS.materialOrderPending;
-  }
-
-  if (workOrder.workflowState === WORKFLOW_STATE.inspection) {
-    return MATERIAL_ORDER_READINESS_STATUS.materialOrderInProgress;
   }
 
   if (workOrder.workflowState === WORKFLOW_STATE.completed) {
@@ -51,15 +47,15 @@ export function getMaterialOrderReadinessSummary(status: MaterialOrderReadinessS
       return {
         status,
         label: "자재 발주 대기",
-        description: "작업지시서 진행 단계는 발주요청 흐름에 두고, 원단·부자재 발주 후보로 표시합니다.",
+        description: "작업지시서 발주요청은 완료됐지만 원단·부자재 발주가 완료되지 않은 상태입니다.",
         candidate: true,
       };
     case MATERIAL_ORDER_READINESS_STATUS.materialOrderInProgress:
       return {
         status,
         label: "자재 발주 진행중",
-        description: "기존 데이터 호환을 위해 검수 단계에 진입한 작업지시서도 자재 발주 확인 대상으로 유지합니다.",
-        candidate: true,
+        description: "자재 발주가 일부 진행 중인 상태입니다.",
+        candidate: false,
       };
     case MATERIAL_ORDER_READINESS_STATUS.materialOrderCompleted:
       return {

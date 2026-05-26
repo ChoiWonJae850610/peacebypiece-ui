@@ -82,7 +82,7 @@ export default function MaterialOrderAllocationPanel({
         ) : candidates.length === 0 ? (
           <PanelMessage
             title="표시할 작업지시서 없음"
-            description="자재 발주 대기 또는 진행중인 작업지시서가 없습니다."
+            description="자재 발주 대기 상태의 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
           <PanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." />
@@ -192,7 +192,7 @@ function WorkOrderMaterialRequestRow({
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
         <p className="mt-0.5 text-[11px] pbp-text-muted">
-          {formatMaterialItemTypeLabel(material.itemType)} · {formatMaterialQuantity(material.quantity, material.unit)}
+          {formatMaterialItemTypeLabel(material.itemType)} · {formatMaterialQuantity(material.quantity, material.unit)} · {formatMaterialUnitPrice(material.unitCost)}
         </p>
       </div>
       <AdminButton
@@ -215,6 +215,16 @@ function formatMaterialQuantity(quantity: number, unit: string): string {
   const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
   const normalizedUnit = unit.trim();
   return `${normalizedQuantity}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
+}
+
+function formatMaterialUnitPrice(unitCost: number | undefined): string {
+  const normalizedUnitCost = typeof unitCost === "number" && Number.isFinite(unitCost) && unitCost > 0 ? unitCost : 0;
+  if (normalizedUnitCost <= 0) return "단가 미입력";
+  return new Intl.NumberFormat("ko-KR", {
+    style: "currency",
+    currency: "KRW",
+    maximumFractionDigits: 0,
+  }).format(normalizedUnitCost);
 }
 
 function PanelMessage({

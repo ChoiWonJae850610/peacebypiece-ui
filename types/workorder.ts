@@ -171,6 +171,7 @@ export type WorkOrderMaterialSummaryItem = {
   itemType: "fabric" | "submaterial";
   quantity: number;
   unit: string;
+  unitCost: number;
 };
 
 export type WorkOrderSummary = Pick<
