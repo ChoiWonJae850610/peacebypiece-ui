@@ -176,9 +176,9 @@ export default function MaterialOrderDetailPanel({
             <div className="flex shrink-0 items-center justify-between gap-3 pb-2">
               <div>
                 <h3 className="text-sm font-semibold pbp-text-primary">품목 라인</h3>
-                <p className="mt-0.5 text-xs pbp-text-muted">품목명, 단위, 수량, 단가만 입력합니다.</p>
+                <p className="mt-0.5 text-xs pbp-text-muted">우측 작업지시서의 필요 자재를 발주 품목으로 추가하면 품목명, 단위, 수량이 자동 입력됩니다.</p>
               </div>
-              <AdminButton onClick={onAddLine} disabled={selectedOrder.status !== "draft"}>품목 추가</AdminButton>
+              <AdminButton onClick={onAddLine} disabled={selectedOrder.status !== "draft"}>직접 추가</AdminButton>
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[var(--pbp-border)]">
@@ -198,7 +198,7 @@ export default function MaterialOrderDetailPanel({
                   {lines.length === 0 ? (
                     <tr>
                       <td className="px-3 py-8 text-center text-sm pbp-text-muted" colSpan={7}>
-                        등록된 품목 라인이 없습니다. 품목 추가 버튼으로 입력을 시작합니다.
+                        우측 작업지시서의 필요 자재를 발주 품목으로 추가하거나 직접 추가로 예외 품목을 입력합니다.
                       </td>
                     </tr>
                   ) : (

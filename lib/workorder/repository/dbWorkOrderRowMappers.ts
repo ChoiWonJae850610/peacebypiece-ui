@@ -141,6 +141,36 @@ function readCountValue(value: number | null | undefined): number {
     : 0;
 }
 
+function readWorkOrderMaterialSummaryItems(value: unknown): WorkOrderSummary["materialItems"] {
+  let source: unknown = value;
+  if (typeof value === "string") {
+    try {
+      source = JSON.parse(value || "[]");
+    } catch {
+      source = [];
+    }
+  }
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((item, index) => {
+      if (!item || typeof item !== "object") return null;
+      const record = item as Record<string, unknown>;
+      const itemName = readStringRowValue(record.itemName);
+      if (!itemName) return null;
+      const itemType = record.itemType === "submaterial" ? "submaterial" : "fabric";
+
+      return {
+        key: readStringRowValue(record.key, `${itemType}-${itemName}-${index}`),
+        itemName,
+        itemType,
+        quantity: readNumberRowValue(record.quantity),
+        unit: readStringRowValue(record.unit),
+      };
+    })
+    .filter((item): item is NonNullable<WorkOrderSummary["materialItems"]>[number] => Boolean(item));
+}
+
 export function mapSpecSheetRowToWorkOrderSummary(
   row: DbSpecSheetRow,
 ): WorkOrderSummary {
@@ -186,6 +216,7 @@ export function mapSpecSheetRowToWorkOrderSummary(
     materialFabricCount: readCountValue(row.material_fabric_count),
     materialSubmaterialCount: readCountValue(row.material_submaterial_count),
     materialSummary: readStringRowValue(row.material_summary),
+    materialItems: readWorkOrderMaterialSummaryItems(row.material_items),
     outsourcingCount: readCountValue(row.outsourcing_count),
     attachmentCount: readCountValue(row.attachment_count),
     memoThreadCount: readCountValue(row.memo_thread_count),

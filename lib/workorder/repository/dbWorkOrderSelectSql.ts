@@ -405,6 +405,7 @@ export function buildSpecSheetSummarySelectQuery(
         COALESCE(material_counts.material_fabric_count, 0)::integer AS material_fabric_count,
         COALESCE(material_counts.material_submaterial_count, 0)::integer AS material_submaterial_count,
         COALESCE(material_counts.material_summary, '')::text AS material_summary,
+        COALESCE(material_counts.material_items, '[]'::jsonb) AS material_items,
         COALESCE(outsourcing_counts.outsourcing_count, 0)::integer AS outsourcing_count,
         COALESCE(attachment_counts.attachment_count, 0)::integer AS attachment_count,
         COALESCE(memo_counts.memo_thread_count, 0)::integer AS memo_thread_count
@@ -448,7 +449,23 @@ export function buildSpecSheetSummarySelectQuery(
               ),
               ''
             )
-          ) AS material_summary
+          ) AS material_summary,
+          COALESCE(
+            JSONB_AGG(
+              JSONB_BUILD_OBJECT(
+                'key', COALESCE(m.id::text, MD5(CONCAT_WS('|', COALESCE(m.name, ''), COALESCE(m.material_type, ''), COALESCE(m.unit, ''), COALESCE(m.quantity::text, '0')))),
+                'itemName', COALESCE(m.name, ''),
+                'itemType', CASE
+                  WHEN LOWER(COALESCE(m.material_type, '')) IN ('submaterial', 'subsidiary', 'trim', 'label', 'packaging', '부자재') THEN 'submaterial'
+                  ELSE 'fabric'
+                END,
+                'quantity', COALESCE(m.quantity, 0),
+                'unit', COALESCE(m.unit, '')
+              )
+              ORDER BY COALESCE(m.name, ''), COALESCE(m.id::text, '')
+            ) FILTER (WHERE NULLIF(TRIM(COALESCE(m.name, '')), '') IS NOT NULL),
+            '[]'::jsonb
+          ) AS material_items
         FROM spec_sheet_materials m
         WHERE m.company_id = s.company_id
           AND m.spec_sheet_id = s.id

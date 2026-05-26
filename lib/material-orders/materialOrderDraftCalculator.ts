@@ -12,6 +12,8 @@ export type MaterialOrderDraftLine = {
   unit: string;
   orderQuantity: number;
   unitPrice: number;
+  sourceWorkOrderId?: string;
+  sourceMaterialKey?: string;
   allocations: MaterialOrderDraftAllocation[];
 };
 

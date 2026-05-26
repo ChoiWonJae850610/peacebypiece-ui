@@ -32,6 +32,7 @@ export type MaterialOrderWorkspaceWorkOrderCandidate = {
   requestedMaterialLabel: string;
   materialCountLabel: string;
   dueDateLabel: string;
+  materialItems: NonNullable<WorkOrderSummary["materialItems"]>;
 };
 
 export type MaterialOrderWorkspaceWorkOrdersResult = {
@@ -224,16 +225,28 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
 
   return workOrders
     .filter((workOrder) => isOrderRequestedWorkOrder(workOrder.workflowState))
-    .map((workOrder) => ({
-      id: workOrder.id,
-      code: workOrder.displayTitle || workOrder.title || "제목 없음",
-      productName: workOrder.baseTitle || workOrder.title || "제목 없음",
-      reorderLabel: resolveReorderLabel(workOrder.reorderRound),
-      managerLabel: workOrder.manager ? `담당 ${workOrder.manager}` : "담당자 미확인",
-      requestedMaterialLabel: resolveWorkOrderMaterialSummary(workOrder.materialSummary, workOrder.materialCount),
-      materialCountLabel: resolveWorkOrderMaterialCountLabel(workOrder),
-      dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
-    }));
+    .filter((workOrder) => resolveWorkOrderMaterialItems(workOrder).length > 0)
+    .map((workOrder) => {
+      const materialItems = resolveWorkOrderMaterialItems(workOrder);
+
+      return {
+        id: workOrder.id,
+        code: workOrder.displayTitle || workOrder.title || "제목 없음",
+        productName: workOrder.baseTitle || workOrder.title || "제목 없음",
+        reorderLabel: resolveReorderLabel(workOrder.reorderRound),
+        managerLabel: workOrder.manager ? `담당 ${workOrder.manager}` : "담당자 미확인",
+        requestedMaterialLabel: resolveWorkOrderMaterialSummary(workOrder.materialSummary, workOrder.materialCount),
+        materialCountLabel: resolveWorkOrderMaterialCountLabel(workOrder),
+        dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
+        materialItems,
+      };
+    });
+}
+
+function resolveWorkOrderMaterialItems(workOrder: WorkOrderSummary): NonNullable<WorkOrderSummary["materialItems"]> {
+  return Array.isArray(workOrder.materialItems)
+    ? workOrder.materialItems.filter((item) => item.itemName.trim().length > 0)
+    : [];
 }
 
 function resolveWorkOrderMaterialCountLabel(workOrder: WorkOrderSummary): string {

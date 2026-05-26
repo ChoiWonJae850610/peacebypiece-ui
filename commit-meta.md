@@ -1,14 +1,16 @@
-Version : 0.17.14
-Summary : 원단·부자재 화면 WAFL 규격 정리
-Description : 원단·부자재 발주 화면의 진행 단계, 품목 라인, 작업지시서 할당 후보 표시를 작업지시서 화면과 같은 WAFL 규격에 맞춰 정리했습니다. 발주 상세 하단 저장/검토요청 버튼을 제거하고 진행 단계 영역에서 상태 액션을 처리하도록 변경했으며, 배분 용어를 할당으로 정리했습니다. 작업지시서 후보의 자재 개수는 원단 n종·부자재 n종으로 표시하고, 자재 요약에는 수량과 단위를 함께 표시하도록 보강했습니다. DB schema와 package 파일은 변경하지 않았습니다.
+Version : 0.17.15
+Summary : 원단·부자재 필요 자재 기반 품목 추가 흐름 정리
+Description : 우측 작업지시서 후보에서 자재가 없는 작업지시서를 제외하고, 작업지시서에 입력된 원단·부자재 필요 자재를 한 줄 단위로 표시해 발주 품목으로 바로 추가할 수 있도록 정리했습니다. 가운데 품목 라인은 우측 필요 자재에서 자동 생성되며 품목명, 단위, 수량과 해당 작업지시서 할당이 함께 반영됩니다. 작업지시서 summary 조회에는 자재 상세 JSON 요약을 추가했으며 DB schema와 package 파일은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - features/material-orders/MaterialOrderDetailPanel.tsx
 - features/material-orders/MaterialOrderAllocationPanel.tsx
-- features/material-orders/MaterialOrderListPanel.tsx
 - features/material-orders/MaterialOrderDraftEditor.tsx
+- lib/material-orders/materialOrderDraftCalculator.ts
 - lib/material-orders/materialOrderWorkspaceClient.ts
-- lib/material-orders/materialOrderWorkspaceViewModel.ts
+- types/workorder.ts
+- lib/workorder/repository/dbWorkOrderRepositoryTypes.ts
+- lib/workorder/repository/dbWorkOrderRowMappers.ts
 - lib/workorder/repository/dbWorkOrderSelectSql.ts
 추가 파일 목록 :
 - 없음

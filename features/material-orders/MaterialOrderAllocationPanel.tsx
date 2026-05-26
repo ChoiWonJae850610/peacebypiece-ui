@@ -6,7 +6,6 @@ import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   calculateMaterialOrderLineAllocatedQuantity,
   calculateMaterialOrderLineRemainingQuantity,
-  type MaterialOrderDraftAllocation,
   type MaterialOrderDraftLine,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
@@ -19,8 +18,10 @@ type MaterialOrderAllocationPanelProps = {
   editable: boolean;
   loading: boolean;
   errorMessage: string | null;
-  onChangeAllocation: (lineId: string, workOrderId: string, patch: Partial<MaterialOrderDraftAllocation>) => void;
-  onRemoveAllocation: (lineId: string, workOrderId: string) => void;
+  onAddMaterialToOrder: (
+    workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
+    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+  ) => void;
   onRetry: () => void;
 };
 
@@ -31,8 +32,7 @@ export default function MaterialOrderAllocationPanel({
   editable,
   loading,
   errorMessage,
-  onChangeAllocation,
-  onRemoveAllocation,
+  onAddMaterialToOrder,
   onRetry,
 }: MaterialOrderAllocationPanelProps) {
   void guideItems;
@@ -92,8 +92,7 @@ export default function MaterialOrderAllocationPanel({
               workOrder={workOrder}
               lines={lines}
               editable={editable}
-              onChangeAllocation={onChangeAllocation}
-              onRemoveAllocation={onRemoveAllocation}
+              onAddMaterialToOrder={onAddMaterialToOrder}
             />
           ))
         )}
@@ -106,27 +105,17 @@ function AllocationCandidateCard({
   workOrder,
   lines,
   editable,
-  onChangeAllocation,
-  onRemoveAllocation,
+  onAddMaterialToOrder,
 }: {
   workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
   lines: MaterialOrderDraftLine[];
   editable: boolean;
-  onChangeAllocation: (lineId: string, workOrderId: string, patch: Partial<MaterialOrderDraftAllocation>) => void;
-  onRemoveAllocation: (lineId: string, workOrderId: string) => void;
+  onAddMaterialToOrder: (
+    workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
+    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+  ) => void;
 }) {
-  const selectedLine = lines.find((line) => line.allocations.some((allocation) => allocation.workOrderId === workOrder.id)) ?? null;
-  const selectedAllocation = selectedLine?.allocations.find((allocation) => allocation.workOrderId === workOrder.id) ?? null;
-
-  function changeLine(nextLineId: string) {
-    if (selectedLine) onRemoveAllocation(selectedLine.id, workOrder.id);
-    if (nextLineId) {
-      onChangeAllocation(nextLineId, workOrder.id, {
-        allocatedQuantity: selectedAllocation?.allocatedQuantity ?? 0,
-        allocationNote: selectedAllocation?.allocationNote ?? "",
-      });
-    }
-  }
+  const linkedLines = lines.filter((line) => line.allocations.some((allocation) => allocation.workOrderId === workOrder.id));
 
   return (
     <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-3 transition hover:bg-[var(--pbp-surface-soft)]">
@@ -135,70 +124,94 @@ function AllocationCandidateCard({
           <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
           <p className="mt-1 truncate text-xs pbp-text-muted">{workOrder.reorderLabel} · {workOrder.managerLabel}</p>
         </div>
-        <AdminStatusBadge tone={selectedLine ? "success" : "warning"} size="xs">
-          {selectedLine ? "할당" : "대기"}
+        <AdminStatusBadge tone={linkedLines.length > 0 ? "success" : "warning"} size="xs">
+          {linkedLines.length > 0 ? "연결" : "대기"}
         </AdminStatusBadge>
       </div>
 
-      <div className="mt-3 grid gap-1 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2">
-        <div className="flex items-center justify-between gap-2 text-xs">
-          <span className="font-semibold pbp-text-subtle">자재</span>
-          <span className="font-semibold pbp-text-primary">{workOrder.materialCountLabel}</span>
-        </div>
-        <p className="max-h-10 overflow-hidden text-xs leading-5 pbp-text-muted">{workOrder.requestedMaterialLabel}</p>
-      </div>
-
       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] pbp-text-muted">
-        <span>{workOrder.dueDateLabel}</span>
+        <span>{workOrder.materialCountLabel}</span>
         <span>·</span>
-        <span>{workOrder.code}</span>
+        <span>{workOrder.dueDateLabel}</span>
       </div>
 
-      <div className="mt-3 grid gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2">
-        <select className={fieldClassName("text-xs")} disabled={!editable || lines.length === 0} value={selectedLine?.id ?? ""} onChange={(event) => changeLine(event.target.value)}>
-          <option value="">할당할 품목 선택</option>
-          {lines.map((line) => (
-            <option key={line.id} value={line.id}>
-              {line.itemName.trim() || "이름 없는 품목"} · 잔여 {calculateMaterialOrderLineRemainingQuantity(line)}{line.unit}
-            </option>
+      <div className="mt-3 grid gap-1.5">
+        {workOrder.materialItems.map((material) => (
+          <WorkOrderMaterialRequestRow
+            key={material.key}
+            workOrder={workOrder}
+            material={material}
+            lines={lines}
+            editable={editable}
+            onAddMaterialToOrder={onAddMaterialToOrder}
+          />
+        ))}
+      </div>
+
+      {linkedLines.length > 0 ? (
+        <div className="mt-2 grid gap-1 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs pbp-text-muted">
+          {linkedLines.map((line) => (
+            <p key={line.id} className="flex items-center justify-between gap-2">
+              <span className="truncate font-semibold pbp-text-primary">{line.itemName || "품목"}</span>
+              <span className="shrink-0">할당 {calculateMaterialOrderLineAllocatedQuantity(line)} / 잔여 {calculateMaterialOrderLineRemainingQuantity(line)} {line.unit}</span>
+            </p>
           ))}
-        </select>
-        <div className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] gap-2">
-          <input
-            type="number"
-            min={0}
-            className={fieldClassName("text-right text-xs")}
-            disabled={!editable || !selectedLine}
-            value={selectedAllocation?.allocatedQuantity ?? 0}
-            onChange={(event) => {
-              if (!selectedLine) return;
-              onChangeAllocation(selectedLine.id, workOrder.id, { allocatedQuantity: normalizeNumberInput(event.target.value) });
-            }}
-            placeholder="수량"
-          />
-          <input
-            className={fieldClassName("text-xs")}
-            disabled={!editable || !selectedLine}
-            value={selectedAllocation?.allocationNote ?? ""}
-            onChange={(event) => {
-              if (!selectedLine) return;
-              onChangeAllocation(selectedLine.id, workOrder.id, { allocationNote: event.target.value });
-            }}
-            placeholder="메모"
-          />
         </div>
-        {lines.length === 0 ? (
-          <p className="text-xs leading-5 pbp-text-muted">가운데 패널에서 품목 라인을 먼저 추가합니다.</p>
-        ) : null}
-      </div>
-
-      {selectedLine ? (
-        <p className="mt-2 text-xs leading-5 pbp-text-muted">
-          <span className="font-semibold pbp-text-primary">{selectedLine.itemName || "품목"}</span> 할당 {calculateMaterialOrderLineAllocatedQuantity(selectedLine)} / 잔여 {calculateMaterialOrderLineRemainingQuantity(selectedLine)} {selectedLine.unit}
-        </p>
       ) : null}
     </div>
   );
+}
+
+function WorkOrderMaterialRequestRow({
+  workOrder,
+  material,
+  lines,
+  editable,
+  onAddMaterialToOrder,
+}: {
+  workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
+  material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
+  lines: MaterialOrderDraftLine[];
+  editable: boolean;
+  onAddMaterialToOrder: (
+    workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
+    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+  ) => void;
+}) {
+  const existingLine = lines.find((line) => (
+    line.sourceWorkOrderId === workOrder.id
+    && line.sourceMaterialKey === material.key
+  ));
+  const isAdded = Boolean(existingLine);
+
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2">
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
+        <p className="mt-0.5 text-[11px] pbp-text-muted">
+          {formatMaterialItemTypeLabel(material.itemType)} · {formatMaterialQuantity(material.quantity, material.unit)}
+        </p>
+      </div>
+      <AdminButton
+        size="sm"
+        variant={isAdded ? "ghost" : "secondary"}
+        disabled={!editable || isAdded}
+        onClick={() => onAddMaterialToOrder(workOrder, material)}
+      >
+        {isAdded ? "추가됨" : "품목 추가"}
+      </AdminButton>
+    </div>
+  );
+}
+
+function formatMaterialItemTypeLabel(itemType: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number]["itemType"]): string {
+  return itemType === "submaterial" ? "부자재" : "원단";
+}
+
+function formatMaterialQuantity(quantity: number, unit: string): string {
+  const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
+  const normalizedUnit = unit.trim();
+  return `${normalizedQuantity}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
 }
 
 function PanelMessage({
@@ -225,10 +238,6 @@ function PanelMessage({
   );
 }
 
-function normalizeNumberInput(value: string): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
 
 function fieldClassName(extra = "") {
   return [

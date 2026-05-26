@@ -41,6 +41,7 @@ export type DbSpecSheetRow = {
   material_fabric_count?: number | null;
   material_submaterial_count?: number | null;
   material_summary?: string | null;
+  material_items?: unknown | null;
   outsourcing_count?: number | null;
   attachment_count?: number | null;
   memo_thread_count?: number | null;

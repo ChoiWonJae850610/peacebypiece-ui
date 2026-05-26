@@ -165,6 +165,14 @@ export type WorkOrderListItem = Pick<
   filesCount: number;
 };
 
+export type WorkOrderMaterialSummaryItem = {
+  key: string;
+  itemName: string;
+  itemType: "fabric" | "submaterial";
+  quantity: number;
+  unit: string;
+};
+
 export type WorkOrderSummary = Pick<
   WorkOrder,
   | "id"
@@ -201,6 +209,7 @@ export type WorkOrderSummary = Pick<
   materialFabricCount?: number;
   materialSubmaterialCount?: number;
   materialSummary?: string;
+  materialItems?: WorkOrderMaterialSummaryItem[];
   outsourcingCount: number;
   attachmentCount: number;
   memoThreadCount: number;
