@@ -37,6 +37,16 @@ export const ADMIN_WORKSPACE_WORK_ENTRY_CARD: AdminWorkspaceCard = {
 
 export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
   {
+    id: "material-orders",
+    label: "원단·부자재",
+    description: "작업지시서와 연결해 원단·부자재 발주 요청과 배분을 관리합니다.",
+    permission: ADMIN_WORKSPACE_PERMISSIONS.workorderAccess,
+    requiredMemberPermissions: [MEMBER_PERMISSION_CODE.materialOrderRequest],
+    href: "/workspace/material-orders",
+    status: "available",
+    statusLabel: "업무 화면",
+  },
+  {
     id: "partners",
     label: "협력업체 관리",
     description: "공장, 원단, 부자재, 외주처 기준정보를 관리합니다.",
@@ -58,7 +68,7 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
   },
   {
     id: "materials",
-    label: "원단·부자재",
+    label: "원단·부자재 기준",
     description: "원단과 부자재 기준 정보를 조회하고 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.standardsRead,
     requiredMemberPermissions: [MEMBER_PERMISSION_CODE.standardsRead],
@@ -75,6 +85,16 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     href: "/workspace/stats",
     status: "available",
     statusLabel: "조회",
+  },
+  {
+    id: "standards",
+    label: "기준정보",
+    description: "단위, 외주공정, 생산품 유형 기준정보를 조회하고 관리합니다.",
+    permission: ADMIN_WORKSPACE_PERMISSIONS.standardsRead,
+    requiredMemberPermissions: [MEMBER_PERMISSION_CODE.standardsRead],
+    href: "/workspace/standards",
+    status: "available",
+    statusLabel: "기준정보",
   },
   {
     id: "settings",
@@ -95,16 +115,6 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     href: "/workspace/members",
     status: "available",
     statusLabel: "관리",
-  },
-  {
-    id: "material-orders",
-    label: "원단/부자재 발주",
-    description: "작업지시서와 연결해 원단·부자재 발주 업무를 관리하는 영역입니다.",
-    permission: ADMIN_WORKSPACE_PERMISSIONS.workorderAccess,
-    requiredMemberPermissions: [MEMBER_PERMISSION_CODE.workorderRead],
-    href: null,
-    status: "planned",
-    statusLabel: "운영 예정",
   },
   {
     id: "billing",
@@ -164,10 +174,12 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
 
 export const ADMIN_HOME_PRIMARY_CARD_IDS = [
   "workorder-entry",
+  "material-orders",
   "partners",
-  "materials",
-  "files",
   "stats",
+  "standards",
+  "files",
+  "settings",
   "member-management",
 ] as const;
 

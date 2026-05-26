@@ -409,6 +409,10 @@ export const adminEn = {
         label: "Storage management",
         description: "Manage documents/designs, trash, and storage usage.",
       },
+      standards: {
+        label: "Standards",
+        description: "Review and manage unit, outsourcing process, and product type standards.",
+      },
       stats: {
         label: "Statistics",
         description: "Review work order, partner, and file usage metrics.",
@@ -425,7 +429,7 @@ export const adminEn = {
       "material-orders": {
         label: "Fabric and subsidiary orders",
         description:
-          "Reserved for the material ordering workspace connected to work orders.",
+          "Manage material order requests and allocations connected to work orders.",
       },
       billing: {
         label: "Billing and payments",

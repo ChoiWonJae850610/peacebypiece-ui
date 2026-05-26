@@ -427,6 +427,10 @@ export const adminKo = {
         label: "저장소 관리",
         description: "문서/디자인, 휴지통, 용량 사용량을 관리합니다.",
       },
+      standards: {
+        label: "기준정보",
+        description: "단위, 외주공정, 생산품 유형 기준정보를 조회하고 관리합니다.",
+      },
       stats: {
         label: "통계정보",
         description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다.",
@@ -440,9 +444,9 @@ export const adminKo = {
         description: "멤버 초대, 가입 승인, 역할 권한을 관리합니다.",
       },
       "material-orders": {
-        label: "원단/부자재 발주",
+        label: "원단·부자재",
         description:
-          "작업지시서와 연결된 원단·부자재 발주 업무 화면으로 확장할 예정입니다.",
+          "작업지시서와 연결해 원단·부자재 발주 요청과 배분을 관리합니다.",
       },
       billing: {
         label: "요금·결제",
