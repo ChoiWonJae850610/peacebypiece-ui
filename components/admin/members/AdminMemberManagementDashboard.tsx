@@ -25,7 +25,6 @@ import {
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
 import {
-  MEMBER_BASE_READ_PERMISSION_CODES,
   countVisibleSimplePermissionControls,
   normalizeSimplePermissionCodes,
   toggleSimplePermissionControl,
@@ -34,14 +33,6 @@ import {
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
-import {
-  ADMIN_FIELD_CONTAINER_CLASS,
-  ADMIN_INPUT_CLASS,
-  ADMIN_SURFACE_PANEL_CLASS,
-  ADMIN_TABLE_HEADER_CLASS,
-  ADMIN_TABLE_ROW_CLASS,
-} from "@/components/admin/common/adminSemanticClassNames";
-import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminSection } from "@/components/admin/common/AdminSection";
 import {
   AdminModal,
@@ -49,6 +40,7 @@ import {
 } from "@/components/admin/layout/AdminModal";
 import AdminMemberPermissionDetailBody from "@/components/admin/members/AdminMemberPermissionDetailBody";
 import AdminMemberInviteBuilderPanel from "@/components/admin/members/AdminMemberInviteBuilderPanel";
+import AdminMemberDirectoryControls from "@/components/admin/members/AdminMemberDirectoryControls";
 import {
   buildMemberInvitationTableColumns,
   type PendingMemberInvitationRow,
@@ -1095,73 +1087,16 @@ export default function AdminMemberManagementDashboard() {
               ).replace("{count}", String(memberDirectoryRows.length))}
               contentClassName="flex min-h-0 flex-1 flex-col pt-4"
             >
-              <div className="mb-4 grid shrink-0 gap-3 rounded-[24px] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-3 lg:grid-cols-[minmax(0,1fr)_180px_190px]">
-                <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-                  <span className="text-xs font-semibold pbp-text-muted">
-                    {t("memberManagement.memberDirectory.filters.search", "검색")}
-                  </span>
-                  <input
-                    value={memberSearchQuery}
-                    onChange={(event) => setMemberSearchQuery(event.target.value)}
-                    className={ADMIN_INPUT_CLASS}
-                    placeholder={t(
-                      "memberManagement.memberDirectory.filters.searchPlaceholder",
-                      "이름, 이메일, 연락처 검색",
-                    )}
-                  />
-                </label>
-                <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-                  <span className="text-xs font-semibold pbp-text-muted">
-                    {t("memberManagement.memberDirectory.filters.status", "상태")}
-                  </span>
-                  <select
-                    value={memberStatusFilter}
-                    onChange={(event) =>
-                      setMemberStatusFilter(
-                        event.target.value as MemberDirectoryStatusFilter,
-                      )
-                    }
-                    className={ADMIN_INPUT_CLASS}
-                  >
-                    {[
-                      "all",
-                      "pending",
-                      "approved",
-                      "suspended",
-                      "withdrawalRequested",
-                    ].map((status) => (
-                      <option key={status} value={status}>
-                        {t(
-                          `memberManagement.memberDirectory.statusFilters.${status}`,
-                          status,
-                        )}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-                  <span className="text-xs font-semibold pbp-text-muted">
-                    {t("memberManagement.memberDirectory.filters.role", "권한")}
-                  </span>
-                  <select
-                    value={memberRoleFilter}
-                    onChange={(event) => setMemberRoleFilter(event.target.value)}
-                    className={ADMIN_INPUT_CLASS}
-                  >
-                    <option value="all">
-                      {t("memberManagement.memberDirectory.roleFilters.all", "전체")}
-                    </option>
-                    <option value="none">
-                      {t("memberManagement.memberDirectory.none", "없음")}
-                    </option>
-                    {inviteRoleOptions.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {t(`memberManagement.roles.${role.id}.label`, role.id)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+              <AdminMemberDirectoryControls
+                t={t}
+                searchQuery={memberSearchQuery}
+                statusFilter={memberStatusFilter}
+                roleFilter={memberRoleFilter}
+                roleOptions={inviteRoleOptions}
+                onSearchQueryChange={setMemberSearchQuery}
+                onStatusFilterChange={setMemberStatusFilter}
+                onRoleFilterChange={setMemberRoleFilter}
+              />
 
               {memberListLoadError ? (
                 <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
