@@ -148,6 +148,20 @@ export function buildMemberManagementTabPreviews({
   ] as const;
 }
 
+export function findMemberManagementTabPreview(
+  tabs: readonly MemberManagementTabPreview[],
+  activeTab: MemberManagementTab,
+): MemberManagementTabPreview | null {
+  return tabs.find((tab) => tab.id === activeTab) ?? null;
+}
+
+export function isMemberDirectoryLoading(
+  memberListLoadStatus: MemberListLoadStatus,
+  joinRequestLoadStatus: MemberJoinRequestLoadStatus,
+): boolean {
+  return memberListLoadStatus === "loading" || joinRequestLoadStatus === "loading";
+}
+
 export function filterMemberDirectoryRows<Row extends MemberDirectoryFilterableRow>(
   rows: readonly Row[],
   filters: MemberDirectoryFilterState,

@@ -15,6 +15,8 @@ import {
   buildMemberManagementSummaryViewModel,
   buildMemberManagementTabPreviews,
   filterMemberDirectoryRows,
+  findMemberManagementTabPreview,
+  isMemberDirectoryLoading,
   type MemberManagementTab,
 } from "@/lib/admin/members/memberManagementViewModel";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
@@ -91,15 +93,6 @@ type MemberUpdateResponse = {
   member?: AdminCompanyMemberRecord;
   error?: string;
 };
-
-function getEmailMatchTone(
-  status: "matched" | "mismatched" | "unknown",
-): AdminStatusBadgeTone {
-  if (status === "matched") return "success";
-  if (status === "mismatched") return "warning";
-  return "neutral";
-}
-
 
 type MemberInvitationListResponse = {
   ok?: boolean;
@@ -228,15 +221,6 @@ function getMemberDetailErrorCode(errorCode: string): string {
   return errorCode;
 }
 
-function getLoadStatusLabelKey(
-  status: MemberJoinRequestLoadStatus | MemberListLoadStatus,
-): string {
-  if (status === "loaded") return "dbConnected";
-  if (status === "loading") return "dbLoading";
-  if (status === "failed") return "dbFailed";
-  return "dbPending";
-}
-
 function getAbsoluteInviteUrl(inviteUrl: string): string {
   if (typeof window === "undefined") return inviteUrl;
   return new URL(inviteUrl, window.location.origin).toString();
@@ -303,7 +287,9 @@ export default function AdminMemberManagementDashboard() {
   const [reviewingJoinRequestId, setReviewingJoinRequestId] = useState<
     string | null
   >(null);
-  const [joinRequestRoleDrafts, setJoinRequestRoleDrafts] = useState<Record<string, MemberPermissionRoleTemplateCode>>({});
+  const [joinRequestRoleDrafts, setJoinRequestRoleDrafts] = useState<
+    Record<string, MemberPermissionRoleTemplateCode>
+  >({});
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [memberDetailDraft, setMemberDetailDraft] =
     useState<MemberDetailDraft | null>(null);
@@ -444,6 +430,14 @@ export default function AdminMemberManagementDashboard() {
         joinRequestCount: joinRequests.length,
       }),
     [invitations.length, joinRequests.length, members.length, t],
+  );
+  const activeTabPreview = useMemo(
+    () => findMemberManagementTabPreview(tabPreviews, activeTab),
+    [activeTab, tabPreviews],
+  );
+  const memberDirectoryLoading = isMemberDirectoryLoading(
+    memberListLoadStatus,
+    joinRequestLoadStatus,
   );
 
   async function loadMemberInvitations() {
@@ -919,15 +913,12 @@ export default function AdminMemberManagementDashboard() {
       <AdminSection
         eyebrow={t("memberManagement.eyebrow", "멤버 권한")}
         title={t(
-          tabPreviews.find((tab) => tab.id === activeTab)?.labelKey ??
-            "memberManagement.title",
-          tabPreviews.find((tab) => tab.id === activeTab)?.fallbackLabel ??
-            "멤버 관리",
+          activeTabPreview?.labelKey ?? "memberManagement.title",
+          activeTabPreview?.fallbackLabel ?? "멤버 관리",
         )}
         description={t(
-          tabPreviews.find((tab) => tab.id === activeTab)?.descriptionKey ??
-            "memberManagement.description",
-          tabPreviews.find((tab) => tab.id === activeTab)?.fallbackDescription ??
+          activeTabPreview?.descriptionKey ?? "memberManagement.description",
+          activeTabPreview?.fallbackDescription ??
             "초대, 승인, 권한, 재직 상태를 한 화면에서 관리합니다.",
         )}
         actions={
@@ -971,10 +962,7 @@ export default function AdminMemberManagementDashboard() {
               inviteRoleOptions={inviteRoleOptions}
               memberListLoadError={memberListLoadError}
               joinRequestLoadError={joinRequestLoadError}
-              isLoading={
-                memberListLoadStatus === "loading" ||
-                joinRequestLoadStatus === "loading"
-              }
+              isLoading={memberDirectoryLoading}
               onSearchQueryChange={setMemberSearchQuery}
               onStatusFilterChange={setMemberStatusFilter}
               onRoleFilterChange={setMemberRoleFilter}
