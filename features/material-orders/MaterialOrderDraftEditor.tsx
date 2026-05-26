@@ -7,6 +7,7 @@ import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDe
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
 import {
   calculateMaterialOrderDraftTotals,
+  type MaterialOrderDraftAllocation,
   type MaterialOrderDraftLine,
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
@@ -137,6 +138,11 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
       unit: line.unit,
       orderQuantity: line.orderQuantity,
       unitPrice: line.unitPrice,
+      allocations: line.allocations.map((allocation) => ({
+        workOrderId: allocation.workOrderId,
+        allocatedQuantity: allocation.allocatedQuantity,
+        allocationNote: allocation.allocationNote ?? "",
+      })),
     })));
   }, [selectedOrder]);
 
@@ -178,6 +184,11 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           unit: line.unit,
           orderQuantity: line.orderQuantity,
           unitPrice: line.unitPrice,
+          allocations: line.allocations.map((allocation) => ({
+            workOrderId: allocation.workOrderId,
+            allocatedQuantity: allocation.allocatedQuantity,
+            allocationNote: allocation.allocationNote,
+          })),
         })),
       });
 
@@ -201,6 +212,37 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
 
   function removeLine(lineId: string) {
     setLines((current) => current.filter((line) => line.id !== lineId));
+  }
+
+  function updateLineAllocation(lineId: string, workOrderId: string, patch: Partial<MaterialOrderDraftAllocation>) {
+    setLines((current) => current.map((line) => {
+      if (line.id !== lineId) return line;
+
+      const existingAllocation = line.allocations.find((allocation) => allocation.workOrderId === workOrderId);
+      const nextAllocations = existingAllocation
+        ? line.allocations.map((allocation) => (
+            allocation.workOrderId === workOrderId ? { ...allocation, ...patch } : allocation
+          ))
+        : [
+            ...line.allocations,
+            {
+              workOrderId,
+              allocatedQuantity: 0,
+              allocationNote: "",
+              ...patch,
+            },
+          ];
+
+      return { ...line, allocations: nextAllocations };
+    }));
+  }
+
+  function removeLineAllocation(lineId: string, workOrderId: string) {
+    setLines((current) => current.map((line) => (
+      line.id === lineId
+        ? { ...line, allocations: line.allocations.filter((allocation) => allocation.workOrderId !== workOrderId) }
+        : line
+    )));
   }
 
   return (
@@ -245,8 +287,12 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
         <MaterialOrderAllocationPanel
           guideItems={guideItems}
           candidates={workOrderCandidates}
+          lines={lines}
+          editable={selectedOrder?.status === "draft"}
           loading={workOrdersLoading}
           errorMessage={workOrdersError}
+          onChangeAllocation={updateLineAllocation}
+          onRemoveAllocation={removeLineAllocation}
           onRetry={() => void refreshWorkOrderCandidates()}
         />
       </div>

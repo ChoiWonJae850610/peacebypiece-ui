@@ -2,7 +2,9 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
+  calculateMaterialOrderLineAllocatedQuantity,
   calculateMaterialOrderLineAmount,
+  calculateMaterialOrderLineRemainingQuantity,
   formatMaterialOrderAmount,
   type MaterialOrderDraftLine,
   type MaterialOrderDraftTotals,
@@ -184,9 +186,10 @@ export default function MaterialOrderDetailPanel({
               </table>
             </div>
 
-            <div className="mt-2 grid shrink-0 gap-2 rounded-3xl bg-[var(--pbp-surface-soft)] p-2.5 text-sm sm:grid-cols-3">
+            <div className="mt-2 grid shrink-0 gap-2 rounded-3xl bg-[var(--pbp-surface-soft)] p-2.5 text-sm sm:grid-cols-4">
               <SummaryValue label="품목 수" value={`${totals.lineCount}개`} />
-              <SummaryValue label="주문수량 합계" value={String(totals.totalOrderQuantity)} />
+              <SummaryValue label="주문수량" value={String(totals.totalOrderQuantity)} />
+              <SummaryValue label="배분/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
               <SummaryValue label="금액 합계" value={formatMaterialOrderAmount(totals.totalAmount)} />
             </div>
 
@@ -223,6 +226,8 @@ function MaterialOrderLineRow({
   onRemoveLine: (lineId: string) => void;
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
+  const allocatedQuantity = calculateMaterialOrderLineAllocatedQuantity(line);
+  const remainingQuantity = calculateMaterialOrderLineRemainingQuantity(line);
 
   return (
     <tr className="bg-[var(--pbp-surface-base)] align-middle">
@@ -265,7 +270,9 @@ function MaterialOrderLineRow({
         />
       </td>
       <td className="px-2 py-2 text-right font-semibold pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
-      <td className="px-3 py-2 text-center text-xs pbp-text-muted">미배분</td>
+      <td className="px-3 py-2 text-center text-xs pbp-text-muted">
+        <span className="font-semibold pbp-text-primary">{allocatedQuantity}</span> / {remainingQuantity}
+      </td>
       <td className="px-3 py-2 text-right">
         <AdminButton size="sm" variant="ghost" disabled={!editable} onClick={() => onRemoveLine(line.id)}>
           삭제

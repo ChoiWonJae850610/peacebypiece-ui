@@ -12,5 +12,6 @@ export function createMaterialOrderDraftLine(index: number): MaterialOrderDraftL
     unit: "마",
     orderQuantity: 0,
     unitPrice: 0,
+    allocations: [],
   };
 }
