@@ -13,8 +13,8 @@ export default function MaterialOrderWorkspacePage() {
           <h1 className="mt-1 text-lg font-semibold tracking-tight pbp-text-primary">원단·부자재 발주</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <AdminStatusBadge tone="warning">Local draft</AdminStatusBadge>
-          <AdminStatusBadge tone="neutral">DB 저장 전</AdminStatusBadge>
+          <AdminStatusBadge tone="info">실제 발주서 조회</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">작업지시서 실제 목록</AdminStatusBadge>
         </div>
       </header>
 

@@ -1,13 +1,15 @@
-Version : 0.17.4
-Summary : 원단·부자재 3패널 스크롤 영역 정리
-Description : 원단·부자재 발주 화면에서 좌측 발주서 목록과 우측 작업지시서 연결/배분 목록만 패널 내부에서 스크롤되도록 정리하고, 가운데 선택 발주서 상세 패널은 스크롤 없이 화면 높이에 맞는 고정 작업 영역으로 압축했습니다. 가운데 패널의 메모 입력, 품목 테이블, 합계/버튼 영역을 compact하게 조정해 하단이 잘리지 않도록 보정했습니다. DB schema, API 저장 로직, package 파일은 변경하지 않았습니다.
+Version : 0.17.5
+Summary : 원단·부자재 실제 발주서 목록 연결
+Description : 원단·부자재 화면의 왼쪽 발주서 목록을 mock 데이터에서 실제 /api/material-orders 조회 기반으로 전환하고 새 발주 버튼으로 draft 발주서를 DB에 생성하도록 연결했습니다. 우측 작업지시서 연결 후보도 /api/workorders 실제 조회 결과를 표시하도록 변경했습니다. 기존 예시 발주서/예시 작업지시서/예시 공급처 목록 의존을 제거하고, 데이터가 없을 때는 빈 상태와 재조회 UI를 표시하도록 정리했습니다. DB schema, package 파일은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
+- features/material-orders/MaterialOrderWorkspacePage.tsx
 - features/material-orders/MaterialOrderDraftEditor.tsx
 - features/material-orders/MaterialOrderListPanel.tsx
 - features/material-orders/MaterialOrderDetailPanel.tsx
 - features/material-orders/MaterialOrderAllocationPanel.tsx
+- lib/material-orders/materialOrderDraftWorkspace.ts
 추가 파일 목록 :
-- 없음
+- lib/material-orders/materialOrderWorkspaceClient.ts
 삭제 파일 목록 :
 - 없음
