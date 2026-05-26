@@ -1,11 +1,10 @@
-Version : 0.16.89
-Summary : 멤버관리 리팩토링 안정화
-Description : 멤버관리 viewModel에 활성 탭 조회와 목록 로딩 상태 판단 helper를 추가하고, 대시보드의 중복 탭 조회 및 인라인 로딩 조건을 정리했습니다. 사용하지 않는 내부 helper를 제거하고 긴 상태 선언을 정리했습니다. 권한/초대/승인/저장 정책, DB schema, package 파일은 변경하지 않았습니다.
+Version : 0.16.90
+Summary : 원단·부자재 발주 기능 설계 문서 추가
+Description : 원단·부자재 발주 업무의 기능 정의, 화면 IA, 상태 흐름, 권한 흐름, DB 테이블 초안, 작업지시서 연결 방식, 자재 전달 요청서/PDF 확장 방향을 현재 기준 문서로 추가했습니다. docs README의 기준 버전과 문서 링크를 갱신하고 APP_VERSION을 0.16.90으로 올렸습니다. 실제 DB schema, API, 화면 기능은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/members/AdminMemberManagementDashboard.tsx
-- lib/admin/members/memberManagementViewModel.ts
+- docs/README.md
 추가 파일 목록 :
-- 없음
+- docs/현재기준/원단-부자재-발주-설계.md
 삭제 파일 목록 :
 - 없음
