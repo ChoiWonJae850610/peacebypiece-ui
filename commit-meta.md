@@ -1,10 +1,10 @@
-Version : 0.17.32
-Summary : 작업지시서 비용 요약 빌드 오류와 런타임 오류 보정
-Description : 비용 요약 공정별 금액 표시에서 locale 타입을 Locale로 정리하고, 비용 요약 섹션 props 생성 시 orderItems를 누락 없이 전달하도록 보정했습니다. APP_VERSION을 0.17.32로 갱신했습니다.
+Version : 0.17.33
+Summary : 발주 요청 즉시 자재 발주 대기 전환
+Description : 발주 요청 시 내부 요약/PDF 미리보기 모달을 열지 않고 공정 정보 검증 후 바로 자재 발주 대기 상태로 전환하도록 정리했습니다. 발주 요청 단계의 자동 발주서 PDF 생성도 제거해 외부 제출용 PDF 생성 흐름과 분리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/workorder/detail/WorkOrderCostSummarySection.tsx
-- lib/workorder/presentation/workOrderDetailSectionProps.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
 추가 파일 목록 :
-- commit-meta.md
+- 없음
 삭제 파일 목록 :
+- 없음

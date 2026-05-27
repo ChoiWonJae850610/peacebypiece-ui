@@ -33,7 +33,7 @@ import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { isImmediateDbField } from "@/lib/workorder/storagePolicy";
 import { getWorkOrderImmediatePatchServiceCode } from "@/lib/workorder/serviceCodeForWorkOrderPatch";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
-import { shouldCreateWorkOrderPdfAfterOrderRequest } from "@/lib/workorder/materialOrderReadiness";
+import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { canReinspectInWorkflow, isWorkflowState, WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import { WORKORDER_SERVICE_CODE, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
@@ -68,7 +68,7 @@ type PendingWorkflowValidation = {
   action: WorkflowAction;
   issues: WorkflowValidationIssue[];
   toastMessageOverride?: string | null;
-  nextStep: "apply" | "orderRequestConfirm";
+  nextStep: "apply" | "requestOrder";
 };
 
 type FactoryPartnerApiItem = {
@@ -411,6 +411,95 @@ export function useWorkOrderWorkflowActions({
     [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, workflowStateLabels],
   );
 
+  const applyFactoryOrderRequest = useCallback(
+    async (
+      workOrder: WorkOrder,
+      action: WorkflowAction,
+      payload?: { factoryName?: string; quantity?: number; requestNote?: string | null },
+    ) => {
+      const normalizedWorkOrder = normalizeWorkOrderForWorkflowGate(workOrder);
+      const submissionSnapshot = getOrderSubmissionSnapshot(normalizedWorkOrder);
+      const normalizedFactoryName = (payload?.factoryName ?? submissionSnapshot.factoryName).trim();
+      const normalizedQuantity = Math.max(0, Number(payload?.quantity ?? submissionSnapshot.quantity) || 0);
+      const normalizedRequestNote = payload?.requestNote?.trim() || null;
+      const validationResult = getFactoryOrderWorkflowGateResult({
+        workOrder: {
+          ...normalizedWorkOrder,
+          vendor: normalizedFactoryName,
+          quantity: normalizedQuantity,
+        },
+        currentUser,
+        text: actionFlowText,
+      });
+
+      if (validationResult.validationMessage) {
+        setToastMessage(validationResult.validationMessage);
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
+        return;
+      }
+
+      const requestedAt = new Date().toISOString();
+      const factoryId = await resolveActiveFactoryPartnerIdByName(normalizedFactoryName);
+      if (!factoryId) {
+        setToastMessage(actionFlowText.factoryOrderFactoryInvalidToast);
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
+        return;
+      }
+
+      const result = buildFactoryOrderRequestResult({
+        workOrder: normalizedWorkOrder,
+        actorName: currentUser.name,
+        input: {
+          factoryId,
+          factoryName: normalizedFactoryName,
+          quantity: normalizedQuantity,
+          requestedAt,
+          requestedBy: currentUser.name,
+          requestedById: currentUser.id,
+          requestNote: normalizedRequestNote,
+        } satisfies FactoryOrderRequest,
+        text: actionFlowText,
+        historyText,
+      });
+
+      if (!result) {
+        setToastMessage(actionFlowText.factoryOrderAlreadyRequestedToast);
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
+        return;
+      }
+
+      const nextWorkOrders = stabilizeWorkOrders(
+        workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)),
+      );
+      markWorkflowPersistStarted(setSaveStatus);
+      try {
+        const nextPersistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
+          workOrder: result.nextWorkOrder,
+          historyLogs: result.historyLogs,
+          auditActor: currentUser,
+          serviceCode: getServiceCodeForWorkflowAction(action),
+        });
+        workOrdersRef.current = nextWorkOrders;
+        setWorkOrders(nextWorkOrders);
+        applyPersistedWorkflowWorkOrder(workOrder.id, nextPersistedWorkOrder);
+        applyWorkflowActionSideEffects(result, {
+          setHistoryLogs,
+          setToastMessage,
+        });
+      } catch (error) {
+        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
+        throw error;
+      } finally {
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
+      }
+    },
+    [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.id, currentUser.name, historyText, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setSaveStatus, setToastMessage, setWorkOrders],
+  );
+
   const handleWorkflowAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction) => {
       const workflowDraft = syncDraftWorkOrderBeforeWorkflowAction(workOrder);
@@ -451,13 +540,12 @@ export function useWorkOrderWorkflowActions({
           action,
           issues: validationIssues,
           toastMessageOverride: reviewWarningMessage,
-          nextStep: "orderRequestConfirm",
+          nextStep: "requestOrder",
         })) {
           return;
         }
 
-        setPendingWorkflowAction(action);
-        setOrderRequestConfirmOpen(true);
+        await applyFactoryOrderRequest(orderGateResult.workOrder, action);
         return;
       }
 
@@ -500,9 +588,8 @@ export function useWorkOrderWorkflowActions({
 
     setPendingWorkflowValidation(null);
 
-    if (pending.nextStep === "orderRequestConfirm") {
-      setPendingWorkflowAction(pending.action);
-      setOrderRequestConfirmOpen(true);
+    if (pending.nextStep === "requestOrder") {
+      await applyFactoryOrderRequest(pending.workOrder, pending.action);
       return;
     }
 
@@ -512,106 +599,9 @@ export function useWorkOrderWorkflowActions({
   const handleConfirmOrderRequest = useCallback(
     async (workOrder: WorkOrder, payload: { factoryName: string; quantity: number; requestNote?: string | null }) => {
       if (!pendingWorkflowAction) return;
-
-      const normalizedFactoryName = payload.factoryName.trim();
-      const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
-      const normalizedRequestNote = payload.requestNote?.trim() || null;
-      const normalizedWorkOrder = normalizeWorkOrderForWorkflowGate(workOrder);
-      const validationResult = getFactoryOrderWorkflowGateResult({
-        workOrder: {
-          ...normalizedWorkOrder,
-          vendor: normalizedFactoryName,
-          quantity: normalizedQuantity,
-        },
-        currentUser,
-        text: actionFlowText,
-      });
-
-      if (validationResult.validationMessage) {
-        setToastMessage(validationResult.validationMessage);
-        setPendingWorkflowAction(null);
-        setOrderRequestConfirmOpen(false);
-        return;
-      }
-
-      const requestedAt = new Date().toISOString();
-      const factoryId = await resolveActiveFactoryPartnerIdByName(normalizedFactoryName);
-      if (!factoryId) {
-        setToastMessage(actionFlowText.factoryOrderFactoryInvalidToast);
-        setPendingWorkflowAction(null);
-        setOrderRequestConfirmOpen(false);
-        return;
-      }
-      const result = buildFactoryOrderRequestResult({
-        workOrder: normalizedWorkOrder,
-        actorName: currentUser.name,
-        input: {
-          factoryId,
-          factoryName: normalizedFactoryName,
-          quantity: normalizedQuantity,
-          requestedAt,
-          requestedBy: currentUser.name,
-          requestedById: currentUser.id,
-          requestNote: normalizedRequestNote,
-        } satisfies FactoryOrderRequest,
-        text: actionFlowText,
-        historyText,
-      });
-      if (!result) {
-        setToastMessage(actionFlowText.factoryOrderAlreadyRequestedToast);
-        setPendingWorkflowAction(null);
-        setOrderRequestConfirmOpen(false);
-        return;
-      }
-
-      const nextWorkOrders = stabilizeWorkOrders(
-        workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)),
-      );
-      markWorkflowPersistStarted(setSaveStatus);
-      try {
-        const nextPersistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
-          workOrder: result.nextWorkOrder,
-          historyLogs: result.historyLogs,
-          auditActor: currentUser,
-          serviceCode: getServiceCodeForWorkflowAction(pendingWorkflowAction),
-        });
-        workOrdersRef.current = nextWorkOrders;
-        setWorkOrders(nextWorkOrders);
-        const persistedWorkOrders = applyPersistedWorkflowWorkOrder(workOrder.id, nextPersistedWorkOrder);
-        applyWorkflowActionSideEffects(result, {
-          setHistoryLogs,
-          setToastMessage,
-        });
-
-        if (shouldCreateWorkOrderPdfAfterOrderRequest(nextPersistedWorkOrder)) {
-          try {
-            const generatedAttachment = await createGeneratedOrderRequestPdfAttachment({
-              workOrderId: workOrder.id,
-              requestNote: normalizedRequestNote,
-            });
-            if (generatedAttachment) {
-              const withGeneratedAttachment = stabilizeWorkOrders(
-                persistedWorkOrders.map((item) => (item.id === workOrder.id ? appendGeneratedAttachment(item, generatedAttachment) : item)),
-              );
-              workOrdersRef.current = withGeneratedAttachment;
-              setWorkOrders(withGeneratedAttachment);
-              setPersistedWorkOrders(withGeneratedAttachment);
-              setToastMessage(actionFlowText.factoryOrderPdfSavedToast);
-            }
-          } catch (pdfError) {
-            console.warn("[ORDER_REQUEST_PDF_CREATE_FAILED]", pdfError);
-            setToastMessage(getOrderRequestPdfFailureToast(actionFlowText, pdfError));
-          }
-        }
-      } catch (error) {
-        markWorkflowPersistFailed(setSaveStatus, setToastMessage, error);
-        throw error;
-      } finally {
-        setPendingWorkflowAction(null);
-        setOrderRequestConfirmOpen(false);
-      }
+      await applyFactoryOrderRequest(workOrder, pendingWorkflowAction, payload);
     },
-    [actionFlowText, applyPersistedWorkflowWorkOrder, currentUser, currentUser.id, currentUser.name, historyText, pendingWorkflowAction, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
+    [applyFactoryOrderRequest, pendingWorkflowAction],
   );
 
   const handleCloseOrderRequestConfirm = useCallback(() => {
