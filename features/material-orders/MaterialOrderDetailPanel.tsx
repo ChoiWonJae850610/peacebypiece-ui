@@ -82,7 +82,7 @@ export default function MaterialOrderDetailPanel({
   return (
     <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-2.5">
       {selectedOrder ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             changing={statusChanging}
@@ -90,7 +90,7 @@ export default function MaterialOrderDetailPanel({
             onChangeStatus={onChangeStatus}
           />
 
-          <div className="grid shrink-0 gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-2 shadow-sm xl:grid-cols-2">
+          <div className="grid shrink-0 gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-3 shadow-sm xl:grid-cols-2">
             <FieldLabel label="구분">
               <select
                 value={displayMaterialType}
@@ -142,7 +142,7 @@ export default function MaterialOrderDetailPanel({
             </FieldLabel>
           </div>
 
-          <div className="flex min-h-[10rem] flex-1 overflow-hidden rounded-xl border border-stone-200 bg-white p-1 shadow-sm">
+          <div className="flex min-h-[10rem] flex-1 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-sm">
             <div className="h-full min-h-0 w-full max-w-full overflow-auto rounded-lg border border-stone-200 bg-white">
               <table className="w-full min-w-[540px] table-fixed text-left">
                 <colgroup>
@@ -196,8 +196,8 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="shrink-0 rounded-lg border border-stone-200 bg-stone-50/80 px-3 py-2 text-[11px]">
-            <div className="grid grid-cols-3 items-center gap-3">
+          <div className="shrink-0 rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-2.5 text-[11px]">
+            <div className="grid grid-cols-3 items-center gap-4">
               <SummaryValue label="품목" value={`${totals.lineCount}종`} />
               <SummaryValue
                 label="주문"
@@ -208,7 +208,7 @@ export default function MaterialOrderDetailPanel({
                 value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`}
               />
             </div>
-            <div className="mt-1 flex items-center justify-end">
+            <div className="mt-1.5 flex items-center justify-end">
               <SummaryValue
                 label="합계"
                 value={formatMaterialOrderAmount(totals.totalAmount)}

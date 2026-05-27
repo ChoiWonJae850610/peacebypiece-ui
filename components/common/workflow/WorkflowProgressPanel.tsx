@@ -41,7 +41,7 @@ export function WorkflowProgressPanel({
 
   return (
     <div
-      className={`pbp-workflow-panel rounded-[24px] border shadow-sm ${isCompact ? "px-3 py-2" : "p-4"} ${className}`}
+      className={`pbp-workflow-panel rounded-[24px] border shadow-sm ${isCompact ? "px-4 py-3" : "p-4"} ${className}`}
     >
       <div
         className={`flex items-start justify-between ${isCompact ? "gap-2" : "gap-4"}`}
@@ -80,9 +80,9 @@ export function WorkflowProgressPanel({
         ) : null}
       </div>
 
-      <div className={isCompact ? "mt-2" : "mt-4"}>
+      <div className={isCompact ? "mt-3" : "mt-4"}>
         <div
-          className={`grid ${isCompact ? "gap-1" : "gap-2"}`}
+          className={`grid ${isCompact ? "gap-1.5" : "gap-2"}`}
           style={{
             gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
           }}
@@ -95,7 +95,7 @@ export function WorkflowProgressPanel({
             return (
               <div
                 key={step.key}
-                className={`relative flex flex-col items-center text-center ${isCompact ? "gap-1" : "gap-2"}`}
+                className={`relative flex flex-col items-center text-center ${isCompact ? "gap-1.5" : "gap-2"}`}
               >
                 {index < steps.length - 1 ? (
                   <div
@@ -127,7 +127,7 @@ export function WorkflowProgressPanel({
 
       {footer ? (
         <div
-          className={`${isCompact ? "mt-2 text-[11px]" : "mt-4 text-xs"} flex items-center gap-2 text-[var(--pbp-text-muted)]`}
+          className={`${isCompact ? "mt-2.5 text-[11px]" : "mt-4 text-xs"} flex items-center gap-2 text-[var(--pbp-text-muted)]`}
         >
           {footer}
         </div>
