@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
+import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
@@ -16,11 +17,13 @@ function DetailSectionGroup({
   eyebrow,
   title,
   description,
+  summary,
   children,
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
+  summary?: string;
   children: ReactNode;
 }) {
   return (
@@ -31,6 +34,7 @@ function DetailSectionGroup({
           <h3 className={eyebrow ? "mt-1 text-sm font-semibold leading-5 text-stone-900" : "text-sm font-semibold leading-5 text-stone-900"}>{title}</h3>
           {description ? <p className="mt-0.5 max-w-[44rem] text-[11px] leading-4 text-stone-500">{description}</p> : null}
         </div>
+        {summary ? <div className="shrink-0 pb-0.5 text-right text-[11px] font-medium leading-4 text-stone-500 md:text-xs">{summary}</div> : null}
       </div>
       {children}
     </section>
@@ -38,8 +42,16 @@ function DetailSectionGroup({
 }
 
 export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderDetailDesktopSectionsProps) {
-  const { i18n } = useI18n();
+  const { i18n, locale } = useI18n();
   const groups = i18n.workorder.ui.detailGroups;
+  const materialCopy = i18n.workorder.ui.sections.material;
+  const common = i18n.workorder.ui.common;
+  const materials = viewModel.productionCompositionProps.materials;
+  const materialSummary = materials.length > 0
+    ? materialCopy.summaryFormat
+      .replace("{name}", translateWorkOrderDisplayText(materials[0].name, locale))
+      .replace("{andMore}", materials.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(materials.length - 1))}` : "")
+    : materialCopy.empty;
 
   return (
     <>
@@ -63,7 +75,7 @@ export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderD
       </DetailSectionGroup>
 
       {viewModel.showProductionComposition ? (
-        <DetailSectionGroup eyebrow={groups.production.eyebrow} title={groups.production.title} description={groups.production.description}>
+        <DetailSectionGroup eyebrow={groups.production.eyebrow} title={groups.production.title} description={groups.production.description} summary={materialSummary}>
           <ProductionCompositionSection {...viewModel.productionCompositionProps} />
         </DetailSectionGroup>
       ) : null}
