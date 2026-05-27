@@ -57,14 +57,14 @@ export default function MaterialSection({
         <div className="text-sm font-semibold leading-5 text-stone-900">{copy.title}</div>
         <div className="mt-0.5 block min-w-0 max-w-full break-words text-[11px] leading-4 text-stone-500 sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap md:text-xs">{summary}</div>
       </div>
-      <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:max-h-[360px] xl:overflow-auto">
+      <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:max-h-[320px] xl:overflow-auto">
           <table className="w-full min-w-[560px] table-fixed text-left xl:min-w-0">
             <colgroup>
-              <col className="w-[16%]" />
-              <col className="w-[34%]" />
+              <col className="w-[14%]" />
+              <col className="w-[44%]" />
+              <col className="w-[15%]" />
               <col className="w-[18%]" />
-              <col className="w-[22%]" />
-              <col className="w-[10%]" />
+              <col className="w-[9%]" />
             </colgroup>
             <thead className="text-stone-500">
               <tr className="border-b border-stone-200">

@@ -46,11 +46,9 @@ export function formatCurrencySummaryParts(total: number, i18n: ReturnType<typeo
 }
 
 export function formatProductionCompositionSummary(materials: readonly Material[], outsourcing: readonly Outsourcing[], i18n: ReturnType<typeof getI18n> = getI18n()) {
+  void outsourcing;
   const copy = i18n.workorder.ui.sections.productionComposition;
-  return [
-    copy.summaryMaterialCount.replace("{count}", String(materials.length)),
-    copy.summaryOutsourcingCount.replace("{count}", String(outsourcing.length)),
-  ].join(" · ");
+  return copy.summaryMaterialCount.replace("{count}", String(materials.length));
 }
 
 

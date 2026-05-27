@@ -77,14 +77,14 @@ export function PbpSingleDatePicker({
   const updateFixedPopoverPosition = () => {
     if (popoverMode !== "fixed" || !buttonRef.current || typeof window === "undefined") return;
     const rect = buttonRef.current.getBoundingClientRect();
-    const popoverWidth = Math.min(300, Math.max(248, window.innerWidth - 24));
+    const popoverWidth = Math.min(248, Math.max(228, window.innerWidth - 24));
     const preferredLeft = popoverAlign === "center"
       ? rect.left + rect.width / 2 - popoverWidth / 2
       : popoverAlign === "end"
         ? rect.right - popoverWidth
         : rect.left;
     const left = Math.min(Math.max(12, preferredLeft), Math.max(12, window.innerWidth - popoverWidth - 12));
-    const top = Math.min(rect.bottom + 8, Math.max(12, window.innerHeight - 340));
+    const top = Math.min(rect.bottom + 8, Math.max(12, window.innerHeight - 320));
     setFixedPopoverStyle({ left, top, width: popoverWidth });
   };
 
@@ -135,7 +135,7 @@ export function PbpSingleDatePicker({
   const popoverContent: ReactNode = isCalendarOpen ? (
     <div
       ref={popoverRef}
-      className={`${popoverMode === "fixed" ? "fixed" : "absolute left-0 top-[calc(100%+8px)]"} z-40 w-[min(320px,calc(100vw-3rem))] rounded-[20px] border border-stone-100 bg-white p-2.5 shadow-2xl`}
+      className={`${popoverMode === "fixed" ? "fixed" : "absolute left-0 top-[calc(100%+8px)]"} z-40 w-[min(248px,calc(100vw-3rem))] rounded-[18px] border border-stone-100 bg-white p-2 shadow-2xl`}
       style={popoverMode === "fixed" ? fixedPopoverStyle ?? undefined : undefined}
     >
       <DayPicker
@@ -148,16 +148,19 @@ export function PbpSingleDatePicker({
         fixedWeeks
         aria-label={labels.calendarAria}
         classNames={{
-          root: "text-xs text-stone-700",
-          months: "grid gap-3",
-          month: "space-y-2",
+          root: "w-full text-xs text-stone-700",
+          months: "grid w-full gap-2",
+          month: "w-full space-y-1.5",
           month_caption: "flex items-center justify-center px-2 py-1 text-xs font-semibold text-stone-950",
           caption_label: "text-xs font-semibold",
-          nav: "flex items-center justify-between",
-          button_previous: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-          button_next: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-          weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
-          week: "grid grid-cols-7 gap-1",
+          nav: "flex items-center justify-between px-1",
+          button_previous: "rounded-full border border-stone-200 px-1.5 py-1 text-stone-500 hover:bg-stone-50",
+          button_next: "rounded-full border border-stone-200 px-1.5 py-1 text-stone-500 hover:bg-stone-50",
+          month_grid: "w-full table-fixed border-collapse",
+          weekdays: "grid w-full grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.04em] text-stone-400",
+          weekday: "flex items-center justify-center",
+          weeks: "grid w-full gap-0.5",
+          week: "grid w-full grid-cols-7 gap-0.5",
           day: "flex items-center justify-center",
           day_button: "h-6 w-6 rounded-full text-[10px] font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
           today: "font-bold text-[var(--admin-theme-surface)]",
@@ -166,20 +169,20 @@ export function PbpSingleDatePicker({
           disabled: "text-stone-300 opacity-40",
         }}
       />
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
+      <div className="mt-2 flex items-center justify-between gap-2 border-t border-stone-100 pt-2">
         <p className="min-w-0 flex-1 text-xs font-semibold text-stone-500">{selectedDate ? selectedSummary : labels.placeholder}</p>
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => onChange("")}
-            className="pbp-interactive-button min-h-8 rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+            className="pbp-interactive-button min-h-7 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-50"
           >
             {labels.clear}
           </button>
           <button
             type="button"
             onClick={closeCalendar}
-            className="pbp-interactive-button min-h-8 rounded-xl bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]"
+            className="pbp-interactive-button min-h-7 rounded-lg bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]"
           >
             {labels.done}
           </button>
