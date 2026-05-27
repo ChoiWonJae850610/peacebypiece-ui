@@ -85,9 +85,8 @@ export function getSubmittableOrderEntries(orderEntries?: OrderEntry[] | null): 
   return (orderEntries ?? []).filter((entry) => {
     if (!entry) return false;
     const hasFactoryLikeValue = Boolean(normalizeText(entry.factory));
-    const hasDueDate = Boolean(normalizeText(entry.dueDate));
     const hasQuantity = normalizeNonNegativeNumber(entry.quantity) > 0;
-    return hasFactoryLikeValue || hasDueDate || hasQuantity;
+    return hasFactoryLikeValue || hasQuantity;
   });
 }
 
@@ -103,13 +102,11 @@ export function getFactoryOrderRowsValidationMessage(workOrder: WorkOrder, text:
 
   const invalidRow = factoryEntries.find((entry) => {
     const factoryName = normalizeOrderFactoryName(entry.factory);
-    const dueDate = normalizeText(entry.dueDate);
     const quantity = normalizeNonNegativeNumber(entry.quantity);
     const laborCost = Number(entry.laborCost ?? 0);
     const lossCost = Number(entry.lossCost ?? 0);
 
     return !factoryName
-      || !dueDate
       || quantity < 1
       || !Number.isFinite(laborCost)
       || laborCost < 0
@@ -121,7 +118,6 @@ export function getFactoryOrderRowsValidationMessage(workOrder: WorkOrder, text:
 
   const factoryName = normalizeOrderFactoryName(invalidRow.factory);
   if (!factoryName) return text.factoryOrderFactoryRequiredToast ?? text.factoryOrderRowsInvalidToast ?? null;
-  if (!normalizeText(invalidRow.dueDate)) return text.factoryOrderDueDateRequiredToast ?? text.factoryOrderRowsInvalidToast ?? null;
   if (normalizeNonNegativeNumber(invalidRow.quantity) < 1) return text.factoryOrderQuantityRequiredToast ?? text.factoryOrderRowsInvalidToast ?? null;
 
   const laborCost = Number(invalidRow.laborCost ?? 0);

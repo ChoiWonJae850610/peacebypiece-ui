@@ -31,7 +31,6 @@ type DbMaterialRow = {
   quantity: number | null;
   unit: Material["unit"] | null;
   unit_cost: number | null;
-  loss_cost: number | null;
   total_cost: number | null;
   status: Material["status"] | null;
 };
@@ -168,7 +167,6 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       quantity: readNumberRowValue(row.quantity),
       unit: normalizeMaterialUnitValue(row.unit || "개"),
       unitCost: readNumberRowValue(row.unit_cost),
-      lossCost: readNumberRowValue(row.loss_cost),
       totalCost: readNumberRowValue(row.total_cost),
       status: row.status || "준비",
     });

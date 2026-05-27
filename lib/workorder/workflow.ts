@@ -103,13 +103,10 @@ function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
   const rowValidationMessage = getFactoryOrderRowsValidationMessage(workOrder, text);
   if (rowValidationMessage) return rowValidationMessage;
 
-  const { factoryName, dueDate, quantity, laborCost, lossCost } = getOrderSubmissionSnapshot(workOrder);
+  const { factoryName, quantity, laborCost, lossCost } = getOrderSubmissionSnapshot(workOrder);
 
   if (!hasValidOrderFactoryName(factoryName)) {
     return text.factoryOrderFactoryRequiredToast ?? null;
-  }
-  if (!dueDate) {
-    return text.factoryOrderDueDateRequiredToast ?? null;
   }
   if (!Number.isFinite(quantity) || quantity < 1) {
     return text.factoryOrderQuantityRequiredToast ?? null;
