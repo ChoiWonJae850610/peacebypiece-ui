@@ -2,6 +2,11 @@ import type { ReactNode } from "react";
 
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import {
+  WorkflowProgressPanel,
+  type WorkflowProgressPanelAction,
+  type WorkflowProgressPanelStep,
+} from "@/components/common/workflow/WorkflowProgressPanel";
+import {
   CALCULATED_TABLE_CELL_CLASS,
   DeleteButton,
   EDITABLE_TABLE_CELL_CLASS,
@@ -16,7 +21,11 @@ import {
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import { formatMaterialOrderStatusLabel } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import type { MaterialOrder, MaterialOrderStatus, MaterialOrderSupplier } from "@/lib/material-orders/types";
+import type {
+  MaterialOrder,
+  MaterialOrderStatus,
+  MaterialOrderSupplier,
+} from "@/lib/material-orders/types";
 
 type MaterialOrderDetailPanelProps = {
   selectedOrder: MaterialOrder | null;
@@ -32,12 +41,23 @@ type MaterialOrderDetailPanelProps = {
   onRetrySuppliers: () => void;
   statusChanging: boolean;
   statusMessage: string | null;
-  onChangeLine: (lineId: string, patch: Partial<MaterialOrderDraftLine>) => void;
+  onChangeLine: (
+    lineId: string,
+    patch: Partial<MaterialOrderDraftLine>,
+  ) => void;
   onRemoveLine: (lineId: string) => void;
   onChangeStatus: (status: MaterialOrderStatus) => void;
 };
 
-const MATERIAL_ORDER_UNIT_OPTIONS = ["마", "야드", "개", "세트", "롤", "봉", "박스"] as const;
+const MATERIAL_ORDER_UNIT_OPTIONS = [
+  "마",
+  "야드",
+  "개",
+  "세트",
+  "롤",
+  "봉",
+  "박스",
+] as const;
 
 export default function MaterialOrderDetailPanel({
   selectedOrder,
@@ -62,7 +82,7 @@ export default function MaterialOrderDetailPanel({
   return (
     <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-2.5">
       {selectedOrder ? (
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_minmax(0,1fr)_auto] gap-1.5">
+        <div className="flex min-h-0 flex-1 flex-col gap-1.5">
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             changing={statusChanging}
@@ -70,45 +90,59 @@ export default function MaterialOrderDetailPanel({
             onChangeStatus={onChangeStatus}
           />
 
-          <div className="grid gap-1.5 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 shadow-sm xl:grid-cols-2">
-              <FieldLabel label="구분">
-                <select
-                  value={displayMaterialType}
-                  disabled={selectedOrder.status !== "draft"}
-                  onChange={(event) => onChangeMaterialType(event.target.value as MaterialOrderDraftType)}
-                  className={compactSelectClassName()}
-                >
-                  <option value="fabric">원단</option>
-                  <option value="submaterial">부자재</option>
-                </select>
-              </FieldLabel>
-              <FieldLabel label="공급처">
-                <select
-                  value={supplierPartnerId ?? ""}
-                  disabled={selectedOrder.status !== "draft" || suppliersLoading}
-                  onChange={(event) => onChangeSupplierPartnerId(event.target.value || null)}
-                  className={compactSelectClassName()}
-                >
-                  <option value="">{resolveSupplierPlaceholder(suppliersLoading, suppliers.length)}</option>
-                  {suppliers.map((supplier) => (
-                    <option key={`${supplier.type}-${supplier.id}`} value={supplier.id}>
-                      {supplier.name}
-                    </option>
-                  ))}
-                </select>
-                {suppliersError ? (
-                  <button
-                    type="button"
-                    onClick={onRetrySuppliers}
-                    className="mt-1 w-fit text-[11px] font-semibold text-rose-600 underline-offset-2 hover:underline"
+          <div className="grid shrink-0 gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-2 shadow-sm xl:grid-cols-2">
+            <FieldLabel label="구분">
+              <select
+                value={displayMaterialType}
+                disabled={selectedOrder.status !== "draft"}
+                onChange={(event) =>
+                  onChangeMaterialType(
+                    event.target.value as MaterialOrderDraftType,
+                  )
+                }
+                className={compactSelectClassName()}
+              >
+                <option value="fabric">원단</option>
+                <option value="submaterial">부자재</option>
+              </select>
+            </FieldLabel>
+            <FieldLabel label="공급처">
+              <select
+                value={supplierPartnerId ?? ""}
+                disabled={selectedOrder.status !== "draft" || suppliersLoading}
+                onChange={(event) =>
+                  onChangeSupplierPartnerId(event.target.value || null)
+                }
+                className={compactSelectClassName()}
+              >
+                <option value="">
+                  {resolveSupplierPlaceholder(
+                    suppliersLoading,
+                    suppliers.length,
+                  )}
+                </option>
+                {suppliers.map((supplier) => (
+                  <option
+                    key={`${supplier.type}-${supplier.id}`}
+                    value={supplier.id}
                   >
-                    공급처 조회 실패 · 다시 조회
-                  </button>
-                ) : null}
-              </FieldLabel>
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
+              {suppliersError ? (
+                <button
+                  type="button"
+                  onClick={onRetrySuppliers}
+                  className="mt-1 w-fit text-[11px] font-semibold text-rose-600 underline-offset-2 hover:underline"
+                >
+                  공급처 조회 실패 · 다시 조회
+                </button>
+              ) : null}
+            </FieldLabel>
           </div>
 
-          <div className="flex min-h-0 overflow-hidden rounded-xl border border-stone-200 bg-white p-1 shadow-sm">
+          <div className="flex min-h-[10rem] flex-1 overflow-hidden rounded-xl border border-stone-200 bg-white p-1 shadow-sm">
             <div className="h-full min-h-0 w-full max-w-full overflow-auto rounded-lg border border-stone-200 bg-white">
               <table className="w-full min-w-[540px] table-fixed text-left">
                 <colgroup>
@@ -121,17 +155,27 @@ export default function MaterialOrderDetailPanel({
                 </colgroup>
                 <thead className="text-stone-500">
                   <tr className="border-b border-stone-200">
-                    {["품목명", "단위", "수량", "단가", "금액", ""].map((header, index) => (
-                      <th key={`${header}-${index}`} className={`${TABLE_HEADER_CELL_CLASS} text-center`}>
-                        <span className="block w-full whitespace-nowrap leading-4">{header}</span>
-                      </th>
-                    ))}
+                    {["품목명", "단위", "수량", "단가", "금액", ""].map(
+                      (header, index) => (
+                        <th
+                          key={`${header}-${index}`}
+                          className={`${TABLE_HEADER_CELL_CLASS} text-center`}
+                        >
+                          <span className="block w-full whitespace-nowrap leading-4">
+                            {header}
+                          </span>
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {lines.length === 0 ? (
                     <tr>
-                      <td className="h-24 px-3 text-center text-xs text-stone-500" colSpan={6}>
+                      <td
+                        className="h-20 px-3 text-center text-xs text-stone-500"
+                        colSpan={6}
+                      >
                         주문할 자재를 선택하세요.
                       </td>
                     </tr>
@@ -152,18 +196,37 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="grid min-h-[2.25rem] shrink-0 grid-cols-2 items-center gap-x-4 gap-y-0.5 rounded-lg border border-stone-200 bg-stone-50/80 px-3 py-1 text-[11px] md:grid-cols-4">
-            <SummaryValue label="품목" value={`${totals.lineCount}종`} />
-            <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
-            <SummaryValue label="할당/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
-            <SummaryValue label="합계" value={formatMaterialOrderAmount(totals.totalAmount)} emphasize />
+          <div className="shrink-0 rounded-lg border border-stone-200 bg-stone-50/80 px-3 py-2 text-[11px]">
+            <div className="grid grid-cols-3 items-center gap-3">
+              <SummaryValue label="품목" value={`${totals.lineCount}종`} />
+              <SummaryValue
+                label="주문"
+                value={String(totals.totalOrderQuantity)}
+              />
+              <SummaryValue
+                label="할당/잔여"
+                value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`}
+              />
+            </div>
+            <div className="mt-1 flex items-center justify-end">
+              <SummaryValue
+                label="합계"
+                value={formatMaterialOrderAmount(totals.totalAmount)}
+                emphasize
+              />
+            </div>
           </div>
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 items-center justify-center rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-6 text-center">
           <div>
-            <p className="text-base font-semibold pbp-text-primary">선택된 발주서가 없습니다.</p>
-            <p className="mt-2 text-sm leading-6 pbp-text-muted">왼쪽 패널에서 새 발주를 만들거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다.</p>
+            <p className="text-base font-semibold pbp-text-primary">
+              선택된 발주서가 없습니다.
+            </p>
+            <p className="mt-2 text-sm leading-6 pbp-text-muted">
+              왼쪽 패널에서 새 발주를 만들거나 기존 발주서를 선택하면 상세 입력
+              영역이 열립니다.
+            </p>
           </div>
         </div>
       )}
@@ -181,17 +244,24 @@ function MaterialOrderLineRow({
   line: MaterialOrderDraftLine;
   rowIndex: number;
   editable: boolean;
-  onChangeLine: (lineId: string, patch: Partial<MaterialOrderDraftLine>) => void;
+  onChangeLine: (
+    lineId: string,
+    patch: Partial<MaterialOrderDraftLine>,
+  ) => void;
   onRemoveLine: (lineId: string) => void;
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
   return (
-    <tr className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
+    <tr
+      className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}
+    >
       <td className={EDITABLE_TABLE_CELL_CLASS}>
         <input
           value={line.itemName}
           disabled={!editable}
-          onChange={(event) => onChangeLine(line.id, { itemName: event.target.value })}
+          onChange={(event) =>
+            onChangeLine(line.id, { itemName: event.target.value })
+          }
           placeholder="예: 30수 면 블랙"
           className={compactInputClassName("text-center")}
         />
@@ -200,12 +270,16 @@ function MaterialOrderLineRow({
         <select
           value={resolveUnitSelectValue(line.unit)}
           disabled={!editable}
-          onChange={(event) => onChangeLine(line.id, { unit: event.target.value })}
+          onChange={(event) =>
+            onChangeLine(line.id, { unit: event.target.value })
+          }
           className={compactSelectClassName("text-center")}
         >
           <option value="">단위</option>
           {MATERIAL_ORDER_UNIT_OPTIONS.map((unit) => (
-            <option key={unit} value={unit}>{unit}</option>
+            <option key={unit} value={unit}>
+              {unit}
+            </option>
           ))}
         </select>
       </td>
@@ -215,7 +289,11 @@ function MaterialOrderLineRow({
           inputMode="decimal"
           value={line.orderQuantity}
           disabled={!editable}
-          onChange={(event) => onChangeLine(line.id, { orderQuantity: normalizeNumberInput(event.target.value) })}
+          onChange={(event) =>
+            onChangeLine(line.id, {
+              orderQuantity: normalizeNumberInput(event.target.value),
+            })
+          }
           className={compactInputClassName("text-center tabular-nums")}
         />
       </td>
@@ -225,15 +303,28 @@ function MaterialOrderLineRow({
           inputMode="numeric"
           value={line.unitPrice}
           disabled={!editable}
-          onChange={(event) => onChangeLine(line.id, { unitPrice: normalizeNumberInput(event.target.value) })}
+          onChange={(event) =>
+            onChangeLine(line.id, {
+              unitPrice: normalizeNumberInput(event.target.value),
+            })
+          }
           className={compactInputClassName("text-right tabular-nums")}
         />
       </td>
-      <td className={CALCULATED_TABLE_CELL_CLASS} title={formatMaterialOrderAmount(lineAmount)}>
-        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{formatMaterialOrderAmount(lineAmount)}</span>
+      <td
+        className={CALCULATED_TABLE_CELL_CLASS}
+        title={formatMaterialOrderAmount(lineAmount)}
+      >
+        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">
+          {formatMaterialOrderAmount(lineAmount)}
+        </span>
       </td>
       <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-        <DeleteButton onClick={() => onRemoveLine(line.id)} srLabel="주문 내역 삭제" disabled={!editable} />
+        <DeleteButton
+          onClick={() => onRemoveLine(line.id)}
+          srLabel="주문 내역 삭제"
+          disabled={!editable}
+        />
       </td>
     </tr>
   );
@@ -256,72 +347,50 @@ function MaterialOrderStatusFlow({
     { status: "approved", label: "발주요청" },
     { status: "order_placed", label: "발주완료" },
   ];
-  const currentIndex = Math.max(0, steps.findIndex((step) => step.status === status));
+  const currentIndex = Math.max(
+    0,
+    steps.findIndex((step) => step.status === status),
+  );
   const actions = resolveMaterialOrderStatusActions(status);
   const primaryActionIndex = actions.length > 0 ? actions.length - 1 : -1;
+  const progressSteps: WorkflowProgressPanelStep[] = steps.map(
+    (step, index) => ({
+      key: step.status,
+      label: step.label,
+      isDone: index <= currentIndex,
+      isCurrent: step.status === status,
+    }),
+  );
+  const progressActions: WorkflowProgressPanelAction[] = actions.map(
+    (action, index) => ({
+      key: `${status}-${action.nextStatus}`,
+      label: action.label,
+      onClick: () => onChangeStatus(action.nextStatus),
+      disabled: changing,
+      isPrimary: index === primaryActionIndex,
+    }),
+  );
 
   return (
-    <div className="pbp-workflow-panel rounded-xl border px-3 pb-2 pt-2.5 shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-xs font-semibold text-stone-900">진행 단계</div>
-        </div>
-        {actions.length > 0 ? (
-          <div className="flex flex-wrap justify-end gap-1.5">
-            {actions.map((action, index) => {
-              const isPrimary = index === primaryActionIndex;
-              return (
-                <button
-                  key={`${status}-${action.nextStatus}`}
-                  type="button"
-                  disabled={changing}
-                  onClick={() => onChangeStatus(action.nextStatus)}
-                  className={`inline-flex items-center justify-center rounded-lg px-2.5 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
-                    isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"
-                  }`}
-                >
-                  {action.label}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-2">
-        <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
-          {steps.map((step, index) => {
-            const isDone = index <= currentIndex;
-            const isCurrent = step.status === status;
-            return (
-              <div key={step.status} className="relative flex flex-col items-center gap-1 text-center">
-                {index < steps.length - 1 ? (
-                  <div className={`absolute left-1/2 top-3 h-0.5 w-full ${isDone ? "bg-[var(--pbp-selected-border)]" : "bg-[var(--pbp-border)]"}`} aria-hidden="true" />
-                ) : null}
-                <div
-                  className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
-                    isDone ? "border-transparent bg-[var(--pbp-selected-border)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
-                  }`}
-                >
-                  <span className={`h-2.5 w-2.5 rounded-full ${isDone ? "bg-white/90" : "bg-[var(--pbp-text-subtle)]"}`} />
-                </div>
-                <div className={`text-[11px] font-medium ${isCurrent ? "pbp-text-primary" : "text-[var(--pbp-text-muted)]"}`}>{step.label}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] leading-4 text-[var(--pbp-text-muted)]">
-        <span>자재 발주</span>
-        <span>·</span>
-        <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
-      </div>
-    </div>
+    <WorkflowProgressPanel
+      title="진행 단계"
+      steps={progressSteps}
+      actions={progressActions}
+      density="compact"
+      footer={
+        <>
+          <span>자재 발주</span>
+          <span>·</span>
+          <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
+        </>
+      }
+    />
   );
 }
 
-function resolveMaterialOrderStatusActions(status: MaterialOrderStatus): Array<{ label: string; nextStatus: MaterialOrderStatus }> {
+function resolveMaterialOrderStatusActions(
+  status: MaterialOrderStatus,
+): Array<{ label: string; nextStatus: MaterialOrderStatus }> {
   switch (status) {
     case "draft":
       return [
@@ -337,7 +406,13 @@ function resolveMaterialOrderStatusActions(status: MaterialOrderStatus): Array<{
   }
 }
 
-function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
+function FieldLabel({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
   return (
     <label className="grid gap-0.5 text-[11px] font-semibold pbp-text-subtle">
       {label}
@@ -346,11 +421,25 @@ function FieldLabel({ label, children }: { label: string; children: ReactNode })
   );
 }
 
-function SummaryValue({ label, value, emphasize = false }: { label: string; value: string; emphasize?: boolean }) {
+function SummaryValue({
+  label,
+  value,
+  emphasize = false,
+}: {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+}) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-1.5">
-      <span className="shrink-0 text-[11px] font-semibold pbp-text-subtle">{label}</span>
-      <span className={`truncate text-xs font-semibold tabular-nums ${emphasize ? "pbp-text-primary" : "pbp-text-muted"}`}>{value}</span>
+      <span className="shrink-0 text-[11px] font-semibold pbp-text-subtle">
+        {label}
+      </span>
+      <span
+        className={`truncate text-xs font-semibold tabular-nums ${emphasize ? "pbp-text-primary" : "pbp-text-muted"}`}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -362,24 +451,35 @@ function normalizeNumberInput(value: string): number {
 }
 
 function resolveUnitSelectValue(unit: string): string {
-  return MATERIAL_ORDER_UNIT_OPTIONS.includes(unit as typeof MATERIAL_ORDER_UNIT_OPTIONS[number]) ? unit : "";
+  return MATERIAL_ORDER_UNIT_OPTIONS.includes(
+    unit as (typeof MATERIAL_ORDER_UNIT_OPTIONS)[number],
+  )
+    ? unit
+    : "";
 }
 
 function compactInputClassName(extra = "") {
   return [
     "pbp-field-interaction pbp-workorder-editable-input h-7 block w-full min-w-0 max-w-full overflow-hidden rounded-md border px-2 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function compactSelectClassName(extra = "") {
   return [
     "pbp-field-interaction pbp-workorder-editable-input h-7 block w-full min-w-0 max-w-full overflow-hidden rounded-md border px-2 pr-6 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
-function resolveSupplierPlaceholder(loading: boolean, supplierCount: number): string {
+function resolveSupplierPlaceholder(
+  loading: boolean,
+  supplierCount: number,
+): string {
   if (loading) return "공급처 조회중";
   if (supplierCount === 0) return "등록된 공급처 없음";
   return "공급처 선택";
