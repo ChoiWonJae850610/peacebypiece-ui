@@ -2,6 +2,16 @@ import { useMemo, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
+import {
+  MATERIAL_ORDER_EMPTY_STATE_CLASS,
+  MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
+  MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
+  MATERIAL_ORDER_NESTED_ROW_CLASS,
+  MATERIAL_ORDER_PANEL_CARD_CLASS,
+  MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
+  MATERIAL_ORDER_PANEL_HEADER_CLASS,
+  MATERIAL_ORDER_PANEL_LIST_CLASS,
+} from "@/features/material-orders/materialOrderWorkspaceStyles";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   type MaterialOrderDraftLine,
@@ -48,8 +58,8 @@ export default function MaterialOrderAllocationPanel({
   }, [candidates, searchQuery]);
 
   return (
-    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-3">
-      <div className="shrink-0 border-b border-[var(--pbp-border)] pb-3">
+    <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+      <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Allocation</p>
@@ -67,7 +77,7 @@ export default function MaterialOrderAllocationPanel({
         />
       </div>
 
-      <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
           <PanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." />
         ) : errorMessage ? (
@@ -110,7 +120,7 @@ function AllocationCandidateCard({
   ) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-3 transition hover:bg-[var(--pbp-surface-soft)]">
+    <div className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
       <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
 
       <div className="mt-3 grid gap-1.5">
@@ -152,7 +162,7 @@ function WorkOrderMaterialRequestRow({
   const isAdded = Boolean(existingLine);
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2">
+    <div className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
         <p className="mt-0.5 text-[11px] pbp-text-muted">
@@ -195,7 +205,7 @@ function PanelMessage({
   onAction?: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 text-sm">
+    <div className={MATERIAL_ORDER_EMPTY_STATE_CLASS}>
       <p className="font-semibold pbp-text-primary">{title}</p>
       <p className="mt-1 text-xs leading-5 pbp-text-muted">{description}</p>
       {actionLabel && onAction ? (
@@ -210,7 +220,7 @@ function PanelMessage({
 
 function fieldClassName(extra = "") {
   return [
-    "min-h-9 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-sm pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-soft)] disabled:opacity-70",
+    MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
     extra,
   ].filter(Boolean).join(" ");
 }

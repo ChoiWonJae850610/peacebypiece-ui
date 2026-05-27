@@ -2,6 +2,12 @@ import type { ReactNode } from "react";
 
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import {
+  MATERIAL_ORDER_PANEL_CARD_CLASS,
+  MATERIAL_ORDER_SECTION_CARD_CLASS,
+  MATERIAL_ORDER_SECTION_GAP_CLASS,
+  MATERIAL_ORDER_TABLE_SHELL_CLASS,
+} from "@/features/material-orders/materialOrderWorkspaceStyles";
+import {
   WorkflowProgressPanel,
   type WorkflowProgressPanelAction,
   type WorkflowProgressPanelStep,
@@ -59,12 +65,6 @@ const MATERIAL_ORDER_UNIT_OPTIONS = [
   "박스",
 ] as const;
 
-const MATERIAL_ORDER_PANEL_GAP_CLASS = "gap-3";
-const MATERIAL_ORDER_SECTION_CARD_CLASS =
-  "rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4";
-const MATERIAL_ORDER_TABLE_SHELL_CLASS =
-  "max-w-full overflow-hidden rounded-xl border border-stone-200 bg-white";
-
 export default function MaterialOrderDetailPanel({
   selectedOrder,
   materialType,
@@ -86,9 +86,9 @@ export default function MaterialOrderDetailPanel({
   const displayMaterialType = materialType;
 
   return (
-    <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3.5">
+    <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       {selectedOrder ? (
-        <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_PANEL_GAP_CLASS}`}>
+        <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_SECTION_GAP_CLASS}`}>
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             changing={statusChanging}
@@ -159,8 +159,8 @@ export default function MaterialOrderDetailPanel({
                   <col className="w-[20%]" />
                   <col className="w-[7%]" />
                 </colgroup>
-                <thead className="text-stone-500">
-                  <tr className="border-b border-stone-200">
+                <thead className="pbp-text-muted">
+                  <tr className="border-b border-[var(--pbp-border)]">
                     {["품목명", "단위", "수량", "단가", "금액", ""].map(
                       (header, index) => (
                         <th
@@ -179,7 +179,7 @@ export default function MaterialOrderDetailPanel({
                   {lines.length === 0 ? (
                     <tr>
                       <td
-                        className="h-20 px-3 text-center text-xs text-stone-500"
+                        className="h-20 px-3 text-center text-xs pbp-text-muted"
                         colSpan={6}
                       >
                         주문할 자재를 선택하세요.
@@ -202,7 +202,7 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="shrink-0 rounded-[24px] border border-stone-200 bg-stone-50/80 px-3.5 py-3 text-[11px] shadow-sm xl:px-4">
+          <div className="shrink-0 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3.5 py-3 text-[11px] shadow-sm xl:px-4">
             <div className="grid grid-cols-3 items-center gap-3">
               <SummaryValue label="품목" value={`${totals.lineCount}종`} />
               <SummaryValue
@@ -259,7 +259,7 @@ function MaterialOrderLineRow({
   const lineAmount = calculateMaterialOrderLineAmount(line);
   return (
     <tr
-      className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}
+      className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-[var(--pbp-surface)]" : "bg-stone-50/70"} hover:bg-stone-50`}
     >
       <td className={EDITABLE_TABLE_CELL_CLASS}>
         <input

@@ -2,6 +2,16 @@ import { useMemo, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
+import {
+  MATERIAL_ORDER_EMPTY_STATE_CLASS,
+  MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
+  MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
+  MATERIAL_ORDER_LIST_CARD_SELECTED_CLASS,
+  MATERIAL_ORDER_PANEL_CARD_CLASS,
+  MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
+  MATERIAL_ORDER_PANEL_HEADER_CLASS,
+  MATERIAL_ORDER_PANEL_LIST_CLASS,
+} from "@/features/material-orders/materialOrderWorkspaceStyles";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   formatMaterialOrderDisplayTitle,
@@ -87,18 +97,20 @@ export default function MaterialOrderListPanel({
   }, [orders, searchQuery, statusFilter, typeFilter]);
 
   return (
-    <AdminCard className="flex h-full min-h-0 flex-col overflow-hidden p-2">
-      <div className="flex shrink-0 items-start justify-between gap-2">
+    <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+      <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
+        <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Material orders</p>
           <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
         </div>
         <AdminButton size="sm" disabled={creating} onClick={onCreateOrder}>
-          {creating ? "생성중" : "새 발주"}
-        </AdminButton>
+            {creating ? "생성중" : "새 발주"}
+          </AdminButton>
+        </div>
       </div>
 
-      <div className="mt-2 grid shrink-0 gap-1.5 border-y border-[var(--pbp-border)] py-2">
+      <div className="mt-3 grid shrink-0 gap-1.5 border-b border-[var(--pbp-border)] pb-3">
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
@@ -127,7 +139,7 @@ export default function MaterialOrderListPanel({
         </div>
       </div>
 
-      <div className="mt-2 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
           <PanelMessage title="불러오는 중" description="발주서 목록을 조회하고 있습니다." />
         ) : errorMessage ? (
@@ -185,10 +197,10 @@ function MaterialOrderListButton({
       type="button"
       onClick={() => onSelectOrder(order.id)}
       className={[
-        "w-full rounded-2xl border px-2.5 py-2 text-left transition",
+        MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
         selected
-          ? "border-[var(--pbp-action-primary)] bg-[var(--pbp-surface-soft)] shadow-sm"
-          : "border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] hover:bg-[var(--pbp-surface-soft)]",
+          ? MATERIAL_ORDER_LIST_CARD_SELECTED_CLASS
+          : MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
       ].join(" ")}
     >
       <div className="flex items-center justify-between gap-2">
@@ -227,7 +239,7 @@ function PanelMessage({
   onAction?: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 text-sm">
+    <div className={MATERIAL_ORDER_EMPTY_STATE_CLASS}>
       <p className="font-semibold pbp-text-primary">{title}</p>
       <p className="mt-1 text-xs leading-5 pbp-text-muted">{description}</p>
       {actionLabel && onAction ? (
@@ -240,5 +252,5 @@ function PanelMessage({
 }
 
 function filterFieldClassName() {
-  return "min-h-9 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-xs pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]";
+  return MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS;
 }
