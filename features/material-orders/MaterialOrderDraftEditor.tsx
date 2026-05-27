@@ -10,7 +10,6 @@ import {
   type MaterialOrderDraftLine,
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
-import { createMaterialOrderDraftLine } from "@/lib/material-orders/materialOrderDraftWorkspace";
 import {
   createEmptyMaterialOrder,
   fetchAllocationCandidateWorkOrders,
@@ -49,8 +48,6 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
   const [workOrdersError, setWorkOrdersError] = useState<string | null>(null);
   const [materialType, setMaterialType] = useState<MaterialOrderDraftType>("fabric");
   const [supplierPartnerId, setSupplierPartnerId] = useState<string | null>(null);
-  const [destinationMemo, setDestinationMemo] = useState("");
-  const [orderNote, setOrderNote] = useState("");
   const [lines, setLines] = useState<MaterialOrderDraftLine[]>([]);
 
   const selectedOrder = useMemo(
@@ -121,8 +118,6 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     if (!selectedOrder) {
       setMaterialType("fabric");
       setSupplierPartnerId(null);
-      setDestinationMemo("");
-      setOrderNote("");
       setLines([]);
       return;
     }
@@ -130,8 +125,6 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "fabric");
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
     setStatusMessage(null);
-    setDestinationMemo("");
-    setOrderNote(selectedOrder.note ?? "");
     setLines(selectedOrder.lines.map((line) => ({
       id: line.id,
       itemName: line.itemName,
@@ -173,7 +166,7 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
     return {
       materialOrderId: selectedOrder.id,
       supplierPartnerId,
-      note: orderNote,
+      note: selectedOrder.note ?? "",
       lines: lines.map((line) => ({
         itemName: line.itemName,
         itemType: materialType,
@@ -225,10 +218,6 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
 
   function updateLine(lineId: string, patch: Partial<MaterialOrderDraftLine>) {
     setLines((current) => current.map((line) => (line.id === lineId ? { ...line, ...patch } : line)));
-  }
-
-  function addLine() {
-    setLines((current) => [...current, createMaterialOrderDraftLine(current.length + 1)]);
   }
 
   function addWorkOrderMaterialLine(
@@ -287,6 +276,9 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           onSelectOrder={setSelectedOrderId}
           onCreateOrder={createOrder}
           onRetry={() => void refreshOrders()}
+          selectedDraftMaterialType={materialType}
+          selectedDraftSupplierName={suppliers.find((supplier) => supplier.id === supplierPartnerId)?.name ?? null}
+          selectedDraftLines={lines}
         />
         <MaterialOrderDetailPanel
           selectedOrder={selectedOrder}
@@ -295,19 +287,14 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           suppliers={suppliers}
           suppliersLoading={suppliersLoading}
           suppliersError={suppliersError}
-          destinationMemo={destinationMemo}
-          orderNote={orderNote}
           lines={lines}
           totals={totals}
           onChangeMaterialType={changeMaterialType}
           onChangeSupplierPartnerId={setSupplierPartnerId}
           onRetrySuppliers={() => void refreshSuppliers(materialType)}
-          onChangeDestinationMemo={setDestinationMemo}
-          onChangeOrderNote={setOrderNote}
           statusChanging={statusChanging}
           statusMessage={statusMessage}
           onChangeLine={updateLine}
-          onAddLine={addLine}
           onRemoveLine={removeLine}
           onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
         />

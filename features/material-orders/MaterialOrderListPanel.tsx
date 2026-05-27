@@ -4,17 +4,15 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
-  formatMaterialOrderAmount,
-  formatMaterialOrderDateLabel,
   formatMaterialOrderDisplayTitle,
   formatMaterialOrderPrimaryLineLabel,
-  formatMaterialOrderRequesterLabel,
   formatMaterialOrderStatusLabel,
   formatMaterialOrderTypeLabel,
   resolveMaterialOrderStatusBadgeTone,
   resolveMaterialOrderType,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import type { MaterialOrder, MaterialOrderLineItemType, MaterialOrderStatus } from "@/lib/material-orders/types";
+import type { MaterialOrderDraftLine, MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderListPanelProps = {
   orders: MaterialOrder[];
@@ -25,6 +23,9 @@ type MaterialOrderListPanelProps = {
   onSelectOrder: (orderId: string) => void;
   onCreateOrder: () => void;
   onRetry: () => void;
+  selectedDraftMaterialType: MaterialOrderDraftType;
+  selectedDraftSupplierName: string | null;
+  selectedDraftLines: MaterialOrderDraftLine[];
 };
 
 const MATERIAL_ORDER_STATUS_OPTIONS: Array<{ value: "all" | MaterialOrderStatus; label: string }> = [
@@ -52,6 +53,9 @@ export default function MaterialOrderListPanel({
   onSelectOrder,
   onCreateOrder,
   onRetry,
+  selectedDraftMaterialType,
+  selectedDraftSupplierName,
+  selectedDraftLines,
 }: MaterialOrderListPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | MaterialOrderStatus>("draft");
@@ -145,6 +149,9 @@ export default function MaterialOrderListPanel({
               order={order}
               selected={order.id === selectedOrderId}
               onSelectOrder={onSelectOrder}
+              draftMaterialType={order.id === selectedOrderId ? selectedDraftMaterialType : null}
+              draftSupplierName={order.id === selectedOrderId ? selectedDraftSupplierName : null}
+              draftLines={order.id === selectedOrderId ? selectedDraftLines : null}
             />
           ))
         )}
@@ -157,14 +164,21 @@ function MaterialOrderListButton({
   order,
   selected,
   onSelectOrder,
+  draftMaterialType,
+  draftSupplierName,
+  draftLines,
 }: {
   order: MaterialOrder;
   selected: boolean;
   onSelectOrder: (orderId: string) => void;
+  draftMaterialType: MaterialOrderDraftType | null;
+  draftSupplierName: string | null;
+  draftLines: MaterialOrderDraftLine[] | null;
 }) {
-  const displayTitle = formatMaterialOrderDisplayTitle(order);
-  const primaryLineLabel = formatMaterialOrderPrimaryLineLabel(order);
-  const requesterLabel = formatMaterialOrderRequesterLabel(order);
+  const materialType = draftMaterialType ?? resolveMaterialOrderType(order);
+  const supplierLabel = draftSupplierName?.trim() || order.supplierPartnerName?.trim() || "공급처 미선택";
+  const displayTitle = selected ? `${formatMaterialOrderTypeLabel(materialType)} · ${supplierLabel}` : formatMaterialOrderDisplayTitle(order);
+  const primaryLineLabel = draftLines ? formatMaterialOrderDraftLineLabel(draftLines) : formatMaterialOrderPrimaryLineLabel(order);
 
   return (
     <button
@@ -179,20 +193,26 @@ function MaterialOrderListButton({
     >
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</span>
-        <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="xs">
-          {formatMaterialOrderStatusLabel(order.status)}
-        </AdminStatusBadge>
+        <div className="flex shrink-0 items-center gap-1">
+          <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="xs">
+            {formatMaterialOrderStatusLabel(order.status)}
+          </AdminStatusBadge>
+          <AdminStatusBadge tone="info" size="xs">
+            {formatMaterialOrderTypeLabel(materialType)}
+          </AdminStatusBadge>
+        </div>
       </div>
       <p className="mt-1.5 truncate text-xs font-medium pbp-text-primary">{primaryLineLabel}</p>
-      <div className="mt-1.5 grid gap-1 text-xs pbp-text-muted">
-        <div className="flex items-center justify-between gap-2">
-          <span>{formatMaterialOrderDateLabel(order.createdAt)}</span>
-          <span>{formatMaterialOrderAmount(order.totalAmount)}</span>
-        </div>
-        <div className="truncate">{requesterLabel}</div>
-      </div>
     </button>
   );
+}
+
+function formatMaterialOrderDraftLineLabel(lines: MaterialOrderDraftLine[]): string {
+  const primaryLine = lines.find((line) => line.itemName.trim().length > 0) ?? null;
+  if (!primaryLine) return "품목 미입력";
+
+  const extraCount = Math.max(0, lines.length - 1);
+  return extraCount > 0 ? `${primaryLine.itemName.trim()} 외 ${extraCount}건` : primaryLine.itemName.trim();
 }
 
 function PanelMessage({

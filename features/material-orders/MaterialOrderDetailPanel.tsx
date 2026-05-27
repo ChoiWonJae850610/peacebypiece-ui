@@ -2,25 +2,13 @@ import type { ReactNode } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
-import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
-  calculateMaterialOrderLineAllocatedQuantity,
   calculateMaterialOrderLineAmount,
-  calculateMaterialOrderLineRemainingQuantity,
   formatMaterialOrderAmount,
   type MaterialOrderDraftLine,
   type MaterialOrderDraftTotals,
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
-import {
-  formatMaterialOrderDateLabel,
-  formatMaterialOrderDisplayTitle,
-  formatMaterialOrderPrimaryLineLabel,
-  formatMaterialOrderRequesterLabel,
-  formatMaterialOrderStatusLabel,
-  formatMaterialOrderTypeLabel,
-  resolveMaterialOrderStatusBadgeTone,
-} from "@/lib/material-orders/materialOrderWorkspaceClient";
 import type { MaterialOrder, MaterialOrderStatus, MaterialOrderSupplier } from "@/lib/material-orders/types";
 
 type MaterialOrderDetailPanelProps = {
@@ -30,19 +18,14 @@ type MaterialOrderDetailPanelProps = {
   suppliers: MaterialOrderSupplier[];
   suppliersLoading: boolean;
   suppliersError: string | null;
-  destinationMemo: string;
-  orderNote: string;
   lines: MaterialOrderDraftLine[];
   totals: MaterialOrderDraftTotals;
   onChangeMaterialType: (materialType: MaterialOrderDraftType) => void;
   onChangeSupplierPartnerId: (partnerId: string | null) => void;
   onRetrySuppliers: () => void;
-  onChangeDestinationMemo: (memo: string) => void;
-  onChangeOrderNote: (memo: string) => void;
   statusChanging: boolean;
   statusMessage: string | null;
   onChangeLine: (lineId: string, patch: Partial<MaterialOrderDraftLine>) => void;
-  onAddLine: () => void;
   onRemoveLine: (lineId: string) => void;
   onChangeStatus: (status: MaterialOrderStatus) => void;
 };
@@ -56,54 +39,23 @@ export default function MaterialOrderDetailPanel({
   suppliers,
   suppliersLoading,
   suppliersError,
-  destinationMemo,
-  orderNote,
   lines,
   totals,
   onChangeMaterialType,
   onChangeSupplierPartnerId,
   onRetrySuppliers,
-  onChangeDestinationMemo,
-  onChangeOrderNote,
   statusChanging,
   statusMessage,
   onChangeLine,
-  onAddLine,
   onRemoveLine,
   onChangeStatus,
 }: MaterialOrderDetailPanelProps) {
   const displayMaterialType = materialType;
-  const selectedOrderTitle = selectedOrder ? formatMaterialOrderDisplayTitle(selectedOrder) : "선택 발주서 상세";
-  const selectedOrderLineLabel = selectedOrder ? formatMaterialOrderPrimaryLineLabel(selectedOrder) : "";
-  const selectedOrderRequesterLabel = selectedOrder ? formatMaterialOrderRequesterLabel(selectedOrder) : "";
 
   return (
     <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-4">
-      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-3">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Selected order</p>
-          <h2 className="mt-1 truncate text-base font-semibold tracking-tight pbp-text-primary">{selectedOrderTitle}</h2>
-          {selectedOrder ? (
-            <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs pbp-text-muted">
-              <span className="font-medium pbp-text-primary">{selectedOrderLineLabel}</span>
-              <span>{formatMaterialOrderDateLabel(selectedOrder.createdAt)}</span>
-              <span>{selectedOrderRequesterLabel}</span>
-              <span>{formatMaterialOrderAmount(selectedOrder.totalAmount)}</span>
-            </div>
-          ) : null}
-        </div>
-        <div className="flex shrink-0 flex-wrap justify-end gap-2">
-          {selectedOrder ? (
-            <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(selectedOrder.status)}>
-              {formatMaterialOrderStatusLabel(selectedOrder.status)}
-            </AdminStatusBadge>
-          ) : null}
-          <AdminStatusBadge tone="info">{formatMaterialOrderTypeLabel(displayMaterialType)}</AdminStatusBadge>
-        </div>
-      </div>
-
       {selectedOrder ? (
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 pt-3">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
           <div className="grid gap-3 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3">
             <div>
               <p className="text-sm font-semibold pbp-text-primary">기본 정보</p>
@@ -116,7 +68,7 @@ export default function MaterialOrderDetailPanel({
               onChangeStatus={onChangeStatus}
             />
 
-            <div className="grid gap-2 xl:grid-cols-4">
+            <div className="grid gap-2 xl:grid-cols-2">
               <FieldLabel label="구분">
                 <select
                   value={displayMaterialType}
@@ -152,42 +104,16 @@ export default function MaterialOrderDetailPanel({
                   </button>
                 ) : null}
               </FieldLabel>
-              <FieldLabel label="전달/보관 메모">
-                <input
-                  value={destinationMemo}
-                  onChange={(event) => onChangeDestinationMemo(event.target.value)}
-                  placeholder="예: B 봉제 전달"
-                  className={fieldClassName()}
-                />
-              </FieldLabel>
-              <FieldLabel label="내부 메모">
-                <input
-                  value={orderNote}
-                  onChange={(event) => onChangeOrderNote(event.target.value)}
-                  placeholder="단가/검토 조건"
-                  className={fieldClassName()}
-                />
-              </FieldLabel>
             </div>
           </div>
 
           <div className="flex min-h-0 flex-col rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-3">
             <div className="flex shrink-0 items-center justify-between gap-3 pb-2">
-              <div>
-                <h3 className="text-sm font-semibold pbp-text-primary">품목 라인</h3>
-              </div>
-              <AdminButton
-                size="sm"
-                className="min-h-8 px-3 py-1 text-xs"
-                onClick={onAddLine}
-                disabled={selectedOrder.status !== "draft"}
-              >
-                직접 추가
-              </AdminButton>
+              <h3 className="text-sm font-semibold pbp-text-primary">주문 내역</h3>
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[var(--pbp-border)]">
-              <table className="w-full min-w-[640px] border-collapse text-xs">
+              <table className="w-full min-w-[540px] border-collapse text-xs">
                 <thead className="sticky top-0 z-10 bg-[var(--pbp-surface-soft)] text-xs font-semibold pbp-text-subtle">
                   <tr>
                     <th className="px-3 py-2 text-left">품목명</th>
@@ -195,15 +121,14 @@ export default function MaterialOrderDetailPanel({
                     <th className="px-2 py-2 text-center">수량</th>
                     <th className="px-2 py-2 text-center">단가</th>
                     <th className="px-2 py-2 text-center">금액</th>
-                    <th className="px-2 py-2 text-center">할당</th>
-                    <th className="px-3 py-2 text-center">작업</th>
+                    <th className="w-10 px-2 py-2 text-center" aria-label="삭제" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--pbp-border)]">
                   {lines.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-6 text-center text-xs pbp-text-muted" colSpan={7}>
-                        우측 작업지시서에서 자재를 선택하거나 직접 추가합니다.
+                      <td className="px-3 py-6 text-center text-xs pbp-text-muted" colSpan={6}>
+                        주문할 자재를 선택하세요.
                       </td>
                     </tr>
                   ) : (
@@ -253,9 +178,6 @@ function MaterialOrderLineRow({
   onRemoveLine: (lineId: string) => void;
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
-  const allocatedQuantity = calculateMaterialOrderLineAllocatedQuantity(line);
-  const remainingQuantity = calculateMaterialOrderLineRemainingQuantity(line);
-
   return (
     <tr className="bg-[var(--pbp-surface-base)] align-middle transition hover:bg-[var(--pbp-surface-soft)]">
       <td className="px-3 py-2">
@@ -301,15 +223,12 @@ function MaterialOrderLineRow({
         />
       </td>
       <td className="px-2 py-2 text-center font-semibold pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
-      <td className="px-2 py-2 text-center text-xs pbp-text-muted">
-        <span className="font-semibold pbp-text-primary">{allocatedQuantity}</span> / {remainingQuantity}
-      </td>
-      <td className="px-3 py-2 text-center">
+      <td className="px-2 py-2 text-center">
         <button
           type="button"
           disabled={!editable}
           onClick={() => onRemoveLine(line.id)}
-          aria-label="품목 라인 삭제"
+          aria-label="주문 내역 삭제"
           className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-base font-semibold leading-none pbp-text-muted transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           −
