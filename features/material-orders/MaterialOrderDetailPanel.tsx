@@ -60,9 +60,9 @@ export default function MaterialOrderDetailPanel({
   const displayMaterialType = materialType;
 
   return (
-    <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3">
+    <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-2.5">
       {selectedOrder ? (
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_minmax(0,1fr)_auto] gap-2">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_minmax(0,1fr)_auto] gap-1.5">
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             changing={statusChanging}
@@ -70,7 +70,7 @@ export default function MaterialOrderDetailPanel({
             onChangeStatus={onChangeStatus}
           />
 
-          <div className="grid gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-sm xl:grid-cols-2">
+          <div className="grid gap-1.5 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 shadow-sm xl:grid-cols-2">
               <FieldLabel label="구분">
                 <select
                   value={displayMaterialType}
@@ -108,7 +108,7 @@ export default function MaterialOrderDetailPanel({
               </FieldLabel>
           </div>
 
-          <div className="flex min-h-0 overflow-hidden rounded-xl border border-stone-200 bg-white p-1.5 shadow-sm">
+          <div className="flex min-h-0 overflow-hidden rounded-xl border border-stone-200 bg-white p-1 shadow-sm">
             <div className="h-full min-h-0 w-full max-w-full overflow-auto rounded-lg border border-stone-200 bg-white">
               <table className="w-full min-w-[540px] table-fixed text-left">
                 <colgroup>
@@ -152,7 +152,7 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="grid min-h-[3.25rem] shrink-0 grid-cols-2 items-center gap-x-4 gap-y-1 rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-2 text-[11px] md:grid-cols-4">
+          <div className="grid min-h-[2.25rem] shrink-0 grid-cols-2 items-center gap-x-4 gap-y-0.5 rounded-lg border border-stone-200 bg-stone-50/80 px-3 py-1 text-[11px] md:grid-cols-4">
             <SummaryValue label="품목" value={`${totals.lineCount}종`} />
             <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
             <SummaryValue label="할당/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
@@ -261,7 +261,7 @@ function MaterialOrderStatusFlow({
   const primaryActionIndex = actions.length > 0 ? actions.length - 1 : -1;
 
   return (
-    <div className="pbp-workflow-panel rounded-xl border p-3 shadow-sm">
+    <div className="pbp-workflow-panel rounded-xl border px-3 pb-2 pt-2.5 shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-xs font-semibold text-stone-900">진행 단계</div>
@@ -288,7 +288,7 @@ function MaterialOrderStatusFlow({
         ) : null}
       </div>
 
-      <div className="mt-3">
+      <div className="mt-2">
         <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
           {steps.map((step, index) => {
             const isDone = index <= currentIndex;
@@ -312,7 +312,7 @@ function MaterialOrderStatusFlow({
         </div>
       </div>
 
-      <div className="mt-2 flex items-center gap-1.5 text-[11px] leading-4 text-[var(--pbp-text-muted)]">
+      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] leading-4 text-[var(--pbp-text-muted)]">
         <span>자재 발주</span>
         <span>·</span>
         <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
@@ -339,7 +339,7 @@ function resolveMaterialOrderStatusActions(status: MaterialOrderStatus): Array<{
 
 function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+    <label className="grid gap-0.5 text-[11px] font-semibold pbp-text-subtle">
       {label}
       {children}
     </label>
