@@ -62,8 +62,8 @@ export default function MaterialOrderDetailPanel({
   return (
     <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3">
       {selectedOrder ? (
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-2">
-          <div className="grid gap-2">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-1.5">
+          <div className="grid gap-1.5">
             <MaterialOrderStatusFlow
               status={selectedOrder.status}
               changing={statusChanging}
@@ -71,7 +71,7 @@ export default function MaterialOrderDetailPanel({
               onChangeStatus={onChangeStatus}
             />
 
-            <div className="grid gap-2 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm xl:grid-cols-2">
+            <div className="grid gap-1.5 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-sm xl:grid-cols-2">
               <FieldLabel label="구분">
                 <select
                   value={displayMaterialType}
@@ -110,8 +110,8 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="min-h-0 overflow-hidden rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4">
-            <div className="min-h-0 max-w-full overflow-auto rounded-xl border border-stone-200 bg-white">
+          <div className="flex min-h-0 overflow-hidden rounded-2xl border border-stone-200 bg-white p-2 shadow-sm">
+            <div className="h-full min-h-0 w-full max-w-full overflow-auto rounded-xl border border-stone-200 bg-white">
               <table className="w-full min-w-[540px] table-fixed text-left">
                 <colgroup>
                   <col className="w-[27%]" />
@@ -133,7 +133,7 @@ export default function MaterialOrderDetailPanel({
                 <tbody>
                   {lines.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-8 text-center text-xs text-stone-500" colSpan={6}>
+                      <td className="px-3 py-5 text-center text-xs text-stone-500" colSpan={6}>
                         주문할 자재를 선택하세요.
                       </td>
                     </tr>
@@ -154,7 +154,7 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center justify-between gap-3 rounded-xl border border-stone-200 bg-stone-50/70 px-3 py-2 text-xs">
+          <div className="flex min-h-9 shrink-0 items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50/70 px-3 py-1.5 text-xs">
             <SummaryValue label="품목" value={`${totals.lineCount}종`} />
             <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
             <SummaryValue label="할당/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
@@ -263,8 +263,8 @@ function MaterialOrderStatusFlow({
   const primaryActionIndex = actions.length > 0 ? actions.length - 1 : -1;
 
   return (
-    <div className="pbp-workflow-panel rounded-[24px] border p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <div className="pbp-workflow-panel rounded-2xl border p-3 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-stone-900">진행 단계</div>
         </div>
@@ -278,7 +278,7 @@ function MaterialOrderStatusFlow({
                   type="button"
                   disabled={changing}
                   onClick={() => onChangeStatus(action.nextStatus)}
-                  className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                  className={`inline-flex items-center justify-center rounded-xl px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
                     isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"
                   }`}
                 >
@@ -290,13 +290,13 @@ function MaterialOrderStatusFlow({
         ) : null}
       </div>
 
-      <div className="mt-4">
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+      <div className="mt-2.5">
+        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
           {steps.map((step, index) => {
             const isDone = index <= currentIndex;
             const isCurrent = step.status === status;
             return (
-              <div key={step.status} className="relative flex flex-col items-center gap-2 text-center">
+              <div key={step.status} className="relative flex flex-col items-center gap-1.5 text-center">
                 {index < steps.length - 1 ? (
                   <div className={`absolute left-1/2 top-3 h-0.5 w-full ${isDone ? "bg-[var(--pbp-selected-border)]" : "bg-[var(--pbp-border)]"}`} aria-hidden="true" />
                 ) : null}
@@ -314,7 +314,7 @@ function MaterialOrderStatusFlow({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 text-xs text-[var(--pbp-text-muted)]">
+      <div className="mt-2.5 flex items-center gap-2 text-xs text-[var(--pbp-text-muted)]">
         <span>자재 발주</span>
         <span>·</span>
         <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
@@ -341,7 +341,7 @@ function resolveMaterialOrderStatusActions(status: MaterialOrderStatus): Array<{
 
 function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+    <label className="grid gap-0.5 text-[11px] font-semibold pbp-text-subtle">
       {label}
       {children}
     </label>
@@ -369,14 +369,14 @@ function resolveUnitSelectValue(unit: string): string {
 
 function compactInputClassName(extra = "") {
   return [
-    "pbp-field-interaction pbp-workorder-editable-input min-h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
+    "pbp-field-interaction pbp-workorder-editable-input min-h-7 block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
   ].filter(Boolean).join(" ");
 }
 
 function compactSelectClassName(extra = "") {
   return [
-    "pbp-field-interaction pbp-workorder-editable-input min-h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 pr-6 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
+    "pbp-field-interaction pbp-workorder-editable-input min-h-7 block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 pr-6 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
   ].filter(Boolean).join(" ");
 }
