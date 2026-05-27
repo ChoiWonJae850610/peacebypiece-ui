@@ -59,6 +59,12 @@ const MATERIAL_ORDER_UNIT_OPTIONS = [
   "박스",
 ] as const;
 
+const MATERIAL_ORDER_PANEL_GAP_CLASS = "gap-3";
+const MATERIAL_ORDER_SECTION_CARD_CLASS =
+  "rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4";
+const MATERIAL_ORDER_TABLE_SHELL_CLASS =
+  "max-w-full overflow-hidden rounded-xl border border-stone-200 bg-white";
+
 export default function MaterialOrderDetailPanel({
   selectedOrder,
   materialType,
@@ -80,9 +86,9 @@ export default function MaterialOrderDetailPanel({
   const displayMaterialType = materialType;
 
   return (
-    <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-2.5">
+    <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3.5">
       {selectedOrder ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
+        <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_PANEL_GAP_CLASS}`}>
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             changing={statusChanging}
@@ -90,7 +96,7 @@ export default function MaterialOrderDetailPanel({
             onChangeStatus={onChangeStatus}
           />
 
-          <div className="grid shrink-0 gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-3 shadow-sm xl:grid-cols-2">
+          <div className={`${MATERIAL_ORDER_SECTION_CARD_CLASS} grid shrink-0 gap-3 xl:grid-cols-2`}>
             <FieldLabel label="구분">
               <select
                 value={displayMaterialType}
@@ -142,8 +148,8 @@ export default function MaterialOrderDetailPanel({
             </FieldLabel>
           </div>
 
-          <div className="flex min-h-[10rem] flex-1 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-sm">
-            <div className="h-full min-h-0 w-full max-w-full overflow-auto rounded-lg border border-stone-200 bg-white">
+          <div className={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}>
+            <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
               <table className="w-full min-w-[540px] table-fixed text-left">
                 <colgroup>
                   <col className="w-[27%]" />
@@ -196,8 +202,8 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="shrink-0 rounded-xl border border-stone-200 bg-stone-50/80 px-4 py-2.5 text-[11px]">
-            <div className="grid grid-cols-3 items-center gap-4">
+          <div className="shrink-0 rounded-[24px] border border-stone-200 bg-stone-50/80 px-3.5 py-3 text-[11px] shadow-sm xl:px-4">
+            <div className="grid grid-cols-3 items-center gap-3">
               <SummaryValue label="품목" value={`${totals.lineCount}종`} />
               <SummaryValue
                 label="주문"
@@ -208,7 +214,7 @@ export default function MaterialOrderDetailPanel({
                 value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`}
               />
             </div>
-            <div className="mt-1.5 flex items-center justify-end">
+            <div className="mt-2 flex items-center justify-end">
               <SummaryValue
                 label="합계"
                 value={formatMaterialOrderAmount(totals.totalAmount)}
@@ -376,7 +382,6 @@ function MaterialOrderStatusFlow({
       title="진행 단계"
       steps={progressSteps}
       actions={progressActions}
-      density="compact"
       footer={
         <>
           <span>자재 발주</span>
