@@ -56,8 +56,8 @@ export default function MaterialOrderDetailPanel({
   return (
     <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3">
       {selectedOrder ? (
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-2.5">
-          <div className="grid gap-2 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-2.5">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-2">
+          <div className="grid gap-2 rounded-2xl border border-stone-200 bg-stone-50/80 p-2">
             <MaterialOrderStatusFlow
               status={selectedOrder.status}
               changing={statusChanging}
@@ -65,7 +65,7 @@ export default function MaterialOrderDetailPanel({
               onChangeStatus={onChangeStatus}
             />
 
-            <div className="grid gap-2 xl:grid-cols-2">
+            <div className="grid gap-1.5 xl:grid-cols-2">
               <FieldLabel label="구분">
                 <select
                   value={displayMaterialType}
@@ -104,25 +104,25 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-col rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-2.5">
+          <div className="flex min-h-0 flex-col rounded-2xl border border-stone-200 bg-white p-2 shadow-sm">
             <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-stone-200 bg-white">
               <table className="w-full min-w-[540px] table-fixed border-collapse text-left text-xs">
                 <colgroup>
-                  <col className="w-[30%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[16%]" />
+                  <col className="w-[32%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[15%]" />
                   <col className="w-[18%]" />
                   <col className="w-[16%]" />
                   <col className="w-[6%]" />
                 </colgroup>
                 <thead className="sticky top-0 z-10 bg-stone-50/90 text-[11px] font-semibold text-stone-500">
                   <tr className="border-b border-stone-200">
-                    <th className="px-2.5 py-1.5 text-center">품목명</th>
-                    <th className="px-2 py-1.5 text-center">단위</th>
-                    <th className="px-2 py-1.5 text-center">수량</th>
-                    <th className="px-2 py-1.5 text-center">단가</th>
-                    <th className="px-2 py-1.5 text-center">금액</th>
-                    <th className="px-1.5 py-1.5 text-center" aria-label="삭제" />
+                    <th className="px-3 py-2 text-center">품목명</th>
+                    <th className="px-2 py-2 text-center">단위</th>
+                    <th className="px-2 py-2 text-center">수량</th>
+                    <th className="px-2 py-2 text-center">단가</th>
+                    <th className="px-2 py-2 text-center">금액</th>
+                    <th className="px-1.5 py-2 text-center" aria-label="삭제" />
                   </tr>
                 </thead>
                 <tbody>
@@ -148,7 +148,7 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center justify-between gap-3 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs">
+          <div className="flex shrink-0 items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50/80 px-3 py-1.5 text-xs">
             <SummaryValue label="품목" value={`${totals.lineCount}종`} />
             <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
             <SummaryValue label="할당/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
@@ -180,8 +180,8 @@ function MaterialOrderLineRow({
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
   return (
-    <tr className="border-b border-stone-100 bg-white align-middle transition hover:bg-stone-50">
-      <td className="px-2.5 py-1.5">
+    <tr className="border-b border-stone-100 bg-white align-middle transition even:bg-stone-50/70 hover:bg-stone-50">
+      <td className="px-2 py-2">
         <input
           value={line.itemName}
           disabled={!editable}
@@ -190,7 +190,7 @@ function MaterialOrderLineRow({
           className={fieldClassName("min-w-[160px]")}
         />
       </td>
-      <td className="px-2 py-1.5">
+      <td className="px-2 py-2">
         <select
           value={resolveUnitSelectValue(line.unit)}
           disabled={!editable}
@@ -203,7 +203,7 @@ function MaterialOrderLineRow({
           ))}
         </select>
       </td>
-      <td className="px-2 py-1.5">
+      <td className="px-2 py-2">
         <input
           type="text"
           inputMode="decimal"
@@ -213,7 +213,7 @@ function MaterialOrderLineRow({
           className={fieldClassName("w-full text-center")}
         />
       </td>
-      <td className="px-2 py-1.5">
+      <td className="px-2 py-2">
         <input
           type="text"
           inputMode="numeric"
@@ -223,8 +223,8 @@ function MaterialOrderLineRow({
           className={fieldClassName("w-full text-right tabular-nums")}
         />
       </td>
-      <td className="px-2 py-1.5 text-right text-xs font-semibold tabular-nums pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
-      <td className="px-1.5 py-1.5 text-center">
+      <td className="px-2 py-2 text-right text-xs font-semibold tabular-nums pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
+      <td className="px-1.5 py-2 text-center">
         <button
           type="button"
           disabled={!editable}
@@ -260,10 +260,10 @@ function MaterialOrderStatusFlow({
   const actions = resolveMaterialOrderStatusActions(status);
 
   return (
-    <div className="rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm">
+    <div className="rounded-2xl border border-stone-200 bg-white p-2.5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold pbp-text-primary">진행 단계</p>
+          <p className="text-xs font-semibold pbp-text-primary">진행 단계</p>
         </div>
         {actions.length > 0 ? (
           <div className="flex shrink-0 flex-wrap justify-end gap-2">
@@ -271,7 +271,7 @@ function MaterialOrderStatusFlow({
               <AdminButton
                 key={`${status}-${action.nextStatus}`}
                 size="sm"
-                className="min-h-8 px-3 py-1 text-xs"
+                className="min-h-7 px-3 py-0.5 text-xs"
                 variant={index === actions.length - 1 ? "primary" : "ghost"}
                 disabled={changing}
                 onClick={() => onChangeStatus(action.nextStatus)}
@@ -283,29 +283,29 @@ function MaterialOrderStatusFlow({
         ) : null}
       </div>
 
-      <div className="mt-4 grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+      <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
         {steps.map((step, index) => {
           const isDone = index <= currentIndex;
           const isCurrent = step.status === status;
           return (
             <div key={step.status} className="relative flex flex-col items-center gap-2 text-center">
               {index < steps.length - 1 ? (
-                <div className={`absolute left-1/2 top-3 h-0.5 w-full ${isDone ? "bg-[var(--pbp-selected-border)]" : "bg-[var(--pbp-border)]"}`} aria-hidden="true" />
+                <div className={`absolute left-1/2 top-2.5 h-0.5 w-full ${isDone ? "bg-[var(--pbp-selected-border)]" : "bg-[var(--pbp-border)]"}`} aria-hidden="true" />
               ) : null}
               <div
-                className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
+                className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full border ${
                   isDone ? "border-transparent bg-[var(--pbp-selected-border)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
                 }`}
               >
-                <span className={`h-2.5 w-2.5 rounded-full ${isDone ? "bg-white" : "bg-[var(--pbp-text-subtle)]"}`} />
+                <span className={`h-2 w-2 rounded-full ${isDone ? "bg-white" : "bg-[var(--pbp-text-subtle)]"}`} />
               </div>
-              <div className={`text-xs font-medium ${isCurrent ? "pbp-text-primary" : "pbp-text-muted"}`}>{step.label}</div>
+              <div className={`text-[11px] font-medium ${isCurrent ? "pbp-text-primary" : "pbp-text-muted"}`}>{step.label}</div>
             </div>
           );
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2 text-xs pbp-text-muted">
+      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] pbp-text-muted">
         <span>자재 발주</span>
         <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
       </div>
@@ -359,7 +359,7 @@ function resolveUnitSelectValue(unit: string): string {
 
 function fieldClassName(extra = "") {
   return [
-    "min-h-7 w-full rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] pbp-text-primary outline-none transition placeholder:text-stone-400 focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-stone-50 disabled:opacity-70",
+    "min-h-7 w-full rounded-lg border border-stone-200 bg-stone-50/70 px-2 py-1 text-[11px] pbp-text-primary outline-none transition placeholder:text-stone-400 focus:border-[var(--pbp-action-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-stone-50 disabled:opacity-70",
     extra,
   ].filter(Boolean).join(" ");
 }
