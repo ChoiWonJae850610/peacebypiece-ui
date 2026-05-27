@@ -58,7 +58,7 @@ export default function ProductionCompositionSection({
     <div className="overflow-hidden rounded-[22px] border border-stone-200 bg-white p-3 shadow-sm xl:p-3.5">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-3 grid gap-3">
+        <div className="mt-3 grid gap-3 xl:grid-cols-2 xl:items-start">
           <MaterialSection
             materials={materials}
             open={materialOpen}

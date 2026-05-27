@@ -52,10 +52,10 @@ export default function OutsourcingSection({
     : copy.empty;
 
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 xl:h-full">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:overflow-x-hidden">
+        <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:max-h-[360px] xl:overflow-auto">
           <table className="w-full min-w-[520px] table-fixed text-left xl:min-w-0">
             <colgroup>
               <col className="w-[36%]" />
