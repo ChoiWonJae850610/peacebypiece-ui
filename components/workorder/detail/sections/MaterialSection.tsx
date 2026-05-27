@@ -78,7 +78,7 @@ export default function MaterialSection({
             <tbody>
               {materials.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-7 text-center text-sm text-stone-500">{copy.empty}</td>
+                  <td colSpan={5} className="px-3 py-2 text-center text-xs text-stone-500">{copy.empty}</td>
                 </tr>
               ) : null}
               {materials.map((item, rowIndex) => (
@@ -107,9 +107,6 @@ export default function MaterialSection({
               )}
             </tbody>
           </table>
-          <div className="border-t border-stone-200 bg-stone-50/70 px-3 py-2 text-xs leading-5 text-stone-500">
-            {copy.handoffNote}
-          </div>
       </div>
     </div>
   );
