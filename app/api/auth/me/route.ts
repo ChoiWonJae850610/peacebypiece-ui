@@ -7,16 +7,18 @@ import { resolveMemberWorkspacePermissionCodes } from "@/lib/admin/members/membe
 
 export const dynamic = "force-dynamic";
 
+const noStoreHeaders = { "Cache-Control": "no-store" } as const;
+
 export async function GET() {
-  const session = await getCurrentWaflSession();
+  const session = await getCurrentWaflSession().catch(() => null);
 
   if (!session) {
-    return NextResponse.json<WaflCurrentUserResponse>({ authenticated: false }, { status: 401, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json<WaflCurrentUserResponse>({ authenticated: false }, { status: 401, headers: noStoreHeaders });
   }
 
   const [profile, permissionCodes] = await Promise.all([
-    session.companyId ? getPersonalProfile(session) : null,
-    session.companyId ? resolveMemberWorkspacePermissionCodes(session) : Promise.resolve([]),
+    session.companyId ? getPersonalProfile(session).catch(() => null) : null,
+    session.companyId ? resolveMemberWorkspacePermissionCodes(session).catch(() => []) : Promise.resolve([]),
   ]);
 
   return NextResponse.json<WaflCurrentUserResponse>(
@@ -35,6 +37,6 @@ export async function GET() {
         profileComplete: profile?.profileComplete ?? false,
       },
     },
-    { headers: { "Cache-Control": "no-store" } },
+    { headers: noStoreHeaders },
   );
 }

@@ -63,7 +63,6 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
           return null;
         }
 
-        console.error("Current user refresh failed", result.error);
         return userRef.current;
       })
       .finally(() => {

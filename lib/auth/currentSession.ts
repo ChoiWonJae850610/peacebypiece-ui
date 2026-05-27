@@ -16,5 +16,9 @@ export async function getCurrentWaflSession(): Promise<WaflSessionPayload | null
   const baseSession = verifyWaflSessionCookieValue(cookieStore.get(WAFL_AUTH_SESSION_COOKIE)?.value);
   if (!baseSession) return null;
 
-  return applyDevTestContextOverlay(baseSession, cookieStore.get(WAFL_DEV_TEST_CONTEXT_COOKIE)?.value);
+  try {
+    return await applyDevTestContextOverlay(baseSession, cookieStore.get(WAFL_DEV_TEST_CONTEXT_COOKIE)?.value);
+  } catch {
+    return baseSession;
+  }
 }
