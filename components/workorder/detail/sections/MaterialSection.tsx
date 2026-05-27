@@ -6,7 +6,6 @@ import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStanda
 import {
   DeleteButton,
   EditableValue,
-  SectionHeader,
   EDITABLE_TABLE_CELL_CLASS,
   SELECTABLE_TABLE_CELL_CLASS,
   TABLE_HEADER_CELL_CLASS,
@@ -46,15 +45,19 @@ export default function MaterialSection({
   const copy = i18n.workorder.ui.sections.material;
   const common = i18n.workorder.ui.common;
   const andMore = materials.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(materials.length - 1))}` : "";
+  void open;
+  void onToggle;
   const summary = materials.length > 0
     ? copy.summaryFormat.replace("{name}", translateWorkOrderDisplayText(materials[0].name, locale)).replace("{andMore}", andMore)
     : copy.empty;
 
   return (
     <div className="min-w-0 xl:h-full">
-      <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
-      {open ? (
-        <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:max-h-[360px] xl:overflow-auto">
+      <div className="border-b border-stone-200 pb-1.5">
+        <div className="text-sm font-semibold leading-5 text-stone-900">{copy.title}</div>
+        <div className="mt-0.5 block min-w-0 max-w-full break-words text-[11px] leading-4 text-stone-500 sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap md:text-xs">{summary}</div>
+      </div>
+      <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:max-h-[360px] xl:overflow-auto">
           <table className="w-full min-w-[560px] table-fixed text-left xl:min-w-0">
             <colgroup>
               <col className="w-[16%]" />
@@ -107,8 +110,7 @@ export default function MaterialSection({
           <div className="border-t border-stone-200 bg-stone-50/70 px-3 py-2 text-xs leading-5 text-stone-500">
             {copy.handoffNote}
           </div>
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import { useI18n } from "@/lib/i18n";
 import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
-import { formatCurrencySummary, formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
+import { formatCurrencySummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import {
@@ -11,7 +11,6 @@ import {
   EDITABLE_TABLE_CELL_CLASS,
   EditableValue,
   SELECTABLE_TABLE_CELL_CLASS,
-  SectionHeader,
   TABLE_HEADER_CELL_CLASS,
   type EditableCell,
   type EditableSectionKey,
@@ -71,7 +70,6 @@ export default function OrderInfoSection({
     return acc;
   }, {});
   const inspectionStatusSummary = Object.values(inspectionStatusCounts);
-  const orderSummary = formatOrderSummary(orderEntries, i18n);
   const dueDatePickerLabels = {
     placeholder: copy.datePicker.placeholder,
     clear: copy.datePicker.clear,
@@ -89,14 +87,16 @@ export default function OrderInfoSection({
     </button>
   ) : null;
 
+  void open;
+  void onToggle;
+
   return (
     <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4">
-      <SectionHeader title={copy.title} summary={orderSummary} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
-      {open ? (
-        <>
-          {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
+      {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
+      {inspectionStatusSummary.length > 0 || inspectionButton ? (
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           {inspectionStatusSummary.length > 0 ? (
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 rounded-2xl border border-stone-200 bg-stone-50/80 px-3 py-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
               <span className="mr-1 text-[11px] font-semibold text-stone-500">{copy.statusSummaryLabel}</span>
               {inspectionStatusSummary.map((status) => (
                 <span key={status.label} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none ${status.tone}`}>
@@ -104,8 +104,13 @@ export default function OrderInfoSection({
                 </span>
               ))}
             </div>
-          ) : null}
-          <div className="mt-3 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white">
+          ) : (
+            <span aria-hidden="true" />
+          )}
+          {inspectionButton}
+        </div>
+      ) : null}
+      <div className="max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white">
             <table className="min-w-[720px] w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[13%]" />
@@ -171,9 +176,7 @@ export default function OrderInfoSection({
                 )}
               </tbody>
             </table>
-          </div>
-        </>
-      ) : null}
+      </div>
     </div>
   );
 }

@@ -1,8 +1,6 @@
-import { useI18n } from "@/lib/i18n";
-import { formatProductionCompositionSummary } from "@/lib/workorder/detail/detailFormatting";
 import MaterialSection from "@/components/workorder/detail/sections/MaterialSection";
 import OutsourcingSection from "@/components/workorder/detail/sections/OutsourcingSection";
-import { SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
+import { type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material, Outsourcing } from "@/types/workorder";
 
 export default function ProductionCompositionSection({
@@ -50,15 +48,11 @@ export default function ProductionCompositionSection({
   outsourcingProcessOptions: string[];
   locked?: boolean;
 }) {
-  const { i18n } = useI18n();
-  const copy = i18n.workorder.ui.sections.productionComposition;
-  const summary = formatProductionCompositionSummary(materials, outsourcing, i18n);
-
+  void open;
+  void onToggle;
   return (
     <div className="overflow-hidden rounded-[22px] border border-stone-200 bg-white p-3 shadow-sm xl:p-3.5">
-      <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
-      {open ? (
-        <div className="mt-3 grid gap-3 xl:grid-cols-2 xl:items-start">
+      <div className="grid gap-3 xl:grid-cols-2 xl:items-start">
           <MaterialSection
             materials={materials}
             open={materialOpen}
@@ -88,8 +82,7 @@ export default function ProductionCompositionSection({
             processOptions={outsourcingProcessOptions}
             locked={locked}
           />
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 }
