@@ -7,11 +7,9 @@ import {
   DeleteButton,
   EditableValue,
   SectionHeader,
-  CALCULATED_TABLE_CELL_CLASS,
   EDITABLE_TABLE_CELL_CLASS,
   SELECTABLE_TABLE_CELL_CLASS,
   TABLE_HEADER_CELL_CLASS,
-  TABLE_VALUE_TEXT_CLASS,
   type EditableCell,
   type EditableSectionKey,
 } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -28,7 +26,6 @@ export default function MaterialSection({
   onCancelEdit,
   onAdd,
   onRemove,
-  vendorOptionsById,
   locked = false,
 }: {
   materials: Material[];
@@ -48,10 +45,9 @@ export default function MaterialSection({
   const { materialUnitOptions } = useCompanyStandardOptions();
   const copy = i18n.workorder.ui.sections.material;
   const common = i18n.workorder.ui.common;
-  const total = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const andMore = materials.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(materials.length - 1))}` : "";
   const summary = materials.length > 0
-    ? copy.summaryFormat.replace("{name}", translateWorkOrderDisplayText(materials[0].name, locale)).replace("{andMore}", andMore).replace("{total}", `${total.toLocaleString()}${common.currencySuffix}`)
+    ? copy.summaryFormat.replace("{name}", translateWorkOrderDisplayText(materials[0].name, locale)).replace("{andMore}", andMore)
     : copy.empty;
 
   return (
@@ -59,20 +55,17 @@ export default function MaterialSection({
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:overflow-x-hidden">
-          <table className="w-full min-w-[760px] table-fixed text-left xl:min-w-0">
+          <table className="w-full min-w-[560px] table-fixed text-left xl:min-w-0">
             <colgroup>
-              <col className="w-[11%]" />
-              <col className="w-[17%]" />
+              <col className="w-[16%]" />
+              <col className="w-[34%]" />
               <col className="w-[18%]" />
+              <col className="w-[22%]" />
               <col className="w-[10%]" />
-              <col className="w-[11%]" />
-              <col className="w-[13%]" />
-              <col className="w-[13%]" />
-              <col className="w-[7%]" />
             </colgroup>
             <thead className="text-stone-500">
               <tr className="border-b border-stone-200">
-                {[copy.fields.type, copy.fields.vendor, copy.fields.name, copy.fields.quantity, copy.fields.unit, copy.fields.unitCost, copy.fields.amount, ""].map((header, index) => (
+                {[copy.fields.type, copy.fields.name, copy.fields.quantity, copy.fields.unit, ""].map((header, index) => (
                   <th key={`${header}-${index}`} className={`${TABLE_HEADER_CELL_CLASS} text-center`}>
                     <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                   </th>
@@ -82,18 +75,15 @@ export default function MaterialSection({
             <tbody>
               {materials.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-7 text-center text-sm text-stone-500">{copy.empty}</td>
+                  <td colSpan={5} className="px-3 py-7 text-center text-sm text-stone-500">{copy.empty}</td>
                 </tr>
               ) : null}
               {materials.map((item, rowIndex) => (
                 <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))} options={MATERIAL_TYPE_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.vendor, (value) => translateWorkOrderDisplayText(value, locale))} options={vendorOptionsById[item.id] ?? []} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={EDITABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="name" value={item.name} displayValue={translateWorkOrderDisplayText(item.name, locale)} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={EDITABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} displayValue={translateWorkOrderDisplayText(item.unit, locale)} options={materialUnitOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={EDITABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={CALCULATED_TABLE_CELL_CLASS}><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}{common.currencySuffix}</span></td>
                   <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                     <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
                   </td>
@@ -101,7 +91,7 @@ export default function MaterialSection({
               ))}
               {locked ? null : (
                 <tr>
-                  <td colSpan={8} className="px-1.5 pb-1 pt-1.5 lg:px-2">
+                  <td colSpan={5} className="px-1.5 pb-1 pt-1.5 lg:px-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -115,7 +105,7 @@ export default function MaterialSection({
             </tbody>
           </table>
           <div className="border-t border-stone-200 bg-stone-50/70 px-3 py-2 text-xs leading-5 text-stone-500">
-            원단·부자재 발주와 작업지시서별 배분은 원단·부자재 발주 화면에서 처리합니다.
+            {copy.handoffNote}
           </div>
         </div>
       ) : null}
