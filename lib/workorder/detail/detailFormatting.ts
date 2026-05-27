@@ -29,10 +29,6 @@ export function getDisplayValue(field: string, value: string) {
   return isEditorNumericField(field) ? formatNumericDisplay(value) : value;
 }
 
-function sumTotalCost(items: readonly { totalCost?: number }[]) {
-  return items.reduce((sum, item) => sum + (Number(item.totalCost) || 0), 0);
-}
-
 export function formatCurrencySummary(total: number, i18n: ReturnType<typeof getI18n> = getI18n()) {
   const copy = i18n.workorder.ui.formatting;
   const common = i18n.workorder.ui.common;
@@ -51,14 +47,9 @@ export function formatCurrencySummaryParts(total: number, i18n: ReturnType<typeo
 
 export function formatProductionCompositionSummary(materials: readonly Material[], outsourcing: readonly Outsourcing[], i18n: ReturnType<typeof getI18n> = getI18n()) {
   const copy = i18n.workorder.ui.sections.productionComposition;
-  const common = i18n.workorder.ui.common;
-  const materialTotal = sumTotalCost(materials);
-  const outsourcingTotal = sumTotalCost(outsourcing);
-
   return [
     copy.summaryMaterialCount.replace("{count}", String(materials.length)),
     copy.summaryOutsourcingCount.replace("{count}", String(outsourcing.length)),
-    copy.summaryTotal.replace("{total}", `${(materialTotal + outsourcingTotal).toLocaleString()}${common.currencySuffix}`),
   ].join(" · ");
 }
 
