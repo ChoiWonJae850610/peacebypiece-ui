@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type KeyboardEvent } from "react";
+import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
 import { getMemoDisplayContent, getVisibleMemoReplies, getVisibleMemoThreads, isDeletedMemoItem } from "@/lib/workorder/presentation/memoPresentation";
@@ -386,7 +387,7 @@ export default function WorkOrderMemoPanel({
     <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
       <div className={isMobile ? "flex min-w-0 items-center justify-between gap-2" : "flex min-w-0 items-center justify-between gap-3"}>
         <h3 className="text-sm font-semibold pbp-text-primary">{ui.memo.panelTitle}</h3>
-        <span className="pbp-sidepanel-count-badge rounded-full px-2 py-1 text-[11px] font-medium">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
+        <SectionCountBadge>{`${memoThreads.length}${ui.memo.countSuffix}`}</SectionCountBadge>
       </div>
       <div className={isMobile ? "pbp-workorder-editable-panel mt-2.5 min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
         <div className="text-[11px] pbp-text-muted">{getMemoAuthorDisplayName({ authorId: currentUserId, authorName: currentUserName, authorRole: currentUserRole }, users, ui.memo)}</div>

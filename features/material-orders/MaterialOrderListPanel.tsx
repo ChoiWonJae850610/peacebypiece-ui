@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
+import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import {
   MATERIAL_ORDER_EMPTY_STATE_CLASS,
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
@@ -101,9 +102,7 @@ export default function MaterialOrderListPanel({
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-end justify-between gap-2">
           <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
-          <AdminStatusBadge tone={filteredOrders.length > 0 ? "info" : "neutral"} size="xs" className="translate-y-0.5">
-            {filteredOrders.length}건
-          </AdminStatusBadge>
+          <SectionCountBadge className="translate-y-0.5">{filteredOrders.length}건</SectionCountBadge>
         </div>
       </div>
 
