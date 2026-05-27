@@ -54,14 +54,10 @@ export default function MaterialOrderDetailPanel({
   const displayMaterialType = materialType;
 
   return (
-    <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-4">
+    <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3">
       {selectedOrder ? (
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
-          <div className="grid gap-3 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3">
-            <div>
-              <p className="text-sm font-semibold pbp-text-primary">기본 정보</p>
-            </div>
-
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-2.5">
+          <div className="grid gap-2 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-2.5">
             <MaterialOrderStatusFlow
               status={selectedOrder.status}
               changing={statusChanging}
@@ -108,27 +104,31 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-col rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-3">
-            <div className="flex shrink-0 items-center justify-between gap-3 pb-2">
-              <h3 className="text-sm font-semibold pbp-text-primary">주문 내역</h3>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[var(--pbp-border)]">
-              <table className="w-full min-w-[540px] border-collapse text-xs">
-                <thead className="sticky top-0 z-10 bg-[var(--pbp-surface-soft)] text-xs font-semibold pbp-text-subtle">
-                  <tr>
-                    <th className="px-3 py-2 text-left">품목명</th>
-                    <th className="px-2 py-2 text-center">단위</th>
-                    <th className="px-2 py-2 text-center">수량</th>
-                    <th className="px-2 py-2 text-center">단가</th>
-                    <th className="px-2 py-2 text-center">금액</th>
-                    <th className="w-10 px-2 py-2 text-center" aria-label="삭제" />
+          <div className="flex min-h-0 flex-col rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-2.5">
+            <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-stone-200 bg-white">
+              <table className="w-full min-w-[540px] table-fixed border-collapse text-left text-xs">
+                <colgroup>
+                  <col className="w-[30%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[6%]" />
+                </colgroup>
+                <thead className="sticky top-0 z-10 bg-stone-50/90 text-[11px] font-semibold text-stone-500">
+                  <tr className="border-b border-stone-200">
+                    <th className="px-2.5 py-1.5 text-center">품목명</th>
+                    <th className="px-2 py-1.5 text-center">단위</th>
+                    <th className="px-2 py-1.5 text-center">수량</th>
+                    <th className="px-2 py-1.5 text-center">단가</th>
+                    <th className="px-2 py-1.5 text-center">금액</th>
+                    <th className="px-1.5 py-1.5 text-center" aria-label="삭제" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--pbp-border)]">
+                <tbody>
                   {lines.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-6 text-center text-xs pbp-text-muted" colSpan={6}>
+                      <td className="px-3 py-8 text-center text-xs text-stone-500" colSpan={6}>
                         주문할 자재를 선택하세요.
                       </td>
                     </tr>
@@ -148,11 +148,11 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="grid shrink-0 grid-cols-4 gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2">
+          <div className="flex shrink-0 items-center justify-between gap-3 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs">
             <SummaryValue label="품목" value={`${totals.lineCount}종`} />
             <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
             <SummaryValue label="할당/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
-            <SummaryValue label="합계" value={formatMaterialOrderAmount(totals.totalAmount)} />
+            <SummaryValue label="합계" value={formatMaterialOrderAmount(totals.totalAmount)} emphasize />
           </div>
         </div>
       ) : (
@@ -180,22 +180,22 @@ function MaterialOrderLineRow({
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
   return (
-    <tr className="bg-[var(--pbp-surface-base)] align-middle transition hover:bg-[var(--pbp-surface-soft)]">
-      <td className="px-3 py-2">
+    <tr className="border-b border-stone-100 bg-white align-middle transition hover:bg-stone-50">
+      <td className="px-2.5 py-1.5">
         <input
           value={line.itemName}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { itemName: event.target.value })}
           placeholder="예: 30수 면 블랙"
-          className={fieldClassName("min-w-[180px]")}
+          className={fieldClassName("min-w-[160px]")}
         />
       </td>
-      <td className="px-2 py-2">
+      <td className="px-2 py-1.5">
         <select
           value={resolveUnitSelectValue(line.unit)}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { unit: event.target.value })}
-          className={fieldClassName("w-20 text-center")}
+          className={fieldClassName("w-full text-center")}
         >
           <option value="">단위</option>
           {MATERIAL_ORDER_UNIT_OPTIONS.map((unit) => (
@@ -203,34 +203,34 @@ function MaterialOrderLineRow({
           ))}
         </select>
       </td>
-      <td className="px-2 py-2">
+      <td className="px-2 py-1.5">
         <input
-          type="number"
-          min={0}
+          type="text"
+          inputMode="decimal"
           value={line.orderQuantity}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { orderQuantity: normalizeNumberInput(event.target.value) })}
-          className={fieldClassName("w-20 text-center")}
+          className={fieldClassName("w-full text-center")}
         />
       </td>
-      <td className="px-2 py-2">
+      <td className="px-2 py-1.5">
         <input
-          type="number"
-          min={0}
+          type="text"
+          inputMode="numeric"
           value={line.unitPrice}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { unitPrice: normalizeNumberInput(event.target.value) })}
-          className={fieldClassName("w-24 text-center")}
+          className={fieldClassName("w-full text-right tabular-nums")}
         />
       </td>
-      <td className="px-2 py-2 text-center font-semibold pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
-      <td className="px-2 py-2 text-center">
+      <td className="px-2 py-1.5 text-right text-xs font-semibold tabular-nums pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
+      <td className="px-1.5 py-1.5 text-center">
         <button
           type="button"
           disabled={!editable}
           onClick={() => onRemoveLine(line.id)}
           aria-label="주문 내역 삭제"
-          className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-base font-semibold leading-none pbp-text-muted transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-100 bg-white text-sm font-semibold leading-none text-rose-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           −
         </button>
@@ -338,17 +338,18 @@ function FieldLabel({ label, children }: { label: string; children: ReactNode })
   );
 }
 
-function SummaryValue({ label, value }: { label: string; value: string }) {
+function SummaryValue({ label, value, emphasize = false }: { label: string; value: string; emphasize?: boolean }) {
   return (
-    <div className="min-w-0">
-      <p className="text-[11px] font-semibold pbp-text-subtle">{label}</p>
-      <p className="mt-0.5 truncate text-sm font-semibold pbp-text-primary">{value}</p>
+    <div className="flex min-w-0 items-center gap-1.5">
+      <span className="shrink-0 text-[11px] font-semibold pbp-text-subtle">{label}</span>
+      <span className={`truncate text-xs font-semibold tabular-nums ${emphasize ? "pbp-text-primary" : "pbp-text-muted"}`}>{value}</span>
     </div>
   );
 }
 
 function normalizeNumberInput(value: string): number {
-  const parsed = Number(value);
+  const normalizedValue = value.replace(/,/g, "").trim();
+  const parsed = Number(normalizedValue);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
@@ -358,7 +359,7 @@ function resolveUnitSelectValue(unit: string): string {
 
 function fieldClassName(extra = "") {
   return [
-    "min-h-8 w-full rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-1 text-xs pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-soft)] disabled:opacity-70",
+    "min-h-7 w-full rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] pbp-text-primary outline-none transition placeholder:text-stone-400 focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-stone-50 disabled:opacity-70",
     extra,
   ].filter(Boolean).join(" ");
 }
