@@ -332,9 +332,13 @@ export function useWorkOrderDetailEditor({
   };
 
   const addOutsourcing = () => {
+    const representativeEntry = getRepresentativeOrderEntry(orderItems);
     const nextItems = [
       ...outsourcingItems,
-      createNewOutsourcingItem(),
+      createNewOutsourcingItem({
+        dueDate: representativeEntry?.dueDate ?? "",
+        quantity: representativeEntry?.quantity ?? 0,
+      }),
     ];
     setOutsourcingItems(nextItems);
     onUpdateWorkOrder(toOutsourcingPatch(nextItems));

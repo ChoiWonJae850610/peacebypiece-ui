@@ -402,7 +402,7 @@ export const workorderKo = {
     },
     detailGroups: {
       cost: { eyebrow: "비용", title: "비용 요약", description: "원단, 부자재, 외주, 공임, 로스 비용을 먼저 확인합니다." },
-      order: { eyebrow: "발주", title: "발주 정보", description: "공장별 발주 수량, 납기일, 공임과 로스 비용을 관리합니다." },
+      order: { eyebrow: "발주", title: "발주 정보", description: "생산 공장 1개와 여러 외주공정의 납기·수량·비용을 관리합니다." },
       production: { eyebrow: "생산", title: "생산 구성", description: "필요 자재와 외주공정 항목을 한 곳에서 정리합니다." },
     },
     sections: {
@@ -414,6 +414,14 @@ export const workorderKo = {
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ 발주 추가",
         factoryAddButton: "+ 공장 정보 추가",
+        productionOrderTitle: "생산 공장",
+        productionOrderDescription: "작업지시서당 생산 공장 1개를 기준으로 발주서를 생성합니다.",
+        outsourcingOrder: {
+          title: "외주공정 발주",
+          summaryFormat: "외주공정 {count}개 · 수량 {quantity}장",
+          addButton: "+ 외주공정 추가",
+          handoffNote: "외주공정은 여러 개 추가할 수 있으며, 실제 외주처·납기·수량·외주비는 이 영역에서 관리합니다.",
+        },
         totalRow: "합계",
         empty: "등록된 발주 정보가 없습니다.",
         datePicker: {
@@ -468,7 +476,7 @@ export const workorderKo = {
           vendor: "거래처",
           quantity: "수량",
           unit: "단위",
-          unitCost: "단가",
+          unitCost: "외주비",
           amount: "금액",
         },
       },
@@ -485,7 +493,7 @@ export const workorderKo = {
           vendor: "외주처",
           quantity: "수량",
           unitType: "단위",
-          unitCost: "단가",
+          unitCost: "외주비",
           amount: "금액",
         },
       },

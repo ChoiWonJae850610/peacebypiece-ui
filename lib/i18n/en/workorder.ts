@@ -402,7 +402,7 @@ export const workorderEn = {
     },
     detailGroups: {
       cost: { eyebrow: "Cost", title: "Cost summary", description: "Review fabric, trim, outsourcing, labor, and loss costs first." },
-      order: { eyebrow: "Order", title: "Order info", description: "Manage factory order quantities, due dates, labor, and loss costs." },
+      order: { eyebrow: "Order", title: "Order info", description: "Manage one production factory and multiple outsourcing processes with due dates, quantities, and costs." },
       production: { eyebrow: "Production", title: "Production composition", description: "Review required materials and outsourcing process items in one place." },
     },
     sections: {
@@ -414,6 +414,14 @@ export const workorderEn = {
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ Add order",
         factoryAddButton: "+ Add factory info",
+        productionOrderTitle: "Production factory",
+        productionOrderDescription: "One production factory is used per work order and produces one order document.",
+        outsourcingOrder: {
+          title: "Outsourcing orders",
+          summaryFormat: "{count} outsourcing processes · {quantity} qty",
+          addButton: "+ Add outsourcing process",
+          handoffNote: "Multiple outsourcing processes can be added here. Supplier, due date, quantity, and outsourcing cost are managed in this section.",
+        },
         totalRow: "Total",
         empty: "No order information registered.",
         datePicker: {
@@ -468,7 +476,7 @@ export const workorderEn = {
           vendor: "Supplier",
           quantity: "Qty",
           unit: "Unit",
-          unitCost: "Unit cost",
+          unitCost: "Outsourcing cost",
           amount: "Amount",
         },
       },
@@ -485,7 +493,7 @@ export const workorderEn = {
           vendor: "Supplier",
           quantity: "Qty",
           unitType: "Unit",
-          unitCost: "Unit cost",
+          unitCost: "Outsourcing cost",
           amount: "Amount",
         },
       },

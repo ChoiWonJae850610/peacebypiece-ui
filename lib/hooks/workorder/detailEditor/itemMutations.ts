@@ -67,6 +67,9 @@ export function commitOutsourcingItemsEdit(payload: {
     if (payload.editingCell.field === "unitCost") {
       return recalculateOutsourcing({ ...item, unitCost: toNumber(payload.nextValue) });
     }
+    if (payload.editingCell.field === "dueDate") {
+      return { ...item, dueDate: payload.nextValue } as Outsourcing;
+    }
     if (payload.editingCell.field === "process") {
       const nextProcess = payload.nextValue;
       if (nextProcess !== item.process) {
@@ -94,16 +97,17 @@ export function createNewOrderEntry(orderItems: OrderEntryState[], currentWorkfl
   }, undefined, currentWorkflowState);
 }
 
-export function createNewOutsourcingItem() {
+export function createNewOutsourcingItem(base?: Partial<Outsourcing>) {
   return recalculateOutsourcing({
     id: createId("outsourcing"),
-    process: DEFAULT_OUTSOURCING_PROCESS,
-    vendor: "",
-    quantity: 0,
-    unitType: DEFAULT_OUTSOURCING_UNIT,
-    unitCost: 0,
+    process: base?.process ?? DEFAULT_OUTSOURCING_PROCESS,
+    vendor: base?.vendor ?? "",
+    dueDate: base?.dueDate ?? "",
+    quantity: Number(base?.quantity) || 0,
+    unitType: base?.unitType ?? DEFAULT_OUTSOURCING_UNIT,
+    unitCost: Number(base?.unitCost) || 0,
     totalCost: 0,
-    status: DEFAULT_OUTSOURCING_STATUS,
+    status: base?.status ?? DEFAULT_OUTSOURCING_STATUS,
   });
 }
 
