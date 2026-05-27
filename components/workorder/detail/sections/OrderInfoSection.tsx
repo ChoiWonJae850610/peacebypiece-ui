@@ -93,13 +93,6 @@ export default function OrderInfoSection({
     return acc;
   }, {});
   const inspectionStatusSummary = Object.values(inspectionStatusCounts);
-  const dueDatePickerLabels = {
-    placeholder: copy.datePicker.placeholder,
-    clear: copy.datePicker.clear,
-    done: copy.datePicker.done,
-    selected: copy.datePicker.selected,
-    calendarAria: copy.datePicker.calendarAria,
-  };
   const inspectionButton = canOpenInspectionModal ? (
     <button
       type="button"
@@ -136,59 +129,79 @@ export default function OrderInfoSection({
       <div>
         <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
           <div>
-            <div className="text-xs font-semibold text-stone-900">{copy.productionOrderTitle}</div>
-            <div className="mt-0.5 text-[11px] leading-4 text-stone-500">{copy.productionOrderDescription}</div>
+            <div className="text-xs font-semibold text-stone-900">{copy.orderLineTitle}</div>
+            <div className="mt-0.5 text-[11px] leading-4 text-stone-500">{copy.orderLineDescription}</div>
           </div>
         </div>
         <div className="max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white">
-          <table className="min-w-[720px] w-full table-fixed text-left">
+          <table className="min-w-[760px] w-full table-fixed text-left">
             <colgroup>
-              <col className="w-[14%]" />
+              <col className="w-[10%]" />
+              <col className="w-[16%]" />
               <col className="w-[24%]" />
-              <col className="w-[18%]" />
+              <col className="w-[12%]" />
               <col className="w-[14%]" />
-              <col className="w-[15%]" />
-              <col className="w-[15%]" />
+              <col className="w-[11%]" />
+              <col className="w-[9%]" />
+              <col className="w-[4%]" />
             </colgroup>
             <thead className="text-stone-500">
               <tr className="border-b border-stone-200">
-                {[copy.fields.type, copy.fields.factory, copy.fields.dueDate, copy.fields.quantity, copy.fields.laborCost, copy.fields.lossCost].map((header, index) => (
-                  <th key={`${header}-${index}`} className={TABLE_HEADER_CELL_CLASS}>
+                {[copy.fields.lineType, copy.fields.item, copy.fields.vendor, copy.fields.quantity, copy.fields.laborCost, copy.fields.lossCost, copy.fields.amount, ""].map((header, index) => (
+                  <th key={`${header}-${index}`} className={`${TABLE_HEADER_CELL_CLASS} text-center`}>
                     <span className="block w-full whitespace-nowrap leading-4">{header}</span>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {visibleOrderEntries.length === 0 ? (
+              {visibleOrderEntries.length === 0 && outsourcing.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">{copy.empty}</td>
+                  <td colSpan={8} className="px-3 py-8 text-center text-sm text-stone-500">{copy.empty}</td>
                 </tr>
               ) : null}
               {visibleOrderEntries.map((item, rowIndex) => (
                 <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
+                  <td className="px-3 py-2 text-center align-middle text-xs font-semibold text-stone-700">{copy.sewingLineTypeLabel}</td>
                   <td className={`${SELECTABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} displayValue={translateWorkOrderDisplayText(item.type, locale)} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} displayValue={translateWorkOrderDisplayText(item.factory, locale)} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} centered editingCell={editingCell} editingValue={editingValue} inputType="date" datePickerLabels={dueDatePickerLabels} datePickerLocale={locale} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                  <td className={CALCULATED_TABLE_CELL_CLASS}>{(item.laborCost + item.lossCost).toLocaleString()}{common.currencySuffix}</td>
+                  <td aria-hidden="true" />
+                </tr>
+              ))}
+              {outsourcing.map((item, rowIndex) => (
+                <tr key={item.id} className={`border-b border-stone-100 ${(visibleOrderEntries.length + rowIndex) % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
+                  <td className="px-3 py-2 text-center align-middle text-xs font-semibold text-stone-700">{copy.outsourcingLineTypeLabel}</td>
+                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.process, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingProcessOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.vendor, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingVendorOptionsById[item.id] ?? []} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                  <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                  <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                  <td className={CALCULATED_TABLE_CELL_CLASS}>-</td>
+                  <td className={CALCULATED_TABLE_CELL_CLASS}>{item.totalCost.toLocaleString()}{common.currencySuffix}</td>
+                  <td className="px-1.5 py-2 text-center align-middle lg:px-2">
+                    <DeleteButton onClick={() => onRemoveOutsourcing(item.id)} srLabel={`${item.process || outsourcingCopy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
+                  </td>
                 </tr>
               ))}
               <tr className="bg-stone-50/70">
                 <td className="px-3 py-2 text-xs font-medium text-stone-500" colSpan={3}>{copy.totalRow}</td>
-                <td className={CALCULATED_TABLE_CELL_CLASS}>{totals.quantity.toLocaleString()}{common.quantitySuffix}</td>
-                <td className={CALCULATED_TABLE_CELL_CLASS}>{totals.laborCost.toLocaleString()}{common.currencySuffix}</td>
+                <td className={CALCULATED_TABLE_CELL_CLASS}>{(totals.quantity + outsourcingTotals.quantity).toLocaleString()}{common.quantitySuffix}</td>
+                <td className={CALCULATED_TABLE_CELL_CLASS}>{(totals.laborCost + outsourcingTotals.cost).toLocaleString()}{common.currencySuffix}</td>
                 <td className={CALCULATED_TABLE_CELL_CLASS}>{totals.lossCost.toLocaleString()}{common.currencySuffix}</td>
+                <td className={CALCULATED_TABLE_CELL_CLASS}>{(totals.totalCost + outsourcingTotals.cost).toLocaleString()}{common.currencySuffix}</td>
+                <td aria-hidden="true" />
               </tr>
               <tr className="border-t border-stone-200 bg-stone-50/90">
-                <td className="px-3 py-2 text-right text-xs font-semibold text-stone-900 tabular-nums" colSpan={6}>
-                  {formatCurrencySummary(totals.totalCost, i18n)}
+                <td className="px-3 py-2 text-right text-xs font-semibold text-stone-900 tabular-nums" colSpan={8}>
+                  {formatCurrencySummary(totals.totalCost + outsourcingTotals.cost, i18n)}
                 </td>
               </tr>
               {!locked && visibleOrderEntries.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 pb-2 pt-2">
+                  <td colSpan={8} className="px-3 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -199,71 +212,9 @@ export default function OrderInfoSection({
                   </td>
                 </tr>
               ) : null}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div>
-        <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
-          <div>
-            <div className="text-xs font-semibold text-stone-900">{copy.outsourcingOrder.title}</div>
-            <div className="mt-0.5 text-[11px] leading-4 text-stone-500">
-              {copy.outsourcingOrder.summaryFormat
-                .replace("{count}", String(outsourcing.length))
-                .replace("{quantity}", outsourcingTotals.quantity.toLocaleString())}
-            </div>
-          </div>
-        </div>
-        <div className="max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white">
-          <table className="min-w-[760px] w-full table-fixed text-left">
-            <colgroup>
-              <col className="w-[17%]" />
-              <col className="w-[23%]" />
-              <col className="w-[16%]" />
-              <col className="w-[12%]" />
-              <col className="w-[14%]" />
-              <col className="w-[14%]" />
-              <col className="w-[4%]" />
-            </colgroup>
-            <thead className="text-stone-500">
-              <tr className="border-b border-stone-200">
-                {[outsourcingCopy.fields.process, outsourcingCopy.fields.vendor, copy.fields.dueDate, outsourcingCopy.fields.quantity, outsourcingCopy.fields.unitCost, outsourcingCopy.fields.amount, ""].map((header, index) => (
-                  <th key={`${header}-${index}`} className={`${TABLE_HEADER_CELL_CLASS} text-center`}>
-                    <span className="block w-full whitespace-nowrap leading-4">{header}</span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {outsourcing.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-3 py-7 text-center text-sm text-stone-500">{outsourcingCopy.empty}</td>
-                </tr>
-              ) : null}
-              {outsourcing.map((item, rowIndex) => (
-                <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.process, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingProcessOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.vendor, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingVendorOptionsById[item.id] ?? []} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="outsourcing" rowId={item.id} field="dueDate" value={item.dueDate ?? ""} centered editingCell={editingCell} editingValue={editingValue} inputType="date" datePickerLabels={dueDatePickerLabels} datePickerLocale={locale} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={CALCULATED_TABLE_CELL_CLASS}>{item.totalCost.toLocaleString()}{common.currencySuffix}</td>
-                  <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                    <DeleteButton onClick={() => onRemoveOutsourcing(item.id)} srLabel={`${item.process || outsourcingCopy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
-                  </td>
-                </tr>
-              ))}
-              <tr className="bg-stone-50/70">
-                <td className="px-3 py-2 text-xs font-medium text-stone-500" colSpan={3}>{copy.totalRow}</td>
-                <td className={CALCULATED_TABLE_CELL_CLASS}>{outsourcingTotals.quantity.toLocaleString()}{common.quantitySuffix}</td>
-                <td className={CALCULATED_TABLE_CELL_CLASS}>-</td>
-                <td className={CALCULATED_TABLE_CELL_CLASS}>{outsourcingTotals.cost.toLocaleString()}{common.currencySuffix}</td>
-                <td aria-hidden="true" />
-              </tr>
               {locked ? null : (
                 <tr>
-                  <td colSpan={7} className="px-3 pb-2 pt-2">
+                  <td colSpan={8} className="px-3 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAddOutsourcing}
@@ -277,7 +228,7 @@ export default function OrderInfoSection({
             </tbody>
           </table>
           <div className="border-t border-stone-200 bg-stone-50/70 px-3 py-2 text-xs leading-5 text-stone-500">
-            {copy.outsourcingOrder.handoffNote}
+            {copy.orderLineHandoffNote}
           </div>
         </div>
       </div>

@@ -402,8 +402,8 @@ export const workorderEn = {
     },
     detailGroups: {
       cost: { eyebrow: "Cost", title: "Cost summary", description: "Review fabric, trim, outsourcing, labor, and loss costs first." },
-      order: { eyebrow: "Order", title: "Order info", description: "Manage one production factory and multiple outsourcing processes with due dates, quantities, and costs." },
-      production: { eyebrow: "Production", title: "Production composition", description: "Review required materials and outsourcing process items in one place." },
+      order: { eyebrow: "Order", title: "Order info", description: "Manage sewing and outsourcing in one table." },
+      production: { eyebrow: "Production", title: "Production composition", description: "Review required fabrics and trims for the work order." },
     },
     sections: {
       orderInfo: {
@@ -416,10 +416,15 @@ export const workorderEn = {
         factoryAddButton: "+ Add factory info",
         productionOrderTitle: "Production factory",
         productionOrderDescription: "One production factory is used per work order and produces one order document.",
+        orderLineTitle: "Order lines",
+        orderLineDescription: "Manage sewing and outsourcing in one unified table.",
+        sewingLineTypeLabel: "Sewing",
+        outsourcingLineTypeLabel: "Outsourcing",
+        orderLineHandoffNote: "For sewing, choose sample/main/rework. For outsourcing, choose a registered process and supplier. Outsourcing due dates and detailed completion handling can be refined in the later outsourcing screen.",
         outsourcingOrder: {
           title: "Outsourcing orders",
           summaryFormat: "{count} outsourcing processes · {quantity} qty",
-          addButton: "+ Add outsourcing process",
+          addButton: "+ Add outsourcing",
           handoffNote: "Multiple outsourcing processes can be added here. Supplier, due date, quantity, and outsourcing cost are managed in this section.",
         },
         totalRow: "Total",
@@ -433,11 +438,15 @@ export const workorderEn = {
         },
         fields: {
           type: "Type",
+          lineType: "Type",
+          item: "Item",
+          vendor: "Supplier",
           factory: "Factory",
           dueDate: "Due date",
           quantity: "Qty",
           laborCost: "Labor",
           lossCost: "Loss",
+          amount: "Amount",
           inspectionStatus: "Inspection",
         },
         hub: {
