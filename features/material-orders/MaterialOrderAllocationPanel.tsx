@@ -60,13 +60,10 @@ export default function MaterialOrderAllocationPanel({
   return (
     <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Allocation</p>
-            <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">작업지시서</h2>
-          </div>
-          <AdminStatusBadge tone={candidates.length > 0 ? "info" : "neutral"} size="xs">
-            {candidates.length}건
+        <div className="flex items-end justify-between gap-2">
+          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서</h2>
+          <AdminStatusBadge tone={filteredCandidates.length > 0 ? "info" : "neutral"} size="xs">
+            {filteredCandidates.length}건
           </AdminStatusBadge>
         </div>
         <input

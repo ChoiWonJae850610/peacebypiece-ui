@@ -99,9 +99,11 @@ export default function MaterialOrderListPanel({
   return (
     <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Material orders</p>
-          <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
+        <div className="flex items-end justify-between gap-2">
+          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
+          <AdminStatusBadge tone={filteredOrders.length > 0 ? "info" : "neutral"} size="xs">
+            {filteredOrders.length}건
+          </AdminStatusBadge>
         </div>
       </div>
 
