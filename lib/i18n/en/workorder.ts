@@ -478,7 +478,7 @@ export const workorderEn = {
         amountLabel: "Amount",
         addButton: "+ Add outsourcing process",
         summaryFormat: "{name}{andMore}",
-        handoffNote: "Supplier, unit cost, confirmed quantity, amount, due date, and completion are finalized later in the outsourcing screen.",
+        handoffNote: "Supplier, unit cost, amount, due date, and completion are finalized later in the outsourcing screen.",
         fields: {
           process: "Process",
           vendor: "Supplier",

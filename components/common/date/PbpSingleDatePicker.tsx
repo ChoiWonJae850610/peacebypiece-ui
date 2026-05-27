@@ -77,14 +77,14 @@ export function PbpSingleDatePicker({
   const updateFixedPopoverPosition = () => {
     if (popoverMode !== "fixed" || !buttonRef.current || typeof window === "undefined") return;
     const rect = buttonRef.current.getBoundingClientRect();
-    const popoverWidth = Math.min(320, Math.max(260, window.innerWidth - 24));
+    const popoverWidth = Math.min(300, Math.max(248, window.innerWidth - 24));
     const preferredLeft = popoverAlign === "center"
       ? rect.left + rect.width / 2 - popoverWidth / 2
       : popoverAlign === "end"
         ? rect.right - popoverWidth
         : rect.left;
     const left = Math.min(Math.max(12, preferredLeft), Math.max(12, window.innerWidth - popoverWidth - 12));
-    const top = Math.min(rect.bottom + 8, Math.max(12, window.innerHeight - 360));
+    const top = Math.min(rect.bottom + 8, Math.max(12, window.innerHeight - 340));
     setFixedPopoverStyle({ left, top, width: popoverWidth });
   };
 
@@ -135,7 +135,7 @@ export function PbpSingleDatePicker({
   const popoverContent: ReactNode = isCalendarOpen ? (
     <div
       ref={popoverRef}
-      className={`${popoverMode === "fixed" ? "fixed" : "absolute left-0 top-[calc(100%+8px)]"} z-40 w-[min(320px,calc(100vw-3rem))] rounded-[22px] border border-stone-100 bg-white p-3 shadow-2xl`}
+      className={`${popoverMode === "fixed" ? "fixed" : "absolute left-0 top-[calc(100%+8px)]"} z-40 w-[min(320px,calc(100vw-3rem))] rounded-[20px] border border-stone-100 bg-white p-2.5 shadow-2xl`}
       style={popoverMode === "fixed" ? fixedPopoverStyle ?? undefined : undefined}
     >
       <DayPicker
@@ -148,18 +148,18 @@ export function PbpSingleDatePicker({
         fixedWeeks
         aria-label={labels.calendarAria}
         classNames={{
-          root: "text-sm text-stone-700",
+          root: "text-xs text-stone-700",
           months: "grid gap-3",
           month: "space-y-2",
-          month_caption: "flex items-center justify-center px-2 py-1 text-sm font-semibold text-stone-950",
-          caption_label: "text-sm font-semibold",
+          month_caption: "flex items-center justify-center px-2 py-1 text-xs font-semibold text-stone-950",
+          caption_label: "text-xs font-semibold",
           nav: "flex items-center justify-between",
           button_previous: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
           button_next: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
           weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
           week: "grid grid-cols-7 gap-1",
           day: "flex items-center justify-center",
-          day_button: "h-7 w-7 rounded-full text-[11px] font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
+          day_button: "h-6 w-6 rounded-full text-[10px] font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
           today: "font-bold text-[var(--admin-theme-surface)]",
           selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
           outside: "text-stone-300",
@@ -195,12 +195,12 @@ export function PbpSingleDatePicker({
         type="button"
         onClick={() => setIsCalendarOpen((current) => !current)}
         disabled={disabled}
-        className="pbp-field-interaction flex min-h-10 w-full min-w-0 items-center justify-between gap-3 rounded-xl border px-3 text-left text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+        className="pbp-field-interaction pbp-field-selectable flex min-h-8 w-full min-w-0 items-center justify-between gap-2 rounded-lg border px-2 text-left text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60"
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
         <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-          {labels.label ? <span className="mr-2 text-[11px] font-semibold text-stone-500">{labels.label}</span> : null}
+          {labels.label ? <span className="mr-1.5 text-[10px] font-semibold text-stone-500">{labels.label}</span> : null}
           <span>{selectedText}</span>
         </span>
         <span aria-hidden="true" className="shrink-0 text-xs text-stone-400">▾</span>

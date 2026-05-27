@@ -478,7 +478,7 @@ export const workorderKo = {
         amountLabel: "금액",
         addButton: "+ 외주공정 추가",
         summaryFormat: "{name}{andMore}",
-        handoffNote: "실제 외주처, 단가, 확정 수량, 금액, 납기와 완료 처리는 이후 외주공정 화면에서 확정합니다.",
+        handoffNote: "실제 외주처, 단가, 금액, 납기와 완료 처리는 이후 외주공정 화면에서 확정합니다.",
         fields: {
           process: "공정",
           vendor: "외주처",

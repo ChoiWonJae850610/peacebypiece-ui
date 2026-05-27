@@ -1,11 +1,9 @@
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
-import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import {
   DeleteButton,
   EditableValue,
-  EDITABLE_TABLE_CELL_CLASS,
   SELECTABLE_TABLE_CELL_CLASS,
   TABLE_HEADER_CELL_CLASS,
   type EditableCell,
@@ -42,7 +40,6 @@ export default function OutsourcingSection({
   locked?: boolean;
 }) {
   const { i18n, locale } = useI18n();
-  const { priceBasisOptions } = useCompanyStandardOptions();
   const copy = i18n.workorder.ui.sections.outsourcing;
   const common = i18n.workorder.ui.common;
   const andMore = outsourcing.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(outsourcing.length - 1))}` : "";
@@ -59,16 +56,14 @@ export default function OutsourcingSection({
         <div className="mt-0.5 block min-w-0 max-w-full break-words text-[11px] leading-4 text-stone-500 sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap md:text-xs">{summary}</div>
       </div>
       <div className="mt-2 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:max-h-[360px] xl:overflow-auto">
-          <table className="w-full min-w-[520px] table-fixed text-left xl:min-w-0">
+          <table className="w-full min-w-[300px] table-fixed text-left xl:min-w-0">
             <colgroup>
-              <col className="w-[36%]" />
-              <col className="w-[22%]" />
-              <col className="w-[32%]" />
-              <col className="w-[10%]" />
+              <col className="w-[86%]" />
+              <col className="w-[14%]" />
             </colgroup>
             <thead className="text-stone-500">
               <tr className="border-b border-stone-200">
-                {[copy.fields.process, copy.fields.quantity, copy.fields.unitType, ""].map((header, index) => (
+                {[copy.fields.process, ""].map((header, index) => (
                   <th key={`${header}-${index}`} className={`${TABLE_HEADER_CELL_CLASS} text-center`}>
                     <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                   </th>
@@ -78,14 +73,12 @@ export default function OutsourcingSection({
             <tbody>
               {outsourcing.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-3 py-7 text-center text-sm text-stone-500">{copy.empty}</td>
+                  <td colSpan={2} className="px-3 py-7 text-center text-sm text-stone-500">{copy.empty}</td>
                 </tr>
               ) : null}
               {outsourcing.map((item, rowIndex) => (
                 <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.process, (value) => translateWorkOrderDisplayText(value, locale))} options={processOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={EDITABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} displayValue={translateWorkOrderDisplayText(item.unitType, locale)} options={priceBasisOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                     <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
                   </td>
@@ -93,7 +86,7 @@ export default function OutsourcingSection({
               ))}
               {locked ? null : (
                 <tr>
-                  <td colSpan={4} className="px-1.5 pb-1 pt-1.5 lg:px-2">
+                  <td colSpan={2} className="px-1.5 pb-1 pt-1.5 lg:px-2">
                     <button
                       type="button"
                       onClick={onAdd}
