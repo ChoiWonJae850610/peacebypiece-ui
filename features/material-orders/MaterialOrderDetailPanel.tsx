@@ -9,6 +9,7 @@ import {
   type MaterialOrderDraftTotals,
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
+import { formatMaterialOrderStatusLabel } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import type { MaterialOrder, MaterialOrderStatus, MaterialOrderSupplier } from "@/lib/material-orders/types";
 
 type MaterialOrderDetailPanelProps = {
