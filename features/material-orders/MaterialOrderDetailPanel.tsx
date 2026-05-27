@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
+import {
+  CALCULATED_TABLE_CELL_CLASS,
+  DeleteButton,
+  EDITABLE_TABLE_CELL_CLASS,
+  SELECTABLE_TABLE_CELL_CLASS,
+  TABLE_HEADER_CELL_CLASS,
+} from "@/components/workorder/detail/shared/detailEditorShared";
 import {
   calculateMaterialOrderLineAmount,
   formatMaterialOrderAmount,
@@ -57,7 +63,7 @@ export default function MaterialOrderDetailPanel({
     <AdminCard className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3">
       {selectedOrder ? (
         <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-2">
-          <div className="grid gap-2 rounded-2xl border border-stone-200 bg-stone-50/80 p-2">
+          <div className="grid gap-2">
             <MaterialOrderStatusFlow
               status={selectedOrder.status}
               changing={statusChanging}
@@ -65,13 +71,13 @@ export default function MaterialOrderDetailPanel({
               onChangeStatus={onChangeStatus}
             />
 
-            <div className="grid gap-1.5 xl:grid-cols-2">
+            <div className="grid gap-2 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm xl:grid-cols-2">
               <FieldLabel label="구분">
                 <select
                   value={displayMaterialType}
                   disabled={selectedOrder.status !== "draft"}
                   onChange={(event) => onChangeMaterialType(event.target.value as MaterialOrderDraftType)}
-                  className={fieldClassName()}
+                  className={compactSelectClassName()}
                 >
                   <option value="fabric">원단</option>
                   <option value="submaterial">부자재</option>
@@ -82,7 +88,7 @@ export default function MaterialOrderDetailPanel({
                   value={supplierPartnerId ?? ""}
                   disabled={selectedOrder.status !== "draft" || suppliersLoading}
                   onChange={(event) => onChangeSupplierPartnerId(event.target.value || null)}
-                  className={fieldClassName()}
+                  className={compactSelectClassName()}
                 >
                   <option value="">{resolveSupplierPlaceholder(suppliersLoading, suppliers.length)}</option>
                   {suppliers.map((supplier) => (
@@ -104,25 +110,24 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-col rounded-2xl border border-stone-200 bg-white p-2 shadow-sm">
-            <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-stone-200 bg-white">
-              <table className="w-full min-w-[540px] table-fixed border-collapse text-left text-xs">
+          <div className="min-h-0 overflow-hidden rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4">
+            <div className="min-h-0 max-w-full overflow-auto rounded-xl border border-stone-200 bg-white">
+              <table className="w-full min-w-[540px] table-fixed text-left">
                 <colgroup>
-                  <col className="w-[32%]" />
+                  <col className="w-[27%]" />
                   <col className="w-[13%]" />
                   <col className="w-[15%]" />
                   <col className="w-[18%]" />
-                  <col className="w-[16%]" />
-                  <col className="w-[6%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[7%]" />
                 </colgroup>
-                <thead className="sticky top-0 z-10 bg-stone-50/90 text-[11px] font-semibold text-stone-500">
+                <thead className="text-stone-500">
                   <tr className="border-b border-stone-200">
-                    <th className="px-3 py-2 text-center">품목명</th>
-                    <th className="px-2 py-2 text-center">단위</th>
-                    <th className="px-2 py-2 text-center">수량</th>
-                    <th className="px-2 py-2 text-center">단가</th>
-                    <th className="px-2 py-2 text-center">금액</th>
-                    <th className="px-1.5 py-2 text-center" aria-label="삭제" />
+                    {["품목명", "단위", "수량", "단가", "금액", ""].map((header, index) => (
+                      <th key={`${header}-${index}`} className={`${TABLE_HEADER_CELL_CLASS} text-center`}>
+                        <span className="block w-full whitespace-nowrap leading-4">{header}</span>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -133,10 +138,11 @@ export default function MaterialOrderDetailPanel({
                       </td>
                     </tr>
                   ) : (
-                    lines.map((line) => (
+                    lines.map((line, rowIndex) => (
                       <MaterialOrderLineRow
                         key={line.id}
                         line={line}
+                        rowIndex={rowIndex}
                         editable={selectedOrder.status === "draft"}
                         onChangeLine={onChangeLine}
                         onRemoveLine={onRemoveLine}
@@ -148,7 +154,7 @@ export default function MaterialOrderDetailPanel({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50/80 px-3 py-1.5 text-xs">
+          <div className="flex shrink-0 items-center justify-between gap-3 rounded-xl border border-stone-200 bg-stone-50/70 px-3 py-2 text-xs">
             <SummaryValue label="품목" value={`${totals.lineCount}종`} />
             <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
             <SummaryValue label="할당/잔여" value={`${totals.totalAllocatedQuantity} / ${totals.totalRemainingQuantity}`} />
@@ -169,33 +175,35 @@ export default function MaterialOrderDetailPanel({
 
 function MaterialOrderLineRow({
   line,
+  rowIndex,
   editable,
   onChangeLine,
   onRemoveLine,
 }: {
   line: MaterialOrderDraftLine;
+  rowIndex: number;
   editable: boolean;
   onChangeLine: (lineId: string, patch: Partial<MaterialOrderDraftLine>) => void;
   onRemoveLine: (lineId: string) => void;
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
   return (
-    <tr className="border-b border-stone-100 bg-white align-middle transition even:bg-stone-50/70 hover:bg-stone-50">
-      <td className="px-2 py-2">
+    <tr className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
+      <td className={EDITABLE_TABLE_CELL_CLASS}>
         <input
           value={line.itemName}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { itemName: event.target.value })}
           placeholder="예: 30수 면 블랙"
-          className={fieldClassName("min-w-[160px]")}
+          className={compactInputClassName("text-center")}
         />
       </td>
-      <td className="px-2 py-2">
+      <td className={SELECTABLE_TABLE_CELL_CLASS}>
         <select
           value={resolveUnitSelectValue(line.unit)}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { unit: event.target.value })}
-          className={fieldClassName("w-full text-center")}
+          className={compactSelectClassName("text-center")}
         >
           <option value="">단위</option>
           {MATERIAL_ORDER_UNIT_OPTIONS.map((unit) => (
@@ -203,37 +211,31 @@ function MaterialOrderLineRow({
           ))}
         </select>
       </td>
-      <td className="px-2 py-2">
+      <td className={EDITABLE_TABLE_CELL_CLASS}>
         <input
           type="text"
           inputMode="decimal"
           value={line.orderQuantity}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { orderQuantity: normalizeNumberInput(event.target.value) })}
-          className={fieldClassName("w-full text-center")}
+          className={compactInputClassName("text-center tabular-nums")}
         />
       </td>
-      <td className="px-2 py-2">
+      <td className={EDITABLE_TABLE_CELL_CLASS}>
         <input
           type="text"
           inputMode="numeric"
           value={line.unitPrice}
           disabled={!editable}
           onChange={(event) => onChangeLine(line.id, { unitPrice: normalizeNumberInput(event.target.value) })}
-          className={fieldClassName("w-full text-right tabular-nums")}
+          className={compactInputClassName("text-right tabular-nums")}
         />
       </td>
-      <td className="px-2 py-2 text-right text-xs font-semibold tabular-nums pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</td>
-      <td className="px-1.5 py-2 text-center">
-        <button
-          type="button"
-          disabled={!editable}
-          onClick={() => onRemoveLine(line.id)}
-          aria-label="주문 내역 삭제"
-          className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-100 bg-white text-sm font-semibold leading-none text-rose-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          −
-        </button>
+      <td className={CALCULATED_TABLE_CELL_CLASS} title={formatMaterialOrderAmount(lineAmount)}>
+        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{formatMaterialOrderAmount(lineAmount)}</span>
+      </td>
+      <td className="px-1.5 py-2 text-center align-middle lg:px-2">
+        <DeleteButton onClick={() => onRemoveLine(line.id)} srLabel="주문 내역 삭제" disabled={!editable} />
       </td>
     </tr>
   );
@@ -258,55 +260,63 @@ function MaterialOrderStatusFlow({
   ];
   const currentIndex = Math.max(0, steps.findIndex((step) => step.status === status));
   const actions = resolveMaterialOrderStatusActions(status);
+  const primaryActionIndex = actions.length > 0 ? actions.length - 1 : -1;
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-2.5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold pbp-text-primary">진행 단계</p>
+    <div className="pbp-workflow-panel rounded-[24px] border p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-stone-900">진행 단계</div>
         </div>
         {actions.length > 0 ? (
-          <div className="flex shrink-0 flex-wrap justify-end gap-2">
-            {actions.map((action, index) => (
-              <AdminButton
-                key={`${status}-${action.nextStatus}`}
-                size="sm"
-                className="min-h-7 px-3 py-0.5 text-xs"
-                variant={index === actions.length - 1 ? "primary" : "ghost"}
-                disabled={changing}
-                onClick={() => onChangeStatus(action.nextStatus)}
-              >
-                {action.label}
-              </AdminButton>
-            ))}
+          <div className="flex flex-wrap justify-end gap-2">
+            {actions.map((action, index) => {
+              const isPrimary = index === primaryActionIndex;
+              return (
+                <button
+                  key={`${status}-${action.nextStatus}`}
+                  type="button"
+                  disabled={changing}
+                  onClick={() => onChangeStatus(action.nextStatus)}
+                  className={`inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                    isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"
+                  }`}
+                >
+                  {action.label}
+                </button>
+              );
+            })}
           </div>
         ) : null}
       </div>
 
-      <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
-        {steps.map((step, index) => {
-          const isDone = index <= currentIndex;
-          const isCurrent = step.status === status;
-          return (
-            <div key={step.status} className="relative flex flex-col items-center gap-2 text-center">
-              {index < steps.length - 1 ? (
-                <div className={`absolute left-1/2 top-2.5 h-0.5 w-full ${isDone ? "bg-[var(--pbp-selected-border)]" : "bg-[var(--pbp-border)]"}`} aria-hidden="true" />
-              ) : null}
-              <div
-                className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full border ${
-                  isDone ? "border-transparent bg-[var(--pbp-selected-border)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
-                }`}
-              >
-                <span className={`h-2 w-2 rounded-full ${isDone ? "bg-white" : "bg-[var(--pbp-text-subtle)]"}`} />
+      <div className="mt-4">
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+          {steps.map((step, index) => {
+            const isDone = index <= currentIndex;
+            const isCurrent = step.status === status;
+            return (
+              <div key={step.status} className="relative flex flex-col items-center gap-2 text-center">
+                {index < steps.length - 1 ? (
+                  <div className={`absolute left-1/2 top-3 h-0.5 w-full ${isDone ? "bg-[var(--pbp-selected-border)]" : "bg-[var(--pbp-border)]"}`} aria-hidden="true" />
+                ) : null}
+                <div
+                  className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
+                    isDone ? "border-transparent bg-[var(--pbp-selected-border)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
+                  }`}
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full ${isDone ? "bg-white/90" : "bg-[var(--pbp-text-subtle)]"}`} />
+                </div>
+                <div className={`text-xs font-medium ${isCurrent ? "pbp-text-primary" : "text-[var(--pbp-text-muted)]"}`}>{step.label}</div>
               </div>
-              <div className={`text-[11px] font-medium ${isCurrent ? "pbp-text-primary" : "pbp-text-muted"}`}>{step.label}</div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] pbp-text-muted">
+      <div className="mt-4 flex items-center gap-2 text-xs text-[var(--pbp-text-muted)]">
         <span>자재 발주</span>
+        <span>·</span>
         <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
       </div>
     </div>
@@ -357,9 +367,16 @@ function resolveUnitSelectValue(unit: string): string {
   return MATERIAL_ORDER_UNIT_OPTIONS.includes(unit as typeof MATERIAL_ORDER_UNIT_OPTIONS[number]) ? unit : "";
 }
 
-function fieldClassName(extra = "") {
+function compactInputClassName(extra = "") {
   return [
-    "min-h-7 w-full rounded-lg border border-stone-200 bg-stone-50/70 px-2 py-1 text-[11px] pbp-text-primary outline-none transition placeholder:text-stone-400 focus:border-[var(--pbp-action-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-stone-50 disabled:opacity-70",
+    "pbp-field-interaction pbp-workorder-editable-input min-h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
+    extra,
+  ].filter(Boolean).join(" ");
+}
+
+function compactSelectClassName(extra = "") {
+  return [
+    "pbp-field-interaction pbp-workorder-editable-input min-h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 pr-6 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
   ].filter(Boolean).join(" ");
 }
