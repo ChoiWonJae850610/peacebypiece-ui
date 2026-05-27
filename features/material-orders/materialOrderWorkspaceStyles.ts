@@ -16,16 +16,16 @@ export const MATERIAL_ORDER_SECTION_CARD_CLASS =
   "rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3.5 shadow-sm xl:p-4";
 
 export const MATERIAL_ORDER_TABLE_SHELL_CLASS =
-  "max-w-full overflow-hidden rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]";
+  "max-w-full min-h-0 flex-1 overflow-auto rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]";
 
 export const MATERIAL_ORDER_LIST_CARD_BASE_CLASS =
-  "w-full rounded-2xl border px-3 py-2.5 text-left transition";
+  "group pbp-interactive-card w-full min-w-0 rounded-2xl border p-2.5 text-left transition";
 
 export const MATERIAL_ORDER_LIST_CARD_SELECTED_CLASS =
-  "border-[var(--pbp-action-primary)] bg-[var(--pbp-surface-soft)] shadow-sm";
+  "pbp-workorder-list-card-selected";
 
 export const MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS =
-  "border-[var(--pbp-border)] bg-[var(--pbp-surface)] hover:bg-[var(--pbp-surface-soft)]";
+  "pbp-workorder-list-card";
 
 export const MATERIAL_ORDER_NESTED_ROW_CLASS =
   "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-2";

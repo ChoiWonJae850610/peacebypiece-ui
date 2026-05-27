@@ -99,14 +99,9 @@ export default function MaterialOrderListPanel({
   return (
     <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
-        <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Material orders</p>
           <h2 className="mt-1 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
-        </div>
-        <AdminButton size="sm" disabled={creating} onClick={onCreateOrder}>
-            {creating ? "생성중" : "새 발주"}
-          </AdminButton>
         </div>
       </div>
 
@@ -137,6 +132,15 @@ export default function MaterialOrderListPanel({
             ))}
           </select>
         </div>
+        <AdminButton
+          size="sm"
+          variant="primary"
+          className="mt-1 w-full min-h-10 text-sm font-semibold"
+          disabled={creating}
+          onClick={onCreateOrder}
+        >
+          {creating ? "주문서 생성 중" : "주문서 생성"}
+        </AdminButton>
       </div>
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
@@ -147,7 +151,7 @@ export default function MaterialOrderListPanel({
         ) : orders.length === 0 ? (
           <PanelMessage
             title="등록된 발주서 없음"
-            description="새 발주 버튼으로 첫 원단·부자재 발주서를 만듭니다."
+            description="주문서 생성 버튼으로 첫 원단·부자재 주문서를 만듭니다."
           />
         ) : filteredOrders.length === 0 ? (
           <PanelMessage
