@@ -1,9 +1,10 @@
-Version : 0.17.35
-Summary : 제품 구성 제목 우측 요약 문구 제거
-Description : 작업지시서 PC 화면의 제품 구성 섹션 제목 우측에 표시되던 필요 자재 요약 문구를 제거하고 바로 테이블이 이어지도록 정리했습니다.
+Version : 0.17.36
+Summary : 원단·부자재 화면 카드와 품목 라인 UI 단순화
+Description : 원단·부자재 목록 기본 필터를 작성중으로 맞추고, 작업지시서 선택 카드의 불필요한 상태·담당·납기·단가 문구를 제거했습니다. 작업지시서 필요 자재 선택 버튼을 간단한 선택 문구로 바꾸고, 중앙 발주 상세의 구분/품목 라인 입력 필드와 버튼 크기를 작업지시서 화면의 compact 톤에 맞춰 정리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/workorder/detail/views/WorkOrderDetailDesktopSections.tsx
+- features/material-orders/MaterialOrderListPanel.tsx
+- features/material-orders/MaterialOrderAllocationPanel.tsx
+- features/material-orders/MaterialOrderDetailPanel.tsx
 추가 파일 목록 :
-- commit-meta.md
 삭제 파일 목록 :

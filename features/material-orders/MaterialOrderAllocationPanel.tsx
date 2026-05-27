@@ -4,8 +4,6 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
-  calculateMaterialOrderLineAllocatedQuantity,
-  calculateMaterialOrderLineRemainingQuantity,
   type MaterialOrderDraftLine,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
@@ -45,12 +43,7 @@ export default function MaterialOrderAllocationPanel({
     return candidates.filter((workOrder) => [
       workOrder.code,
       workOrder.productName,
-      workOrder.reorderLabel,
-      workOrder.managerLabel,
       workOrder.requestedMaterialLabel,
-      workOrder.materialReadinessLabel,
-      workOrder.materialCountLabel,
-      workOrder.dueDateLabel,
     ].join(" ").toLowerCase().includes(normalizedSearchQuery));
   }, [candidates, searchQuery]);
 
@@ -69,7 +62,7 @@ export default function MaterialOrderAllocationPanel({
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="제품·담당 검색"
+          placeholder="제품·자재 검색"
           className={fieldClassName("mt-3 min-h-9 text-xs")}
         />
       </div>
@@ -116,27 +109,9 @@ function AllocationCandidateCard({
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
 }) {
-  const linkedLines = lines.filter((line) => line.allocations.some((allocation) => allocation.workOrderId === workOrder.id));
-
   return (
     <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-3 transition hover:bg-[var(--pbp-surface-soft)]">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
-          <p className="mt-1 truncate text-xs pbp-text-muted">{workOrder.reorderLabel} · {workOrder.managerLabel}</p>
-        </div>
-        <AdminStatusBadge tone={linkedLines.length > 0 ? "success" : "warning"} size="xs">
-          {linkedLines.length > 0 ? "연결" : "대기"}
-        </AdminStatusBadge>
-      </div>
-
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] pbp-text-muted">
-        <span>{workOrder.materialReadinessLabel}</span>
-        <span>·</span>
-        <span>{workOrder.materialCountLabel}</span>
-        <span>·</span>
-        <span>{workOrder.dueDateLabel}</span>
-      </div>
+      <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
 
       <div className="mt-3 grid gap-1.5">
         {workOrder.materialItems.map((material) => (
@@ -150,17 +125,6 @@ function AllocationCandidateCard({
           />
         ))}
       </div>
-
-      {linkedLines.length > 0 ? (
-        <div className="mt-2 grid gap-1 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs pbp-text-muted">
-          {linkedLines.map((line) => (
-            <p key={line.id} className="flex items-center justify-between gap-2">
-              <span className="truncate font-semibold pbp-text-primary">{line.itemName || "품목"}</span>
-              <span className="shrink-0">할당 {calculateMaterialOrderLineAllocatedQuantity(line)} / 잔여 {calculateMaterialOrderLineRemainingQuantity(line)} {line.unit}</span>
-            </p>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -192,16 +156,17 @@ function WorkOrderMaterialRequestRow({
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
         <p className="mt-0.5 text-[11px] pbp-text-muted">
-          {formatMaterialItemTypeLabel(material.itemType)} · {formatMaterialQuantity(material.quantity, material.unit)} · {formatMaterialUnitPrice(material.unitCost)}
+          {formatMaterialItemTypeLabel(material.itemType)} · {formatMaterialQuantity(material.quantity, material.unit)}
         </p>
       </div>
       <AdminButton
         size="sm"
+        className="min-h-7 px-3 py-1 text-xs"
         variant={isAdded ? "ghost" : "secondary"}
         disabled={!editable || isAdded}
         onClick={() => onAddMaterialToOrder(workOrder, material)}
       >
-        {isAdded ? "추가됨" : "품목 추가"}
+        {isAdded ? "선택됨" : "선택"}
       </AdminButton>
     </div>
   );
@@ -217,15 +182,6 @@ function formatMaterialQuantity(quantity: number, unit: string): string {
   return `${normalizedQuantity}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
 }
 
-function formatMaterialUnitPrice(unitCost: number | undefined): string {
-  const normalizedUnitCost = typeof unitCost === "number" && Number.isFinite(unitCost) && unitCost > 0 ? unitCost : 0;
-  if (normalizedUnitCost <= 0) return "단가 미입력";
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-    maximumFractionDigits: 0,
-  }).format(normalizedUnitCost);
-}
 
 function PanelMessage({
   title,

@@ -82,7 +82,7 @@ export default function MaterialOrderDetailPanel({
       <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Selected order</p>
-          <h2 className="mt-1 truncate text-lg font-semibold tracking-tight pbp-text-primary">{selectedOrderTitle}</h2>
+          <h2 className="mt-1 truncate text-base font-semibold tracking-tight pbp-text-primary">{selectedOrderTitle}</h2>
           {selectedOrder ? (
             <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs pbp-text-muted">
               <span className="font-medium pbp-text-primary">{selectedOrderLineLabel}</span>
@@ -106,8 +106,7 @@ export default function MaterialOrderDetailPanel({
         <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 pt-3">
           <div className="grid gap-3 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3">
             <div>
-              <p className="text-sm font-semibold pbp-text-primary">발주 기본 정보</p>
-              <p className="mt-0.5 text-xs pbp-text-muted">종류와 공급처를 고른 뒤 품목 라인을 입력하고 진행 단계 버튼으로 다음 상태를 처리합니다.</p>
+              <p className="text-sm font-semibold pbp-text-primary">기본 정보</p>
             </div>
 
             <MaterialOrderStatusFlow
@@ -118,7 +117,7 @@ export default function MaterialOrderDetailPanel({
             />
 
             <div className="grid gap-2 xl:grid-cols-4">
-              <FieldLabel label="발주 종류">
+              <FieldLabel label="구분">
                 <select
                   value={displayMaterialType}
                   disabled={selectedOrder.status !== "draft"}
@@ -176,13 +175,19 @@ export default function MaterialOrderDetailPanel({
             <div className="flex shrink-0 items-center justify-between gap-3 pb-2">
               <div>
                 <h3 className="text-sm font-semibold pbp-text-primary">품목 라인</h3>
-                <p className="mt-0.5 text-xs pbp-text-muted">우측 작업지시서의 필요 자재를 발주 품목으로 추가하면 품목명, 단위, 수량이 자동 입력됩니다.</p>
               </div>
-              <AdminButton onClick={onAddLine} disabled={selectedOrder.status !== "draft"}>직접 추가</AdminButton>
+              <AdminButton
+                size="sm"
+                className="min-h-8 px-3 py-1 text-xs"
+                onClick={onAddLine}
+                disabled={selectedOrder.status !== "draft"}
+              >
+                직접 추가
+              </AdminButton>
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[var(--pbp-border)]">
-              <table className="w-full min-w-[640px] border-collapse text-sm">
+              <table className="w-full min-w-[640px] border-collapse text-xs">
                 <thead className="sticky top-0 z-10 bg-[var(--pbp-surface-soft)] text-xs font-semibold pbp-text-subtle">
                   <tr>
                     <th className="px-3 py-2 text-left">품목명</th>
@@ -197,8 +202,8 @@ export default function MaterialOrderDetailPanel({
                 <tbody className="divide-y divide-[var(--pbp-border)]">
                   {lines.length === 0 ? (
                     <tr>
-                      <td className="px-3 py-8 text-center text-sm pbp-text-muted" colSpan={7}>
-                        우측 작업지시서의 필요 자재를 발주 품목으로 추가하거나 직접 추가로 예외 품목을 입력합니다.
+                      <td className="px-3 py-6 text-center text-xs pbp-text-muted" colSpan={7}>
+                        우측 작업지시서에서 자재를 선택하거나 직접 추가합니다.
                       </td>
                     </tr>
                   ) : (
@@ -252,7 +257,7 @@ function MaterialOrderLineRow({
   const remainingQuantity = calculateMaterialOrderLineRemainingQuantity(line);
 
   return (
-    <tr className="bg-[var(--pbp-surface-base)] align-middle">
+    <tr className="bg-[var(--pbp-surface-base)] align-middle transition hover:bg-[var(--pbp-surface-soft)]">
       <td className="px-3 py-2">
         <input
           value={line.itemName}
@@ -305,7 +310,7 @@ function MaterialOrderLineRow({
           disabled={!editable}
           onClick={() => onRemoveLine(line.id)}
           aria-label="품목 라인 삭제"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-lg font-semibold leading-none pbp-text-muted transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-base font-semibold leading-none pbp-text-muted transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           −
         </button>
@@ -339,7 +344,6 @@ function MaterialOrderStatusFlow({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold pbp-text-primary">진행 단계</p>
-          <p className="mt-1 text-xs pbp-text-muted">작업지시서와 동일한 규격으로 상태를 처리합니다.</p>
         </div>
         {actions.length > 0 ? (
           <div className="flex shrink-0 flex-wrap justify-end gap-2">
@@ -347,6 +351,7 @@ function MaterialOrderStatusFlow({
               <AdminButton
                 key={`${status}-${action.nextStatus}`}
                 size="sm"
+                className="min-h-8 px-3 py-1 text-xs"
                 variant={index === actions.length - 1 ? "primary" : "ghost"}
                 disabled={changing}
                 onClick={() => onChangeStatus(action.nextStatus)}
@@ -406,7 +411,7 @@ function resolveMaterialOrderStatusActions(status: MaterialOrderStatus): Array<{
 
 function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="grid gap-1 text-xs font-semibold pbp-text-subtle">
+    <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
       {label}
       {children}
     </label>
@@ -433,7 +438,7 @@ function resolveUnitSelectValue(unit: string): string {
 
 function fieldClassName(extra = "") {
   return [
-    "min-h-9 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-sm pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-soft)] disabled:opacity-70",
+    "min-h-8 w-full rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-1 text-xs pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-soft)] disabled:opacity-70",
     extra,
   ].filter(Boolean).join(" ");
 }

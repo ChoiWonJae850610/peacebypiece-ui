@@ -54,7 +54,7 @@ export default function MaterialOrderListPanel({
   onRetry,
 }: MaterialOrderListPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | MaterialOrderStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | MaterialOrderStatus>("draft");
   const [typeFilter, setTypeFilter] = useState<"all" | MaterialOrderLineItemType>("all");
 
   const filteredOrders = useMemo(() => {
