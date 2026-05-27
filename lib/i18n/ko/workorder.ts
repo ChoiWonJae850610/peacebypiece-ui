@@ -391,6 +391,7 @@ export const workorderKo = {
     },
     actionSection: {
       title: "진행 단계",
+      inspectionAction: "검수 진행",
       fallbackGroup: "진행",
       rejectKeyword: "반려",
       processingFormat: "{label} 중입니다...",
@@ -401,7 +402,7 @@ export const workorderKo = {
       emptyReason: "별도 사유 없이 반려되었습니다.",
     },
     detailGroups: {
-      cost: { eyebrow: "비용", title: "비용 요약", description: "원단, 부자재, 외주, 공임, 로스 비용을 먼저 확인합니다." },
+      cost: { eyebrow: "비용", title: "비용 요약", description: "" },
       order: { eyebrow: "발주", title: "발주 정보", description: "" },
       production: { eyebrow: "생산", title: "생산 구성", description: "" },
     },
@@ -420,6 +421,8 @@ export const workorderKo = {
         orderLineDescription: "",
         sewingLineTypeLabel: "제작",
         outsourcingLineTypeLabel: "추가 공정",
+        outsourcingLineTypeLabelPrefix: "추가",
+        outsourcingLineTypeLabelSuffix: "공정",
         orderLineHandoffNote: "",
         outsourcingOrder: {
           title: "외주공정 발주",

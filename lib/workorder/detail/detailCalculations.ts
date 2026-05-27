@@ -9,27 +9,49 @@ export function recalculateMaterial(item: Material): Material {
   };
 }
 
+function normalizeCostNumber(value: unknown) {
+  const numeric = Number(value ?? 0);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.max(0, numeric);
+}
+
+function calculateUnitBasedLineAmount(item: { quantity?: number; unitCost?: number; laborCost?: number; lossCost?: number }) {
+  const quantity = normalizeCostNumber(item.quantity);
+  const unitCost = normalizeCostNumber(item.unitCost ?? item.laborCost);
+  const lossCost = normalizeCostNumber(item.lossCost);
+  return quantity * (unitCost + lossCost);
+}
+
+export function calculateOutsourcingAmount(item: Pick<Outsourcing, "quantity" | "unitCost" | "lossCost">) {
+  return calculateUnitBasedLineAmount(item);
+}
+
 export function recalculateOutsourcing(item: Outsourcing): Outsourcing {
   return {
     ...item,
-    totalCost: (Number(item.quantity) || 0) * (Number(item.unitCost) || 0),
+    lossCost: normalizeCostNumber(item.lossCost),
+    totalCost: calculateOutsourcingAmount(item),
   };
 }
 
 function calculateFactoryLaborTotal(item: Pick<OrderEntry, "quantity" | "laborCost">) {
-  return Math.max(0, Number(item.quantity) || 0) * Math.max(0, Number(item.laborCost) || 0);
+  return normalizeCostNumber(item.quantity) * normalizeCostNumber(item.laborCost);
+}
+
+function calculateFactoryLossTotal(item: Pick<OrderEntry, "quantity" | "lossCost">) {
+  return normalizeCostNumber(item.quantity) * normalizeCostNumber(item.lossCost);
 }
 
 export function calculateOrderEntryAmount(item: Pick<OrderEntry, "quantity" | "laborCost" | "lossCost">) {
-  return calculateFactoryLaborTotal(item) + Math.max(0, Number(item.lossCost) || 0);
+  return calculateFactoryLaborTotal(item) + calculateFactoryLossTotal(item);
 }
 
 export function calculateOrderEntryTotals(orderEntries: OrderEntry[]) {
   return orderEntries.reduce(
     (acc, item) => {
-      acc.quantity += Math.max(0, Number(item.quantity) || 0);
+      acc.quantity += normalizeCostNumber(item.quantity);
       acc.laborCost += calculateFactoryLaborTotal(item);
-      acc.lossCost += Math.max(0, Number(item.lossCost) || 0);
+      acc.lossCost += calculateFactoryLossTotal(item);
       acc.totalCost += calculateOrderEntryAmount(item);
       return acc;
     },

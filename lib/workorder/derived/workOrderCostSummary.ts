@@ -1,10 +1,28 @@
 import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import type { WorkOrder } from "@/types/workorder";
 
-function calculateLineTotal(item: { quantity?: number; unitCost?: number; totalCost?: number }) {
+function normalizeCostNumber(value: unknown) {
+  const numeric = Number(value ?? 0);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.max(0, numeric);
+}
+
+function calculateLineTotal(item: { quantity?: number; unitCost?: number; lossCost?: number; totalCost?: number }) {
   const totalCost = Number(item.totalCost) || 0;
   if (totalCost > 0) return totalCost;
-  return Math.max(0, Number(item.quantity) || 0) * Math.max(0, Number(item.unitCost) || 0);
+  return normalizeCostNumber(item.quantity) * (normalizeCostNumber(item.unitCost) + normalizeCostNumber(item.lossCost));
+}
+
+function calculateOrderLineLaborTotal(item: { quantity?: number; laborCost?: number }) {
+  return normalizeCostNumber(item.quantity) * normalizeCostNumber(item.laborCost);
+}
+
+function calculateOrderLineLossTotal(item: { quantity?: number; lossCost?: number }) {
+  return normalizeCostNumber(item.quantity) * normalizeCostNumber(item.lossCost);
+}
+
+function calculateOutsourcingLossTotal(item: { quantity?: number; lossCost?: number }) {
+  return normalizeCostNumber(item.quantity) * normalizeCostNumber(item.lossCost);
 }
 
 export function calculateWorkOrderCosts(workOrder: WorkOrder) {
@@ -16,12 +34,14 @@ export function calculateWorkOrderCosts(workOrder: WorkOrder) {
   const orderEntries = workOrder.orderEntries ?? [];
   const quantity = orderEntries.length > 0 ? orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) : workOrder.quantity;
   const laborCost = orderEntries.length > 0
-    ? orderEntries.reduce((sum, item) => sum + (Math.max(0, Number(item.quantity) || 0) * Math.max(0, Number(item.laborCost) || 0)), 0)
-    : Math.max(0, Number(workOrder.quantity) || 0) * Math.max(0, Number(workOrder.laborCost) || 0);
-  const lossCost = orderEntries.length > 0
-    ? orderEntries.reduce((sum, item) => sum + Math.max(0, Number(item.lossCost) || 0), 0)
-    : Math.max(0, Number(workOrder.lossCost) || 0);
-  const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal + laborCost + lossCost;
+    ? orderEntries.reduce((sum, item) => sum + calculateOrderLineLaborTotal(item), 0)
+    : normalizeCostNumber(workOrder.quantity) * normalizeCostNumber(workOrder.laborCost);
+  const orderLossCost = orderEntries.length > 0
+    ? orderEntries.reduce((sum, item) => sum + calculateOrderLineLossTotal(item), 0)
+    : normalizeCostNumber(workOrder.quantity) * normalizeCostNumber(workOrder.lossCost);
+  const outsourcingLossCost = outsourcing.reduce((sum, item) => sum + calculateOutsourcingLossTotal(item), 0);
+  const lossCost = orderLossCost + outsourcingLossCost;
+  const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal + laborCost + orderLossCost;
   const unitCost = quantity > 0 ? Math.round(totalCost / quantity) : 0;
 
   return {

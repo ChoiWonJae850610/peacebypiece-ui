@@ -168,6 +168,8 @@ export function buildActionSectionProps({
   workflowProcessingLabel,
   isWorkspaceWriteLocked,
   workspaceWriteLockMessage,
+  canOpenInspectionModal,
+  onOpenInspectionModal,
   onAction,
 }: BuildWorkOrderDetailViewModelArgs): ActionProps {
   return {
@@ -178,6 +180,8 @@ export function buildActionSectionProps({
     workflowProcessingLabel,
     isWorkspaceWriteLocked,
     workspaceWriteLockMessage,
+    canOpenInspectionModal,
+    onOpenInspectionModal,
     onAction,
   };
 }

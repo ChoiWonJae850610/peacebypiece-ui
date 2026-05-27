@@ -15,6 +15,7 @@ const VENDOR_PARTNER_ID_COLUMN_CANDIDATES = ["vendor_partner_id"] as const;
 const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
 const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
 const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost"] as const;
+const LOSS_COST_COLUMN_CANDIDATES = ["loss_cost"] as const;
 const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status"] as const;
 
@@ -53,6 +54,7 @@ type DbSpecSheetOutsourcingSchema = {
   quantityColumn: string | null;
   unitColumn: string | null;
   unitCostColumn: string | null;
+  lossCostColumn: string | null;
   totalCostColumn: string | null;
   statusColumn: string | null;
 };
@@ -79,7 +81,7 @@ function normalizeNumber(value: unknown): number {
 }
 
 function calculateOutsourcingTotalCost(item: Outsourcing): number {
-  return normalizeNumber(item.quantity) * normalizeNumber(item.unitCost);
+  return normalizeNumber(item.quantity) * (normalizeNumber(item.unitCost) + normalizeNumber(item.lossCost));
 }
 
 function normalizeOutsourcingForDb(item: Outsourcing): Outsourcing {
@@ -87,6 +89,7 @@ function normalizeOutsourcingForDb(item: Outsourcing): Outsourcing {
     ...item,
     quantity: normalizeNumber(item.quantity),
     unitCost: normalizeNumber(item.unitCost),
+    lossCost: normalizeNumber(item.lossCost),
     totalCost: calculateOutsourcingTotalCost(item),
   };
 }
@@ -102,6 +105,7 @@ function toOutsourcingRows(workOrder: WorkOrder): Outsourcing[] {
       normalizeText(item.status) ||
       normalizeNumber(item.quantity) > 0 ||
       normalizeNumber(item.unitCost) > 0 ||
+      normalizeNumber(item.lossCost) > 0 ||
       normalizeNumber(item.totalCost) > 0,
     );
   });
@@ -136,6 +140,7 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
       quantityColumn: null,
       unitColumn: null,
       unitCostColumn: null,
+      lossCostColumn: null,
       totalCostColumn: null,
       statusColumn: null,
     };
@@ -153,6 +158,7 @@ async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
     quantityColumn: findFirstMatchingColumn(columnNames, QUANTITY_COLUMN_CANDIDATES),
     unitColumn: findFirstMatchingColumn(columnNames, UNIT_COLUMN_CANDIDATES),
     unitCostColumn: findFirstMatchingColumn(columnNames, UNIT_COST_COLUMN_CANDIDATES),
+    lossCostColumn: findFirstMatchingColumn(columnNames, LOSS_COST_COLUMN_CANDIDATES),
     totalCostColumn: findFirstMatchingColumn(columnNames, TOTAL_COST_COLUMN_CANDIDATES),
     statusColumn: findFirstMatchingColumn(columnNames, STATUS_COLUMN_CANDIDATES),
   };
@@ -250,6 +256,12 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(
       if (schema.unitCostColumn) {
         columns.push(schema.unitCostColumn);
         values.push(normalizeNumber(item.unitCost));
+        placeholders.push(`$${values.length}`);
+      }
+
+      if (schema.lossCostColumn) {
+        columns.push(schema.lossCostColumn);
+        values.push(normalizeNumber(item.lossCost));
         placeholders.push(`$${values.length}`);
       }
 

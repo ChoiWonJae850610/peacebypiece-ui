@@ -11,6 +11,7 @@ const MATERIAL_TOTAL_COST_KEYS = ["totalCost", "amount", "total_cost", "total_am
 
 const OUTSOURCING_QUANTITY_KEYS = ["quantity", "requiredQuantity", "required_quantity", "qty"] as const;
 const OUTSOURCING_UNIT_COST_KEYS = ["unitCost", "unitPrice", "unit_cost", "unit_price", "price", "cost"] as const;
+const OUTSOURCING_LOSS_COST_KEYS = ["lossCost", "loss_cost", "wasteCost", "waste_cost"] as const;
 const OUTSOURCING_TOTAL_COST_KEYS = ["totalCost", "amount", "total_cost", "total_amount"] as const;
 
 const ORDER_QUANTITY_KEYS = ["quantity", "orderQuantity", "order_quantity", "qty"] as const;
@@ -72,12 +73,14 @@ export function normalizeProductionMaterialRows(rows: readonly Material[] | unde
 export function normalizeProductionOutsourcingRow(row: Outsourcing): Outsourcing {
   const quantity = readNumberByKeys(row, OUTSOURCING_QUANTITY_KEYS, 0);
   const unitCost = readNumberByKeys(row, OUTSOURCING_UNIT_COST_KEYS, 0);
-  const totalCost = readNumberByKeys(row, OUTSOURCING_TOTAL_COST_KEYS, quantity * unitCost);
+  const lossCost = readNumberByKeys(row, OUTSOURCING_LOSS_COST_KEYS, 0);
+  const totalCost = readNumberByKeys(row, OUTSOURCING_TOTAL_COST_KEYS, quantity * (unitCost + lossCost));
 
   return recalculateOutsourcing({
     ...row,
     quantity,
     unitCost,
+    lossCost,
     totalCost,
   });
 }
@@ -126,6 +129,7 @@ export function hasProductionCompositionNumberValue(workOrder: WorkOrder): boole
     ...(workOrder.outsourcing ?? []).map((item) =>
       readNumberByKeys(item, OUTSOURCING_QUANTITY_KEYS) +
       readNumberByKeys(item, OUTSOURCING_UNIT_COST_KEYS) +
+      readNumberByKeys(item, OUTSOURCING_LOSS_COST_KEYS) +
       readNumberByKeys(item, OUTSOURCING_TOTAL_COST_KEYS),
     ),
   ].some((value) => value > 0);
@@ -140,6 +144,7 @@ export const productionCompositionFieldMapForAudit = {
   outsourcing: {
     quantity: OUTSOURCING_QUANTITY_KEYS,
     unitCost: OUTSOURCING_UNIT_COST_KEYS,
+    lossCost: OUTSOURCING_LOSS_COST_KEYS,
     totalCost: OUTSOURCING_TOTAL_COST_KEYS,
   },
   order: {

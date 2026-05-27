@@ -74,22 +74,19 @@ export default function OrderInfoSection({
   const totals = calculateOrderEntryTotals(visibleOrderEntries);
   const outsourcingTotals = outsourcing.reduce(
     (acc, item) => {
-      acc.quantity += Number(item.quantity) || 0;
-      acc.cost += Number(item.totalCost) || 0;
+      const quantity = Math.max(0, Number(item.quantity) || 0);
+      const unitCost = Math.max(0, Number(item.unitCost) || 0);
+      const lossCost = Math.max(0, Number(item.lossCost) || 0);
+      acc.quantity += quantity;
+      acc.unitCost += quantity * unitCost;
+      acc.lossCost += quantity * lossCost;
+      acc.totalCost += Number(item.totalCost) || quantity * (unitCost + lossCost);
       return acc;
     },
-    { quantity: 0, cost: 0 },
+    { quantity: 0, unitCost: 0, lossCost: 0, totalCost: 0 },
   );
-  const inspectionButton = canOpenInspectionModal ? (
-    <button
-      type="button"
-      onClick={onOpenInspectionModal}
-      className="pbp-interactive-button pbp-action-secondary inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-medium"
-    >
-      {copy.inspectionAction}
-    </button>
-  ) : null;
-
+  void canOpenInspectionModal;
+  void onOpenInspectionModal;
   void open;
   void onToggle;
 
@@ -99,11 +96,6 @@ export default function OrderInfoSection({
   return (
     <div className="space-y-3 overflow-hidden rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4">
       {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
-      {inspectionButton ? (
-        <div className="flex justify-end">
-          {inspectionButton}
-        </div>
-      ) : null}
       <div>
         <div className="max-w-full overflow-hidden rounded-xl border border-stone-200 bg-white">
           <table className="w-full table-fixed text-left">
@@ -137,7 +129,7 @@ export default function OrderInfoSection({
 
                 return (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                  <td className="px-3 py-2 text-center align-middle text-xs font-semibold text-stone-700">{copy.sewingLineTypeLabel}</td>
+                  <td className="px-3 py-2 text-center align-middle text-xs font-semibold leading-4 text-stone-700">{copy.sewingLineTypeLabel}</td>
                   <td className={`${SELECTABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} displayValue={translateWorkOrderDisplayText(item.type, locale)} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} displayValue={translateWorkOrderDisplayText(item.factory, locale)} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={numericEditableCellClass}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} alignRight compact editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
@@ -152,12 +144,15 @@ export default function OrderInfoSection({
               })}
               {outsourcing.map((item, rowIndex) => (
                 <tr key={item.id} className={`border-b border-stone-100 ${(visibleOrderEntries.length + rowIndex) % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                  <td className="px-3 py-2 text-center align-middle text-xs font-semibold text-stone-700">{copy.outsourcingLineTypeLabel}</td>
+                  <td className="px-3 py-2 text-center align-middle text-xs font-semibold leading-4 text-stone-700">
+                    <span className="block">{copy.outsourcingLineTypeLabelPrefix}</span>
+                    <span className="block">{copy.outsourcingLineTypeLabelSuffix}</span>
+                  </td>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.process, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingProcessOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.vendor, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingVendorOptionsById[item.id] ?? []} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={numericEditableCellClass}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} alignRight compact editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={numericEditableCellClass}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} alignRight compact editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={numericCalculatedCellClass}>-</td>
+                  <td className={numericEditableCellClass}><EditableValue section="outsourcing" rowId={item.id} field="lossCost" value={(item.lossCost ?? 0).toLocaleString()} alignRight compact editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={numericCalculatedCellClass} title={`${item.totalCost.toLocaleString()}${common.currencySuffix}`}>
                     <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{item.totalCost.toLocaleString()}{common.currencySuffix}</span>
                   </td>
@@ -171,20 +166,20 @@ export default function OrderInfoSection({
                 <td className={numericCalculatedCellClass} title={`${(totals.quantity + outsourcingTotals.quantity).toLocaleString()}${common.quantitySuffix}`}>
                   <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{(totals.quantity + outsourcingTotals.quantity).toLocaleString()}{common.quantitySuffix}</span>
                 </td>
-                <td className={numericCalculatedCellClass} title={`${(totals.laborCost + outsourcingTotals.cost).toLocaleString()}${common.currencySuffix}`}>
-                  <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{(totals.laborCost + outsourcingTotals.cost).toLocaleString()}{common.currencySuffix}</span>
+                <td className={numericCalculatedCellClass} title={`${(totals.laborCost + outsourcingTotals.unitCost).toLocaleString()}${common.currencySuffix}`}>
+                  <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{(totals.laborCost + outsourcingTotals.unitCost).toLocaleString()}{common.currencySuffix}</span>
                 </td>
-                <td className={numericCalculatedCellClass} title={`${totals.lossCost.toLocaleString()}${common.currencySuffix}`}>
-                  <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{totals.lossCost.toLocaleString()}{common.currencySuffix}</span>
+                <td className={numericCalculatedCellClass} title={`${(totals.lossCost + outsourcingTotals.lossCost).toLocaleString()}${common.currencySuffix}`}>
+                  <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{(totals.lossCost + outsourcingTotals.lossCost).toLocaleString()}{common.currencySuffix}</span>
                 </td>
-                <td className={numericCalculatedCellClass} title={`${(totals.totalCost + outsourcingTotals.cost).toLocaleString()}${common.currencySuffix}`}>
-                  <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{(totals.totalCost + outsourcingTotals.cost).toLocaleString()}{common.currencySuffix}</span>
+                <td className={numericCalculatedCellClass} title={`${(totals.totalCost + outsourcingTotals.totalCost).toLocaleString()}${common.currencySuffix}`}>
+                  <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{(totals.totalCost + outsourcingTotals.totalCost).toLocaleString()}{common.currencySuffix}</span>
                 </td>
                 <td aria-hidden="true" />
               </tr>
               <tr className="border-t border-stone-200 bg-stone-50/90">
                 <td className="px-3 py-2 text-right text-xs font-semibold text-stone-900 tabular-nums" colSpan={8}>
-                  {formatCurrencySummary(totals.totalCost + outsourcingTotals.cost, i18n)}
+                  {formatCurrencySummary(totals.totalCost + outsourcingTotals.totalCost, i18n)}
                 </td>
               </tr>
               {!locked && visibleOrderEntries.length === 0 ? (

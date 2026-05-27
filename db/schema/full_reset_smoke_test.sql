@@ -263,6 +263,7 @@ BEGIN
       ('orders', 'factory_partner_id'),
       ('spec_sheet_materials', 'vendor_partner_id'),
       ('spec_sheet_outsourcing_lines', 'vendor_partner_id'),
+      ('spec_sheet_outsourcing_lines', 'loss_cost'),
       ('workorder_material_lines', 'material_id')
   ) AS required_columns(table_name, column_name)
   WHERE NOT EXISTS (

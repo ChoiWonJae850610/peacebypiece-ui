@@ -1,6 +1,6 @@
 -- =========================================
 -- WAFL full DB reset schema
--- Version: 0.16.93
+-- Version: 0.17.29
 --
 -- 기준:
 -- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
@@ -686,6 +686,7 @@ CREATE TABLE spec_sheet_outsourcing_lines (
   quantity numeric NOT NULL DEFAULT 0,
   unit text,
   unit_cost numeric NOT NULL DEFAULT 0,
+  loss_cost numeric NOT NULL DEFAULT 0,
   total_cost numeric NOT NULL DEFAULT 0,
   status text
 );

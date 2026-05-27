@@ -31,6 +31,7 @@ type DbMaterialRow = {
   quantity: number | null;
   unit: Material["unit"] | null;
   unit_cost: number | null;
+  loss_cost: number | null;
   total_cost: number | null;
   status: Material["status"] | null;
 };
@@ -45,6 +46,7 @@ type DbOutsourcingRow = {
   quantity: number | null;
   unit: string | null;
   unit_cost: number | null;
+  loss_cost: number | null;
   total_cost: number | null;
   status: string | null;
 };
@@ -125,6 +127,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
               ol.quantity,
               ol.unit,
               ol.unit_cost,
+              ol.loss_cost,
               ol.total_cost,
               ol.status
          FROM spec_sheet_outsourcing_lines ol
@@ -165,6 +168,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       quantity: readNumberRowValue(row.quantity),
       unit: normalizeMaterialUnitValue(row.unit || "개"),
       unitCost: readNumberRowValue(row.unit_cost),
+      lossCost: readNumberRowValue(row.loss_cost),
       totalCost: readNumberRowValue(row.total_cost),
       status: row.status || "준비",
     });
@@ -182,6 +186,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       quantity: readNumberRowValue(row.quantity),
       unitType: row.unit || "",
       unitCost: readNumberRowValue(row.unit_cost),
+      lossCost: readNumberRowValue(row.loss_cost),
       totalCost: readNumberRowValue(row.total_cost),
       status: row.status || "",
     });

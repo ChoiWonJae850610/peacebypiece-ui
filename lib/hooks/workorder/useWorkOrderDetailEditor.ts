@@ -183,7 +183,7 @@ export function useWorkOrderDetailEditor({
       return field === "quantity" || field === "laborCost" || field === "lossCost";
     }
 
-    return field === "quantity" || field === "unitCost";
+    return field === "quantity" || field === "unitCost" || field === "lossCost";
   };
 
   const startEdit = (

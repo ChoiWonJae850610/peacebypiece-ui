@@ -64,6 +64,7 @@ export type Outsourcing = {
   quantity: number;
   unitType: string;
   unitCost: number;
+  lossCost?: number;
   totalCost: number;
   status: string;
 };

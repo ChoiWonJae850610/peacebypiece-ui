@@ -391,6 +391,7 @@ export const workorderEn = {
     },
     actionSection: {
       title: "Progress",
+      inspectionAction: "Start inspection",
       fallbackGroup: "Progress",
       rejectKeyword: "Reject",
       processingFormat: "Processing {label}...",
@@ -401,7 +402,7 @@ export const workorderEn = {
       emptyReason: "Rejected without a written reason.",
     },
     detailGroups: {
-      cost: { eyebrow: "Cost", title: "Cost summary", description: "Review fabric, trim, outsourcing, labor, and loss costs first." },
+      cost: { eyebrow: "Cost", title: "Cost summary", description: "" },
       order: { eyebrow: "Order", title: "Order info", description: "" },
       production: { eyebrow: "Production", title: "Production composition", description: "" },
     },
@@ -420,6 +421,8 @@ export const workorderEn = {
         orderLineDescription: "",
         sewingLineTypeLabel: "Production",
         outsourcingLineTypeLabel: "Additional process",
+        outsourcingLineTypeLabelPrefix: "Additional",
+        outsourcingLineTypeLabelSuffix: "process",
         orderLineHandoffNote: "",
         outsourcingOrder: {
           title: "Outsourcing orders",

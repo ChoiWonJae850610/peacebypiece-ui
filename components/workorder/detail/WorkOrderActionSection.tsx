@@ -23,6 +23,8 @@ export default function WorkOrderActionSection({
   onAction,
   workflowProcessingLabel = null,
   isWorkspaceWriteLocked = false,
+  canOpenInspectionModal = false,
+  onOpenInspectionModal,
 }: {
   stages: DisplayStage[];
   currentStage: DisplayStage;
@@ -32,6 +34,8 @@ export default function WorkOrderActionSection({
   workflowProcessingLabel?: string | null;
   isWorkspaceWriteLocked?: boolean;
   workspaceWriteLockMessage?: string;
+  canOpenInspectionModal?: boolean;
+  onOpenInspectionModal?: () => void;
 }) {
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.actionSection;
@@ -39,6 +43,7 @@ export default function WorkOrderActionSection({
   const currentIndex = stages.indexOf(currentStage);
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
+  const showInspectionAction = canOpenInspectionModal && Boolean(onOpenInspectionModal);
   const primaryActionIndex = actions.findIndex((action) => action.actionType !== WORKFLOW_ACTION_TYPE.rejectReview);
   const doneTrackTone = "bg-[var(--pbp-selected-border)]";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
@@ -55,7 +60,7 @@ export default function WorkOrderActionSection({
         <div className="min-w-0">
           <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
         </div>
-        {actions.length > 0 ? (
+        {actions.length > 0 || showInspectionAction ? (
           <div className="flex flex-wrap justify-end gap-2">
             {actions.map((action, index) => {
               const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
@@ -77,6 +82,16 @@ export default function WorkOrderActionSection({
                 </button>
               );
             })}
+            {showInspectionAction ? (
+              <button
+                type="button"
+                onClick={() => onOpenInspectionModal?.()}
+                disabled={isActionLocked}
+                className="pbp-interactive-button pbp-action-secondary inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {copy.inspectionAction}
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>

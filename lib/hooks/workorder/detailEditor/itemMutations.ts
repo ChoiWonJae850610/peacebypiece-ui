@@ -67,6 +67,9 @@ export function commitOutsourcingItemsEdit(payload: {
     if (payload.editingCell.field === "unitCost") {
       return recalculateOutsourcing({ ...item, unitCost: toNumber(payload.nextValue) });
     }
+    if (payload.editingCell.field === "lossCost") {
+      return recalculateOutsourcing({ ...item, lossCost: toNumber(payload.nextValue) });
+    }
     if (payload.editingCell.field === "dueDate") {
       return { ...item, dueDate: payload.nextValue } as Outsourcing;
     }
@@ -106,6 +109,7 @@ export function createNewOutsourcingItem(base?: Partial<Outsourcing>) {
     quantity: Number(base?.quantity) || 0,
     unitType: base?.unitType ?? DEFAULT_OUTSOURCING_UNIT,
     unitCost: Number(base?.unitCost) || 0,
+    lossCost: Number(base?.lossCost) || 0,
     totalCost: 0,
     status: base?.status ?? DEFAULT_OUTSOURCING_STATUS,
   });
