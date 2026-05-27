@@ -1,4 +1,4 @@
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
 import SummaryCard from "@/components/common/ui/SummaryCard";
 import DesktopCostSummaryLayout from "@/components/workorder/detail/layout/DesktopCostSummaryLayout";
 import { calculateOrderEntryAmount, calculateOutsourcingAmount } from "@/lib/workorder/detail/detailCalculations";
@@ -37,7 +37,7 @@ function buildProcessCostLines({
   orderEntries: OrderEntry[];
   outsourcing: Outsourcing[];
   fallbackProcess: string;
-  locale: string;
+  locale: Locale;
 }): ProcessCostLine[] {
   const productionLines = orderEntries.slice(0, 1).map((item, index) => {
     const typeLabel = translateWorkOrderDisplayText(item.type, locale);

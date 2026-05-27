@@ -271,6 +271,7 @@ export function buildCostSummarySectionProps({
   subsidiaryTotal,
   outsourcingTotal,
   costSummary,
+  orderItems,
   outsourcingItems,
 }: BuildWorkOrderDetailViewModelArgs): CostSummaryProps {
   return {
