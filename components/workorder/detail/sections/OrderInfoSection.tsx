@@ -1,11 +1,10 @@
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import { useI18n } from "@/lib/i18n";
 import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
-import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
+import { calculateOrderEntryAmount, calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { formatCurrencySummary } from "@/lib/workorder/detail/detailFormatting";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
-import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
-import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
+import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import {
   CALCULATED_TABLE_CELL_CLASS,
   DeleteButton,
@@ -81,18 +80,6 @@ export default function OrderInfoSection({
     },
     { quantity: 0, cost: 0 },
   );
-  const inspectionStatusCounts = visibleOrderEntries.reduce<Record<string, { label: string; tone: string; count: number }>>((acc, item) => {
-    const key = item.inspectionStatus ?? "__pending";
-    const current = acc[key] ?? {
-      label: translateInspectionStatusLabel(item.inspectionStatus, i18n),
-      tone: getInspectionStatusTone(item.inspectionStatus),
-      count: 0,
-    };
-    current.count += 1;
-    acc[key] = current;
-    return acc;
-  }, {});
-  const inspectionStatusSummary = Object.values(inspectionStatusCounts);
   const inspectionButton = canOpenInspectionModal ? (
     <button
       type="button"
@@ -112,30 +99,12 @@ export default function OrderInfoSection({
   return (
     <div className="space-y-3 overflow-hidden rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4">
       {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
-      {inspectionStatusSummary.length > 0 || inspectionButton ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {inspectionStatusSummary.length > 0 ? (
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-[11px] font-semibold text-stone-500">{copy.statusSummaryLabel}</span>
-              {inspectionStatusSummary.map((status) => (
-                <span key={status.label} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none ${status.tone}`}>
-                  {status.label} {status.count}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <span aria-hidden="true" />
-          )}
+      {inspectionButton ? (
+        <div className="flex justify-end">
           {inspectionButton}
         </div>
       ) : null}
       <div>
-        <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
-          <div>
-            <div className="text-xs font-semibold text-stone-900">{copy.orderLineTitle}</div>
-            <div className="mt-0.5 text-[11px] leading-4 text-stone-500">{copy.orderLineDescription}</div>
-          </div>
-        </div>
         <div className="max-w-full overflow-hidden rounded-xl border border-stone-200 bg-white">
           <table className="w-full table-fixed text-left">
             <colgroup>
@@ -163,20 +132,24 @@ export default function OrderInfoSection({
                   <td colSpan={8} className="px-3 py-8 text-center text-sm text-stone-500">{copy.empty}</td>
                 </tr>
               ) : null}
-              {visibleOrderEntries.map((item, rowIndex) => (
-                <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
+              {visibleOrderEntries.map((item, rowIndex) => {
+                const orderLineAmount = calculateOrderEntryAmount(item);
+
+                return (
+                  <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                   <td className="px-3 py-2 text-center align-middle text-xs font-semibold text-stone-700">{copy.sewingLineTypeLabel}</td>
                   <td className={`${SELECTABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} displayValue={translateWorkOrderDisplayText(item.type, locale)} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} displayValue={translateWorkOrderDisplayText(item.factory, locale)} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={numericEditableCellClass}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} alignRight compact editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={numericEditableCellClass}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} alignRight compact editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={numericEditableCellClass}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} alignRight compact editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={numericCalculatedCellClass} title={`${(item.laborCost + item.lossCost).toLocaleString()}${common.currencySuffix}`}>
-                    <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{(item.laborCost + item.lossCost).toLocaleString()}{common.currencySuffix}</span>
+                  <td className={numericCalculatedCellClass} title={`${orderLineAmount.toLocaleString()}${common.currencySuffix}`}>
+                    <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">{orderLineAmount.toLocaleString()}{common.currencySuffix}</span>
                   </td>
                   <td aria-hidden="true" />
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
               {outsourcing.map((item, rowIndex) => (
                 <tr key={item.id} className={`border-b border-stone-100 ${(visibleOrderEntries.length + rowIndex) % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                   <td className="px-3 py-2 text-center align-middle text-xs font-semibold text-stone-700">{copy.outsourcingLineTypeLabel}</td>

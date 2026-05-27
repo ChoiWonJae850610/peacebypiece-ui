@@ -20,7 +20,7 @@ function DetailSectionGroup({
 }: {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
 }) {
   return (
@@ -29,7 +29,7 @@ function DetailSectionGroup({
         <div className="min-w-0">
           <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">{eyebrow}</div>
           <h3 className="mt-1 text-sm font-semibold leading-5 text-stone-900">{title}</h3>
-          <p className="mt-0.5 max-w-[44rem] text-[11px] leading-4 text-stone-500">{description}</p>
+          {description ? <p className="mt-0.5 max-w-[44rem] text-[11px] leading-4 text-stone-500">{description}</p> : null}
         </div>
       </div>
       {children}

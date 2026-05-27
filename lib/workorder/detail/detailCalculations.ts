@@ -20,13 +20,17 @@ function calculateFactoryLaborTotal(item: Pick<OrderEntry, "quantity" | "laborCo
   return Math.max(0, Number(item.quantity) || 0) * Math.max(0, Number(item.laborCost) || 0);
 }
 
+export function calculateOrderEntryAmount(item: Pick<OrderEntry, "quantity" | "laborCost" | "lossCost">) {
+  return calculateFactoryLaborTotal(item) + Math.max(0, Number(item.lossCost) || 0);
+}
+
 export function calculateOrderEntryTotals(orderEntries: OrderEntry[]) {
   return orderEntries.reduce(
     (acc, item) => {
       acc.quantity += Math.max(0, Number(item.quantity) || 0);
       acc.laborCost += calculateFactoryLaborTotal(item);
       acc.lossCost += Math.max(0, Number(item.lossCost) || 0);
-      acc.totalCost = acc.laborCost + acc.lossCost;
+      acc.totalCost += calculateOrderEntryAmount(item);
       return acc;
     },
     { quantity: 0, laborCost: 0, lossCost: 0, totalCost: 0 },
