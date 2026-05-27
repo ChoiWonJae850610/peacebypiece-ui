@@ -50,7 +50,7 @@ export default function OrderRequestConfirmModal({
     () => getFactoryOrderRowsValidationMessage(workOrder, i18n.workorder.actionFlow),
     [i18n.workorder.actionFlow, workOrder],
   );
-  const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested && !orderRowsValidationMessage;
+  const canSubmit = Boolean(confirmedFactoryName) && confirmedQuantity > 0 && !requested && !orderRowsValidationMessage;
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [requestNote, setRequestNote] = useState("");

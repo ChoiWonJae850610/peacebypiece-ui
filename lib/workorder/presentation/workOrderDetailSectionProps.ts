@@ -281,6 +281,7 @@ export function buildCostSummarySectionProps({
     lossCost: costSummary.lossCost,
     totalCost: costSummary.totalCost,
     unitCost: costSummary.unitCost,
+    orderEntries: orderItems,
     outsourcing: outsourcingItems,
   };
 }

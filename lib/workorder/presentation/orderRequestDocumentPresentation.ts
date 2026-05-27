@@ -144,9 +144,10 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
 
   const fabricAmountTotal = sumBy(fabricMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
   const subsidiaryAmountTotal = sumBy(subsidiaryMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
-  const outsourcingAmountTotal = sumBy(outsourcingItems, (item) => item.totalCost || item.quantity * item.unitCost);
+  const outsourcingAmountTotal = sumBy(outsourcingItems, (item) => item.totalCost || item.quantity * (item.unitCost + (item.lossCost ?? 0)));
   const materialAndOutsourcingAmountTotal = fabricAmountTotal + subsidiaryAmountTotal + outsourcingAmountTotal;
-  const currentFactoryCostAmount = (Math.max(0, Number(currentPage.quantity) || 0) * Math.max(0, Number(currentPage.laborCost) || 0)) + Math.max(0, Number(currentPage.lossCost) || 0);
+  const currentFactoryQuantity = Math.max(0, Number(currentPage.quantity) || 0);
+  const currentFactoryCostAmount = currentFactoryQuantity * (Math.max(0, Number(currentPage.laborCost) || 0) + Math.max(0, Number(currentPage.lossCost) || 0));
   const currentDocumentAmount = materialAndOutsourcingAmountTotal + currentFactoryCostAmount;
 
   return {

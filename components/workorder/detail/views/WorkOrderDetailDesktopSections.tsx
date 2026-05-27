@@ -18,7 +18,7 @@ function DetailSectionGroup({
   description,
   children,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   children: ReactNode;
@@ -27,8 +27,8 @@ function DetailSectionGroup({
     <section className="mt-5 min-w-0">
       <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
         <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">{eyebrow}</div>
-          <h3 className="mt-1 text-sm font-semibold leading-5 text-stone-900">{title}</h3>
+          {eyebrow ? <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">{eyebrow}</div> : null}
+          <h3 className={eyebrow ? "mt-1 text-sm font-semibold leading-5 text-stone-900" : "text-sm font-semibold leading-5 text-stone-900"}>{title}</h3>
           {description ? <p className="mt-0.5 max-w-[44rem] text-[11px] leading-4 text-stone-500">{description}</p> : null}
         </div>
       </div>
