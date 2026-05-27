@@ -413,6 +413,7 @@ export const workorderKo = {
         fallbackItem: "발주 {index}",
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ 발주 추가",
+        factoryAddButton: "+ 공장 정보 추가",
         totalRow: "합계",
         empty: "등록된 발주 정보가 없습니다.",
         datePicker: {

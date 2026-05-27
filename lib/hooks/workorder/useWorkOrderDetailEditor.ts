@@ -280,8 +280,11 @@ export function useWorkOrderDetailEditor({
   };
 
   const addOrderEntry = () => {
+    if (orderItems.length > 0) {
+      return;
+    }
+
     const nextItems = [
-      ...orderItems,
       createNewOrderEntry(orderItems, currentWorkflowState),
     ];
     setOrderItems(nextItems);

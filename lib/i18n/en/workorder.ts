@@ -413,6 +413,7 @@ export const workorderEn = {
         fallbackItem: "Order {index}",
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ Add order",
+        factoryAddButton: "+ Add factory info",
         totalRow: "Total",
         empty: "No order information registered.",
         datePicker: {

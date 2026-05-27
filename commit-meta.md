@@ -1,13 +1,15 @@
-Version : 0.17.23
-Summary : 달력 팝업과 생산 구성 화면 압축
-Description : 공통 날짜 선택 팝업의 폭을 줄여 우측 빈 공간을 줄이고, 작업지시서 PC 생산 구성 영역에서 외주공정 블록을 제거해 필요 원단/부자재만 넓게 표시하도록 정리했습니다. 외주 발주를 발주 정보 영역으로 이동하는 구조는 이번 버전에서 구현하지 않고 다음 설계 단계로 보류했습니다. 작업지시서 PDF 양식과 DB schema는 변경하지 않았습니다.
+Version : 0.17.24
+Summary : 작업지시서 단일 생산 공장 기준 정리
+Description : 작업지시서 발주 정보에서 복수 공장/복수 발주 추가 흐름을 제거하고, 생산 공장은 작업지시서당 1개만 표시·관리하도록 정리했습니다. 기존 orderEntries 배열 구조와 DB schema는 유지하되 상세 화면과 추가 동작은 대표 생산 공장 1개 기준으로 제한했습니다. 공장 하나당 발주서 1개 생성 방향을 문서화하고, 외주공정은 다음 버전에서 발주 정보 내부의 별도 다중 블록으로 추가할 수 있도록 분리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/common/date/PbpSingleDatePicker.tsx
-- components/workorder/detail/sections/ProductionCompositionSection.tsx
-- components/workorder/detail/sections/MaterialSection.tsx
-- lib/workorder/detail/detailFormatting.ts
+- components/workorder/detail/sections/OrderInfoSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletOrderInfoSection.tsx
+- lib/hooks/workorder/useWorkOrderDetailEditor.ts
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
 추가 파일 목록 :
-- docs/현재기준/0.17.23-calendar-and-production-composition-trim.md
+- docs/현재기준/0.17.24-single-factory-order-policy.md
 삭제 파일 목록 :
-없음
+- 없음

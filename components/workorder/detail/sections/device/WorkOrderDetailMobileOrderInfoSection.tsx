@@ -3,7 +3,7 @@ import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculat
 import { formatCurrencySummaryParts, formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
-import { DeleteButton, EditableValue, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
+import { EditableValue, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type OrderInfoProps = WorkOrderDetailViewModel["orderInfoProps"];
@@ -26,7 +26,9 @@ export default function WorkOrderDetailMobileOrderInfoSection({
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
   const common = i18n.workorder.ui.common;
-  const totals = calculateOrderEntryTotals(orderEntries);
+  void onRemove;
+  const visibleOrderEntries = orderEntries.slice(0, 1);
+  const totals = calculateOrderEntryTotals(visibleOrderEntries);
   const totalCostSummary = formatCurrencySummaryParts(totals.totalCost, i18n);
   const dueDatePickerLabels = {
     placeholder: copy.datePicker.placeholder,
@@ -40,7 +42,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
     <section className="min-w-0 overflow-hidden rounded-2xl bg-stone-50 p-3 sm:p-3.5">
       <SectionHeader
         title={copy.title}
-        summary={formatOrderSummary(orderEntries, i18n)}
+        summary={formatOrderSummary(visibleOrderEntries, i18n)}
         open={open}
         onToggle={onToggle}
         rightSlot={
@@ -58,7 +60,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
 
       {open ? (
         <div className="mt-3 grid gap-3">
-          {orderEntries.map((item, index) => (
+          {visibleOrderEntries.map((item, index) => (
             <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3.5 shadow-sm sm:p-4">
               <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <div>
@@ -105,12 +107,6 @@ export default function WorkOrderDetailMobileOrderInfoSection({
                   <dd className="mt-1 font-semibold tabular-nums text-stone-900">{item.lossCost.toLocaleString()}{common.currencySuffix}</dd>
                 </div>
               </dl>
-
-              {!locked ? (
-                <div className="mt-3 flex justify-end">
-                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} disabled={locked} />
-                </div>
-              ) : null}
             </article>
           ))}
 
@@ -136,13 +132,13 @@ export default function WorkOrderDetailMobileOrderInfoSection({
             </div>
           </div>
 
-          {!locked ? (
+          {!locked && visibleOrderEntries.length === 0 ? (
             <button
               type="button"
               onClick={onAdd}
               className="pbp-interactive-button pbp-action-add flex w-full items-center justify-center rounded-xl px-3 py-3 text-sm font-medium"
             >
-              {copy.addButton}
+              {copy.factoryAddButton}
             </button>
           ) : null}
         </div>

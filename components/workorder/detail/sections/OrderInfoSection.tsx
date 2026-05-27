@@ -7,7 +7,6 @@ import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPres
 import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import {
   CALCULATED_TABLE_CELL_CLASS,
-  DeleteButton,
   EDITABLE_TABLE_CELL_CLASS,
   EditableValue,
   SELECTABLE_TABLE_CELL_CLASS,
@@ -57,7 +56,9 @@ export default function OrderInfoSection({
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
   const common = i18n.workorder.ui.common;
-  const totals = calculateOrderEntryTotals(orderEntries);
+  void onRemove;
+  const visibleOrderEntries = orderEntries.slice(0, 1);
+  const totals = calculateOrderEntryTotals(visibleOrderEntries);
   const inspectionStatusCounts = orderEntries.reduce<Record<string, { label: string; tone: string; count: number }>>((acc, item) => {
     const key = item.inspectionStatus ?? "__pending";
     const current = acc[key] ?? {
@@ -113,17 +114,16 @@ export default function OrderInfoSection({
       <div className="max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white">
             <table className="min-w-[720px] w-full table-fixed text-left">
               <colgroup>
-                <col className="w-[13%]" />
-                <col className="w-[19%]" />
+                <col className="w-[14%]" />
+                <col className="w-[24%]" />
                 <col className="w-[18%]" />
-                <col className="w-[13%]" />
                 <col className="w-[14%]" />
-                <col className="w-[14%]" />
-                <col className="w-[9%]" />
+                <col className="w-[15%]" />
+                <col className="w-[15%]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {[copy.fields.type, copy.fields.factory, copy.fields.dueDate, copy.fields.quantity, copy.fields.laborCost, copy.fields.lossCost, ""].map((header, index) => (
+                  {[copy.fields.type, copy.fields.factory, copy.fields.dueDate, copy.fields.quantity, copy.fields.laborCost, copy.fields.lossCost].map((header, index) => (
                     <th key={`${header}-${index}`} className={TABLE_HEADER_CELL_CLASS}>
                       <span className="block w-full whitespace-nowrap leading-4">{header}</span>
                     </th>
@@ -131,12 +131,12 @@ export default function OrderInfoSection({
                 </tr>
               </thead>
               <tbody>
-                {orderEntries.length === 0 ? (
+                {visibleOrderEntries.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-3 py-8 text-center text-sm text-stone-500">{copy.empty}</td>
+                    <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">{copy.empty}</td>
                   </tr>
                 ) : null}
-                {orderEntries.map((item, rowIndex) => (
+                {visibleOrderEntries.map((item, rowIndex) => (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                     <td className={`${SELECTABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} displayValue={translateWorkOrderDisplayText(item.type, locale)} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} displayValue={translateWorkOrderDisplayText(item.factory, locale)} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
@@ -144,9 +144,7 @@ export default function OrderInfoSection({
                     <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${EDITABLE_TABLE_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                    <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
-                    </td>
+
                   </tr>
                 ))}
                 <tr className="bg-stone-50/70">
@@ -154,26 +152,25 @@ export default function OrderInfoSection({
                   <td className={CALCULATED_TABLE_CELL_CLASS}>{totals.quantity.toLocaleString()}{common.quantitySuffix}</td>
                   <td className={CALCULATED_TABLE_CELL_CLASS}>{totals.laborCost.toLocaleString()}{common.currencySuffix}</td>
                   <td className={CALCULATED_TABLE_CELL_CLASS}>{totals.lossCost.toLocaleString()}{common.currencySuffix}</td>
-                  <td />
                 </tr>
                 <tr className="border-t border-stone-200 bg-stone-50/90">
-                  <td className="px-3 py-2 text-right text-xs font-semibold text-stone-900 tabular-nums" colSpan={7}>
+                  <td className="px-3 py-2 text-right text-xs font-semibold text-stone-900 tabular-nums" colSpan={6}>
                     {formatCurrencySummary(totals.totalCost, i18n)}
                   </td>
                 </tr>
-                {locked ? null : (
+                {!locked && visibleOrderEntries.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-3 pb-2 pt-2">
+                    <td colSpan={6} className="px-3 pb-2 pt-2">
                       <button
                         type="button"
                         onClick={onAdd}
                         className="pbp-interactive-button pbp-action-add flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-sm font-medium"
                       >
-                        {copy.addButton}
+                        {copy.factoryAddButton}
                       </button>
                     </td>
                   </tr>
-                )}
+                ) : null}
               </tbody>
             </table>
       </div>
