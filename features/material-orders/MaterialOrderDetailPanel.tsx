@@ -230,7 +230,7 @@ export default function MaterialOrderDetailPanel({
               선택된 발주서가 없습니다.
             </p>
             <p className="mt-2 text-sm leading-6 pbp-text-muted">
-              왼쪽 패널에서 주문서를 생성하거나 기존 주문서를 선택하면 상세 입력
+              왼쪽 패널에서 발주서를 생성하거나 기존 발주서를 선택하면 상세 입력
               영역이 열립니다.
             </p>
           </div>

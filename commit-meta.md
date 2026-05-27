@@ -1,12 +1,10 @@
-Version : 0.17.52
-Summary : 현재 사용자 조회 실패의 개발 오버레이 오류 보정
-Description : /api/auth/me에서 세션 overlay/profile/permission 조회 실패가 전체 화면 오류로 번지지 않도록 방어하고, 클라이언트 CurrentUserProvider의 refresh 실패가 Next 개발 오버레이 console error로 표시되지 않도록 보정했습니다.
+Version : 0.17.53
+Summary : 원단·부자재 발주서 목록 용어와 건수 뱃지 위치 보정
+Description : 원단·부자재 화면의 발주서 목록과 작업지시서 목록 건수 뱃지를 살짝 낮춰 제목과의 시각적 정렬을 보정했습니다. 발주서 목록에서 남아 있던 주문서 생성 문구를 발주서 생성 기준으로 통일하고, 선택되지 않은 상세 패널 안내 문구도 발주서 용어로 정리했습니다. npm run build는 실행하지 않았으며 사용자가 로컬에서 확인합니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/api/auth/me/route.ts
-- components/auth/CurrentUserProvider.tsx
-- lib/auth/currentSession.ts
+- features/material-orders/MaterialOrderListPanel.tsx
+- features/material-orders/MaterialOrderAllocationPanel.tsx
+- features/material-orders/MaterialOrderDetailPanel.tsx
 추가 파일 목록 :
-- 없음
 삭제 파일 목록 :
-- 없음
