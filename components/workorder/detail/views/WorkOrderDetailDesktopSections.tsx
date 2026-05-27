@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
-import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
@@ -42,16 +41,8 @@ function DetailSectionGroup({
 }
 
 export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderDetailDesktopSectionsProps) {
-  const { i18n, locale } = useI18n();
+  const { i18n } = useI18n();
   const groups = i18n.workorder.ui.detailGroups;
-  const materialCopy = i18n.workorder.ui.sections.material;
-  const common = i18n.workorder.ui.common;
-  const materials = viewModel.productionCompositionProps.materials;
-  const materialSummary = materials.length > 0
-    ? materialCopy.summaryFormat
-      .replace("{name}", translateWorkOrderDisplayText(materials[0].name, locale))
-      .replace("{andMore}", materials.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(materials.length - 1))}` : "")
-    : materialCopy.empty;
 
   return (
     <>
@@ -75,7 +66,7 @@ export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderD
       </DetailSectionGroup>
 
       {viewModel.showProductionComposition ? (
-        <DetailSectionGroup eyebrow={groups.production.eyebrow} title={groups.production.title} description={groups.production.description} summary={materialSummary}>
+        <DetailSectionGroup eyebrow={groups.production.eyebrow} title={groups.production.title} description={groups.production.description}>
           <ProductionCompositionSection {...viewModel.productionCompositionProps} />
         </DetailSectionGroup>
       ) : null}
