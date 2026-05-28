@@ -25,6 +25,8 @@ const widthClassMap: Record<AppSelectWidth, string> = {
   full: "w-full",
 };
 
+const EMPTY_SELECT_VALUE = "__app_select_empty_value__";
+
 type AppSelectProps = {
   value: string;
   onValueChange: (value: string) => void;
@@ -52,8 +54,14 @@ export default function AppSelect({
   contentClassName,
   ariaLabel,
 }: AppSelectProps) {
+  const rootValue = value === "" ? EMPTY_SELECT_VALUE : value;
+
   return (
-    <Select.Root value={value} onValueChange={onValueChange} disabled={disabled}>
+    <Select.Root
+      value={rootValue}
+      onValueChange={(nextValue) => onValueChange(nextValue === EMPTY_SELECT_VALUE ? "" : nextValue)}
+      disabled={disabled}
+    >
       <Select.Trigger
         aria-label={ariaLabel ?? placeholder}
         className={cn(
@@ -82,7 +90,7 @@ export default function AppSelect({
             {options.map((option) => (
               <Select.Item
                 key={option.value}
-                value={option.value}
+                value={option.value === "" ? EMPTY_SELECT_VALUE : option.value}
                 disabled={option.disabled}
                 className="relative flex min-h-9 cursor-pointer select-none items-center rounded-xl px-8 py-2 text-sm font-semibold outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-[var(--pbp-surface-muted)] data-[disabled]:text-[var(--pbp-text-faint)]"
               >

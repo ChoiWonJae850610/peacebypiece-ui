@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { AppBadge, AppButton, AppCard } from "@/components/common/ui";
+import { AppBadge, AppButton, AppCard, AppSelect, type AppSelectOption } from "@/components/common/ui";
 import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
@@ -43,7 +43,7 @@ type MaterialOrderListPanelProps = {
   selectedDraftLines: MaterialOrderDraftLine[];
 };
 
-const MATERIAL_ORDER_STATUS_OPTIONS: Array<{ value: "all" | MaterialOrderStatus; label: string }> = [
+const MATERIAL_ORDER_STATUS_OPTIONS: Array<AppSelectOption & { value: "all" | MaterialOrderStatus }> = [
   { value: "all", label: "상태 전체" },
   { value: "draft", label: "작성중" },
   { value: "review_requested", label: "검토요청" },
@@ -53,7 +53,7 @@ const MATERIAL_ORDER_STATUS_OPTIONS: Array<{ value: "all" | MaterialOrderStatus;
   { value: "cancelled", label: "취소" },
 ];
 
-const MATERIAL_ORDER_TYPE_OPTIONS: Array<{ value: "all" | MaterialOrderLineItemType; label: string }> = [
+const MATERIAL_ORDER_TYPE_OPTIONS: Array<AppSelectOption & { value: "all" | MaterialOrderLineItemType }> = [
   { value: "all", label: "종류 전체" },
   { value: "fabric", label: "원단" },
   { value: "submaterial", label: "부자재" },
@@ -102,24 +102,20 @@ export default function MaterialOrderListPanel({
           className={filterFieldClassName()}
         />
         <div className="grid grid-cols-2 gap-1.5">
-          <select
+          <AppSelect
             value={typeFilter}
-            onChange={(event) => setTypeFilter(event.target.value as MaterialOrderFilterType)}
-            className={filterFieldClassName()}
-          >
-            {MATERIAL_ORDER_TYPE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-          <select
+            onValueChange={(value) => setTypeFilter(value as MaterialOrderFilterType)}
+            options={MATERIAL_ORDER_TYPE_OPTIONS}
+            size="sm"
+            ariaLabel="발주 종류 필터"
+          />
+          <AppSelect
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as MaterialOrderFilterStatus)}
-            className={filterFieldClassName()}
-          >
-            {MATERIAL_ORDER_STATUS_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+            onValueChange={(value) => setStatusFilter(value as MaterialOrderFilterStatus)}
+            options={MATERIAL_ORDER_STATUS_OPTIONS}
+            size="sm"
+            ariaLabel="발주 상태 필터"
+          />
         </div>
         <AppButton
           size="md"
@@ -212,8 +208,4 @@ function MaterialOrderListButton({
       </div>
     </button>
   );
-}
-
-function filterFieldClassName() {
-  return MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS;
 }

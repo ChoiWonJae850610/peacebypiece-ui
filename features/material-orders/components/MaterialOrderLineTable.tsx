@@ -1,3 +1,4 @@
+import { AppSelect, type AppSelectOption } from "@/components/common/ui";
 import {
   CALCULATED_TABLE_CELL_CLASS,
   DeleteButton,
@@ -20,6 +21,11 @@ const MATERIAL_ORDER_UNIT_OPTIONS = [
   "봉",
   "박스",
 ] as const;
+
+const MATERIAL_ORDER_UNIT_SELECT_OPTIONS: AppSelectOption[] = [
+  { value: "", label: "단위" },
+  ...MATERIAL_ORDER_UNIT_OPTIONS.map((unit) => ({ value: unit, label: unit })),
+];
 
 type MaterialOrderLineTableProps = {
   lines: MaterialOrderDraftLine[];
@@ -124,21 +130,16 @@ function MaterialOrderLineRow({
         />
       </td>
       <td className={SELECTABLE_TABLE_CELL_CLASS}>
-        <select
+        <AppSelect
           value={resolveUnitSelectValue(line.unit)}
           disabled={!editable}
-          onChange={(event) =>
-            onChangeLine(line.id, { unit: event.target.value })
-          }
-          className={compactSelectClassName("text-center")}
-        >
-          <option value="">단위</option>
-          {MATERIAL_ORDER_UNIT_OPTIONS.map((unit) => (
-            <option key={unit} value={unit}>
-              {unit}
-            </option>
-          ))}
-        </select>
+          onValueChange={(value) => onChangeLine(line.id, { unit: value })}
+          options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
+          placeholder="단위"
+          size="sm"
+          ariaLabel="발주 단위"
+          triggerClassName="h-8 min-h-8 justify-center rounded-xl px-2.5 text-center text-xs"
+        />
       </td>
       <td className={EDITABLE_TABLE_CELL_CLASS}>
         <input
@@ -211,15 +212,6 @@ function resolveUnitSelectValue(unit: string): string {
 function compactInputClassName(extra = "") {
   return [
     "pbp-field-interaction pbp-workorder-editable-input h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-2.5 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
-    extra,
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function compactSelectClassName(extra = "") {
-  return [
-    "pbp-field-interaction pbp-workorder-editable-input h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-2.5 pr-7 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
   ]
     .filter(Boolean)

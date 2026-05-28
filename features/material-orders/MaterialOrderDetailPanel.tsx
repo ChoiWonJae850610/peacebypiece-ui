@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AppCard, AppSection } from "@/components/common/ui";
+import { AppCard, AppSelect, AppSection, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
@@ -81,44 +81,27 @@ export default function MaterialOrderDetailPanel({
             bodyClassName="grid gap-3 xl:grid-cols-2"
           >
               <FieldLabel label="구분">
-                <select
+                <AppSelect
                   value={materialType}
                   disabled={selectedOrder.status !== "draft"}
-                  onChange={(event) =>
-                    onChangeMaterialType(
-                      event.target.value as MaterialOrderDraftType,
-                    )
+                  size="sm"
+                  options={MATERIAL_TYPE_SELECT_OPTIONS}
+                  ariaLabel="발주 구분"
+                  onValueChange={(value) =>
+                    onChangeMaterialType(value as MaterialOrderDraftType)
                   }
-                  className={compactSelectClassName()}
-                >
-                  <option value="fabric">원단</option>
-                  <option value="submaterial">부자재</option>
-                </select>
+                />
               </FieldLabel>
               <FieldLabel label="공급처">
-                <select
+                <AppSelect
                   value={supplierPartnerId ?? ""}
                   disabled={selectedOrder.status !== "draft" || suppliersLoading}
-                  onChange={(event) =>
-                    onChangeSupplierPartnerId(event.target.value || null)
-                  }
-                  className={compactSelectClassName()}
-                >
-                  <option value="">
-                    {resolveSupplierPlaceholder(
-                      suppliersLoading,
-                      suppliers.length,
-                    )}
-                  </option>
-                  {suppliers.map((supplier) => (
-                    <option
-                      key={`${supplier.type}-${supplier.id}`}
-                      value={supplier.id}
-                    >
-                      {supplier.name}
-                    </option>
-                  ))}
-                </select>
+                  size="sm"
+                  placeholder={resolveSupplierPlaceholder(suppliersLoading, suppliers.length)}
+                  options={buildSupplierSelectOptions(suppliersLoading, suppliers)}
+                  ariaLabel="공급처"
+                  onValueChange={(value) => onChangeSupplierPartnerId(value || null)}
+                />
                 {suppliersError ? (
                   <button
                     type="button"
@@ -167,6 +150,29 @@ export default function MaterialOrderDetailPanel({
   );
 }
 
+
+const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [
+  { value: "fabric", label: "원단" },
+  { value: "submaterial", label: "부자재" },
+];
+
+function buildSupplierSelectOptions(
+  loading: boolean,
+  suppliers: MaterialOrderSupplier[],
+): AppSelectOption[] {
+  return [
+    {
+      value: "",
+      label: resolveSupplierPlaceholder(loading, suppliers.length),
+      disabled: loading || suppliers.length === 0,
+    },
+    ...suppliers.map((supplier) => ({
+      value: supplier.id,
+      label: supplier.name,
+    })),
+  ];
+}
+
 function FieldLabel({
   label,
   children,
@@ -180,15 +186,6 @@ function FieldLabel({
       {children}
     </label>
   );
-}
-
-function compactSelectClassName(extra = "") {
-  return [
-    "pbp-field-interaction pbp-workorder-editable-input h-9 block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 pr-8 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
-    extra,
-  ]
-    .filter(Boolean)
-    .join(" ");
 }
 
 function resolveSupplierPlaceholder(

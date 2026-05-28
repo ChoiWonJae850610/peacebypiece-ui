@@ -1,11 +1,12 @@
-Version : 0.17.95
-Summary : Select와 Tooltip 공통 UI 래퍼 추가
-Description : Radix 기반 AppSelect와 AppTooltip을 추가하여 선택 UI와 도움말 UI를 화면 파일에 직접 흩뿌리지 않고 WAFL 내부 래퍼로 사용할 수 있도록 준비했습니다.
+Version : 0.17.96
+Summary : 원단·부자재 화면의 주요 선택 UI를 AppSelect로 전환
+Description : 원단·부자재 발주서 목록 필터, 발주 상세 기본정보, 발주 품목 단위 선택을 WAFL 공통 AppSelect 기반으로 정리하고, Radix Select의 빈 값 옵션 처리를 AppSelect 내부에서 보정했습니다.
 수정 파일 목록 :
-- components/common/ui/index.ts
+- components/common/ui/AppSelect.tsx
+- features/material-orders/MaterialOrderDetailPanel.tsx
+- features/material-orders/MaterialOrderListPanel.tsx
+- features/material-orders/components/MaterialOrderLineTable.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- components/common/ui/AppSelect.tsx
-- components/common/ui/AppTooltip.tsx
-- docs/ui-select-tooltip-wrappers-0.17.95.md
+- docs/ui-select-application-0.17.96.md
 삭제 파일 목록 :
