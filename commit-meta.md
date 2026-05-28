@@ -1,27 +1,12 @@
-Version : 0.17.56
-Summary : 진행단계 직행 발주 곡선 경로 표시 연결
-Description : WorkflowProgressPanel의 directPath 구조를 작업지시서와 원단·부자재 진행단계에 연결해 작성중에서 발주요청으로 바로 이어지는 곡선 경로를 흐린 보조 경로로 표시할 수 있게 했습니다. 이번 버전은 실제 direct_order 저장값 연결 전의 UI 표시 연결 단계이며, 직행 경로 강조 여부는 이후 workflow_path/order_request_path 설계 결정 뒤 반영합니다. package.json/package-lock.json 변경은 없습니다. 테스트 불가 기간이므로 누적 테스트 항목을 유지합니다.
+Version : 0.17.57
+Summary : 진행단계 Framer Motion 애니메이션 보강
+Description : framer-motion dependency를 추가하고 WorkflowProgressPanel의 SVG 직선/곡선 경로와 step 원에 절제된 transition을 적용했습니다. reduced motion 환경에서는 애니메이션을 즉시 전환하도록 처리했습니다. 누적 테스트 항목은 commit-meta.md 파싱 충돌을 피하기 위해 pending-tests.md로 분리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/workorder/detail/WorkOrderActionSection.tsx
-- features/material-orders/MaterialOrderDetailPanel.tsx
+- components/common/workflow/WorkflowProgressPanel.tsx
+- package.json
+- package-lock.json
 추가 파일 목록 :
-- 없음
+- pending-tests.md
 삭제 파일 목록 :
 - 없음
-누적 테스트 항목 :
-- 0.17.54 이후: 작업메모 0개 뱃지와 발주서 목록 n건 뱃지 색상/테마 반응 동일 여부 확인
-- 0.17.54 이후: 우측 작업지시서 n건 뱃지도 작업메모 뱃지와 같은 톤인지 확인
-- 0.17.54 이후: 테마 변경 시 세 뱃지 모두 같이 색상 변경되는지 확인
-- 0.17.54 이후: 작업메모 카드 기존 레이아웃이 깨지지 않았는지 확인
-- 0.17.55 이후: 작업지시서 진행단계 기존 직선 진행 라인이 깨지지 않는지 확인
-- 0.17.55 이후: 원단·부자재 진행단계 기존 직선 진행 라인이 깨지지 않는지 확인
-- 0.17.55 이후: 진행단계 SVG 전환 후 step 원/라벨 정렬이 기존과 크게 달라지지 않았는지 확인
-- 0.17.56 이후: 작업지시서 진행단계에서 작성중 → 발주요청 곡선 보조 경로가 흐리게 표시되는지 확인
-- 0.17.56 이후: 원단·부자재 진행단계에서 작성중 → 발주요청 곡선 보조 경로가 흐리게 표시되는지 확인
-- 0.17.56 이후: 곡선 보조 경로가 기존 직선 진행선, step 원, 라벨을 가리지 않는지 확인
-- 향후 direct_order 연결 이후: 일반 검토 흐름에서 직선 경로 강조, 곡선 경로 흐림 표시 여부 확인
-- 향후 direct_order 연결 이후: 바로 발주 흐름에서 곡선 경로 강조, 검토요청 경유 라인 흐림 표시 여부 확인
-- 향후 Framer Motion 적용 이후: 선/원 애니메이션이 과하지 않은지 확인
-- 향후 Framer Motion 적용 이후: 테마 변경 시 진행선/곡선/원 색상이 자연스럽게 따라오는지 확인
-Build : npm run build 미실행 — 사용자가 로컬에서 확인
