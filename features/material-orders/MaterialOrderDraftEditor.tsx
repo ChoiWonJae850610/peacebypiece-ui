@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import AppButton from "@/components/common/ui/AppButton";
+import AppSegmentedTabs from "@/components/common/ui/AppSegmentedTabs";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
@@ -84,35 +84,24 @@ export default function MaterialOrderDraftEditor() {
   };
 
   const mobilePanelTabs = (
-    <div className="sticky top-0 z-10 -mx-1 mb-3 flex gap-2 bg-[var(--pbp-surface)]/95 px-1 py-2 backdrop-blur">
-      {MATERIAL_ORDER_PANEL_TABS.map((tab) => (
-        <AppButton
-          key={tab.key}
-          variant={mobilePanel === tab.key ? "primary" : "secondary"}
-          size="sm"
-          width="full"
-          onClick={() => setMobilePanel(tab.key)}
-        >
-          {tab.label}
-        </AppButton>
-      ))}
-    </div>
+    <AppSegmentedTabs
+      items={MATERIAL_ORDER_PANEL_TABS}
+      value={mobilePanel}
+      onChange={setMobilePanel}
+      className="-mx-1 mb-3 bg-[var(--pbp-surface)]/95"
+      sticky
+      ariaLabel="원단·부자재 모바일 화면 전환"
+    />
   );
 
   const tabletPanelTabs = (
-    <div className="mb-3 grid grid-cols-2 gap-2">
-      {MATERIAL_ORDER_TABLET_TABS.map((tab) => (
-        <AppButton
-          key={tab.key}
-          variant={tabletPanel === tab.key ? "primary" : "secondary"}
-          size="sm"
-          width="full"
-          onClick={() => setTabletPanel(tab.key)}
-        >
-          {tab.label}
-        </AppButton>
-      ))}
-    </div>
+    <AppSegmentedTabs
+      items={MATERIAL_ORDER_TABLET_TABS}
+      value={tabletPanel}
+      onChange={setTabletPanel}
+      className="mb-3"
+      ariaLabel="원단·부자재 태블릿 패널 전환"
+    />
   );
 
   const listPanel = (
