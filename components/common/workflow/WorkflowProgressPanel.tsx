@@ -35,7 +35,9 @@ export type WorkflowProgressPanelDirectPath = {
 const TRACK_VIEWBOX_WIDTH = 100;
 const TRACK_VIEWBOX_HEIGHT = 44;
 const TRACK_CENTER_Y = 22;
-const DIRECT_CURVE_CONTROL_Y = 3;
+const DIRECT_BRIDGE_Y = 4;
+const DIRECT_BRIDGE_CORNER_X = 2.2;
+const DIRECT_BRIDGE_CORNER_Y = 5;
 function getStepPositionPercent(index: number, stepCount: number) {
   if (stepCount <= 1) {
     return 50;
@@ -45,9 +47,23 @@ function getStepPositionPercent(index: number, stepCount: number) {
 }
 
 function getDirectPathD(fromX: number, toX: number) {
-  const controlX = (fromX + toX) / 2;
+  const direction = fromX < toX ? 1 : -1;
+  const cornerX = Math.min(
+    DIRECT_BRIDGE_CORNER_X,
+    Math.abs(toX - fromX) / 4,
+  );
+  const startCornerX = fromX + cornerX * direction;
+  const endCornerX = toX - cornerX * direction;
+  const cornerBottomY = DIRECT_BRIDGE_Y + DIRECT_BRIDGE_CORNER_Y;
 
-  return `M ${fromX} ${TRACK_CENTER_Y} Q ${controlX} ${DIRECT_CURVE_CONTROL_Y} ${toX} ${TRACK_CENTER_Y}`;
+  return [
+    `M ${fromX} ${TRACK_CENTER_Y}`,
+    `L ${fromX} ${cornerBottomY}`,
+    `Q ${fromX} ${DIRECT_BRIDGE_Y} ${startCornerX} ${DIRECT_BRIDGE_Y}`,
+    `L ${endCornerX} ${DIRECT_BRIDGE_Y}`,
+    `Q ${toX} ${DIRECT_BRIDGE_Y} ${toX} ${cornerBottomY}`,
+    `L ${toX} ${TRACK_CENTER_Y}`,
+  ].join(" ");
 }
 
 export function WorkflowProgressPanel({
@@ -175,10 +191,11 @@ export function WorkflowProgressPanel({
                     : "stroke-[var(--pbp-border)]"
                 }
                 fill="none"
-                opacity={shouldEmphasizeDirectPath ? 1 : 0.78}
-                strokeWidth={shouldEmphasizeDirectPath ? 2.4 : 1.45}
+                opacity={shouldEmphasizeDirectPath ? 1 : 0.72}
+                strokeWidth={shouldEmphasizeDirectPath ? 2.35 : 1.55}
                 strokeLinecap="round"
-                strokeDasharray={shouldEmphasizeDirectPath ? undefined : "4 3"}
+                strokeLinejoin="round"
+                strokeDasharray={shouldEmphasizeDirectPath ? undefined : "5 3"}
                 vectorEffect="non-scaling-stroke"
                 style={{
                   transition:
