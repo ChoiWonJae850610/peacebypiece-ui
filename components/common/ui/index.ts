@@ -8,3 +8,5 @@ export { default as AppSeparator } from "./AppSeparator";
 export { default as AppSegmentedTabs, type AppSegmentedTabItem } from "./AppSegmentedTabs";
 
 export { AppResponsiveSurface, AppResponsiveWorkspace } from "./AppResponsiveFrame";
+export { default as AppSelect, type AppSelectOption } from "./AppSelect";
+export { default as AppTooltip } from "./AppTooltip";
