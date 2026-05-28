@@ -37,7 +37,6 @@ export default function MaterialSection({
   onCancelEdit: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
-  vendorOptionsById: Record<string, string[]>;
   locked?: boolean;
 }) {
   const { i18n, locale } = useI18n();

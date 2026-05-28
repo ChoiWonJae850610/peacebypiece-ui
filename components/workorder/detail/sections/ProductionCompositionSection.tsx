@@ -54,6 +54,7 @@ export default function ProductionCompositionSection({
   void onToggleOutsourcing;
   void onAddOutsourcing;
   void onRemoveOutsourcing;
+  void materialVendorOptionsById;
   void outsourcingVendorOptionsById;
   void outsourcingProcessOptions;
 
@@ -70,7 +71,6 @@ export default function ProductionCompositionSection({
         onCancelEdit={onCancelEdit}
         onAdd={onAddMaterial}
         onRemove={onRemoveMaterial}
-        vendorOptionsById={materialVendorOptionsById}
         locked={locked}
       />
     </div>
