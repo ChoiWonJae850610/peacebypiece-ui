@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AdminCard } from "@/components/admin/common/AdminSection";
+import { AppBadge, AppButton, AppCard } from "@/components/common/ui";
 import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import {
@@ -68,7 +67,7 @@ export default function MaterialOrderAllocationPanel({
   ), [candidates, searchQuery]);
 
   return (
-    <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+    <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-end justify-between gap-2">
           <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서</h2>
@@ -108,7 +107,7 @@ export default function MaterialOrderAllocationPanel({
           ))
         )}
       </div>
-    </AdminCard>
+    </AppCard>
   );
 }
 
@@ -182,24 +181,19 @@ function AllocationCandidateCard({
   const materialItemsCount = workOrder.materialItems.length;
 
   return (
-    <div className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
+    <AppCard padding="sm" className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
           <p className="mt-1 text-[11px] pbp-text-subtle">{workOrder.managerLabel} · {workOrder.dueDateLabel}</p>
         </div>
-        <span
-          className={[
-            "shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
-            completionSummary.isComplete
-              ? "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]"
-              : completionSummary.isInProgressCovered
-                ? "border-[var(--pbp-status-info-bg)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-status-info-fg)]"
-                : "pbp-border pbp-surface-muted pbp-text-muted",
-          ].join(" ")}
+        <AppBadge
+          tone={completionSummary.isComplete ? "success" : completionSummary.isInProgressCovered ? "info" : "neutral"}
+          size="sm"
+          className="shrink-0"
         >
           {formatWorkOrderMaterialCompletionLabel(completionSummary)}
-        </span>
+        </AppBadge>
       </div>
 
       <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px]">
@@ -227,7 +221,7 @@ function AllocationCandidateCard({
           ))}
         </div>
       </details>
-    </div>
+    </AppCard>
   );
 }
 
@@ -311,19 +305,19 @@ function WorkOrderMaterialRequestRow({
   });
 
   return (
-    <div className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
+    <AppCard padding="none" variant="flat" className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
-          <span className="shrink-0 rounded-full bg-[var(--pbp-surface-soft)] px-2 py-0.5 text-[10px] font-semibold pbp-text-muted">
+          <AppBadge tone="neutral" size="sm" className="shrink-0 text-[10px]">
             {formatMaterialItemTypeLabel(material.itemType)}
-          </span>
+          </AppBadge>
           <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
         </div>
         <p className="mt-1 text-[11px] pbp-text-muted">
           필요 {formatMaterialQuantity(material.quantity, material.unit)} · {readableStatus}
         </p>
       </div>
-      <AdminButton
+      <AppButton
         size="sm"
         className="min-h-7 px-3 py-1 text-xs"
         variant={isAdded || isAllocationCovered ? "ghost" : "secondary"}
@@ -331,8 +325,8 @@ function WorkOrderMaterialRequestRow({
         onClick={() => onAddMaterialToOrder(workOrder, material)}
       >
         {isAdded ? "선택됨" : isCompletionFulfilled ? "완료" : isAllocationCovered ? "진행중" : "선택"}
-      </AdminButton>
-    </div>
+      </AppButton>
+    </AppCard>
   );
 }
 

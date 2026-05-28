@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AdminCard } from "@/components/admin/common/AdminSection";
+import { AppCard, AppSection } from "@/components/common/ui";
 import { MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
@@ -62,7 +62,7 @@ export default function MaterialOrderDetailPanel({
   onChangeStatus,
 }: MaterialOrderDetailPanelProps) {
   return (
-    <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+    <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       {selectedOrder ? (
         <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_SECTION_GAP_CLASS}`}>
           <MaterialOrderStatusFlow
@@ -73,12 +73,13 @@ export default function MaterialOrderDetailPanel({
             onChangeStatus={onChangeStatus}
           />
 
-          <div className={`${MATERIAL_ORDER_SECTION_CARD_CLASS} shrink-0`}>
-            <SectionHeader
-              title="주문 기본정보"
-              description="발주 구분과 실제 공급처만 먼저 정합니다."
-            />
-            <div className="mt-3 grid gap-3 xl:grid-cols-2">
+          <AppSection
+            title="주문 기본정보"
+            description="발주 구분과 실제 공급처만 먼저 정합니다."
+            className="shrink-0"
+            cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}
+            bodyClassName="grid gap-3 xl:grid-cols-2"
+          >
               <FieldLabel label="구분">
                 <select
                   value={materialType}
@@ -128,15 +129,16 @@ export default function MaterialOrderDetailPanel({
                   </button>
                 ) : null}
               </FieldLabel>
-            </div>
-          </div>
+          </AppSection>
 
-          <div className={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}>
-            <SectionHeader
-              title="발주 품목"
-              description="선택한 자재의 실제 주문 수량과 단가를 정리합니다."
-            />
-            <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} mt-3 min-h-0 flex-1 overflow-auto`}>
+          <AppSection
+            title="발주 품목"
+            description="선택한 자재의 실제 주문 수량과 단가를 정리합니다."
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            cardClassName={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}
+            bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
+          >
+            <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
               <MaterialOrderLineTable
                 lines={lines}
                 editable={selectedOrder.status === "draft"}
@@ -144,7 +146,7 @@ export default function MaterialOrderDetailPanel({
                 onRemoveLine={onRemoveLine}
               />
             </div>
-          </div>
+          </AppSection>
 
           <MaterialOrderSummaryFooter totals={totals} />
         </div>
@@ -161,24 +163,7 @@ export default function MaterialOrderDetailPanel({
           </div>
         </div>
       )}
-    </AdminCard>
-  );
-}
-
-function SectionHeader({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-end justify-between gap-3 border-b border-[var(--pbp-border)] pb-2.5">
-      <div className="min-w-0">
-        <h3 className="text-sm font-semibold tracking-tight pbp-text-primary">{title}</h3>
-        <p className="mt-0.5 text-[11px] leading-4 pbp-text-subtle">{description}</p>
-      </div>
-    </div>
+    </AppCard>
   );
 }
 

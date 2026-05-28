@@ -2,12 +2,13 @@ import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-type AppBadgeTone = "neutral" | "strong" | "success" | "warning" | "danger" | "brand";
+type AppBadgeTone = "neutral" | "strong" | "info" | "success" | "warning" | "danger" | "brand";
 type AppBadgeSize = "sm" | "md";
 
 const toneClassMap: Record<AppBadgeTone, string> = {
   neutral: "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]",
   strong: "border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
+  info: "border-[var(--pbp-status-info-bg)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-status-info-fg)]",
   success: "border-emerald-200 bg-emerald-50 text-emerald-700",
   warning: "border-amber-200 bg-amber-50 text-amber-700",
   danger: "border-rose-200 bg-rose-50 text-rose-700",

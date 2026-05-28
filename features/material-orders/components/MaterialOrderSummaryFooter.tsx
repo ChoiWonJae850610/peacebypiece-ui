@@ -1,3 +1,5 @@
+import { AppCard } from "@/components/common/ui";
+
 import {
   formatMaterialOrderAmount,
   type MaterialOrderDraftTotals,
@@ -9,7 +11,7 @@ type MaterialOrderSummaryFooterProps = {
 
 export function MaterialOrderSummaryFooter({ totals }: MaterialOrderSummaryFooterProps) {
   return (
-    <div className="shrink-0 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3.5 py-3 text-[11px] shadow-sm xl:px-4">
+    <AppCard variant="subtle" padding="sm" className="shrink-0 text-[11px] xl:px-4">
       <div className="grid grid-cols-3 items-center gap-3">
         <SummaryValue label="품목" value={`${totals.lineCount}종`} />
         <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />
@@ -25,7 +27,7 @@ export function MaterialOrderSummaryFooter({ totals }: MaterialOrderSummaryFoote
           emphasize
         />
       </div>
-    </div>
+    </AppCard>
   );
 }
 

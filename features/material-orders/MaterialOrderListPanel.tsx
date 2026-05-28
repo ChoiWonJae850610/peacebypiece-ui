@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AdminCard } from "@/components/admin/common/AdminSection";
+import { AppBadge, AppButton, AppCard } from "@/components/common/ui";
 import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
@@ -12,7 +11,6 @@ import {
   MATERIAL_ORDER_PANEL_HEADER_CLASS,
   MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
-import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   formatMaterialOrderDisplayTitle,
   formatMaterialOrderPrimaryLineLabel,
@@ -88,7 +86,7 @@ export default function MaterialOrderListPanel({
   ), [orders, searchQuery, statusFilter, typeFilter]);
 
   return (
-    <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+    <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-end justify-between gap-2">
           <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
@@ -123,15 +121,16 @@ export default function MaterialOrderListPanel({
             ))}
           </select>
         </div>
-        <AdminButton
-          size="sm"
+        <AppButton
+          size="md"
           variant="primary"
-          className="mt-1 w-full min-h-10 text-sm font-semibold"
+          width="full"
+          className="mt-1 min-h-10 text-sm"
           disabled={creating}
           onClick={onCreateOrder}
         >
           {creating ? "발주서 생성 중" : "발주서 생성"}
-        </AdminButton>
+        </AppButton>
       </div>
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
@@ -163,7 +162,7 @@ export default function MaterialOrderListPanel({
           ))
         )}
       </div>
-    </AdminCard>
+    </AppCard>
   );
 }
 
@@ -203,9 +202,9 @@ function MaterialOrderListButton({
           <p className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</p>
           <p className="mt-1 truncate text-[11px] pbp-text-muted">{primaryLineLabel}</p>
         </div>
-        <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="xs">
+        <AppBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="sm">
           {formatMaterialOrderStatusLabel(order.status)}
-        </AdminStatusBadge>
+        </AppBadge>
       </div>
       <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2 text-[11px] pbp-text-subtle">
         <span>{formatMaterialOrderTypeLabel(materialType)}</span>
