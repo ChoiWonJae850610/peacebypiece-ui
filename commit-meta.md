@@ -1,10 +1,14 @@
-Version : 0.17.92
-Summary : 작업지시서 모바일 첨부·메모 패널을 Sheet로 전환
-Description : 모바일 작업지시서 화면에서 첨부·메모 보조 패널을 본문 아래 고정 노출 대신 AppSheet 하단 패널로 열도록 정리했습니다. PC와 태블릿 레이아웃, 첨부/메모/R2 흐름은 변경하지 않았습니다.
+Version : 0.17.93
+Summary : PC 화면 공통 UI 래퍼 적용 범위 확대
+Description : 작업지시서 공정/자재 섹션과 원단·부자재 메시지 버튼에 WAFL App UI 래퍼를 적용해 PC 기준 시각 톤을 더 통일합니다.
+
 수정 파일 목록 :
-- components/workorder/layout/MobileSectionStack.tsx
+- components/workorder/detail/sections/OrderInfoSection.tsx
+- components/workorder/detail/sections/MaterialSection.tsx
+- features/material-orders/components/MaterialOrderPanelMessage.tsx
 - lib/constants/app.ts
+
 추가 파일 목록 :
-- docs/ui-responsive-workorder-side-sheet-0.17.92.md
+- docs/ui-pc-common-wrapper-expansion-0.17.93.md
+
 삭제 파일 목록 :
-없음

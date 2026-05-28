@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { AppButton, AppCard } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
@@ -23,9 +24,9 @@ function MaterialField({
   span?: boolean;
 }) {
   return (
-    <div className={`min-w-0 rounded-2xl border border-stone-200 bg-white px-3 py-2.5 ${span ? "sm:col-span-2" : ""}`}>
-      <div className="mb-1 text-[11px] font-medium leading-4 text-stone-500">{label}</div>
-      <div className="min-h-8 text-sm font-medium text-stone-900">{children}</div>
+    <div className={`min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2.5 ${span ? "sm:col-span-2" : ""}`}>
+      <div className="mb-1 text-[11px] font-medium leading-4 pbp-text-subtle">{label}</div>
+      <div className="min-h-8 text-sm font-medium pbp-text-primary">{children}</div>
     </div>
   );
 }
@@ -64,19 +65,19 @@ export default function MaterialSection({
 
   return (
     <div className="min-w-0 xl:h-full">
-      <div className="space-y-2 rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:max-h-[320px] xl:overflow-auto xl:p-4">
+      <AppCard className="space-y-2 xl:max-h-[320px] xl:overflow-auto xl:p-4" padding="sm">
         {materials.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50/70 px-4 py-8 text-center text-sm text-stone-500">
+          <div className="rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
             {copy.empty}
           </div>
         ) : null}
 
         {materials.map((item, rowIndex) => (
-          <div key={item.id} className="rounded-[22px] border border-stone-200 bg-stone-50/60 p-3">
+          <AppCard key={item.id} variant="subtle" padding="sm" className="rounded-[22px]">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[11px] font-semibold text-stone-500">{copy.fields.type}</div>
-                <div className="mt-0.5 truncate text-sm font-semibold text-stone-950">
+                <div className="text-[11px] font-semibold pbp-text-subtle">{copy.fields.type}</div>
+                <div className="mt-0.5 truncate text-sm font-semibold pbp-text-primary">
                   {getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))}
                 </div>
               </div>
@@ -96,19 +97,21 @@ export default function MaterialSection({
                 <EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))} options={MATERIAL_TYPE_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
               </MaterialField>
             </div>
-          </div>
+          </AppCard>
         ))}
 
         {locked ? null : (
-          <button
-            type="button"
+          <AppButton
             onClick={onAdd}
-            className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            variant="secondary"
+            size="sm"
+            width="full"
+            className="border-dashed"
           >
             {copy.addButton}
-          </button>
+          </AppButton>
         )}
-      </div>
+      </AppCard>
     </div>
   );
 }

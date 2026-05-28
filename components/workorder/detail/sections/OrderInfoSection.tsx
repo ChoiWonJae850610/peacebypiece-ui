@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { AppBadge, AppButton, AppCard } from "@/components/common/ui";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import { useI18n } from "@/lib/i18n";
 import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
@@ -26,16 +27,16 @@ function DetailField({
   span?: boolean;
 }) {
   return (
-    <div className={`min-w-0 rounded-2xl border border-stone-200 bg-white px-3 py-2.5 ${span ? "sm:col-span-2" : ""}`}>
-      <div className="mb-1 text-[11px] font-medium leading-4 text-stone-500">{label}</div>
-      <div className="min-h-8 text-sm font-medium text-stone-900">{children}</div>
+    <div className={`min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2.5 ${span ? "sm:col-span-2" : ""}`}>
+      <div className="mb-1 text-[11px] font-medium leading-4 pbp-text-subtle">{label}</div>
+      <div className="min-h-8 text-sm font-medium pbp-text-primary">{children}</div>
     </div>
   );
 }
 
 function ReadOnlyAmount({ value, suffix }: { value: number; suffix: string }) {
   return (
-    <div className="flex min-h-8 items-center justify-end rounded-xl bg-stone-50 px-3 text-sm font-semibold tabular-nums text-stone-900">
+    <div className="flex min-h-8 items-center justify-end rounded-xl bg-[var(--pbp-surface-muted)] px-3 text-sm font-semibold tabular-nums pbp-text-primary">
       {value.toLocaleString()}{suffix}
     </div>
   );
@@ -117,11 +118,11 @@ export default function OrderInfoSection({
   const hasRows = visibleOrderEntries.length > 0 || outsourcing.length > 0;
 
   return (
-    <div className="space-y-3 overflow-hidden rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:p-4">
+    <AppCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">
       {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
 
       {!hasRows ? (
-        <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50/70 px-4 py-8 text-center text-sm text-stone-500">
+        <div className="rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
           {copy.empty}
         </div>
       ) : null}
@@ -131,15 +132,15 @@ export default function OrderInfoSection({
           const orderLineAmount = calculateOrderEntryAmount(item);
 
           return (
-            <div key={item.id} className="rounded-[22px] border border-stone-200 bg-stone-50/60 p-3">
+            <AppCard key={item.id} variant="subtle" padding="sm" className="rounded-[22px]">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-[11px] font-semibold text-stone-500">{copy.fields.lineType}</div>
-                  <div className="mt-0.5 text-sm font-semibold text-stone-950">{copy.sewingLineTypeLabel}</div>
+                  <div className="text-[11px] font-semibold pbp-text-subtle">{copy.fields.lineType}</div>
+                  <div className="mt-0.5 text-sm font-semibold pbp-text-primary">{copy.sewingLineTypeLabel}</div>
                 </div>
-                <div className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold tabular-nums text-stone-900 shadow-sm">
+                <AppBadge tone="strong" size="sm" className="shrink-0 tabular-nums">
                   {orderLineAmount.toLocaleString()}{common.currencySuffix}
-                </div>
+                </AppBadge>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 <DetailField label={copy.fields.item}>
@@ -161,7 +162,7 @@ export default function OrderInfoSection({
                   <ReadOnlyAmount value={orderLineAmount} suffix={common.currencySuffix} />
                 </DetailField>
               </div>
-            </div>
+            </AppCard>
           );
         })}
 
@@ -169,18 +170,18 @@ export default function OrderInfoSection({
           const outsourcingLineAmount = calculateOutsourcingAmount(item);
 
           return (
-            <div key={item.id} className="rounded-[22px] border border-stone-200 bg-stone-50/60 p-3">
+            <AppCard key={item.id} variant="subtle" padding="sm" className="rounded-[22px]">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-[11px] font-semibold text-stone-500">{copy.fields.lineType}</div>
-                  <div className="mt-0.5 text-sm font-semibold text-stone-950">
+                  <div className="text-[11px] font-semibold pbp-text-subtle">{copy.fields.lineType}</div>
+                  <div className="mt-0.5 text-sm font-semibold pbp-text-primary">
                     {copy.outsourcingLineTypeLabelPrefix} {copy.outsourcingLineTypeLabelSuffix}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold tabular-nums text-stone-900 shadow-sm">
+                  <AppBadge tone="strong" size="sm" className="tabular-nums">
                     {outsourcingLineAmount.toLocaleString()}{common.currencySuffix}
-                  </div>
+                  </AppBadge>
                   <DeleteButton onClick={() => onRemoveOutsourcing(item.id)} srLabel={`${item.process || outsourcingCopy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
                 </div>
               </div>
@@ -204,13 +205,13 @@ export default function OrderInfoSection({
                   <ReadOnlyAmount value={outsourcingLineAmount} suffix={common.currencySuffix} />
                 </DetailField>
               </div>
-            </div>
+            </AppCard>
           );
         })}
       </div>
 
       {hasRows ? (
-        <div className="rounded-[20px] border border-stone-200 bg-stone-950 px-4 py-3 text-white">
+        <AppCard variant="flat" padding="md" className="rounded-[20px] bg-stone-950 px-4 py-3 text-white">
           <div className="grid gap-2 text-xs sm:grid-cols-4">
             <div>
               <div className="text-white/55">{copy.fields.quantity}</div>
@@ -229,27 +230,30 @@ export default function OrderInfoSection({
               <div className="mt-0.5 font-semibold tabular-nums">{formatCurrencySummary(combinedTotal, i18n)}</div>
             </div>
           </div>
-        </div>
+        </AppCard>
       ) : null}
 
       {!locked && visibleOrderEntries.length === 0 ? (
-        <button
-          type="button"
+        <AppButton
           onClick={onAdd}
-          className="pbp-interactive-button pbp-action-add flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-sm font-medium"
+          variant="primary"
+          size="sm"
+          width="full"
         >
           {copy.factoryAddButton}
-        </button>
+        </AppButton>
       ) : null}
       {locked ? null : (
-        <button
-          type="button"
+        <AppButton
           onClick={onAddOutsourcing}
-          className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+          variant="secondary"
+          size="sm"
+          width="full"
+          className="border-dashed"
         >
           {copy.outsourcingOrder.addButton}
-        </button>
+        </AppButton>
       )}
-    </div>
+    </AppCard>
   );
 }
