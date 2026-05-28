@@ -1,4 +1,5 @@
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
@@ -167,24 +168,24 @@ export function buildMemberDirectoryColumns({
             className="flex flex-wrap items-center justify-center gap-1.5"
             onClick={(event) => event.stopPropagation()}
           >
-            <select
+            <AppSelect
               value={getJoinRequestReviewRoleId(row.joinRequest)}
-              onChange={(event) =>
+              onValueChange={(value) =>
                 onRoleDraftChange(
                   row.joinRequest!.id,
-                  event.target.value as MemberPermissionRoleTemplateCode,
+                  value as MemberPermissionRoleTemplateCode,
                 )
               }
-              className="h-8 rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 text-[11px] font-semibold pbp-text-primary"
-              aria-label={t("memberManagement.reviewActions.roleTemplate", "승인 역할")}
+              options={inviteRoleOptions.map((role) => ({
+                value: role.id,
+                label: t(`memberManagement.roles.${role.id}.label`, role.id),
+              }))}
+              size="sm"
+              width="auto"
+              ariaLabel={t("memberManagement.reviewActions.roleTemplate", "승인 역할")}
               disabled={reviewingJoinRequestId !== null}
-            >
-              {inviteRoleOptions.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {t(`memberManagement.roles.${role.id}.label`, role.id)}
-                </option>
-              ))}
-            </select>
+              triggerClassName="h-8 min-h-8 rounded-full px-2 text-[11px]"
+            />
             <AdminButton
               onClick={() => onReviewJoinRequest(row.joinRequest!, "approve")}
               disabled={reviewingJoinRequestId !== null}

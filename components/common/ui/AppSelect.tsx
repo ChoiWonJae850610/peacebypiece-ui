@@ -28,8 +28,9 @@ const widthClassMap: Record<AppSelectWidth, string> = {
 const EMPTY_SELECT_VALUE = "__app_select_empty_value__";
 
 type AppSelectProps = {
-  value: string;
-  onValueChange: (value: string) => void;
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
   options: AppSelectOption[];
   placeholder?: string;
   disabled?: boolean;
@@ -39,10 +40,12 @@ type AppSelectProps = {
   triggerClassName?: string;
   contentClassName?: string;
   ariaLabel?: string;
+  name?: string;
 };
 
 export default function AppSelect({
   value,
+  defaultValue,
   onValueChange,
   options,
   placeholder = "선택",
@@ -53,13 +56,17 @@ export default function AppSelect({
   triggerClassName,
   contentClassName,
   ariaLabel,
+  name,
 }: AppSelectProps) {
-  const rootValue = value === "" ? EMPTY_SELECT_VALUE : value;
+  const rootValue = value === undefined ? undefined : value === "" ? EMPTY_SELECT_VALUE : value;
+  const rootDefaultValue = defaultValue === undefined ? undefined : defaultValue === "" ? EMPTY_SELECT_VALUE : defaultValue;
 
   return (
     <Select.Root
+      name={name}
       value={rootValue}
-      onValueChange={(nextValue) => onValueChange(nextValue === EMPTY_SELECT_VALUE ? "" : nextValue)}
+      defaultValue={rootDefaultValue}
+      onValueChange={(nextValue) => onValueChange?.(nextValue === EMPTY_SELECT_VALUE ? "" : nextValue)}
       disabled={disabled}
     >
       <Select.Trigger

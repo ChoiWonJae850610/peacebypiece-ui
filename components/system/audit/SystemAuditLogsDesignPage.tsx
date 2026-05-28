@@ -1,4 +1,5 @@
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -181,28 +182,24 @@ export default function SystemAuditLogsDesignPage({
               placeholder="요약, 이벤트 코드, 대상 ID 검색"
               className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
             />
-            <select
+            <AppSelect
               name="targetType"
               defaultValue={activeTargetType}
-              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
-            >
-              {SYSTEM_AUDIT_TARGET_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <select
+              options={SYSTEM_AUDIT_TARGET_OPTIONS.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              ariaLabel="감사 로그 대상 유형"
+            />
+            <AppSelect
               name="severity"
               defaultValue={activeSeverity}
-              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
-            >
-              {SYSTEM_AUDIT_SEVERITY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              options={SYSTEM_AUDIT_SEVERITY_OPTIONS.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              ariaLabel="감사 로그 심각도"
+            />
             <AdminButton type="submit" variant="primary" size="md" className="rounded-2xl">
               조회
             </AdminButton>

@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import {
   AdminModalSection,
   adminModalInputClassName,
@@ -112,21 +113,18 @@ export default function AdminMemberPermissionDetailBody({
             <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
               {t("memberManagement.detailModal.fields.role", "역할")}
             </span>
-            <select
+            <AppSelect
               value={draft.roleTemplateCode}
-              onChange={(event) =>
-                onRoleTemplateChange(
-                  event.target.value as MemberPermissionRoleTemplateCode,
-                )
+              onValueChange={(value) =>
+                onRoleTemplateChange(value as MemberPermissionRoleTemplateCode)
               }
-              className={adminModalInputClassName}
-            >
-              {manageableRoles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {t(`memberManagement.roles.${role.id}.label`, role.id)}
-                </option>
-              ))}
-            </select>
+              options={manageableRoles.map((role) => ({
+                value: role.id,
+                label: t(`memberManagement.roles.${role.id}.label`, role.id),
+              }))}
+              ariaLabel={t("memberManagement.detailModal.fields.role", "역할")}
+              triggerClassName={adminModalInputClassName}
+            />
           </label>
 
           <div className="flex flex-col gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 sm:flex-row sm:items-center sm:justify-between">

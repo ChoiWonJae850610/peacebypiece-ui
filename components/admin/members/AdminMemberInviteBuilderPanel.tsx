@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import {
   ADMIN_FIELD_CONTAINER_CLASS,
@@ -74,21 +75,26 @@ export default function AdminMemberInviteBuilderPanel({
           <span className="text-xs font-semibold pbp-text-muted">
             {t("memberManagement.inviteBuilder.fields.expires", "초대 만료")}
           </span>
-          <select
+          <AppSelect
             value={expiresInDays}
-            onChange={(event) => onExpiresInDaysChange(event.target.value)}
-            className={ADMIN_INPUT_CLASS}
-          >
-            <option value="3d">
-              {t("memberManagement.inviteBuilder.expires.3d", "3일")}
-            </option>
-            <option value="7d">
-              {t("memberManagement.inviteBuilder.expires.7d", "7일")}
-            </option>
-            <option value="14d">
-              {t("memberManagement.inviteBuilder.expires.14d", "14일")}
-            </option>
-          </select>
+            onValueChange={onExpiresInDaysChange}
+            options={[
+              {
+                value: "3d",
+                label: t("memberManagement.inviteBuilder.expires.3d", "3일"),
+              },
+              {
+                value: "7d",
+                label: t("memberManagement.inviteBuilder.expires.7d", "7일"),
+              },
+              {
+                value: "14d",
+                label: t("memberManagement.inviteBuilder.expires.14d", "14일"),
+              },
+            ]}
+            ariaLabel={t("memberManagement.inviteBuilder.fields.expires", "초대 만료")}
+            triggerClassName={ADMIN_INPUT_CLASS}
+          />
         </label>
         <div className="flex items-end">
           <AdminButton
