@@ -76,12 +76,12 @@ export default function WorkOrderListCard({
 
   return (
     <div
-      className={`group pbp-interactive-card w-full min-w-0 rounded-2xl border p-2.5 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
+      className={`group pbp-interactive-card w-full min-w-0 rounded-[22px] border px-3 py-3 transition-all duration-150 ${active ? "pbp-workorder-list-card-selected shadow-sm" : "pbp-workorder-list-card"}`}
     >
-      <div className="flex min-w-0 items-start justify-between gap-2.5">
+      <div className="flex min-w-0 items-start justify-between gap-3">
         <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">
-          <div className="min-w-0 truncate text-sm font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
-          <div className="mt-1.5 flex h-6 items-center">
+          <div className="min-w-0 truncate text-[15px] font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <span
               className={`pbp-workorder-status-badge inline-flex h-6 items-center gap-2 rounded-full px-2.5 text-[11px] font-semibold transition-colors duration-150 ease-out ${active ? "pbp-workorder-status-active" : getWorkOrderStatusBadgeSemanticClass(state)}`}
             >
@@ -89,7 +89,7 @@ export default function WorkOrderListCard({
               {stateLabel}
             </span>
           </div>
-          <div className="pbp-workorder-list-muted mt-1.5 min-w-0 space-y-0.5 text-[11px] leading-4">
+          <div className="pbp-workorder-list-muted mt-2 min-w-0 space-y-0.5 text-[11px] leading-4">
             <div className="truncate" title={categoryPath}>{categoryPath}</div>
             {workOrder.vendor ? <div className="truncate">{copy.vendorLabel}: {workOrder.vendor}</div> : null}
             {workOrder.dueDate ? <div>{copy.dueDateLabel}: {workOrder.dueDate}</div> : null}

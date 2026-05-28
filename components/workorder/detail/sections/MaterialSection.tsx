@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
@@ -6,13 +8,27 @@ import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStanda
 import {
   DeleteButton,
   EditableValue,
-  EDITABLE_TABLE_CELL_CLASS,
-  SELECTABLE_TABLE_CELL_CLASS,
-  TABLE_HEADER_CELL_CLASS,
   type EditableCell,
   type EditableSectionKey,
 } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/workorder";
+
+function MaterialField({
+  label,
+  children,
+  span = false,
+}: {
+  label: string;
+  children: ReactNode;
+  span?: boolean;
+}) {
+  return (
+    <div className={`min-w-0 rounded-2xl border border-stone-200 bg-white px-3 py-2.5 ${span ? "sm:col-span-2" : ""}`}>
+      <div className="mb-1 text-[11px] font-medium leading-4 text-stone-500">{label}</div>
+      <div className="min-h-8 text-sm font-medium text-stone-900">{children}</div>
+    </div>
+  );
+}
 
 export default function MaterialSection({
   materials,
@@ -48,56 +64,50 @@ export default function MaterialSection({
 
   return (
     <div className="min-w-0 xl:h-full">
-      <div className="max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white xl:max-h-[320px] xl:overflow-auto">
-          <table className="w-full min-w-[560px] table-fixed text-left xl:min-w-0">
-            <colgroup>
-              <col className="w-[14%]" />
-              <col className="w-[44%]" />
-              <col className="w-[15%]" />
-              <col className="w-[18%]" />
-              <col className="w-[9%]" />
-            </colgroup>
-            <thead className="text-stone-500">
-              <tr className="border-b border-stone-200">
-                {[copy.fields.type, copy.fields.name, copy.fields.quantity, copy.fields.unit, ""].map((header, index) => (
-                  <th key={`${header}-${index}`} className={`${TABLE_HEADER_CELL_CLASS} text-center`}>
-                    <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {materials.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-3 py-2 text-center text-xs text-stone-500">{copy.empty}</td>
-                </tr>
-              ) : null}
-              {materials.map((item, rowIndex) => (
-                <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))} options={MATERIAL_TYPE_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={EDITABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="name" value={item.name} displayValue={translateWorkOrderDisplayText(item.name, locale)} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={EDITABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className={SELECTABLE_TABLE_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} displayValue={translateWorkOrderDisplayText(item.unit, locale)} options={materialUnitOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                  <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                    <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
-                  </td>
-                </tr>
-              ))}
-              {locked ? null : (
-                <tr>
-                  <td colSpan={5} className="px-1.5 pb-1 pt-1.5 lg:px-2">
-                    <button
-                      type="button"
-                      onClick={onAdd}
-                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-                    >
-                      {copy.addButton}
-                    </button>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      <div className="space-y-2 rounded-[24px] border border-stone-200 bg-white p-3.5 shadow-sm xl:max-h-[320px] xl:overflow-auto xl:p-4">
+        {materials.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50/70 px-4 py-8 text-center text-sm text-stone-500">
+            {copy.empty}
+          </div>
+        ) : null}
+
+        {materials.map((item, rowIndex) => (
+          <div key={item.id} className="rounded-[22px] border border-stone-200 bg-stone-50/60 p-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[11px] font-semibold text-stone-500">{copy.fields.type}</div>
+                <div className="mt-0.5 truncate text-sm font-semibold text-stone-950">
+                  {getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))}
+                </div>
+              </div>
+              <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <MaterialField label={copy.fields.name} span>
+                <EditableValue section="material" rowId={item.id} field="name" value={item.name} displayValue={translateWorkOrderDisplayText(item.name, locale)} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+              </MaterialField>
+              <MaterialField label={copy.fields.quantity}>
+                <EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+              </MaterialField>
+              <MaterialField label={copy.fields.unit}>
+                <EditableValue section="material" rowId={item.id} field="unit" value={item.unit} displayValue={translateWorkOrderDisplayText(item.unit, locale)} options={materialUnitOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+              </MaterialField>
+              <MaterialField label={copy.fields.type}>
+                <EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))} options={MATERIAL_TYPE_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+              </MaterialField>
+            </div>
+          </div>
+        ))}
+
+        {locked ? null : (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+          >
+            {copy.addButton}
+          </button>
+        )}
       </div>
     </div>
   );
