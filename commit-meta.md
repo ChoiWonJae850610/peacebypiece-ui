@@ -1,12 +1,12 @@
-Version : 0.18.04
-Summary : 시스템 기준정보 select를 AppSelect로 전환
-Description : 시스템 기준정보와 카테고리 규칙 화면의 native select를 WAFL 공통 AppSelect로 전환하고, 기존 생성/수정/규칙 저장 흐름은 유지합니다.
+Version : 0.18.05
+Summary : 운영 화면의 남은 native select를 AppSelect로 전환
+Description : 작업지시서 생성/등록 모달, 시스템 고객사 초대, 원단·부자재 기준정보의 native select를 AppSelect 기반으로 전환하고, dev/test 및 인라인 편집 select의 보류 사유를 문서화했습니다.
 수정 파일 목록 :
-- components/system/standards/SystemProcessStandardsPage.tsx
-- components/system/standards/SystemUnitStandardsPage.tsx
-- components/system/standards/SystemProductTemplateStandardsPage.tsx
-- components/system/category-rules/CategoryRuleEditorPanel.tsx
+- components/common/modal/createWorkOrder/CreateWorkOrderCategoryFields.tsx
+- components/system/companies/SystemCompanyApprovalConsole.tsx
+- components/workorder/PartnerFactoryRegistryModal.tsx
+- features/materials/MaterialsWorkspacePage.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/ui-system-standards-select-0.18.04.md
+- docs/ui-native-select-closeout-0.18.05.md
 삭제 파일 목록 :

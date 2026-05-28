@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import AppSelect from "@/components/common/ui/AppSelect";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { DEFAULT_REGISTRY_TYPE, REGISTRY_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
@@ -64,17 +65,16 @@ export default function PartnerFactoryRegistryModal({
       <div className="space-y-4">
         <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>
           <label className={MODAL_CONTENT_LABEL_CLASS}>{copy.typeLabel}</label>
-          <select
+          <AppSelect
             value={type}
-            onChange={(event) => setType(event.target.value as RegistryType)}
-            className={`mt-2 ${MODAL_SELECT_CLASS}`}
-          >
-            {REGISTRY_TYPE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {typeOptionLabels[option as RegistryType]}
-              </option>
-            ))}
-          </select>
+            onValueChange={(nextType) => setType(nextType as RegistryType)}
+            options={REGISTRY_TYPE_OPTIONS.map((option) => ({
+              value: option,
+              label: typeOptionLabels[option as RegistryType],
+            }))}
+            className="mt-2"
+            ariaLabel={copy.typeLabel}
+          />
         </div>
 
         <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>

@@ -1,4 +1,4 @@
-import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import AppSelect from "@/components/common/ui/AppSelect";
 import type { CategoryOption } from "@/components/common/modal/createWorkOrder/createWorkOrderCategorySource";
 
 type Props = {
@@ -25,12 +25,11 @@ type Props = {
   };
 };
 
-function renderCategoryOptions(options: CategoryOption[]) {
-  return options.map((option) => (
-    <option key={option.id ?? option.name} value={option.name}>
-      {option.name}
-    </option>
-  ));
+function toCategorySelectOptions(options: CategoryOption[]) {
+  return options.map((option) => ({
+    value: option.name,
+    label: option.name,
+  }));
 }
 
 export default function CreateWorkOrderCategoryFields({ disabled = false, labels, values, options, onChange }: Props) {
@@ -38,21 +37,36 @@ export default function CreateWorkOrderCategoryFields({ disabled = false, labels
     <div className="grid gap-4 md:grid-cols-3">
       <label className="grid gap-1.5">
         <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category1}</span>
-        <select value={values.category1} onChange={(event) => onChange.category1(event.target.value)} className={MODAL_SELECT_CLASS} disabled={disabled}>
-          {renderCategoryOptions(options.category1Options)}
-        </select>
+        <AppSelect
+          value={values.category1}
+          onValueChange={onChange.category1}
+          options={toCategorySelectOptions(options.category1Options)}
+          disabled={disabled}
+          size="md"
+          ariaLabel={labels.category1}
+        />
       </label>
       <label className="grid gap-1.5">
         <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category2}</span>
-        <select value={values.category2} onChange={(event) => onChange.category2(event.target.value)} className={MODAL_SELECT_CLASS} disabled={disabled}>
-          {renderCategoryOptions(options.category2Options)}
-        </select>
+        <AppSelect
+          value={values.category2}
+          onValueChange={onChange.category2}
+          options={toCategorySelectOptions(options.category2Options)}
+          disabled={disabled}
+          size="md"
+          ariaLabel={labels.category2}
+        />
       </label>
       <label className="grid gap-1.5">
         <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category3}</span>
-        <select value={values.category3} onChange={(event) => onChange.category3(event.target.value)} className={MODAL_SELECT_CLASS} disabled={disabled}>
-          {renderCategoryOptions(options.category3Options)}
-        </select>
+        <AppSelect
+          value={values.category3}
+          onValueChange={onChange.category3}
+          options={toCategorySelectOptions(options.category3Options)}
+          disabled={disabled}
+          size="md"
+          ariaLabel={labels.category3}
+        />
       </label>
     </div>
   );

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import AppSelect from "@/components/common/ui/AppSelect";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
   SYSTEM_CARD_CLASS,
@@ -674,18 +675,19 @@ export default function SystemCompanyApprovalConsole() {
                 <div className="grid gap-3 xl:grid-cols-[0.36fr_1fr_auto]">
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">전달 방식</span>
-                    <select
+                    <AppSelect
                       value={deliveryMethod}
-                      onChange={(event) => {
-                        const nextMethod = event.target.value === "phone" ? "phone" : "email";
+                      onValueChange={(value) => {
+                        const nextMethod = value === "phone" ? "phone" : "email";
                         setDeliveryMethod(nextMethod);
                         setDeliveryTarget("");
                       }}
-                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
-                    >
-                      <option value="email">이메일</option>
-                      <option value="phone">휴대폰</option>
-                    </select>
+                      options={[
+                        { value: "email", label: "이메일" },
+                        { value: "phone", label: "휴대폰" },
+                      ]}
+                      ariaLabel="전달 방식"
+                    />
                   </label>
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">전달 대상</span>
@@ -715,17 +717,18 @@ export default function SystemCompanyApprovalConsole() {
                 <div className="grid gap-3 border-t border-[var(--pbp-border)] pt-3 xl:grid-cols-[1fr_auto]">
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 만료</span>
-                    <select
-                      value={systemInviteExpiresInDays}
-                      onChange={(event) => setSystemInviteExpiresInDays(Number(event.target.value))}
-                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
-                    >
-                      <option value={1}>1일</option>
-                      <option value={3}>3일</option>
-                      <option value={7}>7일</option>
-                      <option value={14}>14일</option>
-                      <option value={30}>30일</option>
-                    </select>
+                    <AppSelect
+                      value={String(systemInviteExpiresInDays)}
+                      onValueChange={(value) => setSystemInviteExpiresInDays(Number(value))}
+                      options={[
+                        { value: "1", label: "1일" },
+                        { value: "3", label: "3일" },
+                        { value: "7", label: "7일" },
+                        { value: "14", label: "14일" },
+                        { value: "30", label: "30일" },
+                      ]}
+                      ariaLabel="초대 만료"
+                    />
                   </label>
                   <div className="flex items-end">
                     <AdminButton

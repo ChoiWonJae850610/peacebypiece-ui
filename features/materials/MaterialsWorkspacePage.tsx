@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
+import AppSelect from "@/components/common/ui/AppSelect";
 import {
   MATERIAL_KIND_DESCRIPTIONS,
   MATERIAL_KIND_LABELS,
@@ -149,10 +150,17 @@ function MaterialEditor({
       <div className="grid gap-3 lg:grid-cols-[0.8fr_1fr_1.2fr_0.8fr_0.8fr]">
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           구분
-          <select className={inputClassName} value={draft.kind} onChange={(event) => onChange({ ...draft, kind: event.target.value as MaterialKind })} disabled={!canManageMaterials || isSaving}>
-            <option value="fabric">원단</option>
-            <option value="submaterial">부자재</option>
-          </select>
+          <AppSelect
+            value={draft.kind}
+            onValueChange={(value) => onChange({ ...draft, kind: value as MaterialKind })}
+            options={[
+              { value: "fabric", label: "원단" },
+              { value: "submaterial", label: "부자재" },
+            ]}
+            disabled={!canManageMaterials || isSaving}
+            size="sm"
+            ariaLabel="구분"
+          />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           코드
@@ -164,19 +172,25 @@ function MaterialEditor({
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           단위
-          <select className={inputClassName} value={draft.unit} onChange={(event) => onChange({ ...draft, unit: event.target.value as MaterialUnit })} disabled={!canManageMaterials || isSaving}>
-            {Object.entries(MATERIAL_UNIT_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+          <AppSelect
+            value={draft.unit}
+            onValueChange={(value) => onChange({ ...draft, unit: value as MaterialUnit })}
+            options={Object.entries(MATERIAL_UNIT_LABELS).map(([value, label]) => ({ value, label }))}
+            disabled={!canManageMaterials || isSaving}
+            size="sm"
+            ariaLabel="단위"
+          />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           상태
-          <select className={inputClassName} value={draft.lifecycleStatus} onChange={(event) => onChange({ ...draft, lifecycleStatus: event.target.value as MaterialLifecycleStatus })} disabled={!canManageMaterials || isSaving}>
-            {Object.entries(MATERIAL_LIFECYCLE_STATUS_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+          <AppSelect
+            value={draft.lifecycleStatus}
+            onValueChange={(value) => onChange({ ...draft, lifecycleStatus: value as MaterialLifecycleStatus })}
+            options={Object.entries(MATERIAL_LIFECYCLE_STATUS_LABELS).map(([value, label]) => ({ value, label }))}
+            disabled={!canManageMaterials || isSaving}
+            size="sm"
+            ariaLabel="상태"
+          />
         </label>
       </div>
 
