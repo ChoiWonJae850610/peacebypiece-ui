@@ -1,4 +1,5 @@
 import { type KeyboardEvent, type ReactNode } from "react";
+import AppInlineSelectEditor, { type AppInlineSelectEditorOption } from "@/components/common/ui/AppInlineSelectEditor";
 import { PbpSingleDatePicker, type PbpSingleDatePickerLabels } from "@/components/common/date/PbpSingleDatePicker";
 import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detail/detailFormatting";
 import { isUnavailableWorkOrderSelectOption } from "@/lib/constants/workorderDomain";
@@ -28,7 +29,6 @@ export type OrderEntryState = OrderEntry;
 const EDITABLE_FIELD_HEIGHT_CLASS = "min-h-8";
 const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 outline-none ring-0`;
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-input text-xs`;
-const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none whitespace-nowrap pr-6`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-display text-xs flex items-center`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
@@ -194,22 +194,6 @@ export function EditableValue({
     }
   };
 
-  const handleSelectKeyDown = (event: KeyboardEvent<HTMLSelectElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const nextValue = (event.currentTarget as HTMLSelectElement).value;
-      if (isUnavailableWorkOrderSelectOption(nextValue)) {
-        onCancel();
-        return;
-      }
-      onCommit(nextValue);
-    }
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onCancel();
-    }
-  };
-
   const openDatePicker = (target: HTMLInputElement) => {
     if (inputType !== "date") return;
     if (typeof target.showPicker === "function") {
@@ -231,21 +215,19 @@ export function EditableValue({
       onCommit(nextValue);
     };
 
+    const selectOptions: AppInlineSelectEditorOption[] = options.map((option) => ({
+      value: option,
+      disabled: isUnavailableWorkOrderSelectOption(option),
+    }));
+
     return (
-      <select
-        autoFocus
+      <AppInlineSelectEditor
         value={selectValue}
-        onChange={(event) => commitSelectValue(event.target.value)}
-        onBlur={(event) => commitSelectValue(event.target.value)}
-        onKeyDown={handleSelectKeyDown}
-        className={`${EDITABLE_SELECT_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
-      >
-        {options.map((option) => (
-          <option key={option} value={option} disabled={isUnavailableWorkOrderSelectOption(option)}>
-            {option}
-          </option>
-        ))}
-      </select>
+        options={selectOptions}
+        onCommit={commitSelectValue}
+        onCancel={onCancel}
+        className={`${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
+      />
     );
   }
 
