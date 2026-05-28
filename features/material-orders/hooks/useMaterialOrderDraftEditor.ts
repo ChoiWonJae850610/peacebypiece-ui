@@ -275,8 +275,8 @@ export function useMaterialOrderDraftEditor() {
 
       setOrders(result.materialOrders);
       setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
+      await refreshWorkOrderCandidates();
       setStatusMessage("상태가 변경되었습니다.");
-      void refreshWorkOrderCandidates();
     } catch (error) {
       setStatusMessage(toMaterialOrderWorkspaceError(error, "발주서 상태를 변경하지 못했습니다."));
     } finally {
