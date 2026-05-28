@@ -1,11 +1,24 @@
-Version : 0.17.54
-Summary : 원단·부자재 건수 뱃지와 작업메모 뱃지 스타일 공통화
-Description : 작업메모의 테마 연동 건수 뱃지를 SectionCountBadge 공통 컴포넌트로 분리하고, 원단·부자재 발주서 목록 및 작업지시서 목록의 n건 뱃지에도 동일한 스타일을 적용했습니다. APP_VERSION을 0.17.54로 갱신했습니다.
+Version : 0.17.55
+Summary : 진행단계 공통 컴포넌트의 SVG 경로 구조 준비
+Description : WorkflowProgressPanel의 기존 직선 진행선을 SVG 레이어 기반으로 정리하고, 작성중에서 발주요청으로 바로 연결되는 direct order 곡선 경로를 표현할 수 있는 pathMode/directPath prop 구조를 추가했습니다. 이번 버전은 실제 업무 데이터 연결 전의 공통 구조 정리이며, package.json/package-lock.json 변경은 없습니다. 테스트 불가 기간이므로 누적 테스트 항목을 유지합니다.
 수정 파일 목록 :
-lib/constants/app.ts
-components/workorder/sidepanel/WorkOrderMemoPanel.tsx
-features/material-orders/MaterialOrderListPanel.tsx
-features/material-orders/MaterialOrderAllocationPanel.tsx
+- lib/constants/app.ts
+- components/common/workflow/WorkflowProgressPanel.tsx
 추가 파일 목록 :
-components/common/ui/SectionCountBadge.tsx
+- 없음
 삭제 파일 목록 :
+- 없음
+
+누적 테스트 항목 :
+- 작업메모 0개 뱃지와 발주서 목록 n건 뱃지 색상/테마 반응 동일 여부 확인
+- 우측 작업지시서 n건 뱃지가 작업메모 뱃지와 같은 톤인지 확인
+- 테마 변경 시 세 뱃지 모두 함께 색상 변경되는지 확인
+- 작업메모 카드 기존 레이아웃 깨짐 여부 확인
+- 작업지시서 진행단계 기존 직선 진행 라인 깨짐 여부 확인
+- 원단·부자재 진행단계 기존 직선 진행 라인 깨짐 여부 확인
+- 진행단계 SVG 전환 후 step 원/라벨 정렬이 기존과 크게 달라지지 않았는지 확인
+- 다음 direct path 적용 후 작성중 → 발주요청 곡선 경로 표시 여부 확인
+- 일반 검토 흐름에서 직선 경로 강조, 곡선 경로 흐림 표시 여부 확인
+- 바로 발주 흐름에서 곡선 경로 강조, 검토요청 경유 라인 흐림 표시 여부 확인
+- Framer Motion 적용 후 선/원 애니메이션이 과하지 않은지 확인
+- 테마 변경 시 진행선/곡선/원 색상이 자연스럽게 따라오는지 확인

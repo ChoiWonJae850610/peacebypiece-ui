@@ -21,6 +21,34 @@ export type WorkflowProgressPanelAction = {
 
 type WorkflowProgressPanelDensity = "default" | "compact";
 
+export type WorkflowProgressPanelPathMode = "standard" | "directOrder";
+
+export type WorkflowProgressPanelDirectPath = {
+  fromKey: string;
+  toKey: string;
+  isVisible?: boolean;
+  isActive?: boolean;
+};
+
+const TRACK_VIEWBOX_WIDTH = 100;
+const TRACK_VIEWBOX_HEIGHT = 28;
+const TRACK_CENTER_Y = 14;
+const DIRECT_CURVE_CONTROL_Y = 2;
+
+function getStepPositionPercent(index: number, stepCount: number) {
+  if (stepCount <= 1) {
+    return 50;
+  }
+
+  return (index / (stepCount - 1)) * TRACK_VIEWBOX_WIDTH;
+}
+
+function getDirectPathD(fromX: number, toX: number) {
+  const controlX = (fromX + toX) / 2;
+
+  return `M ${fromX} ${TRACK_CENTER_Y} Q ${controlX} ${DIRECT_CURVE_CONTROL_Y} ${toX} ${TRACK_CENTER_Y}`;
+}
+
 export function WorkflowProgressPanel({
   title,
   steps,
@@ -28,6 +56,8 @@ export function WorkflowProgressPanel({
   footer,
   density = "default",
   className = "",
+  pathMode = "standard",
+  directPath,
 }: {
   title: ReactNode;
   steps: WorkflowProgressPanelStep[];
@@ -35,9 +65,26 @@ export function WorkflowProgressPanel({
   footer?: ReactNode;
   density?: WorkflowProgressPanelDensity;
   className?: string;
+  pathMode?: WorkflowProgressPanelPathMode;
+  directPath?: WorkflowProgressPanelDirectPath;
 }) {
   const isCompact = density === "compact";
-  const trackTone = "bg-[var(--pbp-selected-border)]";
+  const trackPositionClassName = isCompact ? "top-1.5" : "top-2";
+  const directPathFromIndex = directPath
+    ? steps.findIndex((step) => step.key === directPath.fromKey)
+    : -1;
+  const directPathToIndex = directPath
+    ? steps.findIndex((step) => step.key === directPath.toKey)
+    : -1;
+  const canShowDirectPath = Boolean(
+    directPath &&
+      directPath.isVisible !== false &&
+      directPathFromIndex >= 0 &&
+      directPathToIndex >= 0 &&
+      directPathFromIndex !== directPathToIndex,
+  );
+  const shouldEmphasizeDirectPath =
+    pathMode === "directOrder" || Boolean(directPath?.isActive);
 
   return (
     <div
@@ -81,47 +128,92 @@ export function WorkflowProgressPanel({
       </div>
 
       <div className={isCompact ? "mt-3" : "mt-4"}>
-        <div
-          className={`grid ${isCompact ? "gap-1.5" : "gap-2"}`}
-          style={{
-            gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
-          }}
-        >
-          {steps.map((step, index) => {
-            const fillClassName =
-              step.fillClassName ?? "bg-[var(--pbp-selected-border)]";
-            const currentTextClassName =
-              step.currentTextClassName ?? "pbp-text-primary";
-            return (
-              <div
-                key={step.key}
-                className={`relative flex flex-col items-center text-center ${isCompact ? "gap-1.5" : "gap-2"}`}
-              >
-                {index < steps.length - 1 ? (
+        <div className="relative">
+          <svg
+            className={`pointer-events-none absolute left-0 right-0 ${trackPositionClassName} z-0 h-7 w-full overflow-visible`}
+            viewBox={`0 0 ${TRACK_VIEWBOX_WIDTH} ${TRACK_VIEWBOX_HEIGHT}`}
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            {steps.slice(0, -1).map((step, index) => {
+              const fromX = getStepPositionPercent(index, steps.length);
+              const toX = getStepPositionPercent(index + 1, steps.length);
+              const isSegmentActive = step.isDone && !shouldEmphasizeDirectPath;
+
+              return (
+                <line
+                  key={`${step.key}-track`}
+                  x1={fromX}
+                  y1={TRACK_CENTER_Y}
+                  x2={toX}
+                  y2={TRACK_CENTER_Y}
+                  className={
+                    isSegmentActive
+                      ? "stroke-[var(--pbp-selected-border)]"
+                      : "stroke-[var(--pbp-border)]"
+                  }
+                  strokeWidth={isSegmentActive ? 1.6 : 1.2}
+                  vectorEffect="non-scaling-stroke"
+                />
+              );
+            })}
+            {canShowDirectPath ? (
+              <path
+                d={getDirectPathD(
+                  getStepPositionPercent(directPathFromIndex, steps.length),
+                  getStepPositionPercent(directPathToIndex, steps.length),
+                )}
+                className={
+                  shouldEmphasizeDirectPath
+                    ? "stroke-[var(--pbp-selected-border)]"
+                    : "stroke-[var(--pbp-border)]"
+                }
+                fill="none"
+                strokeLinecap="round"
+                strokeWidth={shouldEmphasizeDirectPath ? 1.8 : 1.1}
+                strokeDasharray={shouldEmphasizeDirectPath ? undefined : "2 2"}
+                opacity={shouldEmphasizeDirectPath ? 1 : 0.55}
+                vectorEffect="non-scaling-stroke"
+              />
+            ) : null}
+          </svg>
+
+          <div
+            className={`relative z-10 grid ${isCompact ? "gap-1.5" : "gap-2"}`}
+            style={{
+              gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
+            }}
+          >
+            {steps.map((step) => {
+              const fillClassName =
+                step.fillClassName ?? "bg-[var(--pbp-selected-border)]";
+              const currentTextClassName =
+                step.currentTextClassName ?? "pbp-text-primary";
+              return (
+                <div
+                  key={step.key}
+                  className={`relative flex flex-col items-center text-center ${isCompact ? "gap-1.5" : "gap-2"}`}
+                >
                   <div
-                    className={`absolute left-1/2 top-3 h-0.5 w-full ${step.isDone ? trackTone : "bg-[var(--pbp-border)]"}`}
-                    aria-hidden="true"
-                  />
-                ) : null}
-                <div
-                  className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
-                    step.isDone
-                      ? `${fillClassName} border-transparent`
-                      : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
-                  }`}
-                >
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full ${step.isDone ? (step.isCompleted ? "bg-white" : "bg-white/90") : "bg-[var(--pbp-text-subtle)]"}`}
-                  />
+                    className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
+                      step.isDone
+                        ? `${fillClassName} border-transparent`
+                        : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
+                    }`}
+                  >
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full ${step.isDone ? (step.isCompleted ? "bg-white" : "bg-white/90") : "bg-[var(--pbp-text-subtle)]"}`}
+                    />
+                  </div>
+                  <div
+                    className={`${isCompact ? "text-[11px]" : "text-xs"} font-medium ${step.isCurrent ? currentTextClassName : "text-[var(--pbp-text-muted)]"}`}
+                  >
+                    {step.label}
+                  </div>
                 </div>
-                <div
-                  className={`${isCompact ? "text-[11px]" : "text-xs"} font-medium ${step.isCurrent ? currentTextClassName : "text-[var(--pbp-text-muted)]"}`}
-                >
-                  {step.label}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
