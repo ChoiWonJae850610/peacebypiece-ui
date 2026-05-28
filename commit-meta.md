@@ -1,16 +1,13 @@
-Version : 0.17.81
-Summary : WAFL 내부 공통 UI 래퍼 1차 생성
-Description : shadcn/Radix 계열 라이브러리를 화면에 직접 확산시키기 전에 AppButton, AppBadge, AppCard, AppSection, AppListRow, AppSeparator 기반의 WAFL 내부 UI 래퍼를 추가하고 cn 유틸을 clsx와 tailwind-merge 기반으로 정리했습니다.
+Version : 0.17.82
+Summary : 공통 UI 래퍼의 빌드 의존성 오류 보정과 작업지시서 UI 적용 시작
+Description : tailwind-merge/class-variance-authority/Radix Slot 직접 import로 발생한 빌드 실패를 막기 위해 공통 UI 래퍼를 dependency-free 구현으로 보정하고, 작업지시서 목록 상태 배지와 상세 요약 카드에 App UI 래퍼를 1차 적용했습니다.
 수정 파일 목록 :
-- lib/constants/app.ts
-- lib/utils.ts
-추가 파일 목록 :
 - components/common/ui/AppBadge.tsx
 - components/common/ui/AppButton.tsx
 - components/common/ui/AppCard.tsx
-- components/common/ui/AppListRow.tsx
-- components/common/ui/AppSection.tsx
-- components/common/ui/AppSeparator.tsx
-- components/common/ui/index.ts
-- docs/ui-foundation-components-0.17.81.md
+- components/workorder/detail/WorkOrderDetailVisualSummary.tsx
+- components/workorder/list/WorkOrderListCard.tsx
+- lib/constants/app.ts
+- lib/utils.ts
+추가 파일 목록 :
 삭제 파일 목록 :

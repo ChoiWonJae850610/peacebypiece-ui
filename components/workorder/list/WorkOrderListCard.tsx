@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
+import { AppBadge } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getCategoryPath, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -82,12 +83,14 @@ export default function WorkOrderListCard({
         <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">
           <div className="min-w-0 truncate text-[15px] font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <span
-              className={`pbp-workorder-status-badge inline-flex h-6 items-center gap-2 rounded-full px-2.5 text-[11px] font-semibold transition-colors duration-150 ease-out ${active ? "pbp-workorder-status-active" : getWorkOrderStatusBadgeSemanticClass(state)}`}
+            <AppBadge
+              tone="neutral"
+              size="sm"
+              className={`pbp-workorder-status-badge h-6 gap-2 transition-colors duration-150 ease-out ${active ? "pbp-workorder-status-active" : getWorkOrderStatusBadgeSemanticClass(state)}`}
             >
               <span className="pbp-workorder-status-dot h-2 w-2 rounded-full" aria-hidden="true" />
               {stateLabel}
-            </span>
+            </AppBadge>
           </div>
           <div className="pbp-workorder-list-muted mt-2 min-w-0 space-y-0.5 text-[11px] leading-4">
             <div className="truncate" title={categoryPath}>{categoryPath}</div>

@@ -1,3 +1,5 @@
+import { AppBadge, AppCard } from "@/components/common/ui";
+
 export type WorkOrderDetailVisualSummaryProps = {
   orderCount: number;
   outsourcingCount: number;
@@ -37,14 +39,11 @@ export default function WorkOrderDetailVisualSummary({
   return (
     <div className="mt-4 grid gap-2 md:grid-cols-3">
       {cards.map((card) => (
-        <div
-          key={card.label}
-          className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3.5 py-3"
-        >
-          <div className="text-[11px] font-medium pbp-text-muted">{card.label}</div>
-          <div className="mt-1 text-sm font-semibold pbp-text-primary">{card.value}</div>
+        <AppCard key={card.label} variant="subtle" padding="sm" className="rounded-2xl">
+          <AppBadge tone="strong" size="sm">{card.label}</AppBadge>
+          <div className="mt-2 text-sm font-semibold pbp-text-primary">{card.value}</div>
           <div className="mt-0.5 truncate text-[11px] pbp-text-subtle">{card.description}</div>
-        </div>
+        </AppCard>
       ))}
     </div>
   );
