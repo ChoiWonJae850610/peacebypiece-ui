@@ -78,6 +78,7 @@ function normalizeMaterialOrderLines(value: unknown): MaterialOrderLineInput[] {
 
           return [{
             workOrderId,
+            sourceMaterialKey: normalizeOptionalText(allocationRecord.sourceMaterialKey),
             allocatedQuantity: normalizeNumber(allocationRecord.allocatedQuantity),
             allocationNote: normalizeOptionalText(allocationRecord.allocationNote),
           }];
