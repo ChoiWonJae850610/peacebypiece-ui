@@ -1,6 +1,6 @@
-Version : 0.17.70
-Summary : 진행단계 직행 경로를 브리지형 꺾인선으로 변경
-Description : 작업지시서와 원단·부자재 공통 진행단계의 direct path를 곡선에서 둥근 모서리 브리지형 꺾인선으로 변경했습니다. 메인 직선 진행선은 원 중심을 유지하고, 직행 발주 경로는 중간 단계 원을 우회하는 상단 브리지로 표시되도록 보정했습니다.
+Version : 0.17.71
+Summary : 진행단계 브리지 경로의 상단 접점과 중심선 정렬 보정
+Description : 진행단계 direct path 브리지가 step 원 중심에서 꺾이지 않고 작성중/발주요청 원 상단 접점으로 연결되도록 보정했습니다. 메인 직선은 전체 트랙과 활성 구간을 분리해 작성중 원 이전 구간도 자연스럽게 보이도록 정리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/common/workflow/WorkflowProgressPanel.tsx

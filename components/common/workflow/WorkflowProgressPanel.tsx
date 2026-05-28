@@ -35,15 +35,17 @@ export type WorkflowProgressPanelDirectPath = {
 const TRACK_VIEWBOX_WIDTH = 100;
 const TRACK_VIEWBOX_HEIGHT = 44;
 const TRACK_CENTER_Y = 22;
-const DIRECT_BRIDGE_Y = 4;
-const DIRECT_BRIDGE_CORNER_X = 2.2;
-const DIRECT_BRIDGE_CORNER_Y = 5;
+const STEP_DOT_RADIUS_Y = 8.8;
+const DIRECT_BRIDGE_Y = 4.2;
+const DIRECT_BRIDGE_CORNER_X = 2.4;
+const DIRECT_BRIDGE_CORNER_Y = 4.6;
+
 function getStepPositionPercent(index: number, stepCount: number) {
-  if (stepCount <= 1) {
+  if (stepCount <= 0) {
     return 50;
   }
 
-  return (index / (stepCount - 1)) * TRACK_VIEWBOX_WIDTH;
+  return ((index + 0.5) / stepCount) * TRACK_VIEWBOX_WIDTH;
 }
 
 function getDirectPathD(fromX: number, toX: number) {
@@ -54,15 +56,16 @@ function getDirectPathD(fromX: number, toX: number) {
   );
   const startCornerX = fromX + cornerX * direction;
   const endCornerX = toX - cornerX * direction;
+  const circleTopY = TRACK_CENTER_Y - STEP_DOT_RADIUS_Y;
   const cornerBottomY = DIRECT_BRIDGE_Y + DIRECT_BRIDGE_CORNER_Y;
 
   return [
-    `M ${fromX} ${TRACK_CENTER_Y}`,
+    `M ${fromX} ${circleTopY}`,
     `L ${fromX} ${cornerBottomY}`,
     `Q ${fromX} ${DIRECT_BRIDGE_Y} ${startCornerX} ${DIRECT_BRIDGE_Y}`,
     `L ${endCornerX} ${DIRECT_BRIDGE_Y}`,
     `Q ${toX} ${DIRECT_BRIDGE_Y} ${toX} ${cornerBottomY}`,
-    `L ${toX} ${TRACK_CENTER_Y}`,
+    `L ${toX} ${circleTopY}`,
   ].join(" ");
 }
 
@@ -152,6 +155,16 @@ export function WorkflowProgressPanel({
             preserveAspectRatio="none"
             aria-hidden="true"
           >
+            <line
+              x1={0}
+              y1={TRACK_CENTER_Y}
+              x2={TRACK_VIEWBOX_WIDTH}
+              y2={TRACK_CENTER_Y}
+              className="stroke-[var(--pbp-border)]"
+              opacity={0.48}
+              strokeWidth={1.15}
+              vectorEffect="non-scaling-stroke"
+            />
             {steps.slice(0, -1).map((step, index) => {
               const fromX = getStepPositionPercent(index, steps.length);
               const toX = getStepPositionPercent(index + 1, steps.length);
@@ -169,8 +182,9 @@ export function WorkflowProgressPanel({
                       ? "stroke-[var(--pbp-selected-border)]"
                       : "stroke-[var(--pbp-border)]"
                   }
-                  opacity={isSegmentActive ? 1 : 0.58}
-                  strokeWidth={isSegmentActive ? 1.6 : 1.2}
+                  opacity={isSegmentActive ? 1 : 0.38}
+                  strokeWidth={isSegmentActive ? 1.7 : 1.05}
+                  strokeLinecap="round"
                   vectorEffect="non-scaling-stroke"
                   style={{
                     transition:
@@ -179,6 +193,19 @@ export function WorkflowProgressPanel({
                 />
               );
             })}
+            {steps[0] && steps[0].isDone ? (
+              <line
+                x1={0}
+                y1={TRACK_CENTER_Y}
+                x2={getStepPositionPercent(0, steps.length)}
+                y2={TRACK_CENTER_Y}
+                className="stroke-[var(--pbp-selected-border)]"
+                opacity={1}
+                strokeWidth={1.7}
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            ) : null}
             {canShowDirectPath ? (
               <path
                 d={getDirectPathD(
@@ -191,11 +218,11 @@ export function WorkflowProgressPanel({
                     : "stroke-[var(--pbp-border)]"
                 }
                 fill="none"
-                opacity={shouldEmphasizeDirectPath ? 1 : 0.72}
-                strokeWidth={shouldEmphasizeDirectPath ? 2.35 : 1.55}
+                opacity={shouldEmphasizeDirectPath ? 1 : 0.18}
+                strokeWidth={shouldEmphasizeDirectPath ? 2.2 : 1.2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeDasharray={shouldEmphasizeDirectPath ? undefined : "5 3"}
+                strokeDasharray={shouldEmphasizeDirectPath ? undefined : "4 4"}
                 vectorEffect="non-scaling-stroke"
                 style={{
                   transition:
