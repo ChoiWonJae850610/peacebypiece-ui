@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { AppSelect } from "@/components/common/ui";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
@@ -132,32 +133,22 @@ export default function MobileDrawer({
             ) : null}
           </div>
           <div className="mt-2 grid grid-cols-2 gap-1.5">
-            <label className="block">
-              <span className="sr-only">{controlsCopy.statusFilterAria}</span>
-              <select
-                value={statusFilter}
-                onChange={(event) => onStatusFilterChange(event.target.value as WorkOrderListStatusFilter)}
-                disabled={writeLocked}
-                className="pbp-field-interaction pbp-field-selectable h-8 w-full rounded-xl border px-2.5 text-xs font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="sr-only">{controlsCopy.sortAria}</span>
-              <select
-                value={sort}
-                onChange={(event) => onSortChange(event.target.value as WorkOrderListSort)}
-                disabled={writeLocked}
-                className="pbp-field-interaction pbp-field-selectable h-8 w-full rounded-xl border px-2.5 text-xs font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
+            <AppSelect
+              value={statusFilter}
+              onValueChange={(value) => onStatusFilterChange(value as WorkOrderListStatusFilter)}
+              options={statusOptions}
+              disabled={writeLocked}
+              size="sm"
+              ariaLabel={controlsCopy.statusFilterAria}
+            />
+            <AppSelect
+              value={sort}
+              onValueChange={(value) => onSortChange(value as WorkOrderListSort)}
+              options={sortOptions}
+              disabled={writeLocked}
+              size="sm"
+              ariaLabel={controlsCopy.sortAria}
+            />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-medium leading-4 text-stone-500">
             <span className="min-w-0 truncate">{listSummary}</span>
