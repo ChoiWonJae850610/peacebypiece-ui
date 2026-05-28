@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
@@ -238,17 +239,13 @@ export default function SystemProcessStandardsPage() {
                   placeholder="시스템 코드 예: printing"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <select
+                <AppSelect
                   value={form.category}
-                  onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
-                  className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
-                >
-                  {Object.entries(SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={(value) => setForm((current) => ({ ...current, category: value }))}
+                  options={Object.entries(SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS).map(([value, label]) => ({ value, label }))}
+                  ariaLabel="공정 분류"
+                  size="sm"
+                />
                 <input
                   value={form.sortOrder}
                   onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))}
@@ -313,17 +310,13 @@ export default function SystemProcessStandardsPage() {
                             onChange={(event) => setEditingForm((current) => current ? { ...current, code: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <select
+                          <AppSelect
                             value={editingForm.category}
-                            onChange={(event) => setEditingForm((current) => current ? { ...current, category: event.target.value } : current)}
-                            className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
-                          >
-                            {Object.entries(SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS).map(([value, label]) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ))}
-                          </select>
+                            onValueChange={(value) => setEditingForm((current) => current ? { ...current, category: value } : current)}
+                            options={Object.entries(SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS).map(([value, label]) => ({ value, label }))}
+                            ariaLabel="공정 분류 수정"
+                            size="sm"
+                          />
                           <input
                             value={editingForm.description}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)}

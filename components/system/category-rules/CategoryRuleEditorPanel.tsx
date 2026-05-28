@@ -1,7 +1,8 @@
 "use client";
 
 import { type RefObject } from "react";
-import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { AppSelect } from "@/components/common/ui";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
@@ -101,21 +102,30 @@ export function CategoryRuleEditorPanel({
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2">
               <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category1Label}</span>
-              <select value={currentCategory1} onChange={(event) => onChangeCategory1(event.target.value)} className={MODAL_SELECT_CLASS}>
-                {category1Options.map((option) => <option key={option} value={option}>{option}</option>)}
-              </select>
+              <AppSelect
+                value={currentCategory1}
+                onValueChange={onChangeCategory1}
+                options={category1Options.map((option) => ({ value: option, label: option }))}
+                ariaLabel={text.category1Label}
+              />
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category2Label}</span>
-              <select value={currentCategory2} onChange={(event) => onChangeCategory2(event.target.value)} className={MODAL_SELECT_CLASS}>
-                {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
-              </select>
+              <AppSelect
+                value={currentCategory2}
+                onValueChange={onChangeCategory2}
+                options={category2Options.map((option) => ({ value: option, label: option }))}
+                ariaLabel={text.category2Label}
+              />
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category3Label}</span>
-              <select value={currentCategory3} onChange={(event) => onChangeCategory3(event.target.value)} className={MODAL_SELECT_CLASS}>
-                {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
-              </select>
+              <AppSelect
+                value={currentCategory3}
+                onValueChange={onChangeCategory3}
+                options={category3Options.map((option) => ({ value: option, label: option }))}
+                ariaLabel={text.category3Label}
+              />
             </label>
           </div>
 

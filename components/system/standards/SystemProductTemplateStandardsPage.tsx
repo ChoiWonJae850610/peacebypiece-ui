@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import SystemShell from "@/components/system/layout/SystemShell";
@@ -601,19 +602,34 @@ export default function SystemProductTemplateStandardsPage() {
             <article className={SYSTEM_PANEL_CLASS}>
               <h2 className={SYSTEM_SECTION_TITLE_CLASS}>분류 추가</h2>
               <div className="mt-4 grid gap-2">
-                <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]">
-                  {records.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
-                </select>
-                <select value={categoryForm.level} onChange={(event) => setCategoryForm({ ...EMPTY_CATEGORY_FORM, level: event.target.value as CategoryFormState["level"] })} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]">
-                  <option value="1">1차 분류</option>
-                  <option value="2">2차 분류</option>
-                  <option value="3">3차 분류</option>
-                </select>
+                <AppSelect
+                  value={selectedTemplateId}
+                  onValueChange={setSelectedTemplateId}
+                  options={records.map((template) => ({ value: template.id, label: template.name }))}
+                  placeholder="템플릿 선택"
+                  ariaLabel="제품 템플릿 선택"
+                  size="sm"
+                />
+                <AppSelect
+                  value={categoryForm.level}
+                  onValueChange={(value) => setCategoryForm({ ...EMPTY_CATEGORY_FORM, level: value as CategoryFormState["level"] })}
+                  options={[
+                    { value: "1", label: "1차 분류" },
+                    { value: "2", label: "2차 분류" },
+                    { value: "3", label: "3차 분류" },
+                  ]}
+                  ariaLabel="분류 단계 선택"
+                  size="sm"
+                />
                 {categoryForm.level !== "1" ? (
-                  <select value={categoryForm.parentId} onChange={(event) => setCategoryForm((current) => ({ ...current, parentId: event.target.value }))} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]">
-                    <option value="">상위 분류 선택</option>
-                    {categoryOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
-                  </select>
+                  <AppSelect
+                    value={categoryForm.parentId}
+                    onValueChange={(value) => setCategoryForm((current) => ({ ...current, parentId: value }))}
+                    options={[{ value: "", label: "상위 분류 선택" }, ...categoryOptions.map((option) => ({ value: option.id, label: option.label }))]}
+                    placeholder="상위 분류 선택"
+                    ariaLabel="상위 분류 선택"
+                    size="sm"
+                  />
                 ) : null}
                 <input value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} placeholder="분류명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
                 <input value={categoryForm.sortOrder} onChange={(event) => setCategoryForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
