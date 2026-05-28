@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { AppSegmentedTabs, type AppSegmentedTabItem } from "@/components/common/ui";
+import { AppResponsiveSurface, AppSegmentedTabs, type AppSegmentedTabItem } from "@/components/common/ui";
 import MobileSectionStack from "@/components/workorder/detail/layout/MobileSectionStack";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailMobileCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileCostSummarySection";
@@ -40,7 +40,7 @@ export default function WorkOrderDetailMobileView({
   const resolvedPanel = activePanel === "production" && !viewModel.showProductionComposition ? "summary" : activePanel;
 
   return (
-    <div className="min-w-0 overflow-x-hidden rounded-[24px] border border-stone-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4">
+    <AppResponsiveSurface device="mobile">
       <AppSegmentedTabs
         items={tabs}
         value={resolvedPanel}
@@ -72,6 +72,6 @@ export default function WorkOrderDetailMobileView({
       ) : null}
 
       <WorkOrderDetailSharedModals editor={editor} currentInventoryQuantity={currentInventoryQuantity} />
-    </div>
+    </AppResponsiveSurface>
   );
 }

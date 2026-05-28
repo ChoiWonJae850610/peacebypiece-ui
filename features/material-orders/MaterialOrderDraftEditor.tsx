@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import AppSegmentedTabs from "@/components/common/ui/AppSegmentedTabs";
+import { AppResponsiveWorkspace } from "@/components/common/ui";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
@@ -157,20 +158,20 @@ export default function MaterialOrderDraftEditor() {
 
   if (deviceType === "mobile") {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto pb-1">
+      <AppResponsiveWorkspace device="mobile">
         {mobilePanelTabs}
         <div className="min-h-0 min-w-0">
           {mobilePanel === "orders" ? <section className="min-h-[520px] min-w-0">{listPanel}</section> : null}
           {mobilePanel === "detail" ? <section className="min-h-[620px] min-w-0">{detailPanel}</section> : null}
           {mobilePanel === "materials" ? <section className="min-h-[620px] min-w-0">{allocationPanel}</section> : null}
         </div>
-      </div>
+      </AppResponsiveWorkspace>
     );
   }
 
   if (deviceType === "tablet") {
     return (
-      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pb-1">
+      <AppResponsiveWorkspace device="tablet">
         <div className="grid min-h-0 min-w-0 gap-3" style={MATERIAL_ORDER_TABLET_GRID_STYLE}>
           <section className="min-h-[680px] min-w-0">{listPanel}</section>
           <div className="min-w-0">
@@ -179,12 +180,12 @@ export default function MaterialOrderDraftEditor() {
             {tabletPanel === "materials" ? <section className="min-h-[680px] min-w-0">{allocationPanel}</section> : null}
           </div>
         </div>
-      </div>
+      </AppResponsiveWorkspace>
     );
   }
 
   return (
-    <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-1">
+    <AppResponsiveWorkspace device="desktop">
       <div
         className="grid h-full min-h-0 min-w-[1080px] gap-3"
         style={MATERIAL_ORDER_PANEL_GRID_STYLE}
@@ -193,6 +194,6 @@ export default function MaterialOrderDraftEditor() {
         {detailPanel}
         {allocationPanel}
       </div>
-    </div>
+    </AppResponsiveWorkspace>
   );
 }

@@ -1,13 +1,13 @@
-Version : 0.17.88
-Summary : 작업지시서 태블릿·모바일 상세를 공통 전환 탭으로 정리
-Description : 작업지시서 태블릿·모바일 상세 화면에 AppSegmentedTabs 기반 전환 구조를 적용해 진행 단계, 공정 정보, 제품 구성 영역을 분리했습니다. PC 화면과 저장/상태전환/첨부/메모 흐름은 변경하지 않았습니다.
-
+Version : 0.17.89
+Summary : 태블릿·모바일 반응형 프레임을 공통 UI로 정리
+Description : 작업지시서와 원단·부자재 화면의 태블릿·모바일 외곽 프레임과 workspace 스크롤 정책을 AppResponsiveFrame으로 공통화했습니다. PC 3분할, 저장, 상태 전환, DB/API/R2 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
+- components/common/ui/index.ts
 - components/workorder/detail/views/WorkOrderDetailMobileView.tsx
 - components/workorder/detail/views/WorkOrderDetailTabletView.tsx
+- features/material-orders/MaterialOrderDraftEditor.tsx
 - lib/constants/app.ts
-
 추가 파일 목록 :
-- docs/ui-responsive-workorder-tabs-0.17.88.md
-
+- components/common/ui/AppResponsiveFrame.tsx
+- docs/ui-responsive-frame-0.17.89.md
 삭제 파일 목록 :

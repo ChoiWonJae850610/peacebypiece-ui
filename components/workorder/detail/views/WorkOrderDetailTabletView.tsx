@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { AppSegmentedTabs, type AppSegmentedTabItem } from "@/components/common/ui";
+import { AppResponsiveSurface, AppSegmentedTabs, type AppSegmentedTabItem } from "@/components/common/ui";
 import TabletSplitLayout from "@/components/workorder/detail/layout/TabletSplitLayout";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailTabletCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletCostSummarySection";
@@ -40,7 +40,7 @@ export default function WorkOrderDetailTabletView({
   const resolvedPanel = activePanel === "production" && !viewModel.showProductionComposition ? "summary" : activePanel;
 
   return (
-    <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+    <AppResponsiveSurface device="tablet">
       <AppSegmentedTabs
         items={tabs}
         value={resolvedPanel}
@@ -72,6 +72,6 @@ export default function WorkOrderDetailTabletView({
       ) : null}
 
       <WorkOrderDetailSharedModals editor={editor} currentInventoryQuantity={currentInventoryQuantity} />
-    </div>
+    </AppResponsiveSurface>
   );
 }
