@@ -27,6 +27,7 @@ import {
   buildMaterialRequestQuantityMap,
   calculateMaterialRequestRemainingQuantity,
 } from "@/features/material-orders/materialOrderPanelUtils";
+import { shouldPersistMaterialOrderDetailBeforeStatusChange } from "@/lib/material-orders/statusFlow";
 
 type SelectedOrderDetailPayload = {
   materialOrderId: string;
@@ -251,7 +252,7 @@ export function useMaterialOrderDraftEditor() {
     try {
       let nextSelectedOrderId = selectedOrder.id;
 
-      if (selectedOrder.status === "draft") {
+      if (shouldPersistMaterialOrderDetailBeforeStatusChange(selectedOrder.status)) {
         const detailPayload = buildSelectedOrderDetailPayload();
         if (detailPayload) {
           const detailResult = await updateMaterialOrderDetail(detailPayload);
@@ -268,12 +269,13 @@ export function useMaterialOrderDraftEditor() {
       setOrders(result.materialOrders);
       setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
       setStatusMessage("상태가 변경되었습니다.");
+      void refreshWorkOrderCandidates();
     } catch (error) {
       setStatusMessage(toMaterialOrderWorkspaceError(error, "발주서 상태를 변경하지 못했습니다."));
     } finally {
       setStatusChanging(false);
     }
-  }, [buildSelectedOrderDetailPayload, selectedOrder]);
+  }, [buildSelectedOrderDetailPayload, refreshWorkOrderCandidates, selectedOrder]);
 
   const updateLine = useCallback((lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
     setLines((current) => current.map((line) => (line.id === lineId ? { ...line, ...patch } : line)));

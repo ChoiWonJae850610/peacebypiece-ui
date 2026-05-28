@@ -15,6 +15,7 @@ import type {
   MaterialOrderUpdateInput,
 } from "@/lib/material-orders/types";
 import { WORKFLOW_PATH, normalizeWorkflowPath } from "@/lib/constants/workflowPaths";
+import { isMaterialOrderStatusTransitionAllowed } from "@/lib/material-orders/statusFlow";
 
 type MaterialOrderRow = {
   id: string;
@@ -597,6 +598,12 @@ export async function updateMaterialOrderStatusForCompany(
     companyId: input.companyId,
     materialOrderId: input.materialOrderId,
   });
+
+  if (!currentOrder) throw new Error("MATERIAL_ORDER_STATUS_NOT_FOUND_OR_FORBIDDEN");
+  if (!isMaterialOrderStatusTransitionAllowed(currentOrder.status, input.status)) {
+    throw new Error("MATERIAL_ORDER_STATUS_TRANSITION_NOT_ALLOWED");
+  }
+
   const workflowPath =
     input.status === "approved"
       ? currentOrder?.status === "draft"

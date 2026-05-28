@@ -1,6 +1,10 @@
 import { WorkflowProgressPanel, type WorkflowProgressPanelAction, type WorkflowProgressPanelStep } from "@/components/common/workflow/WorkflowProgressPanel";
 import { WORKFLOW_PATH } from "@/lib/constants/workflowPaths";
 import { formatMaterialOrderStatusLabel } from "@/lib/material-orders/materialOrderWorkspaceClient";
+import {
+  MATERIAL_ORDER_STATUS_STEPS,
+  resolveMaterialOrderStatusActions,
+} from "@/lib/material-orders/statusFlow";
 import type { MaterialOrder, MaterialOrderStatus } from "@/lib/material-orders/types";
 
 type MaterialOrderStatusFlowProps = {
@@ -10,16 +14,6 @@ type MaterialOrderStatusFlowProps = {
   message: string | null;
   onChangeStatus: (status: MaterialOrderStatus) => void;
 };
-
-const MATERIAL_ORDER_STATUS_STEPS: Array<{
-  status: MaterialOrderStatus;
-  label: string;
-}> = [
-  { status: "draft", label: "작성중" },
-  { status: "review_requested", label: "검토요청" },
-  { status: "approved", label: "발주요청" },
-  { status: "order_placed", label: "발주완료" },
-];
 
 export function MaterialOrderStatusFlow({
   status,
@@ -75,20 +69,3 @@ export function MaterialOrderStatusFlow({
   );
 }
 
-function resolveMaterialOrderStatusActions(
-  status: MaterialOrderStatus,
-): Array<{ label: string; nextStatus: MaterialOrderStatus }> {
-  switch (status) {
-    case "draft":
-      return [
-        { label: "검토 요청", nextStatus: "review_requested" },
-        { label: "발주 요청", nextStatus: "approved" },
-      ];
-    case "review_requested":
-      return [{ label: "검토 취소", nextStatus: "draft" }];
-    case "approved":
-      return [{ label: "발주 완료", nextStatus: "order_placed" }];
-    default:
-      return [];
-  }
-}
