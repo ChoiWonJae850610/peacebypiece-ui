@@ -22,17 +22,11 @@ import {
   type MaterialOrderWorkspaceWorkOrderCandidate,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import type { MaterialOrder, MaterialOrderStatus, MaterialOrderSupplier } from "@/lib/material-orders/types";
-import type { MaterialOrderDraftGuideItem } from "@/lib/material-orders/materialOrderWorkspaceViewModel";
-
-type MaterialOrderDraftEditorProps = {
-  guideItems: MaterialOrderDraftGuideItem[];
-};
-
 const MATERIAL_ORDER_PANEL_GRID_STYLE = {
   gridTemplateColumns: "minmax(220px, 0.7fr) minmax(640px, 1fr) minmax(220px, 0.7fr)",
 } as const;
 
-export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDraftEditorProps) {
+export default function MaterialOrderDraftEditor() {
   const [orders, setOrders] = useState<MaterialOrder[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -299,7 +293,6 @@ export default function MaterialOrderDraftEditor({ guideItems }: MaterialOrderDr
           onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
         />
         <MaterialOrderAllocationPanel
-          guideItems={guideItems}
           candidates={workOrderCandidates}
           lines={lines}
           editable={selectedOrder?.status === "draft"}

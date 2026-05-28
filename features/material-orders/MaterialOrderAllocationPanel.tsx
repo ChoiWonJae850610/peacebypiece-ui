@@ -3,8 +3,8 @@ import { useMemo, useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
+import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import {
-  MATERIAL_ORDER_EMPTY_STATE_CLASS,
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
   MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
   MATERIAL_ORDER_NESTED_ROW_CLASS,
@@ -16,11 +16,15 @@ import {
 import {
   type MaterialOrderDraftLine,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
+import {
+  filterMaterialOrderCandidates,
+  formatMaterialItemTypeLabel,
+  formatMaterialQuantity,
+  isMaterialRequestAlreadyAdded,
+} from "@/features/material-orders/materialOrderPanelUtils";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import type { MaterialOrderDraftGuideItem } from "@/lib/material-orders/materialOrderWorkspaceViewModel";
 
 type MaterialOrderAllocationPanelProps = {
-  guideItems: MaterialOrderDraftGuideItem[];
   candidates: MaterialOrderWorkspaceWorkOrderCandidate[];
   lines: MaterialOrderDraftLine[];
   editable: boolean;
@@ -34,7 +38,6 @@ type MaterialOrderAllocationPanelProps = {
 };
 
 export default function MaterialOrderAllocationPanel({
-  guideItems,
   candidates,
   lines,
   editable,
@@ -43,19 +46,13 @@ export default function MaterialOrderAllocationPanel({
   onAddMaterialToOrder,
   onRetry,
 }: MaterialOrderAllocationPanelProps) {
-  void guideItems;
-
   const [searchQuery, setSearchQuery] = useState("");
-  const filteredCandidates = useMemo(() => {
-    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
-    if (!normalizedSearchQuery) return candidates;
-
-    return candidates.filter((workOrder) => [
-      workOrder.code,
-      workOrder.productName,
-      workOrder.requestedMaterialLabel,
-    ].join(" ").toLowerCase().includes(normalizedSearchQuery));
-  }, [candidates, searchQuery]);
+  const filteredCandidates = useMemo(() => (
+    filterMaterialOrderCandidates({
+      candidates,
+      searchQuery,
+    })
+  ), [candidates, searchQuery]);
 
   return (
     <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
@@ -74,16 +71,16 @@ export default function MaterialOrderAllocationPanel({
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
-          <PanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." />
+          <MaterialOrderPanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." />
         ) : errorMessage ? (
-          <PanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
+          <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
         ) : candidates.length === 0 ? (
-          <PanelMessage
+          <MaterialOrderPanelMessage
             title="표시할 작업지시서 없음"
             description="자재 발주 대기 상태의 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
-          <PanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." />
+          <MaterialOrderPanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." />
         ) : (
           filteredCandidates.map((workOrder) => (
             <AllocationCandidateCard
@@ -150,11 +147,11 @@ function WorkOrderMaterialRequestRow({
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
 }) {
-  const existingLine = lines.find((line) => (
-    line.sourceWorkOrderId === workOrder.id
-    && line.sourceMaterialKey === material.key
-  ));
-  const isAdded = Boolean(existingLine);
+  const isAdded = isMaterialRequestAlreadyAdded({
+    lines,
+    workOrderId: workOrder.id,
+    materialKey: material.key,
+  });
 
   return (
     <div className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
@@ -176,42 +173,6 @@ function WorkOrderMaterialRequestRow({
     </div>
   );
 }
-
-function formatMaterialItemTypeLabel(itemType: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number]["itemType"]): string {
-  return itemType === "submaterial" ? "부자재" : "원단";
-}
-
-function formatMaterialQuantity(quantity: number, unit: string): string {
-  const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
-  const normalizedUnit = unit.trim();
-  return `${normalizedQuantity}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
-}
-
-
-function PanelMessage({
-  title,
-  description,
-  actionLabel,
-  onAction,
-}: {
-  title: string;
-  description: string;
-  actionLabel?: string;
-  onAction?: () => void;
-}) {
-  return (
-    <div className={MATERIAL_ORDER_EMPTY_STATE_CLASS}>
-      <p className="font-semibold pbp-text-primary">{title}</p>
-      <p className="mt-1 text-xs leading-5 pbp-text-muted">{description}</p>
-      {actionLabel && onAction ? (
-        <div className="mt-2">
-          <AdminButton size="sm" variant="ghost" onClick={onAction}>{actionLabel}</AdminButton>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 
 function fieldClassName(extra = "") {
   return [

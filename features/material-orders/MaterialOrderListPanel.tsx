@@ -4,7 +4,6 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import {
-  MATERIAL_ORDER_EMPTY_STATE_CLASS,
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
   MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
   MATERIAL_ORDER_LIST_CARD_SELECTED_CLASS,
@@ -22,6 +21,13 @@ import {
   resolveMaterialOrderStatusBadgeTone,
   resolveMaterialOrderType,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
+import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
+import {
+  filterMaterialOrders,
+  formatMaterialOrderDraftLineLabel,
+  type MaterialOrderFilterStatus,
+  type MaterialOrderFilterType,
+} from "@/features/material-orders/materialOrderPanelUtils";
 import type { MaterialOrder, MaterialOrderLineItemType, MaterialOrderStatus } from "@/lib/material-orders/types";
 import type { MaterialOrderDraftLine, MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
 
@@ -69,33 +75,17 @@ export default function MaterialOrderListPanel({
   selectedDraftLines,
 }: MaterialOrderListPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | MaterialOrderStatus>("draft");
-  const [typeFilter, setTypeFilter] = useState<"all" | MaterialOrderLineItemType>("all");
+  const [statusFilter, setStatusFilter] = useState<MaterialOrderFilterStatus>("draft");
+  const [typeFilter, setTypeFilter] = useState<MaterialOrderFilterType>("all");
 
-  const filteredOrders = useMemo(() => {
-    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
-
-    return orders.filter((order) => {
-      const materialType = resolveMaterialOrderType(order);
-      if (statusFilter !== "all" && order.status !== statusFilter) return false;
-      if (typeFilter !== "all" && materialType !== typeFilter) return false;
-
-      if (!normalizedSearchQuery) return true;
-
-      const searchableText = [
-        formatMaterialOrderStatusLabel(order.status),
-        formatMaterialOrderTypeLabel(materialType),
-        order.supplierPartnerName,
-        order.requestedByDisplayName,
-        ...order.lines.map((line) => line.itemName),
-      ]
-        .filter((value): value is string => Boolean(value))
-        .join(" ")
-        .toLowerCase();
-
-      return searchableText.includes(normalizedSearchQuery);
-    });
-  }, [orders, searchQuery, statusFilter, typeFilter]);
+  const filteredOrders = useMemo(() => (
+    filterMaterialOrders({
+      orders,
+      searchQuery,
+      statusFilter,
+      typeFilter,
+    })
+  ), [orders, searchQuery, statusFilter, typeFilter]);
 
   return (
     <AdminCard className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
@@ -116,7 +106,7 @@ export default function MaterialOrderListPanel({
         <div className="grid grid-cols-2 gap-1.5">
           <select
             value={typeFilter}
-            onChange={(event) => setTypeFilter(event.target.value as "all" | MaterialOrderLineItemType)}
+            onChange={(event) => setTypeFilter(event.target.value as MaterialOrderFilterType)}
             className={filterFieldClassName()}
           >
             {MATERIAL_ORDER_TYPE_OPTIONS.map((option) => (
@@ -125,7 +115,7 @@ export default function MaterialOrderListPanel({
           </select>
           <select
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as "all" | MaterialOrderStatus)}
+            onChange={(event) => setStatusFilter(event.target.value as MaterialOrderFilterStatus)}
             className={filterFieldClassName()}
           >
             {MATERIAL_ORDER_STATUS_OPTIONS.map((option) => (
@@ -146,16 +136,16 @@ export default function MaterialOrderListPanel({
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
-          <PanelMessage title="불러오는 중" description="발주서 목록을 조회하고 있습니다." />
+          <MaterialOrderPanelMessage title="불러오는 중" description="발주서 목록을 조회하고 있습니다." />
         ) : errorMessage ? (
-          <PanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
+          <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
         ) : orders.length === 0 ? (
-          <PanelMessage
+          <MaterialOrderPanelMessage
             title="등록된 발주서 없음"
             description="발주서 생성 버튼으로 첫 원단·부자재 발주서를 만듭니다."
           />
         ) : filteredOrders.length === 0 ? (
-          <PanelMessage
+          <MaterialOrderPanelMessage
             title="검색 결과 없음"
             description="검색어, 상태, 종류 필터를 조정해보세요."
           />
@@ -221,38 +211,6 @@ function MaterialOrderListButton({
       </div>
       <p className="mt-1.5 truncate text-xs font-medium pbp-text-primary">{primaryLineLabel}</p>
     </button>
-  );
-}
-
-function formatMaterialOrderDraftLineLabel(lines: MaterialOrderDraftLine[]): string {
-  const primaryLine = lines.find((line) => line.itemName.trim().length > 0) ?? null;
-  if (!primaryLine) return "품목 미입력";
-
-  const extraCount = Math.max(0, lines.length - 1);
-  return extraCount > 0 ? `${primaryLine.itemName.trim()} 외 ${extraCount}건` : primaryLine.itemName.trim();
-}
-
-function PanelMessage({
-  title,
-  description,
-  actionLabel,
-  onAction,
-}: {
-  title: string;
-  description: string;
-  actionLabel?: string;
-  onAction?: () => void;
-}) {
-  return (
-    <div className={MATERIAL_ORDER_EMPTY_STATE_CLASS}>
-      <p className="font-semibold pbp-text-primary">{title}</p>
-      <p className="mt-1 text-xs leading-5 pbp-text-muted">{description}</p>
-      {actionLabel && onAction ? (
-        <div className="mt-2">
-          <AdminButton size="sm" variant="ghost" onClick={onAction}>{actionLabel}</AdminButton>
-        </div>
-      ) : null}
-    </div>
   );
 }
 
