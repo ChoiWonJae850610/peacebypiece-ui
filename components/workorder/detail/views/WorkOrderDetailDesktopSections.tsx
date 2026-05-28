@@ -4,6 +4,7 @@ import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrder
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import DetailSectionGroup from "@/components/workorder/detail/shared/DetailSectionGroup";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
+import WorkOrderDetailVisualSummary from "@/components/workorder/detail/WorkOrderDetailVisualSummary";
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
@@ -22,6 +23,13 @@ export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderD
         <WorkOrderHeaderSection {...viewModel.headerProps} />
 
         {viewModel.rejectionReasonNoticeProps ? <div className="mt-4"><RejectionReasonNotice {...viewModel.rejectionReasonNoticeProps} /></div> : null}
+
+        <WorkOrderDetailVisualSummary
+          orderCount={viewModel.orderInfoProps.orderEntries.length}
+          outsourcingCount={viewModel.orderInfoProps.outsourcing.length}
+          materialCount={viewModel.productionCompositionProps.materials.length}
+          showCostSummary={viewModel.showCostSummary}
+        />
 
         <WorkOrderActionSection {...viewModel.actionProps} />
       </div>

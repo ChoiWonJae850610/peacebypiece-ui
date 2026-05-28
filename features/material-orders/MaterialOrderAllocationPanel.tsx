@@ -112,6 +112,41 @@ export default function MaterialOrderAllocationPanel({
   );
 }
 
+
+function countMaterialItemsByType(
+  items: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"],
+) {
+  return items.reduce(
+    (acc, item) => {
+      if (item.itemType === "submaterial") {
+        acc.subsidiary += 1;
+      } else {
+        acc.fabric += 1;
+      }
+      return acc;
+    },
+    { fabric: 0, subsidiary: 0 },
+  );
+}
+
+function countRemainingMaterialItems({
+  workOrder,
+  materialRequestCompletionMap,
+}: {
+  workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
+  materialRequestCompletionMap: MaterialRequestQuantityMap;
+}) {
+  return workOrder.materialItems.reduce((count, material) => {
+    const completionRemainingQuantity = calculateMaterialRequestCompletionRemainingQuantity({
+      quantityMap: materialRequestCompletionMap,
+      workOrderId: workOrder.id,
+      materialKey: material.key,
+      requiredQuantity: material.quantity,
+    });
+    return completionRemainingQuantity > 0 ? count + 1 : count;
+  }, 0);
+}
+
 function AllocationCandidateCard({
   workOrder,
   lines,
@@ -135,6 +170,15 @@ function AllocationCandidateCard({
     materialRequestQuantityMap,
     materialRequestCompletionMap,
   });
+  const itemTypeSummary = countMaterialItemsByType(workOrder.materialItems);
+  const remainingItemCount = countRemainingMaterialItems({
+    workOrder,
+    materialRequestCompletionMap,
+  });
+  const materialSummaryLabel = `원단 ${itemTypeSummary.fabric}종 · 부자재 ${itemTypeSummary.subsidiary}종`;
+  const remainingSummaryLabel = completionSummary.isComplete
+    ? "자재 발주완료"
+    : `남은 자재 ${remainingItemCount}개`;
 
   return (
     <div className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
@@ -157,20 +201,31 @@ function AllocationCandidateCard({
         </span>
       </div>
 
-      <div className="mt-3 grid gap-1.5">
-        {workOrder.materialItems.map((material) => (
-          <WorkOrderMaterialRequestRow
-            key={material.key}
-            workOrder={workOrder}
-            material={material}
-            lines={lines}
-            materialRequestQuantityMap={materialRequestQuantityMap}
-            materialRequestCompletionMap={materialRequestCompletionMap}
-            editable={editable}
-            onAddMaterialToOrder={onAddMaterialToOrder}
-          />
-        ))}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+        <span className="rounded-full bg-[var(--pbp-surface-soft)] px-2 py-1 pbp-text-muted">{materialSummaryLabel}</span>
+        <span className="rounded-full bg-[var(--pbp-surface-soft)] px-2 py-1 pbp-text-muted">{remainingSummaryLabel}</span>
       </div>
+
+      <details className="group mt-2">
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-2 text-[11px] font-medium pbp-text-muted transition hover:bg-[var(--pbp-surface-muted)]">
+          <span>자재 보기/선택</span>
+          <span aria-hidden="true" className="transition group-open:rotate-180">▾</span>
+        </summary>
+        <div className="mt-2 grid gap-1.5">
+          {workOrder.materialItems.map((material) => (
+            <WorkOrderMaterialRequestRow
+              key={material.key}
+              workOrder={workOrder}
+              material={material}
+              lines={lines}
+              materialRequestQuantityMap={materialRequestQuantityMap}
+              materialRequestCompletionMap={materialRequestCompletionMap}
+              editable={editable}
+              onAddMaterialToOrder={onAddMaterialToOrder}
+            />
+          ))}
+        </div>
+      </details>
     </div>
   );
 }
