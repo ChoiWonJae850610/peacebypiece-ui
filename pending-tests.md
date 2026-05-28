@@ -26,3 +26,9 @@
 ## 향후 direct_order 연결 이후
 - 일반 검토 흐름에서 직선 경로 강조, 곡선 경로 흐림 표시 여부 확인
 - 바로 발주 흐름에서 곡선 경로 강조, 검토요청 경유 라인 흐림 표시 여부 확인
+
+## 0.17.58 이후
+- 빌드 시 `framer-motion` module not found 오류가 사라졌는지 확인
+- package.json/package-lock.json에서 framer-motion 제거 후 기존 의존성 설치 상태로 build가 진행되는지 확인
+- 진행단계 직선/곡선 경로의 CSS transition이 과하지 않은지 확인
+- reduced motion 환경에서 CSS transition이 문제를 만들지 않는지 확인

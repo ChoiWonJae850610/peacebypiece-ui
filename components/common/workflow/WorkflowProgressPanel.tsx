@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 
 export type WorkflowProgressPanelStep = {
@@ -37,20 +36,6 @@ const TRACK_VIEWBOX_WIDTH = 100;
 const TRACK_VIEWBOX_HEIGHT = 28;
 const TRACK_CENTER_Y = 14;
 const DIRECT_CURVE_CONTROL_Y = 2;
-const WORKFLOW_LINE_TRANSITION = {
-  duration: 0.28,
-  ease: "easeOut",
-} as const;
-const WORKFLOW_DIRECT_PATH_TRANSITION = {
-  duration: 0.42,
-  ease: "easeOut",
-} as const;
-const WORKFLOW_STEP_TRANSITION = {
-  duration: 0.18,
-  ease: "easeOut",
-} as const;
-const NO_MOTION_TRANSITION = { duration: 0 } as const;
-
 function getStepPositionPercent(index: number, stepCount: number) {
   if (stepCount <= 1) {
     return 50;
@@ -84,16 +69,6 @@ export function WorkflowProgressPanel({
   pathMode?: WorkflowProgressPanelPathMode;
   directPath?: WorkflowProgressPanelDirectPath;
 }) {
-  const shouldReduceMotion = useReducedMotion();
-  const lineTransition = shouldReduceMotion
-    ? NO_MOTION_TRANSITION
-    : WORKFLOW_LINE_TRANSITION;
-  const directPathTransition = shouldReduceMotion
-    ? NO_MOTION_TRANSITION
-    : WORKFLOW_DIRECT_PATH_TRANSITION;
-  const stepTransition = shouldReduceMotion
-    ? NO_MOTION_TRANSITION
-    : WORKFLOW_STEP_TRANSITION;
   const isCompact = density === "compact";
   const trackPositionClassName = isCompact ? "top-1.5" : "top-2";
   const directPathFromIndex = directPath
@@ -167,7 +142,7 @@ export function WorkflowProgressPanel({
               const isSegmentActive = step.isDone && !shouldEmphasizeDirectPath;
 
               return (
-                <motion.line
+                <line
                   key={`${step.key}-track`}
                   x1={fromX}
                   y1={TRACK_CENTER_Y}
@@ -178,18 +153,18 @@ export function WorkflowProgressPanel({
                       ? "stroke-[var(--pbp-selected-border)]"
                       : "stroke-[var(--pbp-border)]"
                   }
-                  initial={false}
-                  animate={{
-                    opacity: isSegmentActive ? 1 : 0.58,
-                    strokeWidth: isSegmentActive ? 1.6 : 1.2,
-                  }}
-                  transition={lineTransition}
+                  opacity={isSegmentActive ? 1 : 0.58}
+                  strokeWidth={isSegmentActive ? 1.6 : 1.2}
                   vectorEffect="non-scaling-stroke"
+                  style={{
+                    transition:
+                      "opacity 180ms ease-out, stroke-width 180ms ease-out, stroke 180ms ease-out",
+                  }}
                 />
               );
             })}
             {canShowDirectPath ? (
-              <motion.path
+              <path
                 d={getDirectPathD(
                   getStepPositionPercent(directPathFromIndex, steps.length),
                   getStepPositionPercent(directPathToIndex, steps.length),
@@ -200,20 +175,15 @@ export function WorkflowProgressPanel({
                     : "stroke-[var(--pbp-border)]"
                 }
                 fill="none"
-                initial={
-                  shouldReduceMotion || !shouldEmphasizeDirectPath
-                    ? false
-                    : { pathLength: 0, opacity: 0 }
-                }
-                animate={{
-                  pathLength: 1,
-                  opacity: shouldEmphasizeDirectPath ? 1 : 0.55,
-                  strokeWidth: shouldEmphasizeDirectPath ? 1.8 : 1.1,
-                }}
-                transition={directPathTransition}
+                opacity={shouldEmphasizeDirectPath ? 1 : 0.55}
+                strokeWidth={shouldEmphasizeDirectPath ? 1.8 : 1.1}
                 strokeLinecap="round"
                 strokeDasharray={shouldEmphasizeDirectPath ? undefined : "2 2"}
                 vectorEffect="non-scaling-stroke"
+                style={{
+                  transition:
+                    "opacity 220ms ease-out, stroke-width 220ms ease-out, stroke 220ms ease-out",
+                }}
               />
             ) : null}
           </svg>
@@ -234,27 +204,25 @@ export function WorkflowProgressPanel({
                   key={step.key}
                   className={`relative flex flex-col items-center text-center ${isCompact ? "gap-1.5" : "gap-2"}`}
                 >
-                  <motion.div
+                  <div
                     className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
                       step.isDone
                         ? `${fillClassName} border-transparent`
                         : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]"
                     }`}
-                    initial={false}
-                    animate={{
-                      scale: step.isCurrent ? 1.06 : 1,
+                    style={{
+                      transform: `scale(${step.isCurrent ? 1.06 : 1})`,
+                      transition: "transform 160ms ease-out",
                     }}
-                    transition={stepTransition}
                   >
-                    <motion.span
+                    <span
                       className={`h-2.5 w-2.5 rounded-full ${step.isDone ? (step.isCompleted ? "bg-white" : "bg-white/90") : "bg-[var(--pbp-text-subtle)]"}`}
-                      initial={false}
-                      animate={{
+                      style={{
                         opacity: step.isDone || step.isCurrent ? 1 : 0.72,
+                        transition: "opacity 160ms ease-out",
                       }}
-                      transition={stepTransition}
                     />
-                  </motion.div>
+                  </div>
                   <div
                     className={`${isCompact ? "text-[11px]" : "text-xs"} font-medium ${step.isCurrent ? currentTextClassName : "text-[var(--pbp-text-muted)]"}`}
                   >
