@@ -1,9 +1,16 @@
-Version : 0.17.80
-Summary : UI 기반 라이브러리 의존성 묶음 추가
-Description : WAFL UI 제품화와 반응형 구조 정리를 위해 Radix, shadcn/ui 기반 유틸리티, Sonner, React Hook Form/Zod, TanStack Table, cmdk, dnd-kit 의존성을 package.json에 추가하고, 적용 순서 문서를 추가했습니다. 화면 구조와 기존 업무 흐름은 변경하지 않았습니다.
+Version : 0.17.81
+Summary : WAFL 내부 공통 UI 래퍼 1차 생성
+Description : shadcn/Radix 계열 라이브러리를 화면에 직접 확산시키기 전에 AppButton, AppBadge, AppCard, AppSection, AppListRow, AppSeparator 기반의 WAFL 내부 UI 래퍼를 추가하고 cn 유틸을 clsx와 tailwind-merge 기반으로 정리했습니다.
 수정 파일 목록 :
-- package.json
 - lib/constants/app.ts
+- lib/utils.ts
 추가 파일 목록 :
-- docs/ui-library-dependency-stack-0.17.80.md
+- components/common/ui/AppBadge.tsx
+- components/common/ui/AppButton.tsx
+- components/common/ui/AppCard.tsx
+- components/common/ui/AppListRow.tsx
+- components/common/ui/AppSection.tsx
+- components/common/ui/AppSeparator.tsx
+- components/common/ui/index.ts
+- docs/ui-foundation-components-0.17.81.md
 삭제 파일 목록 :
