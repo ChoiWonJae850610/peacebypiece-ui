@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { AppSelect, type AppSelectOption } from "@/components/common/ui";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
 import {
@@ -29,12 +29,11 @@ function buildCategorySourceFromValue(value: BasicInfoState): CategorySource {
   };
 }
 
-function renderCategoryOptions(options: CategoryOption[]) {
-  return options.map((option) => (
-    <option key={option.id ?? option.name} value={option.name}>
-      {option.name}
-    </option>
-  ));
+function buildCategorySelectOptions(options: CategoryOption[]): AppSelectOption[] {
+  return options.map((option) => ({
+    value: option.name,
+    label: option.name,
+  }));
 }
 
 export default function BasicInfoEditModal({
@@ -133,43 +132,43 @@ export default function BasicInfoEditModal({
       })}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="pbp-workorder-selectable-panel rounded-2xl border p-3">
+        <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
           <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category1}</div>
-          <select
+          <AppSelect
             value={value.category1}
-            onChange={(event) => handleCategory1Change(event.target.value)}
-            className={`mt-2 ${MODAL_SELECT_CLASS}`}
-          >
-            {renderCategoryOptions(categorySource.category1Options)}
-          </select>
-        </label>
-        <label className="pbp-workorder-selectable-panel rounded-2xl border p-3">
+            onValueChange={handleCategory1Change}
+            options={buildCategorySelectOptions(categorySource.category1Options)}
+            ariaLabel={copy.category1}
+            className="mt-2"
+          />
+        </div>
+        <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
           <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category2}</div>
-          <select
+          <AppSelect
             value={value.category2}
-            onChange={(event) => handleCategory2Change(event.target.value)}
-            className={`mt-2 ${MODAL_SELECT_CLASS}`}
-          >
-            {renderCategoryOptions(category2Options)}
-          </select>
-        </label>
-        <label className="pbp-workorder-selectable-panel rounded-2xl border p-3">
+            onValueChange={handleCategory2Change}
+            options={buildCategorySelectOptions(category2Options)}
+            ariaLabel={copy.category2}
+            className="mt-2"
+          />
+        </div>
+        <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
           <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category3}</div>
-          <select
+          <AppSelect
             value={value.category3}
-            onChange={(event) => {
-              const nextCategory3 = findCategoryOption(category3Options, event.target.value, categorySource.defaultCategory3);
+            onValueChange={(nextValue) => {
+              const nextCategory3 = findCategoryOption(category3Options, nextValue, categorySource.defaultCategory3);
               onChange({
                 ...value,
                 category3: nextCategory3.name,
                 category3Id: nextCategory3.id,
               });
             }}
-            className={`mt-2 ${MODAL_SELECT_CLASS}`}
-          >
-            {renderCategoryOptions(category3Options)}
-          </select>
-        </label>
+            options={buildCategorySelectOptions(category3Options)}
+            ariaLabel={copy.category3}
+            className="mt-2"
+          />
+        </div>
       </div>
 
       <div className="pbp-detail-summary-readonly mt-4 rounded-2xl border px-4 py-3">

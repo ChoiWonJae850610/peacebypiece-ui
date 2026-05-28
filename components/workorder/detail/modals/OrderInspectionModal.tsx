@@ -3,13 +3,14 @@
 import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_CONTENT_EMPTY_STATE_CLASS, MODAL_CONTENT_FIELD_PANEL_CLASS, MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_READONLY_PANEL_CLASS, MODAL_CONTENT_VALUE_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
+import { AppSelect } from "@/components/common/ui";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 
 export default function OrderInspectionModal({
@@ -108,27 +109,31 @@ export default function OrderInspectionModal({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
               <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.factoryLabel}</div>
-              <select
+              <AppSelect
                 value={resolvedFactory}
-                onChange={(event) => handleFactoryChange(event.target.value)}
-                className={`mt-2 ${MODAL_INPUT_CLASS}`}
-              >
-                {factoryOptions.map((option) => <option key={option} value={option}>{translateWorkOrderDisplayText(option, locale)}</option>)}
-              </select>
+                onValueChange={handleFactoryChange}
+                options={factoryOptions.map((option) => ({
+                  value: option,
+                  label: translateWorkOrderDisplayText(option, locale),
+                }))}
+                ariaLabel={copy.factoryLabel}
+                className="mt-2"
+              />
             </label>
             <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
               <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.orderTypeLabel}</div>
-              <select
+              <AppSelect
                 value={selectedEntry.id}
-                onChange={(event) => setSelectedOrderId(event.target.value)}
-                className={`mt-2 ${MODAL_SELECT_CLASS}`}
-              >
-                {filteredEntries.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {copy.optionFormat.replace("{type}", translateWorkOrderDisplayText(item.type, locale)).replace("{quantity}", `${item.quantity.toLocaleString()}${common.quantitySuffix}`)}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setSelectedOrderId}
+                options={filteredEntries.map((item) => ({
+                  value: item.id,
+                  label: copy.optionFormat
+                    .replace("{type}", translateWorkOrderDisplayText(item.type, locale))
+                    .replace("{quantity}", `${item.quantity.toLocaleString()}${common.quantitySuffix}`),
+                }))}
+                ariaLabel={copy.orderTypeLabel}
+                className="mt-2"
+              />
             </label>
           </div>
 
