@@ -3,6 +3,7 @@ export { default as AppButton } from "./AppButton";
 export { default as AppCard } from "./AppCard";
 export { default as AppListRow } from "./AppListRow";
 export { default as AppSection } from "./AppSection";
+export { default as AppSheet, type AppSheetSide, type AppSheetSize } from "./AppSheet";
 export { default as AppSeparator } from "./AppSeparator";
 export { default as AppSegmentedTabs, type AppSegmentedTabItem } from "./AppSegmentedTabs";
 
