@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
+
 type ToastTone = "info" | "success" | "warning" | "danger";
 
 type ToastMessageProps = {
@@ -7,15 +10,39 @@ type ToastMessageProps = {
   tone?: ToastTone;
 };
 
-export default function ToastMessage({ message, tone = "info" }: ToastMessageProps) {
-  if (!message) return null;
+function showToast(message: string, tone: ToastTone) {
+  if (tone === "success") {
+    toast.success(message);
+    return;
+  }
 
-  return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[95] flex justify-center px-4 md:bottom-6 md:justify-center md:px-8">
-      <div className="pbp-toast inline-flex min-h-11 max-w-[min(92vw,420px)] items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold leading-5" data-tone={tone} role="status" aria-live="polite">
-        <span className="pbp-toast__mark" aria-hidden="true" />
-        <span className="min-w-0 break-keep text-left">{message}</span>
-      </div>
-    </div>
-  );
+  if (tone === "warning") {
+    toast.warning(message);
+    return;
+  }
+
+  if (tone === "danger") {
+    toast.error(message);
+    return;
+  }
+
+  toast(message);
+}
+
+export default function ToastMessage({ message, tone = "info" }: ToastMessageProps) {
+  const lastShownMessageRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!message) {
+      lastShownMessageRef.current = null;
+      return;
+    }
+
+    const toastKey = `${tone}:${message}`;
+    if (lastShownMessageRef.current === toastKey) return;
+    lastShownMessageRef.current = toastKey;
+    showToast(message, tone);
+  }, [message, tone]);
+
+  return null;
 }

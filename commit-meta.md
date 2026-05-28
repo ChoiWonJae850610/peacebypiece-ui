@@ -1,14 +1,11 @@
-Version : 0.17.93
-Summary : PC 화면 공통 UI 래퍼 적용 범위 확대
-Description : 작업지시서 공정/자재 섹션과 원단·부자재 메시지 버튼에 WAFL App UI 래퍼를 적용해 PC 기준 시각 톤을 더 통일합니다.
-
+Version : 0.17.94
+Summary : Sonner 기반 알림 표시 레이어를 도입
+Description : 기존 ToastMessage API를 유지하면서 Sonner 기반 toast 호출로 전환하고, 루트 레이아웃에 AppToaster를 추가해 저장/상태 변경/오류 메시지 통일의 기반을 마련했습니다.
 수정 파일 목록 :
-- components/workorder/detail/sections/OrderInfoSection.tsx
-- components/workorder/detail/sections/MaterialSection.tsx
-- features/material-orders/components/MaterialOrderPanelMessage.tsx
+- app/layout.tsx
+- components/common/ToastMessage.tsx
 - lib/constants/app.ts
-
 추가 파일 목록 :
-- docs/ui-pc-common-wrapper-expansion-0.17.93.md
-
+- components/common/AppToaster.tsx
+- docs/ui-sonner-toast-0.17.94.md
 삭제 파일 목록 :
