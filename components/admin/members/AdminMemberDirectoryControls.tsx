@@ -4,6 +4,7 @@ import {
   ADMIN_FIELD_CONTAINER_CLASS,
   ADMIN_INPUT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
+import { AppSelect } from "@/components/common/ui";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 import type { MemberDirectoryStatusFilter } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
@@ -63,41 +64,35 @@ export default function AdminMemberDirectoryControls({
         <span className="text-xs font-semibold pbp-text-muted">
           {t("memberManagement.memberDirectory.filters.status", "상태")}
         </span>
-        <select
+        <AppSelect
           value={statusFilter}
-          onChange={(event) =>
-            onStatusFilterChange(event.target.value as MemberDirectoryStatusFilter)
-          }
-          className={ADMIN_INPUT_CLASS}
-        >
-          {MEMBER_DIRECTORY_STATUS_FILTERS.map((status) => (
-            <option key={status} value={status}>
-              {t(`memberManagement.memberDirectory.statusFilters.${status}`, status)}
-            </option>
-          ))}
-        </select>
+          onValueChange={(value) => onStatusFilterChange(value as MemberDirectoryStatusFilter)}
+          options={MEMBER_DIRECTORY_STATUS_FILTERS.map((status) => ({
+            value: status,
+            label: t(`memberManagement.memberDirectory.statusFilters.${status}`, status),
+          }))}
+          size="sm"
+          ariaLabel={t("memberManagement.memberDirectory.filters.status", "상태")}
+        />
       </label>
       <label className={ADMIN_FIELD_CONTAINER_CLASS}>
         <span className="text-xs font-semibold pbp-text-muted">
           {t("memberManagement.memberDirectory.filters.role", "권한")}
         </span>
-        <select
+        <AppSelect
           value={roleFilter}
-          onChange={(event) => onRoleFilterChange(event.target.value)}
-          className={ADMIN_INPUT_CLASS}
-        >
-          <option value="all">
-            {t("memberManagement.memberDirectory.roleFilters.all", "전체")}
-          </option>
-          <option value="none">
-            {t("memberManagement.memberDirectory.none", "없음")}
-          </option>
-          {roleOptions.map((role) => (
-            <option key={role.id} value={role.id}>
-              {t(`memberManagement.roles.${role.id}.label`, role.id)}
-            </option>
-          ))}
-        </select>
+          onValueChange={onRoleFilterChange}
+          options={[
+            { value: "all", label: t("memberManagement.memberDirectory.roleFilters.all", "전체") },
+            { value: "none", label: t("memberManagement.memberDirectory.none", "없음") },
+            ...roleOptions.map((role) => ({
+              value: role.id,
+              label: t(`memberManagement.roles.${role.id}.label`, role.id),
+            })),
+          ]}
+          size="sm"
+          ariaLabel={t("memberManagement.memberDirectory.filters.role", "권한")}
+        />
       </label>
     </div>
   );

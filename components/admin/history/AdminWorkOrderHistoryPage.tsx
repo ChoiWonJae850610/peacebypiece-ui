@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import AdminHistoryList from "@/components/admin/history/AdminHistoryList";
 import { buildAdminHistorySectionViewModel } from "@/lib/admin/history/presentation";
 import {
@@ -88,27 +89,29 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
               </label>
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold text-stone-700">{pageText.dateLabel}</span>
-                <select
+                <AppSelect
                   value={dateFilter}
-                  onChange={(event) => setDateFilter(event.target.value as AdminHistoryDateFilter)}
-                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
-                >
-                  {dateOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                  onValueChange={(value) => setDateFilter(value as AdminHistoryDateFilter)}
+                  options={dateOptions.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  size="sm"
+                  ariaLabel={pageText.dateLabel}
+                />
               </label>
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold text-stone-700">{pageText.userLabel}</span>
-                <select
+                <AppSelect
                   value={userFilter}
-                  onChange={(event) => setUserFilter(event.target.value)}
-                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
-                >
-                  {userOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                  onValueChange={setUserFilter}
+                  options={userOptions.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  size="sm"
+                  ariaLabel={pageText.userLabel}
+                />
               </label>
             </div>
           </div>

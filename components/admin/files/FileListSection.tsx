@@ -2,9 +2,9 @@
 
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AppSelect } from "@/components/common/ui";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
-  ADMIN_SELECT_INPUT_CLASS,
   ADMIN_STORAGE_CHECKBOX_CLASS,
   ADMIN_STORAGE_CHECKBOX_IDLE_CLASS,
   ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS,
@@ -43,13 +43,20 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
     <section className={`${ADMIN_STORAGE_PANEL_CLASS} flex h-full min-h-[420px] flex-col p-2.5 md:p-4`}>
       <AdminActionBar
         title={t("filesList.title", `${t("terms.files.documentDesignGroup", "문서/디자인")} 목록`)}
-        actionsClassName="w-full [&>button]:flex-1 [&>select]:min-w-0 [&>select]:flex-1 sm:w-auto sm:[&>button]:flex-none sm:[&>select]:flex-none"
+        actionsClassName="w-full [&>button]:flex-1 sm:w-auto sm:[&>button]:flex-none"
       >
-        <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className={ADMIN_SELECT_INPUT_CLASS}>
-          {ADMIN_FILE_SORT_OPTIONS.map((option) => (
-            <option key={option.key} value={option.key}>{t(`filesList.sort.${option.key}`, option.label)}</option>
-          ))}
-        </select>
+        <AppSelect
+          value={sortKey}
+          onValueChange={(value) => onChangeSort(value as AdminFileSortKey)}
+          options={ADMIN_FILE_SORT_OPTIONS.map((option) => ({
+            value: option.key,
+            label: t(`filesList.sort.${option.key}`, option.label),
+          }))}
+          size="sm"
+          width="auto"
+          ariaLabel={t("filesList.sortLabel", "정렬")}
+          className="min-w-0 flex-1 sm:flex-none"
+        />
         <AdminButton onClick={onToggleAll} disabled={isActionPending || items.length === 0}>
           {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "전체 선택")}
         </AdminButton>
