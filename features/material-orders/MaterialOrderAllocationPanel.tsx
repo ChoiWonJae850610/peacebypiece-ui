@@ -179,6 +179,7 @@ function AllocationCandidateCard({
   const remainingSummaryLabel = completionSummary.isComplete
     ? "자재 발주완료"
     : `남은 자재 ${remainingItemCount}개`;
+  const materialItemsCount = workOrder.materialItems.length;
 
   return (
     <div className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
@@ -201,14 +202,14 @@ function AllocationCandidateCard({
         </span>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-        <span className="rounded-full bg-[var(--pbp-surface-soft)] px-2 py-1 pbp-text-muted">{materialSummaryLabel}</span>
-        <span className="rounded-full bg-[var(--pbp-surface-soft)] px-2 py-1 pbp-text-muted">{remainingSummaryLabel}</span>
+      <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px]">
+        <SummaryChip label="구성" value={materialSummaryLabel} />
+        <SummaryChip label="상태" value={remainingSummaryLabel} />
       </div>
 
-      <details className="group mt-2">
-        <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-2 text-[11px] font-medium pbp-text-muted transition hover:bg-[var(--pbp-surface-muted)]">
-          <span>자재 보기/선택</span>
+      <details className="group mt-2.5">
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-muted)]">
+          <span>자재 보기/선택 · {materialItemsCount}개</span>
           <span aria-hidden="true" className="transition group-open:rotate-180">▾</span>
         </summary>
         <div className="mt-2 grid gap-1.5">
@@ -227,6 +228,21 @@ function AllocationCandidateCard({
         </div>
       </details>
     </div>
+  );
+}
+
+function SummaryChip({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <span className="min-w-0 rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2">
+      <span className="block text-[10px] font-semibold pbp-text-subtle">{label}</span>
+      <span className="mt-0.5 block truncate font-semibold pbp-text-muted">{value}</span>
+    </span>
   );
 }
 
@@ -297,12 +313,14 @@ function WorkOrderMaterialRequestRow({
   return (
     <div className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
       <div className="min-w-0">
-        <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
-        <p className="mt-0.5 text-[11px] pbp-text-muted">
-          {formatMaterialItemTypeLabel(material.itemType)} · 필요 {formatMaterialQuantity(material.quantity, material.unit)}
-        </p>
-        <p className="mt-0.5 text-[11px] pbp-text-subtle">
-          {readableStatus}
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="shrink-0 rounded-full bg-[var(--pbp-surface-soft)] px-2 py-0.5 text-[10px] font-semibold pbp-text-muted">
+            {formatMaterialItemTypeLabel(material.itemType)}
+          </span>
+          <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
+        </div>
+        <p className="mt-1 text-[11px] pbp-text-muted">
+          필요 {formatMaterialQuantity(material.quantity, material.unit)} · {readableStatus}
         </p>
       </div>
       <AdminButton

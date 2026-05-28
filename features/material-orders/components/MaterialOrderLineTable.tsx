@@ -38,7 +38,7 @@ export function MaterialOrderLineTable({
   onRemoveLine,
 }: MaterialOrderLineTableProps) {
   return (
-    <table className="w-full min-w-[540px] table-fixed text-left">
+    <table className="w-full min-w-[540px] table-fixed border-separate border-spacing-0 text-left">
       <colgroup>
         <col className="w-[27%]" />
         <col className="w-[13%]" />
@@ -47,8 +47,8 @@ export function MaterialOrderLineTable({
         <col className="w-[20%]" />
         <col className="w-[7%]" />
       </colgroup>
-      <thead className="pbp-text-muted">
-        <tr className="border-b border-[var(--pbp-border)]">
+      <thead className="bg-[var(--pbp-surface-soft)] pbp-text-muted">
+        <tr>
           {["품목명", "단위", "수량", "단가", "금액", ""].map(
             (header, index) => (
               <th
@@ -110,7 +110,7 @@ function MaterialOrderLineRow({
 
   return (
     <tr
-      className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-[var(--pbp-surface)]" : "bg-stone-50/70"} hover:bg-stone-50`}
+      className={`border-b border-[var(--pbp-border)] transition hover:bg-[var(--pbp-surface-soft)] ${rowIndex % 2 === 0 ? "bg-[var(--pbp-surface)]" : "bg-[var(--pbp-surface-soft)]"}`}
     >
       <td className={EDITABLE_TABLE_CELL_CLASS}>
         <input
@@ -210,7 +210,7 @@ function resolveUnitSelectValue(unit: string): string {
 
 function compactInputClassName(extra = "") {
   return [
-    "pbp-field-interaction pbp-workorder-editable-input h-7 block w-full min-w-0 max-w-full overflow-hidden rounded-md border px-2 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
+    "pbp-field-interaction pbp-workorder-editable-input h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-2.5 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
   ]
     .filter(Boolean)
@@ -219,7 +219,7 @@ function compactInputClassName(extra = "") {
 
 function compactSelectClassName(extra = "") {
   return [
-    "pbp-field-interaction pbp-workorder-editable-input h-7 block w-full min-w-0 max-w-full overflow-hidden rounded-md border px-2 pr-6 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
+    "pbp-field-interaction pbp-workorder-editable-input h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-2.5 pr-7 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
   ]
     .filter(Boolean)

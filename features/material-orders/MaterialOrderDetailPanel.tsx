@@ -73,60 +73,70 @@ export default function MaterialOrderDetailPanel({
             onChangeStatus={onChangeStatus}
           />
 
-          <div className={`${MATERIAL_ORDER_SECTION_CARD_CLASS} grid shrink-0 gap-3 xl:grid-cols-2`}>
-            <FieldLabel label="구분">
-              <select
-                value={materialType}
-                disabled={selectedOrder.status !== "draft"}
-                onChange={(event) =>
-                  onChangeMaterialType(
-                    event.target.value as MaterialOrderDraftType,
-                  )
-                }
-                className={compactSelectClassName()}
-              >
-                <option value="fabric">원단</option>
-                <option value="submaterial">부자재</option>
-              </select>
-            </FieldLabel>
-            <FieldLabel label="공급처">
-              <select
-                value={supplierPartnerId ?? ""}
-                disabled={selectedOrder.status !== "draft" || suppliersLoading}
-                onChange={(event) =>
-                  onChangeSupplierPartnerId(event.target.value || null)
-                }
-                className={compactSelectClassName()}
-              >
-                <option value="">
-                  {resolveSupplierPlaceholder(
-                    suppliersLoading,
-                    suppliers.length,
-                  )}
-                </option>
-                {suppliers.map((supplier) => (
-                  <option
-                    key={`${supplier.type}-${supplier.id}`}
-                    value={supplier.id}
-                  >
-                    {supplier.name}
-                  </option>
-                ))}
-              </select>
-              {suppliersError ? (
-                <button
-                  type="button"
-                  onClick={onRetrySuppliers}
-                  className="mt-1 w-fit text-[11px] font-semibold text-rose-600 underline-offset-2 hover:underline"
+          <div className={`${MATERIAL_ORDER_SECTION_CARD_CLASS} shrink-0`}>
+            <SectionHeader
+              title="주문 기본정보"
+              description="발주 구분과 실제 공급처만 먼저 정합니다."
+            />
+            <div className="mt-3 grid gap-3 xl:grid-cols-2">
+              <FieldLabel label="구분">
+                <select
+                  value={materialType}
+                  disabled={selectedOrder.status !== "draft"}
+                  onChange={(event) =>
+                    onChangeMaterialType(
+                      event.target.value as MaterialOrderDraftType,
+                    )
+                  }
+                  className={compactSelectClassName()}
                 >
-                  공급처 조회 실패 · 다시 조회
-                </button>
-              ) : null}
-            </FieldLabel>
+                  <option value="fabric">원단</option>
+                  <option value="submaterial">부자재</option>
+                </select>
+              </FieldLabel>
+              <FieldLabel label="공급처">
+                <select
+                  value={supplierPartnerId ?? ""}
+                  disabled={selectedOrder.status !== "draft" || suppliersLoading}
+                  onChange={(event) =>
+                    onChangeSupplierPartnerId(event.target.value || null)
+                  }
+                  className={compactSelectClassName()}
+                >
+                  <option value="">
+                    {resolveSupplierPlaceholder(
+                      suppliersLoading,
+                      suppliers.length,
+                    )}
+                  </option>
+                  {suppliers.map((supplier) => (
+                    <option
+                      key={`${supplier.type}-${supplier.id}`}
+                      value={supplier.id}
+                    >
+                      {supplier.name}
+                    </option>
+                  ))}
+                </select>
+                {suppliersError ? (
+                  <button
+                    type="button"
+                    onClick={onRetrySuppliers}
+                    className="mt-1 w-fit text-[11px] font-semibold text-rose-600 underline-offset-2 hover:underline"
+                  >
+                    공급처 조회 실패 · 다시 조회
+                  </button>
+                ) : null}
+              </FieldLabel>
+            </div>
           </div>
 
           <div className={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}>
-            <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
+            <SectionHeader
+              title="발주 품목"
+              description="선택한 자재의 실제 주문 수량과 단가를 정리합니다."
+            />
+            <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} mt-3 min-h-0 flex-1 overflow-auto`}>
               <MaterialOrderLineTable
                 lines={lines}
                 editable={selectedOrder.status === "draft"}
@@ -155,6 +165,23 @@ export default function MaterialOrderDetailPanel({
   );
 }
 
+function SectionHeader({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-end justify-between gap-3 border-b border-[var(--pbp-border)] pb-2.5">
+      <div className="min-w-0">
+        <h3 className="text-sm font-semibold tracking-tight pbp-text-primary">{title}</h3>
+        <p className="mt-0.5 text-[11px] leading-4 pbp-text-subtle">{description}</p>
+      </div>
+    </div>
+  );
+}
+
 function FieldLabel({
   label,
   children,
@@ -163,7 +190,7 @@ function FieldLabel({
   children: ReactNode;
 }) {
   return (
-    <label className="grid gap-0.5 text-[11px] font-semibold pbp-text-subtle">
+    <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
       {label}
       {children}
     </label>
@@ -172,7 +199,7 @@ function FieldLabel({
 
 function compactSelectClassName(extra = "") {
   return [
-    "pbp-field-interaction pbp-workorder-editable-input h-7 block w-full min-w-0 max-w-full overflow-hidden rounded-md border px-2 pr-6 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
+    "pbp-field-interaction pbp-workorder-editable-input h-9 block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 pr-8 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
     extra,
   ]
     .filter(Boolean)

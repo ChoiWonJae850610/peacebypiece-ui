@@ -198,18 +198,19 @@ function MaterialOrderListButton({
           : MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
       ].join(" ")}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</span>
-        <div className="flex shrink-0 items-center gap-1">
-          <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="xs">
-            {formatMaterialOrderStatusLabel(order.status)}
-          </AdminStatusBadge>
-          <AdminStatusBadge tone="info" size="xs">
-            {formatMaterialOrderTypeLabel(materialType)}
-          </AdminStatusBadge>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</p>
+          <p className="mt-1 truncate text-[11px] pbp-text-muted">{primaryLineLabel}</p>
         </div>
+        <AdminStatusBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="xs">
+          {formatMaterialOrderStatusLabel(order.status)}
+        </AdminStatusBadge>
       </div>
-      <p className="mt-1.5 truncate text-xs font-medium pbp-text-primary">{primaryLineLabel}</p>
+      <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2 text-[11px] pbp-text-subtle">
+        <span>{formatMaterialOrderTypeLabel(materialType)}</span>
+        <span>{supplierLabel}</span>
+      </div>
     </button>
   );
 }
