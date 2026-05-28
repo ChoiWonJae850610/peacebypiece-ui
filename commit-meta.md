@@ -1,13 +1,14 @@
-Version : 0.17.63
-Summary : 원단·부자재 상세 패널 렌더링 구조 분리
-Description : 원단·부자재 중앙 상세 패널의 진행 단계, 주문 내역 테이블, 하단 요약 footer 렌더링을 개별 컴포넌트로 분리하고 기존 상세 패널은 상태 전달과 레이아웃 중심으로 정리합니다.
+Version : 0.17.64
+Summary : 원단·부자재 DraftEditor 상태 로직을 훅으로 분리
+Description : 원단·부자재 작성 화면의 데이터 로드, 선택 발주서 동기화, 상태 변경, 자재 라인 추가/삭제 로직을 useMaterialOrderDraftEditor 훅으로 분리하고 DraftEditor는 3패널 조립 중심으로 정리했습니다. 누적 테스트 항목은 pending-tests.md에 유지합니다.
+
 수정 파일 목록 :
 - lib/constants/app.ts
-- features/material-orders/MaterialOrderDetailPanel.tsx
+- features/material-orders/MaterialOrderDraftEditor.tsx
 - pending-tests.md
+
 추가 파일 목록 :
-- features/material-orders/components/MaterialOrderLineTable.tsx
-- features/material-orders/components/MaterialOrderSummaryFooter.tsx
-- features/material-orders/components/MaterialOrderStatusFlow.tsx
+- features/material-orders/hooks/useMaterialOrderDraftEditor.ts
+
 삭제 파일 목록 :
 - 없음
