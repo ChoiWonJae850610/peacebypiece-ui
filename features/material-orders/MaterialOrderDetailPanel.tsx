@@ -382,6 +382,12 @@ function MaterialOrderStatusFlow({
       title="진행 단계"
       steps={progressSteps}
       actions={progressActions}
+      directPath={{
+        fromKey: "draft",
+        toKey: "approved",
+        isVisible: true,
+        isActive: false,
+      }}
       footer={
         <>
           <span>자재 발주</span>

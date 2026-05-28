@@ -128,12 +128,23 @@ export default function WorkOrderActionSection({
     });
   }
 
+  const directOrderPath = stages.includes(DISPLAY_STAGE.draft) &&
+    stages.includes(DISPLAY_STAGE.requestOrder)
+      ? {
+          fromKey: DISPLAY_STAGE.draft,
+          toKey: DISPLAY_STAGE.requestOrder,
+          isVisible: true,
+          isActive: false,
+        }
+      : undefined;
+
   return (
     <WorkflowProgressPanel
       title={copy.title}
       steps={progressSteps}
       actions={progressActions}
       className="mt-5"
+      directPath={directOrderPath}
       footer={
         <>
           <span>
