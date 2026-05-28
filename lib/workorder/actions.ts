@@ -1,5 +1,6 @@
 import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
+import { WORKFLOW_PATH } from "@/lib/constants/workflowPaths";
 import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import {
   getOrderInspectionStatusForCompletion,
@@ -109,7 +110,14 @@ export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: Wor
     };
   }
 
-  return { ...workOrder, workflowState: action.nextState };
+  return {
+    ...workOrder,
+    workflowState: action.nextState,
+    workflowPath:
+      action.actionType === WORKFLOW_ACTION_TYPE.requestReview
+        ? WORKFLOW_PATH.standardReview
+        : workOrder.workflowPath,
+  };
 }
 
 export function applyInventoryAdjustmentToWorkOrder(
@@ -143,9 +151,16 @@ export function requestFactoryOrderForWorkOrder(
       : entry.inspectionStatus ?? getOrderInspectionStatusForNewOrderEntry(),
   }));
 
+  const workflowPath =
+    isWorkflowState(workOrder.workflowState, WORKFLOW_STATE.draft) ||
+    isWorkflowState(workOrder.workflowState, WORKFLOW_STATE.rejected)
+      ? WORKFLOW_PATH.directOrder
+      : WORKFLOW_PATH.standardReview;
+
   return syncWorkOrderOrderSnapshot({
     ...workOrder,
     workflowState: nextWorkflowState,
+    workflowPath,
     orderEntries: nextOrderEntries,
     factoryOrderRequest: {
       ...payload,

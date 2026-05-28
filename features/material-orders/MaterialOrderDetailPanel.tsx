@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { WORKFLOW_PATH } from "@/lib/constants/workflowPaths";
 
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import {
@@ -91,6 +92,7 @@ export default function MaterialOrderDetailPanel({
         <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_SECTION_GAP_CLASS}`}>
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
+            workflowPath={selectedOrder.workflowPath}
             changing={statusChanging}
             message={statusMessage}
             onChangeStatus={onChangeStatus}
@@ -338,11 +340,13 @@ function MaterialOrderLineRow({
 
 function MaterialOrderStatusFlow({
   status,
+  workflowPath,
   changing,
   message,
   onChangeStatus,
 }: {
   status: MaterialOrderStatus;
+  workflowPath: MaterialOrder["workflowPath"];
   changing: boolean;
   message: string | null;
   onChangeStatus: (status: MaterialOrderStatus) => void;
@@ -382,11 +386,12 @@ function MaterialOrderStatusFlow({
       title="진행 단계"
       steps={progressSteps}
       actions={progressActions}
+      pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
       directPath={{
         fromKey: "draft",
         toKey: "approved",
         isVisible: true,
-        isActive: false,
+        isActive: workflowPath === WORKFLOW_PATH.directOrder,
       }}
       footer={
         <>

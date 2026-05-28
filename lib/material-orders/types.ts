@@ -1,3 +1,5 @@
+import type { WorkflowPathValue } from "@/lib/constants/workflowPaths";
+
 export const MATERIAL_ORDER_STATUS = {
   draft: "draft",
   reviewRequested: "review_requested",
@@ -56,6 +58,7 @@ export type MaterialOrder = {
   supplierPartnerId: string | null;
   supplierPartnerName: string | null;
   status: MaterialOrderStatus;
+  workflowPath: WorkflowPathValue;
   requestedByUserId: string | null;
   requestedByDisplayName: string | null;
   approvedByUserId: string | null;

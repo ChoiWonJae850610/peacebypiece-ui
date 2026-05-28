@@ -43,6 +43,15 @@ export function buildWorkOrderStatePatchAssignments(
     normalizeDbWorkflowState(patch.workflowState),
   );
 
+  if (hasPatchProperty(patch, "workflowPath")) {
+    pushStatePatchAssignment(
+      assignments,
+      values,
+      schema.workflowPathColumn,
+      patch.workflowPath ?? "standard_review",
+    );
+  }
+
   pushStatePatchAssignment(
     assignments,
     values,

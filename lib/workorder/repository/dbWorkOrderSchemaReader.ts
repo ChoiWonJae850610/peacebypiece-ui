@@ -5,6 +5,7 @@ import {
   COMPANY_ID_COLUMN_CANDIDATES,
   COMPANY_NAME_COLUMN_CANDIDATES,
   WORKFLOW_STATE_COLUMN_CANDIDATES,
+  WORKFLOW_PATH_COLUMN_CANDIDATES,
   LAST_SAVED_AT_COLUMN_CANDIDATES,
   WORK_ORDER_KIND_COLUMN_CANDIDATES,
   REORDER_GROUP_ID_COLUMN_CANDIDATES,
@@ -103,6 +104,10 @@ async function readSpecSheetSchema(): Promise<DbSpecSheetSchema> {
     workflowStateColumn: findFirstMatchingColumn(
       columnNames,
       WORKFLOW_STATE_COLUMN_CANDIDATES,
+    ),
+    workflowPathColumn: findFirstMatchingColumn(
+      columnNames,
+      WORKFLOW_PATH_COLUMN_CANDIDATES,
     ),
     lastSavedAtColumn: findFirstMatchingColumn(
       columnNames,

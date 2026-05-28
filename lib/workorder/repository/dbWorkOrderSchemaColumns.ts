@@ -7,6 +7,7 @@ export const WORKFLOW_STATE_COLUMN_CANDIDATES = [
   "status",
   "state",
 ] as const;
+export const WORKFLOW_PATH_COLUMN_CANDIDATES = ["workflow_path"] as const;
 export const LAST_SAVED_AT_COLUMN_CANDIDATES = ["last_saved_at", "saved_at"] as const;
 export const WORK_ORDER_KIND_COLUMN_CANDIDATES = ["work_order_kind"] as const;
 export const REORDER_GROUP_ID_COLUMN_CANDIDATES = ["reorder_group_id"] as const;

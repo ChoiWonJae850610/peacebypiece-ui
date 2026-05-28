@@ -6,6 +6,7 @@ export type DbSpecSheetRow = {
   company_id?: string | null;
   company_name?: string | null;
   workflow_state: string | null;
+  workflow_path?: string | null;
   last_saved_at: string | null;
   work_order_kind: WorkOrder["workOrderKind"] | null;
   reorder_group_id: string | null;
@@ -61,6 +62,7 @@ export type DbSpecSheetSchema = {
   companyIdColumn: string | null;
   companyNameColumn: string | null;
   workflowStateColumn: string | null;
+  workflowPathColumn: string | null;
   lastSavedAtColumn: string | null;
   workOrderKindColumn: string | null;
   reorderGroupIdColumn: string | null;

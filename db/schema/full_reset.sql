@@ -546,6 +546,7 @@ CREATE TABLE spec_sheets (
   company_name text,
   title text NOT NULL,
   status text NOT NULL DEFAULT 'draft',
+  workflow_path text NOT NULL DEFAULT 'standard_review',
   work_order_kind text,
   reorder_group_id text,
   reorder_round integer NOT NULL DEFAULT 0,
@@ -590,6 +591,9 @@ CREATE TABLE spec_sheets (
   created_at timestamp without time zone DEFAULT now(),
   updated_at timestamp without time zone DEFAULT now(),
   deleted_at timestamptz,
+  CONSTRAINT spec_sheets_workflow_path_check CHECK (
+    workflow_path IN ('standard_review', 'direct_order')
+  ),
   CONSTRAINT spec_sheets_delete_status_check CHECK (
     delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
   ),
@@ -871,6 +875,7 @@ CREATE TABLE material_orders (
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   supplier_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
   status text NOT NULL DEFAULT 'draft',
+  workflow_path text NOT NULL DEFAULT 'standard_review',
   requested_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
   approved_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
   ordered_at timestamptz,
@@ -887,6 +892,9 @@ CREATE TABLE material_orders (
       'rejected',
       'cancelled'
     )
+  ),
+  CONSTRAINT material_orders_workflow_path_check CHECK (
+    workflow_path IN ('standard_review', 'direct_order')
   ),
   CONSTRAINT material_orders_total_amount_non_negative_check
     CHECK (total_amount >= 0)

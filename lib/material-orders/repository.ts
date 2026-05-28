@@ -14,6 +14,7 @@ import type {
   MaterialOrderSupplierListParams,
   MaterialOrderUpdateInput,
 } from "@/lib/material-orders/types";
+import { WORKFLOW_PATH, normalizeWorkflowPath } from "@/lib/constants/workflowPaths";
 
 type MaterialOrderRow = {
   id: string;
@@ -21,6 +22,7 @@ type MaterialOrderRow = {
   supplier_partner_id: string | null;
   supplier_partner_name: string | null;
   status: MaterialOrderStatus;
+  workflow_path: string | null;
   requested_by_user_id: string | null;
   requested_by_display_name: string | null;
   approved_by_user_id: string | null;
@@ -158,6 +160,7 @@ function mapOrderRow(
     supplierPartnerId: row.supplier_partner_id,
     supplierPartnerName: row.supplier_partner_name,
     status: row.status,
+    workflowPath: normalizeWorkflowPath(row.workflow_path),
     requestedByUserId: row.requested_by_user_id,
     requestedByDisplayName: row.requested_by_display_name,
     approvedByUserId: row.approved_by_user_id,
@@ -209,6 +212,7 @@ const MATERIAL_ORDER_SELECT_SQL = `
     orders.supplier_partner_id,
     supplier.name AS supplier_partner_name,
     orders.status,
+    orders.workflow_path,
     orders.requested_by_user_id,
     COALESCE(
       NULLIF(requested_member.display_name, ''),
@@ -477,16 +481,18 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
          company_id,
          supplier_partner_id,
          status,
+         workflow_path,
          requested_by_user_id,
          total_amount,
          note
        )
-       VALUES ($1, $2, $3, $4, $5, $6)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
       [
         input.companyId,
         normalizeText(input.supplierPartnerId),
         input.status ?? "draft",
+        WORKFLOW_PATH.standardReview,
         input.requestedByUserId,
         calculateTotalAmount(input.lines),
         normalizeText(input.note),
@@ -582,11 +588,22 @@ export async function updateMaterialOrderStatusForCompany(
 ): Promise<MaterialOrder | null> {
   const approvedByUserId = input.status === "approved" ? input.actorUserId : null;
   const orderedAtSql = input.status === "order_placed" ? "now()" : "ordered_at";
+  const currentOrder = await getMaterialOrderById({
+    companyId: input.companyId,
+    materialOrderId: input.materialOrderId,
+  });
+  const workflowPath =
+    input.status === "approved"
+      ? currentOrder?.status === "draft"
+        ? WORKFLOW_PATH.directOrder
+        : WORKFLOW_PATH.standardReview
+      : currentOrder?.workflowPath ?? WORKFLOW_PATH.standardReview;
   const updateValues: unknown[] = [
     input.companyId,
     input.materialOrderId,
     input.status,
     approvedByUserId,
+    workflowPath,
   ];
   const visibilityPredicate = buildRequestedByVisibilityPredicate(
     input.visibility,
@@ -598,6 +615,7 @@ export async function updateMaterialOrderStatusForCompany(
     `UPDATE material_orders
      SET status = $3,
          approved_by_user_id = COALESCE($4, approved_by_user_id),
+         workflow_path = $5,
          ordered_at = ${orderedAtSql},
          updated_at = now()
      WHERE company_id = $1

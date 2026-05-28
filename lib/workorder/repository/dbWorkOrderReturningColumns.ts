@@ -23,6 +23,7 @@ export function buildSpecSheetReturningColumns(
     "id",
     "title",
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
+    buildAliasSelection(schema.workflowPathColumn, "workflow_path", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
     buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL"),
     buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL"),

@@ -4,6 +4,7 @@ import {
   type WorkflowProgressPanelStep,
 } from "@/components/common/workflow/WorkflowProgressPanel";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
+import { WORKFLOW_PATH, type WorkflowPathValue } from "@/lib/constants/workflowPaths";
 import { DISPLAY_STAGE, WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -32,6 +33,7 @@ export default function WorkOrderActionSection({
   stages,
   currentStage,
   currentWorkflowState,
+  workflowPath,
   actions,
   onAction,
   workflowProcessingLabel = null,
@@ -42,6 +44,7 @@ export default function WorkOrderActionSection({
   stages: DisplayStage[];
   currentStage: DisplayStage;
   currentWorkflowState?: string | null;
+  workflowPath?: WorkflowPathValue | null;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
   workflowProcessingLabel?: string | null;
@@ -134,7 +137,7 @@ export default function WorkOrderActionSection({
           fromKey: DISPLAY_STAGE.draft,
           toKey: DISPLAY_STAGE.requestOrder,
           isVisible: true,
-          isActive: false,
+          isActive: workflowPath === WORKFLOW_PATH.directOrder,
         }
       : undefined;
 
@@ -144,6 +147,7 @@ export default function WorkOrderActionSection({
       steps={progressSteps}
       actions={progressActions}
       className="mt-5"
+      pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
       directPath={directOrderPath}
       footer={
         <>

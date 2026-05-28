@@ -59,6 +59,7 @@ export function buildWorkOrderInsertMutationArgs(
   pushInsertColumn(columns, values, placeholders, schema.companyIdColumn, company.companyId);
   pushInsertColumn(columns, values, placeholders, schema.companyNameColumn, company.companyName);
   pushInsertColumn(columns, values, placeholders, schema.workflowStateColumn, workOrder.workflowState);
+  pushInsertColumn(columns, values, placeholders, schema.workflowPathColumn, workOrder.workflowPath ?? "standard_review");
   pushInsertColumn(columns, values, placeholders, schema.lastSavedAtColumn, workOrder.lastSavedAt);
   pushInsertColumn(
     columns,
@@ -100,6 +101,7 @@ export function buildWorkOrderUpdateMutationArgs(
   pushUpdateAssignment(assignments, values, schema.companyIdColumn, company.companyId);
   pushUpdateAssignment(assignments, values, schema.companyNameColumn, company.companyName);
   pushUpdateAssignment(assignments, values, schema.workflowStateColumn, workOrder.workflowState);
+  pushUpdateAssignment(assignments, values, schema.workflowPathColumn, workOrder.workflowPath ?? "standard_review");
   pushUpdateAssignment(assignments, values, schema.lastSavedAtColumn, workOrder.lastSavedAt);
   pushUpdateAssignment(
     assignments,

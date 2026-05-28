@@ -79,6 +79,8 @@ CREATE TABLE material_orders (
         'cancelled'
       )
     ),
+  workflow_path text NOT NULL DEFAULT 'standard_review'
+    CHECK (workflow_path IN ('standard_review', 'direct_order')),
   requested_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
   approved_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
   ordered_at timestamptz,

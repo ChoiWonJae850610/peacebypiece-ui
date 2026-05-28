@@ -5,6 +5,7 @@ import type { InventoryChangeTypeValue, InventoryStatusValue, OrderEntryTargetTy
 import type { AttachmentScopeValue, WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
 import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
 import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
+import type { WorkflowPathValue } from "@/lib/constants/workflowPaths";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
 export type AttachmentScope = AttachmentScopeValue;
@@ -135,6 +136,7 @@ export type WorkOrder = {
   attachments: Attachment[];
   memoThreads: MemoThread[];
   workflowState: WorkflowState;
+  workflowPath?: WorkflowPathValue;
   lastSavedAt: string;
   factoryOrderRequest?: FactoryOrderRequest | null;
   hasDetailSnapshot?: boolean;
@@ -205,6 +207,7 @@ export type WorkOrderSummary = Pick<
   | "inventoryQuantity"
   | "inventoryStatus"
   | "workflowState"
+  | "workflowPath"
   | "lastSavedAt"
 > & {
   orderEntryCount: number;
@@ -229,6 +232,7 @@ export type WorkOrderAuditActor = {
 };
 
 export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "workflowState" | "lastSavedAt"> &
+  Partial<Pick<WorkOrder, "workflowPath">> &
   Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries" | "materials" | "outsourcing" | "rejectionReason" | "rejectedAt" | "rejectedByUserId" | "rejectedByName">> & {
     auditActor?: WorkOrderAuditActor | null;
     serviceCode?: WorkOrderServiceCodeValue | null;

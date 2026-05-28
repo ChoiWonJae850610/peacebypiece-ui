@@ -3,6 +3,7 @@ import {
   LEGACY_WORKFLOW_STATE_MAP,
   WORKFLOW_STATES,
 } from "@/lib/constants/workorderStates";
+import { normalizeWorkflowPath } from "@/lib/constants/workflowPaths";
 import type { WorkOrder, WorkOrderSummary } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import type { DbSpecSheetRow } from "@/lib/workorder/repository/dbWorkOrderRepositoryTypes";
@@ -83,6 +84,7 @@ export function readNumberRowValue(value: unknown, fallback = 0): number {
 
 export function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
   const normalizedWorkflowState = normalizeDbWorkflowState(row.workflow_state);
+  const normalizedWorkflowPath = normalizeWorkflowPath(row.workflow_path);
   const lastSavedAt =
     row.last_saved_at ??
     toIsoString(row.updated_at) ??
@@ -128,6 +130,7 @@ export function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     memoThreads: [],
     orderEntries: [],
     workflowState: normalizedWorkflowState,
+    workflowPath: normalizedWorkflowPath,
     lastSavedAt,
     factoryOrderRequest: null,
   };
@@ -176,6 +179,7 @@ export function mapSpecSheetRowToWorkOrderSummary(
   row: DbSpecSheetRow,
 ): WorkOrderSummary {
   const normalizedWorkflowState = normalizeDbWorkflowState(row.workflow_state);
+  const normalizedWorkflowPath = normalizeWorkflowPath(row.workflow_path);
   const lastSavedAt =
     row.last_saved_at ??
     toIsoString(row.updated_at) ??
@@ -211,6 +215,7 @@ export function mapSpecSheetRowToWorkOrderSummary(
     inventoryQuantity: readNumberRowValue(row.inventory_quantity),
     inventoryStatus: readInventoryStatusValue(row.inventory_status),
     workflowState: normalizedWorkflowState,
+    workflowPath: normalizedWorkflowPath,
     lastSavedAt,
     orderEntryCount: readCountValue(row.order_entry_count),
     materialCount: readCountValue(row.material_count),
