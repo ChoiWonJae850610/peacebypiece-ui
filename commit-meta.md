@@ -1,10 +1,9 @@
-Version : 0.17.68
-Summary : 원단·부자재 작업지시서 자재 발주완료 요약 표시
-Description : 원단·부자재 우측 작업지시서 카드에서 자재별 발주완료 상태를 작업지시서 단위로 집계해 표시하도록 보강하고, 완료/진행/잔여 요약 뱃지를 추가합니다.
+Version : 0.17.69
+Summary : 진행단계 선 정렬과 직행 발주 곡선 가시성 보정
+Description : 작업지시서와 원단·부자재 공통 진행단계의 SVG 트랙 기준선을 원 중심에 맞추고, 작성중에서 발주요청으로 이어지는 직행 발주 곡선 경로가 더 명확히 보이도록 높이, 굵기, 투명도, 점선 간격을 보정했습니다. 누적 테스트 항목은 pending-tests.md에만 유지했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- features/material-orders/materialOrderPanelUtils.ts
-- features/material-orders/MaterialOrderAllocationPanel.tsx
+- components/common/workflow/WorkflowProgressPanel.tsx
 - pending-tests.md
 추가 파일 목록 :
 - 없음

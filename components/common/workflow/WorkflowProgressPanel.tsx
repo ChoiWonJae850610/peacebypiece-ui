@@ -33,9 +33,9 @@ export type WorkflowProgressPanelDirectPath = {
 };
 
 const TRACK_VIEWBOX_WIDTH = 100;
-const TRACK_VIEWBOX_HEIGHT = 28;
-const TRACK_CENTER_Y = 14;
-const DIRECT_CURVE_CONTROL_Y = 2;
+const TRACK_VIEWBOX_HEIGHT = 44;
+const TRACK_CENTER_Y = 22;
+const DIRECT_CURVE_CONTROL_Y = 3;
 function getStepPositionPercent(index: number, stepCount: number) {
   if (stepCount <= 1) {
     return 50;
@@ -70,7 +70,7 @@ export function WorkflowProgressPanel({
   directPath?: WorkflowProgressPanelDirectPath;
 }) {
   const isCompact = density === "compact";
-  const trackPositionClassName = isCompact ? "top-1.5" : "top-2";
+  const trackPositionClassName = "top-[-10px]";
   const directPathFromIndex = directPath
     ? steps.findIndex((step) => step.key === directPath.fromKey)
     : -1;
@@ -131,7 +131,7 @@ export function WorkflowProgressPanel({
       <div className={isCompact ? "mt-3" : "mt-4"}>
         <div className="relative">
           <svg
-            className={`pointer-events-none absolute left-0 right-0 ${trackPositionClassName} z-0 h-7 w-full overflow-visible`}
+            className={`pointer-events-none absolute left-0 right-0 ${trackPositionClassName} z-0 h-11 w-full overflow-visible`}
             viewBox={`0 0 ${TRACK_VIEWBOX_WIDTH} ${TRACK_VIEWBOX_HEIGHT}`}
             preserveAspectRatio="none"
             aria-hidden="true"
@@ -175,10 +175,10 @@ export function WorkflowProgressPanel({
                     : "stroke-[var(--pbp-border)]"
                 }
                 fill="none"
-                opacity={shouldEmphasizeDirectPath ? 1 : 0.55}
-                strokeWidth={shouldEmphasizeDirectPath ? 1.8 : 1.1}
+                opacity={shouldEmphasizeDirectPath ? 1 : 0.78}
+                strokeWidth={shouldEmphasizeDirectPath ? 2.4 : 1.45}
                 strokeLinecap="round"
-                strokeDasharray={shouldEmphasizeDirectPath ? undefined : "2 2"}
+                strokeDasharray={shouldEmphasizeDirectPath ? undefined : "4 3"}
                 vectorEffect="non-scaling-stroke"
                 style={{
                   transition:
