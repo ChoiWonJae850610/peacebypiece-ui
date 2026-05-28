@@ -1,9 +1,10 @@
-import type { HTMLAttributes } from "react";
+import { createElement, type HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
 type AppCardVariant = "default" | "compact" | "flat" | "subtle";
 type AppCardPadding = "none" | "sm" | "md" | "lg";
+type AppCardElement = "div" | "section" | "article" | "header";
 
 const variantClassMap: Record<AppCardVariant, string> = {
   default: "rounded-[28px]",
@@ -19,11 +20,15 @@ const paddingClassMap: Record<AppCardPadding, string> = {
   lg: "p-5",
 };
 
-type AppCardProps = HTMLAttributes<HTMLDivElement> & {
+type AppCardProps = HTMLAttributes<HTMLElement> & {
+  as?: AppCardElement;
   variant?: AppCardVariant;
   padding?: AppCardPadding;
 };
 
-export default function AppCard({ className, variant = "default", padding = "md", ...props }: AppCardProps) {
-  return <div className={cn("pbp-card min-w-0", variantClassMap[variant], paddingClassMap[padding], className)} {...props} />;
+export default function AppCard({ as: Component = "div", className, variant = "default", padding = "md", ...props }: AppCardProps) {
+  return createElement(Component, {
+    className: cn("pbp-card min-w-0", variantClassMap[variant], paddingClassMap[padding], className),
+    ...props,
+  });
 }

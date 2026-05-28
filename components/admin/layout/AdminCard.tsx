@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { adminSurfaceVariantClassNames, joinAdminClassNames, type AdminSurfaceVariant } from "@/components/admin/common/adminComponentVariants";
+import { AppCard } from "@/components/common/ui";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminCardProps = {
@@ -14,7 +15,11 @@ type AdminCardProps = {
 export function AdminCard({ children, className = "", variant = "base" }: AdminCardProps) {
   const variantClassName = variant === "base" ? "pbp-admin-card" : adminSurfaceVariantClassNames[variant];
 
-  return <section className={joinAdminClassNames("min-w-0 rounded-[28px] border p-5", variantClassName, className)}>{children}</section>;
+  return (
+    <AppCard as="section" padding="lg" className={joinAdminClassNames(variantClassName, className)}>
+      {children}
+    </AppCard>
+  );
 }
 
 type AdminStatCardProps = {

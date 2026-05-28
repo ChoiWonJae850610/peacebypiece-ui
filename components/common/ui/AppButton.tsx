@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,26 @@ const widthClassMap: Record<AppButtonWidth, string> = {
   full: "w-full",
 };
 
+export function getAppButtonClassName({
+  className,
+  variant = "secondary",
+  size = "md",
+  width = "auto",
+}: {
+  className?: string;
+  variant?: AppButtonVariant;
+  size?: AppButtonSize;
+  width?: AppButtonWidth;
+} = {}) {
+  return cn(
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]",
+    variantClassMap[variant],
+    sizeClassMap[size],
+    widthClassMap[width],
+    className,
+  );
+}
+
 type AppButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: AppButtonVariant;
   size?: AppButtonSize;
@@ -38,17 +58,15 @@ export default function AppButton({
   type = "button",
   ...props
 }: AppButtonProps) {
-  return (
-    <button
-      type={type}
-      className={cn(
-        "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]",
-        variantClassMap[variant],
-        sizeClassMap[size],
-        widthClassMap[width],
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <button type={type} className={getAppButtonClassName({ variant, size, width, className })} {...props} />;
+}
+
+type AppLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  variant?: AppButtonVariant;
+  size?: AppButtonSize;
+  width?: AppButtonWidth;
+};
+
+export function AppLinkButton({ className, variant = "secondary", size = "md", width = "auto", ...props }: AppLinkButtonProps) {
+  return <a className={getAppButtonClassName({ variant, size, width, className })} {...props} />;
 }

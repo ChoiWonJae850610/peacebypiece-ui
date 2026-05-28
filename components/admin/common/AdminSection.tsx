@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { AppCard } from "@/components/common/ui";
+
 export type AdminSectionDensity = "default" | "compact";
 
 type AdminCardProps = {
@@ -8,10 +10,12 @@ type AdminCardProps = {
   as?: "section" | "article" | "div" | "header";
 };
 
-const cardBaseClassName = "min-w-0 rounded-[28px] pbp-admin-card";
-
 export function AdminCard({ children, className = "", as: Component = "section" }: AdminCardProps) {
-  return <Component className={`${cardBaseClassName} ${className}`.trim()}>{children}</Component>;
+  return (
+    <AppCard as={Component} padding="none" className={className}>
+      {children}
+    </AppCard>
+  );
 }
 
 type AdminSectionHeaderProps = {
