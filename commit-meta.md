@@ -1,10 +1,8 @@
-Version : 0.17.99
-Summary : 작업지시서 모달 select를 AppSelect로 전환
-Description : 기본정보/검수 모달에 남아 있던 native select를 WAFL 공통 AppSelect로 전환하고, 기존 카테고리/검수 선택 및 저장 흐름은 유지합니다.
+Version : 0.18.00
+Summary : UI 제품화 1차 체크포인트 문서 추가
+Description : 작업지시서와 원단·부자재 화면의 UI 경량화, 공통 UI 래퍼, 반응형 분기, Sheet/Toast/Select 기반 적용 현황을 0.18.00 제품화 체크포인트로 정리합니다. 기능 로직은 변경하지 않고 다음 0.18.x UI 리팩토링 우선순위를 문서화합니다.
 수정 파일 목록 :
-- components/workorder/detail/modals/BasicInfoEditModal.tsx
-- components/workorder/detail/modals/OrderInspectionModal.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/ui-workorder-modal-select-0.17.99.md
+- docs/ui-productization-checkpoint-0.18.00.md
 삭제 파일 목록 :
