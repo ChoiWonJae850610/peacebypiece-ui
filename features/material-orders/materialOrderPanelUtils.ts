@@ -262,3 +262,89 @@ export function isMaterialRequestCompletionFulfilled({
     requiredQuantity,
   }) <= 0;
 }
+
+
+export type WorkOrderMaterialCompletionSummary = {
+  requiredItemCount: number;
+  completedItemCount: number;
+  inProgressItemCount: number;
+  remainingItemCount: number;
+  totalRequiredQuantity: number;
+  totalInProgressQuantity: number;
+  totalCompletedQuantity: number;
+  totalCompletionRemainingQuantity: number;
+  isComplete: boolean;
+  isInProgressCovered: boolean;
+};
+
+export function summarizeWorkOrderMaterialCompletion({
+  workOrder,
+  materialRequestQuantityMap,
+  materialRequestCompletionMap,
+}: {
+  workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
+  materialRequestQuantityMap: MaterialRequestQuantityMap;
+  materialRequestCompletionMap: MaterialRequestQuantityMap;
+}): WorkOrderMaterialCompletionSummary {
+  const requiredItemCount = workOrder.materialItems.length;
+
+  return workOrder.materialItems.reduce<WorkOrderMaterialCompletionSummary>((summary, material) => {
+    const requiredQuantity = normalizePositiveQuantity(material.quantity);
+    const inProgressQuantity = calculateMaterialRequestOrderedQuantity(
+      materialRequestQuantityMap,
+      workOrder.id,
+      material.key,
+    );
+    const completedQuantity = calculateMaterialRequestCompletedQuantity(
+      materialRequestCompletionMap,
+      workOrder.id,
+      material.key,
+    );
+    const completionRemainingQuantity = calculateMaterialRequestCompletionRemainingQuantity({
+      quantityMap: materialRequestCompletionMap,
+      workOrderId: workOrder.id,
+      materialKey: material.key,
+      requiredQuantity,
+    });
+    const inProgressRemainingQuantity = calculateMaterialRequestRemainingQuantity({
+      quantityMap: materialRequestQuantityMap,
+      workOrderId: workOrder.id,
+      materialKey: material.key,
+      requiredQuantity,
+    });
+
+    const nextCompletedItemCount = summary.completedItemCount + (completionRemainingQuantity <= 0 ? 1 : 0);
+    const nextInProgressItemCount = summary.inProgressItemCount + (inProgressRemainingQuantity <= 0 ? 1 : 0);
+
+    return {
+      requiredItemCount: summary.requiredItemCount,
+      completedItemCount: nextCompletedItemCount,
+      inProgressItemCount: nextInProgressItemCount,
+      remainingItemCount: Math.max(0, summary.requiredItemCount - nextCompletedItemCount),
+      totalRequiredQuantity: Number((summary.totalRequiredQuantity + requiredQuantity).toFixed(3)),
+      totalInProgressQuantity: Number((summary.totalInProgressQuantity + inProgressQuantity).toFixed(3)),
+      totalCompletedQuantity: Number((summary.totalCompletedQuantity + completedQuantity).toFixed(3)),
+      totalCompletionRemainingQuantity: Number((summary.totalCompletionRemainingQuantity + completionRemainingQuantity).toFixed(3)),
+      isComplete: nextCompletedItemCount >= summary.requiredItemCount && summary.requiredItemCount > 0,
+      isInProgressCovered: nextInProgressItemCount >= summary.requiredItemCount && summary.requiredItemCount > 0,
+    };
+  }, {
+    requiredItemCount,
+    completedItemCount: 0,
+    inProgressItemCount: 0,
+    remainingItemCount: requiredItemCount,
+    totalRequiredQuantity: 0,
+    totalInProgressQuantity: 0,
+    totalCompletedQuantity: 0,
+    totalCompletionRemainingQuantity: 0,
+    isComplete: requiredItemCount === 0,
+    isInProgressCovered: requiredItemCount === 0,
+  });
+}
+
+export function formatWorkOrderMaterialCompletionLabel(summary: WorkOrderMaterialCompletionSummary): string {
+  if (summary.requiredItemCount === 0) return "자재 없음";
+  if (summary.isComplete) return "자재 발주완료";
+  if (summary.isInProgressCovered) return `진행 ${summary.inProgressItemCount}/${summary.requiredItemCount} · 완료 ${summary.completedItemCount}/${summary.requiredItemCount}`;
+  return `완료 ${summary.completedItemCount}/${summary.requiredItemCount} · 잔여 ${summary.remainingItemCount}`;
+}

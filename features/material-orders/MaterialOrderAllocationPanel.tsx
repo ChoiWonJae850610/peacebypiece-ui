@@ -24,7 +24,9 @@ import {
   calculateMaterialRequestRemainingQuantity,
   formatMaterialItemTypeLabel,
   formatMaterialQuantity,
+  formatWorkOrderMaterialCompletionLabel,
   isMaterialRequestAlreadyAdded,
+  summarizeWorkOrderMaterialCompletion,
   type MaterialRequestQuantityMap,
 } from "@/features/material-orders/materialOrderPanelUtils";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
@@ -126,9 +128,32 @@ function AllocationCandidateCard({
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
 }) {
+  const completionSummary = summarizeWorkOrderMaterialCompletion({
+    workOrder,
+    materialRequestQuantityMap,
+    materialRequestCompletionMap,
+  });
+
   return (
     <div className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
-      <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
+          <p className="mt-1 text-[11px] pbp-text-subtle">{workOrder.managerLabel} · {workOrder.dueDateLabel}</p>
+        </div>
+        <span
+          className={[
+            "shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+            completionSummary.isComplete
+              ? "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]"
+              : completionSummary.isInProgressCovered
+                ? "border-[var(--pbp-status-info-bg)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-status-info-fg)]"
+                : "pbp-border pbp-surface-muted pbp-text-muted",
+          ].join(" ")}
+        >
+          {formatWorkOrderMaterialCompletionLabel(completionSummary)}
+        </span>
+      </div>
 
       <div className="mt-3 grid gap-1.5">
         {workOrder.materialItems.map((material) => (
