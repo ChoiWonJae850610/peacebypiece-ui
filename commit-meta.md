@@ -1,10 +1,9 @@
-Version : 0.17.90
-Summary : WAFL 공통 Sheet 래퍼를 추가
-Description : 태블릿과 모바일 보조 패널 전환을 위해 Radix Dialog 기반 AppSheet 내부 UI 래퍼를 추가하고, 화면 파일에서 외부 라이브러리를 직접 사용하지 않는 적용 기준을 문서화합니다.
+Version : 0.17.91
+Summary : 원단·부자재 모바일 자재 선택 패널을 Sheet로 전환
+Description : 모바일 원단·부자재 화면에서 자재 선택 패널을 본문 탭 노출 대신 AppSheet 하단 패널로 열도록 변경하고, PC 3분할 및 태블릿 탭 구조는 유지했습니다.
 수정 파일 목록 :
-- components/common/ui/index.ts
+- features/material-orders/MaterialOrderDraftEditor.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- components/common/ui/AppSheet.tsx
-- docs/ui-sheet-wrapper-0.17.90.md
+- docs/ui-responsive-material-sheet-0.17.91.md
 삭제 파일 목록 :

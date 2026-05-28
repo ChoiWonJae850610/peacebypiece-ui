@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import AppSegmentedTabs from "@/components/common/ui/AppSegmentedTabs";
-import { AppResponsiveWorkspace } from "@/components/common/ui";
+import { AppButton, AppResponsiveWorkspace, AppSheet } from "@/components/common/ui";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
@@ -33,8 +33,9 @@ const MATERIAL_ORDER_TABLET_TABS: Array<{ key: Exclude<MaterialOrderPanelKey, "o
 
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
-  const [mobilePanel, setMobilePanel] = useState<MaterialOrderPanelKey>("orders");
+  const [mobilePanel, setMobilePanel] = useState<Exclude<MaterialOrderPanelKey, "materials">>("orders");
   const [tabletPanel, setTabletPanel] = useState<Exclude<MaterialOrderPanelKey, "orders">>("detail");
+  const [mobileMaterialSheetOpen, setMobileMaterialSheetOpen] = useState(false);
 
   const {
     orders,
@@ -75,6 +76,7 @@ export default function MaterialOrderDraftEditor() {
     if (!selectedOrderId) {
       setMobilePanel("orders");
       setTabletPanel("detail");
+      setMobileMaterialSheetOpen(false);
     }
   }, [selectedOrderId]);
 
@@ -84,11 +86,20 @@ export default function MaterialOrderDraftEditor() {
     setTabletPanel("detail");
   };
 
+  const handleMobilePanelChange = (panel: MaterialOrderPanelKey) => {
+    if (panel === "materials") {
+      setMobileMaterialSheetOpen(true);
+      return;
+    }
+
+    setMobilePanel(panel);
+  };
+
   const mobilePanelTabs = (
     <AppSegmentedTabs
       items={MATERIAL_ORDER_PANEL_TABS}
       value={mobilePanel}
-      onChange={setMobilePanel}
+      onChange={handleMobilePanelChange}
       className="-mx-1 mb-3 bg-[var(--pbp-surface)]/95"
       sticky
       ariaLabel="원단·부자재 모바일 화면 전환"
@@ -162,9 +173,33 @@ export default function MaterialOrderDraftEditor() {
         {mobilePanelTabs}
         <div className="min-h-0 min-w-0">
           {mobilePanel === "orders" ? <section className="min-h-[520px] min-w-0">{listPanel}</section> : null}
-          {mobilePanel === "detail" ? <section className="min-h-[620px] min-w-0">{detailPanel}</section> : null}
-          {mobilePanel === "materials" ? <section className="min-h-[620px] min-w-0">{allocationPanel}</section> : null}
+          {mobilePanel === "detail" ? (
+            <section className="min-h-[620px] min-w-0 space-y-3">
+              <div className="flex justify-end">
+                <AppButton
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setMobileMaterialSheetOpen(true)}
+                >
+                  자재 선택 열기
+                </AppButton>
+              </div>
+              {detailPanel}
+            </section>
+          ) : null}
         </div>
+        <AppSheet
+          open={mobileMaterialSheetOpen}
+          onOpenChange={setMobileMaterialSheetOpen}
+          title="작업지시서 자재 선택"
+          description="이번 발주서에 담을 원단·부자재를 선택합니다."
+          side="bottom"
+          size="full"
+          contentClassName="px-4 pb-5 pt-3"
+        >
+          <div className="min-h-[62vh] min-w-0">{allocationPanel}</div>
+        </AppSheet>
       </AppResponsiveWorkspace>
     );
   }
