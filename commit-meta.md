@@ -1,12 +1,8 @@
-Version : 0.17.83
-Summary : 원단·부자재 화면에 WAFL 공통 UI 래퍼 1차 적용
-Description : 원단·부자재 발주서 목록, 상세 섹션, 작업지시서 후보 카드, 요약 푸터에 AppCard/AppBadge/AppButton/AppSection을 단계적으로 적용하여 화면별 직접 스타일 의존을 줄이고 공통 UI 전환 기반을 확장합니다.
+Version : 0.17.84
+Summary : 반응형 UI 영향 범위 점검 문서 추가
+Description : 작업지시서와 원단·부자재 화면의 PC/tablet/mobile 분리 상태를 점검하고, 이후 공통 responsive hook과 원단·부자재 device switch 도입 순서를 문서화했습니다.
 수정 파일 목록 :
-- components/common/ui/AppBadge.tsx
-- features/material-orders/MaterialOrderAllocationPanel.tsx
-- features/material-orders/MaterialOrderDetailPanel.tsx
-- features/material-orders/MaterialOrderListPanel.tsx
-- features/material-orders/components/MaterialOrderSummaryFooter.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
+- docs/ui-responsive-impact-audit-0.17.84.md
 삭제 파일 목록 :
