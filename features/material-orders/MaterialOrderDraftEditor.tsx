@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+import AppButton from "@/components/common/ui/AppButton";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
@@ -14,8 +17,24 @@ const MATERIAL_ORDER_TABLET_GRID_STYLE = {
   gridTemplateColumns: "minmax(240px, 0.72fr) minmax(0, 1fr)",
 } as const;
 
+type MaterialOrderPanelKey = "orders" | "detail" | "materials";
+
+const MATERIAL_ORDER_PANEL_TABS: Array<{ key: MaterialOrderPanelKey; label: string }> = [
+  { key: "orders", label: "발주서" },
+  { key: "detail", label: "상세" },
+  { key: "materials", label: "자재" },
+];
+
+const MATERIAL_ORDER_TABLET_TABS: Array<{ key: Exclude<MaterialOrderPanelKey, "orders">; label: string }> = [
+  { key: "detail", label: "발주 상세" },
+  { key: "materials", label: "자재 선택" },
+];
+
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
+  const [mobilePanel, setMobilePanel] = useState<MaterialOrderPanelKey>("orders");
+  const [tabletPanel, setTabletPanel] = useState<Exclude<MaterialOrderPanelKey, "orders">>("detail");
+
   const {
     orders,
     selectedOrderId,
@@ -51,6 +70,51 @@ export default function MaterialOrderDraftEditor() {
     removeLine,
   } = useMaterialOrderDraftEditor();
 
+  useEffect(() => {
+    if (!selectedOrderId) {
+      setMobilePanel("orders");
+      setTabletPanel("detail");
+    }
+  }, [selectedOrderId]);
+
+  const handleSelectOrder = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setMobilePanel("detail");
+    setTabletPanel("detail");
+  };
+
+  const mobilePanelTabs = (
+    <div className="sticky top-0 z-10 -mx-1 mb-3 flex gap-2 bg-[var(--pbp-surface)]/95 px-1 py-2 backdrop-blur">
+      {MATERIAL_ORDER_PANEL_TABS.map((tab) => (
+        <AppButton
+          key={tab.key}
+          variant={mobilePanel === tab.key ? "primary" : "secondary"}
+          size="sm"
+          width="full"
+          onClick={() => setMobilePanel(tab.key)}
+        >
+          {tab.label}
+        </AppButton>
+      ))}
+    </div>
+  );
+
+  const tabletPanelTabs = (
+    <div className="mb-3 grid grid-cols-2 gap-2">
+      {MATERIAL_ORDER_TABLET_TABS.map((tab) => (
+        <AppButton
+          key={tab.key}
+          variant={tabletPanel === tab.key ? "primary" : "secondary"}
+          size="sm"
+          width="full"
+          onClick={() => setTabletPanel(tab.key)}
+        >
+          {tab.label}
+        </AppButton>
+      ))}
+    </div>
+  );
+
   const listPanel = (
     <MaterialOrderListPanel
       orders={orders}
@@ -58,7 +122,7 @@ export default function MaterialOrderDraftEditor() {
       loading={ordersLoading}
       errorMessage={ordersError}
       creating={creatingOrder}
-      onSelectOrder={setSelectedOrderId}
+      onSelectOrder={handleSelectOrder}
       onCreateOrder={createOrder}
       onRetry={() => void refreshOrders()}
       selectedDraftMaterialType={materialType}
@@ -105,10 +169,11 @@ export default function MaterialOrderDraftEditor() {
   if (deviceType === "mobile") {
     return (
       <div className="min-h-0 flex-1 overflow-y-auto pb-1">
-        <div className="flex min-h-0 min-w-0 flex-col gap-3">
-          <section className="min-h-[260px] min-w-0">{listPanel}</section>
-          <section className="min-h-[520px] min-w-0">{detailPanel}</section>
-          <section className="min-h-[420px] min-w-0">{allocationPanel}</section>
+        {mobilePanelTabs}
+        <div className="min-h-0 min-w-0">
+          {mobilePanel === "orders" ? <section className="min-h-[520px] min-w-0">{listPanel}</section> : null}
+          {mobilePanel === "detail" ? <section className="min-h-[620px] min-w-0">{detailPanel}</section> : null}
+          {mobilePanel === "materials" ? <section className="min-h-[620px] min-w-0">{allocationPanel}</section> : null}
         </div>
       </div>
     );
@@ -119,9 +184,10 @@ export default function MaterialOrderDraftEditor() {
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pb-1">
         <div className="grid min-h-0 min-w-0 gap-3" style={MATERIAL_ORDER_TABLET_GRID_STYLE}>
           <section className="min-h-[680px] min-w-0">{listPanel}</section>
-          <div className="min-w-0 space-y-3">
-            <section className="min-h-[560px] min-w-0">{detailPanel}</section>
-            <section className="min-h-[460px] min-w-0">{allocationPanel}</section>
+          <div className="min-w-0">
+            {tabletPanelTabs}
+            {tabletPanel === "detail" ? <section className="min-h-[680px] min-w-0">{detailPanel}</section> : null}
+            {tabletPanel === "materials" ? <section className="min-h-[680px] min-w-0">{allocationPanel}</section> : null}
           </div>
         </div>
       </div>
