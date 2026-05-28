@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import { useCallback, useRef, type KeyboardEvent } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -27,16 +27,31 @@ export default function AppInlineSelectEditor({
   className,
   ariaLabel = "선택값 편집",
 }: AppInlineSelectEditorProps) {
+  const committedRef = useRef(false);
+
+  const commit = useCallback(
+    (nextValue: string) => {
+      committedRef.current = true;
+      onCommit(nextValue);
+    },
+    [onCommit],
+  );
+
+  const cancel = useCallback(() => {
+    committedRef.current = true;
+    onCancel();
+  }, [onCancel]);
+
   const handleKeyDown = (event: KeyboardEvent<HTMLSelectElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      onCommit(event.currentTarget.value);
+      commit(event.currentTarget.value);
       return;
     }
 
     if (event.key === "Escape") {
       event.preventDefault();
-      onCancel();
+      cancel();
     }
   };
 
@@ -45,8 +60,11 @@ export default function AppInlineSelectEditor({
       autoFocus={autoFocus}
       aria-label={ariaLabel}
       value={value}
-      onChange={(event) => onCommit(event.target.value)}
-      onBlur={(event) => onCommit(event.target.value)}
+      onChange={(event) => commit(event.target.value)}
+      onBlur={(event) => {
+        if (committedRef.current) return;
+        commit(event.target.value);
+      }}
       onKeyDown={handleKeyDown}
       className={cn(
         "pbp-field-interaction pbp-workorder-editable-input block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 outline-none ring-0",
