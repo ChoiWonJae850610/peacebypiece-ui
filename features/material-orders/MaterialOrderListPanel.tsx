@@ -99,7 +99,7 @@ export default function MaterialOrderListPanel({
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="공급처·품목·담당 검색"
-          className={filterFieldClassName()}
+          className={MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS}
         />
         <div className="grid grid-cols-2 gap-1.5">
           <AppSelect
