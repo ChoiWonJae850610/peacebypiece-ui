@@ -105,12 +105,26 @@ export type MaterialRequestAllocationSummary = {
 
 export type MaterialRequestQuantityMap = ReadonlyMap<string, MaterialRequestAllocationSummary>;
 
-const COUNTED_MATERIAL_ORDER_STATUSES = new Set<MaterialOrder["status"]>([
+const ACTIVE_MATERIAL_ORDER_STATUSES = new Set<MaterialOrder["status"]>([
   "draft",
   "review_requested",
   "approved",
   "order_placed",
 ]);
+
+const COMPLETED_MATERIAL_ORDER_STATUSES = new Set<MaterialOrder["status"]>([
+  "order_placed",
+]);
+
+export type MaterialRequestQuantityScope = "active" | "completed";
+
+function getCountedMaterialOrderStatuses(
+  quantityScope: MaterialRequestQuantityScope,
+): ReadonlySet<MaterialOrder["status"]> {
+  return quantityScope === "completed"
+    ? COMPLETED_MATERIAL_ORDER_STATUSES
+    : ACTIVE_MATERIAL_ORDER_STATUSES;
+}
 
 export function createMaterialRequestMapKey(workOrderId: string, materialKey: string): string {
   return `${workOrderId}::${materialKey}`;
@@ -136,16 +150,19 @@ export function buildMaterialRequestQuantityMap({
   orders,
   excludedOrderId,
   draftLines,
+  quantityScope = "active",
 }: {
   orders: MaterialOrder[];
   excludedOrderId?: string | null;
   draftLines: MaterialOrderDraftLine[];
+  quantityScope?: MaterialRequestQuantityScope;
 }): MaterialRequestQuantityMap {
   const quantityMap = new Map<string, MaterialRequestAllocationSummary>();
+  const countedStatuses = getCountedMaterialOrderStatuses(quantityScope);
 
   for (const order of orders) {
     if (order.id === excludedOrderId) continue;
-    if (!COUNTED_MATERIAL_ORDER_STATUSES.has(order.status)) continue;
+    if (!countedStatuses.has(order.status)) continue;
 
     for (const line of order.lines) {
       for (const allocation of line.allocations) {
@@ -158,14 +175,16 @@ export function buildMaterialRequestQuantityMap({
     }
   }
 
-  for (const line of draftLines) {
-    for (const allocation of line.allocations) {
-      const sourceMaterialKey = allocation.sourceMaterialKey ?? line.sourceMaterialKey;
-      if (!sourceMaterialKey) continue;
-      const mapKey = createMaterialRequestMapKey(allocation.workOrderId, sourceMaterialKey);
-      addQuantityToMap(quantityMap, mapKey, {
-        currentDraftQuantity: allocation.allocatedQuantity,
-      });
+  if (quantityScope === "active") {
+    for (const line of draftLines) {
+      for (const allocation of line.allocations) {
+        const sourceMaterialKey = allocation.sourceMaterialKey ?? line.sourceMaterialKey;
+        if (!sourceMaterialKey) continue;
+        const mapKey = createMaterialRequestMapKey(allocation.workOrderId, sourceMaterialKey);
+        addQuantityToMap(quantityMap, mapKey, {
+          currentDraftQuantity: allocation.allocatedQuantity,
+        });
+      }
     }
   }
 
@@ -198,3 +217,48 @@ export function calculateMaterialRequestRemainingQuantity({
   return Number(Math.max(0, remainingQuantity).toFixed(3));
 }
 
+
+export function calculateMaterialRequestCompletedQuantity(
+  quantityMap: MaterialRequestQuantityMap,
+  workOrderId: string,
+  materialKey: string,
+): number {
+  const summary = quantityMap.get(createMaterialRequestMapKey(workOrderId, materialKey));
+  if (!summary) return 0;
+  return Number(summary.allocatedQuantity.toFixed(3));
+}
+
+export function calculateMaterialRequestCompletionRemainingQuantity({
+  quantityMap,
+  workOrderId,
+  materialKey,
+  requiredQuantity,
+}: {
+  quantityMap: MaterialRequestQuantityMap;
+  workOrderId: string;
+  materialKey: string;
+  requiredQuantity: number;
+}): number {
+  const remainingQuantity = normalizePositiveQuantity(requiredQuantity)
+    - calculateMaterialRequestCompletedQuantity(quantityMap, workOrderId, materialKey);
+  return Number(Math.max(0, remainingQuantity).toFixed(3));
+}
+
+export function isMaterialRequestCompletionFulfilled({
+  quantityMap,
+  workOrderId,
+  materialKey,
+  requiredQuantity,
+}: {
+  quantityMap: MaterialRequestQuantityMap;
+  workOrderId: string;
+  materialKey: string;
+  requiredQuantity: number;
+}): boolean {
+  return calculateMaterialRequestCompletionRemainingQuantity({
+    quantityMap,
+    workOrderId,
+    materialKey,
+    requiredQuantity,
+  }) <= 0;
+}

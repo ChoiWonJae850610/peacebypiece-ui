@@ -18,6 +18,8 @@ import {
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import {
   filterMaterialOrderCandidates,
+  calculateMaterialRequestCompletedQuantity,
+  calculateMaterialRequestCompletionRemainingQuantity,
   calculateMaterialRequestOrderedQuantity,
   calculateMaterialRequestRemainingQuantity,
   formatMaterialItemTypeLabel,
@@ -31,6 +33,7 @@ type MaterialOrderAllocationPanelProps = {
   candidates: MaterialOrderWorkspaceWorkOrderCandidate[];
   lines: MaterialOrderDraftLine[];
   materialRequestQuantityMap: MaterialRequestQuantityMap;
+  materialRequestCompletionMap: MaterialRequestQuantityMap;
   editable: boolean;
   loading: boolean;
   errorMessage: string | null;
@@ -45,6 +48,7 @@ export default function MaterialOrderAllocationPanel({
   candidates,
   lines,
   materialRequestQuantityMap,
+  materialRequestCompletionMap,
   editable,
   loading,
   errorMessage,
@@ -93,6 +97,7 @@ export default function MaterialOrderAllocationPanel({
               workOrder={workOrder}
               lines={lines}
               materialRequestQuantityMap={materialRequestQuantityMap}
+              materialRequestCompletionMap={materialRequestCompletionMap}
               editable={editable}
               onAddMaterialToOrder={onAddMaterialToOrder}
             />
@@ -107,12 +112,14 @@ function AllocationCandidateCard({
   workOrder,
   lines,
   materialRequestQuantityMap,
+  materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
 }: {
   workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
   lines: MaterialOrderDraftLine[];
   materialRequestQuantityMap: MaterialRequestQuantityMap;
+  materialRequestCompletionMap: MaterialRequestQuantityMap;
   editable: boolean;
   onAddMaterialToOrder: (
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
@@ -131,6 +138,7 @@ function AllocationCandidateCard({
             material={material}
             lines={lines}
             materialRequestQuantityMap={materialRequestQuantityMap}
+            materialRequestCompletionMap={materialRequestCompletionMap}
             editable={editable}
             onAddMaterialToOrder={onAddMaterialToOrder}
           />
@@ -145,6 +153,7 @@ function WorkOrderMaterialRequestRow({
   material,
   lines,
   materialRequestQuantityMap,
+  materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
 }: {
@@ -152,6 +161,7 @@ function WorkOrderMaterialRequestRow({
   material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
   lines: MaterialOrderDraftLine[];
   materialRequestQuantityMap: MaterialRequestQuantityMap;
+  materialRequestCompletionMap: MaterialRequestQuantityMap;
   editable: boolean;
   onAddMaterialToOrder: (
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
@@ -174,7 +184,19 @@ function WorkOrderMaterialRequestRow({
     materialKey: material.key,
     requiredQuantity: material.quantity,
   });
-  const isCompleted = remainingQuantity <= 0;
+  const completedQuantity = calculateMaterialRequestCompletedQuantity(
+    materialRequestCompletionMap,
+    workOrder.id,
+    material.key,
+  );
+  const completionRemainingQuantity = calculateMaterialRequestCompletionRemainingQuantity({
+    quantityMap: materialRequestCompletionMap,
+    workOrderId: workOrder.id,
+    materialKey: material.key,
+    requiredQuantity: material.quantity,
+  });
+  const isCompletionFulfilled = completionRemainingQuantity <= 0;
+  const isAllocationCovered = remainingQuantity <= 0;
 
   return (
     <div className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
@@ -184,17 +206,20 @@ function WorkOrderMaterialRequestRow({
           {formatMaterialItemTypeLabel(material.itemType)} · 필요 {formatMaterialQuantity(material.quantity, material.unit)}
         </p>
         <p className="mt-0.5 text-[11px] pbp-text-subtle">
-          발주 {formatMaterialQuantity(orderedQuantity, material.unit)} · 잔여 {formatMaterialQuantity(remainingQuantity, material.unit)}
+          진행 {formatMaterialQuantity(orderedQuantity, material.unit)} · 선택잔여 {formatMaterialQuantity(remainingQuantity, material.unit)}
+        </p>
+        <p className="mt-0.5 text-[11px] pbp-text-subtle">
+          발주완료 {formatMaterialQuantity(completedQuantity, material.unit)} · 완료잔여 {formatMaterialQuantity(completionRemainingQuantity, material.unit)}
         </p>
       </div>
       <AdminButton
         size="sm"
         className="min-h-7 px-3 py-1 text-xs"
-        variant={isAdded || isCompleted ? "ghost" : "secondary"}
-        disabled={!editable || isAdded || isCompleted}
+        variant={isAdded || isAllocationCovered ? "ghost" : "secondary"}
+        disabled={!editable || isAdded || isAllocationCovered}
         onClick={() => onAddMaterialToOrder(workOrder, material)}
       >
-        {isAdded ? "선택됨" : isCompleted ? "완료" : "선택"}
+        {isAdded ? "선택됨" : isCompletionFulfilled ? "완료" : isAllocationCovered ? "진행중" : "선택"}
       </AdminButton>
     </div>
   );

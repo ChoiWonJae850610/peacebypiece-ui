@@ -31,6 +31,7 @@ export default function MaterialOrderDraftEditor() {
     totals,
     selectedDraftSupplierName,
     materialRequestQuantityMap,
+    materialRequestCompletionMap,
     setSelectedOrderId,
     setSupplierPartnerId,
     refreshOrders,
@@ -85,6 +86,7 @@ export default function MaterialOrderDraftEditor() {
           candidates={workOrderCandidates}
           lines={lines}
           materialRequestQuantityMap={materialRequestQuantityMap}
+          materialRequestCompletionMap={materialRequestCompletionMap}
           editable={selectedOrder?.status === "draft"}
           loading={workOrdersLoading}
           errorMessage={workOrdersError}

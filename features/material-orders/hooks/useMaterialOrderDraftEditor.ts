@@ -122,6 +122,13 @@ export function useMaterialOrderDraftEditor() {
     orders,
     excludedOrderId: selectedOrder?.id,
     draftLines: lines,
+    quantityScope: "active",
+  }), [lines, orders, selectedOrder?.id]);
+  const materialRequestCompletionMap = useMemo(() => buildMaterialRequestQuantityMap({
+    orders,
+    excludedOrderId: selectedOrder?.id,
+    draftLines: lines,
+    quantityScope: "completed",
   }), [lines, orders, selectedOrder?.id]);
   const selectedDraftSupplierName = useMemo(
     () => suppliers.find((supplier) => supplier.id === supplierPartnerId)?.name ?? null,
@@ -336,6 +343,7 @@ export function useMaterialOrderDraftEditor() {
     totals,
     selectedDraftSupplierName,
     materialRequestQuantityMap,
+    materialRequestCompletionMap,
     setSelectedOrderId,
     setSupplierPartnerId,
     refreshOrders,
