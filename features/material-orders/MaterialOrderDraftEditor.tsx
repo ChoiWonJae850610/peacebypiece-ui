@@ -30,6 +30,7 @@ export default function MaterialOrderDraftEditor() {
     lines,
     totals,
     selectedDraftSupplierName,
+    materialRequestQuantityMap,
     setSelectedOrderId,
     setSupplierPartnerId,
     refreshOrders,
@@ -83,6 +84,7 @@ export default function MaterialOrderDraftEditor() {
         <MaterialOrderAllocationPanel
           candidates={workOrderCandidates}
           lines={lines}
+          materialRequestQuantityMap={materialRequestQuantityMap}
           editable={selectedOrder?.status === "draft"}
           loading={workOrdersLoading}
           errorMessage={workOrdersError}

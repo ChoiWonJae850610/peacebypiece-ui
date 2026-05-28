@@ -931,6 +931,7 @@ CREATE TABLE material_order_allocations (
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   material_order_line_id text NOT NULL REFERENCES material_order_lines(id) ON DELETE CASCADE,
   work_order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
+  source_material_key text,
   allocated_quantity numeric(14, 3) NOT NULL DEFAULT 0,
   allocation_note text,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -2004,6 +2005,8 @@ CREATE INDEX material_order_allocations_company_line_idx
   ON material_order_allocations (company_id, material_order_line_id);
 CREATE INDEX material_order_allocations_company_work_order_idx
   ON material_order_allocations (company_id, work_order_id);
+CREATE INDEX material_order_allocations_source_material_idx
+  ON material_order_allocations (company_id, work_order_id, source_material_key);
 
 CREATE INDEX material_inventory_lots_company_line_idx
   ON material_inventory_lots (company_id, material_order_line_id);

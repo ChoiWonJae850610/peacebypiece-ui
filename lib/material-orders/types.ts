@@ -27,6 +27,7 @@ export type MaterialOrderAllocation = {
   companyId: string;
   materialOrderLineId: string;
   workOrderId: string;
+  sourceMaterialKey: string | null;
   allocatedQuantity: number;
   allocationNote: string | null;
   createdAt: string;
@@ -98,6 +99,7 @@ export type MaterialOrderSupplierListResult = {
 
 export type MaterialOrderAllocationInput = {
   workOrderId: string;
+  sourceMaterialKey?: string | null;
   allocatedQuantity: number;
   allocationNote?: string | null;
 };

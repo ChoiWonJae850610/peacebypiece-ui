@@ -1,14 +1,23 @@
-Version : 0.17.64
-Summary : 원단·부자재 DraftEditor 상태 로직을 훅으로 분리
-Description : 원단·부자재 작성 화면의 데이터 로드, 선택 발주서 동기화, 상태 변경, 자재 라인 추가/삭제 로직을 useMaterialOrderDraftEditor 훅으로 분리하고 DraftEditor는 3패널 조립 중심으로 정리했습니다. 누적 테스트 항목은 pending-tests.md에 유지합니다.
+Version : 0.17.65
+Summary : 원단·부자재 부분 발주 잔여 수량 계산 1차
+Description : 원단·부자재 발주 할당에 source_material_key를 저장하고 우측 작업지시서 자재 카드에서 필요/발주/잔여 수량을 표시하도록 정리합니다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
+- lib/material-orders/types.ts
+- lib/material-orders/repository.ts
+- lib/material-orders/materialOrderDraftCalculator.ts
+- features/material-orders/hooks/useMaterialOrderDraftEditor.ts
 - features/material-orders/MaterialOrderDraftEditor.tsx
+- features/material-orders/MaterialOrderAllocationPanel.tsx
+- features/material-orders/components/MaterialOrderLineTable.tsx
+- features/material-orders/materialOrderPanelUtils.ts
+- db/schema/full_reset.sql
+- db/schema/materials_schema_draft.sql
 - pending-tests.md
 
 추가 파일 목록 :
-- features/material-orders/hooks/useMaterialOrderDraftEditor.ts
+- db/migrations/patch_0_17_65_material_order_source_material_key.sql
 
 삭제 파일 목록 :
 - 없음

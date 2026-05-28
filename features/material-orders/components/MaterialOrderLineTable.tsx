@@ -146,11 +146,18 @@ function MaterialOrderLineRow({
           inputMode="decimal"
           value={line.orderQuantity}
           disabled={!editable}
-          onChange={(event) =>
+          onChange={(event) => {
+            const nextOrderQuantity = normalizeNumberInput(event.target.value);
             onChangeLine(line.id, {
-              orderQuantity: normalizeNumberInput(event.target.value),
-            })
-          }
+              orderQuantity: nextOrderQuantity,
+              allocations: line.allocations.length > 0
+                ? line.allocations.map((allocation) => ({
+                  ...allocation,
+                  allocatedQuantity: nextOrderQuantity,
+                }))
+                : line.allocations,
+            });
+          }}
           className={compactInputClassName("text-center tabular-nums")}
         />
       </td>

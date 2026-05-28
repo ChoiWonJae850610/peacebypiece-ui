@@ -23,6 +23,10 @@ import type {
   MaterialOrderStatus,
   MaterialOrderSupplier,
 } from "@/lib/material-orders/types";
+import {
+  buildMaterialRequestQuantityMap,
+  calculateMaterialRequestRemainingQuantity,
+} from "@/features/material-orders/materialOrderPanelUtils";
 
 type SelectedOrderDetailPayload = {
   materialOrderId: string;
@@ -36,6 +40,7 @@ type SelectedOrderDetailPayload = {
     unitPrice: number;
     allocations: Array<{
       workOrderId: string;
+      sourceMaterialKey: string | null;
       allocatedQuantity: number;
       allocationNote: string;
     }>;
@@ -46,19 +51,21 @@ function createDraftLineFromMaterial(
   currentLineCount: number,
   workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
   material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+  orderQuantity: number,
 ): MaterialOrderDraftLine {
   return {
     id: `draft-line-${Date.now()}-${currentLineCount + 1}`,
     itemName: material.itemName,
     unit: material.unit || "마",
-    orderQuantity: material.quantity,
+    orderQuantity,
     unitPrice: Number.isFinite(material.unitCost ?? 0) ? material.unitCost ?? 0 : 0,
     sourceWorkOrderId: workOrder.id,
     sourceMaterialKey: material.key,
     allocations: [
       {
         workOrderId: workOrder.id,
-        allocatedQuantity: material.quantity,
+        sourceMaterialKey: material.key,
+        allocatedQuantity: orderQuantity,
         allocationNote: "",
       },
     ],
@@ -66,18 +73,25 @@ function createDraftLineFromMaterial(
 }
 
 function mapSelectedOrderToDraftLines(selectedOrder: MaterialOrder): MaterialOrderDraftLine[] {
-  return selectedOrder.lines.map((line) => ({
+  return selectedOrder.lines.map((line) => {
+    const primaryAllocation = line.allocations[0] ?? null;
+
+    return {
     id: line.id,
     itemName: line.itemName,
     unit: line.unit,
     orderQuantity: line.orderQuantity,
     unitPrice: line.unitPrice,
+    sourceWorkOrderId: primaryAllocation?.workOrderId,
+    sourceMaterialKey: primaryAllocation?.sourceMaterialKey ?? undefined,
     allocations: line.allocations.map((allocation) => ({
       workOrderId: allocation.workOrderId,
+      sourceMaterialKey: allocation.sourceMaterialKey,
       allocatedQuantity: allocation.allocatedQuantity,
       allocationNote: allocation.allocationNote ?? "",
     })),
-  }));
+  };
+  });
 }
 
 export function useMaterialOrderDraftEditor() {
@@ -103,6 +117,11 @@ export function useMaterialOrderDraftEditor() {
     [orders, selectedOrderId],
   );
   const totals = useMemo(() => calculateMaterialOrderDraftTotals(lines), [lines]);
+  const materialRequestQuantityMap = useMemo(() => buildMaterialRequestQuantityMap({
+    orders,
+    excludedOrderId: selectedOrder?.id,
+    draftLines: lines,
+  }), [lines, orders, selectedOrder?.id]);
   const selectedDraftSupplierName = useMemo(
     () => suppliers.find((supplier) => supplier.id === supplierPartnerId)?.name ?? null,
     [supplierPartnerId, suppliers],
@@ -215,6 +234,7 @@ export function useMaterialOrderDraftEditor() {
         unitPrice: line.unitPrice,
         allocations: line.allocations.map((allocation) => ({
           workOrderId: allocation.workOrderId,
+          sourceMaterialKey: allocation.sourceMaterialKey ?? line.sourceMaterialKey ?? null,
           allocatedQuantity: allocation.allocatedQuantity,
           allocationNote: allocation.allocationNote,
         })),
@@ -273,12 +293,21 @@ export function useMaterialOrderDraftEditor() {
 
       if (existingLine) return current;
 
+      const remainingQuantity = calculateMaterialRequestRemainingQuantity({
+        quantityMap: materialRequestQuantityMap,
+        workOrderId: workOrder.id,
+        materialKey: material.key,
+        requiredQuantity: material.quantity,
+      });
+
+      if (remainingQuantity <= 0) return current;
+
       return [
         ...current,
-        createDraftLineFromMaterial(current.length, workOrder, material),
+        createDraftLineFromMaterial(current.length, workOrder, material, remainingQuantity),
       ];
     });
-  }, [selectedOrder]);
+  }, [materialRequestQuantityMap, selectedOrder]);
 
   const removeLine = useCallback((lineId: string) => {
     setLines((current) => current.filter((line) => line.id !== lineId));
@@ -304,6 +333,7 @@ export function useMaterialOrderDraftEditor() {
     lines,
     totals,
     selectedDraftSupplierName,
+    materialRequestQuantityMap,
     setSelectedOrderId,
     setSupplierPartnerId,
     refreshOrders,

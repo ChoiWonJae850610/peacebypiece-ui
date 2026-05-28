@@ -65,6 +65,7 @@ type MaterialOrderAllocationRow = {
   company_id: string;
   material_order_line_id: string;
   work_order_id: string;
+  source_material_key: string | null;
   allocated_quantity: string | number;
   allocation_note: string | null;
   created_at: Date | string;
@@ -119,6 +120,7 @@ function mapAllocationRow(row: MaterialOrderAllocationRow): MaterialOrderAllocat
     companyId: row.company_id,
     materialOrderLineId: row.material_order_line_id,
     workOrderId: row.work_order_id,
+    sourceMaterialKey: row.source_material_key,
     allocatedQuantity: toNumber(row.allocated_quantity),
     allocationNote: row.allocation_note,
     createdAt: toIsoString(row.created_at),
@@ -287,6 +289,7 @@ async function listAllocationRows(companyId: string, lineIds: readonly string[])
        company_id,
        material_order_line_id,
        work_order_id,
+       source_material_key,
        allocated_quantity,
        allocation_note,
        created_at,
@@ -459,14 +462,16 @@ async function insertMaterialOrderAllocations(
          company_id,
          material_order_line_id,
          work_order_id,
+         source_material_key,
          allocated_quantity,
          allocation_note
        )
-       VALUES ($1, $2, $3, $4, $5)`,
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         companyId,
         materialOrderLineId,
         workOrderId,
+        normalizeText(allocation.sourceMaterialKey),
         normalizeQuantity(allocation.allocatedQuantity),
         normalizeText(allocation.allocationNote),
       ],

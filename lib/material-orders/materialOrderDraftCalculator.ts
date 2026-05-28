@@ -2,6 +2,7 @@ export type MaterialOrderDraftType = "fabric" | "submaterial";
 
 export type MaterialOrderDraftAllocation = {
   workOrderId: string;
+  sourceMaterialKey?: string | null;
   allocatedQuantity: number;
   allocationNote: string;
 };
