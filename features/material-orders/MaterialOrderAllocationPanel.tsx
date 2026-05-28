@@ -20,10 +20,12 @@ import {
   filterMaterialOrderCandidates,
   calculateMaterialRequestCompletedQuantity,
   calculateMaterialRequestCompletionRemainingQuantity,
+  calculateMaterialRequestCurrentDraftQuantity,
   calculateMaterialRequestOrderedQuantity,
   calculateMaterialRequestRemainingQuantity,
   formatMaterialItemTypeLabel,
   formatMaterialQuantity,
+  formatMaterialRequestReadableStatus,
   formatWorkOrderMaterialCompletionLabel,
   isMaterialRequestAlreadyAdded,
   summarizeWorkOrderMaterialCompletion,
@@ -203,6 +205,11 @@ function WorkOrderMaterialRequestRow({
     workOrder.id,
     material.key,
   );
+  const currentDraftQuantity = calculateMaterialRequestCurrentDraftQuantity(
+    materialRequestQuantityMap,
+    workOrder.id,
+    material.key,
+  );
   const remainingQuantity = calculateMaterialRequestRemainingQuantity({
     quantityMap: materialRequestQuantityMap,
     workOrderId: workOrder.id,
@@ -222,6 +229,15 @@ function WorkOrderMaterialRequestRow({
   });
   const isCompletionFulfilled = completionRemainingQuantity <= 0;
   const isAllocationCovered = remainingQuantity <= 0;
+  const readableStatus = formatMaterialRequestReadableStatus({
+    requiredQuantity: material.quantity,
+    orderedQuantity,
+    currentDraftQuantity,
+    remainingQuantity,
+    completedQuantity,
+    completionRemainingQuantity,
+    unit: material.unit,
+  });
 
   return (
     <div className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
@@ -231,10 +247,7 @@ function WorkOrderMaterialRequestRow({
           {formatMaterialItemTypeLabel(material.itemType)} · 필요 {formatMaterialQuantity(material.quantity, material.unit)}
         </p>
         <p className="mt-0.5 text-[11px] pbp-text-subtle">
-          진행 {formatMaterialQuantity(orderedQuantity, material.unit)} · 선택잔여 {formatMaterialQuantity(remainingQuantity, material.unit)}
-        </p>
-        <p className="mt-0.5 text-[11px] pbp-text-subtle">
-          발주완료 {formatMaterialQuantity(completedQuantity, material.unit)} · 완료잔여 {formatMaterialQuantity(completionRemainingQuantity, material.unit)}
+          {readableStatus}
         </p>
       </div>
       <AdminButton

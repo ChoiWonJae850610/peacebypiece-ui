@@ -201,6 +201,16 @@ export function calculateMaterialRequestOrderedQuantity(
   return Number((summary.allocatedQuantity + summary.currentDraftQuantity).toFixed(3));
 }
 
+export function calculateMaterialRequestCurrentDraftQuantity(
+  quantityMap: MaterialRequestQuantityMap,
+  workOrderId: string,
+  materialKey: string,
+): number {
+  const summary = quantityMap.get(createMaterialRequestMapKey(workOrderId, materialKey));
+  if (!summary) return 0;
+  return Number(summary.currentDraftQuantity.toFixed(3));
+}
+
 export function calculateMaterialRequestRemainingQuantity({
   quantityMap,
   workOrderId,
@@ -345,6 +355,43 @@ export function summarizeWorkOrderMaterialCompletion({
 export function formatWorkOrderMaterialCompletionLabel(summary: WorkOrderMaterialCompletionSummary): string {
   if (summary.requiredItemCount === 0) return "자재 없음";
   if (summary.isComplete) return "자재 발주완료";
-  if (summary.isInProgressCovered) return `진행 ${summary.inProgressItemCount}/${summary.requiredItemCount} · 완료 ${summary.completedItemCount}/${summary.requiredItemCount}`;
-  return `완료 ${summary.completedItemCount}/${summary.requiredItemCount} · 잔여 ${summary.remainingItemCount}`;
+  if (summary.isInProgressCovered) return "발주 진행 중";
+  return `남은 자재 ${summary.remainingItemCount}개`;
+}
+
+export function formatMaterialRequestReadableStatus({
+  requiredQuantity,
+  orderedQuantity,
+  currentDraftQuantity,
+  remainingQuantity,
+  completedQuantity,
+  completionRemainingQuantity,
+  unit,
+}: {
+  requiredQuantity: number;
+  orderedQuantity: number;
+  currentDraftQuantity: number;
+  remainingQuantity: number;
+  completedQuantity: number;
+  completionRemainingQuantity: number;
+  unit: string;
+}): string {
+  if (completionRemainingQuantity <= 0) return "자재 발주완료";
+
+  if (currentDraftQuantity > 0) {
+    const draftLabel = `이번 발주 ${formatMaterialQuantity(currentDraftQuantity, unit)} 선택됨`;
+    return remainingQuantity > 0
+      ? `${draftLabel} · 남은 수량 ${formatMaterialQuantity(remainingQuantity, unit)}`
+      : draftLabel;
+  }
+
+  if (completedQuantity > 0) {
+    return `발주완료 ${formatMaterialQuantity(completedQuantity, unit)} · 남은 수량 ${formatMaterialQuantity(completionRemainingQuantity, unit)}`;
+  }
+
+  if (orderedQuantity > 0) {
+    return `발주 진행 ${formatMaterialQuantity(orderedQuantity, unit)} · 남은 수량 ${formatMaterialQuantity(remainingQuantity, unit)}`;
+  }
+
+  return `아직 ${formatMaterialQuantity(requiredQuantity, unit)} 남음`;
 }
