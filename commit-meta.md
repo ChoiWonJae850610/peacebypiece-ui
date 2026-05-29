@@ -1,16 +1,10 @@
-Version : 0.18.13
-Summary : AppSection과 AppListRow 적용 범위 확대
-Description : AppSection과 AppListRow의 제품화 variant 기준을 확장하고 원단·부자재 발주서 목록 row를 AppListRow로 전환했습니다. 기존 발주서 선택/필터/생성 흐름과 DB/API/R2 흐름은 변경하지 않았습니다.
-
+Version : 0.18.14
+Summary : 기준정보 화면 toast 피드백 분리
+Description : ToastMessage에 eventKey를 추가하고 원단·부자재 기준정보 화면의 성공/권한 피드백을 Sonner toast로 분리했습니다. API 실패 메시지는 inline message와 danger toast로 함께 유지했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/common/ui/AppSection.tsx
-- components/common/ui/AppListRow.tsx
-- components/common/ui/index.ts
-- features/material-orders/MaterialOrderListPanel.tsx
-
+- components/common/ToastMessage.tsx
+- features/materials/MaterialsWorkspacePage.tsx
 추가 파일 목록 :
-- docs/ui-section-listrow-0.18.13.md
-
+- docs/ui-toast-message-0.18.14.md
 삭제 파일 목록 :
-- 없음

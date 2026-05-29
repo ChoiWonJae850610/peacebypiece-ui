@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
+import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import AppSelect from "@/components/common/ui/AppSelect";
 import {
   MATERIAL_KIND_DESCRIPTIONS,
@@ -33,6 +34,12 @@ type MaterialsWorkspacePageProps = {
   initialMaterials: Material[];
   initialCapabilities?: Partial<MaterialCapabilityState> | null;
   initialError?: string | null;
+};
+
+type WorkspaceToastMessage = {
+  text: string;
+  tone: ToastTone;
+  eventKey: number;
 };
 
 const EMPTY_DRAFT: MaterialDraft = {
@@ -294,21 +301,29 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
   const [draft, setDraft] = useState<MaterialDraft>(EMPTY_DRAFT);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(initialError);
+  const [inlineMessage, setInlineMessage] = useState<string | null>(initialError);
+  const [toastMessage, setToastMessage] = useState<WorkspaceToastMessage | null>(null);
   const [capabilities, setCapabilities] = useState<MaterialCapabilityState>(() => normalizeMaterialCapabilities(initialCapabilities));
 
   const fabricItems = useMemo(() => materials.filter((item) => item.kind === "fabric"), [materials]);
   const submaterialItems = useMemo(() => materials.filter((item) => item.kind === "submaterial"), [materials]);
 
+  const showToastMessage = useCallback((text: string, tone: ToastTone = "info") => {
+    setToastMessage({ text, tone, eventKey: Date.now() });
+  }, []);
+
   const handleRefresh = async () => {
     setIsSaving(true);
-    setMessage(null);
+    setInlineMessage(null);
     try {
       const payload = await requestMaterialsApi("GET");
       setMaterials(payload.materials ?? []);
       setCapabilities(normalizeMaterialCapabilities(payload.capabilities));
+      showToastMessage("원단·부자재 기준정보를 새로고침했습니다.", "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "MATERIALS_REFRESH_FAILED");
+      const nextMessage = error instanceof Error ? error.message : "MATERIALS_REFRESH_FAILED";
+      setInlineMessage(nextMessage);
+      showToastMessage(nextMessage, "danger");
     } finally {
       setIsSaving(false);
     }
@@ -316,11 +331,11 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
 
   const handleSubmit = async () => {
     if (!capabilities.canManageMaterials) {
-      setMessage("원단·부자재 기준정보를 수정할 권한이 없습니다.");
+      showToastMessage("원단·부자재 기준정보를 수정할 권한이 없습니다.", "warning");
       return;
     }
     setIsSaving(true);
-    setMessage(null);
+    setInlineMessage(null);
     try {
       const payload = await requestMaterialsApi(editingId ? "PATCH" : "POST", {
         materialId: editingId,
@@ -330,9 +345,11 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
       setCapabilities(normalizeMaterialCapabilities(payload.capabilities));
       setDraft(EMPTY_DRAFT);
       setEditingId(null);
-      setMessage(editingId ? "원단·부자재 항목을 수정했습니다." : "원단·부자재 항목을 등록했습니다.");
+      showToastMessage(editingId ? "원단·부자재 항목을 수정했습니다." : "원단·부자재 항목을 등록했습니다.", "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "MATERIALS_SAVE_FAILED");
+      const nextMessage = error instanceof Error ? error.message : "MATERIALS_SAVE_FAILED";
+      setInlineMessage(nextMessage);
+      showToastMessage(nextMessage, "danger");
     } finally {
       setIsSaving(false);
     }
@@ -340,7 +357,7 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
 
   const handleEdit = (item: Material) => {
     if (!capabilities.canManageMaterials) {
-      setMessage("원단·부자재 기준정보를 수정할 권한이 없습니다.");
+      showToastMessage("원단·부자재 기준정보를 수정할 권한이 없습니다.", "warning");
       return;
     }
     setEditingId(item.id);
@@ -352,16 +369,16 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
       lifecycleStatus: item.lifecycleStatus,
       memo: item.memo ?? "",
     });
-    setMessage(null);
+    setInlineMessage(null);
   };
 
   const handleDelete = async (item: Material) => {
     if (!capabilities.canManageMaterials) {
-      setMessage("원단·부자재 기준정보를 삭제할 권한이 없습니다.");
+      showToastMessage("원단·부자재 기준정보를 삭제할 권한이 없습니다.", "warning");
       return;
     }
     setIsSaving(true);
-    setMessage(null);
+    setInlineMessage(null);
     try {
       const payload = await requestMaterialsApi("DELETE", { materialId: item.id });
       setMaterials(payload.materials ?? []);
@@ -370,9 +387,11 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
         setEditingId(null);
         setDraft(EMPTY_DRAFT);
       }
-      setMessage("원단·부자재 항목을 삭제했습니다.");
+      showToastMessage("원단·부자재 항목을 삭제했습니다.", "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "MATERIALS_DELETE_FAILED");
+      const nextMessage = error instanceof Error ? error.message : "MATERIALS_DELETE_FAILED";
+      setInlineMessage(nextMessage);
+      showToastMessage(nextMessage, "danger");
     } finally {
       setIsSaving(false);
     }
@@ -380,6 +399,7 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
 
   return (
     <div className="flex min-h-full flex-col gap-4">
+      <ToastMessage message={toastMessage?.text ?? null} tone={toastMessage?.tone ?? "info"} eventKey={toastMessage?.eventKey} />
       <section className="rounded-[32px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-[var(--pbp-shadow-card)] sm:p-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
@@ -396,7 +416,7 @@ export default function MaterialsWorkspacePage({ initialMaterials, initialCapabi
           </div>
           <AdminButton onClick={handleRefresh} disabled={isSaving}>새로고침</AdminButton>
         </div>
-        {message ? <p className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm pbp-text-muted">{message}</p> : null}
+        {inlineMessage ? <p className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm pbp-text-muted">{inlineMessage}</p> : null}
       </section>
 
       <MaterialSummaryCards materials={materials} />
