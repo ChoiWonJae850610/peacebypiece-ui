@@ -207,7 +207,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
       title={t("filesPage.title", "저장소 관리")}
       contentMode="fixed-md"
     >
-      <section className="relative flex min-h-0 flex-1 flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3 shadow-[var(--pbp-shadow-elevated)] md:p-4 xl:h-full xl:overflow-hidden">
+      <section className="relative flex min-h-0 flex-1 touch-pan-y flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3 shadow-[var(--pbp-shadow-elevated)] md:p-4 xl:h-full xl:overflow-hidden">
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
@@ -216,7 +216,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
 
         <ToastMessage message={actionMessage} />
 
-        <div className="mt-2 min-h-[420px] overflow-visible xl:min-h-0 xl:flex-1 xl:overflow-hidden">
+        <div className="mt-2 min-h-[420px] touch-pan-y overflow-visible overscroll-auto xl:min-h-0 xl:flex-1 xl:overflow-hidden">
           <FileTrashSection
             items={snapshot.trashItems}
             workOrderItems={snapshot.workOrders ?? []}

@@ -21,11 +21,11 @@ type AdminMemberInvitationSectionProps = {
   onCreateInvite: () => void;
 };
 
-const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "min-h-[360px] xl:h-[452px] xl:min-h-[452px]";
+const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "min-h-[360px] touch-pan-y xl:h-[452px] xl:min-h-[452px]";
 const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-col pt-4 xl:flex-1";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
   "flex min-h-0 flex-col pt-4 xl:flex-1";
-const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-[260px] xl:min-h-0 xl:flex-1";
+const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-[260px] touch-pan-y xl:min-h-0 xl:flex-1";
 
 export default function AdminMemberInvitationSection({
   t,

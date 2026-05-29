@@ -67,7 +67,7 @@ export default function AdminMemberDirectorySection({
         "memberManagement.tabs.members.count",
         "대상 {count}명",
       ).replace("{count}", String(memberDirectoryRows.length))}
-      contentClassName="flex min-h-0 flex-col pt-4 xl:flex-1"
+      contentClassName="flex min-h-0 touch-pan-y flex-col pt-4 xl:flex-1"
     >
       <AdminMemberDirectoryControls
         t={t}
@@ -116,9 +116,9 @@ export default function AdminMemberDirectorySection({
           "멤버 목록을 불러오는 중입니다",
         )}
         gridTemplateColumns="minmax(120px,1fr) minmax(160px,1.2fr) 110px 110px 96px 110px 110px 120px 140px"
-        rowBaseClassName="grid w-full min-w-[1120px] gap-3 px-4 py-3 text-left text-xs md:items-center"
-        headerClassName="hidden min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid"
-        className="min-h-[320px] xl:min-h-0 xl:flex-1"
+        rowBaseClassName="grid w-full xl:min-w-[1120px] gap-3 px-4 py-3 text-left text-xs md:items-center"
+        headerClassName="hidden xl:min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid"
+        className="min-h-[320px] touch-pan-y xl:min-h-0 xl:flex-1"
         onRowClick={onOpenMemberDetail}
       />
     </AdminPanelSection>

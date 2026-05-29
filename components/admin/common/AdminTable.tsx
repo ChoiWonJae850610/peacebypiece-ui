@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import { adminKo } from "@/lib/i18n/ko/admin";
 import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
@@ -36,18 +36,23 @@ export default function AdminTable<TItem>({
   headerClassName,
   onRowClick,
 }: AdminTableProps<TItem>) {
-  const gridStyle = gridTemplateColumns ? { gridTemplateColumns } : undefined;
+  const gridStyle = gridTemplateColumns
+    ? ({ "--admin-table-columns": gridTemplateColumns } as CSSProperties)
+    : undefined;
+  const responsiveGridClassName = gridTemplateColumns
+    ? "grid-cols-1 xl:[grid-template-columns:var(--admin-table-columns)]"
+    : "grid-cols-1";
   const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
-  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid";
+  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid xl:[grid-template-columns:var(--admin-table-columns)]";
 
   return (
     <div className={joinAdminClassNames("flex min-h-0 flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] xl:flex-1 xl:overflow-hidden", className)}>
-      <div className={tableHeaderClassName} style={gridStyle}>
+      <div className={joinAdminClassNames(tableHeaderClassName, "xl:[grid-template-columns:var(--admin-table-columns)]")} style={gridStyle}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}
       </div>
-      <div className="min-h-0 divide-y divide-[var(--pbp-border)] overflow-x-auto overflow-y-visible overscroll-contain xl:flex-1 xl:overflow-auto">
+      <div className="min-h-0 touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto xl:flex-1 xl:overflow-auto xl:overscroll-contain">
         {isLoading ? (
           <div className="flex min-h-[240px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">{loadingLabel}</div>
         ) : items.length === 0 ? (
@@ -62,7 +67,7 @@ export default function AdminTable<TItem>({
           </div>
         ) : (
           items.map((item) => {
-            const mergedRowClassName = joinAdminClassNames(baseRowClassName, rowClassName?.(item));
+            const mergedRowClassName = joinAdminClassNames(baseRowClassName, responsiveGridClassName, rowClassName?.(item));
             const cells = columns.map((column) => (
               <div key={column.key} className={joinAdminClassNames("min-w-0", column.className)}>{column.render(item)}</div>
             ));
@@ -81,15 +86,14 @@ export default function AdminTable<TItem>({
                     }
                   }}
                   className={joinAdminClassNames(mergedRowClassName, "cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)]")}
-                  style={gridStyle}
-                >
+                  >
                   {cells}
                 </div>
               );
             }
 
             return (
-              <div key={getRowKey(item)} className={mergedRowClassName} style={gridStyle}>
+              <div key={getRowKey(item)} className={mergedRowClassName}>
                 {cells}
               </div>
             );

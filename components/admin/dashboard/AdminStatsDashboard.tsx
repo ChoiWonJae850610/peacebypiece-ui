@@ -856,8 +856,8 @@ export default function AdminStatsDashboard({
                       )}
                       className="mt-3 min-h-[218px] rounded-2xl border-[var(--pbp-border)]"
                       gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
-                      rowBaseClassName="grid w-full min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
-                      headerClassName="hidden min-w-[420px] gap-3 bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)] md:grid md:min-w-0"
+                      rowBaseClassName="grid w-full xl:min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
+                      headerClassName="hidden gap-3 bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)] xl:grid xl:min-w-0"
                     />
                   </AdminCard>
                 </div>
