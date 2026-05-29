@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { adminSurfaceVariantClassNames, joinAdminClassNames, type AdminSurfaceVariant } from "@/components/admin/common/adminComponentVariants";
-import { AppCard } from "@/components/common/ui";
+import { AppCard, type AppCardVariant } from "@/components/common/ui";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminCardProps = {
@@ -12,11 +12,24 @@ type AdminCardProps = {
   variant?: AdminSurfaceVariant;
 };
 
+const adminCardAppVariantMap: Record<AdminSurfaceVariant, AppCardVariant> = {
+  base: "surface",
+  soft: "subtle",
+  selected: "surface",
+  warning: "surface",
+  danger: "surface",
+};
+
 export function AdminCard({ children, className = "", variant = "base" }: AdminCardProps) {
   const variantClassName = variant === "base" ? "pbp-admin-card" : adminSurfaceVariantClassNames[variant];
 
   return (
-    <AppCard as="section" padding="lg" className={joinAdminClassNames(variantClassName, className)}>
+    <AppCard
+      as="section"
+      variant={adminCardAppVariantMap[variant]}
+      padding="lg"
+      className={joinAdminClassNames(variantClassName, className)}
+    >
       {children}
     </AppCard>
   );

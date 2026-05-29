@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AppCard } from "@/components/common/ui";
+import { AppCard, type AppCardVariant } from "@/components/common/ui";
 
 export type AdminSectionDensity = "default" | "compact";
 
@@ -8,11 +8,12 @@ type AdminCardProps = {
   children: ReactNode;
   className?: string;
   as?: "section" | "article" | "div" | "header";
+  variant?: AppCardVariant;
 };
 
-export function AdminCard({ children, className = "", as: Component = "section" }: AdminCardProps) {
+export function AdminCard({ children, className = "", as: Component = "section", variant = "surface" }: AdminCardProps) {
   return (
-    <AppCard as={Component} padding="none" className={className}>
+    <AppCard as={Component} variant={variant} padding="none" className={className}>
       {children}
     </AppCard>
   );
