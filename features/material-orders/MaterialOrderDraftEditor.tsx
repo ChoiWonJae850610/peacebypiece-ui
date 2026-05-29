@@ -26,16 +26,11 @@ const MATERIAL_ORDER_PANEL_TABS: Array<{ key: MaterialOrderPanelKey; label: stri
   { key: "materials", label: "자재" },
 ];
 
-const MATERIAL_ORDER_TABLET_TABS: Array<{ key: Exclude<MaterialOrderPanelKey, "orders">; label: string }> = [
-  { key: "detail", label: "발주 상세" },
-  { key: "materials", label: "자재 선택" },
-];
-
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
   const [mobilePanel, setMobilePanel] = useState<Exclude<MaterialOrderPanelKey, "materials">>("orders");
-  const [tabletPanel, setTabletPanel] = useState<Exclude<MaterialOrderPanelKey, "orders">>("detail");
   const [mobileMaterialSheetOpen, setMobileMaterialSheetOpen] = useState(false);
+  const [tabletMaterialSheetOpen, setTabletMaterialSheetOpen] = useState(false);
 
   const {
     orders,
@@ -75,15 +70,15 @@ export default function MaterialOrderDraftEditor() {
   useEffect(() => {
     if (!selectedOrderId) {
       setMobilePanel("orders");
-      setTabletPanel("detail");
       setMobileMaterialSheetOpen(false);
+      setTabletMaterialSheetOpen(false);
     }
   }, [selectedOrderId]);
 
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
     setMobilePanel("detail");
-    setTabletPanel("detail");
+    setTabletMaterialSheetOpen(false);
   };
 
   const handleMobilePanelChange = (panel: MaterialOrderPanelKey) => {
@@ -103,16 +98,6 @@ export default function MaterialOrderDraftEditor() {
       className="-mx-1 mb-3 bg-[var(--pbp-surface)]/95"
       sticky
       ariaLabel="원단·부자재 모바일 화면 전환"
-    />
-  );
-
-  const tabletPanelTabs = (
-    <AppSegmentedTabs
-      items={MATERIAL_ORDER_TABLET_TABS}
-      value={tabletPanel}
-      onChange={setTabletPanel}
-      className="mb-3"
-      ariaLabel="원단·부자재 태블릿 패널 전환"
     />
   );
 
@@ -209,12 +194,31 @@ export default function MaterialOrderDraftEditor() {
       <AppResponsiveWorkspace device="tablet">
         <div className="grid min-h-0 min-w-0 gap-3" style={MATERIAL_ORDER_TABLET_GRID_STYLE}>
           <section className="min-h-[680px] min-w-0">{listPanel}</section>
-          <div className="min-w-0">
-            {tabletPanelTabs}
-            {tabletPanel === "detail" ? <section className="min-h-[680px] min-w-0">{detailPanel}</section> : null}
-            {tabletPanel === "materials" ? <section className="min-h-[680px] min-w-0">{allocationPanel}</section> : null}
+          <div className="min-w-0 space-y-3">
+            <div className="flex justify-end">
+              <AppButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setTabletMaterialSheetOpen(true)}
+              >
+                자재 선택 열기
+              </AppButton>
+            </div>
+            <section className="min-h-[680px] min-w-0">{detailPanel}</section>
           </div>
         </div>
+        <AppSheet
+          open={tabletMaterialSheetOpen}
+          onOpenChange={setTabletMaterialSheetOpen}
+          title="작업지시서 자재 선택"
+          description="이번 발주서에 담을 원단·부자재를 선택합니다."
+          side="right"
+          size="lg"
+          contentClassName="px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"
+        >
+          <div className="min-h-[72vh] min-w-0">{allocationPanel}</div>
+        </AppSheet>
       </AppResponsiveWorkspace>
     );
   }

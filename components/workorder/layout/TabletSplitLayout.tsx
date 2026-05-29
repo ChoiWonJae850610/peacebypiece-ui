@@ -40,7 +40,7 @@ export default function TabletSplitLayout({
 
           <section
             ref={contentScrollRef}
-            className="col-span-8 min-h-0 overflow-y-auto px-4 py-4 pb-[calc(6rem+env(safe-area-inset-bottom))]"
+            className="col-span-8 min-h-0 overflow-y-auto px-4 py-4 pb-[calc(7rem+env(safe-area-inset-bottom))]"
           >
             <div className="grid min-h-full grid-cols-1 gap-4">
               <div>{detail}</div>
@@ -48,7 +48,7 @@ export default function TabletSplitLayout({
           </section>
         </div>
 
-        <div className="fixed bottom-4 left-[calc(33.333333%+1rem)] right-4 z-30 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur">
+        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(33.333333%+1rem)] right-4 z-30 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur">
           <AppButton className="w-full" size="lg" onClick={() => setSidePanelOpen(true)}>
             {sidePanelTitle}
           </AppButton>
@@ -61,7 +61,7 @@ export default function TabletSplitLayout({
           description={i18n.workorder.ui.emptyWorkspace.sideDescription}
           side="right"
           size="lg"
-          contentClassName="px-4 py-4"
+          contentClassName="px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
         >
           {sidePanel}
         </AppSheet>
