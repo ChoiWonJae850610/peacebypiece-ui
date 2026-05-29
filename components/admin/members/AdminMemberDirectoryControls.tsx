@@ -45,7 +45,7 @@ export default function AdminMemberDirectoryControls({
   onRoleFilterChange,
 }: AdminMemberDirectoryControlsProps) {
   return (
-    <div className="mb-4 grid shrink-0 gap-3 rounded-[24px] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-3 xl:grid-cols-[minmax(0,1fr)_180px_190px]">
+    <div className="mb-4 grid shrink-0 gap-3 rounded-[24px] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-3 2xl:grid-cols-[minmax(0,1fr)_180px_190px]">
       <label className={ADMIN_FIELD_CONTAINER_CLASS}>
         <span className="text-xs font-semibold pbp-text-muted">
           {t("memberManagement.memberDirectory.filters.search", "검색")}

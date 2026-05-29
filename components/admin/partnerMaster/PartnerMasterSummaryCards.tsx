@@ -77,7 +77,7 @@ export default function PartnerMasterSummaryCards({
       cards={cards}
       ariaLabel={summaryText.ariaLabel}
       className={className}
-      gridClassName="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
+      gridClassName="grid gap-3 md:grid-cols-2 2xl:grid-cols-5"
     />
   );
 }

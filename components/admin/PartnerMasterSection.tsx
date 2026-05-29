@@ -24,7 +24,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
   const controller = usePartnerMasterController(partnerText, capabilities);
 
   return (
-    <section className="flex min-h-0 flex-1 touch-pan-y flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-elevated)] md:p-5 xl:h-full xl:max-h-full xl:overflow-hidden xl:p-6">
+    <section className="flex min-h-fit touch-pan-y flex-col overflow-visible 2xl:min-h-0 2xl:flex-1 rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-elevated)] md:p-5 2xl:h-full 2xl:max-h-full 2xl:overflow-hidden 2xl:p-6">
       <div className="rounded-[30px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:p-5">
         <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
 
@@ -46,7 +46,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
       />
 
       <PartnerMasterList
-        className="mt-4 min-h-[360px] touch-pan-y xl:min-h-0 xl:flex-1"
+        className="mt-4 min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
         items={controller.listViewModel.items}
         isLoading={controller.isLoadingPartners}
         canUpdate={controller.canUpdatePartner}

@@ -51,9 +51,9 @@ export const ADMIN_STORAGE_WARNING_BOX_CLASS =
 export const ADMIN_STORAGE_DANGER_BOX_CLASS =
   "rounded-2xl border border-[var(--pbp-status-danger)] bg-[var(--pbp-status-danger-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-danger)]";
 export const ADMIN_STORAGE_TABLE_HEADER_CLASS =
-  "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] lg:grid";
+  "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid";
 export const ADMIN_STORAGE_TABLE_HEADER_COMPACT_CLASS =
-  "hidden shrink-0 gap-3 bg-[var(--pbp-surface-muted)] px-3.5 py-1.5 text-[10px] font-semibold text-[var(--pbp-text-muted)] lg:grid";
+  "hidden shrink-0 gap-3 bg-[var(--pbp-surface-muted)] px-3.5 py-1.5 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid";
 export const ADMIN_STORAGE_CHECKBOX_CLASS =
   "flex h-4 w-4 items-center justify-center rounded border text-[10px]";
 export const ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS =

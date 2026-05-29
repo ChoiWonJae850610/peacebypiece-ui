@@ -78,7 +78,7 @@ export default function PartnerMasterList({ items, isLoading = false, canUpdate 
       getRowKey={(item) => item.id}
       gridTemplateColumns={PARTNER_TABLE_GRID}
       rowClassName={(item) => [
-        "xl:min-w-[920px] px-4 py-3 md:gap-3 transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]",
+        "2xl:min-w-[920px] px-4 py-3 md:gap-3 transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]",
         canUpdate ? "hover:bg-[var(--admin-theme-soft)]" : "",
         item.isActive ? "bg-[var(--pbp-surface)]" : "bg-[var(--pbp-surface-muted)]",
       ].join(" ")}

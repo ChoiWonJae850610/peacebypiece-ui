@@ -21,11 +21,11 @@ type AdminMemberInvitationSectionProps = {
   onCreateInvite: () => void;
 };
 
-const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "min-h-[360px] touch-pan-y xl:h-[452px] xl:min-h-[452px]";
-const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-col pt-4 xl:flex-1";
+const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "min-h-fit touch-pan-y 2xl:h-[452px] 2xl:min-h-[452px]";
+const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-fit flex-col overflow-visible overscroll-auto pt-4 2xl:min-h-0 2xl:flex-1";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
-  "flex min-h-0 flex-col pt-4 xl:flex-1";
-const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-[260px] touch-pan-y xl:min-h-0 xl:flex-1";
+  "flex min-h-fit flex-col overflow-visible overscroll-auto pt-4 2xl:min-h-0 2xl:flex-1";
+const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1";
 
 export default function AdminMemberInvitationSection({
   t,
@@ -41,7 +41,7 @@ export default function AdminMemberInvitationSection({
   return (
     <section
       id="member-invite-builder"
-      className="grid items-stretch gap-5 xl:grid-cols-[0.95fr_1.05fr]"
+      className="grid items-stretch gap-5 2xl:grid-cols-[0.95fr_1.05fr]"
     >
       <AdminMemberInviteBuilderPanel
         t={t}
@@ -84,7 +84,7 @@ export default function AdminMemberInvitationSection({
             "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
           )}
           gridTemplateColumns="84px minmax(180px,1fr) 90px 90px 140px"
-          headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid"
+          headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid"
           rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
           className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
         />

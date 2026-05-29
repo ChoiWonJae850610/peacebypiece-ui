@@ -40,19 +40,19 @@ export default function AdminTable<TItem>({
     ? ({ "--admin-table-columns": gridTemplateColumns } as CSSProperties)
     : undefined;
   const responsiveGridClassName = gridTemplateColumns
-    ? "grid-cols-1 xl:[grid-template-columns:var(--admin-table-columns)]"
+    ? "grid-cols-1 2xl:[grid-template-columns:var(--admin-table-columns)]"
     : "grid-cols-1";
   const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
-  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid xl:[grid-template-columns:var(--admin-table-columns)]";
+  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid 2xl:[grid-template-columns:var(--admin-table-columns)]";
 
   return (
-    <div className={joinAdminClassNames("flex min-h-0 flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] xl:flex-1 xl:overflow-hidden", className)}>
-      <div className={joinAdminClassNames(tableHeaderClassName, "xl:[grid-template-columns:var(--admin-table-columns)]")} style={gridStyle}>
+    <div className={joinAdminClassNames("flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] 2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden", className)}>
+      <div className={joinAdminClassNames(tableHeaderClassName, "2xl:[grid-template-columns:var(--admin-table-columns)]")} style={gridStyle}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}
       </div>
-      <div className="min-h-0 touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto xl:flex-1 xl:overflow-auto xl:overscroll-contain">
+      <div className="min-h-fit touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto 2xl:min-h-0 2xl:flex-1 2xl:overflow-auto 2xl:overscroll-contain">
         {isLoading ? (
           <div className="flex min-h-[240px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">{loadingLabel}</div>
         ) : items.length === 0 ? (
