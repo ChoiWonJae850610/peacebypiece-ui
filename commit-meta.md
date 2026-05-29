@@ -1,11 +1,13 @@
-Version : 0.18.21
-Summary : 모바일 태블릿 생산 공장 선택 필드 보정
-Description : 작업지시서 모바일/태블릿 생산 공장 카드에서 납기 필드 대신 생산 공장 선택 EditableValue를 노출하도록 보정했습니다. PC와 동일하게 factoryOptions 기반 선택 흐름을 사용하며, 공장 등록/협력업체관리/DB/API/R2 흐름은 변경하지 않았습니다.
+Version : 0.18.22
+Summary : 모바일 태블릿 작업지시서 필드 정합성 보정
+Description : 태블릿·모바일 작업지시서 생산 공장 영역에 PC와 동일한 샘플/메인/재작업 구분, 수량, 단가, 장당 로스비, 금액 필드를 노출하고 외주 공정 row를 생산 공장/공정 정보 영역으로 이동했습니다. 제품 구성 영역에서는 외주 공정 섹션을 제거했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection.tsx
 - components/workorder/detail/sections/device/WorkOrderDetailTabletOrderInfoSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileProductionCompositionSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletProductionCompositionSection.tsx
 추가 파일 목록 :
-- docs/workorder-device-order-info-alignment-0.18.21.md
+- docs/workorder-device-field-alignment-0.18.22.md
 삭제 파일 목록 :
-없음
+- 없음

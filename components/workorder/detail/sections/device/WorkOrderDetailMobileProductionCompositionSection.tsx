@@ -2,7 +2,6 @@ import { useI18n } from "@/lib/i18n";
 import { formatProductionCompositionSummary } from "@/lib/workorder/detail/detailFormatting";
 import { SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
 import WorkOrderDetailMobileMaterialSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileMaterialSection";
-import WorkOrderDetailMobileOutsourcingSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileOutsourcingSection";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type ProductionCompositionProps = WorkOrderDetailViewModel["productionCompositionProps"];
@@ -10,7 +9,7 @@ type ProductionCompositionProps = WorkOrderDetailViewModel["productionCompositio
 export default function WorkOrderDetailMobileProductionCompositionSection(props: ProductionCompositionProps) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.sections.productionComposition;
-  const summary = formatProductionCompositionSummary(props.materials, props.outsourcing, i18n);
+  const summary = formatProductionCompositionSummary(props.materials, [], i18n);
 
   return (
     <section className="min-w-0 overflow-hidden rounded-2xl bg-stone-50 p-3 sm:p-3.5">
@@ -29,21 +28,6 @@ export default function WorkOrderDetailMobileProductionCompositionSection(props:
             onAdd={props.onAddMaterial}
             onRemove={props.onRemoveMaterial}
             vendorOptionsById={props.materialVendorOptionsById}
-            locked={props.locked}
-          />
-          <WorkOrderDetailMobileOutsourcingSection
-            outsourcing={props.outsourcing}
-            open={props.outsourcingOpen}
-            onToggle={props.onToggleOutsourcing}
-            editingCell={props.editingCell}
-            editingValue={props.editingValue}
-            onStartEdit={props.onStartEdit}
-            onCommitEdit={props.onCommitEdit}
-            onCancelEdit={props.onCancelEdit}
-            onAdd={props.onAddOutsourcing}
-            onRemove={props.onRemoveOutsourcing}
-            vendorOptionsById={props.outsourcingVendorOptionsById}
-            processOptions={props.outsourcingProcessOptions}
             locked={props.locked}
           />
         </div>
