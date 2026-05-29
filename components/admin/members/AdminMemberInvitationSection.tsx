@@ -21,11 +21,11 @@ type AdminMemberInvitationSectionProps = {
   onCreateInvite: () => void;
 };
 
-const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
-const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-1 flex-col pt-4";
+const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "min-h-[360px] lg:h-[452px] lg:min-h-[452px]";
+const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-col pt-4 lg:flex-1";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
-  "flex min-h-0 flex-1 flex-col pt-4";
-const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-0 flex-1";
+  "flex min-h-0 flex-col pt-4 lg:flex-1";
+const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-[260px] lg:min-h-0 lg:flex-1";
 
 export default function AdminMemberInvitationSection({
   t,
@@ -84,7 +84,7 @@ export default function AdminMemberInvitationSection({
             "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
           )}
           gridTemplateColumns="84px minmax(180px,1fr) 90px 90px 140px"
-          headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
+          headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] lg:grid"
           rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
           className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
         />

@@ -1,17 +1,19 @@
-Version : 0.18.23
-Summary : 일반멤버 약관 정책 카드와 태블릿 관리자 화면 스크롤 보정
-Description : 일반멤버 업무 홈에 약관·정책 조회 카드를 추가하고 /workspace/legal 조회용 정책 허브를 추가했습니다. WorkspaceShell fixed-md 기준을 lg 이상으로 조정해 태블릿 저장소관리·협력업체관리·멤버관리 화면에서 전체 페이지 스크롤이 막히는 문제를 줄였습니다. DB/API/R2/첨부/메모/휴지통/purge 흐름은 변경하지 않았습니다.
+Version : 0.18.24
+Summary : 태블릿 관리자 화면 스크롤 구조 재보정
+Description : 저장소관리, 협력업체관리, 멤버관리의 태블릿 가로/세로 화면에서 내부 스크롤과 터치 스크롤 지점이 충돌하지 않도록 AdminTable/AdminPanelSection/WorkspaceShell의 태블릿 구간 overflow 기준을 재보정했습니다. PC 고정 패널 동작은 lg 이상에서 유지하고 DB/API/R2 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/admin/adminWorkspaceCards.ts
-- components/admin/dashboard/AdminConsoleSections.tsx
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
 - components/workspace/layout/WorkspaceShell.tsx
+- components/admin/common/AdminPanelSection.tsx
+- components/admin/common/adminSemanticClassNames.ts
+- components/admin/common/AdminTable.tsx
 - components/admin/files/AdminFilesWorkspaceClient.tsx
-- components/admin/PartnerMasterSection.tsx
+- components/admin/files/FileTrashSection.tsx
+- components/admin/members/AdminMemberDirectorySection.tsx
+- components/admin/members/AdminMemberInvitationSection.tsx
 - components/admin/members/AdminMemberManagementDashboard.tsx
+- components/admin/partnerMaster/PartnerMasterList.tsx
 추가 파일 목록 :
-- app/(workspace)/workspace/legal/page.tsx
-- docs/workspace-tablet-responsive-0.18.23.md
+- docs/tablet-admin-responsive-reflow-0.18.24.md
 삭제 파일 목록 :
+- 없음

@@ -35,7 +35,7 @@ export default function AdminPanelSection({
     <article
       className={joinClassNames(
         ADMIN_SURFACE_PANEL_CLASS,
-        "flex min-h-0 flex-col overflow-hidden",
+        "flex min-h-0 flex-col overflow-visible lg:overflow-hidden",
         className,
       )}
     >
@@ -64,7 +64,7 @@ export default function AdminPanelSection({
         {meta ? <div className="shrink-0 text-xs font-semibold pbp-text-subtle">{meta}</div> : null}
       </div>
 
-      <div className={joinClassNames("min-h-0 flex-1", contentClassName)}>
+      <div className={joinClassNames("min-h-0 lg:flex-1", contentClassName)}>
         {children}
       </div>
 

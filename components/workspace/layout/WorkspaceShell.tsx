@@ -25,8 +25,8 @@ export default function WorkspaceShell({
 }: WorkspaceShellProps) {
   const isFixedFromDesktop = contentMode === "fixed-md";
   const contentFrameClassName = isFixedFromDesktop
-    ? "min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0 sm:pr-1 lg:overflow-hidden"
-    : "min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0 sm:pr-1";
+    ? "min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-0 sm:pr-1 lg:overflow-hidden"
+    : "min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-0 sm:pr-1";
   const contentInnerClassName = isFixedFromDesktop
     ? "flex min-h-full flex-col gap-3 pb-2 sm:gap-4 lg:h-full lg:min-h-0 lg:gap-0 lg:pb-0"
     : "flex min-h-full flex-col gap-3 pb-2 sm:gap-4 md:gap-5";
