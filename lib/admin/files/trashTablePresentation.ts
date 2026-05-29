@@ -5,11 +5,11 @@ export const TRASH_TABLE_GRID =
   "50px minmax(280px,1.2fr) 128px minmax(180px,0.85fr) 104px 82px";
 export const TRASH_HEADER_CENTER_CLASS = "text-center";
 export const TRASH_CELL_CENTER_CLASS =
-  "flex h-full min-h-[38px] w-full items-center justify-center text-center";
+  "flex min-h-[24px] w-full items-start justify-start text-left min-[1180px]:h-full min-[1180px]:min-h-[38px] min-[1180px]:items-center min-[1180px]:justify-center min-[1180px]:text-center";
 export const TRASH_CELL_TARGET_CLASS =
-  "flex h-full min-h-[38px] w-full items-center justify-start text-left";
+  "flex min-h-[34px] w-full items-center justify-start text-left min-[1180px]:h-full min-[1180px]:min-h-[38px]";
 export const TRASH_CELL_SELECT_CLASS =
-  "flex h-full min-h-[38px] w-full items-center justify-center text-center";
+  "flex h-full min-h-[34px] w-full items-start justify-center pt-1 text-center min-[1180px]:min-h-[38px] min-[1180px]:items-center min-[1180px]:pt-0";
 
 export const WORKORDER_STAGE_STEPS = [
   {

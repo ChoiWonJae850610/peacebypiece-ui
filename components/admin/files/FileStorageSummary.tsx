@@ -299,7 +299,7 @@ export default function FileStorageSummary({
       <div className="grid gap-3 md:grid-cols-2 md:gap-3 2xl:grid-cols-3 2xl:grid-cols-[minmax(230px,0.78fr)_minmax(260px,0.88fr)_minmax(340px,1.12fr)]">
         <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
         <FileOperationsCard items={statusItems} />
-        <div className="lg:col-span-2 2xl:col-span-1"><DonutChart items={fileTypeDistribution} /></div>
+        <div className="md:col-span-2 2xl:col-span-1"><DonutChart items={fileTypeDistribution} /></div>
       </div>
     </section>
   );

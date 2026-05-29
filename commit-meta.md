@@ -1,13 +1,13 @@
-Version : 0.18.30
-Summary : 저장소관리 휴지통 표시 밀도 재정리
-Description : 저장소관리 PC 화면에서 휴지통 목록이 너무 낮고 작게 보이는 문제와 태블릿에서 휴지통 항목이 과하게 큰 카드처럼 보이는 문제를 보정했습니다. 저장소 요약 카드 높이를 줄이고 휴지통 row를 compact list-card 흐름으로 조정했으며, 태블릿 이하에서도 주요 컬럼 라벨이 row 내부에 표시되도록 했습니다. WorkspaceShell 스크롤 구조와 DB/API/R2 흐름은 변경하지 않았습니다.
+Version : 0.18.31
+Summary : 저장소관리 휴지통 responsive 표시 구조 재정리
+Description : 저장소관리 파일 유형 요약 카드가 태블릿 세로에서 한 칸만 차지하는 문제를 보정하고, 휴지통 목록을 넓은 화면에서는 table 형태로, 좁은 화면에서는 compact label-card 형태로 분리했습니다. WorkspaceShell 스크롤 구조와 DB/API/R2 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/common/AdminTable.tsx
 - components/admin/files/FileStorageSummary.tsx
 - components/admin/files/FileTrashSection.tsx
 - components/admin/files/fileTrashSectionColumns.tsx
+- lib/admin/files/trashTablePresentation.ts
 추가 파일 목록 :
-- docs/storage-trash-density-0.18.30.md
+- docs/storage-responsive-table-card-0.18.31.md
 삭제 파일 목록 :
 - 없음

@@ -8,7 +8,6 @@ import {
   ADMIN_STORAGE_PANEL_TIGHT_CLASS,
   ADMIN_STORAGE_ROW_CLASS,
   ADMIN_STORAGE_SELECTED_ROW_CLASS,
-  ADMIN_STORAGE_TABLE_HEADER_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import type {
   AdminStorageWorkOrderItem,
@@ -295,9 +294,9 @@ export default function FileTrashSection({
       />
 
       <AdminTable
-        className="min-h-fit touch-pan-y border-0 bg-transparent shadow-none 2xl:min-h-[300px] 2xl:flex-1 2xl:border 2xl:bg-[var(--pbp-surface)]"
-        headerClassName={ADMIN_STORAGE_TABLE_HEADER_CLASS}
-        rowBaseClassName="grid w-full gap-2 rounded-[16px] border border-[var(--pbp-border)] px-3 py-2.5 text-left text-[11px] shadow-[var(--pbp-shadow-card)] md:items-center md:gap-2.5 md:px-3.5 md:py-2.5 xl:gap-3 2xl:rounded-none 2xl:border-0 2xl:px-3.5 2xl:py-1.5 2xl:shadow-none"
+        className="min-h-fit touch-pan-y border-0 bg-transparent shadow-none min-[1180px]:border min-[1180px]:bg-[var(--pbp-surface)]"
+        headerClassName="hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] min-[1180px]:grid min-[1180px]:[grid-template-columns:var(--admin-table-columns)]"
+        rowBaseClassName="grid w-full gap-2 rounded-[16px] border border-[var(--pbp-border)] px-3 py-2 text-left text-[11px] shadow-[var(--pbp-shadow-card)] md:gap-2.5 md:px-3.5 md:py-2.5 min-[1180px]:items-center min-[1180px]:gap-3 min-[1180px]:rounded-none min-[1180px]:border-0 min-[1180px]:px-3.5 min-[1180px]:py-1.5 min-[1180px]:shadow-none"
         items={sortedRows}
         getRowKey={(row) => row.rowId}
         emptyLabel={t(
@@ -309,7 +308,7 @@ export default function FileTrashSection({
           "삭제한 작업지시서, 문서, 디자인, 메모가 있으면 복원 또는 삭제 요청 대상으로 표시됩니다.",
         )}
         gridTemplateColumns={TRASH_TABLE_GRID}
-        responsiveGridClassName="grid-cols-[auto_minmax(0,1fr)] md:[grid-template-columns:34px_minmax(220px,1fr)_minmax(150px,0.72fr)_minmax(150px,0.72fr)] xl:[grid-template-columns:38px_minmax(260px,1.2fr)_128px_minmax(180px,0.9fr)_96px_82px] 2xl:[grid-template-columns:var(--admin-table-columns)]"
+        responsiveGridClassName="grid-cols-[auto_minmax(0,1fr)] min-[1180px]:[grid-template-columns:var(--admin-table-columns)]"
         onRowClick={(row) => setDetailRow(row)}
         rowClassName={(row) => {
           const previewWorkOrderId =

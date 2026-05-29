@@ -139,7 +139,7 @@ function TrashTargetCell({
         compact
       />
       <div className="min-w-0 text-left">
-        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] min-[1180px]:hidden`}>
           {t("filesList.columns.target", "삭제 대상")}
         </p>
         <p
@@ -165,12 +165,12 @@ function CenterTextCell({
   isStrong?: boolean;
 }) {
   return (
-    <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
+    <div className="flex min-w-0 w-full flex-col items-start justify-center text-left min-[1180px]:items-center min-[1180px]:text-center">
       {mobileLabel ? (
-        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>{mobileLabel}</p>
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] min-[1180px]:hidden`}>{mobileLabel}</p>
       ) : null}
       <p
-        className={`mx-auto max-w-full truncate text-center text-[12px] ${isStrong ? `font-semibold ${ADMIN_STORAGE_MUTED_TEXT_CLASS}` : ADMIN_STORAGE_MUTED_TEXT_CLASS}`}
+        className={`max-w-full truncate text-left text-[12px] min-[1180px]:mx-auto min-[1180px]:text-center ${isStrong ? `font-semibold ${ADMIN_STORAGE_MUTED_TEXT_CLASS}` : ADMIN_STORAGE_MUTED_TEXT_CLASS}`}
         title={title ?? value}
       >
         {value}
@@ -187,10 +187,10 @@ function WorkOrderCell({
   mobileLabel: string;
 }) {
   return (
-    <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
-      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>{mobileLabel}</p>
+    <div className="flex min-w-0 w-full flex-col items-start justify-center text-left min-[1180px]:items-center min-[1180px]:text-center">
+      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] min-[1180px]:hidden`}>{mobileLabel}</p>
       <p
-        className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mx-auto max-w-[220px] truncate text-center text-[12px] font-medium`}
+        className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} max-w-full truncate text-left text-[12px] font-medium min-[1180px]:mx-auto min-[1180px]:max-w-[220px] min-[1180px]:text-center`}
         title={value}
       >
         {value}
@@ -201,14 +201,14 @@ function WorkOrderCell({
 
 function TypeBadgeCell({ value, mobileLabel }: { value: string; mobileLabel?: string }) {
   return (
-    <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
+    <div className="flex min-w-0 w-full flex-col items-start justify-center text-left min-[1180px]:items-center min-[1180px]:text-center">
       {mobileLabel ? (
-        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>{mobileLabel}</p>
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] min-[1180px]:hidden`}>{mobileLabel}</p>
       ) : null}
       <AdminStatusBadge
         size="xs"
         tone="neutral"
-        className="max-w-[92px] truncate text-center"
+        className="max-w-[140px] truncate text-left min-[1180px]:max-w-[92px] min-[1180px]:text-center"
       >
         {value}
       </AdminStatusBadge>
