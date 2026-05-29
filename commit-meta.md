@@ -1,13 +1,16 @@
-Version : 0.18.12
-Summary : AppBadge variant 기준 정리
-Description : AppBadge variant를 제품화 기준으로 확장하고 AdminStatusBadge와 SectionCountBadge가 AppBadge를 위임하도록 연결했습니다. 기존 tone 기반 사용처는 호환 유지했습니다.
+Version : 0.18.13
+Summary : AppSection과 AppListRow 적용 범위 확대
+Description : AppSection과 AppListRow의 제품화 variant 기준을 확장하고 원단·부자재 발주서 목록 row를 AppListRow로 전환했습니다. 기존 발주서 선택/필터/생성 흐름과 DB/API/R2 흐름은 변경하지 않았습니다.
+
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/common/ui/AppBadge.tsx
+- components/common/ui/AppSection.tsx
+- components/common/ui/AppListRow.tsx
 - components/common/ui/index.ts
-- components/common/ui/SectionCountBadge.tsx
-- components/admin/common/AdminStatusBadge.tsx
+- features/material-orders/MaterialOrderListPanel.tsx
+
 추가 파일 목록 :
-- docs/ui-badge-variant-0.18.12.md
+- docs/ui-section-listrow-0.18.13.md
+
 삭제 파일 목록 :
 - 없음

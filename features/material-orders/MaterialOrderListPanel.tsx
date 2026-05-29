@@ -1,11 +1,8 @@
 import { useMemo, useState } from "react";
 
-import { AppBadge, AppButton, AppCard, AppSelect, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppButton, AppCard, AppListRow, AppSelect, type AppSelectOption } from "@/components/common/ui";
 import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import {
-  MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
-  MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
-  MATERIAL_ORDER_LIST_CARD_SELECTED_CLASS,
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
   MATERIAL_ORDER_PANEL_HEADER_CLASS,
@@ -183,29 +180,24 @@ function MaterialOrderListButton({
   const primaryLineLabel = draftLines ? formatMaterialOrderDraftLineLabel(draftLines) : formatMaterialOrderPrimaryLineLabel(order);
 
   return (
-    <button
+    <AppListRow
+      as="button"
       type="button"
-      onClick={() => onSelectOrder(order.id)}
-      className={[
-        MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
-        selected
-          ? MATERIAL_ORDER_LIST_CARD_SELECTED_CLASS
-          : MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
-      ].join(" ")}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</p>
-          <p className="mt-1 truncate text-[11px] pbp-text-muted">{primaryLineLabel}</p>
-        </div>
+      selected={selected}
+      title={displayTitle}
+      description={primaryLineLabel}
+      trailing={
         <AppBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="sm">
           {formatMaterialOrderStatusLabel(order.status)}
         </AppBadge>
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2 text-[11px] pbp-text-subtle">
-        <span>{formatMaterialOrderTypeLabel(materialType)}</span>
-        <span>{supplierLabel}</span>
-      </div>
-    </button>
+      }
+      meta={
+        <span className="flex w-full min-w-0 items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2 pbp-text-subtle">
+          <span>{formatMaterialOrderTypeLabel(materialType)}</span>
+          <span className="truncate">{supplierLabel}</span>
+        </span>
+      }
+      onClick={() => onSelectOrder(order.id)}
+    />
   );
 }
