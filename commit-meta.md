@@ -1,10 +1,13 @@
-Version : 0.18.29
-Summary : 저장소관리 태블릿 디자인 재정리
-Description : 0.18.28에서 복구된 태블릿 스크롤 구조를 유지하면서 저장소관리 상단 요약 카드와 휴지통 목록의 태블릿 표시 밀도를 정리했습니다. 태블릿 이하에서는 요약 카드 2열 흐름과 터치 가능한 카드형 휴지통 row를 사용하고, PC 2xl 이상에서는 기존 표형 구조를 유지합니다.
+Version : 0.18.30
+Summary : 저장소관리 휴지통 표시 밀도 재정리
+Description : 저장소관리 PC 화면에서 휴지통 목록이 너무 낮고 작게 보이는 문제와 태블릿에서 휴지통 항목이 과하게 큰 카드처럼 보이는 문제를 보정했습니다. 저장소 요약 카드 높이를 줄이고 휴지통 row를 compact list-card 흐름으로 조정했으며, 태블릿 이하에서도 주요 컬럼 라벨이 row 내부에 표시되도록 했습니다. WorkspaceShell 스크롤 구조와 DB/API/R2 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
+- components/admin/common/AdminTable.tsx
 - components/admin/files/FileStorageSummary.tsx
 - components/admin/files/FileTrashSection.tsx
+- components/admin/files/fileTrashSectionColumns.tsx
 추가 파일 목록 :
-- docs/storage-tablet-design-0.18.29.md
+- docs/storage-trash-density-0.18.30.md
 삭제 파일 목록 :
+- 없음

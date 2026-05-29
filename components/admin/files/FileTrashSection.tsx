@@ -189,10 +189,10 @@ export default function FileTrashSection({
   }
 
   return (
-    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 md:p-4 2xl:h-full 2xl:min-h-0 2xl:gap-0`}>
+    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 md:p-4 2xl:h-full 2xl:min-h-[340px] 2xl:gap-2`}>
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
-        actionsClassName="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:[&>button]:flex-none [&>button]:min-h-10 [&>button]:px-3"
+        actionsClassName="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:[&>button]:flex-none [&>button]:min-h-9 [&>button]:px-3"
       >
         <AdminButton
           onClick={onRefresh}
@@ -295,9 +295,9 @@ export default function FileTrashSection({
       />
 
       <AdminTable
-        className="min-h-fit touch-pan-y border-0 bg-transparent shadow-none 2xl:min-h-0 2xl:flex-1 2xl:border 2xl:bg-[var(--pbp-surface)]"
+        className="min-h-fit touch-pan-y border-0 bg-transparent shadow-none 2xl:min-h-[300px] 2xl:flex-1 2xl:border 2xl:bg-[var(--pbp-surface)]"
         headerClassName={ADMIN_STORAGE_TABLE_HEADER_CLASS}
-        rowBaseClassName="grid w-full gap-2 rounded-[18px] border border-[var(--pbp-border)] px-3 py-3 text-left text-[11px] shadow-[var(--pbp-shadow-card)] md:items-center md:gap-3 md:px-4 md:py-3 2xl:rounded-none 2xl:border-0 2xl:px-3.5 2xl:py-1.5 2xl:shadow-none"
+        rowBaseClassName="grid w-full gap-2 rounded-[16px] border border-[var(--pbp-border)] px-3 py-2.5 text-left text-[11px] shadow-[var(--pbp-shadow-card)] md:items-center md:gap-2.5 md:px-3.5 md:py-2.5 xl:gap-3 2xl:rounded-none 2xl:border-0 2xl:px-3.5 2xl:py-1.5 2xl:shadow-none"
         items={sortedRows}
         getRowKey={(row) => row.rowId}
         emptyLabel={t(
@@ -309,6 +309,7 @@ export default function FileTrashSection({
           "삭제한 작업지시서, 문서, 디자인, 메모가 있으면 복원 또는 삭제 요청 대상으로 표시됩니다.",
         )}
         gridTemplateColumns={TRASH_TABLE_GRID}
+        responsiveGridClassName="grid-cols-[auto_minmax(0,1fr)] md:[grid-template-columns:34px_minmax(220px,1fr)_minmax(150px,0.72fr)_minmax(150px,0.72fr)] xl:[grid-template-columns:38px_minmax(260px,1.2fr)_128px_minmax(180px,0.9fr)_96px_82px] 2xl:[grid-template-columns:var(--admin-table-columns)]"
         onRowClick={(row) => setDetailRow(row)}
         rowClassName={(row) => {
           const previewWorkOrderId =

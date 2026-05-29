@@ -17,6 +17,7 @@ type AdminTableProps<TItem> = {
   rowClassName?: (item: TItem) => string;
   rowBaseClassName?: string;
   headerClassName?: string;
+  responsiveGridClassName?: string;
   onRowClick?: (item: TItem) => void;
 };
 
@@ -34,14 +35,15 @@ export default function AdminTable<TItem>({
   rowClassName,
   rowBaseClassName,
   headerClassName,
+  responsiveGridClassName: responsiveGridClassNameOverride,
   onRowClick,
 }: AdminTableProps<TItem>) {
   const gridStyle = gridTemplateColumns
     ? ({ "--admin-table-columns": gridTemplateColumns } as CSSProperties)
     : undefined;
-  const responsiveGridClassName = gridTemplateColumns
+  const responsiveGridClassName = responsiveGridClassNameOverride ?? (gridTemplateColumns
     ? "grid-cols-1 2xl:[grid-template-columns:var(--admin-table-columns)]"
-    : "grid-cols-1";
+    : "grid-cols-1");
   const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
   const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid 2xl:[grid-template-columns:var(--admin-table-columns)]";
 

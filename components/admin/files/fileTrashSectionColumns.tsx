@@ -139,7 +139,7 @@ function TrashTargetCell({
         compact
       />
       <div className="min-w-0 text-left">
-        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>
           {t("filesList.columns.target", "삭제 대상")}
         </p>
         <p
@@ -167,7 +167,7 @@ function CenterTextCell({
   return (
     <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
       {mobileLabel ? (
-        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{mobileLabel}</p>
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>{mobileLabel}</p>
       ) : null}
       <p
         className={`mx-auto max-w-full truncate text-center text-[12px] ${isStrong ? `font-semibold ${ADMIN_STORAGE_MUTED_TEXT_CLASS}` : ADMIN_STORAGE_MUTED_TEXT_CLASS}`}
@@ -188,7 +188,7 @@ function WorkOrderCell({
 }) {
   return (
     <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
-      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{mobileLabel}</p>
+      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>{mobileLabel}</p>
       <p
         className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mx-auto max-w-[220px] truncate text-center text-[12px] font-medium`}
         title={value}
@@ -199,9 +199,12 @@ function WorkOrderCell({
   );
 }
 
-function TypeBadgeCell({ value }: { value: string }) {
+function TypeBadgeCell({ value, mobileLabel }: { value: string; mobileLabel?: string }) {
   return (
-    <div className="flex min-w-0 w-full items-center justify-center text-center">
+    <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
+      {mobileLabel ? (
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] 2xl:hidden`}>{mobileLabel}</p>
+      ) : null}
       <AdminStatusBadge
         size="xs"
         tone="neutral"
@@ -261,7 +264,12 @@ export function createFileTrashColumns({
       ),
       headerClassName: TRASH_HEADER_CENTER_CLASS,
       className: TRASH_CELL_CENTER_CLASS,
-      render: (row) => <CenterTextCell value={row.deletedAt} />,
+      render: (row) => (
+        <CenterTextCell
+          value={row.deletedAt}
+          mobileLabel={t("filesList.columns.deletedAt", "삭제 일시")}
+        />
+      ),
     },
     {
       key: "workorder",
@@ -294,7 +302,12 @@ export function createFileTrashColumns({
       ),
       headerClassName: TRASH_HEADER_CENTER_CLASS,
       className: TRASH_CELL_CENTER_CLASS,
-      render: (row) => <TypeBadgeCell value={row.typeLabel} />,
+      render: (row) => (
+        <TypeBadgeCell
+          value={row.typeLabel}
+          mobileLabel={t("filesList.columns.type", "유형")}
+        />
+      ),
     },
     {
       key: "size",
@@ -308,7 +321,13 @@ export function createFileTrashColumns({
       ),
       headerClassName: TRASH_HEADER_CENTER_CLASS,
       className: TRASH_CELL_CENTER_CLASS,
-      render: (row) => <CenterTextCell value={row.sizeLabel} isStrong />,
+      render: (row) => (
+        <CenterTextCell
+          value={row.sizeLabel}
+          mobileLabel={t("filesList.columns.size", "크기")}
+          isStrong
+        />
+      ),
     },
   ];
 }
