@@ -10,6 +10,7 @@ type OrderInfoProps = WorkOrderDetailViewModel["orderInfoProps"];
 
 export default function WorkOrderDetailTabletOrderInfoSection({
   orderEntries,
+  factoryOptions,
   open,
   onToggle,
   onAdd,
@@ -30,14 +31,6 @@ export default function WorkOrderDetailTabletOrderInfoSection({
   const visibleOrderEntries = orderEntries.slice(0, 1);
   const totals = calculateOrderEntryTotals(visibleOrderEntries);
   const totalCostSummary = formatCurrencySummaryParts(totals.totalCost, i18n);
-  const dueDatePickerLabels = {
-    placeholder: copy.datePicker.placeholder,
-    clear: copy.datePicker.clear,
-    done: copy.datePicker.done,
-    selected: copy.datePicker.selected,
-    calendarAria: copy.datePicker.calendarAria,
-  };
-
   return (
     <section className="overflow-hidden rounded-2xl bg-stone-50 p-4">
       <SectionHeader
@@ -72,21 +65,21 @@ export default function WorkOrderDetailTabletOrderInfoSection({
               </div>
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-                <div className="pbp-workorder-editable-panel rounded-xl border px-3 py-3">
-                  <dt className="text-xs text-stone-500">{copy.fields.dueDate}</dt>
+                <div className="pbp-workorder-editable-panel rounded-xl border px-3 py-3 md:col-span-2">
+                  <dt className="text-xs text-stone-500">{copy.fields.vendor}</dt>
                   <dd className="mt-1">
                     <EditableValue
                       section="order"
                       rowId={item.id}
-                      field="dueDate"
-                      value={item.dueDate}
-                      editingCell={editingCell}
-                      editingValue={editingValue}
-                      inputType="date"
-                      datePickerLabels={dueDatePickerLabels}
-                      datePickerLocale={locale}
+                      field="factory"
+                      value={item.factory}
+                      displayValue={translateWorkOrderDisplayText(item.factory, locale)}
+                      options={factoryOptions}
+                      wrapText
                       centered
                       compact
+                      editingCell={editingCell}
+                      editingValue={editingValue}
                       onStartEdit={onStartEdit}
                       onCommit={onCommitEdit}
                       onCancel={onCancelEdit}

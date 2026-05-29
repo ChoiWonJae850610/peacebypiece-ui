@@ -1,9 +1,11 @@
-Version : 0.18.20
-Summary : TanStack Table 적용 후보 분석 문서 추가
-Description : TanStack Table을 바로 대량 적용하지 않고 저장소, 멤버 목록, 시스템 감사 로그, 시스템 purge 후보 목록을 기준으로 1차 전환 후보와 제외 대상을 문서화했습니다. APP_VERSION을 0.18.20으로 증가했습니다.
+Version : 0.18.21
+Summary : 모바일 태블릿 생산 공장 선택 필드 보정
+Description : 작업지시서 모바일/태블릿 생산 공장 카드에서 납기 필드 대신 생산 공장 선택 EditableValue를 노출하도록 보정했습니다. PC와 동일하게 factoryOptions 기반 선택 흐름을 사용하며, 공장 등록/협력업체관리/DB/API/R2 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
+- components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletOrderInfoSection.tsx
 추가 파일 목록 :
-- docs/ui-tanstack-table-candidates-0.18.20.md
+- docs/workorder-device-order-info-alignment-0.18.21.md
 삭제 파일 목록 :
 없음
