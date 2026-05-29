@@ -160,11 +160,12 @@ export default function MaterialOrderDraftEditor() {
           {mobilePanel === "orders" ? <section className="min-h-[520px] min-w-0">{listPanel}</section> : null}
           {mobilePanel === "detail" ? (
             <section className="min-h-[620px] min-w-0 space-y-3">
-              <div className="flex justify-end">
+              <div className="sticky bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-20 flex justify-end rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-2 shadow-[0_-10px_26px_rgba(28,25,23,0.10)] backdrop-blur">
                 <AppButton
                   type="button"
                   variant="secondary"
-                  size="sm"
+                  size="md"
+                  className="w-full"
                   onClick={() => setMobileMaterialSheetOpen(true)}
                 >
                   자재 선택 열기
@@ -181,9 +182,9 @@ export default function MaterialOrderDraftEditor() {
           description="이번 발주서에 담을 원단·부자재를 선택합니다."
           side="bottom"
           size="full"
-          contentClassName="px-4 pb-5 pt-3"
+          contentClassName="px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"
         >
-          <div className="min-h-[62vh] min-w-0">{allocationPanel}</div>
+          <div className="min-h-[62dvh] min-w-0">{allocationPanel}</div>
         </AppSheet>
       </AppResponsiveWorkspace>
     );

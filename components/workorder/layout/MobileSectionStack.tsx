@@ -43,7 +43,7 @@ export default function MobileSectionStack({
           </section>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 px-3 py-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 px-3 pt-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
           <AppButton className="w-full" size="lg" onClick={() => setSidePanelOpen(true)}>
             {sidePanelTitle}
           </AppButton>
@@ -56,7 +56,7 @@ export default function MobileSectionStack({
           description={i18n.workorder.ui.emptyWorkspace.sideDescription}
           side="bottom"
           size="full"
-          contentClassName="px-3 py-3"
+          contentClassName="px-3 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))]"
         >
           {sidePanel}
         </AppSheet>

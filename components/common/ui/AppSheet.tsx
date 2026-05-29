@@ -13,7 +13,7 @@ export type AppSheetSize = "sm" | "md" | "lg" | "full";
 const sideClassMap: Record<AppSheetSide, string> = {
   right: "inset-y-0 right-0 h-full border-l",
   left: "inset-y-0 left-0 h-full border-r",
-  bottom: "inset-x-0 bottom-0 max-h-[88vh] rounded-t-[28px] border-t",
+  bottom: "inset-x-0 bottom-0 max-h-[min(88dvh,calc(100dvh-env(safe-area-inset-top)-0.75rem))] rounded-t-[28px] border-t",
 };
 
 const sizeClassMap: Record<AppSheetSize, string> = {
@@ -56,7 +56,7 @@ export default function AppSheet({
           className={cn(
             "fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-2xl outline-none",
             sideClassMap[side],
-            side === "bottom" ? "min-h-[42vh]" : sizeClassMap[size],
+            side === "bottom" ? "min-h-[42dvh]" : sizeClassMap[size],
             className,
           )}
         >
@@ -77,8 +77,12 @@ export default function AppSheet({
               </AppButton>
             </Dialog.Close>
           </div>
-          <div className={cn("min-h-0 flex-1 overflow-y-auto px-5 py-4", contentClassName)}>{children}</div>
-          {footer ? <div className="border-t border-[var(--pbp-border)] px-5 py-4">{footer}</div> : null}
+          <div className={cn("min-h-0 flex-1 overscroll-contain overflow-y-auto px-5 py-4", contentClassName)}>{children}</div>
+          {footer ? (
+            <div className="border-t border-[var(--pbp-border)] px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              {footer}
+            </div>
+          ) : null}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
