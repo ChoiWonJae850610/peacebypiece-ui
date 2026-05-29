@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import { AppBadge, type AppBadgeTone } from "@/components/common/ui";
 import {
   ADMIN_STORAGE_CHECKBOX_CLASS,
   ADMIN_STORAGE_CHECKBOX_IDLE_CLASS,
@@ -26,6 +26,37 @@ const WIDE_TRASH_GRID =
   "48px minmax(260px,1.45fr) 136px minmax(180px,1fr) 104px 88px";
 
 type AdminT = ReturnType<typeof useAdminTranslation>;
+
+function getTrashTypeBadgeTone(row: UnifiedTrashRow): AppBadgeTone {
+  if (row.kind === "workorder") return "workorder";
+
+  const normalizedType = row.typeLabel.trim().toLowerCase();
+  if (normalizedType.includes("디자인") || normalizedType.includes("design")) {
+    return "design";
+  }
+  if (normalizedType.includes("문서") || normalizedType.includes("pdf") || normalizedType.includes("document")) {
+    return "document";
+  }
+  if (normalizedType.includes("메모") || normalizedType.includes("memo")) {
+    return "memo";
+  }
+  if (row.visualTone === "image") return "design";
+  if (row.visualTone === "pdf") return "document";
+  return "file";
+}
+
+function TrashTypeBadge({ row, className = "" }: { row: UnifiedTrashRow; className?: string }) {
+  return (
+    <AppBadge
+      size="xs"
+      tone={getTrashTypeBadgeTone(row)}
+      className={`max-w-[104px] truncate ${className}`}
+      title={row.typeLabel}
+    >
+      {row.typeLabel}
+    </AppBadge>
+  );
+}
 
 type FileTrashResponsiveRowsProps = {
   rows: UnifiedTrashRow[];
@@ -301,9 +332,7 @@ function WideTrashRow({
         {row.kind === "workorder" ? "-" : row.workorderTitle}
       </span>
       <span className="flex justify-center">
-        <AdminStatusBadge size="xs" tone="neutral" className="max-w-[92px] truncate">
-          {row.typeLabel}
-        </AdminStatusBadge>
+        <TrashTypeBadge row={row} className="min-w-[64px] justify-center" />
       </span>
       <span className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} truncate text-center text-[12px] font-semibold`}>
         {row.sizeLabel}
@@ -373,10 +402,14 @@ function CompactTrashRow({
               label={t("filesList.columns.workorder", "작업지시서")}
               value={row.kind === "workorder" ? "-" : row.workorderTitle}
             />
-            <CompactMetaItem
-              label={t("filesList.columns.type", "유형")}
-              value={row.typeLabel}
-            />
+            <div className="min-w-0">
+              <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium`}>
+                {t("filesList.columns.type", "유형")}
+              </p>
+              <div className="mt-1">
+                <TrashTypeBadge row={row} />
+              </div>
+            </div>
             <CompactMetaItem
               label={t("filesList.columns.size", "크기")}
               value={row.sizeLabel}

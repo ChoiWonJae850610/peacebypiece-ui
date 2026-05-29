@@ -10,6 +10,11 @@ export type AppBadgeTone =
   | "warning"
   | "danger"
   | "brand"
+  | "workorder"
+  | "design"
+  | "document"
+  | "memo"
+  | "file"
   | "inverse";
 
 export type AppBadgeVariant =
@@ -32,6 +37,11 @@ const toneClassMap: Record<AppBadgeTone, string> = {
   warning: "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]",
   danger: "border-[var(--pbp-status-danger-bg)] bg-[var(--pbp-status-danger-bg)] text-[var(--pbp-status-danger-fg)]",
   brand: "border-[var(--pbp-brand-muted)] bg-[var(--pbp-surface-selected)] text-[var(--pbp-brand-primary)]",
+  workorder: "border-[var(--pbp-brand-muted)] bg-[var(--pbp-surface-selected)] text-[var(--pbp-brand-primary)]",
+  design: "border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] text-[var(--pbp-accent)]",
+  document: "border-[var(--pbp-status-info-bg)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-status-info-fg)]",
+  memo: "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]",
+  file: "border-[var(--pbp-status-neutral-bg)] bg-[var(--pbp-status-neutral-bg)] text-[var(--pbp-status-neutral-fg)]",
   inverse: "border-white/20 bg-white/10 text-[var(--pbp-text-inverse)]",
 };
 

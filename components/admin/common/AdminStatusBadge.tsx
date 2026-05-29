@@ -6,6 +6,11 @@ export type AdminStatusBadgeTone =
   | "neutral"
   | "brand"
   | "primary"
+  | "workorder"
+  | "design"
+  | "document"
+  | "memo"
+  | "file"
   | "info"
   | "success"
   | "warning"
@@ -26,6 +31,11 @@ const toneMap: Record<AdminStatusBadgeTone, AppBadgeTone> = {
   neutral: "neutral",
   brand: "brand",
   primary: "brand",
+  workorder: "workorder",
+  design: "design",
+  document: "document",
+  memo: "memo",
+  file: "file",
   info: "info",
   success: "success",
   warning: "warning",

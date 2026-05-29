@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { RefreshCw, RotateCcw, Trash, Trash2 } from "lucide-react";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { ADMIN_STORAGE_PANEL_TIGHT_CLASS } from "@/components/admin/common/adminSemanticClassNames";
@@ -185,13 +186,15 @@ export default function FileTrashSection({
     <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 md:p-4 2xl:h-full 2xl:min-h-[340px] 2xl:gap-2`}>
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
-        actionsClassName="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:[&>button]:flex-none [&>button]:min-h-9 [&>button]:px-3"
+        actionsClassName="ml-auto grid w-fit grid-cols-2 justify-end gap-1.5 self-end sm:flex sm:flex-wrap sm:items-center sm:justify-end [&>button]:min-h-8 [&>button]:px-2.5 [&>button]:py-1.5 [&>button]:text-[11px]"
       >
         <AdminButton
           onClick={onRefresh}
           disabled={!canRefresh}
           title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+          className="gap-1.5"
         >
+          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} aria-hidden="true" />
           {isRefreshing
             ? t("filesList.refreshing", "새로고침 중")
             : t("filesList.refresh", "새로고침")}
@@ -208,13 +211,17 @@ export default function FileTrashSection({
                 )
               : undefined
           }
+          className="gap-1.5"
         >
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
           {isActionPending || isWorkOrderActionPending
             ? t("filesList.processing", "처리 중")
-            : t("terms.actions.restore", "복원")}{" "}
-          {selectedCount > 0
-            ? formatAdminTermCount(t, selectedCount, "item")
-            : ""}
+            : t("terms.actions.restore", "복원")}
+          {selectedCount > 0 ? (
+            <span className="text-[10px] opacity-80">
+              {formatAdminTermCount(t, selectedCount, "item")}
+            </span>
+          ) : null}
         </AdminButton>
         <AdminButton
           variant="danger"
@@ -228,19 +235,25 @@ export default function FileTrashSection({
                 )
               : undefined
           }
+          className="gap-1.5"
         >
+          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           {isActionPending || isWorkOrderActionPending
             ? t("filesList.processing", "처리 중")
-            : t("filesList.delete", "삭제")}{" "}
-          {selectedCount > 0
-            ? formatAdminTermCount(t, selectedCount, "item")
-            : ""}
+            : t("filesList.delete", "삭제")}
+          {selectedCount > 0 ? (
+            <span className="text-[10px] opacity-80">
+              {formatAdminTermCount(t, selectedCount, "item")}
+            </span>
+          ) : null}
         </AdminButton>
         <AdminButton
           variant="danger"
           onClick={() => setIsEmptyTrashConfirmOpen(true)}
           disabled={!canEmptyTrash}
+          className="gap-1.5"
         >
+          <Trash className="h-3.5 w-3.5" aria-hidden="true" />
           {t("filesList.emptyTrash", "비우기")}
         </AdminButton>
       </AdminActionBar>
