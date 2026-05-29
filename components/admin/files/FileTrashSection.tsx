@@ -3,19 +3,13 @@
 import { useMemo, useState } from "react";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import AdminTable from "@/components/admin/common/AdminTable";
-import {
-  ADMIN_STORAGE_PANEL_TIGHT_CLASS,
-  ADMIN_STORAGE_ROW_CLASS,
-  ADMIN_STORAGE_SELECTED_ROW_CLASS,
-} from "@/components/admin/common/adminSemanticClassNames";
+import { ADMIN_STORAGE_PANEL_TIGHT_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import type {
   AdminStorageWorkOrderItem,
   AdminTrashFileItem,
 } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
-import { createFileTrashColumns } from "@/components/admin/files/fileTrashSectionColumns";
 import {
   createUnifiedRows,
   sortUnifiedTrashRows,
@@ -23,7 +17,6 @@ import {
   type TrashSortState,
   type UnifiedTrashRow,
 } from "@/components/admin/files/fileTrashSectionRows";
-import { TRASH_TABLE_GRID } from "@/lib/admin/files/trashTablePresentation";
 import {
   createTrashSelectionConfirmSummary,
   getTrashSelectionActionState,
@@ -38,6 +31,7 @@ import {
   TrashSelectionConfirmModal,
   WorkOrderActionPreviewModal,
 } from "@/components/admin/files/fileTrashSectionModals";
+import { FileTrashResponsiveRows } from "@/components/admin/files/FileTrashResponsiveRows";
 
 type FileTrashSectionProps = {
   items: AdminTrashFileItem[];
@@ -293,49 +287,15 @@ export default function FileTrashSection({
         t={t}
       />
 
-      <AdminTable
-        className="min-h-fit touch-pan-y border-0 bg-transparent shadow-none min-[1180px]:border min-[1180px]:bg-[var(--pbp-surface)]"
-        headerClassName="hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] min-[1180px]:grid min-[1180px]:[grid-template-columns:var(--admin-table-columns)]"
-        rowBaseClassName="grid w-full gap-2 rounded-[16px] border border-[var(--pbp-border)] px-3 py-2 text-left text-[11px] shadow-[var(--pbp-shadow-card)] md:gap-2.5 md:px-3.5 md:py-2.5 min-[1180px]:items-center min-[1180px]:gap-3 min-[1180px]:rounded-none min-[1180px]:border-0 min-[1180px]:px-3.5 min-[1180px]:py-1.5 min-[1180px]:shadow-none"
-        items={sortedRows}
-        getRowKey={(row) => row.rowId}
-        emptyLabel={t(
-          "filesList.trashEmpty",
-          "휴지통에 보관 중인 항목이 없습니다.",
-        )}
-        emptyDescription={t(
-          "filesList.trashEmptyDescription",
-          "삭제한 작업지시서, 문서, 디자인, 메모가 있으면 복원 또는 삭제 요청 대상으로 표시됩니다.",
-        )}
-        gridTemplateColumns={TRASH_TABLE_GRID}
-        responsiveGridClassName="grid-cols-[auto_minmax(0,1fr)] min-[1180px]:[grid-template-columns:var(--admin-table-columns)]"
+      <FileTrashResponsiveRows
+        rows={sortedRows}
+        t={t}
+        sortState={sortState}
+        onSort={toggleSort}
         onRowClick={(row) => setDetailRow(row)}
-        rowClassName={(row) => {
-          const previewWorkOrderId =
-            workOrderActionPreview?.workOrderId ?? null;
-          if (row.kind === "workorder")
-            return row.id === previewWorkOrderId || row.isSelected
-              ? ADMIN_STORAGE_SELECTED_ROW_CLASS
-              : `${ADMIN_STORAGE_ROW_CLASS} border-l-4 border-l-[var(--pbp-border-strong)]`;
-          const isPreviewWorkOrderGroup = Boolean(
-            previewWorkOrderId &&
-            row.sourceItem.workorderId === previewWorkOrderId,
-          );
-          if (row.isGroupedAttachment)
-            return `${
-              isPreviewWorkOrderGroup
-                ? "border-l-4 border-l-[var(--pbp-border-strong)] bg-[var(--pbp-selected-surface-soft)]"
-                : "border-l-4 border-l-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]"
-            } text-[var(--pbp-text-muted)] transition`;
-          return `transition ${row.isSelected ? ADMIN_STORAGE_SELECTED_ROW_CLASS : ADMIN_STORAGE_ROW_CLASS}`;
-        }}
-        columns={createFileTrashColumns({
-          t,
-          onToggleItem,
-          onToggleWorkOrder,
-          sortState,
-          onSort: toggleSort,
-        })}
+        onToggleItem={onToggleItem}
+        onToggleWorkOrder={onToggleWorkOrder}
+        previewWorkOrderId={workOrderActionPreview?.workOrderId ?? null}
       />
     </section>
   );
