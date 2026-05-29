@@ -38,16 +38,16 @@ export default function AdminTable<TItem>({
 }: AdminTableProps<TItem>) {
   const gridStyle = gridTemplateColumns ? { gridTemplateColumns } : undefined;
   const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
-  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] lg:grid";
+  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid";
 
   return (
-    <div className={joinAdminClassNames("flex min-h-0 flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] lg:flex-1 lg:overflow-hidden", className)}>
+    <div className={joinAdminClassNames("flex min-h-0 flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] xl:flex-1 xl:overflow-hidden", className)}>
       <div className={tableHeaderClassName} style={gridStyle}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}
       </div>
-      <div className="min-h-0 divide-y divide-[var(--pbp-border)] overflow-x-auto overflow-y-visible overscroll-contain lg:flex-1 lg:overflow-auto">
+      <div className="min-h-0 divide-y divide-[var(--pbp-border)] overflow-x-auto overflow-y-visible overscroll-contain xl:flex-1 xl:overflow-auto">
         {isLoading ? (
           <div className="flex min-h-[240px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">{loadingLabel}</div>
         ) : items.length === 0 ? (

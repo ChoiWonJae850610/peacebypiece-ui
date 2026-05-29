@@ -35,7 +35,7 @@ type AdminMemberDirectorySectionProps = {
   onOpenMemberDetail: (row: MemberDirectoryRow) => void;
 };
 
-const MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS = "min-h-[420px] lg:h-[452px] lg:min-h-[452px]";
+const MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS = "min-h-[420px] xl:h-[452px] xl:min-h-[452px]";
 
 export default function AdminMemberDirectorySection({
   t,
@@ -67,7 +67,7 @@ export default function AdminMemberDirectorySection({
         "memberManagement.tabs.members.count",
         "대상 {count}명",
       ).replace("{count}", String(memberDirectoryRows.length))}
-      contentClassName="flex min-h-0 flex-col pt-4 lg:flex-1"
+      contentClassName="flex min-h-0 flex-col pt-4 xl:flex-1"
     >
       <AdminMemberDirectoryControls
         t={t}
@@ -117,8 +117,8 @@ export default function AdminMemberDirectorySection({
         )}
         gridTemplateColumns="minmax(120px,1fr) minmax(160px,1.2fr) 110px 110px 96px 110px 110px 120px 140px"
         rowBaseClassName="grid w-full min-w-[1120px] gap-3 px-4 py-3 text-left text-xs md:items-center"
-        headerClassName="hidden min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] lg:grid"
-        className="min-h-[320px] lg:min-h-0 lg:flex-1"
+        headerClassName="hidden min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid"
+        className="min-h-[320px] xl:min-h-0 xl:flex-1"
         onRowClick={onOpenMemberDetail}
       />
     </AdminPanelSection>

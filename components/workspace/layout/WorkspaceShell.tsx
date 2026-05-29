@@ -25,15 +25,15 @@ export default function WorkspaceShell({
 }: WorkspaceShellProps) {
   const isFixedFromDesktop = contentMode === "fixed-md";
   const contentFrameClassName = isFixedFromDesktop
-    ? "min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-0 sm:pr-1 lg:overflow-hidden"
+    ? "min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-0 sm:pr-1 xl:overflow-hidden"
     : "min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-0 sm:pr-1";
   const contentInnerClassName = isFixedFromDesktop
-    ? "flex min-h-full flex-col gap-3 pb-2 sm:gap-4 lg:h-full lg:min-h-0 lg:gap-0 lg:pb-0"
+    ? "flex min-h-full flex-col gap-3 pb-2 sm:gap-4 xl:h-full xl:min-h-0 xl:gap-0 xl:pb-0"
     : "flex min-h-full flex-col gap-3 pb-2 sm:gap-4 md:gap-5";
 
   return (
     <AdminThemeScope>
-      <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
+      <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 xl:p-8">
         <div className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
           <WorkspaceTopbar
             companyName={companyName}

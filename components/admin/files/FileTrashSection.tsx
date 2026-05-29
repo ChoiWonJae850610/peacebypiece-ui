@@ -189,7 +189,7 @@ export default function FileTrashSection({
   }
 
   return (
-    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-[360px] flex-col p-2.5 md:p-3 lg:h-full lg:min-h-0`}>
+    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-[360px] flex-col p-2.5 md:p-3 xl:h-full xl:min-h-0`}>
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
         actionsClassName="w-full [&>button]:flex-1 [&>button]:px-3 sm:w-auto sm:[&>button]:flex-none"
@@ -295,7 +295,7 @@ export default function FileTrashSection({
       />
 
       <AdminTable
-        className="mt-2 min-h-[320px] lg:min-h-0 lg:flex-1"
+        className="mt-2 min-h-[320px] xl:min-h-0 xl:flex-1"
         headerClassName={ADMIN_STORAGE_TABLE_HEADER_CLASS}
         rowBaseClassName="grid w-full gap-2 px-3 py-3 text-left text-[11px] md:items-center md:gap-3 md:px-3.5 md:py-1.5"
         items={sortedRows}
