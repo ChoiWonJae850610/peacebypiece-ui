@@ -1,8 +1,8 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
-import { AppButton, AppLinkButton, getAppButtonClassName } from "@/components/common/ui";
+import { AppButton, AppLinkButton, getAppButtonClassName, type AppButtonVariant } from "@/components/common/ui";
 
-export type AdminButtonVariant = "primary" | "secondary" | "danger" | "ghost";
+export type AdminButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "subtle" | "icon";
 export type AdminButtonSize = "sm" | "md" | "lg";
 
 type AdminButtonBaseProps = {
@@ -27,6 +27,10 @@ function mapAdminButtonSize(size: AdminButtonSize) {
   return "md";
 }
 
+function mapAdminButtonVariant(variant: AdminButtonVariant): AppButtonVariant {
+  return variant;
+}
+
 export function getAdminButtonClassName({
   variant = "secondary",
   size = "sm",
@@ -37,7 +41,7 @@ export function getAdminButtonClassName({
   className?: string;
 } = {}) {
   return getAppButtonClassName({
-    variant,
+    variant: mapAdminButtonVariant(variant),
     size: mapAdminButtonSize(size),
     className,
   });
@@ -45,7 +49,7 @@ export function getAdminButtonClassName({
 
 export function AdminButton({ children, variant = "secondary", size = "sm", className = "", type = "button", ...props }: AdminButtonProps) {
   return (
-    <AppButton type={type} variant={variant} size={mapAdminButtonSize(size)} className={className} {...props}>
+    <AppButton type={type} variant={mapAdminButtonVariant(variant)} size={mapAdminButtonSize(size)} className={className} {...props}>
       {children}
     </AppButton>
   );
@@ -53,7 +57,7 @@ export function AdminButton({ children, variant = "secondary", size = "sm", clas
 
 export function AdminLinkButton({ children, variant = "secondary", size = "sm", className = "", ...props }: AdminLinkButtonProps) {
   return (
-    <AppLinkButton variant={variant} size={mapAdminButtonSize(size)} className={className} {...props}>
+    <AppLinkButton variant={mapAdminButtonVariant(variant)} size={mapAdminButtonSize(size)} className={className} {...props}>
       {children}
     </AppLinkButton>
   );
