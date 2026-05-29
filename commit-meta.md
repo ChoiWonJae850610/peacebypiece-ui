@@ -1,10 +1,9 @@
-Version : 0.18.14
-Summary : 기준정보 화면 toast 피드백 분리
-Description : ToastMessage에 eventKey를 추가하고 원단·부자재 기준정보 화면의 성공/권한 피드백을 Sonner toast로 분리했습니다. API 실패 메시지는 inline message와 danger toast로 함께 유지했습니다.
+Version : 0.18.15
+Summary : 관리자 통계 tooltip 적용 범위 확대
+Description : 관리자 통계 화면의 공장별 성과 테이블에서 title 기반 기본 툴팁을 AppTooltip으로 전환했습니다. 통계 계산, 필터, API, DB 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/common/ToastMessage.tsx
-- features/materials/MaterialsWorkspacePage.tsx
+- components/admin/dashboard/AdminStatsDashboard.tsx
 추가 파일 목록 :
-- docs/ui-toast-message-0.18.14.md
+- docs/ui-tooltip-application-0.18.15.md
 삭제 파일 목록 :

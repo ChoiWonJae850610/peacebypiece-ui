@@ -33,6 +33,7 @@ import {
 } from "@/components/admin/common/adminSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
+import { AppTooltip } from "@/components/common/ui";
 import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type {
@@ -543,50 +544,53 @@ export default function AdminStatsDashboard({
         label: pt("factoryColumn", pageText.factoryColumn),
         className: "min-w-0",
         render: (item) => (
-          <span
-            className={`block truncate text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-            title={getFactoryMetricTooltip(item)}
-          >
-            {item.label} ·{" "}
-            {formatAdminStatsCount(
-              item.productionCount,
-              pt("workorderCountSuffix", pageText.workorderCountSuffix),
-            )}
-          </span>
+          <AppTooltip content={getFactoryMetricTooltip(item)} side="top">
+            <span
+              className={`block cursor-help truncate text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}
+            >
+              {item.label} ·{" "}
+              {formatAdminStatsCount(
+                item.productionCount,
+                pt("workorderCountSuffix", pageText.workorderCountSuffix),
+              )}
+            </span>
+          </AppTooltip>
         ),
       },
       {
         key: "delayRate",
         label: pt("delayRateColumn", pageText.delayRateColumn),
         render: (item) => (
-          <AdminStatusBadge
-            tone={
-              item.dueDelayRate && item.dueDelayRate > 0 ? "warning" : "success"
-            }
-            size="xs"
-            className="cursor-help"
-            title={getFactoryMetricTooltip(item)}
-          >
-            {formatAdminStatsPercent(item.dueDelayRate, zeroPercentLabel)}
-          </AdminStatusBadge>
+          <AppTooltip content={getFactoryMetricTooltip(item)} side="top">
+            <AdminStatusBadge
+              tone={
+                item.dueDelayRate && item.dueDelayRate > 0 ? "warning" : "success"
+              }
+              size="xs"
+              className="cursor-help"
+            >
+              {formatAdminStatsPercent(item.dueDelayRate, zeroPercentLabel)}
+            </AdminStatusBadge>
+          </AppTooltip>
         ),
       },
       {
         key: "qualityRate",
         label: pt("qualityRateColumn", pageText.qualityRateColumn),
         render: (item) => (
-          <AdminStatusBadge
-            tone={
-              item.qualityIssueRate && item.qualityIssueRate > 0
-                ? "warning"
-                : "success"
-            }
-            size="xs"
-            className="cursor-help"
-            title={getFactoryMetricTooltip(item)}
-          >
-            {formatAdminStatsPercent(item.qualityIssueRate, zeroPercentLabel)}
-          </AdminStatusBadge>
+          <AppTooltip content={getFactoryMetricTooltip(item)} side="top">
+            <AdminStatusBadge
+              tone={
+                item.qualityIssueRate && item.qualityIssueRate > 0
+                  ? "warning"
+                  : "success"
+              }
+              size="xs"
+              className="cursor-help"
+            >
+              {formatAdminStatsPercent(item.qualityIssueRate, zeroPercentLabel)}
+            </AdminStatusBadge>
+          </AppTooltip>
         ),
       },
     ],
