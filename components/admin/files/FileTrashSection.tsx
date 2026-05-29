@@ -189,10 +189,10 @@ export default function FileTrashSection({
   }
 
   return (
-    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col p-2.5 md:p-3 2xl:h-full 2xl:min-h-0`}>
+    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 md:p-4 2xl:h-full 2xl:min-h-0 2xl:gap-0`}>
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
-        actionsClassName="w-full [&>button]:flex-1 [&>button]:px-3 sm:w-auto sm:[&>button]:flex-none"
+        actionsClassName="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:[&>button]:flex-none [&>button]:min-h-10 [&>button]:px-3"
       >
         <AdminButton
           onClick={onRefresh}
@@ -295,9 +295,9 @@ export default function FileTrashSection({
       />
 
       <AdminTable
-        className="mt-2 min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
+        className="min-h-fit touch-pan-y border-0 bg-transparent shadow-none 2xl:min-h-0 2xl:flex-1 2xl:border 2xl:bg-[var(--pbp-surface)]"
         headerClassName={ADMIN_STORAGE_TABLE_HEADER_CLASS}
-        rowBaseClassName="grid w-full gap-2 px-3 py-3 text-left text-[11px] md:items-center md:gap-3 md:px-3.5 md:py-1.5"
+        rowBaseClassName="grid w-full gap-2 rounded-[18px] border border-[var(--pbp-border)] px-3 py-3 text-left text-[11px] shadow-[var(--pbp-shadow-card)] md:items-center md:gap-3 md:px-4 md:py-3 2xl:rounded-none 2xl:border-0 2xl:px-3.5 2xl:py-1.5 2xl:shadow-none"
         items={sortedRows}
         getRowKey={(row) => row.rowId}
         emptyLabel={t(

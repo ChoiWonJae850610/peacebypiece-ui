@@ -35,7 +35,7 @@ type FileStorageSummaryProps = {
 function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   return (
-    <div className="relative mx-auto mt-4 h-[126px] w-[128px]" aria-hidden="true">
+    <div className="relative mx-auto mt-3 h-[118px] w-[120px] 2xl:mt-4 2xl:h-[126px] 2xl:w-[128px]" aria-hidden="true">
       <div className="absolute inset-x-4 bottom-0 h-[98px] overflow-hidden rounded-b-[32px] border-x border-b border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-inner">
         <div
           className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[var(--admin-theme-surface)]/20"
@@ -73,7 +73,7 @@ function PlanUsageCard({
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
-    <div className={`${ADMIN_STORAGE_CARD_MUTED_CLASS} flex h-full min-h-[190px] flex-col px-4 py-4 md:min-h-[210px] md:px-6 md:py-5`}>
+    <div className={`${ADMIN_STORAGE_CARD_MUTED_CLASS} flex h-full min-h-[170px] flex-col px-4 py-4 md:min-h-[190px] md:px-5 md:py-5 2xl:min-h-[210px] 2xl:px-6`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
           <p className={ADMIN_STORAGE_LABEL_CLASS}>
@@ -123,7 +123,7 @@ function PlanUsageCard({
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
   const t = useAdminTranslation();
   return (
-    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[190px] flex-col px-4 py-4 md:min-h-[210px] md:px-6 md:py-5`}>
+    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[170px] flex-col px-4 py-4 md:min-h-[190px] md:px-5 md:py-5 2xl:min-h-[210px] 2xl:px-6`}>
       <div>
         <p className={ADMIN_STORAGE_LABEL_CLASS}>
           {t("filesSummary.fileOperationsLabel", "파일 운영")}
@@ -178,7 +178,7 @@ function DonutChart({
   let offset = 0;
 
   return (
-    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[190px] flex-col px-4 py-4 md:min-h-[210px] md:px-6 md:py-5`}>
+    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[170px] flex-col px-4 py-4 md:min-h-[190px] md:px-5 md:py-5 2xl:min-h-[210px] 2xl:px-6`}>
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className={ADMIN_STORAGE_LABEL_CLASS}>
@@ -279,13 +279,13 @@ export default function FileStorageSummary({
   const statusItems = buildFileStatusItems({ usageCards, t });
 
   return (
-    <section className="shrink-0 overflow-hidden rounded-[30px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:p-5">
-      <div className="flex flex-col gap-3 pb-4 md:flex-row md:items-end md:justify-between">
+    <section className="shrink-0 overflow-visible rounded-[26px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:rounded-[30px] md:p-5">
+      <div className="flex flex-col gap-3 pb-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--pbp-brand-soft)]">
             {t("filesSummary.visualEyebrow", "Storage control")}
           </p>
-          <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--pbp-text-primary)] md:text-3xl">
+          <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[var(--pbp-text-primary)] md:text-2xl 2xl:text-3xl">
             {t("filesSummary.visualTitle", "저장공간과 휴지통을 한 화면에서 관리합니다.")}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-muted)]">
@@ -296,10 +296,10 @@ export default function FileStorageSummary({
           {statusLabel}
         </span>
       </div>
-      <div className="grid gap-3 md:gap-4 2xl:grid-cols-3 2xl:grid-cols-[minmax(250px,0.82fr)_minmax(280px,0.92fr)_minmax(360px,1.18fr)]">
+      <div className="grid gap-3 md:gap-4 lg:grid-cols-2 2xl:grid-cols-3 2xl:grid-cols-[minmax(250px,0.82fr)_minmax(280px,0.92fr)_minmax(360px,1.18fr)]">
         <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
         <FileOperationsCard items={statusItems} />
-        <DonutChart items={fileTypeDistribution} />
+        <div className="lg:col-span-2 2xl:col-span-1"><DonutChart items={fileTypeDistribution} /></div>
       </div>
     </section>
   );
