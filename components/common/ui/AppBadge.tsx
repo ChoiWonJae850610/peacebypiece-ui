@@ -2,35 +2,76 @@ import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-type AppBadgeTone = "neutral" | "strong" | "info" | "success" | "warning" | "danger" | "brand";
-type AppBadgeSize = "sm" | "md";
+export type AppBadgeTone =
+  | "neutral"
+  | "strong"
+  | "info"
+  | "success"
+  | "warning"
+  | "danger"
+  | "brand"
+  | "inverse";
+
+export type AppBadgeVariant =
+  | "status"
+  | "count"
+  | "info"
+  | "success"
+  | "warning"
+  | "danger"
+  | "brand"
+  | "neutral";
+
+export type AppBadgeSize = "xs" | "sm" | "md";
 
 const toneClassMap: Record<AppBadgeTone, string> = {
-  neutral: "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]",
+  neutral: "border-[var(--pbp-status-neutral-bg)] bg-[var(--pbp-status-neutral-bg)] text-[var(--pbp-status-neutral-fg)]",
   strong: "border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
   info: "border-[var(--pbp-status-info-bg)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-status-info-fg)]",
-  success: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  warning: "border-amber-200 bg-amber-50 text-amber-700",
-  danger: "border-rose-200 bg-rose-50 text-rose-700",
-  brand: "border-[var(--pbp-accent)] bg-[color-mix(in_srgb,var(--pbp-accent)_12%,var(--pbp-surface))] text-[var(--pbp-accent)]",
+  success: "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]",
+  warning: "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]",
+  danger: "border-[var(--pbp-status-danger-bg)] bg-[var(--pbp-status-danger-bg)] text-[var(--pbp-status-danger-fg)]",
+  brand: "border-[var(--pbp-brand-muted)] bg-[var(--pbp-surface-selected)] text-[var(--pbp-brand-primary)]",
+  inverse: "border-white/20 bg-white/10 text-[var(--pbp-text-inverse)]",
+};
+
+const variantToneMap: Record<AppBadgeVariant, AppBadgeTone> = {
+  status: "neutral",
+  count: "strong",
+  info: "info",
+  success: "success",
+  warning: "warning",
+  danger: "danger",
+  brand: "brand",
+  neutral: "neutral",
 };
 
 const sizeClassMap: Record<AppBadgeSize, string> = {
+  xs: "px-2 py-0.5 text-[10px]",
   sm: "px-2 py-0.5 text-[11px]",
   md: "px-2.5 py-1 text-xs",
 };
 
 type AppBadgeProps = HTMLAttributes<HTMLSpanElement> & {
   tone?: AppBadgeTone;
+  variant?: AppBadgeVariant;
   size?: AppBadgeSize;
 };
 
-export default function AppBadge({ className, tone = "neutral", size = "md", ...props }: AppBadgeProps) {
+export default function AppBadge({
+  className,
+  tone,
+  variant = "status",
+  size = "md",
+  ...props
+}: AppBadgeProps) {
+  const resolvedTone = tone ?? variantToneMap[variant];
+
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border font-semibold leading-none",
-        toneClassMap[tone],
+        "inline-flex w-fit shrink-0 items-center justify-center gap-1 rounded-full border font-semibold leading-none",
+        toneClassMap[resolvedTone],
         sizeClassMap[size],
         className,
       )}

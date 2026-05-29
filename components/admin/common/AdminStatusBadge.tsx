@@ -1,7 +1,17 @@
 import type { ReactNode } from "react";
-import { adminToneClassNames, joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 
-export type AdminStatusBadgeTone = "neutral" | "brand" | "primary" | "info" | "success" | "warning" | "danger" | "maintenance" | "inverse";
+import { AppBadge, type AppBadgeSize, type AppBadgeTone } from "@/components/common/ui";
+
+export type AdminStatusBadgeTone =
+  | "neutral"
+  | "brand"
+  | "primary"
+  | "info"
+  | "success"
+  | "warning"
+  | "danger"
+  | "maintenance"
+  | "inverse";
 export type AdminStatusBadgeSize = "xs" | "sm";
 
 type AdminStatusBadgeProps = {
@@ -12,21 +22,33 @@ type AdminStatusBadgeProps = {
   title?: string;
 };
 
-const toneClassNames: Record<AdminStatusBadgeTone, string> = {
-  ...adminToneClassNames,
-  primary: adminToneClassNames.brand,
-  maintenance: adminToneClassNames.info,
+const toneMap: Record<AdminStatusBadgeTone, AppBadgeTone> = {
+  neutral: "neutral",
+  brand: "brand",
+  primary: "brand",
+  info: "info",
+  success: "success",
+  warning: "warning",
+  danger: "danger",
+  maintenance: "info",
+  inverse: "inverse",
 };
 
-const sizeClassNames: Record<AdminStatusBadgeSize, string> = {
-  xs: "px-2 py-0.5 text-[10px]",
-  sm: "px-2.5 py-1 text-[11px]",
+const sizeMap: Record<AdminStatusBadgeSize, AppBadgeSize> = {
+  xs: "xs",
+  sm: "sm",
 };
 
-export function AdminStatusBadge({ children, tone = "neutral", size = "sm", className = "", title }: AdminStatusBadgeProps) {
+export function AdminStatusBadge({
+  children,
+  tone = "neutral",
+  size = "sm",
+  className = "",
+  title,
+}: AdminStatusBadgeProps) {
   return (
-    <span title={title} className={joinAdminClassNames("inline-flex w-fit shrink-0 items-center justify-center rounded-full border font-semibold leading-none", sizeClassNames[size], toneClassNames[tone], className)}>
+    <AppBadge title={title} tone={toneMap[tone]} size={sizeMap[size]} className={className}>
       {children}
-    </span>
+    </AppBadge>
   );
 }

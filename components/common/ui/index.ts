@@ -1,4 +1,4 @@
-export { default as AppBadge } from "./AppBadge";
+export { default as AppBadge, type AppBadgeSize, type AppBadgeTone, type AppBadgeVariant } from "./AppBadge";
 export { default as AppButton, AppLinkButton, getAppButtonClassName, type AppButtonSize, type AppButtonVariant, type AppButtonWidth } from "./AppButton";
 export { default as AppCard, type AppCardPadding, type AppCardVariant } from "./AppCard";
 export { default as AppListRow } from "./AppListRow";
