@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo, useRef } from "react";
+
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import {
   ADMIN_STORAGE_CARD_CLASS,
@@ -18,6 +20,7 @@ import type {
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { translateAdminFileTypeTerm } from "@/lib/i18n/adminTermFormatters";
 import { getAdminChartColor } from "@/lib/admin/chartPalette";
+import { useElementSize } from "@/lib/responsive/useElementSize";
 import {
   buildFileStatusItems,
   formatCountWithUnit,
@@ -31,6 +34,44 @@ type FileStorageSummaryProps = {
   usageSummary: AdminStorageUsageSummary;
   fileTypeDistribution?: AdminFileTypeDistributionItem[];
 };
+
+const STORAGE_SUMMARY_WIDE_MIN_WIDTH = 1120;
+const STORAGE_SUMMARY_MEDIUM_MIN_WIDTH = 720;
+
+type StorageSummaryLayoutMode = "narrow" | "medium" | "wide";
+
+function getStorageSummaryLayoutMode(width: number): StorageSummaryLayoutMode {
+  if (width >= STORAGE_SUMMARY_WIDE_MIN_WIDTH) return "wide";
+  if (width >= STORAGE_SUMMARY_MEDIUM_MIN_WIDTH) return "medium";
+  return "narrow";
+}
+
+function getStorageSummaryGridStyle(layoutMode: StorageSummaryLayoutMode) {
+  if (layoutMode === "wide") {
+    return {
+      gridTemplateColumns:
+        "minmax(230px,0.78fr) minmax(260px,0.88fr) minmax(340px,1.12fr)",
+    };
+  }
+
+  if (layoutMode === "medium") {
+    return {
+      gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
+    };
+  }
+
+  return {
+    gridTemplateColumns: "minmax(0,1fr)",
+  };
+}
+
+function getFileTypeCardGridStyle(layoutMode: StorageSummaryLayoutMode) {
+  if (layoutMode === "medium") {
+    return { gridColumn: "1 / -1" };
+  }
+
+  return undefined;
+}
 
 function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
@@ -271,6 +312,17 @@ export default function FileStorageSummary({
   fileTypeDistribution = [],
 }: FileStorageSummaryProps) {
   const t = useAdminTranslation();
+  const summaryRef = useRef<HTMLElement | null>(null);
+  const { width: summaryWidth } = useElementSize(summaryRef);
+  const layoutMode = getStorageSummaryLayoutMode(summaryWidth);
+  const gridStyle = useMemo(
+    () => getStorageSummaryGridStyle(layoutMode),
+    [layoutMode],
+  );
+  const fileTypeGridStyle = useMemo(
+    () => getFileTypeCardGridStyle(layoutMode),
+    [layoutMode],
+  );
   const statusLabel = translateStorageStatus(
     usageSummary.statusTone,
     usageSummary.statusLabel,
@@ -279,7 +331,10 @@ export default function FileStorageSummary({
   const statusItems = buildFileStatusItems({ usageCards, t });
 
   return (
-    <section className="shrink-0 overflow-visible rounded-[24px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-3 shadow-sm md:rounded-[28px] md:p-4">
+    <section
+      ref={summaryRef}
+      className="shrink-0 overflow-visible rounded-[24px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-3 shadow-sm md:rounded-[28px] md:p-4"
+    >
       <div className="flex flex-col gap-2 pb-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--pbp-brand-soft)]">
@@ -296,10 +351,12 @@ export default function FileStorageSummary({
           {statusLabel}
         </span>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 md:gap-3 2xl:grid-cols-3 2xl:grid-cols-[minmax(230px,0.78fr)_minmax(260px,0.88fr)_minmax(340px,1.12fr)]">
+      <div className="grid gap-3 md:gap-3" style={gridStyle}>
         <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
         <FileOperationsCard items={statusItems} />
-        <div className="md:col-span-2 2xl:col-span-1"><DonutChart items={fileTypeDistribution} /></div>
+        <div style={fileTypeGridStyle}>
+          <DonutChart items={fileTypeDistribution} />
+        </div>
       </div>
     </section>
   );
