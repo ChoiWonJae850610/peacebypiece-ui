@@ -876,7 +876,7 @@ export default function AdminMemberManagementDashboard() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto pr-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain pb-4 pr-1 md:gap-6">
       <section className="overflow-hidden rounded-[32px] border border-[var(--pbp-border-soft)] bg-[linear-gradient(135deg,var(--pbp-surface-base)_0%,var(--pbp-surface-soft)_48%,var(--pbp-brand-muted)_140%)] p-5 shadow-[var(--pbp-shadow-card)] sm:p-6">
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
@@ -932,8 +932,8 @@ export default function AdminMemberManagementDashboard() {
             onChange={setActiveTab}
           />
         }
-        bodyClassName="mt-4"
-        className="shrink-0 rounded-[30px]"
+        bodyClassName="mt-4 min-w-0 overflow-visible"
+        className="min-w-0 shrink-0 rounded-[30px]"
       >
         <div>
           {activeTab === "invite" ? (

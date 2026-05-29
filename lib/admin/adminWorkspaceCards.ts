@@ -129,12 +129,12 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
   {
     id: "legal",
     label: "약관·정책",
-    description: "이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책을 확인하는 영역입니다.",
+    description: "이용약관, 개인정보처리방침, 서비스 운영정책, 데이터 보관·삭제정책을 확인합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.organizationSettingsManage,
-    requiredMemberPermissions: [MEMBER_PERMISSION_CODE.settingsRead],
-    href: null,
-    status: "planned",
-    statusLabel: "운영 예정",
+    requiredMemberPermissions: [],
+    href: "/workspace/legal",
+    status: "available",
+    statusLabel: "조회",
   },
 ];
 
@@ -181,7 +181,7 @@ export const ADMIN_HOME_PRIMARY_CARD_IDS = [
   "member-management",
 ] as const;
 
-export const ADMIN_HOME_MEMBER_CARD_IDS = [] as const;
+export const ADMIN_HOME_MEMBER_CARD_IDS = ["legal"] as const;
 
 function filterAdminWorkspaceCardsByIds(
   cards: readonly AdminWorkspaceCard[],

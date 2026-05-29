@@ -5,6 +5,7 @@ import { AdminSection, AdminCard } from "@/components/admin/common/AdminSection"
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
+  getVisibleAdminHomeMemberCards,
   getVisibleAdminHomePrimaryCards,
   type AdminWorkspaceCard,
   type AdminWorkspaceCardStatus,
@@ -101,7 +102,10 @@ type AdminConsoleSectionsProps = {
 export default function AdminConsoleSections({ permissionCodes, role }: AdminConsoleSectionsProps) {
   const t = useAdminTranslation();
   const cardAccessInput = { permissionCodes: permissionCodes ?? ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES, role };
-  const primaryCards = getVisibleAdminHomePrimaryCards(cardAccessInput);
+  const primaryCards = [
+    ...getVisibleAdminHomePrimaryCards(cardAccessInput),
+    ...(role === "member" ? getVisibleAdminHomeMemberCards(cardAccessInput) : []),
+  ];
 
   return (
     <AdminSection

@@ -439,7 +439,7 @@ export const adminEn = {
       legal: {
         label: "Terms and policies",
         description:
-          "Reserved for terms, privacy, refund, and data retention policy screens.",
+          "Review service terms, privacy policy, operating policy, and data retention policy.",
       },
       "standard-units": {
         label: "Standard units",

@@ -24,7 +24,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
   const controller = usePartnerMasterController(partnerText, capabilities);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-elevated)] md:h-full md:max-h-full md:overflow-hidden md:p-5 xl:p-6">
+    <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-elevated)] md:p-5 lg:h-full lg:max-h-full lg:overflow-hidden xl:p-6">
       <div className="rounded-[30px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:p-5">
         <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
 
@@ -46,7 +46,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
       />
 
       <PartnerMasterList
-        className="mt-4 min-h-[360px] md:min-h-0 md:flex-1"
+        className="mt-4 min-h-[360px] lg:min-h-0 lg:flex-1"
         items={controller.listViewModel.items}
         isLoading={controller.isLoadingPartners}
         canUpdate={controller.canUpdatePartner}
