@@ -39,7 +39,7 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-3 shrink-0 border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 transition-colors md:px-4">
-      <div className="grid min-w-0 gap-3 min-[720px]:grid-cols-[minmax(260px,1fr)_180px_180px] min-[720px]:items-end">
+      <div className="grid min-w-0 gap-3 min-[720px]:grid-cols-[minmax(320px,520px)_minmax(320px,auto)] min-[720px]:items-end min-[720px]:justify-between">
         <label className="min-w-0 space-y-2">
           <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
           <input
@@ -50,7 +50,7 @@ export default function PartnerMasterFilters({
           />
         </label>
 
-        <div className="grid min-w-0 grid-cols-2 gap-3 min-[720px]:contents">
+        <div className="grid min-w-0 grid-cols-2 gap-3 min-[720px]:ml-auto min-[720px]:w-[380px]">
           <label className="min-w-0 space-y-2">
             <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</span>
             <AppSelect
