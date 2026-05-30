@@ -1,7 +1,7 @@
 "use client";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminFilterBar from "@/components/admin/common/AdminFilterBar";
+import { AppSelect } from "@/components/common/ui";
 import { type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 
@@ -14,8 +14,8 @@ type PartnerMasterFiltersProps = {
   searchTerm: string;
   onSearchTermChange: (value: string) => void;
   filterOptions: PartnerMasterFilterOption[];
-  selectedTypes: PartnerFilterChip[];
-  onToggleType: (value: PartnerFilterChip) => void;
+  selectedType: PartnerFilterChip;
+  onTypeChange: (value: PartnerFilterChip) => void;
   selectedStatus: PartnerStatusFilter;
   onStatusChange: (value: PartnerStatusFilter) => void;
   filteredCount: number;
@@ -26,8 +26,8 @@ export default function PartnerMasterFilters({
   searchTerm,
   onSearchTermChange,
   filterOptions,
-  selectedTypes,
-  onToggleType,
+  selectedType,
+  onTypeChange,
   selectedStatus,
   onStatusChange,
   filteredCount,
@@ -43,8 +43,8 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-3 shrink-0 border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 transition-colors md:px-4">
-      <div className="flex flex-col gap-3 min-[1120px]:flex-row min-[1120px]:items-end min-[1120px]:justify-between">
-        <label className="min-w-0 space-y-2 min-[1120px]:w-[260px] min-[1280px]:w-[300px]">
+      <div className="grid min-w-0 gap-3 min-[860px]:grid-cols-[minmax(240px,1fr)_180px_180px_auto] min-[860px]:items-end">
+        <label className="min-w-0 space-y-2">
           <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
           <input
             value={searchTerm}
@@ -54,48 +54,33 @@ export default function PartnerMasterFilters({
           />
         </label>
 
-        <div className="grid min-w-0 gap-3 min-[720px]:grid-cols-2 min-[1120px]:flex min-[1120px]:flex-1 min-[1120px]:items-end min-[1120px]:gap-4">
-          <div className="min-w-0 space-y-2 min-[1120px]:flex-1">
-            <p className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</p>
-            <div className="flex flex-wrap gap-2">
-              {filterOptions.map((item) => {
-                const isSelected = selectedTypes.includes(item.value);
-                return (
-                  <AdminButton
-                    key={item.value}
-                    type="button"
-                    onClick={() => onToggleType(item.value)}
-                    variant={isSelected ? "primary" : "secondary"}
-                    size="sm"
-                    className="h-9 whitespace-nowrap px-3 text-xs"
-                  >
-                    {item.label}
-                  </AdminButton>
-                );
-              })}
-            </div>
-          </div>
+        <label className="min-w-0 space-y-2">
+          <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</span>
+          <AppSelect
+            value={selectedType}
+            onValueChange={(value) => onTypeChange(value as PartnerFilterChip)}
+            options={filterOptions.map((item) => ({ value: item.value, label: item.label }))}
+            size="sm"
+            width="full"
+            ariaLabel={filterText.typeLabel}
+            triggerClassName="h-10 rounded-2xl"
+          />
+        </label>
 
-          <div className="min-w-0 space-y-2 min-[1120px]:w-[220px]">
-            <p className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.statusLabel}</p>
-            <div className="flex flex-wrap gap-2">
-              {statusOptions.map((item) => (
-                <AdminButton
-                  key={item.value}
-                  type="button"
-                  onClick={() => onStatusChange(item.value)}
-                  variant={selectedStatus === item.value ? "primary" : "secondary"}
-                  size="sm"
-                  className="h-9 whitespace-nowrap px-3 text-xs"
-                >
-                  {item.label}
-                </AdminButton>
-              ))}
-            </div>
-          </div>
-        </div>
+        <label className="min-w-0 space-y-2">
+          <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.statusLabel}</span>
+          <AppSelect
+            value={selectedStatus}
+            onValueChange={(value) => onStatusChange(value as PartnerStatusFilter)}
+            options={statusOptions.map((item) => ({ value: item.value, label: item.label }))}
+            size="sm"
+            width="full"
+            ariaLabel={filterText.statusLabel}
+            triggerClassName="h-10 rounded-2xl"
+          />
+        </label>
 
-        <div className="flex min-w-0 justify-end min-[1120px]:w-[150px]">
+        <div className="flex min-w-0 justify-end min-[860px]:self-end">
           <p className="min-w-[132px] rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 text-center text-sm text-[var(--pbp-text-muted)]">
             {filterText.currentListPrefix} <span className="font-semibold text-[var(--pbp-text-primary)]">{filteredCount}</span>
             {filterText.currentListSuffix}

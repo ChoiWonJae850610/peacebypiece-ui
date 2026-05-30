@@ -32,18 +32,14 @@ export default function PartnerMasterSummaryCards({
 }: PartnerMasterSummaryCardsProps) {
   const { i18n } = useI18n();
   const summaryText = i18n.admin.partnerMaster.summaryCards;
+  const filterText = i18n.admin.partnerMaster.filters;
   const metrics: PartnerSummaryMetric[] = [
     {
       id: "total",
       label: summaryText.total.label,
       value: formatCount(summary.total),
-      helper: summaryText.total.helper,
-    },
-    {
-      id: "active",
-      label: summaryText.active.label,
-      value: formatCount(summary.active),
-      helper: formatMessage(summaryText.active.helper, {
+      helper: formatMessage(filterText.usageSummary, {
+        active: summary.active,
         inactive: summary.inactive,
       }),
     },
@@ -74,7 +70,7 @@ export default function PartnerMasterSummaryCards({
 
   return (
     <section className={[className, "shrink-0"].filter(Boolean).join(" ")} aria-label={summaryText.ariaLabel}>
-      <div className="grid gap-2 min-[560px]:grid-cols-2 min-[920px]:grid-cols-3 min-[1180px]:grid-cols-5">
+      <div className="grid gap-2 min-[560px]:grid-cols-2 min-[1080px]:grid-cols-4">
         {metrics.map((metric) => (
           <article
             key={metric.id}

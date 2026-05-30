@@ -148,7 +148,7 @@ export default function PartnerMasterWideTableRows({
   onEditPartner,
 }: PartnerMasterWideTableRowsProps) {
   return (
-    <section className="flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+    <section className="flex min-h-fit touch-pan-y flex-col overflow-visible overflow-hidden rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
       <WideTableHeader listText={listText} sortState={sortState} onSort={onSort} />
       {isLoading ? (
         <PartnerRowsEmpty label={listText.loading} />

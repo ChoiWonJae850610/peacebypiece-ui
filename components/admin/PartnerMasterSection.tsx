@@ -6,7 +6,6 @@ import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMast
 import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
 import PartnerMasterSummaryCards from "@/components/admin/partnerMaster/PartnerMasterSummaryCards";
-import { togglePartnerFilterSelection } from "@/lib/admin/partner";
 import { usePartnerMasterController } from "@/components/admin/partnerMaster/usePartnerMasterController";
 
 export type PartnerMasterCapabilities = {
@@ -35,10 +34,8 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
         searchTerm={controller.searchTerm}
         onSearchTermChange={controller.setSearchTerm}
         filterOptions={controller.listViewModel.filterOptions}
-        selectedTypes={controller.selectedTypes}
-        onToggleType={(value) =>
-          controller.setSelectedTypes((current) => togglePartnerFilterSelection(current, value))
-        }
+        selectedType={controller.selectedTypes[0] ?? "all"}
+        onTypeChange={(value) => controller.setSelectedTypes([value])}
         selectedStatus={controller.selectedStatus}
         onStatusChange={controller.setSelectedStatus}
         filteredCount={controller.listViewModel.filteredCount}
