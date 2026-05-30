@@ -38,8 +38,6 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
         onTypeChange={(value) => controller.setSelectedTypes([value])}
         selectedStatus={controller.selectedStatus}
         onStatusChange={controller.setSelectedStatus}
-        filteredCount={controller.listViewModel.filteredCount}
-        hasSearch={controller.listViewModel.hasSearch}
       />
 
       <PartnerMasterList

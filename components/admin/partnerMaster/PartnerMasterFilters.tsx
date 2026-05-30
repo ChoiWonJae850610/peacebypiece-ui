@@ -18,8 +18,6 @@ type PartnerMasterFiltersProps = {
   onTypeChange: (value: PartnerFilterChip) => void;
   selectedStatus: PartnerStatusFilter;
   onStatusChange: (value: PartnerStatusFilter) => void;
-  filteredCount: number;
-  hasSearch: boolean;
 };
 
 export default function PartnerMasterFilters({
@@ -30,8 +28,6 @@ export default function PartnerMasterFilters({
   onTypeChange,
   selectedStatus,
   onStatusChange,
-  filteredCount,
-  hasSearch,
 }: PartnerMasterFiltersProps) {
   const { i18n } = useI18n();
   const filterText = i18n.admin.partnerMaster.filters;
@@ -43,7 +39,7 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-3 shrink-0 border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 transition-colors md:px-4">
-      <div className="grid min-w-0 gap-3 min-[860px]:grid-cols-[minmax(240px,1fr)_180px_180px_auto] min-[860px]:items-end">
+      <div className="grid min-w-0 gap-3 min-[720px]:grid-cols-[minmax(260px,1fr)_180px_180px] min-[720px]:items-end">
         <label className="min-w-0 space-y-2">
           <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
           <input
@@ -54,38 +50,32 @@ export default function PartnerMasterFilters({
           />
         </label>
 
-        <label className="min-w-0 space-y-2">
-          <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</span>
-          <AppSelect
-            value={selectedType}
-            onValueChange={(value) => onTypeChange(value as PartnerFilterChip)}
-            options={filterOptions.map((item) => ({ value: item.value, label: item.label }))}
-            size="sm"
-            width="full"
-            ariaLabel={filterText.typeLabel}
-            triggerClassName="h-10 rounded-2xl"
-          />
-        </label>
+        <div className="grid min-w-0 grid-cols-2 gap-3 min-[720px]:contents">
+          <label className="min-w-0 space-y-2">
+            <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</span>
+            <AppSelect
+              value={selectedType}
+              onValueChange={(value) => onTypeChange(value as PartnerFilterChip)}
+              options={filterOptions.map((item) => ({ value: item.value, label: item.label }))}
+              size="sm"
+              width="full"
+              ariaLabel={filterText.typeLabel}
+              triggerClassName="h-10 rounded-2xl"
+            />
+          </label>
 
-        <label className="min-w-0 space-y-2">
-          <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.statusLabel}</span>
-          <AppSelect
-            value={selectedStatus}
-            onValueChange={(value) => onStatusChange(value as PartnerStatusFilter)}
-            options={statusOptions.map((item) => ({ value: item.value, label: item.label }))}
-            size="sm"
-            width="full"
-            ariaLabel={filterText.statusLabel}
-            triggerClassName="h-10 rounded-2xl"
-          />
-        </label>
-
-        <div className="flex min-w-0 justify-end min-[860px]:self-end">
-          <p className="min-w-[132px] rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 text-center text-sm text-[var(--pbp-text-muted)]">
-            {filterText.currentListPrefix} <span className="font-semibold text-[var(--pbp-text-primary)]">{filteredCount}</span>
-            {filterText.currentListSuffix}
-            {hasSearch ? filterText.searchResultSuffix : ""}
-          </p>
+          <label className="min-w-0 space-y-2">
+            <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.statusLabel}</span>
+            <AppSelect
+              value={selectedStatus}
+              onValueChange={(value) => onStatusChange(value as PartnerStatusFilter)}
+              options={statusOptions.map((item) => ({ value: item.value, label: item.label }))}
+              size="sm"
+              width="full"
+              ariaLabel={filterText.statusLabel}
+              triggerClassName="h-10 rounded-2xl"
+            />
+          </label>
         </div>
       </div>
     </AdminFilterBar>
