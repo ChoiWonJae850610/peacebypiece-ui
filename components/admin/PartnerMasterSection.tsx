@@ -28,7 +28,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
       <div className="rounded-[30px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:p-5">
         <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
 
-        <PartnerMasterSummaryCards summary={controller.listViewModel.summary} className="mt-5" />
+        <PartnerMasterSummaryCards summary={controller.listViewModel.summary} className="mt-4" />
       </div>
 
       <PartnerMasterFilters
