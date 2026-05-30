@@ -1,10 +1,11 @@
-Version : 0.18.39
-Summary : 저장소 휴지통 header 정렬 보정
-Description : 저장소관리 휴지통 영역에서 제목과 액션 버튼이 같은 높이에 정렬되도록 FileTrashSection의 AdminActionBar 배치를 보정했습니다. 버튼은 icon-only compact 형태를 유지하고 WorkspaceShell 및 휴지통 기능 흐름은 변경하지 않았습니다.
+Version : 0.18.40
+Summary : 협력업체관리 목록 컨테이너 기준 반응형 전환
+Description : 협력업체관리 목록에 실제 컨테이너 폭 기준 wide table / compact list 렌더링 분기를 적용했습니다. 기존 검색/필터/정렬/수정 모달 흐름은 유지하고 WorkspaceShell과 DB/API 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/files/FileTrashSection.tsx
+- components/admin/partnerMaster/PartnerMasterList.tsx
 추가 파일 목록 :
-- docs/storage-trash-header-alignment-0.18.39.md
+- components/admin/partnerMaster/PartnerMasterResponsiveRows.tsx
+- docs/partner-responsive-list-0.18.40.md
 삭제 파일 목록 :
 - 없음
