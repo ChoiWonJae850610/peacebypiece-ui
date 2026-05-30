@@ -39,18 +39,18 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-3 shrink-0 border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 transition-colors md:px-4">
-      <div className="grid w-full min-w-0 gap-3 min-[1120px]:grid-cols-[minmax(0,1fr)_auto] min-[1120px]:items-end">
-        <label className="min-w-0 space-y-2">
+      <div className="grid w-full min-w-0 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(140px,180px)] min-[720px]:items-end">
+        <label className="min-w-0 space-y-2 min-[720px]:col-span-1">
           <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
           <input
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
             placeholder={filterText.searchPlaceholder}
-            className="h-10 w-full rounded-2xl border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-4 text-sm outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-4 focus:ring-[var(--pbp-focus-ring)]"
+            className="h-10 w-full min-w-0 rounded-2xl border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-4 text-sm outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-4 focus:ring-[var(--pbp-focus-ring)]"
           />
         </label>
 
-        <div className="grid min-w-0 grid-cols-2 gap-3 min-[720px]:ml-auto min-[720px]:w-full min-[720px]:max-w-[400px] min-[1120px]:ml-0 min-[1120px]:w-[400px] min-[1120px]:max-w-[400px]">
+        <div className="grid min-w-0 grid-cols-2 gap-3 min-[720px]:contents">
           <label className="min-w-0 space-y-2">
             <span className="text-[12px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</span>
             <AppSelect
