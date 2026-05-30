@@ -19,7 +19,7 @@ import type {
 } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { translateAdminFileTypeTerm } from "@/lib/i18n/adminTermFormatters";
-import { getAdminChartColor } from "@/lib/admin/chartPalette";
+import { getAdminFileTypeChartColor } from "@/lib/admin/chartPalette";
 import { useElementSize } from "@/lib/responsive/useElementSize";
 import {
   buildFileStatusItems,
@@ -76,17 +76,17 @@ function getFileTypeCardGridStyle(layoutMode: StorageSummaryLayoutMode) {
 function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   return (
-    <div className="relative mx-auto mt-2 h-[98px] w-[104px] 2xl:mt-2 2xl:h-[108px] 2xl:w-[112px]" aria-hidden="true">
-      <div className="absolute inset-x-4 bottom-0 h-[80px] overflow-hidden rounded-b-[32px] border-x border-b border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-inner">
+    <div className="relative mx-auto mt-2 h-[90px] w-[100px] 2xl:mt-2 2xl:h-[98px] 2xl:w-[108px]" aria-hidden="true">
+      <div className="absolute inset-x-4 bottom-0 h-[72px] overflow-hidden rounded-b-[32px] border-x border-b border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-inner">
         <div
-          className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[var(--admin-theme-surface)]/20"
+          className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[color-mix(in_srgb,var(--pbp-chart-2)_18%,var(--pbp-surface))]"
           style={{ height: `${Math.max(6, safePercent)}%` }}
         />
       </div>
       <div className="absolute inset-x-4 top-0 h-10 rounded-[50%] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-sm" />
       <div
-        className="absolute inset-x-4 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
-        style={{ bottom: `${Math.max(0, Math.min(70, safePercent * 0.7))}px`, height: 34 }}
+        className="absolute inset-x-4 rounded-[50%] border border-[color-mix(in_srgb,var(--pbp-chart-2)_45%,var(--pbp-border))] bg-[color-mix(in_srgb,var(--pbp-chart-2)_18%,var(--pbp-surface))]"
+        style={{ bottom: `${Math.max(0, Math.min(62, safePercent * 0.62))}px`, height: 34 }}
       />
       <div className="absolute inset-0 flex items-center justify-center pt-2">
         <span className="rounded-full bg-[var(--pbp-surface)]/90 px-3 py-1 text-base font-bold text-[var(--pbp-text-primary)] shadow-sm">
@@ -114,7 +114,7 @@ function PlanUsageCard({
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
-    <div className={`${ADMIN_STORAGE_CARD_MUTED_CLASS} flex h-full min-h-[150px] flex-col px-4 py-3 md:min-h-[160px] md:px-4 md:py-4 2xl:min-h-[170px] 2xl:px-5`}>
+    <div className={`${ADMIN_STORAGE_CARD_MUTED_CLASS} flex h-full min-h-[138px] flex-col px-4 py-3 md:min-h-[148px] md:px-4 md:py-3.5 2xl:min-h-[156px] 2xl:px-5`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
           <p className={ADMIN_STORAGE_LABEL_CLASS}>
@@ -151,7 +151,7 @@ function PlanUsageCard({
         </p>
       </div>
 
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--pbp-surface)] shadow-inner">
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--pbp-surface)] shadow-inner">
         <div
           className={`h-full rounded-full ${isDanger ? "bg-[var(--pbp-status-danger)]" : isCaution ? "bg-[var(--pbp-status-warning)]" : "bg-[var(--admin-theme-surface)]"}`}
           style={{ width: `${hasPlanLimit ? Math.min(100, Math.max(0, usageSummary.usagePercent)) : 0}%` }}
@@ -164,7 +164,7 @@ function PlanUsageCard({
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
   const t = useAdminTranslation();
   return (
-    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[150px] flex-col px-4 py-3 md:min-h-[160px] md:px-4 md:py-4 2xl:min-h-[170px] 2xl:px-5`}>
+    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[138px] flex-col px-4 py-3 md:min-h-[148px] md:px-4 md:py-3.5 2xl:min-h-[156px] 2xl:px-5`}>
       <div>
         <p className={ADMIN_STORAGE_LABEL_CLASS}>
           {t("filesSummary.fileOperationsLabel", "파일 운영")}
@@ -175,7 +175,7 @@ function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
         {items.map((item) => (
           <div
             key={item.label}
-            className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} flex items-center justify-between gap-3 px-3 py-2.5`}
+            className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} flex items-center justify-between gap-3 px-3 py-2`}
           >
             <div className="min-w-0">
               <p className={`${ADMIN_STORAGE_VALUE_CLASS} truncate text-[13px] font-semibold`} title={item.label}>
@@ -219,7 +219,7 @@ function DonutChart({
   let offset = 0;
 
   return (
-    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[150px] flex-col px-4 py-3 md:min-h-[160px] md:px-4 md:py-4 2xl:min-h-[170px] 2xl:px-5`}>
+    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[138px] flex-col px-4 py-3 md:min-h-[148px] md:px-4 md:py-3.5 2xl:min-h-[156px] 2xl:px-5`}>
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className={ADMIN_STORAGE_LABEL_CLASS}>
@@ -253,6 +253,7 @@ function DonutChart({
                   const dash = (item.value / total) * circumference;
                   const strokeDasharray = `${dash} ${circumference - dash}`;
                   const strokeDashoffset = -offset;
+                  const segmentColor = getAdminFileTypeChartColor(item.label, index);
                   offset += dash;
                   return (
                     <circle
@@ -266,7 +267,7 @@ function DonutChart({
                       strokeDasharray={strokeDasharray}
                       strokeDashoffset={strokeDashoffset}
                       strokeLinecap="butt"
-                      style={{ color: getAdminChartColor(index) }}
+                      style={{ color: segmentColor }}
                     />
                   );
                 })
@@ -284,7 +285,7 @@ function DonutChart({
                 <span className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} flex min-w-0 items-center gap-2 font-semibold`}>
                   <span
                     className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: getAdminChartColor(index) }}
+                    style={{ backgroundColor: getAdminFileTypeChartColor(item.label, index) }}
                   />
                   <span className="truncate" title={item.label}>{item.label}</span>
                 </span>
@@ -295,7 +296,7 @@ function DonutChart({
               <div className="mt-1 h-1.5 max-w-[360px] overflow-hidden rounded-full bg-[var(--pbp-surface-muted)]">
                 <div
                   className="h-full rounded-full"
-                  style={{ width: `${Math.max(2, item.percent)}%`, backgroundColor: getAdminChartColor(index) }}
+                  style={{ width: `${Math.max(2, item.percent)}%`, backgroundColor: getAdminFileTypeChartColor(item.label, index) }}
                 />
               </div>
             </div>
@@ -333,9 +334,9 @@ export default function FileStorageSummary({
   return (
     <section
       ref={summaryRef}
-      className="shrink-0 overflow-visible rounded-[24px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-3 shadow-sm md:rounded-[28px] md:p-4"
+      className="shrink-0 overflow-visible rounded-[24px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-3 shadow-sm md:rounded-[28px] md:p-3"
     >
-      <div className="flex flex-col gap-2 pb-3 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-2 pb-2 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--pbp-brand-soft)]">
             {t("filesSummary.visualEyebrow", "Storage control")}

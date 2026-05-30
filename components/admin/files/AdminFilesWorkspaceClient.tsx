@@ -205,9 +205,9 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
       appVersion={APP_VERSION}
       navigationItems={navigationItems}
       title={t("filesPage.title", "저장소 관리")}
-      contentMode="fixed-md"
+      contentMode="scroll"
     >
-      <section className="relative flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3 pb-5 shadow-[var(--pbp-shadow-elevated)] md:p-4 md:pb-6">
+      <section className="relative flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3 pb-8 shadow-[var(--pbp-shadow-elevated)] md:p-4 md:pb-10">
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
