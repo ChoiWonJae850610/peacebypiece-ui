@@ -183,21 +183,24 @@ export default function FileTrashSection({
   }
 
   return (
-    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 md:p-4 2xl:h-full 2xl:min-h-[340px] 2xl:gap-2`}>
+    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 pb-4 md:p-4 md:pb-5`}>
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
-        actionsClassName="ml-auto grid w-fit grid-cols-2 justify-end gap-1.5 self-end sm:flex sm:flex-wrap sm:items-center sm:justify-end [&>button]:min-h-8 [&>button]:px-2.5 [&>button]:py-1.5 [&>button]:text-[11px]"
+        actionsClassName="ml-auto flex w-fit max-w-full flex-wrap items-center justify-end gap-1.5 self-end [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
       >
         <AdminButton
+          variant="icon"
           onClick={onRefresh}
           disabled={!canRefresh}
           title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
-          className="gap-1.5"
+          aria-label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-          {isRefreshing
-            ? t("filesList.refreshing", "새로고침 중")
-            : t("filesList.refresh", "새로고침")}
+          <span className="sr-only">
+            {isRefreshing
+              ? t("filesList.refreshing", "새로고침 중")
+              : t("filesList.refresh", "새로고침")}
+          </span>
         </AdminButton>
         <AdminButton
           variant="primary"
@@ -209,17 +212,22 @@ export default function FileTrashSection({
                   "filesList.restoreSkipsBlockedItems",
                   "복원할 수 없는 선택 항목은 제외하고 처리합니다.",
                 )
-              : undefined
+              : selectedCount > 0
+                ? `${t("terms.actions.restore", "복원")} · ${formatAdminTermCount(t, selectedCount, "item")}`
+                : t("terms.actions.restore", "복원")
           }
-          className="gap-1.5"
+          aria-label={t("terms.actions.restore", "복원")}
+          className="relative rounded-full"
         >
           <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-          {isActionPending || isWorkOrderActionPending
-            ? t("filesList.processing", "처리 중")
-            : t("terms.actions.restore", "복원")}
+          <span className="sr-only">
+            {isActionPending || isWorkOrderActionPending
+              ? t("filesList.processing", "처리 중")
+              : t("terms.actions.restore", "복원")}
+          </span>
           {selectedCount > 0 ? (
-            <span className="text-[10px] opacity-80">
-              {formatAdminTermCount(t, selectedCount, "item")}
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
+              {selectedCount}
             </span>
           ) : null}
         </AdminButton>
@@ -233,17 +241,22 @@ export default function FileTrashSection({
                   "filesList.purgeSkipsBlockedItems",
                   "삭제 요청할 수 없는 선택 항목은 제외하고 처리합니다.",
                 )
-              : undefined
+              : selectedCount > 0
+                ? `${t("filesList.delete", "삭제")} · ${formatAdminTermCount(t, selectedCount, "item")}`
+                : t("filesList.delete", "삭제")
           }
-          className="gap-1.5"
+          aria-label={t("filesList.delete", "삭제")}
+          className="relative rounded-full"
         >
           <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          {isActionPending || isWorkOrderActionPending
-            ? t("filesList.processing", "처리 중")
-            : t("filesList.delete", "삭제")}
+          <span className="sr-only">
+            {isActionPending || isWorkOrderActionPending
+              ? t("filesList.processing", "처리 중")
+              : t("filesList.delete", "삭제")}
+          </span>
           {selectedCount > 0 ? (
-            <span className="text-[10px] opacity-80">
-              {formatAdminTermCount(t, selectedCount, "item")}
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
+              {selectedCount}
             </span>
           ) : null}
         </AdminButton>
@@ -251,10 +264,12 @@ export default function FileTrashSection({
           variant="danger"
           onClick={() => setIsEmptyTrashConfirmOpen(true)}
           disabled={!canEmptyTrash}
-          className="gap-1.5"
+          title={t("filesList.emptyTrash", "비우기")}
+          aria-label={t("filesList.emptyTrash", "비우기")}
+          className="rounded-full"
         >
           <Trash className="h-3.5 w-3.5" aria-hidden="true" />
-          {t("filesList.emptyTrash", "비우기")}
+          <span className="sr-only">{t("filesList.emptyTrash", "비우기")}</span>
         </AdminButton>
       </AdminActionBar>
 
