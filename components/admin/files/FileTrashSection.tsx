@@ -186,7 +186,8 @@ export default function FileTrashSection({
     <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 pb-4 md:p-4 md:pb-5`}>
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
-        actionsClassName="ml-auto flex w-fit max-w-full flex-wrap items-center justify-end gap-1.5 self-end [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
+        className="flex-row items-center justify-between gap-2"
+        actionsClassName="ml-auto flex w-fit max-w-[calc(100%-5rem)] shrink-0 flex-wrap items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
       >
         <AdminButton
           variant="icon"
