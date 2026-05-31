@@ -110,7 +110,7 @@ function MemberDirectoryWideTableRows({
   );
 }
 
-function MemberMetaItem({ label, value }: { label: string; value: ReactNode }) {
+function MemberMetaItem({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
     <div className={ADMIN_RESPONSIVE_COMPACT_META_BOX_CLASS}>
       <p className={ADMIN_RESPONSIVE_COMPACT_META_LABEL_CLASS}>{label}</p>
