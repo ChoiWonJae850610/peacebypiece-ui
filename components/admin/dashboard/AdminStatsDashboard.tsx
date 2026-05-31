@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import { getTodayAdminLocalDateValue } from "@/components/admin/common/AdminDateRangePicker";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
 import { AdminStatsPeriodControls } from "@/components/admin/dashboard/AdminStatsPeriodControls";
 import { AdminStatsInlineToggle } from "@/components/admin/dashboard/AdminStatsInlineToggle";
+import { AdminStatsWorkflowSection } from "@/components/admin/dashboard/AdminStatsWorkflowSection";
 import {
   AdminStatsAnalysisCardShell,
   AdminStatsBarListCard,
@@ -15,11 +15,9 @@ import {
   PeriodTopCard,
 } from "@/components/admin/dashboard/AdminStatsAnalysisCards";
 import { FactoryPerformanceTable } from "@/components/admin/dashboard/AdminStatsFactoryPerformanceTable";
-import { AdminSection } from "@/components/admin/common/AdminSection";
 import {
   ADMIN_STATS_ACCENT_TEXT_CLASS,
   ADMIN_STATS_BODY_CLASS,
-  ADMIN_STATS_PANEL_CLASS,
   ADMIN_STATS_WARNING_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
@@ -490,7 +488,7 @@ export default function AdminStatsDashboard({
         cards={currentSummaryCards}
       />
 
-      <AdminSection
+      <AdminStatsWorkflowSection
         eyebrow={statsAnalysisEyebrow}
         title={pt("workflowAnalysisTitle", pageText.workflowAnalysisTitle)}
         description={statsAnalysisDescription}
@@ -501,30 +499,19 @@ export default function AdminStatsDashboard({
             </AdminStatusBadge>
           ) : null
         }
-        bodyClassName="mt-4"
+        tabs={statsSectionTabs.map((item) => ({
+          id: item.key,
+          label: item.label,
+          title: item.description,
+        }))}
+        activeTabId={activeStatsSection}
+        onTabChange={(nextId) => changeStatsSection(nextId as AdminStatsSectionKey)}
+        activeContentKey={activeStatsSection}
+        isAnimating={isStatsSectionAnimating}
+        direction={statsSectionDirection}
       >
-        <div
-          className={`${ADMIN_STATS_PANEL_CLASS} overflow-hidden px-2 py-2 sm:px-2.5 sm:py-2.5`}
-        >
-          <div className="flex flex-wrap items-center justify-start border-b border-[var(--pbp-border)] pb-1.5 sm:justify-end">
-            <AdminSegmentedTabs
-              items={statsSectionTabs.map((item) => ({
-                id: item.key,
-                label: item.label,
-                title: item.description,
-              }))}
-              activeId={activeStatsSection}
-              onChange={changeStatsSection}
-            />
-          </div>
-
-          <div className="mt-2 min-h-[284px] overflow-hidden">
-            <div
-              key={activeStatsSection}
-              className={`transform-gpu transition-[opacity,transform] duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none ${isStatsSectionAnimating ? (statsSectionDirection >= 0 ? "translate-x-3 opacity-0" : "-translate-x-3 opacity-0") : "translate-x-0 opacity-100"}`}
-            >
-              {activeStatsSection === "production" ? (
-                <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
+        {activeStatsSection === "production" ? (
+          <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
                   <AdminStatsAnalysisCardShell
                     eyebrow={pt(
                       "productionMixEyebrow",
@@ -690,10 +677,7 @@ export default function AdminStatsDashboard({
                   </div>
                 </div>
               ) : null}
-            </div>
-          </div>
-        </div>
-      </AdminSection>
+      </AdminStatsWorkflowSection>
     </div>
   );
 }
