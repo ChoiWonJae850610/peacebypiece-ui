@@ -1,12 +1,10 @@
-Version : 0.18.60
-Summary : 통계정보 기간 컨트롤과 달력 여백 정리
-Description : 통계정보 기간 분석 영역의 날짜 범위 선택/기간 버튼 조합을 AdminStatsPeriodControls로 분리하고, 공통 AdminDateRangePicker의 버튼과 달력 패널 여백을 줄였습니다. 달력 UI는 theme semantic token 기반 색상으로 보정했으며 통계 데이터 계산, 탭 전환, 기간 적용 흐름은 변경하지 않았습니다.
+Version : 0.18.61
+Summary : 통계정보 기간 선택 UI 보정
+Description : 통계정보 기간 분석 영역에서 날짜 선택 필드가 과하게 넓어지는 문제를 줄이고, 달력은 좌측 compact 영역에 두며 7일/30일/초기화/적용 버튼은 우측 액션 영역으로 정리했습니다. 초기화/적용은 접근성 라벨을 유지한 icon-only 버튼으로 바꾸고, 달력 팝오버 폭과 내부 여백을 축소했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/admin/common/AdminDateRangePicker.tsx
-- components/admin/dashboard/AdminStatsDashboard.tsx
-추가 파일 목록 :
 - components/admin/dashboard/AdminStatsPeriodControls.tsx
-- docs/stats-period-controls-calendar-0.18.60.md
+추가 파일 목록 :
+- docs/stats-period-date-control-layout-0.18.61.md
 삭제 파일 목록 :
-없음

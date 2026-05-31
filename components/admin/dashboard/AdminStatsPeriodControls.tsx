@@ -1,5 +1,7 @@
 "use client";
 
+import { Check, RotateCcw } from "lucide-react";
+
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
 import {
   AdminDateRangePicker,
@@ -61,8 +63,8 @@ export function AdminStatsPeriodControls({
           {title}
         </h3>
       </div>
-      <div className="grid min-w-0 gap-2 md:grid-cols-[minmax(240px,1fr)_auto] md:items-center">
-        <div className="min-w-0">
+      <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0 md:w-[420px] md:max-w-[420px]">
           <AdminDateRangePicker
             startDate={startDate}
             endDate={endDate}
@@ -73,7 +75,7 @@ export function AdminStatsPeriodControls({
             onEndDateChange={onEndDateChange}
           />
         </div>
-        <div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5 md:justify-end">
+        <div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5 md:ml-auto md:justify-end">
           {periodOptions.map((item) => (
             <AdminLinkButton
               key={item.key}
@@ -81,27 +83,33 @@ export function AdminStatsPeriodControls({
               aria-current={item.active ? "page" : undefined}
               variant={item.active ? "primary" : "secondary"}
               size="sm"
-              className="min-h-7 shrink-0 px-2.5 py-1 text-[11px]"
+              className="min-h-8 shrink-0 px-2.5 py-1 text-[11px]"
             >
               {translateAdminStatsLabel(item.label, t)}
             </AdminLinkButton>
           ))}
           <AdminLinkButton
             href={buildPeriodSectionHref(resetHref)}
+            aria-label={resetLabel}
+            title={resetLabel}
             variant="secondary"
             size="sm"
-            className="min-h-7 shrink-0 px-2.5 py-1 text-[11px]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0"
           >
-            {resetLabel}
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="sr-only">{resetLabel}</span>
           </AdminLinkButton>
           <AdminLinkButton
             href={applyHref}
             aria-disabled={!isApplyEnabled}
+            aria-label={applyLabel}
+            title={applyLabel}
             variant={isApplyEnabled ? "primary" : "secondary"}
             size="sm"
-            className={`min-h-7 shrink-0 px-2.5 py-1 text-[11px] ${isApplyEnabled ? "" : "pointer-events-none opacity-50"}`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 ${isApplyEnabled ? "" : "pointer-events-none opacity-50"}`}
           >
-            {applyLabel}
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="sr-only">{applyLabel}</span>
           </AdminLinkButton>
         </div>
       </div>

@@ -94,11 +94,11 @@ export function AdminDateRangePicker({
     : labels.notSelected;
 
   return (
-    <div ref={pickerRef} className="relative">
+    <div ref={pickerRef} className="relative w-full min-w-0 md:max-w-[420px]">
       <button
         type="button"
         onClick={() => setIsCalendarOpen((current) => !current)}
-        className="grid w-full min-w-0 grid-cols-2 gap-1 rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-left shadow-[var(--pbp-shadow-card)] transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]"
+        className="grid w-full min-w-0 grid-cols-2 gap-1 rounded-[16px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-left shadow-[var(--pbp-shadow-card)] transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]"
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
@@ -113,7 +113,7 @@ export function AdminDateRangePicker({
       </button>
 
       {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-[min(300px,calc(100vw-2rem))] rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2.5 shadow-2xl">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-[min(244px,calc(100vw-2rem))] rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-2xl">
           <DayPicker
             mode="range"
             selected={selected}
@@ -125,17 +125,17 @@ export function AdminDateRangePicker({
             aria-label={labels.calendarAria}
             classNames={{
               root: "text-sm text-[var(--pbp-text-muted)]",
-              months: "grid gap-2",
-              month: "space-y-1.5",
-              month_caption: "flex items-center justify-center px-2 py-0.5 text-sm font-semibold text-[var(--pbp-text-primary)]",
-              caption_label: "text-sm font-semibold",
+              months: "grid gap-1",
+              month: "space-y-1",
+              month_caption: "flex items-center justify-center px-1 py-0.5 text-xs font-semibold text-[var(--pbp-text-primary)]",
+              caption_label: "text-xs font-semibold",
               nav: "flex items-center justify-between",
-              button_previous: "rounded-full border border-[var(--pbp-border)] px-2 py-1 text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
-              button_next: "rounded-full border border-[var(--pbp-border)] px-2 py-1 text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              button_previous: "h-7 w-7 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              button_next: "h-7 w-7 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
               weekdays: "grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--pbp-text-subtle)]",
               week: "grid grid-cols-7 gap-0.5",
               day: "flex items-center justify-center",
-              day_button: "h-6 w-6 rounded-full text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
+              day_button: "h-5.5 w-5.5 rounded-full text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
               today: "font-bold text-[var(--admin-theme-surface)]",
               selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
