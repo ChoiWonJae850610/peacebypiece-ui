@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Check, RotateCcw } from "lucide-react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { enUS, ko } from "date-fns/locale";
 
@@ -89,12 +90,8 @@ export function AdminDateRangePicker({
     onEndDateChange("");
   };
 
-  const selectedSummary = startDate && endDate
-    ? labels.selected.replace("{start}", formatAdminDateDisplay(startDate, locale)).replace("{end}", formatAdminDateDisplay(endDate, locale))
-    : labels.notSelected;
-
   return (
-    <div ref={pickerRef} className="relative w-full min-w-0 md:max-w-[420px]">
+    <div ref={pickerRef} className="relative w-full min-w-0 md:max-w-[360px]">
       <button
         type="button"
         onClick={() => setIsCalendarOpen((current) => !current)}
@@ -102,18 +99,18 @@ export function AdminDateRangePicker({
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
-        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2.5 py-1">
+        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2 py-1">
           <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.start}</span>
           <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(startDate, locale)}</span>
         </span>
-        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2.5 py-1">
+        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2 py-1">
           <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.end}</span>
           <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(endDate, locale)}</span>
         </span>
       </button>
 
       {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-[min(244px,calc(100vw-2rem))] rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-2xl">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-[min(224px,calc(100vw-2rem))] max-h-[min(360px,calc(100vh-4rem))] overflow-y-auto rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 shadow-2xl">
           <DayPicker
             mode="range"
             selected={selected}
@@ -127,15 +124,15 @@ export function AdminDateRangePicker({
               root: "text-sm text-[var(--pbp-text-muted)]",
               months: "grid gap-1",
               month: "space-y-1",
-              month_caption: "flex items-center justify-center px-1 py-0.5 text-xs font-semibold text-[var(--pbp-text-primary)]",
+              month_caption: "flex items-center justify-center px-1 py-0.5 text-[11px] font-semibold text-[var(--pbp-text-primary)]",
               caption_label: "text-xs font-semibold",
               nav: "flex items-center justify-between",
-              button_previous: "h-7 w-7 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
-              button_next: "h-7 w-7 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              button_previous: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              button_next: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
               weekdays: "grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--pbp-text-subtle)]",
-              week: "grid grid-cols-7 gap-0.5",
+              week: "grid grid-cols-7 gap-0",
               day: "flex items-center justify-center",
-              day_button: "h-5.5 w-5.5 rounded-full text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
+              day_button: "h-5 w-5 rounded-full text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
               today: "font-bold text-[var(--admin-theme-surface)]",
               selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
@@ -145,16 +142,31 @@ export function AdminDateRangePicker({
               disabled: "text-[var(--pbp-text-subtle)] opacity-40",
             }}
           />
-          <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2">
-            <p className="min-w-0 flex-1 text-[11px] font-semibold text-[var(--pbp-text-muted)]">{selectedSummary}</p>
-            <div className="flex shrink-0 items-center gap-1.5">
-              <AdminButton type="button" onClick={clearSelection} variant="secondary" size="sm" className="min-h-7 px-2.5 py-1 text-[11px]">
-                {labels.clear}
-              </AdminButton>
-              <AdminButton type="button" onClick={() => setIsCalendarOpen(false)} variant="primary" size="sm" className="min-h-7 px-2.5 py-1 text-[11px]">
-                {labels.done}
-              </AdminButton>
-            </div>
+          <div className="mt-1.5 flex items-center justify-end gap-1.5 border-t border-[var(--pbp-border)] pt-1.5">
+            <AdminButton
+              type="button"
+              onClick={clearSelection}
+              variant="icon"
+              size="sm"
+              aria-label={labels.clear}
+              title={labels.clear}
+              className="shrink-0 text-[var(--pbp-action-ghost-text)]"
+            >
+              <RotateCcw className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
+              <span className="sr-only">{labels.clear}</span>
+            </AdminButton>
+            <AdminButton
+              type="button"
+              onClick={() => setIsCalendarOpen(false)}
+              variant="primary"
+              size="sm"
+              aria-label={labels.done}
+              title={labels.done}
+              className="shrink-0 text-[var(--pbp-action-primary-text)]"
+            >
+              <Check className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
+              <span className="sr-only">{labels.done}</span>
+            </AdminButton>
           </div>
         </div>
       ) : null}
