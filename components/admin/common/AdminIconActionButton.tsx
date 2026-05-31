@@ -11,6 +11,12 @@ type IconActionBaseProps = {
   children: ReactNode;
 };
 
+type CompactActionBaseProps = {
+  active?: boolean;
+  className?: string;
+  children: ReactNode;
+};
+
 const toneClassMap: Record<AdminIconActionButtonTone, string> = {
   neutral:
     "border-[var(--pbp-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-secondary-text)] shadow-sm hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-action-secondary-surface-hover)]",
@@ -20,8 +26,18 @@ const toneClassMap: Record<AdminIconActionButtonTone, string> = {
     "border-transparent bg-[var(--pbp-action-danger-surface)] text-[var(--pbp-action-danger-text)] shadow-sm hover:bg-[var(--pbp-action-danger-surface-hover)]",
 };
 
-export const ADMIN_ICON_ACTION_BUTTON_CLASS =
-  "inline-flex h-8 min-h-8 w-8 min-w-8 shrink-0 items-center justify-center rounded-full border p-0 text-xs font-semibold transition disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:shrink-0";
+export const ADMIN_ACTION_BUTTON_BASE_CLASS =
+  "inline-flex h-8 min-h-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]";
+
+export const ADMIN_ICON_ACTION_BUTTON_CLASS = cn(
+  ADMIN_ACTION_BUTTON_BASE_CLASS,
+  "w-8 min-w-8 p-0 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:shrink-0",
+);
+
+export const ADMIN_COMPACT_ACTION_BUTTON_CLASS = cn(
+  ADMIN_ACTION_BUTTON_BASE_CLASS,
+  "min-w-10 px-3 py-0 text-[11px] leading-none",
+);
 
 export function getAdminIconActionButtonClassName({
   tone = "neutral",
@@ -31,6 +47,43 @@ export function getAdminIconActionButtonClassName({
   className?: string;
 } = {}) {
   return cn(ADMIN_ICON_ACTION_BUTTON_CLASS, toneClassMap[tone], className);
+}
+
+
+export function getAdminCompactActionButtonClassName({
+  active = false,
+  className = "",
+}: {
+  active?: boolean;
+  className?: string;
+} = {}) {
+  return cn(
+    ADMIN_COMPACT_ACTION_BUTTON_CLASS,
+    toneClassMap[active ? "primary" : "neutral"],
+    className,
+  );
+}
+
+type AdminCompactActionButtonProps = CompactActionBaseProps &
+  ButtonHTMLAttributes<HTMLButtonElement>;
+
+export function AdminCompactActionButton({
+  active = false,
+  className = "",
+  children,
+  type = "button",
+  ...props
+}: AdminCompactActionButtonProps) {
+  return (
+    <button
+      type={type}
+      aria-pressed={active}
+      className={getAdminCompactActionButtonClassName({ active, className })}
+      {...props}
+    >
+      {children}
+    </button>
+  );
 }
 
 type AdminIconActionButtonProps = IconActionBaseProps &

@@ -2,8 +2,10 @@
 
 import { Check, RotateCcw } from "lucide-react";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AdminIconActionLink } from "@/components/admin/common/AdminIconActionButton";
+import {
+  AdminCompactActionButton,
+  AdminIconActionLink,
+} from "@/components/admin/common/AdminIconActionButton";
 import {
   AdminDateRangePicker,
   type AdminDateRangePickerLabels,
@@ -80,17 +82,13 @@ export function AdminStatsPeriodControls({
         </div>
         <div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5 md:ml-auto md:justify-end">
           {periodOptions.map((item) => (
-            <AdminButton
+            <AdminCompactActionButton
               key={item.key}
-              type="button"
-              aria-pressed={item.active}
-              variant={item.active ? "primary" : "secondary"}
-              size="sm"
-              className="min-h-8 shrink-0 px-2.5 py-1 text-[11px]"
+              active={item.active}
               onClick={() => onPeriodOptionSelect(item.key)}
             >
               {translateAdminStatsLabel(item.label, t)}
-            </AdminButton>
+            </AdminCompactActionButton>
           ))}
           <AdminIconActionLink
             href={buildPeriodSectionHref(resetHref)}
