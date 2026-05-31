@@ -11,10 +11,10 @@ import { AdminStatsInlineToggle } from "@/components/admin/dashboard/AdminStatsI
 import {
   AdminStatsAnalysisCardShell,
   AdminStatsBarListCard,
-  FactoryPerformanceTable,
   PeriodSummaryCard,
   PeriodTopCard,
 } from "@/components/admin/dashboard/AdminStatsAnalysisCards";
+import { FactoryPerformanceTable } from "@/components/admin/dashboard/AdminStatsFactoryPerformanceTable";
 import { AdminSection } from "@/components/admin/common/AdminSection";
 import {
   ADMIN_STATS_ACCENT_TEXT_CLASS,
