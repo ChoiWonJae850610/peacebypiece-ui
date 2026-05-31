@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
@@ -34,6 +36,53 @@ type PeriodSummaryItem = {
   value: string;
   description: string;
 };
+
+
+export function AdminStatsAnalysisCardShell({
+  eyebrow,
+  title,
+  actions,
+  children,
+  className = "",
+  bodyClassName = "mt-3 grid flex-1 content-center gap-3",
+  minHeight = "standard",
+}: {
+  eyebrow?: string;
+  title: string;
+  actions?: ReactNode;
+  children: ReactNode;
+  className?: string;
+  bodyClassName?: string;
+  minHeight?: "standard" | "tall";
+}) {
+  const minHeightClass =
+    minHeight === "tall"
+      ? "min-h-[252px] sm:min-h-[286px]"
+      : "min-h-[188px] sm:min-h-[204px]";
+
+  return (
+    <AdminCard
+      className={`flex h-full ${minHeightClass} flex-col p-3 sm:p-3.5 ${className}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          {eyebrow ? (
+            <p
+              className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
+            >
+              {eyebrow}
+            </p>
+          ) : null}
+          <h2 className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>
+            {title}
+          </h2>
+        </div>
+        {actions ? <div className="shrink-0">{actions}</div> : null}
+      </div>
+      <div className={bodyClassName}>{children}</div>
+    </AdminCard>
+  );
+}
 
 export function PeriodSummaryCard({
   title,
@@ -106,47 +155,37 @@ export function PeriodTopCard({
   valueSuffix: string;
 }) {
   return (
-    <AdminCard className="flex h-full min-h-[188px] flex-col p-3 sm:min-h-[204px] sm:p-3.5">
-      <p
-        className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
-      >
-        {eyebrow}
-      </p>
-      <h2 className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>
-        {title}
-      </h2>
-      <div className="mt-3 grid flex-1 content-center gap-3">
-        {items.length > 0 ? (
-          items.map((item, index) => (
+    <AdminStatsAnalysisCardShell eyebrow={eyebrow} title={title}>
+      {items.length > 0 ? (
+        items.map((item, index) => (
+          <div
+            key={`${item.label}-${index}`}
+            className={`${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2`}
+          >
             <div
-              key={`${item.label}-${index}`}
-              className={`${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2`}
+              className={`flex items-start justify-between gap-2 text-sm font-semibold ${ADMIN_STATS_BODY_CLASS}`}
+            >
+              <span className="truncate pr-3">
+                {index + 1}. {item.label}
+              </span>
+              <span className={`shrink-0 ${ADMIN_STATS_TITLE_CLASS}`}>
+                {formatAdminStatsCount(item.value, valueSuffix)}
+              </span>
+            </div>
+            <div
+              className={`mt-1.5 h-1.5 rounded-full ${ADMIN_STATS_TRACK_INSET_CLASS}`}
             >
               <div
-                className={`flex items-start justify-between gap-2 text-sm font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-              >
-                <span className="truncate pr-3">
-                  {index + 1}. {item.label}
-                </span>
-                <span className={`shrink-0 ${ADMIN_STATS_TITLE_CLASS}`}>
-                  {formatAdminStatsCount(item.value, valueSuffix)}
-                </span>
-              </div>
-              <div
-                className={`mt-1.5 h-1.5 rounded-full ${ADMIN_STATS_TRACK_INSET_CLASS}`}
-              >
-                <div
-                  className={`h-1.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`}
-                  style={{ width: `${item.widthPercent}%` }}
-                />
-              </div>
+                className={`h-1.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`}
+                style={{ width: `${item.widthPercent}%` }}
+              />
             </div>
-          ))
-        ) : (
-          <AdminEmptyState title={emptyLabel} />
-        )}
-      </div>
-    </AdminCard>
+          </div>
+        ))
+      ) : (
+        <AdminEmptyState title={emptyLabel} />
+      )}
+    </AdminStatsAnalysisCardShell>
   );
 }
 
@@ -162,36 +201,31 @@ export function AdminStatsBarListCard({
   const t = useAdminTranslation();
 
   return (
-    <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
-      <h2 className={`text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>
-        {title}
-      </h2>
-      <div className="mt-3 grid flex-1 content-center gap-3">
-        {points.length > 0 ? (
-          points.map((item) => (
-            <div key={item.label}>
-              <div
-                className={`flex items-center justify-between text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-              >
-                <span className="truncate pr-2">
-                  {translateAdminStatsLabel(item.label, t)}
-                </span>
-                <span>{item.value}</span>
-              </div>
-              <div
-                className={`mt-2.5 h-2.5 rounded-full ${ADMIN_STATS_TRACK_CLASS}`}
-              >
-                <div
-                  className={`h-2.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`}
-                  style={{ width: `${item.widthPercent}%` }}
-                />
-              </div>
+    <AdminStatsAnalysisCardShell title={title} minHeight="tall">
+      {points.length > 0 ? (
+        points.map((item) => (
+          <div key={item.label}>
+            <div
+              className={`flex items-center justify-between text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}
+            >
+              <span className="truncate pr-2">
+                {translateAdminStatsLabel(item.label, t)}
+              </span>
+              <span>{item.value}</span>
             </div>
-          ))
-        ) : (
-          <AdminEmptyState title={emptyLabel} />
-        )}
-      </div>
-    </AdminCard>
+            <div
+              className={`mt-2.5 h-2.5 rounded-full ${ADMIN_STATS_TRACK_CLASS}`}
+            >
+              <div
+                className={`h-2.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`}
+                style={{ width: `${item.widthPercent}%` }}
+              />
+            </div>
+          </div>
+        ))
+      ) : (
+        <AdminEmptyState title={emptyLabel} />
+      )}
+    </AdminStatsAnalysisCardShell>
   );
 }

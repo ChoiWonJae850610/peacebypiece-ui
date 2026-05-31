@@ -14,6 +14,7 @@ import {
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
 import {
+  AdminStatsAnalysisCardShell,
   AdminStatsBarListCard,
   PeriodSummaryCard,
   PeriodTopCard,
@@ -24,12 +25,10 @@ import {
   ADMIN_STATS_BODY_CLASS,
   ADMIN_STATS_PANEL_CLASS,
   ADMIN_STATS_PANEL_TIGHT_CLASS,
-  ADMIN_STATS_SUBTLE_TEXT_CLASS,
   ADMIN_STATS_TITLE_CLASS,
   ADMIN_STATS_WARNING_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
-import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AppTooltip } from "@/components/common/ui";
 import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
@@ -561,27 +560,19 @@ export default function AdminStatsDashboard({
             >
               {activeStatsSection === "production" ? (
                 <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
-                  <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
-                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
-                      <div>
-                        <p
-                          className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
-                        >
-                          {pt(
-                            "productionMixEyebrow",
-                            pageText.productionMixEyebrow,
-                          )}
-                        </p>
-                        <h2
-                          className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
-                        >
-                          {pt(
-                            "productionMixTitle",
-                            pageText.productionMixTitle,
-                          )}
-                        </h2>
-                      </div>
-                      <div className="flex w-full overflow-x-auto rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1 sm:w-auto">
+                  <AdminStatsAnalysisCardShell
+                    eyebrow={pt(
+                      "productionMixEyebrow",
+                      pageText.productionMixEyebrow,
+                    )}
+                    title={pt(
+                      "productionMixTitle",
+                      pageText.productionMixTitle,
+                    )}
+                    minHeight="tall"
+                    bodyClassName="mt-1.5 min-w-0 flex-1"
+                    actions={
+                      <div className="flex max-w-full overflow-x-auto rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1">
                         {(["first", "second"] as const).map((key) => (
                           <AdminButton
                             key={key}
@@ -600,27 +591,26 @@ export default function AdminStatsDashboard({
                           </AdminButton>
                         ))}
                       </div>
-                    </div>
-                    <div className="mt-1.5 min-w-0 flex-1">
-                      <AdminBasicDonutChart
-                        points={selectedCategoryDepthBars}
-                        totalLabel={pt(
-                          "workorderCountSuffix",
-                          pageText.workorderCountSuffix,
-                        )}
-                        valueSuffix={pt(
-                          "workorderCountSuffix",
-                          pageText.workorderCountSuffix,
-                        )}
-                        emptyLabel={pt(
-                          "productionMixEmpty",
-                          pageText.productionMixEmpty,
-                        )}
-                        compact
-                        selectedLabel={normalizedSelectedCategoryLabel}
-                        onSelectPoint={setSelectedCategoryLabel}
-                      />
-                    </div>
+                    }
+                  >
+                    <AdminBasicDonutChart
+                      points={selectedCategoryDepthBars}
+                      totalLabel={pt(
+                        "workorderCountSuffix",
+                        pageText.workorderCountSuffix,
+                      )}
+                      valueSuffix={pt(
+                        "workorderCountSuffix",
+                        pageText.workorderCountSuffix,
+                      )}
+                      emptyLabel={pt(
+                        "productionMixEmpty",
+                        pageText.productionMixEmpty,
+                      )}
+                      compact
+                      selectedLabel={normalizedSelectedCategoryLabel}
+                      onSelectPoint={setSelectedCategoryLabel}
+                    />
                     <p
                       className={`mt-1 text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}
                     >
@@ -641,7 +631,7 @@ export default function AdminStatsDashboard({
                         {normalizedSelectedCategoryLabel}
                       </p>
                     ) : null}
-                  </AdminCard>
+                  </AdminStatsAnalysisCardShell>
 
                   <AdminStatsBarListCard
                     title={categoryDetailTitle}
@@ -664,17 +654,12 @@ export default function AdminStatsDashboard({
                       pageText.factoryPerformanceEmpty,
                     )}
                   />
-                  <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
-                    <p
-                      className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}
-                    >
-                      {pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}
-                    </p>
-                    <h2
-                      className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
-                    >
-                      {pt("delayQualityTitle", pageText.delayQualityTitle)}
-                    </h2>
+                  <AdminStatsAnalysisCardShell
+                    eyebrow={pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}
+                    title={pt("delayQualityTitle", pageText.delayQualityTitle)}
+                    minHeight="tall"
+                    bodyClassName="mt-3 flex-1"
+                  >
                     <AdminTable
                       items={translatedStats.factoryPerformance.slice(0, 5)}
                       columns={factoryPerformanceColumns}
@@ -683,12 +668,12 @@ export default function AdminStatsDashboard({
                         "factoryPerformanceEmpty",
                         pageText.factoryPerformanceEmpty,
                       )}
-                      className="mt-3 min-h-[218px] rounded-2xl border-[var(--pbp-border)]"
+                      className="min-h-[218px] rounded-2xl border-[var(--pbp-border)]"
                       gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
                       rowBaseClassName="grid w-full xl:min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
                       headerClassName="hidden gap-3 bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)] xl:grid xl:min-w-0"
                     />
-                  </AdminCard>
+                  </AdminStatsAnalysisCardShell>
                 </div>
               ) : null}
 
