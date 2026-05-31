@@ -40,6 +40,7 @@ type AdminDateRangePickerProps = {
 
 const CALENDAR_GRID_WIDTH_CLASS = "w-[140px]";
 const CALENDAR_PANEL_WIDTH_CLASS = CALENDAR_GRID_WIDTH_CLASS;
+const CALENDAR_ACTION_BUTTON_CLASS = "h-8 min-h-8 w-8 min-w-8 shrink-0 rounded-full p-0 [&>svg]:shrink-0";
 
 export function AdminDateRangePicker({
   startDate,
@@ -155,7 +156,7 @@ export function AdminDateRangePicker({
               size="sm"
               aria-label={labels.clear}
               title={labels.clear}
-              className="h-7 w-7 shrink-0 p-0 text-[var(--pbp-action-ghost-text)]"
+              className={`${CALENDAR_ACTION_BUTTON_CLASS} text-[var(--pbp-action-ghost-text)]`}
             >
               <RotateCcw className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
               <span className="sr-only">{labels.clear}</span>
@@ -167,9 +168,9 @@ export function AdminDateRangePicker({
               size="sm"
               aria-label={labels.done}
               title={labels.done}
-              className="h-7 w-7 shrink-0 rounded-full p-0 text-[var(--pbp-action-primary-text)]"
+              className={`${CALENDAR_ACTION_BUTTON_CLASS} text-[var(--pbp-action-primary-text)]`}
             >
-              <Check className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
+              <Check className="h-3.5 w-3.5 text-current" strokeWidth={2.6} aria-hidden="true" />
               <span className="sr-only">{labels.done}</span>
             </AdminButton>
           </div>
