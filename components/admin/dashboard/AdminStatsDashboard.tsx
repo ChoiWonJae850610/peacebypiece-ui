@@ -476,8 +476,6 @@ export default function AdminStatsDashboard({
         eyebrow={statsOverviewEyebrow}
         title={statsOverviewTitle}
         description={statsOverviewDescription}
-        selectedPeriodBadgeLabel={selectedPeriodBadgeLabel}
-        activePeriodLabel={activePeriodLabel}
         cards={currentSummaryCards}
       />
 
@@ -486,9 +484,11 @@ export default function AdminStatsDashboard({
         title={pt("workflowAnalysisTitle", pageText.workflowAnalysisTitle)}
         description={statsAnalysisDescription}
         actions={
-          <AdminStatusBadge tone="neutral">
-            {selectedPeriodBadgeLabel}: {activePeriodLabel}
-          </AdminStatusBadge>
+          activeStatsSection === "period" ? (
+            <AdminStatusBadge tone="neutral">
+              {selectedPeriodBadgeLabel}: {activePeriodLabel}
+            </AdminStatusBadge>
+          ) : null
         }
         bodyClassName="mt-4"
       >
