@@ -1,16 +1,20 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useRef } from "react";
 
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import { ADMIN_STATS_PANEL_CLASS } from "@/components/admin/common/adminSemanticClassNames";
+import { useElementSize } from "@/lib/responsive/useElementSize";
 
 type AdminStatsWorkflowTab = {
   id: string;
   label: string;
   title?: string;
 };
+
+const WORKFLOW_HEADER_INLINE_MIN_WIDTH = 640;
 
 type AdminStatsWorkflowSectionProps = {
   eyebrow: string;
@@ -45,11 +49,22 @@ export function AdminStatsWorkflowSection({
       : "-translate-x-3 opacity-0"
     : "translate-x-0 opacity-100";
 
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const { width: headerWidth } = useElementSize(headerRef);
+  const isInlineHeader = headerWidth >= WORKFLOW_HEADER_INLINE_MIN_WIDTH;
+
   return (
     <AdminCard
       className={`${ADMIN_STATS_PANEL_CLASS} overflow-hidden px-3 py-3 sm:px-3.5 sm:py-3.5`}
     >
-      <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-2.5 md:flex-row md:items-start md:justify-between">
+      <div
+        ref={headerRef}
+        className={`flex gap-3 border-b border-[var(--pbp-border)] pb-2.5 ${
+          isInlineHeader
+            ? "flex-row items-start justify-between"
+            : "flex-col items-stretch"
+        }`}
+      >
         <div className="min-w-0">
           {eyebrow ? (
             <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">
@@ -66,17 +81,27 @@ export function AdminStatsWorkflowSection({
           ) : null}
         </div>
 
-        <div className="flex w-full shrink-0 flex-col gap-2 md:w-auto md:items-end">
+        <div
+          className={`flex shrink-0 flex-col gap-2 ${
+            isInlineHeader ? "w-auto items-end" : "w-full items-stretch"
+          }`}
+        >
           {actions ? (
-            <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
+            <div
+              className={`flex flex-wrap items-center gap-2 ${
+                isInlineHeader ? "w-auto justify-end" : "w-full"
+              }`}
+            >
               {actions}
             </div>
           ) : null}
-          <AdminSegmentedTabs
-            items={tabs}
-            activeId={activeTabId}
-            onChange={onTabChange}
-          />
+          <div className={isInlineHeader ? "flex justify-end" : "w-full"}>
+            <AdminSegmentedTabs
+              items={tabs}
+              activeId={activeTabId}
+              onChange={onTabChange}
+            />
+          </div>
         </div>
       </div>
 
