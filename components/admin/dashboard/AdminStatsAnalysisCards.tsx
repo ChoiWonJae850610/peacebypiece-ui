@@ -52,6 +52,55 @@ type PeriodSummaryItem = {
   description: string;
 };
 
+type AdminStatsBarRowDensity = "compact" | "standard";
+
+function AdminStatsBarRow({
+  label,
+  valueLabel,
+  widthPercent,
+  density = "standard",
+  indexLabel,
+}: {
+  label: string;
+  valueLabel: string;
+  widthPercent: number;
+  density?: AdminStatsBarRowDensity;
+  indexLabel?: string;
+}) {
+  const trackClass =
+    density === "compact"
+      ? `mt-1.5 h-1.5 rounded-full ${ADMIN_STATS_TRACK_INSET_CLASS}`
+      : `mt-2.5 h-2.5 rounded-full ${ADMIN_STATS_TRACK_CLASS}`;
+  const barClass =
+    density === "compact"
+      ? `h-1.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`
+      : `h-2.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`;
+
+  return (
+    <div
+      className={
+        density === "compact"
+          ? `${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2`
+          : ""
+      }
+    >
+      <div
+        className={`flex items-center justify-between gap-2 ${
+          density === "compact" ? "text-sm" : "text-xs"
+        } font-semibold ${ADMIN_STATS_BODY_CLASS}`}
+      >
+        <span className="truncate pr-2">
+          {indexLabel ? `${indexLabel}. ` : ""}
+          {label}
+        </span>
+        <span className={`shrink-0 ${ADMIN_STATS_TITLE_CLASS}`}>{valueLabel}</span>
+      </div>
+      <div className={trackClass}>
+        <div className={barClass} style={{ width: `${widthPercent}%` }} />
+      </div>
+    </div>
+  );
+}
 
 export function AdminStatsAnalysisCardShell({
   eyebrow,
@@ -251,29 +300,14 @@ export function PeriodTopCard({
     <AdminStatsAnalysisCardShell eyebrow={eyebrow} title={title}>
       {items.length > 0 ? (
         items.map((item, index) => (
-          <div
+          <AdminStatsBarRow
             key={`${item.label}-${index}`}
-            className={`${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2`}
-          >
-            <div
-              className={`flex items-start justify-between gap-2 text-sm font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-            >
-              <span className="truncate pr-3">
-                {index + 1}. {item.label}
-              </span>
-              <span className={`shrink-0 ${ADMIN_STATS_TITLE_CLASS}`}>
-                {formatAdminStatsCount(item.value, valueSuffix)}
-              </span>
-            </div>
-            <div
-              className={`mt-1.5 h-1.5 rounded-full ${ADMIN_STATS_TRACK_INSET_CLASS}`}
-            >
-              <div
-                className={`h-1.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`}
-                style={{ width: `${item.widthPercent}%` }}
-              />
-            </div>
-          </div>
+            label={item.label}
+            valueLabel={formatAdminStatsCount(item.value, valueSuffix)}
+            widthPercent={item.widthPercent}
+            density="compact"
+            indexLabel={String(index + 1)}
+          />
         ))
       ) : (
         <AdminEmptyState title={emptyLabel} />
@@ -297,24 +331,12 @@ export function AdminStatsBarListCard({
     <AdminStatsAnalysisCardShell title={title} minHeight="tall">
       {points.length > 0 ? (
         points.map((item) => (
-          <div key={item.label}>
-            <div
-              className={`flex items-center justify-between text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-            >
-              <span className="truncate pr-2">
-                {translateAdminStatsLabel(item.label, t)}
-              </span>
-              <span>{item.value}</span>
-            </div>
-            <div
-              className={`mt-2.5 h-2.5 rounded-full ${ADMIN_STATS_TRACK_CLASS}`}
-            >
-              <div
-                className={`h-2.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`}
-                style={{ width: `${item.widthPercent}%` }}
-              />
-            </div>
-          </div>
+          <AdminStatsBarRow
+            key={item.label}
+            label={translateAdminStatsLabel(item.label, t)}
+            valueLabel={item.valueLabel ?? String(item.value)}
+            widthPercent={item.widthPercent}
+          />
         ))
       ) : (
         <AdminEmptyState title={emptyLabel} />
