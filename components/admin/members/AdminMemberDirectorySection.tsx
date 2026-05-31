@@ -3,8 +3,8 @@
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
-import AdminTable from "@/components/admin/common/AdminTable";
 import AdminMemberDirectoryControls from "@/components/admin/members/AdminMemberDirectoryControls";
+import AdminMemberDirectoryResponsiveRows from "@/components/admin/members/AdminMemberDirectoryResponsiveRows";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 import type {
   MemberDirectoryRow,
@@ -98,10 +98,9 @@ export default function AdminMemberDirectorySection({
           {joinRequestLoadError}
         </p>
       ) : null}
-      <AdminTable
+      <AdminMemberDirectoryResponsiveRows
         items={filteredMemberDirectoryRows}
         columns={memberDirectoryColumns}
-        getRowKey={(row) => row.id}
         emptyLabel={t(
           "memberManagement.empty.memberDirectory.title",
           "표시할 멤버가 없습니다",
@@ -115,11 +114,7 @@ export default function AdminMemberDirectorySection({
           "memberManagement.loading.memberDirectory.title",
           "멤버 목록을 불러오는 중입니다",
         )}
-        gridTemplateColumns="minmax(120px,1fr) minmax(160px,1.2fr) 110px 110px 96px 110px 110px 120px 140px"
-        rowBaseClassName="grid w-full 2xl:min-w-[1120px] gap-3 px-4 py-3 text-left text-xs md:items-center"
-        headerClassName="hidden 2xl:min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid"
-        className="min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
-        onRowClick={onOpenMemberDetail}
+        onOpenMemberDetail={onOpenMemberDetail}
       />
     </AdminPanelSection>
   );
