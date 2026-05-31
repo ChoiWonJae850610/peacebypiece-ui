@@ -11,6 +11,7 @@ import { AdminStatsPeriodControls } from "@/components/admin/dashboard/AdminStat
 import {
   AdminStatsAnalysisCardShell,
   AdminStatsBarListCard,
+  FactoryPerformanceTable,
   PeriodSummaryCard,
   PeriodTopCard,
 } from "@/components/admin/dashboard/AdminStatsAnalysisCards";
@@ -21,10 +22,7 @@ import {
   ADMIN_STATS_PANEL_CLASS,
   ADMIN_STATS_WARNING_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
-import AdminTable from "@/components/admin/common/AdminTable";
-import { AppTooltip } from "@/components/common/ui";
 import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
-import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type {
   AdminStatsPeriodTopMode,
   AdminStatsSnapshot,
@@ -58,9 +56,6 @@ type AdminStatsDashboardProps = {
   initialSection?: AdminStatsSectionKey;
   initialPeriodTopMode?: AdminStatsPeriodTopMode;
 };
-type AdminStatsFactoryPerformanceItem =
-  AdminStatsSnapshot["factoryPerformance"][number];
-
 export default function AdminStatsDashboard({
   stats,
   pageText,
@@ -424,69 +419,13 @@ export default function AdminStatsDashboard({
       ).slice(0, 5),
     [selectedPeriodTopMode, translatedStats.periodTopProducts],
   );
-  const getFactoryMetricTooltip = (item: AdminStatsFactoryPerformanceItem) =>
+  const getFactoryMetricTooltip = (item: AdminStatsSnapshot["factoryPerformance"][number]) =>
     buildAdminFactoryMetricTooltip(item, pageText, pt);
-  const factoryPerformanceColumns = useMemo<
-    AdminTableColumn<AdminStatsFactoryPerformanceItem>[]
-  >(
-    () => [
-      {
-        key: "factory",
-        label: pt("factoryColumn", pageText.factoryColumn),
-        className: "min-w-0",
-        render: (item) => (
-          <AppTooltip content={getFactoryMetricTooltip(item)} side="top">
-            <span
-              className={`block cursor-help truncate text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-            >
-              {item.label} ·{" "}
-              {formatAdminStatsCount(
-                item.productionCount,
-                pt("workorderCountSuffix", pageText.workorderCountSuffix),
-              )}
-            </span>
-          </AppTooltip>
-        ),
-      },
-      {
-        key: "delayRate",
-        label: pt("delayRateColumn", pageText.delayRateColumn),
-        render: (item) => (
-          <AppTooltip content={getFactoryMetricTooltip(item)} side="top">
-            <AdminStatusBadge
-              tone={
-                item.dueDelayRate && item.dueDelayRate > 0 ? "warning" : "success"
-              }
-              size="xs"
-              className="cursor-help"
-            >
-              {formatAdminStatsPercent(item.dueDelayRate, zeroPercentLabel)}
-            </AdminStatusBadge>
-          </AppTooltip>
-        ),
-      },
-      {
-        key: "qualityRate",
-        label: pt("qualityRateColumn", pageText.qualityRateColumn),
-        render: (item) => (
-          <AppTooltip content={getFactoryMetricTooltip(item)} side="top">
-            <AdminStatusBadge
-              tone={
-                item.qualityIssueRate && item.qualityIssueRate > 0
-                  ? "warning"
-                  : "success"
-              }
-              size="xs"
-              className="cursor-help"
-            >
-              {formatAdminStatsPercent(item.qualityIssueRate, zeroPercentLabel)}
-            </AdminStatusBadge>
-          </AppTooltip>
-        ),
-      },
-    ],
-    [pageText, t],
-  );
+  const factoryPerformanceLabels = {
+    factory: pt("factoryColumn", pageText.factoryColumn),
+    delayRate: pt("delayRateColumn", pageText.delayRateColumn),
+    qualityRate: pt("qualityRateColumn", pageText.qualityRateColumn),
+  };
 
   const statsSectionTabs = buildAdminStatsSectionTabs(pageText, pt);
   const activeStatsSectionIndex = statsSectionTabs.findIndex(
@@ -675,18 +614,19 @@ export default function AdminStatsDashboard({
                     minHeight="tall"
                     bodyClassName="mt-3 flex-1"
                   >
-                    <AdminTable
+                    <FactoryPerformanceTable
                       items={translatedStats.factoryPerformance.slice(0, 5)}
-                      columns={factoryPerformanceColumns}
-                      getRowKey={(item) => item.label}
                       emptyLabel={pt(
                         "factoryPerformanceEmpty",
                         pageText.factoryPerformanceEmpty,
                       )}
-                      className="min-h-[218px] rounded-2xl border-[var(--pbp-border)]"
-                      gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
-                      rowBaseClassName="grid w-full xl:min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
-                      headerClassName="hidden gap-3 bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)] xl:grid xl:min-w-0"
+                      columns={factoryPerformanceLabels}
+                      countSuffix={pt(
+                        "workorderCountSuffix",
+                        pageText.workorderCountSuffix,
+                      )}
+                      zeroPercentLabel={zeroPercentLabel}
+                      getTooltip={getFactoryMetricTooltip}
                     />
                   </AdminStatsAnalysisCardShell>
                 </div>

@@ -1,15 +1,11 @@
-Version : 0.18.68
-Summary : 통계정보 기간 프리셋과 탭 정렬 보정
-Description : 통계정보 기간 분석의 7일/30일 버튼이 즉시 조회하지 않고 시작일/종료일 필드만 세팅하도록 변경했습니다. 실제 통계 반영은 적용 버튼 기준으로 유지하고, 태블릿 이상에서 segmented tab이 우측 정렬되도록 보정했습니다.
-
+Version : 0.18.69
+Summary : 통계정보 업체 성과 테이블 공통화
+Description : 통계정보 업체 성과 탭의 업체별 납기·검수 지표를 공통 responsive table shell 기준으로 정리해 업체명, 납기 지연율, 검수/불량률이 같은 row 안에 정렬되도록 보정했습니다. 통계 계산, 탭 전환, 기간 선택, DB/API 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/common/AdminSegmentedTabs.tsx
 - components/admin/dashboard/AdminStatsDashboard.tsx
-- components/admin/dashboard/AdminStatsPeriodControls.tsx
-
+- components/admin/dashboard/AdminStatsAnalysisCards.tsx
 추가 파일 목록 :
-- docs/stats-period-preset-and-tabs-0.18.68.md
-
+- docs/stats-factory-performance-table-0.18.69.md
 삭제 파일 목록 :
-- 없음
+없음
