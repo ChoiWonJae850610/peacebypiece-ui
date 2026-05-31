@@ -12,6 +12,10 @@ import {
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import { TrashItemVisual } from "@/components/admin/files/fileTrashSectionPresentation";
+import {
+  ADMIN_RESPONSIVE_TABLE_PRIMARY_TEXT_CLASS,
+  ADMIN_RESPONSIVE_TABLE_SECONDARY_TEXT_CLASS,
+} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
 import type { UnifiedTrashRow } from "@/components/admin/files/fileTrashSectionRows";
 import { ADMIN_TRASH_RESTORE_POLICIES } from "@/lib/admin/files/trashPolicy";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -46,7 +50,9 @@ export function getFileTrashRowToneClass(
       : "border-l-4 border-l-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]";
   }
 
-  return row.isSelected ? ADMIN_STORAGE_SELECTED_ROW_CLASS : ADMIN_STORAGE_ROW_CLASS;
+  return row.isSelected
+    ? ADMIN_STORAGE_SELECTED_ROW_CLASS
+    : ADMIN_STORAGE_ROW_CLASS;
 }
 
 export function TrashSelectionControl({
@@ -145,17 +151,20 @@ export function TargetSummary({
         label={row.visualLabel}
         tone={row.visualTone}
         thumbnailUrl={row.thumbnailUrl || row.previewUrl}
-        previewFailedLabel={t("filesList.detail.previewFailed", "Preview failed")}
+        previewFailedLabel={t(
+          "filesList.detail.previewFailed",
+          "Preview failed",
+        )}
         compact
       />
       <div className="min-w-0 text-left">
         <p
-          className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} truncate text-[13px] font-semibold`}
+          className={ADMIN_RESPONSIVE_TABLE_PRIMARY_TEXT_CLASS}
           title={row.targetLabel}
         >
           {row.targetLabel}
         </p>
-        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} mt-0.5 truncate text-[10px]`}>
+        <p className={ADMIN_RESPONSIVE_TABLE_SECONDARY_TEXT_CLASS}>
           {row.restorePolicyLabel}
         </p>
       </div>

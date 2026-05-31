@@ -20,7 +20,13 @@ export const ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS =
   "flex min-h-[220px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]";
 
 export const ADMIN_RESPONSIVE_TABLE_PRIMARY_TEXT_CLASS =
-  "text-[var(--pbp-text-strong)]";
+  "truncate text-[13px] font-semibold text-[var(--pbp-text-muted)]";
+
+export const ADMIN_RESPONSIVE_TABLE_SECONDARY_TEXT_CLASS =
+  "mt-0.5 truncate text-[10px] text-[var(--pbp-text-subtle)]";
+
+export const ADMIN_RESPONSIVE_TABLE_VALUE_TEXT_CLASS =
+  "min-w-0 max-w-full truncate text-[12px] font-medium text-[var(--pbp-text-muted)]";
 
 export const ADMIN_RESPONSIVE_TABLE_MUTED_TEXT_CLASS =
   "text-[var(--pbp-text-muted)]";

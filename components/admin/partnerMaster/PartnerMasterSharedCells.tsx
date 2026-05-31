@@ -3,6 +3,12 @@
 import type { KeyboardEvent } from "react";
 
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import {
+  ADMIN_RESPONSIVE_TABLE_PRIMARY_TEXT_CLASS,
+  ADMIN_RESPONSIVE_TABLE_SECONDARY_TEXT_CLASS,
+  ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS,
+  ADMIN_RESPONSIVE_TABLE_VALUE_TEXT_CLASS,
+} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
 import type { PartnerListItemViewModel } from "@/lib/admin/partner";
 import { getPartnerEmptyValue } from "@/components/admin/partnerMaster/partnerMasterResponsivePresentation";
 
@@ -37,7 +43,10 @@ export function PartnerNameSummary({
   return (
     <div className="min-w-0">
       <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <p className="min-w-0 max-w-full truncate text-sm font-semibold text-[var(--pbp-text-strong)]" title={item.name}>
+        <p
+          className={`${ADMIN_RESPONSIVE_TABLE_PRIMARY_TEXT_CLASS} min-w-0 max-w-full`}
+          title={item.name}
+        >
           {item.name}
         </p>
         {!item.isActive ? (
@@ -47,7 +56,10 @@ export function PartnerNameSummary({
         ) : null}
       </div>
       {item.memo ? (
-        <p className="mt-1 truncate text-xs text-[var(--pbp-text-muted)]" title={item.memo}>
+        <p
+          className={ADMIN_RESPONSIVE_TABLE_SECONDARY_TEXT_CLASS}
+          title={item.memo}
+        >
           {item.memo}
         </p>
       ) : null}
@@ -64,10 +76,16 @@ export function PartnerTypeBadges({
   listText: PartnerListText;
   align?: "left" | "center";
 }) {
-  const alignment = align === "center" ? "justify-center text-center" : "justify-start text-left";
+  const alignment =
+    align === "center"
+      ? "justify-center text-center"
+      : "justify-start text-left";
 
   return (
-    <div className={`flex min-w-0 max-w-full flex-wrap items-center gap-1.5 ${alignment}`} aria-label={item.typeDisplayLabel || listText.typeMissing}>
+    <div
+      className={`flex min-w-0 max-w-full flex-wrap items-center gap-1.5 ${alignment}`}
+      aria-label={item.typeDisplayLabel || listText.typeMissing}
+    >
       {item.hasBaseTypes ? (
         item.baseTypeBadges.map((badge) => (
           <AdminStatusBadge key={badge.key} tone="info" size="xs">
@@ -75,10 +93,17 @@ export function PartnerTypeBadges({
           </AdminStatusBadge>
         ))
       ) : (
-        <span className="text-xs text-[var(--pbp-text-muted)]">{listText.noBaseType}</span>
+        <span className={ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS}>
+          {listText.noBaseType}
+        </span>
       )}
       {item.outsourcingProcessBadges.map((badge) => (
-        <AdminStatusBadge key={badge.key} tone="warning" size="xs" title={badge.label}>
+        <AdminStatusBadge
+          key={badge.key}
+          tone="warning"
+          size="xs"
+          title={badge.label}
+        >
           {badge.label}
         </AdminStatusBadge>
       ))}
@@ -111,7 +136,10 @@ export function PartnerValueText({
   const alignClassName = align === "center" ? "text-center" : "text-left";
 
   return (
-    <p className={`min-w-0 max-w-full truncate text-sm text-[var(--pbp-text-muted)] ${alignClassName}`} title={displayValue}>
+    <p
+      className={`${ADMIN_RESPONSIVE_TABLE_VALUE_TEXT_CLASS} ${alignClassName}`}
+      title={displayValue}
+    >
       {displayValue}
     </p>
   );
