@@ -5,7 +5,7 @@ import { Check, RotateCcw } from "lucide-react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { enUS, ko } from "date-fns/locale";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminIconActionButton } from "@/components/admin/common/AdminIconActionButton";
 import {
   formatPbpDateDisplay,
   getTodayPbpLocalDateValue,
@@ -40,7 +40,6 @@ type AdminDateRangePickerProps = {
 
 const CALENDAR_GRID_WIDTH_CLASS = "w-[140px]";
 const CALENDAR_PANEL_WIDTH_CLASS = CALENDAR_GRID_WIDTH_CLASS;
-const CALENDAR_ACTION_BUTTON_CLASS = "h-8 min-h-8 w-8 min-w-8 shrink-0 rounded-full p-0 [&>svg]:shrink-0";
 
 export function AdminDateRangePicker({
   startDate,
@@ -149,30 +148,20 @@ export function AdminDateRangePicker({
             }}
           />
           <div className={`${CALENDAR_GRID_WIDTH_CLASS} mx-auto mt-1 flex items-center justify-between gap-1 border-t border-[var(--pbp-border)] pt-1`}>
-            <AdminButton
-              type="button"
+            <AdminIconActionButton
+              label={labels.clear}
+              tone="neutral"
               onClick={clearSelection}
-              variant="icon"
-              size="sm"
-              aria-label={labels.clear}
-              title={labels.clear}
-              className={`${CALENDAR_ACTION_BUTTON_CLASS} text-[var(--pbp-action-ghost-text)]`}
             >
-              <RotateCcw className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
-              <span className="sr-only">{labels.clear}</span>
-            </AdminButton>
-            <AdminButton
-              type="button"
+              <RotateCcw className="text-current" strokeWidth={2.4} aria-hidden="true" />
+            </AdminIconActionButton>
+            <AdminIconActionButton
+              label={labels.done}
+              tone="primary"
               onClick={() => setIsCalendarOpen(false)}
-              variant="primary"
-              size="sm"
-              aria-label={labels.done}
-              title={labels.done}
-              className={`${CALENDAR_ACTION_BUTTON_CLASS} text-[var(--pbp-action-primary-text)]`}
             >
-              <Check className="h-3.5 w-3.5 text-current" strokeWidth={2.6} aria-hidden="true" />
-              <span className="sr-only">{labels.done}</span>
-            </AdminButton>
+              <Check className="text-current" strokeWidth={2.6} aria-hidden="true" />
+            </AdminIconActionButton>
           </div>
         </div>
       ) : null}

@@ -2,7 +2,8 @@
 
 import { Check, RotateCcw } from "lucide-react";
 
-import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminIconActionLink } from "@/components/admin/common/AdminIconActionButton";
 import {
   AdminDateRangePicker,
   type AdminDateRangePickerLabels,
@@ -91,29 +92,21 @@ export function AdminStatsPeriodControls({
               {translateAdminStatsLabel(item.label, t)}
             </AdminButton>
           ))}
-          <AdminLinkButton
+          <AdminIconActionLink
             href={buildPeriodSectionHref(resetHref)}
-            aria-label={resetLabel}
-            title={resetLabel}
-            variant="icon"
-            size="sm"
-            className="shrink-0 text-[var(--pbp-action-ghost-text)]"
+            label={resetLabel}
+            tone="neutral"
           >
-            <RotateCcw className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
-            <span className="sr-only">{resetLabel}</span>
-          </AdminLinkButton>
-          <AdminLinkButton
+            <RotateCcw className="text-current" strokeWidth={2.4} aria-hidden="true" />
+          </AdminIconActionLink>
+          <AdminIconActionLink
             href={applyHref}
-            aria-disabled={!isApplyEnabled}
-            aria-label={applyLabel}
-            title={applyLabel}
-            variant={isApplyEnabled ? "primary" : "icon"}
-            size="sm"
-            className={`shrink-0 ${isApplyEnabled ? "text-[var(--pbp-action-primary-text)]" : "pointer-events-none opacity-50 text-[var(--pbp-action-ghost-text)]"}`}
+            label={applyLabel}
+            tone="primary"
+            disabled={!isApplyEnabled}
           >
-            <Check className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
-            <span className="sr-only">{applyLabel}</span>
-          </AdminLinkButton>
+            <Check className="text-current" strokeWidth={2.4} aria-hidden="true" />
+          </AdminIconActionLink>
         </div>
       </div>
     </div>
