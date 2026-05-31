@@ -106,7 +106,7 @@ export default function AdminStatsDashboard({
   const statsAnalysisEyebrow = pt("statsAnalysisEyebrow", "Analysis");
   const statsAnalysisDescription = pt(
     "statsAnalysisDescription",
-    "생산 구성, 업체 성과, 기간별 흐름을 탭으로 전환해 확인합니다.",
+    "생산 구성, 업체 성과, 기간별 흐름을 확인합니다.",
   );
   const updateCustomStartDate = (value: string) => {
     setActivePeriodPresetKey(null);

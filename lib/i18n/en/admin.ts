@@ -1375,7 +1375,7 @@ export const adminEn = {
       "Review cumulative production, delay, quality, and storage usage for the current company first.",
     statsAnalysisEyebrow: "Analysis",
     statsAnalysisDescription:
-      "Switch between production mix, partner performance, and period flow with tabs.",
+      "Review production mix, partner performance, and period flow.",
     selectedPeriodBadgeLabel: "Selected period",
     currentProducedLabel: "Cumulative production",
     currentReorderDescription: "Reorders {count}",
@@ -1412,7 +1412,7 @@ export const adminEn = {
     dateSelectMonth: "Month",
     dateSelectDay: "Day",
     workflowEyebrow: "Workflow",
-    workflowAnalysisTitle: "Workflow analysis",
+    workflowAnalysisTitle: "Analysis statistics",
     periodTopEyebrow: "Period top 5",
     periodTopCompletedTitle: "Top 5 by order quantity",
     periodTopReorderTitle: "Top 5 by reorder round",

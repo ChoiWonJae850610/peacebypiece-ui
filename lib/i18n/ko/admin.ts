@@ -1373,7 +1373,7 @@ export const adminKo = {
       "현재 회사 기준의 누적 생산, 납기, 검수, 저장소 사용량을 먼저 확인합니다.",
     statsAnalysisEyebrow: "Analysis",
     statsAnalysisDescription:
-      "생산 구성, 업체 성과, 기간별 흐름을 탭으로 전환해 확인합니다.",
+      "생산 구성, 업체 성과, 기간별 흐름을 확인합니다.",
     selectedPeriodBadgeLabel: "선택 기간",
     currentProducedLabel: "누적 생산",
     currentReorderDescription: "리오더 {count}",
@@ -1407,7 +1407,7 @@ export const adminKo = {
     dateSelectMonth: "월",
     dateSelectDay: "일",
     workflowEyebrow: "작업 흐름",
-    workflowAnalysisTitle: "작업흐름분석",
+    workflowAnalysisTitle: "분석 통계",
     periodTopEyebrow: "기간별 상위 5개",
     periodTopCompletedTitle: "발주수량 상위 5개",
     periodTopReorderTitle: "리오더 차수 상위 5개",
