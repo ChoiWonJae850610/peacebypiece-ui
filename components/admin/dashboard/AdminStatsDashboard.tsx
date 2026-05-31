@@ -84,6 +84,9 @@ export default function AdminStatsDashboard({
   const [customEndDate, setCustomEndDate] = useState(
     stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "",
   );
+  const [activePeriodPresetKey, setActivePeriodPresetKey] = useState<
+    "7d" | "30d" | null
+  >(null);
   const todayDateValue = getTodayAdminLocalDateValue();
   const dateRangeLabels = {
     start: pt("customStartDateLabel", pageText.customStartDateLabel),
@@ -110,6 +113,7 @@ export default function AdminStatsDashboard({
   );
   const selectedPeriodBadgeLabel = pt("selectedPeriodBadgeLabel", "선택 기간");
   const updateCustomStartDate = (value: string) => {
+    setActivePeriodPresetKey(null);
     if (!value) {
       setCustomStartDate("");
       setCustomEndDate("");
@@ -120,6 +124,7 @@ export default function AdminStatsDashboard({
     if (customEndDate && customEndDate < value) setCustomEndDate("");
   };
   const updateCustomEndDate = (value: string) => {
+    setActivePeriodPresetKey(null);
     if (!value) {
       setCustomEndDate("");
       return;
@@ -140,15 +145,18 @@ export default function AdminStatsDashboard({
   };
 
   const setPresetCustomPeriod = (key: AdminStatsSnapshot["periodOptions"][number]["key"]) => {
-    if (key === "7d") {
-      setCustomStartDate(getRelativeAdminDateValue(todayDateValue, 7));
-      setCustomEndDate(todayDateValue);
+    if (key !== "7d" && key !== "30d") return;
+
+    if (activePeriodPresetKey === key) {
+      setActivePeriodPresetKey(null);
+      setCustomStartDate("");
+      setCustomEndDate("");
       return;
     }
-    if (key === "30d") {
-      setCustomStartDate(getRelativeAdminDateValue(todayDateValue, 30));
-      setCustomEndDate(todayDateValue);
-    }
+
+    setActivePeriodPresetKey(key);
+    setCustomEndDate(todayDateValue);
+    setCustomStartDate(getRelativeAdminDateValue(todayDateValue, key === "7d" ? 7 : 30));
   };
 
   const translatedStats = {
@@ -225,9 +233,12 @@ export default function AdminStatsDashboard({
   });
 
   const totalReorderCount = stats.currentOverview.reorderCount;
-  const activePeriodOptions = stats.periodOptions.filter(
-    (item) => item.key === "7d" || item.key === "30d",
-  );
+  const activePeriodOptions = stats.periodOptions
+    .filter((item) => item.key === "7d" || item.key === "30d")
+    .map((item) => ({
+      ...item,
+      active: item.key === activePeriodPresetKey,
+    }));
   const activePeriodLabel = translateAdminStatsLabel(
     stats.selectedPeriodRange.label,
     t,
