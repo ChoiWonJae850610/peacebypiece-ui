@@ -26,7 +26,7 @@ export default function AdminSegmentedTabs<TId extends string>({
   return (
     <div
       className={[
-        "flex w-full justify-start overflow-x-auto 2xl:w-auto 2xl:justify-end",
+        "flex w-full justify-start overflow-x-auto sm:justify-end 2xl:w-auto 2xl:justify-end",
         className,
       ]
         .filter(Boolean)

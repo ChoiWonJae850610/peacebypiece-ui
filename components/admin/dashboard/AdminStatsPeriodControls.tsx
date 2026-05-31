@@ -2,7 +2,7 @@
 
 import { Check, RotateCcw } from "lucide-react";
 
-import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import {
   AdminDateRangePicker,
   type AdminDateRangePickerLabels,
@@ -31,6 +31,7 @@ type AdminStatsPeriodControlsProps = {
   applyLabel: string;
   isApplyEnabled: boolean;
   buildPeriodSectionHref: (href: string) => string;
+  onPeriodOptionSelect: (key: AdminStatsPeriodOption["key"]) => void;
   onStartDateChange: (value: string) => void;
   onEndDateChange: (value: string) => void;
 };
@@ -49,6 +50,7 @@ export function AdminStatsPeriodControls({
   applyLabel,
   isApplyEnabled,
   buildPeriodSectionHref,
+  onPeriodOptionSelect,
   onStartDateChange,
   onEndDateChange,
 }: AdminStatsPeriodControlsProps) {
@@ -77,16 +79,17 @@ export function AdminStatsPeriodControls({
         </div>
         <div className="flex min-w-0 flex-wrap items-center justify-start gap-1.5 md:ml-auto md:justify-end">
           {periodOptions.map((item) => (
-            <AdminLinkButton
+            <AdminButton
               key={item.key}
-              href={buildPeriodSectionHref(item.href)}
-              aria-current={item.active ? "page" : undefined}
+              type="button"
+              aria-pressed={item.active}
               variant={item.active ? "primary" : "secondary"}
               size="sm"
               className="min-h-8 shrink-0 px-2.5 py-1 text-[11px]"
+              onClick={() => onPeriodOptionSelect(item.key)}
             >
               {translateAdminStatsLabel(item.label, t)}
-            </AdminLinkButton>
+            </AdminButton>
           ))}
           <AdminLinkButton
             href={buildPeriodSectionHref(resetHref)}

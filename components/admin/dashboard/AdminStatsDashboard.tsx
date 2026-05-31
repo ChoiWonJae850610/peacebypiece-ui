@@ -134,6 +134,28 @@ export default function AdminStatsDashboard({
     setCustomEndDate(value);
   };
 
+  const getRelativeAdminDateValue = (baseDateValue: string, daysBefore: number) => {
+    const [year, month, day] = baseDateValue.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() - daysBefore);
+    const nextYear = date.getFullYear();
+    const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
+    const nextDay = String(date.getDate()).padStart(2, "0");
+    return `${nextYear}-${nextMonth}-${nextDay}`;
+  };
+
+  const setPresetCustomPeriod = (key: AdminStatsSnapshot["periodOptions"][number]["key"]) => {
+    if (key === "7d") {
+      setCustomStartDate(getRelativeAdminDateValue(todayDateValue, 7));
+      setCustomEndDate(todayDateValue);
+      return;
+    }
+    if (key === "30d") {
+      setCustomStartDate(getRelativeAdminDateValue(todayDateValue, 30));
+      setCustomEndDate(todayDateValue);
+    }
+  };
+
   const translatedStats = {
     ...stats,
     summaries: translateAdminStatsText(stats.summaries, t),
@@ -686,6 +708,7 @@ export default function AdminStatsDashboard({
                     applyLabel={pt("customApplyShort", pageText.customApply)}
                     isApplyEnabled={isCustomPeriodValid}
                     buildPeriodSectionHref={buildPeriodSectionHref}
+                    onPeriodOptionSelect={setPresetCustomPeriod}
                     onStartDateChange={updateCustomStartDate}
                     onEndDateChange={updateCustomEndDate}
                   />
