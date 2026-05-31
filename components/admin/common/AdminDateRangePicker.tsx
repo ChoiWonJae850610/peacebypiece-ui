@@ -110,7 +110,7 @@ export function AdminDateRangePicker({
       </button>
 
       {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-[min(224px,calc(100vw-2rem))] max-h-[min(360px,calc(100vh-4rem))] overflow-y-auto rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 shadow-2xl">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-fit max-w-[calc(100vw-2rem)] max-h-[min(340px,calc(100vh-4rem))] overflow-y-auto rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 shadow-2xl">
           <DayPicker
             mode="range"
             selected={selected}
@@ -121,18 +121,18 @@ export function AdminDateRangePicker({
             fixedWeeks
             aria-label={labels.calendarAria}
             classNames={{
-              root: "text-sm text-[var(--pbp-text-muted)]",
-              months: "grid gap-1",
-              month: "space-y-1",
-              month_caption: "flex items-center justify-center px-1 py-0.5 text-[11px] font-semibold text-[var(--pbp-text-primary)]",
+              root: "w-[166px] text-sm text-[var(--pbp-text-muted)]",
+              months: "grid w-full gap-1",
+              month: "w-full space-y-1",
+              month_caption: "flex items-center justify-center px-0.5 py-0.5 text-[11px] font-semibold text-[var(--pbp-text-primary)]",
               caption_label: "text-xs font-semibold",
-              nav: "flex items-center justify-between",
+              nav: "flex w-full items-center justify-between",
               button_previous: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
               button_next: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
-              weekdays: "grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--pbp-text-subtle)]",
-              week: "grid grid-cols-7 gap-0",
-              day: "flex items-center justify-center",
-              day_button: "h-5 w-5 rounded-full text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
+              weekdays: "grid w-full grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--pbp-text-subtle)]",
+              week: "grid w-full grid-cols-7 gap-0",
+              day: "flex h-5 w-full items-center justify-center",
+              day_button: "mx-auto h-5 w-5 rounded-full text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
               today: "font-bold text-[var(--admin-theme-surface)]",
               selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
@@ -142,7 +142,7 @@ export function AdminDateRangePicker({
               disabled: "text-[var(--pbp-text-subtle)] opacity-40",
             }}
           />
-          <div className="mt-1.5 flex items-center justify-end gap-1.5 border-t border-[var(--pbp-border)] pt-1.5">
+          <div className="mt-1.5 flex w-[166px] items-center justify-between gap-1.5 border-t border-[var(--pbp-border)] pt-1.5">
             <AdminButton
               type="button"
               onClick={clearSelection}
