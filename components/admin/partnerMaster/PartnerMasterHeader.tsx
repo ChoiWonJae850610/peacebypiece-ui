@@ -1,5 +1,7 @@
 "use client";
 
+import { Plus } from "lucide-react";
+
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { useI18n } from "@/lib/i18n";
 
@@ -26,8 +28,15 @@ export default function PartnerMasterHeader({ canCreate = true, onOpenCreateModa
         </p>
       </div>
       {canCreate ? (
-        <AdminButton type="button" onClick={onOpenCreateModal} variant="primary" size="lg" className="w-full whitespace-nowrap px-5 md:w-auto">
-          + {headerText.createPartner}
+        <AdminButton
+          type="button"
+          onClick={onOpenCreateModal}
+          variant="primary"
+          size="sm"
+          className="h-8 min-h-8 w-full rounded-full px-3 text-[12px] md:w-auto"
+        >
+          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>{headerText.createPartner}</span>
         </AdminButton>
       ) : null}
     </div>

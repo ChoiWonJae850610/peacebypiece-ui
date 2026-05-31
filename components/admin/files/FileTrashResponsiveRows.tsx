@@ -6,6 +6,7 @@ import type {
   TrashSortState,
   UnifiedTrashRow,
 } from "@/components/admin/files/fileTrashSectionRows";
+import { AdminResponsiveTableShell } from "@/components/admin/common/responsiveTable/AdminResponsiveTableShell";
 import { EmptyTrashRows, FileTrashCompactListRows } from "@/components/admin/files/trash/FileTrashCompactListRows";
 import { FileTrashWideTableRows } from "@/components/admin/files/trash/FileTrashWideTableRows";
 import { TRASH_TABLE_MIN_WIDTH } from "@/components/admin/files/trash/fileTrashResponsivePresentation";
@@ -45,37 +46,36 @@ export function FileTrashResponsiveRows({
   );
 
   return (
-    <div
-      ref={containerRef}
-      className={`flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] ${
-        isWideTable ? "divide-y divide-[var(--pbp-border)]" : "gap-2 border-0 bg-transparent"
-      }`}
-    >
+    <div ref={containerRef} className="min-h-fit touch-pan-y overflow-visible">
       {rows.length === 0 ? (
         <EmptyTrashRows
           emptyLabel={emptyLabel}
           emptyDescription={emptyDescription}
         />
       ) : isWideTable ? (
-        <FileTrashWideTableRows
-          rows={rows}
-          t={t}
-          sortState={sortState}
-          onSort={onSort}
-          onRowClick={onRowClick}
-          onToggleItem={onToggleItem}
-          onToggleWorkOrder={onToggleWorkOrder}
-          previewWorkOrderId={previewWorkOrderId}
-        />
+        <AdminResponsiveTableShell>
+          <FileTrashWideTableRows
+            rows={rows}
+            t={t}
+            sortState={sortState}
+            onSort={onSort}
+            onRowClick={onRowClick}
+            onToggleItem={onToggleItem}
+            onToggleWorkOrder={onToggleWorkOrder}
+            previewWorkOrderId={previewWorkOrderId}
+          />
+        </AdminResponsiveTableShell>
       ) : (
-        <FileTrashCompactListRows
-          rows={rows}
-          t={t}
-          onRowClick={onRowClick}
-          onToggleItem={onToggleItem}
-          onToggleWorkOrder={onToggleWorkOrder}
-          previewWorkOrderId={previewWorkOrderId}
-        />
+        <div className="flex flex-col gap-2">
+          <FileTrashCompactListRows
+            rows={rows}
+            t={t}
+            onRowClick={onRowClick}
+            onToggleItem={onToggleItem}
+            onToggleWorkOrder={onToggleWorkOrder}
+            previewWorkOrderId={previewWorkOrderId}
+          />
+        </div>
       )}
     </div>
   );

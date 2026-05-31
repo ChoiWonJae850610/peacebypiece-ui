@@ -16,9 +16,9 @@ import {
   ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS,
   ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
   ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
-  ADMIN_RESPONSIVE_TABLE_SHELL_CLASS,
   ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS,
 } from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
+import { AdminResponsiveTableShell } from "@/components/admin/common/responsiveTable/AdminResponsiveTableShell";
 import {
   handlePartnerRowKeyDown,
   PartnerNameSummary,
@@ -158,7 +158,7 @@ export default function PartnerMasterWideTableRows({
   onEditPartner,
 }: PartnerMasterWideTableRowsProps) {
   return (
-    <section className={ADMIN_RESPONSIVE_TABLE_SHELL_CLASS}>
+    <AdminResponsiveTableShell>
       <WideTableHeader listText={listText} sortState={sortState} onSort={onSort} />
       {isLoading ? (
         <PartnerRowsEmpty label={listText.loading} />
@@ -177,6 +177,6 @@ export default function PartnerMasterWideTableRows({
           ))}
         </div>
       )}
-    </section>
+    </AdminResponsiveTableShell>
   );
 }
