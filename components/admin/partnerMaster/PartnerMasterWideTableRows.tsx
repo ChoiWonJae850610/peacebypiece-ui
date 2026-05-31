@@ -10,6 +10,16 @@ import {
   PARTNER_WIDE_TABLE_GRID,
 } from "@/components/admin/partnerMaster/partnerMasterResponsivePresentation";
 import {
+  ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS,
+  ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS,
+  ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS,
+  ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS,
+  ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
+  ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
+  ADMIN_RESPONSIVE_TABLE_SHELL_CLASS,
+  ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS,
+} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
+import {
   handlePartnerRowKeyDown,
   PartnerNameSummary,
   PartnerStatusBadge,
@@ -59,11 +69,11 @@ function SortButton({
     <button
       type="button"
       onClick={() => onSort(sortKey)}
-      className={`inline-flex w-full max-w-full items-center gap-1 rounded-full px-1.5 py-1 transition hover:bg-[var(--admin-theme-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-theme-ring)] ${alignClassName}`}
+      className={`${ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS} ${alignClassName}`}
       aria-sort={isActive ? (activeSort.direction === "asc" ? "ascending" : "descending") : "none"}
     >
       <span className="truncate">{label}</span>
-      <span className={isActive ? "text-[var(--admin-theme-primary)]" : "text-[var(--pbp-text-muted)]"} aria-hidden="true">
+      <span className={isActive ? "text-[var(--admin-theme-primary)]" : ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS} aria-hidden="true">
         {marker}
       </span>
     </button>
@@ -81,7 +91,7 @@ function WideTableHeader({
 }) {
   return (
     <div
-      className="grid items-center gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)]"
+      className={ADMIN_RESPONSIVE_TABLE_HEADER_CLASS}
       style={{ gridTemplateColumns: PARTNER_WIDE_TABLE_GRID }}
     >
       <SortButton sortKey="name" label={listText.columns.name} activeSort={sortState} onSort={onSort} align="left" />
@@ -115,7 +125,7 @@ function WidePartnerRow({
       tabIndex={canUpdate ? 0 : undefined}
       onClick={openPartner}
       onKeyDown={(event) => handlePartnerRowKeyDown(event, item, canUpdate, onEditPartner)}
-      className={`grid w-full items-center gap-3 px-4 py-2 text-left transition focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] ${getPartnerRowToneClass(item)} ${canUpdate ? "cursor-pointer hover:bg-[var(--admin-theme-soft)]" : ""}`}
+      className={`${ADMIN_RESPONSIVE_TABLE_ROW_CLASS} ${getPartnerRowToneClass(item)} ${canUpdate ? ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS : ""}`}
       style={{ gridTemplateColumns: PARTNER_WIDE_TABLE_GRID }}
     >
       <PartnerNameSummary item={item} listText={listText} />
@@ -132,7 +142,7 @@ function WidePartnerRow({
 
 function PartnerRowsEmpty({ label }: { label: string }) {
   return (
-    <div className="flex min-h-[220px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">
+    <div className={ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS}>
       {label}
     </div>
   );
@@ -148,14 +158,14 @@ export default function PartnerMasterWideTableRows({
   onEditPartner,
 }: PartnerMasterWideTableRowsProps) {
   return (
-    <section className="flex min-h-fit touch-pan-y flex-col overflow-visible overflow-hidden rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+    <section className={ADMIN_RESPONSIVE_TABLE_SHELL_CLASS}>
       <WideTableHeader listText={listText} sortState={sortState} onSort={onSort} />
       {isLoading ? (
         <PartnerRowsEmpty label={listText.loading} />
       ) : items.length === 0 ? (
         <PartnerRowsEmpty label={listText.empty} />
       ) : (
-        <div className="divide-y divide-[var(--pbp-border)]">
+        <div className={ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS}>
           {items.map((item) => (
             <WidePartnerRow
               key={item.id}

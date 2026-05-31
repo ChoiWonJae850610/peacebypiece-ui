@@ -1,9 +1,11 @@
 "use client";
 
 import {
-  ADMIN_STORAGE_MUTED_TEXT_CLASS,
-  ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
-} from "@/components/admin/common/adminSemanticClassNames";
+  ADMIN_RESPONSIVE_COMPACT_CARD_CLASS,
+  ADMIN_RESPONSIVE_COMPACT_CARD_CLICKABLE_CLASS,
+  ADMIN_RESPONSIVE_COMPACT_META_LABEL_CLASS,
+  ADMIN_RESPONSIVE_COMPACT_META_VALUE_CLASS,
+} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
 import type { UnifiedTrashRow } from "@/components/admin/files/fileTrashSectionRows";
 import { FileTrashTypeBadge } from "@/components/admin/files/trash/FileTrashTypeBadge";
 import {
@@ -18,10 +20,10 @@ import {
 function CompactMetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium`}>
+      <p className={ADMIN_RESPONSIVE_COMPACT_META_LABEL_CLASS}>
         {label}
       </p>
-      <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-0.5 truncate text-[12px] font-medium`} title={value}>
+      <p className={ADMIN_RESPONSIVE_COMPACT_META_VALUE_CLASS} title={value}>
         {value}
       </p>
     </div>
@@ -42,7 +44,7 @@ function CompactTrashRow({
       tabIndex={0}
       onClick={() => onRowClick(row)}
       onKeyDown={(event) => handleTrashRowKeyDown(event, row, onRowClick)}
-      className={`w-full cursor-pointer rounded-[16px] border border-[var(--pbp-border)] px-3 py-2.5 text-left text-[11px] shadow-[var(--pbp-shadow-card)] transition hover:bg-[var(--pbp-surface-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] ${getFileTrashRowToneClass(row, previewWorkOrderId)}`}
+      className={`${ADMIN_RESPONSIVE_COMPACT_CARD_CLASS} ${ADMIN_RESPONSIVE_COMPACT_CARD_CLICKABLE_CLASS} ${getFileTrashRowToneClass(row, previewWorkOrderId)}`}
     >
       <div className="flex items-start gap-3">
         <div className="pt-1">
@@ -65,7 +67,7 @@ function CompactTrashRow({
               value={row.kind === "workorder" ? "-" : row.workorderTitle}
             />
             <div className="min-w-0">
-              <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium`}>
+              <p className={ADMIN_RESPONSIVE_COMPACT_META_LABEL_CLASS}>
                 {t("filesList.columns.type", "유형")}
               </p>
               <div className="mt-1">

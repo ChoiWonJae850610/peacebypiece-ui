@@ -3,6 +3,14 @@
 import {
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
+import {
+  ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS,
+  ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS,
+  ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS,
+  ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
+  ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
+  ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS,
+} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
 import type {
   TrashSortKey,
   TrashSortState,
@@ -41,15 +49,11 @@ function SortButton({
     <button
       type="button"
       onClick={() => onSort(sortKey)}
-      className="inline-flex w-full items-center justify-center gap-1 rounded px-1 py-0.5 text-center transition hover:bg-[var(--pbp-surface-soft)] hover:text-[var(--pbp-text-primary)]"
+      className={`${ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS} justify-center`}
     >
       <span>{label}</span>
       <span
-        className={
-          isActive
-            ? "text-[var(--pbp-text-primary)]"
-            : "text-[var(--pbp-text-subtle)]"
-        }
+        className={isActive ? "text-[var(--pbp-text-primary)]" : ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS}
       >
         {directionLabel}
       </span>
@@ -68,7 +72,7 @@ function WideTrashTableHeader({
 }) {
   return (
     <div
-      className="grid items-center gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-center text-[10px] font-semibold text-[var(--pbp-text-muted)]"
+      className={`${ADMIN_RESPONSIVE_TABLE_HEADER_CLASS} text-center`}
       style={{ gridTemplateColumns: WIDE_TRASH_GRID }}
     >
       <span>{t("filesList.columns.select", "선택")}</span>
@@ -120,7 +124,7 @@ function WideTrashTableRow({
       tabIndex={0}
       onClick={() => onRowClick(row)}
       onKeyDown={(event) => handleTrashRowKeyDown(event, row, onRowClick)}
-      className={`grid w-full cursor-pointer items-center gap-3 px-4 py-2 text-left text-[11px] transition hover:bg-[var(--pbp-surface-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] ${getFileTrashRowToneClass(row, previewWorkOrderId)}`}
+      className={`${ADMIN_RESPONSIVE_TABLE_ROW_CLASS} ${ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS} ${getFileTrashRowToneClass(row, previewWorkOrderId)}`}
       style={{ gridTemplateColumns: WIDE_TRASH_GRID }}
     >
       <span className="flex justify-center">
@@ -168,7 +172,7 @@ export function FileTrashWideTableRows({
   return (
     <>
       <WideTrashTableHeader t={t} sortState={sortState} onSort={onSort} />
-      <div className="divide-y divide-[var(--pbp-border)]">
+      <div className={ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS}>
         {rows.map((row) => (
           <WideTrashTableRow
             key={row.rowId}
