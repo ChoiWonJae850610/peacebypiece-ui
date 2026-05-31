@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getTodayAdminLocalDateValue } from "@/components/admin/common/AdminDateRangePicker";
-import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
 import { AdminStatsPeriodControls } from "@/components/admin/dashboard/AdminStatsPeriodControls";
 import { AdminStatsInlineToggle } from "@/components/admin/dashboard/AdminStatsInlineToggle";
@@ -109,7 +108,6 @@ export default function AdminStatsDashboard({
     "statsAnalysisDescription",
     "생산 구성, 업체 성과, 기간별 흐름을 탭으로 전환해 확인합니다.",
   );
-  const selectedPeriodBadgeLabel = pt("selectedPeriodBadgeLabel", "선택 기간");
   const updateCustomStartDate = (value: string) => {
     setActivePeriodPresetKey(null);
     if (!value) {
@@ -237,10 +235,6 @@ export default function AdminStatsDashboard({
       ...item,
       active: item.key === activePeriodPresetKey,
     }));
-  const activePeriodLabel = translateAdminStatsLabel(
-    stats.selectedPeriodRange.label,
-    t,
-  );
   const buildPeriodSectionHref = (href: string) => {
     const separator = href.includes("?") ? "&" : "?";
     return `${href}${separator}section=period&topMode=${selectedPeriodTopMode}`;
@@ -492,13 +486,6 @@ export default function AdminStatsDashboard({
         eyebrow={statsAnalysisEyebrow}
         title={pt("workflowAnalysisTitle", pageText.workflowAnalysisTitle)}
         description={statsAnalysisDescription}
-        actions={
-          activeStatsSection === "period" ? (
-            <AdminStatusBadge tone="neutral">
-              {selectedPeriodBadgeLabel}: {activePeriodLabel}
-            </AdminStatusBadge>
-          ) : null
-        }
         tabs={statsSectionTabs.map((item) => ({
           id: item.key,
           label: item.label,
