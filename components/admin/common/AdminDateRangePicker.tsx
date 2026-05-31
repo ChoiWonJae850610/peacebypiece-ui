@@ -98,22 +98,22 @@ export function AdminDateRangePicker({
       <button
         type="button"
         onClick={() => setIsCalendarOpen((current) => !current)}
-        className="flex w-full min-w-[280px] flex-col gap-1 rounded-2xl border border-stone-100 bg-white p-1 text-left shadow-sm transition hover:border-stone-200 hover:bg-stone-50 sm:flex-row"
+        className="grid w-full min-w-0 grid-cols-2 gap-1 rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-left shadow-[var(--pbp-shadow-card)] transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]"
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
-        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.start}</span>
-          <span className="mt-0.5 block text-xs font-semibold text-stone-800">{formatAdminDateDisplay(startDate, locale)}</span>
+        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2.5 py-1">
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.start}</span>
+          <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(startDate, locale)}</span>
         </span>
-        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.end}</span>
-          <span className="mt-0.5 block text-xs font-semibold text-stone-800">{formatAdminDateDisplay(endDate, locale)}</span>
+        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2.5 py-1">
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.end}</span>
+          <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(endDate, locale)}</span>
         </span>
       </button>
 
       {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[min(320px,calc(100vw-3rem))] rounded-[22px] border border-stone-100 bg-white p-3 shadow-2xl">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-[min(300px,calc(100vw-2rem))] rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2.5 shadow-2xl">
           <DayPicker
             mode="range"
             selected={selected}
@@ -124,34 +124,34 @@ export function AdminDateRangePicker({
             fixedWeeks
             aria-label={labels.calendarAria}
             classNames={{
-              root: "text-sm text-stone-700",
-              months: "grid gap-3",
-              month: "space-y-2",
-              month_caption: "flex items-center justify-center px-2 py-1 text-sm font-semibold text-stone-950",
+              root: "text-sm text-[var(--pbp-text-muted)]",
+              months: "grid gap-2",
+              month: "space-y-1.5",
+              month_caption: "flex items-center justify-center px-2 py-0.5 text-sm font-semibold text-[var(--pbp-text-primary)]",
               caption_label: "text-sm font-semibold",
               nav: "flex items-center justify-between",
-              button_previous: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-              button_next: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-              weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
-              week: "grid grid-cols-7 gap-1",
+              button_previous: "rounded-full border border-[var(--pbp-border)] px-2 py-1 text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              button_next: "rounded-full border border-[var(--pbp-border)] px-2 py-1 text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              weekdays: "grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--pbp-text-subtle)]",
+              week: "grid grid-cols-7 gap-0.5",
               day: "flex items-center justify-center",
-              day_button: "h-7 w-7 rounded-full text-[11px] font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
+              day_button: "h-6 w-6 rounded-full text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
               today: "font-bold text-[var(--admin-theme-surface)]",
               selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_end: "rounded-r-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
-              range_middle: "rounded-none bg-stone-100 text-stone-900",
-              outside: "text-stone-300",
-              disabled: "text-stone-300 opacity-40",
+              range_middle: "rounded-none bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]",
+              outside: "text-[var(--pbp-text-subtle)]",
+              disabled: "text-[var(--pbp-text-subtle)] opacity-40",
             }}
           />
-          <div className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
-            <p className="min-w-0 flex-1 text-xs font-semibold text-stone-500">{selectedSummary}</p>
-            <div className="flex shrink-0 items-center gap-2">
-              <AdminButton type="button" onClick={clearSelection} variant="secondary" size="sm" className="min-h-8 px-3 py-1.5 text-xs">
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2">
+            <p className="min-w-0 flex-1 text-[11px] font-semibold text-[var(--pbp-text-muted)]">{selectedSummary}</p>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <AdminButton type="button" onClick={clearSelection} variant="secondary" size="sm" className="min-h-7 px-2.5 py-1 text-[11px]">
                 {labels.clear}
               </AdminButton>
-              <AdminButton type="button" onClick={() => setIsCalendarOpen(false)} variant="primary" size="sm" className="min-h-8 px-3 py-1.5 text-xs">
+              <AdminButton type="button" onClick={() => setIsCalendarOpen(false)} variant="primary" size="sm" className="min-h-7 px-2.5 py-1 text-[11px]">
                 {labels.done}
               </AdminButton>
             </div>

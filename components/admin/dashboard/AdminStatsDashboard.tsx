@@ -2,17 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import {
-  AdminButton,
-  AdminLinkButton,
-} from "@/components/admin/common/AdminButton";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
-import {
-  AdminDateRangePicker,
-  getTodayAdminLocalDateValue,
-} from "@/components/admin/common/AdminDateRangePicker";
+import { getTodayAdminLocalDateValue } from "@/components/admin/common/AdminDateRangePicker";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
+import { AdminStatsPeriodControls } from "@/components/admin/dashboard/AdminStatsPeriodControls";
 import {
   AdminStatsAnalysisCardShell,
   AdminStatsBarListCard,
@@ -24,8 +19,6 @@ import {
   ADMIN_STATS_ACCENT_TEXT_CLASS,
   ADMIN_STATS_BODY_CLASS,
   ADMIN_STATS_PANEL_CLASS,
-  ADMIN_STATS_PANEL_TIGHT_CLASS,
-  ADMIN_STATS_TITLE_CLASS,
   ADMIN_STATS_WARNING_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
@@ -679,62 +672,23 @@ export default function AdminStatsDashboard({
 
               {activeStatsSection === "period" ? (
                 <div>
-                  <div
-                    className={`${ADMIN_STATS_PANEL_TIGHT_CLASS} flex flex-col items-stretch gap-2 px-2.5 py-2 sm:px-3 lg:flex-row lg:items-center lg:justify-between`}
-                  >
-                    <div>
-                      <h3
-                        className={`text-sm font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
-                      >
-                        {pt(
-                          "periodAnalysisTitle",
-                          pageText.periodAnalysisTitle,
-                        )}
-                      </h3>
-                    </div>
-                    <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
-                      <div className="w-full min-w-0 flex-1 sm:w-auto sm:min-w-[280px] sm:max-w-[440px] sm:flex-none">
-                        <AdminDateRangePicker
-                          startDate={customStartDate}
-                          endDate={customEndDate}
-                          maxDateValue={todayDateValue}
-                          labels={dateRangeLabels}
-                          locale={locale}
-                          onStartDateChange={updateCustomStartDate}
-                          onEndDateChange={updateCustomEndDate}
-                        />
-                      </div>
-                      {activePeriodOptions.map((item) => (
-                        <AdminLinkButton
-                          key={item.key}
-                          href={buildPeriodSectionHref(item.href)}
-                          aria-current={item.active ? "page" : undefined}
-                          variant={item.active ? "primary" : "secondary"}
-                          size="sm"
-                          className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
-                        >
-                          {translateAdminStatsLabel(item.label, t)}
-                        </AdminLinkButton>
-                      ))}
-                      <AdminLinkButton
-                        href={buildPeriodSectionHref("/workspace/stats?period=30d")}
-                        variant="secondary"
-                        size="sm"
-                        className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
-                      >
-                        {pt("customReset", pageText.customReset)}
-                      </AdminLinkButton>
-                      <AdminLinkButton
-                        href={customPeriodHref}
-                        aria-disabled={!isCustomPeriodValid}
-                        variant={isCustomPeriodValid ? "primary" : "secondary"}
-                        size="sm"
-                        className={`min-h-8 shrink-0 px-3 py-1.5 text-xs ${isCustomPeriodValid ? "" : "pointer-events-none opacity-50"}`}
-                      >
-                        {pt("customApplyShort", pageText.customApply)}
-                      </AdminLinkButton>
-                    </div>
-                  </div>
+                  <AdminStatsPeriodControls
+                    title={pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}
+                    startDate={customStartDate}
+                    endDate={customEndDate}
+                    maxDateValue={todayDateValue}
+                    labels={dateRangeLabels}
+                    locale={locale}
+                    periodOptions={activePeriodOptions}
+                    resetHref="/workspace/stats?period=30d"
+                    applyHref={customPeriodHref}
+                    resetLabel={pt("customReset", pageText.customReset)}
+                    applyLabel={pt("customApplyShort", pageText.customApply)}
+                    isApplyEnabled={isCustomPeriodValid}
+                    buildPeriodSectionHref={buildPeriodSectionHref}
+                    onStartDateChange={updateCustomStartDate}
+                    onEndDateChange={updateCustomEndDate}
+                  />
                   {customPeriodMessage ? (
                     <p
                       className={`mt-3 text-xs font-semibold ${ADMIN_STATS_WARNING_TEXT_CLASS}`}
