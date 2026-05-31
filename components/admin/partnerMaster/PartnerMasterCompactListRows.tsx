@@ -1,10 +1,7 @@
 "use client";
 
-import type {
-  PartnerListItemViewModel,
-  PartnerSortKey,
-  PartnerSortState,
-} from "@/lib/admin/partner";
+import type { PartnerListItemViewModel, PartnerSortKey } from "@/lib/admin/partner";
+import type { PartnerMasterListText, PartnerMasterRowsProps } from "@/components/admin/partnerMaster/partnerMasterListTypes";
 import { getPartnerEmptyValue, getPartnerRowToneClass } from "@/components/admin/partnerMaster/partnerMasterResponsivePresentation";
 import {
   ADMIN_RESPONSIVE_COMPACT_CARD_CLASS,
@@ -12,7 +9,6 @@ import {
   ADMIN_RESPONSIVE_COMPACT_META_BOX_CLASS,
   ADMIN_RESPONSIVE_COMPACT_META_LABEL_CLASS,
   ADMIN_RESPONSIVE_COMPACT_META_VALUE_CLASS,
-  ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS,
   ADMIN_RESPONSIVE_TABLE_SHELL_CLASS,
 } from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
 import {
@@ -21,61 +17,12 @@ import {
   PartnerStatusBadge,
   PartnerTypeBadges,
 } from "@/components/admin/partnerMaster/PartnerMasterSharedCells";
+import PartnerMasterRowsEmpty from "@/components/admin/partnerMaster/PartnerMasterRowsEmpty";
+import { PartnerMasterCompactSortButton } from "@/components/admin/partnerMaster/PartnerMasterSortButton";
 
-type PartnerMasterListText = {
-  empty: string;
-  loading: string;
-  inactiveBadge: string;
-  active: string;
-  inactive: string;
-  noBaseType: string;
-  typeMissing: string;
-  columns: Record<PartnerSortKey, string>;
-};
-
-type PartnerMasterCompactListRowsProps = {
-  items: PartnerListItemViewModel[];
-  isLoading: boolean;
-  canUpdate: boolean;
-  listText: PartnerMasterListText;
-  sortState: PartnerSortState;
-  onSort: (sortKey: PartnerSortKey) => void;
-  onEditPartner: (partnerId: string) => void;
-};
+type PartnerMasterCompactListRowsProps = PartnerMasterRowsProps;
 
 const COMPACT_SORT_KEYS: PartnerSortKey[] = ["name", "type", "status", "contact"];
-
-function CompactSortButton({
-  sortKey,
-  label,
-  activeSort,
-  onSort,
-}: {
-  sortKey: PartnerSortKey;
-  label: string;
-  activeSort: PartnerSortState;
-  onSort: (sortKey: PartnerSortKey) => void;
-}) {
-  const isActive = activeSort.key === sortKey;
-  const marker = isActive ? (activeSort.direction === "asc" ? "↑" : "↓") : "↕";
-
-  return (
-    <button
-      type="button"
-      onClick={() => onSort(sortKey)}
-      className={[
-        "inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition",
-        isActive
-          ? "border-[var(--admin-theme-primary)] bg-[var(--admin-theme-soft)] text-[var(--admin-theme-primary)]"
-          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-border-strong)]",
-      ].join(" ")}
-      aria-pressed={isActive}
-    >
-      <span>{label}</span>
-      <span aria-hidden="true">{marker}</span>
-    </button>
-  );
-}
 
 function MetadataItem({ label, value }: { label: string; value: string | null | undefined }) {
   const displayValue = getPartnerEmptyValue(value);
@@ -136,14 +83,6 @@ function PartnerCompactRow({
   );
 }
 
-function PartnerRowsEmpty({ label }: { label: string }) {
-  return (
-    <div className={ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS}>
-      {label}
-    </div>
-  );
-}
-
 export default function PartnerMasterCompactListRows({
   items,
   isLoading,
@@ -159,7 +98,7 @@ export default function PartnerMasterCompactListRows({
         <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">{listText.columns.name}</p>
         <div className="flex flex-wrap items-center justify-end gap-2">
           {COMPACT_SORT_KEYS.map((key) => (
-            <CompactSortButton
+            <PartnerMasterCompactSortButton
               key={key}
               sortKey={key}
               label={listText.columns[key]}
@@ -171,9 +110,9 @@ export default function PartnerMasterCompactListRows({
       </div>
 
       {isLoading ? (
-        <PartnerRowsEmpty label={listText.loading} />
+        <PartnerMasterRowsEmpty label={listText.loading} />
       ) : items.length === 0 ? (
-        <PartnerRowsEmpty label={listText.empty} />
+        <PartnerMasterRowsEmpty label={listText.empty} />
       ) : (
         <div className="grid gap-3">
           {items.map((item) => (

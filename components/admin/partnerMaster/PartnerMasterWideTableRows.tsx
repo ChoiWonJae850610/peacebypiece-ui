@@ -1,10 +1,7 @@
 "use client";
 
-import type {
-  PartnerListItemViewModel,
-  PartnerSortKey,
-  PartnerSortState,
-} from "@/lib/admin/partner";
+import type { PartnerListItemViewModel, PartnerSortKey, PartnerSortState } from "@/lib/admin/partner";
+import type { PartnerMasterListText, PartnerMasterRowsProps } from "@/components/admin/partnerMaster/partnerMasterListTypes";
 import {
   getPartnerRowToneClass,
   PARTNER_WIDE_TABLE_GRID,
@@ -12,11 +9,8 @@ import {
 import {
   ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS,
   ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS,
-  ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS,
   ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
   ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
-  ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS,
 } from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
 import { AdminResponsiveTableShell } from "@/components/admin/common/responsiveTable/AdminResponsiveTableShell";
 import {
@@ -26,59 +20,10 @@ import {
   PartnerTypeBadges,
   PartnerValueText,
 } from "@/components/admin/partnerMaster/PartnerMasterSharedCells";
+import PartnerMasterRowsEmpty from "@/components/admin/partnerMaster/PartnerMasterRowsEmpty";
+import { PartnerMasterTableSortButton } from "@/components/admin/partnerMaster/PartnerMasterSortButton";
 
-type PartnerMasterListText = {
-  empty: string;
-  loading: string;
-  inactiveBadge: string;
-  active: string;
-  inactive: string;
-  noBaseType: string;
-  typeMissing: string;
-  columns: Record<PartnerSortKey, string>;
-};
-
-type PartnerMasterWideTableRowsProps = {
-  items: PartnerListItemViewModel[];
-  isLoading: boolean;
-  canUpdate: boolean;
-  listText: PartnerMasterListText;
-  sortState: PartnerSortState;
-  onSort: (sortKey: PartnerSortKey) => void;
-  onEditPartner: (partnerId: string) => void;
-};
-
-function SortButton({
-  sortKey,
-  label,
-  activeSort,
-  onSort,
-  align = "center",
-}: {
-  sortKey: PartnerSortKey;
-  label: string;
-  activeSort: PartnerSortState;
-  onSort: (sortKey: PartnerSortKey) => void;
-  align?: "left" | "center";
-}) {
-  const isActive = activeSort.key === sortKey;
-  const marker = isActive ? (activeSort.direction === "asc" ? "↑" : "↓") : "↕";
-  const alignClassName = align === "center" ? "justify-center text-center" : "justify-start text-left";
-
-  return (
-    <button
-      type="button"
-      onClick={() => onSort(sortKey)}
-      className={`${ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS} ${alignClassName}`}
-      aria-sort={isActive ? (activeSort.direction === "asc" ? "ascending" : "descending") : "none"}
-    >
-      <span className="truncate">{label}</span>
-      <span className={isActive ? "text-[var(--admin-theme-primary)]" : ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS} aria-hidden="true">
-        {marker}
-      </span>
-    </button>
-  );
-}
+type PartnerMasterWideTableRowsProps = PartnerMasterRowsProps;
 
 function WideTableHeader({
   listText,
@@ -94,12 +39,12 @@ function WideTableHeader({
       className={ADMIN_RESPONSIVE_TABLE_HEADER_CLASS}
       style={{ gridTemplateColumns: PARTNER_WIDE_TABLE_GRID }}
     >
-      <SortButton sortKey="name" label={listText.columns.name} activeSort={sortState} onSort={onSort} align="left" />
-      <SortButton sortKey="contact" label={listText.columns.contact} activeSort={sortState} onSort={onSort} />
-      <SortButton sortKey="phone" label={listText.columns.phone} activeSort={sortState} onSort={onSort} />
-      <SortButton sortKey="email" label={listText.columns.email} activeSort={sortState} onSort={onSort} />
-      <SortButton sortKey="type" label={listText.columns.type} activeSort={sortState} onSort={onSort} />
-      <SortButton sortKey="status" label={listText.columns.status} activeSort={sortState} onSort={onSort} />
+      <PartnerMasterTableSortButton sortKey="name" label={listText.columns.name} activeSort={sortState} onSort={onSort} align="left" />
+      <PartnerMasterTableSortButton sortKey="contact" label={listText.columns.contact} activeSort={sortState} onSort={onSort} />
+      <PartnerMasterTableSortButton sortKey="phone" label={listText.columns.phone} activeSort={sortState} onSort={onSort} />
+      <PartnerMasterTableSortButton sortKey="email" label={listText.columns.email} activeSort={sortState} onSort={onSort} />
+      <PartnerMasterTableSortButton sortKey="type" label={listText.columns.type} activeSort={sortState} onSort={onSort} />
+      <PartnerMasterTableSortButton sortKey="status" label={listText.columns.status} activeSort={sortState} onSort={onSort} />
     </div>
   );
 }
@@ -140,14 +85,6 @@ function WidePartnerRow({
   );
 }
 
-function PartnerRowsEmpty({ label }: { label: string }) {
-  return (
-    <div className={ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS}>
-      {label}
-    </div>
-  );
-}
-
 export default function PartnerMasterWideTableRows({
   items,
   isLoading,
@@ -161,9 +98,9 @@ export default function PartnerMasterWideTableRows({
     <AdminResponsiveTableShell>
       <WideTableHeader listText={listText} sortState={sortState} onSort={onSort} />
       {isLoading ? (
-        <PartnerRowsEmpty label={listText.loading} />
+        <PartnerMasterRowsEmpty label={listText.loading} />
       ) : items.length === 0 ? (
-        <PartnerRowsEmpty label={listText.empty} />
+        <PartnerMasterRowsEmpty label={listText.empty} />
       ) : (
         <div className={ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS}>
           {items.map((item) => (
