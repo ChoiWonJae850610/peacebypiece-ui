@@ -92,11 +92,11 @@ export function AdminStatsPeriodControls({
             href={buildPeriodSectionHref(resetHref)}
             aria-label={resetLabel}
             title={resetLabel}
-            variant="secondary"
+            variant="icon"
             size="sm"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0"
+            className="shrink-0 text-[var(--pbp-action-ghost-text)]"
           >
-            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            <RotateCcw className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
             <span className="sr-only">{resetLabel}</span>
           </AdminLinkButton>
           <AdminLinkButton
@@ -104,11 +104,11 @@ export function AdminStatsPeriodControls({
             aria-disabled={!isApplyEnabled}
             aria-label={applyLabel}
             title={applyLabel}
-            variant={isApplyEnabled ? "primary" : "secondary"}
+            variant={isApplyEnabled ? "primary" : "icon"}
             size="sm"
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 ${isApplyEnabled ? "" : "pointer-events-none opacity-50"}`}
+            className={`shrink-0 ${isApplyEnabled ? "text-[var(--pbp-action-primary-text)]" : "pointer-events-none opacity-50 text-[var(--pbp-action-ghost-text)]"}`}
           >
-            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            <Check className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
             <span className="sr-only">{applyLabel}</span>
           </AdminLinkButton>
         </div>
