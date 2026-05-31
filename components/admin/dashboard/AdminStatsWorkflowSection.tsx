@@ -49,7 +49,7 @@ export function AdminStatsWorkflowSection({
     <AdminCard
       className={`${ADMIN_STATS_PANEL_CLASS} overflow-hidden px-3 py-3 sm:px-3.5 sm:py-3.5`}
     >
-      <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-2.5 xl:flex-row xl:items-start xl:justify-between">
+      <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-2.5 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           {eyebrow ? (
             <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">
@@ -66,9 +66,9 @@ export function AdminStatsWorkflowSection({
           ) : null}
         </div>
 
-        <div className="flex w-full shrink-0 flex-col gap-2 xl:w-auto xl:items-end">
+        <div className="flex w-full shrink-0 flex-col gap-2 md:w-auto md:items-end">
           {actions ? (
-            <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
+            <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
               {actions}
             </div>
           ) : null}
