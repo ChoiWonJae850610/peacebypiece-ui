@@ -7,13 +7,13 @@ import {
   AdminLinkButton,
 } from "@/components/admin/common/AdminButton";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
-import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
 import {
   AdminDateRangePicker,
   getTodayAdminLocalDateValue,
 } from "@/components/admin/common/AdminDateRangePicker";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
 import { AdminSection } from "@/components/admin/common/AdminSection";
 import {
   ADMIN_STATS_ACCENT_BAR_CLASS,
@@ -683,21 +683,14 @@ export default function AdminStatsDashboard({
 
   return (
     <div className="grid gap-4">
-      <AdminSection
+      <AdminStatsOverviewSection
         eyebrow={statsOverviewEyebrow}
         title={statsOverviewTitle}
         description={statsOverviewDescription}
-        className="overflow-hidden border-[var(--pbp-border-strong)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-5 shadow-[var(--pbp-shadow-elevated)]"
-        headerClassName="items-end"
-        actions={
-          <AdminStatusBadge tone="brand">
-            {selectedPeriodBadgeLabel}: {activePeriodLabel}
-          </AdminStatusBadge>
-        }
-        bodyClassName="mt-5"
-      >
-        <AdminSummaryMetricCards cards={currentSummaryCards} gridClassName="grid gap-3 md:grid-cols-2 xl:grid-cols-4" />
-      </AdminSection>
+        selectedPeriodBadgeLabel={selectedPeriodBadgeLabel}
+        activePeriodLabel={activePeriodLabel}
+        cards={currentSummaryCards}
+      />
 
       <AdminSection
         eyebrow={statsAnalysisEyebrow}
