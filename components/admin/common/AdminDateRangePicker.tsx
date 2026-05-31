@@ -39,7 +39,7 @@ type AdminDateRangePickerProps = {
 };
 
 const CALENDAR_GRID_WIDTH_CLASS = "w-[140px]";
-const CALENDAR_PANEL_WIDTH_CLASS = "w-[156px]";
+const CALENDAR_PANEL_WIDTH_CLASS = CALENDAR_GRID_WIDTH_CLASS;
 
 export function AdminDateRangePicker({
   startDate,
@@ -125,14 +125,16 @@ export function AdminDateRangePicker({
             aria-label={labels.calendarAria}
             classNames={{
               root: `${CALENDAR_PANEL_WIDTH_CLASS} text-sm text-[var(--pbp-text-muted)]`,
-              months: "grid w-full justify-items-center gap-1",
-              month: `${CALENDAR_PANEL_WIDTH_CLASS} space-y-1`,
+              months: "grid w-fit justify-items-center gap-1",
+              month: `${CALENDAR_GRID_WIDTH_CLASS} space-y-1`,
               month_caption: "flex items-center justify-center px-0 py-0.5 text-[11px] font-semibold text-[var(--pbp-text-primary)]",
               caption_label: "text-xs font-semibold",
-              nav: `${CALENDAR_PANEL_WIDTH_CLASS} flex items-center justify-between`,
+              nav: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto flex items-center justify-between`,
               button_previous: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
               button_next: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              month_grid: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto table-fixed border-collapse`,
               weekdays: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--pbp-text-subtle)]`,
+              weekday: "flex h-5 w-5 items-center justify-center",
               week: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto grid grid-cols-7 gap-0`,
               day: "flex h-5 w-5 items-center justify-center",
               day_button: "h-5 w-5 rounded-full p-0 text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
@@ -165,7 +167,7 @@ export function AdminDateRangePicker({
               size="sm"
               aria-label={labels.done}
               title={labels.done}
-              className="h-7 w-7 shrink-0 p-0 text-[var(--pbp-action-primary-text)]"
+              className="h-7 w-7 shrink-0 rounded-full p-0 text-[var(--pbp-action-primary-text)]"
             >
               <Check className="h-3.5 w-3.5 text-current" strokeWidth={2.4} aria-hidden="true" />
               <span className="sr-only">{labels.done}</span>
