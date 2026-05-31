@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import { getTodayAdminLocalDateValue } from "@/components/admin/common/AdminDateRangePicker";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
 import { AdminStatsPeriodControls } from "@/components/admin/dashboard/AdminStatsPeriodControls";
+import { AdminStatsInlineToggle } from "@/components/admin/dashboard/AdminStatsInlineToggle";
 import {
   AdminStatsAnalysisCardShell,
   AdminStatsBarListCard,
@@ -526,25 +526,21 @@ export default function AdminStatsDashboard({
                     minHeight="tall"
                     bodyClassName="mt-1.5 min-w-0 flex-1"
                     actions={
-                      <div className="flex max-w-full overflow-x-auto rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1">
-                        {(["first", "second"] as const).map((key) => (
-                          <AdminButton
-                            key={key}
-                            type="button"
-                            onClick={() => {
-                              setCategoryDepth(key);
-                              setSelectedCategoryLabel(null);
-                            }}
-                            variant={
-                              categoryDepth === key ? "secondary" : "ghost"
-                            }
-                            size="sm"
-                            className="min-h-7 shrink-0 px-3 py-1 text-xs"
-                          >
-                            {categoryDepthLabels[key]}
-                          </AdminButton>
-                        ))}
-                      </div>
+                      <AdminStatsInlineToggle
+                        items={(["first", "second"] as const).map((key) => ({
+                          key,
+                          label: categoryDepthLabels[key],
+                        }))}
+                        value={categoryDepth}
+                        onChange={(nextDepth) => {
+                          setCategoryDepth(nextDepth);
+                          setSelectedCategoryLabel(null);
+                        }}
+                        ariaLabel={pt(
+                          "categoryDepthToggleAriaLabel",
+                          pageText.productionMixTitle,
+                        )}
+                      />
                     }
                   >
                     <AdminBasicDonutChart
