@@ -11,12 +11,12 @@ import {
   ADMIN_RESPONSIVE_COMPACT_META_VALUE_CLASS,
   ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS,
   ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS,
   ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
   ADMIN_RESPONSIVE_TABLE_MUTED_TEXT_CLASS,
   ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
 } from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import { AdminTableState } from "@/components/admin/common/AdminTableState";
 import { useElementSize } from "@/lib/responsive/useElementSize";
 import type { MemberDirectoryRow } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
 
@@ -39,19 +39,6 @@ function getColumn(
   key: string,
 ): AdminTableColumn<MemberDirectoryRow> | undefined {
   return columns.find((column) => column.key === key);
-}
-
-function MemberDirectoryEmptyState({ label, description }: { label: string; description?: string }) {
-  return (
-    <div className={ADMIN_RESPONSIVE_TABLE_EMPTY_CLASS}>
-      <div className="max-w-md">
-        <p className="font-semibold text-[var(--pbp-text-muted)]">{label}</p>
-        {description ? (
-          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{description}</p>
-        ) : null}
-      </div>
-    </div>
-  );
 }
 
 function MemberDirectoryWideTableRows({
@@ -77,9 +64,9 @@ function MemberDirectoryWideTableRows({
       </div>
 
       {isLoading ? (
-        <MemberDirectoryEmptyState label={loadingLabel} />
+        <AdminTableState title={loadingLabel} minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
-        <MemberDirectoryEmptyState label={emptyLabel} description={emptyDescription} />
+        <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
       ) : (
         <div className={ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS}>
           {items.map((row) => (
@@ -141,9 +128,9 @@ function MemberDirectoryCompactListRows({
   return (
     <section className="flex min-h-fit touch-pan-y flex-col overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 md:p-4">
       {isLoading ? (
-        <MemberDirectoryEmptyState label={loadingLabel} />
+        <AdminTableState title={loadingLabel} minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
-        <MemberDirectoryEmptyState label={emptyLabel} description={emptyDescription} />
+        <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
       ) : (
         <div className="grid gap-3">
           {items.map((row) => (

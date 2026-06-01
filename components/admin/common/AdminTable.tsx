@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import { adminKo } from "@/lib/i18n/ko/admin";
 import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
+import { AdminTableState } from "@/components/admin/common/AdminTableState";
 
 type AdminTableProps<TItem> = {
   items: readonly TItem[];
@@ -59,17 +60,9 @@ export default function AdminTable<TItem>({
       </div>
       <div className="min-h-fit touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto 2xl:min-h-0 2xl:flex-1 2xl:overflow-auto 2xl:overscroll-contain">
         {isLoading ? (
-          <div className="flex min-h-[240px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">{loadingLabel}</div>
+          <AdminTableState title={loadingLabel} />
         ) : items.length === 0 ? (
-          <div className="flex min-h-[240px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">
-            <div className="max-w-md">
-              <p className="font-semibold text-[var(--pbp-text-muted)]">{emptyLabel}</p>
-              {emptyDescription ? (
-                <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{emptyDescription}</p>
-              ) : null}
-              {emptyAction ? <div className="mt-3">{emptyAction}</div> : null}
-            </div>
-          </div>
+          <AdminTableState title={emptyLabel} description={emptyDescription} action={emptyAction} />
         ) : (
           items.map((item) => {
             const mergedRowClassName = joinAdminClassNames(baseRowClassName, responsiveGridClassName, rowClassName?.(item));
