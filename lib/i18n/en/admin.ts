@@ -608,13 +608,16 @@ export const adminEn = {
       },
       actions: {
         copy: "Copy link",
+        copyDisabled: "Unavailable invitations cannot be copied.",
         create: "Create invitation",
         creating: "Creating",
         cancel: "Cancel invitation",
+        cancelDisabled: "This invitation is already completed or unavailable.",
       },
       feedback: {
         created: "Invitation link created.",
         copied: "Invitation link copied.",
+        cancelling: "Cancelling invitation.",
         cancelled: "Invitation cancelled.",
       },
       errors: {
@@ -1447,6 +1450,11 @@ export const adminEn = {
       "Production, delay, and inspection by partner",
     statsSectionPeriodLabel: "Period analysis",
     statsSectionPeriodDescription: "Period reorder and summary metrics",
+    statsRefreshLabel: "Refresh stats data",
+    statsRefresh: "Refresh",
+    statsRefreshing: "Refreshing",
+    statsRefreshLoading: "Loading stats data.",
+    statsRefreshCompleted: "Stats data has been refreshed.",
     factoryColumn: "Factory",
     delayRateColumn: "Delay rate",
     qualityRateColumn: "Inspection/defect rate",

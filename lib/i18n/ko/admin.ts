@@ -623,13 +623,16 @@ export const adminKo = {
       },
       actions: {
         copy: "링크 복사",
+        copyDisabled: "사용할 수 없는 초대는 링크를 복사할 수 없습니다.",
         create: "초대 생성",
         creating: "생성 중",
         cancel: "초대 취소",
+        cancelDisabled: "이미 완료되었거나 사용할 수 없는 초대입니다.",
       },
       feedback: {
         created: "초대 링크가 생성되었습니다.",
         copied: "링크가 복사되었습니다.",
+        cancelling: "초대를 취소하는 중입니다.",
         cancelled: "초대를 취소했습니다.",
       },
       errors: {
@@ -1438,6 +1441,11 @@ export const adminKo = {
     statsSectionFactoryDescription: "업체별 생산·납기·검수",
     statsSectionPeriodLabel: "기간 분석",
     statsSectionPeriodDescription: "기간별 리오더와 요약",
+    statsRefreshLabel: "통계 데이터 새로고침",
+    statsRefresh: "새로고침",
+    statsRefreshing: "새로고침 중",
+    statsRefreshLoading: "통계 데이터를 불러오는 중입니다.",
+    statsRefreshCompleted: "통계 데이터를 새로고침했습니다.",
     factoryColumn: "업체",
     delayRateColumn: "납기 지연율",
     qualityRateColumn: "검수/불량률",

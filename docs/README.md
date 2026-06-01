@@ -87,3 +87,4 @@
 - [0.19.10 WAFL Toast 단일 규격 확정](wafl-toast-single-standard-0.19.10.md)
 - [0.19.11 APP_VERSION 분리 및 app.ts 상수 복구](version-constant-split-0.19.11.md)
 - [0.19.12 WAFL Toast loading 정책 보정](wafl-toast-loading-policy-0.19.12.md)
+- [0.19.13 WAFL Toast 실제 검수 보정 및 주변 UI 회귀 보정](wafl-toast-followup-ui-fix-0.19.13.md)

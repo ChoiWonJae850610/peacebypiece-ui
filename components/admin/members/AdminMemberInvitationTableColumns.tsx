@@ -1,3 +1,5 @@
+import { Ban, Copy } from "lucide-react";
+
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import {
   AdminStatusBadge,
@@ -45,8 +47,12 @@ function getInvitationStatusTone(
   return "success";
 }
 
+function canCopyInvitation(status: PendingMemberInvitationRow["status"]): boolean {
+  return status === "pending" || status === "active";
+}
+
 function canCancelInvitation(status: PendingMemberInvitationRow["status"]): boolean {
-  return status !== "accepted" && status !== "revoked" && status !== "cancelled";
+  return status === "draft" || status === "pending" || status === "active";
 }
 
 export function buildMemberInvitationTableColumns({
@@ -120,30 +126,55 @@ export function buildMemberInvitationTableColumns({
       key: "actions",
       label: t("memberManagement.tables.invitations.columns.actions", "작업"),
       headerClassName: "text-center",
-      className: "flex justify-center gap-2",
-      render: (invitation) => (
-        <>
-          <AdminButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => void onCopyInviteLink(invitation.inviteUrl)}
-          >
-            {t("memberManagement.inviteBuilder.actions.copy", "복사")}
-          </AdminButton>
-          <AdminButton
-            type="button"
-            variant="danger"
-            size="sm"
-            onClick={() => void onCancelInvitation(invitation)}
-            disabled={revokingInviteId !== null || !canCancelInvitation(invitation.status)}
-          >
-            {revokingInviteId === invitation.id
-              ? "…"
-              : t("memberManagement.inviteBuilder.actions.cancel", "취소")}
-          </AdminButton>
-        </>
-      ),
+      className: "flex justify-center gap-1.5",
+      render: (invitation) => {
+        const copyEnabled = canCopyInvitation(invitation.status);
+        const cancelEnabled = canCancelInvitation(invitation.status);
+        const isRevoking = revokingInviteId === invitation.id;
+
+        return (
+          <>
+            <AdminButton
+              type="button"
+              variant="icon"
+              size="sm"
+              onClick={() => void onCopyInviteLink(invitation.inviteUrl)}
+              disabled={!copyEnabled}
+              title={copyEnabled
+                ? t("memberManagement.inviteBuilder.actions.copy", "링크 복사")
+                : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
+              aria-label={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
+              className="h-8 min-h-8 w-8 px-0 py-0"
+            >
+              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="sr-only">
+                {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
+              </span>
+            </AdminButton>
+            <AdminButton
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={() => void onCancelInvitation(invitation)}
+              disabled={revokingInviteId !== null || !cancelEnabled}
+              title={cancelEnabled
+                ? t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")
+                : t("memberManagement.inviteBuilder.actions.cancelDisabled", "이미 완료되었거나 사용할 수 없는 초대입니다.")}
+              aria-label={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
+              className="h-8 min-h-8 w-8 px-0 py-0"
+            >
+              {isRevoking ? (
+                <span className="h-3.5 w-3.5 animate-pulse text-[11px] font-bold" aria-hidden="true">…</span>
+              ) : (
+                <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
+              <span className="sr-only">
+                {t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
+              </span>
+            </AdminButton>
+          </>
+        );
+      },
     },
   ];
 }

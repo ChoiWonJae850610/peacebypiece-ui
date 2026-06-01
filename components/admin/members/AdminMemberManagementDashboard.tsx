@@ -66,7 +66,7 @@ import {
 import AdminMemberInvitationSection from "@/components/admin/members/AdminMemberInvitationSection";
 import AdminMemberDirectorySection from "@/components/admin/members/AdminMemberDirectorySection";
 
-import ToastMessage from "@/components/common/ToastMessage";
+import ToastMessage, { showWaflLoadingToast, type ToastTone } from "@/components/common/ToastMessage";
 
 function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
   if (status === "ready") return "success";
@@ -322,6 +322,7 @@ export default function AdminMemberManagementDashboard() {
   >({ key: "approvedAt", direction: "desc" });
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [feedbackTone, setFeedbackTone] = useState<ToastTone>("info");
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
   const [revokingInviteId, setRevokingInviteId] = useState<string | null>(null);
   const [memberRecords, setMemberRecords] = useState<
@@ -860,6 +861,7 @@ export default function AdminMemberManagementDashboard() {
         },
         ...previous,
       ]);
+      setFeedbackTone("success");
       setFeedbackMessage(
         t(
           "memberManagement.inviteBuilder.feedback.created",
@@ -897,6 +899,12 @@ export default function AdminMemberManagementDashboard() {
 
     setRevokingInviteId(invitation.id);
     setInviteError(null);
+    showWaflLoadingToast(
+      t(
+        "memberManagement.inviteBuilder.feedback.cancelling",
+        "초대를 취소하는 중입니다.",
+      ),
+    );
 
     try {
       const response = await fetch(
@@ -913,6 +921,7 @@ export default function AdminMemberManagementDashboard() {
         throw new Error(payload.message ?? payload.error ?? "INVITATION_REVOKE_FAILED");
       }
 
+      setFeedbackTone("success");
       setFeedbackMessage(
         t(
           "memberManagement.inviteBuilder.feedback.cancelled",
@@ -939,6 +948,7 @@ export default function AdminMemberManagementDashboard() {
   async function handleCopyInviteLink(inviteUrl: string) {
     if (!inviteUrl || typeof navigator === "undefined") return;
     await navigator.clipboard.writeText(inviteUrl);
+    setFeedbackTone("success");
     setFeedbackMessage(
       t(
         "memberManagement.inviteBuilder.feedback.copied",
@@ -1094,7 +1104,7 @@ export default function AdminMemberManagementDashboard() {
         ) : null}
       </AdminModal>
 
-      <ToastMessage message={feedbackMessage} />
+      <ToastMessage message={feedbackMessage} tone={feedbackTone} />
     </div>
   );
 }

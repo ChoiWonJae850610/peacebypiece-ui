@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { RefreshCw } from "lucide-react";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
 import { AdminStatsFactorySection } from "@/components/admin/dashboard/AdminStatsFactorySection";
 import { AdminStatsPeriodSection } from "@/components/admin/dashboard/AdminStatsPeriodSection";
@@ -32,6 +35,7 @@ import {
 import type { getI18n } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { showWaflLoadingToast, showWaflToast } from "@/components/common/ToastMessage";
 
 type CategoryDepthKey = "first" | "second";
 type AdminStatsDashboardProps = {
@@ -48,6 +52,8 @@ export default function AdminStatsDashboard({
   initialPeriodTopMode = "reorder",
 }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
+  const router = useRouter();
+  const [isStatsRefreshing, startStatsRefreshTransition] = useTransition();
   const { locale } = useI18n();
   const pt = (key: string, fallback = "") =>
     t(`dashboardPage.${key}`, fallback);
@@ -346,6 +352,19 @@ export default function AdminStatsDashboard({
     setActiveStatsSection(nextKey);
   };
 
+  const refreshStatsData = () => {
+    showWaflLoadingToast(pt("statsRefreshLoading", "통계 데이터를 불러오는 중입니다."));
+    startStatsRefreshTransition(() => {
+      router.refresh();
+      window.setTimeout(() => {
+        showWaflToast({
+          message: pt("statsRefreshCompleted", "통계 데이터를 새로고침했습니다."),
+          tone: "success",
+        });
+      }, 450);
+    });
+  };
+
   useEffect(() => {
     setSelectedCategoryLabel((current) => {
       if (
@@ -394,6 +413,24 @@ export default function AdminStatsDashboard({
         activeTabId={activeStatsSection}
         onTabChange={(nextId) =>
           changeStatsSection(nextId as AdminStatsSectionKey)
+        }
+        actions={
+          <AdminButton
+            type="button"
+            variant="icon"
+            onClick={refreshStatsData}
+            disabled={isStatsRefreshing}
+            title={pt("statsRefreshLabel", "통계 데이터 새로고침")}
+            aria-label={pt("statsRefreshLabel", "통계 데이터 새로고침")}
+            className="h-8 min-h-8 w-8 px-0 py-0"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isStatsRefreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+            <span className="sr-only">
+              {isStatsRefreshing
+                ? pt("statsRefreshing", "새로고침 중")
+                : pt("statsRefresh", "새로고침")}
+            </span>
+          </AdminButton>
         }
         activeContentKey={activeStatsSection}
         isAnimating={isStatsSectionAnimating}

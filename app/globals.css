@@ -167,6 +167,11 @@
   --pbp-toast-foreground: #2B2118;
   --pbp-toast-border: #E8DED1;
   --pbp-toast-accent: #A8733D;
+  --pbp-toast-success: var(--pbp-status-success-fg);
+  --pbp-toast-warning: var(--pbp-status-warning-fg);
+  --pbp-toast-danger: var(--pbp-status-danger-fg);
+  --pbp-toast-info: var(--pbp-toast-accent);
+  --pbp-toast-loading: var(--pbp-toast-accent);
   --pbp-shadow-card: 0 1px 3px rgba(28, 25, 23, 0.08), 0 1px 2px rgba(28, 25, 23, 0.04);
   --pbp-shadow-elevated: 0 18px 55px rgba(28, 25, 23, 0.22);
 }
@@ -533,8 +538,8 @@ body {
   height: 0.66rem;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: var(--pbp-toast-accent, var(--pbp-brand-soft));
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--pbp-toast-accent, var(--pbp-brand-soft)) 18%, transparent);
+  background: var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft)));
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft))) 18%, transparent);
 }
 
 .pbp-toast__loading-mark {
@@ -555,38 +560,32 @@ body {
   overflow-wrap: anywhere;
 }
 
-.pbp-toast[data-tone="success"] {
-  border-color: color-mix(in srgb, var(--pbp-status-success-fg) 26%, var(--pbp-toast-border));
-  background: linear-gradient(135deg, color-mix(in srgb, var(--pbp-status-success-fg) 10%, var(--pbp-toast-background)), var(--pbp-toast-background));
+.pbp-toast[data-tone="info"] {
+  --pbp-toast-tone-color: var(--pbp-toast-info);
+  border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 24%, var(--pbp-toast-border));
 }
 
-.pbp-toast[data-tone="success"] .pbp-toast__mark {
-  background: var(--pbp-status-success-fg);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--pbp-status-success-fg) 18%, transparent);
+.pbp-toast[data-tone="success"] {
+  --pbp-toast-tone-color: var(--pbp-toast-success);
+  border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 26%, var(--pbp-toast-border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pbp-toast-tone-color) 10%, var(--pbp-toast-background)), var(--pbp-toast-background));
 }
 
 .pbp-toast[data-tone="warning"] {
-  border-color: color-mix(in srgb, var(--pbp-status-warning-fg) 30%, var(--pbp-toast-border));
-  background: linear-gradient(135deg, color-mix(in srgb, var(--pbp-status-warning-fg) 12%, var(--pbp-toast-background)), var(--pbp-toast-background));
-}
-
-.pbp-toast[data-tone="warning"] .pbp-toast__mark {
-  background: var(--pbp-status-warning-fg);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--pbp-status-warning-fg) 18%, transparent);
+  --pbp-toast-tone-color: var(--pbp-toast-warning);
+  border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 30%, var(--pbp-toast-border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pbp-toast-tone-color) 12%, var(--pbp-toast-background)), var(--pbp-toast-background));
 }
 
 .pbp-toast[data-tone="danger"] {
-  border-color: color-mix(in srgb, var(--pbp-status-danger-fg) 28%, var(--pbp-toast-border));
-  background: linear-gradient(135deg, color-mix(in srgb, var(--pbp-status-danger-fg) 10%, var(--pbp-toast-background)), var(--pbp-toast-background));
-}
-
-.pbp-toast[data-tone="danger"] .pbp-toast__mark {
-  background: var(--pbp-status-danger-fg);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--pbp-status-danger-fg) 18%, transparent);
+  --pbp-toast-tone-color: var(--pbp-toast-danger);
+  border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 28%, var(--pbp-toast-border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pbp-toast-tone-color) 10%, var(--pbp-toast-background)), var(--pbp-toast-background));
 }
 
 .pbp-toast[data-tone="loading"] {
-  border-color: color-mix(in srgb, var(--pbp-toast-accent, var(--pbp-brand-soft)) 28%, var(--pbp-toast-border));
+  --pbp-toast-tone-color: var(--pbp-toast-loading);
+  border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 28%, var(--pbp-toast-border));
 }
 
 .pbp-toast--processing {
@@ -619,8 +618,8 @@ body {
   height: 0.9rem;
   flex: 0 0 auto;
   border-radius: 999px;
-  border: 2px solid color-mix(in srgb, var(--pbp-toast-accent, var(--pbp-brand-soft)) 26%, transparent);
-  border-top-color: var(--pbp-toast-accent, var(--pbp-brand-soft));
+  border: 2px solid color-mix(in srgb, var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft))) 26%, transparent);
+  border-top-color: var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft)));
   animation: pbp-toast-spin 0.75s linear infinite;
 }
 
