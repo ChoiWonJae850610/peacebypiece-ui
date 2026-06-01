@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.18.95`
+- 기준 앱 버전: `0.18.96`
 - 프로젝트 성격: 의류 생산·작업지시서·원단/부자재 발주·고객사 운영을 관리하는 WAFL 웹 UI
 - 현재 작업 상태: 사용자가 테스트 가능하다고 명시하기 전까지 테스트 불가 상태로 간주한다.
 - 테스트 불가 기간 작업 원칙: 문서 최신화, 소스 점검, 로컬 생성물 정리, 명백한 타입 오류 수정처럼 영향 범위가 좁은 작업만 우선한다.
@@ -47,7 +47,7 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `docs/project-readme-refresh-0.18.89.md`
 - `docs/current-baseline-doc-audit-0.18.90.md`
 - `docs/source-artifact-ignore-audit-0.18.91.md`
-- `docs/scripts-folder-audit-0.18.93.md`
+- `docs/scripts-folder-audit-0.18.92.md`
 
 
 ## 개발/시드 스크립트 안내
@@ -72,3 +72,10 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `db/test/`는 개발 DB 검증과 수동 테스트 fixture 전용 SQL/문서를 둔다.
 - 테스트 불가 기간에는 DB SQL 내용을 변경하지 않고 역할 분류와 실행 조건 문서화를 우선한다.
 - `docs/doc-archive-policy-audit-0.18.95.md`
+
+## 보관문서 / WAFL A-Type 기준
+
+- `docs/보관문서/wafl-a-type/`는 과거 A-Type 문서 묶음으로 유지한다.
+- 현재 개발 기준과 충돌할 경우 `docs/현재기준/` 문서를 우선한다.
+- 테스트 불가 기간에는 해당 문서 묶음을 삭제·이동하지 않고 수량, 역할, 충돌 가능성만 문서화한다.
+- 관련 점검 문서: `docs/wafl-a-type-archive-audit-0.18.96.md`
