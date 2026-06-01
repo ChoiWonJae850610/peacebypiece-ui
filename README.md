@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.19.19`
+- 기준 앱 버전: `0.19.20`
 - 프로젝트 성격: 의류 생산·작업지시서·원단/부자재 발주·고객사 운영을 관리하는 WAFL 웹 UI
 - 현재 작업 상태: 0.18.99 이후 사용자가 테스트 가능하다고 명시했으므로, 리팩토링 패치마다 화면별 테스트 위치와 변경 금지 항목을 함께 관리한다.
 - 리팩토링 작업 원칙: 저위험 공통 formatter/helper부터 실제 코드에 점진 적용하고, DB/API/R2/권한/상태 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -75,6 +75,7 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `docs/toast-feedback-audit-0.19.08.md`
 - `docs/wafl-floating-toast-refactor-0.19.09.md`
 - `docs/wafl-toast-single-standard-0.19.10.md`
+- `docs/wafl-member-management-unified-screen-0.19.20.md`
 
 ## 보관문서 / WAFL A-Type 기준
 
@@ -114,6 +115,7 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `docs/toast-feedback-audit-0.19.08.md`
 - `docs/wafl-floating-toast-refactor-0.19.09.md`
 - `docs/wafl-toast-single-standard-0.19.10.md`
+- `docs/wafl-member-management-unified-screen-0.19.20.md`
 - `docs/version-constant-split-0.19.11.md`
 - `docs/wafl-toast-loading-policy-0.19.12.md`
 - `docs/wafl-toast-followup-ui-fix-0.19.13.md`

@@ -13,11 +13,8 @@ import {
 } from "@/lib/admin/members/memberManagementPresentation";
 import {
   buildMemberManagementSummaryViewModel,
-  buildMemberManagementTabPreviews,
   filterMemberDirectoryRows,
-  findMemberManagementTabPreview,
   isMemberDirectoryLoading,
-  type MemberManagementTab,
 } from "@/lib/admin/members/memberManagementViewModel";
 import type { AdminTableSortState } from "@/lib/admin/common/types";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
@@ -39,7 +36,6 @@ import {
   toggleSimplePermissionControl,
   type SimplePermissionControl,
 } from "@/lib/admin/members/memberSimplePermissionControls";
-import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
 import { AdminSection } from "@/components/admin/common/AdminSection";
 import {
@@ -304,7 +300,6 @@ export default function AdminMemberManagementDashboard() {
     getCompanyAdminMemberRoleTemplateCode(),
   );
   const inviteRoleOptions = getMemberInviteRoleOptions();
-  const [activeTab, setActiveTab] = useState<MemberManagementTab>("invite");
   const [memberSearchQuery, setMemberSearchQuery] = useState("");
   const [memberStatusFilter, setMemberStatusFilter] =
     useState<MemberDirectoryStatusFilter>("all");
@@ -493,20 +488,6 @@ export default function AdminMemberManagementDashboard() {
     ],
   );
   const canSubmitInvite = canCreateInvite && !isCreatingInvite;
-  const tabPreviews = useMemo(
-    () =>
-      buildMemberManagementTabPreviews({
-        t,
-        invitationCount: invitations.length,
-        memberCount: members.length,
-        joinRequestCount: joinRequests.length,
-      }),
-    [invitations.length, joinRequests.length, members.length, t],
-  );
-  const activeTabPreview = useMemo(
-    () => findMemberManagementTabPreview(tabPreviews, activeTab),
-    [activeTab, tabPreviews],
-  );
   const memberDirectoryLoading = isMemberDirectoryLoading(
     memberListLoadStatus,
     joinRequestLoadStatus,
@@ -993,68 +974,48 @@ export default function AdminMemberManagementDashboard() {
 
       <AdminSection
         eyebrow={t("memberManagement.eyebrow", "멤버 권한")}
-        title={t(
-          activeTabPreview?.labelKey ?? "memberManagement.title",
-          activeTabPreview?.fallbackLabel ?? "멤버 관리",
-        )}
+        title={t("memberManagement.title", "멤버 관리")}
         description={t(
-          activeTabPreview?.descriptionKey ?? "memberManagement.description",
-          activeTabPreview?.fallbackDescription ??
-            "초대, 승인, 권한, 재직 상태를 한 화면에서 관리합니다.",
+          "memberManagement.description",
+          "초대, 승인, 권한, 재직 상태를 한 화면에서 관리합니다.",
         )}
-        actions={
-          <AdminSegmentedTabs
-            items={tabPreviews.map((tab) => ({
-              id: tab.id,
-              label: t(tab.labelKey, tab.fallbackLabel),
-              title: t(tab.descriptionKey, tab.fallbackDescription),
-            }))}
-            activeId={activeTab}
-            onChange={setActiveTab}
-          />
-        }
         bodyClassName="mt-4 min-w-0 touch-pan-y overflow-visible overscroll-auto pb-2"
         className="min-w-0 rounded-[30px]"
       >
-        <div>
-          {activeTab === "invite" ? (
-            <AdminMemberInvitationSection
-              t={t}
-              invitations={invitations}
-              invitationTableColumns={invitationTableColumns}
-              expiresInDays={expiresInDays}
-              inviteError={inviteError}
-              isCreatingInvite={isCreatingInvite}
-              canSubmitInvite={canSubmitInvite}
-              onExpiresInDaysChange={setExpiresInDays}
-              onCreateInvite={handleCreateInvite}
-              invitationSortState={invitationSortState}
-              onInvitationSort={handleInvitationSort}
-            />
-          ) : null}
+        <div className="grid min-w-0 gap-5">
+          <AdminMemberInvitationSection
+            t={t}
+            invitations={invitations}
+            invitationTableColumns={invitationTableColumns}
+            expiresInDays={expiresInDays}
+            inviteError={inviteError}
+            isCreatingInvite={isCreatingInvite}
+            canSubmitInvite={canSubmitInvite}
+            onExpiresInDaysChange={setExpiresInDays}
+            onCreateInvite={handleCreateInvite}
+            invitationSortState={invitationSortState}
+            onInvitationSort={handleInvitationSort}
+          />
 
-          {activeTab === "members" ? (
-            <AdminMemberDirectorySection
-              t={t}
-              memberDirectoryRows={memberDirectoryRows}
-              filteredMemberDirectoryRows={filteredMemberDirectoryRows}
-              memberDirectoryColumns={memberDirectoryColumns}
-              memberSearchQuery={memberSearchQuery}
-              memberStatusFilter={memberStatusFilter}
-              memberRoleFilter={memberRoleFilter}
-              inviteRoleOptions={inviteRoleOptions}
-              memberListLoadError={memberListLoadError}
-              joinRequestLoadError={joinRequestLoadError}
-              isLoading={memberDirectoryLoading}
-              onSearchQueryChange={setMemberSearchQuery}
-              onStatusFilterChange={setMemberStatusFilter}
-              onRoleFilterChange={setMemberRoleFilter}
-              onOpenMemberDetail={handleOpenMemberDetail}
-              memberDirectorySortState={memberDirectorySortState}
-              onMemberDirectorySort={handleMemberDirectorySort}
-            />
-          ) : null}
-
+          <AdminMemberDirectorySection
+            t={t}
+            memberDirectoryRows={memberDirectoryRows}
+            filteredMemberDirectoryRows={filteredMemberDirectoryRows}
+            memberDirectoryColumns={memberDirectoryColumns}
+            memberSearchQuery={memberSearchQuery}
+            memberStatusFilter={memberStatusFilter}
+            memberRoleFilter={memberRoleFilter}
+            inviteRoleOptions={inviteRoleOptions}
+            memberListLoadError={memberListLoadError}
+            joinRequestLoadError={joinRequestLoadError}
+            isLoading={memberDirectoryLoading}
+            onSearchQueryChange={setMemberSearchQuery}
+            onStatusFilterChange={setMemberStatusFilter}
+            onRoleFilterChange={setMemberRoleFilter}
+            onOpenMemberDetail={handleOpenMemberDetail}
+            memberDirectorySortState={memberDirectorySortState}
+            onMemberDirectorySort={handleMemberDirectorySort}
+          />
         </div>
       </AdminSection>
 
