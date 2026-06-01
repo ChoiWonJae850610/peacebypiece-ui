@@ -341,15 +341,16 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       </div>
 
       <AdminTable
-        className="mt-4"
+        className="mt-4 overflow-x-auto"
         items={sortedCandidates}
         columns={purgeCandidateTableColumns}
         getRowKey={(candidate) => candidate.trashItemId}
         emptyLabel={purgeCopy.list.empty}
         emptyDescription={purgeCopy.list.emptyDescription}
-        gridTemplateColumns="0.22fr 0.55fr 1.05fr 1.15fr 1fr 0.8fr 1.45fr"
-        rowBaseClassName="grid min-w-[920px] w-full gap-3 px-4 py-4 text-left text-sm lg:items-start"
-        headerClassName={SYSTEM_TABLE_HEADER_CLASS}
+        gridTemplateColumns="0.24fr 0.58fr 1.05fr 1.15fr 1fr 0.82fr 1.5fr"
+        rowBaseClassName="grid w-full gap-3 px-4 py-4 text-left text-sm lg:min-w-[980px] lg:items-start"
+        responsiveGridClassName="grid-cols-1 lg:[grid-template-columns:var(--admin-table-columns)]"
+        headerClassName={`${SYSTEM_TABLE_HEADER_CLASS} lg:[grid-template-columns:var(--admin-table-columns)]`}
       />
     </section>
   );
