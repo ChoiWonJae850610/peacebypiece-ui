@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.18.91`
+- 기준 앱 버전: `0.18.92`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
@@ -64,3 +64,4 @@
 - [0.18.89 프로젝트 루트 README 최신화](project-readme-refresh-0.18.89.md)
 - [0.18.90 현재 기준 문서 점검](current-baseline-doc-audit-0.18.90.md)
 - [0.18.91 로컬 산출물 ignore 기준 점검](source-artifact-ignore-audit-0.18.91.md)
+- [0.18.92 scripts 폴더 사용 범위 점검](scripts-folder-audit-0.18.92.md)
