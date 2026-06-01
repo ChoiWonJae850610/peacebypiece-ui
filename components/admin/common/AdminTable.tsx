@@ -48,8 +48,11 @@ export default function AdminTable<TItem>({
   const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid 2xl:[grid-template-columns:var(--admin-table-columns)]";
 
   return (
-    <div className={joinAdminClassNames("flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] 2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden", className)}>
-      <div className={joinAdminClassNames(tableHeaderClassName, "2xl:[grid-template-columns:var(--admin-table-columns)]")} style={gridStyle}>
+    <div
+      className={joinAdminClassNames("flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] 2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden", className)}
+      style={gridStyle}
+    >
+      <div className={joinAdminClassNames(tableHeaderClassName, "2xl:[grid-template-columns:var(--admin-table-columns)]")}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}

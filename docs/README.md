@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.19.01`
+- 기준 앱 버전: `0.19.02`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
@@ -75,3 +75,4 @@
 - [0.18.99 formatter/label helper 점검](formatter-label-helper-audit-0.18.99.md)
 - [0.19.00 저장소/용량 formatter 공통화 1차](storage-formatter-refactor-0.19.00.md)
 - [0.19.01 시스템 저장소 삭제 후보 row/table 구조 보정](system-storage-table-row-refactor-0.19.01.md)
+- [0.19.02 AdminTable grid style 상속 보정](admin-table-grid-style-fix-0.19.02.md)
