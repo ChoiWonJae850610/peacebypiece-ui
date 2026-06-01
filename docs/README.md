@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.19.07`
+- 기준 앱 버전: `0.19.08`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
@@ -82,3 +82,4 @@
 - [0.19.06 멤버관리 row/scroll 회귀 보정](member-directory-scroll-regression-fix-0.19.06.md)
 
 - [0.19.07 멤버관리 테이블 공통화 2차](member-table-common-refactor-0.19.07.md)
+- [0.19.08 토스트/피드백 전체 소스 전수 감사](toast-feedback-audit-0.19.08.md)

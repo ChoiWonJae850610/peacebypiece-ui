@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.19.07`
+- 기준 앱 버전: `0.19.08`
 - 프로젝트 성격: 의류 생산·작업지시서·원단/부자재 발주·고객사 운영을 관리하는 WAFL 웹 UI
 - 현재 작업 상태: 0.18.99 이후 사용자가 테스트 가능하다고 명시했으므로, 리팩토링 패치마다 화면별 테스트 위치와 변경 금지 항목을 함께 관리한다.
 - 리팩토링 작업 원칙: 저위험 공통 formatter/helper부터 실제 코드에 점진 적용하고, DB/API/R2/권한/상태 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -72,6 +72,7 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `db/test/`는 개발 DB 검증과 수동 테스트 fixture 전용 SQL/문서를 둔다.
 - 테스트 불가 기간에는 DB SQL 내용을 변경하지 않고 역할 분류와 실행 조건 문서화를 우선한다.
 - `docs/doc-archive-policy-audit-0.18.95.md`
+- `docs/toast-feedback-audit-0.19.08.md`
 
 ## 보관문서 / WAFL A-Type 기준
 
