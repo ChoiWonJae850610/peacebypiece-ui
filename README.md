@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.18.93`
+- 기준 앱 버전: `0.18.94`
 - 프로젝트 성격: 의류 생산·작업지시서·원단/부자재 발주·고객사 운영을 관리하는 WAFL 웹 UI
 - 현재 작업 상태: 사용자가 테스트 가능하다고 명시하기 전까지 테스트 불가 상태로 간주한다.
 - 테스트 불가 기간 작업 원칙: 문서 최신화, 소스 점검, 로컬 생성물 정리, 명백한 타입 오류 수정처럼 영향 범위가 좁은 작업만 우선한다.
@@ -63,3 +63,11 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `cloudflare/pdf-generator-worker/`는 PDF 생성 Worker의 Wrangler 배포 기준 폴더다.
 - `cloudflare/pdf-generator-worker.js`와 `cloudflare/pdf-generator-worker.wrangler.example.toml`은 과거/예시 진입점이므로 신규 배포 기준으로 사용하지 않는다.
 - 테스트 불가 기간에는 Worker 코드 동작 변경보다 배포 기준과 보관 기준 문서화를 우선한다.
+
+## DB 보조 파일 보관 기준
+
+- `db/schema/`는 full reset 기준 schema와 smoke test를 둔다. 운영 DB에서 직접 실행하지 않는다.
+- `db/migrations/`는 기존 개발 DB를 full reset 없이 보정할 때 참고하는 패치 SQL이다.
+- `db/seed/`는 시스템 관리자·시스템 기준정보 같은 baseline 보조 seed를 둔다.
+- `db/test/`는 개발 DB 검증과 수동 테스트 fixture 전용 SQL/문서를 둔다.
+- 테스트 불가 기간에는 DB SQL 내용을 변경하지 않고 역할 분류와 실행 조건 문서화를 우선한다.
