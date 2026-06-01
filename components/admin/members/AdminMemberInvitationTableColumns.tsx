@@ -9,7 +9,7 @@ import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
-export type MemberInvitationSortKey = "status" | "link" | "expires" | "createdAt";
+export type MemberInvitationSortKey = "status" | "expires" | "createdAt";
 
 export type PendingMemberInvitationRow = {
   id: string;
@@ -28,18 +28,6 @@ type BuildMemberInvitationTableColumnsOptions = {
   ) => void | Promise<void>;
 };
 
-
-function getInviteCodeSuffix(inviteUrl: string): string {
-  const normalized = inviteUrl.trim();
-  if (!normalized) return "-";
-
-  const [withoutQuery] = normalized.split(/[?#]/);
-  const lastSegment = withoutQuery.split("/").filter(Boolean).at(-1) ?? normalized;
-  const suffix = lastSegment.slice(-8);
-
-  return suffix ? `…${suffix}` : "-";
-}
-
 function getPendingInvitationDateLabel(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
@@ -47,6 +35,20 @@ function getPendingInvitationDateLabel(value: string): string {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
+  });
+}
+
+function getPendingInvitationDateTimeLabel(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
   });
 }
 
@@ -89,20 +91,16 @@ export function buildMemberInvitationTableColumns({
       ),
     },
     {
-      key: "link",
-      sortKey: "link",
-      sortAlign: "left",
+      key: "createdAt",
+      sortKey: "createdAt",
       label: t(
-        "memberManagement.tables.invitations.columns.link",
-        "초대 링크",
+        "memberManagement.tables.invitations.columns.createdAt",
+        "생성일",
       ),
       className: "whitespace-nowrap",
       render: (invitation) => (
-        <span
-          className="inline-flex items-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-xs font-semibold pbp-text-primary"
-          title={invitation.inviteUrl}
-        >
-          {getInviteCodeSuffix(invitation.inviteUrl)}
+        <span className="pbp-text-muted">
+          {getPendingInvitationDateTimeLabel(invitation.createdAt)}
         </span>
       ),
     },
@@ -117,20 +115,6 @@ export function buildMemberInvitationTableColumns({
       render: (invitation) => (
         <span className="pbp-text-muted">
           {getPendingInvitationDateLabel(invitation.expiresAt)}
-        </span>
-      ),
-    },
-    {
-      key: "createdAt",
-      sortKey: "createdAt",
-      label: t(
-        "memberManagement.tables.invitations.columns.createdAt",
-        "생성일",
-      ),
-      className: "whitespace-nowrap",
-      render: (invitation) => (
-        <span className="pbp-text-muted">
-          {getPendingInvitationDateLabel(invitation.createdAt)}
         </span>
       ),
     },
@@ -156,10 +140,9 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.copy", "링크 복사")
                 : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-              className="h-8 min-h-8 rounded-full px-2.5 py-0 text-xs"
+              className="h-8 min-h-8 w-8 rounded-full border border-[var(--pbp-border-strong)] p-0 shadow-sm disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-muted)]"
             >
               <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{t("memberManagement.inviteBuilder.actions.copyShort", "복사")}</span>
             </AdminButton>
             <AdminButton
               type="button"
@@ -171,14 +154,13 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")
                 : t("memberManagement.inviteBuilder.actions.cancelDisabled", "이미 완료되었거나 사용할 수 없는 초대입니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
-              className="h-8 min-h-8 rounded-full px-2.5 py-0 text-xs"
+              className="h-8 min-h-8 w-8 rounded-full border p-0 shadow-sm disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-muted)]"
             >
               {isRevoking ? (
                 <span className="h-3.5 w-3.5 animate-pulse text-[11px] font-bold" aria-hidden="true">…</span>
               ) : (
                 <Ban className="h-3.5 w-3.5" aria-hidden="true" />
               )}
-              <span>{t("memberManagement.inviteBuilder.actions.cancelShort", "취소")}</span>
             </AdminButton>
           </>
         );
