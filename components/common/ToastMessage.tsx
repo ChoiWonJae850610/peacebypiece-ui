@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { AlertTriangle, CheckCircle2, Info, LoaderCircle, XCircle, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export type ToastTone = "info" | "success" | "warning" | "danger" | "loading";
@@ -22,12 +23,12 @@ export type WaflToastOptions = {
   duration?: number;
 };
 
-const toneIcon: Record<ToastTone, string> = {
-  info: "ℹ️",
-  success: "✅",
-  warning: "⚠️",
-  danger: "❌",
-  loading: "⏳",
+const toneIcon: Record<ToastTone, LucideIcon> = {
+  info: Info,
+  success: CheckCircle2,
+  warning: AlertTriangle,
+  danger: XCircle,
+  loading: LoaderCircle,
 };
 
 const defaultDurationByTone: Record<ToastTone, number> = {
@@ -40,13 +41,14 @@ const defaultDurationByTone: Record<ToastTone, number> = {
 
 function WaflToastContent({ message, tone }: WaflToastContentProps) {
   const isAlert = tone === "danger";
+  const ToastIcon = toneIcon[tone];
 
   return (
     <div className="pbp-toast pbp-toast--floating" data-tone={tone} role={isAlert ? "alert" : "status"} aria-live={isAlert ? "assertive" : "polite"}>
       <span className="pbp-toast__mark" aria-hidden="true">
-        {toneIcon[tone]}
+        <ToastIcon className={tone === "loading" ? "h-4 w-4 animate-spin" : "h-4 w-4"} aria-hidden="true" />
       </span>
-      <span className="min-w-0 flex-1 text-sm font-semibold leading-5 pbp-toast__message">{message}</span>
+      <span className="pbp-toast__message min-w-0 flex-1 text-sm font-semibold leading-5">{message}</span>
     </div>
   );
 }

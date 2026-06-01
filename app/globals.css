@@ -522,32 +522,31 @@ body {
 }
 
 .pbp-toast--floating {
-  display: inline-flex;
+  display: inline-grid;
   min-height: 3.25rem;
   width: max-content;
-  min-width: min(18rem, calc(100vw - 2rem));
-  max-width: min(38rem, calc(100vw - 2rem));
+  min-width: min(19rem, calc(100vw - 2rem));
+  max-width: min(40rem, calc(100vw - 2rem));
+  grid-template-columns: 1.5rem minmax(0, 1fr);
   align-items: center;
-  gap: 0.8rem;
+  column-gap: 0.7rem;
   border-radius: 999px;
-  padding: 0.72rem 1rem;
+  padding: 0.72rem 1.05rem 0.72rem 0.95rem;
 }
 
 .pbp-toast__mark {
   display: inline-flex;
-  width: 1.2rem;
-  height: 1.2rem;
-  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 1.5rem;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  font-size: 0.95rem;
-  line-height: 1;
   color: var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft)));
 }
 
-
 .pbp-toast__message {
+  min-width: 0;
   color: var(--pbp-toast-foreground);
   overflow-wrap: anywhere;
 }

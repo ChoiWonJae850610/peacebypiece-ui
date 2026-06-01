@@ -623,10 +623,12 @@ export const adminKo = {
       },
       actions: {
         copy: "링크 복사",
+        copyShort: "복사",
         copyDisabled: "사용할 수 없는 초대는 링크를 복사할 수 없습니다.",
         create: "초대 생성",
         creating: "생성 중",
         cancel: "초대 취소",
+        cancelShort: "취소",
         cancelDisabled: "이미 완료되었거나 사용할 수 없는 초대입니다.",
       },
       feedback: {

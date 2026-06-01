@@ -138,7 +138,7 @@ export function buildMemberInvitationTableColumns({
       key: "actions",
       label: t("memberManagement.tables.invitations.columns.actions", "작업"),
       headerClassName: "text-center",
-      className: "flex justify-center gap-1.5",
+      className: "flex justify-center gap-2 whitespace-nowrap",
       render: (invitation) => {
         const copyEnabled = canCopyInvitation(invitation.status);
         const cancelEnabled = canCancelInvitation(invitation.status);
@@ -156,12 +156,10 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.copy", "링크 복사")
                 : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-              className="h-8 min-h-8 w-8 rounded-full px-0 py-0"
+              className="h-8 min-h-8 rounded-full px-2.5 py-0 text-xs"
             >
-              <Copy className="h-4 w-4" aria-hidden="true" />
-              <span className="sr-only">
-                {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-              </span>
+              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{t("memberManagement.inviteBuilder.actions.copyShort", "복사")}</span>
             </AdminButton>
             <AdminButton
               type="button"
@@ -173,16 +171,14 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")
                 : t("memberManagement.inviteBuilder.actions.cancelDisabled", "이미 완료되었거나 사용할 수 없는 초대입니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
-              className="h-8 min-h-8 w-8 rounded-full px-0 py-0"
+              className="h-8 min-h-8 rounded-full px-2.5 py-0 text-xs"
             >
               {isRevoking ? (
                 <span className="h-3.5 w-3.5 animate-pulse text-[11px] font-bold" aria-hidden="true">…</span>
               ) : (
-                <Ban className="h-4 w-4" aria-hidden="true" />
+                <Ban className="h-3.5 w-3.5" aria-hidden="true" />
               )}
-              <span className="sr-only">
-                {t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
-              </span>
+              <span>{t("memberManagement.inviteBuilder.actions.cancelShort", "취소")}</span>
             </AdminButton>
           </>
         );

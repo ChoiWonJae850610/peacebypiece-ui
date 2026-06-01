@@ -608,10 +608,12 @@ export const adminEn = {
       },
       actions: {
         copy: "Copy link",
+        copyShort: "Copy",
         copyDisabled: "Unavailable invitations cannot be copied.",
         create: "Create invitation",
         creating: "Creating",
         cancel: "Cancel invitation",
+        cancelShort: "Cancel",
         cancelDisabled: "This invitation is already completed or unavailable.",
       },
       feedback: {
