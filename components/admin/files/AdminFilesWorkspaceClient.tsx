@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import ToastMessage from "@/components/common/ToastMessage";
+import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
@@ -38,6 +38,8 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
     [],
   );
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [actionToastTone, setActionToastTone] = useState<ToastTone>("info");
+  const [actionToastEventKey, setActionToastEventKey] = useState(0);
   const [pendingFileAction, setPendingFileAction] = useState<
     "restore" | "purge" | null
   >(null);
@@ -45,10 +47,16 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
     "restore" | "purge" | null
   >(null);
 
+  function showActionToast(message: string, tone: ToastTone = "info") {
+    setActionMessage(message);
+    setActionToastTone(tone);
+    setActionToastEventKey((currentKey) => currentKey + 1);
+  }
+
   async function refreshSnapshot(options: { notify?: boolean } = {}) {
     const shouldNotify = options.notify === true;
     if (shouldNotify) {
-      setActionMessage(t("filesPage.refreshing", "새로고침 중입니다."));
+      showActionToast(t("filesPage.refreshing", "새로고침 중입니다."), "info");
     }
     setIsLoadingSnapshot(true);
     try {
@@ -66,18 +74,19 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
       }
 
       if (!response.ok && payload?.message) {
-        setActionMessage(
+        showActionToast(
           t(
             "filesPage.snapshotLoadFailedWithMessage",
             "파일 목록 DB 조회 실패: {message}",
             { message: payload.message },
           ),
+          "danger",
         );
         return;
       }
 
     } catch (error) {
-      setActionMessage(
+      showActionToast(
         error instanceof Error
           ? t(
               "filesPage.snapshotLoadFailedWithMessage",
@@ -85,6 +94,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
               { message: error.message },
             )
           : t("filesPage.snapshotLoadFailed", "파일 목록 DB 조회 실패"),
+        "danger",
       );
     } finally {
       setIsLoadingSnapshot(false);
@@ -136,7 +146,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
         selectedItemIds: itemIds,
         workOrderIds,
       });
-      setActionMessage(result.message);
+      showActionToast(result.message, result.ok ? "success" : "danger");
       if (result.ok) {
         setSelectedTrashItemIds([]);
         setSelectedWorkOrderIds([]);
@@ -175,7 +185,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
         items: snapshot.trashItems,
         workOrderItems: snapshot.workOrders ?? [],
       });
-      setActionMessage(result.message);
+      showActionToast(result.message, result.ok ? "success" : "danger");
       if (result.ok) {
         setSelectedTrashItemIds([]);
         setSelectedWorkOrderIds([]);
@@ -214,7 +224,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
           fileTypeDistribution={snapshot.fileTypeDistribution}
         />
 
-        <ToastMessage message={actionMessage} />
+        <ToastMessage message={actionMessage} tone={actionToastTone} eventKey={actionToastEventKey} />
 
         <div className="mt-2 min-h-fit touch-pan-y overflow-visible overscroll-auto">
           <FileTrashSection

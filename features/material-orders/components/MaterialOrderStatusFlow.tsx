@@ -11,7 +11,6 @@ type MaterialOrderStatusFlowProps = {
   status: MaterialOrderStatus;
   workflowPath: MaterialOrder["workflowPath"];
   changing: boolean;
-  message: string | null;
   onChangeStatus: (status: MaterialOrderStatus) => void;
 };
 
@@ -19,7 +18,6 @@ export function MaterialOrderStatusFlow({
   status,
   workflowPath,
   changing,
-  message,
   onChangeStatus,
 }: MaterialOrderStatusFlowProps) {
   const currentIndex = Math.max(
@@ -62,7 +60,7 @@ export function MaterialOrderStatusFlow({
         <>
           <span>자재 발주</span>
           <span>·</span>
-          <span>{message ?? formatMaterialOrderStatusLabel(status)}</span>
+          <span>{formatMaterialOrderStatusLabel(status)}</span>
         </>
       }
     />

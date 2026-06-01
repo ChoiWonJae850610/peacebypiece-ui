@@ -29,6 +29,8 @@ import {
 } from "@/features/material-orders/materialOrderPanelUtils";
 import { shouldPersistMaterialOrderDetailBeforeStatusChange } from "@/lib/material-orders/statusFlow";
 
+type MaterialOrderStatusToastTone = "info" | "success" | "warning" | "danger";
+
 type SelectedOrderDetailPayload = {
   materialOrderId: string;
   supplierPartnerId: string | null;
@@ -102,7 +104,9 @@ export function useMaterialOrderDraftEditor() {
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [statusChanging, setStatusChanging] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusToastMessage, setStatusToastMessage] = useState<string | null>(null);
+  const [statusToastTone, setStatusToastTone] = useState<MaterialOrderStatusToastTone>("info");
+  const [statusToastEventKey, setStatusToastEventKey] = useState(0);
   const [workOrderCandidates, setWorkOrderCandidates] = useState<MaterialOrderWorkspaceWorkOrderCandidate[]>([]);
   const [suppliers, setSuppliers] = useState<MaterialOrderSupplier[]>([]);
   const [suppliersLoading, setSuppliersLoading] = useState(false);
@@ -203,9 +207,15 @@ export function useMaterialOrderDraftEditor() {
 
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "fabric");
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
-    setStatusMessage(null);
+    setStatusToastMessage(null);
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
   }, [selectedOrder]);
+
+  const showStatusToast = useCallback((message: string, tone: MaterialOrderStatusToastTone) => {
+    setStatusToastMessage(message);
+    setStatusToastTone(tone);
+    setStatusToastEventKey((currentKey) => currentKey + 1);
+  }, []);
 
   const createOrder = useCallback(async () => {
     setCreatingOrder(true);
@@ -254,7 +264,7 @@ export function useMaterialOrderDraftEditor() {
     if (!selectedOrder) return;
 
     setStatusChanging(true);
-    setStatusMessage(null);
+    setStatusToastMessage(null);
 
     try {
       let nextSelectedOrderId = selectedOrder.id;
@@ -276,13 +286,13 @@ export function useMaterialOrderDraftEditor() {
       setOrders(result.materialOrders);
       setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
       await refreshWorkOrderCandidates();
-      setStatusMessage("상태가 변경되었습니다.");
+      showStatusToast("상태가 변경되었습니다.", "success");
     } catch (error) {
-      setStatusMessage(toMaterialOrderWorkspaceError(error, "발주서 상태를 변경하지 못했습니다."));
+      showStatusToast(toMaterialOrderWorkspaceError(error, "발주서 상태를 변경하지 못했습니다."), "danger");
     } finally {
       setStatusChanging(false);
     }
-  }, [buildSelectedOrderDetailPayload, refreshWorkOrderCandidates, selectedOrder]);
+  }, [buildSelectedOrderDetailPayload, refreshWorkOrderCandidates, selectedOrder, showStatusToast]);
 
   const updateLine = useCallback((lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
     setLines((current) => current.map((line) => (line.id === lineId ? { ...line, ...patch } : line)));
@@ -330,7 +340,9 @@ export function useMaterialOrderDraftEditor() {
     ordersError,
     creatingOrder,
     statusChanging,
-    statusMessage,
+    statusToastMessage,
+    statusToastTone,
+    statusToastEventKey,
     workOrderCandidates,
     suppliers,
     suppliersLoading,

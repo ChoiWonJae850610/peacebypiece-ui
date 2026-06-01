@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import ToastMessage from "@/components/common/ToastMessage";
 import AppSegmentedTabs from "@/components/common/ui/AppSegmentedTabs";
 import { AppButton, AppResponsiveWorkspace, AppSheet } from "@/components/common/ui";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
@@ -40,7 +41,9 @@ export default function MaterialOrderDraftEditor() {
     ordersError,
     creatingOrder,
     statusChanging,
-    statusMessage,
+    statusToastMessage,
+    statusToastTone,
+    statusToastEventKey,
     workOrderCandidates,
     suppliers,
     suppliersLoading,
@@ -90,6 +93,14 @@ export default function MaterialOrderDraftEditor() {
     setMobilePanel(panel);
   };
 
+  const statusToast = (
+    <ToastMessage
+      message={statusToastMessage}
+      tone={statusToastTone}
+      eventKey={statusToastEventKey}
+    />
+  );
+
   const mobilePanelTabs = (
     <AppSegmentedTabs
       items={MATERIAL_ORDER_PANEL_TABS}
@@ -131,8 +142,7 @@ export default function MaterialOrderDraftEditor() {
       onChangeSupplierPartnerId={setSupplierPartnerId}
       onRetrySuppliers={() => void refreshSuppliers(materialType)}
       statusChanging={statusChanging}
-      statusMessage={statusMessage}
-      onChangeLine={updateLine}
+       onChangeLine={updateLine}
       onRemoveLine={removeLine}
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
     />
@@ -155,6 +165,7 @@ export default function MaterialOrderDraftEditor() {
   if (deviceType === "mobile") {
     return (
       <AppResponsiveWorkspace device="mobile">
+        {statusToast}
         {mobilePanelTabs}
         <div className="min-h-0 min-w-0">
           {mobilePanel === "orders" ? <section className="min-h-[520px] min-w-0">{listPanel}</section> : null}
@@ -193,6 +204,7 @@ export default function MaterialOrderDraftEditor() {
   if (deviceType === "tablet") {
     return (
       <AppResponsiveWorkspace device="tablet">
+        {statusToast}
         <div className="grid min-h-0 min-w-0 gap-3" style={MATERIAL_ORDER_TABLET_GRID_STYLE}>
           <section className="min-h-[680px] min-w-0">{listPanel}</section>
           <div className="min-w-0 space-y-3">
@@ -226,6 +238,7 @@ export default function MaterialOrderDraftEditor() {
 
   return (
     <AppResponsiveWorkspace device="desktop">
+      {statusToast}
       <div
         className="grid h-full min-h-0 min-w-[1080px] gap-3"
         style={MATERIAL_ORDER_PANEL_GRID_STYLE}

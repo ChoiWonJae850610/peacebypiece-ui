@@ -9,7 +9,7 @@ export default function AppToaster() {
       toastOptions={{
         classNames: {
           toast:
-            "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-[var(--pbp-shadow-elevated)]",
+            "pbp-toast rounded-[22px] px-4 py-3 text-[var(--pbp-toast-foreground)] shadow-[var(--pbp-shadow-elevated)]",
           title: "text-sm font-semibold leading-5",
           description: "text-xs text-[var(--pbp-text-muted)]",
           actionButton:

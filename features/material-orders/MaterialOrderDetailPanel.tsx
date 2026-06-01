@@ -34,7 +34,6 @@ type MaterialOrderDetailPanelProps = {
   onChangeSupplierPartnerId: (partnerId: string | null) => void;
   onRetrySuppliers: () => void;
   statusChanging: boolean;
-  statusMessage: string | null;
   onChangeLine: (
     lineId: string,
     patch: Partial<MaterialOrderDraftLine>,
@@ -56,7 +55,6 @@ export default function MaterialOrderDetailPanel({
   onChangeSupplierPartnerId,
   onRetrySuppliers,
   statusChanging,
-  statusMessage,
   onChangeLine,
   onRemoveLine,
   onChangeStatus,
@@ -69,7 +67,6 @@ export default function MaterialOrderDetailPanel({
             status={selectedOrder.status}
             workflowPath={selectedOrder.workflowPath}
             changing={statusChanging}
-            message={statusMessage}
             onChangeStatus={onChangeStatus}
           />
 
