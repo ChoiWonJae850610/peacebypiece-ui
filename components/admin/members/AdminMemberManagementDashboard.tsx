@@ -19,6 +19,7 @@ import {
   isMemberDirectoryLoading,
   type MemberManagementTab,
 } from "@/lib/admin/members/memberManagementViewModel";
+import type { AdminTableSortState } from "@/lib/admin/common/types";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
@@ -49,12 +50,14 @@ import AdminMemberPermissionDetailBody from "@/components/admin/members/AdminMem
 import {
   buildMemberInvitationTableColumns,
   type PendingMemberInvitationRow,
+  type MemberInvitationSortKey,
 } from "@/components/admin/members/AdminMemberInvitationTableColumns";
 import {
   buildMemberDirectoryColumns,
   type JoinRequestReviewAction,
   type MemberDirectoryRow,
   type MemberDirectoryStatusFilter,
+  type MemberDirectorySortKey,
 } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
 import {
   AdminStatusBadge,
@@ -62,6 +65,7 @@ import {
 } from "@/components/admin/common/AdminStatusBadge";
 import AdminMemberInvitationSection from "@/components/admin/members/AdminMemberInvitationSection";
 import AdminMemberDirectorySection from "@/components/admin/members/AdminMemberDirectorySection";
+
 import ToastMessage from "@/components/common/ToastMessage";
 
 function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
@@ -240,6 +244,52 @@ function toPendingMemberInvitationRow(
   };
 }
 
+function toggleAdminTableSort<TKey extends string>(
+  current: AdminTableSortState<TKey>,
+  key: TKey,
+): AdminTableSortState<TKey> {
+  if (current.key !== key) {
+    return { key, direction: "asc" };
+  }
+  return { key, direction: current.direction === "asc" ? "desc" : "asc" };
+}
+
+function compareAdminTableValues(a: string | null | undefined, b: string | null | undefined) {
+  const left = String(a ?? "").trim();
+  const right = String(b ?? "").trim();
+  return left.localeCompare(right, "ko-KR", { numeric: true, sensitivity: "base" });
+}
+
+function sortMemberDirectoryRows(
+  rows: readonly MemberDirectoryRow[],
+  sortState: AdminTableSortState<MemberDirectorySortKey>,
+): MemberDirectoryRow[] {
+  return [...rows].sort((a, b) => {
+    const readValue = (row: MemberDirectoryRow): string => {
+      if (sortState.key === "role") return row.roleId ?? "";
+      return String(row[sortState.key] ?? "");
+    };
+    const result = compareAdminTableValues(readValue(a), readValue(b));
+    return sortState.direction === "asc" ? result : -result;
+  });
+}
+
+function sortPendingInvitations(
+  rows: readonly PendingMemberInvitationRow[],
+  sortState: AdminTableSortState<MemberInvitationSortKey>,
+): PendingMemberInvitationRow[] {
+  return [...rows].sort((a, b) => {
+    const readValue = (row: PendingMemberInvitationRow): string => {
+      if (sortState.key === "link") return row.inviteUrl;
+      if (sortState.key === "expires") return row.expiresAt;
+      if (sortState.key === "createdAt") return row.createdAt;
+      return row.status;
+    };
+    const result = compareAdminTableValues(readValue(a), readValue(b));
+    return sortState.direction === "asc" ? result : -result;
+  });
+}
+
 function resolveExpiresAt(expiresInDays: string): string {
   const days = Number.parseInt(expiresInDays.replace("d", ""), 10);
   const expiresAt = new Date();
@@ -264,6 +314,12 @@ export default function AdminMemberManagementDashboard() {
   const [pendingInvitations, setPendingInvitations] = useState<
     PendingMemberInvitationRow[]
   >([]);
+  const [invitationSortState, setInvitationSortState] = useState<
+    AdminTableSortState<MemberInvitationSortKey>
+  >({ key: "createdAt", direction: "desc" });
+  const [memberDirectorySortState, setMemberDirectorySortState] = useState<
+    AdminTableSortState<MemberDirectorySortKey>
+  >({ key: "approvedAt", direction: "desc" });
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
@@ -306,7 +362,10 @@ export default function AdminMemberManagementDashboard() {
     () => toMemberListPreviews(memberRecords),
     [memberRecords],
   );
-  const invitations = pendingInvitations;
+  const invitations = useMemo(
+    () => sortPendingInvitations(pendingInvitations, invitationSortState),
+    [invitationSortState, pendingInvitations],
+  );
   const invitationTableColumns = useMemo(
     () =>
       buildMemberInvitationTableColumns({
@@ -355,15 +414,28 @@ export default function AdminMemberManagementDashboard() {
     return [...pendingRows, ...memberRows];
   }, [joinRequests, memberRecords, members]);
 
-  const filteredMemberDirectoryRows = useMemo(
-    () =>
-      filterMemberDirectoryRows(memberDirectoryRows, {
-        searchQuery: memberSearchQuery,
-        statusFilter: memberStatusFilter,
-        roleFilter: memberRoleFilter,
-      }),
-    [memberDirectoryRows, memberRoleFilter, memberSearchQuery, memberStatusFilter],
-  );
+  const filteredMemberDirectoryRows = useMemo(() => {
+    const filteredRows = filterMemberDirectoryRows(memberDirectoryRows, {
+      searchQuery: memberSearchQuery,
+      statusFilter: memberStatusFilter,
+      roleFilter: memberRoleFilter,
+    });
+    return sortMemberDirectoryRows(filteredRows, memberDirectorySortState);
+  }, [
+    memberDirectoryRows,
+    memberDirectorySortState,
+    memberRoleFilter,
+    memberSearchQuery,
+    memberStatusFilter,
+  ]);
+
+  const handleInvitationSort = (sortKey: MemberInvitationSortKey) => {
+    setInvitationSortState((current) => toggleAdminTableSort(current, sortKey));
+  };
+
+  const handleMemberDirectorySort = (sortKey: MemberDirectorySortKey) => {
+    setMemberDirectorySortState((current) => toggleAdminTableSort(current, sortKey));
+  };
 
   const selectedMemberRecord = useMemo(
     () =>
@@ -947,6 +1019,8 @@ export default function AdminMemberManagementDashboard() {
               canSubmitInvite={canSubmitInvite}
               onExpiresInDaysChange={setExpiresInDays}
               onCreateInvite={handleCreateInvite}
+              invitationSortState={invitationSortState}
+              onInvitationSort={handleInvitationSort}
             />
           ) : null}
 
@@ -967,6 +1041,8 @@ export default function AdminMemberManagementDashboard() {
               onStatusFilterChange={setMemberStatusFilter}
               onRoleFilterChange={setMemberRoleFilter}
               onOpenMemberDetail={handleOpenMemberDetail}
+              memberDirectorySortState={memberDirectorySortState}
+              onMemberDirectorySort={handleMemberDirectorySort}
             />
           ) : null}
 

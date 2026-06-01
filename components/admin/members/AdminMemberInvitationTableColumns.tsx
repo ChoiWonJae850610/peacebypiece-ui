@@ -7,6 +7,8 @@ import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
+export type MemberInvitationSortKey = "status" | "link" | "expires" | "createdAt";
+
 export type PendingMemberInvitationRow = {
   id: string;
   inviteUrl: string;
@@ -52,10 +54,11 @@ export function buildMemberInvitationTableColumns({
   revokingInviteId,
   onCopyInviteLink,
   onCancelInvitation,
-}: BuildMemberInvitationTableColumnsOptions): AdminTableColumn<PendingMemberInvitationRow>[] {
+}: BuildMemberInvitationTableColumnsOptions): AdminTableColumn<PendingMemberInvitationRow, MemberInvitationSortKey>[] {
   return [
     {
       key: "status",
+      sortKey: "status",
       label: t("memberManagement.tables.invitations.columns.status", "상태"),
       className: "whitespace-nowrap",
       render: (invitation) => (
@@ -69,6 +72,8 @@ export function buildMemberInvitationTableColumns({
     },
     {
       key: "link",
+      sortKey: "link",
+      sortAlign: "left",
       label: t(
         "memberManagement.tables.invitations.columns.link",
         "초대 링크",
@@ -85,6 +90,7 @@ export function buildMemberInvitationTableColumns({
     },
     {
       key: "expires",
+      sortKey: "expires",
       label: t(
         "memberManagement.tables.invitations.columns.expires",
         "만료일",
@@ -98,6 +104,7 @@ export function buildMemberInvitationTableColumns({
     },
     {
       key: "createdAt",
+      sortKey: "createdAt",
       label: t(
         "memberManagement.tables.invitations.columns.createdAt",
         "생성일",

@@ -6,10 +6,19 @@ export interface AdminBaseEntity {
   updatedAt?: string;
 }
 
-export type AdminTableColumn<TItem> = {
+export type AdminTableSortDirection = "asc" | "desc";
+
+export type AdminTableSortState<TKey extends string = string> = {
+  key: TKey;
+  direction: AdminTableSortDirection;
+};
+
+export type AdminTableColumn<TItem, TSortKey extends string = string> = {
   key: string;
   label: ReactNode;
   className?: string;
   headerClassName?: string;
+  sortKey?: TSortKey;
+  sortAlign?: "left" | "center";
   render: (item: TItem) => ReactNode;
 };

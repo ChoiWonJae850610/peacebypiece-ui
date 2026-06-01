@@ -15,19 +15,22 @@ import {
   ADMIN_RESPONSIVE_TABLE_MUTED_TEXT_CLASS,
   ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
 } from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
-import type { AdminTableColumn } from "@/lib/admin/common/types";
+import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
+import { AdminTableSortButton } from "@/components/admin/common/AdminTableSortButton";
 import { AdminTableState } from "@/components/admin/common/AdminTableState";
 import { useElementSize } from "@/lib/responsive/useElementSize";
-import type { MemberDirectoryRow } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
+import type { MemberDirectoryRow, MemberDirectorySortKey } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
 
 type AdminMemberDirectoryResponsiveRowsProps = {
   items: readonly MemberDirectoryRow[];
-  columns: AdminTableColumn<MemberDirectoryRow>[];
+  columns: AdminTableColumn<MemberDirectoryRow, MemberDirectorySortKey>[];
   isLoading: boolean;
   loadingLabel: string;
   emptyLabel: string;
   emptyDescription: string;
   onOpenMemberDetail: (row: MemberDirectoryRow) => void;
+  sortState: AdminTableSortState<MemberDirectorySortKey>;
+  onSort: (sortKey: MemberDirectorySortKey) => void;
 };
 
 const MEMBER_DIRECTORY_TABLE_MIN_WIDTH = 1080;
@@ -35,9 +38,9 @@ const MEMBER_DIRECTORY_TABLE_GRID =
   "minmax(120px,1fr) minmax(160px,1.2fr) 110px 110px 96px 110px 110px 120px 140px";
 
 function getColumn(
-  columns: AdminTableColumn<MemberDirectoryRow>[],
+  columns: AdminTableColumn<MemberDirectoryRow, MemberDirectorySortKey>[],
   key: string,
-): AdminTableColumn<MemberDirectoryRow> | undefined {
+): AdminTableColumn<MemberDirectoryRow, MemberDirectorySortKey> | undefined {
   return columns.find((column) => column.key === key);
 }
 
@@ -49,6 +52,8 @@ function MemberDirectoryWideTableRows({
   emptyLabel,
   emptyDescription,
   onOpenMemberDetail,
+  sortState,
+  onSort,
 }: AdminMemberDirectoryResponsiveRowsProps) {
   return (
     <AdminResponsiveTableShell className="mb-1">
@@ -58,7 +63,17 @@ function MemberDirectoryWideTableRows({
       >
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>
-            {column.label}
+            {column.sortKey ? (
+              <AdminTableSortButton
+                sortKey={column.sortKey as MemberDirectorySortKey}
+                label={column.label}
+                activeSort={sortState}
+                onSort={onSort}
+                align={column.sortAlign}
+              />
+            ) : (
+              column.label
+            )}
           </span>
         ))}
       </div>

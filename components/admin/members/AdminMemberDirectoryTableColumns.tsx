@@ -12,6 +12,16 @@ import {
 } from "@/lib/admin/members/memberManagementPresentation";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 
+export type MemberDirectorySortKey =
+  | "name"
+  | "email"
+  | "phone"
+  | "role"
+  | "status"
+  | "requestedAt"
+  | "approvedAt"
+  | "lastActiveAt";
+
 export type MemberDirectoryStatusFilter =
   | "all"
   | "pending"
@@ -89,10 +99,12 @@ export function buildMemberDirectoryColumns({
   getJoinRequestReviewRoleId,
   onRoleDraftChange,
   onReviewJoinRequest,
-}: BuildMemberDirectoryColumnsOptions): AdminTableColumn<MemberDirectoryRow>[] {
+}: BuildMemberDirectoryColumnsOptions): AdminTableColumn<MemberDirectoryRow, MemberDirectorySortKey>[] {
   return [
     {
       key: "name",
+      sortKey: "name",
+      sortAlign: "left",
       label: t("memberManagement.tables.memberDirectory.columns.name", "이름"),
       className: "min-w-0",
       render: (row) => (
@@ -103,6 +115,8 @@ export function buildMemberDirectoryColumns({
     },
     {
       key: "email",
+      sortKey: "email",
+      sortAlign: "left",
       label: t("memberManagement.tables.memberDirectory.columns.email", "이메일"),
       className: "min-w-0",
       render: (row) => (
@@ -113,12 +127,14 @@ export function buildMemberDirectoryColumns({
     },
     {
       key: "phone",
+      sortKey: "phone",
       label: t("memberManagement.tables.memberDirectory.columns.phone", "연락처"),
       className: "min-w-0",
       render: (row) => <span className="pbp-text-muted">{row.phone || "-"}</span>,
     },
     {
       key: "role",
+      sortKey: "role",
       label: t("memberManagement.tables.memberDirectory.columns.role", "역할"),
       className: "min-w-0",
       render: (row) => (
@@ -131,6 +147,7 @@ export function buildMemberDirectoryColumns({
     },
     {
       key: "status",
+      sortKey: "status",
       label: t("memberManagement.tables.memberDirectory.columns.status", "상태"),
       className: "whitespace-nowrap",
       render: (row) => (
@@ -141,18 +158,21 @@ export function buildMemberDirectoryColumns({
     },
     {
       key: "requestedAt",
+      sortKey: "requestedAt",
       label: t("memberManagement.tables.memberDirectory.columns.requestedAt", "신청일"),
       className: "whitespace-nowrap",
       render: (row) => <span className="pbp-text-muted">{row.requestedAt}</span>,
     },
     {
       key: "approvedAt",
+      sortKey: "approvedAt",
       label: t("memberManagement.tables.memberDirectory.columns.approvedAt", "승인일"),
       className: "whitespace-nowrap",
       render: (row) => <span className="pbp-text-muted">{row.approvedAt}</span>,
     },
     {
       key: "lastActiveAt",
+      sortKey: "lastActiveAt",
       label: t("memberManagement.tables.memberDirectory.columns.lastActiveAt", "마지막 접속"),
       className: "whitespace-nowrap",
       render: (row) => <span className="pbp-text-muted">{row.lastActiveAt}</span>,

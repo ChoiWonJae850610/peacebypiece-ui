@@ -1,12 +1,15 @@
 import type { CSSProperties, ReactNode } from "react";
-import type { AdminTableColumn } from "@/lib/admin/common/types";
+import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
+import { AdminTableSortButton } from "@/components/admin/common/AdminTableSortButton";
 import { adminKo } from "@/lib/i18n/ko/admin";
 import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 import { AdminTableState } from "@/components/admin/common/AdminTableState";
 
-type AdminTableProps<TItem> = {
+type AdminTableScrollMode = "internal" | "page";
+
+type AdminTableProps<TItem, TSortKey extends string = string> = {
   items: readonly TItem[];
-  columns: AdminTableColumn<TItem>[];
+  columns: AdminTableColumn<TItem, TSortKey>[];
   getRowKey: (item: TItem) => string;
   emptyLabel: string;
   emptyDescription?: string;
@@ -20,9 +23,13 @@ type AdminTableProps<TItem> = {
   headerClassName?: string;
   responsiveGridClassName?: string;
   onRowClick?: (item: TItem) => void;
+  sortState?: AdminTableSortState<TSortKey>;
+  onSort?: (sortKey: TSortKey) => void;
+  bodyClassName?: string;
+  scrollMode?: AdminTableScrollMode;
 };
 
-export default function AdminTable<TItem>({
+export default function AdminTable<TItem, TSortKey extends string = string>({
   items,
   columns,
   getRowKey,
@@ -38,7 +45,11 @@ export default function AdminTable<TItem>({
   headerClassName,
   responsiveGridClassName: responsiveGridClassNameOverride,
   onRowClick,
-}: AdminTableProps<TItem>) {
+  sortState,
+  onSort,
+  bodyClassName,
+  scrollMode = "internal",
+}: AdminTableProps<TItem, TSortKey>) {
   const gridStyle = gridTemplateColumns
     ? ({ "--admin-table-columns": gridTemplateColumns } as CSSProperties)
     : undefined;
@@ -48,17 +59,42 @@ export default function AdminTable<TItem>({
   const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
   const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid 2xl:[grid-template-columns:var(--admin-table-columns)]";
 
+  const bodyScrollClassName =
+    scrollMode === "internal"
+      ? "min-h-fit touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto 2xl:min-h-0 2xl:flex-1 2xl:overflow-auto 2xl:overscroll-contain"
+      : "min-h-fit touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto";
+  const outerScrollClassName =
+    scrollMode === "internal"
+      ? "2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden"
+      : "2xl:min-h-0 2xl:overflow-visible";
+
   return (
     <div
-      className={joinAdminClassNames("flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] 2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden", className)}
+      className={joinAdminClassNames(
+        "flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
+        outerScrollClassName,
+        className,
+      )}
       style={gridStyle}
     >
       <div className={joinAdminClassNames(tableHeaderClassName, "2xl:[grid-template-columns:var(--admin-table-columns)]")}>
         {columns.map((column) => (
-          <span key={column.key} className={column.headerClassName}>{column.label}</span>
+          <span key={column.key} className={column.headerClassName}>
+            {column.sortKey && sortState && onSort ? (
+              <AdminTableSortButton
+                sortKey={column.sortKey}
+                label={column.label}
+                activeSort={sortState}
+                onSort={onSort}
+                align={column.sortAlign}
+              />
+            ) : (
+              column.label
+            )}
+          </span>
         ))}
       </div>
-      <div className="min-h-fit touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto 2xl:min-h-0 2xl:flex-1 2xl:overflow-auto 2xl:overscroll-contain">
+      <div className={joinAdminClassNames(bodyScrollClassName, bodyClassName)}>
         {isLoading ? (
           <AdminTableState title={loadingLabel} />
         ) : items.length === 0 ? (

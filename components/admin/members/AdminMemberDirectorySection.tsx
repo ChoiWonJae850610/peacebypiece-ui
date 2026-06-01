@@ -1,7 +1,7 @@
 "use client";
 
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
-import type { AdminTableColumn } from "@/lib/admin/common/types";
+import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import { AdminFeedbackMessage } from "@/components/admin/common/AdminFeedbackMessage";
 import AdminMemberDirectoryControls from "@/components/admin/members/AdminMemberDirectoryControls";
@@ -10,6 +10,7 @@ import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 import type {
   MemberDirectoryRow,
   MemberDirectoryStatusFilter,
+  MemberDirectorySortKey,
 } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
 
 type AdminTranslate = ReturnType<typeof useAdminTranslation>;
@@ -22,7 +23,7 @@ type AdminMemberDirectorySectionProps = {
   t: AdminTranslate;
   memberDirectoryRows: readonly MemberDirectoryRow[];
   filteredMemberDirectoryRows: readonly MemberDirectoryRow[];
-  memberDirectoryColumns: AdminTableColumn<MemberDirectoryRow>[];
+  memberDirectoryColumns: AdminTableColumn<MemberDirectoryRow, MemberDirectorySortKey>[];
   memberSearchQuery: string;
   memberStatusFilter: MemberDirectoryStatusFilter;
   memberRoleFilter: string;
@@ -34,6 +35,8 @@ type AdminMemberDirectorySectionProps = {
   onStatusFilterChange: (value: MemberDirectoryStatusFilter) => void;
   onRoleFilterChange: (value: string) => void;
   onOpenMemberDetail: (row: MemberDirectoryRow) => void;
+  memberDirectorySortState: AdminTableSortState<MemberDirectorySortKey>;
+  onMemberDirectorySort: (sortKey: MemberDirectorySortKey) => void;
 };
 
 const MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS = "min-h-fit 2xl:min-h-[452px]";
@@ -54,6 +57,8 @@ export default function AdminMemberDirectorySection({
   onStatusFilterChange,
   onRoleFilterChange,
   onOpenMemberDetail,
+  memberDirectorySortState,
+  onMemberDirectorySort,
 }: AdminMemberDirectorySectionProps) {
   return (
     <AdminPanelSection
@@ -128,6 +133,8 @@ export default function AdminMemberDirectorySection({
           "멤버 목록을 불러오는 중입니다",
         )}
         onOpenMemberDetail={onOpenMemberDetail}
+        sortState={memberDirectorySortState}
+        onSort={onMemberDirectorySort}
       />
     </AdminPanelSection>
   );
