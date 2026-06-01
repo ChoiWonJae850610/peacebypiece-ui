@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Ban, Copy } from "lucide-react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
@@ -70,10 +71,49 @@ function canCancelInvitation(status: PendingMemberInvitationRow["status"]): bool
 }
 
 const INVITATION_ICON_BUTTON_CLASS =
-  "h-8 min-h-8 w-8 min-w-8 rounded-full p-0 shadow-sm [&_svg]:h-4 [&_svg]:w-4 [&_svg]:stroke-[2.25]";
+  "h-8 min-h-8 w-8 min-w-8 rounded-full border p-0 shadow-none disabled:pointer-events-none disabled:opacity-100";
 
-const INVITATION_ICON_BUTTON_DISABLED_CLASS =
-  "disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)] disabled:opacity-100";
+const INVITATION_ICON_CLASS = "block h-4 w-4 shrink-0 stroke-[2.5]";
+
+function InvitationIconActionButton({
+  tone,
+  disabled,
+  title,
+  ariaLabel,
+  onClick,
+  children,
+}: {
+  tone: "copy" | "cancel";
+  disabled: boolean;
+  title: string;
+  ariaLabel: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  const toneClassName =
+    tone === "cancel"
+      ? disabled
+        ? "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-action-danger-soft-text)]"
+        : "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-danger-soft-surface)] text-[var(--pbp-action-danger-soft-text)] hover:bg-[color-mix(in_srgb,var(--pbp-action-danger-soft-surface)_72%,var(--pbp-action-danger-soft-border))]"
+      : disabled
+        ? "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
+        : "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-action-secondary-surface-hover)]";
+
+  return (
+    <AdminButton
+      type="button"
+      variant="icon"
+      size="sm"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      aria-label={ariaLabel}
+      className={`${INVITATION_ICON_BUTTON_CLASS} ${toneClassName}`}
+    >
+      {children}
+    </AdminButton>
+  );
+}
 
 export function buildMemberInvitationTableColumns({
   t,
@@ -136,38 +176,32 @@ export function buildMemberInvitationTableColumns({
 
         return (
           <>
-            <AdminButton
-              type="button"
-              variant="secondary"
-              size="sm"
+            <InvitationIconActionButton
+              tone="copy"
               onClick={() => void onCopyInviteLink(invitation.inviteUrl)}
               disabled={!copyEnabled}
               title={copyEnabled
                 ? t("memberManagement.inviteBuilder.actions.copy", "링크 복사")
                 : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
-              aria-label={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-              className={`${INVITATION_ICON_BUTTON_CLASS} ${INVITATION_ICON_BUTTON_DISABLED_CLASS} border border-[var(--pbp-border-strong)] text-[var(--pbp-text-primary)]`}
+              ariaLabel={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
             >
-              <Copy aria-hidden="true" />
-            </AdminButton>
-            <AdminButton
-              type="button"
-              variant={cancelEnabled ? "danger" : "secondary"}
-              size="sm"
+              <Copy className={INVITATION_ICON_CLASS} aria-hidden="true" />
+            </InvitationIconActionButton>
+            <InvitationIconActionButton
+              tone="cancel"
               onClick={() => void onCancelInvitation(invitation)}
               disabled={revokingInviteId !== null || !cancelEnabled}
               title={cancelEnabled
                 ? t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")
                 : t("memberManagement.inviteBuilder.actions.cancelDisabled", "이미 완료되었거나 사용할 수 없는 초대입니다.")}
-              aria-label={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
-              className={`${INVITATION_ICON_BUTTON_CLASS} ${INVITATION_ICON_BUTTON_DISABLED_CLASS} border`}
+              ariaLabel={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
             >
               {isRevoking ? (
-                <span className="text-[11px] font-bold leading-none" aria-hidden="true">…</span>
+                <span className="text-[13px] font-bold leading-none" aria-hidden="true">…</span>
               ) : (
-                <Ban aria-hidden="true" />
+                <Ban className={INVITATION_ICON_CLASS} aria-hidden="true" />
               )}
-            </AdminButton>
+            </InvitationIconActionButton>
           </>
         );
       },

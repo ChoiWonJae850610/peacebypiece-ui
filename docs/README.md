@@ -93,3 +93,5 @@
 - [0.19.16 멤버 초대 목록 컬럼과 disabled icon action 보정](wafl-member-invite-table-actions-0.19.16.md)
 - [0.19.17 멤버 초대 목록 icon-only action과 카드 비율 보정](wafl-member-invite-icon-layout-fix-0.19.17.md)
 
+
+- [0.19.18 멤버 초대 아이콘 버튼 표시 및 카드 비율 보정](./wafl-member-invite-icon-visibility-layout-0.19.18.md)
