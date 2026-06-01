@@ -72,3 +72,12 @@ export function formatPbpBinaryBytes(
 
   return `${Math.round(safeBytes)}B`;
 }
+
+export function formatPbpFixedGigabytes(
+  bytes: PbpFormatNumberInput,
+  fractionDigits = 2,
+): string {
+  const safeBytes = Math.max(0, normalizeFiniteNumber(bytes));
+  const safeFractionDigits = Math.max(0, Math.trunc(fractionDigits));
+  return `${(safeBytes / 1024 ** 3).toFixed(safeFractionDigits)}GB`;
+}

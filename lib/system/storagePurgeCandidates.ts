@@ -25,6 +25,7 @@ import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { isWorkOrderAttachmentStorageKeyForWorkOrder } from "@/lib/storage/r2/r2Keys";
 import { queryDb } from "@/lib/db/client";
+import { formatPbpBinaryBytes } from "@/lib/utils/formatters";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
 const WORKORDER_CANDIDATE_PREFIX = "workorder:";
@@ -150,11 +151,12 @@ function formatDateTime(value: string | Date | null | undefined): string {
 }
 
 function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "0B";
-  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
-  if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)}MB`;
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
-  return `${bytes}B`;
+  return formatPbpBinaryBytes(bytes, {
+    zeroLabel: "0B",
+    gbFractionDigits: 1,
+    mbFractionDigits: 1,
+    kbFractionDigits: 0,
+  });
 }
 
 function buildFileProxyUrl(key: string | null | undefined): string | null {

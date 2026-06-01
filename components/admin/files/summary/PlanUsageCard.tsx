@@ -7,6 +7,7 @@ import {
 } from "@/components/admin/common/adminSemanticClassNames";
 import type { AdminStorageUsageSummary } from "@/lib/admin/files/types";
 import { formatStorageBytes } from "@/lib/admin/files/storageSummaryPresentation";
+import { formatPbpFixedGigabytes } from "@/lib/utils/formatters";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 import { StorageCylinder } from "./StorageCylinder";
@@ -19,7 +20,7 @@ export function PlanUsageCard({
   statusLabel: string;
 }) {
   const hasPlanLimit = Number.isFinite(usageSummary.limitBytes) && usageSummary.limitBytes > 0;
-  const usedGbLabel = `${(usageSummary.usedBytes / 1024 / 1024 / 1024).toFixed(2)}GB`;
+  const usedGbLabel = formatPbpFixedGigabytes(usageSummary.usedBytes, 2);
   const remainingBytes = hasPlanLimit ? Math.max(0, usageSummary.limitBytes - usageSummary.usedBytes) : 0;
   const t = useAdminTranslation();
   const remainingLabel = hasPlanLimit ? formatStorageBytes(remainingBytes) : t("filesSummary.planCapacityPending", "요금제 확인 중");

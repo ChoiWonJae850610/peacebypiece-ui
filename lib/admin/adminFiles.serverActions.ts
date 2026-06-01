@@ -7,6 +7,7 @@ import { queryDb } from "@/lib/db/client";
 import { formatAdminStorageDate, formatAdminStorageDateTime } from "@/lib/admin/adminFiles.datePresentation";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
+import { formatPbpBinaryBytes } from "@/lib/utils/formatters";
 import {
   createAdminWorkOrderTrashActionMessage,
   createAdminWorkOrderTrashIdRequiredMessage,
@@ -344,11 +345,12 @@ function formatDateTime(value: string | Date | null | undefined): string {
 }
 
 function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) return "0B";
-  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
-  if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
-  return `${bytes}B`;
+  return formatPbpBinaryBytes(bytes, {
+    zeroLabel: "0B",
+    gbFractionDigits: 1,
+    mbFractionDigits: 0,
+    kbFractionDigits: 0,
+  });
 }
 
 function formatAdminWorkOrderTitle(input: {

@@ -1,5 +1,6 @@
 import type { AdminStatsPeriodTopMode } from "@/lib/admin/stats/types";
 import type { getI18n } from "@/lib/i18n";
+import { formatPbpFixedGigabytes } from "@/lib/utils/formatters";
 
 export type AdminStatsSectionKey = "production" | "factory" | "period";
 
@@ -84,9 +85,7 @@ export function formatAdminStatsPercent(value: number | null | undefined, fallba
 }
 
 export function formatAdminStatsStorageGb(bytes: number, limitBytes: number) {
-  const usedGb = bytes / 1024 / 1024 / 1024;
-  const limitGb = limitBytes / 1024 / 1024 / 1024;
-  return `${usedGb.toFixed(2)}GB / ${limitGb.toFixed(2)}GB`;
+  return `${formatPbpFixedGigabytes(bytes, 2)} / ${formatPbpFixedGigabytes(limitBytes, 2)}`;
 }
 
 export function formatAdminStatsStorageMb(bytes: number, usedSuffix: string) {
