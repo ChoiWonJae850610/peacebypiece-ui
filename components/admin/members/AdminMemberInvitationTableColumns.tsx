@@ -28,6 +28,18 @@ type BuildMemberInvitationTableColumnsOptions = {
   ) => void | Promise<void>;
 };
 
+
+function getInviteCodeSuffix(inviteUrl: string): string {
+  const normalized = inviteUrl.trim();
+  if (!normalized) return "-";
+
+  const [withoutQuery] = normalized.split(/[?#]/);
+  const lastSegment = withoutQuery.split("/").filter(Boolean).at(-1) ?? normalized;
+  const suffix = lastSegment.slice(-8);
+
+  return suffix ? `…${suffix}` : "-";
+}
+
 function getPendingInvitationDateLabel(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
@@ -84,13 +96,13 @@ export function buildMemberInvitationTableColumns({
         "memberManagement.tables.invitations.columns.link",
         "초대 링크",
       ),
-      className: "min-w-0",
+      className: "whitespace-nowrap",
       render: (invitation) => (
         <span
-          className="block truncate font-semibold pbp-text-primary"
+          className="inline-flex items-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-xs font-semibold pbp-text-primary"
           title={invitation.inviteUrl}
         >
-          {invitation.inviteUrl}
+          {getInviteCodeSuffix(invitation.inviteUrl)}
         </span>
       ),
     },
@@ -136,7 +148,7 @@ export function buildMemberInvitationTableColumns({
           <>
             <AdminButton
               type="button"
-              variant="icon"
+              variant="secondary"
               size="sm"
               onClick={() => void onCopyInviteLink(invitation.inviteUrl)}
               disabled={!copyEnabled}
@@ -144,16 +156,16 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.copy", "링크 복사")
                 : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-              className="h-8 min-h-8 w-8 px-0 py-0"
+              className="h-8 min-h-8 w-8 rounded-full px-0 py-0"
             >
-              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+              <Copy className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only">
                 {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
               </span>
             </AdminButton>
             <AdminButton
               type="button"
-              variant="danger"
+              variant={cancelEnabled ? "danger" : "secondary"}
               size="sm"
               onClick={() => void onCancelInvitation(invitation)}
               disabled={revokingInviteId !== null || !cancelEnabled}
@@ -161,12 +173,12 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")
                 : t("memberManagement.inviteBuilder.actions.cancelDisabled", "이미 완료되었거나 사용할 수 없는 초대입니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
-              className="h-8 min-h-8 w-8 px-0 py-0"
+              className="h-8 min-h-8 w-8 rounded-full px-0 py-0"
             >
               {isRevoking ? (
                 <span className="h-3.5 w-3.5 animate-pulse text-[11px] font-bold" aria-hidden="true">…</span>
               ) : (
-                <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                <Ban className="h-4 w-4" aria-hidden="true" />
               )}
               <span className="sr-only">
                 {t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 export type ToastTone = "info" | "success" | "warning" | "danger" | "loading";
@@ -22,20 +22,12 @@ export type WaflToastOptions = {
   duration?: number;
 };
 
-const toneLabel: Record<ToastTone, string> = {
-  info: "안내",
-  success: "완료",
-  warning: "주의",
-  danger: "오류",
-  loading: "처리중",
-};
-
-const toneMark: Record<ToastTone, ReactNode> = {
-  info: null,
-  success: null,
-  warning: null,
-  danger: null,
-  loading: <span className="pbp-toast__spinner" aria-hidden="true" />,
+const toneIcon: Record<ToastTone, string> = {
+  info: "ℹ️",
+  success: "✅",
+  warning: "⚠️",
+  danger: "❌",
+  loading: "⏳",
 };
 
 const defaultDurationByTone: Record<ToastTone, number> = {
@@ -51,19 +43,10 @@ function WaflToastContent({ message, tone }: WaflToastContentProps) {
 
   return (
     <div className="pbp-toast pbp-toast--floating" data-tone={tone} role={isAlert ? "alert" : "status"} aria-live={isAlert ? "assertive" : "polite"}>
-      {tone === "loading" ? (
-        <span className="pbp-toast__loading-mark" aria-hidden="true">
-          {toneMark.loading}
-        </span>
-      ) : (
-        <span className="pbp-toast__mark" aria-hidden="true">
-          {toneMark[tone]}
-        </span>
-      )}
-      <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-bold leading-4 tracking-[0.12em] pbp-toast__eyebrow">{toneLabel[tone]}</span>
-        <span className="mt-0.5 block text-sm font-semibold leading-5 pbp-toast__message">{message}</span>
+      <span className="pbp-toast__mark" aria-hidden="true">
+        {toneIcon[tone]}
       </span>
+      <span className="min-w-0 flex-1 text-sm font-semibold leading-5 pbp-toast__message">{message}</span>
     </div>
   );
 }
