@@ -280,7 +280,6 @@ function sortPendingInvitations(
 ): PendingMemberInvitationRow[] {
   return [...rows].sort((a, b) => {
     const readValue = (row: PendingMemberInvitationRow): string => {
-      if (sortState.key === "link") return row.inviteUrl;
       if (sortState.key === "expires") return row.expiresAt;
       if (sortState.key === "createdAt") return row.createdAt;
       return row.status;

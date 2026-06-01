@@ -69,6 +69,12 @@ function canCancelInvitation(status: PendingMemberInvitationRow["status"]): bool
   return status === "draft" || status === "pending" || status === "active";
 }
 
+const INVITATION_ICON_BUTTON_CLASS =
+  "h-8 min-h-8 w-8 min-w-8 rounded-full p-0 shadow-sm [&_svg]:h-4 [&_svg]:w-4 [&_svg]:stroke-[2.25]";
+
+const INVITATION_ICON_BUTTON_DISABLED_CLASS =
+  "disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)] disabled:opacity-100";
+
 export function buildMemberInvitationTableColumns({
   t,
   revokingInviteId,
@@ -140,9 +146,9 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.copy", "링크 복사")
                 : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-              className="h-8 min-h-8 w-8 rounded-full border border-[var(--pbp-border-strong)] p-0 shadow-sm disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-muted)]"
+              className={`${INVITATION_ICON_BUTTON_CLASS} ${INVITATION_ICON_BUTTON_DISABLED_CLASS} border border-[var(--pbp-border-strong)] text-[var(--pbp-text-primary)]`}
             >
-              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+              <Copy aria-hidden="true" />
             </AdminButton>
             <AdminButton
               type="button"
@@ -154,12 +160,12 @@ export function buildMemberInvitationTableColumns({
                 ? t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")
                 : t("memberManagement.inviteBuilder.actions.cancelDisabled", "이미 완료되었거나 사용할 수 없는 초대입니다.")}
               aria-label={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
-              className="h-8 min-h-8 w-8 rounded-full border p-0 shadow-sm disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-muted)]"
+              className={`${INVITATION_ICON_BUTTON_CLASS} ${INVITATION_ICON_BUTTON_DISABLED_CLASS} border`}
             >
               {isRevoking ? (
-                <span className="h-3.5 w-3.5 animate-pulse text-[11px] font-bold" aria-hidden="true">…</span>
+                <span className="text-[11px] font-bold leading-none" aria-hidden="true">…</span>
               ) : (
-                <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                <Ban aria-hidden="true" />
               )}
             </AdminButton>
           </>

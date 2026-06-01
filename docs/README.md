@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.19.16`
+- 기준 앱 버전: `0.19.17`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
@@ -91,3 +91,5 @@
 - [0.19.14 Toast icon-first 규격과 멤버 초대 목록 보정](wafl-toast-icon-member-invite-fix-0.19.14.md)
 - [0.19.15 Toast lucide icon 보정과 멤버 초대 action button 재정리](wafl-toast-lucide-member-action-fix-0.19.15.md)
 - [0.19.16 멤버 초대 목록 컬럼과 disabled icon action 보정](wafl-member-invite-table-actions-0.19.16.md)
+- [0.19.17 멤버 초대 목록 icon-only action과 카드 비율 보정](wafl-member-invite-icon-layout-fix-0.19.17.md)
+
