@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminFeedbackMessage } from "@/components/admin/common/AdminFeedbackMessage";
+import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
@@ -62,6 +63,9 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
   const [draft, setDraft] = useState<CompanySettings>(initialSettings);
   const [saveState, setSaveState] = useState<AdminSettingSaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [saveToastMessage, setSaveToastMessage] = useState<string | null>(null);
+  const [saveToastTone, setSaveToastTone] = useState<ToastTone>("info");
+  const [saveToastEventKey, setSaveToastEventKey] = useState(0);
 
   async function saveNextSettings(nextSettings: CompanySettings) {
     if (saveState === "saving") return;
@@ -74,16 +78,23 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
     setDraft(nextSettings);
     setSaveState("saving");
     setErrorMessage(null);
+    setSaveToastMessage(null);
 
     const result = await runSaveCompanySettingsFlow(nextSettings);
     if (!result.ok || !result.settings) {
       setSaveState("error");
       setErrorMessage(result.message || text.saveFailed);
+      setSaveToastTone("danger");
+      setSaveToastEventKey((currentKey) => currentKey + 1);
+      setSaveToastMessage(result.message || text.saveFailed);
       return;
     }
 
     setDraft(result.settings);
     setSaveState("saved");
+    setSaveToastTone("success");
+    setSaveToastEventKey((currentKey) => currentKey + 1);
+    setSaveToastMessage(text.badges.saved);
   }
 
   const currentTheme = getSelectedAdminTheme(draft);
@@ -172,6 +183,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
         </section>
       </div>
       {errorMessage ? <AdminFeedbackMessage className="mt-4" tone="danger" message={errorMessage} /> : null}
+      <ToastMessage message={saveToastMessage} tone={saveToastTone} eventKey={saveToastEventKey} />
     </AdminCard>
   );
 }

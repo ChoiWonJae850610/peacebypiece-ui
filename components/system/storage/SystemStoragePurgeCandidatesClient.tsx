@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import {
   SYSTEM_PANEL_CLASS,
   SYSTEM_SECTION_HEADER_CLASS,
@@ -21,7 +22,6 @@ import {
   buildSystemStoragePurgeResultMessage,
   buildSystemStorageSelectedPurgeConfirmMessage,
   buildSystemStorageWorkOrderBundleMetaLabel,
-  getSystemStoragePurgeResultMessageClass,
   getSystemStoragePurgeResultTone,
   getSystemStorageSortDirectionLabel,
   type SystemStoragePurgeResponse,
@@ -42,6 +42,14 @@ type SortState = {
   key: SortKey;
   direction: SortDirection;
 };
+
+
+function toToastTone(tone: SystemStoragePurgeResultTone): ToastTone {
+  if (tone === "error") return "danger";
+  if (tone === "warning") return "warning";
+  if (tone === "success") return "success";
+  return "info";
+}
 
 function renderKey(value: string | null) {
   if (!value) return <span className={SYSTEM_SUBTLE_TEXT_CLASS}>없음</span>;
@@ -93,6 +101,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
   const [isPending, setIsPending] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [resultTone, setResultTone] = useState<SystemStoragePurgeResultTone>(null);
+  const [resultEventKey, setResultEventKey] = useState(0);
   const [sortState, setSortState] = useState<SortState>({ key: "purgeDueAt", direction: "asc" });
 
   const sortedCandidates = useMemo(() => {
@@ -282,11 +291,13 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       const result = await postPurgeRequest({ mode: "selected", trashItemIds: selectedIds, limit: selectedIds.length });
       setResultMessage(buildSystemStoragePurgeResultMessage(purgeCopy.result.selectedLabel, result, purgeCopy));
       setResultTone(getSystemStoragePurgeResultTone(result));
+      setResultEventKey((currentKey) => currentKey + 1);
       setSelectedIds([]);
       router.refresh();
     } catch (error) {
       setResultMessage(error instanceof Error ? error.message : purgeCopy.result.selectedError);
       setResultTone("error");
+      setResultEventKey((currentKey) => currentKey + 1);
     } finally {
       setIsPending(false);
     }
@@ -304,11 +315,13 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       const result = await postPurgeRequest({ mode: "all-due", limit: 200 });
       setResultMessage(buildSystemStoragePurgeResultMessage(purgeCopy.result.allDueLabel, result, purgeCopy));
       setResultTone(getSystemStoragePurgeResultTone(result));
+      setResultEventKey((currentKey) => currentKey + 1);
       setSelectedIds([]);
       router.refresh();
     } catch (error) {
       setResultMessage(error instanceof Error ? error.message : purgeCopy.result.allDueError);
       setResultTone("error");
+      setResultEventKey((currentKey) => currentKey + 1);
     } finally {
       setIsPending(false);
     }
@@ -325,7 +338,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           <p className="mt-2 text-xs font-medium text-[var(--pbp-text-muted)]">
             {purgeCopy.list.currentSort}: {sortLabels[sortState.key]} · {getSystemStorageSortDirectionLabel(sortState.direction, t)}
           </p>
-          {resultMessage ? <p className={`mt-2 rounded-2xl px-3 py-2 text-xs font-medium ${getSystemStoragePurgeResultMessageClass(resultTone)}`}>{resultMessage}</p> : null}
+          <ToastMessage message={resultMessage} tone={toToastTone(resultTone)} eventKey={resultEventKey} />
         </div>
         <div className="grid gap-2 sm:flex sm:flex-wrap">
           <AdminButton onClick={refreshCandidates} disabled={isPending}>

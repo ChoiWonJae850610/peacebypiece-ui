@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
+import ToastMessage from "@/components/common/ToastMessage";
 import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMasterFilters";
 import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMasterFormModal";
 import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
@@ -47,6 +48,8 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
         canUpdate={controller.canUpdatePartner}
         onEditPartner={controller.openEditModal}
       />
+
+      <ToastMessage message={controller.toastMessage} tone={controller.toastTone} eventKey={controller.toastEventKey} />
 
       <PartnerMasterFormModal
         open={controller.isModalOpen}

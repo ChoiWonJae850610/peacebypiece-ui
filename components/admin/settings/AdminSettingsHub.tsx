@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import { ADMIN_SURFACE_ITEM_CLASS, ADMIN_SURFACE_SUBTLE_BOX_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminSection } from "@/components/admin/common/AdminSection";
@@ -134,6 +135,8 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
   const [requestMessage, setRequestMessage] = useState("");
   const [requestState, setRequestState] = useState<"idle" | "submitting" | "submitted" | "failed">("idle");
   const [requestFeedback, setRequestFeedback] = useState("");
+  const [requestFeedbackTone, setRequestFeedbackTone] = useState<ToastTone>("info");
+  const [requestFeedbackEventKey, setRequestFeedbackEventKey] = useState(0);
 
   const activeRequestAction = overview.actions.find((action) => action.requestType === activeRequestType) ?? null;
   const canSubmitRequest = requestState !== "submitting" && requestMessage.trim().length >= 10;
@@ -162,11 +165,15 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
       }
 
       setRequestState("submitted");
+      setRequestFeedbackTone("success");
+      setRequestFeedbackEventKey((currentKey) => currentKey + 1);
       setRequestFeedback(t("settings.accountRequest.submitted", "요청이 접수되었습니다. 시스템관리자 검토 후 처리됩니다."));
       setRequestMessage("");
       setActiveRequestType(null);
     } catch {
       setRequestState("failed");
+      setRequestFeedbackTone("danger");
+      setRequestFeedbackEventKey((currentKey) => currentKey + 1);
       setRequestFeedback(t("settings.accountRequest.failed", "요청을 접수하지 못했습니다. 잠시 후 다시 시도해 주세요."));
     }
   };
@@ -277,11 +284,7 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
         </div>
       ) : null}
 
-      {requestFeedback ? (
-        <div className={`${ADMIN_SURFACE_ITEM_CLASS} rounded-[22px] text-sm font-semibold ${requestState === "failed" ? "text-[var(--pbp-status-danger-fg)]" : "text-[var(--pbp-status-success-fg)]"}`}>
-          {requestFeedback}
-        </div>
-      ) : null}
+      <ToastMessage message={requestFeedback || null} tone={requestFeedbackTone} eventKey={requestFeedbackEventKey} />
 
       <div className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-2 rounded-[22px] md:grid-cols-2`}>
         {overview.policyNotes.map((note) => (

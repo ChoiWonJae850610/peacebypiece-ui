@@ -5,11 +5,12 @@ import { Toaster } from "sonner";
 export default function AppToaster() {
   return (
     <Toaster
-      position="bottom-center"
+      position="bottom-right"
+      gap={10}
+      offset={24}
       toastOptions={{
         classNames: {
-          toast:
-            "pbp-toast rounded-[22px] px-4 py-3 text-[var(--pbp-toast-foreground)] shadow-[var(--pbp-shadow-elevated)]",
+          toast: "pbp-toast-host border-0 bg-transparent p-0 shadow-none",
           title: "text-sm font-semibold leading-5",
           description: "text-xs text-[var(--pbp-text-muted)]",
           actionButton:

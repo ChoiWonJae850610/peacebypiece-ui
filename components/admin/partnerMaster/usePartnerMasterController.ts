@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import type { ToastTone } from "@/components/common/ToastMessage";
 
 import {
   applyPartnerPrimaryTypeToDraft,
@@ -26,6 +27,7 @@ type PartnerMasterText = {
   typeLabels: Parameters<typeof buildPartnerListViewModel>[3];
   form: {
     saveFailed: string;
+    saveCompleted: string;
   };
 };
 
@@ -46,6 +48,9 @@ export function usePartnerMasterController(partnerText: PartnerMasterText, capab
   const [selectedAvailableProcess, setSelectedAvailableProcess] = useState<OutsourcingProcessType | null>(null);
   const [selectedAssignedProcess, setSelectedAssignedProcess] = useState<OutsourcingProcessType | null>(null);
   const [formError, setFormError] = useState("");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<ToastTone>("info");
+  const [toastEventKey, setToastEventKey] = useState(0);
   const [isLoadingPartners, setIsLoadingPartners] = useState(true);
   const [isSavingPartner, setIsSavingPartner] = useState(false);
   const isSavingPartnerRef = useRef(false);
@@ -164,16 +169,22 @@ export function usePartnerMasterController(partnerText: PartnerMasterText, capab
       .then((payload) => {
         setPartners(payload.partners);
         if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
+        setToastTone("success");
+        setToastEventKey((currentKey) => currentKey + 1);
+        setToastMessage(partnerText.form.saveCompleted);
         closeModal();
       })
       .catch(() => {
         setFormError(partnerText.form.saveFailed);
+        setToastTone("danger");
+        setToastEventKey((currentKey) => currentKey + 1);
+        setToastMessage(partnerText.form.saveFailed);
       })
       .finally(() => {
         isSavingPartnerRef.current = false;
         setIsSavingPartner(false);
       });
-  }, [canSubmitPartner, closeModal, draft, editingPartnerId, partnerText.form.saveFailed]);
+  }, [canSubmitPartner, closeModal, draft, editingPartnerId, partnerText.form.saveCompleted, partnerText.form.saveFailed]);
 
   return {
     canCreatePartner,
@@ -211,5 +222,8 @@ export function usePartnerMasterController(partnerText: PartnerMasterText, capab
     setPrimaryType,
     toggleOutsourcingProcess,
     handleSubmit,
+    toastMessage,
+    toastTone,
+    toastEventKey,
   };
 }

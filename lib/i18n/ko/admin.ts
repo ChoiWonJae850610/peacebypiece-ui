@@ -1744,6 +1744,7 @@ export const adminKo = {
       usageInactive: "미사용",
       usageSrLabel: "협력업체 사용 상태",
       saveFailed: "저장에 실패했습니다. 연결됨 상태를 확인하세요.",
+      saveCompleted: "협력업체 정보를 저장했습니다.",
       outsourcingDescription:
         "이 협력업체가 외주처라면 공정을 연결해 작업지시서에서 바로 필터링할 수 있게 합니다.",
       outsourcingActive: "외주 사용",

@@ -1805,6 +1805,7 @@ export const adminEn = {
       usageInactive: "Inactive",
       usageSrLabel: "Partner active status",
       saveFailed: "Could not save. Check the database connection.",
+      saveCompleted: "Partner information has been saved.",
       outsourcingDescription:
         "If this partner is an outsourcing vendor, connect processes so work orders can filter it directly.",
       outsourcingActive: "Outsourcing enabled",
