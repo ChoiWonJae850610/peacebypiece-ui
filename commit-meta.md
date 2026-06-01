@@ -1,10 +1,10 @@
-Version : 0.18.83
-Summary : 통계정보 기간 컨트롤 컨테이너 폭 기준 보정
-Description : 통계정보 기간 분석 컨트롤에 실제 컨테이너 폭 기준 배치를 적용해 시작일/종료일 필드와 7일/30일/초기화/적용 버튼이 충분한 폭에서는 한 줄로 유지되도록 보정했습니다. 달력 팝오버, 기간 적용 로직, 통계 계산 흐름은 변경하지 않았습니다.
+Version : 0.18.84
+Summary : 통계정보 기간 컨트롤 소스 정리
+Description : AdminStatsDashboard에 있던 기간 선택 상태, 프리셋 처리, 날짜 검증, 적용 링크 계산 로직을 useAdminStatsPeriodControls hook으로 분리했습니다. UI 결과와 통계 계산, DB/API/R2 흐름은 변경하지 않았습니다.
 수정 파일 목록 :
+- components/admin/dashboard/AdminStatsDashboard.tsx
 - lib/constants/app.ts
-- components/admin/dashboard/AdminStatsPeriodControls.tsx
 추가 파일 목록 :
-- docs/stats-period-controls-container-width-0.18.83.md
+- components/admin/dashboard/useAdminStatsPeriodControls.ts
+- docs/stats-period-controls-source-cleanup-0.18.84.md
 삭제 파일 목록 :
-없음

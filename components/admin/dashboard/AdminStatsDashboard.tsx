@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { getTodayAdminLocalDateValue } from "@/components/admin/common/AdminDateRangePicker";
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
 import { AdminStatsPeriodControls } from "@/components/admin/dashboard/AdminStatsPeriodControls";
+import { useAdminStatsPeriodControls } from "@/components/admin/dashboard/useAdminStatsPeriodControls";
 import { AdminStatsInlineToggle } from "@/components/admin/dashboard/AdminStatsInlineToggle";
 import { AdminStatsWorkflowSection } from "@/components/admin/dashboard/AdminStatsWorkflowSection";
 import {
@@ -37,7 +37,6 @@ import {
   formatAdminStatsCount,
   formatAdminStatsPercent,
   formatAdminStatsStorageGb,
-  formatAdminStatsStorageMb,
   translateAdminStatsLabel,
   translateAdminStatsText,
   type AdminStatsSectionKey,
@@ -73,30 +72,6 @@ export default function AdminStatsDashboard({
     useState<AdminStatsSectionKey>(initialSection);
   const [statsSectionDirection, setStatsSectionDirection] = useState(1);
   const [isStatsSectionAnimating, setIsStatsSectionAnimating] = useState(false);
-  const [customStartDate, setCustomStartDate] = useState(
-    stats.selectedPeriodRange.isCustom
-      ? stats.selectedPeriodRange.startDate
-      : "",
-  );
-  const [customEndDate, setCustomEndDate] = useState(
-    stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "",
-  );
-  const [activePeriodPresetKey, setActivePeriodPresetKey] = useState<
-    "7d" | "30d" | null
-  >(null);
-  const todayDateValue = getTodayAdminLocalDateValue();
-  const dateRangeLabels = {
-    start: pt("customStartDateLabel", pageText.customStartDateLabel),
-    end: pt("customEndDateLabel", pageText.customEndDateLabel),
-    clear: pt("customClear", pageText.customReset),
-    done: pt("customDone", pageText.customDone),
-    selected: pt("customDateRangeSelected", pageText.customDateRangeSelected),
-    notSelected: pt("customDateRangeEmpty", pageText.customDateRangeEmpty),
-    calendarAria: pt(
-      "customDateRangeCalendarAria",
-      pageText.customDateRangeCalendarAria,
-    ),
-  };
   const statsOverviewEyebrow = pt("statsOverviewEyebrow", "Current overview");
   const statsOverviewTitle = pt("statsOverviewTitle", "운영 누적 지표");
   const statsOverviewDescription = pt(
@@ -108,53 +83,25 @@ export default function AdminStatsDashboard({
     "statsAnalysisDescription",
     "생산 구성, 업체 성과, 기간별 흐름을 확인합니다.",
   );
-  const updateCustomStartDate = (value: string) => {
-    setActivePeriodPresetKey(null);
-    if (!value) {
-      setCustomStartDate("");
-      setCustomEndDate("");
-      return;
-    }
-    if (value > todayDateValue) return;
-    setCustomStartDate(value);
-    if (customEndDate && customEndDate < value) setCustomEndDate("");
-  };
-  const updateCustomEndDate = (value: string) => {
-    setActivePeriodPresetKey(null);
-    if (!value) {
-      setCustomEndDate("");
-      return;
-    }
-    if (value > todayDateValue) return;
-    if (customStartDate && value < customStartDate) return;
-    setCustomEndDate(value);
-  };
-
-  const getRelativeAdminDateValue = (baseDateValue: string, daysBefore: number) => {
-    const [year, month, day] = baseDateValue.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-    date.setDate(date.getDate() - daysBefore);
-    const nextYear = date.getFullYear();
-    const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
-    const nextDay = String(date.getDate()).padStart(2, "0");
-    return `${nextYear}-${nextMonth}-${nextDay}`;
-  };
-
-  const setPresetCustomPeriod = (key: AdminStatsSnapshot["periodOptions"][number]["key"]) => {
-    if (key !== "7d" && key !== "30d") return;
-
-    if (activePeriodPresetKey === key) {
-      setActivePeriodPresetKey(null);
-      setCustomStartDate("");
-      setCustomEndDate("");
-      return;
-    }
-
-    setActivePeriodPresetKey(key);
-    setCustomEndDate(todayDateValue);
-    setCustomStartDate(getRelativeAdminDateValue(todayDateValue, key === "7d" ? 7 : 30));
-  };
-
+  const {
+    todayDateValue,
+    customStartDate,
+    customEndDate,
+    dateRangeLabels,
+    activePeriodOptions,
+    buildPeriodSectionHref,
+    updateCustomStartDate,
+    updateCustomEndDate,
+    setPresetCustomPeriod,
+    isCustomPeriodValid,
+    customPeriodHref,
+    customPeriodMessage,
+  } = useAdminStatsPeriodControls({
+    stats,
+    pageText,
+    translate: pt,
+    selectedPeriodTopMode,
+  });
   const translatedStats = {
     ...stats,
     summaries: translateAdminStatsText(stats.summaries, t),
@@ -229,41 +176,6 @@ export default function AdminStatsDashboard({
   });
 
   const totalReorderCount = stats.currentOverview.reorderCount;
-  const activePeriodOptions = stats.periodOptions
-    .filter((item) => item.key === "7d" || item.key === "30d")
-    .map((item) => ({
-      ...item,
-      active: item.key === activePeriodPresetKey,
-    }));
-  const buildPeriodSectionHref = (href: string) => {
-    const separator = href.includes("?") ? "&" : "?";
-    return `${href}${separator}section=period&topMode=${selectedPeriodTopMode}`;
-  };
-  const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
-  const isCustomPeriodOrderValid =
-    !isCustomPeriodReady || customStartDate <= customEndDate;
-  const isCustomPeriodNotFuture =
-    (!customStartDate || customStartDate <= todayDateValue) &&
-    (!customEndDate || customEndDate <= todayDateValue);
-  const isCustomEndSelectable =
-    !customEndDate || !customStartDate || customEndDate >= customStartDate;
-  const isCustomPeriodValid =
-    isCustomPeriodReady &&
-    isCustomPeriodOrderValid &&
-    isCustomPeriodNotFuture &&
-    isCustomEndSelectable;
-  const customPeriodHref = buildPeriodSectionHref(
-    isCustomPeriodValid
-      ? `/workspace/stats?period=custom&startDate=${customStartDate}&endDate=${customEndDate}`
-      : "/workspace/stats?period=30d",
-  );
-  const customPeriodMessage = !isCustomPeriodOrderValid
-    ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
-    : !isCustomPeriodNotFuture
-      ? pt("customPeriodFutureBlocked", pageText.customPeriodFutureBlocked)
-      : customEndDate && !isCustomEndSelectable
-        ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
-        : "";
   const storageUsePercent =
     stats.currentOverview.storageLimitBytes > 0
       ? Math.round(
