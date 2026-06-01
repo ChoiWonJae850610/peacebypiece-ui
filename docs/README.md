@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.19.10`
+- 기준 앱 버전: `0.19.11`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
@@ -85,3 +85,4 @@
 - [0.19.08 토스트/피드백 전체 소스 전수 감사](toast-feedback-audit-0.19.08.md)
 - [0.19.09 WAFL floating toast 공통화 1차](wafl-floating-toast-refactor-0.19.09.md)
 - [0.19.10 WAFL Toast 단일 규격 확정](wafl-toast-single-standard-0.19.10.md)
+- [0.19.11 APP_VERSION 분리 및 app.ts 상수 복구](version-constant-split-0.19.11.md)
