@@ -36,7 +36,7 @@ type AdminMemberDirectorySectionProps = {
   onOpenMemberDetail: (row: MemberDirectoryRow) => void;
 };
 
-const MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS = "min-h-fit 2xl:h-[452px] 2xl:min-h-[452px]";
+const MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS = "min-h-fit 2xl:min-h-[452px]";
 
 export default function AdminMemberDirectorySection({
   t,
@@ -68,7 +68,7 @@ export default function AdminMemberDirectorySection({
         "memberManagement.tabs.members.count",
         "대상 {count}명",
       ).replace("{count}", String(memberDirectoryRows.length))}
-      contentClassName="flex min-h-fit touch-pan-y flex-col overflow-visible overscroll-auto pt-4 2xl:min-h-0 2xl:flex-1"
+      contentClassName="flex min-h-fit touch-pan-y flex-col overflow-visible overscroll-auto pt-4 pb-3"
     >
       <AdminMemberDirectoryControls
         t={t}

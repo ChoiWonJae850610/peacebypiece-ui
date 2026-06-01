@@ -51,7 +51,7 @@ function MemberDirectoryWideTableRows({
   onOpenMemberDetail,
 }: AdminMemberDirectoryResponsiveRowsProps) {
   return (
-    <AdminResponsiveTableShell>
+    <AdminResponsiveTableShell className="mb-1">
       <div
         className={ADMIN_RESPONSIVE_TABLE_HEADER_CLASS}
         style={{ gridTemplateColumns: MEMBER_DIRECTORY_TABLE_GRID }}
@@ -126,7 +126,7 @@ function MemberDirectoryCompactListRows({
   const actionsColumn = getColumn(columns, "actions");
 
   return (
-    <section className="flex min-h-fit touch-pan-y flex-col overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 md:p-4">
+    <section className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 md:p-4">
       {isLoading ? (
         <AdminTableState title={loadingLabel} minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
@@ -190,7 +190,7 @@ export default function AdminMemberDirectoryResponsiveRows(props: AdminMemberDir
   const shouldUseWideTable = width >= MEMBER_DIRECTORY_TABLE_MIN_WIDTH;
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="min-w-0 pb-1">
       {shouldUseWideTable ? (
         <MemberDirectoryWideTableRows {...props} />
       ) : (

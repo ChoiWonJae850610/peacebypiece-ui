@@ -876,7 +876,7 @@ export default function AdminMemberManagementDashboard() {
   }
 
   return (
-    <div className="flex min-h-fit touch-pan-y flex-col gap-5 overflow-visible overscroll-auto 2xl:min-h-0 2xl:flex-1 pb-8 md:gap-6 2xl:overflow-y-auto 2xl:overscroll-contain 2xl:pb-4 2xl:pr-1">
+    <div className="flex min-h-fit touch-pan-y flex-col gap-5 overflow-visible overscroll-auto pb-10 md:gap-6 2xl:pb-6 2xl:pr-1">
       <section className="overflow-hidden rounded-[32px] border border-[var(--pbp-border-soft)] bg-[linear-gradient(135deg,var(--pbp-surface-base)_0%,var(--pbp-surface-soft)_48%,var(--pbp-brand-muted)_140%)] p-5 shadow-[var(--pbp-shadow-card)] sm:p-6">
         <div className="mb-5 flex flex-col gap-3 2xl:flex-row 2xl:items-end 2xl:justify-between">
           <div className="min-w-0">
@@ -932,7 +932,7 @@ export default function AdminMemberManagementDashboard() {
             onChange={setActiveTab}
           />
         }
-        bodyClassName="mt-4 min-w-0 touch-pan-y overflow-visible overscroll-auto"
+        bodyClassName="mt-4 min-w-0 touch-pan-y overflow-visible overscroll-auto pb-2"
         className="min-w-0 rounded-[30px]"
       >
         <div>
