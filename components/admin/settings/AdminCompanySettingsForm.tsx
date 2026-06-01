@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminFeedbackMessage } from "@/components/admin/common/AdminFeedbackMessage";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
@@ -170,7 +171,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
           </div>
         </section>
       </div>
-      {errorMessage ? <p className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</p> : null}
+      {errorMessage ? <AdminFeedbackMessage className="mt-4" tone="danger" message={errorMessage} /> : null}
     </AdminCard>
   );
 }

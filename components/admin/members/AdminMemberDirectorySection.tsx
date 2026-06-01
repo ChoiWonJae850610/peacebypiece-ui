@@ -3,6 +3,7 @@
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
+import { AdminFeedbackMessage } from "@/components/admin/common/AdminFeedbackMessage";
 import AdminMemberDirectoryControls from "@/components/admin/members/AdminMemberDirectoryControls";
 import AdminMemberDirectoryResponsiveRows from "@/components/admin/members/AdminMemberDirectoryResponsiveRows";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
@@ -81,22 +82,34 @@ export default function AdminMemberDirectorySection({
       />
 
       {memberListLoadError ? (
-        <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-          {t(
-            "memberManagement.loadErrors.members",
-            "멤버 목록을 불러오지 못했습니다.",
-          )}{" "}
-          {memberListLoadError}
-        </p>
+        <AdminFeedbackMessage
+          className="mb-3"
+          tone="danger"
+          message={
+            <>
+              {t(
+                "memberManagement.loadErrors.members",
+                "멤버 목록을 불러오지 못했습니다.",
+              )}{" "}
+              {memberListLoadError}
+            </>
+          }
+        />
       ) : null}
       {joinRequestLoadError ? (
-        <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-          {t(
-            "memberManagement.loadErrors.joinRequests",
-            "승인 대기 신청 목록을 불러오지 못했습니다.",
-          )}{" "}
-          {joinRequestLoadError}
-        </p>
+        <AdminFeedbackMessage
+          className="mb-3"
+          tone="danger"
+          message={
+            <>
+              {t(
+                "memberManagement.loadErrors.joinRequests",
+                "승인 대기 신청 목록을 불러오지 못했습니다.",
+              )}{" "}
+              {joinRequestLoadError}
+            </>
+          }
+        />
       ) : null}
       <AdminMemberDirectoryResponsiveRows
         items={filteredMemberDirectoryRows}
