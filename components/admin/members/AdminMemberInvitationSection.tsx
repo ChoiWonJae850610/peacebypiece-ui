@@ -45,7 +45,7 @@ export default function AdminMemberInvitationSection({
   return (
     <section
       id="member-invite-builder"
-      className="grid items-stretch gap-5 2xl:grid-cols-[1.38fr_0.62fr]"
+      className="grid items-stretch gap-5 2xl:grid-cols-[1.46fr_0.74fr]"
     >
       <AdminMemberInviteBuilderPanel
         t={t}
@@ -87,9 +87,9 @@ export default function AdminMemberInvitationSection({
             "memberManagement.empty.invitations.description",
             "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
           )}
-          gridTemplateColumns="72px minmax(132px,1fr) 88px 76px"
-          headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid"
-          rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
+          gridTemplateColumns="58px minmax(118px,1fr) 76px 68px"
+          headerClassName="hidden shrink-0 gap-1.5 bg-[var(--pbp-surface-muted)] px-2.5 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid"
+          rowBaseClassName="grid w-full min-w-0 gap-1.5 px-2.5 py-2.5 text-left text-[11px] md:items-center"
           className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
           scrollMode="page"
           sortState={invitationSortState}
