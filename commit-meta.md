@@ -1,13 +1,10 @@
-Version : 0.18.85
-Summary : 통계정보 탭 렌더링 소스 정리
-Description : AdminStatsDashboard의 생산 구성, 업체 성과, 기간 분석 탭 렌더링을 전용 섹션 컴포넌트로 분리하고 APP_VERSION을 0.18.85로 갱신했습니다. 통계 계산, DB/API/R2, 첨부/메모/휴지통/purge 흐름은 변경하지 않았습니다.
+Version : 0.18.86
+Summary : 통계정보 기간 분석 locale 타입 오류 수정
+Description : 0.18.85 빌드 로그에서 확인된 AdminStatsPeriodSection locale prop 타입 오류를 수정하고 APP_VERSION을 0.18.86으로 갱신했습니다. 화면 테스트가 어려운 상황을 고려해 UI/DB/API/R2 흐름 변경 없이 타입 보정과 문서 추가만 반영했습니다.
 수정 파일 목록 :
-- components/admin/dashboard/AdminStatsDashboard.tsx
+- components/admin/dashboard/AdminStatsPeriodSection.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- components/admin/dashboard/AdminStatsProductionSection.tsx
-- components/admin/dashboard/AdminStatsFactorySection.tsx
-- components/admin/dashboard/AdminStatsPeriodSection.tsx
-- docs/stats-tab-rendering-source-cleanup-0.18.85.md
+- docs/stats-build-error-fix-0.18.86.md
 삭제 파일 목록 :
-없음
+- 없음

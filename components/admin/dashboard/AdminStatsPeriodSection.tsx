@@ -8,6 +8,7 @@ import {
 import { ADMIN_STATS_WARNING_TEXT_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import type { AdminDateRangePickerLabels } from "@/components/admin/common/AdminDateRangePicker";
 import type { AdminStatsPeriodTopMode, AdminStatsSnapshot } from "@/lib/admin/stats/types";
+import type { Locale } from "@/lib/i18n";
 
 type AdminStatsRatioBar = {
   label: string;
@@ -29,7 +30,7 @@ type AdminStatsPeriodSectionProps = {
   endDate: string;
   maxDateValue: string;
   labels: AdminDateRangePickerLabels;
-  locale: string;
+  locale: Locale;
   periodOptions: AdminStatsSnapshot["periodOptions"];
   applyHref: string;
   resetLabel: string;
