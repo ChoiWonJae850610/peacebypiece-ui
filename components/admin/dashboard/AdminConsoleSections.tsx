@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import { AdminSection, AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
@@ -88,7 +89,7 @@ function AdminWorkspaceCardView({ item, index }: { item: AdminWorkspaceCard; ind
   if (!item.href) return content;
 
   return (
-    <Link href={item.href} className="block h-full min-w-0" prefetch={false}>
+    <Link href={item.href} className="block h-full min-w-0" prefetch={false} onClick={() => showWaflLoadingToast(`${text.label} 화면을 여는 중입니다.`)}>
       {content}
     </Link>
   );

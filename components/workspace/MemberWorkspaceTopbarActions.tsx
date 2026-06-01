@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import { useEffect, useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
@@ -107,6 +108,7 @@ export default function MemberWorkspaceTopbarActions({
           aria-label={i18n.common.workspaceHome.title}
           title={i18n.common.workspaceHome.title}
           className={buildWorkspaceIconButtonClassName()}
+          onClick={() => showWaflLoadingToast("업무 홈을 여는 중입니다.")}
         >
           <HomeIcon />
         </Link>

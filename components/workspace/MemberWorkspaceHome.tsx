@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import MemberWorkspaceTopbarActions from "@/components/workspace/MemberWorkspaceTopbarActions";
 import { APP_VERSION } from "@/lib/constants/app";
 import { useI18n } from "@/lib/i18n";
@@ -107,6 +108,7 @@ export default function MemberWorkspaceHome({
                           <Link
                             href={card.href}
                             className="inline-flex rounded-xl border border-[var(--pbp-brand-primary)] bg-[var(--pbp-brand-primary)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-inverse)] hover:bg-[var(--pbp-brand-primary-hover)]"
+                            onClick={() => showWaflLoadingToast(`${cardCopy.label} 화면을 여는 중입니다.`)}
                           >
                             {copy.openLabel}
                           </Link>

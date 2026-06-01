@@ -29,7 +29,7 @@ import {
 } from "@/features/material-orders/materialOrderPanelUtils";
 import { shouldPersistMaterialOrderDetailBeforeStatusChange } from "@/lib/material-orders/statusFlow";
 
-type MaterialOrderStatusToastTone = "info" | "success" | "warning" | "danger";
+type MaterialOrderStatusToastTone = "info" | "success" | "warning" | "danger" | "loading";
 
 type SelectedOrderDetailPayload = {
   materialOrderId: string;
@@ -264,7 +264,7 @@ export function useMaterialOrderDraftEditor() {
     if (!selectedOrder) return;
 
     setStatusChanging(true);
-    setStatusToastMessage(null);
+    showStatusToast("상태를 변경하는 중입니다.", "loading");
 
     try {
       let nextSelectedOrderId = selectedOrder.id;

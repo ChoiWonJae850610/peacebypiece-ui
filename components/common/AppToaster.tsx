@@ -5,9 +5,9 @@ import { Toaster } from "sonner";
 export default function AppToaster() {
   return (
     <Toaster
-      position="bottom-right"
+      position="bottom-center"
       gap={10}
-      offset={24}
+      offset={28}
       toastOptions={{
         classNames: {
           toast: "pbp-toast-host border-0 bg-transparent p-0 shadow-none",
