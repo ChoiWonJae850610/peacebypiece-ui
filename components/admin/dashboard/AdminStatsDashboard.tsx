@@ -3,23 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 import AdminStatsOverviewSection from "@/components/admin/dashboard/AdminStatsOverviewSection";
-import { AdminStatsPeriodControls } from "@/components/admin/dashboard/AdminStatsPeriodControls";
+import { AdminStatsFactorySection } from "@/components/admin/dashboard/AdminStatsFactorySection";
+import { AdminStatsPeriodSection } from "@/components/admin/dashboard/AdminStatsPeriodSection";
 import { useAdminStatsPeriodControls } from "@/components/admin/dashboard/useAdminStatsPeriodControls";
-import { AdminStatsInlineToggle } from "@/components/admin/dashboard/AdminStatsInlineToggle";
+import { AdminStatsProductionSection } from "@/components/admin/dashboard/AdminStatsProductionSection";
 import { AdminStatsWorkflowSection } from "@/components/admin/dashboard/AdminStatsWorkflowSection";
-import {
-  AdminStatsAnalysisCardShell,
-  AdminStatsBarListCard,
-  PeriodSummaryCard,
-  PeriodTopCard,
-} from "@/components/admin/dashboard/AdminStatsAnalysisCards";
-import { FactoryPerformanceTable } from "@/components/admin/dashboard/AdminStatsFactoryPerformanceTable";
-import {
-  ADMIN_STATS_ACCENT_TEXT_CLASS,
-  ADMIN_STATS_BODY_CLASS,
-  ADMIN_STATS_WARNING_TEXT_CLASS,
-} from "@/components/admin/common/adminSemanticClassNames";
-import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type {
   AdminStatsPeriodTopMode,
   AdminStatsSnapshot,
@@ -52,6 +40,7 @@ type AdminStatsDashboardProps = {
   initialSection?: AdminStatsSectionKey;
   initialPeriodTopMode?: AdminStatsPeriodTopMode;
 };
+
 export default function AdminStatsDashboard({
   stats,
   pageText,
@@ -334,8 +323,9 @@ export default function AdminStatsDashboard({
       ).slice(0, 5),
     [selectedPeriodTopMode, translatedStats.periodTopProducts],
   );
-  const getFactoryMetricTooltip = (item: AdminStatsSnapshot["factoryPerformance"][number]) =>
-    buildAdminFactoryMetricTooltip(item, pageText, pt);
+  const getFactoryMetricTooltip = (
+    item: AdminStatsSnapshot["factoryPerformance"][number],
+  ) => buildAdminFactoryMetricTooltip(item, pageText, pt);
   const factoryPerformanceLabels = {
     factory: pt("factoryColumn", pageText.factoryColumn),
     delayRate: pt("delayRateColumn", pageText.delayRateColumn),
@@ -383,8 +373,6 @@ export default function AdminStatsDashboard({
     return () => window.cancelAnimationFrame(animationFrame);
   }, [activeStatsSection, isStatsSectionAnimating]);
 
-
-
   return (
     <div className="grid gap-4">
       <AdminStatsOverviewSection
@@ -404,178 +392,98 @@ export default function AdminStatsDashboard({
           title: item.description,
         }))}
         activeTabId={activeStatsSection}
-        onTabChange={(nextId) => changeStatsSection(nextId as AdminStatsSectionKey)}
+        onTabChange={(nextId) =>
+          changeStatsSection(nextId as AdminStatsSectionKey)
+        }
         activeContentKey={activeStatsSection}
         isAnimating={isStatsSectionAnimating}
         direction={statsSectionDirection}
       >
         {activeStatsSection === "production" ? (
-          <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
-                  <AdminStatsAnalysisCardShell
-                    eyebrow={pt(
-                      "productionMixEyebrow",
-                      pageText.productionMixEyebrow,
-                    )}
-                    title={pt(
-                      "productionMixTitle",
-                      pageText.productionMixTitle,
-                    )}
-                    minHeight="tall"
-                    bodyClassName="mt-1.5 min-w-0 flex-1"
-                    actions={
-                      <AdminStatsInlineToggle
-                        items={(["first", "second"] as const).map((key) => ({
-                          key,
-                          label: categoryDepthLabels[key],
-                        }))}
-                        value={categoryDepth}
-                        onChange={(nextDepth) => {
-                          setCategoryDepth(nextDepth);
-                          setSelectedCategoryLabel(null);
-                        }}
-                        ariaLabel={pt(
-                          "categoryDepthToggleAriaLabel",
-                          pageText.productionMixTitle,
-                        )}
-                      />
-                    }
-                  >
-                    <AdminBasicDonutChart
-                      points={selectedCategoryDepthBars}
-                      totalLabel={pt(
-                        "workorderCountSuffix",
-                        pageText.workorderCountSuffix,
-                      )}
-                      valueSuffix={pt(
-                        "workorderCountSuffix",
-                        pageText.workorderCountSuffix,
-                      )}
-                      emptyLabel={pt(
-                        "productionMixEmpty",
-                        pageText.productionMixEmpty,
-                      )}
-                      compact
-                      selectedLabel={normalizedSelectedCategoryLabel}
-                      onSelectPoint={setSelectedCategoryLabel}
-                    />
-                    <p
-                      className={`mt-1 text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}
-                    >
-                      {selectedCategoryDepthLabel} ·{" "}
-                      {formatAdminStatsCount(
-                        selectedCategoryDepthTotal,
-                        pt(
-                          "workorderCountSuffix",
-                          pageText.workorderCountSuffix,
-                        ),
-                      )}
-                    </p>
-                    {normalizedSelectedCategoryLabel ? (
-                      <p
-                        className={`mt-0.5 text-[11px] font-semibold ${ADMIN_STATS_ACCENT_TEXT_CLASS}`}
-                      >
-                        {pt("selectedItemLabel", pageText.selectedItemLabel)}:{" "}
-                        {normalizedSelectedCategoryLabel}
-                      </p>
-                    ) : null}
-                  </AdminStatsAnalysisCardShell>
+          <AdminStatsProductionSection
+            title={pt("productionMixTitle", pageText.productionMixTitle)}
+            eyebrow={pt("productionMixEyebrow", pageText.productionMixEyebrow)}
+            categoryDepth={categoryDepth}
+            categoryDepthLabels={categoryDepthLabels}
+            selectedCategoryDepthLabel={selectedCategoryDepthLabel}
+            selectedCategoryDepthBars={selectedCategoryDepthBars}
+            selectedCategoryDepthTotal={selectedCategoryDepthTotal}
+            normalizedSelectedCategoryLabel={normalizedSelectedCategoryLabel}
+            categoryDetailTitle={categoryDetailTitle}
+            categoryDetailPoints={categoryDetailPoints}
+            categoryDetailEmptyLabel={categoryDetailEmptyLabel}
+            workorderSuffix={workorderSuffix}
+            productionMixEmpty={pt(
+              "productionMixEmpty",
+              pageText.productionMixEmpty,
+            )}
+            selectedItemLabel={pt("selectedItemLabel", pageText.selectedItemLabel)}
+            categoryDepthToggleAriaLabel={pt(
+              "categoryDepthToggleAriaLabel",
+              pageText.productionMixTitle,
+            )}
+            onCategoryDepthChange={setCategoryDepth}
+            onSelectedCategoryChange={setSelectedCategoryLabel}
+          />
+        ) : null}
 
-                  <AdminStatsBarListCard
-                    title={categoryDetailTitle}
-                    points={categoryDetailPoints}
-                    emptyLabel={categoryDetailEmptyLabel}
-                  />
-                </div>
-              ) : null}
+        {activeStatsSection === "factory" ? (
+          <AdminStatsFactorySection
+            factoryProductionBars={viewModel.factoryProductionBars}
+            factoryPerformanceItems={translatedStats.factoryPerformance.slice(0, 5)}
+            factoryPerformanceTitle={pt(
+              "factoryPerformanceTitle",
+              pageText.factoryPerformanceTitle,
+            )}
+            factoryPerformanceEmpty={pt(
+              "factoryPerformanceEmpty",
+              pageText.factoryPerformanceEmpty,
+            )}
+            delayQualityEyebrow={pt(
+              "delayQualityEyebrow",
+              pageText.delayQualityEyebrow,
+            )}
+            delayQualityTitle={pt("delayQualityTitle", pageText.delayQualityTitle)}
+            columns={factoryPerformanceLabels}
+            countSuffix={workorderSuffix}
+            zeroPercentLabel={zeroPercentLabel}
+            getTooltip={getFactoryMetricTooltip}
+          />
+        ) : null}
 
-              {activeStatsSection === "factory" ? (
-                <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
-                  <AdminStatsBarListCard
-                    title={pt(
-                      "factoryPerformanceTitle",
-                      pageText.factoryPerformanceTitle,
-                    )}
-                    points={viewModel.factoryProductionBars}
-                    emptyLabel={pt(
-                      "factoryPerformanceEmpty",
-                      pageText.factoryPerformanceEmpty,
-                    )}
-                  />
-                  <AdminStatsAnalysisCardShell
-                    eyebrow={pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}
-                    title={pt("delayQualityTitle", pageText.delayQualityTitle)}
-                    minHeight="tall"
-                    bodyClassName="mt-3 flex-1"
-                  >
-                    <FactoryPerformanceTable
-                      items={translatedStats.factoryPerformance.slice(0, 5)}
-                      emptyLabel={pt(
-                        "factoryPerformanceEmpty",
-                        pageText.factoryPerformanceEmpty,
-                      )}
-                      columns={factoryPerformanceLabels}
-                      countSuffix={pt(
-                        "workorderCountSuffix",
-                        pageText.workorderCountSuffix,
-                      )}
-                      zeroPercentLabel={zeroPercentLabel}
-                      getTooltip={getFactoryMetricTooltip}
-                    />
-                  </AdminStatsAnalysisCardShell>
-                </div>
-              ) : null}
-
-              {activeStatsSection === "period" ? (
-                <div>
-                  <AdminStatsPeriodControls
-                    title={pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}
-                    startDate={customStartDate}
-                    endDate={customEndDate}
-                    maxDateValue={todayDateValue}
-                    labels={dateRangeLabels}
-                    locale={locale}
-                    periodOptions={activePeriodOptions}
-                    resetHref="/workspace/stats?period=30d"
-                    applyHref={customPeriodHref}
-                    resetLabel={pt("customReset", pageText.customReset)}
-                    applyLabel={pt("customApplyShort", pageText.customApply)}
-                    isApplyEnabled={isCustomPeriodValid}
-                    buildPeriodSectionHref={buildPeriodSectionHref}
-                    onPeriodOptionSelect={setPresetCustomPeriod}
-                    onStartDateChange={updateCustomStartDate}
-                    onEndDateChange={updateCustomEndDate}
-                  />
-                  {customPeriodMessage ? (
-                    <p
-                      className={`mt-3 text-xs font-semibold ${ADMIN_STATS_WARNING_TEXT_CLASS}`}
-                    >
-                      {customPeriodMessage}
-                    </p>
-                  ) : null}
-                  <div className="mt-3 grid auto-rows-fr gap-3 xl:grid-cols-2">
-                    <PeriodTopCard
-                      eyebrow={pt(
-                        "periodTopEyebrow",
-                        pageText.reorderTopEyebrow,
-                      )}
-                      title={periodTopModeTitle[selectedPeriodTopMode]}
-                      basis={periodTopModeBasis[selectedPeriodTopMode]}
-                      items={selectedPeriodTopProducts}
-                      emptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
-                      valueSuffix={periodTopValueSuffix}
-                    />
-                    <PeriodSummaryCard
-                      title={pt(
-                        "periodSummaryTitle",
-                        pageText.periodSummaryTitle,
-                      )}
-                      items={periodSummaryItems}
-                      selectedKey={selectedPeriodTopMode}
-                      onSelect={setSelectedPeriodTopMode}
-                    />
-                  </div>
-                </div>
-              ) : null}
+        {activeStatsSection === "period" ? (
+          <AdminStatsPeriodSection
+            title={pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}
+            startDate={customStartDate}
+            endDate={customEndDate}
+            maxDateValue={todayDateValue}
+            labels={dateRangeLabels}
+            locale={locale}
+            periodOptions={activePeriodOptions}
+            applyHref={customPeriodHref}
+            resetLabel={pt("customReset", pageText.customReset)}
+            applyLabel={pt("customApplyShort", pageText.customApply)}
+            isApplyEnabled={isCustomPeriodValid}
+            buildPeriodSectionHref={buildPeriodSectionHref}
+            onPeriodOptionSelect={setPresetCustomPeriod}
+            onStartDateChange={updateCustomStartDate}
+            onEndDateChange={updateCustomEndDate}
+            customPeriodMessage={customPeriodMessage}
+            periodTopEyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
+            periodTopTitle={periodTopModeTitle[selectedPeriodTopMode]}
+            periodTopBasis={periodTopModeBasis[selectedPeriodTopMode]}
+            periodTopItems={selectedPeriodTopProducts}
+            periodTopEmptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
+            periodTopValueSuffix={periodTopValueSuffix}
+            periodSummaryTitle={pt(
+              "periodSummaryTitle",
+              pageText.periodSummaryTitle,
+            )}
+            periodSummaryItems={periodSummaryItems}
+            selectedPeriodTopMode={selectedPeriodTopMode}
+            onPeriodTopModeSelect={setSelectedPeriodTopMode}
+          />
+        ) : null}
       </AdminStatsWorkflowSection>
     </div>
   );
