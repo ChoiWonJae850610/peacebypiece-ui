@@ -1,7 +1,5 @@
-import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
+import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import AdminMemberManagementDashboard from "@/components/admin/members/AdminMemberManagementDashboard";
-import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
-import { APP_VERSION } from "@/lib/constants/app";
 import { getAdminMemberCompanyScope } from "@/lib/admin/members/sessionScope";
 import { getI18n } from "@/lib/i18n";
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
@@ -12,14 +10,14 @@ export default async function AdminMembersPage() {
   const companyScope = await getAdminMemberCompanyScope();
 
   return (
-    <WorkspaceShell
-      companyName={companyScope?.companyName ?? ""}
-      appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/members", { role: session.role })}
+    <WorkspacePageShell
+      session={session}
+      activeHref="/workspace/members"
+      companyName={companyScope?.companyName}
       title={pageText.title}
       description={pageText.description}
     >
       <AdminMemberManagementDashboard />
-    </WorkspaceShell>
+    </WorkspacePageShell>
   );
 }

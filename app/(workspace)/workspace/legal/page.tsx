@@ -1,9 +1,7 @@
-import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
+import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
-import { APP_VERSION } from "@/lib/constants/app";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
-import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 
 const POLICY_ITEMS = [
   {
@@ -36,10 +34,9 @@ export default async function WorkspaceLegalPage() {
   const session = await requireWaflSessionForArea("workspace");
 
   return (
-    <WorkspaceShell
-      companyName={session.companyName ?? ""}
-      appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/legal", { role: session.role })}
+    <WorkspacePageShell
+      session={session}
+      activeHref="/workspace/legal"
       title="약관·정책"
       description="일반멤버도 확인할 수 있는 서비스 약관과 운영정책 조회 화면입니다."
     >
@@ -72,6 +69,6 @@ export default async function WorkspaceLegalPage() {
           </p>
         </div>
       </AdminSection>
-    </WorkspaceShell>
+    </WorkspacePageShell>
   );
 }

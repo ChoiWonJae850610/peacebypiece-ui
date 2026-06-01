@@ -1,7 +1,5 @@
-import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
+import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import PartnerMasterSection from "@/components/admin/PartnerMasterSection";
-import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
-import { APP_VERSION } from "@/lib/constants/app";
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 import { getI18n } from "@/lib/i18n";
 
@@ -12,14 +10,13 @@ export default async function AdminPartnersPage() {
   const session = await requireWorkspacePagePermission("partner.read");
 
   return (
-    <WorkspaceShell
-      companyName={session.companyName ?? ""}
-      appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/partners", { role: session.role })}
+    <WorkspacePageShell
+      session={session}
+      activeHref="/workspace/partners"
       title={pageText.title}
       contentMode="fixed-md"
     >
       <PartnerMasterSection />
-    </WorkspaceShell>
+    </WorkspacePageShell>
   );
 }

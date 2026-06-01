@@ -4,6 +4,8 @@ import AdminThemeScope from "@/components/admin/layout/AdminThemeScope";
 import WorkspaceTopbar from "@/components/workspace/layout/WorkspaceTopbar";
 import type { WorkspaceNavigationItem } from "@/lib/navigation/workspaceNavigation";
 
+export type WorkspaceShellContentMode = "scroll" | "fixed-md";
+
 type WorkspaceShellProps = {
   companyName: string;
   appVersion: string;
@@ -11,7 +13,7 @@ type WorkspaceShellProps = {
   title: string;
   description?: string;
   children: ReactNode;
-  contentMode?: "scroll" | "fixed-md";
+  contentMode?: WorkspaceShellContentMode;
 };
 
 export default function WorkspaceShell({

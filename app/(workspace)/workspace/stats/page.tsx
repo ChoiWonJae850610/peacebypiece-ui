@@ -1,11 +1,9 @@
 import { redirect } from "next/navigation";
 
 import AdminStatsDashboard from "@/components/admin/dashboard/AdminStatsDashboard";
-import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
-import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
+import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import { getAdminStatsSnapshot } from "@/lib/admin/stats/repository";
 import { normalizeAdminPeriodTopMode, normalizeAdminStatsPageSection } from "@/lib/admin/stats/dashboardPresentation";
-import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 import { getAdminStatsCompanyScope } from "@/lib/admin/stats/sessionScope";
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
@@ -41,14 +39,14 @@ export default async function AdminStatsPage({ searchParams }: AdminStatsPagePro
   const initialPeriodTopMode = normalizeAdminPeriodTopMode(resolvedSearchParams?.topMode);
 
   return (
-    <WorkspaceShell
-      companyName={companyScope.companyName ?? ""}
-      appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/stats", { role: session.role })}
+    <WorkspacePageShell
+      session={session}
+      activeHref="/workspace/stats"
+      companyName={companyScope.companyName}
       title={pageText.title}
       description={pageText.description}
     >
       <AdminStatsDashboard stats={stats} pageText={pageText} initialSection={initialSection} initialPeriodTopMode={initialPeriodTopMode} />
-    </WorkspaceShell>
+    </WorkspacePageShell>
   );
 }

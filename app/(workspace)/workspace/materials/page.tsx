@@ -1,8 +1,6 @@
-import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
-import { APP_VERSION } from "@/lib/constants/app";
+import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 import { buildMaterialCapabilityState } from "@/lib/materials/capabilities";
-import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import MaterialsWorkspacePage from "@/features/materials/MaterialsWorkspacePage";
 import { listWorkspaceMaterials } from "@/lib/materials/service";
 import type { Material, MaterialCapabilityState } from "@/lib/materials/types";
@@ -22,14 +20,13 @@ export default async function WorkspaceMaterialsPageRoute() {
   }
 
   return (
-    <WorkspaceShell
-      companyName={session.companyName ?? ""}
-      appVersion={APP_VERSION}
-      navigationItems={getWorkspaceNavigationItems("/workspace/materials", { role: session.role })}
+    <WorkspacePageShell
+      session={session}
+      activeHref="/workspace/materials"
       title="원단·부자재"
       description="원단과 부자재 기준 정보를 작업지시서 연결 전 단계에서 검토합니다."
     >
       <MaterialsWorkspacePage initialMaterials={initialMaterials} initialCapabilities={initialCapabilities} initialError={initialError} />
-    </WorkspaceShell>
+    </WorkspacePageShell>
   );
 }
