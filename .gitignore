@@ -53,6 +53,12 @@ peacebypiece-auto-pipeline*.ps1
 git-status.txt
 git-tracked-files.txt
 git-history-files.txt
+repo-state-*.txt
+
+# local build failure logs / patch result artifacts
+FAIL_*_build*.txt
+build-*.txt
+patch_result/
 
 # archives
 *.zip
