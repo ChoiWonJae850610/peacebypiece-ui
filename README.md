@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.18.89`
+- 기준 앱 버전: `0.18.90`
 - 프로젝트 성격: 의류 생산·작업지시서·원단/부자재 발주·고객사 운영을 관리하는 WAFL 웹 UI
 - 현재 작업 상태: 사용자가 테스트 가능하다고 명시하기 전까지 테스트 불가 상태로 간주한다.
 - 테스트 불가 기간 작업 원칙: 문서 최신화, 소스 점검, 로컬 생성물 정리, 명백한 타입 오류 수정처럼 영향 범위가 좁은 작업만 우선한다.
@@ -45,3 +45,4 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `docs/project-source-cleanup-audit-0.18.87.md`
 - `docs/dev-test-route-audit-0.18.88.md`
 - `docs/project-readme-refresh-0.18.89.md`
+- `docs/current-baseline-doc-audit-0.18.90.md`
