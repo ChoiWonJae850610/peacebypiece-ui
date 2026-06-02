@@ -1,11 +1,12 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 0.19.26: 멤버 초대 링크 목록 전체 폭 테이블 보정 — PC/태블릿/모바일 가로에서 table wrapper가 화면 폭을 쓰고 컬럼을 균등 분배하도록 정리.
-- 기준 앱 버전: `0.19.24`
+- 0.19.27: WAFL Page Hero / Summary Card 공통화 2차 — 협력업체관리·저장소관리·환경설정 상단 구조와 설정 카드 계열을 theme token 기반 공통 UI로 정리.
+- 기준 앱 버전: `0.19.27`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
 
+- [WAFL Page Hero / Summary Card 공통화 2차 0.19.27](wafl-page-hero-summary-theme-2-0.19.27.md)
 - [WAFL 멤버관리 responsive/접기 보정 0.19.24](wafl-member-responsive-collapse-0.19.24.md)
 
 현재 개발·테스트·리팩토링에서 우선 확인해야 하는 문서는 `docs/현재기준/`에 둔다.

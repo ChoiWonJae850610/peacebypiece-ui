@@ -15,18 +15,17 @@ type AdminTopbarProps = {
 };
 
 function getTopbarSummary(title: string, description: string | undefined, t: ReturnType<typeof useAdminTranslation>): string | null {
-  if (description) return description;
   if (title.includes(t("historySection.title", "히스토리"))) return t("topbar.summaries.history", "상태 변경 · 주요 작업 기록");
 
   const summaries: Record<string, string> = {
     [t("navigation.storage", "저장소 관리")]: t("topbar.summaries.storage", "저장소 · 휴지통 · 용량 관리"),
     [t("navigation.partners", "협력업체 관리")]: t("topbar.summaries.partners", "협력업체 · 공장 · 외주 관리"),
-    [t("dashboardPage.title", "통계정보")]: t("topbar.summaries.dashboard", "통계 · 생산 · 저장소"),
-    [t("navigation.settings", "환경설정")]: t("topbar.summaries.settings", "기준 설정 · 저장 정책 · 운영 설정"),
+    [t("dashboardPage.title", "통계정보")]: t("topbar.summaries.dashboard", "기간별 작업 · 협력업체 · 저장소"),
+    [t("navigation.settings", "환경설정")]: t("topbar.summaries.settings", "회사 계정 · 기준정보 · 정책 관리"),
     [t("memberManagement.title", "멤버 관리")]: t("topbar.summaries.members", "멤버 · 권한 · 승인 관리"),
   };
 
-  return summaries[title] ?? null;
+  return summaries[title] ?? description ?? null;
 }
 
 function getLocalizedTopbarTitle(title: string, t: ReturnType<typeof useAdminTranslation>): string {

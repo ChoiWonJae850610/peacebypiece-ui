@@ -69,8 +69,8 @@ export default function PartnerMasterSummaryCards({
       ariaLabel={summaryText.ariaLabel}
       cards={metrics}
       className={className}
-      density="compact"
-      gridClassName="grid gap-2 min-[560px]:grid-cols-2 min-[1080px]:grid-cols-4"
+      density="standard"
+      gridClassName="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
     />
   );
 }

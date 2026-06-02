@@ -19,7 +19,7 @@ function joinClassNames(...classNames: Array<string | false | null | undefined>)
 }
 
 export const WAFL_PAGE_HERO_CLASS =
-  "overflow-hidden rounded-[32px] border border-[var(--pbp-border-strong)] bg-[linear-gradient(135deg,var(--pbp-surface-soft)_0%,var(--pbp-surface)_62%,var(--pbp-surface-muted)_130%)] p-5 shadow-[var(--pbp-shadow-elevated)] sm:p-6";
+  "w-full overflow-hidden rounded-[32px] border border-[var(--pbp-border-strong)] bg-[linear-gradient(135deg,var(--pbp-surface-soft)_0%,var(--pbp-surface)_62%,var(--pbp-surface-muted)_130%)] p-5 shadow-[var(--pbp-shadow-elevated)] sm:p-6";
 
 export const WAFL_PAGE_HERO_EYEBROW_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--pbp-brand-soft)]";

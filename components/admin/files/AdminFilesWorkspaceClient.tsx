@@ -217,7 +217,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
       title={t("filesPage.title", "저장소 관리")}
       contentMode="scroll"
     >
-      <section className="relative flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3 pb-8 shadow-[var(--pbp-shadow-elevated)] md:p-4 md:pb-10">
+      <section className="relative flex min-h-fit w-full touch-pan-y flex-col gap-4 overflow-visible pb-8 md:pb-10">
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
@@ -226,7 +226,7 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
 
         <ToastMessage message={actionMessage} tone={actionToastTone} eventKey={actionToastEventKey} />
 
-        <div className="mt-2 min-h-fit touch-pan-y overflow-visible overscroll-auto">
+        <div className="min-h-fit touch-pan-y overflow-visible overscroll-auto">
           <FileTrashSection
             items={snapshot.trashItems}
             workOrderItems={snapshot.workOrders ?? []}

@@ -26,7 +26,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
   const controller = usePartnerMasterController(partnerText, capabilities);
 
   return (
-    <section className="flex min-h-fit touch-pan-y flex-col overflow-visible 2xl:min-h-0 2xl:flex-1 rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-elevated)] md:p-5 2xl:h-full 2xl:max-h-full 2xl:overflow-hidden 2xl:p-6">
+    <section className="flex min-h-fit w-full touch-pan-y flex-col gap-4 overflow-visible 2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden">
       <WaflPageHero
         eyebrow={partnerText.header.eyebrow || "Partner network"}
         title={partnerText.header.title}

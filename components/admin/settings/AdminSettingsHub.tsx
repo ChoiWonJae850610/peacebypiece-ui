@@ -6,6 +6,8 @@ import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import { ADMIN_SURFACE_ITEM_CLASS, ADMIN_SURFACE_SUBTLE_BOX_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminSection } from "@/components/admin/common/AdminSection";
+import WaflPageHero from "@/components/admin/common/WaflPageHero";
+import WaflFeatureCard from "@/components/admin/common/WaflFeatureCard";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
 import {
@@ -52,31 +54,15 @@ const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badgeTone: A
 function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuItem; active: boolean; onClick: () => void }) {
   const tone = toneClassNames[item.tone];
   return (
-    <button
-      type="button"
+    <WaflFeatureCard
+      title={item.title}
+      description={item.description}
+      badge={<AdminStatusBadge tone={tone.badgeTone}>{item.statusLabel}</AdminStatusBadge>}
+      details={item.detailItems}
+      active={active}
+      leadingDotClassName={tone.dot}
       onClick={onClick}
-      className={`flex min-h-[132px] w-full min-w-0 flex-col justify-between rounded-[28px] border p-5 text-left shadow-[var(--pbp-shadow-card)] transition hover:-translate-y-0.5 sm:min-h-[140px] ${tone.card} ${
-        active ? "ring-2 ring-[var(--pbp-focus-ring)]/20" : ""
-      }`}
-    >
-      <span className="flex items-start justify-between gap-3">
-        <span className="min-w-0">
-          <span className="flex items-center gap-2">
-            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${tone.dot}`} />
-            <span className="text-base font-semibold pbp-text-primary">{item.title}</span>
-          </span>
-          <span className="mt-2 block text-xs leading-5 pbp-text-muted">{item.description}</span>
-        </span>
-        <AdminStatusBadge tone={tone.badgeTone}>{item.statusLabel}</AdminStatusBadge>
-      </span>
-      <span className="mt-3 flex flex-wrap gap-1.5">
-        {item.detailItems.map((detail) => (
-          <span key={detail} className="rounded-full px-2 py-0.5 text-[11px] font-semibold pbp-admin-soft-badge">
-            {detail}
-          </span>
-        ))}
-      </span>
-    </button>
+    />
   );
 }
 
@@ -452,24 +438,22 @@ export default function AdminSettingsHub() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-0 sm:pr-1">
-      <AdminSection
+      <WaflPageHero
         eyebrow={t("settings.hub.eyebrow", "Admin settings")}
         title={t("settings.hub.title", "환경설정")}
-        description={t("settings.hub.description", "계정 정보, 회사 운영 기준정보, 요금제, 약관·정책, 개선 요청을 한 화면에서 전환해 확인합니다.")}
-        actions={
-          <p className="w-full rounded-full border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-2 text-xs font-semibold leading-5 pbp-text-muted shadow-sm sm:w-auto">
+        description={t("settings.hub.description", "회사 정보, 기준정보, 요금제, 약관·정책, 개선 요청을 한 화면에서 확인합니다.")}
+        badges={
+          <p className="w-full rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)] shadow-sm sm:w-auto">
             {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}
           </p>
         }
-        density="default"
-        className="shrink-0 overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,var(--pbp-surface-base)_0%,var(--pbp-surface-soft)_58%,var(--pbp-brand-muted)_145%)]"
       >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
             <SettingsMenuCard key={item.id} item={item} active={activeMenuId === item.id} onClick={() => setActiveMenuId(item.id)} />
           ))}
         </div>
-      </AdminSection>
+      </WaflPageHero>
 
       <section className="flex min-h-0 flex-1 flex-col">
         {renderActiveSettingsPanel()}
