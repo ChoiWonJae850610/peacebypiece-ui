@@ -1227,7 +1227,7 @@ export const adminEn = {
     restorePolicies: { workorderBundle: "Work order scope" },
     sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" },
   },
-  trashPage: { title: "Recycle Bin" },
+  trashPage: { title: "Recycle Bin", eyebrow: "TRASH LIST", description: "Review deleted work orders, documents, designs, and memos before restoring or cleaning them up." },
 
   historyPage: {
     title: "Work Order History",
@@ -1769,6 +1769,9 @@ export const adminEn = {
       usageSummary: "Active {active} · Inactive {inactive}",
     },
     list: {
+      eyebrow: "PARTNER LIST",
+      title: "Partner List",
+      description: "Review factories, fabric and subsidiary vendors, and outsourcing partners in one list.",
       columns: {
         name: "Name",
         contact: "Contact",

@@ -7,6 +7,7 @@ import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMast
 import { Plus } from "lucide-react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import WaflPageHero from "@/components/admin/common/WaflPageHero";
+import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
 import PartnerMasterSummaryCards from "@/components/admin/partnerMaster/PartnerMasterSummaryCards";
 import { usePartnerMasterController } from "@/components/admin/partnerMaster/usePartnerMasterController";
@@ -49,23 +50,32 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
         <PartnerMasterSummaryCards summary={controller.listViewModel.summary} className="mt-0" />
       </WaflPageHero>
 
-      <PartnerMasterFilters
-        searchTerm={controller.searchTerm}
-        onSearchTermChange={controller.setSearchTerm}
-        filterOptions={controller.listViewModel.filterOptions}
-        selectedType={controller.selectedTypes[0] ?? "all"}
-        onTypeChange={(value) => controller.setSelectedTypes([value])}
-        selectedStatus={controller.selectedStatus}
-        onStatusChange={controller.setSelectedStatus}
-      />
+      <WaflSectionPanel
+        eyebrow={partnerText.list.eyebrow || "PARTNER LIST"}
+        title={partnerText.list.title || "업체 목록"}
+        description={partnerText.list.description || "공장, 원단·부자재, 외주 거래처 정보를 한 목록에서 확인합니다."}
+        meta={`${partnerText.filters.currentListPrefix} ${controller.listViewModel.items.length}${partnerText.filters.currentListSuffix}`}
+        className="min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
+        bodyClassName="pt-4"
+      >
+        <PartnerMasterFilters
+          searchTerm={controller.searchTerm}
+          onSearchTermChange={controller.setSearchTerm}
+          filterOptions={controller.listViewModel.filterOptions}
+          selectedType={controller.selectedTypes[0] ?? "all"}
+          onTypeChange={(value) => controller.setSelectedTypes([value])}
+          selectedStatus={controller.selectedStatus}
+          onStatusChange={controller.setSelectedStatus}
+        />
 
-      <PartnerMasterList
-        className="mt-4 min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
-        items={controller.listViewModel.items}
-        isLoading={controller.isLoadingPartners}
-        canUpdate={controller.canUpdatePartner}
-        onEditPartner={controller.openEditModal}
-      />
+        <PartnerMasterList
+          className="mt-4 min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
+          items={controller.listViewModel.items}
+          isLoading={controller.isLoadingPartners}
+          canUpdate={controller.canUpdatePartner}
+          onEditPartner={controller.openEditModal}
+        />
+      </WaflSectionPanel>
 
       <ToastMessage message={controller.toastMessage} tone={controller.toastTone} eventKey={controller.toastEventKey} />
 

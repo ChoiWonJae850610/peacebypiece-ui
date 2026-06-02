@@ -1227,7 +1227,7 @@ export const adminKo = {
     restorePolicies: { workorderBundle: "작업지시서 단위 처리" },
     sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" },
   },
-  trashPage: { title: "휴지통" },
+  trashPage: { title: "휴지통", eyebrow: "TRASH LIST", description: "삭제된 작업지시서, 문서, 디자인, 메모를 확인하고 복원 또는 정리합니다." },
 
   historyPage: {
     title: "작업지시서 히스토리",
@@ -1712,6 +1712,9 @@ export const adminKo = {
       usageSummary: "사용 {active} · 미사용 {inactive}",
     },
     list: {
+      eyebrow: "PARTNER LIST",
+      title: "업체 목록",
+      description: "공장, 원단·부자재, 외주 거래처 정보를 한 목록에서 확인합니다.",
       columns: {
         name: "업체명",
         contact: "담당자명",

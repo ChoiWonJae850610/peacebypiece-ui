@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { RefreshCw, RotateCcw, Trash, Trash2 } from "lucide-react";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import { ADMIN_STORAGE_PANEL_TIGHT_CLASS } from "@/components/admin/common/adminSemanticClassNames";
+import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import type {
   AdminStorageWorkOrderItem,
   AdminTrashFileItem,
@@ -183,10 +183,19 @@ export default function FileTrashSection({
   }
 
   return (
-    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex min-h-fit touch-pan-y flex-col gap-3 p-3 pb-4 md:p-4 md:pb-5`}>
+    <WaflSectionPanel
+      eyebrow={t("trashPage.eyebrow", "TRASH LIST")}
+      title={t("trashPage.title", "휴지통")}
+      description={t(
+        "trashPage.description",
+        "삭제된 작업지시서, 문서, 디자인, 메모를 확인하고 복원 또는 정리합니다.",
+      )}
+      meta={formatAdminTermCount(t, rows.length, "item")}
+      className="flex min-h-fit touch-pan-y flex-col overflow-visible"
+      bodyClassName="pt-4"
+    >
       <AdminActionBar
-        title={t("trashPage.title", "휴지통")}
-        className="flex-row items-center justify-between gap-2"
+        className="flex-row items-center justify-end gap-2"
         actionsClassName="ml-auto flex w-fit max-w-[calc(100%-5rem)] shrink-0 flex-wrap items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
       >
         <AdminButton
@@ -326,6 +335,6 @@ export default function FileTrashSection({
         onToggleWorkOrder={onToggleWorkOrder}
         previewWorkOrderId={workOrderActionPreview?.workOrderId ?? null}
       />
-    </section>
+    </WaflSectionPanel>
   );
 }
