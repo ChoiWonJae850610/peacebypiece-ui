@@ -31,7 +31,7 @@ type AdminMemberInvitationSectionProps = {
 
 const MEMBER_INVITATION_COMPACT_CONTENT_CLASS =
   "grid min-h-fit gap-4 overflow-visible overscroll-auto pt-4";
-const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "wafl-member-invite-table min-h-fit touch-pan-y";
+const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "wafl-member-invite-table min-h-fit w-full max-w-none touch-pan-y";
 const MEMBER_INVITATION_PREVIEW_LIMIT = 5;
 
 export default function AdminMemberInvitationSection({
@@ -144,7 +144,7 @@ export default function AdminMemberInvitationSection({
           "memberManagement.empty.invitations.description",
           "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
         )}
-        gridTemplateColumns="88px 178px 118px 104px"
+        gridTemplateColumns="minmax(86px,1fr) minmax(164px,1.25fr) minmax(118px,1fr) minmax(136px,1fr)"
         headerClassName="wafl-member-invite-table-header shrink-0 gap-1 bg-[var(--pbp-surface-muted)] px-3 py-2 text-center text-[10px] font-semibold text-[var(--pbp-text-muted)]"
         rowBaseClassName="wafl-member-invite-table-row w-full min-w-0 gap-1 px-3 py-2 text-center text-[11px]"
         responsiveGridClassName="wafl-member-invite-table-row-layout"
