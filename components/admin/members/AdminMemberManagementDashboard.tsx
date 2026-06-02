@@ -983,20 +983,6 @@ export default function AdminMemberManagementDashboard() {
         className="min-w-0 rounded-[30px]"
       >
         <div className="grid min-w-0 gap-5">
-          <AdminMemberInvitationSection
-            t={t}
-            invitations={invitations}
-            invitationTableColumns={invitationTableColumns}
-            expiresInDays={expiresInDays}
-            inviteError={inviteError}
-            isCreatingInvite={isCreatingInvite}
-            canSubmitInvite={canSubmitInvite}
-            onExpiresInDaysChange={setExpiresInDays}
-            onCreateInvite={handleCreateInvite}
-            invitationSortState={invitationSortState}
-            onInvitationSort={handleInvitationSort}
-          />
-
           <AdminMemberDirectorySection
             t={t}
             memberDirectoryRows={memberDirectoryRows}
@@ -1015,6 +1001,20 @@ export default function AdminMemberManagementDashboard() {
             onOpenMemberDetail={handleOpenMemberDetail}
             memberDirectorySortState={memberDirectorySortState}
             onMemberDirectorySort={handleMemberDirectorySort}
+          />
+
+          <AdminMemberInvitationSection
+            t={t}
+            invitations={invitations}
+            invitationTableColumns={invitationTableColumns}
+            expiresInDays={expiresInDays}
+            inviteError={inviteError}
+            isCreatingInvite={isCreatingInvite}
+            canSubmitInvite={canSubmitInvite}
+            onExpiresInDaysChange={setExpiresInDays}
+            onCreateInvite={handleCreateInvite}
+            invitationSortState={invitationSortState}
+            onInvitationSort={handleInvitationSort}
           />
         </div>
       </AdminSection>
