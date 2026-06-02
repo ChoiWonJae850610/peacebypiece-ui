@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 0.19.25: 멤버 초대 링크 목록 전체 폭 테이블 보정 — PC/태블릿/모바일 가로에서 table wrapper가 화면 폭을 쓰고 컬럼을 균등 분배하도록 정리.
+- 0.19.26: 멤버 초대 링크 목록 전체 폭 테이블 보정 — PC/태블릿/모바일 가로에서 table wrapper가 화면 폭을 쓰고 컬럼을 균등 분배하도록 정리.
 - 기준 앱 버전: `0.19.24`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
@@ -106,3 +106,4 @@
 - [0.19.22 멤버 초대 관리 PC/모바일 역할 분리](wafl-member-invitation-responsive-share-0.19.22.md)
 
 - [0.19.23 멤버 초대 목록 responsive 기준 보정](wafl-member-invitation-responsive-table-0.19.23.md)
+- [0.19.26 WAFL theme 기반 Page Hero/Summary Card 공통화 1차](wafl-page-hero-summary-theme-0.19.26.md)

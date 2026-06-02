@@ -22,6 +22,7 @@ import {
   getStorageSummaryGridStyle,
   getStorageSummaryLayoutMode,
 } from "./summary/storageSummaryLayout";
+import WaflPageHero from "@/components/admin/common/WaflPageHero";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
@@ -54,26 +55,18 @@ export default function FileStorageSummary({
   const statusItems = buildFileStatusItems({ usageCards, t });
 
   return (
-    <section
-      ref={summaryRef}
-      className="shrink-0 overflow-visible rounded-[24px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-3 shadow-sm md:rounded-[28px] md:p-3"
-    >
-      <div className="flex flex-col gap-2 pb-2 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--pbp-brand-soft)]">
-            {t("filesSummary.visualEyebrow", "Storage control")}
-          </p>
-          <h2 className="mt-1 text-lg font-extrabold tracking-tight text-[var(--pbp-text-primary)] md:text-xl 2xl:text-2xl">
-            {t("filesSummary.visualTitle", "저장공간과 휴지통을 한 화면에서 관리합니다.")}
-          </h2>
-          <p className="mt-1 max-w-2xl text-xs leading-5 text-[var(--pbp-text-muted)] md:text-sm">
-            {t("filesSummary.visualDescription", "사용량, 파일 유형, 휴지통 상태를 먼저 확인하고 필요한 복원·삭제 작업만 처리합니다.")}
-          </p>
-        </div>
+    <WaflPageHero
+      sectionRef={summaryRef}
+      eyebrow={t("filesSummary.visualEyebrow", "Storage management")}
+      title={t("filesSummary.visualTitle", "저장공간과 휴지통을 관리합니다.")}
+      description={t("filesSummary.visualDescription", "파일 사용량, 파일 유형, 휴지통 상태를 확인하고 필요한 정리 작업을 처리합니다.")}
+      badges={
         <span className="w-fit rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-xs font-bold text-[var(--pbp-text-muted)] shadow-sm">
           {statusLabel}
         </span>
-      </div>
+      }
+      bodyClassName="mt-4"
+    >
       <div className="grid gap-3 md:gap-3" style={gridStyle}>
         <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
         <FileOperationsCard items={statusItems} />
@@ -81,6 +74,6 @@ export default function FileStorageSummary({
           <FileTypeChartCard items={fileTypeDistribution} />
         </div>
       </div>
-    </section>
+    </WaflPageHero>
   );
 }

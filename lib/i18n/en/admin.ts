@@ -460,9 +460,9 @@ export const adminEn = {
   },
   memberManagement: {
     visualHero: {
-      eyebrow: "Team operation",
-      title: "Manage members and permission flow in one place",
-      description: "Review invitation links, join approvals, employment status, and screen permissions under one shared standard.",
+      eyebrow: "Team management",
+      title: "Manage members and permissions.",
+      description: "Review join approvals, employment status, roles, and permissions in one place.",
       badge: {
         role: "Role based",
         permission: "Permission control",
@@ -470,7 +470,7 @@ export const adminEn = {
     },
     title: "Member management",
     description:
-      "Manage company member invitations, join approvals, and direct permission assignment.",
+      "Members · permissions · approvals",
     eyebrow: "Member permissions",
     permissionCount: "{count} permissions",
     systemOnlyCount: "{count} system-only",
@@ -606,6 +606,7 @@ export const adminEn = {
         linkOnly:
           "Create an invitation link for copying. Actual email/SMS delivery will be connected later.",
       },
+      desktopOnlyNotice: "Member invitation link creation and sharing are available on mobile or tablet screens.",
       actions: {
         copy: "Copy link",
         copyShort: "Copy",
@@ -647,9 +648,9 @@ export const adminEn = {
 
     memberDirectory: {
       eyebrow: "Member management",
-      title: "Member management",
+      title: "Member list",
       description:
-        "Review and process pending approvals and all members in one list.",
+        "Review join approvals, employment status, roles, and permissions in one list.",
       none: "None",
       actions: {
         expandList: "Show more members",
@@ -1055,10 +1056,10 @@ export const adminEn = {
     title: "Storage usage",
     description:
       "Review plan capacity, file status, and file types based on current data.",
-    visualEyebrow: "Storage control",
-    visualTitle: "Manage storage and trash in one view.",
+    visualEyebrow: "Storage management",
+    visualTitle: "Manage storage and trash.",
     visualDescription:
-      "Review usage, file types, and trash status before handling restore or delete actions.",
+      "Review file usage, file types, and trash status before handling cleanup actions.",
     periods: { 7: "7 days", 15: "15 days", 30: "30 days" },
     uploadAmount: "Upload amount",
     count: "Count",
@@ -1334,11 +1335,11 @@ export const adminEn = {
     },
     summaries: {
       adminMain: "Operations, status flow, and today checks",
-      storage: "Documents/designs · Trash · Storage usage",
-      partners: "Partners, factories, and outsourcing vendors",
-      dashboard: "Work orders, partners, and file usage",
-      settings: "Standards, storage policy, and log events",
-      members: "Member invitations, roles, and permission design",
+      storage: "Storage · Trash · Capacity",
+      partners: "Partners · Factories · Outsourcing",
+      dashboard: "Stats · Production · Storage",
+      settings: "Standards · Storage policy · Operations",
+      members: "Members · Permissions · Approvals",
       history: "Status changes and key activity records",
     },
   },
@@ -1389,10 +1390,10 @@ export const adminEn = {
     factoryTooltipQuality: "Quality issue candidates {count} / {target}",
     factoryTooltipQualityExamples: "Quality issue candidates: {items}",
     factoryTooltipQualityNone: "Quality issue candidates: none",
-    statsOverviewEyebrow: "Current overview",
-    statsOverviewTitle: "Operational cumulative metrics",
+    statsOverviewEyebrow: "Operation overview",
+    statsOverviewTitle: "Review operations at a glance.",
     statsOverviewDescription:
-      "Review cumulative production, delay, quality, and storage usage for the current company first.",
+      "Review production, delivery, quality, and storage usage to understand the current flow.",
     statsAnalysisEyebrow: "Analysis",
     statsAnalysisDescription:
       "Review production mix, partner performance, and period flow.",
@@ -1713,7 +1714,7 @@ export const adminEn = {
       eyebrow: "Partner network",
       title: "Partner / Factory Management",
       description:
-        "Manage partners, fabric vendors, and material vendors in one screen. Select a row to edit details.",
+        "Manage factories, fabric and material vendors, and outsourcing partners in one place.",
       manageProcesses: "Manage Outsourcing Processes",
       createPartner: "Add partner",
     },

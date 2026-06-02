@@ -6,6 +6,7 @@ import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/t
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminTable from "@/components/admin/common/AdminTable";
+import WaflNoticeBox from "@/components/admin/common/WaflNoticeBox";
 import { AppSelect } from "@/components/common/ui";
 import {
   ADMIN_FIELD_CONTAINER_CLASS,
@@ -57,7 +58,14 @@ export default function AdminMemberInvitationSection({
   );
 
   return (
-    <AdminPanelSection
+    <>
+      <WaflNoticeBox className="hidden 2xl:block">
+        {t(
+          "memberManagement.inviteBuilder.desktopOnlyNotice",
+          "멤버 초대 링크 생성과 공유는 모바일 또는 태블릿 화면에서 사용할 수 있습니다.",
+        )}
+      </WaflNoticeBox>
+      <AdminPanelSection
       title={t(
         "memberManagement.sections.invitationManagement",
         "초대 관리",
@@ -70,7 +78,7 @@ export default function AdminMemberInvitationSection({
         "memberManagement.tabs.invite.count",
         "초대 {count}건",
       ).replace("{count}", String(invitations.length))}
-      className="min-h-fit"
+      className="min-h-fit 2xl:hidden"
       headerMinClassName="min-h-0"
       contentClassName={MEMBER_INVITATION_COMPACT_CONTENT_CLASS}
     >
@@ -125,13 +133,6 @@ export default function AdminMemberInvitationSection({
         </div>
       </div>
 
-      <div className="hidden rounded-[22px] border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 text-xs leading-5 pbp-text-muted 2xl:block">
-        {t(
-          "memberManagement.inviteBuilder.desktopNotice",
-          "PC 화면에서는 초대 링크 상태와 취소만 관리합니다. 초대 링크 생성과 공유는 모바일/태블릿 화면에서 사용합니다.",
-        )}
-      </div>
-
       <AdminTable
         items={visibleInvitations}
         columns={invitationTableColumns}
@@ -167,5 +168,6 @@ export default function AdminMemberInvitationSection({
         </div>
       ) : null}
     </AdminPanelSection>
+    </>
   );
 }

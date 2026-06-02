@@ -475,9 +475,9 @@ export const adminKo = {
   },
   memberManagement: {
     visualHero: {
-      eyebrow: "Team operation",
-      title: "멤버와 권한 흐름을 한 화면에서 관리하세요",
-      description: "초대 링크, 가입 승인, 재직 상태, 화면별 권한을 같은 기준으로 확인합니다.",
+      eyebrow: "Team management",
+      title: "멤버와 권한을 관리합니다.",
+      description: "가입 승인, 재직 상태, 역할과 권한을 한 화면에서 확인합니다.",
       badge: {
         role: "역할 기반",
         permission: "권한 관리",
@@ -485,7 +485,7 @@ export const adminKo = {
     },
     title: "멤버 관리",
     description:
-      "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리합니다.",
+      "멤버 · 권한 · 승인 관리",
     eyebrow: "멤버 권한",
     permissionCount: "권한 {count}개",
     systemOnlyCount: "시스템 전용 {count}개",
@@ -621,6 +621,7 @@ export const adminKo = {
         linkOnly:
           "초대 링크를 생성해 복사할 수 있게 준비합니다. 실제 이메일/SMS 발송은 추후 기능에서 연결합니다.",
       },
+      desktopOnlyNotice: "멤버 초대 링크 생성과 공유는 모바일 또는 태블릿 화면에서 사용할 수 있습니다.",
       actions: {
         copy: "링크 복사",
         copyShort: "복사",
@@ -662,8 +663,8 @@ export const adminKo = {
 
     memberDirectory: {
       eyebrow: "멤버 관리",
-      title: "멤버 관리",
-      description: "승인 대기와 전체 멤버를 한 목록에서 확인하고 처리합니다.",
+      title: "멤버 목록",
+      description: "가입 승인, 재직 상태, 역할과 권한을 한 목록에서 확인합니다.",
       none: "없음",
       actions: {
         expandList: "멤버 목록 더 보기",
@@ -1057,10 +1058,10 @@ export const adminKo = {
     title: "저장소 사용 현황",
     description:
       "요금제 용량, 파일 상태, 파일 유형을 현재 기준으로 확인합니다.",
-    visualEyebrow: "Storage control",
-    visualTitle: "저장공간과 휴지통을 한 화면에서 관리합니다.",
+    visualEyebrow: "Storage management",
+    visualTitle: "저장공간과 휴지통을 관리합니다.",
     visualDescription:
-      "사용량, 파일 유형, 휴지통 상태를 먼저 확인하고 필요한 복원·삭제 작업만 처리합니다.",
+      "파일 사용량, 파일 유형, 휴지통 상태를 확인하고 필요한 정리 작업을 처리합니다.",
     periods: { 7: "7일", 15: "15일", 30: "30일" },
     uploadAmount: "첨부량",
     count: "건수",
@@ -1335,11 +1336,11 @@ export const adminKo = {
     },
     summaries: {
       adminMain: "운영 통계 · 상태 흐름 · 오늘 체크",
-      storage: "첨부파일 · 휴지통 · 용량 관리",
-      partners: "협력업체 · 공장 · 외주처",
-      dashboard: "작업지시서 · 협력업체 · 파일 사용량",
-      settings: "기준 설정 · 저장 정책 · 로그 이벤트",
-      members: "멤버 초대 · 역할 · 권한 관리",
+      storage: "저장소 · 휴지통 · 용량 관리",
+      partners: "협력업체 · 공장 · 외주 관리",
+      dashboard: "통계 · 생산 · 저장소",
+      settings: "기준 설정 · 저장 정책 · 운영 설정",
+      members: "멤버 · 권한 · 승인 관리",
       history: "상태 변경 · 주요 작업 기록",
     },
   },
@@ -1387,10 +1388,10 @@ export const adminKo = {
     factoryTooltipQuality: "검수/불량 후보 {count} / {target} 기준",
     factoryTooltipQualityExamples: "검수/불량 후보: {items}",
     factoryTooltipQualityNone: "검수/불량 후보: 없음",
-    statsOverviewEyebrow: "Current overview",
-    statsOverviewTitle: "운영 누적 지표",
+    statsOverviewEyebrow: "Operation overview",
+    statsOverviewTitle: "운영 현황을 한눈에 확인합니다.",
     statsOverviewDescription:
-      "현재 회사 기준의 누적 생산, 납기, 검수, 저장소 사용량을 먼저 확인합니다.",
+      "생산, 납기, 검수, 저장소 사용량을 기준으로 현재 흐름을 확인합니다.",
     statsAnalysisEyebrow: "Analysis",
     statsAnalysisDescription:
       "생산 구성, 업체 성과, 기간별 흐름을 확인합니다.",
@@ -1657,7 +1658,7 @@ export const adminKo = {
       eyebrow: "Partner network",
       title: "협력업체 관리",
       description:
-        "협력업체와 원단·부자재 거래처를 한 화면에서 관리합니다. 행을 선택하면 수정 모달이 열립니다.",
+        "공장, 원단·부자재, 외주 거래처 정보를 한 화면에서 관리합니다.",
       manageProcesses: "외주 공정 관리",
       createPartner: "업체 추가",
     },

@@ -4,7 +4,9 @@ import { useI18n } from "@/lib/i18n";
 import ToastMessage from "@/components/common/ToastMessage";
 import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMasterFilters";
 import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMasterFormModal";
-import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
+import { Plus } from "lucide-react";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import WaflPageHero from "@/components/admin/common/WaflPageHero";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
 import PartnerMasterSummaryCards from "@/components/admin/partnerMaster/PartnerMasterSummaryCards";
 import { usePartnerMasterController } from "@/components/admin/partnerMaster/usePartnerMasterController";
@@ -25,11 +27,27 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
 
   return (
     <section className="flex min-h-fit touch-pan-y flex-col overflow-visible 2xl:min-h-0 2xl:flex-1 rounded-[34px] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-elevated)] md:p-5 2xl:h-full 2xl:max-h-full 2xl:overflow-hidden 2xl:p-6">
-      <div className="rounded-[30px] border border-[var(--pbp-border)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-4 shadow-sm md:p-5">
-        <PartnerMasterHeader canCreate={controller.canCreatePartner} onOpenCreateModal={controller.openCreateModal} />
-
-        <PartnerMasterSummaryCards summary={controller.listViewModel.summary} className="mt-4" />
-      </div>
+      <WaflPageHero
+        eyebrow={partnerText.header.eyebrow || "Partner network"}
+        title={partnerText.header.title}
+        description={partnerText.header.description}
+        actions={
+          controller.canCreatePartner ? (
+            <AdminButton
+              type="button"
+              onClick={controller.openCreateModal}
+              variant="primary"
+              size="sm"
+              className="h-8 min-h-8 w-full rounded-full px-3 text-[12px] md:w-auto"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{partnerText.header.createPartner}</span>
+            </AdminButton>
+          ) : null
+        }
+      >
+        <PartnerMasterSummaryCards summary={controller.listViewModel.summary} className="mt-0" />
+      </WaflPageHero>
 
       <PartnerMasterFilters
         searchTerm={controller.searchTerm}

@@ -19,11 +19,11 @@ function getTopbarSummary(title: string, description: string | undefined, t: Ret
   if (title.includes(t("historySection.title", "히스토리"))) return t("topbar.summaries.history", "상태 변경 · 주요 작업 기록");
 
   const summaries: Record<string, string> = {
-    [t("navigation.storage", "저장소 관리")]: t("topbar.summaries.storage", "첨부파일 · 휴지통 · 용량 관리"),
-    [t("navigation.partners", "협력업체 관리")]: t("topbar.summaries.partners", "협력업체 · 공장 · 외주처"),
-    [t("dashboardPage.title", "통계정보")]: t("topbar.summaries.dashboard", "작업지시서 · 협력업체 · 파일 사용량"),
-    [t("navigation.settings", "환경설정")]: t("topbar.summaries.settings", "기준 설정 · 저장 정책 · 로그 이벤트"),
-    [t("memberManagement.title", "멤버 관리")]: t("topbar.summaries.members", "멤버 초대 · 역할 · 권한 설계"),
+    [t("navigation.storage", "저장소 관리")]: t("topbar.summaries.storage", "저장소 · 휴지통 · 용량 관리"),
+    [t("navigation.partners", "협력업체 관리")]: t("topbar.summaries.partners", "협력업체 · 공장 · 외주 관리"),
+    [t("dashboardPage.title", "통계정보")]: t("topbar.summaries.dashboard", "통계 · 생산 · 저장소"),
+    [t("navigation.settings", "환경설정")]: t("topbar.summaries.settings", "기준 설정 · 저장 정책 · 운영 설정"),
+    [t("memberManagement.title", "멤버 관리")]: t("topbar.summaries.members", "멤버 · 권한 · 승인 관리"),
   };
 
   return summaries[title] ?? null;

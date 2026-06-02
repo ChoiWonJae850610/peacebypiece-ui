@@ -64,10 +64,10 @@ export default function AdminMemberDirectorySection({
     <AdminPanelSection
       className={MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS}
       eyebrow={t("memberManagement.memberDirectory.eyebrow", "멤버 관리")}
-      title={t("memberManagement.memberDirectory.title", "멤버 관리")}
+      title={t("memberManagement.memberDirectory.title", "멤버 목록")}
       description={t(
         "memberManagement.memberDirectory.description",
-        "승인 대기와 전체 멤버를 한 목록에서 확인하고 처리합니다.",
+        "가입 승인, 재직 상태, 역할과 권한을 한 목록에서 확인합니다.",
       )}
       meta={t(
         "memberManagement.tabs.members.count",

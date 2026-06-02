@@ -3,7 +3,7 @@
 import AdminSummaryMetricCards, {
   type AdminSummaryMetricCard,
 } from "@/components/admin/common/AdminSummaryMetricCards";
-import { AdminSection } from "@/components/admin/common/AdminSection";
+import WaflPageHero from "@/components/admin/common/WaflPageHero";
 
 type AdminStatsOverviewSectionProps = {
   eyebrow: string;
@@ -19,17 +19,15 @@ export default function AdminStatsOverviewSection({
   cards,
 }: AdminStatsOverviewSectionProps) {
   return (
-    <AdminSection
+    <WaflPageHero
       eyebrow={eyebrow}
       title={title}
       description={description}
-      className="overflow-hidden border-[var(--pbp-border-strong)] bg-[linear-gradient(135deg,var(--pbp-surface-soft),var(--pbp-surface))] p-5 shadow-[var(--pbp-shadow-elevated)]"
-      bodyClassName="mt-5"
     >
       <AdminSummaryMetricCards
         cards={cards}
         gridClassName="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
       />
-    </AdminSection>
+    </WaflPageHero>
   );
 }

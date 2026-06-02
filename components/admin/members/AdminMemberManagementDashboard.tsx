@@ -37,7 +37,7 @@ import {
   type SimplePermissionControl,
 } from "@/lib/admin/members/memberSimplePermissionControls";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
-import { AdminSection } from "@/components/admin/common/AdminSection";
+import WaflPageHero from "@/components/admin/common/WaflPageHero";
 import {
   AdminModal,
   AdminModalFooterActions,
@@ -991,24 +991,17 @@ export default function AdminMemberManagementDashboard() {
 
   return (
     <div className="flex min-h-fit touch-pan-y flex-col gap-5 overflow-visible overscroll-auto pb-10 md:gap-6 2xl:pb-6 2xl:pr-1">
-      <section className="overflow-hidden rounded-[32px] border border-[var(--pbp-border-soft)] bg-[linear-gradient(135deg,var(--pbp-surface-base)_0%,var(--pbp-surface-soft)_48%,var(--pbp-brand-muted)_140%)] p-5 shadow-[var(--pbp-shadow-card)] sm:p-6">
-        <div className="mb-5 flex flex-col gap-3 2xl:flex-row 2xl:items-end 2xl:justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--pbp-brand-soft)]">
-              {t("memberManagement.visualHero.eyebrow", "Team operation")}
-            </p>
-            <h2 className="mt-2 text-2xl font-bold tracking-[-0.03em] pbp-text-primary sm:text-3xl">
-              {t("memberManagement.visualHero.title", "멤버와 권한 흐름을 한 화면에서 관리하세요")}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 pbp-text-muted">
-              {t("memberManagement.visualHero.description", "초대 링크, 가입 승인, 재직 상태, 화면별 권한을 같은 기준으로 확인합니다.")}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <WaflPageHero
+        eyebrow={t("memberManagement.visualHero.eyebrow", "Team management")}
+        title={t("memberManagement.visualHero.title", "멤버와 권한을 관리합니다.")}
+        description={t("memberManagement.visualHero.description", "가입 승인, 재직 상태, 역할과 권한을 한 화면에서 확인합니다.")}
+        badges={
+          <>
             <AdminStatusBadge tone="brand">{t("memberManagement.visualHero.badge.role", "역할 기반")}</AdminStatusBadge>
             <AdminStatusBadge tone="info">{t("memberManagement.visualHero.badge.permission", "권한 관리")}</AdminStatusBadge>
-          </div>
-        </div>
+          </>
+        }
+      >
         <AdminSummaryMetricCards
           cards={summaryCards.map((card) => ({
             id: card.id,
@@ -1022,54 +1015,43 @@ export default function AdminMemberManagementDashboard() {
             ),
           }))}
         />
-      </section>
+      </WaflPageHero>
 
-      <AdminSection
-        eyebrow={t("memberManagement.eyebrow", "멤버 권한")}
-        title={t("memberManagement.title", "멤버 관리")}
-        description={t(
-          "memberManagement.description",
-          "초대, 승인, 권한, 재직 상태를 한 화면에서 관리합니다.",
-        )}
-        bodyClassName="mt-4 min-w-0 touch-pan-y overflow-visible overscroll-auto pb-2"
-        className="min-w-0 rounded-[30px]"
-      >
-        <div className="grid min-w-0 gap-5">
-          <AdminMemberDirectorySection
-            t={t}
-            memberDirectoryRows={memberDirectoryRows}
-            filteredMemberDirectoryRows={filteredMemberDirectoryRows}
-            memberDirectoryColumns={memberDirectoryColumns}
-            memberSearchQuery={memberSearchQuery}
-            memberStatusFilter={memberStatusFilter}
-            memberRoleFilter={memberRoleFilter}
-            inviteRoleOptions={inviteRoleOptions}
-            memberListLoadError={memberListLoadError}
-            joinRequestLoadError={joinRequestLoadError}
-            isLoading={memberDirectoryLoading}
-            onSearchQueryChange={setMemberSearchQuery}
-            onStatusFilterChange={setMemberStatusFilter}
-            onRoleFilterChange={setMemberRoleFilter}
-            onOpenMemberDetail={handleOpenMemberDetail}
-            memberDirectorySortState={memberDirectorySortState}
-            onMemberDirectorySort={handleMemberDirectorySort}
-          />
+      <div className="grid min-w-0 gap-5">
+        <AdminMemberDirectorySection
+          t={t}
+          memberDirectoryRows={memberDirectoryRows}
+          filteredMemberDirectoryRows={filteredMemberDirectoryRows}
+          memberDirectoryColumns={memberDirectoryColumns}
+          memberSearchQuery={memberSearchQuery}
+          memberStatusFilter={memberStatusFilter}
+          memberRoleFilter={memberRoleFilter}
+          inviteRoleOptions={inviteRoleOptions}
+          memberListLoadError={memberListLoadError}
+          joinRequestLoadError={joinRequestLoadError}
+          isLoading={memberDirectoryLoading}
+          onSearchQueryChange={setMemberSearchQuery}
+          onStatusFilterChange={setMemberStatusFilter}
+          onRoleFilterChange={setMemberRoleFilter}
+          onOpenMemberDetail={handleOpenMemberDetail}
+          memberDirectorySortState={memberDirectorySortState}
+          onMemberDirectorySort={handleMemberDirectorySort}
+        />
 
-          <AdminMemberInvitationSection
-            t={t}
-            invitations={invitations}
-            invitationTableColumns={invitationTableColumns}
-            expiresInDays={expiresInDays}
-            inviteError={inviteError}
-            isCreatingInvite={isCreatingInvite}
-            canSubmitInvite={canSubmitInvite}
-            onExpiresInDaysChange={setExpiresInDays}
-            onCreateInvite={handleCreateInvite}
-            invitationSortState={invitationSortState}
-            onInvitationSort={handleInvitationSort}
-          />
-        </div>
-      </AdminSection>
+        <AdminMemberInvitationSection
+          t={t}
+          invitations={invitations}
+          invitationTableColumns={invitationTableColumns}
+          expiresInDays={expiresInDays}
+          inviteError={inviteError}
+          isCreatingInvite={isCreatingInvite}
+          canSubmitInvite={canSubmitInvite}
+          onExpiresInDaysChange={setExpiresInDays}
+          onCreateInvite={handleCreateInvite}
+          invitationSortState={invitationSortState}
+          onInvitationSort={handleInvitationSort}
+        />
+      </div>
 
       <AdminModal
         open={Boolean(selectedMemberId && memberDetailDraft)}
