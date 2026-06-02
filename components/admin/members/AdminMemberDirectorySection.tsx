@@ -63,7 +63,7 @@ export default function AdminMemberDirectorySection({
   return (
     <AdminPanelSection
       className={MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS}
-      eyebrow={t("memberManagement.memberDirectory.eyebrow", "멤버 관리")}
+      eyebrow={t("memberManagement.memberDirectory.eyebrow", "MEMBER LIST")}
       title={t("memberManagement.memberDirectory.title", "멤버 목록")}
       description={t(
         "memberManagement.memberDirectory.description",
@@ -73,7 +73,7 @@ export default function AdminMemberDirectorySection({
         "memberManagement.tabs.members.count",
         "대상 {count}명",
       ).replace("{count}", String(memberDirectoryRows.length))}
-      contentClassName="flex min-h-fit touch-pan-y flex-col overflow-visible overscroll-auto pt-4 pb-3"
+      contentClassName="flex min-h-fit touch-pan-y flex-col overflow-visible overscroll-auto pt-3 pb-3"
     >
       <AdminMemberDirectoryControls
         t={t}

@@ -662,7 +662,7 @@ export const adminKo = {
     },
 
     memberDirectory: {
-      eyebrow: "멤버 관리",
+      eyebrow: "MEMBER LIST",
       title: "멤버 목록",
       description: "가입 승인, 재직 상태, 역할과 권한을 한 목록에서 확인합니다.",
       none: "없음",

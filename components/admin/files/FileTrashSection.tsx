@@ -191,98 +191,99 @@ export default function FileTrashSection({
         "삭제된 작업지시서, 문서, 디자인, 메모를 확인하고 복원 또는 정리합니다.",
       )}
       meta={formatAdminTermCount(t, rows.length, "item")}
+      actions={
+        <AdminActionBar
+          className="flex-row items-center justify-end gap-2"
+          actionsClassName="ml-auto flex w-fit shrink-0 flex-wrap items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
+        >
+          <AdminButton
+            variant="icon"
+            onClick={onRefresh}
+            disabled={!canRefresh}
+            title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+            aria-label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+            <span className="sr-only">
+              {isRefreshing
+                ? t("filesList.refreshing", "새로고침 중")
+                : t("filesList.refresh", "새로고침")}
+            </span>
+          </AdminButton>
+          <AdminButton
+            variant="primary"
+            onClick={() => openSelectionConfirm("restore")}
+            disabled={!canRestoreSelection}
+            title={
+              selectedItems.some((item) => !item.canRestore)
+                ? t(
+                    "filesList.restoreSkipsBlockedItems",
+                    "복원할 수 없는 선택 항목은 제외하고 처리합니다.",
+                  )
+                : selectedCount > 0
+                  ? `${t("terms.actions.restore", "복원")} · ${formatAdminTermCount(t, selectedCount, "item")}`
+                  : t("terms.actions.restore", "복원")
+            }
+            aria-label={t("terms.actions.restore", "복원")}
+            className="relative rounded-full"
+          >
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="sr-only">
+              {isActionPending || isWorkOrderActionPending
+                ? t("filesList.processing", "처리 중")
+                : t("terms.actions.restore", "복원")}
+            </span>
+            {selectedCount > 0 ? (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
+                {selectedCount}
+              </span>
+            ) : null}
+          </AdminButton>
+          <AdminButton
+            variant="danger"
+            onClick={() => openSelectionConfirm("purge")}
+            disabled={!canPurgeSelection}
+            title={
+              selectedItems.some((item) => !item.canPurge)
+                ? t(
+                    "filesList.purgeSkipsBlockedItems",
+                    "삭제 요청할 수 없는 선택 항목은 제외하고 처리합니다.",
+                  )
+                : selectedCount > 0
+                  ? `${t("filesList.delete", "삭제")} · ${formatAdminTermCount(t, selectedCount, "item")}`
+                  : t("filesList.delete", "삭제")
+            }
+            aria-label={t("filesList.delete", "삭제")}
+            className="relative rounded-full"
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="sr-only">
+              {isActionPending || isWorkOrderActionPending
+                ? t("filesList.processing", "처리 중")
+                : t("filesList.delete", "삭제")}
+            </span>
+            {selectedCount > 0 ? (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
+                {selectedCount}
+              </span>
+            ) : null}
+          </AdminButton>
+          <AdminButton
+            variant="danger"
+            onClick={() => setIsEmptyTrashConfirmOpen(true)}
+            disabled={!canEmptyTrash}
+            title={t("filesList.emptyTrash", "비우기")}
+            aria-label={t("filesList.emptyTrash", "비우기")}
+            className="rounded-full"
+          >
+            <Trash className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="sr-only">{t("filesList.emptyTrash", "비우기")}</span>
+          </AdminButton>
+        </AdminActionBar>
+      }
       className="flex min-h-fit touch-pan-y flex-col overflow-visible"
-      bodyClassName="pt-4"
+      bodyClassName="pt-3"
     >
-      <AdminActionBar
-        className="flex-row items-center justify-end gap-2"
-        actionsClassName="ml-auto flex w-fit max-w-[calc(100%-5rem)] shrink-0 flex-wrap items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
-      >
-        <AdminButton
-          variant="icon"
-          onClick={onRefresh}
-          disabled={!canRefresh}
-          title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
-          aria-label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-          <span className="sr-only">
-            {isRefreshing
-              ? t("filesList.refreshing", "새로고침 중")
-              : t("filesList.refresh", "새로고침")}
-          </span>
-        </AdminButton>
-        <AdminButton
-          variant="primary"
-          onClick={() => openSelectionConfirm("restore")}
-          disabled={!canRestoreSelection}
-          title={
-            selectedItems.some((item) => !item.canRestore)
-              ? t(
-                  "filesList.restoreSkipsBlockedItems",
-                  "복원할 수 없는 선택 항목은 제외하고 처리합니다.",
-                )
-              : selectedCount > 0
-                ? `${t("terms.actions.restore", "복원")} · ${formatAdminTermCount(t, selectedCount, "item")}`
-                : t("terms.actions.restore", "복원")
-          }
-          aria-label={t("terms.actions.restore", "복원")}
-          className="relative rounded-full"
-        >
-          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="sr-only">
-            {isActionPending || isWorkOrderActionPending
-              ? t("filesList.processing", "처리 중")
-              : t("terms.actions.restore", "복원")}
-          </span>
-          {selectedCount > 0 ? (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
-              {selectedCount}
-            </span>
-          ) : null}
-        </AdminButton>
-        <AdminButton
-          variant="danger"
-          onClick={() => openSelectionConfirm("purge")}
-          disabled={!canPurgeSelection}
-          title={
-            selectedItems.some((item) => !item.canPurge)
-              ? t(
-                  "filesList.purgeSkipsBlockedItems",
-                  "삭제 요청할 수 없는 선택 항목은 제외하고 처리합니다.",
-                )
-              : selectedCount > 0
-                ? `${t("filesList.delete", "삭제")} · ${formatAdminTermCount(t, selectedCount, "item")}`
-                : t("filesList.delete", "삭제")
-          }
-          aria-label={t("filesList.delete", "삭제")}
-          className="relative rounded-full"
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="sr-only">
-            {isActionPending || isWorkOrderActionPending
-              ? t("filesList.processing", "처리 중")
-              : t("filesList.delete", "삭제")}
-          </span>
-          {selectedCount > 0 ? (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
-              {selectedCount}
-            </span>
-          ) : null}
-        </AdminButton>
-        <AdminButton
-          variant="danger"
-          onClick={() => setIsEmptyTrashConfirmOpen(true)}
-          disabled={!canEmptyTrash}
-          title={t("filesList.emptyTrash", "비우기")}
-          aria-label={t("filesList.emptyTrash", "비우기")}
-          className="rounded-full"
-        >
-          <Trash className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="sr-only">{t("filesList.emptyTrash", "비우기")}</span>
-        </AdminButton>
-      </AdminActionBar>
-
       <EmptyTrashConfirmModal
         open={isEmptyTrashConfirmOpen}
         canEmptyTrash={canEmptyTrash}

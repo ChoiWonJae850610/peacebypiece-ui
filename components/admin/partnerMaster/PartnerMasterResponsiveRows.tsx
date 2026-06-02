@@ -24,7 +24,7 @@ export default function PartnerMasterResponsiveRows({
   const shouldUseWideTable = width >= PARTNER_TABLE_MIN_WIDTH;
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="min-h-fit touch-pan-y overflow-visible overscroll-auto">
       {shouldUseWideTable ? (
         <PartnerMasterWideTableRows
           items={items}

@@ -990,7 +990,7 @@ export default function AdminMemberManagementDashboard() {
   }
 
   return (
-    <div className="flex min-h-fit touch-pan-y flex-col gap-5 overflow-visible overscroll-auto pb-10 md:gap-6 2xl:pb-6 2xl:pr-1">
+    <div className="flex min-h-fit touch-pan-y flex-col gap-4 overflow-visible overscroll-auto pb-10 2xl:pb-6 2xl:pr-1">
       <WaflPageHero
         eyebrow={t("memberManagement.visualHero.eyebrow", "Team management")}
         title={t("memberManagement.visualHero.title", "멤버와 권한을 관리합니다.")}
@@ -1017,7 +1017,7 @@ export default function AdminMemberManagementDashboard() {
         />
       </WaflPageHero>
 
-      <div className="grid min-w-0 gap-5">
+      <div className="grid min-w-0 gap-4">
         <AdminMemberDirectorySection
           t={t}
           memberDirectoryRows={memberDirectoryRows}

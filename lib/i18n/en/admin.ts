@@ -647,7 +647,7 @@ export const adminEn = {
     },
 
     memberDirectory: {
-      eyebrow: "Member management",
+      eyebrow: "MEMBER LIST",
       title: "Member list",
       description:
         "Review join approvals, employment status, roles, and permissions in one list.",

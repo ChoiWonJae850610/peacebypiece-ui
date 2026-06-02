@@ -27,7 +27,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
   const controller = usePartnerMasterController(partnerText, capabilities);
 
   return (
-    <section className="flex min-h-fit w-full touch-pan-y flex-col gap-4 overflow-visible 2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden">
+    <section className="flex min-h-fit w-full touch-pan-y flex-col gap-4 overflow-visible overscroll-auto">
       <WaflPageHero
         eyebrow={partnerText.header.eyebrow || "Partner network"}
         title={partnerText.header.title}
@@ -55,8 +55,8 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
         title={partnerText.list.title || "업체 목록"}
         description={partnerText.list.description || "공장, 원단·부자재, 외주 거래처 정보를 한 목록에서 확인합니다."}
         meta={`${partnerText.filters.currentListPrefix} ${controller.listViewModel.items.length}${partnerText.filters.currentListSuffix}`}
-        className="min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
-        bodyClassName="pt-4"
+        className="min-h-fit touch-pan-y overflow-visible overscroll-auto"
+        bodyClassName="pt-3"
       >
         <PartnerMasterFilters
           searchTerm={controller.searchTerm}
@@ -69,7 +69,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
         />
 
         <PartnerMasterList
-          className="mt-4 min-h-fit touch-pan-y 2xl:min-h-0 2xl:flex-1"
+          className="mt-3 min-h-fit touch-pan-y overflow-visible overscroll-auto"
           items={controller.listViewModel.items}
           isLoading={controller.isLoadingPartners}
           canUpdate={controller.canUpdatePartner}

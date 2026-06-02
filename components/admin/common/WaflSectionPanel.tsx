@@ -55,7 +55,7 @@ export default function WaflSectionPanel({
   children,
   footer,
   className = "",
-  bodyClassName = "pt-4",
+  bodyClassName = "pt-3",
   headerClassName = "",
   density = "standard",
 }: WaflSectionPanelProps) {
@@ -82,7 +82,7 @@ export default function WaflSectionPanel({
           {description ? <p className={WAFL_SECTION_DESCRIPTION_CLASS}>{description}</p> : null}
         </div>
         {meta || actions ? (
-          <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs font-semibold text-[var(--pbp-text-subtle)] sm:justify-end">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs font-semibold text-[var(--pbp-text-subtle)] sm:justify-end sm:self-start">
             {meta ? <span>{meta}</span> : null}
             {actions}
           </div>
