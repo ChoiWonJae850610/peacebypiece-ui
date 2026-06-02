@@ -63,7 +63,7 @@ export default function AdminMemberInvitationSection({
       headerMinClassName="min-h-0"
       contentClassName={MEMBER_INVITATION_COMPACT_CONTENT_CLASS}
     >
-      <div className="rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 sm:p-4">
+      <div className="rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 sm:p-4 2xl:hidden">
         <div className="grid gap-3 lg:grid-cols-[minmax(180px,240px)_160px_minmax(0,1fr)] lg:items-end">
           <label className={ADMIN_FIELD_CONTAINER_CLASS}>
             <span className="text-xs font-semibold pbp-text-muted">
@@ -103,7 +103,7 @@ export default function AdminMemberInvitationSection({
           <div className="min-w-0 text-xs leading-5 pbp-text-muted lg:pb-1">
             {t(
               "memberManagement.inviteBuilder.sendPolicy.compact",
-              "링크는 복사해서 전달합니다. 이메일/SMS 직접 발송은 후속 기능에서 연결합니다.",
+              "모바일/태블릿에서는 기기 공유창으로 초대 링크를 전달할 수 있습니다.",
             )}
             {inviteError ? (
               <p className="mt-1 font-semibold text-[var(--pbp-danger)]">
@@ -112,6 +112,13 @@ export default function AdminMemberInvitationSection({
             ) : null}
           </div>
         </div>
+      </div>
+
+      <div className="hidden rounded-[22px] border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 text-xs leading-5 pbp-text-muted 2xl:block">
+        {t(
+          "memberManagement.inviteBuilder.desktopNotice",
+          "PC 화면에서는 초대 링크 상태와 취소만 관리합니다. 초대 링크 생성과 공유는 모바일/태블릿 화면에서 사용합니다.",
+        )}
       </div>
 
       <AdminTable
@@ -126,7 +133,7 @@ export default function AdminMemberInvitationSection({
           "memberManagement.empty.invitations.description",
           "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
         )}
-        gridTemplateColumns="72px minmax(150px,1fr) 112px 76px"
+        gridTemplateColumns="72px minmax(150px,1fr) 112px 96px"
         headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid"
         rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
         className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}

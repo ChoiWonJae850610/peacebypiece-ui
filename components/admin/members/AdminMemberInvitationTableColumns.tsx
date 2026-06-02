@@ -1,4 +1,4 @@
-import { Ban, Copy, type LucideIcon } from "lucide-react";
+import { Ban, Copy, Share2, type LucideIcon } from "lucide-react";
 
 import {
   AdminStatusBadge,
@@ -22,6 +22,7 @@ type BuildMemberInvitationTableColumnsOptions = {
   t: ReturnType<typeof useAdminTranslation>;
   revokingInviteId: string | null;
   onCopyInviteLink: (inviteUrl: string) => void | Promise<void>;
+  onShareInviteLink: (inviteUrl: string) => void | Promise<void>;
   onCancelInvitation: (
     invitation: PendingMemberInvitationRow,
   ) => void | Promise<void>;
@@ -78,14 +79,16 @@ function InvitationIconActionButton({
   onClick,
   isBusy = false,
   icon: Icon,
+  className = "",
 }: {
-  tone: "copy" | "cancel";
+  tone: "copy" | "share" | "cancel";
   disabled: boolean;
   title: string;
   ariaLabel: string;
   onClick: () => void;
   isBusy?: boolean;
   icon: LucideIcon;
+  className?: string;
 }) {
   const baseClassName =
     "inline-flex h-7 min-h-7 w-7 min-w-7 shrink-0 items-center justify-center rounded-full border p-0 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]";
@@ -95,9 +98,13 @@ function InvitationIconActionButton({
       ? disabled
         ? "cursor-not-allowed border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-surface-muted)] text-[color-mix(in_srgb,var(--pbp-action-danger-soft-text)_58%,var(--pbp-text-muted))]"
         : "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-danger-soft-surface)] text-[var(--pbp-action-danger-soft-text)] hover:bg-[color-mix(in_srgb,var(--pbp-action-danger-soft-surface)_70%,var(--pbp-action-danger-soft-border))]"
-      : disabled
-        ? "cursor-not-allowed border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
-        : "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-action-secondary-surface-hover)]";
+      : tone === "share"
+        ? disabled
+          ? "cursor-not-allowed border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
+          : "border-[var(--pbp-brand-border)] bg-[var(--pbp-brand-muted)] text-[var(--pbp-brand-strong)] hover:bg-[color-mix(in_srgb,var(--pbp-brand-muted)_70%,var(--pbp-surface))]"
+        : disabled
+          ? "cursor-not-allowed border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
+          : "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-action-secondary-surface-hover)]";
 
   return (
     <button
@@ -106,7 +113,7 @@ function InvitationIconActionButton({
       disabled={disabled}
       title={title}
       aria-label={ariaLabel}
-      className={`${baseClassName} ${toneClassName}`}
+      className={`${baseClassName} ${toneClassName} ${className}`.trim()}
     >
       {isBusy ? (
         <span className="text-[12px] font-bold leading-none" aria-hidden="true">…</span>
@@ -121,6 +128,7 @@ export function buildMemberInvitationTableColumns({
   t,
   revokingInviteId,
   onCopyInviteLink,
+  onShareInviteLink,
   onCancelInvitation,
 }: BuildMemberInvitationTableColumnsOptions): AdminTableColumn<PendingMemberInvitationRow, MemberInvitationSortKey>[] {
   return [
@@ -170,7 +178,7 @@ export function buildMemberInvitationTableColumns({
       key: "actions",
       label: t("memberManagement.tables.invitations.columns.actions", "작업"),
       headerClassName: "text-center",
-      className: "flex min-w-0 justify-center gap-1.5 whitespace-nowrap",
+      className: "flex min-w-0 justify-center gap-1 whitespace-nowrap 2xl:gap-1.5",
       render: (invitation) => {
         const copyEnabled = canCopyInvitation(invitation.status);
         const cancelEnabled = canCancelInvitation(invitation.status);
@@ -178,6 +186,17 @@ export function buildMemberInvitationTableColumns({
 
         return (
           <>
+            <InvitationIconActionButton
+              tone="share"
+              onClick={() => void onShareInviteLink(invitation.inviteUrl)}
+              disabled={!copyEnabled}
+              title={copyEnabled
+                ? t("memberManagement.inviteBuilder.actions.share", "초대 링크 공유")
+                : t("memberManagement.inviteBuilder.actions.shareDisabled", "사용할 수 없는 초대는 공유할 수 없습니다.")}
+              ariaLabel={t("memberManagement.inviteBuilder.actions.share", "초대 링크 공유")}
+              icon={Share2}
+              className="2xl:hidden"
+            />
             <InvitationIconActionButton
               tone="copy"
               onClick={() => void onCopyInviteLink(invitation.inviteUrl)}
@@ -187,6 +206,22 @@ export function buildMemberInvitationTableColumns({
                 : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
               ariaLabel={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
               icon={Copy}
+              className="2xl:hidden"
+            />
+            <InvitationIconActionButton
+              tone="copy"
+              onClick={() => undefined}
+              disabled
+              title={t(
+                "memberManagement.inviteBuilder.actions.copyDesktopDisabled",
+                "PC 화면에서는 초대 링크 복사를 비활성화합니다.",
+              )}
+              ariaLabel={t(
+                "memberManagement.inviteBuilder.actions.copyDesktopDisabled",
+                "PC 화면에서는 초대 링크 복사를 비활성화합니다.",
+              )}
+              icon={Copy}
+              className="hidden 2xl:inline-flex"
             />
             <InvitationIconActionButton
               tone="cancel"

@@ -367,6 +367,7 @@ export default function AdminMemberManagementDashboard() {
         t,
         revokingInviteId,
         onCopyInviteLink: handleCopyInviteLink,
+        onShareInviteLink: handleShareInviteLink,
         onCancelInvitation: handleCancelPendingInvitation,
       }),
     [revokingInviteId, t],
@@ -935,6 +936,57 @@ export default function AdminMemberManagementDashboard() {
         "링크가 복사되었습니다.",
       ),
     );
+  }
+
+  async function handleShareInviteLink(inviteUrl: string) {
+    if (!inviteUrl || typeof navigator === "undefined") return;
+
+    const shareTitle = t(
+      "memberManagement.inviteBuilder.share.title",
+      "WAFL 초대 링크",
+    );
+    const shareText = t(
+      "memberManagement.inviteBuilder.share.text",
+      "WAFL 멤버 초대 링크입니다.",
+    );
+
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: inviteUrl,
+        });
+        setFeedbackTone("success");
+        setFeedbackMessage(
+          t(
+            "memberManagement.inviteBuilder.feedback.shared",
+            "초대 링크 공유창을 열었습니다.",
+          ),
+        );
+        return;
+      }
+
+      await navigator.clipboard.writeText(`${shareText}\n${inviteUrl}`);
+      setFeedbackTone("info");
+      setFeedbackMessage(
+        t(
+          "memberManagement.inviteBuilder.feedback.shareFallbackCopied",
+          "공유를 지원하지 않는 기기라 링크를 복사했습니다.",
+        ),
+      );
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+
+      await navigator.clipboard.writeText(`${shareText}\n${inviteUrl}`);
+      setFeedbackTone("info");
+      setFeedbackMessage(
+        t(
+          "memberManagement.inviteBuilder.feedback.shareFallbackCopied",
+          "공유를 지원하지 않는 기기라 링크를 복사했습니다.",
+        ),
+      );
+    }
   }
 
   return (
