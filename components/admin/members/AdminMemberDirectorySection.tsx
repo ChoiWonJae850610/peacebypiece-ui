@@ -135,6 +135,14 @@ export default function AdminMemberDirectorySection({
         onOpenMemberDetail={onOpenMemberDetail}
         sortState={memberDirectorySortState}
         onSort={onMemberDirectorySort}
+        expandListLabel={t(
+          "memberManagement.memberDirectory.actions.expandList",
+          "멤버 목록 더 보기",
+        )}
+        collapseListLabel={t(
+          "memberManagement.memberDirectory.actions.collapseList",
+          "멤버 목록 접기",
+        )}
       />
     </AdminPanelSection>
   );

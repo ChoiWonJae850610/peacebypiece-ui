@@ -69,7 +69,7 @@ function canCancelInvitation(status: PendingMemberInvitationRow["status"]): bool
   return status === "draft" || status === "pending" || status === "active";
 }
 
-const INVITATION_ICON_CLASS = "pointer-events-none block h-[15px] w-[15px] shrink-0 stroke-[2.4]";
+const INVITATION_ICON_CLASS = "pointer-events-none block h-[14px] w-[14px] shrink-0 stroke-[2.5]";
 
 function InvitationIconActionButton({
   tone,
@@ -136,7 +136,7 @@ export function buildMemberInvitationTableColumns({
       key: "status",
       sortKey: "status",
       label: t("memberManagement.tables.invitations.columns.status", "상태"),
-      className: "whitespace-nowrap",
+      className: "wafl-member-invite-status-cell whitespace-nowrap",
       render: (invitation) => (
         <AdminStatusBadge tone={getInvitationStatusTone(invitation.status)}>
           {t(
@@ -153,7 +153,7 @@ export function buildMemberInvitationTableColumns({
         "memberManagement.tables.invitations.columns.createdAt",
         "생성일",
       ),
-      className: "whitespace-nowrap",
+      className: "wafl-member-invite-created-cell whitespace-nowrap text-center",
       render: (invitation) => (
         <span className="pbp-text-muted">
           {getPendingInvitationDateTimeLabel(invitation.createdAt)}
@@ -167,7 +167,7 @@ export function buildMemberInvitationTableColumns({
         "memberManagement.tables.invitations.columns.expires",
         "만료일",
       ),
-      className: "whitespace-nowrap",
+      className: "wafl-member-invite-expires-cell whitespace-nowrap text-center",
       render: (invitation) => (
         <span className="pbp-text-muted">
           {getPendingInvitationDateLabel(invitation.expiresAt)}

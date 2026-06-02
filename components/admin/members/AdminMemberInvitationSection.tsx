@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
 import { AdminButton } from "@/components/admin/common/AdminButton";
@@ -30,7 +31,8 @@ type AdminMemberInvitationSectionProps = {
 
 const MEMBER_INVITATION_COMPACT_CONTENT_CLASS =
   "grid min-h-fit gap-4 overflow-visible overscroll-auto pt-4";
-const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-fit touch-pan-y";
+const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "wafl-member-invite-table min-h-fit touch-pan-y";
+const MEMBER_INVITATION_PREVIEW_LIMIT = 5;
 
 export default function AdminMemberInvitationSection({
   t,
@@ -45,6 +47,15 @@ export default function AdminMemberInvitationSection({
   invitationSortState,
   onInvitationSort,
 }: AdminMemberInvitationSectionProps) {
+  const [isInvitationListExpanded, setIsInvitationListExpanded] = useState(false);
+  const hasInvitationOverflow = invitations.length > MEMBER_INVITATION_PREVIEW_LIMIT;
+  const visibleInvitations = useMemo(
+    () => isInvitationListExpanded
+      ? invitations
+      : invitations.slice(0, MEMBER_INVITATION_PREVIEW_LIMIT),
+    [invitations, isInvitationListExpanded],
+  );
+
   return (
     <AdminPanelSection
       title={t(
@@ -122,7 +133,7 @@ export default function AdminMemberInvitationSection({
       </div>
 
       <AdminTable
-        items={invitations}
+        items={visibleInvitations}
         columns={invitationTableColumns}
         getRowKey={(invitation) => invitation.id}
         emptyLabel={t(
@@ -133,15 +144,28 @@ export default function AdminMemberInvitationSection({
           "memberManagement.empty.invitations.description",
           "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
         )}
-        gridTemplateColumns="72px minmax(160px,1fr) 112px 112px"
-        headerClassName="wafl-member-invite-table-header shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)]"
-        rowBaseClassName="wafl-member-invite-table-row w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px]"
+        gridTemplateColumns="88px 178px 118px 104px"
+        headerClassName="wafl-member-invite-table-header shrink-0 gap-1 bg-[var(--pbp-surface-muted)] px-3 py-2 text-center text-[10px] font-semibold text-[var(--pbp-text-muted)]"
+        rowBaseClassName="wafl-member-invite-table-row w-full min-w-0 gap-1 px-3 py-2 text-center text-[11px]"
         responsiveGridClassName="wafl-member-invite-table-row-layout"
         className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
         scrollMode="page"
         sortState={invitationSortState}
         onSort={onInvitationSort}
       />
+      {hasInvitationOverflow ? (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-xs font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-soft)]"
+            onClick={() => setIsInvitationListExpanded((current) => !current)}
+          >
+            {isInvitationListExpanded
+              ? t("memberManagement.inviteBuilder.actions.collapseList", "초대 링크 접기")
+              : t("memberManagement.inviteBuilder.actions.expandList", "초대 링크 더 보기")}
+          </button>
+        </div>
+      ) : null}
     </AdminPanelSection>
   );
 }

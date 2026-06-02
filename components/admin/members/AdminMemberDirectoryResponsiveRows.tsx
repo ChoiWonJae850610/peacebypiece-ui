@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 
 import { AdminResponsiveTableShell } from "@/components/admin/common/responsiveTable/AdminResponsiveTableShell";
 import {
@@ -31,9 +31,12 @@ type AdminMemberDirectoryResponsiveRowsProps = {
   onOpenMemberDetail: (row: MemberDirectoryRow) => void;
   sortState: AdminTableSortState<MemberDirectorySortKey>;
   onSort: (sortKey: MemberDirectorySortKey) => void;
+  expandListLabel: string;
+  collapseListLabel: string;
 };
 
 const MEMBER_DIRECTORY_TABLE_MIN_WIDTH = 1080;
+const MEMBER_DIRECTORY_COMPACT_PREVIEW_LIMIT = 6;
 const MEMBER_DIRECTORY_TABLE_GRID =
   "minmax(120px,1fr) minmax(160px,1.2fr) 110px 110px 96px 110px 110px 120px 140px";
 
@@ -129,7 +132,15 @@ function MemberDirectoryCompactListRows({
   emptyLabel,
   emptyDescription,
   onOpenMemberDetail,
+  expandListLabel,
+  collapseListLabel,
 }: AdminMemberDirectoryResponsiveRowsProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasOverflow = items.length > MEMBER_DIRECTORY_COMPACT_PREVIEW_LIMIT;
+  const visibleItems = useMemo(
+    () => isExpanded ? items : items.slice(0, MEMBER_DIRECTORY_COMPACT_PREVIEW_LIMIT),
+    [items, isExpanded],
+  );
   const nameColumn = getColumn(columns, "name");
   const emailColumn = getColumn(columns, "email");
   const phoneColumn = getColumn(columns, "phone");
@@ -148,7 +159,7 @@ function MemberDirectoryCompactListRows({
         <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
       ) : (
         <div className="grid gap-3">
-          {items.map((row) => (
+          {visibleItems.map((row) => (
             <article
               key={row.id}
               role="button"
@@ -193,6 +204,17 @@ function MemberDirectoryCompactListRows({
               ) : null}
             </article>
           ))}
+          {hasOverflow ? (
+            <div className="flex justify-center pt-1">
+              <button
+                type="button"
+                className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-xs font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-soft)]"
+                onClick={() => setIsExpanded((current) => !current)}
+              >
+                {isExpanded ? collapseListLabel : expandListLabel}
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
     </section>

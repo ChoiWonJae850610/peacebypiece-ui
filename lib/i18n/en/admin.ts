@@ -618,6 +618,8 @@ export const adminEn = {
         cancel: "Cancel invitation",
         cancelShort: "Cancel",
         cancelDisabled: "This invitation is already completed or unavailable.",
+        expandList: "Show more invites",
+        collapseList: "Collapse invites",
       },
       share: {
         title: "WAFL invitation link",
@@ -649,6 +651,10 @@ export const adminEn = {
       description:
         "Review and process pending approvals and all members in one list.",
       none: "None",
+      actions: {
+        expandList: "Show more members",
+        collapseList: "Collapse members",
+      },
       filters: {
         search: "Search",
         searchPlaceholder: "Search name, email, or contact",

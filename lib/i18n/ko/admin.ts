@@ -633,6 +633,8 @@ export const adminKo = {
         cancel: "초대 취소",
         cancelShort: "취소",
         cancelDisabled: "이미 완료되었거나 사용할 수 없는 초대입니다.",
+        expandList: "초대 링크 더 보기",
+        collapseList: "초대 링크 접기",
       },
       share: {
         title: "WAFL 초대 링크",
@@ -663,6 +665,10 @@ export const adminKo = {
       title: "멤버 관리",
       description: "승인 대기와 전체 멤버를 한 목록에서 확인하고 처리합니다.",
       none: "없음",
+      actions: {
+        expandList: "멤버 목록 더 보기",
+        collapseList: "멤버 목록 접기",
+      },
       filters: {
         search: "검색",
         searchPlaceholder: "이름, 이메일, 연락처 검색",
