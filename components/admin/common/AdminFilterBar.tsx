@@ -1,15 +1,21 @@
 import type { ReactNode } from "react";
-import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
+
+import WaflFilterBar from "@/components/admin/common/WaflFilterBar";
 
 type AdminFilterBarProps = {
   children: ReactNode;
   className?: string;
+  layoutClassName?: string;
 };
 
-export default function AdminFilterBar({ children, className = "" }: AdminFilterBarProps) {
+export default function AdminFilterBar({
+  children,
+  className = "",
+  layoutClassName = "flex flex-wrap items-center gap-2",
+}: AdminFilterBarProps) {
   return (
-    <div className={joinAdminClassNames("flex flex-wrap items-center gap-2 rounded-[24px] p-2.5 pbp-admin-filter-bar", className)}>
+    <WaflFilterBar className={className} layoutClassName={layoutClassName}>
       {children}
-    </div>
+    </WaflFilterBar>
   );
 }

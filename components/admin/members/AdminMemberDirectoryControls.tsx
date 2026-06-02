@@ -4,6 +4,7 @@ import {
   ADMIN_FIELD_CONTAINER_CLASS,
   ADMIN_INPUT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
+import WaflFilterBar from "@/components/admin/common/WaflFilterBar";
 import { AppSelect } from "@/components/common/ui";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
@@ -45,7 +46,7 @@ export default function AdminMemberDirectoryControls({
   onRoleFilterChange,
 }: AdminMemberDirectoryControlsProps) {
   return (
-    <div className="mb-4 grid shrink-0 gap-3 rounded-[24px] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-3 2xl:grid-cols-[minmax(0,1fr)_180px_190px]">
+    <WaflFilterBar className="mb-3 shrink-0" layoutClassName="grid w-full min-w-0 gap-3 2xl:grid-cols-[minmax(0,1fr)_180px_190px]">
       <label className={ADMIN_FIELD_CONTAINER_CLASS}>
         <span className="text-xs font-semibold pbp-text-muted">
           {t("memberManagement.memberDirectory.filters.search", "검색")}
@@ -94,6 +95,6 @@ export default function AdminMemberDirectoryControls({
           ariaLabel={t("memberManagement.memberDirectory.filters.role", "권한")}
         />
       </label>
-    </div>
+    </WaflFilterBar>
   );
 }

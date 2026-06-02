@@ -34,30 +34,30 @@ export default function PartnerMasterFilters({
   const statusOptions = buildPartnerStatusFilterOptions(filterText);
 
   return (
-    <AdminFilterBar className="shrink-0 border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 transition-colors md:px-4">
-      <div className="grid w-full min-w-0 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(140px,180px)] min-[720px]:items-end">
-        <PartnerMasterSearchField
-          label={filterText.searchLabel}
-          placeholder={filterText.searchPlaceholder}
-          value={searchTerm}
-          onChange={onSearchTermChange}
+    <AdminFilterBar
+      layoutClassName="grid w-full min-w-0 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(140px,180px)] min-[720px]:items-end"
+    >
+      <PartnerMasterSearchField
+        label={filterText.searchLabel}
+        placeholder={filterText.searchPlaceholder}
+        value={searchTerm}
+        onChange={onSearchTermChange}
+      />
+
+      <div className="grid min-w-0 grid-cols-2 gap-3 min-[720px]:contents">
+        <PartnerMasterSelectField
+          label={filterText.typeLabel}
+          value={selectedType}
+          options={filterOptions}
+          onChange={onTypeChange}
         />
 
-        <div className="grid min-w-0 grid-cols-2 gap-3 min-[720px]:contents">
-          <PartnerMasterSelectField
-            label={filterText.typeLabel}
-            value={selectedType}
-            options={filterOptions}
-            onChange={onTypeChange}
-          />
-
-          <PartnerMasterSelectField
-            label={filterText.statusLabel}
-            value={selectedStatus}
-            options={statusOptions}
-            onChange={onStatusChange}
-          />
-        </div>
+        <PartnerMasterSelectField
+          label={filterText.statusLabel}
+          value={selectedStatus}
+          options={statusOptions}
+          onChange={onStatusChange}
+        />
       </div>
     </AdminFilterBar>
   );

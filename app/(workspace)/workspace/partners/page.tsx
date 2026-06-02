@@ -14,7 +14,7 @@ export default async function AdminPartnersPage() {
       session={session}
       activeHref="/workspace/partners"
       title={pageText.title}
-      contentMode="fixed-md"
+      contentMode="scroll"
     >
       <PartnerMasterSection />
     </WorkspacePageShell>
