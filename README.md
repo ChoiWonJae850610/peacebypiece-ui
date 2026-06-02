@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.19.22`
+- 기준 앱 버전: `0.19.23`
 - 프로젝트 성격: 의류 생산·작업지시서·원단/부자재 발주·고객사 운영을 관리하는 WAFL 웹 UI
 - 현재 작업 상태: 0.18.99 이후 사용자가 테스트 가능하다고 명시했으므로, 리팩토링 패치마다 화면별 테스트 위치와 변경 금지 항목을 함께 관리한다.
 - 리팩토링 작업 원칙: 저위험 공통 formatter/helper부터 실제 코드에 점진 적용하고, DB/API/R2/권한/상태 흐름은 직접 목표가 아니면 변경하지 않는다.
@@ -127,3 +127,9 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - `docs/wafl-toast-lucide-member-action-fix-0.19.15.md`
 - `docs/wafl-member-invite-table-actions-0.19.16.md`
 - `docs/wafl-member-invite-icon-layout-fix-0.19.17.md`
+
+## 0.19.23 변경 요약
+
+- 멤버 초대 링크 목록은 모바일 세로 화면에서만 카드형으로 표시하고, 모바일 가로/태블릿/PC에서는 테이블형을 유지한다.
+- 태블릿에서 PC용 복사 버튼과 공유 가능 버튼이 중복 노출되지 않도록 action 표시 조건을 분리했다.
+- PC에서는 복사 disabled + 취소 조건부 활성, 공유 가능 화면에서는 공유/복사/취소 1세트만 표시한다.

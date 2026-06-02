@@ -178,7 +178,7 @@ export function buildMemberInvitationTableColumns({
       key: "actions",
       label: t("memberManagement.tables.invitations.columns.actions", "작업"),
       headerClassName: "text-center",
-      className: "flex min-w-0 justify-center gap-1 whitespace-nowrap 2xl:gap-1.5",
+      className: "wafl-member-invite-action-cell",
       render: (invitation) => {
         const copyEnabled = canCopyInvitation(invitation.status);
         const cancelEnabled = canCancelInvitation(invitation.status);
@@ -195,7 +195,7 @@ export function buildMemberInvitationTableColumns({
                 : t("memberManagement.inviteBuilder.actions.shareDisabled", "사용할 수 없는 초대는 공유할 수 없습니다.")}
               ariaLabel={t("memberManagement.inviteBuilder.actions.share", "초대 링크 공유")}
               icon={Share2}
-              className="2xl:hidden"
+              className="wafl-member-invite-action-share"
             />
             <InvitationIconActionButton
               tone="copy"
@@ -206,7 +206,7 @@ export function buildMemberInvitationTableColumns({
                 : t("memberManagement.inviteBuilder.actions.copyDisabled", "사용할 수 없는 초대는 링크를 복사할 수 없습니다.")}
               ariaLabel={t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
               icon={Copy}
-              className="2xl:hidden"
+              className="wafl-member-invite-action-copy-touch"
             />
             <InvitationIconActionButton
               tone="copy"
@@ -221,7 +221,7 @@ export function buildMemberInvitationTableColumns({
                 "PC 화면에서는 초대 링크 복사를 비활성화합니다.",
               )}
               icon={Copy}
-              className="hidden 2xl:inline-flex"
+              className="wafl-member-invite-action-copy-pc"
             />
             <InvitationIconActionButton
               tone="cancel"

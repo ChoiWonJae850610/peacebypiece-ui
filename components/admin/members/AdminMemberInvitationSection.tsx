@@ -133,9 +133,10 @@ export default function AdminMemberInvitationSection({
           "memberManagement.empty.invitations.description",
           "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
         )}
-        gridTemplateColumns="72px minmax(150px,1fr) 112px 96px"
-        headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] xl:grid"
-        rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
+        gridTemplateColumns="72px minmax(160px,1fr) 112px 112px"
+        headerClassName="wafl-member-invite-table-header shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)]"
+        rowBaseClassName="wafl-member-invite-table-row w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px]"
+        responsiveGridClassName="wafl-member-invite-table-row-layout"
         className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
         scrollMode="page"
         sortState={invitationSortState}

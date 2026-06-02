@@ -1156,3 +1156,66 @@ textarea.pbp-field-interaction.pbp-field-selectable {
     transform: none !important;
   }
 }
+
+
+/* WAFL member invitation list responsive rule.
+   Use the project's existing breakpoint scale: mobile portrait stays card-like,
+   and every wider layout (mobile landscape, tablet, PC) stays table-like. */
+.wafl-member-invite-table-header {
+  display: none;
+}
+
+.wafl-member-invite-table-row {
+  display: grid;
+}
+
+.wafl-member-invite-table-row-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.wafl-member-invite-action-cell {
+  display: flex;
+  min-width: 0;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.wafl-member-invite-action-share,
+.wafl-member-invite-action-copy-touch {
+  display: inline-flex;
+}
+
+.wafl-member-invite-action-copy-pc {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .wafl-member-invite-table-header {
+    display: grid;
+    grid-template-columns: var(--admin-table-columns);
+  }
+
+  .wafl-member-invite-table-row-layout {
+    grid-template-columns: var(--admin-table-columns);
+  }
+
+  .wafl-member-invite-table-row {
+    align-items: center;
+  }
+
+  .wafl-member-invite-action-cell {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1536px) {
+  .wafl-member-invite-action-share,
+  .wafl-member-invite-action-copy-touch {
+    display: none;
+  }
+
+  .wafl-member-invite-action-copy-pc {
+    display: inline-flex;
+  }
+}
