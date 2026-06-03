@@ -10,6 +10,7 @@ import {
   WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS,
   WAFL_DATA_TABLE_HEADER_BUTTON_CLASS,
   WAFL_DATA_TABLE_SUBTLE_TEXT_CLASS,
+  WAFL_DATA_TABLE_HEADER_CELL_CLASS,
 } from "@/components/admin/common/WaflDataTable";
 import type {
   TrashSortKey,
@@ -72,7 +73,7 @@ function WideTrashTableHeader({
 }) {
   return (
     <WaflDataTableHeader gridTemplateColumns={WIDE_TRASH_GRID} className="text-center">
-      <span>{t("filesList.columns.select", "선택")}</span>
+      <span className={`${WAFL_DATA_TABLE_HEADER_CELL_CLASS} justify-center text-center`}>{t("filesList.columns.select", "선택")}</span>
       <SortButton
         label={t("filesList.columns.target", "삭제 대상")}
         sortKey="target"

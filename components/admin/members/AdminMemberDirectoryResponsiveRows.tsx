@@ -14,6 +14,8 @@ import {
   WAFL_DATA_TABLE_COMPACT_META_LABEL_CLASS,
   WAFL_DATA_TABLE_COMPACT_META_VALUE_CLASS,
   WAFL_DATA_TABLE_MUTED_TEXT_CLASS,
+  WAFL_DATA_TABLE_CELL_CLASS,
+  WAFL_DATA_TABLE_HEADER_CELL_CLASS,
 } from "@/components/admin/common/WaflDataTable";
 import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
 import { AdminTableSortButton } from "@/components/admin/common/AdminTableSortButton";
@@ -62,7 +64,7 @@ function MemberDirectoryWideTableRows({
     <WaflDataTableShell className="mb-1">
       <WaflDataTableHeader gridTemplateColumns={MEMBER_DIRECTORY_TABLE_GRID}>
         {columns.map((column) => (
-          <span key={column.key} className={column.headerClassName}>
+          <span key={column.key} className={`${WAFL_DATA_TABLE_HEADER_CELL_CLASS} ${column.headerClassName ?? ""}`}>
             {column.sortKey ? (
               <AdminTableSortButton
                 sortKey={column.sortKey as MemberDirectorySortKey}
@@ -100,7 +102,7 @@ function MemberDirectoryWideTableRows({
               className={WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS}
             >
               {columns.map((column) => (
-                <div key={column.key} className={`min-w-0 ${column.className ?? ""}`}>
+                <div key={column.key} className={`${WAFL_DATA_TABLE_CELL_CLASS} ${column.className ?? ""}`}>
                   {column.render(row)}
                 </div>
               ))}
@@ -149,13 +151,13 @@ function MemberDirectoryCompactListRows({
   const actionsColumn = getColumn(columns, "actions");
 
   return (
-    <section className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 md:p-4">
+    <section className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3.5 md:p-4">
       {isLoading ? (
         <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
         <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-3.5">
           {visibleItems.map((row) => (
             <article
               key={row.id}

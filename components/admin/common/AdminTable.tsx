@@ -9,6 +9,8 @@ import {
   WAFL_DATA_TABLE_HEADER_CLASS,
   WAFL_DATA_TABLE_ROW_CLASS,
   WAFL_DATA_TABLE_DIVIDER_CLASS,
+  WAFL_DATA_TABLE_CELL_CLASS,
+  WAFL_DATA_TABLE_HEADER_CELL_CLASS,
 } from "@/components/admin/common/WaflDataTable";
 
 type AdminTableScrollMode = "internal" | "page";
@@ -85,7 +87,7 @@ export default function AdminTable<TItem, TSortKey extends string = string>({
     >
       <div className={joinAdminClassNames(tableHeaderClassName, "2xl:[grid-template-columns:var(--admin-table-columns)]")}>
         {columns.map((column) => (
-          <span key={column.key} className={column.headerClassName}>
+          <span key={column.key} className={joinAdminClassNames(WAFL_DATA_TABLE_HEADER_CELL_CLASS, column.headerClassName)}>
             {column.sortKey && sortState && onSort ? (
               <AdminTableSortButton
                 sortKey={column.sortKey}
@@ -109,7 +111,7 @@ export default function AdminTable<TItem, TSortKey extends string = string>({
           items.map((item) => {
             const mergedRowClassName = joinAdminClassNames(baseRowClassName, responsiveGridClassName, rowClassName?.(item));
             const cells = columns.map((column) => (
-              <div key={column.key} className={joinAdminClassNames("min-w-0", column.className)}>{column.render(item)}</div>
+              <div key={column.key} className={joinAdminClassNames(WAFL_DATA_TABLE_CELL_CLASS, column.className)}>{column.render(item)}</div>
             ));
 
             if (onRowClick) {
