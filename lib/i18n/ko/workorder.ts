@@ -411,6 +411,11 @@ export const workorderKo = {
       fallbackGroup: "진행",
       rejectKeyword: "반려",
       processingFormat: "{label} 중입니다...",
+      actionTitleFormat: "{label} 실행",
+      disabledActionTitleFormat: "{label}은 현재 사용할 수 없습니다.",
+      actionAriaFormat: "작업지시서 {label}",
+      processingLockedReason: "상태 변경 처리 중입니다.",
+      workspaceLockedReason: "현재 단계에서는 사용할 수 없습니다.",
       materialOrderPendingBadge: "자재 발주 대기",
     },
     rejectionReasonNotice: {

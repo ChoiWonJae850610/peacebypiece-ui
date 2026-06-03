@@ -1,3 +1,4 @@
+import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
@@ -11,6 +12,10 @@ function getProcessingLabel(label: string, format: string) {
   return format.replace("{label}", compactLabel);
 }
 
+function formatActionCopy(format: string, label: string) {
+  return format.replace("{label}", label);
+}
+
 export default function WorkOrderDetailTabletActionSection({
   stages,
   currentStage,
@@ -19,11 +24,20 @@ export default function WorkOrderDetailTabletActionSection({
   onAction,
   workflowProcessingLabel = null,
   isWorkspaceWriteLocked = false,
+  workspaceWriteLockMessage,
 }: ActionProps) {
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.actionSection;
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
+  const lockedReason = isWorkflowProcessing
+    ? copy.processingLockedReason
+    : isWorkspaceWriteLocked
+      ? workspaceWriteLockMessage || copy.workspaceLockedReason
+      : null;
+  const primaryActionIndex = actions.findIndex(
+    (action) => action.actionType !== WORKFLOW_ACTION_TYPE.rejectReview,
+  );
   const showMaterialOrderPendingBadge = currentWorkflowState === WORKFLOW_STATE.materialOrderPending;
 
   return (
@@ -34,19 +48,33 @@ export default function WorkOrderDetailTabletActionSection({
           <div className="flex flex-wrap justify-end gap-2">
             {actions.map((action, index) => {
               const isProcessingTarget = workflowProcessingLabel === action.label;
+              const translatedLabel = translateWorkflowActionLabel(action, i18n, locale);
+              const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
+              const helperId = isActionLocked
+                ? `workorder-${currentStage}-${action.nextState}-${index}-reason`
+                : undefined;
               return (
-                <button
-                  key={`${currentStage}-${action.nextState}-${action.label}`}
-                  type="button"
-                  onClick={() => onAction(action)}
-                  disabled={isActionLocked}
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
-                    index === 0 ? "pbp-action-primary" : "pbp-action-secondary border"
-                  }`}
-                >
-                  {isProcessingTarget ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
-                  <span>{isProcessingTarget ? getProcessingLabel(translateWorkflowActionLabel(action, i18n, locale), copy.processingFormat) : translateWorkflowActionLabel(action, i18n, locale)}</span>
-                </button>
+                <div key={`${currentStage}-${action.nextState}-${action.label}`} className="flex flex-col items-end gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onAction(action)}
+                    disabled={isActionLocked}
+                    title={isActionLocked ? formatActionCopy(copy.disabledActionTitleFormat, translatedLabel) : formatActionCopy(copy.actionTitleFormat, translatedLabel)}
+                    aria-label={formatActionCopy(copy.actionAriaFormat, translatedLabel)}
+                    aria-describedby={helperId}
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
+                      isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"
+                    }`}
+                  >
+                    {isProcessingTarget ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
+                    <span>{isProcessingTarget ? getProcessingLabel(translatedLabel, copy.processingFormat) : translatedLabel}</span>
+                  </button>
+                  {isActionLocked && lockedReason ? (
+                    <span id={helperId} className="text-right text-[11px] font-medium leading-snug text-[var(--pbp-text-muted)]">
+                      {lockedReason}
+                    </span>
+                  ) : null}
+                </div>
               );
             })}
           </div>

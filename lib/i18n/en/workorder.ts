@@ -411,6 +411,11 @@ export const workorderEn = {
       fallbackGroup: "Progress",
       rejectKeyword: "Reject",
       processingFormat: "Processing {label}...",
+      actionTitleFormat: "Run {label}",
+      disabledActionTitleFormat: "{label} is not available now.",
+      actionAriaFormat: "Work order {label}",
+      processingLockedReason: "A status change is being processed.",
+      workspaceLockedReason: "This action is not available at the current stage.",
       materialOrderPendingBadge: "Material order pending",
     },
     rejectionReasonNotice: {

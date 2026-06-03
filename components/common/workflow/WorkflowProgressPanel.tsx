@@ -17,6 +17,9 @@ export type WorkflowProgressPanelAction = {
   label: ReactNode;
   onClick: () => void;
   disabled?: boolean;
+  disabledReason?: ReactNode;
+  title?: string;
+  ariaLabel?: string;
   isPrimary?: boolean;
   isProcessing?: boolean;
 };
@@ -46,6 +49,10 @@ function getStepPositionPercent(index: number, stepCount: number) {
   }
 
   return ((index + 0.5) / stepCount) * TRACK_VIEWBOX_WIDTH;
+}
+
+function getWorkflowActionReasonId(actionKey: string) {
+  return `workflow-action-${actionKey.replace(/[^a-zA-Z0-9_-]+/g, "-")}-reason`;
 }
 
 function getDirectPathD(fromX: number, toX: number) {
@@ -124,25 +131,41 @@ export function WorkflowProgressPanel({
           <div
             className={`flex flex-wrap justify-end ${isCompact ? "gap-1.5" : "gap-2"}`}
           >
-            {actions.map((action) => (
-              <button
-                key={action.key}
-                type="button"
-                onClick={action.onClick}
-                disabled={Boolean(action.disabled)}
-                className={`inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
-                  isCompact ? "px-2.5 py-1" : "px-3 py-2"
-                } ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
-              >
-                {action.isProcessing ? (
-                  <span
-                    className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
-                    aria-hidden="true"
-                  />
-                ) : null}
-                <span>{action.label}</span>
-              </button>
-            ))}
+            {actions.map((action) => {
+              const isDisabled = Boolean(action.disabled);
+              const helperId = action.disabledReason
+                ? getWorkflowActionReasonId(action.key)
+                : undefined;
+
+              return (
+                <div key={action.key} className="flex flex-col items-end gap-1">
+                  <button
+                    type="button"
+                    onClick={action.onClick}
+                    disabled={isDisabled}
+                    title={action.title}
+                    aria-label={action.ariaLabel}
+                    aria-describedby={isDisabled ? helperId : undefined}
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                      isCompact ? "px-2.5 py-1" : "px-3 py-2"
+                    } ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
+                  >
+                    {action.isProcessing ? (
+                      <span
+                        className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    <span>{action.label}</span>
+                  </button>
+                  {isDisabled && action.disabledReason ? (
+                    <span id={helperId} className="max-w-[12rem] text-right text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]">
+                      {action.disabledReason}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         ) : null}
       </div>

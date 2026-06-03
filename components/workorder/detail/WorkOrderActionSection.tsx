@@ -29,6 +29,10 @@ function getProcessingLabel(label: string, format: string) {
   return format.replace("{label}", compactLabel);
 }
 
+function formatActionCopy(format: string, label: string) {
+  return format.replace("{label}", label);
+}
+
 export default function WorkOrderActionSection({
   stages,
   currentStage,
@@ -38,6 +42,7 @@ export default function WorkOrderActionSection({
   onAction,
   workflowProcessingLabel = null,
   isWorkspaceWriteLocked = false,
+  workspaceWriteLockMessage,
   canOpenInspectionModal = false,
   onOpenInspectionModal,
 }: {
@@ -60,6 +65,11 @@ export default function WorkOrderActionSection({
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked =
     isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
+  const lockedReason = isWorkflowProcessing
+    ? copy.processingLockedReason
+    : isWorkspaceWriteLocked
+      ? workspaceWriteLockMessage || copy.workspaceLockedReason
+      : null;
   const showInspectionAction =
     canOpenInspectionModal && Boolean(onOpenInspectionModal);
   const primaryActionIndex = actions.findIndex(
@@ -115,6 +125,11 @@ export default function WorkOrderActionSection({
           : translatedLabel,
         onClick: () => onAction(action),
         disabled: isActionLocked,
+        disabledReason: isActionLocked ? lockedReason : undefined,
+        title: isActionLocked
+          ? formatActionCopy(copy.disabledActionTitleFormat, translatedLabel)
+          : formatActionCopy(copy.actionTitleFormat, translatedLabel),
+        ariaLabel: formatActionCopy(copy.actionAriaFormat, translatedLabel),
         isPrimary,
         isProcessing: isProcessingTarget,
       };
@@ -127,6 +142,11 @@ export default function WorkOrderActionSection({
       label: copy.inspectionAction,
       onClick: () => onOpenInspectionModal?.(),
       disabled: isActionLocked,
+      disabledReason: isActionLocked ? lockedReason : undefined,
+      title: isActionLocked
+        ? formatActionCopy(copy.disabledActionTitleFormat, copy.inspectionAction)
+        : formatActionCopy(copy.actionTitleFormat, copy.inspectionAction),
+      ariaLabel: formatActionCopy(copy.actionAriaFormat, copy.inspectionAction),
       isPrimary: progressActions.length === 0,
     });
   }
