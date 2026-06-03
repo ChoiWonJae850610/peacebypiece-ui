@@ -72,7 +72,7 @@ export default function WaflSectionPanel({
           headerClassName,
         )}
       >
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           {eyebrow ? <p className={WAFL_SECTION_EYEBROW_CLASS}>{eyebrow}</p> : null}
           <h3
             className={joinClassNames(

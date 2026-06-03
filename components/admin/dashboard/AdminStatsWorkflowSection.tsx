@@ -57,7 +57,7 @@ export function AdminStatsWorkflowSection({
       eyebrow={eyebrow}
       title={title}
       description={description}
-      actions={
+      descriptionActions={
         <div
           ref={headerRef}
           className={`flex shrink-0 flex-col gap-2 ${

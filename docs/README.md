@@ -110,3 +110,9 @@
 - [0.19.23 멤버 초대 목록 responsive 기준 보정](wafl-member-invitation-responsive-table-0.19.23.md)
 - [0.19.26 WAFL theme 기반 Page Hero/Summary Card 공통화 1차](wafl-page-hero-summary-theme-0.19.26.md)
 - 0.19.30: WAFL 본문 섹션 카드 공통화 1차 — WaflSectionPanel 추가 및 통계/멤버/협력업체/저장소 본문 섹션 구조 정렬
+
+## 0.19.33
+
+- WAFL section description action slot alignment refined.
+- Storage trash actions stay on the description line but align to the section right edge.
+- Statistics analysis tabs return to the description-line action position above the divider.

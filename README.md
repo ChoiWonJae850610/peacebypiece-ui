@@ -135,3 +135,9 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - 태블릿에서 PC용 복사 버튼과 공유 가능 버튼이 중복 노출되지 않도록 action 표시 조건을 분리했다.
 - PC에서는 복사 disabled + 취소 조건부 활성, 공유 가능 화면에서는 공유/복사/취소 1세트만 표시한다.
 - 0.19.30: WAFL 본문 섹션 카드 공통화 1차 — WaflSectionPanel 추가 및 통계/멤버/협력업체/저장소 본문 섹션 구조 정렬
+
+## 0.19.33
+
+- WAFL section description action slot alignment refined.
+- Storage trash actions stay on the description line but align to the section right edge.
+- Statistics analysis tabs return to the description-line action position above the divider.
