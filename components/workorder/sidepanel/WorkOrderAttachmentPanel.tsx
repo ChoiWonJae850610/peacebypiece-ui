@@ -289,7 +289,8 @@ export default function WorkOrderAttachmentPanel({
   const isTablet = variant === "tablet";
   const isOfficialAttachmentScope = !isDesignAttachmentScope(uploadScope);
   const hasGeneratedOrderRequestPdf = attachments.some((attachment) => isGeneratedOrderRequestPdfAttachment(attachment));
-  const showGenerateOrderRequestPdfAction = isOfficialAttachmentScope && canGenerateOrderRequestPdf && !hasGeneratedOrderRequestPdf;
+  const showOrderRequestPdfStatus = isOfficialAttachmentScope && canGenerateOrderRequestPdf;
+  const showGenerateOrderRequestPdfAction = showOrderRequestPdfStatus && !hasGeneratedOrderRequestPdf;
 
   return (
     <>
@@ -319,22 +320,39 @@ export default function WorkOrderAttachmentPanel({
           />
         ) : null}
       </div>
-      {showGenerateOrderRequestPdfAction ? (
+      {showOrderRequestPdfStatus ? (
         <div className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left shadow-sm">
-          <div className="text-[13px] font-semibold pbp-text-primary">{ui.attachmentPanel.orderRequestPdfMissingTitle}</div>
-          <p className="mt-1 text-xs leading-5 pbp-text-muted">{ui.attachmentPanel.orderRequestPdfMissingDescription}</p>
-          <WaflButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => { if (!writeLocked) onGenerateOrderRequestPdf?.(); }}
-            disabled={writeLocked || typeof onGenerateOrderRequestPdf !== "function"}
-            title={writeLocked ? writeLockMessage : undefined}
-            className="mt-3"
-          >
-            {writeLocked ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
-            <span>{writeLocked && writeLockMessage ? writeLockMessage : ui.attachmentPanel.generateOrderRequestPdfButton}</span>
-          </WaflButton>
+          <div className="flex min-w-0 items-start gap-2">
+            <span
+              className={`mt-0.5 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
+                hasGeneratedOrderRequestPdf ? "bg-[var(--pbp-status-success)]" : "bg-[var(--pbp-warning)]"
+              }`}
+              aria-hidden="true"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-semibold pbp-text-primary">
+                {hasGeneratedOrderRequestPdf ? ui.attachmentPanel.orderRequestPdfSavedTitle : ui.attachmentPanel.orderRequestPdfMissingTitle}
+              </div>
+              <p className="mt-1 text-xs leading-5 pbp-text-muted">
+                {hasGeneratedOrderRequestPdf ? ui.attachmentPanel.orderRequestPdfSavedDescription : ui.attachmentPanel.orderRequestPdfMissingDescription}
+              </p>
+            </div>
+          </div>
+          {showGenerateOrderRequestPdfAction ? (
+            <WaflButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => { if (!writeLocked) onGenerateOrderRequestPdf?.(); }}
+              disabled={writeLocked || typeof onGenerateOrderRequestPdf !== "function"}
+              title={writeLocked ? writeLockMessage : ui.attachmentPanel.generateOrderRequestPdfButtonTitle}
+              aria-label={ui.attachmentPanel.generateOrderRequestPdfButtonAria}
+              className="mt-3"
+            >
+              {writeLocked ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
+              <span>{writeLocked && writeLockMessage ? writeLockMessage : ui.attachmentPanel.generateOrderRequestPdfButton}</span>
+            </WaflButton>
+          ) : null}
         </div>
       ) : null}
       {attachments.length > 0 ? (
