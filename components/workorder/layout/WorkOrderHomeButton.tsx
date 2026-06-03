@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { getWaflActionButtonClassName } from "@/components/common/ui";
 import type { WorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
 
 export type WorkOrderHomeNavigation = WorkspaceHomeNavigation;
@@ -29,7 +30,7 @@ export default function WorkOrderHomeButton({
         href={homeNavigation.href}
         aria-label={homeNavigation.ariaLabel}
         title={homeNavigation.label}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:bg-stone-50"
+        className={getWaflActionButtonClassName({ size: "md" })}
       >
         <HomeIcon />
       </Link>

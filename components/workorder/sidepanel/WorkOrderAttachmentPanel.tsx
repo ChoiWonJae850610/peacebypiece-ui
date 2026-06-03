@@ -4,6 +4,8 @@ import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentSco
 import { useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
+import { WaflButton } from "@/components/common/ui";
+import { WorkOrderActionButton } from "@/components/workorder/common/WorkOrderActionButton";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
@@ -62,17 +64,16 @@ function AttachmentActionMenu({
 
   return (
     <div className="relative shrink-0">
-      <button
-        type="button"
+      <WorkOrderActionButton
+        label={ui.attachmentPanel.actionMenuAria}
         onClick={() => { if (!disabled) setOpen((value) => !value); }}
         disabled={disabled}
         title={disabled ? disabledReason : undefined}
-        className="pbp-interactive-button pbp-action-secondary inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-        aria-label={ui.attachmentPanel.actionMenuAria}
+        showSrLabel={false}
         aria-expanded={open}
       >
         ···
-      </button>
+      </WorkOrderActionButton>
       {open ? (
         <div className={`pbp-card absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}>
           <button
@@ -319,16 +320,18 @@ export default function WorkOrderAttachmentPanel({
         <div className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left shadow-sm">
           <div className="text-[13px] font-semibold pbp-text-primary">{ui.attachmentPanel.orderRequestPdfMissingTitle}</div>
           <p className="mt-1 text-xs leading-5 pbp-text-muted">{ui.attachmentPanel.orderRequestPdfMissingDescription}</p>
-          <button
+          <WaflButton
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => { if (!writeLocked) onGenerateOrderRequestPdf?.(); }}
             disabled={writeLocked || typeof onGenerateOrderRequestPdf !== "function"}
             title={writeLocked ? writeLockMessage : undefined}
-            className="pbp-interactive-button pbp-action-secondary mt-3 inline-flex h-8 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-3"
           >
             {writeLocked ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
             <span>{writeLocked && writeLockMessage ? writeLockMessage : ui.attachmentPanel.generateOrderRequestPdfButton}</span>
-          </button>
+          </WaflButton>
         </div>
       ) : null}
       {attachments.length > 0 ? (

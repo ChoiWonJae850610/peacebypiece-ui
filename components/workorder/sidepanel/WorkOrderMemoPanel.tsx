@@ -3,6 +3,7 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
+import { WorkOrderMiniActionButton } from "@/components/workorder/common/WorkOrderActionButton";
 import { useI18n } from "@/lib/i18n";
 import { getMemoDisplayContent, getVisibleMemoReplies, getVisibleMemoThreads, isDeletedMemoItem } from "@/lib/workorder/presentation/memoPresentation";
 import type { MemoReply, MemoThread, RoleType, UserProfile, WorkOrder } from "@/types/workorder";
@@ -133,24 +134,22 @@ function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDele
   if (!canMutate) return null;
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <button
-        type="button"
+      <WorkOrderMiniActionButton
+        label={editLabel}
         onClick={onEdit}
-        aria-label={editLabel}
         title={disabledReason ?? editLabel}
-        className="pbp-interactive-button pbp-action-secondary inline-flex h-5 w-5 items-center justify-center rounded-full text-[var(--pbp-warning)]"
+        className="text-[var(--pbp-warning)]"
       >
         <MemoPencilIcon />
-      </button>
-      <button
-        type="button"
+      </WorkOrderMiniActionButton>
+      <WorkOrderMiniActionButton
+        label={deleteAriaLabel}
+        tone="dangerSoft"
         onClick={onDelete}
-        aria-label={deleteAriaLabel}
         title={disabledReason ?? deleteAriaLabel}
-        className="pbp-interactive-button pbp-action-danger-soft inline-flex h-5 w-5 items-center justify-center rounded-full border text-[13px] font-semibold leading-none"
       >
         -
-      </button>
+      </WorkOrderMiniActionButton>
     </div>
   );
 }
