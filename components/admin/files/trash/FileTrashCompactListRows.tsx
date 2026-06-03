@@ -1,5 +1,6 @@
 "use client";
 
+import { WaflEmptyState } from "@/components/common/ui";
 import {
   ADMIN_RESPONSIVE_COMPACT_CARD_CLASS,
   ADMIN_RESPONSIVE_COMPACT_CARD_CLICKABLE_CLASS,
@@ -93,14 +94,12 @@ export function EmptyTrashRows({
   emptyDescription: string;
 }) {
   return (
-    <div className="flex min-h-[220px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">
-      <div className="max-w-md">
-        <p className="font-semibold text-[var(--pbp-text-muted)]">{emptyLabel}</p>
-        <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
-          {emptyDescription}
-        </p>
-      </div>
-    </div>
+    <WaflEmptyState
+      title={emptyLabel}
+      description={emptyDescription}
+      minHeightClassName="min-h-[220px]"
+      className="rounded-[22px] border-0"
+    />
   );
 }
 

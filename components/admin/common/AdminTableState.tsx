@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { WaflStateBlock, type WaflStateKind, type WaflStateTone } from "@/components/common/ui";
 import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 
 export type AdminTableStateTone = "neutral" | "danger";
@@ -9,13 +10,14 @@ type AdminTableStateProps = {
   description?: string;
   action?: ReactNode;
   tone?: AdminTableStateTone;
+  kind?: WaflStateKind;
   className?: string;
   minHeightClassName?: string;
 };
 
-const toneClassNames: Record<AdminTableStateTone, string> = {
-  neutral: "text-[var(--pbp-text-muted)]",
-  danger: "text-[var(--pbp-danger-text)]",
+const toneMap: Record<AdminTableStateTone, WaflStateTone> = {
+  neutral: "neutral",
+  danger: "danger",
 };
 
 export function AdminTableState({
@@ -23,23 +25,20 @@ export function AdminTableState({
   description,
   action,
   tone = "neutral",
+  kind,
   className = "",
   minHeightClassName = "min-h-[240px]",
 }: AdminTableStateProps) {
   return (
-    <div
-      className={joinAdminClassNames(
-        "flex items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm",
-        minHeightClassName,
-        toneClassNames[tone],
-        className,
-      )}
-    >
-      <div className="max-w-md">
-        <p className="font-semibold">{title}</p>
-        {description ? <p className="mt-1 text-xs leading-5 opacity-90">{description}</p> : null}
-        {action ? <div className="mt-3">{action}</div> : null}
-      </div>
-    </div>
+    <WaflStateBlock
+      title={title}
+      description={description}
+      action={action}
+      kind={kind ?? (tone === "danger" ? "error" : "empty")}
+      tone={toneMap[tone]}
+      size="md"
+      minHeightClassName={minHeightClassName}
+      className={joinAdminClassNames("rounded-none border-0", className)}
+    />
   );
 }

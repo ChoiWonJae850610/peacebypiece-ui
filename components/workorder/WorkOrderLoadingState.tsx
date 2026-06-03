@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { WaflLoadingState } from "@/components/common/ui";
+
 export type WorkOrderLoadingStateVariant = "detail" | "side";
 
 type WorkOrderLoadingStateProps = {
@@ -9,26 +11,24 @@ type WorkOrderLoadingStateProps = {
 };
 
 function SkeletonLine({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-full bg-stone-200/80 ${className}`} />;
+  return <div className={`animate-pulse rounded-full bg-[var(--pbp-surface-muted)] ${className}`} />;
 }
 
 function SkeletonCard({ children }: { children: ReactNode }) {
-  return <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">{children}</div>;
+  return <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-sm">{children}</div>;
 }
 
 export default function WorkOrderLoadingState({ variant = "detail", title, description }: WorkOrderLoadingStateProps) {
   if (variant === "side") {
     return (
-      <div className="flex h-full min-h-0 flex-col gap-4 rounded-[2rem] border border-stone-200 bg-stone-50/80 p-4">
-        <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold text-stone-900">{title}</div>
-              {description ? <div className="mt-1 text-xs leading-5 text-stone-500">{description}</div> : null}
-            </div>
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-stone-800" aria-hidden="true" />
-          </div>
-        </div>
+      <div className="flex h-full min-h-0 flex-col gap-4 rounded-[2rem] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+        <WaflLoadingState
+          title={title}
+          description={description}
+          size="sm"
+          minHeightClassName="min-h-[96px]"
+          className="shadow-sm"
+        />
         <SkeletonCard>
           <SkeletonLine className="h-4 w-20" />
           <div className="mt-5 space-y-3">
@@ -48,14 +48,13 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[2rem] border border-stone-200 bg-stone-50/80 p-5">
-      <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-        <div>
-          <div className="text-base font-semibold text-stone-900">{title}</div>
-          {description ? <div className="mt-1 text-sm leading-5 text-stone-500">{description}</div> : null}
-        </div>
-        <div className="h-9 w-9 animate-spin rounded-full border-2 border-stone-200 border-t-stone-900" aria-hidden="true" />
-      </div>
+    <div className="flex h-full min-h-0 flex-col rounded-[2rem] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-5">
+      <WaflLoadingState
+        title={title}
+        description={description}
+        minHeightClassName="min-h-[120px]"
+        className="mb-5 shadow-sm"
+      />
       <div className="grid gap-4 md:grid-cols-2">
         <SkeletonCard>
           <SkeletonLine className="h-7 w-44" />

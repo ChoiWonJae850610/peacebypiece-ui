@@ -79,7 +79,7 @@ function MemberDirectoryWideTableRows({
       </WaflDataTableHeader>
 
       {isLoading ? (
-        <AdminTableState title={loadingLabel} minHeightClassName="min-h-[220px]" />
+        <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
         <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
       ) : (
@@ -151,7 +151,7 @@ function MemberDirectoryCompactListRows({
   return (
     <section className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 md:p-4">
       {isLoading ? (
-        <AdminTableState title={loadingLabel} minHeightClassName="min-h-[220px]" />
+        <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
         <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
       ) : (

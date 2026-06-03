@@ -102,7 +102,7 @@ export default function AdminTable<TItem, TSortKey extends string = string>({
       </div>
       <div className={joinAdminClassNames(bodyScrollClassName, bodyClassName)}>
         {isLoading ? (
-          <AdminTableState title={loadingLabel} />
+          <AdminTableState title={loadingLabel} kind="loading" />
         ) : items.length === 0 ? (
           <AdminTableState title={emptyLabel} description={emptyDescription} action={emptyAction} />
         ) : (

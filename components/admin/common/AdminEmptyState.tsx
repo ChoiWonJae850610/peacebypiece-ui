@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { adminSurfaceVariantClassNames, joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
+
+import { WaflStateBlock, type WaflStateTone } from "@/components/common/ui";
+import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 
 type AdminEmptyStateTone = "neutral" | "danger" | "warning";
 
@@ -11,22 +13,22 @@ type AdminEmptyStateProps = {
   className?: string;
 };
 
-const toneClassNames: Record<AdminEmptyStateTone, string> = {
-  neutral: adminSurfaceVariantClassNames.base,
-  danger: adminSurfaceVariantClassNames.danger,
-  warning: adminSurfaceVariantClassNames.warning,
+const toneMap: Record<AdminEmptyStateTone, WaflStateTone> = {
+  neutral: "neutral",
+  danger: "danger",
+  warning: "warning",
 };
 
 export function AdminEmptyState({ title, description, action, tone = "neutral", className = "" }: AdminEmptyStateProps) {
   return (
-    <section className={joinAdminClassNames("rounded-[28px] border p-5 shadow-[var(--pbp-shadow-card)]", toneClassNames[tone], className)}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold">{title}</p>
-          {description ? <p className="mt-1 text-xs leading-5 opacity-80">{description}</p> : null}
-        </div>
-        {action ? <div className="shrink-0">{action}</div> : null}
-      </div>
-    </section>
+    <WaflStateBlock
+      title={title}
+      description={description}
+      action={action}
+      kind={tone === "danger" ? "error" : "empty"}
+      tone={toneMap[tone]}
+      minHeightClassName="min-h-[140px]"
+      className={joinAdminClassNames("shadow-[var(--pbp-shadow-card)]", className)}
+    />
   );
 }
