@@ -1,13 +1,13 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 0.19.34: WAFL DataTable 공통화 1차 — 테이블 shell/header/row/card 스타일을 theme token 기반 공통 컴포넌트로 중앙화.
+- 0.19.35: WAFL DataTable 공통화 1차 — 테이블 shell/header/row/card 스타일을 theme token 기반 공통 컴포넌트로 중앙화.
 - 0.19.33: WAFL Section description action 정렬 보정 — 휴지통 action과 통계 탭 위치를 공통 slot 기준으로 정리.
-- 기준 앱 버전: `0.19.34`
+- 기준 앱 버전: `0.19.35`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
 
-- [WAFL DataTable 공통화 1차 0.19.34](wafl-datatable-common-0.19.34.md)
+- [WAFL DataTable 공통화 1차 0.19.35](wafl-datatable-common-0.19.35.md)
 - [WAFL Page Hero / Summary Card 공통화 2차 0.19.30](wafl-page-hero-summary-theme-2-0.19.30.md)
 - [WAFL 멤버관리 responsive/접기 보정 0.19.24](wafl-member-responsive-collapse-0.19.24.md)
 
