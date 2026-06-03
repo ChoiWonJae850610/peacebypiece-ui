@@ -49,7 +49,7 @@ export function PlanUsageCard({
         <AdminButton
           size="sm"
           title={t("filesSummary.upgradeTitle", "요금제 업그레이드 화면은 후속 버전에서 연결합니다.")}
-          className="min-h-7 w-full px-2.5 py-1 text-[11px] sm:w-auto"
+          className="w-full sm:w-auto"
         >
           {t("filesSummary.upgrade", "업그레이드")}
         </AdminButton>

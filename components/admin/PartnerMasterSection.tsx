@@ -39,7 +39,7 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
               onClick={controller.openCreateModal}
               variant="primary"
               size="sm"
-              className="h-8 min-h-8 w-full rounded-full px-3 text-[12px] md:w-auto"
+              className="w-full md:w-auto"
             >
               <Plus className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{partnerText.header.createPartner}</span>

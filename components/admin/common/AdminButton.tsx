@@ -1,6 +1,6 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
-import { AppButton, AppLinkButton, getAppButtonClassName, type AppButtonVariant } from "@/components/common/ui";
+import { WaflButton, WaflLinkButton, getWaflButtonClassName, type WaflButtonVariant } from "@/components/common/ui";
 
 export type AdminButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "subtle" | "icon";
 export type AdminButtonSize = "sm" | "md" | "lg";
@@ -16,18 +16,10 @@ type AdminButtonProps = AdminButtonBaseProps & ButtonHTMLAttributes<HTMLButtonEl
 type AdminLinkButtonProps = AdminButtonBaseProps & AnchorHTMLAttributes<HTMLAnchorElement>;
 
 function mapAdminButtonSize(size: AdminButtonSize) {
-  if (size === "lg") {
-    return "lg";
-  }
-
-  if (size === "md") {
-    return "md";
-  }
-
-  return "md";
+  return size;
 }
 
-function mapAdminButtonVariant(variant: AdminButtonVariant): AppButtonVariant {
+function mapAdminButtonVariant(variant: AdminButtonVariant): WaflButtonVariant {
   return variant;
 }
 
@@ -40,7 +32,7 @@ export function getAdminButtonClassName({
   size?: AdminButtonSize;
   className?: string;
 } = {}) {
-  return getAppButtonClassName({
+  return getWaflButtonClassName({
     variant: mapAdminButtonVariant(variant),
     size: mapAdminButtonSize(size),
     className,
@@ -49,16 +41,16 @@ export function getAdminButtonClassName({
 
 export function AdminButton({ children, variant = "secondary", size = "sm", className = "", type = "button", ...props }: AdminButtonProps) {
   return (
-    <AppButton type={type} variant={mapAdminButtonVariant(variant)} size={mapAdminButtonSize(size)} className={className} {...props}>
+    <WaflButton type={type} variant={mapAdminButtonVariant(variant)} size={mapAdminButtonSize(size)} className={className} {...props}>
       {children}
-    </AppButton>
+    </WaflButton>
   );
 }
 
 export function AdminLinkButton({ children, variant = "secondary", size = "sm", className = "", ...props }: AdminLinkButtonProps) {
   return (
-    <AppLinkButton variant={mapAdminButtonVariant(variant)} size={mapAdminButtonSize(size)} className={className} {...props}>
+    <WaflLinkButton variant={mapAdminButtonVariant(variant)} size={mapAdminButtonSize(size)} className={className} {...props}>
       {children}
-    </AppLinkButton>
+    </WaflLinkButton>
   );
 }
