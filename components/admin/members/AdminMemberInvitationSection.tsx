@@ -74,10 +74,6 @@ export default function AdminMemberInvitationSection({
         "memberManagement.sections.invitationManagementDescription",
         "필요할 때만 초대 링크를 생성하고 최근 초대 상태를 확인합니다.",
       )}
-      meta={t(
-        "memberManagement.tabs.invite.count",
-        "초대 {count}건",
-      ).replace("{count}", String(invitations.length))}
       className="min-h-fit 2xl:hidden"
       headerMinClassName="min-h-0"
       contentClassName={MEMBER_INVITATION_COMPACT_CONTENT_CLASS}

@@ -1,10 +1,11 @@
 "use client";
 
-import {
-  ADMIN_FIELD_CONTAINER_CLASS,
-  ADMIN_INPUT_CLASS,
-} from "@/components/admin/common/adminSemanticClassNames";
-import WaflFilterBar from "@/components/admin/common/WaflFilterBar";
+import WaflFilterBar, {
+  WAFL_FILTER_FIELD_CLASS,
+  WAFL_FILTER_INPUT_CLASS,
+  WAFL_FILTER_LABEL_CLASS,
+  WAFL_FILTER_SELECT_TRIGGER_CLASS,
+} from "@/components/admin/common/WaflFilterBar";
 import { AppSelect } from "@/components/common/ui";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
@@ -46,23 +47,23 @@ export default function AdminMemberDirectoryControls({
   onRoleFilterChange,
 }: AdminMemberDirectoryControlsProps) {
   return (
-    <WaflFilterBar className="mb-3 shrink-0" layoutClassName="grid w-full min-w-0 gap-3 2xl:grid-cols-[minmax(0,1fr)_180px_190px]">
-      <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-        <span className="text-xs font-semibold pbp-text-muted">
+    <WaflFilterBar className="mb-3 shrink-0" layoutClassName="grid w-full min-w-0 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(140px,180px)] min-[720px]:items-end">
+      <label className={WAFL_FILTER_FIELD_CLASS}>
+        <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.search", "검색")}
         </span>
         <input
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
-          className={ADMIN_INPUT_CLASS}
+          className={WAFL_FILTER_INPUT_CLASS}
           placeholder={t(
             "memberManagement.memberDirectory.filters.searchPlaceholder",
             "이름, 이메일, 연락처 검색",
           )}
         />
       </label>
-      <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-        <span className="text-xs font-semibold pbp-text-muted">
+      <label className={WAFL_FILTER_FIELD_CLASS}>
+        <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.status", "상태")}
         </span>
         <AppSelect
@@ -73,11 +74,12 @@ export default function AdminMemberDirectoryControls({
             label: t(`memberManagement.memberDirectory.statusFilters.${status}`, status),
           }))}
           size="sm"
+          triggerClassName={WAFL_FILTER_SELECT_TRIGGER_CLASS}
           ariaLabel={t("memberManagement.memberDirectory.filters.status", "상태")}
         />
       </label>
-      <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-        <span className="text-xs font-semibold pbp-text-muted">
+      <label className={WAFL_FILTER_FIELD_CLASS}>
+        <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.role", "권한")}
         </span>
         <AppSelect
@@ -92,6 +94,7 @@ export default function AdminMemberDirectoryControls({
             })),
           ]}
           size="sm"
+          triggerClassName={WAFL_FILTER_SELECT_TRIGGER_CLASS}
           ariaLabel={t("memberManagement.memberDirectory.filters.role", "권한")}
         />
       </label>

@@ -1,6 +1,12 @@
 "use client";
 
 import { AppSelect } from "@/components/common/ui";
+import {
+  WAFL_FILTER_FIELD_CLASS,
+  WAFL_FILTER_INPUT_CLASS,
+  WAFL_FILTER_LABEL_CLASS,
+  WAFL_FILTER_SELECT_TRIGGER_CLASS,
+} from "@/components/admin/common/WaflFilterBar";
 import { type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partner";
 
 type PartnerMasterFilterOption = {
@@ -27,9 +33,6 @@ type PartnerMasterSelectFieldProps<TValue extends string> = {
   onChange: (value: TValue) => void;
 };
 
-const PARTNER_FILTER_LABEL_CLASS = "text-[12px] font-semibold text-[var(--pbp-text-muted)]";
-const PARTNER_FILTER_FIELD_CLASS = "min-w-0 space-y-2";
-
 export function PartnerMasterSearchField({
   label,
   placeholder,
@@ -37,13 +40,13 @@ export function PartnerMasterSearchField({
   onChange,
 }: PartnerMasterSearchFieldProps) {
   return (
-    <label className={`${PARTNER_FILTER_FIELD_CLASS} min-[720px]:col-span-1`}>
-      <span className={PARTNER_FILTER_LABEL_CLASS}>{label}</span>
+    <label className={`${WAFL_FILTER_FIELD_CLASS} min-[720px]:col-span-1`}>
+      <span className={WAFL_FILTER_LABEL_CLASS}>{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full min-w-0 rounded-2xl border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-4 text-sm outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-4 focus:ring-[var(--pbp-focus-ring)]"
+        className={WAFL_FILTER_INPUT_CLASS}
       />
     </label>
   );
@@ -56,8 +59,8 @@ export function PartnerMasterSelectField<TValue extends string>({
   onChange,
 }: PartnerMasterSelectFieldProps<TValue>) {
   return (
-    <label className={PARTNER_FILTER_FIELD_CLASS}>
-      <span className={PARTNER_FILTER_LABEL_CLASS}>{label}</span>
+    <label className={WAFL_FILTER_FIELD_CLASS}>
+      <span className={WAFL_FILTER_LABEL_CLASS}>{label}</span>
       <AppSelect
         value={value}
         onValueChange={(nextValue) => onChange(nextValue as TValue)}
@@ -65,7 +68,7 @@ export function PartnerMasterSelectField<TValue extends string>({
         size="sm"
         width="full"
         ariaLabel={label}
-        triggerClassName="h-10 rounded-2xl"
+        triggerClassName={WAFL_FILTER_SELECT_TRIGGER_CLASS}
       />
     </label>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { type WheelEvent, useRef } from "react";
 
 import PartnerMasterCompactListRows from "@/components/admin/partnerMaster/PartnerMasterCompactListRows";
 import PartnerMasterWideTableRows from "@/components/admin/partnerMaster/PartnerMasterWideTableRows";
@@ -9,6 +9,22 @@ import type { PartnerMasterRowsProps } from "@/components/admin/partnerMaster/pa
 import { useElementSize } from "@/lib/responsive/useElementSize";
 
 type PartnerMasterResponsiveRowsProps = PartnerMasterRowsProps;
+
+function forwardWheelToWorkspaceScrollFrame(event: WheelEvent<HTMLDivElement>) {
+  if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+
+  const scrollFrame = event.currentTarget.closest<HTMLElement>(
+    '[data-workspace-scroll-frame="true"]',
+  );
+  if (!scrollFrame) return;
+
+  const previousScrollTop = scrollFrame.scrollTop;
+  scrollFrame.scrollTop += event.deltaY;
+
+  if (scrollFrame.scrollTop !== previousScrollTop) {
+    event.preventDefault();
+  }
+}
 
 export default function PartnerMasterResponsiveRows({
   items,
@@ -24,7 +40,11 @@ export default function PartnerMasterResponsiveRows({
   const shouldUseWideTable = width >= PARTNER_TABLE_MIN_WIDTH;
 
   return (
-    <div ref={containerRef} className="min-h-fit touch-pan-y overflow-visible overscroll-auto">
+    <div
+      ref={containerRef}
+      className="min-h-fit touch-pan-y overflow-visible overscroll-auto"
+      onWheel={forwardWheelToWorkspaceScrollFrame}
+    >
       {shouldUseWideTable ? (
         <PartnerMasterWideTableRows
           items={items}

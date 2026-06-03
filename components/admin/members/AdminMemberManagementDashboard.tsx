@@ -1006,7 +1006,7 @@ export default function AdminMemberManagementDashboard() {
           cards={summaryCards.map((card) => ({
             id: card.id,
             label: t(`memberManagement.summary.${card.id}.label`, card.id),
-            value: card.value,
+            value: `${card.value}명`,
             helper: t(`memberManagement.summary.${card.id}.description`, ""),
             badge: (
               <AdminStatusBadge tone={getStatusTone(card.status)}>
@@ -1020,7 +1020,6 @@ export default function AdminMemberManagementDashboard() {
       <div className="grid min-w-0 gap-4">
         <AdminMemberDirectorySection
           t={t}
-          memberDirectoryRows={memberDirectoryRows}
           filteredMemberDirectoryRows={filteredMemberDirectoryRows}
           memberDirectoryColumns={memberDirectoryColumns}
           memberSearchQuery={memberSearchQuery}

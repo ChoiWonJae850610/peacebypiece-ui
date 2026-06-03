@@ -54,7 +54,6 @@ export default function PartnerMasterSection({ capabilities }: PartnerMasterSect
         eyebrow={partnerText.list.eyebrow || "PARTNER LIST"}
         title={partnerText.list.title || "업체 목록"}
         description={partnerText.list.description || "공장, 원단·부자재, 외주 거래처 정보를 한 목록에서 확인합니다."}
-        meta={`${partnerText.filters.currentListPrefix} ${controller.listViewModel.items.length}${partnerText.filters.currentListSuffix}`}
         className="min-h-fit touch-pan-y overflow-visible overscroll-auto"
         bodyClassName="pt-3"
       >

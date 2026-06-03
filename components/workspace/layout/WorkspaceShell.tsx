@@ -44,7 +44,7 @@ export default function WorkspaceShell({
             description={description}
             navigationItems={navigationItems}
           />
-          <div className={contentFrameClassName}>
+          <div className={contentFrameClassName} data-workspace-scroll-frame="true">
             <div className={contentInnerClassName}>{children}</div>
           </div>
         </div>

@@ -15,6 +15,10 @@ function formatCount(value: number) {
   return value.toLocaleString("ko-KR");
 }
 
+function formatPartnerCount(value: number) {
+  return `${formatCount(value)}개`;
+}
+
 function formatMessage(template: string, values: Record<string, number>) {
   return Object.entries(values).reduce(
     (message, [key, value]) => message.replaceAll(`{${key}}`, formatCount(value)),
@@ -33,7 +37,7 @@ export default function PartnerMasterSummaryCards({
     {
       id: "total",
       label: summaryText.total.label,
-      value: formatCount(summary.total),
+      value: formatPartnerCount(summary.total),
       helper: formatMessage(filterText.usageSummary, {
         active: summary.active,
         inactive: summary.inactive,
@@ -42,13 +46,13 @@ export default function PartnerMasterSummaryCards({
     {
       id: "factory",
       label: summaryText.factory.label,
-      value: formatCount(summary.typeCounts.factory),
+      value: formatPartnerCount(summary.typeCounts.factory),
       helper: summaryText.factory.helper,
     },
     {
       id: "materials",
       label: summaryText.materials.label,
-      value: formatCount(summary.typeCounts.material_vendor + summary.typeCounts.subsidiary_vendor),
+      value: formatPartnerCount(summary.typeCounts.material_vendor + summary.typeCounts.subsidiary_vendor),
       helper: formatMessage(summaryText.materials.helper, {
         fabric: summary.typeCounts.material_vendor,
         subsidiary: summary.typeCounts.subsidiary_vendor,
@@ -57,7 +61,7 @@ export default function PartnerMasterSummaryCards({
     {
       id: "outsourcing",
       label: summaryText.outsourcing.label,
-      value: formatCount(summary.typeCounts.outsourcing_vendor),
+      value: formatPartnerCount(summary.typeCounts.outsourcing_vendor),
       helper: formatMessage(summaryText.outsourcing.helper, {
         processes: summary.outsourcingProcessCount,
       }),

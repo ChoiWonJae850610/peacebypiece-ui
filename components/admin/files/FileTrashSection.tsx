@@ -190,7 +190,6 @@ export default function FileTrashSection({
         "trashPage.description",
         "삭제된 작업지시서, 문서, 디자인, 메모를 확인하고 복원 또는 정리합니다.",
       )}
-      meta={formatAdminTermCount(t, rows.length, "item")}
       actions={
         <AdminActionBar
           className="flex-row items-center justify-end gap-2"
@@ -282,7 +281,8 @@ export default function FileTrashSection({
         </AdminActionBar>
       }
       className="flex min-h-fit touch-pan-y flex-col overflow-visible"
-      bodyClassName="pt-3"
+      actionClassName="sm:self-end sm:pb-0.5"
+      bodyClassName="pt-2"
     >
       <EmptyTrashConfirmModal
         open={isEmptyTrashConfirmOpen}

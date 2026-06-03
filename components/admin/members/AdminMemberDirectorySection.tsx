@@ -21,7 +21,6 @@ type MemberDirectoryRoleFilterOption = {
 
 type AdminMemberDirectorySectionProps = {
   t: AdminTranslate;
-  memberDirectoryRows: readonly MemberDirectoryRow[];
   filteredMemberDirectoryRows: readonly MemberDirectoryRow[];
   memberDirectoryColumns: AdminTableColumn<MemberDirectoryRow, MemberDirectorySortKey>[];
   memberSearchQuery: string;
@@ -43,7 +42,6 @@ const MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS = "min-h-fit 2xl:min-h-[452px]";
 
 export default function AdminMemberDirectorySection({
   t,
-  memberDirectoryRows,
   filteredMemberDirectoryRows,
   memberDirectoryColumns,
   memberSearchQuery,
@@ -69,10 +67,6 @@ export default function AdminMemberDirectorySection({
         "memberManagement.memberDirectory.description",
         "가입 승인, 재직 상태, 역할과 권한을 한 목록에서 확인합니다.",
       )}
-      meta={t(
-        "memberManagement.tabs.members.count",
-        "대상 {count}명",
-      ).replace("{count}", String(memberDirectoryRows.length))}
       contentClassName="flex min-h-fit touch-pan-y flex-col overflow-visible overscroll-auto pt-3 pb-3"
     >
       <AdminMemberDirectoryControls
