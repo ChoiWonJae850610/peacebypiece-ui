@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AppCard, AppSelect, AppSection, type AppSelectOption } from "@/components/common/ui";
+import { AppButton, AppCard, AppSelect, AppSection, WaflEmptyState, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
@@ -100,13 +100,15 @@ export default function MaterialOrderDetailPanel({
                   onValueChange={(value) => onChangeSupplierPartnerId(value || null)}
                 />
                 {suppliersError ? (
-                  <button
+                  <AppButton
                     type="button"
                     onClick={onRetrySuppliers}
-                    className="mt-1 w-fit text-[11px] font-semibold text-rose-600 underline-offset-2 hover:underline"
+                    variant="danger"
+                    size="sm"
+                    className="mt-1 w-fit min-h-7 px-3 py-1 text-[11px]"
                   >
                     공급처 조회 실패 · 다시 조회
-                  </button>
+                  </AppButton>
                 ) : null}
               </FieldLabel>
           </AppSection>
@@ -131,17 +133,13 @@ export default function MaterialOrderDetailPanel({
           <MaterialOrderSummaryFooter totals={totals} />
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1 items-center justify-center rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-6 text-center">
-          <div>
-            <p className="text-base font-semibold pbp-text-primary">
-              선택된 발주서가 없습니다.
-            </p>
-            <p className="mt-2 text-sm leading-6 pbp-text-muted">
-              왼쪽 패널에서 발주서를 생성하거나 기존 발주서를 선택하면 상세 입력
-              영역이 열립니다.
-            </p>
-          </div>
-        </div>
+        <WaflEmptyState
+          title="선택된 발주서가 없습니다."
+          description="왼쪽 패널에서 발주서를 생성하거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다."
+          size="md"
+          minHeightClassName="min-h-full"
+          className="flex-1 rounded-3xl border-dashed bg-[var(--pbp-surface-soft)]"
+        />
       )}
     </AppCard>
   );

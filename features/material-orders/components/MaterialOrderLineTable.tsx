@@ -1,11 +1,11 @@
-import { AppSelect, type AppSelectOption } from "@/components/common/ui";
+import { AppSelect, WaflEmptyState, type AppSelectOption } from "@/components/common/ui";
 import {
   CALCULATED_TABLE_CELL_CLASS,
-  DeleteButton,
   EDITABLE_TABLE_CELL_CLASS,
   SELECTABLE_TABLE_CELL_CLASS,
   TABLE_HEADER_CELL_CLASS,
 } from "@/components/workorder/detail/shared/detailEditorShared";
+import { MaterialOrderMiniActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
 import {
   calculateMaterialOrderLineAmount,
   formatMaterialOrderAmount,
@@ -72,11 +72,14 @@ export function MaterialOrderLineTable({
       <tbody>
         {lines.length === 0 ? (
           <tr>
-            <td
-              className="h-20 px-3 text-center text-xs pbp-text-muted"
-              colSpan={6}
-            >
-              주문할 자재를 선택하세요.
+            <td className="px-3 py-4" colSpan={6}>
+              <WaflEmptyState
+                title="주문할 자재를 선택하세요."
+                description="오른쪽 작업지시서 패널에서 이번 발주서에 담을 자재를 추가합니다."
+                size="sm"
+                minHeightClassName="min-h-[96px]"
+                className="rounded-2xl border-dashed bg-[var(--pbp-surface-soft)]"
+              />
             </td>
           </tr>
         ) : (
@@ -185,11 +188,14 @@ function MaterialOrderLineRow({
         </span>
       </td>
       <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-        <DeleteButton
-          onClick={() => onRemoveLine(line.id)}
-          srLabel="주문 내역 삭제"
+        <MaterialOrderMiniActionButton
+          label="주문 내역 삭제"
+          tone="dangerSoft"
           disabled={!editable}
-        />
+          onClick={() => onRemoveLine(line.id)}
+        >
+          <span aria-hidden="true">−</span>
+        </MaterialOrderMiniActionButton>
       </td>
     </tr>
   );

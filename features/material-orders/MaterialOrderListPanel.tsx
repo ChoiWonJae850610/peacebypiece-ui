@@ -128,9 +128,9 @@ export default function MaterialOrderListPanel({
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
-          <MaterialOrderPanelMessage title="불러오는 중" description="발주서 목록을 조회하고 있습니다." />
+          <MaterialOrderPanelMessage title="불러오는 중" description="발주서 목록을 조회하고 있습니다." kind="loading" />
         ) : errorMessage ? (
-          <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
+          <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} kind="error" />
         ) : orders.length === 0 ? (
           <MaterialOrderPanelMessage
             title="등록된 발주서 없음"
@@ -140,6 +140,7 @@ export default function MaterialOrderListPanel({
           <MaterialOrderPanelMessage
             title="검색 결과 없음"
             description="검색어, 상태, 종류 필터를 조정해보세요."
+            kind="search"
           />
         ) : (
           filteredOrders.map((order) => (

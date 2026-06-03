@@ -83,16 +83,16 @@ export default function MaterialOrderAllocationPanel({
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
-          <MaterialOrderPanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." />
+          <MaterialOrderPanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." kind="loading" />
         ) : errorMessage ? (
-          <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} />
+          <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} kind="error" />
         ) : candidates.length === 0 ? (
           <MaterialOrderPanelMessage
             title="표시할 작업지시서 없음"
             description="자재 발주 대기 상태의 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
-          <MaterialOrderPanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." />
+          <MaterialOrderPanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." kind="search" />
         ) : (
           filteredCandidates.map((workOrder) => (
             <AllocationCandidateCard
