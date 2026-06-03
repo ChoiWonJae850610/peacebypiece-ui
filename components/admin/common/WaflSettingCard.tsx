@@ -12,9 +12,12 @@ type WaflSettingCardProps = {
   actions?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
+  meta?: ReactNode;
   tone?: WaflSettingCardTone;
+  density?: "default" | "compact";
   className?: string;
   bodyClassName?: string;
+  headerClassName?: string;
 };
 
 function joinClassNames(...classNames: Array<string | false | null | undefined>) {
@@ -30,7 +33,12 @@ const TONE_ACCENT_CLASS: Record<WaflSettingCardTone, string> = {
 };
 
 export const WAFL_SETTING_CARD_CLASS =
-  "relative min-w-0 overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-card)]";
+  "relative min-w-0 overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
+
+const DENSITY_CLASS: Record<NonNullable<WaflSettingCardProps["density"]>, string> = {
+  default: "p-4",
+  compact: "p-3.5",
+};
 
 export default function WaflSettingCard({
   title,
@@ -40,17 +48,20 @@ export default function WaflSettingCard({
   actions,
   children,
   footer,
+  meta,
   tone = "neutral",
+  density = "default",
   className = "",
   bodyClassName = "mt-3",
+  headerClassName = "",
 }: WaflSettingCardProps) {
   return (
-    <article className={joinClassNames(WAFL_SETTING_CARD_CLASS, className)}>
+    <article className={joinClassNames(WAFL_SETTING_CARD_CLASS, DENSITY_CLASS[density], className)}>
       <span
         aria-hidden="true"
         className={joinClassNames("pointer-events-none absolute inset-y-4 left-0 w-1 rounded-r-full opacity-75", TONE_ACCENT_CLASS[tone])}
       />
-      <div className="flex min-w-0 flex-col gap-3 pl-1 sm:flex-row sm:items-start sm:justify-between">
+      <div className={joinClassNames("flex min-w-0 flex-col gap-3 pl-1 sm:flex-row sm:items-start sm:justify-between", headerClassName)}>
         <div className="min-w-0">
           {eyebrow ? (
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">{eyebrow}</p>
@@ -60,6 +71,7 @@ export default function WaflSettingCard({
             {badge ? <span className="shrink-0">{badge}</span> : null}
           </div>
           {description ? <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{description}</p> : null}
+          {meta ? <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--pbp-text-muted)]">{meta}</div> : null}
         </div>
         {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div> : null}
       </div>

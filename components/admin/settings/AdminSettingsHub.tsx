@@ -9,6 +9,7 @@ import WaflFeatureCard from "@/components/admin/common/WaflFeatureCard";
 import WaflNoticeBox from "@/components/admin/common/WaflNoticeBox";
 import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import WaflSettingCard from "@/components/admin/common/WaflSettingCard";
+import WaflSettingsSectionGroup from "@/components/admin/common/WaflSettingsSectionGroup";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
 import {
@@ -82,31 +83,59 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.9fr)]">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {overview.metrics.map((metric) => (
-            <WaflSettingCard key={metric.id} title={metric.value} description={metric.description} eyebrow={metric.label} tone="success" />
-          ))}
-        </div>
-        <div className="space-y-3">
-          {overview.actions.map((action) => (
-            <WaflSettingCard
-              key={action.id}
-              title={action.label}
-              description={action.description}
-              badge={<AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>}
-              tone="info"
-            />
-          ))}
-        </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.billing.summaryEyebrow", "현재 기준")}
+          title={t("settings.billing.summaryTitle", "요금제와 저장공간 현황")}
+          description={t("settings.billing.summaryDescription", "현재 고객사에 적용된 요금제 정책과 저장공간 기준을 읽기 전용으로 확인합니다.")}
+          badge={<AdminStatusBadge tone="success">{overview.currentPlanLabel}</AdminStatusBadge>}
+          tone="success"
+        >
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {overview.metrics.map((metric) => (
+              <WaflSettingCard
+                key={metric.id}
+                title={metric.value}
+                description={metric.description}
+                eyebrow={metric.label}
+                tone="success"
+                density="compact"
+              />
+            ))}
+          </div>
+        </WaflSettingsSectionGroup>
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.billing.requestEyebrow", "요청 흐름")}
+          title={t("settings.billing.requestTitle", "변경 요청과 결제 문의")}
+          description={t("settings.billing.requestDescription", "요금제 변경, 저장공간 증설, 결제 문의는 시스템관리자 검토 흐름으로 분리합니다.")}
+          tone="info"
+        >
+          <div className="grid gap-3">
+            {overview.actions.map((action) => (
+              <WaflSettingCard
+                key={action.id}
+                title={action.label}
+                description={action.description}
+                badge={<AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>}
+                tone="info"
+                density="compact"
+              />
+            ))}
+          </div>
+        </WaflSettingsSectionGroup>
       </div>
-      <WaflNoticeBox tone="info" className="rounded-[22px]">
+      <WaflSettingsSectionGroup
+        eyebrow={t("settings.billing.policyEyebrow", "운영 기준")}
+        title={t("settings.billing.policyTitle", "요금제·저장공간 처리 원칙")}
+        description={t("settings.billing.policyDescription", "고객사 관리자 화면은 조회와 요청 접수 중심으로 유지하고 실제 정책 변경은 시스템관리자 영역에서 처리합니다.")}
+        tone="neutral"
+      >
         <div className="grid gap-2 md:grid-cols-2">
           {overview.policyNotes.map((note) => (
-            <p key={note}>• {note}</p>
+            <p key={note} className="text-sm leading-6 text-[var(--pbp-text-muted)]">• {note}</p>
           ))}
         </div>
-      </WaflNoticeBox>
+      </WaflSettingsSectionGroup>
     </WaflSectionPanel>
   );
 }
@@ -176,47 +205,71 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.9fr)]">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {overview.metrics.map((metric) => (
-            <WaflSettingCard key={metric.id} title={metric.value} description={metric.description} eyebrow={metric.label} tone="warning" />
-          ))}
-        </div>
-        <div className="space-y-3">
-          {overview.actions.map((action) => (
-            <WaflSettingCard
-              key={action.id}
-              title={action.label}
-              description={action.description}
-              badge={<AdminStatusBadge tone={action.tone} size="xs">{action.statusLabel}</AdminStatusBadge>}
-              tone={action.requestType === "account_deactivation" ? "danger" : "info"}
-              actions={
-                action.requestType ? (
-                  <AdminButton
-                    size="sm"
-                    variant={action.requestType === "account_deactivation" ? "danger" : "secondary"}
-                    onClick={() => {
-                      setActiveRequestType(action.requestType ?? null);
-                      setRequestState("idle");
-                      setRequestFeedback("");
-                    }}
-                  >
-                    {t("settings.accountRequest.open", "요청 작성")}
-                  </AdminButton>
-                ) : null
-              }
-            />
-          ))}
-        </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.95fr)]">
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.account.companyEyebrow", "회사 정보")}
+          title={t("settings.account.companyTitle", "현재 등록된 회사·대표 계정")}
+          description={t("settings.account.companyDescription", "회사명, 사업자 정보, 주소, 대표 로그인 계정은 현재 고객사 기준으로 표시합니다.")}
+          badge={<AdminStatusBadge tone={overview.statusTone}>{overview.statusLabel}</AdminStatusBadge>}
+          tone="warning"
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {overview.metrics.map((metric) => (
+              <WaflSettingCard
+                key={metric.id}
+                title={metric.value}
+                description={metric.description}
+                eyebrow={metric.label}
+                tone="warning"
+                density="compact"
+              />
+            ))}
+          </div>
+        </WaflSettingsSectionGroup>
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.account.requestEyebrow", "요청 관리")}
+          title={t("settings.account.requestTitle", "회사 정보 변경·비활성화 요청")}
+          description={t("settings.account.requestDescription", "회사 단위 변경은 즉시 수정하지 않고 시스템관리자 검토 요청으로 접수합니다.")}
+          tone="info"
+        >
+          <div className="grid gap-3">
+            {overview.actions.map((action) => (
+              <WaflSettingCard
+                key={action.id}
+                title={action.label}
+                description={action.description}
+                badge={<AdminStatusBadge tone={action.tone} size="xs">{action.statusLabel}</AdminStatusBadge>}
+                tone={action.requestType === "account_deactivation" ? "danger" : "info"}
+                density="compact"
+                actions={
+                  action.requestType ? (
+                    <AdminButton
+                      size="sm"
+                      variant={action.requestType === "account_deactivation" ? "danger" : "secondary"}
+                      onClick={() => {
+                        setActiveRequestType(action.requestType ?? null);
+                        setRequestState("idle");
+                        setRequestFeedback("");
+                      }}
+                    >
+                      {t("settings.accountRequest.open", "요청 작성")}
+                    </AdminButton>
+                  ) : null
+                }
+              />
+            ))}
+          </div>
+        </WaflSettingsSectionGroup>
       </div>
 
       {activeRequestAction ? (
-        <WaflSettingCard
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.accountRequest.eyebrow", "요청 작성")}
           title={activeRequestAction.label}
           description={t("settings.accountRequest.description", "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.")}
           badge={<AdminStatusBadge tone={activeRequestAction.tone} size="xs">{activeRequestAction.statusLabel}</AdminStatusBadge>}
           tone={activeRequestType === "account_deactivation" ? "danger" : "warning"}
-          bodyClassName="mt-3"
+          footer={t("settings.accountRequest.validation", "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.")}
         >
           <textarea
             value={requestMessage}
@@ -231,44 +284,44 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
             className="min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
             placeholder={t("settings.accountRequest.placeholder", "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.")}
           />
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs leading-5 pbp-text-muted">
-              {t("settings.accountRequest.validation", "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <AdminButton
-                variant="ghost"
-                onClick={() => {
-                  setActiveRequestType(null);
-                  setRequestMessage("");
-                  setRequestState("idle");
-                  setRequestFeedback("");
-                }}
-                disabled={requestState === "submitting"}
-              >
-                {t("common.cancel", "취소")}
-              </AdminButton>
-              <AdminButton
-                variant={activeRequestType === "account_deactivation" ? "danger" : "primary"}
-                onClick={submitAccountRequest}
-                disabled={!canSubmitRequest}
-              >
-                {requestState === "submitting" ? t("common.saving", "저장 중") : t("settings.accountRequest.submit", "요청 접수")}
-              </AdminButton>
-            </div>
+          <div className="mt-3 flex flex-wrap justify-end gap-2">
+            <AdminButton
+              variant="ghost"
+              onClick={() => {
+                setActiveRequestType(null);
+                setRequestMessage("");
+                setRequestState("idle");
+                setRequestFeedback("");
+              }}
+              disabled={requestState === "submitting"}
+            >
+              {t("common.cancel", "취소")}
+            </AdminButton>
+            <AdminButton
+              variant={activeRequestType === "account_deactivation" ? "danger" : "primary"}
+              onClick={submitAccountRequest}
+              disabled={!canSubmitRequest}
+            >
+              {requestState === "submitting" ? t("common.saving", "저장 중") : t("settings.accountRequest.submit", "요청 접수")}
+            </AdminButton>
           </div>
-        </WaflSettingCard>
+        </WaflSettingsSectionGroup>
       ) : null}
 
       <ToastMessage message={requestFeedback || null} tone={requestFeedbackTone} eventKey={requestFeedbackEventKey} />
 
-      <WaflNoticeBox tone="info" className="rounded-[22px]">
+      <WaflSettingsSectionGroup
+        eyebrow={t("settings.account.policyEyebrow", "운영 기준")}
+        title={t("settings.account.policyTitle", "조직 정보와 개인 설정 분리")}
+        description={t("settings.account.policyDescription", "회사 설정, 관리자 개인 프로필, 로그인 이메일의 책임 범위를 분리해서 관리합니다.")}
+        tone="neutral"
+      >
         <div className="grid gap-2 md:grid-cols-2">
           {overview.policyNotes.map((note) => (
-            <p key={note}>• {note}</p>
+            <p key={note} className="text-sm leading-6 text-[var(--pbp-text-muted)]">• {note}</p>
           ))}
         </div>
-      </WaflNoticeBox>
+      </WaflSettingsSectionGroup>
     </WaflSectionPanel>
   );
 }
@@ -287,16 +340,26 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
       bodyClassName="pt-4 space-y-4"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {notice.items.map((item) => (
-            <WaflSettingCard key={item} title={item} tone="neutral" />
-          ))}
-        </div>
-        <WaflSettingCard
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.notice.documentEyebrow", "고객 공개 문서")}
+          title={t("settings.notice.documentTitle", "조회 대상 문서")}
+          description={t("settings.notice.documentDescription", "고객사가 환경설정에서 확인하게 될 약관·정책 문서 목록입니다.")}
+          tone="neutral"
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {notice.items.map((item) => (
+              <WaflSettingCard key={item} title={item} tone="neutral" density="compact" />
+            ))}
+          </div>
+        </WaflSettingsSectionGroup>
+        <WaflSettingsSectionGroup
           eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
           title={notice.nextStep}
+          description={t("settings.notice.nextStepDescription", "정식 문서 route와 시스템관리자 문서 관리 화면이 연결되기 전까지는 안내 영역으로 유지합니다.")}
           tone="info"
-        />
+        >
+          <WaflSettingCard title={t("common.preparing", "준비중")} description={notice.description} tone="info" density="compact" />
+        </WaflSettingsSectionGroup>
       </div>
     </WaflSectionPanel>
   );
@@ -319,24 +382,26 @@ function FeedbackPanel() {
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
-      <WaflSettingCard
+      <WaflSettingsSectionGroup
         eyebrow={t("settings.feedback.emailLabel", "접수 이메일")}
         title={<span className="font-mono">{ADMIN_FEEDBACK_CONTACT_EMAIL}</span>}
         description={t("settings.feedback.mailDescription", "개선 요청, 오류 제보, 기능 제안 내용을 기본 메일 앱으로 작성해 전달합니다.")}
         tone="info"
-      />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {feedback.items.map((item) => (
-            <WaflSettingCard key={item} title={item} tone="neutral" />
-          ))}
+      >
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {feedback.items.map((item) => (
+              <WaflSettingCard key={item} title={item} tone="neutral" density="compact" />
+            ))}
+          </div>
+          <WaflSettingCard
+            eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
+            title={feedback.nextStep}
+            tone="info"
+            density="compact"
+          />
         </div>
-        <WaflSettingCard
-          eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
-          title={feedback.nextStep}
-          tone="info"
-        />
-      </div>
+      </WaflSettingsSectionGroup>
     </WaflSectionPanel>
   );
 }
