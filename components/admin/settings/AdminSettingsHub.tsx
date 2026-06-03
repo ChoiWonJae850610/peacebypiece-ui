@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
-import { ADMIN_SURFACE_ITEM_CLASS, ADMIN_SURFACE_SUBTLE_BOX_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
-import { AdminSection } from "@/components/admin/common/AdminSection";
 import WaflPageHero from "@/components/admin/common/WaflPageHero";
 import WaflFeatureCard from "@/components/admin/common/WaflFeatureCard";
+import WaflNoticeBox from "@/components/admin/common/WaflNoticeBox";
+import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
+import WaflSettingCard from "@/components/admin/common/WaflSettingCard";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
 import {
@@ -28,24 +29,20 @@ type AdminCurrentCompanyPayload = {
   account?: AdminAccountSettingsOverview;
 };
 
-const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badgeTone: AdminStatusBadgeTone; dot: string }> = {
+const toneClassNames: Record<AdminSettingsMenuTone, { badgeTone: AdminStatusBadgeTone; dot: string }> = {
   blue: {
-    card: "pbp-admin-card-interactive",
     badgeTone: "info",
     dot: "bg-[var(--pbp-status-neutral-bg)]",
   },
   amber: {
-    card: "pbp-admin-card-interactive",
     badgeTone: "warning",
     dot: "bg-[var(--pbp-status-warning)]",
   },
   emerald: {
-    card: "pbp-admin-card-interactive",
     badgeTone: "success",
     dot: "bg-[var(--pbp-status-success)]",
   },
   violet: {
-    card: "pbp-admin-card-interactive",
     badgeTone: "maintenance",
     dot: "bg-[var(--pbp-accent)]",
   },
@@ -69,49 +66,48 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
 function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanOverview; loadState: "idle" | "loading" | "loaded" | "failed" }) {
   const t = useAdminTranslation();
   return (
-    <AdminSection
+    <WaflSectionPanel
+      eyebrow={t("settings.billing.eyebrow", "요금제·저장공간")}
       title={overview.title}
       description={overview.description}
       actions={
-        <div className="flex flex-wrap gap-1.5">
+        <>
           <AdminStatusBadge tone="success">{overview.currentPlanLabel}</AdminStatusBadge>
           <AdminStatusBadge tone="maintenance">{overview.systemManagedLabel}</AdminStatusBadge>
           <AdminStatusBadge tone={loadState === "failed" ? "warning" : "neutral"}>
             {loadState === "loading" ? t("common.loadingShort", "조회 중") : overview.dataSourceLabel}
           </AdminStatusBadge>
-        </div>
+        </>
       }
       className="min-h-[320px]"
-      bodyClassName="mt-4 space-y-4"
+      bodyClassName="pt-4 space-y-4"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.9fr)]">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {overview.metrics.map((metric) => (
-            <div key={metric.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
-              <p className="text-[11px] font-semibold pbp-text-subtle">{metric.label}</p>
-              <p className="mt-2 text-lg font-semibold pbp-text-primary">{metric.value}</p>
-              <p className="mt-2 text-xs leading-5 pbp-text-muted">{metric.description}</p>
-            </div>
+            <WaflSettingCard key={metric.id} title={metric.value} description={metric.description} eyebrow={metric.label} tone="success" />
           ))}
         </div>
         <div className="space-y-3">
           {overview.actions.map((action) => (
-            <div key={action.id} className={ADMIN_SURFACE_ITEM_CLASS}>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold pbp-text-primary">{action.label}</p>
-                <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
-              </div>
-              <p className="mt-2 text-xs leading-5 pbp-text-muted">{action.description}</p>
-            </div>
+            <WaflSettingCard
+              key={action.id}
+              title={action.label}
+              description={action.description}
+              badge={<AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>}
+              tone="info"
+            />
           ))}
         </div>
       </div>
-      <div className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-2 rounded-[22px] md:grid-cols-2`}>
-        {overview.policyNotes.map((note) => (
-          <p key={note} className="text-xs leading-5 pbp-text-muted">• {note}</p>
-        ))}
-      </div>
-    </AdminSection>
+      <WaflNoticeBox tone="info" className="rounded-[22px]">
+        <div className="grid gap-2 md:grid-cols-2">
+          {overview.policyNotes.map((note) => (
+            <p key={note}>• {note}</p>
+          ))}
+        </div>
+      </WaflNoticeBox>
+    </WaflSectionPanel>
   );
 }
 
@@ -165,40 +161,37 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
   };
 
   return (
-    <AdminSection
+    <WaflSectionPanel
+      eyebrow={t("settings.account.eyebrow", "회사 계정 정보")}
       title={overview.title}
       description={overview.description}
       actions={
-        <div className="flex flex-wrap gap-1.5">
+        <>
           <AdminStatusBadge tone={overview.statusTone}>{overview.statusLabel}</AdminStatusBadge>
           <AdminStatusBadge tone={loadState === "failed" ? "warning" : "neutral"}>
             {loadState === "loading" ? t("common.loadingShort", "조회 중") : t("settings.account.currentData", "현재 계정 기준")}
           </AdminStatusBadge>
-        </div>
+        </>
       }
       className="min-h-[320px]"
-      bodyClassName="mt-4 space-y-4"
+      bodyClassName="pt-4 space-y-4"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.9fr)]">
         <div className="grid gap-3 sm:grid-cols-2">
           {overview.metrics.map((metric) => (
-            <div key={metric.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
-              <p className="text-[11px] font-semibold pbp-text-subtle">{metric.label}</p>
-              <p className="mt-2 text-base font-semibold pbp-text-primary sm:text-lg">{metric.value}</p>
-              <p className="mt-2 text-xs leading-5 pbp-text-muted">{metric.description}</p>
-            </div>
+            <WaflSettingCard key={metric.id} title={metric.value} description={metric.description} eyebrow={metric.label} tone="warning" />
           ))}
         </div>
         <div className="space-y-3">
           {overview.actions.map((action) => (
-            <div key={action.id} className={ADMIN_SURFACE_ITEM_CLASS}>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold pbp-text-primary">{action.label}</p>
-                <AdminStatusBadge tone={action.tone} size="xs">{action.statusLabel}</AdminStatusBadge>
-              </div>
-              <p className="mt-2 text-xs leading-5 pbp-text-muted">{action.description}</p>
-              {action.requestType ? (
-                <div className="mt-3">
+            <WaflSettingCard
+              key={action.id}
+              title={action.label}
+              description={action.description}
+              badge={<AdminStatusBadge tone={action.tone} size="xs">{action.statusLabel}</AdminStatusBadge>}
+              tone={action.requestType === "account_deactivation" ? "danger" : "info"}
+              actions={
+                action.requestType ? (
                   <AdminButton
                     size="sm"
                     variant={action.requestType === "account_deactivation" ? "danger" : "secondary"}
@@ -210,24 +203,21 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
                   >
                     {t("settings.accountRequest.open", "요청 작성")}
                   </AdminButton>
-                </div>
-              ) : null}
-            </div>
+                ) : null
+              }
+            />
           ))}
         </div>
       </div>
 
       {activeRequestAction ? (
-        <div className={`${ADMIN_SURFACE_ITEM_CLASS} rounded-[22px]`}>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold pbp-text-primary">{activeRequestAction.label}</p>
-              <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                {t("settings.accountRequest.description", "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.")}
-              </p>
-            </div>
-            <AdminStatusBadge tone={activeRequestAction.tone} size="xs">{activeRequestAction.statusLabel}</AdminStatusBadge>
-          </div>
+        <WaflSettingCard
+          title={activeRequestAction.label}
+          description={t("settings.accountRequest.description", "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.")}
+          badge={<AdminStatusBadge tone={activeRequestAction.tone} size="xs">{activeRequestAction.statusLabel}</AdminStatusBadge>}
+          tone={activeRequestType === "account_deactivation" ? "danger" : "warning"}
+          bodyClassName="mt-3"
+        >
           <textarea
             value={requestMessage}
             onChange={(event) => {
@@ -238,7 +228,7 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
               }
             }}
             rows={4}
-            className="mt-3 min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
+            className="min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
             placeholder={t("settings.accountRequest.placeholder", "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.")}
           />
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -267,17 +257,19 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
               </AdminButton>
             </div>
           </div>
-        </div>
+        </WaflSettingCard>
       ) : null}
 
       <ToastMessage message={requestFeedback || null} tone={requestFeedbackTone} eventKey={requestFeedbackEventKey} />
 
-      <div className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-2 rounded-[22px] md:grid-cols-2`}>
-        {overview.policyNotes.map((note) => (
-          <p key={note} className="text-xs leading-5 pbp-text-muted">• {note}</p>
-        ))}
-      </div>
-    </AdminSection>
+      <WaflNoticeBox tone="info" className="rounded-[22px]">
+        <div className="grid gap-2 md:grid-cols-2">
+          {overview.policyNotes.map((note) => (
+            <p key={note}>• {note}</p>
+          ))}
+        </div>
+      </WaflNoticeBox>
+    </WaflSectionPanel>
   );
 }
 
@@ -286,27 +278,27 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
   const notice = ADMIN_SETTINGS_NOTICE_BY_ID[noticeId];
 
   return (
-    <AdminSection
+    <WaflSectionPanel
+      eyebrow={t("settings.notice.eyebrow", "약관·정책")}
       title={notice.title}
       description={notice.description}
       actions={<AdminStatusBadge tone="maintenance">{t("common.preparing", "준비중")}</AdminStatusBadge>}
       className="min-h-[320px]"
-      bodyClassName="mt-4 space-y-4"
+      bodyClassName="pt-4 space-y-4"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
         <div className="grid gap-3 sm:grid-cols-2">
           {notice.items.map((item) => (
-            <div key={item} className={`${ADMIN_SURFACE_ITEM_CLASS} text-sm font-semibold pbp-text-primary`}>
-              {item}
-            </div>
+            <WaflSettingCard key={item} title={item} tone="neutral" />
           ))}
         </div>
-        <div className={ADMIN_SURFACE_ITEM_CLASS}>
-          <p className="text-xs font-semibold pbp-text-subtle">{t("settings.notice.nextStepTitle", "적용 예정")}</p>
-          <p className="mt-2 text-sm leading-6 pbp-text-muted">{notice.nextStep}</p>
-        </div>
+        <WaflSettingCard
+          eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
+          title={notice.nextStep}
+          tone="info"
+        />
       </div>
-    </AdminSection>
+    </WaflSectionPanel>
   );
 }
 
@@ -315,7 +307,8 @@ function FeedbackPanel() {
   const feedback = ADMIN_SETTINGS_NOTICE_BY_ID.feedback;
   const feedbackMailtoHref = useMemo(() => buildAdminFeedbackMailtoHref(), []);
   return (
-    <AdminSection
+    <WaflSectionPanel
+      eyebrow={t("settings.feedback.eyebrow", "개발 건의")}
       title={feedback.title}
       description={feedback.description}
       actions={
@@ -324,29 +317,27 @@ function FeedbackPanel() {
         </AdminLinkButton>
       }
       className="min-h-[320px]"
-      bodyClassName="mt-4 space-y-4"
+      bodyClassName="pt-4 space-y-4"
     >
-      <div className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">{t("settings.feedback.emailLabel", "Feedback email")}</p>
-        <p className="mt-1 font-mono text-base font-semibold pbp-text-primary">{ADMIN_FEEDBACK_CONTACT_EMAIL}</p>
-        <p className="mt-2 text-xs leading-5 pbp-text-muted">
-          {t("settings.feedback.mailDescription", "개선 요청, 오류 제보, 기능 제안 내용을 기본 메일 앱으로 작성해 전달합니다.")}
-        </p>
-      </div>
+      <WaflSettingCard
+        eyebrow={t("settings.feedback.emailLabel", "접수 이메일")}
+        title={<span className="font-mono">{ADMIN_FEEDBACK_CONTACT_EMAIL}</span>}
+        description={t("settings.feedback.mailDescription", "개선 요청, 오류 제보, 기능 제안 내용을 기본 메일 앱으로 작성해 전달합니다.")}
+        tone="info"
+      />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
         <div className="grid gap-3 sm:grid-cols-2">
           {feedback.items.map((item) => (
-            <div key={item} className={`${ADMIN_SURFACE_ITEM_CLASS} text-sm font-semibold pbp-text-primary`}>
-              {item}
-            </div>
+            <WaflSettingCard key={item} title={item} tone="neutral" />
           ))}
         </div>
-        <div className={ADMIN_SURFACE_ITEM_CLASS}>
-          <p className="text-xs font-semibold pbp-text-subtle">{t("settings.notice.nextStepTitle", "적용 예정")}</p>
-          <p className="mt-2 text-sm leading-6 pbp-text-muted">{feedback.nextStep}</p>
-        </div>
+        <WaflSettingCard
+          eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
+          title={feedback.nextStep}
+          tone="info"
+        />
       </div>
-    </AdminSection>
+    </WaflSectionPanel>
   );
 }
 
@@ -439,13 +430,13 @@ export default function AdminSettingsHub() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-0 sm:pr-1">
       <WaflPageHero
-        eyebrow={t("settings.hub.eyebrow", "Admin settings")}
+        eyebrow={t("settings.hub.eyebrow", "고객사 환경설정")}
         title={t("settings.hub.title", "환경설정")}
         description={t("settings.hub.description", "회사 정보, 기준정보, 요금제, 약관·정책, 개선 요청을 한 화면에서 확인합니다.")}
         badges={
-          <p className="w-full rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)] shadow-sm sm:w-auto">
+          <WaflNoticeBox tone="neutral" className="w-full rounded-full px-4 py-2 sm:w-auto">
             {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}
-          </p>
+          </WaflNoticeBox>
         }
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
