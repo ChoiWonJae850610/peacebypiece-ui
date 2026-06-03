@@ -1,5 +1,5 @@
 import { type KeyboardEvent, type ReactNode } from "react";
-import AppInlineSelectEditor, { type AppInlineSelectEditorOption } from "@/components/common/ui/AppInlineSelectEditor";
+import { AppInlineSelectEditor, type AppInlineSelectEditorOption } from "@/components/common/ui";
 import { PbpSingleDatePicker, type PbpSingleDatePickerLabels } from "@/components/common/date/PbpSingleDatePicker";
 import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detail/detailFormatting";
 import { isUnavailableWorkOrderSelectOption } from "@/lib/constants/workorderDomain";

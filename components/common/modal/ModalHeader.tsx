@@ -1,6 +1,6 @@
 "use client";
 
-import { WaflModalCloseButton, getWaflModalHeaderClassName } from "@/components/common/ui/WaflModal";
+import { WaflModalCloseButton, getWaflModalHeaderClassName } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import ToastMessage from "@/components/common/ToastMessage";
-import AppSegmentedTabs from "@/components/common/ui/AppSegmentedTabs";
+import { AppSegmentedTabs } from "@/components/common/ui";
 import { AppButton, AppResponsiveWorkspace, AppSheet } from "@/components/common/ui";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";

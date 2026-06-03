@@ -12,6 +12,11 @@ export { default as AppSelect, type AppSelectOption } from "./AppSelect";
 export { default as AppInlineSelectEditor, type AppInlineSelectEditorOption } from "./AppInlineSelectEditor";
 export { default as AppTooltip } from "./AppTooltip";
 
+export { default as InlineInfoItem } from "./InlineInfoItem";
+export { default as SectionCountBadge } from "./SectionCountBadge";
+export { default as SummaryCard } from "./SummaryCard";
+export { default as WorkOrderPanelCard, WORKORDER_PANEL_CARD_CLASS } from "./WorkOrderPanelCard";
+
 export * from "./WaflActionButton";
 export * from "./WaflButton";
 export * from "./WaflToast";

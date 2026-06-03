@@ -3,7 +3,7 @@
 import { createPortal } from "react-dom";
 import type { MouseEvent, ReactNode, RefObject } from "react";
 
-import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui/WaflModal";
+import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui";
 
 type BaseModalProps = {
   open: boolean;

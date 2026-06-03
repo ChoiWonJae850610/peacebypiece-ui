@@ -1,5 +1,5 @@
 import { useI18n } from "@/lib/i18n";
-import SummaryCard from "@/components/common/ui/SummaryCard";
+import { SummaryCard } from "@/components/common/ui";
 import DesktopCostSummaryLayout from "@/components/workorder/detail/layout/DesktopCostSummaryLayout";
 import { buildWorkOrderCostSummaryPresentation } from "@/lib/workorder/presentation/workOrderCostSummaryPresentation";
 import type { OrderEntry, Outsourcing } from "@/types/workorder";

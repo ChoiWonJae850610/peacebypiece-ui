@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, type KeyboardEvent } from "react";
-import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
-import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
+import { SectionCountBadge } from "@/components/common/ui";
+import { WorkOrderPanelCard } from "@/components/common/ui";
 import { WorkOrderMiniActionButton } from "@/components/workorder/common/WorkOrderActionButton";
 import { useI18n } from "@/lib/i18n";
 import { getMemoDisplayContent, getVisibleMemoReplies, getVisibleMemoThreads, isDeletedMemoItem } from "@/lib/workorder/presentation/memoPresentation";

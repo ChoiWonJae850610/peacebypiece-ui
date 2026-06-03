@@ -3,7 +3,7 @@
 import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import { useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
-import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
+import { WorkOrderPanelCard } from "@/components/common/ui";
 import { WaflButton } from "@/components/common/ui";
 import { WorkOrderActionButton } from "@/components/workorder/common/WorkOrderActionButton";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";

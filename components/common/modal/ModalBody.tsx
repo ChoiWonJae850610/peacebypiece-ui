@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import { getWaflModalBodyClassName } from "@/components/common/ui/WaflModal";
+import { getWaflModalBodyClassName } from "@/components/common/ui";
 
 export default function ModalBody({
   children,

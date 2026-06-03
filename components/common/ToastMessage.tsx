@@ -7,7 +7,7 @@ import {
   showWaflToast,
   type WaflToastOptions,
   type WaflToastTone,
-} from "@/components/common/ui/WaflToast";
+} from "@/components/common/ui";
 
 export type ToastTone = WaflToastTone;
 

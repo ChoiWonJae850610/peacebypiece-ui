@@ -1,6 +1,6 @@
 import type { ChangeEventHandler, ComponentProps, RefObject } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
-import { WaflProcessingToast } from "@/components/common/ui/WaflToast";
+import { WaflProcessingToast } from "@/components/common/ui";
 import AttachmentDeleteConfirmModal from "@/components/common/modal/AttachmentDeleteConfirmModal";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import CreateWorkOrderModal from "@/components/common/modal/CreateWorkOrderModal";

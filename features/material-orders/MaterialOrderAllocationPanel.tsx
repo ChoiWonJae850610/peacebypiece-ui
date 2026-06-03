@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { AppBadge, AppButton, AppCard } from "@/components/common/ui";
-import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
+import { SectionCountBadge } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,

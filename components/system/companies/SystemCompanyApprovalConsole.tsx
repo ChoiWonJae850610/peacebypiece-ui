@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
-import AppSelect from "@/components/common/ui/AppSelect";
+import { AppSelect } from "@/components/common/ui";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
   SYSTEM_CARD_CLASS,

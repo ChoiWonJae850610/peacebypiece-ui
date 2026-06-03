@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
-import AppSelect from "@/components/common/ui/AppSelect";
+import { AppSelect } from "@/components/common/ui";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { DEFAULT_REGISTRY_TYPE, REGISTRY_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";

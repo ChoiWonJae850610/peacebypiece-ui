@@ -6,7 +6,7 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
-import AppSelect from "@/components/common/ui/AppSelect";
+import { AppSelect } from "@/components/common/ui";
 import {
   MATERIAL_KIND_DESCRIPTIONS,
   MATERIAL_KIND_LABELS,

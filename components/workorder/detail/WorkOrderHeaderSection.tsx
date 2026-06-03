@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import InlineInfoItem from "@/components/common/ui/InlineInfoItem";
+import { InlineInfoItem } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";

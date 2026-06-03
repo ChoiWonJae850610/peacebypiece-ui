@@ -1,4 +1,4 @@
-import AppSelect from "@/components/common/ui/AppSelect";
+import { AppSelect } from "@/components/common/ui";
 import type { CategoryOption } from "@/components/common/modal/createWorkOrder/createWorkOrderCategorySource";
 
 type Props = {

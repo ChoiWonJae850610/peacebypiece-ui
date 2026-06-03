@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { WaflButton, type WaflButtonVariant } from "@/components/common/ui/WaflButton";
+import { WaflButton, type WaflButtonVariant } from "@/components/common/ui";
 
 import { getI18n } from "@/lib/i18n";
 

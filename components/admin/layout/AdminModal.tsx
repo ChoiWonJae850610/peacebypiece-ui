@@ -6,7 +6,7 @@ import {
   WAFL_MODAL_OVERLAY_CLASS,
   WaflModalSection,
   getWaflModalPanelClassName,
-} from "@/components/common/ui/WaflModal";
+} from "@/components/common/ui";
 import type { ReactNode } from "react";
 
 type AdminModalProps = {

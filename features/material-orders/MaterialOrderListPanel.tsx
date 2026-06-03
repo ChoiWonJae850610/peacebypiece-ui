@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { AppBadge, AppButton, AppCard, AppListRow, AppSelect, type AppSelectOption } from "@/components/common/ui";
-import SectionCountBadge from "@/components/common/ui/SectionCountBadge";
+import { SectionCountBadge } from "@/components/common/ui";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,

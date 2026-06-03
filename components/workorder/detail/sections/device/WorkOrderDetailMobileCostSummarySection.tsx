@@ -1,4 +1,4 @@
-import SummaryCard from "@/components/common/ui/SummaryCard";
+import { SummaryCard } from "@/components/common/ui";
 import type { WorkOrderCostSummarySectionProps } from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import { useI18n } from "@/lib/i18n";
 

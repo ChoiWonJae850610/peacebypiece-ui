@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import { getWaflModalFooterClassName } from "@/components/common/ui/WaflModal";
+import { getWaflModalFooterClassName } from "@/components/common/ui";
 
 export default function ModalFooter({
   children,
