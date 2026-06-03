@@ -2,6 +2,11 @@
 
 import { AdminButton, getAdminButtonClassName } from "@/components/admin/common/AdminButton";
 import ModalShell from "@/components/common/modal/ModalShell";
+import {
+  WAFL_MODAL_OVERLAY_CLASS,
+  WaflModalSection,
+  getWaflModalPanelClassName,
+} from "@/components/common/ui/WaflModal";
 import type { ReactNode } from "react";
 
 type AdminModalProps = {
@@ -36,8 +41,8 @@ export function AdminModal({
       maxWidthClass={maxWidthClass}
       bodyClassName={bodyClassName}
       footerClassName="px-5 py-4"
-      panelClassName={`overflow-hidden rounded-[28px] ${minHeightClassName}`}
-      overlayClassName="pbp-modal-overlay"
+      panelClassName={getWaflModalPanelClassName({ minHeightClassName })}
+      overlayClassName={WAFL_MODAL_OVERLAY_CLASS}
       footer={footer}
     >
       {children}
@@ -52,18 +57,8 @@ type AdminModalSectionProps = {
   className?: string;
 };
 
-export function AdminModalSection({ title, description, children, className = "" }: AdminModalSectionProps) {
-  return (
-    <section className={`rounded-3xl border p-4 pbp-modal-section ${className}`}>
-      {title || description ? (
-        <div className="mb-4">
-          {title ? <h3 className="text-sm font-semibold pbp-text-primary">{title}</h3> : null}
-          {description ? <p className="mt-1 text-xs leading-5 pbp-text-muted">{description}</p> : null}
-        </div>
-      ) : null}
-      {children}
-    </section>
-  );
+export function AdminModalSection(props: AdminModalSectionProps) {
+  return <WaflModalSection {...props} />;
 }
 
 export const adminModalInputClassName =
@@ -103,13 +98,13 @@ export function AdminModalFooterActions({
       <div className="min-h-[20px] min-w-0 flex-1">
         {statusMessage ? <p className={`text-xs font-semibold ${statusClassName}`}>{statusMessage}</p> : null}
       </div>
-      <div className="flex shrink-0 items-center justify-end gap-2">
+      <div className="flex w-full shrink-0 flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
         {secondaryLabel && onSecondary ? (
-          <AdminButton variant="secondary" onClick={onSecondary} disabled={secondaryDisabled}>
+          <AdminButton variant="secondary" width="full" onClick={onSecondary} disabled={secondaryDisabled} className="sm:w-auto">
             {secondaryLabel}
           </AdminButton>
         ) : null}
-        <AdminButton variant="primary" onClick={onPrimary} disabled={primaryDisabled}>
+        <AdminButton variant="primary" width="full" onClick={onPrimary} disabled={primaryDisabled} className="sm:w-auto">
           {primaryLabel}
         </AdminButton>
       </div>

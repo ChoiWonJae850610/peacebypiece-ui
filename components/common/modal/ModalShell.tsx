@@ -38,6 +38,8 @@ export default function ModalShell({
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
+  const descriptionId = useId();
+  const resolvedDescriptionId = description ? descriptionId : undefined;
 
   useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition });
 
@@ -47,12 +49,13 @@ export default function ModalShell({
       onClose={onClose}
       dialogRef={dialogRef}
       titleId={titleId}
+      descriptionId={resolvedDescriptionId}
       maxWidthClassName={maxWidthClass}
       panelClassName={panelClassName}
       overlayClassName={overlayClassName}
       closeOnBackdrop={closeOnBackdrop}
     >
-      <ModalHeader titleId={titleId} title={title} description={description} onClose={onClose} />
+      <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
       <ModalBody className={bodyClassName}>{children}</ModalBody>
       {footer ? <ModalFooter className={footerClassName}>{footer}</ModalFooter> : null}
     </BaseModal>

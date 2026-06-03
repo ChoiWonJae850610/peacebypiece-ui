@@ -3,11 +3,14 @@
 import { createPortal } from "react-dom";
 import type { MouseEvent, ReactNode, RefObject } from "react";
 
+import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui/WaflModal";
+
 type BaseModalProps = {
   open: boolean;
   onClose: () => void;
   dialogRef: RefObject<HTMLDivElement | null>;
   titleId: string;
+  descriptionId?: string;
   children: ReactNode;
   maxWidthClassName?: string;
   panelClassName?: string;
@@ -20,10 +23,11 @@ export default function BaseModal({
   onClose,
   dialogRef,
   titleId,
+  descriptionId,
   children,
   maxWidthClassName = "md:max-w-2xl",
   panelClassName = "",
-  overlayClassName = "pbp-modal-overlay",
+  overlayClassName = WAFL_MODAL_OVERLAY_CLASS,
   closeOnBackdrop = true,
 }: BaseModalProps) {
   if (!open) return null;
@@ -36,7 +40,13 @@ export default function BaseModal({
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <div
+      className="fixed inset-0 z-[90]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+    >
       <div className={`absolute inset-0 pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
       <div className="absolute inset-0 md:p-6" onClick={handleBackdropClick}>
         <div

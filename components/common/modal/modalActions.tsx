@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { WaflButton, type WaflButtonVariant } from "@/components/common/ui/WaflButton";
 
 import { getI18n } from "@/lib/i18n";
 
@@ -29,15 +29,14 @@ type ModalActionButtonConfig = {
   className?: string;
 };
 
-const BASE_BUTTON_CLASS = "pbp-interactive-button rounded-xl px-4 text-sm";
 const WIDTH_CLASS_MAP: Record<ModalActionWidth, string> = {
-  auto: "py-2 font-medium",
-  fill: "flex-1 py-3 font-medium",
+  auto: "",
+  fill: "flex-1",
 };
-const TONE_CLASS_MAP: Record<ModalActionTone, string> = {
-  neutral: "pbp-action-secondary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
-  primary: "pbp-action-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
-  danger: "pbp-action-danger-soft font-semibold active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
+const TONE_VARIANT_MAP: Record<ModalActionTone, WaflButtonVariant> = {
+  neutral: "secondary",
+  primary: "primary",
+  danger: "danger",
 };
 const LAYOUT_CLASS_MAP: Record<ModalFooterLayout, string> = {
   end: "flex items-center justify-end gap-2",
@@ -74,14 +73,16 @@ export function createModalActionHandler({
 
 function ModalActionButton({ label, onClick, disabled, tone = "neutral", width = "auto", className }: ModalActionButtonConfig) {
   return (
-    <button
+    <WaflButton
       type="button"
+      variant={TONE_VARIANT_MAP[tone]}
+      size={width === "fill" ? "md" : "sm"}
       onClick={onClick}
       disabled={disabled}
-      className={cn(BASE_BUTTON_CLASS, WIDTH_CLASS_MAP[width], TONE_CLASS_MAP[tone], className)}
+      className={[WIDTH_CLASS_MAP[width], className].filter(Boolean).join(" ")}
     >
       {label}
-    </button>
+    </WaflButton>
   );
 }
 

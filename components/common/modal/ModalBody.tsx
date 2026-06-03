@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 
+import { getWaflModalBodyClassName } from "@/components/common/ui/WaflModal";
+
 export default function ModalBody({
   children,
   className = "",
@@ -9,9 +11,5 @@ export default function ModalBody({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6 md:py-5 md:pb-6 pbp-modal-body ${className}`.trim()}>
-      {children}
-    </div>
-  );
+  return <div className={getWaflModalBodyClassName(className)}>{children}</div>;
 }
