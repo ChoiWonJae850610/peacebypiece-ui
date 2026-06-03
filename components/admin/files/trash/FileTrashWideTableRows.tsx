@@ -4,13 +4,13 @@ import {
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import {
-  ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS,
-  ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS,
-  ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
-  ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS,
-} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
+  WaflDataTableBody,
+  WaflDataTableHeader,
+  WaflDataTableRow,
+  WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS,
+  WAFL_DATA_TABLE_HEADER_BUTTON_CLASS,
+  WAFL_DATA_TABLE_SUBTLE_TEXT_CLASS,
+} from "@/components/admin/common/WaflDataTable";
 import type {
   TrashSortKey,
   TrashSortState,
@@ -49,11 +49,11 @@ function SortButton({
     <button
       type="button"
       onClick={() => onSort(sortKey)}
-      className={`${ADMIN_RESPONSIVE_TABLE_HEADER_BUTTON_CLASS} justify-center`}
+      className={`${WAFL_DATA_TABLE_HEADER_BUTTON_CLASS} justify-center`}
     >
       <span>{label}</span>
       <span
-        className={isActive ? "text-[var(--pbp-text-primary)]" : ADMIN_RESPONSIVE_TABLE_SUBTLE_TEXT_CLASS}
+        className={isActive ? "text-[var(--pbp-text-primary)]" : WAFL_DATA_TABLE_SUBTLE_TEXT_CLASS}
       >
         {directionLabel}
       </span>
@@ -71,10 +71,7 @@ function WideTrashTableHeader({
   onSort: (key: TrashSortKey) => void;
 }) {
   return (
-    <div
-      className={`${ADMIN_RESPONSIVE_TABLE_HEADER_CLASS} text-center`}
-      style={{ gridTemplateColumns: WIDE_TRASH_GRID }}
-    >
+    <WaflDataTableHeader gridTemplateColumns={WIDE_TRASH_GRID} className="text-center">
       <span>{t("filesList.columns.select", "선택")}</span>
       <SortButton
         label={t("filesList.columns.target", "삭제 대상")}
@@ -106,7 +103,7 @@ function WideTrashTableHeader({
         sortState={sortState}
         onSort={onSort}
       />
-    </div>
+    </WaflDataTableHeader>
   );
 }
 
@@ -119,13 +116,13 @@ function WideTrashTableRow({
   previewWorkOrderId,
 }: FileTrashRowsCommonProps & { row: UnifiedTrashRow }) {
   return (
-    <div
+    <WaflDataTableRow
       role="button"
       tabIndex={0}
       onClick={() => onRowClick(row)}
       onKeyDown={(event) => handleTrashRowKeyDown(event, row, onRowClick)}
-      className={`${ADMIN_RESPONSIVE_TABLE_ROW_CLASS} ${ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS} ${getFileTrashRowToneClass(row, previewWorkOrderId)}`}
-      style={{ gridTemplateColumns: WIDE_TRASH_GRID }}
+      gridTemplateColumns={WIDE_TRASH_GRID}
+      className={`${WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS} ${getFileTrashRowToneClass(row, previewWorkOrderId)}`}
     >
       <span className="flex justify-center">
         <TrashSelectionControl
@@ -151,7 +148,7 @@ function WideTrashTableRow({
       <span className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} truncate text-center text-[12px] font-semibold`}>
         {row.sizeLabel}
       </span>
-    </div>
+    </WaflDataTableRow>
   );
 }
 
@@ -172,7 +169,7 @@ export function FileTrashWideTableRows({
   return (
     <>
       <WideTrashTableHeader t={t} sortState={sortState} onSort={onSort} />
-      <div className={ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS}>
+      <WaflDataTableBody>
         {rows.map((row) => (
           <WideTrashTableRow
             key={row.rowId}
@@ -184,7 +181,7 @@ export function FileTrashWideTableRows({
             previewWorkOrderId={previewWorkOrderId}
           />
         ))}
-      </div>
+      </WaflDataTableBody>
     </>
   );
 }

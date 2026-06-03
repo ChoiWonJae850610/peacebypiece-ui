@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
-import { ADMIN_RESPONSIVE_TABLE_SHELL_CLASS } from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
+import { WaflDataTableShell } from "@/components/admin/common/WaflDataTable";
 
 type AdminResponsiveTableShellProps = {
   children: ReactNode;
@@ -9,9 +8,5 @@ type AdminResponsiveTableShellProps = {
 };
 
 export function AdminResponsiveTableShell({ children, className }: AdminResponsiveTableShellProps) {
-  return (
-    <section className={cn(ADMIN_RESPONSIVE_TABLE_SHELL_CLASS, className)}>
-      {children}
-    </section>
-  );
+  return <WaflDataTableShell className={className}>{children}</WaflDataTableShell>;
 }

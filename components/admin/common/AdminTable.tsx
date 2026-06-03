@@ -4,6 +4,12 @@ import { AdminTableSortButton } from "@/components/admin/common/AdminTableSortBu
 import { adminKo } from "@/lib/i18n/ko/admin";
 import { joinAdminClassNames } from "@/components/admin/common/adminComponentVariants";
 import { AdminTableState } from "@/components/admin/common/AdminTableState";
+import {
+  WAFL_DATA_TABLE_SHELL_CLASS,
+  WAFL_DATA_TABLE_HEADER_CLASS,
+  WAFL_DATA_TABLE_ROW_CLASS,
+  WAFL_DATA_TABLE_DIVIDER_CLASS,
+} from "@/components/admin/common/WaflDataTable";
 
 type AdminTableScrollMode = "internal" | "page";
 
@@ -56,13 +62,13 @@ export default function AdminTable<TItem, TSortKey extends string = string>({
   const responsiveGridClassName = responsiveGridClassNameOverride ?? (gridTemplateColumns
     ? "grid-cols-1 2xl:[grid-template-columns:var(--admin-table-columns)]"
     : "grid-cols-1");
-  const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
-  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid 2xl:[grid-template-columns:var(--admin-table-columns)]";
+  const baseRowClassName = rowBaseClassName ?? WAFL_DATA_TABLE_ROW_CLASS;
+  const tableHeaderClassName = headerClassName ?? `${WAFL_DATA_TABLE_HEADER_CLASS} hidden 2xl:grid 2xl:[grid-template-columns:var(--admin-table-columns)]`;
 
   const bodyScrollClassName =
     scrollMode === "internal"
-      ? "min-h-fit touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto 2xl:min-h-0 2xl:flex-1 2xl:overflow-auto 2xl:overscroll-contain"
-      : "min-h-fit touch-pan-y divide-y divide-[var(--pbp-border)] overflow-visible overscroll-auto";
+      ? `${WAFL_DATA_TABLE_DIVIDER_CLASS} min-h-fit touch-pan-y overflow-visible overscroll-auto 2xl:min-h-0 2xl:flex-1 2xl:overflow-auto 2xl:overscroll-contain`
+      : `${WAFL_DATA_TABLE_DIVIDER_CLASS} min-h-fit touch-pan-y overflow-visible overscroll-auto`;
   const outerScrollClassName =
     scrollMode === "internal"
       ? "2xl:min-h-0 2xl:flex-1 2xl:overflow-hidden"
@@ -71,7 +77,7 @@ export default function AdminTable<TItem, TSortKey extends string = string>({
   return (
     <div
       className={joinAdminClassNames(
-        "flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
+        WAFL_DATA_TABLE_SHELL_CLASS,
         outerScrollClassName,
         className,
       )}

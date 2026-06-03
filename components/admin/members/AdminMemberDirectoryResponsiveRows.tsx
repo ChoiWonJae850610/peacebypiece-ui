@@ -2,19 +2,19 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 
-import { AdminResponsiveTableShell } from "@/components/admin/common/responsiveTable/AdminResponsiveTableShell";
 import {
-  ADMIN_RESPONSIVE_COMPACT_CARD_CLASS,
-  ADMIN_RESPONSIVE_COMPACT_CARD_CLICKABLE_CLASS,
-  ADMIN_RESPONSIVE_COMPACT_META_BOX_CLASS,
-  ADMIN_RESPONSIVE_COMPACT_META_LABEL_CLASS,
-  ADMIN_RESPONSIVE_COMPACT_META_VALUE_CLASS,
-  ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS,
-  ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_MUTED_TEXT_CLASS,
-  ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
-} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
+  WaflDataTableBody,
+  WaflDataTableHeader,
+  WaflDataTableRow,
+  WaflDataTableShell,
+  WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS,
+  WAFL_DATA_TABLE_COMPACT_CARD_CLASS,
+  WAFL_DATA_TABLE_COMPACT_CARD_CLICKABLE_CLASS,
+  WAFL_DATA_TABLE_COMPACT_META_BOX_CLASS,
+  WAFL_DATA_TABLE_COMPACT_META_LABEL_CLASS,
+  WAFL_DATA_TABLE_COMPACT_META_VALUE_CLASS,
+  WAFL_DATA_TABLE_MUTED_TEXT_CLASS,
+} from "@/components/admin/common/WaflDataTable";
 import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
 import { AdminTableSortButton } from "@/components/admin/common/AdminTableSortButton";
 import { AdminTableState } from "@/components/admin/common/AdminTableState";
@@ -59,11 +59,8 @@ function MemberDirectoryWideTableRows({
   onSort,
 }: AdminMemberDirectoryResponsiveRowsProps) {
   return (
-    <AdminResponsiveTableShell className="mb-1">
-      <div
-        className={ADMIN_RESPONSIVE_TABLE_HEADER_CLASS}
-        style={{ gridTemplateColumns: MEMBER_DIRECTORY_TABLE_GRID }}
-      >
+    <WaflDataTableShell className="mb-1">
+      <WaflDataTableHeader gridTemplateColumns={MEMBER_DIRECTORY_TABLE_GRID}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>
             {column.sortKey ? (
@@ -79,16 +76,16 @@ function MemberDirectoryWideTableRows({
             )}
           </span>
         ))}
-      </div>
+      </WaflDataTableHeader>
 
       {isLoading ? (
         <AdminTableState title={loadingLabel} minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
         <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
       ) : (
-        <div className={ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS}>
+        <WaflDataTableBody>
           {items.map((row) => (
-            <div
+            <WaflDataTableRow
               key={row.id}
               role="button"
               tabIndex={0}
@@ -99,27 +96,27 @@ function MemberDirectoryWideTableRows({
                   onOpenMemberDetail(row);
                 }
               }}
-              className={`${ADMIN_RESPONSIVE_TABLE_ROW_CLASS} ${ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS}`}
-              style={{ gridTemplateColumns: MEMBER_DIRECTORY_TABLE_GRID }}
+              gridTemplateColumns={MEMBER_DIRECTORY_TABLE_GRID}
+              className={WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS}
             >
               {columns.map((column) => (
                 <div key={column.key} className={`min-w-0 ${column.className ?? ""}`}>
                   {column.render(row)}
                 </div>
               ))}
-            </div>
+            </WaflDataTableRow>
           ))}
-        </div>
+        </WaflDataTableBody>
       )}
-    </AdminResponsiveTableShell>
+    </WaflDataTableShell>
   );
 }
 
 function MemberMetaItem({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
-    <div className={ADMIN_RESPONSIVE_COMPACT_META_BOX_CLASS}>
-      <p className={ADMIN_RESPONSIVE_COMPACT_META_LABEL_CLASS}>{label}</p>
-      <div className={ADMIN_RESPONSIVE_COMPACT_META_VALUE_CLASS}>{value}</div>
+    <div className={WAFL_DATA_TABLE_COMPACT_META_BOX_CLASS}>
+      <p className={WAFL_DATA_TABLE_COMPACT_META_LABEL_CLASS}>{label}</p>
+      <div className={WAFL_DATA_TABLE_COMPACT_META_VALUE_CLASS}>{value}</div>
     </div>
   );
 }
@@ -171,12 +168,12 @@ function MemberDirectoryCompactListRows({
                   onOpenMemberDetail(row);
                 }
               }}
-              className={`${ADMIN_RESPONSIVE_COMPACT_CARD_CLASS} ${ADMIN_RESPONSIVE_COMPACT_CARD_CLICKABLE_CLASS}`}
+              className={`${WAFL_DATA_TABLE_COMPACT_CARD_CLASS} ${WAFL_DATA_TABLE_COMPACT_CARD_CLICKABLE_CLASS}`}
             >
               <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   {nameColumn ? nameColumn.render(row) : <span>{row.name || "-"}</span>}
-                  <div className={ADMIN_RESPONSIVE_TABLE_MUTED_TEXT_CLASS}>
+                  <div className={WAFL_DATA_TABLE_MUTED_TEXT_CLASS}>
                     {emailColumn ? emailColumn.render(row) : row.email || "-"}
                   </div>
                 </div>

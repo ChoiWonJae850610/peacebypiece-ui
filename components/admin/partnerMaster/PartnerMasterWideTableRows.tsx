@@ -7,12 +7,12 @@ import {
   PARTNER_WIDE_TABLE_GRID,
 } from "@/components/admin/partnerMaster/partnerMasterResponsivePresentation";
 import {
-  ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS,
-  ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_HEADER_CLASS,
-  ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
-} from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
-import { AdminResponsiveTableShell } from "@/components/admin/common/responsiveTable/AdminResponsiveTableShell";
+  WaflDataTableBody,
+  WaflDataTableHeader,
+  WaflDataTableRow,
+  WaflDataTableShell,
+  WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS,
+} from "@/components/admin/common/WaflDataTable";
 import {
   handlePartnerRowKeyDown,
   PartnerNameSummary,
@@ -35,17 +35,14 @@ function WideTableHeader({
   onSort: (sortKey: PartnerSortKey) => void;
 }) {
   return (
-    <div
-      className={ADMIN_RESPONSIVE_TABLE_HEADER_CLASS}
-      style={{ gridTemplateColumns: PARTNER_WIDE_TABLE_GRID }}
-    >
+    <WaflDataTableHeader gridTemplateColumns={PARTNER_WIDE_TABLE_GRID}>
       <PartnerMasterTableSortButton sortKey="name" label={listText.columns.name} activeSort={sortState} onSort={onSort} align="left" />
       <PartnerMasterTableSortButton sortKey="contact" label={listText.columns.contact} activeSort={sortState} onSort={onSort} />
       <PartnerMasterTableSortButton sortKey="phone" label={listText.columns.phone} activeSort={sortState} onSort={onSort} />
       <PartnerMasterTableSortButton sortKey="email" label={listText.columns.email} activeSort={sortState} onSort={onSort} />
       <PartnerMasterTableSortButton sortKey="type" label={listText.columns.type} activeSort={sortState} onSort={onSort} />
       <PartnerMasterTableSortButton sortKey="status" label={listText.columns.status} activeSort={sortState} onSort={onSort} />
-    </div>
+    </WaflDataTableHeader>
   );
 }
 
@@ -65,13 +62,13 @@ function WidePartnerRow({
   };
 
   return (
-    <div
+    <WaflDataTableRow
       role={canUpdate ? "button" : undefined}
       tabIndex={canUpdate ? 0 : undefined}
       onClick={openPartner}
       onKeyDown={(event) => handlePartnerRowKeyDown(event, item, canUpdate, onEditPartner)}
-      className={`${ADMIN_RESPONSIVE_TABLE_ROW_CLASS} ${getPartnerRowToneClass(item)} ${canUpdate ? ADMIN_RESPONSIVE_TABLE_CLICKABLE_ROW_CLASS : ""}`}
-      style={{ gridTemplateColumns: PARTNER_WIDE_TABLE_GRID }}
+      gridTemplateColumns={PARTNER_WIDE_TABLE_GRID}
+      className={`${getPartnerRowToneClass(item)} ${canUpdate ? WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS : ""}`}
     >
       <PartnerNameSummary item={item} listText={listText} />
       <PartnerValueText value={item.contactName} />
@@ -81,7 +78,7 @@ function WidePartnerRow({
       <div className="flex justify-center">
         <PartnerStatusBadge item={item} listText={listText} />
       </div>
-    </div>
+    </WaflDataTableRow>
   );
 }
 
@@ -95,14 +92,14 @@ export default function PartnerMasterWideTableRows({
   onEditPartner,
 }: PartnerMasterWideTableRowsProps) {
   return (
-    <AdminResponsiveTableShell>
+    <WaflDataTableShell>
       <WideTableHeader listText={listText} sortState={sortState} onSort={onSort} />
       {isLoading ? (
         <PartnerMasterRowsEmpty label={listText.loading} />
       ) : items.length === 0 ? (
         <PartnerMasterRowsEmpty label={listText.empty} />
       ) : (
-        <div className={ADMIN_RESPONSIVE_TABLE_DIVIDER_CLASS}>
+        <WaflDataTableBody>
           {items.map((item) => (
             <WidePartnerRow
               key={item.id}
@@ -112,8 +109,8 @@ export default function PartnerMasterWideTableRows({
               onEditPartner={onEditPartner}
             />
           ))}
-        </div>
+        </WaflDataTableBody>
       )}
-    </AdminResponsiveTableShell>
+    </WaflDataTableShell>
   );
 }
