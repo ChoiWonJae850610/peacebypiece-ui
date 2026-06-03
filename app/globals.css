@@ -167,11 +167,11 @@
   --pbp-toast-foreground: #2B2118;
   --pbp-toast-border: #E8DED1;
   --pbp-toast-accent: #A8733D;
-  --pbp-toast-success: var(--pbp-toast-accent);
-  --pbp-toast-warning: var(--pbp-toast-accent);
-  --pbp-toast-danger: var(--pbp-toast-accent);
-  --pbp-toast-info: var(--pbp-toast-accent);
-  --pbp-toast-loading: var(--pbp-toast-accent);
+  --pbp-toast-success: var(--pbp-status-success-fg);
+  --pbp-toast-warning: var(--pbp-status-warning-fg);
+  --pbp-toast-danger: var(--pbp-status-danger-fg);
+  --pbp-toast-info: var(--pbp-brand-soft);
+  --pbp-toast-loading: var(--pbp-brand-soft);
   --pbp-shadow-card: 0 1px 3px rgba(28, 25, 23, 0.08), 0 1px 2px rgba(28, 25, 23, 0.04);
   --pbp-shadow-elevated: 0 18px 55px rgba(28, 25, 23, 0.22);
 }
@@ -542,6 +542,7 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
+  background: color-mix(in srgb, var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft))) 10%, transparent);
   color: var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft)));
 }
 
@@ -553,26 +554,31 @@ body {
 
 .pbp-toast[data-tone="info"] {
   --pbp-toast-tone-color: var(--pbp-toast-info);
+  background: color-mix(in srgb, var(--pbp-surface) 34%, var(--pbp-toast-background));
   border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 24%, var(--pbp-toast-border));
 }
 
 .pbp-toast[data-tone="success"] {
   --pbp-toast-tone-color: var(--pbp-toast-success);
+  background: color-mix(in srgb, var(--pbp-status-success-bg) 34%, var(--pbp-toast-background));
   border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 24%, var(--pbp-toast-border));
 }
 
 .pbp-toast[data-tone="warning"] {
   --pbp-toast-tone-color: var(--pbp-toast-warning);
+  background: color-mix(in srgb, var(--pbp-status-warning-bg) 34%, var(--pbp-toast-background));
   border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 24%, var(--pbp-toast-border));
 }
 
 .pbp-toast[data-tone="danger"] {
   --pbp-toast-tone-color: var(--pbp-toast-danger);
+  background: color-mix(in srgb, var(--pbp-status-danger-bg) 34%, var(--pbp-toast-background));
   border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 24%, var(--pbp-toast-border));
 }
 
 .pbp-toast[data-tone="loading"] {
   --pbp-toast-tone-color: var(--pbp-toast-loading);
+  background: color-mix(in srgb, var(--pbp-surface) 34%, var(--pbp-toast-background));
   border-color: color-mix(in srgb, var(--pbp-toast-tone-color) 28%, var(--pbp-toast-border));
 }
 
