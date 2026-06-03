@@ -9,29 +9,29 @@ import {
   ADMIN_STORAGE_SUBTLE_BOX_CLASS,
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
+import { getWaflActionButtonClassName, type WaflActionButtonTone } from "@/components/common/ui";
 
-export const TRASH_ACTION_BUTTON_BASE =
-  "rounded-full border px-3 py-1.5 text-xs font-semibold transition";
-export const TRASH_ACTION_BUTTON_NEUTRAL_ENABLED =
-  "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-secondary-text)] shadow-sm hover:bg-[var(--pbp-action-secondary-surface-hover)]";
-export const TRASH_ACTION_BUTTON_DANGER_ENABLED =
-  "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-danger-soft-text)] shadow-sm hover:bg-[var(--pbp-action-danger-soft-surface)]";
-export const TRASH_ACTION_BUTTON_DANGER_SOLID_ENABLED =
-  "border-[var(--pbp-action-danger-surface)] bg-[var(--pbp-action-danger-surface)] text-[var(--pbp-action-danger-text)] shadow-sm hover:bg-[var(--pbp-action-danger-surface-hover)]";
-export const TRASH_ACTION_BUTTON_DISABLED =
-  "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-subtle)]";
+type TrashActionTone = "neutral" | "danger" | "dangerSolid";
+
+function mapTrashActionTone(tone: TrashActionTone): WaflActionButtonTone {
+  if (tone === "dangerSolid") return "danger";
+  if (tone === "danger") return "dangerSoft";
+  return "neutral";
+}
 
 export function getTrashActionButtonClassName(
   isEnabled: boolean,
-  tone: "neutral" | "danger" | "dangerSolid" = "neutral",
+  tone: TrashActionTone = "neutral",
 ): string {
-  if (!isEnabled) return `${TRASH_ACTION_BUTTON_BASE} ${TRASH_ACTION_BUTTON_DISABLED}`;
-  if (tone === "dangerSolid")
-    return `${TRASH_ACTION_BUTTON_BASE} ${TRASH_ACTION_BUTTON_DANGER_SOLID_ENABLED}`;
-  if (tone === "danger")
-    return `${TRASH_ACTION_BUTTON_BASE} ${TRASH_ACTION_BUTTON_DANGER_ENABLED}`;
-  return `${TRASH_ACTION_BUTTON_BASE} ${TRASH_ACTION_BUTTON_NEUTRAL_ENABLED}`;
+  return getWaflActionButtonClassName({
+    tone: mapTrashActionTone(tone),
+    compact: true,
+    className: isEnabled
+      ? ""
+      : "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-subtle)]",
+  });
 }
+
 
 type AdminT = ReturnType<typeof useAdminTranslation>;
 

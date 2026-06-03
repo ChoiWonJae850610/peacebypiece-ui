@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { RefreshCw, RotateCcw, Trash, Trash2 } from "lucide-react";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
-import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminIconActionButton } from "@/components/admin/common/AdminIconActionButton";
 import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import type {
   AdminStorageWorkOrderItem,
@@ -195,12 +195,11 @@ export default function FileTrashSection({
           className="flex-row items-center justify-end gap-2"
           actionsClassName="ml-auto flex w-fit shrink-0 flex-wrap items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
         >
-          <AdminButton
-            variant="icon"
+          <AdminIconActionButton
             onClick={onRefresh}
             disabled={!canRefresh}
             title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
-            aria-label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+            label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} aria-hidden="true" />
             <span className="sr-only">
@@ -208,9 +207,9 @@ export default function FileTrashSection({
                 ? t("filesList.refreshing", "새로고침 중")
                 : t("filesList.refresh", "새로고침")}
             </span>
-          </AdminButton>
-          <AdminButton
-            variant="primary"
+          </AdminIconActionButton>
+          <AdminIconActionButton
+            tone="primary"
             onClick={() => openSelectionConfirm("restore")}
             disabled={!canRestoreSelection}
             title={
@@ -223,8 +222,8 @@ export default function FileTrashSection({
                   ? `${t("terms.actions.restore", "복원")} · ${formatAdminTermCount(t, selectedCount, "item")}`
                   : t("terms.actions.restore", "복원")
             }
-            aria-label={t("terms.actions.restore", "복원")}
-            className="relative rounded-full"
+            label={t("terms.actions.restore", "복원")}
+            className="relative"
           >
             <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="sr-only">
@@ -237,9 +236,9 @@ export default function FileTrashSection({
                 {selectedCount}
               </span>
             ) : null}
-          </AdminButton>
-          <AdminButton
-            variant="danger"
+          </AdminIconActionButton>
+          <AdminIconActionButton
+            tone="danger"
             onClick={() => openSelectionConfirm("purge")}
             disabled={!canPurgeSelection}
             title={
@@ -252,8 +251,8 @@ export default function FileTrashSection({
                   ? `${t("filesList.delete", "삭제")} · ${formatAdminTermCount(t, selectedCount, "item")}`
                   : t("filesList.delete", "삭제")
             }
-            aria-label={t("filesList.delete", "삭제")}
-            className="relative rounded-full"
+            label={t("filesList.delete", "삭제")}
+            className="relative"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="sr-only">
@@ -266,18 +265,17 @@ export default function FileTrashSection({
                 {selectedCount}
               </span>
             ) : null}
-          </AdminButton>
-          <AdminButton
-            variant="danger"
+          </AdminIconActionButton>
+          <AdminIconActionButton
+            tone="danger"
             onClick={() => setIsEmptyTrashConfirmOpen(true)}
             disabled={!canEmptyTrash}
             title={t("filesList.emptyTrash", "비우기")}
-            aria-label={t("filesList.emptyTrash", "비우기")}
-            className="rounded-full"
+            label={t("filesList.emptyTrash", "비우기")}
           >
             <Trash className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="sr-only">{t("filesList.emptyTrash", "비우기")}</span>
-          </AdminButton>
+          </AdminIconActionButton>
         </AdminActionBar>
       }
       className="flex min-h-fit touch-pan-y flex-col overflow-visible"

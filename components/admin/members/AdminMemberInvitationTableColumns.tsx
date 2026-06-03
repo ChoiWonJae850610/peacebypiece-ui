@@ -1,5 +1,7 @@
 import { Ban, Copy, Share2, type LucideIcon } from "lucide-react";
 
+import { AdminIconActionButton, type AdminIconActionButtonTone } from "@/components/admin/common/AdminIconActionButton";
+
 import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
@@ -71,6 +73,12 @@ function canCancelInvitation(status: PendingMemberInvitationRow["status"]): bool
 
 const INVITATION_ICON_CLASS = "pointer-events-none block h-[14px] w-[14px] shrink-0 stroke-[2.5]";
 
+const INVITATION_ACTION_TONE_MAP: Record<"copy" | "share" | "cancel", AdminIconActionButtonTone> = {
+  copy: "neutral",
+  share: "primary",
+  cancel: "dangerSoft",
+};
+
 function InvitationIconActionButton({
   tone,
   disabled,
@@ -90,39 +98,24 @@ function InvitationIconActionButton({
   icon: LucideIcon;
   className?: string;
 }) {
-  const baseClassName =
-    "inline-flex h-7 min-h-7 w-7 min-w-7 shrink-0 items-center justify-center rounded-full border p-0 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]";
-
-  const toneClassName =
-    tone === "cancel"
-      ? disabled
-        ? "cursor-not-allowed border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-surface-muted)] text-[color-mix(in_srgb,var(--pbp-action-danger-soft-text)_58%,var(--pbp-text-muted))]"
-        : "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-danger-soft-surface)] text-[var(--pbp-action-danger-soft-text)] hover:bg-[color-mix(in_srgb,var(--pbp-action-danger-soft-surface)_70%,var(--pbp-action-danger-soft-border))]"
-      : tone === "share"
-        ? disabled
-          ? "cursor-not-allowed border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
-          : "border-[var(--pbp-brand-border)] bg-[var(--pbp-brand-muted)] text-[var(--pbp-brand-strong)] hover:bg-[color-mix(in_srgb,var(--pbp-brand-muted)_70%,var(--pbp-surface))]"
-        : disabled
-          ? "cursor-not-allowed border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
-          : "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-action-secondary-surface-hover)]";
-
   return (
-    <button
-      type="button"
+    <AdminIconActionButton
+      tone={INVITATION_ACTION_TONE_MAP[tone]}
       onClick={onClick}
       disabled={disabled}
       title={title}
-      aria-label={ariaLabel}
-      className={`${baseClassName} ${toneClassName} ${className}`.trim()}
+      label={ariaLabel}
+      className={className}
     >
       {isBusy ? (
         <span className="text-[12px] font-bold leading-none" aria-hidden="true">…</span>
       ) : (
         <Icon className={INVITATION_ICON_CLASS} aria-hidden="true" />
       )}
-    </button>
+    </AdminIconActionButton>
   );
 }
+
 
 export function buildMemberInvitationTableColumns({
   t,
