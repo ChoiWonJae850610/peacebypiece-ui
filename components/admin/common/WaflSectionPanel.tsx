@@ -10,6 +10,7 @@ type WaflSectionPanelProps = {
   description?: ReactNode;
   meta?: ReactNode;
   actions?: ReactNode;
+  descriptionActions?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
@@ -53,6 +54,7 @@ export default function WaflSectionPanel({
   description,
   meta,
   actions,
+  descriptionActions,
   children,
   footer,
   className = "",
@@ -81,7 +83,20 @@ export default function WaflSectionPanel({
           >
             {title}
           </h3>
-          {description ? <p className={WAFL_SECTION_DESCRIPTION_CLASS}>{description}</p> : null}
+          {description || descriptionActions ? (
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              {description ? (
+                <p className={joinClassNames(WAFL_SECTION_DESCRIPTION_CLASS, "mt-0")}>{description}</p>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+              {descriptionActions ? (
+                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                  {descriptionActions}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         {meta || actions ? (
           <div className={joinClassNames("flex shrink-0 flex-wrap items-center gap-2 text-xs font-semibold text-[var(--pbp-text-subtle)] sm:justify-end sm:self-start", actionClassName)}>

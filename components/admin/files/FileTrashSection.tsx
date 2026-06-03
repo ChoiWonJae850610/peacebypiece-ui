@@ -190,7 +190,7 @@ export default function FileTrashSection({
         "trashPage.description",
         "삭제된 작업지시서, 문서, 디자인, 메모를 확인하고 복원 또는 정리합니다.",
       )}
-      actions={
+      descriptionActions={
         <AdminActionBar
           className="flex-row items-center justify-end gap-2"
           actionsClassName="ml-auto flex w-fit shrink-0 flex-wrap items-center justify-end gap-1.5 [&>button]:h-8 [&>button]:min-h-8 [&>button]:w-8 [&>button]:px-0 [&>button]:py-0"
@@ -281,8 +281,7 @@ export default function FileTrashSection({
         </AdminActionBar>
       }
       className="flex min-h-fit touch-pan-y flex-col overflow-visible"
-      actionClassName="sm:self-end sm:pb-0.5"
-      bodyClassName="pt-2"
+      bodyClassName="pt-3"
     >
       <EmptyTrashConfirmModal
         open={isEmptyTrashConfirmOpen}
