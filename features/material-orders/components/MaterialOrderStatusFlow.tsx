@@ -46,7 +46,7 @@ export function MaterialOrderStatusFlow({
 
   return (
     <WorkflowProgressPanel
-      title="진행 단계"
+      title="발주 진행 단계"
       steps={progressSteps}
       actions={progressActions}
       pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
@@ -58,7 +58,7 @@ export function MaterialOrderStatusFlow({
       }}
       footer={
         <>
-          <span>자재 발주</span>
+          <span>원단·부자재 발주</span>
           <span>·</span>
           <span>{formatMaterialOrderStatusLabel(status)}</span>
         </>

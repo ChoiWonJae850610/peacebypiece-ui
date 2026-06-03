@@ -95,7 +95,7 @@ export default function MaterialOrderListPanel({
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="공급처·품목·담당 검색"
+          placeholder="공급처·품목·작업지시서 검색"
           className={MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS}
         />
         <div className="grid grid-cols-2 gap-1.5">
@@ -104,7 +104,7 @@ export default function MaterialOrderListPanel({
             onValueChange={(value) => setTypeFilter(value as MaterialOrderFilterType)}
             options={MATERIAL_ORDER_TYPE_OPTIONS}
             size="sm"
-            ariaLabel="발주 종류 필터"
+            ariaLabel="자재 종류 필터"
           />
           <AppSelect
             value={statusFilter}
@@ -122,24 +122,24 @@ export default function MaterialOrderListPanel({
           disabled={creating}
           onClick={onCreateOrder}
         >
-          {creating ? "발주서 생성 중" : "발주서 생성"}
+          {creating ? "발주서 생성 중" : "새 발주서 생성"}
         </AppButton>
       </div>
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
-          <MaterialOrderPanelMessage title="불러오는 중" description="발주서 목록을 조회하고 있습니다." kind="loading" />
+          <MaterialOrderPanelMessage title="불러오는 중" description="원단·부자재 발주서를 조회하고 있습니다." kind="loading" />
         ) : errorMessage ? (
           <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} kind="error" />
         ) : orders.length === 0 ? (
           <MaterialOrderPanelMessage
             title="등록된 발주서 없음"
-            description="발주서 생성 버튼으로 첫 원단·부자재 발주서를 만듭니다."
+            description="새 발주서 생성 버튼으로 공급처별 발주서를 시작합니다."
           />
         ) : filteredOrders.length === 0 ? (
           <MaterialOrderPanelMessage
             title="검색 결과 없음"
-            description="검색어, 상태, 종류 필터를 조정해보세요."
+            description="검색어 또는 상태/종류 필터를 조정하세요."
             kind="search"
           />
         ) : (
@@ -176,7 +176,7 @@ function MaterialOrderListButton({
   draftLines: MaterialOrderDraftLine[] | null;
 }) {
   const materialType = draftMaterialType ?? resolveMaterialOrderType(order);
-  const supplierLabel = draftSupplierName?.trim() || order.supplierPartnerName?.trim() || "공급처 미선택";
+  const supplierLabel = draftSupplierName?.trim() || order.supplierPartnerName?.trim() || "공급처 미지정";
   const displayTitle = selected ? `${formatMaterialOrderTypeLabel(materialType)} · ${supplierLabel}` : formatMaterialOrderDisplayTitle(order);
   const primaryLineLabel = draftLines ? formatMaterialOrderDraftLineLabel(draftLines) : formatMaterialOrderPrimaryLineLabel(order);
 

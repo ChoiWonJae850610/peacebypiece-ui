@@ -71,19 +71,19 @@ export default function MaterialOrderDetailPanel({
           />
 
           <AppSection
-            title="주문 기본정보"
-            description="발주 구분과 실제 공급처만 먼저 정합니다."
+            title="발주 기본정보"
+            description="자재 종류와 실제 공급처를 먼저 정합니다."
             className="shrink-0"
             cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}
             bodyClassName="grid gap-3 xl:grid-cols-2"
           >
-              <FieldLabel label="구분">
+              <FieldLabel label="자재 종류">
                 <AppSelect
                   value={materialType}
                   disabled={selectedOrder.status !== "draft"}
                   size="sm"
                   options={MATERIAL_TYPE_SELECT_OPTIONS}
-                  ariaLabel="발주 구분"
+                  ariaLabel="자재 종류"
                   onValueChange={(value) =>
                     onChangeMaterialType(value as MaterialOrderDraftType)
                   }
@@ -107,7 +107,7 @@ export default function MaterialOrderDetailPanel({
                     size="sm"
                     className="mt-1 w-fit min-h-7 px-3 py-1 text-[11px]"
                   >
-                    공급처 조회 실패 · 다시 조회
+                    공급처를 불러오지 못했습니다 · 다시 조회
                   </AppButton>
                 ) : null}
               </FieldLabel>
@@ -115,7 +115,7 @@ export default function MaterialOrderDetailPanel({
 
           <AppSection
             title="발주 품목"
-            description="선택한 자재의 실제 주문 수량과 단가를 정리합니다."
+            description="실제 주문 수량과 단가를 입력합니다. 금액은 자동 계산됩니다."
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
             cardClassName={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}
             bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -134,8 +134,8 @@ export default function MaterialOrderDetailPanel({
         </div>
       ) : (
         <WaflEmptyState
-          title="선택된 발주서가 없습니다."
-          description="왼쪽 패널에서 발주서를 생성하거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다."
+          title="발주서를 선택하세요."
+          description="왼쪽 발주서 목록에서 새 발주서를 만들거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다."
           size="md"
           minHeightClassName="min-h-full"
           className="flex-1 rounded-3xl border-dashed bg-[var(--pbp-surface-soft)]"
@@ -187,7 +187,7 @@ function resolveSupplierPlaceholder(
   loading: boolean,
   supplierCount: number,
 ): string {
-  if (loading) return "공급처 조회중";
-  if (supplierCount === 0) return "등록된 공급처 없음";
+  if (loading) return "공급처 조회 중";
+  if (supplierCount === 0) return "선택 가능한 공급처 없음";
   return "공급처 선택";
 }

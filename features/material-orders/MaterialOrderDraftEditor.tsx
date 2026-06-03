@@ -23,8 +23,8 @@ type MaterialOrderPanelKey = "orders" | "detail" | "materials";
 
 const MATERIAL_ORDER_PANEL_TABS: Array<{ key: MaterialOrderPanelKey; label: string }> = [
   { key: "orders", label: "발주서" },
-  { key: "detail", label: "상세" },
-  { key: "materials", label: "자재" },
+  { key: "detail", label: "상세 입력" },
+  { key: "materials", label: "자재 선택" },
 ];
 
 export default function MaterialOrderDraftEditor() {
@@ -108,7 +108,7 @@ export default function MaterialOrderDraftEditor() {
       onChange={handleMobilePanelChange}
       className="-mx-1 mb-3 bg-[var(--pbp-surface)]/95"
       sticky
-      ariaLabel="원단·부자재 모바일 화면 전환"
+      ariaLabel="원단·부자재 발주 화면 전환"
     />
   );
 
@@ -179,7 +179,7 @@ export default function MaterialOrderDraftEditor() {
                   className="w-full"
                   onClick={() => setMobileMaterialSheetOpen(true)}
                 >
-                  자재 선택 열기
+                  작업지시서 자재 선택
                 </AppButton>
               </div>
               {detailPanel}
@@ -190,7 +190,7 @@ export default function MaterialOrderDraftEditor() {
           open={mobileMaterialSheetOpen}
           onOpenChange={setMobileMaterialSheetOpen}
           title="작업지시서 자재 선택"
-          description="이번 발주서에 담을 원단·부자재를 선택합니다."
+          description="자재 발주 대기 상태의 작업지시서에서 이번 발주서에 담을 품목을 선택합니다."
           side="bottom"
           size="full"
           contentClassName="px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"
@@ -215,7 +215,7 @@ export default function MaterialOrderDraftEditor() {
                 size="sm"
                 onClick={() => setTabletMaterialSheetOpen(true)}
               >
-                자재 선택 열기
+                작업지시서 자재 선택
               </AppButton>
             </div>
             <section className="min-h-[680px] min-w-0">{detailPanel}</section>
@@ -225,7 +225,7 @@ export default function MaterialOrderDraftEditor() {
           open={tabletMaterialSheetOpen}
           onOpenChange={setTabletMaterialSheetOpen}
           title="작업지시서 자재 선택"
-          description="이번 발주서에 담을 원단·부자재를 선택합니다."
+          description="자재 발주 대기 상태의 작업지시서에서 이번 발주서에 담을 품목을 선택합니다."
           side="right"
           size="lg"
           contentClassName="px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"

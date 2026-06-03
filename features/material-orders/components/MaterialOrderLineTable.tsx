@@ -74,8 +74,8 @@ export function MaterialOrderLineTable({
           <tr>
             <td className="px-3 py-4" colSpan={6}>
               <WaflEmptyState
-                title="주문할 자재를 선택하세요."
-                description="오른쪽 작업지시서 패널에서 이번 발주서에 담을 자재를 추가합니다."
+                title="발주 품목을 추가하세요."
+                description="작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다."
                 size="sm"
                 minHeightClassName="min-h-[96px]"
                 className="rounded-2xl border-dashed bg-[var(--pbp-surface-soft)]"
@@ -189,7 +189,7 @@ function MaterialOrderLineRow({
       </td>
       <td className="px-1.5 py-2 text-center align-middle lg:px-2">
         <MaterialOrderMiniActionButton
-          label="주문 내역 삭제"
+          label="발주 품목 삭제"
           tone="dangerSoft"
           disabled={!editable}
           onClick={() => onRemoveLine(line.id)}

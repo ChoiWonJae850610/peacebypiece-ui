@@ -10,7 +10,7 @@ export default async function WorkspaceMaterialOrdersPageRoute() {
       session={session}
       activeHref="/workspace/material-orders"
       title="원단·부자재"
-      description="작업지시서와 연결해 자재 발주 요청, 발주 확정, 배분, 재고 예정 수량을 관리합니다."
+      description="작업지시서의 자재 발주 대기 항목을 공급처별 발주서로 묶고, 발주 상태와 잔여 자재를 확인합니다."
       contentMode="fixed-md"
     >
       <MaterialOrderWorkspacePage />

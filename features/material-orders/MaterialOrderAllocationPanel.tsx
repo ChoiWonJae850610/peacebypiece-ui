@@ -70,29 +70,29 @@ export default function MaterialOrderAllocationPanel({
     <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-end justify-between gap-2">
-          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서</h2>
+          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 자재 선택</h2>
           <SectionCountBadge className="translate-y-0.5">{filteredCandidates.length}건</SectionCountBadge>
         </div>
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="제품·자재 검색"
+          placeholder="제품·자재·담당자 검색"
           className={fieldClassName("mt-3 min-h-9 text-xs")}
         />
       </div>
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
-          <MaterialOrderPanelMessage title="불러오는 중" description="작업지시서 목록을 조회하고 있습니다." kind="loading" />
+          <MaterialOrderPanelMessage title="불러오는 중" description="자재 발주 대기 작업지시서를 조회하고 있습니다." kind="loading" />
         ) : errorMessage ? (
           <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} kind="error" />
         ) : candidates.length === 0 ? (
           <MaterialOrderPanelMessage
-            title="표시할 작업지시서 없음"
+            title="선택 가능한 자재 없음"
             description="자재 발주 대기 상태의 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
-          <MaterialOrderPanelMessage title="검색 결과 없음" description="검색어를 조정해보세요." kind="search" />
+          <MaterialOrderPanelMessage title="검색 결과 없음" description="제품명, 자재명, 담당자 검색어를 조정하세요." kind="search" />
         ) : (
           filteredCandidates.map((workOrder) => (
             <AllocationCandidateCard
@@ -176,7 +176,7 @@ function AllocationCandidateCard({
   });
   const materialSummaryLabel = `원단 ${itemTypeSummary.fabric}종 · 부자재 ${itemTypeSummary.subsidiary}종`;
   const remainingSummaryLabel = completionSummary.isComplete
-    ? "자재 발주완료"
+    ? "자재 발주 완료"
     : `남은 자재 ${remainingItemCount}개`;
   const materialItemsCount = workOrder.materialItems.length;
 
@@ -203,7 +203,7 @@ function AllocationCandidateCard({
 
       <details className="group mt-2.5">
         <summary className="flex cursor-pointer list-none items-center justify-between rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-muted)]">
-          <span>자재 보기/선택 · {materialItemsCount}개</span>
+          <span>발주 대기 자재 · {materialItemsCount}개</span>
           <span aria-hidden="true" className="transition group-open:rotate-180">▾</span>
         </summary>
         <div className="mt-2 grid gap-1.5">
@@ -314,7 +314,7 @@ function WorkOrderMaterialRequestRow({
           <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
         </div>
         <p className="mt-1 text-[11px] pbp-text-muted">
-          필요 {formatMaterialQuantity(material.quantity, material.unit)} · {readableStatus}
+          필요 수량 {formatMaterialQuantity(material.quantity, material.unit)} · {readableStatus}
         </p>
       </div>
       <AppButton
@@ -324,7 +324,7 @@ function WorkOrderMaterialRequestRow({
         disabled={!editable || isAdded || isAllocationCovered}
         onClick={() => onAddMaterialToOrder(workOrder, material)}
       >
-        {isAdded ? "선택됨" : isCompletionFulfilled ? "완료" : isAllocationCovered ? "진행중" : "선택"}
+        {isAdded ? "선택됨" : isCompletionFulfilled ? "발주 완료" : isAllocationCovered ? "진행중" : "선택"}
       </AppButton>
     </AppCard>
   );
