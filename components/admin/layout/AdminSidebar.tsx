@@ -16,8 +16,8 @@ type SidebarIconProps = {
 };
 
 function SidebarIcon({ type, active }: SidebarIconProps) {
-  const strokeClassName = active ? "stroke-stone-950" : "stroke-stone-500";
-  const fillClassName = active ? "fill-stone-950" : "fill-stone-500";
+  const strokeClassName = active ? "stroke-[var(--pbp-text-inverse)]" : "stroke-[var(--pbp-text-muted)]";
+  const fillClassName = active ? "fill-[var(--pbp-text-primary)]" : "fill-[var(--pbp-text-muted)]";
   const baseProps = {
     viewBox: "0 0 24 24",
     className: `h-[18px] w-[18px] ${strokeClassName}`,
@@ -124,18 +124,18 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
   const showDbStatus = process.env.NODE_ENV !== "production";
 
   return (
-    <aside className="flex min-w-0 flex-col rounded-[30px] border border-stone-200 bg-white p-4 shadow-sm lg:h-full lg:w-[268px] lg:shrink-0">
+    <aside className="flex min-w-0 flex-col rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-card)] lg:h-full lg:w-[268px] lg:shrink-0">
       <div className="rounded-[24px] bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] transition-colors">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">WAFL</p>
+            <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">WAFL</p>
             <p className="mt-2 truncate text-lg font-semibold">{companyName}</p>
           </div>
-          <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-stone-300">v{appVersion}</span>
+          <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--pbp-text-inverse)] opacity-75">v{appVersion}</span>
         </div>
         {showDbStatus ? (
-          <div className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-100">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,0.18)]" aria-hidden="true" />
+          <div className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-[var(--pbp-status-success-fg)]">
+            <span className="h-2 w-2 rounded-full bg-[var(--pbp-status-success)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--pbp-status-success)_18%,transparent)]" aria-hidden="true" />
             {t("navigation.dbConnected", "데이터 상태 점검")}
           </div>
         ) : null}
@@ -144,12 +144,12 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
       <nav className="mt-5 flex min-h-0 flex-1 flex-col justify-between gap-2.5 overflow-y-auto pb-1" aria-label={t("common.adminMenu", "관리자 메뉴")}>
         {navigationItems.map((item) => {
           const itemClassName = `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition ${
-            item.active ? "bg-stone-100 text-stone-950" : "text-stone-600 hover:bg-stone-50 hover:text-stone-950"
+            item.active ? "bg-[var(--pbp-surface-selected)] text-[var(--pbp-brand-primary)]" : "text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)] hover:text-[var(--pbp-text-primary)]"
           }`;
 
           const content = (
             <>
-              <span className={["flex h-9 w-9 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-[var(--admin-theme-surface)] ring-[var(--admin-theme-surface)] [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
+              <span className={["flex h-9 w-9 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-[var(--admin-theme-surface)] ring-[var(--admin-theme-surface)] [&_svg]:stroke-[var(--pbp-text-inverse)]" : "bg-[var(--pbp-surface)] ring-[var(--pbp-border)]"].join(" ") }>
                 <SidebarIcon type={item.icon} active={item.active} />
               </span>
               <span className="min-w-0 truncate">{item.translationKey ? t(`navigation.${item.translationKey}`, item.label) : item.label}</span>

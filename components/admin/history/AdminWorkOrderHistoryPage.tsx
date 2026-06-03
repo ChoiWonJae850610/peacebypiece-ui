@@ -67,28 +67,28 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
 
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
-      <div className="shrink-0 rounded-[28px] border border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] p-4 shadow-sm transition-colors">
+      <div className="shrink-0 rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4 shadow-sm transition-colors">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-stone-950">{pageText.searchBoxTitle}</h2>
-                <p className="mt-1 text-xs text-stone-500">{pageText.searchBoxDescription}</p>
+                <h2 className="text-lg font-semibold text-[var(--pbp-text-primary)]">{pageText.searchBoxTitle}</h2>
+                <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{pageText.searchBoxDescription}</p>
               </div>
             </div>
             <div className="grid gap-2 md:grid-cols-[minmax(0,1.3fr)_0.75fr_0.75fr]">
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-stone-700">{pageText.searchLabel}</span>
+                <span className="text-xs font-semibold text-[var(--pbp-text-secondary)]">{pageText.searchLabel}</span>
                 <input
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder={pageText.searchPlaceholder}
-                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
+                  className="h-10 w-full rounded-2xl border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-3 text-sm text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] focus:ring-4 focus:ring-[var(--pbp-focus-ring-soft)]"
                 />
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-stone-700">{pageText.dateLabel}</span>
+                <span className="text-xs font-semibold text-[var(--pbp-text-secondary)]">{pageText.dateLabel}</span>
                 <AppSelect
                   value={dateFilter}
                   onValueChange={(value) => setDateFilter(value as AdminHistoryDateFilter)}
@@ -101,7 +101,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
                 />
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-stone-700">{pageText.userLabel}</span>
+                <span className="text-xs font-semibold text-[var(--pbp-text-secondary)]">{pageText.userLabel}</span>
                 <AppSelect
                   value={userFilter}
                   onValueChange={setUserFilter}

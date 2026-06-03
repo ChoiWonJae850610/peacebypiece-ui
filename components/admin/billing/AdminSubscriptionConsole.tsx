@@ -1,3 +1,4 @@
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import type { AdminSubscriptionViewModel } from "@/lib/admin/billing/adminSubscription.presentation";
 
 type AdminSubscriptionConsoleProps = {
@@ -31,19 +32,12 @@ export default function AdminSubscriptionConsole({ viewModel }: AdminSubscriptio
           <p className="text-sm font-bold pbp-text-primary">{viewModel.statusLabel}</p>
           <p className="mt-2 text-sm leading-6 pbp-text-muted">{viewModel.statusDescription}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled
-              className="inline-flex h-10 items-center justify-center rounded-2xl bg-[var(--pbp-primary)] px-4 text-sm font-bold text-white opacity-60"
-            >
+            <AdminButton type="button" disabled variant="primary" size="md">
               {viewModel.primaryActionLabel}
-            </button>
-            <a
-              href="/api/auth/logout"
-              className="inline-flex h-10 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-sm font-bold pbp-text-primary"
-            >
+            </AdminButton>
+            <AdminLinkButton href="/api/auth/logout" variant="secondary" size="md">
               {viewModel.secondaryActionLabel}
-            </a>
+            </AdminLinkButton>
           </div>
         </div>
 
