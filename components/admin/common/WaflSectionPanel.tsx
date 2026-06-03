@@ -40,7 +40,7 @@ const TITLE_DENSITY_CLASS: Record<WaflSectionPanelDensity, string> = {
 };
 
 export const WAFL_SECTION_PANEL_CLASS =
-  "w-full overflow-hidden border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
+  "w-full min-w-0 overflow-hidden border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
 
 export const WAFL_SECTION_EYEBROW_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--pbp-brand-soft)]";

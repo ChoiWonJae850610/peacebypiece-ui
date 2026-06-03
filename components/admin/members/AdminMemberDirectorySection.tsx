@@ -2,7 +2,7 @@
 
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
-import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
+import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import { AdminFeedbackMessage } from "@/components/admin/common/AdminFeedbackMessage";
 import AdminMemberDirectoryControls from "@/components/admin/members/AdminMemberDirectoryControls";
 import AdminMemberDirectoryResponsiveRows from "@/components/admin/members/AdminMemberDirectoryResponsiveRows";
@@ -38,7 +38,7 @@ type AdminMemberDirectorySectionProps = {
   onMemberDirectorySort: (sortKey: MemberDirectorySortKey) => void;
 };
 
-const MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS = "min-h-fit 2xl:min-h-[452px]";
+const MEMBER_DIRECTORY_PANEL_CLASS = "min-h-fit touch-pan-y overflow-visible overscroll-auto";
 
 export default function AdminMemberDirectorySection({
   t,
@@ -59,15 +59,15 @@ export default function AdminMemberDirectorySection({
   onMemberDirectorySort,
 }: AdminMemberDirectorySectionProps) {
   return (
-    <AdminPanelSection
-      className={MEMBER_DIRECTORY_PANEL_HEIGHT_CLASS}
+    <WaflSectionPanel
+      className={MEMBER_DIRECTORY_PANEL_CLASS}
       eyebrow={t("memberManagement.memberDirectory.eyebrow", "MEMBER LIST")}
       title={t("memberManagement.memberDirectory.title", "멤버 목록")}
       description={t(
         "memberManagement.memberDirectory.description",
         "가입 승인, 재직 상태, 역할과 권한을 한 목록에서 확인합니다.",
       )}
-      contentClassName="flex min-h-fit touch-pan-y flex-col overflow-visible overscroll-auto pt-3 pb-3"
+      bodyClassName="flex min-h-fit touch-pan-y flex-col overflow-visible overscroll-auto pt-3 pb-3"
     >
       <AdminMemberDirectoryControls
         t={t}
@@ -138,6 +138,6 @@ export default function AdminMemberDirectorySection({
           "멤버 목록 접기",
         )}
       />
-    </AdminPanelSection>
+    </WaflSectionPanel>
   );
 }

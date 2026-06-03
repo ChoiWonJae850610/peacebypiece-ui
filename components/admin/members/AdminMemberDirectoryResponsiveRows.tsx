@@ -224,11 +224,11 @@ export default function AdminMemberDirectoryResponsiveRows(props: AdminMemberDir
   const shouldUseWideTable = width >= MEMBER_DIRECTORY_TABLE_MIN_WIDTH;
 
   return (
-    <div ref={containerRef} className="min-w-0 pb-1">
+    <div ref={containerRef} className="w-full min-w-0 pb-1" data-wafl-responsive-measure="member-directory">
       {shouldUseWideTable ? (
-        <MemberDirectoryWideTableRows {...props} />
+        <MemberDirectoryWideTableRows key="member-directory-wide" {...props} />
       ) : (
-        <MemberDirectoryCompactListRows {...props} />
+        <MemberDirectoryCompactListRows key="member-directory-compact" {...props} />
       )}
     </div>
   );
