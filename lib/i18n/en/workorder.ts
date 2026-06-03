@@ -261,6 +261,7 @@ export const workorderEn = {
 
     memo: {
       panelTitle: "Work memo",
+      authorPrefix: "Author",
       countSuffix: "",
       toggleReplyOpen: "Reply",
       toggleReplyClose: "Close replies",
@@ -284,6 +285,11 @@ export const workorderEn = {
       designAddButton: "Add design",
       deleteTitle: "Delete",
       deleteAriaSuffix: "delete",
+      countSuffix: " files",
+      previewTitle: "Open preview",
+      previewUnavailableTitle: "Preview is not available.",
+      previewAriaSuffix: "preview",
+      previewUnavailableAriaSuffix: "preview unavailable",
       empty: "No attachments yet. You can add PDFs, reference images, or handoff documents.",
       designEmpty: "No design files yet. Upload image files or save a direct drawing.",
       legacyOwnerFallback: "Existing attachment",

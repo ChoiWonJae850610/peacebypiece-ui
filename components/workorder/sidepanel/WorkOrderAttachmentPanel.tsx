@@ -3,8 +3,7 @@
 import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import { useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
-import { WorkOrderPanelCard } from "@/components/common/ui";
-import { WaflButton } from "@/components/common/ui";
+import { SectionCountBadge, WorkOrderPanelCard, WaflButton } from "@/components/common/ui";
 import { WorkOrderActionButton } from "@/components/workorder/common/WorkOrderActionButton";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
@@ -36,6 +35,9 @@ function logAttachmentDropDebug(scope: AttachmentPanelScope, message: string, pa
   console.info(`[attachment-dnd:${scope}] ${message}`, payload ?? {});
 }
 
+function formatAttachmentCount(count: number, suffix: string) {
+  return `${count}${suffix}`;
+}
 
 function AttachmentActionMenu({
   scope,
@@ -300,8 +302,9 @@ export default function WorkOrderAttachmentPanel({
     >
       <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
       <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
-        <div>
-          <h3 className="text-sm font-semibold pbp-text-primary">{title}</h3>
+        <div className="flex min-w-0 items-center gap-2">
+          <h3 className="truncate text-sm font-semibold pbp-text-primary">{title}</h3>
+          <SectionCountBadge>{formatAttachmentCount(attachments.length, ui.attachmentPanel.countSuffix)}</SectionCountBadge>
         </div>
         {canManageAttachments ? (
           <AttachmentActionMenu
@@ -364,6 +367,8 @@ export default function WorkOrderAttachmentPanel({
                 type="button"
                 onClick={() => onPreviewAttachment(attachment.id)}
                 disabled={!attachment.canPreview}
+                title={attachment.canPreview ? ui.attachmentPanel.previewTitle : ui.attachmentPanel.previewUnavailableTitle}
+                aria-label={`${attachment.name} ${attachment.canPreview ? ui.attachmentPanel.previewAriaSuffix : ui.attachmentPanel.previewUnavailableAriaSuffix}`}
                 className="flex w-full min-w-0 items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
               >
                 <div className={isMobile ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl" : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl"}>
@@ -375,7 +380,11 @@ export default function WorkOrderAttachmentPanel({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className={isMobile ? "break-words pr-1 text-[13px] font-medium leading-4 pbp-text-primary" : "truncate pr-2 text-sm font-medium pbp-text-primary"}>{attachment.name}</div>
-                  <div className={isMobile ? "mt-0.5 break-words text-[11px] leading-4 pbp-text-muted" : "mt-1 text-xs pbp-text-muted"}>{attachment.ownerLabel}</div>
+                  <div className={isMobile ? "mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 break-words text-[11px] leading-4 pbp-text-muted" : "mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs pbp-text-muted"}>
+                    <span>{attachment.ownerLabel}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{attachment.previewLabel}</span>
+                  </div>
                 </div>
               </button>
             </div>

@@ -86,7 +86,7 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
   };
 
   return (
-    <div>
+    <div className="min-w-0">
       <textarea
         rows={1}
         maxLength={MEMO_MAX_LENGTH}
@@ -100,7 +100,7 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
           : "pbp-field-interaction pbp-workorder-editable-input h-[32px] w-full resize-none overflow-hidden rounded-lg border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"}
       />
       <div className={isMobile ? "mt-1.5 flex flex-wrap items-center justify-between gap-2" : "mt-1.5 flex items-center justify-end gap-2"}>
-        <span className="mr-auto text-[10px] font-medium text-[var(--pbp-field-disabled-text)]">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
+        <span className="mr-auto text-[10px] font-medium text-[var(--pbp-field-disabled-text)]" aria-live="polite">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
         {onCancel ? (
           <button type="button" onClick={onCancel} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1.5 text-[11px] font-semibold">
             {cancelLabel}
@@ -110,6 +110,7 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
           type="button"
           onClick={onSubmit}
           disabled={disabled || !trimmed}
+          title={disabled ? placeholder : submitLabel}
           className={isMobile
             ? "pbp-interactive-button pbp-action-primary rounded-full px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
             : "pbp-interactive-button pbp-action-primary rounded-full px-3 py-1.5 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"}
@@ -315,7 +316,7 @@ function MemoThreadCard({
         }) : null}
 
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 pt-1">
-          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} title={writeLocked ? writeLockMessage : undefined} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-50">
             {replyComposerOpen ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
           </button>
         </div>
@@ -385,11 +386,11 @@ export default function WorkOrderMemoPanel({
   return (
     <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
       <div className={isMobile ? "flex min-w-0 items-center justify-between gap-2" : "flex min-w-0 items-center justify-between gap-3"}>
-        <h3 className="text-sm font-semibold pbp-text-primary">{ui.memo.panelTitle}</h3>
+        <h3 className="truncate text-sm font-semibold pbp-text-primary">{ui.memo.panelTitle}</h3>
         <SectionCountBadge>{`${memoThreads.length}${ui.memo.countSuffix}`}</SectionCountBadge>
       </div>
       <div className={isMobile ? "pbp-workorder-editable-panel mt-2.5 min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
-        <div className="text-[11px] pbp-text-muted">{getMemoAuthorDisplayName({ authorId: currentUserId, authorName: currentUserName, authorRole: currentUserRole }, users, ui.memo)}</div>
+        <div className="text-[11px] pbp-text-muted">{ui.memo.authorPrefix} {getMemoAuthorDisplayName({ authorId: currentUserId, authorName: currentUserName, authorRole: currentUserRole }, users, ui.memo)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>

@@ -261,6 +261,7 @@ export const workorderKo = {
 
     memo: {
       panelTitle: "작업메모",
+      authorPrefix: "작성자",
       countSuffix: "개",
       toggleReplyOpen: "댓글",
       toggleReplyClose: "댓글 닫기",
@@ -284,6 +285,11 @@ export const workorderKo = {
       designAddButton: "디자인 추가",
       deleteTitle: "삭제",
       deleteAriaSuffix: "삭제",
+      countSuffix: "개",
+      previewTitle: "미리보기 열기",
+      previewUnavailableTitle: "미리보기를 사용할 수 없습니다.",
+      previewAriaSuffix: "미리보기",
+      previewUnavailableAriaSuffix: "미리보기 불가",
       empty: "아직 등록된 첨부 파일이 없습니다. PDF, 참고 이미지, 전달 문서를 추가할 수 있습니다.",
       designEmpty: "아직 등록된 디자인이 없습니다. 이미지 파일을 추가하거나 직접 그리기로 저장할 수 있습니다.",
       legacyOwnerFallback: "기존 첨부",
