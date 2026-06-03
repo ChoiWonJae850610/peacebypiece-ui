@@ -1,4 +1,5 @@
 import { AppBadge, AppCard } from "@/components/common/ui";
+import { useI18n } from "@/lib/i18n";
 
 export type WorkOrderDetailVisualSummaryProps = {
   orderCount: number;
@@ -11,28 +12,39 @@ function formatCount(value: number, suffix: string) {
   return `${Math.max(0, value).toLocaleString()}${suffix}`;
 }
 
+function formatDescription(template: string, values: Record<string, number>) {
+  return Object.entries(values).reduce(
+    (message, [key, value]) => message.replace(`{${key}}`, value.toLocaleString()),
+    template,
+  );
+}
+
 export default function WorkOrderDetailVisualSummary({
   orderCount,
   outsourcingCount,
   materialCount,
   showCostSummary,
 }: WorkOrderDetailVisualSummaryProps) {
+  const { i18n } = useI18n();
+  const copy = i18n.workorder.ui.visualSummary;
   const productionCount = orderCount + outsourcingCount;
   const cards = [
     {
-      label: "생산",
-      value: productionCount > 0 ? formatCount(productionCount, "건") : "미입력",
-      description: outsourcingCount > 0 ? `봉제 ${orderCount} · 외주 ${outsourcingCount}` : "봉제/외주 공정",
+      label: copy.productionLabel,
+      value: productionCount > 0 ? formatCount(productionCount, copy.productionCountSuffix) : copy.productionEmpty,
+      description: outsourcingCount > 0
+        ? formatDescription(copy.productionDescriptionFormat, { orderCount, outsourcingCount })
+        : copy.productionDescriptionEmpty,
     },
     {
-      label: "자재",
-      value: materialCount > 0 ? formatCount(materialCount, "종") : "미입력",
-      description: "원단·부자재 구성",
+      label: copy.materialLabel,
+      value: materialCount > 0 ? formatCount(materialCount, copy.materialCountSuffix) : copy.materialEmpty,
+      description: copy.materialDescription,
     },
     {
-      label: "원가",
-      value: showCostSummary ? "표시 중" : "비공개",
-      description: showCostSummary ? "관리자 비용 요약 사용" : "권한에 따라 숨김",
+      label: copy.costLabel,
+      value: showCostSummary ? copy.costVisible : copy.costHidden,
+      description: showCostSummary ? copy.costVisibleDescription : copy.costHiddenDescription,
     },
   ];
 
