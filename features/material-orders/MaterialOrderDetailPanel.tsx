@@ -59,6 +59,8 @@ export default function MaterialOrderDetailPanel({
   onRemoveLine,
   onChangeStatus,
 }: MaterialOrderDetailPanelProps) {
+  const isDraftEditable = selectedOrder?.status === "draft";
+
   return (
     <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       {selectedOrder ? (
@@ -80,7 +82,7 @@ export default function MaterialOrderDetailPanel({
               <FieldLabel label="자재 종류">
                 <AppSelect
                   value={materialType}
-                  disabled={selectedOrder.status !== "draft"}
+                  disabled={!isDraftEditable}
                   size="sm"
                   options={MATERIAL_TYPE_SELECT_OPTIONS}
                   ariaLabel="자재 종류"
@@ -92,7 +94,7 @@ export default function MaterialOrderDetailPanel({
               <FieldLabel label="공급처">
                 <AppSelect
                   value={supplierPartnerId ?? ""}
-                  disabled={selectedOrder.status !== "draft" || suppliersLoading}
+                  disabled={!isDraftEditable || suppliersLoading}
                   size="sm"
                   placeholder={resolveSupplierPlaceholder(suppliersLoading, suppliers.length)}
                   options={buildSupplierSelectOptions(suppliersLoading, suppliers)}
@@ -106,8 +108,10 @@ export default function MaterialOrderDetailPanel({
                     variant="danger"
                     size="sm"
                     className="mt-1 w-fit min-h-7 px-3 py-1 text-[11px]"
+                    title="공급처 목록을 다시 조회합니다."
+                    aria-label="공급처 목록 다시 조회"
                   >
-                    공급처를 불러오지 못했습니다 · 다시 조회
+                    공급처 다시 조회
                   </AppButton>
                 ) : null}
               </FieldLabel>
@@ -123,11 +127,16 @@ export default function MaterialOrderDetailPanel({
             <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
               <MaterialOrderLineTable
                 lines={lines}
-                editable={selectedOrder.status === "draft"}
+                editable={isDraftEditable}
                 onChangeLine={onChangeLine}
                 onRemoveLine={onRemoveLine}
               />
             </div>
+            {!isDraftEditable ? (
+              <p className="mt-2 text-[11px] font-medium pbp-text-muted">
+                발주서가 작성중 상태일 때만 품목을 수정할 수 있습니다.
+              </p>
+            ) : null}
           </AppSection>
 
           <MaterialOrderSummaryFooter totals={totals} />

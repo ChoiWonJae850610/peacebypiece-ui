@@ -192,6 +192,7 @@ function MaterialOrderLineRow({
           label="발주 품목 삭제"
           tone="dangerSoft"
           disabled={!editable}
+          title={editable ? "발주 품목을 삭제합니다." : "작성중 상태에서만 발주 품목을 삭제할 수 있습니다."}
           onClick={() => onRemoveLine(line.id)}
         >
           <span aria-hidden="true">−</span>

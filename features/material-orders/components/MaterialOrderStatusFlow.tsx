@@ -40,7 +40,11 @@ export function MaterialOrderStatusFlow({
       label: action.label,
       onClick: () => onChangeStatus(action.nextStatus),
       disabled: changing,
+      disabledReason: changing ? "발주 상태 변경 처리 중입니다." : undefined,
+      title: changing ? "발주 상태 변경 처리 중입니다." : `${action.label} 단계로 변경`,
+      ariaLabel: `${formatMaterialOrderStatusLabel(status)}에서 ${action.label} 단계로 변경`,
       isPrimary: index === primaryActionIndex,
+      isProcessing: changing,
     }),
   );
 
@@ -61,6 +65,12 @@ export function MaterialOrderStatusFlow({
           <span>원단·부자재 발주</span>
           <span>·</span>
           <span>{formatMaterialOrderStatusLabel(status)}</span>
+          {changing ? (
+            <>
+              <span>·</span>
+              <span>상태 변경 처리 중</span>
+            </>
+          ) : null}
         </>
       }
     />

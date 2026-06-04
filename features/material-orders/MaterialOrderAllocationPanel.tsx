@@ -304,6 +304,20 @@ function WorkOrderMaterialRequestRow({
     unit: material.unit,
   });
 
+  const selectionButtonLabel = isAdded
+    ? "선택됨"
+    : isCompletionFulfilled
+      ? "발주 완료"
+      : isAllocationCovered
+        ? "진행중"
+        : "선택";
+  const selectionButtonTitle = resolveMaterialSelectionButtonTitle({
+    editable,
+    isAdded,
+    isCompletionFulfilled,
+    isAllocationCovered,
+  });
+
   return (
     <AppCard padding="none" variant="flat" className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
       <div className="min-w-0">
@@ -322,9 +336,11 @@ function WorkOrderMaterialRequestRow({
         className="min-h-7 px-3 py-1 text-xs"
         variant={isAdded || isAllocationCovered ? "ghost" : "secondary"}
         disabled={!editable || isAdded || isAllocationCovered}
+        title={selectionButtonTitle}
+        aria-label={`${material.itemName} ${selectionButtonLabel}`}
         onClick={() => onAddMaterialToOrder(workOrder, material)}
       >
-        {isAdded ? "선택됨" : isCompletionFulfilled ? "발주 완료" : isAllocationCovered ? "진행중" : "선택"}
+        {selectionButtonLabel}
       </AppButton>
     </AppCard>
   );
@@ -335,4 +351,22 @@ function fieldClassName(extra = "") {
     MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
     extra,
   ].filter(Boolean).join(" ");
+}
+
+function resolveMaterialSelectionButtonTitle({
+  editable,
+  isAdded,
+  isCompletionFulfilled,
+  isAllocationCovered,
+}: {
+  editable: boolean;
+  isAdded: boolean;
+  isCompletionFulfilled: boolean;
+  isAllocationCovered: boolean;
+}) {
+  if (!editable) return "작성중 발주서에서만 자재를 선택할 수 있습니다.";
+  if (isAdded) return "이번 발주서에 이미 선택된 자재입니다.";
+  if (isCompletionFulfilled) return "필요 수량의 자재 발주가 완료되었습니다.";
+  if (isAllocationCovered) return "다른 진행 중 발주서에서 필요한 수량이 이미 선택되었습니다.";
+  return "이번 발주서에 자재를 추가합니다.";
 }

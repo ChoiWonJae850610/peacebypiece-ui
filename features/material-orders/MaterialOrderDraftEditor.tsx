@@ -177,9 +177,11 @@ export default function MaterialOrderDraftEditor() {
                   variant="secondary"
                   size="md"
                   className="w-full"
+                  title="이번 발주서에 담을 작업지시서 자재를 선택합니다."
+                  aria-label="작업지시서 자재 선택 패널 열기"
                   onClick={() => setMobileMaterialSheetOpen(true)}
                 >
-                  작업지시서 자재 선택
+                  자재 선택
                 </AppButton>
               </div>
               {detailPanel}
@@ -213,9 +215,11 @@ export default function MaterialOrderDraftEditor() {
                 type="button"
                 variant="secondary"
                 size="sm"
+                title="이번 발주서에 담을 작업지시서 자재를 선택합니다."
+                aria-label="작업지시서 자재 선택 패널 열기"
                 onClick={() => setTabletMaterialSheetOpen(true)}
               >
-                작업지시서 자재 선택
+                자재 선택
               </AppButton>
             </div>
             <section className="min-h-[680px] min-w-0">{detailPanel}</section>

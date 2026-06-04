@@ -120,9 +120,11 @@ export default function MaterialOrderListPanel({
           width="full"
           className="mt-1 min-h-10 text-sm"
           disabled={creating}
+          title={creating ? "새 발주서를 생성하고 있습니다." : "새 원단·부자재 발주서를 생성합니다."}
+          aria-label={creating ? "새 발주서 생성 중" : "새 원단·부자재 발주서 생성"}
           onClick={onCreateOrder}
         >
-          {creating ? "발주서 생성 중" : "새 발주서 생성"}
+          {creating ? "생성 중" : "새 발주서 생성"}
         </AppButton>
       </div>
 
