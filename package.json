@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test:smoke:db-api": "node scripts/smoke-db-api.mjs",
-    "test:e2e": "npx --yes @playwright/test@1.51.1 test",
-    "test:e2e:headed": "npx --yes @playwright/test@1.51.1 test --headed",
-    "test:e2e:install": "npx --yes @playwright/test@1.51.1 install chromium"
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1036.0",
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@playwright/test": "^1.51.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
