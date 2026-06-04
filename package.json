@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:smoke:db-api": "node scripts/smoke-db-api.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1036.0",
