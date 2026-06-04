@@ -786,6 +786,63 @@ BEGIN
   END IF;
 END $$;
 
+
+
+DO $$
+DECLARE
+  missing_policy_tables text[];
+BEGIN
+  SELECT array_agg(expected_table ORDER BY expected_table)
+  INTO missing_policy_tables
+  FROM (VALUES
+    ('policy_documents'),
+    ('policy_versions'),
+    ('policy_agreements')
+  ) AS expected(expected_table)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = current_schema()
+      AND table_name = expected.expected_table
+  );
+
+  IF missing_policy_tables IS NOT NULL THEN
+    RAISE EXCEPTION 'policy tables are missing: %', missing_policy_tables;
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  missing_policy_columns text[];
+BEGIN
+  SELECT array_agg(format('%s.%s', expected_table, expected_column) ORDER BY expected_table, expected_column)
+  INTO missing_policy_columns
+  FROM (VALUES
+    ('policy_documents', 'document_key'),
+    ('policy_documents', 'is_customer_visible'),
+    ('policy_versions', 'policy_document_id'),
+    ('policy_versions', 'is_current'),
+    ('policy_versions', 'is_required_for_approval'),
+    ('policy_versions', 'requires_reagreement'),
+    ('policy_versions', 'content_snapshot'),
+    ('policy_agreements', 'policy_version_id'),
+    ('policy_agreements', 'company_id'),
+    ('policy_agreements', 'user_id'),
+    ('policy_agreements', 'agreed_at')
+  ) AS expected(expected_table, expected_column)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = expected.expected_table
+      AND column_name = expected.expected_column
+  );
+
+  IF missing_policy_columns IS NOT NULL THEN
+    RAISE EXCEPTION 'policy columns are missing: %', missing_policy_columns;
+  END IF;
+END $$;
+
 SELECT
   'full_reset smoke test passed' AS result,
   (SELECT count(*) FROM companies) AS companies,
