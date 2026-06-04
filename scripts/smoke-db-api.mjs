@@ -33,6 +33,7 @@ const REQUIRED_TABLES = [
   "policy_documents",
   "policy_versions",
   "policy_agreements",
+  "company_members",
 ];
 
 const REQUIRED_COLUMNS = {
@@ -71,6 +72,21 @@ const REQUIRED_COLUMNS = {
     "agreement_scope",
     "agreement_source",
     "agreed_at",
+  ],
+  company_members: [
+    "id",
+    "company_id",
+    "user_id",
+    "status",
+    "role_template_code",
+    "approved_by",
+    "approved_at",
+    "suspended_by",
+    "suspended_at",
+    "withdrawal_requested_by",
+    "withdrawal_requested_at",
+    "withdrawn_by",
+    "withdrawn_at",
   ],
 };
 
@@ -158,14 +174,14 @@ async function assertSchema(client) {
   }
 }
 
-async function assertCompanyAccountRequestReviewContract(client) {
-  logStep("company account request review contract");
-  console.log("  - creating rollback-only company/request/reviewer fixture");
+async function assertMemberLifecycleContract(client) {
+  logStep("member lifecycle contract");
+  console.log("  - creating rollback-only member status/withdrawal fixtures");
 
-  const companyId = "smoke-company-account-request";
-  const userId = "smoke-customer-admin";
-  const systemUserId = "smoke-system-admin";
-  const requestId = "smoke-company-account-request-review";
+  const companyId = "smoke-member-lifecycle-company";
+  const adminUserId = "smoke-member-lifecycle-admin";
+  const memberUserId = "smoke-member-lifecycle-user";
+  const memberId = "smoke-member-lifecycle-member";
 
   await client.query(
     `INSERT INTO companies (
@@ -177,7 +193,7 @@ async function assertCompanyAccountRequestReviewContract(client) {
        is_active,
        created_at,
        updated_at
-     ) VALUES ($1, 'Smoke Test Company', 'active', 'active', 'active', true, now(), now())`,
+     ) VALUES ($1, 'Smoke Member Lifecycle Company', 'active', 'active', 'active', true, now(), now())`,
     [companyId],
   );
 
@@ -191,9 +207,135 @@ async function assertCompanyAccountRequestReviewContract(client) {
        is_active,
        created_at,
        updated_at
-     ) VALUES ($1, $2, 'smoke-customer-admin@example.test', 'Smoke Customer Admin', 'admin', true, now(), now())`,
-    [userId, companyId],
+     ) VALUES
+       ($1, $3, 'smoke-member-admin@example.test', 'Smoke Member Admin', 'admin', true, now(), now()),
+       ($2, $3, 'smoke-member-user@example.test', 'Smoke Member User', 'member', true, now(), now())`,
+    [adminUserId, memberUserId, companyId],
   );
+
+  await client.query(
+    `INSERT INTO company_members (
+       id,
+       company_id,
+       user_id,
+       status,
+       role_template_code,
+       display_name,
+       approved_by,
+       approved_at,
+       created_at,
+       updated_at
+     ) VALUES ($1, $2, $3, 'approved', 'designer', 'Smoke Member User', $4, now(), now(), now())`,
+    [memberId, companyId, memberUserId, adminUserId],
+  );
+
+  await client.query(
+    `UPDATE company_members
+        SET status = 'suspended',
+            suspended_by = $2,
+            suspended_at = COALESCE(suspended_at, now()),
+            withdrawal_requested_by = NULL,
+            withdrawal_requested_at = NULL,
+            withdrawn_by = NULL,
+            withdrawn_at = NULL,
+            updated_at = now()
+      WHERE id = $1`,
+    [memberId, adminUserId],
+  );
+
+  const suspendedResult = await client.query(
+    `SELECT status, suspended_by, suspended_at
+       FROM company_members
+      WHERE id = $1`,
+    [memberId],
+  );
+  const suspendedRow = suspendedResult.rows[0];
+  if (!suspendedRow || suspendedRow.status !== "suspended" || suspendedRow.suspended_by !== adminUserId || !suspendedRow.suspended_at) {
+    throwSmokeError({
+      area: "member lifecycle contract",
+      target: "company_members.status",
+      message: "member suspension status/timestamp contract failed.",
+      next: "check company_members status update handling in memberRepository.",
+    });
+  }
+
+  await client.query(
+    `UPDATE company_members
+        SET status = 'withdrawal_requested',
+            withdrawal_requested_by = $2,
+            withdrawal_requested_at = COALESCE(withdrawal_requested_at, now()),
+            withdrawn_by = NULL,
+            withdrawn_at = NULL,
+            updated_at = now()
+      WHERE id = $1
+        AND company_id = $3
+        AND user_id = $2`,
+    [memberId, memberUserId, companyId],
+  );
+
+  const withdrawalRequestResult = await client.query(
+    `SELECT status, withdrawal_requested_by, withdrawal_requested_at, withdrawn_by, withdrawn_at
+       FROM company_members
+      WHERE id = $1`,
+    [memberId],
+  );
+  const withdrawalRequestRow = withdrawalRequestResult.rows[0];
+  if (
+    !withdrawalRequestRow ||
+    withdrawalRequestRow.status !== "withdrawal_requested" ||
+    withdrawalRequestRow.withdrawal_requested_by !== memberUserId ||
+    !withdrawalRequestRow.withdrawal_requested_at ||
+    withdrawalRequestRow.withdrawn_by !== null ||
+    withdrawalRequestRow.withdrawn_at !== null
+  ) {
+    throwSmokeError({
+      area: "member lifecycle contract",
+      target: "company_members.withdrawal_requested",
+      message: "personal withdrawal request status/timestamp contract failed.",
+      next: "check requestPersonalMemberWithdrawal and company_members withdrawal consistency constraints.",
+    });
+  }
+
+  await client.query(
+    `UPDATE company_members
+        SET status = 'withdrawn',
+            withdrawn_by = $2,
+            withdrawn_at = COALESCE(withdrawn_at, now()),
+            updated_at = now()
+      WHERE id = $1`,
+    [memberId, adminUserId],
+  );
+
+  const withdrawnResult = await client.query(
+    `SELECT status, withdrawn_by, withdrawn_at
+       FROM company_members
+      WHERE id = $1`,
+    [memberId],
+  );
+  const withdrawnRow = withdrawnResult.rows[0];
+  if (!withdrawnRow || withdrawnRow.status !== "withdrawn" || withdrawnRow.withdrawn_by !== adminUserId || !withdrawnRow.withdrawn_at) {
+    throwSmokeError({
+      area: "member lifecycle contract",
+      target: "company_members.withdrawn",
+      message: "admin withdrawal completion status/timestamp contract failed.",
+      next: "check admin member status update handling and company_members withdrawn consistency constraints.",
+    });
+  }
+
+  logOk("company members: status change, personal withdrawal request, and withdrawal completion contract");
+}
+
+async function assertCompanyAccountRequestReviewContract(client) {
+  logStep("company account request review contract");
+  console.log("  - creating rollback-only approved/rejected company request fixtures");
+
+  const systemUserId = "smoke-system-admin";
+  const approvedCompanyId = "smoke-company-account-request-approved-company";
+  const approvedUserId = "smoke-company-account-request-approved-user";
+  const approvedRequestId = "smoke-company-account-request-approved";
+  const rejectedCompanyId = "smoke-company-account-request-rejected-company";
+  const rejectedUserId = "smoke-company-account-request-rejected-user";
+  const rejectedRequestId = "smoke-company-account-request-rejected";
 
   await client.query(
     `INSERT INTO system_users (
@@ -209,6 +351,38 @@ async function assertCompanyAccountRequestReviewContract(client) {
   );
 
   await client.query(
+    `INSERT INTO companies (
+       id,
+       name,
+       onboarding_status,
+       subscription_status,
+       billing_status,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES
+       ($1, 'Smoke Approved Company', 'active', 'active', 'active', true, now(), now()),
+       ($2, 'Smoke Rejected Company', 'active', 'active', 'active', true, now(), now())`,
+    [approvedCompanyId, rejectedCompanyId],
+  );
+
+  await client.query(
+    `INSERT INTO users (
+       id,
+       company_id,
+       email,
+       name,
+       role,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES
+       ($1, $2, 'smoke-approved-admin@example.test', 'Smoke Approved Admin', 'admin', true, now(), now()),
+       ($3, $4, 'smoke-rejected-admin@example.test', 'Smoke Rejected Admin', 'admin', true, now(), now())`,
+    [approvedUserId, approvedCompanyId, rejectedUserId, rejectedCompanyId],
+  );
+
+  await client.query(
     `INSERT INTO company_account_requests (
        id,
        company_id,
@@ -220,19 +394,10 @@ async function assertCompanyAccountRequestReviewContract(client) {
        request_payload,
        created_at,
        updated_at
-     ) VALUES (
-       $1,
-       $2,
-       $3,
-       'account_deactivation',
-       'pending',
-       '계정 비활성화 요청',
-       'smoke test account deactivation request message',
-       '{}'::jsonb,
-       now(),
-       now()
-     )`,
-    [requestId, companyId, userId],
+     ) VALUES
+       ($1, $2, $3, 'account_deactivation', 'pending', '계정 비활성화 요청', 'smoke approved account deactivation request message', '{}'::jsonb, now(), now()),
+       ($4, $5, $6, 'account_deactivation', 'pending', '계정 비활성화 요청', 'smoke rejected account deactivation request message', '{}'::jsonb, now(), now())`,
+    [approvedRequestId, approvedCompanyId, approvedUserId, rejectedRequestId, rejectedCompanyId, rejectedUserId],
   );
 
   await client.query(
@@ -243,7 +408,7 @@ async function assertCompanyAccountRequestReviewContract(client) {
             review_message = 'smoke approved',
             updated_at = now()
       WHERE id = $2`,
-    [systemUserId, requestId],
+    [systemUserId, approvedRequestId],
   );
 
   await client.query(
@@ -252,13 +417,26 @@ async function assertCompanyAccountRequestReviewContract(client) {
             subscription_status = 'canceled',
             updated_at = now()
       WHERE id = $1`,
-    [companyId],
+    [approvedCompanyId],
+  );
+
+  await client.query(
+    `UPDATE company_account_requests
+        SET request_status = 'rejected',
+            reviewed_by_system_user_id = $1,
+            reviewed_at = now(),
+            review_message = 'smoke rejected',
+            updated_at = now()
+      WHERE id = $2`,
+    [systemUserId, rejectedRequestId],
   );
 
   const result = await client.query(
     `SELECT
+       request.id,
        request.request_status,
        request.reviewed_by_system_user_id,
+       request.review_message,
        reviewer_user.name AS reviewer_name,
        company.is_active,
        company.subscription_status
@@ -267,61 +445,51 @@ async function assertCompanyAccountRequestReviewContract(client) {
        ON reviewer_user.id = request.reviewed_by_system_user_id
      INNER JOIN companies company
        ON company.id = request.company_id
-     WHERE request.id = $1`,
-    [requestId],
+     WHERE request.id = ANY($1::text[])
+     ORDER BY request.id`,
+    [[approvedRequestId, rejectedRequestId]],
   );
 
-  const row = result.rows[0];
-  if (!row) {
+  const rowsById = new Map(result.rows.map((row) => [row.id, row]));
+  const approvedRow = rowsById.get(approvedRequestId);
+  const rejectedRow = rowsById.get(rejectedRequestId);
+
+  if (!approvedRow || !rejectedRow) {
     throwSmokeError({
       area: "company account request review contract",
       target: "company_account_requests",
-      message: "review row was not found after fixture update.",
+      message: "approved/rejected review rows were not both found after fixture update.",
       next: "check request id filters and rollback-only fixture inserts.",
     });
   }
-  if (row.request_status !== "approved") {
+  if (approvedRow.request_status !== "approved" || approvedRow.is_active !== false || approvedRow.subscription_status !== "canceled") {
     throwSmokeError({
       area: "company account request review contract",
-      target: "request_status",
-      message: "approval status was not persisted as approved.",
-      next: "check the account request approval update query.",
+      target: "approved account_deactivation",
+      message: "approval status or approved side effect contract failed.",
+      next: "check account request approval update and company deactivation side effect handling.",
     });
   }
-  if (row.reviewed_by_system_user_id !== systemUserId) {
+  if (rejectedRow.request_status !== "rejected" || rejectedRow.is_active !== true || rejectedRow.subscription_status !== "active") {
     throwSmokeError({
       area: "company account request review contract",
-      target: "reviewed_by_system_user_id",
-      message: "system reviewer id was not persisted.",
-      next: "check reviewer FK handling between company_account_requests and system_users.",
+      target: "rejected account_deactivation",
+      message: "rejection status or rejected side effect contract failed.",
+      next: "check account request rejection handling and ensure rejected requests do not deactivate the company.",
     });
   }
-  if (row.reviewer_name !== "Smoke System Admin") {
-    throwSmokeError({
-      area: "company account request review contract",
-      target: "system_users join",
-      message: "system reviewer name join failed.",
-      next: "check reviewed_by_system_user_id and system_users.id relation.",
-    });
-  }
-  if (row.is_active !== false) {
-    throwSmokeError({
-      area: "company account request review contract",
-      target: "companies.is_active",
-      message: "company deactivation contract failed.",
-      next: "check approval result application for account deactivation requests.",
-    });
-  }
-  if (row.subscription_status !== "canceled") {
-    throwSmokeError({
-      area: "company account request review contract",
-      target: "companies.subscription_status",
-      message: "company subscription status contract failed.",
-      next: "check approval result application for subscription/account state.",
-    });
+  for (const row of [approvedRow, rejectedRow]) {
+    if (row.reviewed_by_system_user_id !== systemUserId || row.reviewer_name !== "Smoke System Admin") {
+      throwSmokeError({
+        area: "company account request review contract",
+        target: "system reviewer join",
+        message: "system reviewer id/name join failed for a review result.",
+        next: "check reviewed_by_system_user_id and system_users.id relation.",
+      });
+    }
   }
 
-  logOk("company account request: system reviewer FK and approval result contract");
+  logOk("company account requests: approval/rejection review result and side effect contract");
 }
 
 async function assertPolicyAgreementContract(client) {
@@ -422,10 +590,44 @@ async function assertPolicyAgreementContract(client) {
     [versionId, companyId, userId],
   );
 
+
+
+  await client.query(
+    `INSERT INTO policy_agreements (
+       id,
+       policy_version_id,
+       company_id,
+       user_id,
+       agreement_scope,
+       agreement_source,
+       ip_address,
+       user_agent,
+       agreed_at,
+       created_at
+     ) VALUES (
+       'smoke-policy-agreement-updated',
+       $1,
+       $2,
+       $3,
+       'company_admin_onboarding',
+       'smoke_test_retry',
+       NULL,
+       'smoke-db-api',
+       now(),
+       now()
+     )
+     ON CONFLICT (policy_version_id, user_id) DO UPDATE SET
+       agreement_scope = EXCLUDED.agreement_scope,
+       agreement_source = EXCLUDED.agreement_source,
+       agreed_at = EXCLUDED.agreed_at`,
+    [versionId, companyId, userId],
+  );
+
   const result = await client.query(
     `SELECT
        COUNT(*)::int AS required_count,
-       COUNT(agreement.id)::int AS agreed_required_count
+       COUNT(agreement.id)::int AS agreed_required_count,
+       MAX(agreement.agreement_source) AS agreement_source
      FROM policy_documents document
      INNER JOIN policy_versions version
        ON version.policy_document_id = document.id
@@ -449,8 +651,16 @@ async function assertPolicyAgreementContract(client) {
       next: "check policy_documents, policy_versions, and policy_agreements joins for required approval policies.",
     });
   }
+  if (row.agreement_source !== "smoke_test_retry") {
+    throwSmokeError({
+      area: "policy agreement contract",
+      target: "policy_agreements unique upsert",
+      message: "policy agreement upsert did not update the existing user/version agreement.",
+      next: "check the policy_agreements_version_user_unique constraint and ON CONFLICT handling.",
+    });
+  }
 
-  logOk("policy agreement: required policy agreement save/read contract");
+  logOk("policy agreement: required policy agreement save/read/upsert contract");
 }
 
 function logSummary() {
@@ -484,6 +694,7 @@ async function main() {
     await client.query("BEGIN");
     transactionStarted = true;
     try {
+      await assertMemberLifecycleContract(client);
       await assertCompanyAccountRequestReviewContract(client);
       await assertPolicyAgreementContract(client);
     } finally {
