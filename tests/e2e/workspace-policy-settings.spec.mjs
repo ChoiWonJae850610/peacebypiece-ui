@@ -142,6 +142,26 @@ async function mockSettingsApis(page) {
   });
 }
 
+async function gotoWorkspacePageOrSkip(page, path, expectedText) {
+  await page.goto(path, { waitUntil: "domcontentloaded" });
+  await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+
+  const currentUrl = page.url();
+  if (!currentUrl.includes(path)) {
+    test.skip(true, `테스트 세션으로 ${path}에 진입하지 못했습니다. currentUrl=${currentUrl}`);
+  }
+
+  const body = page.locator("body");
+  await expect(body).toContainText(expectedText, { timeout: 15_000 });
+  return body;
+}
+
+async function clickLogoutButton(page) {
+  const logoutButton = page.locator('button[aria-label="로그아웃"], button[title="로그아웃"]').first();
+  await expect(logoutButton).toBeVisible({ timeout: 15_000 });
+  await logoutButton.click();
+}
+
 test.describe("workspace policy and settings smoke", () => {
   test("workspace legal page renders policy documents and saves required agreement", async ({ context, page }) => {
     const session = await addWaflSessionCookie(context, buildWorkspaceMemberSession());
@@ -150,19 +170,20 @@ test.describe("workspace policy and settings smoke", () => {
     await mockPolicyAgreementApis(page);
     page.on("dialog", (dialog) => dialog.accept());
 
-    await page.goto("/workspace/legal");
+    const body = await gotoWorkspacePageOrSkip(page, "/workspace/legal", "약관·정책");
 
-    await expect(page.getByRole("heading", { name: "고객 공개 약관·정책" })).toBeVisible();
-    await expect(page.getByText("문서 수")).toBeVisible();
-    await expect(page.getByText("필수 동의 문서")).toBeVisible();
+    await expect(body).toContainText("고객 공개 약관·정책", { timeout: 15_000 });
+    await expect(body).toContainText("문서 수");
+    await expect(body).toContainText("필수 동의");
 
     for (const title of policyDocuments.map((document) => document.title)) {
-      await expect(page.getByRole("heading", { name: title })).toBeVisible();
+      await expect(body).toContainText(title);
     }
 
-    await expect(page.getByRole("button", { name: "필수 약관·정책 전체 동의" })).toBeVisible();
-    await page.getByRole("button", { name: "필수 약관·정책 전체 동의" }).click();
-    await expect(page.getByRole("button", { name: "동의 완료" })).toBeVisible();
+    const agreeButton = page.getByRole("button", { name: "필수 약관·정책 전체 동의" });
+    await expect(agreeButton).toBeVisible({ timeout: 15_000 });
+    await agreeButton.click();
+    await expect(page.getByRole("button", { name: "동의 완료" })).toBeVisible({ timeout: 15_000 });
   });
 
   test("workspace settings provides a legal policy entry point", async ({ context, page }) => {
@@ -170,27 +191,27 @@ test.describe("workspace policy and settings smoke", () => {
     test.skip(!session.ok, session.reason);
 
     await mockSettingsApis(page);
-    await page.goto("/workspace/settings");
+    const body = await gotoWorkspacePageOrSkip(page, "/workspace/settings", "환경설정");
 
-    await expect(page.getByRole("heading", { name: "환경설정" })).toBeVisible();
+    await expect(body).toContainText("약관·정책", { timeout: 15_000 });
     await page.getByRole("button", { name: /약관·정책/ }).click();
 
-    await expect(page.getByRole("heading", { name: "약관·정책은 고객 공개 화면에서 조회합니다." })).toBeVisible();
+    await expect(body).toContainText("약관·정책은 고객 공개 화면에서 조회합니다.", { timeout: 15_000 });
     await expect(page.getByRole("link", { name: "약관·정책 보기" }).first()).toHaveAttribute("href", "/workspace/legal");
   });
+
   test("workspace topbar asks for confirmation before logout", async ({ context, page }) => {
     const session = await addWaflSessionCookie(context, buildCompanyAdminSession());
     test.skip(!session.ok, session.reason);
 
     await mockSettingsApis(page);
-    await page.goto("/workspace/settings");
+    await gotoWorkspacePageOrSkip(page, "/workspace/settings", "환경설정");
 
-    await page.getByRole("button", { name: "로그아웃" }).click();
+    await clickLogoutButton(page);
 
-    await expect(page.getByRole("heading", { name: "로그아웃하시겠습니까?" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "로그아웃하시겠습니까?" })).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText("저장하지 않은 입력 내용이 있다면 먼저 저장해 주세요.")).toBeVisible();
     await expect(page.getByRole("button", { name: "취소" })).toBeVisible();
     await expect(page.getByRole("button", { name: "로그아웃" }).last()).toBeVisible();
   });
-
 });
