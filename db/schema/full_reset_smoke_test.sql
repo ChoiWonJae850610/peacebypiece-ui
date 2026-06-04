@@ -229,6 +229,7 @@ BEGIN
       ('company_account_requests', 'request_title'),
       ('company_account_requests', 'request_message'),
       ('company_account_requests', 'request_payload'),
+        ('company_account_requests', 'reviewed_by_system_user_id'),
       ('member_permissions', 'permission_code'),
       ('role_templates', 'role_code'),
       ('role_template_permissions', 'permission_code'),

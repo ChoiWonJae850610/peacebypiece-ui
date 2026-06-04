@@ -1484,6 +1484,7 @@ CREATE TABLE company_account_requests (
   request_message text NOT NULL,
   request_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
   reviewed_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_by_system_user_id text REFERENCES system_users(id) ON DELETE SET NULL,
   reviewed_at timestamptz,
   review_message text,
   created_at timestamptz NOT NULL DEFAULT now(),

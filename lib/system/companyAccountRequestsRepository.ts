@@ -19,6 +19,7 @@ export type SystemCompanyAccountRequestRecord = {
   requestTitle: string;
   requestMessage: string;
   reviewedByUserId: string | null;
+  reviewedBySystemUserId: string | null;
   reviewerName: string | null;
   reviewedAt: string | null;
   reviewMessage: string | null;
@@ -39,6 +40,7 @@ type SystemCompanyAccountRequestRow = {
   request_title: string;
   request_message: string;
   reviewed_by_user_id: string | null;
+  reviewed_by_system_user_id: string | null;
   reviewer_name: string | null;
   reviewed_at: Date | string | null;
   review_message: string | null;
@@ -84,6 +86,7 @@ function toSystemCompanyAccountRequestRecord(row: SystemCompanyAccountRequestRow
     requestTitle: row.request_title,
     requestMessage: row.request_message,
     reviewedByUserId: row.reviewed_by_user_id,
+    reviewedBySystemUserId: row.reviewed_by_system_user_id,
     reviewerName: row.reviewer_name,
     reviewedAt: toIsoString(row.reviewed_at),
     reviewMessage: row.review_message,
@@ -107,6 +110,7 @@ export async function listSystemCompanyAccountRequests(limit?: number): Promise<
        request.request_title,
        request.request_message,
        request.reviewed_by_user_id,
+       request.reviewed_by_system_user_id,
        reviewer.name AS reviewer_name,
        request.reviewed_at,
        request.review_message,
@@ -117,8 +121,8 @@ export async function listSystemCompanyAccountRequests(limit?: number): Promise<
         ON company.id = request.company_id
      INNER JOIN users requester
         ON requester.id = request.requested_by_user_id
-     LEFT JOIN users reviewer
-        ON reviewer.id = request.reviewed_by_user_id
+     LEFT JOIN system_users reviewer
+        ON reviewer.id = request.reviewed_by_system_user_id
      ORDER BY request.created_at DESC
      LIMIT $1`,
     [normalizeLimit(limit)],
@@ -144,13 +148,14 @@ export async function updateSystemCompanyAccountRequestStatus({
   const result = await queryDb<SystemCompanyAccountRequestRow>(
     `UPDATE company_account_requests request
         SET request_status = $2,
-            reviewed_by_user_id = $3,
+            reviewed_by_user_id = NULL,
+            reviewed_by_system_user_id = $3,
             reviewed_at = now(),
             review_message = $4,
             updated_at = now()
       FROM companies company,
            users requester
-      LEFT JOIN users reviewer
+      LEFT JOIN system_users reviewer
          ON reviewer.id = $3
       WHERE request.id = $1
         AND request.request_status IN ('pending', 'reviewing')
@@ -169,6 +174,7 @@ export async function updateSystemCompanyAccountRequestStatus({
         request.request_title,
         request.request_message,
         request.reviewed_by_user_id,
+        request.reviewed_by_system_user_id,
         reviewer.name AS reviewer_name,
         request.reviewed_at,
         request.review_message,
