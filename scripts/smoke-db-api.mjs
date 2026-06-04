@@ -209,7 +209,7 @@ async function assertMemberLifecycleContract(client) {
        updated_at
      ) VALUES
        ($1, $3, 'smoke-member-admin@example.test', 'Smoke Member Admin', 'admin', true, now(), now()),
-       ($2, $3, 'smoke-member-user@example.test', 'Smoke Member User', 'member', true, now(), now())`,
+       ($2, $3, 'smoke-member-user@example.test', 'Smoke Member User', 'designer', true, now(), now())`,
     [adminUserId, memberUserId, companyId],
   );
 
