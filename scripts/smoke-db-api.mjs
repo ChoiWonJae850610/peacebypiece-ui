@@ -74,6 +74,8 @@ const REQUIRED_COLUMNS = {
   ],
 };
 
+const CHECK_RESULTS = [];
+
 function findDatabaseUrl() {
   for (const key of DATABASE_URL_ENV_KEYS) {
     const value = process.env[key];
@@ -84,12 +86,30 @@ function findDatabaseUrl() {
   return null;
 }
 
+function logHeader(databaseKey) {
+  console.log("[smoke] WAFL DB/API contract smoke test");
+  console.log(`[smoke] Database env: ${databaseKey}`);
+  console.log("[smoke] Safety: write checks run inside a transaction and are rolled back.");
+}
+
 function logStep(label) {
   console.log(`\n[smoke] ${label}`);
 }
 
 function logOk(label) {
+  CHECK_RESULTS.push({ label, status: "passed" });
   console.log(`  ✓ ${label}`);
+}
+
+function formatErrorMessage({ area, target, message, next }) {
+  return [
+    `[${area}] ${target}: ${message}`,
+    next ? `Next check: ${next}` : null,
+  ].filter(Boolean).join("\n");
+}
+
+function throwSmokeError(payload) {
+  throw new Error(formatErrorMessage(payload));
 }
 
 async function assertTableExists(client, tableName) {
@@ -98,7 +118,12 @@ async function assertTableExists(client, tableName) {
     [`public.${tableName}`],
   );
   if (!result.rows[0]?.table_name) {
-    throw new Error(`Missing required table: ${tableName}`);
+    throwSmokeError({
+      area: "schema contract",
+      target: tableName,
+      message: "required table was not found.",
+      next: "full_reset.sql or the latest migration may not have been applied.",
+    });
   }
 }
 
@@ -115,7 +140,12 @@ async function assertColumnsExist(client, tableName, columns) {
   const found = new Set(result.rows.map((row) => row.column_name));
   const missing = columns.filter((column) => !found.has(column));
   if (missing.length > 0) {
-    throw new Error(`Missing required columns on ${tableName}: ${missing.join(", ")}`);
+    throwSmokeError({
+      area: "schema contract",
+      target: tableName,
+      message: `missing required column(s): ${missing.join(", ")}`,
+      next: "compare db/schema/full_reset.sql and recent db/migrations files with the current database.",
+    });
   }
 }
 
@@ -124,7 +154,7 @@ async function assertSchema(client) {
   for (const tableName of REQUIRED_TABLES) {
     await assertTableExists(client, tableName);
     await assertColumnsExist(client, tableName, REQUIRED_COLUMNS[tableName]);
-    logOk(`${tableName} table and columns`);
+    logOk(`${tableName}: required table/columns present`);
   }
 }
 
@@ -242,14 +272,56 @@ async function assertCompanyAccountRequestReviewContract(client) {
   );
 
   const row = result.rows[0];
-  if (!row) throw new Error("Company account request review row was not found.");
-  if (row.request_status !== "approved") throw new Error("Company account request approval status was not persisted.");
-  if (row.reviewed_by_system_user_id !== systemUserId) throw new Error("System reviewer id was not persisted.");
-  if (row.reviewer_name !== "Smoke System Admin") throw new Error("System reviewer join failed.");
-  if (row.is_active !== false) throw new Error("Company deactivation contract failed.");
-  if (row.subscription_status !== "canceled") throw new Error("Company subscription status contract failed.");
+  if (!row) {
+    throwSmokeError({
+      area: "company account request review contract",
+      target: "company_account_requests",
+      message: "review row was not found after fixture update.",
+      next: "check request id filters and rollback-only fixture inserts.",
+    });
+  }
+  if (row.request_status !== "approved") {
+    throwSmokeError({
+      area: "company account request review contract",
+      target: "request_status",
+      message: "approval status was not persisted as approved.",
+      next: "check the account request approval update query.",
+    });
+  }
+  if (row.reviewed_by_system_user_id !== systemUserId) {
+    throwSmokeError({
+      area: "company account request review contract",
+      target: "reviewed_by_system_user_id",
+      message: "system reviewer id was not persisted.",
+      next: "check reviewer FK handling between company_account_requests and system_users.",
+    });
+  }
+  if (row.reviewer_name !== "Smoke System Admin") {
+    throwSmokeError({
+      area: "company account request review contract",
+      target: "system_users join",
+      message: "system reviewer name join failed.",
+      next: "check reviewed_by_system_user_id and system_users.id relation.",
+    });
+  }
+  if (row.is_active !== false) {
+    throwSmokeError({
+      area: "company account request review contract",
+      target: "companies.is_active",
+      message: "company deactivation contract failed.",
+      next: "check approval result application for account deactivation requests.",
+    });
+  }
+  if (row.subscription_status !== "canceled") {
+    throwSmokeError({
+      area: "company account request review contract",
+      target: "companies.subscription_status",
+      message: "company subscription status contract failed.",
+      next: "check approval result application for subscription/account state.",
+    });
+  }
 
-  logOk("system reviewer FK and deactivation approval contract");
+  logOk("company account request: system reviewer FK and approval result contract");
 }
 
 async function assertPolicyAgreementContract(client) {
@@ -370,42 +442,70 @@ async function assertPolicyAgreementContract(client) {
 
   const row = result.rows[0];
   if (!row || row.required_count !== 1 || row.agreed_required_count !== 1) {
-    throw new Error("Policy required agreement contract failed.");
+    throwSmokeError({
+      area: "policy agreement contract",
+      target: "policy_agreements",
+      message: "required policy agreement count did not match expected result.",
+      next: "check policy_documents, policy_versions, and policy_agreements joins for required approval policies.",
+    });
   }
 
-  logOk("required policy agreement contract");
+  logOk("policy agreement: required policy agreement save/read contract");
+}
+
+function logSummary() {
+  console.log("\n[smoke] Summary");
+  console.log(`  Passed checks: ${CHECK_RESULTS.length}`);
+  for (const result of CHECK_RESULTS) {
+    console.log(`  ✓ ${result.label}`);
+  }
+  console.log("  Result: completed successfully");
+  console.log("  Persistence: no test data was persisted");
 }
 
 async function main() {
   const database = findDatabaseUrl();
   if (!database) {
-    console.error(`[smoke] Missing database URL. Set one of: ${DATABASE_URL_ENV_KEYS.join(", ")}`);
+    console.error("[smoke] Missing database URL.");
+    console.error(`  Set one of: ${DATABASE_URL_ENV_KEYS.join(", ")}`);
+    console.error("  Example PowerShell: $env:DATABASE_URL=\"postgres://...\"; npm run test:smoke:db-api");
     process.exitCode = 1;
     return;
   }
 
-  console.log(`[smoke] Using ${database.key}. Writes are rolled back.`);
+  logHeader(database.key);
 
   const client = new Client({ connectionString: database.value });
-  await client.connect();
+  let transactionStarted = false;
 
   try {
+    await client.connect();
     await assertSchema(client);
     await client.query("BEGIN");
+    transactionStarted = true;
     try {
       await assertCompanyAccountRequestReviewContract(client);
       await assertPolicyAgreementContract(client);
     } finally {
       await client.query("ROLLBACK");
+      transactionStarted = false;
     }
-    console.log("\n[smoke] Completed successfully. No test data was persisted.");
+    logSummary();
+  } catch (error) {
+    if (transactionStarted) {
+      try {
+        await client.query("ROLLBACK");
+      } catch {
+        // Keep the original failure visible. The connection will be closed below.
+      }
+    }
+    console.error("\n[smoke] Failed.");
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error("  Persistence: rollback attempted for write checks.");
+    process.exitCode = 1;
   } finally {
-    await client.end();
+    await client.end().catch(() => {});
   }
 }
 
-main().catch((error) => {
-  console.error("\n[smoke] Failed.");
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+main();
