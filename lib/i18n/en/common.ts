@@ -37,6 +37,10 @@ export const commonEn = {
         label: "Standards",
         description: "A work card for managing units, processes, item types, and other work-order standards.",
       },
+      legal: {
+        label: "Terms and policies",
+        description: "Review WAFL customer-facing terms, privacy policy, billing policy, and service policies.",
+      },
   personalSettings: {
         label: "Personal settings",
         description: "A future area for language, color, and notification preferences per user.",
@@ -130,6 +134,11 @@ export const commonEn = {
         title: "Default entry screen",
         description: "Chooses where the default-entry button at the top of this screen opens.",
       },
+    },
+    policyAccess: {
+      title: "Terms and policies",
+      description: "Review customer-facing documents such as the terms of service, privacy policy, and billing policy.",
+      action: "View terms and policies",
     },
     languageOptions: {
       ko: "한국어",

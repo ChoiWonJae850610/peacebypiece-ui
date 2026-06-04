@@ -37,6 +37,10 @@ export const commonKo = {
         label: "기준정보",
         description: "단위, 공정, 품목 등 작업지시서 입력 기준을 관리할 수 있는 업무 카드입니다.",
       },
+      legal: {
+        label: "약관·정책",
+        description: "WAFL 이용약관, 개인정보처리방침, 요금·환불정책 등 고객 공개 문서를 확인합니다.",
+      },
   personalSettings: {
         label: "개인 환경설정",
         description: "언어와 테마를 사용자별로 관리합니다.",
@@ -130,6 +134,11 @@ export const commonKo = {
         title: "기본 진입 화면",
         description: "상단의 기본 진입 화면 버튼이 이동할 화면을 정합니다.",
       },
+    },
+    policyAccess: {
+      title: "약관·정책",
+      description: "이용약관, 개인정보처리방침, 요금·환불정책 등 고객 공개 문서를 확인할 수 있습니다.",
+      action: "약관·정책 보기",
     },
     languageOptions: {
       ko: "한국어",

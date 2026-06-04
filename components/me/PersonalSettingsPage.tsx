@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
@@ -406,6 +407,21 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
         value={draft.theme}
         onChange={updateTheme}
       />
+
+      <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.policyAccess.title}</h3>
+            <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.policyAccess.description}</p>
+          </div>
+          <Link
+            href="/workspace/legal"
+            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--pbp-text-secondary)] transition hover:border-[var(--pbp-border-strong)] hover:text-[var(--pbp-text-primary)]"
+          >
+            {copy.policyAccess.action}
+          </Link>
+        </div>
+      </section>
       {!loaded ? <p className="text-xs font-semibold text-[var(--pbp-text-subtle)]">{copy.loading}</p> : null}
     </div>
   );

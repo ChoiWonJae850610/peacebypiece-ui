@@ -8,7 +8,7 @@ export const MEMBER_WORKSPACE_CARD_STATUS = {
 export type MemberWorkspaceCardStatus =
   (typeof MEMBER_WORKSPACE_CARD_STATUS)[keyof typeof MEMBER_WORKSPACE_CARD_STATUS];
 
-export type MemberWorkspaceCardId = "workorder" | "partners" | "standards";
+export type MemberWorkspaceCardId = "workorder" | "partners" | "standards" | "legal";
 
 export type MemberWorkspaceCard = {
   id: MemberWorkspaceCardId;
@@ -39,6 +39,13 @@ export const MEMBER_WORKSPACE_CARDS: readonly MemberWorkspaceCard[] = [
     status: MEMBER_WORKSPACE_CARD_STATUS.available,
     section: "work",
     requiredPermissions: ["standards.read"],
+  },
+  {
+    id: "legal",
+    href: "/workspace/legal",
+    status: MEMBER_WORKSPACE_CARD_STATUS.available,
+    section: "settings",
+    requiredPermissions: ["personal_settings.manage"],
   },
 ] as const;
 
