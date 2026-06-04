@@ -51,6 +51,7 @@ import {
   buildMemberDirectoryColumns,
   type JoinRequestReviewAction,
   type MemberDirectoryRow,
+  type MemberDirectoryStatus,
   type MemberDirectoryStatusFilter,
   type MemberDirectorySortKey,
 } from "@/components/admin/members/AdminMemberDirectoryTableColumns";

@@ -143,6 +143,12 @@ SET
   status = 'approved',
   approved_by = COALESCE(approved_by, 'test-a-admin'),
   approved_at = COALESCE(approved_at, now()),
+  suspended_by = NULL,
+  suspended_at = NULL,
+  withdrawal_requested_by = NULL,
+  withdrawal_requested_at = NULL,
+  withdrawn_by = NULL,
+  withdrawn_at = NULL,
   updated_at = now()
 FROM _wafl_google_login_test_users seed
 WHERE cm.user_id = seed.user_id;
@@ -189,7 +195,8 @@ SET
   display_name = seed.display_name,
   updated_at = now()
 FROM _wafl_google_login_test_users seed
-WHERE cm.user_id = seed.user_id;
+WHERE cm.user_id = seed.user_id
+  AND cm.status = 'approved';
 
 COMMIT;
 
