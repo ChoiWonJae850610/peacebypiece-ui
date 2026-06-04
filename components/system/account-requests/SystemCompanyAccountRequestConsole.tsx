@@ -36,6 +36,15 @@ type SystemCompanyAccountRequestListResponse = {
   message?: string;
 };
 
+type SystemCompanyAccountRequestReviewResponse = {
+  ok?: boolean;
+  request?: SystemCompanyAccountRequestRecord;
+  error?: string;
+  message?: string;
+};
+
+type SystemCompanyAccountRequestReviewAction = "reviewing" | "approved" | "rejected";
+
 const REQUEST_FILTERS: SystemCompanyAccountRequestFilter[] = [
   "all",
   "pending",
@@ -60,12 +69,16 @@ export default function SystemCompanyAccountRequestConsole() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<SystemCompanyAccountRequestFilter>("all");
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [reviewMessage, setReviewMessage] = useState("");
+  const [reviewStatus, setReviewStatus] = useState<"idle" | "submitting">("idle");
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const filteredRequests = useMemo(
     () => requests.filter((request) => matchesSystemCompanyAccountRequestFilter(request, activeFilter)),
     [activeFilter, requests],
   );
   const selectedRequest = requests.find((request) => request.id === selectedRequestId) ?? filteredRequests[0] ?? null;
+  const canReviewSelectedRequest = selectedRequest ? selectedRequest.requestStatus === "pending" || selectedRequest.requestStatus === "reviewing" : false;
 
   const summaryCounts = useMemo(() => {
     return {
@@ -141,6 +154,50 @@ export default function SystemCompanyAccountRequestConsole() {
     [],
   );
 
+  function replaceRequest(updatedRequest: SystemCompanyAccountRequestRecord) {
+    setRequests((currentRequests) => currentRequests.map((request) => (request.id === updatedRequest.id ? updatedRequest : request)));
+    setSelectedRequestId(updatedRequest.id);
+    setReviewMessage(updatedRequest.reviewMessage ?? "");
+  }
+
+  async function submitReview(action: SystemCompanyAccountRequestReviewAction) {
+    if (!selectedRequest || reviewStatus === "submitting") return;
+
+    if (action === "rejected" && reviewMessage.trim().length < 5) {
+      setReviewError("반려 처리 시 검토 메모를 5자 이상 입력해 주세요.");
+      return;
+    }
+
+    if (action === "approved" && !window.confirm("선택한 요청을 승인 상태로 처리할까요?")) return;
+    if (action === "rejected" && !window.confirm("선택한 요청을 반려 상태로 처리할까요?")) return;
+
+    setReviewStatus("submitting");
+    setReviewError(null);
+
+    try {
+      const response = await fetch("/api/system/company-account-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: selectedRequest.id,
+          action,
+          reviewMessage,
+        }),
+      });
+      const payload = (await response.json()) as SystemCompanyAccountRequestReviewResponse;
+
+      if (!response.ok || !payload.ok || !payload.request) {
+        throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ACCOUNT_REQUEST_REVIEW_FAILED");
+      }
+
+      replaceRequest(payload.request);
+    } catch (error) {
+      setReviewError(error instanceof Error ? error.message : "요청 상태를 처리하지 못했습니다.");
+    } finally {
+      setReviewStatus("idle");
+    }
+  }
+
   async function loadRequests() {
     setLoadStatus("loading");
     setLoadError(null);
@@ -153,7 +210,9 @@ export default function SystemCompanyAccountRequestConsole() {
         throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ACCOUNT_REQUESTS_LOAD_FAILED");
       }
 
-      setRequests(payload.requests ?? []);
+      const nextRequests = payload.requests ?? [];
+      setRequests(nextRequests);
+      setSelectedRequestId((currentId) => currentId ?? nextRequests[0]?.id ?? null);
       setLoadStatus("loaded");
     } catch (error) {
       setRequests([]);
@@ -165,6 +224,11 @@ export default function SystemCompanyAccountRequestConsole() {
   useEffect(() => {
     void loadRequests();
   }, []);
+
+  useEffect(() => {
+    setReviewMessage(selectedRequest?.reviewMessage ?? "");
+    setReviewError(null);
+  }, [selectedRequest?.id, selectedRequest?.reviewMessage]);
 
   return (
     <SystemShell>
@@ -258,7 +322,7 @@ export default function SystemCompanyAccountRequestConsole() {
         <div className={SYSTEM_SECTION_HEADER_CLASS}>
           <div>
             <h2 className={SYSTEM_SECTION_TITLE_CLASS}>요청 상세</h2>
-            <p className={SYSTEM_SMALL_TEXT_CLASS}>승인/반려 처리는 다음 단계에서 연결하고, 현재는 검토용 정보를 먼저 노출합니다.</p>
+            <p className={SYSTEM_SMALL_TEXT_CLASS}>요청 내용을 확인한 뒤 검토 중, 승인, 반려 상태로 처리합니다.</p>
           </div>
           {selectedRequest ? (
             <AdminStatusBadge tone={getSystemCompanyAccountRequestStatusTone(selectedRequest.requestStatus)}>
@@ -292,12 +356,53 @@ export default function SystemCompanyAccountRequestConsole() {
             <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">
               <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{selectedRequest.requestTitle}</p>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--pbp-text-muted)]">{selectedRequest.requestMessage}</p>
-              {selectedRequest.reviewMessage ? (
-                <div className="mt-4 rounded-2xl bg-[var(--pbp-surface-muted)] px-4 py-3">
-                  <p className={SYSTEM_SMALL_TEXT_CLASS}>처리 메모</p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">{selectedRequest.reviewMessage}</p>
+              <div className="mt-4 rounded-2xl bg-[var(--pbp-surface-muted)] px-4 py-3">
+                <p className={SYSTEM_SMALL_TEXT_CLASS}>검토 정보</p>
+                <div className="mt-2 grid gap-1 text-sm text-[var(--pbp-text-muted)]">
+                  <p>검토자: {selectedRequest.reviewerName || "-"}</p>
+                  <p>검토일: {formatSystemCompanyAccountRequestDate(selectedRequest.reviewedAt)}</p>
                 </div>
-              ) : null}
+                {selectedRequest.reviewMessage ? (
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--pbp-text-muted)]">{selectedRequest.reviewMessage}</p>
+                ) : null}
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">
+                <label className="text-xs font-semibold text-[var(--pbp-text-muted)]" htmlFor="system-account-request-review-message">
+                  검토 메모
+                </label>
+                <textarea
+                  id="system-account-request-review-message"
+                  value={reviewMessage}
+                  onChange={(event) => setReviewMessage(event.target.value)}
+                  disabled={!canReviewSelectedRequest || reviewStatus === "submitting"}
+                  rows={4}
+                  maxLength={1200}
+                  className="mt-2 min-h-28 w-full resize-y rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-brand-primary)] focus:ring-2 focus:ring-[var(--pbp-brand-primary-soft)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]"
+                  placeholder="승인/반려 사유 또는 운영팀 확인 내용을 입력하세요."
+                />
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-[var(--pbp-text-muted)]">
+                    {canReviewSelectedRequest ? "승인/반려는 요청 상태만 변경하며 실제 회사 정보나 계정 상태는 별도 단계에서 반영합니다." : "이미 처리된 요청은 상태를 다시 변경하지 않습니다."}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <AdminButton onClick={() => void submitReview("reviewing")} disabled={!canReviewSelectedRequest || reviewStatus === "submitting"} variant="secondary">
+                      {reviewStatus === "submitting" ? "처리 중" : "검토 중"}
+                    </AdminButton>
+                    <AdminButton onClick={() => void submitReview("approved")} disabled={!canReviewSelectedRequest || reviewStatus === "submitting"} variant="primary">
+                      승인
+                    </AdminButton>
+                    <AdminButton onClick={() => void submitReview("rejected")} disabled={!canReviewSelectedRequest || reviewStatus === "submitting"} variant="danger">
+                      반려
+                    </AdminButton>
+                  </div>
+                </div>
+                {reviewError ? (
+                  <p className="mt-3 rounded-2xl border border-[var(--pbp-status-danger-border)] bg-[var(--pbp-status-danger-bg)] px-4 py-3 text-sm font-semibold text-[var(--pbp-status-danger)]">
+                    {reviewError}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </div>
         ) : (

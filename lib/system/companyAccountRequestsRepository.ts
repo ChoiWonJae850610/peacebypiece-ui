@@ -3,6 +3,7 @@ import "server-only";
 import { queryDb } from "@/lib/db/client";
 
 export type SystemCompanyAccountRequestStatus = "pending" | "reviewing" | "approved" | "rejected" | "cancelled";
+export type SystemCompanyAccountRequestReviewAction = "reviewing" | "approved" | "rejected";
 export type SystemCompanyAccountRequestType = "company_info_change" | "account_deactivation";
 
 export type SystemCompanyAccountRequestRecord = {
@@ -48,6 +49,20 @@ type SystemCompanyAccountRequestRow = {
 function toIsoString(value: Date | string | null): string | null {
   if (!value) return null;
   return value instanceof Date ? value.toISOString() : value;
+}
+
+function normalizeReviewMessage(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const message = value.trim().replace(/\s+/g, " ");
+  if (!message) return null;
+  if (message.length > 1200) {
+    throw new Error("SYSTEM_COMPANY_ACCOUNT_REQUEST_REVIEW_MESSAGE_TOO_LONG");
+  }
+  return message;
+}
+
+export function isSystemCompanyAccountRequestReviewAction(value: unknown): value is SystemCompanyAccountRequestReviewAction {
+  return value === "reviewing" || value === "approved" || value === "rejected";
 }
 
 function normalizeLimit(value: number | undefined): number {
@@ -110,4 +125,62 @@ export async function listSystemCompanyAccountRequests(limit?: number): Promise<
   );
 
   return result.rows.map(toSystemCompanyAccountRequestRecord);
+}
+
+
+export async function updateSystemCompanyAccountRequestStatus({
+  requestId,
+  reviewerUserId,
+  action,
+  reviewMessage,
+}: {
+  requestId: string;
+  reviewerUserId: string;
+  action: SystemCompanyAccountRequestReviewAction;
+  reviewMessage?: unknown;
+}): Promise<SystemCompanyAccountRequestRecord> {
+  const normalizedMessage = normalizeReviewMessage(reviewMessage);
+
+  const result = await queryDb<SystemCompanyAccountRequestRow>(
+    `UPDATE company_account_requests request
+        SET request_status = $2,
+            reviewed_by_user_id = $3,
+            reviewed_at = now(),
+            review_message = $4,
+            updated_at = now()
+      FROM companies company,
+           users requester
+      LEFT JOIN users reviewer
+         ON reviewer.id = $3
+      WHERE request.id = $1
+        AND request.request_status IN ('pending', 'reviewing')
+        AND company.id = request.company_id
+        AND requester.id = request.requested_by_user_id
+      RETURNING
+        request.id,
+        request.company_id,
+        company.name AS company_name,
+        company.business_name,
+        request.requested_by_user_id,
+        requester.name AS requester_name,
+        requester.email AS requester_email,
+        request.request_type,
+        request.request_status,
+        request.request_title,
+        request.request_message,
+        request.reviewed_by_user_id,
+        reviewer.name AS reviewer_name,
+        request.reviewed_at,
+        request.review_message,
+        request.created_at,
+        request.updated_at`,
+    [requestId, action, reviewerUserId, normalizedMessage],
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error("SYSTEM_COMPANY_ACCOUNT_REQUEST_NOT_FOUND");
+  }
+
+  return toSystemCompanyAccountRequestRecord(row);
 }
