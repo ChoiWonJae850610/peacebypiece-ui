@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import type { AdminNavigationItem } from "@/lib/admin/adminDashboard.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -165,7 +166,12 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
           }
 
           return (
-            <Link key={item.label} href={item.href} className={itemClassName}>
+            <Link
+              key={item.label}
+              href={item.href}
+              className={itemClassName}
+              onClick={() => showWaflLoadingToast(`${item.translationKey ? t(`navigation.${item.translationKey}`, item.label) : item.label} 화면을 여는 중입니다.`)}
+            >
               {content}
             </Link>
           );

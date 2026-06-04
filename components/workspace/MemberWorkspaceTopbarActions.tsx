@@ -5,6 +5,7 @@ import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import { useEffect, useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
+import LogoutConfirmModal from "@/components/common/navigation/LogoutConfirmModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { useI18n } from "@/lib/i18n";
 
@@ -54,6 +55,7 @@ export default function MemberWorkspaceTopbarActions({
 }: MemberWorkspaceTopbarActionsProps) {
   const { i18n } = useI18n();
   const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [reviveKey, setReviveKey] = useState(0);
   const personalSettingsTitle = i18n.common.personalSettings.title;
   const personalSettingsDescription = i18n.common.personalSettings.description;
@@ -86,6 +88,7 @@ export default function MemberWorkspaceTopbarActions({
 
     const reviveWorkspaceActions = () => {
       setPersonalSettingsOpen(false);
+      setLogoutConfirmOpen(false);
       setReviveKey((current) => current + 1);
     };
 
@@ -122,16 +125,21 @@ export default function MemberWorkspaceTopbarActions({
       >
         <PersonalSettingsIcon />
       </button>
-      <form action="/api/auth/logout" method="post">
-        <button
-          type="submit"
-          aria-label={i18n.common.workorderToolbar.logout}
-          title={i18n.common.workorderToolbar.logout}
-          className={buildWorkspaceIconButtonClassName()}
-        >
-          <LogoutIcon />
-        </button>
-      </form>
+      <button
+        type="button"
+        onClick={() => setLogoutConfirmOpen(true)}
+        aria-label={i18n.common.workorderToolbar.logout}
+        title={i18n.common.workorderToolbar.logout}
+        className={buildWorkspaceIconButtonClassName()}
+      >
+        <LogoutIcon />
+      </button>
+      <LogoutConfirmModal
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        confirmLabel={i18n.common.workorderToolbar.logout}
+        loadingMessage="로그아웃 중입니다."
+      />
       <AdminModal
         open={personalSettingsOpen}
         title={personalSettingsTitle}

@@ -178,4 +178,19 @@ test.describe("workspace policy and settings smoke", () => {
     await expect(page.getByRole("heading", { name: "약관·정책은 고객 공개 화면에서 조회합니다." })).toBeVisible();
     await expect(page.getByRole("link", { name: "약관·정책 보기" }).first()).toHaveAttribute("href", "/workspace/legal");
   });
+  test("workspace topbar asks for confirmation before logout", async ({ context, page }) => {
+    const session = await addWaflSessionCookie(context, buildCompanyAdminSession());
+    test.skip(!session.ok, session.reason);
+
+    await mockSettingsApis(page);
+    await page.goto("/workspace/settings");
+
+    await page.getByRole("button", { name: "로그아웃" }).click();
+
+    await expect(page.getByRole("heading", { name: "로그아웃하시겠습니까?" })).toBeVisible();
+    await expect(page.getByText("저장하지 않은 입력 내용이 있다면 먼저 저장해 주세요.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "취소" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "로그아웃" }).last()).toBeVisible();
+  });
+
 });

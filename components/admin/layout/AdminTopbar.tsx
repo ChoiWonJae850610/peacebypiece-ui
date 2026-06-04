@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
+import LogoutConfirmModal from "@/components/common/navigation/LogoutConfirmModal";
+import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -85,11 +87,13 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
   const t = useAdminTranslation();
   const { user } = useCurrentUser();
   const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [reviveKey, setReviveKey] = useState(0);
 
   useEffect(() => {
     const reviveTopbarActions = () => {
       setPersonalSettingsOpen(false);
+      setLogoutConfirmOpen(false);
       setReviveKey((current) => current + 1);
     };
 
@@ -131,6 +135,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
             aria-label={t("topbar.actions.home", "홈")}
             title={t("topbar.actions.home", "홈")}
             className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+            onClick={() => showWaflLoadingToast(t("topbar.loading.home", "업무 홈을 여는 중입니다."))}
           >
             <HomeIcon />
           </Link>
@@ -149,22 +154,31 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
               aria-label={t("topbar.actions.adminSettings", "환경설정")}
               title={t("topbar.actions.adminSettings", "환경설정")}
               className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+              onClick={() => showWaflLoadingToast(t("topbar.loading.settings", "환경설정을 여는 중입니다."))}
             >
               <SettingsIcon />
             </Link>
           ) : null}
-          <form action="/api/auth/logout" method="post">
-            <button
-              type="submit"
-              aria-label={t("topbar.actions.logout", "로그아웃")}
-              title={t("topbar.actions.logout", "로그아웃")}
-              className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
-            >
-              <LogoutIcon />
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={() => setLogoutConfirmOpen(true)}
+            aria-label={t("topbar.actions.logout", "로그아웃")}
+            title={t("topbar.actions.logout", "로그아웃")}
+            className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+          >
+            <LogoutIcon />
+          </button>
         </div>
       </div>
+      <LogoutConfirmModal
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        title={t("topbar.logoutConfirm.title", "로그아웃하시겠습니까?")}
+        description={t("topbar.logoutConfirm.description", "현재 계정에서 로그아웃합니다. 저장하지 않은 입력 내용이 있다면 먼저 저장해 주세요.")}
+        cancelLabel={t("common.cancel", "취소")}
+        confirmLabel={t("topbar.actions.logout", "로그아웃")}
+        loadingMessage={t("topbar.loading.logout", "로그아웃 중입니다.")}
+      />
       <AdminModal
         open={personalSettingsOpen}
         title={t("topbar.actions.personalSettings", "개인 설정")}
