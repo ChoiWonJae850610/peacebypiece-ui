@@ -16,6 +16,7 @@ import {
 } from "@/lib/admin/settings/companyOnboardingFilePolicy";
 import type { CompanyOnboardingUpdateInput, CompanyOnboardingFileType } from "@/lib/admin/settings/companyTypes";
 import { isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
+import { agreeToCurrentRequiredPolicies, listCurrentPolicyAgreementStatus } from "@/lib/policies/policyAgreementRepository";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -26,6 +27,31 @@ function isUpdateBody(value: unknown): value is CompanyOnboardingUpdateInput {
 
 function getErrorCode(error: unknown): string {
   return error instanceof Error ? error.message : "COMPANY_ONBOARDING_SAVE_FAILED";
+}
+
+function hasRequiredPolicyAgreementConfirmation(body: CompanyOnboardingUpdateInput): boolean {
+  return body.requiredPolicyAgreementConfirmed === true;
+}
+
+async function ensureRequiredPolicyAgreement(input: {
+  companyId: string;
+  userId: string;
+  confirmed: boolean;
+  request: NextRequest;
+}): Promise<void> {
+  if (input.confirmed) {
+    await agreeToCurrentRequiredPolicies({
+      companyId: input.companyId,
+      userId: input.userId,
+      agreementSource: "company_onboarding",
+      ipAddress: input.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      userAgent: input.request.headers.get("user-agent"),
+    });
+    return;
+  }
+
+  const status = await listCurrentPolicyAgreementStatus({ companyId: input.companyId, userId: input.userId });
+  if (!status.allRequiredAgreed) throw new Error("POLICY_REQUIRED_AGREEMENT_MISSING");
 }
 
 
@@ -231,6 +257,13 @@ export async function PATCH(request: NextRequest) {
   if (blockedResponse) return blockedResponse;
 
   try {
+    await ensureRequiredPolicyAgreement({
+      companyId,
+      userId: effectiveSession.userId,
+      confirmed: hasRequiredPolicyAgreementConfirmation(body),
+      request,
+    });
+
     if (logoFile) {
       await uploadCompanyOnboardingFile({
         companyId,
@@ -264,7 +297,7 @@ export async function PATCH(request: NextRequest) {
     return response;
   } catch (error) {
     const code = getErrorCode(error);
-    const status = code === "COMPANY_ONBOARDING_REQUIRED_FIELDS" ? 400 : 500;
+    const status = code === "COMPANY_ONBOARDING_REQUIRED_FIELDS" || code === "POLICY_REQUIRED_AGREEMENT_MISSING" ? 400 : 500;
     return NextResponse.json({ profile: null, error: code }, { status });
   }
 }

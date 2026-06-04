@@ -2136,6 +2136,12 @@ export const adminEn = {
     submit: "Save and request approval",
     addressApiNote:
       "After selecting a search result, enter the address detail manually. If search is unavailable, postal code and address can still be entered manually.",
+    policyAgreement: {
+      title: "Required policy agreement",
+      description: "Required policy agreement is needed before submitting the company approval request. The agreement record is saved with the approval request.",
+      checkbox: "I have reviewed the required terms and policies and agree to save the agreement record needed for company approval.",
+      link: "Open terms and policies in a new tab",
+    },
     addressSearch: {
       label: "Road-name address search",
       placeholder: "Enter a road name, building name, or lot number",
@@ -2246,6 +2252,7 @@ export const adminEn = {
       requiredFields: "Check the required fields",
       load: "Failed to load company information.",
       save: "Failed to save company information. Check required fields.",
+      policyAgreementRequired: "Required policy agreement is needed.",
       fileRequired: "Select a file to upload.",
       fileTypeRequired: "Select an upload file type.",
       fileTypeUnsupported: "This upload file type is not supported.",

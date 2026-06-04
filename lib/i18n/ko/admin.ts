@@ -2067,6 +2067,12 @@ export const adminKo = {
     submit: "회사 정보 저장 및 승인 요청",
     addressApiNote:
       "주소 검색 결과를 선택해도 상세주소는 직접 입력해야 합니다. 검색이 되지 않으면 우편번호와 주소를 수동 입력할 수 있습니다.",
+    policyAgreement: {
+      title: "필수 약관·정책 동의",
+      description: "고객사 승인 요청을 제출하려면 필수 약관·정책 동의가 필요합니다. 동의 이력은 승인 요청과 함께 저장됩니다.",
+      checkbox: "필수 약관·정책을 확인했고, 고객사 승인 요청에 필요한 동의 이력을 저장하는 데 동의합니다.",
+      link: "약관·정책 새 창에서 보기",
+    },
     addressSearch: {
       label: "도로명주소 검색",
       placeholder: "도로명, 건물명, 지번을 입력하세요",
@@ -2175,6 +2181,7 @@ export const adminKo = {
       requiredFields: "필수 입력값을 확인해주세요",
       load: "회사 정보를 불러오지 못했습니다.",
       save: "회사 정보 저장에 실패했습니다. 필수 항목을 확인해주세요.",
+      policyAgreementRequired: "필수 약관·정책 동의가 필요합니다.",
       fileRequired: "업로드할 파일을 선택해주세요.",
       fileTypeRequired: "업로드 파일 유형을 선택해주세요.",
       fileTypeUnsupported: "지원하지 않는 업로드 파일 유형입니다.",

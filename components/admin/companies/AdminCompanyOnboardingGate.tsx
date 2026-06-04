@@ -111,6 +111,7 @@ type CompanyOnboardingErrorCopy = {
   load: string;
   save: string;
   requiredFields: string;
+  policyAgreementRequired: string;
   fileRequired: string;
   fileTypeRequired: string;
   fileTypeUnsupported: string;
@@ -167,6 +168,7 @@ function resolveCompanyOnboardingErrorMessage(errorCode: string | null | undefin
   if (errorCode === "COMPANY_ONBOARDING_REQUIRED_FIELDS") return copy.requiredFields;
   if (errorCode === "COMPANY_ONBOARDING_LOAD_FAILED") return copy.load;
   if (errorCode === "COMPANY_ONBOARDING_SAVE_FAILED") return copy.save;
+  if (errorCode === "POLICY_REQUIRED_AGREEMENT_MISSING") return copy.policyAgreementRequired;
   return copy.save;
 }
 
@@ -408,6 +410,7 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
   const [addressSearchState, setAddressSearchState] = useState<AddressSearchState>("idle");
   const [addressSearchResults, setAddressSearchResults] = useState<AddressSearchResult[]>([]);
   const [addressSearchError, setAddressSearchError] = useState<string | null>(null);
+  const [policyAgreementConfirmed, setPolicyAgreementConfirmed] = useState(false);
   const dialogRef = useRef<HTMLElement | null>(null);
 
   const requiresOnboarding =
@@ -445,7 +448,7 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
     draft,
   ]);
 
-  const canSave = missingRequiredLabels.length === 0 && !hasUploadingFile;
+  const canSave = missingRequiredLabels.length === 0 && !hasUploadingFile && policyAgreementConfirmed;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -642,7 +645,13 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
 
     if (!canSave) {
       setSaveState("error");
-      setErrorMessage(hasUploadingFile ? copy.fileUploads.saveBlocked : buildRequiredFieldsMessage(copy.errors.requiredFields, missingRequiredLabels));
+      setErrorMessage(
+        hasUploadingFile
+          ? copy.fileUploads.saveBlocked
+          : missingRequiredLabels.length > 0
+            ? buildRequiredFieldsMessage(copy.errors.requiredFields, missingRequiredLabels)
+            : copy.errors.policyAgreementRequired,
+      );
       return;
     }
 
@@ -657,6 +666,7 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
           ...draft,
           requestedPlanCode: "basic",
           adminPhone: normalizePhoneNumber(draft.adminPhone),
+          requiredPolicyAgreementConfirmed: policyAgreementConfirmed,
         }),
       );
       if (selectedFiles.logo) formData.append("logo", selectedFiles.logo);
@@ -898,6 +908,33 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
                         <span className="text-xs leading-5">{copy.planReadOnlyDescription}</span>
                       </div>
                     </div>
+                  </section>
+
+
+                  <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+                    <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{copy.policyAgreement.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.policyAgreement.description}</p>
+                    <label className="mt-3 flex items-start gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 text-sm font-semibold text-[var(--pbp-text-primary)]">
+                      <input
+                        type="checkbox"
+                        checked={policyAgreementConfirmed}
+                        onChange={(event) => {
+                          setPolicyAgreementConfirmed(event.target.checked);
+                          if (saveState === "error") setSaveState("idle");
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        className="mt-1 size-4 accent-[var(--pbp-accent)]"
+                      />
+                      <span>{copy.policyAgreement.checkbox}</span>
+                    </label>
+                    <a
+                      href="/workspace/legal"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex text-xs font-bold text-[var(--pbp-accent)] underline-offset-4 hover:underline"
+                    >
+                      {copy.policyAgreement.link}
+                    </a>
                   </section>
 
                   {errorMessage ? (

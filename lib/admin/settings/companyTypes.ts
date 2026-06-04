@@ -68,6 +68,7 @@ export type CompanyOnboardingUpdateInput = {
   requestedPlanCode?: string | null;
   adminName?: string | null;
   adminPhone?: string | null;
+  requiredPolicyAgreementConfirmed?: boolean | null;
 };
 
 

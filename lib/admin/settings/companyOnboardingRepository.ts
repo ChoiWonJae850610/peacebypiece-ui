@@ -252,6 +252,7 @@ type NormalizedCompanyOnboardingUpdateInput = {
   requestedPlanCode: string | null;
   adminName: string | null;
   adminPhone: string;
+  requiredPolicyAgreementConfirmed: boolean;
 };
 
 function normalizeCompanyOnboardingUpdateInput(input: CompanyOnboardingUpdateInput): NormalizedCompanyOnboardingUpdateInput {
@@ -269,6 +270,7 @@ function normalizeCompanyOnboardingUpdateInput(input: CompanyOnboardingUpdateInp
     requestedPlanCode: "basic",
     adminName: normalizeNullableText(input.adminName),
     adminPhone: normalizePhoneNumber(String(input.adminPhone ?? "")),
+    requiredPolicyAgreementConfirmed: input.requiredPolicyAgreementConfirmed === true,
   };
 }
 
