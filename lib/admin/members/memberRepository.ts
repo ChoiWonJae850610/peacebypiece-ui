@@ -285,6 +285,8 @@ async function selectCompanyMemberById(
                ARRAY[]::text[]
              ) AS permission_codes,
              company_members.approved_at,
+             company_members.withdrawal_requested_at,
+             company_members.withdrawn_at,
              users.last_login_at AS last_active_at,
              company_members.created_at,
              company_members.updated_at
@@ -342,6 +344,8 @@ async function listDbCompanyMembers(input: ListAdminCompanyMembersInput): Promis
                ARRAY[]::text[]
              ) AS permission_codes,
              company_members.approved_at,
+             company_members.withdrawal_requested_at,
+             company_members.withdrawn_at,
              users.last_login_at AS last_active_at,
              company_members.created_at,
              company_members.updated_at
@@ -418,6 +422,10 @@ async function updateDbCompanyMember(
                rejected_by = CASE WHEN $4::text = 'rejected' THEN COALESCE(rejected_by, $5::text) ELSE NULL END,
                suspended_at = CASE WHEN $4::text = 'suspended' THEN COALESCE(suspended_at, now()) ELSE NULL END,
                suspended_by = CASE WHEN $4::text = 'suspended' THEN COALESCE(suspended_by, $5::text) ELSE NULL END,
+               withdrawal_requested_at = CASE WHEN $4::text = 'withdrawal_requested' THEN COALESCE(withdrawal_requested_at, now()) ELSE NULL END,
+               withdrawal_requested_by = CASE WHEN $4::text = 'withdrawal_requested' THEN COALESCE(withdrawal_requested_by, $5::text) ELSE NULL END,
+               withdrawn_at = CASE WHEN $4::text = 'withdrawn' THEN COALESCE(withdrawn_at, now()) ELSE NULL END,
+               withdrawn_by = CASE WHEN $4::text = 'withdrawn' THEN COALESCE(withdrawn_by, $5::text) ELSE NULL END,
                updated_at = now()
          WHERE id = $1
            AND company_id = $6

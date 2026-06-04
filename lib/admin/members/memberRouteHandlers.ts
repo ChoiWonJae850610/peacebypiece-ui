@@ -11,6 +11,7 @@ import {
 } from "@/lib/permissions";
 import {
   ADMIN_COMPANY_MEMBER_STATUS_FILTER,
+  normalizeAdminCompanyMemberStatusOrNull,
   type AdminCompanyMemberStatusFilter,
 } from "@/lib/domain/memberStatus";
 import { adminMemberRepository } from "./memberRepository";
@@ -20,7 +21,7 @@ interface UpdateMemberBody {
   updatedByUserId?: string | null;
   displayName?: string | null;
   phone?: string | null;
-  status?: Exclude<AdminCompanyMemberStatusFilter, "all"> | null;
+  status?: string | null;
   roleTemplateCode?: string | null;
   permissionCodes?: string[] | null;
 }
@@ -92,6 +93,16 @@ function normalizeRoleTemplateCode(
     : null;
 }
 
+function normalizeMemberStatusInput(
+  value: string | null | undefined,
+): Exclude<AdminCompanyMemberStatusFilter, "all"> | null {
+  if (!value) return null;
+  if (value === "withdrawalRequested") {
+    return ADMIN_COMPANY_MEMBER_STATUS_FILTER.withdrawalRequested;
+  }
+  return normalizeAdminCompanyMemberStatusOrNull(value);
+}
+
 function readActorUserId(body: UpdateMemberPermissionsBody | UpdateMemberBody): string | null {
   return body.actorUserId?.trim() || body.updatedByUserId?.trim() || null;
 }
@@ -105,14 +116,26 @@ export async function handleListAdminMembers(request: Request) {
     const companyId = scope.companyScope.companyId;
     const status = url.searchParams.get("status")?.trim() || ADMIN_COMPANY_MEMBER_STATUS_FILTER.approved;
     const limit = Number(url.searchParams.get("limit") ?? "50");
+    const normalizedStatus =
+      status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.all
+        ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.all
+        : status === "withdrawalRequested"
+          ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.withdrawalRequested
+          : status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.withdrawalRequested
+            ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.withdrawalRequested
+            : status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.withdrawn
+              ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.withdrawn
+              : status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.rejected
+                ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.rejected
+                : status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.pending
+                  ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.pending
+                  : status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.suspended
+                    ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.suspended
+                    : ADMIN_COMPANY_MEMBER_STATUS_FILTER.approved;
+
     const result = await adminMemberRepository.listCompanyMembers({
       companyId,
-      status:
-        status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.all
-          ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.all
-          : status === ADMIN_COMPANY_MEMBER_STATUS_FILTER.suspended
-            ? ADMIN_COMPANY_MEMBER_STATUS_FILTER.suspended
-            : ADMIN_COMPANY_MEMBER_STATUS_FILTER.approved,
+      status: normalizedStatus,
       limit,
     });
 
@@ -144,7 +167,7 @@ export async function handleUpdateAdminMember(
       updatedByUserId,
       displayName: body.displayName,
       phone: body.phone,
-      status: body.status,
+      status: normalizeMemberStatusInput(body.status),
       roleTemplateCode: normalizeRoleTemplateCode(body.roleTemplateCode),
       permissionCodes:
         body.permissionCodes === undefined

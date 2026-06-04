@@ -5,6 +5,8 @@ export const ADMIN_COMPANY_MEMBER_STATUS = {
   pending: "pending",
   rejected: "rejected",
   suspended: "suspended",
+  withdrawalRequested: "withdrawal_requested",
+  withdrawn: "withdrawn",
 } as const satisfies Record<string, AdminCompanyMemberStatus>;
 
 export const ADMIN_COMPANY_MEMBER_STATUSES = [
@@ -12,12 +14,18 @@ export const ADMIN_COMPANY_MEMBER_STATUSES = [
   ADMIN_COMPANY_MEMBER_STATUS.pending,
   ADMIN_COMPANY_MEMBER_STATUS.rejected,
   ADMIN_COMPANY_MEMBER_STATUS.suspended,
+  ADMIN_COMPANY_MEMBER_STATUS.withdrawalRequested,
+  ADMIN_COMPANY_MEMBER_STATUS.withdrawn,
 ] as const satisfies readonly AdminCompanyMemberStatus[];
 
 export const ADMIN_COMPANY_MEMBER_STATUS_FILTER = {
   all: "all",
   approved: ADMIN_COMPANY_MEMBER_STATUS.approved,
   suspended: ADMIN_COMPANY_MEMBER_STATUS.suspended,
+  withdrawalRequested: ADMIN_COMPANY_MEMBER_STATUS.withdrawalRequested,
+  withdrawn: ADMIN_COMPANY_MEMBER_STATUS.withdrawn,
+  rejected: ADMIN_COMPANY_MEMBER_STATUS.rejected,
+  pending: ADMIN_COMPANY_MEMBER_STATUS.pending,
 } as const;
 
 export type AdminCompanyMemberStatusFilter =

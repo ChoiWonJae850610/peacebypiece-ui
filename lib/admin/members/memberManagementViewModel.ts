@@ -50,7 +50,10 @@ type MemberManagementTabPreviewInput = {
 
 function getInactiveMemberCount(members: readonly MemberListPreview[]): number {
   return members.filter(
-    (member) => member.status === "suspended" || member.status === "rejected",
+    (member) => member.status === "suspended" ||
+      member.status === "withdrawal_requested" ||
+      member.status === "withdrawn" ||
+      member.status === "rejected",
   ).length;
 }
 

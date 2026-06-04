@@ -1,6 +1,12 @@
 import type { MemberPermissionCode, MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 
-export type AdminCompanyMemberStatus = "approved" | "pending" | "rejected" | "suspended";
+export type AdminCompanyMemberStatus =
+  | "approved"
+  | "pending"
+  | "rejected"
+  | "suspended"
+  | "withdrawal_requested"
+  | "withdrawn";
 
 export interface AdminCompanyMemberRecord {
   id: string;

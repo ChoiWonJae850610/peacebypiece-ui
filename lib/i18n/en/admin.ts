@@ -668,6 +668,9 @@ export const adminEn = {
         approved: "Active",
         suspended: "Left/inactive",
         withdrawalRequested: "Withdrawal requested",
+        withdrawal_requested: "Withdrawal requested",
+        withdrawn: "Left",
+        rejected: "Rejected",
       },
       roleFilters: { all: "All" },
       statuses: {
@@ -675,6 +678,7 @@ export const adminEn = {
         approved: "Active",
         suspended: "Left/inactive",
         withdrawalRequested: "Withdrawal requested",
+        withdrawal_requested: "Withdrawal requested",
         withdrawn: "Left",
         rejected: "Rejected",
       },

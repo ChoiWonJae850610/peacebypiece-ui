@@ -119,6 +119,11 @@ const EDITABLE_MEMBER_STATUS_OPTIONS: readonly MemberStatusOption[] = [
   },
 ] as const;
 
+function toMemberDirectoryStatus(status: AdminCompanyMemberRecord["status"]): MemberDirectoryStatus {
+  if (status === "withdrawal_requested") return "withdrawalRequested";
+  return status;
+}
+
 function getMemberDetailStatusOptions(
   currentStatus: AdminCompanyMemberRecord["status"] | null | undefined,
 ): readonly MemberStatusOption[] {
@@ -389,7 +394,7 @@ export default function AdminMemberManagementDashboard() {
       email: member.email || "-",
       phone: member.phone || "-",
       roleId: member.roleId,
-      status: member.status,
+      status: toMemberDirectoryStatus(member.status),
       requestedAt: "-",
       approvedAt: member.approvedAtLabel,
       lastActiveAt: member.lastActiveLabel,

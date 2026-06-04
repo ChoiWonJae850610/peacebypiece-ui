@@ -682,6 +682,9 @@ export const adminKo = {
         approved: "재직중",
         suspended: "퇴사/비활성",
         withdrawalRequested: "탈퇴 요청",
+        withdrawal_requested: "탈퇴 요청",
+        withdrawn: "퇴사 완료",
+        rejected: "거절됨",
       },
       roleFilters: { all: "전체" },
       statuses: {
@@ -689,6 +692,7 @@ export const adminKo = {
         approved: "재직중",
         suspended: "퇴사/비활성",
         withdrawalRequested: "탈퇴 요청",
+        withdrawal_requested: "탈퇴 요청",
         withdrawn: "퇴사 완료",
         rejected: "거절됨",
       },

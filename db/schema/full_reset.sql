@@ -1441,16 +1441,24 @@ CREATE TABLE company_members (
   rejected_at timestamptz,
   suspended_by text REFERENCES users(id),
   suspended_at timestamptz,
+  withdrawal_requested_by text REFERENCES users(id),
+  withdrawal_requested_at timestamptz,
+  withdrawn_by text REFERENCES users(id),
+  withdrawn_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT company_members_status_check
-    CHECK (status IN ('pending', 'approved', 'rejected', 'suspended')),
+    CHECK (status IN ('pending', 'approved', 'rejected', 'suspended', 'withdrawal_requested', 'withdrawn')),
   CONSTRAINT company_members_approval_consistency
     CHECK ((status = 'approved' AND approved_at IS NOT NULL) OR status <> 'approved'),
   CONSTRAINT company_members_rejection_consistency
     CHECK ((status = 'rejected' AND rejected_at IS NOT NULL) OR status <> 'rejected'),
   CONSTRAINT company_members_suspension_consistency
-    CHECK ((status = 'suspended' AND suspended_at IS NOT NULL) OR status <> 'suspended')
+    CHECK ((status = 'suspended' AND suspended_at IS NOT NULL) OR status <> 'suspended'),
+  CONSTRAINT company_members_withdrawal_request_consistency
+    CHECK ((status = 'withdrawal_requested' AND withdrawal_requested_at IS NOT NULL) OR status <> 'withdrawal_requested'),
+  CONSTRAINT company_members_withdrawn_consistency
+    CHECK ((status = 'withdrawn' AND withdrawn_at IS NOT NULL) OR status <> 'withdrawn')
 );
 
 CREATE UNIQUE INDEX company_members_company_user_unique
@@ -1461,6 +1469,9 @@ CREATE INDEX company_members_company_status_idx
 
 CREATE INDEX company_members_user_idx
   ON company_members (user_id);
+
+CREATE INDEX company_members_withdrawal_status_idx
+  ON company_members (company_id, status, withdrawal_requested_at DESC, withdrawn_at DESC);
 
 
 CREATE TABLE company_account_requests (
