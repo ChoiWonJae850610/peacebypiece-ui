@@ -1518,6 +1518,9 @@ export const adminKo = {
       historyEmptyDescription: "회사 정보 변경 또는 계정 비활성화가 필요할 때 요청을 작성하면 이곳에 최근 이력이 표시됩니다.",
       historyFailedTitle: "요청 이력을 불러오지 못했습니다.",
       historyFailedDescription: "요청 접수 기능은 계속 사용할 수 있습니다. 이력은 잠시 후 다시 확인해 주세요.",
+      reviewerLabel: "검토자",
+      reviewedAtLabel: "검토일",
+      reviewMessageLabel: "검토 메모",
       status: {
         pending: "접수됨",
         reviewing: "검토 중",

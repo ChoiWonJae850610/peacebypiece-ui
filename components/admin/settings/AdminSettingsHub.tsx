@@ -40,6 +40,9 @@ type CompanyAccountRequestRecord = {
   requestStatus: CompanyAccountRequestStatus;
   requestTitle: string;
   requestMessage: string;
+  reviewerName: string | null;
+  reviewedAt: string | null;
+  reviewMessage: string | null;
   createdAt: string;
 };
 
@@ -404,6 +407,15 @@ function AccountSettingsPanel({
                 description={request.requestMessage}
                 badge={<AdminStatusBadge tone={requestStatusTone[request.requestStatus]} size="xs">{resolveRequestStatusLabel(request.requestStatus, t)}</AdminStatusBadge>}
                 meta={formatSettingsRequestDate(request.createdAt)}
+                footer={
+                  <div className="grid gap-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                    <span>{t("settings.accountRequest.reviewerLabel", "검토자")}: {request.reviewerName?.trim() || "-"}</span>
+                    <span>{t("settings.accountRequest.reviewedAtLabel", "검토일")}: {request.reviewedAt ? formatSettingsRequestDate(request.reviewedAt) : "-"}</span>
+                    {request.reviewMessage?.trim() ? (
+                      <span>{t("settings.accountRequest.reviewMessageLabel", "검토 메모")}: {request.reviewMessage}</span>
+                    ) : null}
+                  </div>
+                }
                 tone={request.requestStatus === "rejected" ? "danger" : request.requestStatus === "approved" ? "success" : "info"}
                 density="compact"
               />

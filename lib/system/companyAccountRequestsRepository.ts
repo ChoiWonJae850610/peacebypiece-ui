@@ -1,6 +1,6 @@
 import "server-only";
 
-import { queryDb } from "@/lib/db/client";
+import { queryDb, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
 
 export type SystemCompanyAccountRequestStatus = "pending" | "reviewing" | "approved" | "rejected" | "cancelled";
 export type SystemCompanyAccountRequestReviewAction = "reviewing" | "approved" | "rejected";
@@ -132,6 +132,34 @@ export async function listSystemCompanyAccountRequests(limit?: number): Promise<
 }
 
 
+
+async function applyApprovedCompanyAccountRequestSideEffect(
+  client: DbTransactionClient,
+  request: SystemCompanyAccountRequestRecord,
+): Promise<void> {
+  if (request.requestStatus !== "approved") return;
+
+  if (request.requestType === "account_deactivation") {
+    await client.query(
+      `UPDATE companies
+          SET is_active = false,
+              status = 'suspended',
+              subscription_status = 'canceled',
+              updated_at = now()
+        WHERE id = $1`,
+      [request.companyId],
+    );
+    return;
+  }
+
+  if (request.requestType === "company_info_change") {
+    // 현재 고객사 화면의 회사 정보 변경 요청은 구조화된 변경 필드가 아니라
+    // 검토 메시지 중심으로 접수된다. 따라서 승인 시에는 요청 상태만 확정하고,
+    // 실제 회사 필드 변경은 별도 구조화 입력이 생긴 뒤 적용한다.
+    return;
+  }
+}
+
 export async function updateSystemCompanyAccountRequestStatus({
   requestId,
   reviewerUserId,
@@ -145,48 +173,53 @@ export async function updateSystemCompanyAccountRequestStatus({
 }): Promise<SystemCompanyAccountRequestRecord> {
   const normalizedMessage = normalizeReviewMessage(reviewMessage);
 
-  const result = await queryDb<SystemCompanyAccountRequestRow>(
-    `UPDATE company_account_requests request
-        SET request_status = $2,
-            reviewed_by_user_id = NULL,
-            reviewed_by_system_user_id = $3,
-            reviewed_at = now(),
-            review_message = $4,
-            updated_at = now()
-      FROM companies company,
-           users requester
-      LEFT JOIN system_users reviewer
-         ON reviewer.id = $3
-      WHERE request.id = $1
-        AND request.request_status IN ('pending', 'reviewing')
-        AND company.id = request.company_id
-        AND requester.id = request.requested_by_user_id
-      RETURNING
-        request.id,
-        request.company_id,
-        company.name AS company_name,
-        company.business_name,
-        request.requested_by_user_id,
-        requester.name AS requester_name,
-        requester.email AS requester_email,
-        request.request_type,
-        request.request_status,
-        request.request_title,
-        request.request_message,
-        request.reviewed_by_user_id,
-        request.reviewed_by_system_user_id,
-        reviewer.name AS reviewer_name,
-        request.reviewed_at,
-        request.review_message,
-        request.created_at,
-        request.updated_at`,
-    [requestId, action, reviewerUserId, normalizedMessage],
-  );
+  return withDbTransaction(async (client) => {
+    const result = await client.query<SystemCompanyAccountRequestRow>(
+      `UPDATE company_account_requests request
+          SET request_status = $2,
+              reviewed_by_user_id = NULL,
+              reviewed_by_system_user_id = $3,
+              reviewed_at = now(),
+              review_message = $4,
+              updated_at = now()
+        FROM companies company,
+             users requester
+        LEFT JOIN system_users reviewer
+           ON reviewer.id = $3
+        WHERE request.id = $1
+          AND request.request_status IN ('pending', 'reviewing')
+          AND company.id = request.company_id
+          AND requester.id = request.requested_by_user_id
+        RETURNING
+          request.id,
+          request.company_id,
+          company.name AS company_name,
+          company.business_name,
+          request.requested_by_user_id,
+          requester.name AS requester_name,
+          requester.email AS requester_email,
+          request.request_type,
+          request.request_status,
+          request.request_title,
+          request.request_message,
+          request.reviewed_by_user_id,
+          request.reviewed_by_system_user_id,
+          reviewer.name AS reviewer_name,
+          request.reviewed_at,
+          request.review_message,
+          request.created_at,
+          request.updated_at`,
+      [requestId, action, reviewerUserId, normalizedMessage],
+    );
 
-  const row = result.rows[0];
-  if (!row) {
-    throw new Error("SYSTEM_COMPANY_ACCOUNT_REQUEST_NOT_FOUND");
-  }
+    const row = result.rows[0];
+    if (!row) {
+      throw new Error("SYSTEM_COMPANY_ACCOUNT_REQUEST_NOT_FOUND");
+    }
 
-  return toSystemCompanyAccountRequestRecord(row);
+    const updatedRequest = toSystemCompanyAccountRequestRecord(row);
+    await applyApprovedCompanyAccountRequestSideEffect(client, updatedRequest);
+
+    return updatedRequest;
+  });
 }

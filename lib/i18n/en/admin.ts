@@ -1528,6 +1528,9 @@ export const adminEn = {
       historyEmptyDescription: "When you submit a company information or account deactivation request, recent history will appear here.",
       historyFailedTitle: "Could not load request history.",
       historyFailedDescription: "You can still submit requests. Check the history again later.",
+      reviewerLabel: "Reviewer",
+      reviewedAtLabel: "Reviewed at",
+      reviewMessageLabel: "Review note",
       status: {
         pending: "Submitted",
         reviewing: "In review",

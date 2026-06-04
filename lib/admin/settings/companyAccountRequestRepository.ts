@@ -17,6 +17,11 @@ export type CompanyAccountRequestRecord = {
   requestTitle: string;
   requestMessage: string;
   requestPayload: Record<string, unknown>;
+  reviewedByUserId: string | null;
+  reviewedBySystemUserId: string | null;
+  reviewerName: string | null;
+  reviewedAt: string | null;
+  reviewMessage: string | null;
   createdAt: string;
 };
 
@@ -37,6 +42,11 @@ type CompanyAccountRequestRow = {
   request_title: string;
   request_message: string;
   request_payload: Record<string, unknown> | null;
+  reviewed_by_user_id: string | null;
+  reviewed_by_system_user_id: string | null;
+  reviewer_name: string | null;
+  reviewed_at: Date | string | null;
+  review_message: string | null;
   created_at: Date | string;
 };
 
@@ -83,6 +93,11 @@ function toCompanyAccountRequestRecord(row: CompanyAccountRequestRow): CompanyAc
     requestTitle: row.request_title,
     requestMessage: row.request_message,
     requestPayload: row.request_payload && typeof row.request_payload === "object" && !Array.isArray(row.request_payload) ? row.request_payload : {},
+    reviewedByUserId: row.reviewed_by_user_id,
+    reviewedBySystemUserId: row.reviewed_by_system_user_id,
+    reviewerName: row.reviewer_name,
+    reviewedAt: row.reviewed_at ? toIsoString(row.reviewed_at) : null,
+    reviewMessage: row.review_message,
     createdAt: toIsoString(row.created_at),
   };
 }
@@ -116,6 +131,11 @@ export async function createCompanyAccountRequest(input: CreateCompanyAccountReq
        request_title,
        request_message,
        request_payload,
+       NULL::text AS reviewed_by_user_id,
+       NULL::text AS reviewed_by_system_user_id,
+       NULL::text AS reviewer_name,
+       NULL::timestamptz AS reviewed_at,
+       NULL::text AS review_message,
        created_at`,
     [
       randomUUID(),
@@ -141,18 +161,27 @@ export async function listCompanyAccountRequests(companyId: string, limit = 5): 
 
   const result = await queryDb<CompanyAccountRequestRow>(
     `SELECT
-       id,
-       company_id,
-       requested_by_user_id,
-       request_type,
-       request_status,
-       request_title,
-       request_message,
-       request_payload,
-       created_at
-     FROM company_account_requests
-     WHERE company_id = $1
-     ORDER BY created_at DESC
+       request.id,
+       request.company_id,
+       request.requested_by_user_id,
+       request.request_type,
+       request.request_status,
+       request.request_title,
+       request.request_message,
+       request.request_payload,
+       request.reviewed_by_user_id,
+       request.reviewed_by_system_user_id,
+       COALESCE(system_reviewer.name, user_reviewer.name) AS reviewer_name,
+       request.reviewed_at,
+       request.review_message,
+       request.created_at
+     FROM company_account_requests request
+     LEFT JOIN system_users system_reviewer
+       ON system_reviewer.id = request.reviewed_by_system_user_id
+     LEFT JOIN users user_reviewer
+       ON user_reviewer.id = request.reviewed_by_user_id
+     WHERE request.company_id = $1
+     ORDER BY request.created_at DESC
      LIMIT $2`,
     [companyId, safeLimit],
   );
