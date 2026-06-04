@@ -98,7 +98,7 @@ export function buildAdminAccountSettingsOverview(input: AdminAccountSettingsOve
 
   return {
     title: `${companyName} 계정 정보`,
-    description: "회사 정보, 대표 로그인 계정, 상태, 변경 요청 범위를 한 곳에서 확인합니다. 개인 언어와 색상 테마는 개인설정에서 관리합니다.",
+    description: "회사 정보, 대표 로그인 계정, 상태, 변경 요청 범위를 한 곳에서 확인합니다. 개인 프로필과 테마는 개인설정에서 관리합니다.",
     statusLabel: resolveCompanyStatusLabel(company),
     statusTone: company?.onboardingStatus === COMPANY_ONBOARDING_STATUS.active ? "success" : "warning",
     metrics: [

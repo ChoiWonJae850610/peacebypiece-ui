@@ -1353,7 +1353,7 @@ export const adminKo = {
     unknownLabel: "확인 필요",
   },
   topbar: {
-    personalSettingsDescription: "개인 설정에서는 언어와 테마만 변경합니다.",
+    personalSettingsDescription: "개인 설정에서는 프로필과 테마를 변경합니다.",
     actions: {
       home: "홈",
       personalSettings: "개인 설정",
@@ -1570,7 +1570,7 @@ export const adminKo = {
       badge: "조직 설정",
       title: "회사 운영 설정",
       description:
-        "고객사 전체에 적용되는 파일, 저장소, 알림, 기준정보, 멤버 권한 정책을 관리하는 영역입니다. 개인 언어와 색상은 개인 설정에서 변경합니다.",
+        "고객사 전체에 적용되는 파일, 저장소, 알림, 기준정보, 멤버 권한 정책을 관리하는 영역입니다. 개인 프로필과 테마는 개인 설정에서 변경합니다.",
       scopeTitle: "조직 설정 범위",
       scopeDescription:
         "고객관리자가 회사 단위로 관리해야 하는 설정만 이 화면에 남깁니다.",
@@ -1613,7 +1613,7 @@ export const adminKo = {
         title: "개인 설정은 분리됨",
         description:
           "언어, 색상, 화면 밀도, 기본 진입 화면은 회사 전체 정책이 아니라 사용자별 선호 설정입니다.",
-        note: "고객관리자와 일반 멤버는 상단 사람 아이콘의 개인 설정 모달에서 언어와 테마를 변경합니다.",
+        note: "고객관리자와 일반 멤버는 상단 사람 아이콘의 개인 설정 모달에서 프로필과 테마를 변경합니다.",
         actionLabel: "개인 설정 열기",
       },
     },

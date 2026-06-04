@@ -653,7 +653,7 @@ export default function AdminSettingsHub() {
         description={t("settings.hub.description", "회사 정보, 기준정보, 요금제, 약관·정책, 개선 요청을 한 화면에서 확인합니다.")}
         badges={
           <WaflNoticeBox tone="neutral" className="w-full rounded-full px-4 py-2 sm:w-auto">
-            {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}
+            {t("settings.hub.scopeNotice", "개인별 프로필과 테마는 우측 상단 개인 설정에서 관리합니다.")}
           </WaflNoticeBox>
         }
       >

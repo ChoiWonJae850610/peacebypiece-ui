@@ -43,7 +43,7 @@ export const commonKo = {
       },
   personalSettings: {
         label: "개인 환경설정",
-        description: "언어와 테마를 사용자별로 관리합니다.",
+        description: "프로필과 테마를 사용자별로 관리합니다.",
       },
     },
   },

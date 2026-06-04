@@ -15,6 +15,7 @@ export const RUNTIME_VISIBILITY = {
   showRepositoryBadges: isDevelopmentMode,
   showUserSwitchingTools: isDevelopmentMode,
   showAdvancedDrawingTools: isDevelopmentMode && isTldrawPocEnabled,
+  showPersonalLanguageSwitcher: isDevelopmentMode,
 } as const;
 
 export const DEV_DEBUG_FLAGS = {

@@ -43,7 +43,7 @@ export const commonEn = {
       },
   personalSettings: {
         label: "Personal settings",
-        description: "A future area for language, color, and notification preferences per user.",
+        description: "A future area for profile, theme, and notification preferences per user.",
       },
     },
   },

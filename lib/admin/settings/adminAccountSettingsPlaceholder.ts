@@ -40,7 +40,7 @@ export const ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER = {
       id: "personal-settings",
       label: "개인 설정",
       value: "상단 모달",
-      description: "언어와 테마는 상단 사람 아이콘의 개인 설정 모달에서 관리합니다.",
+      description: "프로필과 테마는 상단 사람 아이콘의 개인 설정 모달에서 관리합니다.",
     },
   ] satisfies AdminAccountSettingsMetric[],
   actions: [

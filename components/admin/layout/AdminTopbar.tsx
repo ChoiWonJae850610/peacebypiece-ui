@@ -182,7 +182,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
       <AdminModal
         open={personalSettingsOpen}
         title={t("topbar.actions.personalSettings", "개인 설정")}
-        description={t("topbar.personalSettingsDescription", "언어와 테마만 개인별로 변경합니다.")}
+        description={t("topbar.personalSettingsDescription", "프로필과 테마를 개인별로 변경합니다.")}
         onClose={() => setPersonalSettingsOpen(false)}
         maxWidthClass="md:max-w-2xl"
         bodyClassName="space-y-4 [scrollbar-gutter:stable]"

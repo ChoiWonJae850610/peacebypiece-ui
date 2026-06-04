@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
 import { useI18n } from "@/lib/i18n";
+import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { usePbpTheme } from "@/lib/theme/PbpThemeProvider";
 import { getPbpThemeDefinition } from "@/lib/theme/themeRegistry";
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
@@ -21,6 +22,13 @@ import {
 } from "@/lib/me/personalSettings";
 
 type PersonalSettingsCopy = ReturnType<typeof useI18n>["i18n"]["common"]["personalSettings"];
+
+const PERSONAL_LANGUAGE_SWITCHER_ENABLED = RUNTIME_VISIBILITY.showPersonalLanguageSwitcher;
+
+function resolveVisiblePersonalSettings(settings: PersonalSettingsDraft): PersonalSettingsDraft {
+  if (PERSONAL_LANGUAGE_SWITCHER_ENABLED) return settings;
+  return { ...settings, language: DEFAULT_PERSONAL_SETTINGS.language };
+}
 
 type ChoiceOption<TValue extends string> = {
   value: TValue;
@@ -355,7 +363,7 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const storedSettings = readStoredPersonalSettings(window.localStorage);
+    const storedSettings = resolveVisiblePersonalSettings(readStoredPersonalSettings(window.localStorage));
     setDraft(storedSettings);
     setLocale(storedSettings.language);
     setThemeId(storedSettings.theme);
@@ -364,7 +372,8 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
   }, [setLocale, setThemeId]);
 
   function commitDraft(nextDraft: PersonalSettingsDraft) {
-    const normalizedDraft = writeStoredPersonalSettings(window.localStorage, nextDraft);
+    const visibleDraft = resolveVisiblePersonalSettings(nextDraft);
+    const normalizedDraft = writeStoredPersonalSettings(window.localStorage, visibleDraft);
     setDraft(normalizedDraft);
     setLocale(normalizedDraft.language);
     setThemeId(normalizedDraft.theme);
@@ -393,13 +402,15 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
   return (
     <div className={`space-y-4 ${className}`}>
       <ProfileSection copy={copy} />
-      <ChoiceGroup
-        title={copy.sections.language.title}
-        description={copy.sections.language.description}
-        options={languageOptions}
-        value={draft.language}
-        onChange={updateLanguage}
-      />
+      {PERSONAL_LANGUAGE_SWITCHER_ENABLED ? (
+        <ChoiceGroup
+          title={copy.sections.language.title}
+          description={copy.sections.language.description}
+          options={languageOptions}
+          value={draft.language}
+          onChange={updateLanguage}
+        />
+      ) : null}
       <ChoiceGroup
         title={copy.sections.theme.title}
         description={copy.sections.theme.description}
