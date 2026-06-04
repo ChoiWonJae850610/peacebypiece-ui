@@ -130,6 +130,7 @@ async function assertSchema(client) {
 
 async function assertCompanyAccountRequestReviewContract(client) {
   logStep("company account request review contract");
+  console.log("  - creating rollback-only company/request/reviewer fixture");
 
   const companyId = "smoke-company-account-request";
   const userId = "smoke-customer-admin";
@@ -228,12 +229,12 @@ async function assertCompanyAccountRequestReviewContract(client) {
     `SELECT
        request.request_status,
        request.reviewed_by_system_user_id,
-       system_user.name AS reviewer_name,
+       reviewer_user.name AS reviewer_name,
        company.is_active,
        company.subscription_status
      FROM company_account_requests request
-     LEFT JOIN system_users system_user
-       ON system_user.id = request.reviewed_by_system_user_id
+     LEFT JOIN system_users reviewer_user
+       ON reviewer_user.id = request.reviewed_by_system_user_id
      INNER JOIN companies company
        ON company.id = request.company_id
      WHERE request.id = $1`,
@@ -253,6 +254,7 @@ async function assertCompanyAccountRequestReviewContract(client) {
 
 async function assertPolicyAgreementContract(client) {
   logStep("policy agreement contract");
+  console.log("  - creating rollback-only policy/version/agreement fixture");
 
   const companyId = "smoke-policy-company";
   const userId = "smoke-policy-user";
