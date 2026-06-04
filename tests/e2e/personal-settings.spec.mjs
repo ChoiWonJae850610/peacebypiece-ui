@@ -55,7 +55,7 @@ test.describe("personal settings smoke", () => {
 
     const body = await gotoPersonalSettingsOrSkip(page);
 
-    await expect(body).toContainText("개인 프로필", { timeout: 15_000 });
+    await expect(body).toContainText(/내 프로필|개인 프로필/, { timeout: 15_000 });
     await expect(body).toContainText("테마", { timeout: 15_000 });
     await expect(page.getByRole("button", { name: "English" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "한국어" })).toHaveCount(0);

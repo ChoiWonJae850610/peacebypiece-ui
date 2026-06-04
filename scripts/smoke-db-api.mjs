@@ -34,6 +34,7 @@ const REQUIRED_TABLES = [
   "policy_versions",
   "policy_agreements",
   "company_members",
+  "partners",
 ];
 
 const REQUIRED_COLUMNS = {
@@ -88,6 +89,7 @@ const REQUIRED_COLUMNS = {
     "withdrawn_by",
     "withdrawn_at",
   ],
+  partners: ["id", "company_id", "name", "contact", "contact_person", "email", "memo", "is_active"],
 };
 
 const CHECK_RESULTS = [];
@@ -663,6 +665,83 @@ async function assertPolicyAgreementContract(client) {
   logOk("policy agreement: required policy agreement save/read/upsert contract");
 }
 
+async function assertPartnerNamePhoneContract(client) {
+  logStep("partner name/phone contract");
+  console.log("  - creating rollback-only partner duplicate identity fixtures");
+
+  const companyId = "smoke-partner-company";
+
+  await client.query(
+    `INSERT INTO companies (
+       id,
+       name,
+       onboarding_status,
+       subscription_status,
+       billing_status,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES ($1, 'Smoke Partner Company', 'active', 'active', 'active', true, now(), now())`,
+    [companyId],
+  );
+
+  await client.query(
+    `INSERT INTO partners (
+       id,
+       company_id,
+       company_name,
+       name,
+       contact,
+       contact_person,
+       email,
+       memo,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES
+       ('smoke-partner-a', $1, 'Smoke Partner Company', '동일공장', '01012345678', '담당자 A', NULL, NULL, true, now(), now()),
+       ('smoke-partner-b', $1, 'Smoke Partner Company', '동일공장', '01022223333', '담당자 B', NULL, NULL, true, now(), now())`,
+    [companyId],
+  );
+
+  const sameNameDifferentPhone = await client.query(
+    `SELECT COUNT(*)::int AS count
+       FROM partners
+      WHERE company_id = $1
+        AND name = '동일공장'`,
+    [companyId],
+  );
+  if (sameNameDifferentPhone.rows[0]?.count !== 2) {
+    throwSmokeError({
+      area: "partner name/phone contract",
+      target: "partners name/contact",
+      message: "same partner name with different phone numbers should be representable.",
+      next: "check partner save validation and partners contact storage.",
+    });
+  }
+
+  const duplicateIdentity = await client.query(
+    `SELECT id
+       FROM partners
+      WHERE company_id = $1
+        AND lower(name) = lower($2)
+        AND regexp_replace(COALESCE(contact, ''), '\D', '', 'g') = $3
+      LIMIT 1`,
+    [companyId, '동일공장', '01012345678'],
+  );
+
+  if (!duplicateIdentity.rows[0]) {
+    throwSmokeError({
+      area: "partner name/phone contract",
+      target: "partners duplicate identity lookup",
+      message: "partner name + normalized phone duplicate lookup did not find the existing partner.",
+      next: "check contact normalization and duplicate validation before partner create/update.",
+    });
+  }
+
+  logOk("partners: same name allowed only when normalized phone differs");
+}
+
 function logSummary() {
   console.log("\n[smoke] Summary");
   console.log(`  Passed checks: ${CHECK_RESULTS.length}`);
@@ -697,6 +776,7 @@ async function main() {
       await assertMemberLifecycleContract(client);
       await assertCompanyAccountRequestReviewContract(client);
       await assertPolicyAgreementContract(client);
+      await assertPartnerNamePhoneContract(client);
     } finally {
       await client.query("ROLLBACK");
       transactionStarted = false;

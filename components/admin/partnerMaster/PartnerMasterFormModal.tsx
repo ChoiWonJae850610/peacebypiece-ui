@@ -130,13 +130,15 @@ export default function PartnerMasterFormModal({
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="partner-phone" className={adminModalLabelClassName}>{formText.labels.phone}</label>
+          <label htmlFor="partner-phone" className={adminModalLabelClassName}>{formText.labels.phone} <span className="text-rose-500">*</span></label>
           <input
             id="partner-phone"
             type="tel"
             value={draft.phone}
             inputMode="numeric"
             pattern="[0-9]*"
+            required
+            maxLength={PARTNER_MASTER_FIELD_LIMITS.phone}
             onChange={(event) => onDraftChange((current) => ({ ...current, phone: formatPhoneNumber(event.target.value) }))}
             placeholder={formText.placeholders.phone}
             className={adminModalInputClassName}

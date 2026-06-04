@@ -13,6 +13,7 @@ import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 import type { PartnerCompanyScope } from "@/lib/partners/types";
 import { requirePartnerCompanyScope } from "@/lib/partners/sessionScope";
 import type { PartnerRepository, PartnerWritableRepository } from "@/lib/partners/partnerRepository";
+import { buildPartnerNamePhoneIdentity, normalizePartnerDraft } from "@/lib/admin/partner/draft";
 import type { PartnerDraft } from "@/types/partner";
 
 type PartnerMasterRequestBody = {
@@ -79,6 +80,31 @@ function isWritablePartnerRepository(repository: PartnerRepository): repository 
   return "createPartner" in repository && "updatePartner" in repository;
 }
 
+function validatePartnerDraftForWrite(draft: PartnerDraft) {
+  const normalized = normalizePartnerDraft(draft);
+  if (!normalized.name) return "PARTNER_MASTER_NAME_REQUIRED";
+  if (normalized.partnerTypes.length === 0) return "PARTNER_MASTER_TYPE_REQUIRED";
+  if (!normalized.phone) return "PARTNER_MASTER_PHONE_REQUIRED";
+  if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)) return "PARTNER_MASTER_EMAIL_INVALID";
+  return null;
+}
+
+async function hasDuplicatePartnerNameAndPhoneOnServer(
+  repository: PartnerRepository,
+  draft: PartnerDraft,
+  editingPartnerId: string | null = null,
+) {
+  const target = buildPartnerNamePhoneIdentity(draft);
+  if (!target.name || !target.phone) return false;
+
+  const partners = await repository.listPartners({ activeOnly: false });
+  return partners.some((partner) => {
+    if (editingPartnerId && partner.id === editingPartnerId) return false;
+    const current = buildPartnerNamePhoneIdentity({ name: partner.name, phone: partner.contact ?? "" });
+    return current.name === target.name && current.phone === target.phone;
+  });
+}
+
 export async function GET() {
   const scopeResult = await requirePartnerCompanyScope("partner.read");
   if (!scopeResult.ok) return scopeResult.response;
@@ -110,8 +136,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ partners: [], error: "PARTNER_MASTER_DRAFT_REQUIRED" }, { status: 400 });
     }
 
+    const validationError = validatePartnerDraftForWrite(draft);
+    if (validationError) {
+      return NextResponse.json({ partners: [], error: validationError }, { status: 400 });
+    }
+
     if (!isWritablePartnerRepository(repository)) {
       return NextResponse.json({ partners: [], error: "PARTNER_MASTER_WRITE_UNSUPPORTED" }, { status: 400 });
+    }
+
+    if (await hasDuplicatePartnerNameAndPhoneOnServer(repository, draft)) {
+      return NextResponse.json({ partners: [], error: "PARTNER_MASTER_DUPLICATE_NAME_PHONE" }, { status: 409 });
     }
 
     const created = await repository.createPartner(buildPartnerDbCreateInput(draft));
@@ -144,8 +179,17 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ partners: [], error: "PARTNER_MASTER_UPDATE_PAYLOAD_REQUIRED" }, { status: 400 });
     }
 
+    const validationError = validatePartnerDraftForWrite(draft);
+    if (validationError) {
+      return NextResponse.json({ partners: [], error: validationError }, { status: 400 });
+    }
+
     if (!isWritablePartnerRepository(repository)) {
       return NextResponse.json({ partners: [], error: "PARTNER_MASTER_WRITE_UNSUPPORTED" }, { status: 400 });
+    }
+
+    if (await hasDuplicatePartnerNameAndPhoneOnServer(repository, draft, partnerId)) {
+      return NextResponse.json({ partners: [], error: "PARTNER_MASTER_DUPLICATE_NAME_PHONE" }, { status: 409 });
     }
 
     await repository.updatePartner(partnerId, buildPartnerDbUpdateInput(draft));

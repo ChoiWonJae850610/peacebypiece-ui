@@ -9,11 +9,18 @@ export type PartnerMasterApiResponse = {
   error?: string;
 };
 
+export class PartnerMasterApiError extends Error {
+  constructor(readonly code: string) {
+    super(code);
+    this.name = "PartnerMasterApiError";
+  }
+}
+
 async function parsePartnerMasterApiResponse(response: Response): Promise<PartnerMasterApiResponse> {
   const payload = (await response.json()) as PartnerMasterApiResponse;
 
   if (!response.ok) {
-    throw new Error(payload.error ?? "PARTNER_MASTER_API_ERROR");
+    throw new PartnerMasterApiError(payload.error ?? "PARTNER_MASTER_API_ERROR");
   }
 
   return {

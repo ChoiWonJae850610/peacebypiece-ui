@@ -44,6 +44,29 @@ export function buildPartnerDraftFromEntity(partner: Partner): PartnerDraft {
   };
 }
 
+
+export function buildPartnerNamePhoneIdentity(input: Pick<PartnerDraft, "name" | "phone">) {
+  return {
+    name: normalizePartnerTextField(input.name, PARTNER_MASTER_FIELD_LIMITS.name).toLocaleLowerCase("ko-KR"),
+    phone: normalizePhoneNumber(input.phone).slice(0, PARTNER_MASTER_FIELD_LIMITS.phone),
+  };
+}
+
+export function hasDuplicatePartnerNameAndPhone(
+  draft: PartnerDraft,
+  partners: Partner[],
+  editingPartnerId: string | null = null,
+) {
+  const target = buildPartnerNamePhoneIdentity(draft);
+  if (!target.name || !target.phone) return false;
+
+  return partners.some((partner) => {
+    if (editingPartnerId && partner.id === editingPartnerId) return false;
+    const current = buildPartnerNamePhoneIdentity({ name: partner.name, phone: partner.phone ?? "" });
+    return current.name === target.name && current.phone === target.phone;
+  });
+}
+
 export function normalizePartnerDraft(draft: PartnerDraft): PartnerDraft {
   const normalizedTypes = normalizePartnerTypeSelection(draft.partnerTypes);
   const isOutsourcingVendor = normalizedTypes.includes("outsourcing_vendor");
@@ -54,7 +77,7 @@ export function normalizePartnerDraft(draft: PartnerDraft): PartnerDraft {
     partnerTypes: normalizedTypes,
     isActive: draft.isActive,
     contactName: normalizePartnerTextField(draft.contactName, PARTNER_MASTER_FIELD_LIMITS.contactName),
-    phone: normalizePhoneNumber(draft.phone),
+    phone: normalizePhoneNumber(draft.phone).slice(0, PARTNER_MASTER_FIELD_LIMITS.phone),
     email: normalizePartnerTextField(draft.email, PARTNER_MASTER_FIELD_LIMITS.email),
     outsourcingProcessTypes: isOutsourcingVendor ? Array.from(new Set(draft.outsourcingProcessTypes)) : [],
     memo: normalizePartnerTextField(draft.memo, PARTNER_MASTER_FIELD_LIMITS.memo),

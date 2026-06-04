@@ -9,6 +9,7 @@ import {
   buildPartnerListViewModel,
   createEmptyPartnerDraft,
   DEFAULT_PARTNER_FILTER_STATE,
+  hasDuplicatePartnerNameAndPhone,
   normalizePartnerDraft,
   PARTNER_MASTER_FORM_ERRORS,
   selectAssignedOutsourcingProcessDefinitions,
@@ -19,7 +20,7 @@ import {
   type BasePartnerType,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partner";
-import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi } from "@/lib/admin/partner/apiClient";
+import { PartnerMasterApiError, fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi } from "@/lib/admin/partner/apiClient";
 import type { OutsourcingProcessType, Partner, PartnerDraft } from "@/types/partner";
 import type { PartnerMasterCapabilities } from "@/components/admin/PartnerMasterSection";
 
@@ -157,6 +158,16 @@ export function usePartnerMasterController(partnerText: PartnerMasterText, capab
       return;
     }
 
+    if (!normalizedDraft.phone) {
+      setFormError(PARTNER_MASTER_FORM_ERRORS.phoneRequired);
+      return;
+    }
+
+    if (hasDuplicatePartnerNameAndPhone(normalizedDraft, partners, editingPartnerId)) {
+      setFormError(PARTNER_MASTER_FORM_ERRORS.duplicateNameAndPhone);
+      return;
+    }
+
     if (normalizedDraft.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedDraft.email)) {
       setFormError(PARTNER_MASTER_FORM_ERRORS.emailInvalid);
       return;
@@ -174,17 +185,26 @@ export function usePartnerMasterController(partnerText: PartnerMasterText, capab
         setToastMessage(partnerText.form.saveCompleted);
         closeModal();
       })
-      .catch(() => {
-        setFormError(partnerText.form.saveFailed);
+      .catch((error) => {
+        const message = error instanceof PartnerMasterApiError
+          ? {
+              PARTNER_MASTER_PHONE_REQUIRED: PARTNER_MASTER_FORM_ERRORS.phoneRequired,
+              PARTNER_MASTER_DUPLICATE_NAME_PHONE: PARTNER_MASTER_FORM_ERRORS.duplicateNameAndPhone,
+              PARTNER_MASTER_NAME_REQUIRED: PARTNER_MASTER_FORM_ERRORS.nameRequired,
+              PARTNER_MASTER_TYPE_REQUIRED: PARTNER_MASTER_FORM_ERRORS.typeRequired,
+              PARTNER_MASTER_EMAIL_INVALID: PARTNER_MASTER_FORM_ERRORS.emailInvalid,
+            }[error.code] ?? partnerText.form.saveFailed
+          : partnerText.form.saveFailed;
+        setFormError(message);
         setToastTone("danger");
         setToastEventKey((currentKey) => currentKey + 1);
-        setToastMessage(partnerText.form.saveFailed);
+        setToastMessage(message);
       })
       .finally(() => {
         isSavingPartnerRef.current = false;
         setIsSavingPartner(false);
       });
-  }, [canSubmitPartner, closeModal, draft, editingPartnerId, partnerText.form.saveCompleted, partnerText.form.saveFailed]);
+  }, [canSubmitPartner, closeModal, draft, editingPartnerId, partnerText.form.saveCompleted, partnerText.form.saveFailed, partners]);
 
   return {
     canCreatePartner,

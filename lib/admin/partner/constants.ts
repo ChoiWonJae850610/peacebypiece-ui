@@ -50,6 +50,7 @@ export const DEFAULT_PARTNER_FILTER_STATE: PartnerListFilterState = {
 export const PARTNER_MASTER_FIELD_LIMITS = {
   name: 40,
   contactName: 24,
+  phone: 20,
   email: 80,
   memo: 160,
   outsourcingProcessLabel: 18,
@@ -58,6 +59,8 @@ export const PARTNER_MASTER_FIELD_LIMITS = {
 export const PARTNER_MASTER_FORM_ERRORS = {
   nameRequired: "업체명을 입력하세요.",
   typeRequired: "유형을 하나 이상 선택하세요.",
+  phoneRequired: "연락처를 입력하세요.",
+  duplicateNameAndPhone: "같은 업체명과 연락처로 등록된 업체가 이미 있습니다.",
   emailInvalid: "올바른 이메일 형식으로 입력하세요.",
   processNameRequired: "공정명을 입력하세요.",
   duplicateProcessLabel: "같은 표시명의 외주공정이 이미 있다.",
