@@ -1,6 +1,6 @@
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 
-export type AdminPolicyStatus = "active" | "fixed" | "planned" | "development";
+export type AdminPolicyStatus = "active" | "fixed" | "planned";
 
 export type AdminPolicySummaryItem = {
   id: string;
@@ -15,7 +15,6 @@ export type AdminPolicyDevelopmentFeature = {
   id: string;
   title: string;
   description: string;
-  statusLabel: string;
 };
 
 export type AdminPolicyOverviewViewModel = {
@@ -89,8 +88,8 @@ export function buildAdminPolicyOverviewViewModel(settings: CompanySettings): Ad
       {
         id: "permission-ui",
         title: "권한 설정 UI",
-        value: "DB seed 이후 연결",
-        description: "0.9.215 permission code 기준을 먼저 사용하고 실제 권한 편집 UI는 DB seed와 API 차단 이후 연결합니다.",
+        value: "멤버관리에서 처리",
+        description: "역할과 권한 편집은 멤버관리 상세 모달에서 관리하고 환경설정은 운영 기준을 확인하는 역할로 유지합니다.",
         status: "planned",
         statusLabel: "후속",
       },
@@ -99,26 +98,23 @@ export function buildAdminPolicyOverviewViewModel(settings: CompanySettings): Ad
       {
         id: "notification-policy",
         title: "알림 정책",
-        description: "상태 변경 이벤트와 사용자 권한 차단 기준이 고정된 뒤 활성화합니다.",
-        statusLabel: "개발중",
+        description: "상태 변경 이벤트와 사용자 권한 차단 기준이 안정화된 뒤 운영 알림 기준으로 연결합니다.",
       },
       {
         id: "notification-service",
         title: "알림 서비스",
-        description: "이메일/앱 알림 채널과 발송 로그가 준비된 뒤 연결합니다.",
-        statusLabel: "개발중",
+        description: "이메일과 앱 알림 채널, 발송 로그를 운영 화면과 분리해 연결합니다.",
       },
       {
         id: "ai-workorder-name",
         title: "작업지시서 이름 추천 AI",
-        description: "초기 제품에서는 핵심 기능이 아니므로 통계/권한/저장소 안정화 이후 검토합니다.",
-        statusLabel: "개발중",
+        description: "초기 제품에서는 핵심 업무 안정화를 우선하고 통계/권한/저장소 정리 이후 검토합니다.",
       },
     ],
     nextSteps: [
-      "권한 UI는 permission/feature flag DB seed 반영 이후 실제 저장과 연결합니다.",
+      "권한 편집은 멤버관리 상세 모달에서 처리하고 환경설정은 운영 기준 안내로 분리합니다.",
       "파일정책 모달에 흩어진 설명은 환경설정 메인 정책 카드로 점진 통합합니다.",
-      "알림/AI 기능은 개발중 표시를 유지하고 실제 업무 흐름 안정화 이후 활성화합니다.",
+      "알림과 AI 항목은 운영 기준 안내로만 두고 실제 적용은 별도 기능 버전에서 분리합니다.",
     ],
   };
 }

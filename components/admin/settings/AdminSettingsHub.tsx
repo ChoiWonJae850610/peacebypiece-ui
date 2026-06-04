@@ -371,7 +371,7 @@ function FeedbackPanel() {
   const feedbackMailtoHref = useMemo(() => buildAdminFeedbackMailtoHref(), []);
   return (
     <WaflSectionPanel
-      eyebrow={t("settings.feedback.eyebrow", "개발 건의")}
+      eyebrow={t("settings.feedback.eyebrow", "서비스 건의")}
       title={feedback.title}
       description={feedback.description}
       actions={
@@ -385,7 +385,7 @@ function FeedbackPanel() {
       <WaflSettingsSectionGroup
         eyebrow={t("settings.feedback.emailLabel", "접수 이메일")}
         title={<span className="font-mono">{ADMIN_FEEDBACK_CONTACT_EMAIL}</span>}
-        description={t("settings.feedback.mailDescription", "개선 요청, 오류 제보, 기능 제안 내용을 기본 메일 앱으로 작성해 전달합니다.")}
+        description={t("settings.feedback.mailDescription", "개선 요청, 오류 제보, 기능 제안 내용을 이메일로 작성해 전달합니다.")}
         tone="info"
       >
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">

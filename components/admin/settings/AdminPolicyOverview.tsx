@@ -12,7 +12,6 @@ type AdminPolicyOverviewProps = {
 function getStatusClassName(status: AdminPolicyStatus) {
   if (status === "active") return "bg-emerald-50 text-emerald-700";
   if (status === "fixed") return "bg-blue-50 text-blue-700";
-  if (status === "development") return "bg-amber-50 text-amber-700";
   return "bg-[var(--pbp-status-neutral-bg)] text-[var(--pbp-status-neutral-fg)]";
 }
 
@@ -46,7 +45,6 @@ export default function AdminPolicyOverview({ settings }: AdminPolicyOverviewPro
             {t("settings.policyOverview.description", "삭제방식, 용량 한도, 휴지통 포함 여부와 조직 운영 기준을 환경설정 메인에서 먼저 확인합니다.")}
           </p>
         </div>
-        <span className="w-fit rounded-full bg-[var(--pbp-brand-primary)] px-3 py-1 text-xs font-semibold text-[var(--pbp-text-inverse)]">{t("settings.policyOverview.versionBadge", "0.9.216 기준")}</span>
       </div>
 
       <section className="mt-4">
@@ -82,17 +80,12 @@ export default function AdminPolicyOverview({ settings }: AdminPolicyOverviewPro
           </div>
         </div>
 
-        <div className="rounded-3xl border border-amber-100 bg-amber-50 p-4">
-          <h3 className="text-sm font-semibold text-amber-950">{t("settings.policyOverview.developmentFeatureTitle", "운영 준비 항목")}</h3>
+        <div className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{t("settings.policyOverview.serviceFeatureTitle", "서비스 운영 항목")}</h3>
           <div className="mt-3 grid gap-2">
             {viewModel.developmentFeatures.map((item) => (
               <div key={item.id} className="rounded-2xl border border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-surface)] p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{item.title}</p>
-                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
-                    {item.statusLabel}
-                  </span>
-                </div>
+                <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{item.title}</p>
                 <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{item.description}</p>
               </div>
             ))}
