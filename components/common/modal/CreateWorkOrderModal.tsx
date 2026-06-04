@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_INPUT_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_CONTENT_MUTED_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
@@ -100,6 +100,12 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate, isCreati
     }),
   });
 
+  const handleTitleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    handleCreate();
+  };
+
   const handleApplyRecommendation = () => {
     if (!recommendedCategory) return;
     setCategory1(recommendedCategory.category1);
@@ -123,7 +129,14 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate, isCreati
       <div className="grid gap-4">
         <label className="grid gap-1.5">
           <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.workOrderTitle}</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={copy.titlePlaceholder} className={MODAL_INPUT_CLASS} disabled={isCreating} />
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={handleTitleKeyDown}
+            placeholder={copy.titlePlaceholder}
+            className={MODAL_INPUT_CLASS}
+            disabled={isCreating}
+          />
         </label>
         {isCreating ? (
           <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} flex items-center gap-2 px-3 py-2 text-sm text-[var(--pbp-text-secondary)]`}>

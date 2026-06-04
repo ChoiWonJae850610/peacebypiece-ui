@@ -83,7 +83,6 @@ export async function addWaflSessionCookie(context, payload) {
         secret,
       ),
       url: baseURL,
-      path: "/",
       httpOnly: true,
       sameSite: "Lax",
     },
