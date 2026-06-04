@@ -9,7 +9,6 @@ import {
   getAssignableMemberRolePreviews,
   type MemberJoinRequestLoadStatus,
   type MemberListLoadStatus,
-  type MemberManagementStatus,
 } from "@/lib/admin/members/memberManagementPresentation";
 import {
   buildMemberManagementSummaryViewModel,
@@ -55,20 +54,11 @@ import {
   type MemberDirectoryStatusFilter,
   type MemberDirectorySortKey,
 } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
-import {
-  AdminStatusBadge,
-  type AdminStatusBadgeTone,
-} from "@/components/admin/common/AdminStatusBadge";
 import AdminMemberInvitationSection from "@/components/admin/members/AdminMemberInvitationSection";
 import AdminMemberDirectorySection from "@/components/admin/members/AdminMemberDirectorySection";
 
 import ToastMessage, { showWaflLoadingToast, type ToastTone } from "@/components/common/ToastMessage";
 
-function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
-  if (status === "ready") return "success";
-  if (status === "pending") return "warning";
-  return "neutral";
-}
 
 type JoinRequestListResponse = {
   ok?: boolean;
@@ -995,12 +985,6 @@ export default function AdminMemberManagementDashboard() {
         eyebrow={t("memberManagement.visualHero.eyebrow", "Team management")}
         title={t("memberManagement.visualHero.title", "멤버와 권한을 관리합니다.")}
         description={t("memberManagement.visualHero.description", "가입 승인, 재직 상태, 역할과 권한을 한 화면에서 확인합니다.")}
-        badges={
-          <>
-            <AdminStatusBadge tone="brand">{t("memberManagement.visualHero.badge.role", "역할 기반")}</AdminStatusBadge>
-            <AdminStatusBadge tone="info">{t("memberManagement.visualHero.badge.permission", "권한 관리")}</AdminStatusBadge>
-          </>
-        }
       >
         <AdminSummaryMetricCards
           cards={summaryCards.map((card) => ({
@@ -1008,11 +992,6 @@ export default function AdminMemberManagementDashboard() {
             label: t(`memberManagement.summary.${card.id}.label`, card.id),
             value: `${card.value}명`,
             helper: t(`memberManagement.summary.${card.id}.description`, ""),
-            badge: (
-              <AdminStatusBadge tone={getStatusTone(card.status)}>
-                {t(`memberManagement.statuses.${card.status}`, card.status)}
-              </AdminStatusBadge>
-            ),
           }))}
         />
       </WaflPageHero>
