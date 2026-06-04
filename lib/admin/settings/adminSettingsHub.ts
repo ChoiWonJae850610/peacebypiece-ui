@@ -40,7 +40,7 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
     id: "legal",
     title: "약관·정책",
     description: "이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책 표시 위치를 확인합니다.",
-    statusLabel: "준비 중",
+    statusLabel: "조회 가능",
     tone: "violet",
     detailItems: ["이용약관", "개인정보", "환불정책"],
   },
@@ -68,9 +68,9 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
     items: ["회사 정보 확인", "대표 로그인 이메일 확인", "회사 정보 변경 요청", "계정 비활성화 요청"],
   },
   legal: {
-    title: "약관·정책은 고객사가 조회할 수 있는 별도 영역으로 분리합니다.",
-    description: "정식 화면 구현 전까지 환경설정에서 이용약관, 개인정보처리방침, 환불정책, 데이터 보관·삭제정책의 노출 위치를 안내합니다.",
-    nextStep: "/workspace/legal route를 추가한 뒤 시스템관리자가 작성한 최신 서비스 문서를 고객사 범위에서 조회하도록 연결합니다.",
+    title: "약관·정책은 고객 공개 화면에서 조회합니다.",
+    description: "고객사 관리자와 일반 멤버가 확인할 수 있는 이용약관, 개인정보처리방침, 요금·환불정책, 데이터 보관·삭제정책을 제공합니다.",
+    nextStep: "정책 버전과 동의 이력을 DB로 연결한 뒤 고객사 승인 요청 전 필수 동의 흐름으로 확장합니다.",
     items: ["이용약관", "개인정보처리방침", "환불정책", "데이터 보관·삭제정책"],
   },
   feedback: {

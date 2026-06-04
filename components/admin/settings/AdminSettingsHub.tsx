@@ -456,7 +456,7 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
       eyebrow={t("settings.notice.eyebrow", "약관·정책")}
       title={notice.title}
       description={notice.description}
-      actions={<AdminStatusBadge tone="maintenance">{t("common.preparing", "준비중")}</AdminStatusBadge>}
+      actions={<AdminLinkButton variant="primary" href="/workspace/legal">{t("settings.notice.openLegal", "약관·정책 보기")}</AdminLinkButton>}
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
@@ -476,10 +476,10 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
         <WaflSettingsSectionGroup
           eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
           title={notice.nextStep}
-          description={t("settings.notice.nextStepDescription", "정식 문서 route와 시스템관리자 문서 관리 화면이 연결되기 전까지는 안내 영역으로 유지합니다.")}
+          description={t("settings.notice.nextStepDescription", "현재 공개된 정책 문서를 확인하고, 후속 단계에서 정책 버전과 동의 이력을 연결합니다.")}
           tone="info"
         >
-          <WaflSettingCard title={t("common.preparing", "준비중")} description={notice.description} tone="info" density="compact" />
+          <WaflSettingCard title={t("settings.notice.openLegal", "약관·정책 보기")} description={notice.description} tone="info" density="compact" actions={<AdminLinkButton variant="secondary" href="/workspace/legal">{t("settings.notice.openLegal", "약관·정책 보기")}</AdminLinkButton>} />
         </WaflSettingsSectionGroup>
       </div>
     </WaflSectionPanel>

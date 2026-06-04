@@ -1,73 +1,99 @@
 import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
-import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
+import { CUSTOMER_POLICY_DOCUMENTS, getRequiredPolicyDocumentCount, type CustomerPolicyDocumentCategory } from "@/lib/policies/customerPolicyDocuments";
 
-const POLICY_ITEMS = [
-  {
-    id: "terms",
-    title: "이용약관",
-    status: "조회용",
-    description: "WAFL 서비스 이용 조건, 계정 이용 기준, 고객사와 멤버의 기본 책임 범위를 확인합니다.",
-  },
-  {
-    id: "privacy",
-    title: "개인정보처리방침",
-    status: "조회용",
-    description: "로그인 계정, 업무 프로필, 첨부파일 처리 과정에서 적용되는 개인정보 처리 기준을 확인합니다.",
-  },
-  {
-    id: "operation",
-    title: "서비스 운영정책",
-    status: "조회용",
-    description: "초대, 승인, 권한, 파일 보관, 휴지통, 삭제 요청 등 업무 운영 기준을 확인합니다.",
-  },
-  {
-    id: "data-retention",
-    title: "데이터 보관·삭제정책",
-    status: "조회용",
-    description: "작업지시서, 문서, 디자인, 메모, 휴지통 항목의 보관과 삭제 요청 기준을 확인합니다.",
-  },
-] as const;
+const categoryTone: Record<CustomerPolicyDocumentCategory, AdminStatusBadgeTone> = {
+  service: "brand",
+  privacy: "info",
+  billing: "success",
+  data: "warning",
+  operation: "neutral",
+};
 
 export default async function WorkspaceLegalPage() {
   const session = await requireWaflSessionForArea("workspace");
+  const requiredPolicyCount = getRequiredPolicyDocumentCount();
 
   return (
     <WorkspacePageShell
       session={session}
       activeHref="/workspace/legal"
       title="약관·정책"
-      description="일반멤버도 확인할 수 있는 서비스 약관과 운영정책 조회 화면입니다."
+      description="WAFL 이용에 필요한 고객 공개 약관과 운영정책을 확인합니다."
     >
       <AdminSection
-        eyebrow="Policy"
-        title="약관·정책"
-        description="현재는 조회용 정책 허브로 제공하며, 실제 공개 문서 연결과 시스템관리자 편집 기능은 후속 운영 화면에서 분리합니다."
-        actions={<AdminStatusBadge tone="info">조회 전용</AdminStatusBadge>}
+        eyebrow="WAFL Policy"
+        title="고객 공개 약관·정책"
+        description="이 화면은 고객사 관리자와 일반 멤버가 함께 확인하는 정책 문서 열람 영역입니다. 현재는 서비스 초기 공개 문서 기준으로 제공하며, 정책 버전과 동의 이력 저장은 후속 단계에서 연결합니다."
+        actions={
+          <>
+            <AdminStatusBadge tone="brand">고객 공개</AdminStatusBadge>
+            <AdminStatusBadge tone="warning">필수 동의 {requiredPolicyCount}건</AdminStatusBadge>
+          </>
+        }
         className="p-5 sm:p-6"
-        bodyClassName="mt-5"
+        bodyClassName="mt-5 space-y-5"
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          {POLICY_ITEMS.map((item) => (
-            <AdminCard key={item.id} as="article" className="p-5">
-              <div className="flex items-start justify-between gap-3">
+        <div className="grid gap-4 md:grid-cols-3">
+          <AdminCard as="article" className="p-5">
+            <p className="text-xs font-semibold pbp-text-subtle">문서 수</p>
+            <p className="mt-2 text-2xl font-semibold pbp-text-primary">{CUSTOMER_POLICY_DOCUMENTS.length}건</p>
+            <p className="mt-2 text-sm leading-6 pbp-text-muted">고객 공개 대상 약관·정책 문서입니다.</p>
+          </AdminCard>
+          <AdminCard as="article" className="p-5">
+            <p className="text-xs font-semibold pbp-text-subtle">필수 동의</p>
+            <p className="mt-2 text-2xl font-semibold pbp-text-primary">{requiredPolicyCount}건</p>
+            <p className="mt-2 text-sm leading-6 pbp-text-muted">고객사 승인 요청과 연결할 필수 동의 문서입니다.</p>
+          </AdminCard>
+          <AdminCard as="article" className="p-5">
+            <p className="text-xs font-semibold pbp-text-subtle">버전 상태</p>
+            <p className="mt-2 text-2xl font-semibold pbp-text-primary">v1.0</p>
+            <p className="mt-2 text-sm leading-6 pbp-text-muted">초기 공개 문서 기준입니다. 시행일 확정 후 동의 이력과 연결합니다.</p>
+          </AdminCard>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          {CUSTOMER_POLICY_DOCUMENTS.map((document) => (
+            <AdminCard key={document.id} as="article" className="p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <h2 className="text-base font-semibold pbp-text-primary">{item.title}</h2>
-                  <p className="mt-3 text-sm leading-6 pbp-text-muted">{item.description}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AdminStatusBadge tone={categoryTone[document.category]}>{document.categoryLabel}</AdminStatusBadge>
+                    <AdminStatusBadge tone="neutral">{document.versionLabel}</AdminStatusBadge>
+                    {document.requiredForApproval ? <AdminStatusBadge tone="warning">필수 동의</AdminStatusBadge> : null}
+                  </div>
+                  <h2 className="mt-3 text-lg font-semibold pbp-text-primary">{document.title}</h2>
+                  <p className="mt-1 text-sm font-semibold pbp-text-muted">{document.subtitle}</p>
+                  <p className="mt-3 text-sm leading-6 pbp-text-muted">{document.summary}</p>
                 </div>
-                <AdminStatusBadge tone="neutral">{item.status}</AdminStatusBadge>
+                <span className="shrink-0 rounded-full bg-[var(--pbp-surface-soft)] px-3 py-1 text-xs font-semibold pbp-text-muted">
+                  {document.effectiveDateLabel}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                {document.sections.map((section) => (
+                  <section key={section.title} className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+                    <h3 className="text-sm font-semibold pbp-text-primary">{section.title}</h3>
+                    <p className="mt-2 text-sm leading-6 pbp-text-muted">{section.body}</p>
+                  </section>
+                ))}
               </div>
             </AdminCard>
           ))}
         </div>
 
-        <div className="mt-5 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
-          <p className="text-sm font-semibold pbp-text-primary">운영 메모</p>
-          <p className="mt-2 text-sm leading-6 pbp-text-muted">
-            이 화면은 일반멤버용 조회 진입점입니다. 정책 원문 파일, 버전 이력, 동의 이력, 시스템관리자 편집 화면은 별도 버전에서 연결합니다.
-          </p>
-        </div>
+        <AdminCard as="section" className="p-5">
+          <h2 className="text-base font-semibold pbp-text-primary">후속 연결 기준</h2>
+          <div className="mt-3 grid gap-2 text-sm leading-6 pbp-text-muted md:grid-cols-2">
+            <p>• 정책 문서는 고객 공개 문서와 내부 운영 문서를 분리해 관리합니다.</p>
+            <p>• 정책 버전, 시행일, 필수 동의 여부는 DB화 단계에서 고정 필드로 관리합니다.</p>
+            <p>• 고객사 승인 요청 전 필수 동의 이력을 저장하는 흐름으로 연결합니다.</p>
+            <p>• 중요 정책 변경 시 로그인 후 재동의 화면을 우선 표시하는 구조로 확장합니다.</p>
+          </div>
+        </AdminCard>
       </AdminSection>
     </WorkspacePageShell>
   );
