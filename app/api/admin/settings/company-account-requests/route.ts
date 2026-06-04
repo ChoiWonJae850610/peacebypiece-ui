@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   createCompanyAccountRequest,
   isCompanyAccountRequestType,
+  listCompanyAccountRequests,
   validateCompanyAccountRequestMessage,
 } from "@/lib/admin/settings/companyAccountRequestRepository";
 import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
@@ -26,6 +27,29 @@ function getErrorMessage(error: unknown): string {
 async function readPayload(request: Request): Promise<CompanyAccountRequestPayload> {
   const payload = (await request.json().catch(() => null)) as unknown;
   return payload && typeof payload === "object" && !Array.isArray(payload) ? (payload as CompanyAccountRequestPayload) : {};
+}
+
+
+export async function GET() {
+  const scopeResult = await requireAdminSettingsCompanyScope();
+  if (!scopeResult.ok) return scopeResult.response;
+
+  try {
+    const { companyId } = scopeResult.companyScope;
+    const requests = await listCompanyAccountRequests(companyId, 5);
+    return NextResponse.json({ ok: true, requests });
+  } catch (error) {
+    const message = getErrorMessage(error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "COMPANY_ACCOUNT_REQUEST_LIST_FAILED",
+        message,
+      },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: Request) {

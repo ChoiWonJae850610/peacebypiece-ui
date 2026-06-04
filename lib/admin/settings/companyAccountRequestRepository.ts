@@ -135,3 +135,27 @@ export async function createCompanyAccountRequest(input: CreateCompanyAccountReq
 
   return toCompanyAccountRequestRecord(row);
 }
+
+export async function listCompanyAccountRequests(companyId: string, limit = 5): Promise<CompanyAccountRequestRecord[]> {
+  const safeLimit = Math.min(Math.max(Number.isFinite(limit) ? Math.trunc(limit) : 5, 1), 20);
+
+  const result = await queryDb<CompanyAccountRequestRow>(
+    `SELECT
+       id,
+       company_id,
+       requested_by_user_id,
+       request_type,
+       request_status,
+       request_title,
+       request_message,
+       request_payload,
+       created_at
+     FROM company_account_requests
+     WHERE company_id = $1
+     ORDER BY created_at DESC
+     LIMIT $2`,
+    [companyId, safeLimit],
+  );
+
+  return result.rows.map(toCompanyAccountRequestRecord);
+}

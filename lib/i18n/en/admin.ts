@@ -1520,6 +1520,25 @@ export const adminEn = {
       submitted:
         "The request has been submitted and will be reviewed by the system admin.",
       failed: "Could not submit the request. Try again later.",
+      historyEyebrow: "Request history",
+      historyTitle: "Recent company account requests",
+      historyDescription: "Check recent statuses for company information and account deactivation requests.",
+      historyBadge: "Latest 5",
+      historyEmptyTitle: "No requests have been submitted.",
+      historyEmptyDescription: "When you submit a company information or account deactivation request, recent history will appear here.",
+      historyFailedTitle: "Could not load request history.",
+      historyFailedDescription: "You can still submit requests. Check the history again later.",
+      status: {
+        pending: "Submitted",
+        reviewing: "In review",
+        approved: "Approved",
+        rejected: "Rejected",
+        cancelled: "Cancelled",
+      },
+      type: {
+        companyInfoChange: "Company info change",
+        accountDeactivation: "Account deactivation",
+      },
     },
     billing: {
       emptyTitle: "Could not load billing information.",

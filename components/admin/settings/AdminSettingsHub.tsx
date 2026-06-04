@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
@@ -28,6 +28,24 @@ type AdminCurrentCompanyPayload = {
   ok?: boolean;
   billing?: AdminBillingPlanOverview;
   account?: AdminAccountSettingsOverview;
+};
+
+type CompanyAccountRequestStatus = "pending" | "reviewing" | "approved" | "rejected" | "cancelled";
+
+type CompanyAccountRequestType = "company_info_change" | "account_deactivation";
+
+type CompanyAccountRequestRecord = {
+  id: string;
+  requestType: CompanyAccountRequestType;
+  requestStatus: CompanyAccountRequestStatus;
+  requestTitle: string;
+  requestMessage: string;
+  createdAt: string;
+};
+
+type CompanyAccountRequestsPayload = {
+  ok?: boolean;
+  requests?: CompanyAccountRequestRecord[];
 };
 
 const toneClassNames: Record<AdminSettingsMenuTone, { badgeTone: AdminStatusBadgeTone; dot: string }> = {
@@ -62,6 +80,41 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
       onClick={onClick}
     />
   );
+}
+
+
+function formatSettingsRequestDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+const requestStatusTone: Record<CompanyAccountRequestStatus, AdminStatusBadgeTone> = {
+  pending: "warning",
+  reviewing: "info",
+  approved: "success",
+  rejected: "danger",
+  cancelled: "neutral",
+};
+
+function resolveRequestStatusLabel(status: CompanyAccountRequestStatus, t: ReturnType<typeof useAdminTranslation>): string {
+  if (status === "reviewing") return t("settings.accountRequest.status.reviewing", "검토 중");
+  if (status === "approved") return t("settings.accountRequest.status.approved", "승인됨");
+  if (status === "rejected") return t("settings.accountRequest.status.rejected", "반려됨");
+  if (status === "cancelled") return t("settings.accountRequest.status.cancelled", "취소됨");
+  return t("settings.accountRequest.status.pending", "접수됨");
+}
+
+function resolveRequestTypeLabel(type: CompanyAccountRequestType, t: ReturnType<typeof useAdminTranslation>): string {
+  if (type === "account_deactivation") return t("settings.accountRequest.type.accountDeactivation", "계정 비활성화");
+  return t("settings.accountRequest.type.companyInfoChange", "회사 정보 변경");
 }
 
 function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanOverview; loadState: "idle" | "loading" | "loaded" | "failed" }) {
@@ -140,7 +193,19 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
   );
 }
 
-function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountSettingsOverview; loadState: "idle" | "loading" | "loaded" | "failed" }) {
+function AccountSettingsPanel({
+  overview,
+  loadState,
+  requests,
+  requestsLoadState,
+  onRequestSubmitted,
+}: {
+  overview: AdminAccountSettingsOverview;
+  loadState: "idle" | "loading" | "loaded" | "failed";
+  requests: CompanyAccountRequestRecord[];
+  requestsLoadState: "idle" | "loading" | "loaded" | "failed";
+  onRequestSubmitted: () => void;
+}) {
   const t = useAdminTranslation();
   const [activeRequestType, setActiveRequestType] = useState<"company_info_change" | "account_deactivation" | null>(null);
   const [requestMessage, setRequestMessage] = useState("");
@@ -181,6 +246,7 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
       setRequestFeedback(t("settings.accountRequest.submitted", "요청이 접수되었습니다. 시스템관리자 검토 후 처리됩니다."));
       setRequestMessage("");
       setActiveRequestType(null);
+      onRequestSubmitted();
     } catch {
       setRequestState("failed");
       setRequestFeedbackTone("danger");
@@ -311,6 +377,49 @@ function AccountSettingsPanel({ overview, loadState }: { overview: AdminAccountS
       <ToastMessage message={requestFeedback || null} tone={requestFeedbackTone} eventKey={requestFeedbackEventKey} />
 
       <WaflSettingsSectionGroup
+        eyebrow={t("settings.accountRequest.historyEyebrow", "요청 이력")}
+        title={t("settings.accountRequest.historyTitle", "최근 접수된 회사 계정 요청")}
+        description={t("settings.accountRequest.historyDescription", "회사 정보 변경과 계정 비활성화 요청의 최근 접수 상태를 확인합니다.")}
+        badge={
+          <AdminStatusBadge tone={requestsLoadState === "failed" ? "warning" : "neutral"} size="xs">
+            {requestsLoadState === "loading" ? t("common.loadingShort", "조회 중") : t("settings.accountRequest.historyBadge", "최근 5건")}
+          </AdminStatusBadge>
+        }
+        tone="neutral"
+      >
+        {requestsLoadState === "failed" ? (
+          <WaflSettingCard
+            title={t("settings.accountRequest.historyFailedTitle", "요청 이력을 불러오지 못했습니다.")}
+            description={t("settings.accountRequest.historyFailedDescription", "요청 접수 기능은 계속 사용할 수 있습니다. 이력은 잠시 후 다시 확인해 주세요.")}
+            tone="warning"
+            density="compact"
+          />
+        ) : requests.length > 0 ? (
+          <div className="grid gap-3">
+            {requests.map((request) => (
+              <WaflSettingCard
+                key={request.id}
+                eyebrow={resolveRequestTypeLabel(request.requestType, t)}
+                title={request.requestTitle}
+                description={request.requestMessage}
+                badge={<AdminStatusBadge tone={requestStatusTone[request.requestStatus]} size="xs">{resolveRequestStatusLabel(request.requestStatus, t)}</AdminStatusBadge>}
+                meta={formatSettingsRequestDate(request.createdAt)}
+                tone={request.requestStatus === "rejected" ? "danger" : request.requestStatus === "approved" ? "success" : "info"}
+                density="compact"
+              />
+            ))}
+          </div>
+        ) : (
+          <WaflSettingCard
+            title={t("settings.accountRequest.historyEmptyTitle", "접수된 요청이 없습니다.")}
+            description={t("settings.accountRequest.historyEmptyDescription", "회사 정보 변경 또는 계정 비활성화가 필요할 때 요청을 작성하면 이곳에 최근 이력이 표시됩니다.")}
+            tone="neutral"
+            density="compact"
+          />
+        )}
+      </WaflSettingsSectionGroup>
+
+      <WaflSettingsSectionGroup
         eyebrow={t("settings.account.policyEyebrow", "운영 기준")}
         title={t("settings.account.policyTitle", "조직 정보와 개인 설정 분리")}
         description={t("settings.account.policyDescription", "회사 설정, 관리자 개인 프로필, 로그인 이메일의 책임 범위를 분리해서 관리합니다.")}
@@ -411,8 +520,30 @@ export default function AdminSettingsHub() {
   const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("account");
   const [billingPlanOverview, setBillingPlanOverview] = useState<AdminBillingPlanOverview | null>(null);
   const [accountOverview, setAccountOverview] = useState<AdminAccountSettingsOverview | null>(null);
+  const [accountRequests, setAccountRequests] = useState<CompanyAccountRequestRecord[]>([]);
   const [billingPlanLoadState, setBillingPlanLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const [accountLoadState, setAccountLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
+  const [accountRequestsLoadState, setAccountRequestsLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
+
+  const refreshAccountRequests = useCallback(() => {
+    setAccountRequestsLoadState("loading");
+
+    fetch("/api/admin/settings/company-account-requests", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as CompanyAccountRequestsPayload | null;
+
+        if (!response.ok || !payload?.ok || !Array.isArray(payload.requests)) {
+          throw new Error("COMPANY_ACCOUNT_REQUEST_LIST_FAILED");
+        }
+
+        setAccountRequests(payload.requests);
+        setAccountRequestsLoadState("loaded");
+      })
+      .catch(() => {
+        setAccountRequests([]);
+        setAccountRequestsLoadState("failed");
+      });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -445,10 +576,12 @@ export default function AdminSettingsHub() {
         }
       });
 
+    refreshAccountRequests();
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshAccountRequests]);
 
   const renderActiveSettingsPanel = () => {
     if (activeMenuId === "standards") {
@@ -478,7 +611,15 @@ export default function AdminSettingsHub() {
         );
       }
 
-      return <AccountSettingsPanel overview={accountOverview} loadState={accountLoadState} />;
+      return (
+        <AccountSettingsPanel
+          overview={accountOverview}
+          loadState={accountLoadState}
+          requests={accountRequests}
+          requestsLoadState={accountRequestsLoadState}
+          onRequestSubmitted={refreshAccountRequests}
+        />
+      );
     }
 
     if (activeMenuId === "legal") {
