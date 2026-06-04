@@ -26,6 +26,14 @@ export const SYSTEM_CONSOLE_HERO_OPERATION_CARDS: SystemConsoleNavigationCard[] 
     tone: "primary",
   },
   {
+    id: "account-requests",
+    label: "계정 요청 검토",
+    description: "회사 정보 변경과 계정 비활성화 요청을 시스템관리자 기준으로 검토합니다.",
+    href: "/system/account-requests",
+    statusLabel: "요청 검토",
+    tone: "neutral",
+  },
+  {
     id: "billing-operations",
     label: "구독·결제 운영",
     description: "고객사 요금제, 결제 상태, 증빙 처리 현황을 한곳에서 확인합니다.",
@@ -50,6 +58,14 @@ export const SYSTEM_CONSOLE_CUSTOMER_OPERATIONS_NAVIGATION: SystemConsoleNavigat
     description: "고객사 목록, 고객사 관리자 초대, 가입 신청, 승인·거절, 상태 변경을 한 화면에서 처리합니다.",
     href: "/system/companies",
     statusLabel: "초대·승인",
+    tone: "primary",
+  },
+  {
+    id: "account-requests",
+    label: "회사 계정 요청",
+    description: "고객사 관리자가 접수한 회사 정보 변경과 계정 비활성화 요청을 검토합니다.",
+    href: "/system/account-requests",
+    statusLabel: "요청 검토",
     tone: "primary",
   },
   {
