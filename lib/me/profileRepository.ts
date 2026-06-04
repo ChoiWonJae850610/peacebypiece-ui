@@ -15,6 +15,7 @@ type PersonalProfileRow = {
   company_member_id: string | null;
   display_name: string | null;
   role_template_code: string | null;
+  member_status: string | null;
 };
 
 export type PersonalProfile = {
@@ -27,6 +28,7 @@ export type PersonalProfile = {
   companyName: string | null;
   companyMemberId: string | null;
   roleTemplateCode: string | null;
+  memberStatus: string | null;
   profileComplete: boolean;
 };
 
@@ -67,6 +69,7 @@ function mapProfileRow(row: PersonalProfileRow, session: WaflSessionPayload): Pe
     companyName: row.company_name ?? session.companyName,
     companyMemberId: row.company_member_id ?? session.companyMemberId,
     roleTemplateCode: row.role_template_code,
+    memberStatus: row.member_status,
     profileComplete: Boolean(normalizeName(name) && normalizePhoneNumber(phone).length >= 10),
   };
 }
@@ -84,7 +87,8 @@ export async function getPersonalProfile(session: WaflSessionPayload): Promise<P
         companies.name AS company_name,
         company_members.id AS company_member_id,
         company_members.display_name,
-        company_members.role_template_code
+        company_members.role_template_code,
+        company_members.status AS member_status
       FROM users
       LEFT JOIN company_members
         ON company_members.user_id = users.id
@@ -142,6 +146,56 @@ export async function updatePersonalProfile(
       [session.userId, session.companyId, normalizedName, session.companyMemberId],
     );
   }
+
+  return getPersonalProfile(session);
+}
+
+
+export async function requestPersonalMemberWithdrawal(session: WaflSessionPayload): Promise<PersonalProfile | null> {
+  if (!session.companyId || !session.companyMemberId) {
+    throw new Error("PERSONAL_MEMBER_WITHDRAWAL_COMPANY_REQUIRED");
+  }
+
+  const result = await queryDb<{ id: string; role_template_code: string | null; status: string | null }>(
+    `
+      SELECT id, role_template_code, status
+        FROM company_members
+       WHERE id = $1
+         AND company_id = $2
+         AND user_id = $3
+       LIMIT 1
+    `,
+    [session.companyMemberId, session.companyId, session.userId],
+  );
+
+  const member = result.rows[0];
+  if (!member) {
+    throw new Error("PERSONAL_MEMBER_WITHDRAWAL_MEMBER_NOT_FOUND");
+  }
+
+  if (member.role_template_code === "company_admin") {
+    throw new Error("PERSONAL_MEMBER_WITHDRAWAL_COMPANY_ADMIN_BLOCKED");
+  }
+
+  if (member.status === "withdrawn") {
+    throw new Error("PERSONAL_MEMBER_WITHDRAWAL_ALREADY_WITHDRAWN");
+  }
+
+  await queryDb(
+    `
+      UPDATE company_members
+         SET status = 'withdrawal_requested',
+             withdrawal_requested_by = $3,
+             withdrawal_requested_at = COALESCE(withdrawal_requested_at, now()),
+             withdrawn_by = NULL,
+             withdrawn_at = NULL,
+             updated_at = now()
+       WHERE id = $1
+         AND company_id = $2
+         AND user_id = $3
+    `,
+    [session.companyMemberId, session.companyId, session.userId],
+  );
 
   return getPersonalProfile(session);
 }

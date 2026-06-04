@@ -74,6 +74,18 @@ export const commonKo = {
       saving: "저장 중",
       saved: "프로필을 저장했습니다.",
       clearBirthday: "삭제",
+      withdrawal: {
+        title: "탈퇴 요청",
+        description: "탈퇴를 요청하면 고객사 관리자가 검토한 뒤 멤버 상태를 변경합니다. 처리 전까지 기존 권한은 유지됩니다.",
+        action: "탈퇴 요청",
+        requesting: "요청 중",
+        requested: "탈퇴 요청을 보냈습니다.",
+        pending: "탈퇴 요청이 접수되었습니다. 고객사 관리자 처리를 기다리는 상태입니다.",
+        withdrawn: "탈퇴 완료 상태입니다. 업무 화면 접근이 제한될 수 있습니다.",
+        companyAdminBlocked: "고객사 관리자는 이 화면에서 탈퇴 요청을 보낼 수 없습니다. 회사 설정 또는 시스템 관리자 절차를 사용해야 합니다.",
+        confirm: "탈퇴 요청을 보내시겠습니까? 고객사 관리자가 처리하기 전까지 기존 권한은 유지됩니다.",
+        error: "탈퇴 요청을 보내지 못했습니다.",
+      },
       fields: {
         name: "이름",
         phone: "연락처",

@@ -74,6 +74,18 @@ export const commonEn = {
       saving: "Saving",
       saved: "Profile saved.",
       clearBirthday: "Clear",
+      withdrawal: {
+        title: "Withdrawal request",
+        description: "Requesting withdrawal sends the request to the company admin. Existing access stays unchanged until it is processed.",
+        action: "Request withdrawal",
+        requesting: "Requesting",
+        requested: "Withdrawal request sent.",
+        pending: "Your withdrawal request is pending company-admin review.",
+        withdrawn: "This member account is withdrawn. Work access may be restricted.",
+        companyAdminBlocked: "Company admins cannot request withdrawal from this screen. Use the company or system admin process instead.",
+        confirm: "Send a withdrawal request? Your existing access remains unchanged until the company admin processes it.",
+        error: "Could not send the withdrawal request.",
+      },
       fields: {
         name: "Name",
         phone: "Contact",
