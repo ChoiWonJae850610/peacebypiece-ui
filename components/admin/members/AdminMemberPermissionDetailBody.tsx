@@ -35,6 +35,12 @@ type AdminTranslate = (
   params?: Record<string, string | number>,
 ) => string;
 
+type MemberStatusOption = {
+  value: AdminCompanyMemberRecord["status"];
+  labelKey: string;
+  fallbackLabel: string;
+};
+
 type AdminMemberPermissionDetailBodyProps = {
   t: AdminTranslate;
   draft: MemberPermissionDetailDraft;
@@ -42,6 +48,8 @@ type AdminMemberPermissionDetailBodyProps = {
   selectedRolePreview: AdminMemberRolePreview | null;
   selectedPermissionCount: number;
   manageableRoles: readonly AdminMemberRolePreview[];
+  statusOptions: readonly MemberStatusOption[];
+  onStatusChange: (status: AdminCompanyMemberRecord["status"]) => void;
   onRoleTemplateChange: (roleTemplateCode: MemberPermissionRoleTemplateCode) => void;
   onApplyRoleTemplatePermissions: () => void;
   onToggleSimplePermissionControl: (control: SimplePermissionControl) => void;
@@ -54,6 +62,8 @@ export default function AdminMemberPermissionDetailBody({
   selectedRolePreview,
   selectedPermissionCount,
   manageableRoles,
+  statusOptions,
+  onStatusChange,
   onRoleTemplateChange,
   onApplyRoleTemplatePermissions,
   onToggleSimplePermissionControl,
@@ -97,6 +107,67 @@ export default function AdminMemberPermissionDetailBody({
           </p>
         </div>
       </div>
+
+
+      <AdminModalSection
+        title={t(
+          "memberManagement.detailModal.sections.lifecycle",
+          "멤버 상태",
+        )}
+        description={t(
+          "memberManagement.detailModal.sections.lifecycleDescription",
+          "재직, 비활성, 탈퇴 요청, 탈퇴 완료 상태를 관리합니다. 비활성 또는 탈퇴 완료 멤버는 업무 담당자 후보와 일반 업무 접근에서 제외됩니다.",
+        )}
+      >
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          <label className="grid gap-1.5">
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
+              {t("memberManagement.detailModal.fields.status", "상태")}
+            </span>
+            <AppSelect
+              value={draft.status}
+              onValueChange={(value) =>
+                onStatusChange(value as AdminCompanyMemberRecord["status"])
+              }
+              options={statusOptions.map((option) => ({
+                value: option.value,
+                label: t(option.labelKey, option.fallbackLabel),
+              }))}
+              ariaLabel={t("memberManagement.detailModal.fields.status", "상태")}
+              triggerClassName={adminModalInputClassName}
+            />
+          </label>
+
+          <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
+            <p className="font-semibold pbp-text-primary">
+              {t(
+                "memberManagement.detailModal.lifecycle.statusTitle",
+                "상태 변경 기준",
+              )}
+            </p>
+            <p className="mt-1">
+              {t(
+                "memberManagement.detailModal.lifecycle.statusHelper",
+                "탈퇴 요청은 멤버가 탈퇴 의사를 표시한 상태이고, 탈퇴 완료는 관리자가 처리를 확정한 상태입니다. 실제 저장은 하단 저장 버튼을 눌렀을 때 반영됩니다.",
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {statusOptions.map((option) => (
+            <AdminButton
+              key={option.value}
+              type="button"
+              variant={draft.status === option.value ? "primary" : "secondary"}
+              size="sm"
+              onClick={() => onStatusChange(option.value)}
+            >
+              {t(option.labelKey, option.fallbackLabel)}
+            </AdminButton>
+          ))}
+        </div>
+      </AdminModalSection>
 
       <AdminModalSection
         title={t(

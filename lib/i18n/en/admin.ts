@@ -499,6 +499,9 @@ export const adminEn = {
         profile: "Profile",
         profileDescription:
           "Name and contact are saved against the same-company member record.",
+        lifecycle: "Member status",
+        lifecycleDescription:
+          "Manage active, suspended, withdrawal requested, and withdrawn states. Suspended or withdrawn members are excluded from assignee candidates and normal workspace access.",
         permissions: "Workspace permissions",
         permissionsDescription:
           "Unchecked items remain read-only. Checked items allow writing and management. Stats are always readable by default.",
@@ -508,6 +511,11 @@ export const adminEn = {
         phone: "Contact",
         status: "Status",
         role: "Role",
+      },
+      lifecycle: {
+        statusTitle: "Status-change rule",
+        statusHelper:
+          "Withdrawal requested means the member has asked to leave. Withdrawn means the administrator has finalized the exit. The change is saved only when you press Save.",
       },
       simplePermissions: {
         workorderManage: {

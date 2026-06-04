@@ -514,6 +514,9 @@ export const adminKo = {
         profile: "기본 정보",
         profileDescription:
           "이름과 연락처는 같은 회사 멤버 레코드 기준으로 저장합니다.",
+        lifecycle: "멤버 상태",
+        lifecycleDescription:
+          "재직, 비활성, 탈퇴 요청, 탈퇴 완료 상태를 관리합니다. 비활성 또는 탈퇴 완료 멤버는 업무 담당자 후보와 일반 업무 접근에서 제외됩니다.",
         permissions: "업무 권한",
         permissionsDescription:
           "체크 해제 시 조회만 가능하고, 체크 시 해당 업무의 작성과 관리 작업을 허용합니다. 통계는 기본 조회 권한으로 제공합니다.",
@@ -523,6 +526,11 @@ export const adminKo = {
         phone: "연락처",
         status: "상태",
         role: "역할",
+      },
+      lifecycle: {
+        statusTitle: "상태 변경 기준",
+        statusHelper:
+          "탈퇴 요청은 멤버가 탈퇴 의사를 표시한 상태이고, 탈퇴 완료는 관리자가 처리를 확정한 상태입니다. 실제 저장은 하단 저장 버튼을 눌렀을 때 반영됩니다.",
       },
       simplePermissions: {
         workorderManage: {

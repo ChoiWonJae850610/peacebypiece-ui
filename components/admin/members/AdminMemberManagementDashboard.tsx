@@ -111,12 +111,22 @@ const EDITABLE_MEMBER_STATUS_OPTIONS: readonly MemberStatusOption[] = [
   {
     value: "approved",
     labelKey: "memberManagement.memberDirectory.statuses.approved",
-    fallbackLabel: "사용 중",
+    fallbackLabel: "재직중",
   },
   {
     value: "suspended",
     labelKey: "memberManagement.memberDirectory.statuses.suspended",
     fallbackLabel: "비활성",
+  },
+  {
+    value: "withdrawal_requested",
+    labelKey: "memberManagement.memberDirectory.statuses.withdrawal_requested",
+    fallbackLabel: "탈퇴 요청",
+  },
+  {
+    value: "withdrawn",
+    labelKey: "memberManagement.memberDirectory.statuses.withdrawn",
+    fallbackLabel: "탈퇴 완료",
   },
 ] as const;
 
@@ -630,6 +640,17 @@ export default function AdminMemberManagementDashboard() {
     );
   }
 
+  function handleMemberStatusChange(status: AdminCompanyMemberRecord["status"]) {
+    setMemberDetailDraft((previous) =>
+      previous
+        ? {
+            ...previous,
+            status,
+          }
+        : previous,
+    );
+  }
+
   function handleToggleSimplePermissionControl(control: SimplePermissionControl) {
     setMemberDetailDraft((previous) =>
       previous
@@ -1075,6 +1096,8 @@ export default function AdminMemberManagementDashboard() {
             selectedRolePreview={selectedMemberRolePreview}
             selectedPermissionCount={selectedMemberPermissionCount}
             manageableRoles={manageableRoles}
+            statusOptions={selectedMemberStatusOptions}
+            onStatusChange={handleMemberStatusChange}
             onRoleTemplateChange={handleRoleTemplateChange}
             onApplyRoleTemplatePermissions={handleApplyRoleTemplatePermissions}
             onToggleSimplePermissionControl={handleToggleSimplePermissionControl}
