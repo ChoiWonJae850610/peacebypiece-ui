@@ -2,6 +2,7 @@ import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell
 import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
+import { PolicyAgreementStatusPanel } from "@/components/policies/PolicyAgreementStatusPanel";
 import { CUSTOMER_POLICY_DOCUMENTS, getRequiredPolicyDocumentCount, type CustomerPolicyDocumentCategory } from "@/lib/policies/customerPolicyDocuments";
 
 const categoryTone: Record<CustomerPolicyDocumentCategory, AdminStatusBadgeTone> = {
@@ -54,6 +55,8 @@ export default async function WorkspaceLegalPage() {
           </AdminCard>
         </div>
 
+        <PolicyAgreementStatusPanel />
+
         <div className="grid gap-4 xl:grid-cols-2">
           {CUSTOMER_POLICY_DOCUMENTS.map((document) => (
             <AdminCard key={document.id} as="article" className="p-5">
@@ -86,12 +89,12 @@ export default async function WorkspaceLegalPage() {
         </div>
 
         <AdminCard as="section" className="p-5">
-          <h2 className="text-base font-semibold pbp-text-primary">후속 연결 기준</h2>
+          <h2 className="text-base font-semibold pbp-text-primary">운영 기준</h2>
           <div className="mt-3 grid gap-2 text-sm leading-6 pbp-text-muted md:grid-cols-2">
-            <p>• 정책 문서는 고객 공개 문서와 내부 운영 문서를 분리해 관리합니다.</p>
-            <p>• 정책 버전, 시행일, 필수 동의 여부는 DB화 단계에서 고정 필드로 관리합니다.</p>
-            <p>• 고객사 승인 요청 전 필수 동의 이력을 저장하는 흐름으로 연결합니다.</p>
-            <p>• 중요 정책 변경 시 로그인 후 재동의 화면을 우선 표시하는 구조로 확장합니다.</p>
+            <p>• 고객 공개 문서와 내부 운영 문서는 분리해 관리합니다.</p>
+            <p>• 필수 동의 여부와 동의 이력은 현재 사용자 기준으로 저장합니다.</p>
+            <p>• 고객사 승인 요청 전 필수 동의 확인은 후속 단계에서 연결합니다.</p>
+            <p>• 중요 정책 변경 시 재동의 화면을 우선 표시하는 구조로 확장합니다.</p>
           </div>
         </AdminCard>
       </AdminSection>
