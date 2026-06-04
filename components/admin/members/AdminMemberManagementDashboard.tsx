@@ -354,6 +354,7 @@ export default function AdminMemberManagementDashboard() {
     null,
   );
   const [isSavingMemberDetail, setIsSavingMemberDetail] = useState(false);
+  const [quickUpdatingMemberId, setQuickUpdatingMemberId] = useState<string | null>(null);
   const canCreateInvite = hasEveryMemberPermission(
     { permissionCodes: currentPermissionCodes },
     ["member.invite"],
@@ -474,8 +475,11 @@ export default function AdminMemberManagementDashboard() {
           })),
         onReviewJoinRequest: (request, action) =>
           void handleReviewJoinRequest(request, action),
+        quickUpdatingMemberId,
+        onQuickUpdateMemberStatus: (member, status) =>
+          void handleQuickUpdateMemberStatus(member, status),
       }),
-    [inviteRoleOptions, reviewingJoinRequestId, t, joinRequestRoleDrafts],
+    [inviteRoleOptions, reviewingJoinRequestId, t, joinRequestRoleDrafts, quickUpdatingMemberId],
   );
   const summaryCards = useMemo(
     () =>
@@ -663,6 +667,97 @@ export default function AdminMemberManagementDashboard() {
           }
         : previous,
     );
+  }
+
+  async function handleQuickUpdateMemberStatus(
+    member: AdminCompanyMemberRecord,
+    status: AdminCompanyMemberRecord["status"],
+  ) {
+    if (quickUpdatingMemberId || member.status === status) return;
+    if (
+      status === "withdrawn" &&
+      typeof window !== "undefined" &&
+      !window.confirm(
+        t(
+          "memberManagement.memberDirectory.confirmCompleteWithdrawal",
+          "이 멤버를 탈퇴 완료로 처리할까요? 완료 후에는 업무 접근과 담당자 후보에서 제외됩니다.",
+        ),
+      )
+    ) {
+      return;
+    }
+
+    setQuickUpdatingMemberId(member.id);
+    setFeedbackTone("info");
+    setFeedbackMessage(
+      t(
+        "memberManagement.memberDirectory.feedback.updatingStatus",
+        "멤버 상태를 변경하는 중입니다.",
+      ),
+    );
+
+    try {
+      const response = await fetch(
+        `/api/admin/members/${encodeURIComponent(member.id)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "x-peacebypiece-permissions":
+              "member.read,member.permission.update,member.suspend",
+          },
+          body: JSON.stringify({
+            displayName: member.displayName?.trim() || member.name,
+            phone: member.phone ?? "",
+            status,
+            roleTemplateCode: member.roleTemplateCode,
+            permissionCodes: normalizeSimplePermissionCodes(member.permissionCodes),
+          }),
+        },
+      );
+      const payload = (await response.json()) as MemberUpdateResponse;
+
+      if (!response.ok || !payload.ok || !payload.member) {
+        throw new Error(payload.error ?? "MEMBER_UPDATE_FAILED");
+      }
+
+      setMemberRecords((previous) =>
+        previous.map((record) =>
+          record.id === payload.member!.id ? payload.member! : record,
+        ),
+      );
+      setFeedbackTone("success");
+      setFeedbackMessage(
+        t(
+          "memberManagement.memberDirectory.feedback.statusUpdated",
+          "멤버 상태를 변경했습니다.",
+        ),
+      );
+    } catch (error) {
+      const errorCode = getMemberDetailErrorCode(
+        error instanceof Error ? error.message : "MEMBER_UPDATE_FAILED",
+      );
+      const errorMessageMap: Record<string, string> = {
+        SELF_STATUS_UPDATE_BLOCKED: t(
+          "memberManagement.detailModal.errors.selfStatusBlocked",
+          "본인의 사용 상태는 직접 변경할 수 없습니다.",
+        ),
+        LAST_ADMIN_PERMISSION_REMOVAL_BLOCKED: t(
+          "memberManagement.detailModal.errors.lastAdminBlocked",
+          "마지막 관리자 권한은 제거할 수 없습니다.",
+        ),
+      };
+      setFeedbackTone("danger");
+      setFeedbackMessage(
+        errorMessageMap[errorCode] ??
+          t(
+            "memberManagement.memberDirectory.feedback.statusUpdateFailed",
+            "멤버 상태를 변경하지 못했습니다.",
+          ),
+      );
+    } finally {
+      setQuickUpdatingMemberId(null);
+    }
   }
 
   async function handleSaveMemberDetail() {

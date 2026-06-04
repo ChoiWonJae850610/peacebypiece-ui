@@ -65,6 +65,15 @@ type MemberDirectoryRoleOption = {
 
 type TranslationFn = (key: string, fallback: string) => string;
 
+type MemberQuickStatusAction = {
+  status: AdminCompanyMemberRecord["status"];
+  labelKey: string;
+  fallbackLabel: string;
+  titleKey: string;
+  fallbackTitle: string;
+  variant: "primary" | "secondary" | "danger";
+};
+
 type BuildMemberDirectoryColumnsOptions = {
   t: TranslationFn;
   inviteRoleOptions: readonly MemberDirectoryRoleOption[];
@@ -80,6 +89,11 @@ type BuildMemberDirectoryColumnsOptions = {
     request: MemberDirectoryJoinRequestPreview,
     action: JoinRequestReviewAction,
   ) => void;
+  quickUpdatingMemberId: string | null;
+  onQuickUpdateMemberStatus: (
+    member: AdminCompanyMemberRecord,
+    status: AdminCompanyMemberRecord["status"],
+  ) => void;
 };
 
 function getMemberDirectoryStatusTone(
@@ -92,6 +106,73 @@ function getMemberDirectoryStatusTone(
   return "warning";
 }
 
+
+function getMemberQuickStatusActions(
+  status: MemberDirectoryStatus,
+): readonly MemberQuickStatusAction[] {
+  if (status === "approved") {
+    return [
+      {
+        status: "suspended",
+        labelKey: "memberManagement.memberDirectory.actions.suspendShort",
+        fallbackLabel: "비활성",
+        titleKey: "memberManagement.memberDirectory.actions.suspendTitle",
+        fallbackTitle: "이 멤버를 비활성 상태로 변경합니다.",
+        variant: "secondary",
+      },
+    ];
+  }
+
+  if (status === "suspended") {
+    return [
+      {
+        status: "approved",
+        labelKey: "memberManagement.memberDirectory.actions.restoreShort",
+        fallbackLabel: "재직중",
+        titleKey: "memberManagement.memberDirectory.actions.restoreTitle",
+        fallbackTitle: "이 멤버를 재직중 상태로 복구합니다.",
+        variant: "primary",
+      },
+    ];
+  }
+
+  if (status === "withdrawalRequested") {
+    return [
+      {
+        status: "withdrawn",
+        labelKey: "memberManagement.memberDirectory.actions.completeWithdrawalShort",
+        fallbackLabel: "탈퇴 완료",
+        titleKey: "memberManagement.memberDirectory.actions.completeWithdrawalTitle",
+        fallbackTitle: "이 멤버의 탈퇴 요청을 탈퇴 완료로 처리합니다.",
+        variant: "danger",
+      },
+      {
+        status: "approved",
+        labelKey: "memberManagement.memberDirectory.actions.restoreShort",
+        fallbackLabel: "재직중",
+        titleKey: "memberManagement.memberDirectory.actions.cancelWithdrawalTitle",
+        fallbackTitle: "탈퇴 요청을 취소하고 재직중 상태로 되돌립니다.",
+        variant: "secondary",
+      },
+    ];
+  }
+
+  if (status === "withdrawn") {
+    return [
+      {
+        status: "approved",
+        labelKey: "memberManagement.memberDirectory.actions.restoreShort",
+        fallbackLabel: "재직중",
+        titleKey: "memberManagement.memberDirectory.actions.restoreTitle",
+        fallbackTitle: "이 멤버를 재직중 상태로 복구합니다.",
+        variant: "secondary",
+      },
+    ];
+  }
+
+  return [];
+}
+
 export function buildMemberDirectoryColumns({
   t,
   inviteRoleOptions,
@@ -99,6 +180,8 @@ export function buildMemberDirectoryColumns({
   getJoinRequestReviewRoleId,
   onRoleDraftChange,
   onReviewJoinRequest,
+  quickUpdatingMemberId,
+  onQuickUpdateMemberStatus,
 }: BuildMemberDirectoryColumnsOptions): AdminTableColumn<MemberDirectoryRow, MemberDirectorySortKey>[] {
   return [
     {
@@ -226,6 +309,34 @@ export function buildMemberDirectoryColumns({
             >
               {t("memberManagement.reviewActions.reject", "거절")}
             </AdminButton>
+          </div>
+        ) : row.memberRecord ? (
+          <div
+            className="flex flex-wrap items-center justify-center gap-1.5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {getMemberQuickStatusActions(row.status).map((action) => {
+              const isUpdating = quickUpdatingMemberId === row.memberRecord!.id;
+              return (
+                <AdminButton
+                  key={action.status}
+                  type="button"
+                  variant={action.variant}
+                  size="sm"
+                  className="px-2.5 py-1 text-[11px]"
+                  title={t(action.titleKey, action.fallbackTitle)}
+                  aria-label={t(action.titleKey, action.fallbackTitle)}
+                  disabled={quickUpdatingMemberId !== null}
+                  onClick={() =>
+                    onQuickUpdateMemberStatus(row.memberRecord!, action.status)
+                  }
+                >
+                  {isUpdating
+                    ? t("memberManagement.memberDirectory.actions.updating", "처리 중")
+                    : t(action.labelKey, action.fallbackLabel)}
+                </AdminButton>
+              );
+            })}
           </div>
         ) : (
           <span className="block h-8" aria-hidden="true" />

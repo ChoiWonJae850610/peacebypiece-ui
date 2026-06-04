@@ -663,6 +663,21 @@ export const adminEn = {
       actions: {
         expandList: "Show more members",
         collapseList: "Collapse members",
+        suspendShort: "Suspend",
+        suspendTitle: "Change this member to suspended.",
+        restoreShort: "Active",
+        restoreTitle: "Restore this member to active.",
+        completeWithdrawalShort: "Complete exit",
+        completeWithdrawalTitle: "Finalize this member's withdrawal request.",
+        cancelWithdrawalTitle: "Cancel the withdrawal request and restore this member to active.",
+        updating: "Updating",
+      },
+      confirmCompleteWithdrawal:
+        "Finalize this member's withdrawal? After completion, workspace access and assignee candidacy are blocked.",
+      feedback: {
+        updatingStatus: "Updating member status.",
+        statusUpdated: "Member status updated.",
+        statusUpdateFailed: "Could not update member status.",
       },
       filters: {
         search: "Search",

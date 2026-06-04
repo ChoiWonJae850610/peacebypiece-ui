@@ -677,6 +677,21 @@ export const adminKo = {
       actions: {
         expandList: "멤버 목록 더 보기",
         collapseList: "멤버 목록 접기",
+        suspendShort: "비활성",
+        suspendTitle: "이 멤버를 비활성 상태로 변경합니다.",
+        restoreShort: "재직중",
+        restoreTitle: "이 멤버를 재직중 상태로 복구합니다.",
+        completeWithdrawalShort: "탈퇴 완료",
+        completeWithdrawalTitle: "이 멤버의 탈퇴 요청을 탈퇴 완료로 처리합니다.",
+        cancelWithdrawalTitle: "탈퇴 요청을 취소하고 재직중 상태로 되돌립니다.",
+        updating: "처리 중",
+      },
+      confirmCompleteWithdrawal:
+        "이 멤버를 탈퇴 완료로 처리할까요? 완료 후에는 업무 접근과 담당자 후보에서 제외됩니다.",
+      feedback: {
+        updatingStatus: "멤버 상태를 변경하는 중입니다.",
+        statusUpdated: "멤버 상태를 변경했습니다.",
+        statusUpdateFailed: "멤버 상태를 변경하지 못했습니다.",
       },
       filters: {
         search: "검색",
