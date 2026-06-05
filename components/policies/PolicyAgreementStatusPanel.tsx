@@ -24,9 +24,23 @@ type PolicyAgreementStatus = {
   allRequiredAgreed: boolean;
 };
 
+type PolicyReagreementStatus = {
+  documents: PolicyAgreementDocument[];
+  requiredReagreementCount: number;
+  agreedReagreementCount: number;
+  pendingReagreementCount: number;
+  hasPendingReagreement: boolean;
+};
+
 type PolicyAgreementResponse = {
   ok: boolean;
   status?: PolicyAgreementStatus;
+  message?: string;
+};
+
+type PolicyReagreementResponse = {
+  ok: boolean;
+  status?: PolicyReagreementStatus;
   message?: string;
 };
 
@@ -61,6 +75,164 @@ function getDocumentAgreementLabel(document: PolicyAgreementDocument): string {
   if (document.agreedAt) return "동의 완료";
   if (document.requiredForApproval) return "동의 필요";
   return "선택 문서";
+}
+
+function getReagreementTone(document: PolicyAgreementDocument): AdminStatusBadgeTone {
+  if (document.agreedAt) return "success";
+  return "danger";
+}
+
+function getReagreementLabel(document: PolicyAgreementDocument): string {
+  if (document.agreedAt) return "재동의 완료";
+  return "재동의 필요";
+}
+
+export function PolicyReagreementStatusPanel() {
+  const [status, setStatus] = useState<PolicyReagreementStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function loadStatus() {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/policies/reagreement", { cache: "no-store" });
+      const payload = (await response.json()) as PolicyReagreementResponse;
+      if (!response.ok || !payload.ok || !payload.status) {
+        throw new Error(payload.message || "정책 재동의 필요 상태를 불러오지 못했습니다.");
+      }
+      setStatus(payload.status);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "정책 재동의 필요 상태를 불러오지 못했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function submitReagreement() {
+    if (isSubmitting || !status?.hasPendingReagreement) return;
+    const confirmed = window.confirm("중요 정책 변경사항에 모두 재동의하시겠습니까?");
+    if (!confirmed) return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/policies/reagreement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const payload = (await response.json()) as PolicyReagreementResponse;
+      if (!response.ok || !payload.ok || !payload.status) {
+        throw new Error(payload.message || "정책 재동의 저장에 실패했습니다.");
+      }
+      setStatus(payload.status);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "정책 재동의 저장에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadStatus();
+  }, []);
+
+  if (!isLoading && !errorMessage && status && status.requiredReagreementCount === 0) {
+    return (
+      <AdminCard as="section" className="border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Required Reagreement</p>
+            <h2 className="text-base font-semibold pbp-text-primary">정책 재동의 필요 상태</h2>
+            <p className="mt-1 text-sm leading-6 pbp-text-muted">
+              현재 재동의가 필요한 중요 정책 변경사항은 없습니다.
+            </p>
+          </div>
+          <AdminStatusBadge tone="success">재동의 필요 없음</AdminStatusBadge>
+        </div>
+      </AdminCard>
+    );
+  }
+
+  return (
+    <AdminCard as="section" className="border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">Required Reagreement</p>
+          <h2 className="text-base font-semibold pbp-text-primary">정책 재동의 필요 상태</h2>
+          <p className="mt-1 text-sm leading-6 pbp-text-muted">
+            중요 정책 변경으로 재동의가 필요한 문서를 확인하고, 업무 화면 차단 전에 재동의를 완료합니다.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {status ? (
+            <AdminStatusBadge tone={status.hasPendingReagreement ? "danger" : "success"}>
+              {status.pendingReagreementCount}건 재동의 필요
+            </AdminStatusBadge>
+          ) : null}
+          <AdminButton variant="secondary" size="sm" onClick={loadStatus} disabled={isLoading || isSubmitting}>
+            새로고침
+          </AdminButton>
+        </div>
+      </div>
+
+      {isLoading ? <p className="mt-4 text-sm pbp-text-muted">재동의 필요 상태를 불러오는 중입니다.</p> : null}
+      {errorMessage ? <p className="mt-4 text-sm font-semibold text-[var(--pbp-danger-text)]">{errorMessage}</p> : null}
+
+      {status ? (
+        <div className="mt-5 space-y-4">
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+              <p className="text-xs font-semibold pbp-text-subtle">재동의 대상</p>
+              <p className="mt-2 text-xl font-semibold pbp-text-primary">{status.requiredReagreementCount}건</p>
+            </div>
+            <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+              <p className="text-xs font-semibold pbp-text-subtle">재동의 완료</p>
+              <p className="mt-2 text-xl font-semibold pbp-text-primary">{status.agreedReagreementCount}건</p>
+            </div>
+            <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+              <p className="text-xs font-semibold pbp-text-subtle">남은 재동의</p>
+              <p className="mt-2 text-xl font-semibold pbp-text-primary">{status.pendingReagreementCount}건</p>
+            </div>
+          </div>
+
+          {status.documents.length > 0 ? (
+            <div className="grid gap-3 xl:grid-cols-2">
+              {status.documents.map((document) => (
+                <div key={document.versionId} className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <AdminStatusBadge tone={categoryTone[document.category] ?? "neutral"}>{document.category}</AdminStatusBadge>
+                        <AdminStatusBadge tone="neutral">{document.versionLabel}</AdminStatusBadge>
+                        <AdminStatusBadge tone={getReagreementTone(document)}>{getReagreementLabel(document)}</AdminStatusBadge>
+                      </div>
+                      <p className="mt-2 text-sm font-semibold pbp-text-primary">{document.title}</p>
+                    </div>
+                    <p className="text-xs font-semibold pbp-text-muted">{formatDateTime(document.agreedAt)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm leading-6 pbp-text-muted">
+              {status.hasPendingReagreement
+                ? "재동의가 필요한 정책을 확인한 뒤 전체 재동의를 저장합니다."
+                : "정책 재동의가 완료되었습니다."}
+            </p>
+            <AdminButton variant="primary" size="sm" onClick={submitReagreement} disabled={isSubmitting || !status.hasPendingReagreement}>
+              {isSubmitting ? "저장 중" : status.hasPendingReagreement ? "필수 정책 전체 재동의" : "재동의 완료"}
+            </AdminButton>
+          </div>
+        </div>
+      ) : null}
+    </AdminCard>
+  );
 }
 
 export function PolicyAgreementStatusPanel() {

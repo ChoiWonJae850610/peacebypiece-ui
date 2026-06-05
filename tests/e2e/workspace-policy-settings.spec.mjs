@@ -60,6 +60,33 @@ const agreedPolicyDocuments = policyDocuments.map((document) => ({
   agreedAt: document.requiredForApproval ? "2026-06-04T12:00:00.000Z" : null,
 }));
 
+const pendingReagreementDocuments = [
+  {
+    ...policyDocuments[1],
+    requiresReagreement: true,
+    agreedAt: null,
+  },
+];
+
+const completedReagreementDocuments = pendingReagreementDocuments.map((document) => ({
+  ...document,
+  agreedAt: "2026-06-05T13:00:00.000Z",
+}));
+
+function buildPolicyReagreementStatus(documents) {
+  const requiredReagreementCount = documents.length;
+  const agreedReagreementCount = documents.filter((document) => document.agreedAt).length;
+  const pendingReagreementCount = documents.filter((document) => !document.agreedAt).length;
+
+  return {
+    documents,
+    requiredReagreementCount,
+    agreedReagreementCount,
+    pendingReagreementCount,
+    hasPendingReagreement: pendingReagreementCount > 0,
+  };
+}
+
 function buildPolicyStatus(documents) {
   const requiredCount = documents.filter((document) => document.requiredForApproval).length;
   const agreedRequiredCount = documents.filter((document) => document.requiredForApproval && document.agreedAt).length;
@@ -86,6 +113,18 @@ async function mockPolicyAgreementApis(page) {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ ok: true, status: buildPolicyStatus(agreedPolicyDocuments) }),
+    });
+  });
+
+  await page.route("**/api/policies/reagreement", async (route) => {
+    const isSaveRequest = route.request().method() === "POST";
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        status: buildPolicyReagreementStatus(isSaveRequest ? completedReagreementDocuments : pendingReagreementDocuments),
+      }),
     });
   });
 }
@@ -309,6 +348,12 @@ test.describe("workspace policy and settings smoke", () => {
 
     await expectAnyText(body, ["약관·정책", "약관", "정책"]);
     await expectAnyText(body, ["문서 수", "고객 공개", "필수 동의"]);
+    await expectAnyText(body, ["정책 재동의 필요 상태", "재동의 필요", "필수 정책 전체 재동의"], 15_000);
+
+    const reagreementButton = page.getByRole("button", { name: /필수 정책 전체 재동의/ }).first();
+    if (await clickIfVisible(reagreementButton, 3_000)) {
+      await expectAnyText(body, ["재동의 완료", "정책 재동의가 완료되었습니다."], 15_000);
+    }
 
     const renderedText = await collectBodyText(page);
     const renderedPolicyCount = policyDocuments.filter((document) => renderedText.includes(document.title)).length;

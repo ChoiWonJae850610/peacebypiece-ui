@@ -2,7 +2,7 @@ import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell
 import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
-import { PolicyAgreementStatusPanel } from "@/components/policies/PolicyAgreementStatusPanel";
+import { PolicyAgreementStatusPanel, PolicyReagreementStatusPanel } from "@/components/policies/PolicyAgreementStatusPanel";
 import { CUSTOMER_POLICY_DOCUMENTS, getRequiredPolicyDocumentCount, type CustomerPolicyDocumentCategory } from "@/lib/policies/customerPolicyDocuments";
 
 const categoryTone: Record<CustomerPolicyDocumentCategory, AdminStatusBadgeTone> = {
@@ -27,7 +27,7 @@ export default async function WorkspaceLegalPage() {
       <AdminSection
         eyebrow="WAFL Policy"
         title="고객 공개 약관·정책"
-        description="이 화면은 고객사 관리자와 일반 멤버가 함께 확인하는 정책 문서 열람 영역입니다. 현재는 서비스 초기 공개 문서 기준으로 제공하며, 정책 버전과 동의 이력 저장은 후속 단계에서 연결합니다."
+        description="이 화면은 고객사 관리자와 일반 멤버가 함께 확인하는 정책 문서 열람 영역입니다. 현재는 서비스 초기 공개 문서 기준으로 제공하며, 정책 버전, 동의 이력, 중요 정책 재동의 상태를 함께 확인합니다."
         actions={
           <>
             <AdminStatusBadge tone="brand">고객 공개</AdminStatusBadge>
@@ -54,6 +54,8 @@ export default async function WorkspaceLegalPage() {
             <p className="mt-2 text-sm leading-6 pbp-text-muted">초기 공개 문서 기준입니다. 시행일 확정 후 동의 이력과 연결합니다.</p>
           </AdminCard>
         </div>
+
+        <PolicyReagreementStatusPanel />
 
         <PolicyAgreementStatusPanel />
 
@@ -94,7 +96,7 @@ export default async function WorkspaceLegalPage() {
             <p>• 고객 공개 문서와 내부 운영 문서는 분리해 관리합니다.</p>
             <p>• 필수 동의 여부와 동의 이력은 현재 사용자 기준으로 저장합니다.</p>
             <p>• 고객사 승인 요청 전 필수 동의 확인은 후속 단계에서 연결합니다.</p>
-            <p>• 중요 정책 변경 시 재동의 화면을 우선 표시하는 구조로 확장합니다.</p>
+            <p>• 중요 정책 변경 시 재동의 필요 상태를 먼저 표시하고 후속 버전에서 업무 접근 차단과 연결합니다.</p>
           </div>
         </AdminCard>
       </AdminSection>

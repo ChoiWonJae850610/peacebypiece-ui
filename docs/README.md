@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.01`
+- 기준 앱 버전: `0.20.02`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -88,6 +88,7 @@
 - [policy-version-agreement-db-api-0.19.82.md](policy-version-agreement-db-api-0.19.82.md)
 - [policy-reagreement-blocking-design-0.20.00.md](policy-reagreement-blocking-design-0.20.00.md)
 - [policy-reagreement-db-api-0.20.01.md](policy-reagreement-db-api-0.20.01.md)
+- [policy-reagreement-ui-0.20.02.md](policy-reagreement-ui-0.20.02.md)
 
 ### DB/API smoke
 
@@ -166,3 +167,18 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않고, 사용자가 
 - DB/API smoke test에 재동의 pending/저장 후 해소 계약 추가
 
 상세 문서: [정책 재동의 필요 상태 DB/API 1차 0.20.01](policy-reagreement-db-api-0.20.01.md)
+
+
+## 10. 0.20.02 정책 재동의 안내 UI 1차
+
+`0.20.01`의 재동의 필요 상태 DB/API를 `/workspace/legal` 화면에 연결했다.
+
+- 재동의 필요 상태 패널 추가
+- 재동의 대상/완료/남은 건수 표시
+- 재동의 필요 문서 목록 표시
+- `필수 정책 전체 재동의` 버튼 추가
+- `GET /api/policies/reagreement`, `POST /api/policies/reagreement` 연결
+- Playwright E2E에 재동의 안내/저장 mock 테스트 추가
+- 업무 접근 차단은 아직 연결하지 않음
+
+상세 문서: [정책 재동의 안내 UI 1차 0.20.02](policy-reagreement-ui-0.20.02.md)
