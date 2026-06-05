@@ -6,6 +6,7 @@ import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminBut
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AppSelect } from "@/components/common/ui";
+import SystemCompanyFileReviewPanel from "@/components/system/companies/SystemCompanyFileReviewPanel";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
   SYSTEM_CARD_CLASS,
@@ -773,6 +774,9 @@ export default function SystemCompanyApprovalConsole() {
             </article>
           </div>
         </section>
+
+
+        <SystemCompanyFileReviewPanel />
 
         <section className={SYSTEM_CARD_CLASS}>
           <div className={`flex flex-col gap-3 ${SYSTEM_SECTION_HEADER_CLASS} lg:flex-row lg:items-start lg:justify-between`}>

@@ -860,7 +860,69 @@ async function assertCompanyFilesContract(client) {
     });
   }
 
-  logOk("company files: active file listing, replacement marker, and business registration review status contract");
+  const systemUserId = "smoke-company-files-system-user";
+  await client.query(
+    `INSERT INTO system_users (
+       id,
+       email,
+       name,
+       role,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES ($1, 'smoke-company-files-system@example.test', 'Smoke Company Files System User', 'system_admin', true, now(), now())`,
+    [systemUserId],
+  );
+
+  const approvedResult = await client.query(
+    `UPDATE company_files
+        SET review_status = 'approved',
+            reviewed_by_system_user_id = $2,
+            reviewed_at = now(),
+            rejection_reason = NULL,
+            updated_at = now()
+      WHERE id = $1
+        AND file_type = 'business_registration'
+        AND deleted_at IS NULL
+      RETURNING review_status, reviewed_by_system_user_id, reviewed_at, rejection_reason`,
+    [businessRegistrationId, systemUserId],
+  );
+
+  const approvedRow = approvedResult.rows[0];
+  if (!approvedRow || approvedRow.review_status !== "approved" || approvedRow.reviewed_by_system_user_id !== systemUserId || !approvedRow.reviewed_at || approvedRow.rejection_reason !== null) {
+    throwSmokeError({
+      area: "company files contract",
+      target: "company_files business_registration approval review",
+      message: "business registration approval should store reviewer and reviewed_at while clearing rejection_reason.",
+      next: "check system company file review update contract and company_files_review_status_idx usage.",
+    });
+  }
+
+  const rejectedResult = await client.query(
+    `UPDATE company_files
+        SET review_status = 'rejected',
+            reviewed_by_system_user_id = $2,
+            reviewed_at = now(),
+            rejection_reason = '서류 식별 정보 확인 필요',
+            updated_at = now()
+      WHERE id = $1
+        AND file_type = 'business_registration'
+        AND deleted_at IS NULL
+      RETURNING review_status, reviewed_by_system_user_id, reviewed_at, rejection_reason`,
+    [businessRegistrationId, systemUserId],
+  );
+
+  const rejectedRow = rejectedResult.rows[0];
+  if (!rejectedRow || rejectedRow.review_status !== "rejected" || rejectedRow.reviewed_by_system_user_id !== systemUserId || !rejectedRow.reviewed_at || !rejectedRow.rejection_reason) {
+    throwSmokeError({
+      area: "company files contract",
+      target: "company_files business_registration rejection review",
+      message: "business registration rejection should store reviewer, reviewed_at, and rejection_reason.",
+      next: "check system company file review update contract and company_files_rejection_reason_check constraint.",
+    });
+  }
+
+  logOk("company files: active file listing, replacement marker, business registration review status, and system review update contract");
 }
 
 function logSummary() {

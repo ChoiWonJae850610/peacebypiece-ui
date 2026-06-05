@@ -137,3 +137,4 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않고, 사용자가 
 - 기능 작업 복귀 후 테스트는 자동테스트 중심으로 진행한다.
 
 상세 문서: [문서 정리 마무리 및 자동테스트 복귀 기준 0.19.94.10](docs-cleanup-completion-0.19.94.10.md)
+- [시스템관리자 회사 파일 검토 UI/API 1차](./company-file-review-ui-api-0.19.99.md)
