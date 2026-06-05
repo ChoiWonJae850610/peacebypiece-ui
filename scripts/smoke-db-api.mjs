@@ -679,7 +679,129 @@ async function assertPolicyAgreementContract(client) {
     });
   }
 
-  logOk("policy agreement: required policy agreement save/read/upsert contract");
+  const reagreementDocumentId = "smoke-policy-reagreement-document";
+  const reagreementVersionId = "smoke-policy-reagreement-version";
+
+  await client.query(
+    `INSERT INTO policy_documents (
+       id,
+       document_key,
+       title,
+       category,
+       is_customer_visible,
+       created_at,
+       updated_at
+     ) VALUES ($1, 'smoke-policy-reagreement-required', 'Smoke Reagreement Required Policy', 'privacy', true, now(), now())`,
+    [reagreementDocumentId],
+  );
+
+  await client.query(
+    `INSERT INTO policy_versions (
+       id,
+       policy_document_id,
+       version_label,
+       effective_date_label,
+       is_current,
+       is_required_for_approval,
+       requires_reagreement,
+       content_snapshot,
+       published_at,
+       created_at,
+       updated_at
+     ) VALUES ($1, $2, 'smoke-v2', '재동의 테스트', true, true, true, '{}'::jsonb, now(), now(), now())`,
+    [reagreementVersionId, reagreementDocumentId],
+  );
+
+  const beforeReagreement = await client.query(
+    `SELECT
+       COUNT(*)::int AS required_reagreement_count,
+       COUNT(agreement.id)::int AS agreed_reagreement_count
+     FROM policy_documents document
+     INNER JOIN policy_versions version
+       ON version.policy_document_id = document.id
+      AND version.is_current = true
+     LEFT JOIN policy_agreements agreement
+       ON agreement.policy_version_id = version.id
+      AND agreement.company_id = $1
+      AND agreement.user_id = $2
+     WHERE document.is_customer_visible = true
+       AND version.is_required_for_approval = true
+       AND version.requires_reagreement = true
+       AND document.document_key = 'smoke-policy-reagreement-required'`,
+    [companyId, userId],
+  );
+
+  const beforeReagreementRow = beforeReagreement.rows[0];
+  if (!beforeReagreementRow || beforeReagreementRow.required_reagreement_count !== 1 || beforeReagreementRow.agreed_reagreement_count !== 0) {
+    throwSmokeError({
+      area: "policy reagreement contract",
+      target: "policy_versions.requires_reagreement",
+      message: "required policy reagreement query did not find exactly one pending policy.",
+      next: "check requires_reagreement, current version, required policy, and agreement join conditions.",
+    });
+  }
+
+  await client.query(
+    `INSERT INTO policy_agreements (
+       id,
+       policy_version_id,
+       company_id,
+       user_id,
+       agreement_scope,
+       agreement_source,
+       ip_address,
+       user_agent,
+       agreed_at,
+       created_at
+     ) VALUES (
+       'smoke-policy-reagreement',
+       $1,
+       $2,
+       $3,
+       'user',
+       'smoke_reagreement',
+       NULL,
+       'smoke-db-api',
+       now(),
+       now()
+     )
+     ON CONFLICT (policy_version_id, user_id) DO UPDATE SET
+       agreement_scope = EXCLUDED.agreement_scope,
+       agreement_source = EXCLUDED.agreement_source,
+       agreed_at = EXCLUDED.agreed_at`,
+    [reagreementVersionId, companyId, userId],
+  );
+
+  const afterReagreement = await client.query(
+    `SELECT
+       COUNT(*)::int AS pending_reagreement_count
+     FROM policy_documents document
+     INNER JOIN policy_versions version
+       ON version.policy_document_id = document.id
+      AND version.is_current = true
+     LEFT JOIN policy_agreements agreement
+       ON agreement.policy_version_id = version.id
+      AND agreement.company_id = $1
+      AND agreement.user_id = $2
+     WHERE document.is_customer_visible = true
+       AND version.is_required_for_approval = true
+       AND version.requires_reagreement = true
+       AND agreement.id IS NULL
+       AND document.document_key = 'smoke-policy-reagreement-required'`,
+    [companyId, userId],
+  );
+
+  const afterReagreementRow = afterReagreement.rows[0];
+  if (!afterReagreementRow || afterReagreementRow.pending_reagreement_count !== 0) {
+    throwSmokeError({
+      area: "policy reagreement contract",
+      target: "policy_agreements",
+      message: "policy reagreement save did not clear the pending reagreement query result.",
+      next: "check policy_agreements insertion/upsert for current required policies that require reagreement.",
+    });
+  }
+
+  logOk("policy agreement: required policy agreement save/read/upsert and reagreement contract");
 }
 
 async function assertPartnerNamePhoneContract(client) {

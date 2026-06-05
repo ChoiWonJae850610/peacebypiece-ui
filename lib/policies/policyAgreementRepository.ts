@@ -11,6 +11,7 @@ export type PolicyAgreementDocument = {
   category: string;
   versionId: string;
   versionLabel: string;
+  effectiveDateLabel: string;
   requiredForApproval: boolean;
   requiresReagreement: boolean;
   agreedAt: string | null;
@@ -29,6 +30,7 @@ type CurrentPolicyVersionRow = {
   category: string;
   version_id: string;
   version_label: string;
+  effective_date_label: string;
   is_required_for_approval: boolean;
   requires_reagreement: boolean;
   agreed_at: Date | string | null;
@@ -120,6 +122,7 @@ export async function listCurrentPolicyAgreementStatus(input: {
        document.category,
        version.id AS version_id,
        version.version_label,
+       version.effective_date_label,
        version.is_required_for_approval,
        version.requires_reagreement,
        agreement.agreed_at
@@ -142,6 +145,7 @@ export async function listCurrentPolicyAgreementStatus(input: {
     category: row.category,
     versionId: row.version_id,
     versionLabel: row.version_label,
+    effectiveDateLabel: row.effective_date_label,
     requiredForApproval: row.is_required_for_approval,
     requiresReagreement: row.requires_reagreement,
     agreedAt: row.agreed_at ? toIsoString(row.agreed_at) : null,
@@ -205,4 +209,125 @@ export async function agreeToCurrentRequiredPolicies(input: {
   );
 
   return listCurrentPolicyAgreementStatus({ companyId: input.companyId, userId: input.userId });
+}
+
+export type PolicyReagreementStatus = {
+  documents: PolicyAgreementDocument[];
+  requiredReagreementCount: number;
+  agreedReagreementCount: number;
+  pendingReagreementCount: number;
+  hasPendingReagreement: boolean;
+};
+
+function summarizePolicyReagreementDocuments(documents: PolicyAgreementDocument[]): PolicyReagreementStatus {
+  const requiredReagreementCount = documents.length;
+  const agreedReagreementCount = documents.filter((document) => document.agreedAt).length;
+  const pendingReagreementCount = documents.filter((document) => !document.agreedAt).length;
+
+  return {
+    documents,
+    requiredReagreementCount,
+    agreedReagreementCount,
+    pendingReagreementCount,
+    hasPendingReagreement: pendingReagreementCount > 0,
+  };
+}
+
+export async function listRequiredPolicyReagreementStatus(input: {
+  companyId: string;
+  userId: string;
+}): Promise<PolicyReagreementStatus> {
+  await syncCustomerPolicyDocumentsFromCode();
+
+  const result = await queryDb<CurrentPolicyVersionRow>(
+    `SELECT
+       document.document_key,
+       document.title,
+       document.category,
+       version.id AS version_id,
+       version.version_label,
+       version.effective_date_label,
+       version.is_required_for_approval,
+       version.requires_reagreement,
+       agreement.agreed_at
+     FROM policy_documents document
+     INNER JOIN policy_versions version
+       ON version.policy_document_id = document.id
+      AND version.is_current = true
+     LEFT JOIN policy_agreements agreement
+       ON agreement.policy_version_id = version.id
+      AND agreement.company_id = $1
+      AND agreement.user_id = $2
+     WHERE document.is_customer_visible = true
+       AND version.is_required_for_approval = true
+       AND version.requires_reagreement = true
+     ORDER BY document.created_at ASC, document.document_key ASC`,
+    [input.companyId, input.userId],
+  );
+
+  const documents = result.rows.map((row) => ({
+    documentKey: row.document_key,
+    title: row.title,
+    category: row.category,
+    versionId: row.version_id,
+    versionLabel: row.version_label,
+    effectiveDateLabel: row.effective_date_label,
+    requiredForApproval: row.is_required_for_approval,
+    requiresReagreement: row.requires_reagreement,
+    agreedAt: row.agreed_at ? toIsoString(row.agreed_at) : null,
+  }));
+
+  return summarizePolicyReagreementDocuments(documents);
+}
+
+export async function agreeToRequiredPolicyReagreements(input: {
+  companyId: string;
+  userId: string;
+  agreementSource: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+}): Promise<PolicyReagreementStatus> {
+  await syncCustomerPolicyDocumentsFromCode();
+
+  await queryDb(
+    `INSERT INTO policy_agreements (
+       id,
+       policy_version_id,
+       company_id,
+       user_id,
+       agreement_scope,
+       agreement_source,
+       ip_address,
+       user_agent,
+       agreed_at,
+       created_at
+     )
+     SELECT
+       gen_random_uuid()::text,
+       version.id,
+       $1,
+       $2,
+       'user',
+       $3,
+       $4,
+       $5,
+       now(),
+       now()
+     FROM policy_documents document
+     INNER JOIN policy_versions version
+       ON version.policy_document_id = document.id
+      AND version.is_current = true
+     WHERE document.is_customer_visible = true
+       AND version.is_required_for_approval = true
+       AND version.requires_reagreement = true
+     ON CONFLICT (policy_version_id, user_id) DO UPDATE SET
+       agreement_scope = EXCLUDED.agreement_scope,
+       agreement_source = EXCLUDED.agreement_source,
+       ip_address = EXCLUDED.ip_address,
+       user_agent = EXCLUDED.user_agent,
+       agreed_at = EXCLUDED.agreed_at`,
+    [input.companyId, input.userId, input.agreementSource, input.ipAddress ?? null, input.userAgent ?? null],
+  );
+
+  return listRequiredPolicyReagreementStatus({ companyId: input.companyId, userId: input.userId });
 }

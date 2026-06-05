@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.00`
+- 기준 앱 버전: `0.20.01`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -87,6 +87,7 @@
 - [policy-public-documents-0.19.80.md](policy-public-documents-0.19.80.md)
 - [policy-version-agreement-db-api-0.19.82.md](policy-version-agreement-db-api-0.19.82.md)
 - [policy-reagreement-blocking-design-0.20.00.md](policy-reagreement-blocking-design-0.20.00.md)
+- [policy-reagreement-db-api-0.20.01.md](policy-reagreement-db-api-0.20.01.md)
 
 ### DB/API smoke
 
@@ -152,3 +153,16 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않고, 사용자가 
 - 실제 DB/API/라우팅 차단 구현은 `0.20.01` 이후 단계에서 진행한다.
 
 상세 문서: [정책 강제 재동의/차단 UX 설계 0.20.00](policy-reagreement-blocking-design-0.20.00.md)
+
+## 9. 0.20.01 정책 재동의 필요 상태 DB/API 1차
+
+중요 정책 변경 시 현재 사용자에게 재동의가 필요한 정책 목록을 조회하고, 재동의 완료 기록을 저장하는 DB/API 계약을 추가했다.
+
+- 조회 API: `GET /api/policies/reagreement`
+- 저장 API: `POST /api/policies/reagreement`
+- 기준 필드: `policy_versions.requires_reagreement`
+- 저장 테이블: 기존 `policy_agreements` 사용
+- 신규 DB schema 없음
+- DB/API smoke test에 재동의 pending/저장 후 해소 계약 추가
+
+상세 문서: [정책 재동의 필요 상태 DB/API 1차 0.20.01](policy-reagreement-db-api-0.20.01.md)
