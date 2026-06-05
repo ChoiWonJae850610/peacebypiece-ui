@@ -27,6 +27,7 @@ BEGIN
       ('users', to_regclass('public.users')),
       ('company_users', to_regclass('public.company_users')),
       ('company_onboarding_files', to_regclass('public.company_onboarding_files')),
+      ('company_files', to_regclass('public.company_files')),
       ('role_catalog', to_regclass('public.role_catalog')),
       ('permission_catalog', to_regclass('public.permission_catalog')),
       ('role_permissions', to_regclass('public.role_permissions')),
@@ -212,6 +213,19 @@ BEGIN
       ('company_onboarding_files', 'storage_key'),
       ('company_onboarding_files', 'mime_type'),
       ('company_onboarding_files', 'size_bytes'),
+      ('company_files', 'company_id'),
+      ('company_files', 'file_type'),
+      ('company_files', 'original_name'),
+      ('company_files', 'storage_key'),
+      ('company_files', 'mime_type'),
+      ('company_files', 'size_bytes'),
+      ('company_files', 'review_status'),
+      ('company_files', 'uploaded_by_user_id'),
+      ('company_files', 'reviewed_by_system_user_id'),
+      ('company_files', 'reviewed_at'),
+      ('company_files', 'rejection_reason'),
+      ('company_files', 'replaced_by_file_id'),
+      ('company_files', 'deleted_at'),
       ('permission_catalog', 'permission_group'),
       ('permission_catalog', 'label_key'),
       ('permission_catalog', 'description_key'),
@@ -543,6 +557,9 @@ BEGIN
       ('join_requests_pending_invitation_email_unique'),
       ('company_onboarding_files_company_type_active_idx'),
       ('company_onboarding_files_storage_key_unique'),
+      ('company_files_company_type_active_idx'),
+      ('company_files_storage_key_unique'),
+      ('company_files_review_status_idx'),
       ('company_account_requests_company_status_idx'),
       ('company_account_requests_type_created_idx')
   ) AS required_indexes(index_name)
@@ -632,6 +649,8 @@ DECLARE
   invitation_url_path_exists boolean;
   member_invitation_link_only_valid boolean;
   company_onboarding_file_type_valid boolean;
+  company_file_type_valid boolean;
+  company_file_review_status_valid boolean;
 BEGIN
   SELECT EXISTS (
     SELECT 1
@@ -723,6 +742,42 @@ BEGIN
 
   IF NOT company_onboarding_file_type_valid THEN
     RAISE EXCEPTION 'company_onboarding_files_type_check must allow logo and business_license';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'company_files'
+      AND cc.constraint_name = 'company_files_type_check'
+      AND cc.check_clause LIKE '%representative_image%'
+      AND cc.check_clause LIKE '%business_registration%'
+  ) INTO company_file_type_valid;
+
+  IF NOT company_file_type_valid THEN
+    RAISE EXCEPTION 'company_files_type_check must allow representative_image and business_registration';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'company_files'
+      AND cc.constraint_name = 'company_files_review_status_check'
+      AND cc.check_clause LIKE '%not_required%'
+      AND cc.check_clause LIKE '%pending_review%'
+      AND cc.check_clause LIKE '%approved%'
+      AND cc.check_clause LIKE '%rejected%'
+  ) INTO company_file_review_status_valid;
+
+  IF NOT company_file_review_status_valid THEN
+    RAISE EXCEPTION 'company_files_review_status_check must allow current review statuses';
   END IF;
 END $$;
 

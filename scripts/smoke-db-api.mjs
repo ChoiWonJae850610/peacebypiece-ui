@@ -35,6 +35,7 @@ const REQUIRED_TABLES = [
   "policy_agreements",
   "company_members",
   "partners",
+  "company_files",
 ];
 
 const REQUIRED_COLUMNS = {
@@ -90,6 +91,22 @@ const REQUIRED_COLUMNS = {
     "withdrawn_at",
   ],
   partners: ["id", "company_id", "name", "contact", "contact_person", "email", "memo", "is_active"],
+  company_files: [
+    "id",
+    "company_id",
+    "file_type",
+    "original_name",
+    "storage_key",
+    "mime_type",
+    "size_bytes",
+    "review_status",
+    "uploaded_by_user_id",
+    "reviewed_by_system_user_id",
+    "reviewed_at",
+    "rejection_reason",
+    "replaced_by_file_id",
+    "deleted_at",
+  ],
 };
 
 const CHECK_RESULTS = [];
@@ -742,6 +759,110 @@ async function assertPartnerNamePhoneContract(client) {
   logOk("partners: same name allowed only when normalized phone differs");
 }
 
+async function assertCompanyFilesContract(client) {
+  logStep("company files contract");
+  console.log("  - creating rollback-only representative image and business registration fixtures");
+
+  const companyId = "smoke-company-files-company";
+  const userId = "smoke-company-files-user";
+  const firstImageId = "smoke-company-files-image-a";
+  const replacementImageId = "smoke-company-files-image-b";
+  const businessRegistrationId = "smoke-company-files-business-registration";
+
+  await client.query(
+    `INSERT INTO companies (
+       id,
+       name,
+       onboarding_status,
+       subscription_status,
+       billing_status,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES ($1, 'Smoke Company Files Company', 'active', 'active', 'active', true, now(), now())`,
+    [companyId],
+  );
+
+  await client.query(
+    `INSERT INTO users (
+       id,
+       company_id,
+       email,
+       name,
+       role,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES ($1, $2, 'smoke-company-files-user@example.test', 'Smoke Company Files User', 'admin', true, now(), now())`,
+    [userId, companyId],
+  );
+
+  await client.query(
+    `INSERT INTO company_files (
+       id,
+       company_id,
+       file_type,
+       original_name,
+       storage_key,
+       mime_type,
+       size_bytes,
+       review_status,
+       uploaded_by_user_id
+     ) VALUES
+       ($1, $4, 'representative_image', 'logo-a.png', 'companies/smoke-company-files-company/company-files/representative_image/logo-a.png', 'image/png', 100, 'not_required', $5),
+       ($2, $4, 'representative_image', 'logo-b.png', 'companies/smoke-company-files-company/company-files/representative_image/logo-b.png', 'image/png', 200, 'not_required', $5),
+       ($3, $4, 'business_registration', 'business-registration.pdf', 'companies/smoke-company-files-company/company-files/business_registration/business-registration.pdf', 'application/pdf', 300, 'pending_review', $5)`,
+    [firstImageId, replacementImageId, businessRegistrationId, companyId, userId],
+  );
+
+  await client.query(
+    `UPDATE company_files
+        SET deleted_at = now(),
+            replaced_by_file_id = $2,
+            updated_at = now()
+      WHERE id = $1
+        AND company_id = $3`,
+    [firstImageId, replacementImageId, companyId],
+  );
+
+  const result = await client.query(
+    `SELECT
+       file_type,
+       COUNT(*) FILTER (WHERE deleted_at IS NULL)::int AS active_count,
+       MAX(review_status) FILTER (WHERE file_type = 'business_registration') AS business_review_status,
+       MAX(replaced_by_file_id) FILTER (WHERE id = $2) AS replaced_by_file_id
+     FROM company_files
+     WHERE company_id = $1
+     GROUP BY file_type
+     ORDER BY file_type`,
+    [companyId, firstImageId],
+  );
+
+  const rowsByType = new Map(result.rows.map((row) => [row.file_type, row]));
+  const imageRow = rowsByType.get("representative_image");
+  const businessRegistrationRow = rowsByType.get("business_registration");
+
+  if (!imageRow || imageRow.active_count !== 1 || imageRow.replaced_by_file_id !== replacementImageId) {
+    throwSmokeError({
+      area: "company files contract",
+      target: "company_files representative_image replacement",
+      message: "representative image replacement should keep only one active file and mark the previous file as replaced.",
+      next: "check company file replacement update and company_files_company_type_active_idx usage.",
+    });
+  }
+
+  if (!businessRegistrationRow || businessRegistrationRow.active_count !== 1 || businessRegistrationRow.business_review_status !== "pending_review") {
+    throwSmokeError({
+      area: "company files contract",
+      target: "company_files business_registration review status",
+      message: "business registration file should be stored as pending_review by default.",
+      next: "check company file file_type/review_status defaults and API metadata save contract.",
+    });
+  }
+
+  logOk("company files: active file listing, replacement marker, and business registration review status contract");
+}
+
 function logSummary() {
   console.log("\n[smoke] Summary");
   console.log(`  Passed checks: ${CHECK_RESULTS.length}`);
@@ -777,6 +898,7 @@ async function main() {
       await assertCompanyAccountRequestReviewContract(client);
       await assertPolicyAgreementContract(client);
       await assertPartnerNamePhoneContract(client);
+      await assertCompanyFilesContract(client);
     } finally {
       await client.query("ROLLBACK");
       transactionStarted = false;
