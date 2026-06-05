@@ -1,8 +1,9 @@
 # WAFL / PeaceByPiece 문서 목록
 
+- 0.19.94.4: 패치 자동화 삭제 목록 안전장치 기준을 문서화하고 폴더 삭제 처리 원칙을 정리.
 - 0.19.94.3: 테스트 불가 기간의 문서/SQL/스크립트 정리 후보를 재분류하고 삭제 보류 기준을 문서화.
 - 0.19.33: WAFL Section description action 정렬 보정 — 휴지통 action과 통계 탭 위치를 공통 slot 기준으로 정리.
-- 기준 앱 버전: `0.19.94.3`
+- 기준 앱 버전: `0.19.94.4`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
@@ -127,3 +128,11 @@
 - `db/schema/full_reset.sql`, `db/schema/full_reset_smoke_test.sql`, `db/seed/*`, `db/test/*`는 개발 테스트 기준 파일로 유지한다.
 - `scripts/smoke-db-api.mjs`, Playwright 설정과 E2E 테스트 파일은 현재 자동 테스트 기반이므로 유지한다.
 - `commit-meta.md`는 패치 자동화 산출물이므로 장기적으로 스크립트가 repo root에 남기지 않도록 개선하는 방향이 적절하다.
+## 7. 0.19.94.4 패치 자동화 삭제 안전장치 기준
+
+- 최신 감사 문서: [패치 자동화 삭제 안전장치 0.19.94.4](patch-automation-delete-safety-0.19.94.4.md)
+- 패치 zip의 `삭제 파일 목록`은 파일 경로 중심으로 작성한다.
+- 폴더 삭제는 `playwright-report/`, `test-results/`처럼 생성 산출물 allowlist에 포함된 경우만 별도 clean 단계에서 처리한다.
+- `app/`, `components/`, `lib/`, `db/`, `scripts/`, `features/` 하위 폴더 단위 삭제는 기본 차단한다.
+- PowerShell 확인 프롬프트가 발생할 수 있는 폴더 삭제는 패치 적용 단계에 섞지 않는다.
+
