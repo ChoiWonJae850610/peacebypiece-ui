@@ -22,6 +22,7 @@ import {
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 import { type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 import { type AdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
+import AdminCompanyFilesPanel from "@/components/admin/settings/AdminCompanyFilesPanel";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminCurrentCompanyPayload = {
@@ -330,6 +331,8 @@ function AccountSettingsPanel({
           </div>
         </WaflSettingsSectionGroup>
       </div>
+
+      <AdminCompanyFilesPanel />
 
       {activeRequestAction ? (
         <WaflSettingsSectionGroup

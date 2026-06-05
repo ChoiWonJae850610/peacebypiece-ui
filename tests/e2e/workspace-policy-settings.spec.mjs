@@ -140,6 +140,54 @@ async function mockSettingsApis(page) {
       body: JSON.stringify({ ok: true, requests: [] }),
     });
   });
+
+  await page.route("**/api/admin/company-files", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        files: [
+          {
+            id: "e2e-representative-image",
+            companyId: "company-e2e",
+            fileType: "representative_image",
+            originalName: "대표이미지.png",
+            storageKey: "companies/company-e2e/company-files/representative_image/e2e.png",
+            mimeType: "image/png",
+            sizeBytes: 204800,
+            reviewStatus: "not_required",
+            uploadedByUserId: "user-e2e-admin",
+            reviewedBySystemUserId: null,
+            reviewedAt: null,
+            rejectionReason: null,
+            replacedByFileId: null,
+            createdAt: "2026-06-05T12:00:00.000Z",
+            updatedAt: "2026-06-05T12:00:00.000Z",
+            deletedAt: null,
+          },
+          {
+            id: "e2e-business-registration",
+            companyId: "company-e2e",
+            fileType: "business_registration",
+            originalName: "사업자등록증.pdf",
+            storageKey: "companies/company-e2e/company-files/business_registration/e2e.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 512000,
+            reviewStatus: "pending_review",
+            uploadedByUserId: "user-e2e-admin",
+            reviewedBySystemUserId: null,
+            reviewedAt: null,
+            rejectionReason: null,
+            replacedByFileId: null,
+            createdAt: "2026-06-05T12:00:00.000Z",
+            updatedAt: "2026-06-05T12:00:00.000Z",
+            deletedAt: null,
+          },
+        ],
+      }),
+    });
+  });
 }
 
 async function gotoWorkspacePageOrSkip(page, path, expectedText) {
@@ -209,6 +257,7 @@ test.describe("workspace policy and settings smoke", () => {
     const body = await gotoWorkspacePageOrSkip(page, "/workspace/settings", "환경");
 
     await expectAnyText(body, ["환경설정", "회사 정보", "약관·정책", "기준정보"]);
+    await expectAnyText(body, ["대표 이미지", "사업자등록증", "회사 파일"], 15_000);
 
     const legalEntry = page.getByRole("link", { name: /약관·정책 보기|약관·정책/ }).first();
     const legalButton = page.getByRole("button", { name: /약관·정책/ }).first();
