@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import AdminCompanyAccessGate from "@/components/admin/billing/AdminCompanyAccessGate";
 import AdminCompanyOnboardingGate from "@/components/admin/companies/AdminCompanyOnboardingGate";
+import PolicyReagreementAccessGate from "@/components/policies/PolicyReagreementAccessGate";
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 import { getCompanyAccessState } from "@/lib/billing/companyAccessRepository";
 
@@ -20,7 +21,7 @@ export default async function WorkspaceLayout({ children }: { children: ReactNod
           accessBlocked: accessState.accessBlocked,
         } : null}
       >
-        {children}
+        <PolicyReagreementAccessGate>{children}</PolicyReagreementAccessGate>
       </AdminCompanyOnboardingGate>
     </AdminCompanyAccessGate>
   );

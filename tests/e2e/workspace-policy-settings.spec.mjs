@@ -129,7 +129,20 @@ async function mockPolicyAgreementApis(page) {
   });
 }
 
-async function mockSettingsApis(page) {
+async function mockSettingsApis(page, options = {}) {
+  const hasPendingPolicyReagreement = Boolean(options.hasPendingPolicyReagreement);
+
+  await page.route("**/api/policies/reagreement", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        status: buildPolicyReagreementStatus(hasPendingPolicyReagreement ? pendingReagreementDocuments : completedReagreementDocuments),
+      }),
+    });
+  });
+
   const companyFiles = [
     {
       id: "e2e-representative-image",
@@ -399,6 +412,18 @@ test.describe("workspace policy and settings smoke", () => {
     } else {
       await expectAnyText(body, ["약관·정책", "환경설정"], 15_000);
     }
+  });
+
+  test("workspace business pages are blocked while policy reagreement is pending", async ({ context, page }) => {
+    const session = await addWaflSessionCookie(context, buildCompanyAdminSession());
+    test.skip(!session.ok, session.reason);
+
+    await mockSettingsApis(page, { hasPendingPolicyReagreement: true });
+    const body = await gotoWorkspacePageOrSkip(page, "/workspace/settings", "정책 재동의가 필요합니다");
+
+    await expectAnyText(body, ["정책 재동의가 필요합니다", "약관·정책 확인하기", "업무 화면 사용을 잠시 제한"], 15_000);
+    await expect(page.getByRole("link", { name: /약관·정책 확인하기/ })).toHaveAttribute("href", /\/workspace\/legal/);
+    await expectAnyText(body, ["로그아웃", "고객지원 문의"], 15_000);
   });
 
   test("workspace topbar exposes a logout action", async ({ context, page }) => {
