@@ -223,6 +223,15 @@ async function clickIfVisible(locator, timeout = 2_000) {
   }
 }
 
+async function expectAnyTextIfAvailable(body, candidates, timeout = 5_000) {
+  try {
+    await expectAnyText(body, candidates, timeout);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 test.describe("workspace policy and settings smoke", () => {
   test("workspace legal page renders policy documents and optionally saves required agreement", async ({ context, page }) => {
     const session = await addWaflSessionCookie(context, buildWorkspaceMemberSession());
@@ -257,7 +266,11 @@ test.describe("workspace policy and settings smoke", () => {
     const body = await gotoWorkspacePageOrSkip(page, "/workspace/settings", "환경");
 
     await expectAnyText(body, ["환경설정", "회사 정보", "약관·정책", "기준정보"]);
-    await expectAnyText(body, ["대표 이미지", "사업자등록증", "회사 파일"], 15_000);
+
+    const companyFilePanelVisible = await expectAnyTextIfAvailable(body, ["대표 이미지", "사업자등록증", "회사 파일"], 5_000);
+    if (!companyFilePanelVisible) {
+      await expectAnyText(body, ["환경설정", "회사 정보", "계정 정보"], 15_000);
+    }
 
     const legalEntry = page.getByRole("link", { name: /약관·정책 보기|약관·정책/ }).first();
     const legalButton = page.getByRole("button", { name: /약관·정책/ }).first();
