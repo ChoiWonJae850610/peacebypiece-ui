@@ -265,7 +265,7 @@ test.describe("workspace policy and settings smoke", () => {
     if (await legalEntry.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await expect(legalEntry).toHaveAttribute("href", /\/workspace\/legal/);
     } else if (await clickIfVisible(legalButton, 3_000)) {
-      await expectAnyText(body, ["약관·정책", "고객 공개", "조회 대상 문서"], 15_000);
+      await expectAnyText(body, ["약관·정책", "정책 관리", "정책 문서", "고객 공개", "조회 대상 문서"], 15_000);
     } else {
       await expectAnyText(body, ["약관·정책", "환경설정"], 15_000);
     }
