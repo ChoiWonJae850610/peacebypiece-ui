@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.19.94.10`
+- 기준 앱 버전: `0.19.98`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -62,6 +62,10 @@
 - [company-account-request-system-reviewer-0.19.77.md](company-account-request-system-reviewer-0.19.77.md)
 - [company-approval-required-policy-agreement-0.19.84.md](company-approval-required-policy-agreement-0.19.84.md)
 - [company-file-upload-design-0.19.94.md](company-file-upload-design-0.19.94.md)
+- [company-files-db-api-0.19.95.md](company-files-db-api-0.19.95.md)
+- [company-files-ui-0.19.96.md](company-files-ui-0.19.96.md)
+- [company-files-r2-upload-0.19.97.md](company-files-r2-upload-0.19.97.md)
+- [company-file-review-design-0.19.98.md](company-file-review-design-0.19.98.md)
 - [customer-settings-feature-design-0.19.72.md](customer-settings-feature-design-0.19.72.md)
 - [customer-settings-request-history-0.19.73.md](customer-settings-request-history-0.19.73.md)
 - [member-directory-quick-status-actions-0.19.71.md](member-directory-quick-status-actions-0.19.71.md)
