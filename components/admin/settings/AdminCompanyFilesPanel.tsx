@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
@@ -21,6 +21,32 @@ type CompanyFilesPayload = {
   error?: string;
 };
 
+type CompanyFileUploadPayload = {
+  ok?: boolean;
+  error?: string;
+  message?: string;
+  file?: {
+    fileType: CompanyFileType;
+    originalName: string;
+    mimeType: string;
+    sizeBytes: number;
+    storageKey: string;
+  };
+  upload?: {
+    url: string;
+    method: "PUT";
+    headers: Record<string, string>;
+    expiresInSeconds: number;
+  };
+};
+
+type CompanyFileSavePayload = {
+  ok?: boolean;
+  file?: CompanyFileMetadata;
+  error?: string;
+  message?: string;
+};
+
 type CompanyFileSlotViewModel = {
   fileType: CompanyFileType;
   title: string;
@@ -28,16 +54,18 @@ type CompanyFileSlotViewModel = {
   actionLabel: string;
   emptyLabel: string;
   reviewRequired: boolean;
+  accept: string;
   file: CompanyFileMetadata | null;
 };
 
-const fileTypeCopy: Record<CompanyFileType, { title: string; description: string; actionLabel: string; emptyLabel: string; reviewRequired: boolean }> = {
+const fileTypeCopy: Record<CompanyFileType, { title: string; description: string; actionLabel: string; emptyLabel: string; reviewRequired: boolean; accept: string }> = {
   representative_image: {
     title: "대표 이미지",
     description: "고객사 프로필, 시스템관리자 검토 화면, 향후 공개 문서에 표시할 회사 대표 이미지를 준비합니다.",
     actionLabel: "대표 이미지 등록/변경",
     emptyLabel: "등록된 대표 이미지 없음",
     reviewRequired: false,
+    accept: "image/jpeg,image/png,image/webp",
   },
   business_registration: {
     title: "사업자등록증",
@@ -45,6 +73,7 @@ const fileTypeCopy: Record<CompanyFileType, { title: string; description: string
     actionLabel: "사업자등록증 등록/변경",
     emptyLabel: "등록된 사업자등록증 없음",
     reviewRequired: true,
+    accept: "image/jpeg,image/png,image/webp,application/pdf",
   },
 };
 
@@ -79,13 +108,29 @@ function findFile(files: CompanyFileMetadata[], fileType: CompanyFileType): Comp
   return files.find((file) => file.fileType === fileType) ?? null;
 }
 
+function getUploadErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error || "회사 파일 업로드에 실패했습니다.");
+}
+
 export default function AdminCompanyFilesPanel() {
   const t = useAdminTranslation();
   const [files, setFiles] = useState<CompanyFileMetadata[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
+  const [uploadingType, setUploadingType] = useState<CompanyFileType | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastTone, setToastTone] = useState<ToastTone>("info");
   const [toastEventKey, setToastEventKey] = useState(0);
+  const inputRefs = useRef<Record<CompanyFileType, HTMLInputElement | null>>({
+    representative_image: null,
+    business_registration: null,
+  });
+
+  const showToast = useCallback((message: string, tone: ToastTone = "info") => {
+    setToastTone(tone);
+    setToastEventKey((currentKey) => currentKey + 1);
+    setToastMessage(message);
+  }, []);
 
   const loadFiles = useCallback(() => {
     setLoadState("loading");
@@ -117,29 +162,78 @@ export default function AdminCompanyFilesPanel() {
     }));
   }, [files]);
 
-  const showUploadPendingToast = (fileType: CompanyFileType) => {
-    const copy = fileTypeCopy[fileType];
-    setToastTone("info");
-    setToastEventKey((currentKey) => currentKey + 1);
-    setToastMessage(
-      t(
-        "settings.companyFiles.uploadPending",
-        `${copy.title} 업로드는 R2 연결 버전에서 활성화됩니다. 현재는 DB/API 상태 조회와 화면 표시만 확인합니다.`,
-      ),
-    );
+  const openFilePicker = (fileType: CompanyFileType) => {
+    inputRefs.current[fileType]?.click();
   };
 
-  const panelBadgeTone: AdminStatusBadgeTone = loadState === "failed" ? "warning" : "neutral";
-  const panelBadgeLabel = loadState === "loading" ? t("common.loadingShort", "조회 중") : loadState === "failed" ? t("common.loadFailed", "조회 실패") : t("settings.companyFiles.badge", "DB/API 연결");
+  const uploadCompanyFile = async (fileType: CompanyFileType, selectedFile: File) => {
+    setUploadingType(fileType);
+    try {
+      const prepareResponse = await fetch("/api/admin/company-files/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileType,
+          originalName: selectedFile.name,
+          mimeType: selectedFile.type || "application/octet-stream",
+          sizeBytes: selectedFile.size,
+        }),
+      });
+      const preparePayload = (await prepareResponse.json().catch(() => null)) as CompanyFileUploadPayload | null;
+      if (!prepareResponse.ok || !preparePayload?.ok || !preparePayload.file || !preparePayload.upload) {
+        throw new Error(preparePayload?.message || preparePayload?.error || "COMPANY_FILE_UPLOAD_PREPARE_FAILED");
+      }
+
+      const uploadResponse = await fetch(preparePayload.upload.url, {
+        method: preparePayload.upload.method,
+        headers: preparePayload.upload.headers,
+        body: selectedFile,
+      });
+      if (!uploadResponse.ok) {
+        throw new Error("COMPANY_FILE_R2_UPLOAD_FAILED");
+      }
+
+      const saveResponse = await fetch("/api/admin/company-files", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(preparePayload.file),
+      });
+      const savePayload = (await saveResponse.json().catch(() => null)) as CompanyFileSavePayload | null;
+      if (!saveResponse.ok || !savePayload?.ok || !savePayload.file) {
+        throw new Error(savePayload?.message || savePayload?.error || "COMPANY_FILE_METADATA_SAVE_FAILED");
+      }
+
+      showToast(t("settings.companyFiles.uploadSuccess", "회사 파일을 업로드했습니다."), "success");
+      loadFiles();
+    } catch (error) {
+      showToast(getUploadErrorMessage(error), "danger");
+    } finally {
+      setUploadingType(null);
+    }
+  };
+
+  const handleFileChange = (fileType: CompanyFileType, selectedFile: File | null) => {
+    if (!selectedFile) return;
+    void uploadCompanyFile(fileType, selectedFile);
+  };
+
+  const panelBadgeTone: AdminStatusBadgeTone = loadState === "failed" ? "warning" : uploadingType ? "info" : "neutral";
+  const panelBadgeLabel = uploadingType
+    ? t("common.savingShort", "저장 중")
+    : loadState === "loading"
+      ? t("common.loadingShort", "조회 중")
+      : loadState === "failed"
+        ? t("common.loadFailed", "조회 실패")
+        : t("settings.companyFiles.badge", "R2 업로드 연결");
 
   return (
     <WaflSettingsSectionGroup
       eyebrow={t("settings.companyFiles.eyebrow", "회사 파일")}
       title={t("settings.companyFiles.title", "대표 이미지·사업자등록증")}
-      description={t("settings.companyFiles.description", "회사 정보 화면에서 필요한 파일 상태를 먼저 표시합니다. 실제 R2 업로드는 다음 단계에서 연결합니다.")}
+      description={t("settings.companyFiles.description", "회사 정보 화면에서 필요한 대표 이미지와 사업자등록증을 업로드하고 현재 등록 상태를 확인합니다.")}
       badge={<AdminStatusBadge tone={panelBadgeTone} size="xs">{panelBadgeLabel}</AdminStatusBadge>}
       tone="info"
-      footer={t("settings.companyFiles.footer", "이 버전은 UI 1차입니다. 파일 선택·R2 업로드·미리보기 다운로드는 후속 버전에서 연결합니다.")}
+      footer={t("settings.companyFiles.footer", "대표 이미지는 검토 없이 저장되고, 사업자등록증은 시스템관리자 검토 필요 상태로 저장됩니다.")}
     >
       <div className="grid gap-3 lg:grid-cols-2">
         {slots.map((slot) => {
@@ -149,6 +243,7 @@ export default function AdminCompanyFilesPanel() {
           const description = file
             ? `${formatFileSize(file.sizeBytes)} · ${file.mimeType || "파일 형식 미확인"} · 등록일 ${formatFileDate(file.createdAt)}`
             : slot.description;
+          const isUploading = uploadingType === slot.fileType;
 
           return (
             <WaflSettingCard
@@ -169,9 +264,31 @@ export default function AdminCompanyFilesPanel() {
               tone={file?.reviewStatus === "rejected" ? "danger" : slot.reviewRequired ? "warning" : "info"}
               density="compact"
               actions={
-                <AdminButton type="button" size="sm" variant="secondary" onClick={() => showUploadPendingToast(slot.fileType)}>
-                  {file ? t("settings.companyFiles.replace", "변경") : t("settings.companyFiles.register", "등록")}
-                </AdminButton>
+                <>
+                  <input
+                    ref={(element) => {
+                      inputRefs.current[slot.fileType] = element;
+                    }}
+                    type="file"
+                    className="hidden"
+                    accept={slot.accept}
+                    disabled={Boolean(uploadingType)}
+                    onChange={(event) => {
+                      const selectedFile = event.currentTarget.files?.[0] ?? null;
+                      event.currentTarget.value = "";
+                      handleFileChange(slot.fileType, selectedFile);
+                    }}
+                  />
+                  <AdminButton
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={Boolean(uploadingType)}
+                    onClick={() => openFilePicker(slot.fileType)}
+                  >
+                    {isUploading ? t("common.savingShort", "저장 중") : file ? t("settings.companyFiles.replace", "변경") : t("settings.companyFiles.register", "등록")}
+                  </AdminButton>
+                </>
               }
             />
           );

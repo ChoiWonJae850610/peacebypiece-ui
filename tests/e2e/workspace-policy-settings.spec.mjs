@@ -91,6 +91,45 @@ async function mockPolicyAgreementApis(page) {
 }
 
 async function mockSettingsApis(page) {
+  const companyFiles = [
+    {
+      id: "e2e-representative-image",
+      companyId: "company-e2e",
+      fileType: "representative_image",
+      originalName: "대표이미지.png",
+      storageKey: "companies/company-e2e/company-files/representative_image/e2e.png",
+      mimeType: "image/png",
+      sizeBytes: 204800,
+      reviewStatus: "not_required",
+      uploadedByUserId: "user-e2e-admin",
+      reviewedBySystemUserId: null,
+      reviewedAt: null,
+      rejectionReason: null,
+      replacedByFileId: null,
+      createdAt: "2026-06-05T12:00:00.000Z",
+      updatedAt: "2026-06-05T12:00:00.000Z",
+      deletedAt: null,
+    },
+    {
+      id: "e2e-business-registration",
+      companyId: "company-e2e",
+      fileType: "business_registration",
+      originalName: "사업자등록증.pdf",
+      storageKey: "companies/company-e2e/company-files/business_registration/e2e.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: 512000,
+      reviewStatus: "pending_review",
+      uploadedByUserId: "user-e2e-admin",
+      reviewedBySystemUserId: null,
+      reviewedAt: null,
+      rejectionReason: null,
+      replacedByFileId: null,
+      createdAt: "2026-06-05T12:00:00.000Z",
+      updatedAt: "2026-06-05T12:00:00.000Z",
+      deletedAt: null,
+    },
+  ];
+
   await page.route("**/api/admin/companies/current", async (route) => {
     await route.fulfill({
       status: 200,
@@ -141,51 +180,77 @@ async function mockSettingsApis(page) {
     });
   });
 
-  await page.route("**/api/admin/company-files", async (route) => {
+  await page.route("**/api/admin/company-files/upload", async (route) => {
+    const request = route.request();
+    const body = request.postDataJSON();
+    const fileType = body?.fileType || "representative_image";
+    const originalName = body?.originalName || "e2e-upload.png";
+    const mimeType = body?.mimeType || "image/png";
+    const sizeBytes = Number(body?.sizeBytes || 0);
     await route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
         ok: true,
-        files: [
-          {
-            id: "e2e-representative-image",
-            companyId: "company-e2e",
-            fileType: "representative_image",
-            originalName: "대표이미지.png",
-            storageKey: "companies/company-e2e/company-files/representative_image/e2e.png",
-            mimeType: "image/png",
-            sizeBytes: 204800,
-            reviewStatus: "not_required",
-            uploadedByUserId: "user-e2e-admin",
-            reviewedBySystemUserId: null,
-            reviewedAt: null,
-            rejectionReason: null,
-            replacedByFileId: null,
-            createdAt: "2026-06-05T12:00:00.000Z",
-            updatedAt: "2026-06-05T12:00:00.000Z",
-            deletedAt: null,
-          },
-          {
-            id: "e2e-business-registration",
-            companyId: "company-e2e",
-            fileType: "business_registration",
-            originalName: "사업자등록증.pdf",
-            storageKey: "companies/company-e2e/company-files/business_registration/e2e.pdf",
-            mimeType: "application/pdf",
-            sizeBytes: 512000,
-            reviewStatus: "pending_review",
-            uploadedByUserId: "user-e2e-admin",
-            reviewedBySystemUserId: null,
-            reviewedAt: null,
-            rejectionReason: null,
-            replacedByFileId: null,
-            createdAt: "2026-06-05T12:00:00.000Z",
-            updatedAt: "2026-06-05T12:00:00.000Z",
-            deletedAt: null,
-          },
-        ],
+        file: {
+          fileType,
+          originalName,
+          mimeType,
+          sizeBytes,
+          storageKey: `companies/company-e2e/company-files/${fileType}/e2e-uploaded.png`,
+        },
+        upload: {
+          url: "https://r2-company-file-upload.example.test/e2e-uploaded.png",
+          method: "PUT",
+          headers: { "Content-Type": mimeType },
+          expiresInSeconds: 600,
+        },
       }),
+    });
+  });
+
+  await page.route("https://r2-company-file-upload.example.test/**", async (route) => {
+    await route.fulfill({ status: 200, body: "" });
+  });
+
+  await page.route("**/api/admin/company-files", async (route) => {
+    const request = route.request();
+    if (request.method() === "POST") {
+      const body = request.postDataJSON();
+      const savedFile = {
+        id: "e2e-uploaded-company-file",
+        companyId: "company-e2e",
+        fileType: body.fileType,
+        originalName: body.originalName,
+        storageKey: body.storageKey,
+        mimeType: body.mimeType,
+        sizeBytes: Number(body.sizeBytes || 0),
+        reviewStatus: body.fileType === "business_registration" ? "pending_review" : "not_required",
+        uploadedByUserId: "user-e2e-admin",
+        reviewedBySystemUserId: null,
+        reviewedAt: null,
+        rejectionReason: null,
+        replacedByFileId: null,
+        createdAt: "2026-06-05T12:10:00.000Z",
+        updatedAt: "2026-06-05T12:10:00.000Z",
+        deletedAt: null,
+      };
+      const existingIndex = companyFiles.findIndex((file) => file.fileType === savedFile.fileType);
+      if (existingIndex >= 0) companyFiles.splice(existingIndex, 1, savedFile);
+      else companyFiles.push(savedFile);
+
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, file: savedFile }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, files: companyFiles }),
     });
   });
 }
@@ -268,7 +333,14 @@ test.describe("workspace policy and settings smoke", () => {
     await expectAnyText(body, ["환경설정", "회사 정보", "약관·정책", "기준정보"]);
 
     const companyFilePanelVisible = await expectAnyTextIfAvailable(body, ["대표 이미지", "사업자등록증", "회사 파일"], 5_000);
-    if (!companyFilePanelVisible) {
+    if (companyFilePanelVisible) {
+      await page.locator('input[type="file"][accept*="image/png"]').first().setInputFiles({
+        name: "e2e-new-logo.png",
+        mimeType: "image/png",
+        buffer: Buffer.from("e2e-company-file"),
+      });
+      await expectAnyText(body, ["e2e-new-logo.png", "회사 파일을 업로드했습니다."], 15_000);
+    } else {
       await expectAnyText(body, ["환경설정", "회사 정보", "계정 정보"], 15_000);
     }
 

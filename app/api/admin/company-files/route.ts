@@ -5,8 +5,8 @@ import {
   createOrReplaceCompanyFileMetadata,
   listActiveCompanyFiles,
 } from "@/lib/admin/settings/companyFileRepository";
-import type { CompanyFileType } from "@/lib/admin/settings/companyFileTypes";
 import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
+import { COMPANY_FILE_ERROR_CODES, isCompanyFileStorageKeyForCompany, validateCompanyFileUploadInput } from "@/lib/admin/settings/companyFilePolicy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,13 +62,35 @@ export async function POST(request: Request) {
 
   try {
     const body = await readBody(request);
+    const validation = validateCompanyFileUploadInput({
+      fileType: body.fileType,
+      originalName: body.originalName,
+      mimeType: body.mimeType,
+      sizeBytes: body.sizeBytes,
+    });
+
+    if (!validation.ok) {
+      return NextResponse.json(
+        { ok: false, error: "ADMIN_COMPANY_FILE_INVALID_INPUT", message: validation.error },
+        { status: 400, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
+    const storageKey = String(body.storageKey ?? "").trim();
+    if (!isCompanyFileStorageKeyForCompany({ key: storageKey, companyId: scopeResult.companyScope.companyId, fileType: validation.fileType })) {
+      return NextResponse.json(
+        { ok: false, error: "ADMIN_COMPANY_FILE_INVALID_INPUT", message: COMPANY_FILE_ERROR_CODES.invalidStorageKey },
+        { status: 400, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
     const file = await createOrReplaceCompanyFileMetadata({
       companyId: scopeResult.companyScope.companyId,
-      fileType: body.fileType as CompanyFileType,
-      originalName: body.originalName ?? "",
-      storageKey: body.storageKey ?? "",
-      mimeType: body.mimeType ?? "",
-      sizeBytes: body.sizeBytes ?? 0,
+      fileType: validation.fileType,
+      originalName: validation.originalName,
+      storageKey,
+      mimeType: validation.mimeType,
+      sizeBytes: validation.sizeBytes,
       uploadedByUserId: scopeResult.companyScope.userId,
     });
 
