@@ -75,3 +75,6 @@ service-account*.json
 credentials*.json
 # local generated demo files
 .tmp/
+# local Playwright outputs
+/playwright-report/
+/test-results/
