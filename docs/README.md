@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.19.98`
+- 기준 앱 버전: `0.20.00`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -86,6 +86,7 @@
 - [policy-document-management-design-0.19.79.md](policy-document-management-design-0.19.79.md)
 - [policy-public-documents-0.19.80.md](policy-public-documents-0.19.80.md)
 - [policy-version-agreement-db-api-0.19.82.md](policy-version-agreement-db-api-0.19.82.md)
+- [policy-reagreement-blocking-design-0.20.00.md](policy-reagreement-blocking-design-0.20.00.md)
 
 ### DB/API smoke
 
@@ -138,3 +139,16 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않고, 사용자가 
 
 상세 문서: [문서 정리 마무리 및 자동테스트 복귀 기준 0.19.94.10](docs-cleanup-completion-0.19.94.10.md)
 - [시스템관리자 회사 파일 검토 UI/API 1차](./company-file-review-ui-api-0.19.99.md)
+
+
+## 8. 0.20.00 정책 강제 재동의/차단 UX 설계
+
+중요 정책 변경 시 사용자에게 재동의를 요구하고, 미동의 상태에서는 업무 화면 진입을 제한하는 UX 기준을 문서화했다.
+
+- 재동의 대상: `policy_versions.requires_reagreement = true`인 활성 필수 정책
+- 차단 대상: 고객사 관리자와 일반 멤버의 업무 화면
+- 예외 허용: 정책 열람, 재동의 제출, 로그아웃, 고객지원 안내
+- 시스템관리자 운영 화면은 별도 정책으로 분리 검토
+- 실제 DB/API/라우팅 차단 구현은 `0.20.01` 이후 단계에서 진행한다.
+
+상세 문서: [정책 강제 재동의/차단 UX 설계 0.20.00](policy-reagreement-blocking-design-0.20.00.md)
