@@ -1,9 +1,9 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.19.36`
+- 기준 앱 버전: `0.19.94.3`
 - 0.19.36: WAFL 공통 폭/회전 기준 보정 — 멤버관리도 Page Hero/Section/DataTable 공통 폭 규칙을 직접 타도록 정리하고 태블릿 회전 재측정을 강화
 - 프로젝트 성격: 의류 생산·작업지시서·원단/부자재 발주·고객사 운영을 관리하는 WAFL 웹 UI
-- 현재 작업 상태: 0.18.99 이후 사용자가 테스트 가능하다고 명시했으므로, 리팩토링 패치마다 화면별 테스트 위치와 변경 금지 항목을 함께 관리한다.
+- 현재 작업 상태: 0.19.94.3 기준으로 테스트 불가 기간에 맞춰 기능 코드보다 문서/소스 구조 점검과 안전한 산출물 정리를 우선한다.
 - 리팩토링 작업 원칙: 저위험 공통 formatter/helper부터 실제 코드에 점진 적용하고, DB/API/R2/권한/상태 흐름은 직접 목표가 아니면 변경하지 않는다.
 
 ## 개발 실행
@@ -141,3 +141,11 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - WAFL section description action slot alignment refined.
 - Storage trash actions stay on the description line but align to the section right edge.
 - Statistics analysis tabs return to the description-line action position above the divider.
+
+## 0.19.94 파일 구조 정리 기준
+
+- 0.19.94.1: 프로젝트 파일 구조 감사와 Playwright 산출물 제외 규칙을 추가했다.
+- 0.19.94.2: Playwright 생성 산출물과 미사용 public 기본 SVG 정리를 반영했다.
+- 0.19.94.3: 남은 문서/SQL/스크립트 정리 후보를 재분류하고, 테스트 불가 기간에는 삭제보다 현행/보관/보류 분류를 우선하기로 했다.
+- 폴더 단위 삭제는 패치 스크립트에서 위험할 수 있으므로 commit-meta 삭제 목록에는 원칙적으로 실제 파일만 넣는다.
+- `playwright-report/`, `test-results/`, `.next/`, `.tmp/` 같은 생성 산출물은 `.gitignore`와 별도 clean 단계로 관리한다.

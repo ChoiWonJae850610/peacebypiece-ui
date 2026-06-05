@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 0.19.36: WAFL 공통 폭/회전 기준 보정 — 멤버관리 전용 wrapper를 줄이고 태블릿 회전 후 responsive 폭 재측정을 강화.
+- 0.19.94.3: 테스트 불가 기간의 문서/SQL/스크립트 정리 후보를 재분류하고 삭제 보류 기준을 문서화.
 - 0.19.33: WAFL Section description action 정렬 보정 — 휴지통 action과 통계 탭 위치를 공통 slot 기준으로 정리.
-- 기준 앱 버전: `0.19.36`
+- 기준 앱 버전: `0.19.94.3`
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 DB/API/R2/권한/상태 흐름을 건드리지 않는 저위험 정리 작업을 우선한다.
 
 ## 1. 현재 기준 문서
@@ -118,3 +118,12 @@
 - WAFL section description action slot alignment refined.
 - Storage trash actions stay on the description line but align to the section right edge.
 - Statistics analysis tabs return to the description-line action position above the divider.
+
+
+## 6. 0.19.94.3 문서/SQL/스크립트 정리 기준
+
+- 최신 감사 문서: [문서·SQL·스크립트 정리 후보 재분류 0.19.94.3](project-doc-sql-script-cleanup-audit-0.19.94.3.md)
+- 현재 `docs/`는 정책/현재기준/보관문서와 버전별 작업 기록이 섞여 있으므로 대량 삭제하지 않는다.
+- `db/schema/full_reset.sql`, `db/schema/full_reset_smoke_test.sql`, `db/seed/*`, `db/test/*`는 개발 테스트 기준 파일로 유지한다.
+- `scripts/smoke-db-api.mjs`, Playwright 설정과 E2E 테스트 파일은 현재 자동 테스트 기반이므로 유지한다.
+- `commit-meta.md`는 패치 자동화 산출물이므로 장기적으로 스크립트가 repo root에 남기지 않도록 개선하는 방향이 적절하다.
