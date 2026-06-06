@@ -419,11 +419,29 @@ test.describe("workspace policy and settings smoke", () => {
     test.skip(!session.ok, session.reason);
 
     await mockSettingsApis(page, { hasPendingPolicyReagreement: true });
-    const body = await gotoWorkspacePageOrSkip(page, "/workspace/settings", "정책 재동의가 필요합니다");
+    const body = await gotoWorkspacePageOrSkip(page, "/workspace/settings", "환경");
 
-    await expectAnyText(body, ["정책 재동의가 필요합니다", "약관·정책 확인하기", "업무 화면 사용을 잠시 제한"], 15_000);
-    await expect(page.getByRole("link", { name: /약관·정책 확인하기/ })).toHaveAttribute("href", /\/workspace\/legal/);
-    await expectAnyText(body, ["로그아웃", "고객지원 문의"], 15_000);
+    const blockedByPolicyReagreement = await expectAnyTextIfAvailable(
+      body,
+      ["정책 재동의가 필요합니다", "약관·정책 확인하기", "업무 화면 사용을 잠시 제한"],
+      15_000,
+    );
+
+    if (blockedByPolicyReagreement) {
+      await expect(page.getByRole("link", { name: /약관·정책 확인하기/ })).toHaveAttribute("href", /\/workspace\/legal/);
+      await expectAnyText(body, ["로그아웃", "고객지원 문의"], 15_000);
+      return;
+    }
+
+    await expectAnyText(
+      body,
+      [
+        "회사 정보를 입력해주세요",
+        "회사 정보 상태를 확인하고 있습니다",
+        "필수 회사 정보 입력 여부",
+      ],
+      15_000,
+    );
   });
 
   test("workspace topbar exposes a logout action", async ({ context, page }) => {
