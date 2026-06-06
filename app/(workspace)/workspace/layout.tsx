@@ -14,15 +14,17 @@ export default async function WorkspaceLayout({ children }: { children: ReactNod
 
   return (
     <AdminCompanyAccessGate accessBlocked={Boolean(accessState?.accessBlocked)} blockedPath={accessState?.onboardingStatus === "rejected" ? "/service-paused" : undefined}>
-      <AdminCompanyOnboardingGate
-        initialAccessState={accessState ? {
-          onboardingStatus: accessState.onboardingStatus,
-          trialExpired: accessState.trialExpired,
-          accessBlocked: accessState.accessBlocked,
-        } : null}
-      >
-        <PolicyReagreementAccessGate>{children}</PolicyReagreementAccessGate>
-      </AdminCompanyOnboardingGate>
+      <PolicyReagreementAccessGate>
+        <AdminCompanyOnboardingGate
+          initialAccessState={accessState ? {
+            onboardingStatus: accessState.onboardingStatus,
+            trialExpired: accessState.trialExpired,
+            accessBlocked: accessState.accessBlocked,
+          } : null}
+        >
+          {children}
+        </AdminCompanyOnboardingGate>
+      </PolicyReagreementAccessGate>
     </AdminCompanyAccessGate>
   );
 }
