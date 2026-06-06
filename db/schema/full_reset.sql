@@ -61,6 +61,7 @@ DROP TABLE IF EXISTS policy_versions CASCADE;
 DROP TABLE IF EXISTS policy_documents CASCADE;
 DROP TABLE IF EXISTS company_account_requests CASCADE;
 DROP TABLE IF EXISTS company_files CASCADE;
+DROP TABLE IF EXISTS company_subscriptions CASCADE;
 DROP TABLE IF EXISTS company_onboarding_files CASCADE;
 DROP TABLE IF EXISTS role_permissions CASCADE;
 DROP TABLE IF EXISTS permission_catalog CASCADE;
@@ -193,7 +194,7 @@ CREATE TABLE companies (
     onboarding_status IN ('profile_required', 'approval_pending', 'active', 'rejected')
   ),
   CONSTRAINT companies_subscription_status_check CHECK (
-    subscription_status IN ('trialing', 'trial_expired', 'active', 'past_due', 'canceled')
+    subscription_status IN ('trialing', 'trial_expired', 'active', 'past_due', 'payment_failed', 'cancel_scheduled', 'canceled', 'suspended')
   ),
   CONSTRAINT companies_trial_period_valid CHECK (
     trial_ends_at IS NULL OR trial_started_at IS NULL OR trial_ends_at > trial_started_at
@@ -202,6 +203,38 @@ CREATE TABLE companies (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE TABLE company_subscriptions (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  plan_code text NOT NULL DEFAULT 'trial',
+  status text NOT NULL DEFAULT 'trialing',
+  trial_started_at timestamptz,
+  trial_ends_at timestamptz,
+  current_period_started_at timestamptz,
+  current_period_ends_at timestamptz,
+  cancel_scheduled_at timestamptz,
+  canceled_at timestamptz,
+  storage_limit_bytes bigint NOT NULL DEFAULT 104857600,
+  member_limit integer NOT NULL DEFAULT 3,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT company_subscriptions_plan_code_check CHECK (
+    plan_code IN ('trial', 'lite', 'flow', 'studio', 'custom')
+  ),
+  CONSTRAINT company_subscriptions_status_check CHECK (
+    status IN ('trialing', 'active', 'past_due', 'payment_failed', 'cancel_scheduled', 'canceled', 'suspended')
+  ),
+  CONSTRAINT company_subscriptions_storage_limit_check CHECK (storage_limit_bytes >= 0),
+  CONSTRAINT company_subscriptions_member_limit_check CHECK (member_limit >= 0),
+  CONSTRAINT company_subscriptions_trial_period_check CHECK (
+    trial_ends_at IS NULL OR trial_started_at IS NULL OR trial_ends_at > trial_started_at
+  ),
+  CONSTRAINT company_subscriptions_current_period_check CHECK (
+    current_period_ends_at IS NULL OR current_period_started_at IS NULL OR current_period_ends_at > current_period_started_at
+  )
+);
+
 
 CREATE TABLE users (
   id text PRIMARY KEY,
@@ -1952,6 +1985,12 @@ COMMENT ON COLUMN permission_catalog.permission_key IS
 -- =========================================
 
 CREATE INDEX companies_active_name_idx ON companies (is_active, name);
+CREATE UNIQUE INDEX company_subscriptions_company_unique
+  ON company_subscriptions (company_id);
+CREATE INDEX company_subscriptions_status_idx
+  ON company_subscriptions (status, updated_at DESC);
+CREATE INDEX company_subscriptions_plan_code_idx
+  ON company_subscriptions (plan_code, updated_at DESC);
 CREATE INDEX company_onboarding_files_company_type_active_idx
   ON company_onboarding_files (company_id, file_type, created_at DESC)
   WHERE deleted_at IS NULL;

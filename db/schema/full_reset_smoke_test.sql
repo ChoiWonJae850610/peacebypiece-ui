@@ -226,6 +226,17 @@ BEGIN
       ('company_files', 'rejection_reason'),
       ('company_files', 'replaced_by_file_id'),
       ('company_files', 'deleted_at'),
+      ('company_subscriptions', 'company_id'),
+      ('company_subscriptions', 'plan_code'),
+      ('company_subscriptions', 'status'),
+      ('company_subscriptions', 'trial_started_at'),
+      ('company_subscriptions', 'trial_ends_at'),
+      ('company_subscriptions', 'current_period_started_at'),
+      ('company_subscriptions', 'current_period_ends_at'),
+      ('company_subscriptions', 'cancel_scheduled_at'),
+      ('company_subscriptions', 'canceled_at'),
+      ('company_subscriptions', 'storage_limit_bytes'),
+      ('company_subscriptions', 'member_limit'),
       ('permission_catalog', 'permission_group'),
       ('permission_catalog', 'label_key'),
       ('permission_catalog', 'description_key'),
@@ -646,6 +657,8 @@ DECLARE
   rejected_status_allowed boolean;
   trial_status_allowed boolean;
   trial_plan_exists boolean;
+  plan_code_constraint_exists boolean;
+  subscription_status_constraint_exists boolean;
   invitation_url_path_exists boolean;
   member_invitation_link_only_valid boolean;
   company_onboarding_file_type_valid boolean;
@@ -680,10 +693,52 @@ BEGIN
       AND cc.check_clause LIKE '%trial_expired%'
       AND cc.check_clause LIKE '%past_due%'
       AND cc.check_clause LIKE '%canceled%'
+      AND cc.check_clause LIKE '%payment_failed%'
+      AND cc.check_clause LIKE '%cancel_scheduled%'
+      AND cc.check_clause LIKE '%suspended%'
   ) INTO trial_status_allowed;
 
   IF NOT trial_status_allowed THEN
     RAISE EXCEPTION 'companies_subscription_status_check must allow current subscription statuses';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'company_subscriptions'
+      AND cc.constraint_name = 'company_subscriptions_plan_code_check'
+      AND cc.check_clause LIKE '%lite%'
+      AND cc.check_clause LIKE '%flow%'
+      AND cc.check_clause LIKE '%studio%'
+      AND cc.check_clause LIKE '%custom%'
+  ) INTO plan_code_constraint_exists;
+
+  IF NOT plan_code_constraint_exists THEN
+    RAISE EXCEPTION 'company_subscriptions_plan_code_check must allow current plan codes';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.check_constraints cc
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_schema = cc.constraint_schema
+     AND ccu.constraint_name = cc.constraint_name
+    WHERE ccu.table_schema = current_schema()
+      AND ccu.table_name = 'company_subscriptions'
+      AND cc.constraint_name = 'company_subscriptions_status_check'
+      AND cc.check_clause LIKE '%trialing%'
+      AND cc.check_clause LIKE '%active%'
+      AND cc.check_clause LIKE '%payment_failed%'
+      AND cc.check_clause LIKE '%cancel_scheduled%'
+      AND cc.check_clause LIKE '%suspended%'
+  ) INTO subscription_status_constraint_exists;
+
+  IF NOT subscription_status_constraint_exists THEN
+    RAISE EXCEPTION 'company_subscriptions_status_check must allow current subscription statuses';
   END IF;
 
   SELECT EXISTS (

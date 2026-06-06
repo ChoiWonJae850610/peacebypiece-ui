@@ -36,6 +36,7 @@ const REQUIRED_TABLES = [
   "company_members",
   "partners",
   "company_files",
+  "company_subscriptions",
 ];
 
 const REQUIRED_COLUMNS = {
@@ -106,6 +107,22 @@ const REQUIRED_COLUMNS = {
     "rejection_reason",
     "replaced_by_file_id",
     "deleted_at",
+  ],
+  company_subscriptions: [
+    "id",
+    "company_id",
+    "plan_code",
+    "status",
+    "trial_started_at",
+    "trial_ends_at",
+    "current_period_started_at",
+    "current_period_ends_at",
+    "cancel_scheduled_at",
+    "canceled_at",
+    "storage_limit_bytes",
+    "member_limit",
+    "created_at",
+    "updated_at",
   ],
 };
 
@@ -1047,6 +1064,143 @@ async function assertCompanyFilesContract(client) {
   logOk("company files: active file listing, replacement marker, business registration review status, and system review update contract");
 }
 
+async function assertCompanySubscriptionContract(client) {
+  logStep("company subscription contract");
+  console.log("  - creating rollback-only trial and active subscription fixtures");
+
+  const trialCompanyId = "smoke-subscription-trial-company";
+  const activeCompanyId = "smoke-subscription-active-company";
+
+  await client.query(
+    `INSERT INTO companies (
+       id,
+       name,
+       onboarding_status,
+       subscription_status,
+       billing_status,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES
+       ($1, 'Smoke Trial Subscription Company', 'active', 'trialing', 'trial', true, now(), now()),
+       ($2, 'Smoke Active Subscription Company', 'active', 'active', 'active', true, now(), now())`,
+    [trialCompanyId, activeCompanyId],
+  );
+
+  await client.query(
+    `INSERT INTO users (
+       id,
+       company_id,
+       email,
+       name,
+       role,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES
+       ('smoke-subscription-admin', $1, 'smoke-subscription-admin@example.test', 'Smoke Subscription Admin', 'admin', true, now(), now()),
+       ('smoke-subscription-member', $1, 'smoke-subscription-member@example.test', 'Smoke Subscription Member', 'designer', true, now(), now())`,
+    [trialCompanyId],
+  );
+
+  await client.query(
+    `INSERT INTO company_files (
+       id,
+       company_id,
+       file_type,
+       original_name,
+       storage_key,
+       mime_type,
+       size_bytes,
+       review_status
+     ) VALUES
+       ('smoke-subscription-logo', $1, 'representative_image', 'logo.png', 'companies/smoke-subscription-trial-company/company-files/representative_image/logo.png', 'image/png', 1024, 'not_required')`,
+    [trialCompanyId],
+  );
+
+  await client.query(
+    `INSERT INTO company_subscriptions (
+       id,
+       company_id,
+       plan_code,
+       status,
+       trial_started_at,
+       trial_ends_at,
+       current_period_started_at,
+       current_period_ends_at,
+       storage_limit_bytes,
+       member_limit,
+       created_at,
+       updated_at
+     ) VALUES
+       ('smoke-subscription-trial', $1, 'trial', 'trialing', now(), now() + interval '7 days', NULL, NULL, 104857600, 3, now(), now()),
+       ('smoke-subscription-active', $2, 'flow', 'active', NULL, NULL, now(), now() + interval '1 month', 10737418240, 15, now(), now())`,
+    [trialCompanyId, activeCompanyId],
+  );
+
+  const snapshot = await client.query(
+    `SELECT
+       subscription.plan_code,
+       subscription.status,
+       subscription.storage_limit_bytes::bigint AS storage_limit_bytes,
+       subscription.member_limit::int AS member_limit,
+       COALESCE((
+         SELECT SUM(file.size_bytes)::bigint
+         FROM company_files file
+         WHERE file.company_id = subscription.company_id
+           AND file.deleted_at IS NULL
+       ), 0)::bigint AS storage_used_bytes,
+       COALESCE((
+         SELECT COUNT(*)::int
+         FROM users app_user
+         WHERE app_user.company_id = subscription.company_id
+           AND app_user.is_active = true
+           AND app_user.role <> 'system'
+       ), 0)::int AS active_member_count
+     FROM company_subscriptions subscription
+     WHERE subscription.company_id = $1
+     LIMIT 1`,
+    [trialCompanyId],
+  );
+
+  const snapshotRow = snapshot.rows[0];
+  if (
+    !snapshotRow ||
+    snapshotRow.plan_code !== "trial" ||
+    snapshotRow.status !== "trialing" ||
+    Number(snapshotRow.storage_limit_bytes) !== 104857600 ||
+    Number(snapshotRow.member_limit) !== 3 ||
+    Number(snapshotRow.storage_used_bytes) !== 1024 ||
+    Number(snapshotRow.active_member_count) !== 2
+  ) {
+    throwSmokeError({
+      area: "company subscription contract",
+      target: "company_subscriptions current snapshot",
+      message: "current subscription snapshot should expose plan/status, storage limit, storage usage, and active member count.",
+      next: "check company_subscriptions schema, active file usage query, and active user count query.",
+    });
+  }
+
+  const activeResult = await client.query(
+    `SELECT plan_code, status, storage_limit_bytes::bigint AS storage_limit_bytes, member_limit::int AS member_limit
+     FROM company_subscriptions
+     WHERE company_id = $1
+     LIMIT 1`,
+    [activeCompanyId],
+  );
+  const activeRow = activeResult.rows[0];
+  if (!activeRow || activeRow.plan_code !== "flow" || activeRow.status !== "active" || Number(activeRow.storage_limit_bytes) !== 10737418240 || Number(activeRow.member_limit) !== 15) {
+    throwSmokeError({
+      area: "company subscription contract",
+      target: "company_subscriptions plan/status limits",
+      message: "active flow subscription should keep the configured plan/status/storage/member limits.",
+      next: "check company_subscriptions plan_code/status constraints and numeric limit storage.",
+    });
+  }
+
+  logOk("company subscriptions: current plan/status, storage limit, usage, and member limit contract");
+}
+
 function logSummary() {
   console.log("\n[smoke] Summary");
   console.log(`  Passed checks: ${CHECK_RESULTS.length}`);
@@ -1083,6 +1237,7 @@ async function main() {
       await assertPolicyAgreementContract(client);
       await assertPartnerNamePhoneContract(client);
       await assertCompanyFilesContract(client);
+      await assertCompanySubscriptionContract(client);
     } finally {
       await client.query("ROLLBACK");
       transactionStarted = false;
