@@ -224,6 +224,38 @@ async function mockSettingsApis(page, options = {}) {
     });
   });
 
+
+  await page.route("**/api/admin/subscription", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        subscription: {
+          id: "e2e-company-subscription",
+          companyId: "company-e2e",
+          planCode: "flow",
+          planLabel: "Flow",
+          status: "active",
+          statusLabel: "정상 사용 중",
+          trialStartedAt: "2026-06-01T00:00:00.000Z",
+          trialEndsAt: "2026-06-08T00:00:00.000Z",
+          currentPeriodStartedAt: "2026-06-08T00:00:00.000Z",
+          currentPeriodEndsAt: "2026-07-08T00:00:00.000Z",
+          cancelScheduledAt: null,
+          canceledAt: null,
+          storageLimitBytes: 10 * 1024 * 1024 * 1024,
+          storageUsedBytes: 8 * 1024 * 1024,
+          storageUsageRatio: 0.00078125,
+          memberLimit: 15,
+          activeMemberCount: 3,
+          source: "company_subscriptions",
+          updatedAt: "2026-06-06T12:00:00.000Z",
+        },
+      }),
+    });
+  });
+
   await page.route("**/api/admin/settings/company-account-requests", async (route) => {
     await route.fulfill({
       status: 200,
@@ -389,6 +421,14 @@ test.describe("workspace policy and settings smoke", () => {
     const body = await gotoWorkspacePageOrSkip(page, "/workspace/settings", "환경");
 
     await expectAnyText(body, ["환경설정", "회사 정보", "약관·정책", "기준정보"]);
+
+    const billingButton = page.getByRole("button", { name: /요금제·저장공간/ }).first();
+    if (await clickIfVisible(billingButton, 3_000)) {
+      await expectAnyText(body, ["Flow", "정상 사용 중", "저장공간 사용량", "멤버 사용량"], 15_000);
+    }
+
+    const accountButton = page.getByRole("button", { name: /계정 정보/ }).first();
+    await clickIfVisible(accountButton, 3_000);
 
     const companyFilePanelVisible = await expectAnyTextIfAvailable(body, ["대표 이미지", "사업자등록증", "회사 파일"], 5_000);
     if (companyFilePanelVisible) {

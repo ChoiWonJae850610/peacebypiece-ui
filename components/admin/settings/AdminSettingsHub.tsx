@@ -21,6 +21,8 @@ import {
 } from "@/lib/admin/settings/adminSettingsHub";
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 import { type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
+import { formatStorageBytes } from "@/lib/billing/storageQuotaPolicy";
+import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import { type AdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
 import AdminCompanyFilesPanel from "@/components/admin/settings/AdminCompanyFilesPanel";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -50,6 +52,33 @@ type CompanyAccountRequestRecord = {
 type CompanyAccountRequestsPayload = {
   ok?: boolean;
   requests?: CompanyAccountRequestRecord[];
+};
+
+type CompanySubscriptionSnapshot = {
+  id: string | null;
+  companyId: string;
+  planCode: string;
+  planLabel: string;
+  status: string;
+  statusLabel: string;
+  trialStartedAt: string | null;
+  trialEndsAt: string | null;
+  currentPeriodStartedAt: string | null;
+  currentPeriodEndsAt: string | null;
+  cancelScheduledAt: string | null;
+  canceledAt: string | null;
+  storageLimitBytes: number;
+  storageUsedBytes: number;
+  storageUsageRatio: number;
+  memberLimit: number;
+  activeMemberCount: number;
+  source: "company_subscriptions" | "company_fallback";
+  updatedAt: string | null;
+};
+
+type CompanySubscriptionPayload = {
+  ok?: boolean;
+  subscription?: CompanySubscriptionSnapshot;
 };
 
 const toneClassNames: Record<AdminSettingsMenuTone, { badgeTone: AdminStatusBadgeTone; dot: string }> = {
@@ -121,8 +150,57 @@ function resolveRequestTypeLabel(type: CompanyAccountRequestType, t: ReturnType<
   return t("settings.accountRequest.type.companyInfoChange", "회사 정보 변경");
 }
 
-function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanOverview; loadState: "idle" | "loading" | "loaded" | "failed" }) {
+function formatSettingsDateTime(value: string | null): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatPercent(value: number): string {
+  if (!Number.isFinite(value)) return "0%";
+  return `${Math.min(999, Math.max(0, Math.round(value * 100)))}%`;
+}
+
+function resolveSubscriptionStatusTone(status: string): AdminStatusBadgeTone {
+  if (status === "active" || status === "trialing") return "success";
+  if (status === "past_due" || status === "payment_failed" || status === "cancel_scheduled") return "warning";
+  if (status === "canceled" || status === "suspended") return "danger";
+  return "neutral";
+}
+
+function BillingPlanPanel({
+  overview,
+  loadState,
+  subscription,
+  subscriptionLoadState,
+}: {
+  overview: AdminBillingPlanOverview;
+  loadState: "idle" | "loading" | "loaded" | "failed";
+  subscription: CompanySubscriptionSnapshot | null;
+  subscriptionLoadState: "idle" | "loading" | "loaded" | "failed";
+}) {
   const t = useAdminTranslation();
+  const subscriptionStatusTone = subscription ? resolveSubscriptionStatusTone(subscription.status) : "neutral";
+  const storageLimitLabel = subscription ? formatStorageBytes(subscription.storageLimitBytes) : "-";
+  const storageUsedLabel = subscription ? formatStorageBytes(subscription.storageUsedBytes) : "-";
+  const storageUsageLabel = subscription ? formatPercent(subscription.storageUsageRatio) : "-";
+  const memberUsageLabel = subscription
+    ? `${formatPbpNumberWithUnit(subscription.activeMemberCount, "명")} / ${formatPbpNumberWithUnit(subscription.memberLimit, "명")}`
+    : "-";
+  const sourceLabel = subscription?.source === "company_subscriptions"
+    ? t("settings.billing.sourceSubscription", "구독 데이터")
+    : subscription?.source === "company_fallback"
+      ? t("settings.billing.sourceCompanyFallback", "회사 기본값")
+      : overview.dataSourceLabel;
+
   return (
     <WaflSectionPanel
       eyebrow={t("settings.billing.eyebrow", "요금제·저장공간")}
@@ -130,10 +208,10 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
       description={overview.description}
       actions={
         <>
-          <AdminStatusBadge tone="success">{overview.currentPlanLabel}</AdminStatusBadge>
-          <AdminStatusBadge tone="maintenance">{overview.systemManagedLabel}</AdminStatusBadge>
-          <AdminStatusBadge tone={loadState === "failed" ? "warning" : "neutral"}>
-            {loadState === "loading" ? t("common.loadingShort", "조회 중") : overview.dataSourceLabel}
+          <AdminStatusBadge tone={subscriptionStatusTone}>{subscription?.planLabel ?? overview.currentPlanLabel}</AdminStatusBadge>
+          <AdminStatusBadge tone={subscriptionStatusTone}>{subscription?.statusLabel ?? overview.billingStatusLabel}</AdminStatusBadge>
+          <AdminStatusBadge tone={subscriptionLoadState === "failed" || loadState === "failed" ? "warning" : "neutral"}>
+            {subscriptionLoadState === "loading" ? t("common.loadingShort", "조회 중") : sourceLabel}
           </AdminStatusBadge>
         </>
       }
@@ -145,20 +223,62 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
           eyebrow={t("settings.billing.summaryEyebrow", "현재 기준")}
           title={t("settings.billing.summaryTitle", "요금제와 저장공간 현황")}
           description={t("settings.billing.summaryDescription", "현재 고객사에 적용된 요금제 정책과 저장공간 기준을 읽기 전용으로 확인합니다.")}
-          badge={<AdminStatusBadge tone="success">{overview.currentPlanLabel}</AdminStatusBadge>}
+          badge={<AdminStatusBadge tone={subscriptionStatusTone}>{subscription?.statusLabel ?? overview.currentPlanLabel}</AdminStatusBadge>}
           tone="success"
         >
+          {subscriptionLoadState === "failed" ? (
+            <WaflSettingCard
+              title={t("settings.billing.subscriptionFailedTitle", "요금제 데이터를 불러오지 못했습니다.")}
+              description={t("settings.billing.subscriptionFailedDescription", "회사 구독 데이터 조회에 실패했습니다. 기존 환경설정 요약값을 임시로 표시합니다.")}
+              tone="warning"
+              density="compact"
+            />
+          ) : null}
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {overview.metrics.map((metric) => (
-              <WaflSettingCard
-                key={metric.id}
-                title={metric.value}
-                description={metric.description}
-                eyebrow={metric.label}
-                tone="success"
-                density="compact"
-              />
-            ))}
+            <WaflSettingCard
+              title={subscription?.planLabel ?? overview.currentPlanLabel}
+              description={t("settings.billing.currentPlanDescription", "현재 고객사에 적용된 요금제 코드와 표시명을 확인합니다.")}
+              eyebrow={t("settings.billing.currentPlanLabel", "현재 요금제")}
+              badge={subscription ? <AdminStatusBadge tone="neutral" size="xs">{subscription.planCode}</AdminStatusBadge> : null}
+              tone="success"
+              density="compact"
+            />
+            <WaflSettingCard
+              title={subscription?.statusLabel ?? overview.billingStatusLabel}
+              description={t("settings.billing.statusDescription", "무료체험, 정상 사용, 결제 실패, 해지 예정 등의 운영 상태입니다.")}
+              eyebrow={t("settings.billing.statusLabel", "구독 상태")}
+              tone={subscriptionStatusTone === "danger" ? "danger" : subscriptionStatusTone === "warning" ? "warning" : "success"}
+              density="compact"
+            />
+            <WaflSettingCard
+              title={`${storageUsedLabel} / ${storageLimitLabel}`}
+              description={t("settings.billing.storageUsageDescription", "활성 회사 파일 기준의 저장공간 사용량입니다.")}
+              eyebrow={t("settings.billing.storageUsageLabel", "저장공간 사용량")}
+              badge={<AdminStatusBadge tone={subscription && subscription.storageUsageRatio >= 1 ? "danger" : subscription && subscription.storageUsageRatio >= 0.8 ? "warning" : "neutral"} size="xs">{storageUsageLabel}</AdminStatusBadge>}
+              tone={subscription && subscription.storageUsageRatio >= 1 ? "danger" : subscription && subscription.storageUsageRatio >= 0.8 ? "warning" : "success"}
+              density="compact"
+            />
+            <WaflSettingCard
+              title={memberUsageLabel}
+              description={t("settings.billing.memberUsageDescription", "현재 고객사 활성 멤버 수와 요금제 멤버 한도입니다.")}
+              eyebrow={t("settings.billing.memberUsageLabel", "멤버 사용량")}
+              tone={subscription && subscription.activeMemberCount > subscription.memberLimit ? "warning" : "success"}
+              density="compact"
+            />
+            <WaflSettingCard
+              title={formatSettingsDateTime(subscription?.trialEndsAt ?? null)}
+              description={t("settings.billing.trialEndDescription", "무료체험 종료일이 없으면 정식 구독 또는 미설정 상태입니다.")}
+              eyebrow={t("settings.billing.trialEndLabel", "무료체험 종료일")}
+              tone="info"
+              density="compact"
+            />
+            <WaflSettingCard
+              title={formatSettingsDateTime(subscription?.updatedAt ?? null)}
+              description={t("settings.billing.updatedAtDescription", "요금제 운영 데이터가 마지막으로 갱신된 시점입니다.")}
+              eyebrow={t("settings.billing.updatedAtLabel", "최근 갱신")}
+              tone="neutral"
+              density="compact"
+            />
           </div>
         </WaflSettingsSectionGroup>
         <WaflSettingsSectionGroup
@@ -534,9 +654,11 @@ export default function AdminSettingsHub() {
   const t = useAdminTranslation();
   const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("account");
   const [billingPlanOverview, setBillingPlanOverview] = useState<AdminBillingPlanOverview | null>(null);
+  const [companySubscription, setCompanySubscription] = useState<CompanySubscriptionSnapshot | null>(null);
   const [accountOverview, setAccountOverview] = useState<AdminAccountSettingsOverview | null>(null);
   const [accountRequests, setAccountRequests] = useState<CompanyAccountRequestRecord[]>([]);
   const [billingPlanLoadState, setBillingPlanLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
+  const [subscriptionLoadState, setSubscriptionLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const [accountLoadState, setAccountLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const [accountRequestsLoadState, setAccountRequestsLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
 
@@ -563,6 +685,7 @@ export default function AdminSettingsHub() {
   useEffect(() => {
     let cancelled = false;
     setBillingPlanLoadState("loading");
+    setSubscriptionLoadState("loading");
     setAccountLoadState("loading");
 
     fetch("/api/admin/companies/current", { cache: "no-store" })
@@ -591,6 +714,25 @@ export default function AdminSettingsHub() {
         }
       });
 
+    fetch("/api/admin/subscription", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as CompanySubscriptionPayload | null;
+        if (cancelled) return;
+
+        if (!response.ok || !payload?.ok || !payload.subscription) {
+          throw new Error("ADMIN_COMPANY_SUBSCRIPTION_LOAD_FAILED");
+        }
+
+        setCompanySubscription(payload.subscription);
+        setSubscriptionLoadState("loaded");
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCompanySubscription(null);
+          setSubscriptionLoadState("failed");
+        }
+      });
+
     refreshAccountRequests();
 
     return () => {
@@ -613,7 +755,7 @@ export default function AdminSettingsHub() {
         );
       }
 
-      return <BillingPlanPanel overview={billingPlanOverview} loadState={billingPlanLoadState} />;
+      return <BillingPlanPanel overview={billingPlanOverview} loadState={billingPlanLoadState} subscription={companySubscription} subscriptionLoadState={subscriptionLoadState} />;
     }
 
     if (activeMenuId === "account") {

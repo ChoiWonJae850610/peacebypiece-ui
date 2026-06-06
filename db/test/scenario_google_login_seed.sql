@@ -35,7 +35,7 @@ CREATE TEMP TABLE _wafl_google_login_test_users (
 
 INSERT INTO _wafl_google_login_test_users (user_id, email, display_name, is_required)
 VALUES
-  ('test-a-admin',     'TEST_CUSTOMER_ADMIN_EMAIL@gmail.com',     'TEST A 관리자',   true),
+  ('test-a-admin',     'wjchoi850610@gmail.com',     'TEST A 관리자',   true),
   ('test-a-designer',  'TEST_DESIGNER_EMAIL@gmail.com',           'TEST A 디자이너', false),
   ('test-a-inspector', 'TEST_INSPECTOR_EMAIL@gmail.com',          'TEST A 검수담당', false),
   ('test-a-material',  'TEST_MATERIAL_MANAGER_EMAIL@gmail.com',   'TEST A 자재담당', false),
