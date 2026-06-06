@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.02`
+- 기준 앱 버전: `0.20.04`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -89,6 +89,7 @@
 - [policy-reagreement-blocking-design-0.20.00.md](policy-reagreement-blocking-design-0.20.00.md)
 - [policy-reagreement-db-api-0.20.01.md](policy-reagreement-db-api-0.20.01.md)
 - [policy-reagreement-ui-0.20.02.md](policy-reagreement-ui-0.20.02.md)
+- [billing-plan-storage-design-0.20.04.md](billing-plan-storage-design-0.20.04.md)
 
 ### DB/API smoke
 
@@ -194,3 +195,18 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않고, 사용자가 
 - 시스템관리자 운영 화면은 이번 범위에서 제외
 
 상세 문서: [정책 미동의 업무 접근 차단 1차 0.20.03](policy-business-access-blocking-0.20.03.md)
+
+
+## 12. 0.20.04 요금제/무료체험/저장공간 운영 데이터 설계 1차
+
+WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/미납 상태의 1차 운영 기준을 문서화했다.
+
+- 무료체험 기본값: 7일
+- 무료체험 저장공간: 100MB
+- 무료체험 멤버 제한: 고객사 관리자 포함 3명
+- 요금제 후보: Lite, Flow, Studio
+- 결제 상태: trialing, active, past_due, payment_failed, cancel_scheduled, canceled, suspended
+- 실제 PG 연동과 결제수단 저장은 이번 범위에서 제외
+- 다음 구현 단계는 `0.20.05`의 company_subscriptions DB/API 1차다.
+
+상세 문서: [요금제/무료체험/저장공간 운영 데이터 설계 0.20.04](billing-plan-storage-design-0.20.04.md)
