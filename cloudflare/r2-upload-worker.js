@@ -6,10 +6,11 @@ const CORS_HEADERS = {
 };
 
 const TEXT_ENCODER = new TextEncoder();
-const WORKER_VERSION = "0.13.68";
+const WORKER_VERSION = "0.13.69";
 const ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
 const SCOPED_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
 const COMPANY_ONBOARDING_KEY_PATTERN = /^companies\/[^/]+\/onboarding\/(logo|business-license)\/[^/]+\.(jpg|png|webp|pdf)$/i;
+const COMPANY_FILE_KEY_PATTERN = /^companies\/[^/]+\/company-files\/(representative_image|business_registration)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 
 const ATTACHMENT_POLICY = {
   maxFileSizeBytes: 10 * 1024 * 1024,
@@ -31,6 +32,17 @@ const COMPANY_ONBOARDING_POLICY = {
   },
 };
 
+const COMPANY_FILE_POLICY = {
+  maxFileSizeBytes: {
+    representativeImage: 5 * 1024 * 1024,
+    businessRegistration: 10 * 1024 * 1024,
+  },
+  allowedMimeTypes: {
+    representativeImage: ["image/jpeg", "image/png", "image/webp"],
+    businessRegistration: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+  },
+};
+
 function normalizeStorageKey(value) {
   return String(value || "").replace(/^\/+/, "").trim();
 }
@@ -49,6 +61,13 @@ function getCompanyOnboardingFileTypeFromKey(key) {
   return null;
 }
 
+function getCompanyFileTypeFromKey(key) {
+  const normalized = normalizeStorageKey(key);
+  if (normalized.includes("/company-files/representative_image/")) return "representativeImage";
+  if (normalized.includes("/company-files/business_registration/")) return "businessRegistration";
+  return null;
+}
+
 function isAllowedWorkerFile({ key, contentType, size }) {
   const normalizedContentType = String(contentType || "").toLowerCase();
   const companyOnboardingFileType = getCompanyOnboardingFileTypeFromKey(key);
@@ -56,6 +75,13 @@ function isAllowedWorkerFile({ key, contentType, size }) {
   if (companyOnboardingFileType) {
     const allowedTypes = COMPANY_ONBOARDING_POLICY.allowedMimeTypes[companyOnboardingFileType] || [];
     const maxFileSizeBytes = COMPANY_ONBOARDING_POLICY.maxFileSizeBytes[companyOnboardingFileType] || 0;
+    return allowedTypes.includes(normalizedContentType) && size <= maxFileSizeBytes;
+  }
+
+  const companyFileType = getCompanyFileTypeFromKey(key);
+  if (companyFileType) {
+    const allowedTypes = COMPANY_FILE_POLICY.allowedMimeTypes[companyFileType] || [];
+    const maxFileSizeBytes = COMPANY_FILE_POLICY.maxFileSizeBytes[companyFileType] || 0;
     return allowedTypes.includes(normalizedContentType) && size <= maxFileSizeBytes;
   }
 
@@ -81,7 +107,8 @@ function isSafeStorageKey(key) {
   return (
     ATTACHMENT_KEY_PATTERN.test(normalized) ||
     SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
-    COMPANY_ONBOARDING_KEY_PATTERN.test(normalized)
+    COMPANY_ONBOARDING_KEY_PATTERN.test(normalized) ||
+    COMPANY_FILE_KEY_PATTERN.test(normalized)
   ) && !normalized.includes("..") && !normalized.startsWith("/");
 }
 
