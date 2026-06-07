@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.08`
+- 기준 앱 버전: `0.20.09`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -94,6 +94,7 @@
 - [billing-storage-ui-0.20.06.md](billing-storage-ui-0.20.06.md)
 - [storage-quota-enforcement-design-0.20.07.md](storage-quota-enforcement-design-0.20.07.md)
 - [storage-quota-enforcement-0.20.08.md](storage-quota-enforcement-0.20.08.md)
+- [full-smoke-qa-0.20.09.md](full-smoke-qa-0.20.09.md)
 
 ### DB/API smoke
 
@@ -265,3 +266,16 @@ WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/
 - 작업지시서 첨부/디자인 업로드 제한은 후속 버전으로 분리
 
 상세 문서: [저장소 사용량 제한 1차 0.20.08](storage-quota-enforcement-0.20.08.md)
+
+## 12. 0.20.04~0.20.08 요금제·저장공간·업로드 제한 구현 묶음
+
+요금제/무료체험/저장공간 운영 기준을 문서화하고, 고객사 구독 상태 DB/API, 환경설정 UI, 회사 파일 업로드 경로의 저장공간 제한 1차를 연결했다.
+
+- `0.20.04`: 요금제/무료체험/저장공간 운영 데이터 설계
+- `0.20.05`: `company_subscriptions` DB/API 1차와 DB/API smoke 계약
+- `0.20.06`: 환경설정 요금제·저장공간 UI 1차
+- `0.20.07`: 저장소 사용량 제한 설계
+- `0.20.08`: 회사 파일 업로드 경로 저장공간 guard 1차
+
+상세 문서: [전체 smoke QA 3차 0.20.09](full-smoke-qa-0.20.09.md)
+
