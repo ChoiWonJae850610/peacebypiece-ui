@@ -28,6 +28,18 @@ type StandardAction = {
   onClick?: () => void;
 };
 
+type StandardTabKey = "items" | "units" | "processes";
+
+type StandardTabConfig = {
+  key: StandardTabKey;
+  title: string;
+  description: string;
+  activeCount: number;
+  totalCount: number;
+  emptyLabel: string;
+  onManage?: () => void;
+};
+
 function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
   return items.slice().sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
 }
@@ -66,6 +78,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [selectedActiveProcessDefinition, setSelectedActiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const standardsLoadSeqRef = useRef(0);
+  const [activeStandardTab, setActiveStandardTab] = useState<StandardTabKey>("items");
   const canManageStandards = capabilities?.canManage ?? true;
 
   useEffect(() => {
@@ -231,16 +244,37 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
   const inUseSuffix = t("standards.common.inUseSuffix", "개 사용중");
   const emptyDbLabel = t("standards.common.emptyDbLabel", "등록된 항목 없음");
 
-  const standardActionStatusLabel = canManageStandards
-    ? t("standards.common.manage", "관리")
-    : t("standards.common.readOnly", "조회 전용");
-
-  const standardActions: StandardAction[] = [
-    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: formatStandardUsageDescription(itemCategoryDefinitions.filter((item) => item.is_active).length, itemCategoryDefinitions.length, t("standards.actions.items.empty", "고객사 품목 없음"), inUseSuffix), statusLabel: standardActionStatusLabel, onClick: canManageStandards ? () => setIsItemCategoryModalOpen(true) : undefined },
-    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: formatStandardUsageDescription(unitDefinitions.filter((unit) => unit.is_active).length, unitDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: standardActionStatusLabel, onClick: canManageStandards ? () => setIsUnitModalOpen(true) : undefined },
-    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: formatStandardUsageDescription(activeProcessDefinitions.length, processDraftDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: standardActionStatusLabel, onClick: canManageStandards ? openProcessModal : undefined },
+  const standardTabs: StandardTabConfig[] = [
+    {
+      key: "items",
+      title: t("standards.actions.items.title", "생산품 유형"),
+      description: formatStandardUsageDescription(itemCategoryDefinitions.filter((item) => item.is_active).length, itemCategoryDefinitions.length, t("standards.actions.items.empty", "고객사 품목 없음"), inUseSuffix),
+      activeCount: itemCategoryDefinitions.filter((item) => item.is_active).length,
+      totalCount: itemCategoryDefinitions.length,
+      emptyLabel: t("standards.actions.items.empty", "고객사 품목 없음"),
+      onManage: canManageStandards ? () => setIsItemCategoryModalOpen(true) : undefined,
+    },
+    {
+      key: "units",
+      title: t("standards.actions.units.title", "단위 표준"),
+      description: formatStandardUsageDescription(unitDefinitions.filter((unit) => unit.is_active).length, unitDefinitions.length, emptyDbLabel, inUseSuffix),
+      activeCount: unitDefinitions.filter((unit) => unit.is_active).length,
+      totalCount: unitDefinitions.length,
+      emptyLabel: emptyDbLabel,
+      onManage: canManageStandards ? () => setIsUnitModalOpen(true) : undefined,
+    },
+    {
+      key: "processes",
+      title: t("standards.actions.processes.title", "외주 공정 유형"),
+      description: formatStandardUsageDescription(activeProcessDefinitions.length, processDraftDefinitions.length, emptyDbLabel, inUseSuffix),
+      activeCount: activeProcessDefinitions.length,
+      totalCount: processDraftDefinitions.length,
+      emptyLabel: emptyDbLabel,
+      onManage: canManageStandards ? openProcessModal : undefined,
+    },
   ];
 
+  const selectedStandardTab = standardTabs.find((tab) => tab.key === activeStandardTab) ?? standardTabs[0];
   const hasMissingDbStandards = unitDefinitions.length === 0 || processDraftDefinitions.length === 0 || defaultItemCategoryDefinitions.length === 0;
 
   const renderActionGrid = (actions: StandardAction[]) => (
@@ -251,17 +285,107 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
           type="button"
           onClick={action.onClick}
           disabled={!action.onClick}
-          className="flex min-h-[86px] items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+          className="flex min-h-[72px] items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
         >
           <span className="min-w-0">
-            <span className="block text-base font-semibold text-stone-950">{action.title}</span>
-            <span className="mt-1 block text-xs font-semibold leading-5 text-stone-500">{action.description}</span>
+            <span className="block text-sm font-semibold text-stone-950">{action.title}</span>
+            <span className="mt-0.5 block text-xs font-medium leading-5 text-stone-500">{action.description}</span>
           </span>
-          <span className="shrink-0 rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-stone-600 shadow-sm">{action.statusLabel}</span>
+          <span className="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-stone-600 shadow-sm">{action.statusLabel}</span>
         </button>
       ))}
     </div>
   );
+
+  const renderStandardStatus = (isActive: boolean) => (
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${isActive ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>
+      {isActive ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
+    </span>
+  );
+
+  const renderStandardTable = () => {
+    if (activeStandardTab === "items") {
+      const rows = itemCategoryDefinitions.slice().sort((a, b) => a.sort_order - b.sort_order || a.level - b.level || a.name.localeCompare(b.name, "ko-KR"));
+
+      return (
+        <div className="overflow-hidden rounded-2xl border border-stone-200">
+          <div className="grid grid-cols-[minmax(0,1fr)_72px_86px_64px] bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500">
+            <span>{t("standards.table.name", "이름")}</span>
+            <span>{t("standards.table.level", "단계")}</span>
+            <span>{t("standards.table.status", "상태")}</span>
+            <span className="text-right">{t("standards.table.order", "순서")}</span>
+          </div>
+          <div className="max-h-[320px] overflow-auto divide-y divide-stone-100 bg-white">
+            {rows.length > 0 ? rows.map((item) => (
+              <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_72px_86px_64px] items-center px-4 py-3 text-sm">
+                <span className="truncate font-semibold text-stone-900">{item.name}</span>
+                <span className="text-xs font-medium text-stone-500">{item.level}</span>
+                <span>{renderStandardStatus(item.is_active)}</span>
+                <span className="text-right text-xs font-medium text-stone-500">{item.sort_order}</span>
+              </div>
+            )) : (
+              <div className="px-4 py-8 text-center text-sm font-medium text-stone-500">{selectedStandardTab.emptyLabel}</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeStandardTab === "units") {
+      const rows = unitDefinitions.slice().sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, "ko-KR"));
+
+      return (
+        <div className="overflow-hidden rounded-2xl border border-stone-200">
+          <div className="grid grid-cols-[minmax(0,1fr)_96px_86px_64px] bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500">
+            <span>{t("standards.table.name", "이름")}</span>
+            <span>{t("standards.table.code", "코드")}</span>
+            <span>{t("standards.table.status", "상태")}</span>
+            <span className="text-right">{t("standards.table.order", "순서")}</span>
+          </div>
+          <div className="max-h-[320px] overflow-auto divide-y divide-stone-100 bg-white">
+            {rows.length > 0 ? rows.map((unit) => (
+              <div key={unit.id} className="grid grid-cols-[minmax(0,1fr)_96px_86px_64px] items-center px-4 py-3 text-sm">
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold text-stone-900">{unit.name}</span>
+                  <span className="mt-0.5 block truncate text-xs font-medium text-stone-500">{unit.category ?? "-"}</span>
+                </span>
+                <span className="truncate text-xs font-semibold text-stone-600">{unit.code}</span>
+                <span>{renderStandardStatus(unit.is_active)}</span>
+                <span className="text-right text-xs font-medium text-stone-500">{unit.sort_order}</span>
+              </div>
+            )) : (
+              <div className="px-4 py-8 text-center text-sm font-medium text-stone-500">{selectedStandardTab.emptyLabel}</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    const rows = processDraftDefinitions.slice().sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label, "ko-KR"));
+
+    return (
+      <div className="overflow-hidden rounded-2xl border border-stone-200">
+        <div className="grid grid-cols-[minmax(0,1fr)_120px_86px_64px] bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500">
+          <span>{t("standards.table.name", "이름")}</span>
+          <span>{t("standards.table.code", "코드")}</span>
+          <span>{t("standards.table.status", "상태")}</span>
+          <span className="text-right">{t("standards.table.order", "순서")}</span>
+        </div>
+        <div className="max-h-[320px] overflow-auto divide-y divide-stone-100 bg-white">
+          {rows.length > 0 ? rows.map((process) => (
+            <div key={process.type} className="grid grid-cols-[minmax(0,1fr)_120px_86px_64px] items-center px-4 py-3 text-sm">
+              <span className="truncate font-semibold text-stone-900">{process.label}</span>
+              <span className="truncate text-xs font-semibold text-stone-600">{process.type}</span>
+              <span>{renderStandardStatus(process.isActive)}</span>
+              <span className="text-right text-xs font-medium text-stone-500">{process.sortOrder}</span>
+            </div>
+          )) : (
+            <div className="px-4 py-8 text-center text-sm font-medium text-stone-500">{selectedStandardTab.emptyLabel}</div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const showPolicySection = mode === "full";
 
@@ -274,16 +398,52 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         </div>
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
-        <div className="flex shrink-0 items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-stone-950">{t("standards.section.standardTitle", "기준 관리")}</h2>
-          <p className="hidden text-xs font-semibold text-stone-400 sm:block">{t("standards.section.standardDescription", "작업지시서 생성 기준값")}</p>
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-stone-950">{t("standards.section.standardTitle", "기준정보 설정")}</h2>
+            <p className="mt-1 text-xs font-medium text-stone-500">{t("standards.section.standardDescription", "작업지시서 생성에 쓰는 기준값을 탭별로 관리합니다.")}</p>
+          </div>
+          <button
+            type="button"
+            onClick={selectedStandardTab.onManage}
+            disabled={!selectedStandardTab.onManage}
+            className="rounded-full bg-stone-950 px-4 py-2 text-xs font-semibold text-white transition enabled:hover:bg-stone-800 disabled:cursor-default disabled:bg-stone-200 disabled:text-stone-500"
+          >
+            {canManageStandards ? t("standards.common.manageSelected", "선택 항목 관리") : t("standards.common.readOnly", "조회 전용")}
+          </button>
         </div>
+
+        <div className="mt-3 grid gap-2 rounded-2xl bg-stone-100 p-1 sm:grid-cols-3">
+          {standardTabs.map((tab) => {
+            const selected = tab.key === activeStandardTab;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveStandardTab(tab.key)}
+                className={`rounded-xl px-3 py-2 text-left transition ${selected ? "bg-white shadow-sm" : "hover:bg-white/70"}`}
+              >
+                <span className={`block text-sm font-semibold ${selected ? "text-stone-950" : "text-stone-600"}`}>{tab.title}</span>
+                <span className="mt-0.5 block text-xs font-medium text-stone-500">{tab.description}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {hasMissingDbStandards ? (
-          <div className="mt-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
-            {t("standards.section.missingSeedNotice", "기준정보가 비어 있거나 일부 부족합니다. 시스템관리자 기준정보에서 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 확인하세요.")}
+          <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+            {t("standards.section.missingSeedNotice", "일부 기준정보가 비어 있습니다. 필요한 항목만 선택해 관리하세요.")}
           </div>
         ) : null}
-        <div className="mt-2.5">{renderActionGrid(standardActions)}</div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-stone-900">{selectedStandardTab.title}</p>
+          <p className="text-xs font-medium text-stone-500">
+            {t("standards.section.activeSummary", "사용")} {selectedStandardTab.activeCount} / {t("standards.section.totalSummary", "전체")} {selectedStandardTab.totalCount}
+          </p>
+        </div>
+
+        <div className="mt-2.5">{renderStandardTable()}</div>
       </div>
 
       <AdminUnitManagementModal
