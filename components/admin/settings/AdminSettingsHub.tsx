@@ -414,19 +414,38 @@ function AccountSettingsPanel({
 }) {
   const t = useAdminTranslation();
   const [activeRequestType, setActiveRequestType] = useState<"company_info_change" | "account_deactivation" | null>(null);
+  const [activeRequestMetricId, setActiveRequestMetricId] = useState<string | null>(null);
   const [requestMessage, setRequestMessage] = useState("");
   const [requestState, setRequestState] = useState<"idle" | "submitting" | "submitted" | "failed">("idle");
   const [requestFeedback, setRequestFeedback] = useState("");
   const [requestFeedbackTone, setRequestFeedbackTone] = useState<ToastTone>("info");
   const [requestFeedbackEventKey, setRequestFeedbackEventKey] = useState(0);
 
-  const activeRequestAction = overview.actions.find((action) => action.requestType === activeRequestType) ?? null;
-  const companyInfoAction = overview.actions.find((action) => action.requestType === "company_info_change") ?? null;
   const deactivationAction = overview.actions.find((action) => action.requestType === "account_deactivation") ?? null;
+  const activeRequestMetric = overview.metrics.find((metric) => metric.id === activeRequestMetricId) ?? null;
+  const editableMetricIds = useMemo(() => new Set(["company-name", "business-registration-number", "company-address"]), []);
   const canSubmitRequest = requestState !== "submitting" && requestMessage.trim().length >= 10;
 
-  const openRequestComposer = (requestType: "company_info_change" | "account_deactivation") => {
-    setActiveRequestType(requestType);
+  const closeRequestModal = useCallback(() => {
+    if (requestState === "submitting") return;
+    setActiveRequestType(null);
+    setActiveRequestMetricId(null);
+    setRequestMessage("");
+    setRequestState("idle");
+  }, [requestState]);
+
+  const openCompanyInfoRequest = (metricId: string) => {
+    setActiveRequestType("company_info_change");
+    setActiveRequestMetricId(metricId);
+    setRequestMessage("");
+    setRequestState("idle");
+    setRequestFeedback("");
+  };
+
+  const openDeactivationRequest = () => {
+    setActiveRequestType("account_deactivation");
+    setActiveRequestMetricId(null);
+    setRequestMessage("");
     setRequestState("idle");
     setRequestFeedback("");
   };
@@ -437,14 +456,23 @@ function AccountSettingsPanel({
     setRequestState("submitting");
     setRequestFeedback("");
 
+    const message = activeRequestType === "company_info_change" && activeRequestMetric
+      ? [
+          `[${activeRequestMetric.label} 변경 요청]`,
+          `현재 값: ${activeRequestMetric.value}`,
+          "",
+          requestMessage.trim(),
+        ].join("\n")
+      : requestMessage.trim();
+
     try {
       const response = await fetch("/api/admin/settings/company-account-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           requestType: activeRequestType,
-          message: requestMessage,
-          source: "admin_settings_account_panel",
+          message,
+          source: activeRequestType === "company_info_change" ? "admin_settings_account_field" : "admin_settings_account_panel",
         }),
       });
 
@@ -460,6 +488,7 @@ function AccountSettingsPanel({
       setRequestFeedback(t("settings.accountRequest.submitted", "요청이 접수되었습니다. 시스템관리자 검토 후 처리됩니다."));
       setRequestMessage("");
       setActiveRequestType(null);
+      setActiveRequestMetricId(null);
       onRequestSubmitted();
     } catch {
       setRequestState("failed");
@@ -468,6 +497,12 @@ function AccountSettingsPanel({
       setRequestFeedback(t("settings.accountRequest.failed", "요청을 접수하지 못했습니다. 잠시 후 다시 시도해 주세요."));
     }
   };
+
+  const modalTitle = activeRequestType === "account_deactivation"
+    ? t("settings.accountRequest.withdrawalTitle", "탈퇴 요청")
+    : activeRequestMetric
+      ? `${activeRequestMetric.label} ${t("settings.accountRequest.changeRequestSuffix", "변경 요청")}`
+      : t("settings.accountRequest.companyInfoButton", "회사 정보 변경 요청");
 
   return (
     <WaflSectionPanel
@@ -488,95 +523,49 @@ function AccountSettingsPanel({
       <WaflSettingsSectionGroup
         eyebrow={t("settings.account.companyEyebrow", "회사 정보")}
         title={t("settings.account.companyTitle", "회사 기본 정보")}
-        description={t("settings.account.companyRedesignedDescription", "현재 등록된 회사 정보입니다. 회사명, 사업자 정보, 주소 변경은 요청으로 접수합니다.")}
+        description={t("settings.account.companyFieldRequestDescription", "변경이 필요한 항목의 수정 버튼을 눌러 요청을 접수합니다.")}
         badge={<AdminStatusBadge tone={overview.statusTone}>{overview.statusLabel}</AdminStatusBadge>}
         aside={
-          <>
-            {companyInfoAction ? (
-              <AdminButton type="button" size="sm" variant="secondary" onClick={() => openRequestComposer("company_info_change")}>
-                {t("settings.accountRequest.companyInfoButton", "회사 정보 변경 요청")}
-              </AdminButton>
-            ) : null}
-            {deactivationAction ? (
-              <AdminButton type="button" size="sm" variant="danger" onClick={() => openRequestComposer("account_deactivation")}>
-                {t("settings.accountRequest.withdrawalButton", "탈퇴 요청")}
-              </AdminButton>
-            ) : null}
-          </>
+          deactivationAction ? (
+            <AdminButton type="button" size="sm" variant="danger" onClick={openDeactivationRequest}>
+              {t("settings.accountRequest.withdrawalButton", "탈퇴 요청")}
+            </AdminButton>
+          ) : null
         }
         tone="neutral"
       >
         <div className="overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
-          {overview.metrics.map((metric) => (
-            <div
-              key={metric.id}
-              className="grid gap-1 border-b border-[var(--pbp-border)] px-4 py-3 last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4 sm:px-5"
-            >
-              <div className="text-xs font-bold text-[var(--pbp-text-subtle)]">{metric.label}</div>
-              <div className="min-w-0">
-                <div className="break-words text-sm font-bold text-[var(--pbp-text-primary)]">{metric.value}</div>
-                <div className="mt-1 break-words text-xs leading-5 text-[var(--pbp-text-muted)]">{metric.description}</div>
+          {overview.metrics.map((metric) => {
+            const editable = editableMetricIds.has(metric.id);
+            return (
+              <div
+                key={metric.id}
+                className="grid gap-3 border-b border-[var(--pbp-border)] px-4 py-3 last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:px-5"
+              >
+                <div className="text-xs font-bold text-[var(--pbp-text-subtle)]">{metric.label}</div>
+                <div className="min-w-0">
+                  <div className="break-words text-sm font-bold text-[var(--pbp-text-primary)]">{metric.value}</div>
+                  <div className="mt-1 break-words text-xs leading-5 text-[var(--pbp-text-muted)]">{metric.description}</div>
+                </div>
+                {editable ? (
+                  <AdminButton
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => openCompanyInfoRequest(metric.id)}
+                    className="justify-self-start sm:justify-self-end"
+                    aria-label={`${metric.label} 변경 요청`}
+                  >
+                    {t("settings.accountRequest.fieldEditButton", "수정 요청")}
+                  </AdminButton>
+                ) : null}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </WaflSettingsSectionGroup>
 
       <AdminCompanyFilesPanel />
-
-      {activeRequestAction ? (
-        <WaflSettingsSectionGroup
-          eyebrow={t("settings.accountRequest.eyebrow", "요청 작성")}
-          title={activeRequestType === "account_deactivation" ? t("settings.accountRequest.withdrawalTitle", "탈퇴 요청") : activeRequestAction.label}
-          description={
-            activeRequestType === "account_deactivation"
-              ? t("settings.accountRequest.withdrawalDescription", "탈퇴 요청이 승인되면 서비스 이용이 제한됩니다. 필요한 파일은 미리 내려받아 주세요.")
-              : t("settings.accountRequest.description", "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.")
-          }
-          badge={<AdminStatusBadge tone={activeRequestType === "account_deactivation" ? "warning" : activeRequestAction.tone} size="xs">{activeRequestAction.statusLabel}</AdminStatusBadge>}
-          tone={activeRequestType === "account_deactivation" ? "danger" : "warning"}
-          footer={t("settings.accountRequest.validation", "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.")}
-        >
-          <textarea
-            value={requestMessage}
-            onChange={(event) => {
-              setRequestMessage(event.target.value);
-              if (requestState !== "idle") {
-                setRequestState("idle");
-                setRequestFeedback("");
-              }
-            }}
-            rows={4}
-            className="min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
-            placeholder={
-              activeRequestType === "account_deactivation"
-                ? t("settings.accountRequest.withdrawalPlaceholder", "예: 서비스 이용을 중단하려고 합니다. 필요한 자료를 내려받은 뒤 탈퇴 처리를 요청합니다.")
-                : t("settings.accountRequest.placeholder", "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.")
-            }
-          />
-          <div className="mt-3 flex flex-wrap justify-end gap-2">
-            <AdminButton
-              variant="ghost"
-              onClick={() => {
-                setActiveRequestType(null);
-                setRequestMessage("");
-                setRequestState("idle");
-                setRequestFeedback("");
-              }}
-              disabled={requestState === "submitting"}
-            >
-              {t("common.cancel", "취소")}
-            </AdminButton>
-            <AdminButton
-              variant={activeRequestType === "account_deactivation" ? "danger" : "primary"}
-              onClick={submitAccountRequest}
-              disabled={!canSubmitRequest}
-            >
-              {requestState === "submitting" ? t("common.saving", "저장 중") : t("settings.accountRequest.submit", "요청 접수")}
-            </AdminButton>
-          </div>
-        </WaflSettingsSectionGroup>
-      ) : null}
 
       <ToastMessage message={requestFeedback || null} tone={requestFeedbackTone} eventKey={requestFeedbackEventKey} />
 
@@ -631,6 +620,65 @@ function AccountSettingsPanel({
           />
         )}
       </WaflSettingsSectionGroup>
+
+      <AdminModal
+        open={Boolean(activeRequestType)}
+        title={modalTitle}
+        description={
+          activeRequestType === "account_deactivation"
+            ? t("settings.accountRequest.withdrawalDescription", "탈퇴 요청이 승인되면 서비스 이용이 제한됩니다. 필요한 파일은 미리 내려받아 주세요.")
+            : t("settings.accountRequest.fieldModalDescription", "현재 값을 기준으로 변경할 내용과 사유를 적어 요청합니다. 시스템관리자 검토 후 처리됩니다.")
+        }
+        onClose={closeRequestModal}
+        maxWidthClass="md:max-w-2xl"
+        footer={
+          <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <AdminButton variant="ghost" onClick={closeRequestModal} disabled={requestState === "submitting"}>
+              {t("common.cancel", "취소")}
+            </AdminButton>
+            <AdminButton
+              variant={activeRequestType === "account_deactivation" ? "danger" : "primary"}
+              onClick={submitAccountRequest}
+              disabled={!canSubmitRequest}
+            >
+              {requestState === "submitting" ? t("common.saving", "저장 중") : t("settings.accountRequest.submit", "요청 접수")}
+            </AdminButton>
+          </div>
+        }
+      >
+        {activeRequestMetric ? (
+          <div className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3">
+            <div className="text-xs font-bold text-[var(--pbp-text-subtle)]">{activeRequestMetric.label}</div>
+            <div className="mt-1 break-words text-sm font-black text-[var(--pbp-text-primary)]">{activeRequestMetric.value}</div>
+            <div className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{activeRequestMetric.description}</div>
+          </div>
+        ) : null}
+        <label className="grid gap-2">
+          <span className="text-xs font-bold text-[var(--pbp-text-subtle)]">
+            {activeRequestType === "account_deactivation" ? t("settings.accountRequest.withdrawalReasonLabel", "탈퇴 요청 사유") : t("settings.accountRequest.changeContentLabel", "변경 내용과 사유")}
+          </span>
+          <textarea
+            value={requestMessage}
+            onChange={(event) => {
+              setRequestMessage(event.target.value);
+              if (requestState !== "idle") {
+                setRequestState("idle");
+                setRequestFeedback("");
+              }
+            }}
+            rows={6}
+            className="min-h-36 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
+            placeholder={
+              activeRequestType === "account_deactivation"
+                ? t("settings.accountRequest.withdrawalPlaceholder", "예: 서비스 이용을 중단하려고 합니다. 필요한 자료를 내려받은 뒤 탈퇴 처리를 요청합니다.")
+                : t("settings.accountRequest.fieldPlaceholder", "예: 새 회사명은 WAFL Sample Co. 입니다. 사업자등록증과 동일하게 변경 요청합니다.")
+            }
+          />
+        </label>
+        <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">
+          {t("settings.accountRequest.validation", "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.")}
+        </p>
+      </AdminModal>
     </WaflSectionPanel>
   );
 }
