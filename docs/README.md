@@ -312,3 +312,4 @@ WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/
 
 상세 문서: [환경설정 서비스 건의 UI 재정리 0.20.16](settings-feedback-form-0.20.16.md)
 - `settings-legal-markdown-rendering-0.20.18.md` — 환경설정 약관·정책 Markdown 원문 렌더링 1차 기준
+- [0.20.19 환경설정 서비스 건의 DB 접수형 전환](./settings-feedback-db-intake-0.20.19.md)

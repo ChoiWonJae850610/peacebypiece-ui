@@ -76,8 +76,8 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
   feedback: {
     title: "서비스 건의",
     description: "기능 건의, 오류 제보, 업무 흐름 불편사항을 한 화면에서 작성합니다.",
-    nextStep: "정식 접수 API 전까지 이메일 작성 화면으로 연결합니다.",
-    items: ["기능 건의", "오류 제보", "개선 요청", "첨부/캡처 전달"],
+    nextStep: "접수된 문의는 운영팀 검토 상태와 답변을 접수 이력에서 확인합니다.",
+    items: ["기능 건의", "오류 제보", "개선 요청", "접수 이력"],
   },
 };
 

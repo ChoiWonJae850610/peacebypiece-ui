@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
@@ -18,7 +18,6 @@ import {
   type AdminSettingsMenuItem,
   type AdminSettingsMenuTone,
 } from "@/lib/admin/settings/adminSettingsHub";
-import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 import { type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 import { formatStorageBytes } from "@/lib/billing/storageQuotaPolicy";
 import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
@@ -86,6 +85,28 @@ type CompanySubscriptionPayload = {
   subscription?: CompanySubscriptionSnapshot;
 };
 
+type CompanyFeedbackType = "feature" | "bug" | "improvement";
+
+type CompanyFeedbackStatus = "received" | "reviewing" | "answered" | "closed";
+
+type CompanyFeedbackRequestRecord = {
+  id: string;
+  feedbackType: CompanyFeedbackType;
+  feedbackStatus: CompanyFeedbackStatus;
+  title: string;
+  message: string;
+  reviewerName: string | null;
+  reviewedAt: string | null;
+  responseMessage: string | null;
+  createdAt: string;
+};
+
+type CompanyFeedbackPayload = {
+  ok?: boolean;
+  requests?: CompanyFeedbackRequestRecord[];
+  feedback?: CompanyFeedbackRequestRecord;
+};
+
 type CustomerPolicyMarkdownDocument = {
   id: string;
   title: string;
@@ -128,6 +149,13 @@ const toneClassNames: Record<AdminSettingsMenuTone, { badgeTone: AdminStatusBadg
     activeRing: "border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] text-[var(--pbp-text)] shadow-sm",
   },
 };
+
+function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("ko-KR", { dateStyle: "short", timeStyle: "short" }).format(date);
+}
 
 function SettingsMenuTab({ item, active, onClick }: { item: AdminSettingsMenuItem; active: boolean; onClick: () => void }) {
   const tone = toneClassNames[item.tone];
@@ -838,9 +866,15 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
 function FeedbackPanel() {
   const t = useAdminTranslation();
   const feedback = ADMIN_SETTINGS_NOTICE_BY_ID.feedback;
-  const [feedbackType, setFeedbackType] = useState<"feature" | "bug" | "improvement">("feature");
+  const [feedbackType, setFeedbackType] = useState<CompanyFeedbackType>("feature");
   const [feedbackTitle, setFeedbackTitle] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackRequests, setFeedbackRequests] = useState<CompanyFeedbackRequestRecord[]>([]);
+  const [feedbackLoadState, setFeedbackLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
+  const [feedbackSubmitState, setFeedbackSubmitState] = useState<"idle" | "submitting" | "submitted" | "failed">("idle");
+  const [feedbackNotice, setFeedbackNotice] = useState("");
+  const [feedbackNoticeTone, setFeedbackNoticeTone] = useState<ToastTone>("info");
+  const [feedbackNoticeEventKey, setFeedbackNoticeEventKey] = useState(0);
 
   const feedbackTypeOptions = useMemo(
     () => [
@@ -851,47 +885,99 @@ function FeedbackPanel() {
     [t],
   );
 
-  const selectedFeedbackTypeLabel = feedbackTypeOptions.find((item) => item.value === feedbackType)?.label ?? feedbackTypeOptions[0]?.label ?? "";
+  const feedbackStatusLabels: Record<CompanyFeedbackStatus, string> = useMemo(
+    () => ({
+      received: t("settings.feedback.status.received", "접수됨"),
+      reviewing: t("settings.feedback.status.reviewing", "검토중"),
+      answered: t("settings.feedback.status.answered", "답변완료"),
+      closed: t("settings.feedback.status.closed", "종료"),
+    }),
+    [t],
+  );
+
+  const feedbackStatusTones: Record<CompanyFeedbackStatus, AdminStatusBadgeTone> = {
+    received: "info",
+    reviewing: "warning",
+    answered: "success",
+    closed: "neutral",
+  };
+
   const normalizedTitle = feedbackTitle.trim();
   const normalizedMessage = feedbackMessage.trim();
-  const canWriteEmail = normalizedTitle.length >= 2 && normalizedMessage.length >= 10;
-  const feedbackMailtoHref = useMemo(
-    () => buildAdminFeedbackMailtoHref({
-      requestType: feedbackType,
-      subject: normalizedTitle ? `[${selectedFeedbackTypeLabel}] ${normalizedTitle}` : undefined,
-      body: [
-        `문의 유형: ${selectedFeedbackTypeLabel}`,
-        "",
-        "제목:",
-        normalizedTitle,
-        "",
-        "내용:",
-        normalizedMessage,
-        "",
-        "사용 중인 화면:",
-        "환경설정 > 서비스 건의",
-        "",
-        "첨부/캡처:",
-        "필요 시 이메일에 파일을 첨부해 주세요.",
-      ].join("\n"),
-    }),
-    [feedbackType, normalizedMessage, normalizedTitle, selectedFeedbackTypeLabel],
-  );
+  const canSubmitFeedback = normalizedTitle.length >= 2 && normalizedMessage.length >= 10 && feedbackSubmitState !== "submitting";
+
+  const refreshFeedbackRequests = useCallback(() => {
+    setFeedbackLoadState("loading");
+    fetch("/api/admin/settings/feedback", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as CompanyFeedbackPayload | null;
+        if (!response.ok || !payload?.ok || !Array.isArray(payload.requests)) {
+          throw new Error("COMPANY_FEEDBACK_LIST_FAILED");
+        }
+        setFeedbackRequests(payload.requests);
+        setFeedbackLoadState("loaded");
+      })
+      .catch(() => {
+        setFeedbackRequests([]);
+        setFeedbackLoadState("failed");
+      });
+  }, []);
+
+  useEffect(() => {
+    refreshFeedbackRequests();
+  }, [refreshFeedbackRequests]);
+
+  const submitFeedback = useCallback(async () => {
+    if (!canSubmitFeedback) return;
+    setFeedbackSubmitState("submitting");
+    setFeedbackNotice("");
+
+    try {
+      const response = await fetch("/api/admin/settings/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          feedbackType,
+          title: normalizedTitle,
+          message: normalizedMessage,
+          source: "admin_settings",
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as CompanyFeedbackPayload | null;
+      if (!response.ok || !payload?.ok || !payload.feedback) {
+        throw new Error("COMPANY_FEEDBACK_CREATE_FAILED");
+      }
+
+      setFeedbackTitle("");
+      setFeedbackMessage("");
+      setFeedbackType("feature");
+      setFeedbackSubmitState("submitted");
+      setFeedbackNoticeTone("success");
+      setFeedbackNotice(t("settings.feedback.submitSuccess", "문의가 접수되었습니다."));
+      setFeedbackNoticeEventKey((key) => key + 1);
+      refreshFeedbackRequests();
+    } catch {
+      setFeedbackSubmitState("failed");
+      setFeedbackNoticeTone("error");
+      setFeedbackNotice(t("settings.feedback.submitFailed", "문의를 접수하지 못했습니다. 잠시 후 다시 시도해 주세요."));
+      setFeedbackNoticeEventKey((key) => key + 1);
+    }
+  }, [canSubmitFeedback, feedbackType, normalizedMessage, normalizedTitle, refreshFeedbackRequests, t]);
 
   return (
     <WaflSectionPanel
       eyebrow={t("settings.feedback.eyebrow", "서비스 건의")}
       title={feedback.title}
-      description={t("settings.feedback.redesignedDescription", "기능 건의, 오류 제보, 개선 요청을 작성한 뒤 이메일 접수로 전달합니다.")}
-      actions={<AdminStatusBadge tone="neutral">{ADMIN_FEEDBACK_CONTACT_EMAIL}</AdminStatusBadge>}
+      description={t("settings.feedback.dbDescription", "기능 건의, 오류 제보, 개선 요청을 접수하고 처리 상태를 확인합니다.")}
+      actions={<AdminStatusBadge tone="info">{t("settings.feedback.dbMode", "문의 접수")}</AdminStatusBadge>}
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.72fr)]">
         <WaflSettingsSectionGroup
-          eyebrow={t("settings.feedback.formEyebrow", "접수 내용")}
-          title={t("settings.feedback.formTitle", "건의 또는 오류 내용을 작성하세요")}
-          description={t("settings.feedback.formDescription", "정식 접수 API 전까지는 작성한 내용을 이메일로 보내는 방식으로 운영합니다.")}
+          eyebrow={t("settings.feedback.formEyebrow", "문의 내용")}
+          title={t("settings.feedback.formTitle", "문의하기")}
+          description={t("settings.feedback.formDescriptionDb", "운영팀에 전달할 내용을 작성하면 접수 이력에 저장됩니다.")}
           tone="neutral"
         >
           <div className="space-y-4">
@@ -902,7 +988,7 @@ function FeedbackPanel() {
               <select
                 id="admin-feedback-type"
                 value={feedbackType}
-                onChange={(event) => setFeedbackType(event.target.value as typeof feedbackType)}
+                onChange={(event) => setFeedbackType(event.target.value as CompanyFeedbackType)}
                 className="mt-2 h-11 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
               >
                 {feedbackTypeOptions.map((option) => (
@@ -920,7 +1006,10 @@ function FeedbackPanel() {
               <input
                 id="admin-feedback-title"
                 value={feedbackTitle}
-                onChange={(event) => setFeedbackTitle(event.target.value)}
+                onChange={(event) => {
+                  setFeedbackTitle(event.target.value);
+                  if (feedbackSubmitState !== "idle") setFeedbackSubmitState("idle");
+                }}
                 className="mt-2 h-11 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
                 placeholder={t("settings.feedback.titlePlaceholder", "예: 사업자등록증 업로드 후 검토 상태가 궁금합니다")}
               />
@@ -933,13 +1022,16 @@ function FeedbackPanel() {
               <textarea
                 id="admin-feedback-message"
                 value={feedbackMessage}
-                onChange={(event) => setFeedbackMessage(event.target.value)}
+                onChange={(event) => {
+                  setFeedbackMessage(event.target.value);
+                  if (feedbackSubmitState !== "idle") setFeedbackSubmitState("idle");
+                }}
                 rows={7}
                 className="mt-2 min-h-40 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
                 placeholder={t("settings.feedback.messagePlaceholder", "불편한 상황, 재현 방법, 원하는 개선 방향을 적어 주세요.")}
               />
               <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
-                {t("settings.feedback.validationHint", "제목 2자 이상, 내용 10자 이상 입력하면 이메일 작성 버튼을 사용할 수 있습니다.")}
+                {t("settings.feedback.validationHintDb", "제목 2자 이상, 내용 10자 이상 입력하면 문의할 수 있습니다.")}
               </p>
             </div>
 
@@ -951,13 +1043,15 @@ function FeedbackPanel() {
                   setFeedbackTitle("");
                   setFeedbackMessage("");
                   setFeedbackType("feature");
+                  setFeedbackSubmitState("idle");
                 }}
+                disabled={feedbackSubmitState === "submitting"}
               >
                 {t("common.reset", "초기화")}
               </AdminButton>
-              <AdminLinkButton variant="primary" href={feedbackMailtoHref} aria-disabled={!canWriteEmail} className={!canWriteEmail ? "pointer-events-none opacity-50" : undefined}>
-                {t("settings.feedback.writeEmail", "이메일 작성하기")}
-              </AdminLinkButton>
+              <AdminButton variant="primary" onClick={submitFeedback} disabled={!canSubmitFeedback}>
+                {feedbackSubmitState === "submitting" ? t("common.saving", "저장 중") : t("settings.feedback.submit", "문의하기")}
+              </AdminButton>
             </div>
           </div>
         </WaflSettingsSectionGroup>
@@ -965,20 +1059,44 @@ function FeedbackPanel() {
         <WaflSettingsSectionGroup
           eyebrow={t("settings.feedback.historyEyebrow", "접수 이력")}
           title={t("settings.feedback.historyTitle", "최근 접수 이력")}
-          description={t("settings.feedback.historyDescription", "정식 접수 저장 기능이 연결되면 이 영역에서 처리 상태와 답변을 확인합니다.")}
-          badge={<AdminStatusBadge tone="neutral">{t("settings.feedback.emailMode", "이메일 접수")}</AdminStatusBadge>}
+          description={t("settings.feedback.historyDescriptionDb", "최근 접수한 문의의 처리 상태와 답변을 확인합니다.")}
+          badge={<AdminStatusBadge tone={feedbackLoadState === "failed" ? "warning" : "neutral"}>{feedbackLoadState === "loading" ? t("common.loadingShort", "조회 중") : t("settings.feedback.historyBadge", "최근 5건")}</AdminStatusBadge>}
           tone="neutral"
         >
-          <div className="rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-6 text-sm leading-6 text-[var(--pbp-text-muted)]">
-            <p className="font-semibold text-[var(--pbp-text-primary)]">{t("settings.feedback.emptyHistoryTitle", "아직 화면에 표시할 접수 이력이 없습니다.")}</p>
-            <p className="mt-2">{t("settings.feedback.emptyHistoryDescription", "현재는 이메일 접수만 지원합니다. 이메일로 보낸 요청은 운영팀 답장 기준으로 확인해 주세요.")}</p>
-          </div>
-          <div className="mt-4 grid gap-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
-            <p>{t("settings.feedback.emailRecipient", "접수 이메일")}: <span className="font-mono text-[var(--pbp-text-primary)]">{ADMIN_FEEDBACK_CONTACT_EMAIL}</span></p>
-            <p>{feedback.nextStep}</p>
-          </div>
+          {feedbackLoadState === "failed" ? (
+            <div className="rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-6 text-sm leading-6 text-[var(--pbp-text-muted)]">
+              <p className="font-semibold text-[var(--pbp-text-primary)]">{t("settings.feedback.historyFailedTitle", "접수 이력을 불러오지 못했습니다.")}</p>
+              <p className="mt-2">{t("settings.feedback.historyFailedDescription", "문의 접수는 계속 사용할 수 있습니다. 이력은 잠시 후 다시 확인해 주세요.")}</p>
+            </div>
+          ) : feedbackRequests.length > 0 ? (
+            <div className="space-y-3">
+              {feedbackRequests.map((request) => {
+                const typeLabel = feedbackTypeOptions.find((option) => option.value === request.feedbackType)?.label ?? request.feedbackType;
+                return (
+                  <div key={request.id} className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-bold text-[var(--pbp-text-primary)]">{request.title}</p>
+                        <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{typeLabel} · {formatDateTime(request.createdAt)}</p>
+                      </div>
+                      <AdminStatusBadge tone={feedbackStatusTones[request.feedbackStatus] ?? "neutral"} size="xs">
+                        {feedbackStatusLabels[request.feedbackStatus] ?? request.feedbackStatus}
+                      </AdminStatusBadge>
+                    </div>
+                    {request.responseMessage ? <p className="mt-3 rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{request.responseMessage}</p> : null}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-6 text-sm leading-6 text-[var(--pbp-text-muted)]">
+              <p className="font-semibold text-[var(--pbp-text-primary)]">{t("settings.feedback.emptyHistoryTitle", "아직 접수된 문의가 없습니다.")}</p>
+              <p className="mt-2">{t("settings.feedback.emptyHistoryDescriptionDb", "문의가 접수되면 이 영역에 처리 상태가 표시됩니다.")}</p>
+            </div>
+          )}
         </WaflSettingsSectionGroup>
       </div>
+      <ToastMessage message={feedbackNotice || null} tone={feedbackNoticeTone} eventKey={feedbackNoticeEventKey} />
     </WaflSectionPanel>
   );
 }

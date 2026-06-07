@@ -37,6 +37,7 @@ const REQUIRED_TABLES = [
   "partners",
   "company_files",
   "company_subscriptions",
+  "company_feedback_requests",
 ];
 
 const REQUIRED_COLUMNS = {
@@ -107,6 +108,21 @@ const REQUIRED_COLUMNS = {
     "rejection_reason",
     "replaced_by_file_id",
     "deleted_at",
+  ],
+  company_feedback_requests: [
+    "id",
+    "company_id",
+    "requested_by_user_id",
+    "feedback_type",
+    "feedback_status",
+    "title",
+    "message",
+    "source",
+    "reviewed_by_system_user_id",
+    "reviewed_at",
+    "response_message",
+    "created_at",
+    "updated_at",
   ],
   company_subscriptions: [
     "id",
@@ -1064,6 +1080,78 @@ async function assertCompanyFilesContract(client) {
   logOk("company files: active file listing, replacement marker, business registration review status, and system review update contract");
 }
 
+
+async function assertCompanyFeedbackContract(client) {
+  logStep("company feedback contract");
+  console.log("  - creating rollback-only feedback request fixtures");
+
+  const companyId = "smoke-feedback-company";
+  await client.query(
+    `INSERT INTO companies (
+       id,
+       name,
+       onboarding_status,
+       subscription_status,
+       billing_status,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES ($1, 'Smoke Feedback Company', 'active', 'active', 'active', true, now(), now())`,
+    [companyId],
+  );
+
+  await client.query(
+    `INSERT INTO users (
+       id,
+       company_id,
+       email,
+       name,
+       role,
+       is_active,
+       created_at,
+       updated_at
+     ) VALUES ('smoke-feedback-admin', $1, 'smoke-feedback-admin@example.test', 'Smoke Feedback Admin', 'admin', true, now(), now())`,
+    [companyId],
+  );
+
+  await client.query(
+    `INSERT INTO company_feedback_requests (
+       id,
+       company_id,
+       requested_by_user_id,
+       feedback_type,
+       feedback_status,
+       title,
+       message,
+       source,
+       created_at,
+       updated_at
+     ) VALUES
+       ('smoke-feedback-feature', $1, 'smoke-feedback-admin', 'feature', 'received', '작업흐름 개선 요청', '작업 흐름에서 필요한 기능 개선을 요청합니다.', 'admin_settings', now(), now()),
+       ('smoke-feedback-bug', $1, 'smoke-feedback-admin', 'bug', 'reviewing', '오류 제보 테스트', '오류 재현 경로와 상세 상황을 기록합니다.', 'admin_settings', now(), now())`,
+    [companyId],
+  );
+
+  const listResult = await client.query(
+    `SELECT feedback_type, feedback_status, title, source
+     FROM company_feedback_requests
+     WHERE company_id = $1
+     ORDER BY created_at DESC`,
+    [companyId],
+  );
+
+  if (listResult.rows.length !== 2 || !listResult.rows.some((row) => row.feedback_type === "feature" && row.feedback_status === "received") || !listResult.rows.some((row) => row.feedback_type === "bug" && row.feedback_status === "reviewing")) {
+    throwSmokeError({
+      area: "company feedback contract",
+      target: "company_feedback_requests list",
+      message: "feedback requests should keep type/status/title/source for the company.",
+      next: "check company_feedback_requests schema and admin settings feedback repository queries.",
+    });
+  }
+
+  logOk("company feedback requests: create/list type and status contract");
+}
+
 async function assertCompanySubscriptionContract(client) {
   logStep("company subscription contract");
   console.log("  - creating rollback-only trial and active subscription fixtures");
@@ -1238,6 +1326,7 @@ async function main() {
       await assertPartnerNamePhoneContract(client);
       await assertCompanyFilesContract(client);
       await assertCompanySubscriptionContract(client);
+      await assertCompanyFeedbackContract(client);
     } finally {
       await client.query("ROLLBACK");
       transactionStarted = false;

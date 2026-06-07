@@ -334,6 +334,39 @@ async function mockSettingsApis(page, options = {}) {
     await route.fulfill({ status: 200, body: "" });
   });
 
+
+  const feedbackRequests = [];
+  await page.route("**/api/admin/settings/feedback", async (route) => {
+    const request = route.request();
+    if (request.method() === "POST") {
+      const body = request.postDataJSON();
+      const feedback = {
+        id: `e2e-feedback-${feedbackRequests.length + 1}`,
+        feedbackType: body?.feedbackType || "feature",
+        feedbackStatus: "received",
+        title: body?.title || "E2E 문의",
+        message: body?.message || "E2E 문의 내용입니다.",
+        reviewerName: null,
+        reviewedAt: null,
+        responseMessage: null,
+        createdAt: "2026-06-07T12:00:00.000Z",
+      };
+      feedbackRequests.unshift(feedback);
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, feedback }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, requests: feedbackRequests }),
+    });
+  });
+
   await page.route("**/api/admin/company-files", async (route) => {
     const request = route.request();
     if (request.method() === "POST") {
@@ -505,6 +538,16 @@ test.describe("workspace policy and settings smoke", () => {
       }
     } else {
       await expectAnyText(body, ["약관·정책", "환경설정"], 15_000);
+    }
+
+    const feedbackButton = page.getByRole("button", { name: /서비스 건의/ }).first();
+    if (await clickIfVisible(feedbackButton, 3_000)) {
+      await expectAnyText(body, ["문의하기", "최근 접수 이력", "문의 유형"], 15_000);
+      await page.getByLabel(/제목/).fill("E2E 문의 접수");
+      await page.getByLabel(/내용/).fill("E2E 문의 내용을 접수 이력으로 저장합니다.");
+      const submitButton = page.getByRole("button", { name: /^문의하기$/ }).first();
+      await submitButton.click();
+      await expectAnyText(body, ["문의가 접수되었습니다.", "E2E 문의 접수", "접수됨"], 15_000);
     }
   });
 
