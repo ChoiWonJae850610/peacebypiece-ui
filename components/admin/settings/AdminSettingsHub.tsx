@@ -5,8 +5,6 @@ import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminBut
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import WaflPageHero from "@/components/admin/common/WaflPageHero";
-import WaflFeatureCard from "@/components/admin/common/WaflFeatureCard";
-import WaflNoticeBox from "@/components/admin/common/WaflNoticeBox";
 import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import WaflSettingCard from "@/components/admin/common/WaflSettingCard";
 import WaflSettingsSectionGroup from "@/components/admin/common/WaflSettingsSectionGroup";
@@ -81,37 +79,50 @@ type CompanySubscriptionPayload = {
   subscription?: CompanySubscriptionSnapshot;
 };
 
-const toneClassNames: Record<AdminSettingsMenuTone, { badgeTone: AdminStatusBadgeTone; dot: string }> = {
+const toneClassNames: Record<AdminSettingsMenuTone, { badgeTone: AdminStatusBadgeTone; dot: string; activeRing: string }> = {
   blue: {
     badgeTone: "info",
     dot: "bg-[var(--pbp-status-neutral-bg)]",
+    activeRing: "border-[var(--pbp-border-strong)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-text)] shadow-sm",
   },
   amber: {
     badgeTone: "warning",
     dot: "bg-[var(--pbp-status-warning)]",
+    activeRing: "border-[var(--pbp-border-strong)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-text)] shadow-sm",
   },
   emerald: {
     badgeTone: "success",
     dot: "bg-[var(--pbp-status-success)]",
+    activeRing: "border-[var(--pbp-border-strong)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-text)] shadow-sm",
   },
   violet: {
     badgeTone: "maintenance",
     dot: "bg-[var(--pbp-accent)]",
+    activeRing: "border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] text-[var(--pbp-text)] shadow-sm",
   },
 };
 
-function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuItem; active: boolean; onClick: () => void }) {
+function SettingsMenuTab({ item, active, onClick }: { item: AdminSettingsMenuItem; active: boolean; onClick: () => void }) {
   const tone = toneClassNames[item.tone];
+  const summary = item.detailItems.slice(0, 2).join(" · ");
+
   return (
-    <WaflFeatureCard
-      title={item.title}
-      description={item.description}
-      badge={<AdminStatusBadge tone={tone.badgeTone}>{item.statusLabel}</AdminStatusBadge>}
-      details={item.detailItems}
-      active={active}
-      leadingDotClassName={tone.dot}
+    <button
+      type="button"
+      aria-pressed={active}
       onClick={onClick}
-    />
+      className={`flex min-h-[68px] w-full flex-col rounded-2xl border px-4 py-3 text-left transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-soft)] ${
+        active
+          ? tone.activeRing
+          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)]"
+      }`}
+    >
+      <span className="flex items-center gap-2 text-sm font-semibold text-[var(--pbp-text)]">
+        <span className={`h-2 w-2 rounded-full ${tone.dot}`} aria-hidden="true" />
+        {item.title}
+      </span>
+      <span className="mt-2 line-clamp-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{summary}</span>
+    </button>
   );
 }
 
@@ -795,17 +806,14 @@ export default function AdminSettingsHub() {
       <WaflPageHero
         eyebrow={t("settings.hub.eyebrow", "고객사 환경설정")}
         title={t("settings.hub.title", "환경설정")}
-        description={t("settings.hub.description", "회사 정보, 기준정보, 요금제, 약관·정책, 개선 요청을 한 화면에서 확인합니다.")}
-        badges={
-          <WaflNoticeBox tone="neutral" className="w-full rounded-full px-4 py-2 sm:w-auto">
-            {t("settings.hub.scopeNotice", "개인별 프로필과 테마는 우측 상단 개인 설정에서 관리합니다.")}
-          </WaflNoticeBox>
-        }
+        description={t("settings.hub.description", "회사 정보와 운영 기준을 필요한 항목별로 관리합니다.")}
       >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
-            <SettingsMenuCard key={item.id} item={item} active={activeMenuId === item.id} onClick={() => setActiveMenuId(item.id)} />
-          ))}
+        <div className="rounded-[1.5rem] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-2">
+          <div className="grid gap-2 md:grid-cols-5">
+            {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
+              <SettingsMenuTab key={item.id} item={item} active={activeMenuId === item.id} onClick={() => setActiveMenuId(item.id)} />
+            ))}
+          </div>
         </div>
       </WaflPageHero>
 
