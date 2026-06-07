@@ -10,6 +10,8 @@ export type CustomerPolicyDocument = {
   effectiveDateLabel: string;
   requiredForApproval: boolean;
   summary: string;
+  sourceFileName: string;
+  sourceNote?: string;
   sections: readonly {
     title: string;
     body: string;
@@ -26,6 +28,7 @@ export const CUSTOMER_POLICY_DOCUMENTS: readonly CustomerPolicyDocument[] = [
     versionLabel: "v1.0",
     effectiveDateLabel: "시행 준비 중",
     requiredForApproval: true,
+    sourceFileName: "이용약관-v1-초안.md",
     summary:
       "고객사와 멤버가 WAFL을 이용할 때 적용되는 기본 조건, 계정 책임, 서비스 제한 기준을 정리합니다.",
     sections: [
@@ -55,6 +58,7 @@ export const CUSTOMER_POLICY_DOCUMENTS: readonly CustomerPolicyDocument[] = [
     versionLabel: "v1.0",
     effectiveDateLabel: "시행 준비 중",
     requiredForApproval: true,
+    sourceFileName: "개인정보처리방침-v1-초안.md",
     summary:
       "Google 로그인 정보, 업무 프로필, 연락처, 권한, 파일 작성자 표시 등 서비스 제공에 필요한 개인정보 처리 기준을 정리합니다.",
     sections: [
@@ -84,6 +88,8 @@ export const CUSTOMER_POLICY_DOCUMENTS: readonly CustomerPolicyDocument[] = [
     versionLabel: "v1.0",
     effectiveDateLabel: "시행 준비 중",
     requiredForApproval: true,
+    sourceFileName: "요금-환불정책-v1-초안.md",
+    sourceNote: "요금제·저장공간 세부 기준은 내부 보조 문서로 분리해 관리합니다.",
     summary:
       "무료체험, 요금제 변경, 결제 실패, 해지, 환불 요청의 기본 운영 기준을 고객 공개 문서로 정리합니다.",
     sections: [
@@ -113,6 +119,8 @@ export const CUSTOMER_POLICY_DOCUMENTS: readonly CustomerPolicyDocument[] = [
     versionLabel: "v1.0",
     effectiveDateLabel: "시행 준비 중",
     requiredForApproval: true,
+    sourceFileName: "저장소-보관정책-v1-초안.md",
+    sourceNote: "데이터 내보내기 세부 기준은 내부 보조 문서로 분리해 관리합니다.",
     summary:
       "작업지시서, 첨부 문서, 디자인, 메모, 휴지통 항목의 보관·복원·삭제·내보내기 기준을 정리합니다.",
     sections: [
@@ -142,6 +150,8 @@ export const CUSTOMER_POLICY_DOCUMENTS: readonly CustomerPolicyDocument[] = [
     versionLabel: "v1.0",
     effectiveDateLabel: "시행 준비 중",
     requiredForApproval: false,
+    sourceFileName: "서비스운영정책-v1-초안.md",
+    sourceNote: "정책 고지·동의 세부 기준은 내부 보조 문서로 분리해 관리합니다.",
     summary:
       "고객사 승인, 멤버 초대, 권한 변경, 고객지원, 시스템관리자 검토 흐름의 운영 기준을 정리합니다.",
     sections: [
@@ -166,4 +176,9 @@ export const CUSTOMER_POLICY_DOCUMENTS: readonly CustomerPolicyDocument[] = [
 
 export function getRequiredPolicyDocumentCount(): number {
   return CUSTOMER_POLICY_DOCUMENTS.filter((document) => document.requiredForApproval).length;
+}
+
+
+export function getCustomerPolicyDocumentById(documentId: string): CustomerPolicyDocument | null {
+  return CUSTOMER_POLICY_DOCUMENTS.find((document) => document.id === documentId) ?? null;
 }

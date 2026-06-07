@@ -143,6 +143,32 @@ async function mockSettingsApis(page, options = {}) {
     });
   });
 
+  await page.route("**/api/policies/customer-documents/*", async (route) => {
+    const url = new URL(route.request().url());
+    const documentId = decodeURIComponent(url.pathname.split("/").filter(Boolean).at(-1) ?? "");
+    const document = policyDocuments.find((item) => item.documentKey === documentId) ?? policyDocuments[0];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        document: {
+          id: document.documentKey,
+          title: document.title,
+          subtitle: "E2E Markdown 원문",
+          category: document.category,
+          categoryLabel: document.category,
+          versionLabel: document.versionLabel,
+          effectiveDateLabel: "시행 준비 중",
+          requiredForApproval: document.requiredForApproval,
+          sourceFileName: `${document.title}-v1-초안.md`,
+          sourceNote: null,
+          markdown: `# ${document.title}\n\n## 적용 범위\n\nE2E Markdown 문서 원문입니다.\n\n## 계정과 권한\n\n- 고객사 관리자\n- 일반 멤버\n\n## 서비스 제한\n\n정책에 따라 제한될 수 있습니다.`,
+        },
+      }),
+    });
+  });
+
   const companyFiles = [
     {
       id: "e2e-representative-image",
@@ -473,7 +499,7 @@ test.describe("workspace policy and settings smoke", () => {
       await expectAnyText(body, ["이용약관", "개인정보처리방침", "요금·환불정책", "데이터 보관·삭제정책"], 15_000);
       const openDocumentButton = page.getByRole("button", { name: /^보기$/ }).first();
       if (await clickIfVisible(openDocumentButton, 3_000)) {
-        await expectAnyText(body, ["적용 범위", "계정과 권한", "서비스 제한"], 15_000);
+        await expectAnyText(body, ["원문 파일", "E2E Markdown 문서 원문", "서비스 제한"], 15_000);
         const closeButton = page.getByRole("button", { name: /^닫기$/ }).first();
         await clickIfVisible(closeButton, 3_000);
       }

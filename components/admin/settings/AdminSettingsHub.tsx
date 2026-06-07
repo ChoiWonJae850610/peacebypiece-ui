@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
@@ -84,6 +84,26 @@ type CompanySubscriptionSnapshot = {
 type CompanySubscriptionPayload = {
   ok?: boolean;
   subscription?: CompanySubscriptionSnapshot;
+};
+
+type CustomerPolicyMarkdownDocument = {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: CustomerPolicyDocumentCategory;
+  categoryLabel: string;
+  versionLabel: string;
+  effectiveDateLabel: string;
+  requiredForApproval: boolean;
+  sourceFileName: string;
+  sourceNote: string | null;
+  markdown: string;
+};
+
+type CustomerPolicyMarkdownPayload = {
+  ok?: boolean;
+  document?: CustomerPolicyMarkdownDocument;
+  error?: string;
 };
 
 const toneClassNames: Record<AdminSettingsMenuTone, { badgeTone: AdminStatusBadgeTone; dot: string; activeRing: string }> = {
@@ -587,11 +607,103 @@ function AccountSettingsPanel({
   );
 }
 
+
+function MarkdownDocumentBody({ markdown }: { markdown: string }) {
+  const blocks = markdown.split("\n");
+  const elements: ReactNode[] = [];
+  let listItems: string[] = [];
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    const currentItems = listItems;
+    const key = `list-${elements.length}`;
+    elements.push(
+      <ul key={key} className="list-disc space-y-2 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-6 py-4 text-sm leading-7 text-[var(--pbp-text-muted)]">
+        {currentItems.map((item, index) => (
+          <li key={`${key}-${index}`}>{item}</li>
+        ))}
+      </ul>,
+    );
+    listItems = [];
+  };
+
+  blocks.forEach((rawLine, index) => {
+    const line = rawLine.trim();
+    if (!line) {
+      flushList();
+      return;
+    }
+
+    if (line.startsWith("---")) {
+      flushList();
+      elements.push(<hr key={`hr-${index}`} className="border-[var(--pbp-border)]" />);
+      return;
+    }
+
+    if (line.startsWith("### ")) {
+      flushList();
+      elements.push(<h4 key={`h4-${index}`} className="pt-2 text-sm font-black text-[var(--pbp-text-primary)]">{line.slice(4)}</h4>);
+      return;
+    }
+
+    if (line.startsWith("## ")) {
+      flushList();
+      elements.push(<h3 key={`h3-${index}`} className="pt-4 text-base font-black text-[var(--pbp-text-primary)]">{line.slice(3)}</h3>);
+      return;
+    }
+
+    if (line.startsWith("# ")) {
+      flushList();
+      elements.push(<h2 key={`h2-${index}`} className="text-lg font-black text-[var(--pbp-text-primary)]">{line.slice(2)}</h2>);
+      return;
+    }
+
+    if (line.startsWith("- ")) {
+      listItems.push(line.slice(2));
+      return;
+    }
+
+    flushList();
+    elements.push(<p key={`p-${index}`} className="text-sm leading-7 text-[var(--pbp-text-muted)]">{line}</p>);
+  });
+
+  flushList();
+
+  return <div className="space-y-4">{elements}</div>;
+}
+
 function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
   const t = useAdminTranslation();
   const notice = ADMIN_SETTINGS_NOTICE_BY_ID[noticeId];
   const [selectedDocument, setSelectedDocument] = useState<CustomerPolicyDocument | null>(null);
+  const [selectedDocumentContent, setSelectedDocumentContent] = useState<CustomerPolicyMarkdownDocument | null>(null);
+  const [selectedDocumentLoadState, setSelectedDocumentLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const requiredPolicyCount = getRequiredPolicyDocumentCount();
+
+  const closeDocumentModal = useCallback(() => {
+    setSelectedDocument(null);
+    setSelectedDocumentContent(null);
+    setSelectedDocumentLoadState("idle");
+  }, []);
+
+  const openDocumentModal = useCallback(async (document: CustomerPolicyDocument) => {
+    setSelectedDocument(document);
+    setSelectedDocumentContent(null);
+    setSelectedDocumentLoadState("loading");
+
+    try {
+      const response = await fetch(`/api/policies/customer-documents/${encodeURIComponent(document.id)}`, { cache: "no-store" });
+      const payload = (await response.json().catch(() => ({}))) as CustomerPolicyMarkdownPayload;
+      if (!response.ok || !payload.ok || !payload.document) {
+        throw new Error(payload.error ?? "POLICY_MARKDOWN_READ_FAILED");
+      }
+      setSelectedDocumentContent(payload.document);
+      setSelectedDocumentLoadState("loaded");
+    } catch (error) {
+      console.error("[settings] failed to load customer policy markdown", error);
+      setSelectedDocumentLoadState("failed");
+    }
+  }, []);
 
   return (
     <>
@@ -632,7 +744,7 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
                 </div>
                 <div className="flex items-center justify-between gap-3 lg:justify-end">
                   <span className="text-xs font-semibold text-[var(--pbp-text-subtle)]">{document.effectiveDateLabel}</span>
-                  <AdminButton type="button" size="sm" variant="secondary" onClick={() => setSelectedDocument(document)}>
+                  <AdminButton type="button" size="sm" variant="secondary" onClick={() => void openDocumentModal(document)}>
                     {t("settings.notice.openDocument", "보기")}
                   </AdminButton>
                 </div>
@@ -659,12 +771,12 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
         open={Boolean(selectedDocument)}
         title={selectedDocument?.title ?? t("settings.notice.documentModalTitle", "약관 문서")}
         description={selectedDocument ? `${selectedDocument.subtitle} · ${selectedDocument.versionLabel}` : undefined}
-        onClose={() => setSelectedDocument(null)}
+        onClose={closeDocumentModal}
         maxWidthClass="md:max-w-4xl"
         bodyClassName="space-y-4 [scrollbar-gutter:stable]"
         footer={
           <div className="flex w-full justify-end">
-            <AdminButton type="button" variant="primary" onClick={() => setSelectedDocument(null)}>
+            <AdminButton type="button" variant="primary" onClick={closeDocumentModal}>
               {t("common.close", "닫기")}
             </AdminButton>
           </div>
@@ -684,14 +796,38 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
               <p className="mt-3 text-sm leading-6 text-[var(--pbp-text-muted)]">{selectedDocument.summary}</p>
             </div>
 
-            <div className="space-y-3">
-              {selectedDocument.sections.map((section) => (
-                <section key={section.title} className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5">
-                  <h3 className="text-sm font-black text-[var(--pbp-text-primary)]">{section.title}</h3>
-                  <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[var(--pbp-text-muted)]">{section.body}</p>
-                </section>
-              ))}
-            </div>
+            {selectedDocument.sourceNote ? (
+              <p className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
+                {selectedDocument.sourceNote}
+              </p>
+            ) : null}
+
+            {selectedDocumentLoadState === "loading" ? (
+              <WaflSettingCard
+                title={t("settings.notice.documentLoadingTitle", "문서를 불러오고 있습니다.")}
+                description={t("settings.notice.documentLoadingDescription", "고객 공개 Markdown 원문을 읽어오는 중입니다.")}
+                tone="neutral"
+                density="compact"
+              />
+            ) : null}
+
+            {selectedDocumentLoadState === "failed" ? (
+              <WaflSettingCard
+                title={t("settings.notice.documentFailedTitle", "문서를 불러오지 못했습니다.")}
+                description={t("settings.notice.documentFailedDescription", "정책 문서 원문을 읽을 수 없습니다. 문서 파일 위치를 확인해 주세요.")}
+                tone="warning"
+                density="compact"
+              />
+            ) : null}
+
+            {selectedDocumentLoadState === "loaded" && selectedDocumentContent ? (
+              <article className="max-h-[60vh] overflow-auto rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-6 [scrollbar-gutter:stable]">
+                <div className="mb-5 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
+                  원문 파일: {selectedDocumentContent.sourceFileName}
+                </div>
+                <MarkdownDocumentBody markdown={selectedDocumentContent.markdown} />
+              </article>
+            ) : null}
           </div>
         ) : null}
       </AdminModal>
