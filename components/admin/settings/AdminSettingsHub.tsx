@@ -203,127 +203,134 @@ function BillingPlanPanel({
   const storageLimitLabel = subscription ? formatStorageBytes(subscription.storageLimitBytes) : "-";
   const storageUsedLabel = subscription ? formatStorageBytes(subscription.storageUsedBytes) : "-";
   const storageUsageLabel = subscription ? formatPercent(subscription.storageUsageRatio) : "-";
+  const storageUsageTone: AdminStatusBadgeTone = subscription && subscription.storageUsageRatio >= 1
+    ? "danger"
+    : subscription && subscription.storageUsageRatio >= 0.8
+      ? "warning"
+      : "success";
   const memberUsageLabel = subscription
     ? `${formatPbpNumberWithUnit(subscription.activeMemberCount, "명")} / ${formatPbpNumberWithUnit(subscription.memberLimit, "명")}`
     : "-";
+  const memberUsageTone: AdminStatusBadgeTone = subscription && subscription.activeMemberCount > subscription.memberLimit ? "warning" : "success";
+  const planEndsAt = subscription?.currentPeriodEndsAt ?? subscription?.trialEndsAt ?? null;
   const sourceLabel = subscription?.source === "company_subscriptions"
     ? t("settings.billing.sourceSubscription", "구독 데이터")
     : subscription?.source === "company_fallback"
       ? t("settings.billing.sourceCompanyFallback", "회사 기본값")
       : overview.dataSourceLabel;
+  const isLoadingSubscription = subscriptionLoadState === "loading";
+  const isSubscriptionFailed = subscriptionLoadState === "failed" || loadState === "failed";
+  const normalizedActions = overview.actions.slice(0, 3);
 
   return (
     <WaflSectionPanel
       eyebrow={t("settings.billing.eyebrow", "요금제·저장공간")}
       title={overview.title}
-      description={overview.description}
+      description={t("settings.billing.redesignedDescription", "현재 요금제, 저장공간, 멤버 한도만 빠르게 확인하고 필요한 변경은 바로 요청합니다.")}
       actions={
         <>
           <AdminStatusBadge tone={subscriptionStatusTone}>{subscription?.planLabel ?? overview.currentPlanLabel}</AdminStatusBadge>
           <AdminStatusBadge tone={subscriptionStatusTone}>{subscription?.statusLabel ?? overview.billingStatusLabel}</AdminStatusBadge>
-          <AdminStatusBadge tone={subscriptionLoadState === "failed" || loadState === "failed" ? "warning" : "neutral"}>
-            {subscriptionLoadState === "loading" ? t("common.loadingShort", "조회 중") : sourceLabel}
-          </AdminStatusBadge>
         </>
       }
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
+      {isSubscriptionFailed ? (
+        <WaflSettingCard
+          title={t("settings.billing.subscriptionFailedTitle", "요금제 데이터를 불러오지 못했습니다.")}
+          description={t("settings.billing.subscriptionFailedDescription", "회사 구독 데이터 조회에 실패했습니다. 기존 환경설정 요약값을 임시로 표시합니다.")}
+          tone="warning"
+          density="compact"
+        />
+      ) : null}
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
         <WaflSettingsSectionGroup
           eyebrow={t("settings.billing.summaryEyebrow", "현재 기준")}
-          title={t("settings.billing.summaryTitle", "요금제와 저장공간 현황")}
-          description={t("settings.billing.summaryDescription", "현재 고객사에 적용된 요금제 정책과 저장공간 기준을 읽기 전용으로 확인합니다.")}
-          badge={<AdminStatusBadge tone={subscriptionStatusTone}>{subscription?.statusLabel ?? overview.currentPlanLabel}</AdminStatusBadge>}
+          title={t("settings.billing.redesignedSummaryTitle", "요금제·저장공간 현황")}
+          description={t("settings.billing.redesignedSummaryDescription", "고객사가 지금 사용하는 요금제와 한도만 표시합니다.")}
+          badge={<AdminStatusBadge tone={subscriptionLoadState === "failed" ? "warning" : "neutral"} size="xs">{isLoadingSubscription ? t("common.loadingShort", "조회 중") : sourceLabel}</AdminStatusBadge>}
           tone="success"
         >
-          {subscriptionLoadState === "failed" ? (
-            <WaflSettingCard
-              title={t("settings.billing.subscriptionFailedTitle", "요금제 데이터를 불러오지 못했습니다.")}
-              description={t("settings.billing.subscriptionFailedDescription", "회사 구독 데이터 조회에 실패했습니다. 기존 환경설정 요약값을 임시로 표시합니다.")}
-              tone="warning"
-              density="compact"
-            />
-          ) : null}
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <WaflSettingCard
-              title={subscription?.planLabel ?? overview.currentPlanLabel}
-              description={t("settings.billing.currentPlanDescription", "현재 고객사에 적용된 요금제 코드와 표시명을 확인합니다.")}
-              eyebrow={t("settings.billing.currentPlanLabel", "현재 요금제")}
-              badge={subscription ? <AdminStatusBadge tone="neutral" size="xs">{subscription.planCode}</AdminStatusBadge> : null}
-              tone="success"
-              density="compact"
-            />
-            <WaflSettingCard
-              title={subscription?.statusLabel ?? overview.billingStatusLabel}
-              description={t("settings.billing.statusDescription", "무료체험, 정상 사용, 결제 실패, 해지 예정 등의 운영 상태입니다.")}
-              eyebrow={t("settings.billing.statusLabel", "구독 상태")}
-              tone={subscriptionStatusTone === "danger" ? "danger" : subscriptionStatusTone === "warning" ? "warning" : "success"}
-              density="compact"
-            />
-            <WaflSettingCard
-              title={`${storageUsedLabel} / ${storageLimitLabel}`}
-              description={t("settings.billing.storageUsageDescription", "활성 회사 파일 기준의 저장공간 사용량입니다.")}
-              eyebrow={t("settings.billing.storageUsageLabel", "저장공간 사용량")}
-              badge={<AdminStatusBadge tone={subscription && subscription.storageUsageRatio >= 1 ? "danger" : subscription && subscription.storageUsageRatio >= 0.8 ? "warning" : "neutral"} size="xs">{storageUsageLabel}</AdminStatusBadge>}
-              tone={subscription && subscription.storageUsageRatio >= 1 ? "danger" : subscription && subscription.storageUsageRatio >= 0.8 ? "warning" : "success"}
-              density="compact"
-            />
-            <WaflSettingCard
-              title={memberUsageLabel}
-              description={t("settings.billing.memberUsageDescription", "현재 고객사 활성 멤버 수와 요금제 멤버 한도입니다.")}
-              eyebrow={t("settings.billing.memberUsageLabel", "멤버 사용량")}
-              tone={subscription && subscription.activeMemberCount > subscription.memberLimit ? "warning" : "success"}
-              density="compact"
-            />
-            <WaflSettingCard
-              title={formatSettingsDateTime(subscription?.trialEndsAt ?? null)}
-              description={t("settings.billing.trialEndDescription", "무료체험 종료일이 없으면 정식 구독 또는 미설정 상태입니다.")}
-              eyebrow={t("settings.billing.trialEndLabel", "무료체험 종료일")}
-              tone="info"
-              density="compact"
-            />
-            <WaflSettingCard
-              title={formatSettingsDateTime(subscription?.updatedAt ?? null)}
-              description={t("settings.billing.updatedAtDescription", "요금제 운영 데이터가 마지막으로 갱신된 시점입니다.")}
-              eyebrow={t("settings.billing.updatedAtLabel", "최근 갱신")}
-              tone="neutral"
-              density="compact"
-            />
+          <div className="grid gap-3 lg:grid-cols-3">
+            <div className="rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">
+              <p className="text-xs font-bold text-[var(--pbp-text-subtle)]">{t("settings.billing.currentPlanLabel", "현재 요금제")}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <strong className="text-xl font-black tracking-[-0.04em] text-[var(--pbp-text-primary)]">{subscription?.planLabel ?? overview.currentPlanLabel}</strong>
+                {subscription ? <AdminStatusBadge tone="neutral" size="xs">{subscription.planCode}</AdminStatusBadge> : null}
+              </div>
+              <p className="mt-3 text-xs leading-5 text-[var(--pbp-text-muted)]">{t("settings.billing.planEndLabel", "요금제 종료일")}: {formatSettingsDateTime(planEndsAt)}</p>
+            </div>
+
+            <div className="rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-[var(--pbp-text-subtle)]">{t("settings.billing.storageUsageLabel", "저장공간 사용량")}</p>
+                  <strong className="mt-2 block text-xl font-black tracking-[-0.04em] text-[var(--pbp-text-primary)]">{storageUsageLabel}</strong>
+                </div>
+                <AdminStatusBadge tone={storageUsageTone} size="xs">{storageUsedLabel} / {storageLimitLabel}</AdminStatusBadge>
+              </div>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--pbp-surface-muted)]">
+                <div
+                  className="h-full rounded-full bg-[var(--pbp-status-success-fg)]"
+                  style={{ width: `${Math.min(100, Math.max(0, Math.round((subscription?.storageUsageRatio ?? 0) * 100)))}%` }}
+                />
+              </div>
+              <p className="mt-3 text-xs leading-5 text-[var(--pbp-text-muted)]">{t("settings.billing.storageUsageDescription", "활성 회사 파일 기준의 저장공간 사용량입니다.")}</p>
+            </div>
+
+            <div className="rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">
+              <p className="text-xs font-bold text-[var(--pbp-text-subtle)]">{t("settings.billing.memberUsageLabel", "멤버 사용량")}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <strong className="text-xl font-black tracking-[-0.04em] text-[var(--pbp-text-primary)]">{memberUsageLabel}</strong>
+                <AdminStatusBadge tone={memberUsageTone} size="xs">{memberUsageTone === "warning" ? t("settings.billing.memberOverLimit", "초과") : t("settings.billing.withinLimit", "한도 내")}</AdminStatusBadge>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-[var(--pbp-text-muted)]">{t("settings.billing.memberUsageDescription", "현재 고객사 활성 멤버 수와 요금제 멤버 한도입니다.")}</p>
+            </div>
           </div>
-        </WaflSettingsSectionGroup>
-        <WaflSettingsSectionGroup
-          eyebrow={t("settings.billing.requestEyebrow", "요청 흐름")}
-          title={t("settings.billing.requestTitle", "변경 요청과 결제 문의")}
-          description={t("settings.billing.requestDescription", "요금제 변경, 저장공간 증설, 결제 문의는 시스템관리자 검토 흐름으로 분리합니다.")}
-          tone="info"
-        >
-          <div className="grid gap-3">
-            {overview.actions.map((action) => (
-              <WaflSettingCard
-                key={action.id}
-                title={action.label}
-                description={action.description}
-                badge={<AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>}
-                tone="info"
-                density="compact"
-              />
+
+          <div className="mt-4 overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
+            {[
+              [t("settings.billing.statusLabel", "구독 상태"), subscription?.statusLabel ?? overview.billingStatusLabel],
+              [t("settings.billing.planEndLabel", "요금제 종료일"), formatSettingsDateTime(planEndsAt)],
+              [t("settings.billing.updatedAtLabel", "최근 갱신"), formatSettingsDateTime(subscription?.updatedAt ?? null)],
+              [t("settings.billing.sourceLabel", "데이터 기준"), sourceLabel],
+            ].map(([label, value]) => (
+              <div key={label} className="grid gap-1 border-b border-[var(--pbp-border)] px-4 py-3 last:border-b-0 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
+                <span className="text-xs font-bold text-[var(--pbp-text-subtle)]">{label}</span>
+                <span className="text-sm font-semibold text-[var(--pbp-text-primary)]">{value}</span>
+              </div>
             ))}
           </div>
         </WaflSettingsSectionGroup>
+
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.billing.actionsEyebrow", "관리")}
+          title={t("settings.billing.actionsTitle", "변경·결제")}
+          description={t("settings.billing.actionsDescription", "필요한 항목을 선택해 변경 요청 또는 결제 문의로 이어갑니다.")}
+          tone="info"
+        >
+          <div className="grid gap-2">
+            {normalizedActions.map((action) => (
+              <button
+                key={action.id}
+                type="button"
+                className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-left transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-soft)]"
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm font-bold text-[var(--pbp-text-primary)]">{action.label}</span>
+                  <span className="mt-1 block line-clamp-1 text-xs text-[var(--pbp-text-muted)]">{action.description}</span>
+                </span>
+                <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            {t("settings.billing.actionsFootnote", "정식 결제창 연결 전까지 변경 요청은 운영팀 검토 흐름으로 접수됩니다.")}
+          </p>
+        </WaflSettingsSectionGroup>
       </div>
-      <WaflSettingsSectionGroup
-        eyebrow={t("settings.billing.policyEyebrow", "운영 기준")}
-        title={t("settings.billing.policyTitle", "요금제·저장공간 처리 원칙")}
-        description={t("settings.billing.policyDescription", "고객사 관리자 화면은 조회와 요청 접수 중심으로 유지하고 실제 정책 변경은 시스템관리자 영역에서 처리합니다.")}
-        tone="neutral"
-      >
-        <div className="grid gap-2 md:grid-cols-2">
-          {overview.policyNotes.map((note) => (
-            <p key={note} className="text-sm leading-6 text-[var(--pbp-text-muted)]">• {note}</p>
-          ))}
-        </div>
-      </WaflSettingsSectionGroup>
     </WaflSectionPanel>
   );
 }
