@@ -343,3 +343,4 @@ WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/
 - 단위 표준/외주공정 유형은 요청형 구조 유지
 
 상세 문서: [환경설정 기준정보 생산품 유형 계층형 보정 0.20.21.1](settings-standards-product-hierarchy-0.20.21.1.md)
+- [환경설정 기준정보 헤더·토글·테마 정렬 보정 0.20.21.4](./settings-standards-theme-alignment-0.20.21.4.md)

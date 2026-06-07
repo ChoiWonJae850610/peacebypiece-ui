@@ -91,6 +91,33 @@ function getUnitUsageDescription(name: string) {
   return descriptions[normalizedName] ?? "작업지시서 수량 입력에 사용하는 단위";
 }
 
+function getUnitDisplayCode(name: string, code?: string | null) {
+  const normalizedName = name.trim();
+  const displayCodes: Record<string, string> = {
+    개: "pcs",
+    공정: "process",
+    롤: "roll",
+    미터: "m",
+    박스: "box",
+    벌: "set",
+    야드: "yd",
+    장: "sheet",
+  };
+  return displayCodes[normalizedName] ?? code ?? "-";
+}
+
+function getProcessDisplayCode(name: string, code?: string | null) {
+  const normalizedName = name.trim();
+  const displayCodes: Record<string, string> = {
+    나염: "print",
+    단딩: "binding",
+    워싱: "washing",
+    자수: "embroidery",
+    플리스: "fleece",
+  };
+  return displayCodes[normalizedName] ?? code ?? "-";
+}
+
 function getProcessUsageDescription(name: string) {
   const normalizedName = name.trim();
   const descriptions: Record<string, string> = {
@@ -406,22 +433,20 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     </div>
   );
 
-  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick: () => void) => (
+  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick: () => void, readOnly = false) => (
     <AdminUsageToggle
       label={isActive ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
       checked={isActive}
-      onChange={() => onClick()}
+      onChange={() => {
+        if (readOnly) return;
+        onClick();
+      }}
       disabled={disabled}
+      readOnly={readOnly}
       activeLabel={t("standards.common.active", "사용")}
       inactiveLabel={t("standards.common.inactive", "미사용")}
       variant="inline"
     />
-  );
-
-  const renderUsageStatus = (isActive: boolean) => (
-    <AdminStatusBadge tone={isActive ? "success" : "neutral"} size="sm">
-      {isActive ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
-    </AdminStatusBadge>
   );
 
   const renderCategoryColumn = (
@@ -448,7 +473,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
               className={`group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-l-4 px-3 py-2.5 transition ${
                 selected
                   ? "border-l-[var(--pbp-brand-primary)] bg-[var(--pbp-surface-selected)] shadow-[inset_0_0_0_1px_var(--pbp-brand-muted)]"
-                  : "border-l-transparent hover:bg-[var(--pbp-surface-muted)]"
+                  : "border-l-transparent bg-[var(--pbp-surface)] hover:bg-[var(--pbp-surface-muted)]"
               }`}
             >
               <button
@@ -489,7 +514,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
               type="button"
               onClick={() => addItemCategory(level, parentId, newName)}
               disabled={itemSavingId !== null || (level > 1 && !parentId)}
-              className="rounded-xl bg-[var(--pbp-action-primary)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-action-primary-text)] transition enabled:hover:opacity-90 disabled:cursor-default disabled:opacity-45"
+              className="rounded-xl border border-[var(--pbp-action-primary-surface)] bg-[var(--pbp-action-primary-surface)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-action-primary-text)] transition enabled:hover:bg-[var(--pbp-action-primary-surface-hover)] disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface)] disabled:text-[var(--pbp-text-muted)] disabled:cursor-default"
             >
               {itemSavingId === "new" ? t("standards.common.saving", "저장 중") : t("standards.items.addShort", "추가")}
             </button>
@@ -501,7 +526,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
 
   const renderItemManagement = () => (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs font-medium leading-5 text-stone-600">
+      <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
         {t("standards.items.hierarchyDescription", "생산품 유형은 1차·2차·3차 계층으로 관리합니다. 작업지시서에서는 이 분류를 따라 품목을 선택합니다.")}
       </div>
 
@@ -555,24 +580,26 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
   const renderReadOnlyRows = (target: StandardRequestTarget) => {
     const isUnitTarget = target === "units";
     const rows = isUnitTarget
-      ? sortedUnitDefinitions.map((unit) => ({ id: unit.id, name: unit.name, description: getUnitUsageDescription(unit.name), isActive: unit.is_active }))
-      : sortedProcessDefinitions.map((process) => ({ id: process.type, name: process.label, description: getProcessUsageDescription(process.label), isActive: process.isActive }));
+      ? sortedUnitDefinitions.map((unit) => ({ id: unit.id, name: unit.name, code: getUnitDisplayCode(unit.name, unit.code), description: getUnitUsageDescription(unit.name), isActive: unit.is_active }))
+      : sortedProcessDefinitions.map((process) => ({ id: process.type, name: process.label, code: getProcessDisplayCode(process.label, process.type), description: getProcessUsageDescription(process.label), isActive: process.isActive }));
     const targetTitle = isUnitTarget ? t("standards.actions.units.title", "단위 표준") : t("standards.actions.processes.title", "외주공정 유형");
 
     return (
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
-          <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.2fr)_112px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
+          <div className="grid grid-cols-[minmax(0,0.55fr)_minmax(0,0.55fr)_minmax(0,1.2fr)_128px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
             <span>{t("standards.table.name", "이름")}</span>
+            <span>{t("standards.table.code", "표기명")}</span>
             <span>{t("standards.table.description", "사용처")}</span>
             <span className="text-right">{t("standards.table.status", "사용 여부")}</span>
           </div>
           <div className="max-h-[420px] overflow-auto divide-y divide-[var(--pbp-border)] bg-[var(--pbp-surface)]">
             {rows.length > 0 ? rows.map((row) => (
-              <div key={row.id} className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.2fr)_112px] items-center gap-3 px-4 py-3 text-sm">
+              <div key={row.id} className="grid grid-cols-[minmax(0,0.55fr)_minmax(0,0.55fr)_minmax(0,1.2fr)_128px] items-center gap-3 px-4 py-3 text-sm">
                 <span className="truncate font-semibold text-[var(--pbp-text-primary)]">{row.name}</span>
+                <span className="truncate text-xs font-semibold text-[var(--pbp-brand-primary)]">{row.code}</span>
                 <span className="min-w-0 truncate text-xs font-medium text-[var(--pbp-text-muted)]">{row.description}</span>
-                <span className="flex justify-end">{renderUsageStatus(row.isActive)}</span>
+                <span className="flex justify-end">{renderUsageToggle(row.isActive, false, () => undefined, true)}</span>
               </div>
             )) : (
               <div className="px-4 py-8 text-center text-sm font-medium text-[var(--pbp-text-muted)]">{emptyDbLabel}</div>
@@ -636,7 +663,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
                     submitRequest();
                   }}
                   disabled={requestTarget === target && requestSubmitState === "submitting"}
-                  className="rounded-xl bg-[var(--pbp-action-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--pbp-action-primary-text)] transition enabled:hover:opacity-90 disabled:cursor-default disabled:opacity-45"
+                  className="rounded-xl border border-[var(--pbp-action-primary-surface)] bg-[var(--pbp-action-primary-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--pbp-action-primary-text)] transition enabled:hover:bg-[var(--pbp-action-primary-surface-hover)] disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface)] disabled:text-[var(--pbp-text-muted)] disabled:cursor-default"
                 >
                   {requestTarget === target && requestSubmitState === "submitting" ? t("standards.request.submitting", "접수 중") : t("standards.request.submit", "요청하기")}
                 </button>
@@ -675,8 +702,8 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         title={t("standards.section.standardTitle", "기준 관리")}
         description={t("standards.section.standardDescription", "생산품 유형은 직접 관리하고, 단위·외주공정 유형은 요청으로 운영합니다.")}
         meta={<AdminStatusBadge tone="brand" size="sm">{selectedTab.title}</AdminStatusBadge>}
-        density="compact"
-        bodyClassName="pt-3"
+        density="standard"
+        bodyClassName="pt-4"
       >
         <WaflSettingsTabs
           items={tabs.map((tab) => ({ id: tab.key, title: tab.title, description: tab.description, tone: tab.key === "items" ? "brand" : tab.key === "units" ? "info" : "success" }))}
