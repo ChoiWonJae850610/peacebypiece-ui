@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.22`
+- 기준 앱 버전: `0.20.23`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -108,6 +108,7 @@
 - [0.20.21.2 기준정보 계층형 UI 오류 및 밀도 보정](./settings-standards-density-fix-0.20.21.2.md)
 - [0.20.21.3 환경설정 공통 헤더·탭·상태 컴포넌트 보정](./settings-common-components-0.20.21.3.md)
 - [0.20.22 환경설정 마무리 QA 및 공통 UI 보정](./settings-environment-finish-0.20.22.md)
+- [0.20.23 작업지시서 화면 정리 1차 기준](./workorder-screen-cleanup-plan-0.20.23.md)
 
 ### DB/API smoke
 
@@ -345,3 +346,9 @@ WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/
 
 상세 문서: [환경설정 기준정보 생산품 유형 계층형 보정 0.20.21.1](settings-standards-product-hierarchy-0.20.21.1.md)
 - [환경설정 기준정보 헤더·토글·테마 정렬 보정 0.20.21.4](./settings-standards-theme-alignment-0.20.21.4.md)
+
+## 21. 0.20.23 작업지시서 화면 정리 1차 기준
+
+환경설정 UI 정리 이후 작업지시서 화면을 목록, 상세, 우측 패널 단위로 나누어 정리할 기준을 문서화했다. PC 3패널 구조를 유지하면서 WAFL 공통 헤더, selected token, 상태 pill, empty state 패턴을 점진 적용하는 방향이다.
+
+상세 문서: [작업지시서 화면 정리 1차 기준 0.20.23](workorder-screen-cleanup-plan-0.20.23.md)
