@@ -47,10 +47,10 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
   {
     id: "feedback",
     title: "서비스 건의",
-    description: "개선 요청과 오류 제보를 운영팀에 전달합니다.",
-    statusLabel: "이메일 접수",
+    description: "기능 건의와 오류 제보를 접수합니다.",
+    statusLabel: "접수 폼",
     tone: "violet",
-    detailItems: ["기능 건의", "오류 제보", "개선 요청"],
+    detailItems: ["문의 유형", "내용 작성", "접수 이력"],
   },
 ] as const;
 
@@ -74,10 +74,10 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
     items: ["이용약관", "개인정보처리방침", "환불정책", "데이터 보관·삭제정책"],
   },
   feedback: {
-    title: "서비스 건의는 이메일로 접수합니다.",
-    description: "고객관리자가 기능 개선 요청, 오류 제보, 업무 흐름 불편사항을 이메일로 전달할 수 있는 접수 방식입니다.",
-    nextStep: "접수된 개선 요청은 운영 검토 기준에 따라 별도 관리 화면으로 확장합니다.",
-    items: ["기능 개선 건의", "업무 흐름 불편사항", "오류 제보", "첨부/캡처 전달"],
+    title: "서비스 건의",
+    description: "기능 건의, 오류 제보, 업무 흐름 불편사항을 한 화면에서 작성합니다.",
+    nextStep: "정식 접수 API 전까지 이메일 작성 화면으로 연결합니다.",
+    items: ["기능 건의", "오류 제보", "개선 요청", "첨부/캡처 전달"],
   },
 };
 

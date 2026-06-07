@@ -702,40 +702,147 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
 function FeedbackPanel() {
   const t = useAdminTranslation();
   const feedback = ADMIN_SETTINGS_NOTICE_BY_ID.feedback;
-  const feedbackMailtoHref = useMemo(() => buildAdminFeedbackMailtoHref(), []);
+  const [feedbackType, setFeedbackType] = useState<"feature" | "bug" | "improvement">("feature");
+  const [feedbackTitle, setFeedbackTitle] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+
+  const feedbackTypeOptions = useMemo(
+    () => [
+      { value: "feature" as const, label: t("settings.feedback.type.feature", "기능 건의") },
+      { value: "bug" as const, label: t("settings.feedback.type.bug", "오류 제보") },
+      { value: "improvement" as const, label: t("settings.feedback.type.improvement", "개선 요청") },
+    ],
+    [t],
+  );
+
+  const selectedFeedbackTypeLabel = feedbackTypeOptions.find((item) => item.value === feedbackType)?.label ?? feedbackTypeOptions[0]?.label ?? "";
+  const normalizedTitle = feedbackTitle.trim();
+  const normalizedMessage = feedbackMessage.trim();
+  const canWriteEmail = normalizedTitle.length >= 2 && normalizedMessage.length >= 10;
+  const feedbackMailtoHref = useMemo(
+    () => buildAdminFeedbackMailtoHref({
+      requestType: feedbackType,
+      subject: normalizedTitle ? `[${selectedFeedbackTypeLabel}] ${normalizedTitle}` : undefined,
+      body: [
+        `문의 유형: ${selectedFeedbackTypeLabel}`,
+        "",
+        "제목:",
+        normalizedTitle,
+        "",
+        "내용:",
+        normalizedMessage,
+        "",
+        "사용 중인 화면:",
+        "환경설정 > 서비스 건의",
+        "",
+        "첨부/캡처:",
+        "필요 시 이메일에 파일을 첨부해 주세요.",
+      ].join("\n"),
+    }),
+    [feedbackType, normalizedMessage, normalizedTitle, selectedFeedbackTypeLabel],
+  );
+
   return (
     <WaflSectionPanel
       eyebrow={t("settings.feedback.eyebrow", "서비스 건의")}
       title={feedback.title}
-      description={feedback.description}
-      actions={
-        <AdminLinkButton variant="primary" href={feedbackMailtoHref}>
-          {t("settings.feedback.writeEmail", "이메일 작성하기")}
-        </AdminLinkButton>
-      }
+      description={t("settings.feedback.redesignedDescription", "기능 건의, 오류 제보, 개선 요청을 작성한 뒤 이메일 접수로 전달합니다.")}
+      actions={<AdminStatusBadge tone="neutral">{ADMIN_FEEDBACK_CONTACT_EMAIL}</AdminStatusBadge>}
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
-      <WaflSettingsSectionGroup
-        eyebrow={t("settings.feedback.emailLabel", "접수 이메일")}
-        title={<span className="font-mono">{ADMIN_FEEDBACK_CONTACT_EMAIL}</span>}
-        description={t("settings.feedback.mailDescription", "개선 요청, 오류 제보, 기능 제안 내용을 이메일로 작성해 전달합니다.")}
-        tone="info"
-      >
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {feedback.items.map((item) => (
-              <WaflSettingCard key={item} title={item} tone="neutral" density="compact" />
-            ))}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.72fr)]">
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.feedback.formEyebrow", "접수 내용")}
+          title={t("settings.feedback.formTitle", "건의 또는 오류 내용을 작성하세요")}
+          description={t("settings.feedback.formDescription", "정식 접수 API 전까지는 작성한 내용을 이메일로 보내는 방식으로 운영합니다.")}
+          tone="neutral"
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-[var(--pbp-text-subtle)]" htmlFor="admin-feedback-type">
+                {t("settings.feedback.typeLabel", "문의 유형")}
+              </label>
+              <select
+                id="admin-feedback-type"
+                value={feedbackType}
+                onChange={(event) => setFeedbackType(event.target.value as typeof feedbackType)}
+                className="mt-2 h-11 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
+              >
+                {feedbackTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[var(--pbp-text-subtle)]" htmlFor="admin-feedback-title">
+                {t("settings.feedback.titleLabel", "제목")}
+              </label>
+              <input
+                id="admin-feedback-title"
+                value={feedbackTitle}
+                onChange={(event) => setFeedbackTitle(event.target.value)}
+                className="mt-2 h-11 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
+                placeholder={t("settings.feedback.titlePlaceholder", "예: 사업자등록증 업로드 후 검토 상태가 궁금합니다")}
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[var(--pbp-text-subtle)]" htmlFor="admin-feedback-message">
+                {t("settings.feedback.messageLabel", "내용")}
+              </label>
+              <textarea
+                id="admin-feedback-message"
+                value={feedbackMessage}
+                onChange={(event) => setFeedbackMessage(event.target.value)}
+                rows={7}
+                className="mt-2 min-h-40 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
+                placeholder={t("settings.feedback.messagePlaceholder", "불편한 상황, 재현 방법, 원하는 개선 방향을 적어 주세요.")}
+              />
+              <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                {t("settings.feedback.validationHint", "제목 2자 이상, 내용 10자 이상 입력하면 이메일 작성 버튼을 사용할 수 있습니다.")}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2">
+              <AdminButton
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setFeedbackTitle("");
+                  setFeedbackMessage("");
+                  setFeedbackType("feature");
+                }}
+              >
+                {t("common.reset", "초기화")}
+              </AdminButton>
+              <AdminLinkButton variant="primary" href={feedbackMailtoHref} aria-disabled={!canWriteEmail} className={!canWriteEmail ? "pointer-events-none opacity-50" : undefined}>
+                {t("settings.feedback.writeEmail", "이메일 작성하기")}
+              </AdminLinkButton>
+            </div>
           </div>
-          <WaflSettingCard
-            eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
-            title={feedback.nextStep}
-            tone="info"
-            density="compact"
-          />
-        </div>
-      </WaflSettingsSectionGroup>
+        </WaflSettingsSectionGroup>
+
+        <WaflSettingsSectionGroup
+          eyebrow={t("settings.feedback.historyEyebrow", "접수 이력")}
+          title={t("settings.feedback.historyTitle", "최근 접수 이력")}
+          description={t("settings.feedback.historyDescription", "정식 접수 저장 기능이 연결되면 이 영역에서 처리 상태와 답변을 확인합니다.")}
+          badge={<AdminStatusBadge tone="neutral">{t("settings.feedback.emailMode", "이메일 접수")}</AdminStatusBadge>}
+          tone="neutral"
+        >
+          <div className="rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-6 text-sm leading-6 text-[var(--pbp-text-muted)]">
+            <p className="font-semibold text-[var(--pbp-text-primary)]">{t("settings.feedback.emptyHistoryTitle", "아직 화면에 표시할 접수 이력이 없습니다.")}</p>
+            <p className="mt-2">{t("settings.feedback.emptyHistoryDescription", "현재는 이메일 접수만 지원합니다. 이메일로 보낸 요청은 운영팀 답장 기준으로 확인해 주세요.")}</p>
+          </div>
+          <div className="mt-4 grid gap-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            <p>{t("settings.feedback.emailRecipient", "접수 이메일")}: <span className="font-mono text-[var(--pbp-text-primary)]">{ADMIN_FEEDBACK_CONTACT_EMAIL}</span></p>
+            <p>{feedback.nextStep}</p>
+          </div>
+        </WaflSettingsSectionGroup>
+      </div>
     </WaflSectionPanel>
   );
 }

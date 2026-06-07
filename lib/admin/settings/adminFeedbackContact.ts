@@ -5,6 +5,8 @@ export type AdminFeedbackRequestType = "improvement" | "bug" | "feature";
 export type AdminFeedbackMailtoInput = {
   requestType?: AdminFeedbackRequestType;
   companyName?: string;
+  subject?: string;
+  body?: string;
 };
 
 const FEEDBACK_SUBJECT_BY_TYPE: Record<AdminFeedbackRequestType, string> = {
@@ -29,12 +31,16 @@ const FEEDBACK_BODY_TEMPLATE = [
 export function buildAdminFeedbackMailtoHref({
   requestType = "improvement",
   companyName,
+  subject: customSubject,
+  body: customBody,
 }: AdminFeedbackMailtoInput = {}): string {
   const subjectPrefix = companyName ? `[${companyName}] ` : "";
-  const subject = `${subjectPrefix}${FEEDBACK_SUBJECT_BY_TYPE[requestType]}`;
+  const subject = customSubject?.trim()
+    ? `${subjectPrefix}${customSubject.trim()}`
+    : `${subjectPrefix}${FEEDBACK_SUBJECT_BY_TYPE[requestType]}`;
   const query = new URLSearchParams({
     subject,
-    body: FEEDBACK_BODY_TEMPLATE,
+    body: customBody?.trim() ? customBody.trim() : FEEDBACK_BODY_TEMPLATE,
   });
 
   return `mailto:${ADMIN_FEEDBACK_CONTACT_EMAIL}?${query.toString()}`;
