@@ -57,7 +57,7 @@ export default function WaflSettingsTabs<TId extends string>({
                 "flex min-h-[64px] w-full flex-col rounded-2xl border px-4 py-3 text-left transition",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]",
                 active
-                  ? "border-[var(--pbp-brand-muted)] bg-[var(--pbp-surface-selected)] text-[var(--pbp-text-primary)] shadow-sm"
+                  ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-text-primary)] shadow-sm"
                   : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-soft)]",
               )}
             >

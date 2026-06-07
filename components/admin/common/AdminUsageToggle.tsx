@@ -30,35 +30,17 @@ export default function AdminUsageToggle({
   const statusLabel = checked ? activeLabel : inactiveLabel;
 
   if (variant === "inline") {
-    if (readOnly) {
-      return (
-        <div className={["inline-flex shrink-0 items-center gap-2", className].join(" ")}>
-          <span className={["min-w-[42px] text-right text-xs font-semibold", checked ? "text-[var(--pbp-brand-primary)]" : "text-[var(--pbp-text-muted)]"].join(" ")}>{statusLabel}</span>
-          <span
-            aria-label={label}
-            aria-checked={checked}
-            role="switch"
-            className={[
-              "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors duration-200 ease-out",
-              checked ? "pbp-toggle-track-on" : "pbp-toggle-track-off",
-            ].join(" ")}
-          >
-            <span
-              aria-hidden="true"
-              className={[
-                "pointer-events-none absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full shadow-sm transition-transform duration-200 ease-out pbp-toggle-thumb",
-                checked ? "translate-x-5" : "translate-x-0",
-              ].join(" ")}
-            />
-          </span>
-        </div>
-      );
-    }
-
     return (
       <div className={["inline-flex shrink-0 items-center gap-2", className].join(" ")}>
-        <span className={["min-w-[42px] text-right text-xs font-semibold", checked ? "text-[var(--pbp-brand-primary)]" : "text-[var(--pbp-text-muted)]"].join(" ")}>{statusLabel}</span>
-        <StatusToggle checked={checked} onChange={readOnly ? undefined : onChange} disabled={disabled} srLabel={label} size="sm" />
+        <span
+          className={[
+            "min-w-[52px] text-right text-xs font-bold",
+            checked ? "text-[var(--pbp-text-primary)]" : "text-[var(--pbp-text-muted)]",
+          ].join(" ")}
+        >
+          {statusLabel}
+        </span>
+        <StatusToggle checked={checked} onChange={readOnly ? undefined : onChange} disabled={disabled || readOnly} srLabel={label} size="sm" />
       </div>
     );
   }

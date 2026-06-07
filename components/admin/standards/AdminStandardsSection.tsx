@@ -5,6 +5,7 @@ import AdminNotificationSettingsModal from "@/components/admin/AdminNotification
 import AdminFilePolicySettingsModal from "@/components/admin/standards/AdminFilePolicySettingsModal";
 import AdminNotificationPolicySettingsModal from "@/components/admin/standards/AdminNotificationPolicySettingsModal";
 import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import WaflSettingsTabs from "@/components/admin/common/WaflSettingsTabs";
@@ -472,8 +473,8 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
               key={item.id}
               className={`group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-l-4 px-3 py-2.5 transition ${
                 selected
-                  ? "border-l-[var(--pbp-brand-primary)] bg-[var(--pbp-surface-selected)] shadow-[inset_0_0_0_1px_var(--pbp-brand-muted)]"
-                  : "border-l-transparent bg-[var(--pbp-surface)] hover:bg-[var(--pbp-surface-muted)]"
+                  ? "border-l-[var(--pbp-brand-soft)] bg-[var(--pbp-selected-surface)] ring-1 ring-inset ring-[var(--pbp-selected-border)]"
+                  : "border-l-transparent bg-[var(--pbp-surface)] hover:bg-[var(--pbp-selected-surface-soft)]"
               }`}
             >
               <button
@@ -587,7 +588,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     return (
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
-          <div className="grid grid-cols-[minmax(0,0.55fr)_minmax(0,0.55fr)_minmax(0,1.2fr)_128px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
+          <div className="grid grid-cols-[minmax(120px,0.55fr)_minmax(120px,0.55fr)_minmax(220px,1.35fr)_144px] gap-4 bg-[var(--pbp-surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
             <span>{t("standards.table.name", "이름")}</span>
             <span>{t("standards.table.code", "표기명")}</span>
             <span>{t("standards.table.description", "사용처")}</span>
@@ -595,7 +596,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
           </div>
           <div className="max-h-[420px] overflow-auto divide-y divide-[var(--pbp-border)] bg-[var(--pbp-surface)]">
             {rows.length > 0 ? rows.map((row) => (
-              <div key={row.id} className="grid grid-cols-[minmax(0,0.55fr)_minmax(0,0.55fr)_minmax(0,1.2fr)_128px] items-center gap-3 px-4 py-3 text-sm">
+              <div key={row.id} className="grid grid-cols-[minmax(120px,0.55fr)_minmax(120px,0.55fr)_minmax(220px,1.35fr)_144px] items-center gap-4 px-4 py-3 text-sm">
                 <span className="truncate font-semibold text-[var(--pbp-text-primary)]">{row.name}</span>
                 <span className="truncate text-xs font-semibold text-[var(--pbp-brand-primary)]">{row.code}</span>
                 <span className="min-w-0 truncate text-xs font-medium text-[var(--pbp-text-muted)]">{row.description}</span>
@@ -649,12 +650,14 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
               />
               <div className="flex justify-end gap-2">
                 {requestTarget === target ? (
-                  <button type="button" onClick={closeRequestPanel} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--pbp-text-muted)] transition hover:border-[var(--pbp-border-strong)] hover:text-[var(--pbp-text-primary)]">
+                  <AdminButton type="button" variant="secondary" size="md" onClick={closeRequestPanel}>
                     {t("common.cancel", "취소")}
-                  </button>
+                  </AdminButton>
                 ) : null}
-                <button
+                <AdminButton
                   type="button"
+                  variant="primary"
+                  size="md"
                   onClick={() => {
                     if (requestTarget !== target) {
                       openRequestPanel(target);
@@ -663,10 +666,10 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
                     submitRequest();
                   }}
                   disabled={requestTarget === target && requestSubmitState === "submitting"}
-                  className="rounded-xl border border-[var(--pbp-action-primary-surface)] bg-[var(--pbp-action-primary-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--pbp-action-primary-text)] transition enabled:hover:bg-[var(--pbp-action-primary-surface-hover)] disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface)] disabled:text-[var(--pbp-text-muted)] disabled:cursor-default"
+                  className="disabled:opacity-70"
                 >
                   {requestTarget === target && requestSubmitState === "submitting" ? t("standards.request.submitting", "접수 중") : t("standards.request.submit", "요청하기")}
-                </button>
+                </AdminButton>
               </div>
               {requestTarget === target && requestNotice ? (
                 <p className={`rounded-xl px-3 py-2 text-xs font-semibold ${requestSubmitState === "success" ? "bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]" : "bg-[var(--pbp-status-danger-bg)] text-[var(--pbp-status-danger-fg)]"}`}>{requestNotice}</p>
@@ -703,6 +706,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         description={t("standards.section.standardDescription", "생산품 유형은 직접 관리하고, 단위·외주공정 유형은 요청으로 운영합니다.")}
         meta={<AdminStatusBadge tone="brand" size="sm">{selectedTab.title}</AdminStatusBadge>}
         density="standard"
+        headerClassName="min-h-[112px]"
         bodyClassName="pt-4"
       >
         <WaflSettingsTabs

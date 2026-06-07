@@ -51,7 +51,7 @@ export default function StatusToggle({
         "relative inline-flex shrink-0 items-center rounded-full border transition-colors duration-200 ease-out",
         sizeClass.track,
         checked ? "pbp-toggle-track-on" : "pbp-toggle-track-off",
-        disabled ? "cursor-default opacity-70" : "cursor-pointer hover:brightness-95",
+        disabled ? "cursor-default" : "cursor-pointer hover:brightness-95",
         className,
       ].join(" ")}
     >

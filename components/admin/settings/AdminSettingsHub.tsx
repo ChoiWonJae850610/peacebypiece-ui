@@ -255,6 +255,7 @@ function BillingPlanPanel({
         </>
       }
       className="min-h-[320px]"
+      headerClassName="min-h-[112px]"
       bodyClassName="pt-4 space-y-4"
     >
       {isSubscriptionFailed ? (
@@ -475,6 +476,7 @@ function AccountSettingsPanel({
         </>
       }
       className="min-h-[320px]"
+      headerClassName="min-h-[112px]"
       bodyClassName="pt-4 space-y-4"
     >
       <WaflSettingsSectionGroup
@@ -751,6 +753,7 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
           </>
         }
         className="min-h-[320px]"
+        headerClassName="min-h-[112px]"
         bodyClassName="pt-4 space-y-4"
       >
         <WaflSettingsSectionGroup
@@ -976,6 +979,7 @@ function FeedbackPanel() {
       description={t("settings.feedback.dbDescription", "기능 건의, 오류 제보, 개선 요청을 접수하고 처리 상태를 확인합니다.")}
       actions={<AdminStatusBadge tone="info">{t("settings.feedback.dbMode", "문의 접수")}</AdminStatusBadge>}
       className="min-h-[320px]"
+      headerClassName="min-h-[112px]"
       bodyClassName="pt-4 space-y-4"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.72fr)]">
