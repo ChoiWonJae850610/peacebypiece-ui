@@ -467,13 +467,16 @@ test.describe("workspace policy and settings smoke", () => {
       await expectAnyText(body, ["환경설정", "회사 정보", "계정 정보"], 15_000);
     }
 
-    const legalEntry = page.getByRole("link", { name: /약관·정책 보기|약관·정책/ }).first();
     const legalButton = page.getByRole("button", { name: /약관·정책/ }).first();
 
-    if (await legalEntry.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await expect(legalEntry).toHaveAttribute("href", /\/workspace\/legal/);
-    } else if (await clickIfVisible(legalButton, 3_000)) {
-      await expectAnyText(body, ["약관·정책", "정책 관리", "정책 문서", "고객 공개", "조회 대상 문서"], 15_000);
+    if (await clickIfVisible(legalButton, 3_000)) {
+      await expectAnyText(body, ["이용약관", "개인정보처리방침", "요금·환불정책", "데이터 보관·삭제정책"], 15_000);
+      const openDocumentButton = page.getByRole("button", { name: /^보기$/ }).first();
+      if (await clickIfVisible(openDocumentButton, 3_000)) {
+        await expectAnyText(body, ["적용 범위", "계정과 권한", "서비스 제한"], 15_000);
+        const closeButton = page.getByRole("button", { name: /^닫기$/ }).first();
+        await clickIfVisible(closeButton, 3_000);
+      }
     } else {
       await expectAnyText(body, ["약관·정책", "환경설정"], 15_000);
     }

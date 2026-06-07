@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminModal } from "@/components/admin/layout/AdminModal";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import WaflPageHero from "@/components/admin/common/WaflPageHero";
@@ -24,6 +25,12 @@ import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import { type AdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
 import AdminCompanyFilesPanel from "@/components/admin/settings/AdminCompanyFilesPanel";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import {
+  CUSTOMER_POLICY_DOCUMENTS,
+  getRequiredPolicyDocumentCount,
+  type CustomerPolicyDocument,
+  type CustomerPolicyDocumentCategory,
+} from "@/lib/policies/customerPolicyDocuments";
 
 type AdminCurrentCompanyPayload = {
   ok?: boolean;
@@ -126,6 +133,15 @@ function SettingsMenuTab({ item, active, onClick }: { item: AdminSettingsMenuIte
   );
 }
 
+
+
+const policyCategoryTone: Record<CustomerPolicyDocumentCategory, AdminStatusBadgeTone> = {
+  service: "brand",
+  privacy: "info",
+  billing: "success",
+  data: "warning",
+  operation: "neutral",
+};
 
 function formatSettingsRequestDate(value: string): string {
   const date = new Date(value);
@@ -574,39 +590,112 @@ function AccountSettingsPanel({
 function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
   const t = useAdminTranslation();
   const notice = ADMIN_SETTINGS_NOTICE_BY_ID[noticeId];
+  const [selectedDocument, setSelectedDocument] = useState<CustomerPolicyDocument | null>(null);
+  const requiredPolicyCount = getRequiredPolicyDocumentCount();
 
   return (
-    <WaflSectionPanel
-      eyebrow={t("settings.notice.eyebrow", "약관·정책")}
-      title={notice.title}
-      description={notice.description}
-      actions={<AdminLinkButton variant="primary" href="/workspace/legal">{t("settings.notice.openLegal", "약관·정책 보기")}</AdminLinkButton>}
-      className="min-h-[320px]"
-      bodyClassName="pt-4 space-y-4"
-    >
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
+    <>
+      <WaflSectionPanel
+        eyebrow={t("settings.notice.eyebrow", "약관·정책")}
+        title={t("settings.notice.redesignedTitle", "약관·정책")}
+        description={t("settings.notice.redesignedDescription", "필수 약관과 운영정책을 이 화면에서 바로 확인합니다. 각 문서를 누르면 전체 내용을 모달로 열람합니다.")}
+        actions={
+          <>
+            <AdminStatusBadge tone="warning">{t("settings.notice.requiredCount", "필수 동의")} {requiredPolicyCount}{t("common.countUnit", "건")}</AdminStatusBadge>
+            <AdminStatusBadge tone="neutral">{CUSTOMER_POLICY_DOCUMENTS.length}{t("common.countUnit", "건")}</AdminStatusBadge>
+          </>
+        }
+        className="min-h-[320px]"
+        bodyClassName="pt-4 space-y-4"
+      >
         <WaflSettingsSectionGroup
-          eyebrow={t("settings.notice.documentEyebrow", "고객 공개 문서")}
-          title={t("settings.notice.documentTitle", "조회 대상 문서")}
-          description={t("settings.notice.documentDescription", "고객사가 환경설정에서 확인하게 될 약관·정책 문서 목록입니다.")}
+          eyebrow={t("settings.notice.documentEyebrow", "문서 목록")}
+          title={t("settings.notice.documentListTitle", "고객 공개 약관·정책")}
+          description={t("settings.notice.documentListDescription", "문서별 필수 여부와 버전을 확인하고 필요한 문서를 바로 열람합니다.")}
           tone="neutral"
         >
-          <div className="grid gap-3 sm:grid-cols-2">
-            {notice.items.map((item) => (
-              <WaflSettingCard key={item} title={item} tone="neutral" density="compact" />
+          <div className="overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
+            {CUSTOMER_POLICY_DOCUMENTS.map((document) => (
+              <div
+                key={document.id}
+                className="grid gap-3 border-b border-[var(--pbp-border)] px-4 py-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-sm font-black text-[var(--pbp-text-primary)]">{document.title}</h3>
+                    <AdminStatusBadge tone={policyCategoryTone[document.category]} size="xs">{document.categoryLabel}</AdminStatusBadge>
+                    <AdminStatusBadge tone="neutral" size="xs">{document.versionLabel}</AdminStatusBadge>
+                    {document.requiredForApproval ? <AdminStatusBadge tone="warning" size="xs">{t("settings.notice.required", "필수 동의")}</AdminStatusBadge> : null}
+                  </div>
+                  <p className="mt-1 text-xs font-semibold text-[var(--pbp-text-muted)]">{document.subtitle}</p>
+                  <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{document.summary}</p>
+                </div>
+                <div className="flex items-center justify-between gap-3 lg:justify-end">
+                  <span className="text-xs font-semibold text-[var(--pbp-text-subtle)]">{document.effectiveDateLabel}</span>
+                  <AdminButton type="button" size="sm" variant="secondary" onClick={() => setSelectedDocument(document)}>
+                    {t("settings.notice.openDocument", "보기")}
+                  </AdminButton>
+                </div>
+              </div>
             ))}
           </div>
         </WaflSettingsSectionGroup>
+
         <WaflSettingsSectionGroup
-          eyebrow={t("settings.notice.nextStepTitle", "적용 예정")}
-          title={notice.nextStep}
-          description={t("settings.notice.nextStepDescription", "현재 공개된 정책 문서를 확인하고, 후속 단계에서 정책 버전과 동의 이력을 연결합니다.")}
-          tone="info"
+          eyebrow={t("settings.notice.agreementEyebrow", "동의 상태")}
+          title={t("settings.notice.agreementTitle", "필수 약관 동의 상태")}
+          description={t("settings.notice.agreementDescription", "중요 정책 변경이나 재동의 필요 상태는 업무 접근 차단 화면과 약관·정책 화면에서 함께 안내됩니다.")}
+          badge={<AdminStatusBadge tone="warning" size="xs">{t("settings.notice.required", "필수 동의")}</AdminStatusBadge>}
+          tone="warning"
         >
-          <WaflSettingCard title={t("settings.notice.openLegal", "약관·정책 보기")} description={notice.description} tone="info" density="compact" actions={<AdminLinkButton variant="secondary" href="/workspace/legal">{t("settings.notice.openLegal", "약관·정책 보기")}</AdminLinkButton>} />
+          <div className="grid gap-2 text-sm leading-6 text-[var(--pbp-text-muted)] sm:grid-cols-2">
+            <p>{t("settings.notice.requiredPolicySummary", "필수 문서는 이용약관, 개인정보처리방침, 요금·환불정책, 데이터 보관·삭제정책입니다.")}</p>
+            <p>{t("settings.notice.reagreementSummary", "재동의가 필요한 경우 이 탭에서 문서를 열람한 뒤 약관·정책 화면에서 동의 상태를 갱신합니다.")}</p>
+          </div>
         </WaflSettingsSectionGroup>
-      </div>
-    </WaflSectionPanel>
+      </WaflSectionPanel>
+
+      <AdminModal
+        open={Boolean(selectedDocument)}
+        title={selectedDocument?.title ?? t("settings.notice.documentModalTitle", "약관 문서")}
+        description={selectedDocument ? `${selectedDocument.subtitle} · ${selectedDocument.versionLabel}` : undefined}
+        onClose={() => setSelectedDocument(null)}
+        maxWidthClass="md:max-w-4xl"
+        bodyClassName="space-y-4 [scrollbar-gutter:stable]"
+        footer={
+          <div className="flex w-full justify-end">
+            <AdminButton type="button" variant="primary" onClick={() => setSelectedDocument(null)}>
+              {t("common.close", "닫기")}
+            </AdminButton>
+          </div>
+        }
+      >
+        {selectedDocument ? (
+          <div className="space-y-4">
+            <div className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <AdminStatusBadge tone={policyCategoryTone[selectedDocument.category]}>{selectedDocument.categoryLabel}</AdminStatusBadge>
+                <AdminStatusBadge tone="neutral">{selectedDocument.versionLabel}</AdminStatusBadge>
+                <AdminStatusBadge tone={selectedDocument.requiredForApproval ? "warning" : "neutral"}>
+                  {selectedDocument.requiredForApproval ? t("settings.notice.required", "필수 동의") : t("settings.notice.optional", "선택 문서")}
+                </AdminStatusBadge>
+                <AdminStatusBadge tone="neutral">{selectedDocument.effectiveDateLabel}</AdminStatusBadge>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[var(--pbp-text-muted)]">{selectedDocument.summary}</p>
+            </div>
+
+            <div className="space-y-3">
+              {selectedDocument.sections.map((section) => (
+                <section key={section.title} className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5">
+                  <h3 className="text-sm font-black text-[var(--pbp-text-primary)]">{section.title}</h3>
+                  <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[var(--pbp-text-muted)]">{section.body}</p>
+                </section>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </AdminModal>
+    </>
   );
 }
 
