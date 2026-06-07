@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.06`
+- 기준 앱 버전: `0.20.07`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -92,6 +92,7 @@
 - [billing-plan-storage-design-0.20.04.md](billing-plan-storage-design-0.20.04.md)
 - [billing-storage-db-api-0.20.05.md](billing-storage-db-api-0.20.05.md)
 - [billing-storage-ui-0.20.06.md](billing-storage-ui-0.20.06.md)
+- [storage-quota-enforcement-design-0.20.07.md](storage-quota-enforcement-design-0.20.07.md)
 
 ### DB/API smoke
 
@@ -235,3 +236,17 @@ WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/
 환경설정의 요금제·저장공간 영역이 `GET /api/admin/subscription` 응답을 사용해 현재 요금제, 구독 상태, 저장공간 사용량, 멤버 사용량, 무료체험 종료일, 최근 갱신 시점을 표시한다.
 
 상세 문서: [요금제/저장공간 UI 1차 0.20.06](billing-storage-ui-0.20.06.md)
+
+
+## 15. 0.20.07 저장소 사용량 제한 설계 1차
+
+저장공간 사용량에 따라 파일 업로드를 안내·제한하는 1차 운영 기준을 문서화했다.
+
+- 80% 이상: 업로드 허용 + 경고 안내
+- 100% 이상: 신규 파일 업로드 차단
+- 텍스트 작업지시서, 텍스트 메모, 조회, 삭제, 복원은 허용
+- 업로드 준비 API와 메타데이터 저장 API에서 모두 guard 필요
+- 회사 파일 업로드 경로부터 작게 적용하고, 작업지시서 첨부/디자인은 후속 단계에서 확장
+- R2/첨부/메모/휴지통/purge 정상 흐름은 이번 설계에서 변경하지 않는다.
+
+상세 문서: [저장소 사용량 제한 설계 1차 0.20.07](storage-quota-enforcement-design-0.20.07.md)
