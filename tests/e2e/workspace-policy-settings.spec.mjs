@@ -289,6 +289,17 @@ async function mockSettingsApis(page, options = {}) {
           headers: { "Content-Type": mimeType },
           expiresInSeconds: 600,
         },
+        quota: {
+          status: "warning",
+          storageLimitBytes: 10 * 1024 * 1024 * 1024,
+          storageUsedBytes: 8.1 * 1024 * 1024 * 1024,
+          replaceableBytes: 0,
+          incomingSizeBytes: sizeBytes,
+          projectedUsedBytes: 8.1 * 1024 * 1024 * 1024 + sizeBytes,
+          usageRatio: 0.81,
+          warningThresholdRatio: 0.8,
+          message: "저장공간 사용량이 80% 이상입니다.",
+        },
       }),
     });
   });
@@ -326,7 +337,21 @@ async function mockSettingsApis(page, options = {}) {
       await route.fulfill({
         status: 201,
         contentType: "application/json",
-        body: JSON.stringify({ ok: true, file: savedFile }),
+        body: JSON.stringify({
+          ok: true,
+          file: savedFile,
+          quota: {
+            status: "warning",
+            storageLimitBytes: 10 * 1024 * 1024 * 1024,
+            storageUsedBytes: 8.1 * 1024 * 1024 * 1024,
+            replaceableBytes: 0,
+            incomingSizeBytes: savedFile.sizeBytes,
+            projectedUsedBytes: 8.1 * 1024 * 1024 * 1024 + savedFile.sizeBytes,
+            usageRatio: 0.81,
+            warningThresholdRatio: 0.8,
+            message: "저장공간 사용량이 80% 이상입니다.",
+          },
+        }),
       });
       return;
     }
@@ -437,7 +462,7 @@ test.describe("workspace policy and settings smoke", () => {
         mimeType: "image/png",
         buffer: Buffer.from("e2e-company-file"),
       });
-      await expectAnyText(body, ["e2e-new-logo.png", "회사 파일을 업로드했습니다."], 15_000);
+      await expectAnyText(body, ["e2e-new-logo.png", "회사 파일을 업로드했습니다.", "저장공간 사용량이 80% 이상"], 15_000);
     } else {
       await expectAnyText(body, ["환경설정", "회사 정보", "계정 정보"], 15_000);
     }

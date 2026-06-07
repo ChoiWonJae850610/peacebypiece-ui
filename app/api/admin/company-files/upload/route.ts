@@ -6,6 +6,8 @@ import {
   createCompanyFileStorageKey,
   validateCompanyFileUploadInput,
 } from "@/lib/admin/settings/companyFilePolicy";
+import { checkCompanyFileUploadStorageQuota } from "@/lib/billing/companyStorageQuotaRepository";
+import { STORAGE_QUOTA_UPLOAD_ERROR_CODES } from "@/lib/billing/storageQuotaPolicy";
 import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 
 export const runtime = "nodejs";
@@ -50,14 +52,37 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!isR2WorkerUploadConfigured()) {
-    return NextResponse.json(
-      { ok: false, error: COMPANY_FILE_ERROR_CODES.uploadNotConfigured },
-      { status: 503, headers: { "Cache-Control": "no-store" } },
-    );
-  }
-
   try {
+    const quotaResult = await checkCompanyFileUploadStorageQuota({
+      companyId: scopeResult.companyScope.companyId,
+      fileType: validation.fileType,
+      incomingSizeBytes: validation.sizeBytes,
+    });
+    if (!quotaResult.ok) {
+      return NextResponse.json(
+        { ok: false, error: quotaResult.error, message: quotaResult.message },
+        { status: 503, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    if (quotaResult.decision.status === "blocked") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: STORAGE_QUOTA_UPLOAD_ERROR_CODES.exceeded,
+          message: quotaResult.decision.message,
+          quota: quotaResult.decision,
+        },
+        { status: 409, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
+    if (!isR2WorkerUploadConfigured()) {
+      return NextResponse.json(
+        { ok: false, error: COMPANY_FILE_ERROR_CODES.uploadNotConfigured },
+        { status: 503, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
     const storageKey = createCompanyFileStorageKey({
       companyId: scopeResult.companyScope.companyId,
       fileType: validation.fileType,
@@ -77,6 +102,7 @@ export async function POST(request: Request) {
           storageKey,
         },
         upload,
+        quota: quotaResult.decision,
       },
       { headers: { "Cache-Control": "no-store" } },
     );

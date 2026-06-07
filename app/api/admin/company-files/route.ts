@@ -5,6 +5,8 @@ import {
   createOrReplaceCompanyFileMetadata,
   listActiveCompanyFiles,
 } from "@/lib/admin/settings/companyFileRepository";
+import { checkCompanyFileUploadStorageQuota } from "@/lib/billing/companyStorageQuotaRepository";
+import { STORAGE_QUOTA_UPLOAD_ERROR_CODES } from "@/lib/billing/storageQuotaPolicy";
 import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
 import { COMPANY_FILE_ERROR_CODES, isCompanyFileStorageKeyForCompany, validateCompanyFileUploadInput } from "@/lib/admin/settings/companyFilePolicy";
 
@@ -84,6 +86,29 @@ export async function POST(request: Request) {
       );
     }
 
+    const quotaResult = await checkCompanyFileUploadStorageQuota({
+      companyId: scopeResult.companyScope.companyId,
+      fileType: validation.fileType,
+      incomingSizeBytes: validation.sizeBytes,
+    });
+    if (!quotaResult.ok) {
+      return NextResponse.json(
+        { ok: false, error: quotaResult.error, message: quotaResult.message },
+        { status: 503, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    if (quotaResult.decision.status === "blocked") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: STORAGE_QUOTA_UPLOAD_ERROR_CODES.exceeded,
+          message: quotaResult.decision.message,
+          quota: quotaResult.decision,
+        },
+        { status: 409, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
     const file = await createOrReplaceCompanyFileMetadata({
       companyId: scopeResult.companyScope.companyId,
       fileType: validation.fileType,
@@ -95,7 +120,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(
-      { ok: true, file },
+      { ok: true, file, quota: quotaResult.decision },
       { status: 201, headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

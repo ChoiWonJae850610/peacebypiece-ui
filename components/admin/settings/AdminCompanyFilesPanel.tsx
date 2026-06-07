@@ -21,10 +21,21 @@ type CompanyFilesPayload = {
   error?: string;
 };
 
+type CompanyFileUploadQuota = {
+  status?: "allowed" | "warning" | "blocked";
+  message?: string;
+  storageLimitBytes?: number;
+  storageUsedBytes?: number;
+  projectedUsedBytes?: number;
+  usageRatio?: number;
+  warningThresholdRatio?: number;
+};
+
 type CompanyFileUploadPayload = {
   ok?: boolean;
   error?: string;
   message?: string;
+  quota?: CompanyFileUploadQuota;
   file?: {
     fileType: CompanyFileType;
     originalName: string;
@@ -43,6 +54,7 @@ type CompanyFileUploadPayload = {
 type CompanyFileSavePayload = {
   ok?: boolean;
   file?: CompanyFileMetadata;
+  quota?: CompanyFileUploadQuota;
   error?: string;
   message?: string;
 };
@@ -109,8 +121,21 @@ function findFile(files: CompanyFileMetadata[], fileType: CompanyFileType): Comp
 }
 
 function getUploadErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error || "회사 파일 업로드에 실패했습니다.");
+  const message = error instanceof Error ? error.message : String(error || "회사 파일 업로드에 실패했습니다.");
+  if (message === "STORAGE_QUOTA_EXCEEDED" || message.includes("저장공간 한도")) {
+    return message.includes("저장공간 한도")
+      ? message
+      : "저장공간 한도를 초과하여 업로드할 수 없습니다. 요금제·저장공간 상태를 확인해 주세요.";
+  }
+  if (message === "STORAGE_QUOTA_UNAVAILABLE") {
+    return "저장공간 한도 정보를 확인할 수 없어 업로드를 시작하지 못했습니다.";
+  }
+  return message;
+}
+
+function getQuotaWarningMessage(quota: CompanyFileUploadQuota | null | undefined): string | null {
+  if (quota?.status !== "warning") return null;
+  return quota.message || "회사 파일을 업로드했습니다. 저장공간 사용량이 80% 이상입니다.";
 }
 
 export default function AdminCompanyFilesPanel() {
@@ -203,7 +228,13 @@ export default function AdminCompanyFilesPanel() {
         throw new Error(savePayload?.message || savePayload?.error || "COMPANY_FILE_METADATA_SAVE_FAILED");
       }
 
-      showToast(t("settings.companyFiles.uploadSuccess", "회사 파일을 업로드했습니다."), "success");
+      const quotaWarning = getQuotaWarningMessage(savePayload.quota) || getQuotaWarningMessage(preparePayload.quota);
+      showToast(
+        quotaWarning
+          ? `${t("settings.companyFiles.uploadSuccess", "회사 파일을 업로드했습니다.")} ${quotaWarning}`
+          : t("settings.companyFiles.uploadSuccess", "회사 파일을 업로드했습니다."),
+        quotaWarning ? "warning" : "success",
+      );
       loadFiles();
     } catch (error) {
       showToast(getUploadErrorMessage(error), "danger");

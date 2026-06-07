@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.07`
+- 기준 앱 버전: `0.20.08`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -93,6 +93,7 @@
 - [billing-storage-db-api-0.20.05.md](billing-storage-db-api-0.20.05.md)
 - [billing-storage-ui-0.20.06.md](billing-storage-ui-0.20.06.md)
 - [storage-quota-enforcement-design-0.20.07.md](storage-quota-enforcement-design-0.20.07.md)
+- [storage-quota-enforcement-0.20.08.md](storage-quota-enforcement-0.20.08.md)
 
 ### DB/API smoke
 
@@ -250,3 +251,17 @@ WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/
 - R2/첨부/메모/휴지통/purge 정상 흐름은 이번 설계에서 변경하지 않는다.
 
 상세 문서: [저장소 사용량 제한 설계 1차 0.20.07](storage-quota-enforcement-design-0.20.07.md)
+
+
+## 16. 0.20.08 저장소 사용량 제한 1차
+
+회사 파일 업로드 경로에 저장공간 사용량 guard를 적용했다.
+
+- 업로드 준비 API와 메타데이터 저장 API에서 모두 저장공간 한도 검증
+- 80% 이상은 업로드 허용 후 경고 안내
+- 100% 초과는 `STORAGE_QUOTA_EXCEEDED`로 차단
+- 같은 회사 파일 유형을 교체하는 경우 기존 활성 파일 크기를 차감한 예상 사용량으로 판정
+- Playwright E2E mock 업로드 응답에 저장공간 경고 검증 추가
+- 작업지시서 첨부/디자인 업로드 제한은 후속 버전으로 분리
+
+상세 문서: [저장소 사용량 제한 1차 0.20.08](storage-quota-enforcement-0.20.08.md)

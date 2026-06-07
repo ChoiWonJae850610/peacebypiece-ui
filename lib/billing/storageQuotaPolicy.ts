@@ -149,3 +149,93 @@ export function buildResolvedStorageUsageSummary(input: StorageUsageSummaryInput
     sourceLabel: input.quotaPolicy.sourceLabel,
   };
 }
+
+export const STORAGE_QUOTA_UPLOAD_WARNING_RATIO = 0.8;
+
+export const STORAGE_QUOTA_UPLOAD_ERROR_CODES = {
+  exceeded: "STORAGE_QUOTA_EXCEEDED",
+  unavailable: "STORAGE_QUOTA_UNAVAILABLE",
+} as const;
+
+export type StorageQuotaUploadDecisionStatus = "allowed" | "warning" | "blocked";
+
+export interface StorageQuotaUploadDecision {
+  status: StorageQuotaUploadDecisionStatus;
+  storageLimitBytes: number;
+  storageUsedBytes: number;
+  replaceableBytes: number;
+  incomingSizeBytes: number;
+  projectedUsedBytes: number;
+  usageRatio: number;
+  warningThresholdRatio: number;
+  message: string;
+}
+
+function normalizeQuotaBytes(value: number | null | undefined): number {
+  const numericValue = Math.trunc(Number(value ?? 0));
+  return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : 0;
+}
+
+function getUploadUsageRatio(usedBytes: number, limitBytes: number): number {
+  if (!Number.isFinite(limitBytes) || limitBytes <= 0) return 0;
+  return usedBytes / limitBytes;
+}
+
+export function evaluateStorageQuotaForUpload(input: {
+  storageLimitBytes: number;
+  storageUsedBytes: number;
+  incomingSizeBytes: number;
+  replaceableBytes?: number | null;
+  warningThresholdRatio?: number | null;
+}): StorageQuotaUploadDecision {
+  const storageLimitBytes = Math.max(1, normalizeQuotaBytes(input.storageLimitBytes));
+  const storageUsedBytes = normalizeQuotaBytes(input.storageUsedBytes);
+  const incomingSizeBytes = normalizeQuotaBytes(input.incomingSizeBytes);
+  const replaceableBytes = Math.min(storageUsedBytes, normalizeQuotaBytes(input.replaceableBytes));
+  const warningThresholdRatio = Number.isFinite(input.warningThresholdRatio)
+    ? Math.min(1, Math.max(0.01, Number(input.warningThresholdRatio)))
+    : STORAGE_QUOTA_UPLOAD_WARNING_RATIO;
+  const projectedUsedBytes = Math.max(0, storageUsedBytes - replaceableBytes) + incomingSizeBytes;
+  const usageRatio = getUploadUsageRatio(projectedUsedBytes, storageLimitBytes);
+
+  if (projectedUsedBytes > storageLimitBytes) {
+    return {
+      status: "blocked",
+      storageLimitBytes,
+      storageUsedBytes,
+      replaceableBytes,
+      incomingSizeBytes,
+      projectedUsedBytes,
+      usageRatio,
+      warningThresholdRatio,
+      message: `저장공간 한도 ${formatStorageBytes(storageLimitBytes)}를 초과하여 파일을 업로드할 수 없습니다.`,
+    };
+  }
+
+  if (usageRatio >= warningThresholdRatio) {
+    return {
+      status: "warning",
+      storageLimitBytes,
+      storageUsedBytes,
+      replaceableBytes,
+      incomingSizeBytes,
+      projectedUsedBytes,
+      usageRatio,
+      warningThresholdRatio,
+      message: `저장공간 사용량이 ${Math.round(warningThresholdRatio * 100)}% 이상입니다.`,
+    };
+  }
+
+  return {
+    status: "allowed",
+    storageLimitBytes,
+    storageUsedBytes,
+    replaceableBytes,
+    incomingSizeBytes,
+    projectedUsedBytes,
+    usageRatio,
+    warningThresholdRatio,
+    message: "업로드 가능한 저장공간 상태입니다.",
+  };
+}
+
