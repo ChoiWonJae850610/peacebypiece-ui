@@ -958,7 +958,7 @@ function FeedbackPanel() {
       refreshFeedbackRequests();
     } catch {
       setFeedbackSubmitState("failed");
-      setFeedbackNoticeTone("error");
+      setFeedbackNoticeTone("danger");
       setFeedbackNotice(t("settings.feedback.submitFailed", "문의를 접수하지 못했습니다. 잠시 후 다시 시도해 주세요."));
       setFeedbackNoticeEventKey((key) => key + 1);
     }
