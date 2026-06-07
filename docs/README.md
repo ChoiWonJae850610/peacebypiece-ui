@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece 문서 목록
 
-- 기준 앱 버전: `0.20.20`
+- 기준 앱 버전: `0.20.21.2`
 - 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
 - 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
 
@@ -103,6 +103,9 @@
 - [0.20.16 환경설정 서비스 건의 UI 재정리](./settings-feedback-form-0.20.16.md)
 - [0.20.17 환경설정 운영형 UI 2차 재설계](./settings-operational-redesign-0.20.17.md)
 - [0.20.20 환경설정 회사 정보 필드별 수정 요청 UI](./settings-account-field-request-0.20.20.md)
+- [0.20.21 기준정보 직접관리/요청관리 재구성](./settings-standards-inline-request-0.20.21.md)
+- [0.20.21.1 생산품 유형 1차·2차·3차 계층형 보정](./settings-standards-product-hierarchy-0.20.21.1.md)
+- [0.20.21.2 기준정보 계층형 UI 오류 및 밀도 보정](./settings-standards-density-fix-0.20.21.2.md)
 
 ### DB/API smoke
 

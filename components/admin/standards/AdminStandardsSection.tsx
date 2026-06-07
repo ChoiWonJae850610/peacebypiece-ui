@@ -74,6 +74,31 @@ function formatStandardCount(activeCount: number, totalCount: number, emptyLabel
   return `${activeCount}/${totalCount}${suffix}`;
 }
 
+function getUnitUsageDescription(name: string) {
+  const normalizedName = name.trim();
+  const descriptions: Record<string, string> = {
+    개: "일반 수량 단위",
+    공정: "작업 공정 또는 단계 수량",
+    롤: "원단·부자재 롤 단위",
+    미터: "원단 길이 단위",
+    박스: "포장·입고 박스 단위",
+    벌: "세트 또는 완제품 수량 단위",
+  };
+  return descriptions[normalizedName] ?? "작업지시서 수량 입력에 사용하는 단위";
+}
+
+function getProcessUsageDescription(name: string) {
+  const normalizedName = name.trim();
+  const descriptions: Record<string, string> = {
+    나염: "프린트·인쇄 외주 공정",
+    단딩: "마감·바인딩 외주 공정",
+    워싱: "세탁·후가공 외주 공정",
+    자수: "자수 장식 외주 공정",
+    플리스: "기모·보온 후가공 공정",
+  };
+  return descriptions[normalizedName] ?? "발주·협력업체 배분에 사용하는 외주 공정";
+}
+
 function isRequestTarget(value: StandardTabKey): value is StandardRequestTarget {
   return value === "units" || value === "processes";
 }
@@ -377,7 +402,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     </div>
   );
 
-  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick?: () => void, onDark = false) => (
+  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick?: () => void) => (
     <button
       type="button"
       onClick={(event) => {
@@ -385,17 +410,14 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         onClick?.();
       }}
       disabled={disabled || !onClick}
-      className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-semibold transition ${
+      aria-pressed={isActive}
+      className={`inline-flex min-w-[72px] items-center justify-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-semibold transition ${
         isActive
-          ? onDark
-            ? "border-white/40 bg-white text-stone-950 shadow-sm"
-            : "border-stone-900 bg-stone-950 text-white shadow-sm"
-          : onDark
-            ? "border-white/20 bg-white/10 text-white/70"
-            : "border-stone-200 bg-stone-100 text-stone-500"
-      } ${disabled || !onClick ? "cursor-default opacity-70" : "hover:scale-[1.01]"}`}
+          ? "border-[var(--pbp-brand-muted)] bg-[var(--pbp-action-primary)] text-[var(--pbp-action-primary-text)] shadow-sm"
+          : "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
+      } ${disabled || !onClick ? "cursor-default opacity-70" : "hover:border-[var(--pbp-border-strong)] hover:opacity-90"}`}
     >
-      <span className={`h-2.5 w-2.5 rounded-full ${isActive ? (onDark ? "bg-stone-950" : "bg-white") : onDark ? "bg-white/40" : "bg-stone-300"}`} />
+      <span className={`h-2.5 w-2.5 rounded-full ${isActive ? "bg-[var(--pbp-action-primary-text)]" : "bg-[var(--pbp-text-subtle)]"}`} />
       {isActive ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
     </button>
   );
@@ -411,32 +433,42 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     onChangeNewName: (value: string) => void,
     placeholder: string,
   ) => (
-    <div className="flex min-h-[320px] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white">
-      <div className="border-b border-stone-100 bg-stone-50 px-4 py-3">
-        <p className="text-sm font-semibold text-stone-950">{title}</p>
+    <div className="flex min-h-[320px] flex-col overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+      <div className="border-b border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
+        <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{title}</p>
       </div>
-      <div className="min-h-0 flex-1 overflow-auto divide-y divide-stone-100">
+      <div className="min-h-0 flex-1 divide-y divide-[var(--pbp-border)] overflow-auto bg-[var(--pbp-surface)]">
         {items.length > 0 ? items.map((item) => {
           const selected = item.id === selectedId;
           return (
-            <button
+            <div
               key={item.id}
-              type="button"
-              onClick={() => onSelect(item.id)}
-              className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition ${selected ? "bg-stone-950 text-white" : "bg-white text-stone-900 hover:bg-stone-50"}`}
+              className={`group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-l-4 px-3 py-2.5 transition ${
+                selected
+                  ? "border-l-[var(--admin-theme-surface)] bg-[var(--pbp-surface-selected)]"
+                  : "border-l-transparent hover:bg-[var(--pbp-surface-muted)]"
+              }`}
             >
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{item.name}</span>
-              {renderUsageToggle(item.is_active, itemSavingId !== null || !canManageStandards, () => toggleItemCategory(item.id, !item.is_active), selected)}
-            </button>
+              <button
+                type="button"
+                onClick={() => onSelect(item.id)}
+                className={`min-h-10 min-w-0 rounded-xl px-2 text-left text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] ${
+                  selected ? "text-[var(--pbp-brand-primary)]" : "text-[var(--pbp-text-primary)]"
+                }`}
+              >
+                <span className="block truncate">{item.name}</span>
+              </button>
+              {renderUsageToggle(item.is_active, itemSavingId !== null || !canManageStandards, () => toggleItemCategory(item.id, !item.is_active))}
+            </div>
           );
         }) : (
-          <div className="px-4 py-8 text-center text-sm font-medium text-stone-500">
+          <div className="px-4 py-8 text-center text-sm font-medium text-[var(--pbp-text-muted)]">
             {level === 1 ? t("standards.items.emptyLevelOne", "1차 유형이 없습니다.") : t("standards.items.emptyChildren", "상위 유형에 연결된 항목이 없습니다.")}
           </div>
         )}
       </div>
       {canManageStandards ? (
-        <div className="border-t border-stone-100 bg-stone-50 p-3">
+        <div className="border-t border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
           <div className="flex gap-2">
             <input
               value={newName}
@@ -449,13 +481,13 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
               }}
               placeholder={placeholder}
               disabled={level > 1 && !parentId}
-              className="min-h-10 min-w-0 flex-1 rounded-xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-400 disabled:bg-stone-100 disabled:text-stone-400"
+              className="min-h-10 min-w-0 flex-1 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-field-search-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]"
             />
             <button
               type="button"
               onClick={() => addItemCategory(level, parentId, newName)}
               disabled={itemSavingId !== null || (level > 1 && !parentId)}
-              className="rounded-xl bg-stone-950 px-3 py-2.5 text-sm font-semibold text-white transition enabled:hover:bg-stone-800 disabled:cursor-default disabled:bg-stone-300"
+              className="rounded-xl bg-[var(--pbp-action-primary)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-action-primary-text)] transition enabled:hover:opacity-90 disabled:cursor-default disabled:opacity-45"
             >
               {itemSavingId === "new" ? t("standards.common.saving", "저장 중") : t("standards.items.addShort", "추가")}
             </button>
@@ -519,80 +551,104 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
   );
 
   const renderReadOnlyRows = (target: StandardRequestTarget) => {
-    const rows = target === "units"
-      ? sortedUnitDefinitions.map((unit) => ({ id: unit.id, name: unit.name, isActive: unit.is_active }))
-      : sortedProcessDefinitions.map((process) => ({ id: process.type, name: process.label, isActive: process.isActive }));
+    const isUnitTarget = target === "units";
+    const rows = isUnitTarget
+      ? sortedUnitDefinitions.map((unit) => ({ id: unit.id, name: unit.name, description: getUnitUsageDescription(unit.name), isActive: unit.is_active }))
+      : sortedProcessDefinitions.map((process) => ({ id: process.type, name: process.label, description: getProcessUsageDescription(process.label), isActive: process.isActive }));
+    const targetTitle = isUnitTarget ? t("standards.actions.units.title", "단위 표준") : t("standards.actions.processes.title", "외주공정 유형");
 
     return (
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-medium leading-5 text-stone-500">
-            {target === "units"
-              ? t("standards.units.requestDescription", "단위 표준은 전체 운영 기준과 연결되므로 필요한 항목을 요청하면 시스템관리자가 검토합니다.")
-              : t("standards.processes.requestDescription", "외주공정 유형은 발주/협력업체 기준과 연결되므로 필요한 항목을 요청하면 시스템관리자가 검토합니다.")}
-          </p>
-          {canManageStandards ? (
-            <button
-              type="button"
-              onClick={() => openRequestPanel(target)}
-              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 transition hover:border-stone-500 hover:text-stone-950"
-            >
-              {t("standards.request.open", "유형 추가 요청")}
-            </button>
-          ) : null}
-        </div>
-
-        {requestTarget === target ? (
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-            <div className="grid gap-2 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] md:items-center">
-              <input
-                value={requestName}
-                onChange={(event) => setRequestName(event.target.value)}
-                placeholder={target === "units" ? t("standards.request.unitPlaceholder", "예: 마, SET") : t("standards.request.processPlaceholder", "예: 프린트, 워싱")}
-                className="min-h-10 rounded-xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-400"
-              />
-              <input
-                value={requestReason}
-                onChange={(event) => setRequestReason(event.target.value)}
-                placeholder={t("standards.request.reasonPlaceholder", "요청 사유 또는 사용 예시")}
-                className="min-h-10 rounded-xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-400"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={submitRequest}
-                  disabled={requestSubmitState === "submitting"}
-                  className="rounded-xl bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition enabled:hover:bg-stone-800 disabled:cursor-default disabled:bg-stone-300"
-                >
-                  {requestSubmitState === "submitting" ? t("standards.request.submitting", "접수 중") : t("standards.request.submit", "요청하기")}
-                </button>
-                <button type="button" onClick={closeRequestPanel} className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-600 transition hover:border-stone-300 hover:text-stone-950">
-                  {t("common.cancel", "취소")}
-                </button>
-              </div>
-            </div>
-            {requestNotice ? (
-              <p className={`mt-2 text-xs font-semibold ${requestSubmitState === "success" ? "text-emerald-700" : "text-rose-600"}`}>{requestNotice}</p>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className="overflow-hidden rounded-2xl border border-stone-200">
-          <div className="grid grid-cols-[minmax(0,1fr)_112px] bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+          <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.2fr)_112px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
             <span>{t("standards.table.name", "이름")}</span>
+            <span>{t("standards.table.description", "사용처")}</span>
             <span className="text-right">{t("standards.table.status", "사용 여부")}</span>
           </div>
-          <div className="max-h-[360px] overflow-auto divide-y divide-stone-100 bg-white">
+          <div className="max-h-[420px] overflow-auto divide-y divide-[var(--pbp-border)] bg-[var(--pbp-surface)]">
             {rows.length > 0 ? rows.map((row) => (
-              <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_112px] items-center px-4 py-3 text-sm">
-                <span className="truncate font-semibold text-stone-900">{row.name}</span>
+              <div key={row.id} className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.2fr)_112px] items-center gap-3 px-4 py-3 text-sm">
+                <span className="truncate font-semibold text-[var(--pbp-text-primary)]">{row.name}</span>
+                <span className="min-w-0 truncate text-xs font-medium text-[var(--pbp-text-muted)]">{row.description}</span>
                 <span className="flex justify-end">{renderUsageToggle(row.isActive, true)}</span>
               </div>
             )) : (
-              <div className="px-4 py-8 text-center text-sm font-medium text-stone-500">{emptyDbLabel}</div>
+              <div className="px-4 py-8 text-center text-sm font-medium text-[var(--pbp-text-muted)]">{emptyDbLabel}</div>
             )}
           </div>
         </div>
+
+        <aside className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{t("standards.request.panelTitle", "유형 추가 요청")}</p>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                {isUnitTarget
+                  ? t("standards.units.requestDescription", "필요한 단위가 없으면 시스템관리자에게 추가를 요청합니다.")
+                  : t("standards.processes.requestDescription", "필요한 외주공정이 없으면 시스템관리자에게 추가를 요청합니다.")}
+              </p>
+            </div>
+            <span className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--pbp-text-muted)]">{targetTitle}</span>
+          </div>
+
+          {canManageStandards ? (
+            <div className="mt-4 space-y-2">
+              <input
+                value={requestTarget === target ? requestName : ""}
+                onFocus={() => {
+                  if (requestTarget !== target) openRequestPanel(target);
+                }}
+                onChange={(event) => {
+                  if (requestTarget !== target) openRequestPanel(target);
+                  setRequestName(event.target.value);
+                }}
+                placeholder={isUnitTarget ? t("standards.request.unitPlaceholder", "예: 마, SET") : t("standards.request.processPlaceholder", "예: 프린트, 워싱")}
+                className="min-h-10 w-full rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-field-search-surface)] px-3 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)]"
+              />
+              <textarea
+                value={requestTarget === target ? requestReason : ""}
+                onFocus={() => {
+                  if (requestTarget !== target) openRequestPanel(target);
+                }}
+                onChange={(event) => {
+                  if (requestTarget !== target) openRequestPanel(target);
+                  setRequestReason(event.target.value);
+                }}
+                placeholder={t("standards.request.reasonPlaceholder", "요청 사유 또는 사용 예시")}
+                rows={4}
+                className="w-full resize-none rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-field-search-surface)] px-3 py-2.5 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)]"
+              />
+              <div className="flex justify-end gap-2">
+                {requestTarget === target ? (
+                  <button type="button" onClick={closeRequestPanel} className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--pbp-text-muted)] transition hover:border-[var(--pbp-border-strong)] hover:text-[var(--pbp-text-primary)]">
+                    {t("common.cancel", "취소")}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (requestTarget !== target) {
+                      openRequestPanel(target);
+                      return;
+                    }
+                    submitRequest();
+                  }}
+                  disabled={requestTarget === target && requestSubmitState === "submitting"}
+                  className="rounded-xl bg-[var(--pbp-action-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--pbp-action-primary-text)] transition enabled:hover:opacity-90 disabled:cursor-default disabled:opacity-45"
+                >
+                  {requestTarget === target && requestSubmitState === "submitting" ? t("standards.request.submitting", "접수 중") : t("standards.request.submit", "요청하기")}
+                </button>
+              </div>
+              {requestTarget === target && requestNotice ? (
+                <p className={`rounded-xl px-3 py-2 text-xs font-semibold ${requestSubmitState === "success" ? "bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]" : "bg-[var(--pbp-status-danger-bg)] text-[var(--pbp-status-danger-fg)]"}`}>{requestNotice}</p>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
+              {t("standards.request.readonly", "기준정보 추가 요청 권한이 없습니다.")}
+            </p>
+          )}
+        </aside>
       </div>
     );
   };
