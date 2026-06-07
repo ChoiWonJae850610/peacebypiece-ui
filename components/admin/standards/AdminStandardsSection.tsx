@@ -4,6 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AdminNotificationSettingsModal from "@/components/admin/AdminNotificationSettingsModal";
 import AdminFilePolicySettingsModal from "@/components/admin/standards/AdminFilePolicySettingsModal";
 import AdminNotificationPolicySettingsModal from "@/components/admin/standards/AdminNotificationPolicySettingsModal";
+import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
+import WaflSettingsTabs from "@/components/admin/common/WaflSettingsTabs";
 import { fetchAdminStandardProcessesFromApi, fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi } from "@/lib/admin/settings/standardsApiClient";
 import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
@@ -402,24 +406,22 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     </div>
   );
 
-  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick?: () => void) => (
-    <button
-      type="button"
-      onClick={(event) => {
-        event.stopPropagation();
-        onClick?.();
-      }}
-      disabled={disabled || !onClick}
-      aria-pressed={isActive}
-      className={`inline-flex min-w-[72px] items-center justify-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-semibold transition ${
-        isActive
-          ? "border-[var(--pbp-brand-muted)] bg-[var(--pbp-action-primary)] text-[var(--pbp-action-primary-text)] shadow-sm"
-          : "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]"
-      } ${disabled || !onClick ? "cursor-default opacity-70" : "hover:border-[var(--pbp-border-strong)] hover:opacity-90"}`}
-    >
-      <span className={`h-2.5 w-2.5 rounded-full ${isActive ? "bg-[var(--pbp-action-primary-text)]" : "bg-[var(--pbp-text-subtle)]"}`} />
+  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick: () => void) => (
+    <AdminUsageToggle
+      label={isActive ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
+      checked={isActive}
+      onChange={() => onClick()}
+      disabled={disabled}
+      activeLabel={t("standards.common.active", "사용")}
+      inactiveLabel={t("standards.common.inactive", "미사용")}
+      variant="inline"
+    />
+  );
+
+  const renderUsageStatus = (isActive: boolean) => (
+    <AdminStatusBadge tone={isActive ? "success" : "neutral"} size="sm">
       {isActive ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
-    </button>
+    </AdminStatusBadge>
   );
 
   const renderCategoryColumn = (
@@ -445,7 +447,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
               key={item.id}
               className={`group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-l-4 px-3 py-2.5 transition ${
                 selected
-                  ? "border-l-[var(--admin-theme-surface)] bg-[var(--pbp-surface-selected)]"
+                  ? "border-l-[var(--pbp-brand-primary)] bg-[var(--pbp-surface-selected)] shadow-[inset_0_0_0_1px_var(--pbp-brand-muted)]"
                   : "border-l-transparent hover:bg-[var(--pbp-surface-muted)]"
               }`}
             >
@@ -453,7 +455,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
                 type="button"
                 onClick={() => onSelect(item.id)}
                 className={`min-h-10 min-w-0 rounded-xl px-2 text-left text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] ${
-                  selected ? "text-[var(--pbp-brand-primary)]" : "text-[var(--pbp-text-primary)]"
+                  selected ? "text-[var(--pbp-text-primary)]" : "text-[var(--pbp-text-primary)]"
                 }`}
               >
                 <span className="block truncate">{item.name}</span>
@@ -570,7 +572,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
               <div key={row.id} className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.2fr)_112px] items-center gap-3 px-4 py-3 text-sm">
                 <span className="truncate font-semibold text-[var(--pbp-text-primary)]">{row.name}</span>
                 <span className="min-w-0 truncate text-xs font-medium text-[var(--pbp-text-muted)]">{row.description}</span>
-                <span className="flex justify-end">{renderUsageToggle(row.isActive, true)}</span>
+                <span className="flex justify-end">{renderUsageStatus(row.isActive)}</span>
               </div>
             )) : (
               <div className="px-4 py-8 text-center text-sm font-medium text-[var(--pbp-text-muted)]">{emptyDbLabel}</div>
@@ -668,51 +670,39 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
         </div>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-semibold text-stone-950">{t("standards.section.standardTitle", "기준정보 설정")}</h2>
-            <p className="mt-1 text-xs font-medium text-stone-500">
-              {t("standards.section.standardDescription", "생산품 유형은 직접 관리하고, 단위·외주공정 유형은 요청으로 운영합니다.")}
-            </p>
-          </div>
-          <p className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">{selectedTab.title}</p>
-        </div>
-
-        <div className="mt-3 grid gap-2 rounded-2xl bg-stone-100 p-1 sm:grid-cols-3">
-          {tabs.map((tab) => {
-            const selected = tab.key === activeStandardTab;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => {
-                  setActiveStandardTab(tab.key);
-                  setRequestTarget(null);
-                  setRequestNotice("");
-                }}
-                className={`rounded-xl px-3 py-2 text-left transition ${selected ? "bg-white shadow-sm" : "hover:bg-white/70"}`}
-              >
-                <span className={`block text-sm font-semibold ${selected ? "text-stone-950" : "text-stone-600"}`}>{tab.title}</span>
-                <span className="mt-0.5 block text-xs font-medium text-stone-500">{tab.description}</span>
-              </button>
-            );
-          })}
-        </div>
+      <WaflSectionPanel
+        eyebrow={t("standards.section.standardEyebrow", "기준정보 설정")}
+        title={t("standards.section.standardTitle", "기준 관리")}
+        description={t("standards.section.standardDescription", "생산품 유형은 직접 관리하고, 단위·외주공정 유형은 요청으로 운영합니다.")}
+        meta={<AdminStatusBadge tone="brand" size="sm">{selectedTab.title}</AdminStatusBadge>}
+        density="compact"
+        bodyClassName="pt-3"
+      >
+        <WaflSettingsTabs
+          items={tabs.map((tab) => ({ id: tab.key, title: tab.title, description: tab.description, tone: tab.key === "items" ? "brand" : tab.key === "units" ? "info" : "success" }))}
+          activeId={activeStandardTab}
+          onChange={(id) => {
+            setActiveStandardTab(id);
+            setRequestTarget(null);
+            setRequestNotice("");
+          }}
+          ariaLabel={t("standards.section.tabsAria", "기준정보 설정 탭")}
+          gridClassName="grid gap-2 sm:grid-cols-3"
+        />
 
         {hasMissingDbStandards ? (
-          <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+          <div className="mt-3 rounded-2xl border border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-warning-fg)]">
             {t("standards.section.missingSeedNotice", "일부 기준정보가 비어 있습니다. 필요한 항목은 탭 안에서 직접 관리하거나 요청하세요.")}
           </div>
         ) : null}
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-stone-900">{selectedTab.title}</p>
-          <p className="text-xs font-medium text-stone-500">{selectedTab.description}</p>
+          <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{selectedTab.title}</p>
+          <p className="text-xs font-medium text-[var(--pbp-text-muted)]">{selectedTab.description}</p>
         </div>
 
         <div className="mt-2.5">{renderSelectedStandardPanel()}</div>
-      </div>
+      </WaflSectionPanel>
 
       <AdminFilePolicySettingsModal open={isFilePolicyModalOpen} onClose={() => setIsFilePolicyModalOpen(false)} />
 
