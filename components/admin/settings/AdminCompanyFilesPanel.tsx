@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import BaseModal from "@/components/common/modal/BaseModal";
+import ModalBody from "@/components/common/modal/ModalBody";
+import ModalHeader from "@/components/common/modal/ModalHeader";
+import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
 import WaflSettingsSectionGroup from "@/components/admin/common/WaflSettingsSectionGroup";
@@ -12,6 +16,12 @@ import {
   type CompanyFileReviewStatus,
   type CompanyFileType,
 } from "@/lib/admin/settings/companyFileTypes";
+import {
+  getCompanyFileAllowedUploadText,
+  getCompanyFileInputAccept,
+  getCompanyFileKindLabel,
+  isAllowedCompanyFileType,
+} from "@/lib/admin/settings/companyFileUploadPolicy";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type CompanyFilesPayload = {
@@ -76,14 +86,13 @@ type CompanyFileSlotViewModel = {
   file: CompanyFileMetadata | null;
 };
 
-const fileTypeCopy: Record<CompanyFileType, { title: string; description: string; actionLabel: string; emptyLabel: string; reviewRequired: boolean; accept: string }> = {
+const fileTypeCopy: Record<CompanyFileType, { title: string; description: string; actionLabel: string; emptyLabel: string; reviewRequired: boolean }> = {
   representative_image: {
     title: "대표 이미지",
     description: "고객사 프로필, 시스템관리자 검토 화면, 향후 공개 문서에 표시할 회사 대표 이미지를 준비합니다.",
     actionLabel: "대표 이미지 등록/변경",
     emptyLabel: "등록된 대표 이미지 없음",
     reviewRequired: false,
-    accept: "image/jpeg,image/png,image/webp",
   },
   business_registration: {
     title: "사업자등록증",
@@ -91,7 +100,6 @@ const fileTypeCopy: Record<CompanyFileType, { title: string; description: string
     actionLabel: "사업자등록증 등록/변경",
     emptyLabel: "등록된 사업자등록증 없음",
     reviewRequired: true,
-    accept: "image/jpeg,image/png,image/webp,application/pdf",
   },
 };
 
@@ -191,6 +199,105 @@ function getQuotaWarningMessage(quota: CompanyFileUploadQuota | null | undefined
   return quota.message || "회사 파일을 업로드했습니다. 저장공간 사용량이 80% 이상입니다.";
 }
 
+
+function createCompanyFileRouteUrl(file: CompanyFileMetadata | null | undefined, download = false): string {
+  const key = String(file?.storageKey ?? "").trim();
+  if (!key) return "";
+
+  const params = new URLSearchParams({ key });
+  if (download) params.set("download", "1");
+  const fileName = String(file?.originalName ?? "").trim();
+  if (fileName) params.set("name", fileName);
+
+  return `/api/admin/company-files/file?${params.toString()}`;
+}
+
+function isCompanyFileImage(file: CompanyFileMetadata | null | undefined): boolean {
+  return String(file?.mimeType ?? "").toLowerCase().startsWith("image/");
+}
+
+function isCompanyFilePdf(file: CompanyFileMetadata | null | undefined): boolean {
+  return String(file?.mimeType ?? "").toLowerCase() === "application/pdf";
+}
+
+function getCompanyFileSummary(fileType: CompanyFileType, file: CompanyFileMetadata): string {
+  return `${getCompanyFileKindLabel({ fileType, mimeType: file.mimeType })} · ${formatFileSize(file.sizeBytes)} · ${formatFileDate(file.createdAt)}`;
+}
+
+function CompanyFilePreviewModal({
+  file,
+  fileType,
+  title,
+  onClose,
+}: {
+  file: CompanyFileMetadata | null;
+  fileType: CompanyFileType | null;
+  title: string;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const open = Boolean(file && fileType);
+  const previewUrl = createCompanyFileRouteUrl(file);
+  const downloadUrl = createCompanyFileRouteUrl(file, true);
+
+  useModalEnvironment({ open, dialogRef, onClose });
+
+  return (
+    <BaseModal
+      open={open}
+      onClose={onClose}
+      dialogRef={dialogRef}
+      titleId="company-file-preview-title"
+      maxWidthClassName="md:max-w-5xl"
+    >
+      <ModalHeader
+        titleId="company-file-preview-title"
+        title={title}
+        description={file && fileType ? getCompanyFileSummary(fileType, file) : undefined}
+        onClose={onClose}
+      />
+      <ModalBody className="space-y-4">
+        {file && fileType ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3 text-xs text-[var(--pbp-text-muted)]">
+              <span className="break-all">원본 파일명: {file.originalName}</span>
+              <a
+                href={downloadUrl || previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1.5 text-xs font-semibold"
+              >
+                새 창에서 보기
+              </a>
+            </div>
+
+            {!previewUrl ? (
+              <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-6 text-sm text-[var(--pbp-text-muted)]">
+                미리보기 주소를 만들 수 없습니다.
+              </div>
+            ) : isCompanyFileImage(file) ? (
+              <img
+                src={previewUrl}
+                alt={title}
+                className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] object-contain shadow-sm"
+              />
+            ) : isCompanyFilePdf(file) ? (
+              <div className="overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+                <div className="border-b border-[var(--pbp-border)] px-4 py-3 text-sm font-medium text-[var(--pbp-text-secondary)]">PDF 미리보기</div>
+                <iframe title={title} src={previewUrl} className="h-[65dvh] w-full bg-[var(--pbp-surface)] md:h-[70dvh]" />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-6 text-sm text-[var(--pbp-text-muted)]">
+                이 파일 형식은 화면 안에서 미리볼 수 없습니다. 새 창에서 확인해 주세요.
+              </div>
+            )}
+          </div>
+        ) : null}
+      </ModalBody>
+    </BaseModal>
+  );
+}
+
 export default function AdminCompanyFilesPanel() {
   const t = useAdminTranslation();
   const [files, setFiles] = useState<CompanyFileMetadata[]>([]);
@@ -199,6 +306,7 @@ export default function AdminCompanyFilesPanel() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastTone, setToastTone] = useState<ToastTone>("info");
   const [toastEventKey, setToastEventKey] = useState(0);
+  const [previewTarget, setPreviewTarget] = useState<{ fileType: CompanyFileType; file: CompanyFileMetadata; title: string } | null>(null);
   const inputRefs = useRef<Record<CompanyFileType, HTMLInputElement | null>>({
     representative_image: null,
     business_registration: null,
@@ -354,6 +462,10 @@ export default function AdminCompanyFilesPanel() {
 
   const handleFileChange = (fileType: CompanyFileType, selectedFile: File | null) => {
     if (!selectedFile) return;
+    if (!isAllowedCompanyFileType({ fileType, fileName: selectedFile.name, mimeType: selectedFile.type || "application/octet-stream" })) {
+      showToast(`${getCompanyFileAllowedUploadText(fileType)} 형식만 등록할 수 있습니다.`, "warning");
+      return;
+    }
     void uploadCompanyFile(fileType, selectedFile);
   };
 
@@ -380,12 +492,14 @@ export default function AdminCompanyFilesPanel() {
           const status = file ? reviewStatusCopy[file.reviewStatus] : null;
           const isUploading = uploadingType === slot.fileType;
           const isRepresentativeImage = slot.fileType === "representative_image";
-          const previewTitle = file?.originalName?.trim() || slot.emptyLabel;
+          const previewTitle = file ? t("settings.companyFiles.registered", "등록 완료") : slot.emptyLabel;
           const previewDescription = file
-            ? `${formatFileSize(file.sizeBytes)} · ${file.mimeType || "파일 형식 미확인"} · ${formatFileDate(file.createdAt)}`
+            ? getCompanyFileSummary(slot.fileType, file)
             : isRepresentativeImage
               ? t("settings.companyFiles.representativeEmptyDescription", "대표 이미지를 등록하면 고객사 프로필과 시스템관리자 검토 화면에 표시됩니다.")
               : t("settings.companyFiles.businessRegistrationEmptyDescription", "사업자등록증을 등록하면 시스템관리자 검토 상태로 표시됩니다.");
+          const allowedUploadText = getCompanyFileAllowedUploadText(slot.fileType);
+          const previewUrl = createCompanyFileRouteUrl(file);
 
           return (
             <article
@@ -398,6 +512,7 @@ export default function AdminCompanyFilesPanel() {
                     {isRepresentativeImage ? t("settings.companyFiles.representativeEyebrow", "대표 이미지") : t("settings.companyFiles.businessRegistrationEyebrow", "사업자등록증")}
                   </p>
                   <h4 className="mt-1.5 break-words text-sm font-black tracking-[-0.02em] text-[var(--pbp-text-primary)]">{previewTitle}</h4>
+                  <p className="mt-1 text-xs font-medium text-[var(--pbp-text-muted)]">{allowedUploadText}</p>
                 </div>
                 {file && status ? (
                   <AdminStatusBadge tone={status.tone} size="xs">{status.label}</AdminStatusBadge>
@@ -409,13 +524,25 @@ export default function AdminCompanyFilesPanel() {
               <div className="mt-4 overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]">
                 <div className="flex min-h-[132px] items-center justify-center px-4 py-5 text-center">
                   {file ? (
-                    <div className="min-w-0">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xl font-black text-[var(--pbp-text-subtle)]">
-                        {isRepresentativeImage ? "IMG" : "DOC"}
-                      </div>
-                      <p className="mt-3 break-words text-sm font-bold text-[var(--pbp-text-primary)]">{file.originalName}</p>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewTarget({ fileType: slot.fileType, file, title: slot.title })}
+                      className="pbp-interactive-button flex w-full min-w-0 flex-col items-center rounded-2xl p-1 text-center transition hover:bg-[var(--pbp-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
+                    >
+                      {isCompanyFileImage(file) && previewUrl ? (
+                        <img
+                          src={previewUrl}
+                          alt={slot.title}
+                          className="max-h-[96px] max-w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] object-contain shadow-sm"
+                        />
+                      ) : (
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xl font-black text-[var(--pbp-text-subtle)]">
+                          {isCompanyFilePdf(file) ? "PDF" : isRepresentativeImage ? "IMG" : "DOC"}
+                        </div>
+                      )}
+                      <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">{getCompanyFileKindLabel({ fileType: slot.fileType, mimeType: file.mimeType })}</p>
                       <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{previewDescription}</p>
-                    </div>
+                    </button>
                   ) : (
                     <div className="min-w-0">
                       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] text-xs font-bold text-[var(--pbp-text-subtle)]">
@@ -441,13 +568,23 @@ export default function AdminCompanyFilesPanel() {
                     : t("settings.companyFiles.emptyFileHint", "등록된 파일이 없습니다.")}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
+                  {file ? (
+                    <AdminButton
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => setPreviewTarget({ fileType: slot.fileType, file, title: slot.title })}
+                    >
+                      {t("settings.companyFiles.preview", "미리보기")}
+                    </AdminButton>
+                  ) : null}
                   <input
                     ref={(element) => {
                       inputRefs.current[slot.fileType] = element;
                     }}
                     type="file"
                     className="hidden"
-                    accept={slot.accept}
+                    accept={getCompanyFileInputAccept(slot.fileType)}
                     disabled={Boolean(uploadingType)}
                     onChange={(event) => {
                       const selectedFile = event.currentTarget.files?.[0] ?? null;
@@ -476,6 +613,13 @@ export default function AdminCompanyFilesPanel() {
           {t("settings.companyFiles.loadFailedDescription", "회사 파일 상태를 불러오지 못했습니다. DB/API 1차 적용 상태와 로그인 회사 범위를 확인해 주세요.")}
         </div>
       ) : null}
+
+      <CompanyFilePreviewModal
+        file={previewTarget?.file ?? null}
+        fileType={previewTarget?.fileType ?? null}
+        title={previewTarget?.title ?? t("settings.companyFiles.preview", "파일 미리보기")}
+        onClose={() => setPreviewTarget(null)}
+      />
 
       <ToastMessage message={toastMessage} tone={toastTone} eventKey={toastEventKey} />
     </WaflSettingsSectionGroup>

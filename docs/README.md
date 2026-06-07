@@ -355,3 +355,5 @@ WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/
 
 - `company-file-upload-diagnostics-0.20.23.1.md` — 회사 파일 업로드 실패 메시지 개선 및 R2 진단 로그 보강 기준
 - `company-file-r2-worker-policy-0.20.23.2.md` — 회사 파일 R2 Worker key policy 보정 기준
+
+- [회사 파일 미리보기/업로드 정책 UI 1차 (0.20.23.3)](./company-file-preview-policy-0.20.23.3.md)

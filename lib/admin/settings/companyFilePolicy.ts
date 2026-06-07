@@ -3,6 +3,11 @@ import "server-only";
 import { randomUUID } from "crypto";
 
 import { COMPANY_FILE_TYPES, type CompanyFileType } from "@/lib/admin/settings/companyFileTypes";
+import {
+  COMPANY_FILE_UPLOAD_POLICY,
+  getCompanyFileExtension,
+  isAllowedCompanyFileType,
+} from "@/lib/admin/settings/companyFileUploadPolicy";
 
 export const COMPANY_FILE_STORAGE_DIRECTORIES: Record<CompanyFileType, "representative_image" | "business_registration"> = {
   representative_image: "representative_image",
@@ -10,13 +15,13 @@ export const COMPANY_FILE_STORAGE_DIRECTORIES: Record<CompanyFileType, "represen
 };
 
 export const COMPANY_FILE_MAX_BYTES: Record<CompanyFileType, number> = {
-  representative_image: 5 * 1024 * 1024,
-  business_registration: 10 * 1024 * 1024,
+  representative_image: COMPANY_FILE_UPLOAD_POLICY.representative_image.maxBytes,
+  business_registration: COMPANY_FILE_UPLOAD_POLICY.business_registration.maxBytes,
 };
 
 export const COMPANY_FILE_ALLOWED_MIME_TYPES: Record<CompanyFileType, readonly string[]> = {
-  representative_image: ["image/jpeg", "image/png", "image/webp"],
-  business_registration: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+  representative_image: COMPANY_FILE_UPLOAD_POLICY.representative_image.allowedMimeTypes,
+  business_registration: COMPANY_FILE_UPLOAD_POLICY.business_registration.allowedMimeTypes,
 };
 
 export const COMPANY_FILE_ERROR_CODES = {
@@ -38,7 +43,6 @@ const EXTENSIONS_BY_MIME_TYPE: Record<string, string> = {
   "application/pdf": "pdf",
 };
 
-const SAFE_EXTENSION_PATTERN = /^[a-z0-9]{1,12}$/i;
 
 function sanitizeSegment(value: string): string {
   return (
@@ -64,8 +68,7 @@ function getExtension(input: { originalName: string; mimeType: string }): string
   const extensionFromMimeType = EXTENSIONS_BY_MIME_TYPE[normalizedMimeType];
   if (extensionFromMimeType) return extensionFromMimeType;
 
-  const [, extension = ""] = input.originalName.match(/\.([a-z0-9]+)$/i) ?? [];
-  return SAFE_EXTENSION_PATTERN.test(extension) ? extension.toLowerCase() : "bin";
+  return getCompanyFileExtension(input.originalName) || "bin";
 }
 
 export function isCompanyFileType(value: string | null | undefined): value is CompanyFileType {
@@ -143,7 +146,7 @@ export function validateCompanyFileUploadInput(input: {
   if (!originalName) return { ok: false, error: COMPANY_FILE_ERROR_CODES.originalNameRequired };
 
   const mimeType = normalizeCompanyFileMimeType(input.mimeType);
-  if (!isCompanyFileMimeTypeAllowed({ fileType: input.fileType, mimeType })) {
+  if (!isAllowedCompanyFileType({ fileType: input.fileType, fileName: originalName, mimeType })) {
     return { ok: false, error: COMPANY_FILE_ERROR_CODES.mimeTypeUnsupported };
   }
 
