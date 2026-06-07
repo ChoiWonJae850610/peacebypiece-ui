@@ -344,6 +344,7 @@ export default function AdminCompanyFilesPanel() {
     return COMPANY_FILE_TYPES.map((fileType) => ({
       fileType,
       ...fileTypeCopy[fileType],
+      accept: getCompanyFileInputAccept(fileType),
       file: findFile(files, fileType),
     }));
   }, [files]);
