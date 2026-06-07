@@ -40,6 +40,30 @@ function getNextSortOrder(items: AdminItemCategoryDefinition[]) {
   return maxSortOrder + 10;
 }
 
+function normalizeParentId(value?: string | null) {
+  return value && value.trim() ? value : null;
+}
+
+function sortItemCategories(items: AdminItemCategoryDefinition[]) {
+  return items.slice().sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, "ko-KR"));
+}
+
+function getChildren(items: AdminItemCategoryDefinition[], parentId: string | null, level: AdminItemCategoryDefinition["level"]) {
+  return sortItemCategories(items.filter((item) => item.level === level && normalizeParentId(item.parent_id) === parentId));
+}
+
+function getDescendantIds(items: AdminItemCategoryDefinition[], itemId: string) {
+  const descendants = new Set<string>();
+  const visit = (parentId: string) => {
+    items.filter((item) => normalizeParentId(item.parent_id) === parentId).forEach((child) => {
+      descendants.add(child.id);
+      visit(child.id);
+    });
+  };
+  visit(itemId);
+  return descendants;
+}
+
 function createClientId(prefix: string) {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return `${prefix}_${crypto.randomUUID()}`;
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -86,7 +110,11 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
   const [isFilePolicyModalOpen, setIsFilePolicyModalOpen] = useState(false);
   const [isNotificationPolicyModalOpen, setIsNotificationPolicyModalOpen] = useState(false);
   const [activeStandardTab, setActiveStandardTab] = useState<StandardTabKey>("items");
-  const [newItemCategoryName, setNewItemCategoryName] = useState("");
+  const [selectedItemLevelOneId, setSelectedItemLevelOneId] = useState<string | null>(null);
+  const [selectedItemLevelTwoId, setSelectedItemLevelTwoId] = useState<string | null>(null);
+  const [newItemLevelOneName, setNewItemLevelOneName] = useState("");
+  const [newItemLevelTwoName, setNewItemLevelTwoName] = useState("");
+  const [newItemLevelThreeName, setNewItemLevelThreeName] = useState("");
   const [itemInlineError, setItemInlineError] = useState("");
   const [itemSavingId, setItemSavingId] = useState<string | null>(null);
   const [requestTarget, setRequestTarget] = useState<StandardRequestTarget | null>(null);
@@ -131,15 +159,55 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     };
   }, []);
 
+
   const activeProcessDefinitions = useMemo(
     () => sortProcessesByLabel(processDefinitions.filter((definition) => definition.isActive)),
     [processDefinitions],
   );
 
-  const sortedItemCategoryDefinitions = useMemo(
-    () => itemCategoryDefinitions.slice().sort((a, b) => a.name.localeCompare(b.name, "ko-KR") || a.level - b.level || a.sort_order - b.sort_order),
-    [itemCategoryDefinitions],
+  const levelOneItemCategories = useMemo(() => getChildren(itemCategoryDefinitions, null, 1), [itemCategoryDefinitions]);
+
+  const selectedLevelOneCategory = useMemo(
+    () => levelOneItemCategories.find((item) => item.id === selectedItemLevelOneId) ?? levelOneItemCategories[0] ?? null,
+    [levelOneItemCategories, selectedItemLevelOneId],
   );
+
+  const levelTwoItemCategories = useMemo(
+    () => (selectedLevelOneCategory ? getChildren(itemCategoryDefinitions, selectedLevelOneCategory.id, 2) : []),
+    [itemCategoryDefinitions, selectedLevelOneCategory],
+  );
+
+  const selectedLevelTwoCategory = useMemo(
+    () => levelTwoItemCategories.find((item) => item.id === selectedItemLevelTwoId) ?? levelTwoItemCategories[0] ?? null,
+    [levelTwoItemCategories, selectedItemLevelTwoId],
+  );
+
+  const levelThreeItemCategories = useMemo(
+    () => (selectedLevelTwoCategory ? getChildren(itemCategoryDefinitions, selectedLevelTwoCategory.id, 3) : []),
+    [itemCategoryDefinitions, selectedLevelTwoCategory],
+  );
+
+
+  useEffect(() => {
+    if (levelOneItemCategories.length === 0) {
+      setSelectedItemLevelOneId(null);
+      setSelectedItemLevelTwoId(null);
+      return;
+    }
+    if (!selectedItemLevelOneId || !levelOneItemCategories.some((item) => item.id === selectedItemLevelOneId)) {
+      setSelectedItemLevelOneId(levelOneItemCategories[0].id);
+    }
+  }, [levelOneItemCategories, selectedItemLevelOneId]);
+
+  useEffect(() => {
+    if (!selectedLevelOneCategory || levelTwoItemCategories.length === 0) {
+      setSelectedItemLevelTwoId(null);
+      return;
+    }
+    if (!selectedItemLevelTwoId || !levelTwoItemCategories.some((item) => item.id === selectedItemLevelTwoId)) {
+      setSelectedItemLevelTwoId(levelTwoItemCategories[0].id);
+    }
+  }, [levelTwoItemCategories, selectedItemLevelTwoId, selectedLevelOneCategory]);
 
   const sortedUnitDefinitions = useMemo(
     () => unitDefinitions.slice().sort((a, b) => a.name.localeCompare(b.name, "ko-KR") || a.sort_order - b.sort_order),
@@ -159,7 +227,6 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
       saveAdminItemCategoriesToApi(nextCategories)
         .then((payload) => {
           setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : nextCategories);
-          setNewItemCategoryName("");
         })
         .catch(() => setItemInlineError(t("standards.section.saveItemFailed", "생산품 유형 저장에 실패했습니다. 연결 상태를 확인하세요.")))
         .finally(() => setItemSavingId(null));
@@ -167,34 +234,53 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     [canManageStandards, t],
   );
 
-  const addItemCategory = useCallback(() => {
-    if (!canManageStandards || itemSavingId) return;
-    const name = newItemCategoryName.trim().replace(/\s+/g, " ");
-    if (name.length < 2) {
-      setItemInlineError(t("standards.items.nameTooShort", "생산품 유형 이름을 2자 이상 입력하세요."));
-      return;
-    }
-    if (itemCategoryDefinitions.some((item) => item.name.trim() === name && item.level === 1 && !item.parent_id)) {
-      setItemInlineError(t("standards.items.duplicate", "이미 등록된 생산품 유형입니다."));
-      return;
-    }
+  const addItemCategory = useCallback(
+    (level: AdminItemCategoryDefinition["level"], parentId: string | null, nameValue: string) => {
+      if (!canManageStandards || itemSavingId) return;
+      const name = nameValue.trim().replace(/\s+/g, " ");
+      if (name.length < 2) {
+        setItemInlineError(t("standards.items.nameTooShort", "생산품 유형 이름을 2자 이상 입력하세요."));
+        return;
+      }
 
-    const nextItem: AdminItemCategoryDefinition = {
-      id: createClientId("item_category"),
-      parent_id: null,
-      level: 1,
-      name,
-      is_active: true,
-      sort_order: getNextSortOrder(itemCategoryDefinitions),
-    };
+      const normalizedParentId = normalizeParentId(parentId);
+      if (level > 1 && !normalizedParentId) {
+        setItemInlineError(t("standards.items.parentRequired", "상위 생산품 유형을 먼저 선택하세요."));
+        return;
+      }
+      if (itemCategoryDefinitions.some((item) => item.name.trim() === name && item.level === level && normalizeParentId(item.parent_id) === normalizedParentId)) {
+        setItemInlineError(t("standards.items.duplicate", "같은 단계에 이미 등록된 생산품 유형입니다."));
+        return;
+      }
 
-    saveItemCategories([...itemCategoryDefinitions, nextItem], "new");
-  }, [canManageStandards, itemCategoryDefinitions, itemSavingId, newItemCategoryName, saveItemCategories, t]);
+      const siblings = itemCategoryDefinitions.filter((item) => item.level === level && normalizeParentId(item.parent_id) === normalizedParentId);
+      const nextItem: AdminItemCategoryDefinition = {
+        id: createClientId(`item_category_l${level}`),
+        parent_id: normalizedParentId,
+        level,
+        name,
+        is_active: true,
+        sort_order: getNextSortOrder(siblings),
+      };
+
+      if (level === 1) setNewItemLevelOneName("");
+      if (level === 2) setNewItemLevelTwoName("");
+      if (level === 3) setNewItemLevelThreeName("");
+      saveItemCategories([...itemCategoryDefinitions, nextItem], "new");
+      if (level === 1) setSelectedItemLevelOneId(nextItem.id);
+      if (level === 2) setSelectedItemLevelTwoId(nextItem.id);
+    },
+    [canManageStandards, itemCategoryDefinitions, itemSavingId, saveItemCategories, t],
+  );
 
   const toggleItemCategory = useCallback(
     (itemId: string, nextActive: boolean) => {
       if (!canManageStandards || itemSavingId) return;
-      const nextCategories = itemCategoryDefinitions.map((item) => (item.id === itemId ? { ...item, is_active: nextActive } : item));
+      const descendantIds = nextActive ? new Set<string>() : getDescendantIds(itemCategoryDefinitions, itemId);
+      const nextCategories = itemCategoryDefinitions.map((item) => {
+        if (item.id === itemId || descendantIds.has(item.id)) return { ...item, is_active: nextActive };
+        return item;
+      });
       saveItemCategories(nextCategories, itemId);
     },
     [canManageStandards, itemCategoryDefinitions, itemSavingId, saveItemCategories],
@@ -291,70 +377,144 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     </div>
   );
 
-  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick?: () => void) => (
+  const renderUsageToggle = (isActive: boolean, disabled: boolean, onClick?: () => void, onDark = false) => (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick?.();
+      }}
       disabled={disabled || !onClick}
       className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-semibold transition ${
         isActive
-          ? "border-stone-900 bg-stone-950 text-white shadow-sm"
-          : "border-stone-200 bg-stone-100 text-stone-500"
+          ? onDark
+            ? "border-white/40 bg-white text-stone-950 shadow-sm"
+            : "border-stone-900 bg-stone-950 text-white shadow-sm"
+          : onDark
+            ? "border-white/20 bg-white/10 text-white/70"
+            : "border-stone-200 bg-stone-100 text-stone-500"
       } ${disabled || !onClick ? "cursor-default opacity-70" : "hover:scale-[1.01]"}`}
     >
-      <span className={`h-2.5 w-2.5 rounded-full ${isActive ? "bg-white" : "bg-stone-300"}`} />
+      <span className={`h-2.5 w-2.5 rounded-full ${isActive ? (onDark ? "bg-stone-950" : "bg-white") : onDark ? "bg-white/40" : "bg-stone-300"}`} />
       {isActive ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
     </button>
   );
 
-  const renderItemManagement = () => (
-    <div className="space-y-3">
+  const renderCategoryColumn = (
+    title: string,
+    items: AdminItemCategoryDefinition[],
+    selectedId: string | null,
+    onSelect: (id: string) => void,
+    level: AdminItemCategoryDefinition["level"],
+    parentId: string | null,
+    newName: string,
+    onChangeNewName: (value: string) => void,
+    placeholder: string,
+  ) => (
+    <div className="flex min-h-[320px] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white">
+      <div className="border-b border-stone-100 bg-stone-50 px-4 py-3">
+        <p className="text-sm font-semibold text-stone-950">{title}</p>
+      </div>
+      <div className="min-h-0 flex-1 overflow-auto divide-y divide-stone-100">
+        {items.length > 0 ? items.map((item) => {
+          const selected = item.id === selectedId;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onSelect(item.id)}
+              className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition ${selected ? "bg-stone-950 text-white" : "bg-white text-stone-900 hover:bg-stone-50"}`}
+            >
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{item.name}</span>
+              {renderUsageToggle(item.is_active, itemSavingId !== null || !canManageStandards, () => toggleItemCategory(item.id, !item.is_active), selected)}
+            </button>
+          );
+        }) : (
+          <div className="px-4 py-8 text-center text-sm font-medium text-stone-500">
+            {level === 1 ? t("standards.items.emptyLevelOne", "1차 유형이 없습니다.") : t("standards.items.emptyChildren", "상위 유형에 연결된 항목이 없습니다.")}
+          </div>
+        )}
+      </div>
       {canManageStandards ? (
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+        <div className="border-t border-stone-100 bg-stone-50 p-3">
+          <div className="flex gap-2">
             <input
-              value={newItemCategoryName}
+              value={newName}
               onChange={(event) => {
-                setNewItemCategoryName(event.target.value);
+                onChangeNewName(event.target.value);
                 setItemInlineError("");
               }}
               onKeyDown={(event) => {
-                if (event.key === "Enter") addItemCategory();
+                if (event.key === "Enter") addItemCategory(level, parentId, newName);
               }}
-              placeholder={t("standards.items.addPlaceholder", "추가할 생산품 유형 입력")}
-              className="min-h-10 flex-1 rounded-xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-400"
+              placeholder={placeholder}
+              disabled={level > 1 && !parentId}
+              className="min-h-10 min-w-0 flex-1 rounded-xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-400 disabled:bg-stone-100 disabled:text-stone-400"
             />
             <button
               type="button"
-              onClick={addItemCategory}
-              disabled={itemSavingId !== null}
-              className="rounded-xl bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition enabled:hover:bg-stone-800 disabled:cursor-default disabled:bg-stone-300"
+              onClick={() => addItemCategory(level, parentId, newName)}
+              disabled={itemSavingId !== null || (level > 1 && !parentId)}
+              className="rounded-xl bg-stone-950 px-3 py-2.5 text-sm font-semibold text-white transition enabled:hover:bg-stone-800 disabled:cursor-default disabled:bg-stone-300"
             >
-              {itemSavingId === "new" ? t("standards.common.saving", "저장 중") : t("standards.items.add", "생산품 유형 추가")}
+              {itemSavingId === "new" ? t("standards.common.saving", "저장 중") : t("standards.items.addShort", "추가")}
             </button>
           </div>
-          {itemInlineError ? <p className="mt-2 text-xs font-semibold text-rose-600">{itemInlineError}</p> : null}
         </div>
       ) : null}
+    </div>
+  );
 
-      <div className="overflow-hidden rounded-2xl border border-stone-200">
-        <div className="grid grid-cols-[minmax(0,1fr)_112px] bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500">
-          <span>{t("standards.table.name", "이름")}</span>
-          <span className="text-right">{t("standards.table.status", "사용 여부")}</span>
-        </div>
-        <div className="max-h-[360px] overflow-auto divide-y divide-stone-100 bg-white">
-          {sortedItemCategoryDefinitions.length > 0 ? sortedItemCategoryDefinitions.map((item) => (
-            <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_112px] items-center px-4 py-3 text-sm">
-              <span className="truncate font-semibold text-stone-900">{item.name}</span>
-              <span className="flex justify-end">
-                {renderUsageToggle(item.is_active, itemSavingId !== null || !canManageStandards, () => toggleItemCategory(item.id, !item.is_active))}
-              </span>
-            </div>
-          )) : (
-            <div className="px-4 py-8 text-center text-sm font-medium text-stone-500">{t("standards.actions.items.empty", "고객사 품목 없음")}</div>
-          )}
-        </div>
+  const renderItemManagement = () => (
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs font-medium leading-5 text-stone-600">
+        {t("standards.items.hierarchyDescription", "생산품 유형은 1차·2차·3차 계층으로 관리합니다. 작업지시서에서는 이 분류를 따라 품목을 선택합니다.")}
       </div>
+
+      <div className="grid gap-3 xl:grid-cols-3">
+        {renderCategoryColumn(
+          t("standards.items.levelOne", "1차 유형"),
+          levelOneItemCategories,
+          selectedLevelOneCategory?.id ?? null,
+          (id) => {
+            setSelectedItemLevelOneId(id);
+            setSelectedItemLevelTwoId(null);
+            setItemInlineError("");
+          },
+          1,
+          null,
+          newItemLevelOneName,
+          setNewItemLevelOneName,
+          t("standards.items.addLevelOne", "예: 상의, 하의"),
+        )}
+        {renderCategoryColumn(
+          t("standards.items.levelTwo", "2차 유형"),
+          levelTwoItemCategories,
+          selectedLevelTwoCategory?.id ?? null,
+          (id) => {
+            setSelectedItemLevelTwoId(id);
+            setItemInlineError("");
+          },
+          2,
+          selectedLevelOneCategory?.id ?? null,
+          newItemLevelTwoName,
+          setNewItemLevelTwoName,
+          selectedLevelOneCategory ? t("standards.items.addLevelTwo", "예: 티셔츠, 셔츠") : t("standards.items.selectLevelOne", "1차 유형 선택"),
+        )}
+        {renderCategoryColumn(
+          t("standards.items.levelThree", "3차 유형"),
+          levelThreeItemCategories,
+          null,
+          () => undefined,
+          3,
+          selectedLevelTwoCategory?.id ?? null,
+          newItemLevelThreeName,
+          setNewItemLevelThreeName,
+          selectedLevelTwoCategory ? t("standards.items.addLevelThree", "예: 반팔 티셔츠") : t("standards.items.selectLevelTwo", "2차 유형 선택"),
+        )}
+      </div>
+
+      {itemInlineError ? <p className="text-xs font-semibold text-rose-600">{itemInlineError}</p> : null}
     </div>
   );
 
