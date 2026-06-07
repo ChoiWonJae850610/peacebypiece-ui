@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+
 import { NextResponse } from "next/server";
 
 import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
@@ -24,6 +26,15 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
 }
 
+function getWorkerHostLabel(uploadUrl: string): string {
+  try {
+    const url = new URL(uploadUrl);
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return "INVALID_R2_WORKER_UPLOAD_URL";
+  }
+}
+
 async function readBody(request: Request): Promise<CompanyFileUploadRequestBody> {
   const payload = (await request.json().catch(() => null)) as unknown;
   return typeof payload === "object" && payload !== null ? (payload as CompanyFileUploadRequestBody) : {};
@@ -37,6 +48,7 @@ export async function POST(request: Request) {
   });
   if (!scopeResult.ok) return scopeResult.response;
 
+  const requestId = randomUUID();
   const body = await readBody(request);
   const validation = validateCompanyFileUploadInput({
     fileType: body.fileType,
@@ -77,8 +89,20 @@ export async function POST(request: Request) {
     }
 
     if (!isR2WorkerUploadConfigured()) {
+      console.warn("[ADMIN_COMPANY_FILE_R2_UPLOAD_NOT_CONFIGURED]", {
+        requestId,
+        companyId: scopeResult.companyScope.companyId,
+        fileType: validation.fileType,
+        mimeType: validation.mimeType,
+        sizeBytes: validation.sizeBytes,
+      });
       return NextResponse.json(
-        { ok: false, error: COMPANY_FILE_ERROR_CODES.uploadNotConfigured },
+        {
+          ok: false,
+          error: COMPANY_FILE_ERROR_CODES.uploadNotConfigured,
+          message: "COMPANY_FILE_UPLOAD_NOT_CONFIGURED",
+          diagnostics: { requestId },
+        },
         { status: 503, headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -90,6 +114,18 @@ export async function POST(request: Request) {
       mimeType: validation.mimeType,
     });
     const upload = createR2WorkerUploadUrl({ key: storageKey, contentType: validation.mimeType });
+    const workerHost = getWorkerHostLabel(upload.url);
+
+    console.info("[ADMIN_COMPANY_FILE_UPLOAD_PREPARED]", {
+      requestId,
+      companyId: scopeResult.companyScope.companyId,
+      fileType: validation.fileType,
+      mimeType: validation.mimeType,
+      sizeBytes: validation.sizeBytes,
+      storageKey,
+      workerHost,
+      expiresInSeconds: upload.expiresInSeconds,
+    });
 
     return NextResponse.json(
       {
@@ -103,14 +139,24 @@ export async function POST(request: Request) {
         },
         upload,
         quota: quotaResult.decision,
+        diagnostics: {
+          requestId,
+          workerHost,
+          storageKey,
+        },
       },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[ADMIN_COMPANY_FILE_UPLOAD_PREPARE_FAILED]", { message, error });
+    console.error("[ADMIN_COMPANY_FILE_UPLOAD_PREPARE_FAILED]", {
+      requestId,
+      companyId: scopeResult.companyScope.companyId,
+      message,
+      error,
+    });
     return NextResponse.json(
-      { ok: false, error: COMPANY_FILE_ERROR_CODES.presignFailed, message },
+      { ok: false, error: COMPANY_FILE_ERROR_CODES.presignFailed, message: COMPANY_FILE_ERROR_CODES.presignFailed, diagnostics: { requestId } },
       { status: 500, headers: { "Cache-Control": "no-store" } },
     );
   }

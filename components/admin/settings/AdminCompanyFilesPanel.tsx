@@ -30,11 +30,18 @@ type CompanyFileUploadQuota = {
   warningThresholdRatio?: number;
 };
 
+type CompanyFileUploadDiagnostics = {
+  requestId?: string;
+  workerHost?: string;
+  storageKey?: string;
+};
+
 type CompanyFileUploadPayload = {
   ok?: boolean;
   error?: string;
   message?: string;
   quota?: CompanyFileUploadQuota;
+  diagnostics?: CompanyFileUploadDiagnostics;
   file?: {
     fileType: CompanyFileType;
     originalName: string;
@@ -119,17 +126,64 @@ function findFile(files: CompanyFileMetadata[], fileType: CompanyFileType): Comp
   return files.find((file) => file.fileType === fileType) ?? null;
 }
 
-function getUploadErrorMessage(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error || "회사 파일 업로드에 실패했습니다.");
-  if (message === "STORAGE_QUOTA_EXCEEDED" || message.includes("저장공간 한도")) {
-    return message.includes("저장공간 한도")
-      ? message
+class CompanyFileUploadError extends Error {
+  readonly userMessage: string;
+  readonly diagnostics: Record<string, unknown> | null;
+
+  constructor(code: string, userMessage: string, diagnostics: Record<string, unknown> | null = null) {
+    super(code);
+    this.name = "CompanyFileUploadError";
+    this.userMessage = userMessage;
+    this.diagnostics = diagnostics;
+  }
+}
+
+function getCompanyFileUploadUserMessage(codeOrMessage: string): string {
+  if (codeOrMessage === "STORAGE_QUOTA_EXCEEDED" || codeOrMessage.includes("저장공간 한도")) {
+    return codeOrMessage.includes("저장공간 한도")
+      ? codeOrMessage
       : "저장공간 한도를 초과하여 업로드할 수 없습니다. 요금제·저장공간 상태를 확인해 주세요.";
   }
-  if (message === "STORAGE_QUOTA_UNAVAILABLE") {
+  if (codeOrMessage === "STORAGE_QUOTA_UNAVAILABLE") {
     return "저장공간 한도 정보를 확인할 수 없어 업로드를 시작하지 못했습니다.";
   }
-  return message;
+  if (codeOrMessage === "COMPANY_FILE_UPLOAD_NOT_CONFIGURED") {
+    return "파일 업로드 저장소 설정이 완료되지 않았습니다. 시스템관리자에게 문의해 주세요.";
+  }
+  if (codeOrMessage === "COMPANY_FILE_UPLOAD_PREPARE_FAILED") {
+    return "파일 업로드를 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  if (codeOrMessage === "COMPANY_FILE_R2_UPLOAD_FAILED") {
+    return "파일 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  if (codeOrMessage === "COMPANY_FILE_METADATA_SAVE_FAILED") {
+    return "파일은 전송됐지만 등록 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  if (codeOrMessage.startsWith("COMPANY_FILE_")) {
+    return "회사 파일을 처리하지 못했습니다. 파일 형식과 용량을 확인해 주세요.";
+  }
+  return codeOrMessage || "회사 파일 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+function getUploadErrorMessage(error: unknown): string {
+  if (error instanceof CompanyFileUploadError) return error.userMessage;
+  const message = error instanceof Error ? error.message : String(error || "");
+  return getCompanyFileUploadUserMessage(message);
+}
+
+function getUploadTargetLabel(urlString: string): string {
+  try {
+    const url = new URL(urlString);
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return "INVALID_UPLOAD_URL";
+  }
+}
+
+async function readUploadFailureBody(response: Response): Promise<string | null> {
+  const body = await response.text().catch(() => "");
+  const trimmed = body.trim();
+  return trimmed ? trimmed.slice(0, 800) : null;
 }
 
 function getQuotaWarningMessage(quota: CompanyFileUploadQuota | null | undefined): string | null {
@@ -205,7 +259,20 @@ export default function AdminCompanyFilesPanel() {
       });
       const preparePayload = (await prepareResponse.json().catch(() => null)) as CompanyFileUploadPayload | null;
       if (!prepareResponse.ok || !preparePayload?.ok || !preparePayload.file || !preparePayload.upload) {
-        throw new Error(preparePayload?.message || preparePayload?.error || "COMPANY_FILE_UPLOAD_PREPARE_FAILED");
+        const code = preparePayload?.error || "COMPANY_FILE_UPLOAD_PREPARE_FAILED";
+        const diagnostics = {
+          step: "prepare",
+          status: prepareResponse.status,
+          statusText: prepareResponse.statusText,
+          fileType,
+          originalName: selectedFile.name,
+          mimeType: selectedFile.type || "application/octet-stream",
+          sizeBytes: selectedFile.size,
+          error: code,
+          message: preparePayload?.message ?? null,
+        };
+        console.warn("[ADMIN_COMPANY_FILE_UPLOAD_PREPARE_FAILED]", diagnostics);
+        throw new CompanyFileUploadError(code, getCompanyFileUploadUserMessage(preparePayload?.message || code), diagnostics);
       }
 
       const uploadResponse = await fetch(preparePayload.upload.url, {
@@ -214,7 +281,26 @@ export default function AdminCompanyFilesPanel() {
         body: selectedFile,
       });
       if (!uploadResponse.ok) {
-        throw new Error("COMPANY_FILE_R2_UPLOAD_FAILED");
+        const failureBody = await readUploadFailureBody(uploadResponse);
+        const diagnostics = {
+          step: "r2-put",
+          status: uploadResponse.status,
+          statusText: uploadResponse.statusText,
+          responseBody: failureBody,
+          fileType,
+          originalName: selectedFile.name,
+          mimeType: selectedFile.type || "application/octet-stream",
+          sizeBytes: selectedFile.size,
+          storageKey: preparePayload.file.storageKey,
+          requestId: preparePayload.diagnostics?.requestId ?? null,
+          uploadTarget: getUploadTargetLabel(preparePayload.upload.url),
+        };
+        console.warn("[COMPANY_FILE_R2_UPLOAD_FAILED]", diagnostics);
+        throw new CompanyFileUploadError(
+          "COMPANY_FILE_R2_UPLOAD_FAILED",
+          getCompanyFileUploadUserMessage("COMPANY_FILE_R2_UPLOAD_FAILED"),
+          diagnostics,
+        );
       }
 
       const saveResponse = await fetch("/api/admin/company-files", {
@@ -224,7 +310,22 @@ export default function AdminCompanyFilesPanel() {
       });
       const savePayload = (await saveResponse.json().catch(() => null)) as CompanyFileSavePayload | null;
       if (!saveResponse.ok || !savePayload?.ok || !savePayload.file) {
-        throw new Error(savePayload?.message || savePayload?.error || "COMPANY_FILE_METADATA_SAVE_FAILED");
+        const code = savePayload?.error || "COMPANY_FILE_METADATA_SAVE_FAILED";
+        const diagnostics = {
+          step: "metadata-save",
+          status: saveResponse.status,
+          statusText: saveResponse.statusText,
+          fileType,
+          originalName: selectedFile.name,
+          mimeType: selectedFile.type || "application/octet-stream",
+          sizeBytes: selectedFile.size,
+          storageKey: preparePayload.file.storageKey,
+          requestId: preparePayload.diagnostics?.requestId ?? null,
+          error: code,
+          message: savePayload?.message ?? null,
+        };
+        console.warn("[COMPANY_FILE_METADATA_SAVE_FAILED]", diagnostics);
+        throw new CompanyFileUploadError(code, getCompanyFileUploadUserMessage(savePayload?.message || code), diagnostics);
       }
 
       const quotaWarning = getQuotaWarningMessage(savePayload.quota) || getQuotaWarningMessage(preparePayload.quota);
@@ -236,6 +337,15 @@ export default function AdminCompanyFilesPanel() {
       );
       loadFiles();
     } catch (error) {
+      if (!(error instanceof CompanyFileUploadError)) {
+        console.warn("[ADMIN_COMPANY_FILE_UPLOAD_UNEXPECTED_FAILED]", {
+          fileType,
+          originalName: selectedFile.name,
+          mimeType: selectedFile.type || "application/octet-stream",
+          sizeBytes: selectedFile.size,
+          error,
+        });
+      }
       showToast(getUploadErrorMessage(error), "danger");
     } finally {
       setUploadingType(null);
