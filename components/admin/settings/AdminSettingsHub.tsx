@@ -350,7 +350,15 @@ function AccountSettingsPanel({
   const [requestFeedbackEventKey, setRequestFeedbackEventKey] = useState(0);
 
   const activeRequestAction = overview.actions.find((action) => action.requestType === activeRequestType) ?? null;
+  const companyInfoAction = overview.actions.find((action) => action.requestType === "company_info_change") ?? null;
+  const deactivationAction = overview.actions.find((action) => action.requestType === "account_deactivation") ?? null;
   const canSubmitRequest = requestState !== "submitting" && requestMessage.trim().length >= 10;
+
+  const openRequestComposer = (requestType: "company_info_change" | "account_deactivation") => {
+    setActiveRequestType(requestType);
+    setRequestState("idle");
+    setRequestFeedback("");
+  };
 
   const submitAccountRequest = async () => {
     if (!activeRequestType || !canSubmitRequest) return;
@@ -394,7 +402,7 @@ function AccountSettingsPanel({
     <WaflSectionPanel
       eyebrow={t("settings.account.eyebrow", "회사 계정 정보")}
       title={overview.title}
-      description={overview.description}
+      description={t("settings.account.redesignedDescription", "회사 정보와 대표 계정 상태를 확인하고, 필요한 변경은 요청으로 접수합니다.")}
       actions={
         <>
           <AdminStatusBadge tone={overview.statusTone}>{overview.statusLabel}</AdminStatusBadge>
@@ -406,71 +414,55 @@ function AccountSettingsPanel({
       className="min-h-[320px]"
       bodyClassName="pt-4 space-y-4"
     >
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.95fr)]">
-        <WaflSettingsSectionGroup
-          eyebrow={t("settings.account.companyEyebrow", "회사 정보")}
-          title={t("settings.account.companyTitle", "현재 등록된 회사·대표 계정")}
-          description={t("settings.account.companyDescription", "회사명, 사업자 정보, 주소, 대표 로그인 계정은 현재 고객사 기준으로 표시합니다.")}
-          badge={<AdminStatusBadge tone={overview.statusTone}>{overview.statusLabel}</AdminStatusBadge>}
-          tone="warning"
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            {overview.metrics.map((metric) => (
-              <WaflSettingCard
-                key={metric.id}
-                title={metric.value}
-                description={metric.description}
-                eyebrow={metric.label}
-                tone="warning"
-                density="compact"
-              />
-            ))}
-          </div>
-        </WaflSettingsSectionGroup>
-        <WaflSettingsSectionGroup
-          eyebrow={t("settings.account.requestEyebrow", "요청 관리")}
-          title={t("settings.account.requestTitle", "회사 정보 변경·비활성화 요청")}
-          description={t("settings.account.requestDescription", "회사 단위 변경은 즉시 수정하지 않고 시스템관리자 검토 요청으로 접수합니다.")}
-          tone="info"
-        >
-          <div className="grid gap-3">
-            {overview.actions.map((action) => (
-              <WaflSettingCard
-                key={action.id}
-                title={action.label}
-                description={action.description}
-                badge={<AdminStatusBadge tone={action.tone} size="xs">{action.statusLabel}</AdminStatusBadge>}
-                tone={action.requestType === "account_deactivation" ? "danger" : "info"}
-                density="compact"
-                actions={
-                  action.requestType ? (
-                    <AdminButton
-                      size="sm"
-                      variant={action.requestType === "account_deactivation" ? "danger" : "secondary"}
-                      onClick={() => {
-                        setActiveRequestType(action.requestType ?? null);
-                        setRequestState("idle");
-                        setRequestFeedback("");
-                      }}
-                    >
-                      {t("settings.accountRequest.open", "요청 작성")}
-                    </AdminButton>
-                  ) : null
-                }
-              />
-            ))}
-          </div>
-        </WaflSettingsSectionGroup>
-      </div>
+      <WaflSettingsSectionGroup
+        eyebrow={t("settings.account.companyEyebrow", "회사 정보")}
+        title={t("settings.account.companyTitle", "회사 기본 정보")}
+        description={t("settings.account.companyRedesignedDescription", "현재 등록된 회사 정보입니다. 회사명, 사업자 정보, 주소 변경은 요청으로 접수합니다.")}
+        badge={<AdminStatusBadge tone={overview.statusTone}>{overview.statusLabel}</AdminStatusBadge>}
+        aside={
+          <>
+            {companyInfoAction ? (
+              <AdminButton type="button" size="sm" variant="secondary" onClick={() => openRequestComposer("company_info_change")}>
+                {t("settings.accountRequest.companyInfoButton", "회사 정보 변경 요청")}
+              </AdminButton>
+            ) : null}
+            {deactivationAction ? (
+              <AdminButton type="button" size="sm" variant="danger" onClick={() => openRequestComposer("account_deactivation")}>
+                {t("settings.accountRequest.withdrawalButton", "탈퇴 요청")}
+              </AdminButton>
+            ) : null}
+          </>
+        }
+        tone="neutral"
+      >
+        <div className="overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
+          {overview.metrics.map((metric) => (
+            <div
+              key={metric.id}
+              className="grid gap-1 border-b border-[var(--pbp-border)] px-4 py-3 last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4 sm:px-5"
+            >
+              <div className="text-xs font-bold text-[var(--pbp-text-subtle)]">{metric.label}</div>
+              <div className="min-w-0">
+                <div className="break-words text-sm font-bold text-[var(--pbp-text-primary)]">{metric.value}</div>
+                <div className="mt-1 break-words text-xs leading-5 text-[var(--pbp-text-muted)]">{metric.description}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </WaflSettingsSectionGroup>
 
       <AdminCompanyFilesPanel />
 
       {activeRequestAction ? (
         <WaflSettingsSectionGroup
           eyebrow={t("settings.accountRequest.eyebrow", "요청 작성")}
-          title={activeRequestAction.label}
-          description={t("settings.accountRequest.description", "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.")}
-          badge={<AdminStatusBadge tone={activeRequestAction.tone} size="xs">{activeRequestAction.statusLabel}</AdminStatusBadge>}
+          title={activeRequestType === "account_deactivation" ? t("settings.accountRequest.withdrawalTitle", "탈퇴 요청") : activeRequestAction.label}
+          description={
+            activeRequestType === "account_deactivation"
+              ? t("settings.accountRequest.withdrawalDescription", "탈퇴 요청이 승인되면 서비스 이용이 제한됩니다. 필요한 파일은 미리 내려받아 주세요.")
+              : t("settings.accountRequest.description", "변경하려는 내용과 사유를 적으면 시스템관리자가 검토할 수 있는 요청으로 접수됩니다.")
+          }
+          badge={<AdminStatusBadge tone={activeRequestType === "account_deactivation" ? "warning" : activeRequestAction.tone} size="xs">{activeRequestAction.statusLabel}</AdminStatusBadge>}
           tone={activeRequestType === "account_deactivation" ? "danger" : "warning"}
           footer={t("settings.accountRequest.validation", "10자 이상 입력해야 요청할 수 있습니다. 즉시 변경되지 않고 검토 요청으로 접수됩니다.")}
         >
@@ -485,7 +477,11 @@ function AccountSettingsPanel({
             }}
             rows={4}
             className="min-h-28 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]/20"
-            placeholder={t("settings.accountRequest.placeholder", "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.")}
+            placeholder={
+              activeRequestType === "account_deactivation"
+                ? t("settings.accountRequest.withdrawalPlaceholder", "예: 서비스 이용을 중단하려고 합니다. 필요한 자료를 내려받은 뒤 탈퇴 처리를 요청합니다.")
+                : t("settings.accountRequest.placeholder", "예: 사업자명이 변경되었습니다. 변경 전/후 정보와 사유를 입력해 주세요.")
+            }
           />
           <div className="mt-3 flex flex-wrap justify-end gap-2">
             <AdminButton
@@ -515,8 +511,8 @@ function AccountSettingsPanel({
 
       <WaflSettingsSectionGroup
         eyebrow={t("settings.accountRequest.historyEyebrow", "요청 이력")}
-        title={t("settings.accountRequest.historyTitle", "최근 접수된 회사 계정 요청")}
-        description={t("settings.accountRequest.historyDescription", "회사 정보 변경과 계정 비활성화 요청의 최근 접수 상태를 확인합니다.")}
+        title={t("settings.accountRequest.historyTitle", "요청 이력과 처리 결과")}
+        description={t("settings.accountRequest.historyDescription", "회사 정보 변경과 탈퇴 요청의 접수 상태와 처리 결과를 확인합니다.")}
         badge={
           <AdminStatusBadge tone={requestsLoadState === "failed" ? "warning" : "neutral"} size="xs">
             {requestsLoadState === "loading" ? t("common.loadingShort", "조회 중") : t("settings.accountRequest.historyBadge", "최근 5건")}
@@ -537,7 +533,7 @@ function AccountSettingsPanel({
               <WaflSettingCard
                 key={request.id}
                 eyebrow={resolveRequestTypeLabel(request.requestType, t)}
-                title={request.requestTitle}
+                title={request.requestType === "account_deactivation" ? t("settings.accountRequest.withdrawalButton", "탈퇴 요청") : request.requestTitle}
                 description={request.requestMessage}
                 badge={<AdminStatusBadge tone={requestStatusTone[request.requestStatus]} size="xs">{resolveRequestStatusLabel(request.requestStatus, t)}</AdminStatusBadge>}
                 meta={formatSettingsRequestDate(request.createdAt)}
@@ -558,24 +554,11 @@ function AccountSettingsPanel({
         ) : (
           <WaflSettingCard
             title={t("settings.accountRequest.historyEmptyTitle", "접수된 요청이 없습니다.")}
-            description={t("settings.accountRequest.historyEmptyDescription", "회사 정보 변경 또는 계정 비활성화가 필요할 때 요청을 작성하면 이곳에 최근 이력이 표시됩니다.")}
+            description={t("settings.accountRequest.historyEmptyDescription", "회사 정보 변경 또는 탈퇴가 필요할 때 요청을 작성하면 이곳에 최근 이력이 표시됩니다.")}
             tone="neutral"
             density="compact"
           />
         )}
-      </WaflSettingsSectionGroup>
-
-      <WaflSettingsSectionGroup
-        eyebrow={t("settings.account.policyEyebrow", "운영 기준")}
-        title={t("settings.account.policyTitle", "조직 정보와 개인 설정 분리")}
-        description={t("settings.account.policyDescription", "회사 설정, 관리자 개인 프로필, 로그인 이메일의 책임 범위를 분리해서 관리합니다.")}
-        tone="neutral"
-      >
-        <div className="grid gap-2 md:grid-cols-2">
-          {overview.policyNotes.map((note) => (
-            <p key={note} className="text-sm leading-6 text-[var(--pbp-text-muted)]">• {note}</p>
-          ))}
-        </div>
       </WaflSettingsSectionGroup>
     </WaflSectionPanel>
   );

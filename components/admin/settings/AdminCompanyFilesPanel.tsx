@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
-import WaflSettingCard from "@/components/admin/common/WaflSettingCard";
 import WaflSettingsSectionGroup from "@/components/admin/common/WaflSettingsSectionGroup";
 import {
   COMPANY_FILE_TYPES,
@@ -261,41 +260,77 @@ export default function AdminCompanyFilesPanel() {
     <WaflSettingsSectionGroup
       eyebrow={t("settings.companyFiles.eyebrow", "회사 파일")}
       title={t("settings.companyFiles.title", "대표 이미지·사업자등록증")}
-      description={t("settings.companyFiles.description", "회사 정보 화면에서 필요한 대표 이미지와 사업자등록증을 업로드하고 현재 등록 상태를 확인합니다.")}
+      description={t("settings.companyFiles.description", "현재 등록 상태를 먼저 확인하고 필요한 파일만 등록하거나 변경합니다.")}
       badge={<AdminStatusBadge tone={panelBadgeTone} size="xs">{panelBadgeLabel}</AdminStatusBadge>}
-      tone="info"
-      footer={t("settings.companyFiles.footer", "대표 이미지는 검토 없이 저장되고, 사업자등록증은 시스템관리자 검토 필요 상태로 저장됩니다.")}
+      tone="neutral"
     >
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {slots.map((slot) => {
           const file = slot.file;
           const status = file ? reviewStatusCopy[file.reviewStatus] : null;
-          const title = file?.originalName?.trim() || slot.emptyLabel;
-          const description = file
-            ? `${formatFileSize(file.sizeBytes)} · ${file.mimeType || "파일 형식 미확인"} · 등록일 ${formatFileDate(file.createdAt)}`
-            : slot.description;
           const isUploading = uploadingType === slot.fileType;
+          const isRepresentativeImage = slot.fileType === "representative_image";
+          const previewTitle = file?.originalName?.trim() || slot.emptyLabel;
+          const previewDescription = file
+            ? `${formatFileSize(file.sizeBytes)} · ${file.mimeType || "파일 형식 미확인"} · ${formatFileDate(file.createdAt)}`
+            : isRepresentativeImage
+              ? t("settings.companyFiles.representativeEmptyDescription", "대표 이미지를 등록하면 고객사 프로필과 시스템관리자 검토 화면에 표시됩니다.")
+              : t("settings.companyFiles.businessRegistrationEmptyDescription", "사업자등록증을 등록하면 시스템관리자 검토 상태로 표시됩니다.");
 
           return (
-            <WaflSettingCard
+            <article
               key={slot.fileType}
-              eyebrow={slot.title}
-              title={title}
-              description={description}
-              badge={
-                file && status ? (
+              className="rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-card)]"
+            >
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">
+                    {isRepresentativeImage ? t("settings.companyFiles.representativeEyebrow", "대표 이미지") : t("settings.companyFiles.businessRegistrationEyebrow", "사업자등록증")}
+                  </p>
+                  <h4 className="mt-1.5 break-words text-sm font-black tracking-[-0.02em] text-[var(--pbp-text-primary)]">{previewTitle}</h4>
+                </div>
+                {file && status ? (
                   <AdminStatusBadge tone={status.tone} size="xs">{status.label}</AdminStatusBadge>
                 ) : (
-                  <AdminStatusBadge tone={slot.reviewRequired ? "warning" : "neutral"} size="xs">
-                    {slot.reviewRequired ? t("settings.companyFiles.reviewRequired", "검토 파일") : t("settings.companyFiles.optionalReview", "검토 없음")}
-                  </AdminStatusBadge>
-                )
-              }
-              meta={file?.rejectionReason ? `${t("settings.companyFiles.rejectionReason", "반려 사유")}: ${file.rejectionReason}` : undefined}
-              tone={file?.reviewStatus === "rejected" ? "danger" : slot.reviewRequired ? "warning" : "info"}
-              density="compact"
-              actions={
-                <>
+                  <AdminStatusBadge tone="neutral" size="xs">{t("settings.companyFiles.notRegistered", "미등록")}</AdminStatusBadge>
+                )}
+              </div>
+
+              <div className="mt-4 overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]">
+                <div className="flex min-h-[132px] items-center justify-center px-4 py-5 text-center">
+                  {file ? (
+                    <div className="min-w-0">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xl font-black text-[var(--pbp-text-subtle)]">
+                        {isRepresentativeImage ? "IMG" : "DOC"}
+                      </div>
+                      <p className="mt-3 break-words text-sm font-bold text-[var(--pbp-text-primary)]">{file.originalName}</p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{previewDescription}</p>
+                    </div>
+                  ) : (
+                    <div className="min-w-0">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] text-xs font-bold text-[var(--pbp-text-subtle)]">
+                        {isRepresentativeImage ? t("settings.companyFiles.imagePreview", "이미지") : t("settings.companyFiles.documentPreview", "문서")}
+                      </div>
+                      <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">{slot.emptyLabel}</p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{previewDescription}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {file?.rejectionReason ? (
+                <div className="mt-3 rounded-2xl border border-[var(--pbp-status-danger)]/25 bg-[var(--pbp-status-danger-bg)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-status-danger-fg)]">
+                  {t("settings.companyFiles.rejectionReason", "반려 사유")}: {file.rejectionReason}
+                </div>
+              ) : null}
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">
+                  {file
+                    ? t("settings.companyFiles.registeredFileHint", "현재 등록된 파일입니다. 필요한 경우 변경할 수 있습니다.")
+                    : t("settings.companyFiles.emptyFileHint", "등록된 파일이 없습니다.")}
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
                   <input
                     ref={(element) => {
                       inputRefs.current[slot.fileType] = element;
@@ -319,9 +354,9 @@ export default function AdminCompanyFilesPanel() {
                   >
                     {isUploading ? t("common.savingShort", "저장 중") : file ? t("settings.companyFiles.replace", "변경") : t("settings.companyFiles.register", "등록")}
                   </AdminButton>
-                </>
-              }
-            />
+                </div>
+              </div>
+            </article>
           );
         })}
       </div>
