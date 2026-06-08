@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import ToastMessage from "@/components/common/ToastMessage";
-import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import { AppButton, AppResponsiveWorkspace, AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileShell, type AppSegmentedTabItem } from "@/components/common/ui";
+import { AppButton, AppResponsiveWorkspace, AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileListDrawer, WaflMobileShell, WaflMobileTabbedActionSheet, type AppSegmentedTabItem } from "@/components/common/ui";
 import MobileTopBar from "@/components/layout/MobileTopBar";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
@@ -32,17 +31,10 @@ const MATERIAL_ORDER_MOBILE_HOME_NAVIGATION = {
 
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
-  const mobileOrderListDrawerRef = useRef<HTMLDivElement | null>(null);
   const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] = useState(false);
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] = useState<MaterialOrderMobileToolKey>("workorders");
   const [tabletMaterialSheetOpen, setTabletMaterialSheetOpen] = useState(false);
-
-  useModalEnvironment({
-    open: mobileOrderListDrawerOpen,
-    dialogRef: mobileOrderListDrawerRef,
-    onClose: () => setMobileOrderListDrawerOpen(false),
-  });
 
   const {
     orders,
@@ -185,69 +177,42 @@ export default function MaterialOrderDraftEditor() {
           />
         )}
         actionBar={actionBar}
-        drawer={mobileOrderListDrawerOpen ? (
-          <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog" aria-labelledby="material-order-mobile-drawer-title">
-            <button
-              type="button"
-              aria-label="발주서 목록 드로어 닫기"
-              className="absolute inset-0 bg-stone-950/45 pbp-overlay-enter"
-              onClick={() => setMobileOrderListDrawerOpen(false)}
-            />
-            <div
-              ref={mobileOrderListDrawerRef}
-              tabIndex={-1}
-              className="absolute left-0 top-0 flex h-full w-[86%] max-w-sm flex-col overflow-hidden rounded-r-3xl bg-white shadow-2xl focus:outline-none pbp-drawer-enter"
-            >
-              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-stone-200 bg-white/95 px-3 pb-2 pt-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur">
-                <div>
-                  <div id="material-order-mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">발주서 목록</div>
-                  <div className="text-[11px] text-stone-500">모바일 드로어</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setMobileOrderListDrawerOpen(false)}
-                  className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-                >
-                  닫기
-                </button>
-              </div>
-              <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
-                <div className="min-h-[72dvh] min-w-0">{listPanel}</div>
-              </div>
-            </div>
-          </div>
-        ) : null}
+        drawer={(
+          <WaflMobileListDrawer
+            open={mobileOrderListDrawerOpen}
+            onClose={() => setMobileOrderListDrawerOpen(false)}
+            title="발주서 목록"
+            subtitle="모바일 드로어"
+            closeLabel="닫기"
+            closeOverlayAria="발주서 목록 드로어 닫기"
+            titleId="material-order-mobile-drawer-title"
+          >
+            <div className="min-h-[72dvh] min-w-0">{listPanel}</div>
+          </WaflMobileListDrawer>
+        )}
         contentClassName="gap-3"
       >
         {statusToast}
         <WaflMobileContentSection>{detailPanel}</WaflMobileContentSection>
-        <AppSheet
+        <WaflMobileTabbedActionSheet
           open={mobileToolSheetOpen}
           onOpenChange={setMobileToolSheetOpen}
           title="발주 도구"
-          side="bottom"
-          size="full"
-          contentClassName="px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"
+          items={mobileToolTabs}
+          value={mobileActiveTool}
+          onChange={setMobileActiveTool}
+          ariaLabel="원단·부자재 발주 보조 도구"
         >
-          <div className="space-y-3">
-            <AppSegmentedTabs
-              items={mobileToolTabs}
-              value={mobileActiveTool}
-              onChange={setMobileActiveTool}
-              ariaLabel="원단·부자재 발주 보조 도구"
-              itemClassName="text-xs"
-            />
-            {mobileActiveTool === "workorders" ? (
-              <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>
-            ) : null}
-            {mobileActiveTool === "schedule" ? (
-              <div className="min-h-[42dvh] rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
-                <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
-                <p className="mt-2 text-xs leading-5 pbp-text-muted">PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에 배치합니다.</p>
-              </div>
-            ) : null}
-          </div>
-        </AppSheet>
+          {mobileActiveTool === "workorders" ? (
+            <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>
+          ) : null}
+          {mobileActiveTool === "schedule" ? (
+            <div className="min-h-[42dvh] rounded-3xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+              <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
+              <p className="mt-2 text-xs leading-5 pbp-text-muted">PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에 배치합니다.</p>
+            </div>
+          ) : null}
+        </WaflMobileTabbedActionSheet>
       </WaflMobileShell>
     );
   }

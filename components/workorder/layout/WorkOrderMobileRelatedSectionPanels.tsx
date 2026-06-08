@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawingModal";
 import {
-  readDesignDrawingModalOpenState,
   writeDesignDrawingModalOpenState,
 } from "@/components/workorder/drawing/workOrderDrawingModalSession";
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
@@ -22,9 +21,16 @@ export default function WorkOrderMobileRelatedSectionPanels({
   activeSection,
   ...props
 }: WorkOrderMobileRelatedSectionPanelsProps) {
-  const [drawingModalOpen, setDrawingModalOpen] = useState(readDesignDrawingModalOpenState);
+  const [drawingModalOpen, setDrawingModalOpen] = useState(false);
   const hasDesignAttachmentSection = props.attachmentSections.some((section) => isDesignAttachmentScope(section.uploadScope));
   const canRenderDesignDrawingModal = !props.isEmpty && props.canSeeAttachments && hasDesignAttachmentSection;
+
+  useEffect(() => {
+    if (activeSection !== "design") {
+      writeDesignDrawingModalOpenState(false);
+      setDrawingModalOpen(false);
+    }
+  }, [activeSection]);
 
   const openDesignDrawingModal = () => {
     writeDesignDrawingModalOpenState(true);

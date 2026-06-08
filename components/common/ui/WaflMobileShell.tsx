@@ -1,4 +1,10 @@
-import type { ReactNode, Ref } from "react";
+"use client";
+
+import { useRef, type ReactNode, type Ref } from "react";
+
+import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import AppSegmentedTabs, { type AppSegmentedTabItem } from "./AppSegmentedTabs";
+import AppSheet, { type AppSheetSize } from "./AppSheet";
 
 import { cn } from "@/lib/utils";
 
@@ -38,7 +44,7 @@ export function WaflMobileShell({
   contentClassName,
 }: WaflMobileShellProps) {
   return (
-    <main className={cn("min-h-screen overflow-x-hidden", mobileShellToneClassMap[tone], className)}>
+    <main className={cn("pbp-mobile-no-zoom min-h-screen overflow-x-hidden", mobileShellToneClassMap[tone], className)}>
       <div ref={shellRef} className="min-h-screen overflow-x-hidden">
         {topBar}
         {drawer}
@@ -123,5 +129,136 @@ export function WaflMobileFloatingActionButton({
         {children}
       </button>
     </div>
+  );
+}
+
+
+export type WaflMobileListDrawerProps = {
+  open: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  subtitle?: ReactNode;
+  closeLabel: ReactNode;
+  closeOverlayAria: string;
+  titleId?: string;
+  children: ReactNode;
+  headerContent?: ReactNode;
+  footerContent?: ReactNode;
+  className?: string;
+  bodyClassName?: string;
+};
+
+export function WaflMobileListDrawer({
+  open,
+  onClose,
+  title,
+  subtitle,
+  closeLabel,
+  closeOverlayAria,
+  titleId = "wafl-mobile-list-drawer-title",
+  children,
+  headerContent,
+  footerContent,
+  className,
+  bodyClassName,
+}: WaflMobileListDrawerProps) {
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+
+  useModalEnvironment({
+    open,
+    dialogRef: drawerRef,
+    onClose,
+  });
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog" aria-labelledby={titleId}>
+      <button type="button" aria-label={closeOverlayAria} className="absolute inset-0 bg-stone-950/45 pbp-overlay-enter" onClick={onClose} />
+      <div
+        ref={drawerRef}
+        tabIndex={-1}
+        className={cn(
+          "absolute left-0 top-0 flex h-full w-[86%] max-w-sm flex-col overflow-hidden rounded-r-3xl bg-white shadow-2xl focus:outline-none pbp-drawer-enter",
+          className,
+        )}
+      >
+        <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-3 pb-2 pt-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div id={titleId} className="truncate text-sm font-semibold leading-5 text-stone-900">{title}</div>
+              {subtitle ? <div className="truncate text-[11px] text-stone-500">{subtitle}</div> : null}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            >
+              {closeLabel}
+            </button>
+          </div>
+          {headerContent ? <div className="mt-2.5">{headerContent}</div> : null}
+        </div>
+        <div className={cn("pbp-mobile-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+0.875rem)]", bodyClassName)}>
+          {children}
+        </div>
+        {footerContent ? <div className="border-t border-stone-200 bg-white/95 px-3 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">{footerContent}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+export type WaflMobileTabbedActionSheetProps<Key extends string> = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: ReactNode;
+  description?: ReactNode;
+  items: Array<AppSegmentedTabItem<Key>>;
+  value: Key;
+  onChange: (value: Key) => void;
+  ariaLabel: string;
+  children: ReactNode;
+  size?: AppSheetSize;
+  contentClassName?: string;
+  bodyClassName?: string;
+  itemClassName?: string;
+};
+
+export function WaflMobileTabbedActionSheet<Key extends string>({
+  open,
+  onOpenChange,
+  title,
+  description,
+  items,
+  value,
+  onChange,
+  ariaLabel,
+  children,
+  size = "full",
+  contentClassName,
+  bodyClassName,
+  itemClassName = "text-xs",
+}: WaflMobileTabbedActionSheetProps<Key>) {
+  return (
+    <AppSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      side="bottom"
+      size={size}
+      contentClassName={cn(`px-3 py-3 ${WAFL_MOBILE_SAFE_AREA_CLASS_NAMES.sheetBottomPadding}`, contentClassName)}
+    >
+      <div className={cn("space-y-3", bodyClassName)}>
+        <AppSegmentedTabs
+          items={items}
+          value={value}
+          onChange={onChange}
+          ariaLabel={ariaLabel}
+          itemClassName={itemClassName}
+        />
+        <div className="min-w-0 overflow-x-hidden">{children}</div>
+      </div>
+    </AppSheet>
   );
 }

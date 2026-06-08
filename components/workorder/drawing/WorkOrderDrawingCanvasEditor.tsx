@@ -551,6 +551,8 @@ export default function WorkOrderDrawingCanvasEditor({
     suppressDraftPersistRef.current = true;
     clearDrawingDraftSnapshot();
     resetDrawingInteractionState();
+    dirtyRef.current = false;
+    setDirty(false);
     historyGuardActiveRef.current = false;
     if (
       typeof window !== "undefined" &&
@@ -699,6 +701,7 @@ export default function WorkOrderDrawingCanvasEditor({
     if (!open) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
+    suppressDraftPersistRef.current = false;
     canvas.width = canvasSize.width;
     canvas.height = canvasSize.height;
     drawBlankCanvas(canvas);
@@ -813,6 +816,7 @@ export default function WorkOrderDrawingCanvasEditor({
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
     if (drawingInputDisabled) return;
+    event.preventDefault();
     updateEraserCursor(event);
     if (isShapeTool(tool)) {
       drawShapePreview(event);
@@ -825,7 +829,11 @@ export default function WorkOrderDrawingCanvasEditor({
     const canvas = canvasRef.current;
     if (!canvas || drawingInputDisabled) return;
     event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Some mobile WebView implementations may reject pointer capture during orientation changes.
+    }
     strokeDirtyRef.current = false;
     closeToolPopovers();
     updateEraserCursor(event);
@@ -856,8 +864,13 @@ export default function WorkOrderDrawingCanvasEditor({
       hideEraserCursor();
       return;
     }
+    event.preventDefault();
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        // Ignore stale pointer capture after mobile orientation changes.
+      }
     }
 
 
@@ -945,6 +958,15 @@ export default function WorkOrderDrawingCanvasEditor({
     setLineStyle((current) => (current === "solid" ? "dashed" : "solid"));
   };
 
+  const handleLandscapeBlockedClose = () => {
+    suppressDraftPersistRef.current = true;
+    clearDrawingDraftSnapshot();
+    dirtyRef.current = false;
+    setDirty(false);
+    resetDrawingInteractionState();
+    closeModalAndReleaseHistoryGuard();
+  };
+
   const stableViewportPanelClassName = useStableViewportHeight
     ? " !h-[var(--pbp-drawing-ipad-viewport-height,100dvh)] !max-h-[var(--pbp-drawing-ipad-viewport-height,100dvh)] md:!h-[var(--pbp-drawing-ipad-viewport-height,100dvh)] md:!max-h-[var(--pbp-drawing-ipad-viewport-height,100dvh)]"
     : "";
@@ -977,6 +999,7 @@ export default function WorkOrderDrawingCanvasEditor({
               ref={canvasRef}
               width={canvasSize.width}
               height={canvasSize.height}
+              style={{ touchAction: "none" }}
               className={`block h-full w-full touch-none select-none bg-white ${
                 landscapeBlocked ? "pointer-events-none cursor-not-allowed" : tool === "eraser" ? "cursor-none" : "cursor-crosshair"
               }`}
@@ -1000,7 +1023,7 @@ export default function WorkOrderDrawingCanvasEditor({
                   <div className="mt-2 text-xs font-semibold leading-5">{ui.landscapeBlockedMessage}</div>
                   <button
                     type="button"
-                    onClick={closeModalAndReleaseHistoryGuard}
+                    onClick={handleLandscapeBlockedClose}
                     className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-xs font-bold pbp-text-primary shadow-sm"
                   >
                     {ui.landscapeBlockedClose}

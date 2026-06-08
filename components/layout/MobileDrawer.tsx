@@ -1,8 +1,6 @@
 "use client";
 
-import { useRef } from "react";
-import { AppSelect } from "@/components/common/ui";
-import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import { AppSelect, WaflMobileListDrawer } from "@/components/common/ui";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
@@ -62,7 +60,6 @@ export default function MobileDrawer({
   onSortChange,
   onResetListControls,
 }: Props) {
-  const drawerRef = useRef<HTMLDivElement | null>(null);
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileDrawer;
   const controlsCopy = i18n.workorder.ui.layout.sidebarControls;
@@ -80,130 +77,114 @@ export default function MobileDrawer({
     searchQuery,
   });
 
-  useModalEnvironment({
-    open,
-    dialogRef: drawerRef,
-    onClose,
-  });
-
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog" aria-labelledby="mobile-drawer-title">
-      <button type="button" aria-label={copy.closeOverlayAria} className="absolute inset-0 bg-stone-950/45 pbp-overlay-enter" onClick={onClose} />
-      <div
-        ref={drawerRef}
-        tabIndex={-1}
-        className="absolute left-0 top-0 flex h-full w-[86%] max-w-sm flex-col overflow-hidden rounded-r-3xl bg-white shadow-2xl focus:outline-none pbp-drawer-enter"
-      >
-        <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-3 pb-2 pt-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div id="mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">{copy.title}</div>
-              <div className="text-[11px] text-stone-500">{copy.subtitle}</div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-            >
-              {copy.close}
-            </button>
-          </div>
-          <div className="mt-2.5 flex items-center gap-2">
-            <label className="min-w-0 flex-1">
-              <span className="sr-only">{copy.searchAria}</span>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(event) => onSearchQueryChange(event.target.value)}
-                placeholder={copy.searchPlaceholder}
-                className="pbp-field-interaction pbp-field-search h-9 w-full rounded-xl border px-3 text-sm outline-none"
-              />
-            </label>
-            {searchQuery ? (
-              <button
-                type="button"
-                onClick={() => onSearchQueryChange("")}
-                disabled={writeLocked}
-                className="pbp-interactive-button pbp-action-secondary inline-flex h-9 shrink-0 items-center justify-center rounded-xl px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {controlsCopy.clearSearch}
-              </button>
-            ) : null}
-          </div>
-          <div className="mt-2 grid grid-cols-2 gap-1.5">
-            <AppSelect
-              value={statusFilter}
-              onValueChange={(value) => onStatusFilterChange(value as WorkOrderListStatusFilter)}
-              options={statusOptions}
-              disabled={writeLocked}
-              size="sm"
-              ariaLabel={controlsCopy.statusFilterAria}
-            />
-            <AppSelect
-              value={sort}
-              onValueChange={(value) => onSortChange(value as WorkOrderListSort)}
-              options={sortOptions}
-              disabled={writeLocked}
-              size="sm"
-              ariaLabel={controlsCopy.sortAria}
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-medium leading-4 text-stone-500">
-            <span className="min-w-0 truncate">{listSummary}</span>
-            {hasCustomListControls ? (
-              <button
-                type="button"
-                onClick={onResetListControls}
-                disabled={writeLocked}
-                className="pbp-interactive-button pbp-filter-active shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {controlsCopy.resetControls}
-              </button>
-            ) : null}
-          </div>
-          {canCreate ? (
-            <button
-              type="button"
-              onClick={() => {
-                if (writeLocked) return;
-                onCreate();
-                onClose();
-              }}
-              disabled={writeLocked}
-              title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
-              className="pbp-touch-target pbp-interactive-button pbp-action-primary mt-2.5 w-full rounded-xl px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {copy.create}
-            </button>
-          ) : null}
-        </div>
-        <div className="pbp-mobile-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+0.875rem)]">
-          <div className="flex flex-col pbp-card-stack-mobile">
-            {workOrders.map((workOrder) => (
-              <WorkOrderListCard
-                key={workOrder.id}
-                workOrder={workOrder}
-                selectedId={selectedId}
-                workflowStateById={workflowStateById}
-                onClick={(id) => {
-                  onSelect(id);
-                  onClose();
-                }}
-                onReorder={onReorder}
-                onDelete={onDelete}
-                onRework={onRework}
-                canDelete={canManageListActions ? canDelete : undefined}
-                canReorder={canManageListActions && Boolean(onReorder)}
-                writeLocked={writeLocked}
-                writeLockMessage={writeLockMessage}
-              />
-            ))}
-          </div>
-          {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{copy.empty}</div> : null}
-        </div>
+  const headerContent = (
+    <>
+      <div className="flex items-center gap-2">
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">{copy.searchAria}</span>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => onSearchQueryChange(event.target.value)}
+            placeholder={copy.searchPlaceholder}
+            className="pbp-field-interaction pbp-field-search h-9 w-full rounded-xl border px-3 text-sm outline-none"
+          />
+        </label>
+        {searchQuery ? (
+          <button
+            type="button"
+            onClick={() => onSearchQueryChange("")}
+            disabled={writeLocked}
+            className="pbp-interactive-button pbp-action-secondary inline-flex h-9 shrink-0 items-center justify-center rounded-xl px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {controlsCopy.clearSearch}
+          </button>
+        ) : null}
       </div>
-    </div>
+      <div className="mt-2 grid grid-cols-2 gap-1.5">
+        <AppSelect
+          value={statusFilter}
+          onValueChange={(value) => onStatusFilterChange(value as WorkOrderListStatusFilter)}
+          options={statusOptions}
+          disabled={writeLocked}
+          size="sm"
+          ariaLabel={controlsCopy.statusFilterAria}
+        />
+        <AppSelect
+          value={sort}
+          onValueChange={(value) => onSortChange(value as WorkOrderListSort)}
+          options={sortOptions}
+          disabled={writeLocked}
+          size="sm"
+          ariaLabel={controlsCopy.sortAria}
+        />
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-medium leading-4 text-stone-500">
+        <span className="min-w-0 truncate">{listSummary}</span>
+        {hasCustomListControls ? (
+          <button
+            type="button"
+            onClick={onResetListControls}
+            disabled={writeLocked}
+            className="pbp-interactive-button pbp-filter-active shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {controlsCopy.resetControls}
+          </button>
+        ) : null}
+      </div>
+      {canCreate ? (
+        <button
+          type="button"
+          onClick={() => {
+            if (writeLocked) return;
+            onCreate();
+            onClose();
+          }}
+          disabled={writeLocked}
+          title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
+          className="pbp-touch-target pbp-interactive-button pbp-action-primary mt-2.5 w-full rounded-xl px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {copy.create}
+        </button>
+      ) : null}
+    </>
+  );
+
+  return (
+    <WaflMobileListDrawer
+      open={open}
+      onClose={onClose}
+      title={copy.title}
+      subtitle={copy.subtitle}
+      closeLabel={copy.close}
+      closeOverlayAria={copy.closeOverlayAria}
+      titleId="mobile-drawer-title"
+      headerContent={headerContent}
+    >
+      <div className="flex flex-col pbp-card-stack-mobile">
+        {workOrders.map((workOrder) => (
+          <WorkOrderListCard
+            key={workOrder.id}
+            workOrder={workOrder}
+            selectedId={selectedId}
+            workflowStateById={workflowStateById}
+            onClick={(id) => {
+              onSelect(id);
+              onClose();
+            }}
+            onReorder={onReorder}
+            onDelete={onDelete}
+            onRework={onRework}
+            canDelete={canManageListActions ? canDelete : undefined}
+            canReorder={canManageListActions && Boolean(onReorder)}
+            writeLocked={writeLocked}
+            writeLockMessage={writeLockMessage}
+          />
+        ))}
+      </div>
+      {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{copy.empty}</div> : null}
+    </WaflMobileListDrawer>
   );
 }

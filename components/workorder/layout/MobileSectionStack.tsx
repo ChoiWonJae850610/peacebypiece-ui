@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode, type RefObject } from "react";
 
-import { AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileShell, WAFL_MOBILE_SAFE_AREA_CLASS_NAMES, type AppSegmentedTabItem } from "@/components/common/ui";
+import { WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileShell, WaflMobileTabbedActionSheet, type AppSegmentedTabItem } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 type MobileRelatedSectionKey = "attachment" | "design" | "memo";
@@ -37,8 +37,8 @@ export default function MobileSectionStack({
     { key: "memo", label: relatedCopy.memo },
   ], [relatedCopy.attachment, relatedCopy.design, relatedCopy.memo]);
   const relatedTitle = relatedCopy.titles[activeRelatedSection];
-  const openRelatedSection = (section: MobileRelatedSectionKey) => {
-    setActiveRelatedSection(section);
+  const openRelatedSection = () => {
+    setActiveRelatedSection("attachment");
     setSidePanelOpen(true);
   };
   const showDetailActionBar = hasSelection;
@@ -57,7 +57,7 @@ export default function MobileSectionStack({
         <WaflMobileFloatingActionButton
           ariaLabel={relatedCopy.openAria}
           title={relatedCopy.openTitle}
-          onClick={() => openRelatedSection(activeRelatedSection)}
+          onClick={openRelatedSection}
         >
           <span aria-hidden="true">＋</span>
           <span>{relatedCopy.openLabel}</span>
@@ -67,28 +67,18 @@ export default function MobileSectionStack({
     >
       <WaflMobileContentSection>{detail}</WaflMobileContentSection>
 
-      <AppSheet
+      <WaflMobileTabbedActionSheet
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
         title={relatedTitle}
         description={relatedCopy.description}
-        side="bottom"
-        size="full"
-        contentClassName={`px-3 py-3 ${WAFL_MOBILE_SAFE_AREA_CLASS_NAMES.sheetBottomPadding}`}
+        items={relatedTabs}
+        value={activeRelatedSection}
+        onChange={setActiveRelatedSection}
+        ariaLabel={relatedCopy.tabsAria}
       >
-        <div className="space-y-3">
-          <AppSegmentedTabs
-            items={relatedTabs}
-            value={activeRelatedSection}
-            onChange={setActiveRelatedSection}
-            ariaLabel={relatedCopy.tabsAria}
-            itemClassName="text-xs"
-          />
-          <div className="min-w-0 overflow-x-hidden">
-            {sidePanel(activeRelatedSection)}
-          </div>
-        </div>
-      </AppSheet>
+        {sidePanel(activeRelatedSection)}
+      </WaflMobileTabbedActionSheet>
     </WaflMobileShell>
   );
 }

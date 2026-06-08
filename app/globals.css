@@ -1292,3 +1292,23 @@ textarea.pbp-field-interaction.pbp-field-selectable {
     display: inline-flex;
   }
 }
+
+/* Prevent iOS/Safari focus zoom inside WAFL mobile business screens.
+   Keep this scoped to WaflMobileShell so compact PC/tablet density is not changed. */
+@media (max-width: 767px) {
+  .pbp-mobile-no-zoom input,
+  .pbp-mobile-no-zoom textarea,
+  .pbp-mobile-no-zoom select,
+  .pbp-mobile-no-zoom [contenteditable="true"] {
+    font-size: 16px !important;
+    line-height: 1.35 !important;
+  }
+
+  .pbp-mobile-no-zoom .pbp-field-interaction.pbp-field-search,
+  .pbp-mobile-no-zoom .pbp-field-interaction.pbp-field-selectable,
+  .pbp-mobile-no-zoom .pbp-field-interaction.pbp-workorder-editable-input,
+  .pbp-mobile-no-zoom .pbp-field-interaction.pbp-workorder-editable-display {
+    font-size: 16px !important;
+    line-height: 1.35 !important;
+  }
+}
