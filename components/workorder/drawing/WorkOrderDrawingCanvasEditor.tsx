@@ -520,9 +520,12 @@ export default function WorkOrderDrawingCanvasEditor({
   const [canvasDisplaySize, setCanvasDisplaySize] = useState<CanvasDisplaySize>(() => canvasSize);
   const navigationGuardTimerRef = useRef<number | null>(null);
   const historyGuardActiveRef = useRef(false);
+  const touchDrawingActiveRef = useRef(false);
   const isMobile = devicePolicy.variant === "mobile";
   const drawingInputDisabled = landscapeBlocked;
   const toolbarDisabled = drawingInputDisabled;
+  const usesTouchOptimizedInput = devicePolicy.variant !== "desktop";
+  const shouldBypassUnsavedCloseConfirm = devicePolicy.variant !== "desktop";
   const canUndo = !toolbarDisabled && historyIndex > 0;
   const canRedo = !toolbarDisabled && historyIndex < historyRef.current.length - 1;
   const shapeToolSelected = isShapeTool(tool);
@@ -562,6 +565,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
   const resetDrawingInteractionState = () => {
     drawingRef.current = false;
+    touchDrawingActiveRef.current = false;
     strokeDirtyRef.current = false;
     lastPointRef.current = null;
     shapeStartPointRef.current = null;
@@ -578,8 +582,10 @@ export default function WorkOrderDrawingCanvasEditor({
     resetDrawingInteractionState();
     dirtyRef.current = false;
     setDirty(false);
+    setCloseConfirmVisible(false);
     historyGuardActiveRef.current = false;
     if (
+      !shouldBypassUnsavedCloseConfirm &&
       typeof window !== "undefined" &&
       window.history.state &&
       typeof window.history.state === "object" &&
@@ -592,7 +598,7 @@ export default function WorkOrderDrawingCanvasEditor({
   const requestClose = () => {
     closeToolPopovers();
     setNavigationGuardVisible(false);
-    if (dirty) {
+    if (!shouldBypassUnsavedCloseConfirm && dirty) {
       setCloseConfirmVisible(true);
       return;
     }
@@ -622,9 +628,13 @@ export default function WorkOrderDrawingCanvasEditor({
     setEraserCursor(getEraserCursorFromCanvasPoint(canvas, point, eraserLineWidth));
   };
 
-  const shouldUseTouchEventFallback = () => {
-    if (typeof window === "undefined") return false;
-    return typeof window.PointerEvent === "undefined";
+  const shouldHandleTouchEvent = () => usesTouchOptimizedInput;
+
+  const stopTouchPropagation = (event: DrawingTouchEvent) => {
+    event.stopPropagation();
+    if (event.cancelable) {
+      event.preventDefault();
+    }
   };
 
   const getTouchCanvasPoint = (event: DrawingTouchEvent) => {
@@ -784,7 +794,7 @@ export default function WorkOrderDrawingCanvasEditor({
   }, [canvasSize.height, canvasSize.width, isMobile, open]);
 
   useEffect(() => {
-    if (!open || typeof window === "undefined") return;
+    if (!open || shouldBypassUnsavedCloseConfirm || typeof window === "undefined") return;
 
     const currentState = window.history.state;
     const nextState =
@@ -817,7 +827,7 @@ export default function WorkOrderDrawingCanvasEditor({
         navigationGuardTimerRef.current = null;
       }
     };
-  }, [open]);
+  }, [open, shouldBypassUnsavedCloseConfirm]);
 
   const drawFreehandLineFromPoint = (nextPoint: DrawingPoint) => {
     const canvas = canvasRef.current;
@@ -871,6 +881,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (usesTouchOptimizedInput && event.pointerType === "touch") return;
     if (drawingInputDisabled) return;
     event.preventDefault();
     updateEraserCursor(event);
@@ -882,6 +893,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (usesTouchOptimizedInput && event.pointerType === "touch") return;
     const canvas = canvasRef.current;
     if (!canvas || drawingInputDisabled) return;
     event.preventDefault();
@@ -914,6 +926,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const stopDrawing = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (usesTouchOptimizedInput && event.pointerType === "touch") return;
     const canvas = canvasRef.current;
     if (drawingInputDisabled) {
       drawingRef.current = false;
@@ -935,6 +948,7 @@ export default function WorkOrderDrawingCanvasEditor({
     }
 
     drawingRef.current = false;
+    touchDrawingActiveRef.current = false;
     lastPointRef.current = null;
     shapeStartPointRef.current = null;
     shapeBaseImageDataRef.current = null;
@@ -950,6 +964,7 @@ export default function WorkOrderDrawingCanvasEditor({
   const finishDrawingFromTouch = (point: DrawingPoint | null) => {
     if (drawingInputDisabled) {
       drawingRef.current = false;
+      touchDrawingActiveRef.current = false;
       hideEraserCursor();
       return;
     }
@@ -958,6 +973,7 @@ export default function WorkOrderDrawingCanvasEditor({
     }
 
     drawingRef.current = false;
+    touchDrawingActiveRef.current = false;
     lastPointRef.current = null;
     shapeStartPointRef.current = null;
     shapeBaseImageDataRef.current = null;
@@ -971,11 +987,12 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handleTouchStart = (event: DrawingTouchEvent) => {
-    if (!shouldUseTouchEventFallback()) return;
+    if (!shouldHandleTouchEvent()) return;
     const canvas = canvasRef.current;
     const startPoint = getTouchCanvasPoint(event);
     if (!canvas || !startPoint || drawingInputDisabled) return;
-    event.preventDefault();
+    stopTouchPropagation(event);
+    touchDrawingActiveRef.current = true;
     strokeDirtyRef.current = false;
     closeToolPopovers();
     updateEraserCursorFromPoint(startPoint);
@@ -983,6 +1000,7 @@ export default function WorkOrderDrawingCanvasEditor({
     drawingRef.current = true;
     if (!isPointInsideCanvas(startPoint, canvas)) {
       drawingRef.current = false;
+      touchDrawingActiveRef.current = false;
       return;
     }
     lastPointRef.current = startPoint;
@@ -998,10 +1016,10 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handleTouchMove = (event: DrawingTouchEvent) => {
-    if (!shouldUseTouchEventFallback()) return;
+    if (!shouldHandleTouchEvent() || !touchDrawingActiveRef.current) return;
     const nextPoint = getTouchCanvasPoint(event);
     if (!nextPoint || drawingInputDisabled) return;
-    event.preventDefault();
+    stopTouchPropagation(event);
     updateEraserCursorFromPoint(nextPoint);
     if (isShapeTool(tool)) {
       drawShapePreviewFromPoint(nextPoint);
@@ -1011,10 +1029,10 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handleTouchEnd = (event: DrawingTouchEvent) => {
-    if (!shouldUseTouchEventFallback()) return;
+    if (!shouldHandleTouchEvent()) return;
     const endPoint = getTouchCanvasPoint(event);
     if (!drawingInputDisabled) {
-      event.preventDefault();
+      stopTouchPropagation(event);
     }
     finishDrawingFromTouch(endPoint);
   };
