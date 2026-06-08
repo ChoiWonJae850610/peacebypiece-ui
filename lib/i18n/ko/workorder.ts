@@ -273,8 +273,7 @@ export const workorderKo = {
       save: "저장",
       cancel: "취소",
       deleteAria: "메모 삭제",
-      empty: "메모 없음
-필요한 내용을 남겨보세요.",
+      empty: "메모 없음\n필요한 내용을 남겨보세요.",
       adminAuthorFallback: "대표",
       unknownAuthorFallback: "이름 없음",
       replyMarker: "ㄴ",
