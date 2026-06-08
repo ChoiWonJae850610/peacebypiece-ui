@@ -5,6 +5,7 @@ import { normalizeProductionMaterialRows } from "@/lib/workorder/productionCompo
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import { createDefaultMaterial } from "@/lib/workorder/material/materialDefaults";
 import type { EditableCell } from "@/components/workorder/detail/shared/detailEditorShared";
+import type { MaterialSheetDraft } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
 import type { Material, WorkOrder } from "@/types/workorder";
 
 export function commitMaterialItemsEdit(payload: {
@@ -44,6 +45,48 @@ export function commitMaterialItemsEdit(payload: {
 
 export function createNewMaterialItem() {
   return createDefaultMaterial();
+}
+
+export function createOrUpdateMaterialItem({
+  materialItems,
+  materialId,
+  draft,
+}: {
+  materialItems: Material[];
+  materialId: string | null;
+  draft: MaterialSheetDraft;
+}) {
+  const sanitizedDraft = {
+    type: draft.type,
+    name: draft.name.trim() || createDefaultMaterial().name,
+    quantity: Number.isFinite(draft.quantity) ? Math.max(0, draft.quantity) : 0,
+    unit: normalizeMaterialUnitValue(draft.unit),
+  };
+
+  if (!materialId) {
+    return [
+      ...materialItems,
+      createDefaultMaterial(sanitizedDraft),
+    ];
+  }
+
+  return materialItems.map((item) => {
+    if (item.id !== materialId) return item;
+    const nextUnit = sanitizedDraft.type === MATERIAL_KIND.fabric
+      ? sanitizedDraft.unit || MATERIAL_UNIT.yard
+      : sanitizedDraft.type === MATERIAL_KIND.subsidiary
+        ? sanitizedDraft.unit || MATERIAL_UNIT.piece
+        : sanitizedDraft.unit;
+
+    return recalculateMaterial({
+      ...item,
+      type: sanitizedDraft.type,
+      name: sanitizedDraft.name,
+      quantity: sanitizedDraft.quantity,
+      unit: normalizeMaterialUnitValue(nextUnit),
+      ...(sanitizedDraft.type !== item.type ? { vendor: "", vendorRef: null, vendorPartnerId: null } : {}),
+    });
+  });
 }
 
 export function toMaterialsPatch(materialItems: Material[]): Partial<WorkOrder> {

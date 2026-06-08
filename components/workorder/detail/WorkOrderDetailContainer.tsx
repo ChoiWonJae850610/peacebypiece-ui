@@ -132,6 +132,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     onAddMaterial: isWorkspaceWriteLocked ? () => undefined : editor.addMaterial,
     onRemoveMaterial: isWorkspaceWriteLocked ? () => undefined : editor.removeMaterial,
     onRemoveZeroQuantityMaterials: isWorkspaceWriteLocked ? () => undefined : editor.removeZeroQuantityMaterials,
+    onSaveMaterialDraft: isWorkspaceWriteLocked ? () => undefined : editor.saveMaterialDraft,
     onAddOutsourcing: isWorkspaceWriteLocked ? () => undefined : editor.addOutsourcing,
     onRemoveOutsourcing: isWorkspaceWriteLocked ? () => undefined : editor.removeOutsourcing,
   });

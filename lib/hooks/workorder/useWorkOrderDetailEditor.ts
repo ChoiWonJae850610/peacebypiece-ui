@@ -100,6 +100,7 @@ export function useWorkOrderDetailEditor({
     addMaterial,
     removeMaterial,
     removeZeroQuantityMaterials,
+    saveMaterialDraft,
   } = useWorkOrderMaterialsEditor({
     workOrder,
     editingCell,
@@ -477,6 +478,7 @@ export function useWorkOrderDetailEditor({
     addMaterial,
     removeMaterial,
     removeZeroQuantityMaterials,
+    saveMaterialDraft,
     addOutsourcing,
     removeOutsourcing,
     closeRegistryModal,

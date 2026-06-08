@@ -28,6 +28,7 @@ export default function WorkOrderDetailMobileProductionCompositionSection(props:
             onAdd={props.onAddMaterial}
             onRemove={props.onRemoveMaterial}
             onRemoveZeroQuantity={props.onRemoveZeroQuantityMaterials}
+            onSaveDraft={props.onSaveMaterialDraft}
             vendorOptionsById={props.materialVendorOptionsById}
             locked={props.locked}
           />

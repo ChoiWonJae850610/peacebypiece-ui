@@ -1,16 +1,11 @@
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { MATERIAL_TYPE_OPTIONS } from "@/lib/constants/material";
 import { getWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
-import {
-  AddButton,
-  DeleteButton,
-  EditableValue,
-  SectionHeader,
-  type EditableCell,
-  type EditableSectionKey,
-} from "@/components/workorder/detail/shared/detailEditorShared";
+import { AddButton, DeleteButton, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
+import WorkOrderMaterialEditSheet, { type MaterialSheetDraft } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
+import type { EditableCell, EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/material";
 
 type Props = {
@@ -25,36 +20,44 @@ type Props = {
   onAdd: () => void;
   onRemove: (id: string) => void;
   onRemoveZeroQuantity: () => void;
+  onSaveDraft: (materialId: string | null, draft: MaterialSheetDraft) => void;
   vendorOptionsById: Record<string, string[]>;
   locked?: boolean;
 };
 
-const fieldCardClass = "min-w-0 rounded-xl border border-stone-200 bg-white px-3 py-2.5";
-const labelClass = "mb-1 text-[11px] font-medium text-stone-500";
+const infoLabelClass = "text-[11px] font-medium text-stone-500";
+const infoValueClass = "mt-0.5 text-sm font-semibold text-stone-900";
 
 export default function WorkOrderDetailMobileMaterialSection({
   materials,
   open,
   onToggle,
-  editingCell,
-  editingValue,
-  onStartEdit,
-  onCommitEdit,
-  onCancelEdit,
-  onAdd,
   onRemove,
   onRemoveZeroQuantity,
+  onSaveDraft,
   locked = false,
 }: Props) {
   const { i18n, locale } = useI18n();
   const { materialUnitOptions } = useCompanyStandardOptions();
   const copy = i18n.workorder.ui.sections.material;
   const common = i18n.workorder.ui.common;
+  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const zeroQuantityCount = materials.filter((item) => Math.max(0, Number(item.quantity) || 0) <= 0).length;
   const andMore = materials.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(materials.length - 1))}` : "";
   const summary = materials.length > 0
     ? copy.summaryFormat.replace("{name}", materials[0].name).replace("{andMore}", andMore)
     : copy.empty;
+
+  const openAddSheet = () => {
+    setEditingMaterial(null);
+    setSheetOpen(true);
+  };
+
+  const openEditSheet = (item: Material) => {
+    setEditingMaterial(item);
+    setSheetOpen(true);
+  };
 
   return (
     <section className="min-w-0 overflow-hidden rounded-2xl bg-stone-50 p-3 sm:p-3.5">
@@ -74,32 +77,43 @@ export default function WorkOrderDetailMobileMaterialSection({
               </button>
             </div>
           ) : null}
+
+          {materials.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-stone-200 bg-white px-4 py-6 text-center text-xs leading-5 text-stone-500">
+              {copy.empty}
+            </div>
+          ) : null}
+
           {materials.map((item, index) => (
             <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-[11px] font-medium text-stone-500">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
-                  <div className="mt-1 text-sm font-semibold text-stone-900">
-                    <EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+                  <div className="inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
+                    {getWorkOrderSelectDisplayValue(item.type)}
                   </div>
+                  <div className="mt-2 text-sm font-semibold text-stone-900">{item.name || copy.fallbackItem.replace("{index}", String(index + 1))}</div>
                 </div>
-                {!locked ? <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} /> : null}
+                {!locked ? (
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => openEditSheet(item)}
+                      className="pbp-interactive-button rounded-full border border-stone-200 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 shadow-sm"
+                    >
+                      {copy.editButton}
+                    </button>
+                    <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} />
+                  </div>
+                ) : null}
               </div>
-
-              <div className="mt-3 grid gap-2">
-                <div className={fieldCardClass}>
-                  <div className={labelClass}>{copy.fields.type}</div>
-                  <EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getWorkOrderSelectDisplayValue(item.type)} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-stone-50 px-3 py-2">
+                  <div className={infoLabelClass}>{copy.fields.quantity}</div>
+                  <div className={infoValueClass}>{item.quantity.toLocaleString()}</div>
                 </div>
-                <div className="grid min-w-0 grid-cols-2 gap-2">
-                  <div className={fieldCardClass}>
-                    <div className={labelClass}>{copy.fields.quantity}</div>
-                    <EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
-                  </div>
-                  <div className={fieldCardClass}>
-                    <div className={labelClass}>{copy.fields.unit}</div>
-                    <EditableValue section="material" rowId={item.id} field="unit" value={item.unit} displayValue={translateWorkOrderDisplayText(item.unit, locale)} options={materialUnitOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
-                  </div>
+                <div className="rounded-xl bg-stone-50 px-3 py-2">
+                  <div className={infoLabelClass}>{copy.fields.unit}</div>
+                  <div className={infoValueClass}>{translateWorkOrderDisplayText(item.unit, locale)}</div>
                 </div>
               </div>
             </article>
@@ -111,10 +125,19 @@ export default function WorkOrderDetailMobileMaterialSection({
 
           {!locked ? (
             <div className="flex justify-center">
-              <AddButton onClick={onAdd} srLabel={copy.addButton} title={copy.addButton} />
+              <AddButton onClick={openAddSheet} srLabel={copy.addButton} title={copy.addButton} />
             </div>
           ) : null}
         </div>
+      ) : null}
+      {!locked ? (
+        <WorkOrderMaterialEditSheet
+          open={sheetOpen}
+          material={editingMaterial}
+          unitOptions={materialUnitOptions}
+          onClose={() => setSheetOpen(false)}
+          onApply={onSaveDraft}
+        />
       ) : null}
     </section>
   );

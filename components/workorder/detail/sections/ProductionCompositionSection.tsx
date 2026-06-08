@@ -1,4 +1,5 @@
 import MaterialSection from "@/components/workorder/detail/sections/MaterialSection";
+import type { MaterialSheetDraft } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
 import { type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material, Outsourcing } from "@/types/workorder";
 
@@ -19,6 +20,7 @@ export default function ProductionCompositionSection({
   onAddMaterial,
   onRemoveMaterial,
   onRemoveZeroQuantityMaterials,
+  onSaveMaterialDraft,
   onAddOutsourcing,
   onRemoveOutsourcing,
   materialVendorOptionsById,
@@ -42,6 +44,7 @@ export default function ProductionCompositionSection({
   onAddMaterial: () => void;
   onRemoveMaterial: (id: string) => void;
   onRemoveZeroQuantityMaterials: () => void;
+  onSaveMaterialDraft: (materialId: string | null, draft: MaterialSheetDraft) => void;
   onAddOutsourcing: () => void;
   onRemoveOutsourcing: (id: string) => void;
   materialVendorOptionsById: Record<string, string[]>;
@@ -74,6 +77,7 @@ export default function ProductionCompositionSection({
         onAdd={onAddMaterial}
         onRemove={onRemoveMaterial}
         onRemoveZeroQuantity={onRemoveZeroQuantityMaterials}
+        onSaveDraft={onSaveMaterialDraft}
         locked={locked}
       />
     </div>

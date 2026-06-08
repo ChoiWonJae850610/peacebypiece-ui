@@ -92,6 +92,7 @@ export type BuildWorkOrderDetailViewModelArgs = {
   onAddMaterial: ProductionCompositionProps["onAddMaterial"];
   onRemoveMaterial: ProductionCompositionProps["onRemoveMaterial"];
   onRemoveZeroQuantityMaterials: ProductionCompositionProps["onRemoveZeroQuantityMaterials"];
+  onSaveMaterialDraft: ProductionCompositionProps["onSaveMaterialDraft"];
   onAddOutsourcing: ProductionCompositionProps["onAddOutsourcing"];
   onRemoveOutsourcing: ProductionCompositionProps["onRemoveOutsourcing"];
 };
@@ -237,6 +238,7 @@ export function buildProductionCompositionSectionProps({
   onAddMaterial,
   onRemoveMaterial,
   onRemoveZeroQuantityMaterials,
+  onSaveMaterialDraft,
   onAddOutsourcing,
   onRemoveOutsourcing,
   materialVendorOptionsById,
@@ -262,6 +264,7 @@ export function buildProductionCompositionSectionProps({
     onAddMaterial,
     onRemoveMaterial,
     onRemoveZeroQuantityMaterials,
+    onSaveMaterialDraft,
     onAddOutsourcing,
     onRemoveOutsourcing,
     materialVendorOptionsById,

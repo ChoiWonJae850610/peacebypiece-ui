@@ -4,9 +4,11 @@ import { recalculateMaterial } from "@/lib/workorder/detail/detailCalculations";
 import {
   commitMaterialItemsEdit,
   createNewMaterialItem,
+  createOrUpdateMaterialItem,
   toMaterialsPatch,
 } from "@/lib/hooks/workorder/detailEditor/materialMutations";
 import type { Material, WorkOrder } from "@/types/workorder";
+import type { MaterialSheetDraft } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
 
 type UseWorkOrderMaterialsEditorParams = {
   workOrder: WorkOrder;
@@ -81,6 +83,19 @@ export function useWorkOrderMaterialsEditor({
     }
   };
 
+  const saveMaterialDraft = (materialId: string | null, draft: MaterialSheetDraft) => {
+    const nextItems = createOrUpdateMaterialItem({
+      materialItems,
+      materialId,
+      draft,
+    });
+    setMaterialItems(nextItems);
+    onUpdateWorkOrder(toMaterialsPatch(nextItems));
+    if (materialId && editingCell?.section === "material" && editingCell.rowId === materialId) {
+      cancelEdit();
+    }
+  };
+
   return {
     materialItems,
     commitMaterialEdit,
@@ -88,5 +103,6 @@ export function useWorkOrderMaterialsEditor({
     addMaterial,
     removeMaterial,
     removeZeroQuantityMaterials,
+    saveMaterialDraft,
   };
 }
