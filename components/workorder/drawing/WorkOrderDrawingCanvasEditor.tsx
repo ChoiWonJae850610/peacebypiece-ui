@@ -535,9 +535,22 @@ export default function WorkOrderDrawingCanvasEditor({
   const togglePopover = (nextPopover: DrawingPopover) => {
     setActivePopover((current) => (current === nextPopover ? null : nextPopover));
   };
+  const resetDrawingInteractionState = () => {
+    drawingRef.current = false;
+    strokeDirtyRef.current = false;
+    lastPointRef.current = null;
+    shapeStartPointRef.current = null;
+    shapeBaseImageDataRef.current = null;
+    hideEraserCursor();
+    closeToolPopovers();
+    setCloseConfirmVisible(false);
+    setNavigationGuardVisible(false);
+  };
+
   const closeModalAndReleaseHistoryGuard = () => {
     suppressDraftPersistRef.current = true;
     clearDrawingDraftSnapshot();
+    resetDrawingInteractionState();
     historyGuardActiveRef.current = false;
     if (
       typeof window !== "undefined" &&
@@ -675,14 +688,11 @@ export default function WorkOrderDrawingCanvasEditor({
 
   useEffect(() => {
     if (!open || !landscapeBlocked) return;
-    persistCurrentDraftSnapshot();
-    drawingRef.current = false;
-    strokeDirtyRef.current = false;
-    lastPointRef.current = null;
-    shapeStartPointRef.current = null;
-    shapeBaseImageDataRef.current = null;
-    hideEraserCursor();
-    closeToolPopovers();
+    suppressDraftPersistRef.current = true;
+    clearDrawingDraftSnapshot();
+    dirtyRef.current = false;
+    setDirty(false);
+    resetDrawingInteractionState();
   }, [landscapeBlocked, open]);
 
   useEffect(() => {
@@ -990,7 +1000,7 @@ export default function WorkOrderDrawingCanvasEditor({
                   <div className="mt-2 text-xs font-semibold leading-5">{ui.landscapeBlockedMessage}</div>
                   <button
                     type="button"
-                    onClick={requestClose}
+                    onClick={closeModalAndReleaseHistoryGuard}
                     className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-xs font-bold pbp-text-primary shadow-sm"
                   >
                     {ui.landscapeBlockedClose}

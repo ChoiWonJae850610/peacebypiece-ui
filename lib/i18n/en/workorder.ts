@@ -687,9 +687,9 @@ export const workorderEn = {
           aria: "Work order detail sections",
         },
         relatedSections: {
-          openLabel: "Related info",
+          openLabel: "More info",
           openAria: "Open files, design, and memos",
-          openTitle: "Open the related information panel for files, design, and memos.",
+          openTitle: "Open the additional information panel for files, design, and memos.",
           attachment: "Files",
           design: "Design",
           memo: "Memo",

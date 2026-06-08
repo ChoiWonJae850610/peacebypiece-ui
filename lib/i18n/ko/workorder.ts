@@ -687,9 +687,9 @@ export const workorderKo = {
           aria: "작업지시서 상세 섹션",
         },
         relatedSections: {
-          openLabel: "관련 정보",
-          openAria: "첨부·디자인·메모 열기",
-          openTitle: "첨부, 디자인, 메모를 한 번에 여는 관련 정보 패널입니다.",
+          openLabel: "추가정보",
+          openAria: "첨부·디자인·메모 추가정보 열기",
+          openTitle: "첨부, 디자인, 메모를 한 번에 여는 추가정보 패널입니다.",
           attachment: "첨부",
           design: "디자인",
           memo: "메모",
