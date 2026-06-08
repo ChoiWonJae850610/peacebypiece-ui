@@ -1,9 +1,13 @@
 import MaterialOrderDraftEditor from "@/features/material-orders/MaterialOrderDraftEditor";
 
-export default function MaterialOrderWorkspacePage() {
+type MaterialOrderWorkspacePageProps = {
+  companyName: string;
+};
+
+export default function MaterialOrderWorkspacePage({ companyName }: MaterialOrderWorkspacePageProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <MaterialOrderDraftEditor />
+      <MaterialOrderDraftEditor companyName={companyName} />
     </div>
   );
 }

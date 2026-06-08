@@ -15,6 +15,7 @@ type WorkspacePageShellProps = {
   companyName?: string | null;
   contentMode?: WorkspaceShellContentMode;
   children: ReactNode;
+  hideTopbar?: boolean;
 };
 
 export default function WorkspacePageShell({
@@ -25,6 +26,7 @@ export default function WorkspacePageShell({
   companyName,
   contentMode,
   children,
+  hideTopbar = false,
 }: WorkspacePageShellProps) {
   return (
     <WorkspaceShell
@@ -34,6 +36,7 @@ export default function WorkspacePageShell({
       title={title}
       description={description}
       contentMode={contentMode}
+      hideTopbar={hideTopbar}
     >
       {children}
     </WorkspaceShell>

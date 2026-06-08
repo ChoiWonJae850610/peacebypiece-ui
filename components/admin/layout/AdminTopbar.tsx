@@ -14,6 +14,9 @@ type AdminTopbarProps = {
   appVersion: string;
   title: string;
   description?: string;
+  onOpenMenu?: () => void;
+  menuLabel?: string;
+  menuAriaLabel?: string;
 };
 
 function getTopbarSummary(title: string, description: string | undefined, t: ReturnType<typeof useAdminTranslation>): string | null {
@@ -43,6 +46,16 @@ function getLocalizedTopbarTitle(title: string, t: ReturnType<typeof useAdminTra
   };
 
   return titleMap[title] ?? title;
+}
+
+function MenuIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.75 6.75h14.5" />
+      <path d="M4.75 12h14.5" />
+      <path d="M4.75 17.25h14.5" />
+    </svg>
+  );
 }
 
 function HomeIcon() {
@@ -83,7 +96,7 @@ function LogoutIcon() {
   );
 }
 
-export default function AdminTopbar({ companyName, appVersion, title, description }: AdminTopbarProps) {
+export default function AdminTopbar({ companyName, appVersion, title, description, onOpenMenu, menuLabel = "목록", menuAriaLabel }: AdminTopbarProps) {
   const t = useAdminTranslation();
   const { user } = useCurrentUser();
   const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
@@ -130,6 +143,18 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
         </div>
 
         <div key={reviveKey} className="relative z-30 flex shrink-0 flex-wrap gap-2">
+          {onOpenMenu ? (
+            <button
+              type="button"
+              onClick={onOpenMenu}
+              aria-label={menuAriaLabel ?? menuLabel}
+              title={menuLabel}
+              className="pbp-topbar-icon-button inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition"
+            >
+              <MenuIcon />
+              <span className="hidden sm:inline">{menuLabel}</span>
+            </button>
+          ) : null}
           <Link
             href="/workspace"
             aria-label={t("topbar.actions.home", "홈")}

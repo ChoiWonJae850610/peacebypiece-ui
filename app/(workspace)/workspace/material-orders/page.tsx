@@ -12,8 +12,9 @@ export default async function WorkspaceMaterialOrdersPageRoute() {
       title="원단·부자재"
       description="작업지시서의 자재 발주 대기 항목을 공급처별 발주서로 묶고, 발주 상태와 잔여 자재를 확인합니다."
       contentMode="fixed-md"
+      hideTopbar
     >
-      <MaterialOrderWorkspacePage />
+      <MaterialOrderWorkspacePage companyName={session.companyName ?? ""} />
     </WorkspacePageShell>
   );
 }

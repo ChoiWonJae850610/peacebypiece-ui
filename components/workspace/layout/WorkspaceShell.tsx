@@ -14,6 +14,7 @@ type WorkspaceShellProps = {
   description?: string;
   children: ReactNode;
   contentMode?: WorkspaceShellContentMode;
+  hideTopbar?: boolean;
 };
 
 export default function WorkspaceShell({
@@ -24,6 +25,7 @@ export default function WorkspaceShell({
   description,
   children,
   contentMode = "scroll",
+  hideTopbar = false,
 }: WorkspaceShellProps) {
   const isFixedFromDesktop = contentMode === "fixed-md";
   const contentFrameClassName = isFixedFromDesktop
@@ -37,13 +39,15 @@ export default function WorkspaceShell({
     <AdminThemeScope>
       <main className="min-h-screen touch-pan-y overflow-visible overscroll-auto bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 2xl:h-dvh 2xl:overflow-hidden 2xl:p-8">
         <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-3 overflow-visible sm:gap-4 md:gap-5 2xl:h-full 2xl:min-h-0 2xl:overflow-hidden">
-          <WorkspaceTopbar
-            companyName={companyName}
-            appVersion={appVersion}
-            title={title}
-            description={description}
-            navigationItems={navigationItems}
-          />
+          {hideTopbar ? null : (
+            <WorkspaceTopbar
+              companyName={companyName}
+              appVersion={appVersion}
+              title={title}
+              description={description}
+              navigationItems={navigationItems}
+            />
+          )}
           <div className={contentFrameClassName} data-workspace-scroll-frame="true">
             <div className={contentInnerClassName}>{children}</div>
           </div>
