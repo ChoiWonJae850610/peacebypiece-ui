@@ -8,8 +8,8 @@ import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
 import MobileSectionStack from "@/components/workorder/layout/MobileSectionStack";
 import WorkOrderMobileListPanel from "@/components/workorder/layout/WorkOrderMobileListPanel";
+import WorkOrderMobileRelatedSectionPanels, { type WorkOrderMobileRelatedSectionKey } from "@/components/workorder/layout/WorkOrderMobileRelatedSectionPanels";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
-import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
 
 type MobileWorkspaceMode = "list" | "detail";
@@ -69,13 +69,23 @@ export default function WorkOrderDetailMobileView({
     </div>
   ) : <WorkOrderEmptyState variant="detail" />;
 
-  const sidePanelContent = isLoading ? (
-    <WorkOrderLoadingState
-      variant="side"
-      title={loadingState?.sideTitle ?? ""}
-      description={loadingState?.sideDescription}
-    />
-  ) : hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : <WorkOrderEmptyState variant="side" />;
+  const renderRelatedSection = (activeSection: WorkOrderMobileRelatedSectionKey) => {
+    if (isLoading) {
+      return (
+        <WorkOrderLoadingState
+          variant="side"
+          title={loadingState?.sideTitle ?? ""}
+          description={loadingState?.sideDescription}
+        />
+      );
+    }
+
+    if (!hasSelection) {
+      return <WorkOrderEmptyState variant="side" />;
+    }
+
+    return <WorkOrderMobileRelatedSectionPanels {...sidePanelProps} activeSection={activeSection} />;
+  };
 
   return (
     <MobileSectionStack
@@ -86,7 +96,7 @@ export default function WorkOrderDetailMobileView({
       drawer={<MobileDrawer {...mobileDrawerProps} />}
       list={<WorkOrderMobileListPanel {...listProps} />}
       detail={detailContent}
-      sidePanel={sidePanelContent}
+      sidePanel={renderRelatedSection}
       hasSelection={hasSelection}
       onBackToList={() => setMode("list")}
     />

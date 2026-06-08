@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useMemo, useState, type ReactNode, type RefObject } from "react";
 
-import { AppButton, AppSheet, WaflMobileContentSection, WaflMobileFixedActionBar, WaflMobileShell, WAFL_MOBILE_SAFE_AREA_CLASS_NAMES } from "@/components/common/ui";
+import { AppButton, AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFixedActionBar, WaflMobileShell, WAFL_MOBILE_SAFE_AREA_CLASS_NAMES, type AppSegmentedTabItem } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 type MobileSectionStackMode = "list" | "detail";
+type MobileRelatedSectionKey = "attachment" | "design" | "memo";
 
 type MobileSectionStackProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
@@ -14,7 +15,7 @@ type MobileSectionStackProps = {
   drawer: ReactNode;
   list: ReactNode;
   detail: ReactNode;
-  sidePanel: ReactNode;
+  sidePanel: (activeSection: MobileRelatedSectionKey) => ReactNode;
   hasSelection: boolean;
   onBackToList: () => void;
   scrollResetKey: string;
@@ -34,8 +35,19 @@ export default function MobileSectionStack({
 }: MobileSectionStackProps) {
   const { i18n } = useI18n();
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
-  const sidePanelTitle = `${i18n.workorder.ui.attachmentPanel.title} · ${i18n.workorder.ui.memo.panelTitle}`;
+  const [activeRelatedSection, setActiveRelatedSection] = useState<MobileRelatedSectionKey>("attachment");
   const mobileCopy = i18n.workorder.ui.layout.mobileDrawer;
+  const relatedCopy = mobileCopy.relatedSections;
+  const relatedTabs = useMemo<Array<AppSegmentedTabItem<MobileRelatedSectionKey>>>(() => [
+    { key: "attachment", label: relatedCopy.attachment },
+    { key: "design", label: relatedCopy.design },
+    { key: "memo", label: relatedCopy.memo },
+  ], [relatedCopy.attachment, relatedCopy.design, relatedCopy.memo]);
+  const relatedTitle = relatedCopy.titles[activeRelatedSection];
+  const openRelatedSection = (section: MobileRelatedSectionKey) => {
+    setActiveRelatedSection(section);
+    setSidePanelOpen(true);
+  };
   const showDetail = mode === "detail";
   const showDetailActionBar = showDetail && hasSelection;
 
@@ -51,13 +63,21 @@ export default function MobileSectionStack({
       drawer={drawer}
       actionBar={showDetailActionBar ? (
         <WaflMobileFixedActionBar>
-          <div className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-2">
+          <div className="grid grid-cols-[minmax(0,0.34fr)_repeat(3,minmax(0,0.22fr))] gap-2">
             <AppButton className="w-full" variant="secondary" size="lg" onClick={onBackToList}>
               {mobileCopy.backToList}
             </AppButton>
-            <AppButton className="w-full" size="lg" onClick={() => setSidePanelOpen(true)}>
-              {sidePanelTitle}
-            </AppButton>
+            {relatedTabs.map((item) => (
+              <AppButton
+                key={item.key}
+                className="w-full"
+                variant="secondary"
+                size="lg"
+                onClick={() => openRelatedSection(item.key)}
+              >
+                {item.label}
+              </AppButton>
+            ))}
           </div>
         </WaflMobileFixedActionBar>
       ) : undefined}
@@ -72,13 +92,24 @@ export default function MobileSectionStack({
       <AppSheet
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
-        title={sidePanelTitle}
-        description={i18n.workorder.ui.emptyWorkspace.sideDescription}
+        title={relatedTitle}
+        description={relatedCopy.description}
         side="bottom"
         size="full"
         contentClassName={`px-3 py-3 ${WAFL_MOBILE_SAFE_AREA_CLASS_NAMES.sheetBottomPadding}`}
       >
-        {sidePanel}
+        <div className="space-y-3">
+          <AppSegmentedTabs
+            items={relatedTabs}
+            value={activeRelatedSection}
+            onChange={setActiveRelatedSection}
+            ariaLabel={relatedCopy.tabsAria}
+            itemClassName="text-xs"
+          />
+          <div className="min-w-0 overflow-x-hidden">
+            {sidePanel(activeRelatedSection)}
+          </div>
+        </div>
       </AppSheet>
     </WaflMobileShell>
   );

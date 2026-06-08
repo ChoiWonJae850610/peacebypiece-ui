@@ -644,6 +644,24 @@ export const workorderEn = {
         loadingDetailDescription: "Loading work order details and related data.",
         loadingSideTitle: "Loading attachments, design files, and memos.",
         loadingSideDescription: "Checking files and work memos for the right panel.",
+        detailTabs: {
+          basic: "Basic",
+          order: "Process",
+          production: "Items",
+          aria: "Work order detail sections",
+        },
+        relatedSections: {
+          attachment: "Files",
+          design: "Design",
+          memo: "Memo",
+          tabsAria: "Work order related information sections",
+          description: "Attachments, design files, and memos are separated on mobile.",
+          titles: {
+            attachment: "Attached files",
+            design: "Design files",
+            memo: "Work memos",
+          },
+        },
       },
       mobileTopBar: {
         title: "WAFL",

@@ -23,19 +23,19 @@ export default function WorkOrderDetailMobileView({
 }: WorkOrderDetailViewProps) {
   const { i18n } = useI18n();
   const [activePanel, setActivePanel] = useState<WorkOrderMobilePanelKey>("summary");
-  const groups = i18n.workorder.ui.detailGroups;
+  const detailTabs = i18n.workorder.ui.layout.mobileDrawer.detailTabs;
   const tabs = useMemo<Array<AppSegmentedTabItem<WorkOrderMobilePanelKey>>>(() => {
     const items: Array<AppSegmentedTabItem<WorkOrderMobilePanelKey>> = [
-      { key: "summary", label: i18n.workorder.ui.actionSection.title },
-      { key: "order", label: groups.order.title },
+      { key: "summary", label: detailTabs.basic },
+      { key: "order", label: detailTabs.order },
     ];
 
     if (viewModel.showProductionComposition) {
-      items.push({ key: "production", label: groups.production.title });
+      items.push({ key: "production", label: detailTabs.production });
     }
 
     return items;
-  }, [groups.order.title, groups.production.title, i18n.workorder.ui.actionSection.title, viewModel.showProductionComposition]);
+  }, [detailTabs.basic, detailTabs.order, detailTabs.production, viewModel.showProductionComposition]);
 
   const resolvedPanel = activePanel === "production" && !viewModel.showProductionComposition ? "summary" : activePanel;
 
@@ -46,7 +46,7 @@ export default function WorkOrderDetailMobileView({
         value={resolvedPanel}
         onChange={setActivePanel}
         sticky
-        ariaLabel={i18n.workorder.ui.actionSection.title}
+        ariaLabel={detailTabs.aria}
         className="mb-4"
       />
 
