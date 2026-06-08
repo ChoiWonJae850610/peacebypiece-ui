@@ -67,7 +67,10 @@ export default function ManagerAssignModal({
             <button
               key={user.id}
               type="button"
-              onPointerDown={(event) => event.stopPropagation()}
+              onPointerDown={(event) => {
+                blurActiveModalElement();
+                event.stopPropagation();
+              }}
               onTouchEnd={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.preventDefault();

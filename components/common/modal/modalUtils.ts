@@ -47,7 +47,7 @@ function isTopModal(id: string) {
   return modalStack[modalStack.length - 1] === id;
 }
 
-function shouldUseTouchModalFocusPolicy() {
+export function shouldUseTouchModalFocusPolicy() {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 1024;
 }
@@ -170,7 +170,7 @@ export function useModalEnvironment({
         return;
       }
 
-      if (event.key !== "Tab") return;
+      if (useTouchFocusPolicy || event.key !== "Tab") return;
       const focusables = getFocusableElements(dialog);
       if (focusables.length === 0) {
         event.preventDefault();
@@ -201,7 +201,7 @@ export function useModalEnvironment({
       removeModalStack(modalId);
       unlockDocumentScroll();
       blurActiveModalElement();
-      if (previousActive && document.contains(previousActive)) {
+      if (!useTouchFocusPolicy && previousActive && document.contains(previousActive)) {
         previousActive.focus();
       }
     };

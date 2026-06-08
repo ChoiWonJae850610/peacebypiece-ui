@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { WaflButton, type WaflButtonVariant } from "@/components/common/ui";
+import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 
 import { getI18n } from "@/lib/i18n";
 
@@ -77,6 +78,8 @@ function ModalActionButton({ label, onClick, disabled, tone = "neutral", width =
       type="button"
       variant={TONE_VARIANT_MAP[tone]}
       size={width === "fill" ? "md" : "sm"}
+      onPointerDown={() => blurActiveModalElement()}
+      onTouchStart={() => blurActiveModalElement()}
       onClick={onClick}
       disabled={disabled}
       className={[WIDTH_CLASS_MAP[width], className].filter(Boolean).join(" ")}

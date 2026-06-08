@@ -69,7 +69,10 @@ function CategoryOptionButton({
   return (
     <button
       type="button"
-      onPointerDown={(event) => event.stopPropagation()}
+      onPointerDown={(event) => {
+        blurActiveModalElement();
+        event.stopPropagation();
+      }}
       onTouchEnd={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.preventDefault();
@@ -104,7 +107,10 @@ function LeafOptionButton({
   return (
     <button
       type="button"
-      onPointerDown={(event) => event.stopPropagation()}
+      onPointerDown={(event) => {
+        blurActiveModalElement();
+        event.stopPropagation();
+      }}
       onTouchEnd={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.preventDefault();

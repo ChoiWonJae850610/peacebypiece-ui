@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
+import { blurActiveModalElement, shouldUseTouchModalFocusPolicy } from "@/components/common/modal/modalUtils";
 import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_CONTENT_EMPTY_STATE_CLASS, MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_MUTED_PANEL_CLASS, MODAL_CONTENT_READONLY_PANEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS, MODAL_CONTENT_VALUE_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
@@ -52,6 +52,7 @@ export default function InventoryEditor({
   const [adjustmentQuantity, setAdjustmentQuantity] = useState<string>("");
   const [deductionQuantity, setDeductionQuantity] = useState<string>("");
   const [memo, setMemo] = useState("");
+  const allowMemoFocusUntilRef = useRef(0);
 
   useEffect(() => {
     if (!open) {
@@ -65,7 +66,23 @@ export default function InventoryEditor({
   const handleNumericFieldKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
+    if (shouldUseTouchModalFocusPolicy()) {
+      window.requestAnimationFrame(() => {
+        blurActiveModalElement();
+      });
+      return;
+    }
     event.currentTarget.blur();
+  };
+
+  const allowMemoFocusFromPointer = (_event: PointerEvent<HTMLTextAreaElement>) => {
+    allowMemoFocusUntilRef.current = Date.now() + 900;
+  };
+
+  const handleMemoFocus = (event: FocusEvent<HTMLTextAreaElement>) => {
+    if (!shouldUseTouchModalFocusPolicy()) return;
+    if (Date.now() <= allowMemoFocusUntilRef.current) return;
+    window.requestAnimationFrame(() => event.currentTarget.blur());
   };
 
   const parsedInboundQuantity = Number(inboundQuantity || 0);
@@ -128,6 +145,7 @@ export default function InventoryEditor({
             <input
               type="number"
               inputMode="numeric"
+              enterKeyHint="done"
               min={0}
               value={inboundQuantity}
               onChange={(event) => setInboundQuantity(event.target.value)}
@@ -141,6 +159,7 @@ export default function InventoryEditor({
             <input
               type="number"
               inputMode="numeric"
+              enterKeyHint="done"
               min={0}
               value={adjustmentQuantity}
               onChange={(event) => setAdjustmentQuantity(event.target.value)}
@@ -154,6 +173,7 @@ export default function InventoryEditor({
             <input
               type="number"
               inputMode="numeric"
+              enterKeyHint="done"
               min={0}
               value={deductionQuantity}
               onChange={(event) => setDeductionQuantity(event.target.value)}
@@ -167,6 +187,11 @@ export default function InventoryEditor({
           <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.memoLabel}</label>
           <textarea
             value={memo}
+            onPointerDown={allowMemoFocusFromPointer}
+            onTouchStart={() => {
+              allowMemoFocusUntilRef.current = Date.now() + 900;
+            }}
+            onFocus={handleMemoFocus}
             onChange={(event) => setMemo(event.target.value)}
             placeholder={copy.memoPlaceholder}
             rows={3}
