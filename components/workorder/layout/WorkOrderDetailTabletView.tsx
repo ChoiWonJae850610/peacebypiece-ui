@@ -114,11 +114,11 @@ export default function WorkOrderDetailTabletView({
           <div className="min-h-[72dvh] min-w-0">{sidebar}</div>
         </WaflMobileListDrawer>
         <AppResponsiveWorkspace device="tablet">
-          <div className="grid h-full min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(300px,0.46fr)] gap-3">
-            <section className="min-h-0 min-w-0 overflow-y-auto rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+          <div className="grid h-full min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(300px,0.46fr)] gap-3 overflow-hidden">
+            <section className="min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm [scrollbar-gutter:stable]">
               {detail}
             </section>
-            <section className="min-h-0 min-w-0 overflow-y-auto rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+            <section className="min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm [scrollbar-gutter:stable]">
               {sidePanel}
             </section>
           </div>

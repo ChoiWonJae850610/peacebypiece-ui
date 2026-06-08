@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { MODAL_CONTENT_MUTED_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { MODAL_ACTION_LABELS, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { formatRoles } from "@/lib/constants/roles";
@@ -39,6 +40,7 @@ export default function ManagerAssignModal({
   const applyDisabled = getModalActionDisabledState(!draftManagerId || draftManagerId === (currentManagerId ?? ""));
   const handleApply = () => {
     if (applyDisabled || !draftManagerId) return;
+    blurActiveModalElement();
     onSelectManager(draftManagerId);
   };
 
@@ -66,6 +68,7 @@ export default function ManagerAssignModal({
               key={user.id}
               type="button"
               onPointerDown={(event) => event.stopPropagation()}
+              onTouchEnd={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();

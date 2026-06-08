@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_CONTENT_EMPTY_STATE_CLASS, MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_MUTED_PANEL_CLASS, MODAL_CONTENT_READONLY_PANEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS, MODAL_CONTENT_VALUE_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
@@ -61,6 +62,12 @@ export default function InventoryEditor({
     }
   }, [open]);
 
+  const handleNumericFieldKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    event.currentTarget.blur();
+  };
+
   const parsedInboundQuantity = Number(inboundQuantity || 0);
   const parsedAdjustmentQuantity = Number(adjustmentQuantity || 0);
   const parsedDeductionQuantity = Number(deductionQuantity || 0);
@@ -78,9 +85,7 @@ export default function InventoryEditor({
   const handleApply = createModalActionHandler({
     shouldProceed: !applyDisabled,
     beforeAction: () => {
-      if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
+      blurActiveModalElement();
     },
     action: () => {
       onApply({
@@ -122,9 +127,11 @@ export default function InventoryEditor({
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.inboundQuantityLabel}</label>
             <input
               type="number"
+              inputMode="numeric"
               min={0}
               value={inboundQuantity}
               onChange={(event) => setInboundQuantity(event.target.value)}
+              onKeyDown={handleNumericFieldKeyDown}
               placeholder={copy.inboundQuantityPlaceholder}
               className={MODAL_INPUT_CLASS}
             />
@@ -133,9 +140,11 @@ export default function InventoryEditor({
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.adjustmentQuantityLabel}</label>
             <input
               type="number"
+              inputMode="numeric"
               min={0}
               value={adjustmentQuantity}
               onChange={(event) => setAdjustmentQuantity(event.target.value)}
+              onKeyDown={handleNumericFieldKeyDown}
               placeholder={copy.adjustmentQuantityPlaceholder}
               className={MODAL_INPUT_CLASS}
             />
@@ -144,9 +153,11 @@ export default function InventoryEditor({
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.deductionQuantityLabel}</label>
             <input
               type="number"
+              inputMode="numeric"
               min={0}
               value={deductionQuantity}
               onChange={(event) => setDeductionQuantity(event.target.value)}
+              onKeyDown={handleNumericFieldKeyDown}
               placeholder={copy.deductionQuantityPlaceholder}
               className={MODAL_INPUT_CLASS}
             />

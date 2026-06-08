@@ -47,6 +47,19 @@ function isTopModal(id: string) {
   return modalStack[modalStack.length - 1] === id;
 }
 
+function shouldUseTouchModalFocusPolicy() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 1024;
+}
+
+export function blurActiveModalElement() {
+  if (typeof document === "undefined") return;
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement) {
+    activeElement.blur();
+  }
+}
+
 export function getFocusableElements(container: HTMLElement) {
   return Array.from(
     container.querySelectorAll<HTMLElement>(
@@ -135,13 +148,14 @@ export function useModalEnvironment({
     if (!open || !dialogRef.current) return;
 
     const dialog = dialogRef.current;
-    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const useTouchFocusPolicy = shouldUseTouchModalFocusPolicy();
+    const previousActive = !useTouchFocusPolicy && document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     pushModalStack(modalId);
     lockDocumentScroll({ lockBodyPosition });
 
     const focusTimer = window.setTimeout(() => {
-      if (!isTopModal(modalId)) return;
+      if (!isTopModal(modalId) || useTouchFocusPolicy) return;
       const focusables = getFocusableElements(dialog);
       (focusables[0] ?? dialog).focus();
     }, 24);
@@ -186,6 +200,7 @@ export function useModalEnvironment({
       document.removeEventListener("keydown", handleKeyDown, true);
       removeModalStack(modalId);
       unlockDocumentScroll();
+      blurActiveModalElement();
       if (previousActive && document.contains(previousActive)) {
         previousActive.focus();
       }

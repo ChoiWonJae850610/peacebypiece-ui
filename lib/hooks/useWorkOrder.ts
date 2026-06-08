@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import {
   canDeleteWorkOrder,
@@ -42,6 +42,7 @@ type UseWorkOrderOptions = {
 };
 
 export function useWorkOrder(options: UseWorkOrderOptions = {}) {
+  const managerAssignOpenPendingRef = useRef(false);
   const uiState = useWorkOrderUIState();
   const actionRuntime = useWorkOrderActionRuntime();
 
@@ -162,17 +163,20 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   );
 
   const handleOpenManagerAssignModal = useCallback(() => {
-    if (uiState.managerAssignModalOpen) return;
+    if (uiState.managerAssignModalOpen || managerAssignOpenPendingRef.current) return;
     const reviewLocked = derivedState.isReviewRequestLocked ?? isWorkflowStateReviewLocked(derivedState.currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, true);
     const canEditManager = canEditManagerInWorkflow(derivedState.currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, reviewLocked);
     if (!derivedState.canChangeManager || !canEditManager) return;
 
+    managerAssignOpenPendingRef.current = true;
     void loadLatestWorkspaceUserProfiles()
       .then((latestUsers) => {
         if (latestUsers.length > 0) coreState.setUsers(latestUsers);
       })
       .catch(() => undefined)
       .finally(() => {
+        managerAssignOpenPendingRef.current = false;
+        if (uiState.managerAssignModalOpen) return;
         actionState.handleOpenManagerAssignModal({
           canChangeManager: derivedState.canChangeManager,
           isReviewRequestLocked: derivedState.isReviewRequestLocked,

@@ -3,6 +3,7 @@ import { Check, ChevronDown } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
 import {
@@ -68,6 +69,8 @@ function CategoryOptionButton({
   return (
     <button
       type="button"
+      onPointerDown={(event) => event.stopPropagation()}
+      onTouchEnd={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -101,6 +104,8 @@ function LeafOptionButton({
   return (
     <button
       type="button"
+      onPointerDown={(event) => event.stopPropagation()}
+      onTouchEnd={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -167,41 +172,35 @@ export default function BasicInfoEditModal({
   const category3Options = useMemo(() => getCategory3Options(categorySource, draft.category2), [categorySource, draft.category2]);
 
   const handleCategory1Toggle = (option: CategoryOption) => {
-    if (expandedCategory1 === option.name && draft.category1 === option.name) {
+    if (expandedCategory1 === option.name) {
       setExpandedCategory1(null);
       setExpandedCategory2(null);
       return;
     }
-    const nextCategory2Options = getCategory2Options(categorySource, option.name);
-    const nextCategory2 = nextCategory2Options[0] ?? categorySource.defaultCategory2;
-    const nextCategory3Options = getCategory3Options(categorySource, nextCategory2.name);
-    const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
     setDraft((current) => ({
       ...current,
       category1: option.name,
-      category2: nextCategory2.name,
-      category3: nextCategory3.name,
+      category2: current.category1 === option.name ? current.category2 : "",
+      category3: current.category1 === option.name ? current.category3 : "",
       category1Id: option.id,
-      category2Id: nextCategory2.id,
-      category3Id: nextCategory3.id,
+      category2Id: current.category1 === option.name ? current.category2Id : null,
+      category3Id: current.category1 === option.name ? current.category3Id : null,
     }));
     setExpandedCategory1(option.name);
-    setExpandedCategory2(nextCategory2.name);
+    setExpandedCategory2(null);
   };
 
   const handleCategory2Toggle = (option: CategoryOption) => {
-    if (expandedCategory2 === option.name && draft.category2 === option.name) {
+    if (expandedCategory2 === option.name) {
       setExpandedCategory2(null);
       return;
     }
-    const nextCategory3Options = getCategory3Options(categorySource, option.name);
-    const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
     setDraft((current) => ({
       ...current,
       category2: option.name,
-      category3: nextCategory3.name,
+      category3: current.category2 === option.name ? current.category3 : "",
       category2Id: option.id,
-      category3Id: nextCategory3.id,
+      category3Id: current.category2 === option.name ? current.category3Id : null,
     }));
     setExpandedCategory2(option.name);
   };
@@ -214,7 +213,11 @@ export default function BasicInfoEditModal({
     }));
   };
 
+  const applyDisabled = !draft.category1 || !draft.category2 || !draft.category3;
+
   const handleApply = () => {
+    if (applyDisabled) return;
+    blurActiveModalElement();
     onChange(draft);
     onSave(draft);
   };
@@ -228,7 +231,7 @@ export default function BasicInfoEditModal({
       maxWidthClass="md:max-w-xl"
       footer={renderModalFooterActions({
         layout: "end",
-        primary: { label: i18n.common.ui.common.apply, onClick: handleApply, tone: "primary" },
+        primary: { label: i18n.common.ui.common.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary" },
       })}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -262,7 +265,7 @@ export default function BasicInfoEditModal({
               ))}
             </div>
           ) : (
-            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category1 || "-"} 선택 항목을 다시 열면 세부 분류를 확인할 수 있습니다.</p>
+            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category1 || "상위 분류"} 항목을 열면 세부 분류를 확인할 수 있습니다.</p>
           )}
         </div>
 
@@ -280,7 +283,7 @@ export default function BasicInfoEditModal({
               ))}
             </div>
           ) : (
-            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category2 || "-"} 선택 항목을 다시 열면 세부 항목을 확인할 수 있습니다.</p>
+            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category2 || "중분류"} 항목을 열면 세부 항목을 확인할 수 있습니다.</p>
           )}
         </div>
       </div>
