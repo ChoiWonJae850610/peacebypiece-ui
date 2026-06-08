@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-export type ResponsiveDeviceType = "mobile" | "tablet" | "desktop";
-
-const MOBILE_MEDIA = "(max-width: 767px)";
-const TABLET_MEDIA = "(min-width: 768px) and (max-width: 1279px)";
+import { RESPONSIVE_MEDIA_QUERIES, type ResponsiveDeviceType } from "@/lib/responsive/responsiveLayoutPolicy";
+export type { ResponsiveDeviceType } from "@/lib/responsive/responsiveLayoutPolicy";
 
 function resolveResponsiveDeviceType(): ResponsiveDeviceType {
   if (typeof window === "undefined") return "desktop";
-  if (window.matchMedia(MOBILE_MEDIA).matches) return "mobile";
-  if (window.matchMedia(TABLET_MEDIA).matches) return "tablet";
+  if (window.matchMedia(RESPONSIVE_MEDIA_QUERIES.mobile).matches) return "mobile";
+  if (window.matchMedia(RESPONSIVE_MEDIA_QUERIES.tablet).matches) return "tablet";
   return "desktop";
 }
 
@@ -18,8 +16,8 @@ export function useResponsiveDeviceType() {
   const [deviceType, setDeviceType] = useState<ResponsiveDeviceType>(resolveResponsiveDeviceType);
 
   useEffect(() => {
-    const mobileQuery = window.matchMedia(MOBILE_MEDIA);
-    const tabletQuery = window.matchMedia(TABLET_MEDIA);
+    const mobileQuery = window.matchMedia(RESPONSIVE_MEDIA_QUERIES.mobile);
+    const tabletQuery = window.matchMedia(RESPONSIVE_MEDIA_QUERIES.tablet);
 
     const handleChange = () => {
       setDeviceType(resolveResponsiveDeviceType());
