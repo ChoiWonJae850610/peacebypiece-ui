@@ -120,6 +120,7 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate, isCreati
       title={copy.title}
       description={copy.description}
       maxWidthClass="md:max-w-xl"
+      rootClassName="pbp-mobile-no-zoom"
       footer={renderModalFooterActions({
         layout: "end",
         secondary: { label: i18n.common.ui.common.cancel ?? MODAL_ACTION_LABELS.cancel, onClick: onClose, disabled: isCreating },

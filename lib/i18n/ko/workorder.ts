@@ -415,6 +415,7 @@ export const workorderKo = {
       currentInventoryLabel: "현재 재고",
       summaryLabel: "분류",
       lastUpdatedPrefix: "최근 변경",
+      editAction: "수정",
     },
     actionSection: {
       title: "진행 단계",

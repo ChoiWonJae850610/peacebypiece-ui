@@ -415,6 +415,7 @@ export const workorderEn = {
       currentInventoryLabel: "Current stock",
       summaryLabel: "Category",
       lastUpdatedPrefix: "Last updated",
+      editAction: "Edit",
     },
     actionSection: {
       title: "Progress",

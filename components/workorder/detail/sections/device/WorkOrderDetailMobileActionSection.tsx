@@ -43,22 +43,33 @@ export default function WorkOrderDetailMobileActionSection({
   return (
     <section className="pbp-workflow-panel min-w-0 overflow-hidden rounded-2xl border p-3.5 sm:p-4">
       <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
-      <div className="mt-3 flex min-w-0 flex-wrap gap-2">
-        {stages.map((stage) => {
+      <ol className="mt-3 grid min-w-0 gap-2">
+        {stages.map((stage, index) => {
           const isCurrent = stage === currentStage;
+          const isDone = stages.indexOf(currentStage) >= index;
           return (
-            <div
+            <li
               key={stage}
-              className={`inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${
+              className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border px-3 py-2.5 text-xs font-medium ${
                 isCurrent ? "pbp-workflow-step-current" : "pbp-workflow-step-idle"
               }`}
             >
-              <span className={`h-2 w-2 rounded-full ${isCurrent ? getStageDotTone(stage) : "bg-[var(--pbp-text-subtle)]"}`} />
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${
+                  isCurrent
+                    ? `${getStageDotTone(stage)} text-white`
+                    : isDone
+                      ? "bg-[var(--pbp-selected-border)] text-white"
+                      : "bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]"
+                }`}
+              >
+                {index + 1}
+              </span>
               <span className="min-w-0 break-keep">{translateDisplayStageLabel(stage, i18n)}</span>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
       {showMaterialOrderPendingBadge ? (
         <div className="mt-3 inline-flex w-fit rounded-full bg-[var(--pbp-workorder-status-request-order-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--pbp-workorder-status-request-order-text)]">
           {copy.materialOrderPendingBadge}
@@ -82,7 +93,7 @@ export default function WorkOrderDetailMobileActionSection({
                   title={isActionLocked ? formatActionCopy(copy.disabledActionTitleFormat, translatedLabel) : formatActionCopy(copy.actionTitleFormat, translatedLabel)}
                   aria-label={formatActionCopy(copy.actionAriaFormat, translatedLabel)}
                   aria-describedby={helperId}
-                  className={`inline-flex min-w-0 items-center justify-center gap-2 rounded-xl px-3 py-3 text-center text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
+                  className={`inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-2xl px-3 py-3 text-center text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:opacity-70 ${
                     isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"
                   }`}
                 >

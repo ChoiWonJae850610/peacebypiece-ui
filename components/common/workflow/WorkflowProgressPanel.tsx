@@ -127,9 +127,9 @@ export function WorkflowProgressPanel({
             {title}
           </div>
         </div>
-        {actions.length > 0 ? (
+        {actions.length > 0 && !isCompact ? (
           <div
-            className={`flex flex-wrap justify-end ${isCompact ? "gap-1.5" : "gap-2"}`}
+            className="flex flex-wrap justify-end gap-2"
           >
             {actions.map((action) => {
               const isDisabled = Boolean(action.disabled);
@@ -301,6 +301,41 @@ export function WorkflowProgressPanel({
           </div>
         </div>
       </div>
+
+      {actions.length > 0 && isCompact ? (
+        <div className="mt-3 grid gap-2">
+          {actions.map((action) => {
+            const isDisabled = Boolean(action.disabled);
+            const helperId = action.disabledReason
+              ? getWorkflowActionReasonId(action.key)
+              : undefined;
+
+            return (
+              <div key={action.key} className="grid gap-1">
+                <button
+                  type="button"
+                  onClick={action.onClick}
+                  disabled={isDisabled}
+                  title={action.title}
+                  aria-label={action.ariaLabel}
+                  aria-describedby={isDisabled ? helperId : undefined}
+                  className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl px-3 py-3 text-center text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-70 ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
+                >
+                  {action.isProcessing ? (
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                  ) : null}
+                  <span className="min-w-0 break-keep">{action.label}</span>
+                </button>
+                {isDisabled && action.disabledReason ? (
+                  <span id={helperId} className="text-center text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]">
+                    {action.disabledReason}
+                  </span>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
 
       {footer ? (
         <div
