@@ -670,6 +670,7 @@ export const workorderEn = {
         title: "Work list",
         subtitle: "Mobile drawer",
         close: "Close",
+        backToList: "List",
         searchAria: "Search work orders",
         searchPlaceholder: "Search by work name, category, factory, or status",
         create: "Create work order",

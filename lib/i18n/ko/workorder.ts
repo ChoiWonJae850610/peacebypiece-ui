@@ -670,6 +670,7 @@ export const workorderKo = {
         title: "작업 목록",
         subtitle: "모바일 드로어",
         close: "닫기",
+        backToList: "목록",
         searchAria: "작업지시서 검색",
         searchPlaceholder: "작업명, 분류, 공장, 상태 검색",
         create: "작업지시서 생성",
