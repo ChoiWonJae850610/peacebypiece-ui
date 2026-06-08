@@ -1,8 +1,13 @@
 import type { ReactNode } from "react";
 
-import { AppButton, AppCard, AppSelect, AppSection, WaflEmptyState, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppButton, AppCard, AppSelect, AppSection, WaflEmptyState, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
+import {
+  formatMaterialOrderCode,
+  formatMaterialOrderStatusLabel,
+  resolveMaterialOrderStatusBadgeTone,
+} from "@/lib/material-orders/materialOrderWorkspaceClient";
 import { MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
@@ -67,19 +72,26 @@ export default function MaterialOrderDetailPanel({
     <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       {selectedOrder ? (
         <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_SECTION_GAP_CLASS}`}>
+          {mobile ? (
+            <MaterialOrderMobileStatusHeader
+              selectedOrder={selectedOrder}
+              statusChanging={statusChanging}
+            />
+          ) : null}
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             workflowPath={selectedOrder.workflowPath}
             changing={statusChanging}
             onChangeStatus={onChangeStatus}
+            compact={mobile}
           />
 
           <AppSection
             title="발주 기본정보"
-            description="자재 종류와 실제 공급처를 먼저 정합니다."
+            description={mobile ? "공급처와 발주 종류를 확인합니다." : "자재 종류와 실제 공급처를 먼저 정합니다."}
             className="shrink-0"
             cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}
-            bodyClassName="grid gap-3 xl:grid-cols-2"
+            bodyClassName={mobile ? "grid gap-2" : "grid gap-3 xl:grid-cols-2"}
           >
               <FieldLabel label="자재 종류">
                 <AppSelect
@@ -121,7 +133,7 @@ export default function MaterialOrderDetailPanel({
 
           <AppSection
             title="발주 품목"
-            description="실제 주문 수량과 단가를 입력합니다. 금액은 자동 계산됩니다."
+            description={mobile ? "카드별 수량·단가를 확인하고 수정합니다." : "실제 주문 수량과 단가를 입력합니다. 금액은 자동 계산됩니다."}
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
             cardClassName={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}
             bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -165,6 +177,48 @@ export default function MaterialOrderDetailPanel({
   );
 }
 
+function MaterialOrderMobileStatusHeader({
+  selectedOrder,
+  statusChanging,
+}: {
+  selectedOrder: MaterialOrder;
+  statusChanging: boolean;
+}) {
+  const statusLabel = formatMaterialOrderStatusLabel(selectedOrder.status);
+  const supplierLabel = selectedOrder.supplierPartnerName?.trim() || "공급처 미선택";
+  const orderedAtLabel = selectedOrder.orderedAt ? `발주완료 ${selectedOrder.orderedAt.slice(0, 10)}` : "발주완료 전";
+
+  return (
+    <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm">
+      <div className="flex min-w-0 items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold pbp-text-subtle">원단·부자재 발주</p>
+          <h2 className="mt-0.5 truncate text-sm font-semibold pbp-text-primary">
+            {formatMaterialOrderCode(selectedOrder)} · {supplierLabel}
+          </h2>
+        </div>
+        <AppBadge
+          tone={resolveMaterialOrderStatusBadgeTone(selectedOrder.status)}
+          size="sm"
+          className="shrink-0"
+        >
+          {statusLabel}
+        </AppBadge>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px] font-semibold">
+        <span className="rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2 pbp-text-muted">
+          {statusChanging ? "상태 변경 처리 중" : "상태 액션은 아래 단계 카드"}
+        </span>
+        <span className="rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2 text-right pbp-text-muted">
+          {orderedAtLabel}
+        </span>
+      </div>
+      <p className="mt-2 text-[11px] leading-relaxed pbp-text-subtle">
+        PDF 생성과 납기 입력 액션은 후속 기능 연결 전까지 이 상세 영역 하단 기준으로 배치합니다.
+      </p>
+    </section>
+  );
+}
 
 const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [
   { value: "fabric", label: "원단" },

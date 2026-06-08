@@ -133,13 +133,14 @@ export default function MaterialOrderDraftEditor() {
       errorMessage={workOrdersError}
       onAddMaterialToOrder={addWorkOrderMaterialLine}
       onRetry={() => void refreshWorkOrderCandidates()}
+      mobile={deviceType === "mobile"}
     />
   );
 
   if (deviceType === "mobile") {
     const actionBar = selectedOrderId ? (
       <WaflMobileFixedActionBar>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <AppButton
             type="button"
             variant="secondary"
@@ -160,7 +161,18 @@ export default function MaterialOrderDraftEditor() {
             aria-label="작업지시서 자재 선택 패널 열기"
             onClick={() => setMobileMaterialSheetOpen(true)}
           >
-            자재 선택
+            자재
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="ghost"
+            size="md"
+            width="full"
+            disabled
+            title="PDF 생성과 납기 입력은 후속 기능 연결 시 같은 위치에 배치합니다."
+            aria-label="PDF 및 납기 액션 준비 중"
+          >
+            PDF·납기
           </AppButton>
         </div>
       </WaflMobileFixedActionBar>
@@ -179,7 +191,7 @@ export default function MaterialOrderDraftEditor() {
           open={mobileMaterialSheetOpen}
           onOpenChange={setMobileMaterialSheetOpen}
           title="작업지시서 자재 선택"
-          description="자재 발주 대기 상태의 작업지시서에서 이번 발주서에 담을 품목을 선택합니다."
+          description="남은 자재와 진행 상태를 확인한 뒤 이번 발주서에 담을 품목을 선택합니다."
           side="bottom"
           size="full"
           contentClassName="px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"
@@ -216,7 +228,7 @@ export default function MaterialOrderDraftEditor() {
           open={tabletMaterialSheetOpen}
           onOpenChange={setTabletMaterialSheetOpen}
           title="작업지시서 자재 선택"
-          description="자재 발주 대기 상태의 작업지시서에서 이번 발주서에 담을 품목을 선택합니다."
+          description="남은 자재와 진행 상태를 확인한 뒤 이번 발주서에 담을 품목을 선택합니다."
           side="right"
           size="lg"
           contentClassName="px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"

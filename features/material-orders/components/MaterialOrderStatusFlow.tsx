@@ -12,6 +12,7 @@ type MaterialOrderStatusFlowProps = {
   workflowPath: MaterialOrder["workflowPath"];
   changing: boolean;
   onChangeStatus: (status: MaterialOrderStatus) => void;
+  compact?: boolean;
 };
 
 export function MaterialOrderStatusFlow({
@@ -19,6 +20,7 @@ export function MaterialOrderStatusFlow({
   workflowPath,
   changing,
   onChangeStatus,
+  compact = false,
 }: MaterialOrderStatusFlowProps) {
   const currentIndex = Math.max(
     0,
@@ -53,6 +55,8 @@ export function MaterialOrderStatusFlow({
       title="발주 진행 단계"
       steps={progressSteps}
       actions={progressActions}
+      density={compact ? "compact" : "default"}
+      className={compact ? "rounded-3xl shadow-none" : undefined}
       pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
       directPath={{
         fromKey: "draft",

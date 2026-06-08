@@ -45,6 +45,7 @@ type MaterialOrderAllocationPanelProps = {
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
   onRetry: () => void;
+  mobile?: boolean;
 };
 
 export default function MaterialOrderAllocationPanel({
@@ -57,6 +58,7 @@ export default function MaterialOrderAllocationPanel({
   errorMessage,
   onAddMaterialToOrder,
   onRetry,
+  mobile = false,
 }: MaterialOrderAllocationPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const filteredCandidates = useMemo(() => (
@@ -70,7 +72,14 @@ export default function MaterialOrderAllocationPanel({
     <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-end justify-between gap-2">
-          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 자재 선택</h2>
+          <div className="min-w-0">
+            <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 자재 선택</h2>
+            {mobile ? (
+              <p className="mt-1 text-[11px] leading-relaxed pbp-text-subtle">
+                남은 자재와 진행 상태를 확인한 뒤 이번 발주서에 담을 품목만 선택합니다.
+              </p>
+            ) : null}
+          </div>
           <SectionCountBadge className="translate-y-0.5">{filteredCandidates.length}건</SectionCountBadge>
         </div>
         <input
@@ -103,6 +112,7 @@ export default function MaterialOrderAllocationPanel({
               materialRequestCompletionMap={materialRequestCompletionMap}
               editable={editable}
               onAddMaterialToOrder={onAddMaterialToOrder}
+              mobile={mobile}
             />
           ))
         )}
@@ -153,6 +163,7 @@ function AllocationCandidateCard({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
+  mobile = false,
 }: {
   workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
   lines: MaterialOrderDraftLine[];
@@ -163,6 +174,7 @@ function AllocationCandidateCard({
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
+  mobile?: boolean;
 }) {
   const completionSummary = summarizeWorkOrderMaterialCompletion({
     workOrder,
@@ -196,7 +208,7 @@ function AllocationCandidateCard({
         </AppBadge>
       </div>
 
-      <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px]">
+      <div className={mobile ? "mt-2 grid gap-1.5 text-[11px]" : "mt-2 grid grid-cols-2 gap-1.5 text-[11px]"}>
         <SummaryChip label="구성" value={materialSummaryLabel} />
         <SummaryChip label="상태" value={remainingSummaryLabel} />
       </div>
@@ -217,6 +229,7 @@ function AllocationCandidateCard({
               materialRequestCompletionMap={materialRequestCompletionMap}
               editable={editable}
               onAddMaterialToOrder={onAddMaterialToOrder}
+              mobile={mobile}
             />
           ))}
         </div>
@@ -248,6 +261,7 @@ function WorkOrderMaterialRequestRow({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
+  mobile = false,
 }: {
   workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
   material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
@@ -259,6 +273,7 @@ function WorkOrderMaterialRequestRow({
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
+  mobile?: boolean;
 }) {
   const isAdded = isMaterialRequestAlreadyAdded({
     lines,
@@ -319,7 +334,7 @@ function WorkOrderMaterialRequestRow({
   });
 
   return (
-    <AppCard padding="none" variant="flat" className={MATERIAL_ORDER_NESTED_ROW_CLASS}>
+    <AppCard padding="none" variant="flat" className={`${MATERIAL_ORDER_NESTED_ROW_CLASS} ${mobile ? "grid gap-2" : ""}`}>
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <AppBadge tone="neutral" size="sm" className="shrink-0 text-[10px]">
@@ -330,10 +345,16 @@ function WorkOrderMaterialRequestRow({
         <p className="mt-1 text-[11px] pbp-text-muted">
           필요 수량 {formatMaterialQuantity(material.quantity, material.unit)} · {readableStatus}
         </p>
+        {mobile ? (
+          <div className="mt-2 grid grid-cols-2 gap-1.5 text-[10px] font-semibold pbp-text-subtle">
+            <span className="rounded-xl bg-[var(--pbp-surface-soft)] px-2 py-1.5">진행 {formatMaterialQuantity(orderedQuantity, material.unit)}</span>
+            <span className="rounded-xl bg-[var(--pbp-surface-soft)] px-2 py-1.5 text-right">남음 {formatMaterialQuantity(completionRemainingQuantity, material.unit)}</span>
+          </div>
+        ) : null}
       </div>
       <AppButton
         size="sm"
-        className="min-h-7 px-3 py-1 text-xs"
+        className={mobile ? "min-h-9 w-full px-3 py-1 text-xs" : "min-h-7 px-3 py-1 text-xs"}
         variant={isAdded || isAllocationCovered ? "ghost" : "secondary"}
         disabled={!editable || isAdded || isAllocationCovered}
         title={selectionButtonTitle}
