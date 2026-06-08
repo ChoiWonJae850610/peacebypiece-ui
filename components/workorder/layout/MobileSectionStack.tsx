@@ -5,32 +5,25 @@ import { useEffect, useMemo, useState, type ReactNode, type RefObject } from "re
 import { AppButton, AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFixedActionBar, WaflMobileShell, WAFL_MOBILE_SAFE_AREA_CLASS_NAMES, type AppSegmentedTabItem } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
-type MobileSectionStackMode = "list" | "detail";
 type MobileRelatedSectionKey = "attachment" | "design" | "memo";
 
 type MobileSectionStackProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
-  mode: MobileSectionStackMode;
   topBar: ReactNode;
   drawer: ReactNode;
-  list: ReactNode;
   detail: ReactNode;
   sidePanel: (activeSection: MobileRelatedSectionKey) => ReactNode;
   hasSelection: boolean;
-  onBackToList: () => void;
   scrollResetKey: string;
 };
 
 export default function MobileSectionStack({
   appShellRef,
-  mode,
   topBar,
   drawer,
-  list,
   detail,
   sidePanel,
   hasSelection,
-  onBackToList,
   scrollResetKey,
 }: MobileSectionStackProps) {
   const { i18n } = useI18n();
@@ -48,13 +41,12 @@ export default function MobileSectionStack({
     setActiveRelatedSection(section);
     setSidePanelOpen(true);
   };
-  const showDetail = mode === "detail";
-  const showDetailActionBar = showDetail && hasSelection;
+  const showDetailActionBar = hasSelection;
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
     setSidePanelOpen(false);
-  }, [scrollResetKey, mode]);
+  }, [scrollResetKey]);
 
   return (
     <WaflMobileShell
@@ -63,10 +55,7 @@ export default function MobileSectionStack({
       drawer={drawer}
       actionBar={showDetailActionBar ? (
         <WaflMobileFixedActionBar>
-          <div className="grid grid-cols-[minmax(0,0.34fr)_repeat(3,minmax(0,0.22fr))] gap-2">
-            <AppButton className="w-full" variant="secondary" size="lg" onClick={onBackToList}>
-              {mobileCopy.backToList}
-            </AppButton>
+          <div className="grid grid-cols-3 gap-2">
             {relatedTabs.map((item) => (
               <AppButton
                 key={item.key}
@@ -83,11 +72,7 @@ export default function MobileSectionStack({
       ) : undefined}
       contentClassName={showDetailActionBar ? undefined : "pb-[calc(1rem+env(safe-area-inset-bottom))]"}
     >
-      {showDetail ? (
-        <WaflMobileContentSection>{detail}</WaflMobileContentSection>
-      ) : (
-        <WaflMobileContentSection className="flex min-h-[calc(100vh-5.5rem)] flex-col">{list}</WaflMobileContentSection>
-      )}
+      <WaflMobileContentSection>{detail}</WaflMobileContentSection>
 
       <AppSheet
         open={sidePanelOpen}

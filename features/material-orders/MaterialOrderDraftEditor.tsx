@@ -18,11 +18,9 @@ const MATERIAL_ORDER_TABLET_GRID_STYLE = {
   gridTemplateColumns: "minmax(240px, 0.72fr) minmax(0, 1fr)",
 } as const;
 
-type MaterialOrderMobileMode = "list" | "detail";
-
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
-  const [mobileMode, setMobileMode] = useState<MaterialOrderMobileMode>("list");
+  const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] = useState(false);
   const [mobileMaterialSheetOpen, setMobileMaterialSheetOpen] = useState(false);
   const [tabletMaterialSheetOpen, setTabletMaterialSheetOpen] = useState(false);
 
@@ -65,7 +63,7 @@ export default function MaterialOrderDraftEditor() {
 
   useEffect(() => {
     if (!selectedOrderId) {
-      setMobileMode("list");
+      setMobileOrderListDrawerOpen(false);
       setMobileMaterialSheetOpen(false);
       setTabletMaterialSheetOpen(false);
     }
@@ -73,7 +71,7 @@ export default function MaterialOrderDraftEditor() {
 
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
-    setMobileMode("detail");
+    setMobileOrderListDrawerOpen(false);
     setTabletMaterialSheetOpen(false);
   };
 
@@ -138,7 +136,7 @@ export default function MaterialOrderDraftEditor() {
   );
 
   if (deviceType === "mobile") {
-    const actionBar = selectedOrderId ? (
+    const actionBar = (
       <WaflMobileFixedActionBar>
         <div className="grid grid-cols-3 gap-2">
           <AppButton
@@ -146,10 +144,11 @@ export default function MaterialOrderDraftEditor() {
             variant="secondary"
             size="md"
             width="full"
-            aria-label="발주서 목록으로 돌아가기"
-            onClick={() => setMobileMode("list")}
+            aria-label="발주서 목록 드로어 열기"
+            title="상세 화면을 유지한 채 발주서 목록을 엽니다."
+            onClick={() => setMobileOrderListDrawerOpen(true)}
           >
-            목록
+            발주서
           </AppButton>
           <AppButton
             type="button"
@@ -176,17 +175,24 @@ export default function MaterialOrderDraftEditor() {
           </AppButton>
         </div>
       </WaflMobileFixedActionBar>
-    ) : null;
+    );
 
     return (
       <WaflMobileShell actionBar={actionBar} contentClassName="gap-3">
         {statusToast}
-        <WaflMobileContentSection className={mobileMode === "list" ? "block" : "hidden"}>
-          {listPanel}
-        </WaflMobileContentSection>
-        <WaflMobileContentSection className={mobileMode === "detail" ? "block" : "hidden"}>
-          {detailPanel}
-        </WaflMobileContentSection>
+        <WaflMobileContentSection>{detailPanel}</WaflMobileContentSection>
+        <AppSheet
+          open={mobileOrderListDrawerOpen}
+          onOpenChange={setMobileOrderListDrawerOpen}
+          title="발주서 목록"
+          description="현재 상세 화면을 유지한 채 다른 발주서를 선택합니다."
+          side="left"
+          size="md"
+          className="w-[86%] max-w-sm rounded-r-3xl"
+          contentClassName="px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3"
+        >
+          <div className="min-h-[72dvh] min-w-0">{listPanel}</div>
+        </AppSheet>
         <AppSheet
           open={mobileMaterialSheetOpen}
           onOpenChange={setMobileMaterialSheetOpen}

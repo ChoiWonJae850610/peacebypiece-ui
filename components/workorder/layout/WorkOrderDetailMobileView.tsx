@@ -1,29 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-
-import MobileDrawer from "@/components/layout/MobileDrawer";
-import MobileTopBar from "@/components/layout/MobileTopBar";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
 import MobileSectionStack from "@/components/workorder/layout/MobileSectionStack";
-import WorkOrderMobileListPanel from "@/components/workorder/layout/WorkOrderMobileListPanel";
 import WorkOrderMobileRelatedSectionPanels, { type WorkOrderMobileRelatedSectionKey } from "@/components/workorder/layout/WorkOrderMobileRelatedSectionPanels";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
-
-type MobileWorkspaceMode = "list" | "detail";
-
-function hasInitialWorkOrderQuery() {
-  if (typeof window === "undefined") return false;
-  return Boolean(new URLSearchParams(window.location.search).get("workOrderId"));
-}
+import MobileDrawer from "@/components/layout/MobileDrawer";
+import MobileTopBar from "@/components/layout/MobileTopBar";
 
 export default function WorkOrderDetailMobileView({
   appShellRef,
   selectedId,
   hasSelection,
-  sidebarListProps,
   detailProps,
   sidePanelProps,
   mobileTopBarProps,
@@ -32,31 +21,7 @@ export default function WorkOrderDetailMobileView({
   homeNavigation,
 }: WorkOrderLayoutViewProps) {
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
-  const [mode, setMode] = useState<MobileWorkspaceMode>("list");
-  const detailScrollResetKey = `${selectedId}:${mode}`;
-
-  useEffect(() => {
-    if (hasInitialWorkOrderQuery() && hasSelection) {
-      setMode("detail");
-    }
-  }, [hasSelection]);
-
-  useEffect(() => {
-    if (!hasSelection && mode === "detail") {
-      setMode("list");
-    }
-  }, [hasSelection, mode]);
-
-  const listProps = useMemo(
-    () => ({
-      ...sidebarListProps,
-      onOpenDetail: (id: string) => {
-        sidebarListProps.onSelect(id);
-        setMode("detail");
-      },
-    }),
-    [sidebarListProps],
-  );
+  const detailScrollResetKey = selectedId;
 
   const detailContent = isLoading ? (
     <WorkOrderLoadingState
@@ -90,15 +55,12 @@ export default function WorkOrderDetailMobileView({
   return (
     <MobileSectionStack
       appShellRef={appShellRef}
-      mode={mode}
       scrollResetKey={detailScrollResetKey}
       topBar={<MobileTopBar {...mobileTopBarProps} homeNavigation={homeNavigation} />}
       drawer={<MobileDrawer {...mobileDrawerProps} />}
-      list={<WorkOrderMobileListPanel {...listProps} />}
       detail={detailContent}
       sidePanel={renderRelatedSection}
       hasSelection={hasSelection}
-      onBackToList={() => setMode("list")}
     />
   );
 }
