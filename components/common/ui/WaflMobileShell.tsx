@@ -173,7 +173,7 @@ export function WaflMobileListDrawer({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog" aria-labelledby={titleId}>
+    <div className="fixed inset-0 z-40" aria-modal="true" role="dialog" aria-labelledby={titleId}>
       <button type="button" aria-label={closeOverlayAria} className="absolute inset-0 bg-stone-950/45 pbp-overlay-enter" onClick={onClose} />
       <div
         ref={drawerRef}

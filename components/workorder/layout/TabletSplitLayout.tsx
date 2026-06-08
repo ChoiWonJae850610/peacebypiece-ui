@@ -10,6 +10,7 @@ type TabletSplitLayoutProps = {
   sidebar: ReactNode;
   detail: ReactNode;
   sidePanel: ReactNode;
+  topbar?: ReactNode;
   scrollResetKey: string;
 };
 
@@ -18,6 +19,7 @@ export default function TabletSplitLayout({
   sidebar,
   detail,
   sidePanel,
+  topbar,
   scrollResetKey,
 }: TabletSplitLayoutProps) {
   const { i18n } = useI18n();
@@ -31,9 +33,10 @@ export default function TabletSplitLayout({
   }, [scrollResetKey]);
 
   return (
-    <main className="h-screen overflow-hidden bg-stone-100 text-stone-900">
-      <div ref={appShellRef} className="flex h-full flex-col overflow-hidden">
-        <div className="grid min-h-0 flex-1 grid-cols-12 overflow-hidden">
+    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-4 text-[var(--pbp-text-primary)]">
+      <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden">
+        {topbar ? <div className="shrink-0">{topbar}</div> : null}
+        <div className="grid min-h-0 flex-1 grid-cols-12 overflow-hidden rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
           <aside className="col-span-4 min-h-0 border-r border-stone-200 bg-white">
             {sidebar}
           </aside>
@@ -48,7 +51,7 @@ export default function TabletSplitLayout({
           </section>
         </div>
 
-        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(33.333333%+1rem)] right-4 z-30 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur">
+        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(33.333333%+2rem)] right-8 z-30 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur">
           <AppButton className="w-full" size="lg" onClick={() => setSidePanelOpen(true)}>
             {sidePanelTitle}
           </AppButton>

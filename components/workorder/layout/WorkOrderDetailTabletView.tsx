@@ -1,3 +1,4 @@
+import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
@@ -21,7 +22,15 @@ export default function WorkOrderDetailTabletView({
     <TabletSplitLayout
       appShellRef={appShellRef}
       scrollResetKey={selectedId}
-      sidebar={<SidebarContent {...sidebarListProps} homeNavigation={homeNavigation} />}
+      topbar={(
+        <AdminTopbar
+          companyName={sidebarListProps.companyName}
+          appVersion={sidebarListProps.version}
+          title="작업지시서"
+          description="작업지시서를 선택하고 진행 상태, 비용, 첨부와 메모를 확인합니다."
+        />
+      )}
+      sidebar={<SidebarContent {...sidebarListProps} homeNavigation={homeNavigation} showHeaderActions={false} />}
       detail={(
         <>
           {isLoading ? (

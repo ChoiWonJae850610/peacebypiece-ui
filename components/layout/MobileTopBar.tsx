@@ -53,7 +53,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
   const showDevelopmentToolbar = Boolean(dbStatusPresentation || showUserSwitchingTools);
 
   return (
-    <div className="sticky top-0 z-30 border-b border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_94%,transparent)] px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur md:hidden">
+    <div className="sticky top-0 z-30 border-b border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_94%,transparent)] px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold text-[var(--pbp-text-primary)]">{companyName}</div>

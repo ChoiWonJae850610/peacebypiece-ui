@@ -5,11 +5,14 @@ import WorkOrderDetailMobileView from "@/components/workorder/layout/WorkOrderDe
 import WorkOrderDetailTabletView from "@/components/workorder/layout/WorkOrderDetailTabletView";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import { useWorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
+import { useResponsiveOrientation } from "@/lib/responsive/useResponsiveOrientation";
 
 export default function WorkOrderLayout(props: WorkOrderLayoutViewProps) {
   const deviceType = useWorkOrderDeviceType();
+  const orientation = useResponsiveOrientation();
+  const shouldUseDrawerLayout = deviceType === "mobile" || (deviceType === "tablet" && orientation === "portrait");
 
-  if (deviceType === "mobile") {
+  if (shouldUseDrawerLayout) {
     return <WorkOrderDetailMobileView {...props} />;
   }
 

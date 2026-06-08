@@ -81,6 +81,7 @@ type Props = {
   showUserSwitchingTools?: boolean;
   writeLocked?: boolean;
   writeLockMessage?: string;
+  showHeaderActions?: boolean;
 };
 
 export default function SidebarContent({
@@ -111,6 +112,7 @@ export default function SidebarContent({
   showUserSwitchingTools = false,
   writeLocked = false,
   writeLockMessage,
+  showHeaderActions = true,
 }: Props) {
   const { i18n } = useI18n();
   const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
@@ -136,6 +138,8 @@ export default function SidebarContent({
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
       <div className="shrink-0 border-b border-[var(--pbp-border)] p-3.5">
+        {showHeaderActions ? (
+          <>
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-lg font-semibold leading-6 text-[var(--pbp-text-primary)]">{companyName}</div>
@@ -213,7 +217,9 @@ export default function SidebarContent({
             ) : null}
           </div>
         ) : null}
-        <div className="mt-2.5 flex items-center gap-2">
+          </>
+        ) : null}
+        <div className={showHeaderActions ? "mt-2.5 flex items-center gap-2" : "flex items-center gap-2"}>
           <label className="min-w-0 flex-1">
             <span className="sr-only">{controlsUi.searchAria}</span>
             <input

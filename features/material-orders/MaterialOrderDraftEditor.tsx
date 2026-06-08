@@ -33,7 +33,8 @@ const MATERIAL_ORDER_MOBILE_HOME_NAVIGATION = {
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
   const orientation = useResponsiveOrientation();
-  const useStackedProgress = deviceType === "mobile" || (deviceType === "tablet" && orientation === "portrait");
+  const useDrawerNavigation = deviceType === "mobile" || (deviceType === "tablet" && orientation === "portrait");
+  const useStackedProgress = deviceType === "mobile";
   const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] = useState(false);
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] = useState<MaterialOrderMobileToolKey>("workorders");
@@ -151,7 +152,7 @@ export default function MaterialOrderDraftEditor() {
     />
   );
 
-  if (deviceType === "mobile") {
+  if (useDrawerNavigation) {
     const mobileToolTabs: Array<AppSegmentedTabItem<MaterialOrderMobileToolKey>> = [
       { key: "workorders", label: "작업지시서" },
       { key: "schedule", label: "PDF·납기" },
