@@ -155,6 +155,24 @@ function getEraserCursor(
   };
 }
 
+function getEraserCursorFromCanvasPoint(
+  canvas: HTMLCanvasElement,
+  point: DrawingPoint,
+  eraserLineWidth: number,
+): EraserCursor {
+  if (!isPointInsideCanvas(point, canvas)) {
+    return { x: 0, y: 0, diameter: 0, visible: false };
+  }
+
+  const canvasRect = canvas.getBoundingClientRect();
+  return {
+    x: (point.x / Math.max(1, canvas.width)) * canvasRect.width,
+    y: (point.y / Math.max(1, canvas.height)) * canvasRect.height,
+    diameter: Math.max(18, (eraserLineWidth / Math.max(1, canvas.width)) * canvasRect.width),
+    visible: true,
+  };
+}
+
 function getContainedCanvasDisplaySize(
   container: HTMLDivElement,
   canvasSize: { width: number; height: number },
