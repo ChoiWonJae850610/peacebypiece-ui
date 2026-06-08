@@ -224,6 +224,16 @@ function getCompanyFileSummary(fileType: CompanyFileType, file: CompanyFileMetad
   return `${getCompanyFileKindLabel({ fileType, mimeType: file.mimeType })} · ${formatFileSize(file.sizeBytes)} · ${formatFileDate(file.createdAt)}`;
 }
 
+function getCompanyFileDenseMetaItems(file: CompanyFileMetadata): string[] {
+  return [getCompanyFileKindLabel({ fileType: file.fileType, mimeType: file.mimeType }), formatFileSize(file.sizeBytes), formatFileDate(file.createdAt)];
+}
+
+function getCompanyFilePreviewLabel(file: CompanyFileMetadata | null | undefined): string {
+  if (isCompanyFileImage(file)) return "이미지 미리보기";
+  if (isCompanyFilePdf(file)) return "PDF 미리보기";
+  return "파일 미리보기";
+}
+
 function CompanyFilePreviewModal({
   file,
   fileType,
@@ -260,7 +270,10 @@ function CompanyFilePreviewModal({
         {file && fileType ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3 text-xs text-[var(--pbp-text-muted)]">
-              <span className="break-all">원본 파일명: {file.originalName}</span>
+              <div className="min-w-0 space-y-1">
+                <p className="font-bold text-[var(--pbp-text-secondary)]">{getCompanyFilePreviewLabel(file)}</p>
+                <p className="break-all">원본 파일명: {file.originalName}</p>
+              </div>
               <a
                 href={downloadUrl || previewUrl}
                 target="_blank"
@@ -276,11 +289,13 @@ function CompanyFilePreviewModal({
                 미리보기 주소를 만들 수 없습니다.
               </div>
             ) : isCompanyFileImage(file) ? (
-              <img
-                src={previewUrl}
-                alt={title}
-                className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] object-contain shadow-sm"
-              />
+              <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3 shadow-sm">
+                <img
+                  src={previewUrl}
+                  alt={title}
+                  className="mx-auto max-h-[70dvh] w-auto rounded-2xl bg-[var(--pbp-surface)] object-contain"
+                />
+              </div>
             ) : isCompanyFilePdf(file) ? (
               <div className="overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
                 <div className="border-b border-[var(--pbp-border)] px-4 py-3 text-sm font-medium text-[var(--pbp-text-secondary)]">PDF 미리보기</div>
@@ -501,6 +516,7 @@ export default function AdminCompanyFilesPanel() {
               : t("settings.companyFiles.businessRegistrationEmptyDescription", "사업자등록증을 등록하면 시스템관리자 검토 상태로 표시됩니다.");
           const allowedUploadText = getCompanyFileAllowedUploadText(slot.fileType);
           const previewUrl = createCompanyFileRouteUrl(file);
+          const denseMetaItems = file ? getCompanyFileDenseMetaItems(file) : [];
 
           return (
             <article
@@ -523,30 +539,41 @@ export default function AdminCompanyFilesPanel() {
               </div>
 
               <div className="mt-4 overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]">
-                <div className="flex min-h-[132px] items-center justify-center px-4 py-5 text-center">
+                <div className="flex min-h-[188px] items-center justify-center px-4 py-5 text-center sm:min-h-[216px]">
                   {file ? (
                     <button
                       type="button"
                       onClick={() => setPreviewTarget({ fileType: slot.fileType, file, title: slot.title })}
-                      className="pbp-interactive-button flex w-full min-w-0 flex-col items-center rounded-2xl p-1 text-center transition hover:bg-[var(--pbp-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
+                      className="pbp-interactive-button group flex w-full min-w-0 flex-col items-center rounded-2xl p-1 text-center transition hover:bg-[var(--pbp-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
                     >
                       {isCompanyFileImage(file) && previewUrl ? (
-                        <img
-                          src={previewUrl}
-                          alt={slot.title}
-                          className="max-h-[96px] max-w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] object-contain shadow-sm"
-                        />
+                        <div className="flex w-full items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm">
+                          <img
+                            src={previewUrl}
+                            alt={slot.title}
+                            className="h-[142px] w-full rounded-xl object-contain sm:h-[168px]"
+                          />
+                        </div>
                       ) : (
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xl font-black text-[var(--pbp-text-subtle)]">
-                          {isCompanyFilePdf(file) ? "PDF" : isRepresentativeImage ? "IMG" : "DOC"}
+                        <div className="mx-auto flex h-[142px] w-full max-w-[220px] flex-col items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-center shadow-sm sm:h-[168px]">
+                          <span className="text-2xl font-black tracking-[-0.04em] text-[var(--pbp-text-subtle)]">
+                            {isCompanyFilePdf(file) ? "PDF" : isRepresentativeImage ? "IMG" : "DOC"}
+                          </span>
+                          <span className="mt-2 text-xs font-semibold text-[var(--pbp-text-muted)]">{getCompanyFilePreviewLabel(file)}</span>
                         </div>
                       )}
-                      <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">{getCompanyFileKindLabel({ fileType: slot.fileType, mimeType: file.mimeType })}</p>
-                      <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{previewDescription}</p>
+                      <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+                        {denseMetaItems.map((item) => (
+                          <span key={item} className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-[11px] font-semibold text-[var(--pbp-text-muted)]">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{previewDescription}</p>
                     </button>
                   ) : (
                     <div className="min-w-0">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] text-xs font-bold text-[var(--pbp-text-subtle)]">
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] text-xs font-bold text-[var(--pbp-text-subtle)]">
                         {isRepresentativeImage ? t("settings.companyFiles.imagePreview", "이미지") : t("settings.companyFiles.documentPreview", "문서")}
                       </div>
                       <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">{slot.emptyLabel}</p>
@@ -562,10 +589,14 @@ export default function AdminCompanyFilesPanel() {
                 </div>
               ) : null}
 
+              <div className="mt-3 rounded-2xl border border-dashed border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
+                업로드 가능: {allowedUploadText}
+              </div>
+
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">
                   {file
-                    ? t("settings.companyFiles.registeredFileHint", "현재 등록된 파일입니다. 필요한 경우 변경할 수 있습니다.")
+                    ? t("settings.companyFiles.registeredFileHint", "현재 등록된 파일입니다. 원본 파일명은 미리보기에서 확인할 수 있습니다.")
                     : t("settings.companyFiles.emptyFileHint", "등록된 파일이 없습니다.")}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
@@ -585,7 +616,7 @@ export default function AdminCompanyFilesPanel() {
                     }}
                     type="file"
                     className="hidden"
-                    accept={getCompanyFileInputAccept(slot.fileType)}
+                    accept={slot.accept}
                     disabled={Boolean(uploadingType)}
                     onChange={(event) => {
                       const selectedFile = event.currentTarget.files?.[0] ?? null;
