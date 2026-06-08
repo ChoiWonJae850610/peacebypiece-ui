@@ -15,16 +15,7 @@ function PencilIcon() {
   );
 }
 
-function ChevronIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4">
-      <path d="m7.5 4.5 5 5.5-5 5.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function TabletSummaryAction({ label, value, disabled, onClick }: { label: string; value: string; disabled?: boolean; onClick: () => void }) {
-  const { i18n } = useI18n();
   const canAct = !disabled;
   return (
     <button
@@ -36,9 +27,8 @@ function TabletSummaryAction({ label, value, disabled, onClick }: { label: strin
       <div className="flex items-center justify-between gap-2">
         <div className="text-xs font-medium text-stone-500">{label}</div>
         {canAct ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold text-[var(--pbp-text-muted)]">
-            {i18n.workorder.ui.header.editAction}
-            <ChevronIcon />
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]" aria-hidden="true">
+            <PencilIcon />
           </span>
         ) : null}
       </div>
@@ -138,7 +128,7 @@ export default function WorkOrderDetailTabletHeaderSection({
               </div>
             ) : (
               <>
-                <h2 className="min-w-0 flex-1 break-keep text-2xl font-semibold text-stone-950">{title}</h2>
+                <h2 className="min-w-0 break-keep text-2xl font-semibold text-stone-950">{title}</h2>
                 {canEditTitle ? (
                   <button
                     type="button"

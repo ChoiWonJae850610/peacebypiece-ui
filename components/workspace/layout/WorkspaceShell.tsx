@@ -37,7 +37,7 @@ export default function WorkspaceShell({
 
   return (
     <AdminThemeScope>
-      <main className="min-h-screen touch-pan-y overflow-visible overscroll-auto bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 2xl:h-dvh 2xl:overflow-hidden 2xl:p-8">
+      <main className="min-h-screen touch-pan-y overflow-visible overscroll-auto bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8 2xl:h-dvh 2xl:overflow-hidden">
         <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-3 overflow-visible sm:gap-4 md:gap-5 2xl:h-full 2xl:min-h-0 2xl:overflow-hidden">
           {hideTopbar ? null : (
             <WorkspaceTopbar

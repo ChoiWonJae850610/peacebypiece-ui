@@ -149,10 +149,9 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
               onClick={onOpenMenu}
               aria-label={menuAriaLabel ?? menuLabel}
               title={menuLabel}
-              className="pbp-topbar-icon-button inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition"
+              className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold transition"
             >
               <MenuIcon />
-              <span className="hidden sm:inline">{menuLabel}</span>
             </button>
           ) : null}
           <Link

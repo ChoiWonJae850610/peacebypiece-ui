@@ -10,6 +10,7 @@ import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDe
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
+import { RESPONSIVE_BREAKPOINTS } from "@/lib/responsive/responsiveLayoutPolicy";
 import { useResponsiveDeviceType } from "@/lib/responsive/useResponsiveDeviceType";
 import { useResponsiveOrientation } from "@/lib/responsive/useResponsiveOrientation";
 
@@ -23,16 +24,43 @@ const MATERIAL_ORDER_TABLET_GRID_STYLE = {
 
 type MaterialOrderMobileToolKey = "workorders" | "schedule";
 
+function SearchIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m20.2 20.2-4.4-4.4" />
+      <circle cx="10.8" cy="10.8" r="6.1" />
+    </svg>
+  );
+}
+
+function getViewportWidth() {
+  if (typeof window === "undefined") return RESPONSIVE_BREAKPOINTS.desktopMin;
+  return window.innerWidth;
+}
+
 
 export default function MaterialOrderDraftEditor({ companyName }: { companyName: string }) {
   const deviceType = useResponsiveDeviceType();
   const orientation = useResponsiveOrientation();
-  const useDrawerNavigation = deviceType === "mobile" || (deviceType === "tablet" && orientation === "portrait");
+  const [viewportWidth, setViewportWidth] = useState(getViewportWidth);
+  const tabletCanUseThreePanel = orientation === "landscape" && viewportWidth >= RESPONSIVE_BREAKPOINTS.tabletThreePanelMin;
+  const useDrawerNavigation = deviceType === "mobile" || (deviceType === "tablet" && !tabletCanUseThreePanel);
   const useStackedProgress = deviceType === "mobile";
-  const canUseThreePanelWorkspace = deviceType === "desktop" || (deviceType === "tablet" && orientation === "landscape");
+  const canUseThreePanelWorkspace = deviceType === "desktop" || (deviceType === "tablet" && tabletCanUseThreePanel);
   const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] = useState(false);
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] = useState<MaterialOrderMobileToolKey>("workorders");
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(getViewportWidth());
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+    };
+  }, []);
 
   const {
     orders,
@@ -164,13 +192,13 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
 
     const actionBar = (
       <WaflMobileFloatingActionButton
-        ariaLabel="발주 도구 열기"
-        title="작업지시서 선택과 PDF·납기 도구를 엽니다."
+        ariaLabel="작지·자재 선택 열기"
+        title="작업지시서와 자재 선택 도구를 엽니다."
         disabled={!selectedOrderId}
         onClick={() => setMobileToolSheetOpen(true)}
       >
-        <span aria-hidden="true">＋</span>
-        <span>발주 도구</span>
+        <SearchIcon />
+        <span>작지·자재</span>
       </WaflMobileFloatingActionButton>
     );
 
@@ -212,11 +240,11 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
         <WaflMobileTabbedActionSheet
           open={mobileToolSheetOpen}
           onOpenChange={setMobileToolSheetOpen}
-          title="발주 도구"
+          title="작지·자재"
           items={mobileToolTabs}
           value={mobileActiveTool}
           onChange={setMobileActiveTool}
-          ariaLabel="원단·부자재 발주 보조 도구"
+          ariaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
         >
           {mobileActiveTool === "workorders" ? (
             <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>

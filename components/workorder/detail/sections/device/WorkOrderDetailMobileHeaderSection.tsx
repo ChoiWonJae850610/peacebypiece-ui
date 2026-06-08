@@ -15,14 +15,6 @@ function PencilIcon() {
   );
 }
 
-function ChevronIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4">
-      <path d="m7.5 4.5 5 5.5-5 5.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function MobileSummaryAction({
   label,
   value,
@@ -34,7 +26,6 @@ function MobileSummaryAction({
   disabled?: boolean;
   onClick: () => void;
 }) {
-  const { i18n } = useI18n();
   const canAct = !disabled;
   return (
     <button
@@ -50,9 +41,8 @@ function MobileSummaryAction({
         <span className="max-w-full break-words text-sm font-medium text-stone-900">{value}</span>
       </span>
       {canAct ? (
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold text-[var(--pbp-text-muted)]">
-          {i18n.workorder.ui.header.editAction}
-          <ChevronIcon />
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]" aria-hidden="true">
+          <PencilIcon />
         </span>
       ) : null}
     </button>
@@ -148,7 +138,7 @@ export default function WorkOrderDetailMobileHeaderSection({
           </div>
         ) : (
           <>
-            <h2 className="min-w-0 flex-1 break-keep text-lg font-semibold leading-7 text-stone-950 sm:text-xl">{title}</h2>
+            <h2 className="min-w-0 break-keep text-lg font-semibold leading-7 text-stone-950 sm:text-xl">{title}</h2>
             {canEditTitle ? (
               <button
                 type="button"

@@ -7,6 +7,15 @@ import { useI18n } from "@/lib/i18n";
 
 type MobileRelatedSectionKey = "attachment" | "design" | "memo";
 
+function AttachmentIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.1 11.2-8.8 8.8a5.2 5.2 0 0 1-7.4-7.4l9.1-9.1a3.5 3.5 0 0 1 5 5l-9.1 9.1a1.8 1.8 0 0 1-2.6-2.6l8.4-8.4" />
+    </svg>
+  );
+}
+
+
 type MobileSectionStackProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
   topBar: ReactNode;
@@ -65,7 +74,7 @@ export default function MobileSectionStack({
           title={relatedCopy.openTitle}
           onClick={openRelatedSection}
         >
-          <span aria-hidden="true">＋</span>
+          <AttachmentIcon />
           <span>{relatedCopy.openLabel}</span>
         </WaflMobileFloatingActionButton>
       ) : undefined}

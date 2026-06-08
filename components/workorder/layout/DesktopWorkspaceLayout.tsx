@@ -25,10 +25,10 @@ export default function DesktopWorkspaceLayout({
     sidePanelScrollRef.current?.scrollTo({ top: 0, left: 0 });
   }, [scrollResetKey]);
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-4 pbp-text-primary md:p-5 lg:p-6">
-      <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden xl:gap-4">
+    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-3 pbp-text-primary sm:p-4 md:p-6 lg:p-8">
+      <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
         {topbar ? <div className="shrink-0">{topbar}</div> : null}
-        <div className="flex min-h-0 flex-1 gap-3 overflow-hidden xl:gap-4">
+        <div className="flex min-h-0 flex-1 gap-3 overflow-hidden sm:gap-4">
           <aside className="flex min-h-0 w-[272px] shrink-0 overflow-hidden rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm xl:w-[284px]">
             {sidebar}
           </aside>
