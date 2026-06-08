@@ -65,7 +65,12 @@ export default function ManagerAssignModal({
             <button
               key={user.id}
               type="button"
-              onClick={() => setDraftManagerId(user.id)}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setDraftManagerId(user.id);
+              }}
               className={[
                 "flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition",
                 selected

@@ -9,6 +9,7 @@ export const RESPONSIVE_BREAKPOINTS = {
   tabletMax: 1279,
   desktopMin: 1280,
   tabletThreePanelMin: 1240,
+  tabletNarrowTwoPanelMin: 820,
 } as const;
 
 export const RESPONSIVE_MEDIA_QUERIES = {

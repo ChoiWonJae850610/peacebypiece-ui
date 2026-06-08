@@ -162,6 +162,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   );
 
   const handleOpenManagerAssignModal = useCallback(() => {
+    if (uiState.managerAssignModalOpen) return;
     const reviewLocked = derivedState.isReviewRequestLocked ?? isWorkflowStateReviewLocked(derivedState.currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, true);
     const canEditManager = canEditManagerInWorkflow(derivedState.currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, reviewLocked);
     if (!derivedState.canChangeManager || !canEditManager) return;
@@ -184,6 +185,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     derivedState.canChangeManager,
     derivedState.currentWorkflowState,
     derivedState.isReviewRequestLocked,
+    uiState.managerAssignModalOpen,
   ]);
 
   const attachmentState = useWorkOrderAttachments({

@@ -387,15 +387,17 @@ export function useWorkOrderDetailEditor({
     setBasicInfoModalOpen(false);
   };
 
-  const handleSaveBasicInfoModal = () => {
-    setBasicInfo(basicInfoDraft);
+  const handleSaveBasicInfoModal = (nextBasicInfo?: BasicInfoState) => {
+    const resolvedBasicInfo = nextBasicInfo ?? basicInfoDraft;
+    setBasicInfo(resolvedBasicInfo);
+    setBasicInfoDraft(resolvedBasicInfo);
     onUpdateWorkOrder({
-      category1: basicInfoDraft.category1,
-      category2: basicInfoDraft.category2,
-      category3: basicInfoDraft.category3,
-      category1Id: basicInfoDraft.category1Id ?? null,
-      category2Id: basicInfoDraft.category2Id ?? null,
-      category3Id: basicInfoDraft.category3Id ?? null,
+      category1: resolvedBasicInfo.category1,
+      category2: resolvedBasicInfo.category2,
+      category3: resolvedBasicInfo.category3,
+      category1Id: resolvedBasicInfo.category1Id ?? null,
+      category2Id: resolvedBasicInfo.category2Id ?? null,
+      category3Id: resolvedBasicInfo.category3Id ?? null,
     });
     setBasicInfoModalOpen(false);
   };

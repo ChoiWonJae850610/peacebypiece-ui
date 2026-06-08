@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
+
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { AppSelect, type AppSelectOption } from "@/components/common/ui";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
 import {
   buildCategorySourceFromDefinitions,
-  createFallbackOption,
   findCategoryOption,
   type CategoryOption,
   type CategorySource,
@@ -29,11 +29,94 @@ function buildCategorySourceFromValue(value: BasicInfoState): CategorySource {
   };
 }
 
-function buildCategorySelectOptions(options: CategoryOption[]): AppSelectOption[] {
-  return options.map((option) => ({
-    value: option.name,
-    label: option.name,
-  }));
+function getCategory2Options(source: CategorySource, category1: string) {
+  return source.category2OptionsMap[category1] ?? [source.defaultCategory2];
+}
+
+function getCategory3Options(source: CategorySource, category2: string) {
+  return source.category3OptionsMap[category2] ?? [source.defaultCategory3];
+}
+
+function normalizeDraftWithSource(source: CategorySource, value: BasicInfoState): BasicInfoState {
+  const nextCategory1 = findCategoryOption(source.category1Options, value.category1, source.defaultCategory1);
+  const nextCategory2Options = getCategory2Options(source, nextCategory1.name);
+  const nextCategory2 = findCategoryOption(nextCategory2Options, value.category2, source.defaultCategory2);
+  const nextCategory3Options = getCategory3Options(source, nextCategory2.name);
+  const nextCategory3 = findCategoryOption(nextCategory3Options, value.category3, source.defaultCategory3);
+  return {
+    ...value,
+    category1: nextCategory1.name,
+    category2: nextCategory2.name,
+    category3: nextCategory3.name,
+    category1Id: nextCategory1.id,
+    category2Id: nextCategory2.id,
+    category3Id: nextCategory3.id,
+  };
+}
+
+function CategoryOptionButton({
+  label,
+  selected,
+  expanded,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  expanded?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+      }}
+      className={[
+        "flex min-h-11 w-full items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 text-left text-base font-semibold transition md:text-sm",
+        selected
+          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
+          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)]",
+      ].join(" ")}
+    >
+      <span className="min-w-0 truncate">{label}</span>
+      <span className="inline-flex items-center gap-2 text-[var(--pbp-text-muted)]">
+        {selected ? <Check className="h-4 w-4 text-[var(--pbp-accent)]" aria-hidden="true" /> : null}
+        <ChevronDown className={`h-4 w-4 transition ${expanded ? "rotate-180" : ""}`} aria-hidden="true" />
+      </span>
+    </button>
+  );
+}
+
+function LeafOptionButton({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+      }}
+      className={[
+        "flex min-h-10 w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-base font-semibold transition md:text-sm",
+        selected
+          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
+          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)]",
+      ].join(" ")}
+    >
+      <span className="min-w-0 truncate">{label}</span>
+      {selected ? <Check className="h-4 w-4 text-[var(--pbp-accent)]" aria-hidden="true" /> : null}
+    </button>
+  );
 }
 
 export default function BasicInfoEditModal({
@@ -47,75 +130,93 @@ export default function BasicInfoEditModal({
   value: BasicInfoState;
   onChange: (next: BasicInfoState) => void;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (next?: BasicInfoState) => void;
 }) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.modals.basicInfo;
   const [categorySource, setCategorySource] = useState<CategorySource>(() => buildCategorySourceFromValue(value));
+  const [draft, setDraft] = useState<BasicInfoState>(value);
+  const [expandedCategory1, setExpandedCategory1] = useState<string | null>(value.category1 || null);
+  const [expandedCategory2, setExpandedCategory2] = useState<string | null>(value.category2 || null);
 
   useEffect(() => {
     if (!open) return;
-    setCategorySource(buildCategorySourceFromValue(value));
+    const fallbackSource = buildCategorySourceFromValue(value);
+    setCategorySource(fallbackSource);
+    setDraft(value);
+    setExpandedCategory1(value.category1 || null);
+    setExpandedCategory2(value.category2 || null);
     let isMounted = true;
     fetchAdminStandardsFromApi()
       .then((payload) => {
         if (!isMounted) return;
         const nextSource = buildCategorySourceFromDefinitions(payload.itemCategories);
+        const nextDraft = normalizeDraftWithSource(nextSource, value);
         setCategorySource(nextSource);
-        const nextCategory1 = findCategoryOption(nextSource.category1Options, value.category1, nextSource.defaultCategory1);
-        const nextCategory2Options = nextSource.category2OptionsMap[nextCategory1.name] ?? [nextSource.defaultCategory2];
-        const nextCategory2 = findCategoryOption(nextCategory2Options, value.category2, nextSource.defaultCategory2);
-        const nextCategory3Options = nextSource.category3OptionsMap[nextCategory2.name] ?? [nextSource.defaultCategory3];
-        const nextCategory3 = findCategoryOption(nextCategory3Options, value.category3, nextSource.defaultCategory3);
-        onChange({
-          ...value,
-          category1: nextCategory1.name,
-          category2: nextCategory2.name,
-          category3: nextCategory3.name,
-          category1Id: nextCategory1.id,
-          category2Id: nextCategory2.id,
-          category3Id: nextCategory3.id,
-        });
+        setDraft(nextDraft);
+        setExpandedCategory1(nextDraft.category1 || null);
+        setExpandedCategory2(nextDraft.category2 || null);
       })
       .catch(() => undefined);
     return () => {
       isMounted = false;
     };
-  // category refresh must run when the modal opens. value/onChange are intentionally not included to avoid resetting drafts on every select change.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, value]);
 
-  const category2Options = useMemo(() => categorySource.category2OptionsMap[value.category1] ?? [categorySource.defaultCategory2], [categorySource, value.category1]);
-  const category3Options = useMemo(() => categorySource.category3OptionsMap[value.category2] ?? [categorySource.defaultCategory3], [categorySource, value.category2]);
+  const category2Options = useMemo(() => getCategory2Options(categorySource, draft.category1), [categorySource, draft.category1]);
+  const category3Options = useMemo(() => getCategory3Options(categorySource, draft.category2), [categorySource, draft.category2]);
 
-  const handleCategory1Change = (category1: string) => {
-    const nextCategory2Options = categorySource.category2OptionsMap[category1] ?? [categorySource.defaultCategory2];
+  const handleCategory1Toggle = (option: CategoryOption) => {
+    if (expandedCategory1 === option.name && draft.category1 === option.name) {
+      setExpandedCategory1(null);
+      setExpandedCategory2(null);
+      return;
+    }
+    const nextCategory2Options = getCategory2Options(categorySource, option.name);
     const nextCategory2 = nextCategory2Options[0] ?? categorySource.defaultCategory2;
-    const nextCategory3Options = categorySource.category3OptionsMap[nextCategory2.name] ?? [categorySource.defaultCategory3];
+    const nextCategory3Options = getCategory3Options(categorySource, nextCategory2.name);
     const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
-    const nextCategory1 = findCategoryOption(categorySource.category1Options, category1, categorySource.defaultCategory1);
-    onChange({
-      ...value,
-      category1: nextCategory1.name,
+    setDraft((current) => ({
+      ...current,
+      category1: option.name,
       category2: nextCategory2.name,
       category3: nextCategory3.name,
-      category1Id: nextCategory1.id,
+      category1Id: option.id,
       category2Id: nextCategory2.id,
       category3Id: nextCategory3.id,
-    });
+    }));
+    setExpandedCategory1(option.name);
+    setExpandedCategory2(nextCategory2.name);
   };
 
-  const handleCategory2Change = (category2: string) => {
-    const nextCategory3Options = categorySource.category3OptionsMap[category2] ?? [categorySource.defaultCategory3];
+  const handleCategory2Toggle = (option: CategoryOption) => {
+    if (expandedCategory2 === option.name && draft.category2 === option.name) {
+      setExpandedCategory2(null);
+      return;
+    }
+    const nextCategory3Options = getCategory3Options(categorySource, option.name);
     const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
-    const nextCategory2 = findCategoryOption(category2Options, category2, categorySource.defaultCategory2);
-    onChange({
-      ...value,
-      category2: nextCategory2.name,
+    setDraft((current) => ({
+      ...current,
+      category2: option.name,
       category3: nextCategory3.name,
-      category2Id: nextCategory2.id,
+      category2Id: option.id,
       category3Id: nextCategory3.id,
-    });
+    }));
+    setExpandedCategory2(option.name);
+  };
+
+  const handleCategory3Select = (option: CategoryOption) => {
+    setDraft((current) => ({
+      ...current,
+      category3: option.name,
+      category3Id: option.id,
+    }));
+  };
+
+  const handleApply = () => {
+    onChange(draft);
+    onSave(draft);
   };
 
   return (
@@ -127,52 +228,66 @@ export default function BasicInfoEditModal({
       maxWidthClass="md:max-w-xl"
       footer={renderModalFooterActions({
         layout: "end",
-        primary: { label: i18n.common.ui.common.apply, onClick: onSave, tone: "primary" },
+        primary: { label: i18n.common.ui.common.apply, onClick: handleApply, tone: "primary" },
       })}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
           <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category1}</div>
-          <AppSelect
-            value={value.category1}
-            onValueChange={handleCategory1Change}
-            options={buildCategorySelectOptions(categorySource.category1Options)}
-            ariaLabel={copy.category1}
-            className="mt-2"
-          />
+          <div className="mt-2 space-y-2">
+            {categorySource.category1Options.map((option) => (
+              <CategoryOptionButton
+                key={option.name}
+                label={option.name}
+                selected={draft.category1 === option.name}
+                expanded={expandedCategory1 === option.name}
+                onClick={() => handleCategory1Toggle(option)}
+              />
+            ))}
+          </div>
         </div>
+
         <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
           <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category2}</div>
-          <AppSelect
-            value={value.category2}
-            onValueChange={handleCategory2Change}
-            options={buildCategorySelectOptions(category2Options)}
-            ariaLabel={copy.category2}
-            className="mt-2"
-          />
+          {expandedCategory1 === draft.category1 ? (
+            <div className="mt-2 space-y-2">
+              {category2Options.map((option) => (
+                <CategoryOptionButton
+                  key={option.name}
+                  label={option.name}
+                  selected={draft.category2 === option.name}
+                  expanded={expandedCategory2 === option.name}
+                  onClick={() => handleCategory2Toggle(option)}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category1 || "-"} 선택 항목을 다시 열면 세부 분류를 확인할 수 있습니다.</p>
+          )}
         </div>
+
         <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
           <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category3}</div>
-          <AppSelect
-            value={value.category3}
-            onValueChange={(nextValue) => {
-              const nextCategory3 = findCategoryOption(category3Options, nextValue, categorySource.defaultCategory3);
-              onChange({
-                ...value,
-                category3: nextCategory3.name,
-                category3Id: nextCategory3.id,
-              });
-            }}
-            options={buildCategorySelectOptions(category3Options)}
-            ariaLabel={copy.category3}
-            className="mt-2"
-          />
+          {expandedCategory2 === draft.category2 ? (
+            <div className="mt-2 space-y-2">
+              {category3Options.map((option) => (
+                <LeafOptionButton
+                  key={option.name}
+                  label={option.name}
+                  selected={draft.category3 === option.name}
+                  onClick={() => handleCategory3Select(option)}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category2 || "-"} 선택 항목을 다시 열면 세부 항목을 확인할 수 있습니다.</p>
+          )}
         </div>
       </div>
 
       <div className="pbp-detail-summary-readonly mt-4 rounded-2xl border px-4 py-3">
         <div className="text-xs text-[var(--pbp-text-muted)]">{copy.previewLabel}</div>
-        <div className="mt-2 text-sm font-medium text-[var(--pbp-text-primary)]">{formatBasicSummary(value)}</div>
+        <div className="mt-2 text-sm font-medium text-[var(--pbp-text-primary)]">{formatBasicSummary(draft)}</div>
       </div>
     </ModalShell>
   );

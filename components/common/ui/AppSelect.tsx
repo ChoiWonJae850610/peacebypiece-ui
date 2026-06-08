@@ -16,8 +16,8 @@ type AppSelectSize = "sm" | "md";
 type AppSelectWidth = "auto" | "full";
 
 const sizeClassMap: Record<AppSelectSize, string> = {
-  sm: "min-h-9 rounded-xl px-3 text-xs",
-  md: "min-h-11 rounded-2xl px-4 text-sm",
+  sm: "min-h-9 rounded-xl px-3 text-base md:text-xs",
+  md: "min-h-11 rounded-2xl px-4 text-base md:text-sm",
 };
 
 const widthClassMap: Record<AppSelectWidth, string> = {
@@ -89,7 +89,7 @@ export default function AppSelect({
           position="popper"
           sideOffset={6}
           className={cn(
-            "z-[650] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-xl",
+            "z-[1100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-xl",
             contentClassName,
           )}
         >
@@ -99,7 +99,7 @@ export default function AppSelect({
                 key={option.value}
                 value={option.value === "" ? EMPTY_SELECT_VALUE : option.value}
                 disabled={option.disabled}
-                className="relative flex min-h-9 cursor-pointer select-none items-center rounded-xl px-8 py-2 text-sm font-semibold outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-[var(--pbp-surface-muted)] data-[disabled]:text-[var(--pbp-text-faint)]"
+                className="relative flex min-h-9 cursor-pointer select-none items-center rounded-xl px-8 py-2 text-base font-semibold md:text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-[var(--pbp-surface-muted)] data-[disabled]:text-[var(--pbp-text-faint)]"
               >
                 <Select.ItemIndicator className="absolute left-2 inline-flex items-center text-[var(--pbp-accent)]">
                   <Check className="h-4 w-4" aria-hidden="true" />
