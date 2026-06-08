@@ -16,6 +16,7 @@ type BaseModalProps = {
   panelClassName?: string;
   overlayClassName?: string;
   closeOnBackdrop?: boolean;
+  rootClassName?: string;
 };
 
 export default function BaseModal({
@@ -29,6 +30,7 @@ export default function BaseModal({
   panelClassName = "",
   overlayClassName = WAFL_MODAL_OVERLAY_CLASS,
   closeOnBackdrop = true,
+  rootClassName = "",
 }: BaseModalProps) {
   if (!open) return null;
 
@@ -41,7 +43,7 @@ export default function BaseModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[90]"
+      className={`fixed inset-0 z-[90] ${rootClassName}`.trim()}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}

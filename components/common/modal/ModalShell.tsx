@@ -21,6 +21,7 @@ export default function ModalShell({
   overlayClassName,
   closeOnBackdrop,
   lockBodyPosition,
+  rootClassName,
 }: {
   open: boolean;
   title: string;
@@ -35,6 +36,7 @@ export default function ModalShell({
   overlayClassName?: string;
   closeOnBackdrop?: boolean;
   lockBodyPosition?: boolean;
+  rootClassName?: string;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
@@ -54,6 +56,7 @@ export default function ModalShell({
       panelClassName={panelClassName}
       overlayClassName={overlayClassName}
       closeOnBackdrop={closeOnBackdrop}
+      rootClassName={rootClassName}
     >
       <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
       <ModalBody className={bodyClassName}>{children}</ModalBody>

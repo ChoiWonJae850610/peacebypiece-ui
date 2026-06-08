@@ -673,6 +673,23 @@ export default function WorkOrderDrawingCanvasEditor({
     dirtyRef.current = dirty;
   }, [dirty]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!open) return;
+
+    const body = document.body;
+    const previousDrawingModalOpen = body.dataset.pbpDrawingModalOpen;
+    body.dataset.pbpDrawingModalOpen = "true";
+
+    return () => {
+      if (previousDrawingModalOpen === undefined) {
+        delete body.dataset.pbpDrawingModalOpen;
+        return;
+      }
+      body.dataset.pbpDrawingModalOpen = previousDrawingModalOpen;
+    };
+  }, [open]);
+
 
 
   useEffect(() => {
@@ -1126,16 +1143,17 @@ export default function WorkOrderDrawingCanvasEditor({
       bodyClassName="flex min-h-0 flex-1 flex-col !overflow-hidden !px-1.5 !py-1.5 md:!px-2 md:!py-2"
       panelClassName={`!inset-0 !h-[100dvh] !max-h-[100dvh] !w-screen !max-w-none !translate-x-0 !translate-y-0 !rounded-none !border-0 md:!left-0 md:!top-0 md:!bottom-0 md:!h-[100dvh] md:!max-h-[100dvh] md:!w-screen md:!max-w-none md:!translate-x-0 md:!translate-y-0 md:!rounded-none md:!border-0${stableViewportPanelClassName}`}
       overlayClassName="bg-[var(--pbp-bg)]"
+      rootClassName="z-[2147483647] isolate pointer-events-auto pbp-drawing-modal-top-layer"
       closeOnBackdrop={false}
       lockBodyPosition={!useStableViewportHeight}
     >
       <div className="flex h-full min-h-0 flex-col gap-1.5">
         <div
           ref={canvasContainerRef}
-          className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-3xl bg-[var(--pbp-surface-muted)] p-1.5 shadow-inner sm:p-2"
+          className="relative z-10 flex min-h-0 flex-1 touch-none items-center justify-center overflow-hidden rounded-3xl bg-[var(--pbp-surface-muted)] p-1.5 shadow-inner sm:p-2"
         >
           <div
-            className="relative overflow-hidden bg-white shadow-sm"
+            className="relative z-20 overflow-hidden bg-white shadow-sm pointer-events-auto touch-none"
             style={{
               width: `${canvasDisplaySize.width}px`,
               height: `${canvasDisplaySize.height}px`,

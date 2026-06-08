@@ -1312,3 +1312,18 @@ textarea.pbp-field-interaction.pbp-field-selectable {
     line-height: 1.35 !important;
   }
 }
+
+body[data-pbp-drawing-modal-open="true"] .pbp-sidepanel-upload-zone,
+body[data-pbp-drawing-modal-open="true"] input[type="file"] {
+  pointer-events: none !important;
+}
+
+body[data-pbp-drawing-modal-open="true"] .pbp-drawing-modal-top-layer {
+  pointer-events: auto !important;
+  isolation: isolate;
+}
+
+body[data-pbp-drawing-modal-open="true"] .pbp-drawing-modal-top-layer canvas {
+  pointer-events: auto !important;
+  touch-action: none !important;
+}
