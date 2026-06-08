@@ -7,6 +7,7 @@ import {
 import { ensurePartnerMasterItem } from "@/lib/admin/partner/persistence";
 import { WORK_ORDER_KIND } from "@/lib/constants/workorderIdentity";
 import { isVendorRegistryType, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
+import { DEFAULT_FACTORY_OPTION, DEFAULT_ORDER_TYPE, DEFAULT_OUTSOURCING_PROCESS } from "@/lib/constants/workorderOptions";
 import { getOrderInspectionStatusForCompletion } from "@/lib/constants/workorderStates";
 import {
   commitOrderItemsEdit,
@@ -42,7 +43,8 @@ import {
   selectOutsourcingProcessOptions,
   selectOutsourcingVendorOptionsById,
 } from "@/lib/workorder/detail/detailSelectors";
-import type { Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
+import type { OrderEntry, Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
+import type { WorkOrderOrderProcessDraft, WorkOrderOutsourcingProcessDraft } from "@/components/workorder/detail/sections/WorkOrderProcessEditSheet";
 import type { RoleType } from "@/types/permission";
 
 type UseWorkOrderDetailEditorParams = {
@@ -302,6 +304,53 @@ export function useWorkOrderDetailEditor({
     }
   };
 
+
+  const saveOrderEntryDraft = (orderEntryId: string | null, draft: WorkOrderOrderProcessDraft) => {
+    const sanitizedDraft: Partial<OrderEntry> = {
+      type: draft.type || DEFAULT_ORDER_TYPE,
+      factory: draft.factory || DEFAULT_FACTORY_OPTION,
+      quantity: Math.max(0, Number(draft.quantity) || 0),
+      laborCost: Math.max(0, Number(draft.laborCost) || 0),
+      lossCost: Math.max(0, Number(draft.lossCost) || 0),
+    };
+
+    const nextItems = orderEntryId
+      ? orderItems.map((item) => item.id === orderEntryId
+          ? sanitizeOrderEntry({ ...item, ...sanitizedDraft }, item, currentWorkflowState)
+          : item)
+      : orderItems.length > 0
+        ? orderItems
+        : [sanitizeOrderEntry({ ...createNewOrderEntry(orderItems, currentWorkflowState), ...sanitizedDraft }, undefined, currentWorkflowState)];
+
+    setOrderItems(nextItems);
+    syncOrderEntries(nextItems);
+    if (orderEntryId && editingCell?.section === "order" && editingCell.rowId === orderEntryId) {
+      cancelEdit();
+    }
+  };
+
+  const saveOutsourcingDraft = (outsourcingId: string | null, draft: WorkOrderOutsourcingProcessDraft) => {
+    const sanitizedDraft = {
+      process: draft.process.trim() || DEFAULT_OUTSOURCING_PROCESS,
+      vendor: draft.vendor.trim(),
+      quantity: Math.max(0, Number(draft.quantity) || 0),
+      unitCost: Math.max(0, Number(draft.unitCost) || 0),
+      lossCost: Math.max(0, Number(draft.lossCost) || 0),
+    };
+
+    const nextItems = outsourcingId
+      ? outsourcingItems.map((item) => item.id === outsourcingId
+          ? recalculateOutsourcing({ ...item, ...sanitizedDraft })
+          : item)
+      : [...outsourcingItems, createNewOutsourcingItem(sanitizedDraft)];
+
+    setOutsourcingItems(nextItems);
+    onUpdateWorkOrder(toOutsourcingPatch(nextItems));
+    if (outsourcingId && editingCell?.section === "outsourcing" && editingCell.rowId === outsourcingId) {
+      cancelEdit();
+    }
+  };
+
   const handleOpenInspectionModal = () => {
     setInspectionModalOpen(true);
   };
@@ -481,6 +530,8 @@ export function useWorkOrderDetailEditor({
     saveMaterialDraft,
     addOutsourcing,
     removeOutsourcing,
+    saveOrderEntryDraft,
+    saveOutsourcingDraft,
     closeRegistryModal,
     handleRegistrySave,
     handleOpenBasicInfoModal,

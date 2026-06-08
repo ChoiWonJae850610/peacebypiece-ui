@@ -125,6 +125,8 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     onCancelEdit: editor.cancelEdit,
     onAddOrderEntry: isWorkspaceWriteLocked ? () => undefined : editor.addOrderEntry,
     onRemoveOrderEntry: isWorkspaceWriteLocked ? () => undefined : editor.removeOrderEntry,
+    onSaveOrderEntryDraft: isWorkspaceWriteLocked ? () => undefined : (orderEntryId, draft) => editor.saveOrderEntryDraft(orderEntryId, draft as Parameters<typeof editor.saveOrderEntryDraft>[1]),
+    onSaveOutsourcingDraft: isWorkspaceWriteLocked ? () => undefined : (outsourcingId, draft) => editor.saveOutsourcingDraft(outsourcingId, draft as Parameters<typeof editor.saveOutsourcingDraft>[1]),
     onOpenInspectionModal: isWorkspaceWriteLocked ? () => undefined : editor.handleOpenInspectionModal,
     onToggleProductionSection: toggleProductionSection,
     onToggleMaterial: disclosureModel.onToggleMaterial,

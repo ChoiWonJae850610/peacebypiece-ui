@@ -1,41 +1,63 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useState } from "react";
 
 import { AppButton, AppCard } from "@/components/common/ui";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
+import WorkOrderProcessEditSheet, { type WorkOrderProcessSheetDraft, type WorkOrderProcessSheetMode } from "@/components/workorder/detail/sections/WorkOrderProcessEditSheet";
+import { DeleteButton, type EditableCell, type EditableSectionKey, type OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
-import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
-
-import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
-import {
-  DeleteButton,
-  EditableValue,
-  type EditableCell,
-  type EditableSectionKey,
-  type OrderEntryState,
-} from "@/components/workorder/detail/shared/detailEditorShared";
+import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import type { Outsourcing } from "@/types/workorder";
 
-function DetailField({
-  label,
-  children,
-  span = false,
+type SheetState =
+  | { mode: "order"; orderEntry: OrderEntryState | null; outsourcing: null }
+  | { mode: "outsourcing"; orderEntry: null; outsourcing: Outsourcing | null };
+
+function ProcessCard({
+  title,
+  meta,
+  details,
+  locked,
+  onEdit,
+  onRemove,
 }: {
-  label: string;
-  children: ReactNode;
-  span?: boolean;
+  title: string;
+  meta: string;
+  details: string[];
+  locked: boolean;
+  onEdit: () => void;
+  onRemove?: () => void;
 }) {
+  const { i18n } = useI18n();
+  const common = i18n.workorder.ui.common;
   return (
-    <div
-      className={`min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2.5 ${span ? "sm:col-span-2" : ""}`}
-    >
-      <div className="mb-1 text-[11px] font-medium leading-4 pbp-text-subtle">
-        {label}
+    <AppCard variant="subtle" padding="sm" className="rounded-[22px]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[11px] font-semibold pbp-text-subtle">{meta}</div>
+          <div className="mt-1 truncate text-sm font-semibold pbp-text-primary">{title}</div>
+          {details.length > 0 ? (
+            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs pbp-text-muted">
+              {details.map((detail) => <span key={detail}>{detail}</span>)}
+            </div>
+          ) : null}
+        </div>
+        {!locked ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={onEdit}
+              className="pbp-interactive-button rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1 text-[11px] font-semibold pbp-text-secondary shadow-sm"
+            >
+              수정
+            </button>
+            {onRemove ? <DeleteButton onClick={onRemove} srLabel={`${title} ${common.deleteSuffix}`} /> : null}
+          </div>
+        ) : null}
       </div>
-      <div className="min-h-8 text-sm font-medium pbp-text-primary">
-        {children}
-      </div>
-    </div>
+    </AppCard>
   );
 }
 
@@ -44,19 +66,15 @@ export default function OrderInfoSection({
   factoryOptions,
   orderTypeOptions,
   outsourcing,
-  outsourcingVendorOptionsById,
   outsourcingProcessOptions,
   open,
   onToggle,
-  editingCell,
-  editingValue,
-  onStartEdit,
-  onCommitEdit,
-  onCancelEdit,
   onAdd,
   onRemove,
   onAddOutsourcing,
   onRemoveOutsourcing,
+  onSaveOrderEntryDraft,
+  onSaveOutsourcingDraft,
   canOpenInspectionModal,
   locked = false,
   orderHubPolicy,
@@ -68,23 +86,20 @@ export default function OrderInfoSection({
   orderTypeOptions: readonly string[];
   outsourcing: Outsourcing[];
   outsourcingVendorOptionsById: Record<string, string[]>;
-  outsourcingProcessOptions: string[];
+  outsourcingProcessOptions: readonly string[];
   open: boolean;
   onToggle: () => void;
   editingCell: EditableCell;
   editingValue: string;
-  onStartEdit: (
-    section: EditableSectionKey,
-    rowId: string,
-    field: string,
-    value: string,
-  ) => void;
+  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
   onCommitEdit: () => void;
   onCancelEdit: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
   onAddOutsourcing: () => void;
   onRemoveOutsourcing: (id: string) => void;
+  onSaveOrderEntryDraft: (orderEntryId: string | null, draft: WorkOrderProcessSheetDraft) => void;
+  onSaveOutsourcingDraft: (outsourcingId: string | null, draft: WorkOrderProcessSheetDraft) => void;
   canOpenInspectionModal: boolean;
   locked?: boolean;
   orderHubPolicy: OrderInfoHubPolicy;
@@ -93,288 +108,89 @@ export default function OrderInfoSection({
 }) {
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
-  const outsourcingCopy = i18n.workorder.ui.sections.outsourcing;
   const common = i18n.workorder.ui.common;
-  void onRemove;
+  const [sheetState, setSheetState] = useState<SheetState | null>(null);
   const visibleOrderEntries = orderEntries.slice(0, 1);
-  void canOpenInspectionModal;
-  void onOpenInspectionModal;
+  const hasRows = visibleOrderEntries.length > 0 || outsourcing.length > 0;
   void open;
   void onToggle;
+  void onAdd;
+  void onAddOutsourcing;
 
-  const hasRows = visibleOrderEntries.length > 0 || outsourcing.length > 0;
+  const openOrderSheet = (orderEntry: OrderEntryState | null) => setSheetState({ mode: "order", orderEntry, outsourcing: null });
+  const openOutsourcingSheet = (item: Outsourcing | null) => setSheetState({ mode: "outsourcing", orderEntry: null, outsourcing: item });
+  const closeSheet = () => setSheetState(null);
+  const handleApplySheet = ({ mode, orderEntryId, outsourcingId, draft }: { mode: WorkOrderProcessSheetMode; orderEntryId: string | null; outsourcingId: string | null; draft: WorkOrderProcessSheetDraft }) => {
+    if (mode === "order") {
+      onSaveOrderEntryDraft(orderEntryId, draft);
+      return;
+    }
+    onSaveOutsourcingDraft(outsourcingId, draft);
+  };
 
   return (
     <AppCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">
-      {showDebugPanel ? (
-        <OrderInfoHubDebugPanel policy={orderHubPolicy} />
-      ) : null}
-
+      {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
       {!hasRows ? (
         <div className="rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
           {copy.empty}
         </div>
       ) : null}
 
-      <div className="space-y-3">
-        {visibleOrderEntries.map((item) => {
-          return (
-            <AppCard
-              key={item.id}
-              variant="subtle"
-              padding="sm"
-              className="rounded-[22px]"
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-[11px] font-semibold pbp-text-subtle">
-                    {copy.fields.lineType}
-                  </div>
-                  <div className="mt-0.5 text-sm font-semibold pbp-text-primary">
-                    {copy.sewingLineTypeLabel}
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                <DetailField label={copy.fields.item}>
-                  <EditableValue
-                    section="order"
-                    rowId={item.id}
-                    field="type"
-                    value={item.type}
-                    displayValue={translateWorkOrderDisplayText(
-                      item.type,
-                      locale,
-                    )}
-                    options={orderTypeOptions}
-                    centered
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.vendor}>
-                  <EditableValue
-                    section="order"
-                    rowId={item.id}
-                    field="factory"
-                    value={item.factory}
-                    displayValue={translateWorkOrderDisplayText(
-                      item.factory,
-                      locale,
-                    )}
-                    options={factoryOptions}
-                    wrapText
-                    centered
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.quantity}>
-                  <EditableValue
-                    section="order"
-                    rowId={item.id}
-                    field="quantity"
-                    value={item.quantity.toLocaleString()}
-                    alignRight
-                    compact
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode="numeric"
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.laborCost}>
-                  <EditableValue
-                    section="order"
-                    rowId={item.id}
-                    field="laborCost"
-                    value={item.laborCost.toLocaleString()}
-                    alignRight
-                    compact
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode="numeric"
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.lossCost}>
-                  <EditableValue
-                    section="order"
-                    rowId={item.id}
-                    field="lossCost"
-                    value={item.lossCost.toLocaleString()}
-                    alignRight
-                    compact
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode="numeric"
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-              </div>
-            </AppCard>
-          );
-        })}
-
-        {outsourcing.map((item, rowIndex) => {
-          return (
-            <AppCard
-              key={item.id}
-              variant="subtle"
-              padding="sm"
-              className="rounded-[22px]"
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-[11px] font-semibold pbp-text-subtle">
-                    {copy.fields.lineType}
-                  </div>
-                  <div className="mt-0.5 text-sm font-semibold pbp-text-primary">
-                    {copy.outsourcingLineTypeLabelPrefix}{" "}
-                    {copy.outsourcingLineTypeLabelSuffix}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <DeleteButton
-                    onClick={() => onRemoveOutsourcing(item.id)}
-                    srLabel={`${item.process || outsourcingCopy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`}
-                    disabled={locked}
-                  />
-                </div>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                <DetailField label={copy.fields.item}>
-                  <EditableValue
-                    section="outsourcing"
-                    rowId={item.id}
-                    field="process"
-                    value={item.process}
-                    displayValue={getTranslatedWorkOrderSelectDisplayValue(
-                      item.process,
-                      (value) => translateWorkOrderDisplayText(value, locale),
-                    )}
-                    options={outsourcingProcessOptions}
-                    wrapText
-                    centered
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.vendor}>
-                  <EditableValue
-                    section="outsourcing"
-                    rowId={item.id}
-                    field="vendor"
-                    value={item.vendor}
-                    displayValue={getTranslatedWorkOrderSelectDisplayValue(
-                      item.vendor,
-                      (value) => translateWorkOrderDisplayText(value, locale),
-                    )}
-                    options={outsourcingVendorOptionsById[item.id] ?? []}
-                    wrapText
-                    centered
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.quantity}>
-                  <EditableValue
-                    section="outsourcing"
-                    rowId={item.id}
-                    field="quantity"
-                    value={item.quantity.toLocaleString()}
-                    alignRight
-                    compact
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode="numeric"
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.laborCost}>
-                  <EditableValue
-                    section="outsourcing"
-                    rowId={item.id}
-                    field="unitCost"
-                    value={item.unitCost.toLocaleString()}
-                    alignRight
-                    compact
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode="numeric"
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-                <DetailField label={copy.fields.lossCost}>
-                  <EditableValue
-                    section="outsourcing"
-                    rowId={item.id}
-                    field="lossCost"
-                    value={(item.lossCost ?? 0).toLocaleString()}
-                    alignRight
-                    compact
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode="numeric"
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                    disabled={locked}
-                  />
-                </DetailField>
-              </div>
-            </AppCard>
-          );
-        })}
+      <div className="space-y-2.5">
+        {visibleOrderEntries.map((item) => (
+          <ProcessCard
+            key={item.id}
+            title={translateWorkOrderDisplayText(item.type, locale)}
+            meta={copy.sewingLineTypeLabel}
+            details={[item.factory, `${item.quantity.toLocaleString()}장`, `${copy.fields.laborCost} ${item.laborCost.toLocaleString()}원`, `${copy.fields.lossCost} ${item.lossCost.toLocaleString()}원`]}
+            locked={locked}
+            onEdit={() => openOrderSheet(item)}
+          />
+        ))}
+        {outsourcing.map((item, index) => (
+          <ProcessCard
+            key={item.id}
+            title={item.process || copy.outsourcingLineTypeLabel}
+            meta={`${copy.outsourcingLineTypeLabelPrefix} ${copy.outsourcingLineTypeLabelSuffix}`}
+            details={[item.vendor || "미선택", `${item.quantity.toLocaleString()}장`, `${copy.fields.laborCost} ${item.unitCost.toLocaleString()}원`, `${copy.fields.lossCost} ${(item.lossCost ?? 0).toLocaleString()}원`]}
+            locked={locked}
+            onEdit={() => openOutsourcingSheet(item)}
+            onRemove={() => onRemoveOutsourcing(item.id)}
+          />
+        ))}
       </div>
 
-      {!locked && visibleOrderEntries.length === 0 ? (
-        <AppButton onClick={onAdd} variant="primary" size="sm" width="full">
-          {copy.factoryAddButton}
-        </AppButton>
+      {!locked ? (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {visibleOrderEntries.length === 0 ? (
+            <AppButton onClick={() => openOrderSheet(null)} variant="secondary" size="sm" width="full" className="border-dashed">
+              {copy.factoryAddButton}
+            </AppButton>
+          ) : null}
+          <AppButton onClick={() => openOutsourcingSheet(null)} variant="secondary" size="sm" width="full" className="border-dashed">
+            {copy.outsourcingOrder.addButton}
+          </AppButton>
+        </div>
       ) : null}
-      {locked ? null : (
-        <AppButton
-          onClick={onAddOutsourcing}
-          variant="secondary"
-          size="sm"
-          width="full"
-          className="border-dashed"
-        >
-          {copy.outsourcingOrder.addButton}
-        </AppButton>
-      )}
+
+      {canOpenInspectionModal ? (
+        <button type="button" onClick={onOpenInspectionModal} className="pbp-interactive-button pbp-action-secondary w-full rounded-xl px-3 py-2 text-sm font-medium">
+          {copy.inspectionAction}
+        </button>
+      ) : null}
+
+      <WorkOrderProcessEditSheet
+        open={Boolean(sheetState)}
+        mode={sheetState?.mode ?? "order"}
+        orderEntry={sheetState?.orderEntry ?? null}
+        outsourcing={sheetState?.outsourcing ?? null}
+        orderTypeOptions={orderTypeOptions}
+        factoryOptions={factoryOptions}
+        outsourcingProcessOptions={outsourcingProcessOptions}
+        onClose={closeSheet}
+        onApply={handleApplySheet}
+      />
     </AppCard>
   );
 }

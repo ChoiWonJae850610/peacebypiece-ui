@@ -85,6 +85,8 @@ export type BuildWorkOrderDetailViewModelArgs = {
   onCancelEdit: OrderInfoProps["onCancelEdit"];
   onAddOrderEntry: OrderInfoProps["onAdd"];
   onRemoveOrderEntry: OrderInfoProps["onRemove"];
+  onSaveOrderEntryDraft: OrderInfoProps["onSaveOrderEntryDraft"];
+  onSaveOutsourcingDraft: OrderInfoProps["onSaveOutsourcingDraft"];
   onOpenInspectionModal: OrderInfoProps["onOpenInspectionModal"];
   onToggleProductionSection: () => void;
   onToggleMaterial: ProductionCompositionProps["onToggleMaterial"];
@@ -212,6 +214,8 @@ export function buildOrderInfoSectionProps(
     onCancelEdit: args.onCancelEdit,
     onAdd: args.onAddOrderEntry,
     onRemove: args.onRemoveOrderEntry,
+    onSaveOrderEntryDraft: args.onSaveOrderEntryDraft,
+    onSaveOutsourcingDraft: args.onSaveOutsourcingDraft,
     canOpenInspectionModal: args.canOpenInspectionModal,
     onOpenInspectionModal: args.onOpenInspectionModal,
     locked: args.isReviewRequestLocked || Boolean(args.isWorkspaceWriteLocked),
