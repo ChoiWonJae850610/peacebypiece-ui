@@ -8,7 +8,7 @@ export const MATERIAL_ORDER_PANEL_LIST_CLASS =
   "mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1";
 
 export const MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS =
-  "min-h-9 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-xs pbp-text-primary outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-soft)] disabled:opacity-70";
+  "min-h-9 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-base pbp-text-primary md:text-xs outline-none transition placeholder:pbp-text-subtle focus:border-[var(--pbp-action-primary)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] disabled:bg-[var(--pbp-surface-soft)] disabled:opacity-70";
 
 export const MATERIAL_ORDER_SECTION_GAP_CLASS = "gap-3";
 

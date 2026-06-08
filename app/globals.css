@@ -1295,7 +1295,7 @@ textarea.pbp-field-interaction.pbp-field-selectable {
 
 /* Prevent iOS/Safari focus zoom inside WAFL mobile business screens.
    Keep this scoped to WaflMobileShell so compact PC/tablet density is not changed. */
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .pbp-mobile-no-zoom input,
   .pbp-mobile-no-zoom textarea,
   .pbp-mobile-no-zoom select,

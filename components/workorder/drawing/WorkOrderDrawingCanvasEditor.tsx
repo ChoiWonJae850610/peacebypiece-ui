@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type TouchEvent } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { useI18n } from "@/lib/i18n";
 import { shouldBlockDrawingForLandscape, type DrawingDevicePolicy } from "./drawingDevicePolicy";
@@ -38,6 +38,7 @@ type DrawingStrokeSizeId = "thin" | "regular" | "bold" | "wide";
 type DrawingLineStyleId = DrawingLineStyle;
 type DrawingPopover = "color" | "strokeSize" | null;
 type DrawingPointerEvent = PointerEvent<HTMLElement>;
+type DrawingTouchEvent = TouchEvent<HTMLElement>;
 type EraserCursor = { x: number; y: number; diameter: number; visible: boolean };
 type CanvasDisplaySize = { width: number; height: number };
 type DrawingDraftSnapshot = { snapshot: string; width: number; height: number };
@@ -89,6 +90,8 @@ const DEFAULT_STROKE_SIZE: DrawingStrokeSize = DRAWING_STROKE_SIZES[0] ?? {
   previewClassName: "h-0.5",
 };
 
+type DrawingClientPoint = { clientX: number; clientY: number };
+
 
 const TOOL_BUTTON_BASE_CLASS =
   "pbp-interactive-button inline-flex h-10 w-10 items-center justify-center rounded-full border text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
@@ -115,14 +118,18 @@ function getEraserLineWidth(strokeSizeId: DrawingStrokeSizeId) {
   return ERASER_LINE_WIDTH_BY_STROKE_SIZE[strokeSizeId] ?? ERASER_LINE_WIDTH_BY_STROKE_SIZE.regular;
 }
 
-function getPointerPosition(canvas: HTMLCanvasElement, event: DrawingPointerEvent) {
+function getCanvasPointFromClientPoint(canvas: HTMLCanvasElement, point: DrawingClientPoint) {
   const rect = canvas.getBoundingClientRect();
   const safeWidth = rect.width || 1;
   const safeHeight = rect.height || 1;
   return {
-    x: ((event.clientX - rect.left) / safeWidth) * canvas.width,
-    y: ((event.clientY - rect.top) / safeHeight) * canvas.height,
+    x: ((point.clientX - rect.left) / safeWidth) * canvas.width,
+    y: ((point.clientY - rect.top) / safeHeight) * canvas.height,
   };
+}
+
+function getPointerPosition(canvas: HTMLCanvasElement, event: DrawingPointerEvent) {
+  return getCanvasPointFromClientPoint(canvas, event);
 }
 
 function isPointInsideCanvas(point: DrawingPoint, canvas: HTMLCanvasElement) {
@@ -588,6 +595,22 @@ export default function WorkOrderDrawingCanvasEditor({
     setEraserCursor(getEraserCursor(canvas, event, eraserLineWidth));
   };
 
+  const updateEraserCursorFromPoint = (point: DrawingPoint) => {
+    const canvas = canvasRef.current;
+    if (!canvas || tool !== "eraser") {
+      hideEraserCursor();
+      return;
+    }
+    setEraserCursor(getEraserCursorFromCanvasPoint(canvas, point, eraserLineWidth));
+  };
+
+  const getTouchCanvasPoint = (event: DrawingTouchEvent) => {
+    const canvas = canvasRef.current;
+    const touch = event.touches[0] ?? event.changedTouches[0];
+    if (!canvas || !touch) return null;
+    return getCanvasPointFromClientPoint(canvas, touch);
+  };
+
   const syncHistoryState = (nextIndex: number) => {
     historyIndexRef.current = nextIndex;
     setHistoryIndex(nextIndex);
@@ -773,12 +796,11 @@ export default function WorkOrderDrawingCanvasEditor({
     };
   }, [open]);
 
-  const drawFreehandLine = (event: DrawingPointerEvent) => {
+  const drawFreehandLineFromPoint = (nextPoint: DrawingPoint) => {
     const canvas = canvasRef.current;
     if (!canvas || !drawingRef.current) return;
     const context = canvas.getContext("2d");
     if (!context) return;
-    const nextPoint = getPointerPosition(canvas, event);
     if (!isPointInsideCanvas(nextPoint, canvas)) return;
     const previousPoint = lastPointRef.current ?? nextPoint;
 
@@ -798,14 +820,19 @@ export default function WorkOrderDrawingCanvasEditor({
     strokeDirtyRef.current = true;
   };
 
-  const drawShapePreview = (event: DrawingPointerEvent) => {
+  const drawFreehandLine = (event: DrawingPointerEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    drawFreehandLineFromPoint(getPointerPosition(canvas, event));
+  };
+
+  const drawShapePreviewFromPoint = (nextPoint: DrawingPoint) => {
     const canvas = canvasRef.current;
     if (!canvas || !drawingRef.current || !isShapeTool(tool)) return;
     const context = canvas.getContext("2d");
     const startPoint = shapeStartPointRef.current;
     const baseImageData = shapeBaseImageDataRef.current;
     if (!context || !startPoint || !baseImageData) return;
-    const nextPoint = getPointerPosition(canvas, event);
     if (!isPointInsideCanvas(nextPoint, canvas)) return;
 
     context.putImageData(baseImageData, 0, 0);
@@ -814,7 +841,14 @@ export default function WorkOrderDrawingCanvasEditor({
     strokeDirtyRef.current = true;
   };
 
+  const drawShapePreview = (event: DrawingPointerEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    drawShapePreviewFromPoint(getPointerPosition(canvas, event));
+  };
+
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (event.pointerType === "touch") return;
     if (drawingInputDisabled) return;
     event.preventDefault();
     updateEraserCursor(event);
@@ -826,6 +860,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (event.pointerType === "touch") return;
     const canvas = canvasRef.current;
     if (!canvas || drawingInputDisabled) return;
     event.preventDefault();
@@ -858,6 +893,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const stopDrawing = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (event.pointerType === "touch") return;
     const canvas = canvasRef.current;
     if (drawingInputDisabled) {
       drawingRef.current = false;
@@ -889,6 +925,75 @@ export default function WorkOrderDrawingCanvasEditor({
     if (tool !== "eraser") {
       hideEraserCursor();
     }
+  };
+
+  const finishDrawingFromTouch = (point: DrawingPoint | null) => {
+    if (drawingInputDisabled) {
+      drawingRef.current = false;
+      hideEraserCursor();
+      return;
+    }
+    if (point && drawingRef.current && isShapeTool(tool)) {
+      drawShapePreviewFromPoint(point);
+    }
+
+    drawingRef.current = false;
+    lastPointRef.current = null;
+    shapeStartPointRef.current = null;
+    shapeBaseImageDataRef.current = null;
+    if (strokeDirtyRef.current) {
+      pushHistorySnapshot();
+    }
+    strokeDirtyRef.current = false;
+    if (tool !== "eraser") {
+      hideEraserCursor();
+    }
+  };
+
+  const handleTouchStart = (event: DrawingTouchEvent) => {
+    const canvas = canvasRef.current;
+    const startPoint = getTouchCanvasPoint(event);
+    if (!canvas || !startPoint || drawingInputDisabled) return;
+    event.preventDefault();
+    strokeDirtyRef.current = false;
+    closeToolPopovers();
+    updateEraserCursorFromPoint(startPoint);
+
+    drawingRef.current = true;
+    if (!isPointInsideCanvas(startPoint, canvas)) {
+      drawingRef.current = false;
+      return;
+    }
+    lastPointRef.current = startPoint;
+    shapeStartPointRef.current = startPoint;
+
+    if (isShapeTool(tool)) {
+      const context = canvas.getContext("2d");
+      shapeBaseImageDataRef.current = context?.getImageData(0, 0, canvas.width, canvas.height) ?? null;
+      return;
+    }
+
+    drawFreehandLineFromPoint(startPoint);
+  };
+
+  const handleTouchMove = (event: DrawingTouchEvent) => {
+    const nextPoint = getTouchCanvasPoint(event);
+    if (!nextPoint || drawingInputDisabled) return;
+    event.preventDefault();
+    updateEraserCursorFromPoint(nextPoint);
+    if (isShapeTool(tool)) {
+      drawShapePreviewFromPoint(nextPoint);
+      return;
+    }
+    drawFreehandLineFromPoint(nextPoint);
+  };
+
+  const handleTouchEnd = (event: DrawingTouchEvent) => {
+    const endPoint = getTouchCanvasPoint(event);
+    if (!drawingInputDisabled) {
+      event.preventDefault();
+    }
+    finishDrawingFromTouch(endPoint);
   };
 
   const handleUndo = () => {
@@ -1014,6 +1119,10 @@ export default function WorkOrderDrawingCanvasEditor({
                 if (drawingRef.current) stopDrawing(event);
                 hideEraserCursor();
               }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
               aria-label={ui.canvasAria}
             />
             {landscapeBlocked ? (

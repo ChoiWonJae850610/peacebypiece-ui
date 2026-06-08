@@ -54,7 +54,7 @@ export default function AppSheet({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content
           className={cn(
-            "fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-2xl outline-none",
+            "pbp-mobile-no-zoom fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-2xl outline-none",
             sideClassMap[side],
             side === "bottom" ? "min-h-[42dvh]" : sizeClassMap[size],
             className,
