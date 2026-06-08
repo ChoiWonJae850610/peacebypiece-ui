@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode, type RefObject } from "react";
 
-import { AppButton, AppSheet } from "@/components/common/ui";
+import { AppButton, AppSheet, WaflMobileContentSection, WaflMobileFixedActionBar, WaflMobileShell, WAFL_MOBILE_SAFE_AREA_CLASS_NAMES } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 type MobileSectionStackProps = {
@@ -32,35 +32,31 @@ export default function MobileSectionStack({
   }, [scrollResetKey]);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
-      <div ref={appShellRef} className="min-h-screen overflow-x-hidden">
-        {topBar}
-        {drawer}
-
-        <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-full flex-col gap-2.5 overflow-x-hidden px-2.5 py-2.5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:gap-3 sm:px-3 sm:py-3 sm:pb-[calc(5.75rem+env(safe-area-inset-bottom))]">
-          <section className="min-w-0 overflow-x-hidden">
-            {detail}
-          </section>
-        </div>
-
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 px-3 pt-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+    <WaflMobileShell
+      shellRef={appShellRef}
+      topBar={topBar}
+      drawer={drawer}
+      actionBar={
+        <WaflMobileFixedActionBar>
           <AppButton className="w-full" size="lg" onClick={() => setSidePanelOpen(true)}>
             {sidePanelTitle}
           </AppButton>
-        </div>
+        </WaflMobileFixedActionBar>
+      }
+    >
+      <WaflMobileContentSection>{detail}</WaflMobileContentSection>
 
-        <AppSheet
-          open={sidePanelOpen}
-          onOpenChange={setSidePanelOpen}
-          title={sidePanelTitle}
-          description={i18n.workorder.ui.emptyWorkspace.sideDescription}
-          side="bottom"
-          size="full"
-          contentClassName="px-3 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))]"
-        >
-          {sidePanel}
-        </AppSheet>
-      </div>
-    </main>
+      <AppSheet
+        open={sidePanelOpen}
+        onOpenChange={setSidePanelOpen}
+        title={sidePanelTitle}
+        description={i18n.workorder.ui.emptyWorkspace.sideDescription}
+        side="bottom"
+        size="full"
+        contentClassName={`px-3 py-3 ${WAFL_MOBILE_SAFE_AREA_CLASS_NAMES.sheetBottomPadding}`}
+      >
+        {sidePanel}
+      </AppSheet>
+    </WaflMobileShell>
   );
 }

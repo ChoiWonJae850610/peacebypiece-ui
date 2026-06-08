@@ -23,3 +23,5 @@ export * from "./WaflToast";
 
 export * from "./WaflState";
 export * from "./WaflModal";
+
+export * from "./WaflMobileShell";
