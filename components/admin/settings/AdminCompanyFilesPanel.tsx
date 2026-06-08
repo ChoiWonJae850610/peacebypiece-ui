@@ -521,7 +521,7 @@ export default function AdminCompanyFilesPanel() {
           return (
             <article
               key={slot.fileType}
-              className="rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-card)]"
+              className="rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3.5 shadow-[var(--pbp-shadow-card)] sm:rounded-[24px] sm:p-4"
             >
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -538,8 +538,8 @@ export default function AdminCompanyFilesPanel() {
                 )}
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]">
-                <div className="flex min-h-[188px] items-center justify-center px-4 py-5 text-center sm:min-h-[216px]">
+              <div className="mt-3 overflow-hidden rounded-[20px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] sm:mt-4 sm:rounded-[22px]">
+                <div className="flex min-h-[164px] items-center justify-center px-3 py-4 text-center sm:min-h-[216px] sm:px-4 sm:py-5">
                   {file ? (
                     <button
                       type="button"
@@ -551,11 +551,11 @@ export default function AdminCompanyFilesPanel() {
                           <img
                             src={previewUrl}
                             alt={slot.title}
-                            className="h-[142px] w-full rounded-xl object-contain sm:h-[168px]"
+                            className="h-[124px] w-full rounded-xl object-contain sm:h-[168px]"
                           />
                         </div>
                       ) : (
-                        <div className="mx-auto flex h-[142px] w-full max-w-[220px] flex-col items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-center shadow-sm sm:h-[168px]">
+                        <div className="mx-auto flex h-[124px] w-full max-w-[220px] flex-col items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-center shadow-sm sm:h-[168px]">
                           <span className="text-2xl font-black tracking-[-0.04em] text-[var(--pbp-text-subtle)]">
                             {isCompanyFilePdf(file) ? "PDF" : isRepresentativeImage ? "IMG" : "DOC"}
                           </span>
@@ -593,7 +593,7 @@ export default function AdminCompanyFilesPanel() {
                 업로드 가능: {allowedUploadText}
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-4 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
                 <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">
                   {file
                     ? t("settings.companyFiles.registeredFileHint", "현재 등록된 파일입니다. 원본 파일명은 미리보기에서 확인할 수 있습니다.")

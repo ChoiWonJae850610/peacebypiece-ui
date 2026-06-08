@@ -39,10 +39,13 @@ export default function WaflSettingsTabs<TId extends string>({
   onChange,
   ariaLabel,
   className = "",
-  gridClassName = "grid gap-2 md:grid-cols-5",
+  gridClassName = "grid auto-cols-[minmax(13.5rem,82vw)] grid-flow-col gap-2 overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch] sm:auto-cols-[minmax(15rem,1fr)] md:grid-flow-row md:grid-cols-5 md:overflow-visible md:pb-0",
 }: WaflSettingsTabsProps<TId>) {
   return (
-    <nav className={joinClassNames("rounded-[1.5rem] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-2", className)} aria-label={ariaLabel}>
+    <nav
+      className={joinClassNames("rounded-[1.35rem] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-2 sm:rounded-[1.5rem]", className)}
+      aria-label={ariaLabel}
+    >
       <div className={gridClassName}>
         {items.map((item) => {
           const active = item.id === activeId;
@@ -54,7 +57,7 @@ export default function WaflSettingsTabs<TId extends string>({
               aria-pressed={active}
               onClick={() => onChange(item.id)}
               className={joinClassNames(
-                "flex min-h-[64px] w-full flex-col rounded-2xl border px-4 py-3 text-left transition",
+                "flex min-h-[58px] w-full min-w-0 snap-start flex-col rounded-2xl border px-3.5 py-3 text-left transition sm:min-h-[64px] sm:px-4",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]",
                 active
                   ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-text-primary)] shadow-sm"
@@ -65,7 +68,7 @@ export default function WaflSettingsTabs<TId extends string>({
                 <span className={joinClassNames("h-2 w-2 rounded-full", toneDotClassNames[tone])} aria-hidden="true" />
                 {item.title}
               </span>
-              {item.description ? <span className="mt-2 line-clamp-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{item.description}</span> : null}
+              {item.description ? <span className="mt-1.5 line-clamp-2 text-xs leading-5 text-[var(--pbp-text-muted)] sm:mt-2 sm:line-clamp-1">{item.description}</span> : null}
             </button>
           );
         })}

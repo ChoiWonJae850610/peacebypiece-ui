@@ -1250,13 +1250,28 @@ export default function AdminSettingsHub() {
     return <AdminEmptyState title={t("common.preparing", "준비중입니다.")} />;
   };
 
+  const activeMenuItem = ADMIN_SETTINGS_MENU_ITEMS.find((item) => item.id === activeMenuId) ?? ADMIN_SETTINGS_MENU_ITEMS[0];
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-0 sm:pr-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0 sm:gap-4 sm:pr-1 md:gap-5">
       <WaflPageHero
         eyebrow={t("settings.hub.eyebrow", "고객사 환경설정")}
         title={t("settings.hub.title", "환경설정")}
         description={t("settings.hub.description", "회사 정보와 운영 기준을 필요한 항목별로 관리합니다.")}
+        className="rounded-[26px] p-4 sm:rounded-[32px] sm:p-6"
+        bodyClassName="mt-4 sm:mt-5"
       >
+        <div className="mb-3 rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3.5 py-3 shadow-sm md:hidden">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">
+            {activeMenuItem.statusLabel}
+          </p>
+          <p className="mt-1 text-sm font-black tracking-[-0.02em] text-[var(--pbp-text-primary)]">
+            {activeMenuItem.title}
+          </p>
+          <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            {activeMenuItem.description}
+          </p>
+        </div>
         <WaflSettingsTabs
           items={ADMIN_SETTINGS_MENU_ITEMS.map((item) => ({
             id: item.id,

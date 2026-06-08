@@ -36,8 +36,8 @@ export const WAFL_SETTING_CARD_CLASS =
   "relative min-w-0 overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
 
 const DENSITY_CLASS: Record<NonNullable<WaflSettingCardProps["density"]>, string> = {
-  default: "p-4",
-  compact: "p-3.5",
+  default: "p-3.5 sm:p-4",
+  compact: "p-3 sm:p-3.5",
 };
 
 export default function WaflSettingCard({
@@ -73,7 +73,7 @@ export default function WaflSettingCard({
           {description ? <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{description}</p> : null}
           {meta ? <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--pbp-text-muted)]">{meta}</div> : null}
         </div>
-        {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div> : null}
+        {actions ? <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:justify-end">{actions}</div> : null}
       </div>
       {children ? <div className={joinClassNames("pl-1", bodyClassName)}>{children}</div> : null}
       {footer ? <div className="mt-3 border-t border-[var(--pbp-border)] pt-3 pl-1">{footer}</div> : null}
