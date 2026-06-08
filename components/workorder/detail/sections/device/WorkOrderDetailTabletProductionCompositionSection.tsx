@@ -27,6 +27,7 @@ export default function WorkOrderDetailTabletProductionCompositionSection(props:
             onCancelEdit={props.onCancelEdit}
             onAdd={props.onAddMaterial}
             onRemove={props.onRemoveMaterial}
+            onRemoveZeroQuantity={props.onRemoveZeroQuantityMaterials}
             vendorOptionsById={props.materialVendorOptionsById}
             locked={props.locked}
           />

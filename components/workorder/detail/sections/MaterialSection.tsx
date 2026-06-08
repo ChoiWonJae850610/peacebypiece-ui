@@ -42,6 +42,7 @@ export default function MaterialSection({
   onCancelEdit,
   onAdd,
   onRemove,
+  onRemoveZeroQuantity,
   locked = false,
 }: {
   materials: Material[];
@@ -54,12 +55,14 @@ export default function MaterialSection({
   onCancelEdit: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
+  onRemoveZeroQuantity: () => void;
   locked?: boolean;
 }) {
   const { i18n, locale } = useI18n();
   const { materialUnitOptions } = useCompanyStandardOptions();
   const copy = i18n.workorder.ui.sections.material;
   const common = i18n.workorder.ui.common;
+  const zeroQuantityCount = materials.filter((item) => Math.max(0, Number(item.quantity) || 0) <= 0).length;
   void open;
   void onToggle;
 
@@ -69,6 +72,20 @@ export default function MaterialSection({
         {materials.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
             {copy.empty}
+          </div>
+        ) : null}
+
+        {!locked && zeroQuantityCount > 0 ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+            <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
+            <div className="mt-0.5 text-amber-800">{copy.zeroQuantityNoticeDescription}</div>
+            <button
+              type="button"
+              onClick={onRemoveZeroQuantity}
+              className="pbp-interactive-button mt-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+            >
+              {copy.zeroQuantityCleanupButton}
+            </button>
           </div>
         ) : null}
 

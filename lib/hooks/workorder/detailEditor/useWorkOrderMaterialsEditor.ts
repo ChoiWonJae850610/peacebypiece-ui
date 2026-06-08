@@ -62,11 +62,31 @@ export function useWorkOrderMaterialsEditor({
     }
   };
 
+  const removeZeroQuantityMaterials = () => {
+    const zeroQuantityIds = new Set(
+      materialItems
+        .filter((item) => Math.max(0, Number(item.quantity) || 0) <= 0)
+        .map((item) => item.id),
+    );
+
+    if (zeroQuantityIds.size === 0) {
+      return;
+    }
+
+    const nextItems = materialItems.filter((item) => !zeroQuantityIds.has(item.id));
+    setMaterialItems(nextItems);
+    onUpdateWorkOrder(toMaterialsPatch(nextItems));
+    if (editingCell?.section === "material" && zeroQuantityIds.has(editingCell.rowId)) {
+      cancelEdit();
+    }
+  };
+
   return {
     materialItems,
     commitMaterialEdit,
     applyMaterialDraftValue,
     addMaterial,
     removeMaterial,
+    removeZeroQuantityMaterials,
   };
 }

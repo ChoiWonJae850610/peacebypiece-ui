@@ -310,7 +310,9 @@ export function useMaterialOrderDraftEditor() {
         && line.sourceMaterialKey === material.key
       ));
 
-      if (existingLine) return current;
+      if (existingLine) {
+        return current.filter((line) => line.id !== existingLine.id);
+      }
 
       const remainingQuantity = calculateMaterialRequestRemainingQuantity({
         quantityMap: materialRequestQuantityMap,

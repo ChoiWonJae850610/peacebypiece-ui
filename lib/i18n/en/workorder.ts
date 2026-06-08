@@ -514,6 +514,9 @@ export const workorderEn = {
         addButton: "+ Add required item",
         summaryFormat: "{name}{andMore}",
         handoffNote: "Supplier, unit cost, confirmed quantity, amount, and delivery details are finalized in the fabric / trims order screen.",
+        zeroQuantityNoticeTitle: "{count} material item(s) have quantity 0.",
+        zeroQuantityNoticeDescription: "Remove unused fabric / trim items before moving to the material order screen.",
+        zeroQuantityCleanupButton: "Clean up zero-quantity items",
         fields: {
           type: "Type",
           name: "Required item",
@@ -669,7 +672,7 @@ export const workorderEn = {
       mobileDrawer: {
         closeOverlayAria: "Close drawer",
         title: "Work list",
-        subtitle: "Mobile drawer",
+        subtitle: "",
         close: "Close",
         backToList: "List",
         searchAria: "Search work orders",

@@ -350,8 +350,8 @@ function WorkOrderMaterialRequestRow({
       <AppButton
         size="sm"
         className={mobile ? "min-h-9 w-full px-3 py-1 text-xs" : "min-h-7 px-3 py-1 text-xs"}
-        variant={isAdded || isAllocationCovered ? "ghost" : "secondary"}
-        disabled={!editable || isAdded || isAllocationCovered}
+        variant={isAdded ? "secondary" : isAllocationCovered ? "ghost" : "secondary"}
+        disabled={!editable || isCompletionFulfilled || (!isAdded && isAllocationCovered)}
         title={selectionButtonTitle}
         aria-label={`${material.itemName} ${selectionButtonLabel}`}
         onClick={() => onAddMaterialToOrder(workOrder, material)}
@@ -381,7 +381,7 @@ function resolveMaterialSelectionButtonTitle({
   isAllocationCovered: boolean;
 }) {
   if (!editable) return "작성중 발주서에서만 자재를 선택할 수 있습니다.";
-  if (isAdded) return "이번 발주서에 이미 선택된 자재입니다.";
+  if (isAdded) return "다시 누르면 이번 발주서 선택을 취소합니다.";
   if (isCompletionFulfilled) return "필요 수량의 자재 발주가 완료되었습니다.";
   if (isAllocationCovered) return "다른 진행 중 발주서에서 필요한 수량이 이미 선택되었습니다.";
   return "이번 발주서에 자재를 추가합니다.";

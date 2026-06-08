@@ -514,6 +514,9 @@ export const workorderKo = {
         addButton: "+ 필요 항목 추가",
         summaryFormat: "{name}{andMore}",
         handoffNote: "실제 거래처, 단가, 확정 수량, 금액, 배송/전달 정보는 원단·부자재 발주 화면에서 확정합니다.",
+        zeroQuantityNoticeTitle: "수량이 0인 자재 {count}개가 있습니다.",
+        zeroQuantityNoticeDescription: "사용하지 않는 원단·부자재는 발주 화면에 넘어가기 전에 정리하는 것이 좋습니다.",
+        zeroQuantityCleanupButton: "0 수량 자재 정리",
         fields: {
           type: "구분",
           name: "필요 항목",
@@ -669,7 +672,7 @@ export const workorderKo = {
       mobileDrawer: {
         closeOverlayAria: "드로어 닫기",
         title: "작업 목록",
-        subtitle: "모바일 드로어",
+        subtitle: "",
         close: "닫기",
         backToList: "목록",
         searchAria: "작업지시서 검색",

@@ -131,6 +131,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     onToggleOutsourcing: disclosureModel.onToggleOutsourcing,
     onAddMaterial: isWorkspaceWriteLocked ? () => undefined : editor.addMaterial,
     onRemoveMaterial: isWorkspaceWriteLocked ? () => undefined : editor.removeMaterial,
+    onRemoveZeroQuantityMaterials: isWorkspaceWriteLocked ? () => undefined : editor.removeZeroQuantityMaterials,
     onAddOutsourcing: isWorkspaceWriteLocked ? () => undefined : editor.addOutsourcing,
     onRemoveOutsourcing: isWorkspaceWriteLocked ? () => undefined : editor.removeOutsourcing,
   });
