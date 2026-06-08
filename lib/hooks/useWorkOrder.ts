@@ -110,7 +110,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   });
 
   useEffect(() => {
-    if (derivedState.workOrders.length === 0) {
+    if (coreState.workOrders.length === 0) {
       if (coreState.selectedId !== "") {
         coreState.setSelectedId("");
         coreState.setLastSavedAt(null);
@@ -119,23 +119,24 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       return;
     }
 
-    const firstVisibleWorkOrder = derivedState.workOrders[0];
-    if (!firstVisibleWorkOrder) return;
-
     if (coreState.selectedId === "") {
-      coreState.setSelectedId(firstVisibleWorkOrder.id);
-      const next = coreState.workOrders.find((item) => item.id === firstVisibleWorkOrder.id);
-      coreState.setLastSavedAt(next?.lastSavedAt ?? null);
+      const firstWorkOrder = coreState.workOrders[0];
+      if (!firstWorkOrder) return;
+
+      coreState.setSelectedId(firstWorkOrder.id);
+      coreState.setLastSavedAt(firstWorkOrder.lastSavedAt ?? null);
       coreState.setSaveStatus("saved");
       return;
     }
 
-    const selectedVisible = derivedState.workOrders.some((item) => item.id === coreState.selectedId);
-    if (selectedVisible) return;
+    const selectedExists = coreState.workOrders.some((item) => item.id === coreState.selectedId);
+    if (selectedExists) return;
 
-    coreState.setSelectedId(firstVisibleWorkOrder.id);
-    const next = coreState.workOrders.find((item) => item.id === firstVisibleWorkOrder.id);
-    coreState.setLastSavedAt(next?.lastSavedAt ?? null);
+    const firstWorkOrder = coreState.workOrders[0];
+    if (!firstWorkOrder) return;
+
+    coreState.setSelectedId(firstWorkOrder.id);
+    coreState.setLastSavedAt(firstWorkOrder.lastSavedAt ?? null);
     coreState.setSaveStatus("saved");
   }, [
     coreState.selectedId,
@@ -143,7 +144,6 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     coreState.setSaveStatus,
     coreState.setSelectedId,
     coreState.workOrders,
-    derivedState.workOrders,
   ]);
 
   const handleSelectWorkOrder = useCallback(

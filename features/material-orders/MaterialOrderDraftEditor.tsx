@@ -182,12 +182,26 @@ export default function MaterialOrderDraftEditor() {
             open={mobileOrderListDrawerOpen}
             onClose={() => setMobileOrderListDrawerOpen(false)}
             title="발주서 목록"
-            subtitle="모바일 드로어"
             closeLabel="닫기"
             closeOverlayAria="발주서 목록 드로어 닫기"
             titleId="material-order-mobile-drawer-title"
           >
-            <div className="min-h-[72dvh] min-w-0">{listPanel}</div>
+            <div className="min-h-[72dvh] min-w-0">
+              <MaterialOrderListPanel
+                variant="drawer"
+                orders={orders}
+                selectedOrderId={selectedOrderId}
+                loading={ordersLoading}
+                errorMessage={ordersError}
+                creating={creatingOrder}
+                onSelectOrder={handleSelectOrder}
+                onCreateOrder={createOrder}
+                onRetry={() => void refreshOrders()}
+                selectedDraftMaterialType={materialType}
+                selectedDraftSupplierName={selectedDraftSupplierName}
+                selectedDraftLines={lines}
+              />
+            </div>
           </WaflMobileListDrawer>
         )}
         contentClassName="gap-3"

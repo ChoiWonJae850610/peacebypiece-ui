@@ -27,6 +27,7 @@ import type { MaterialOrder, MaterialOrderLineItemType, MaterialOrderStatus } fr
 import type { MaterialOrderDraftLine, MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderListPanelProps = {
+  variant?: "panel" | "drawer";
   orders: MaterialOrder[];
   selectedOrderId: string;
   loading: boolean;
@@ -57,6 +58,7 @@ const MATERIAL_ORDER_TYPE_OPTIONS: Array<AppSelectOption & { value: "all" | Mate
 ];
 
 export default function MaterialOrderListPanel({
+  variant = "panel",
   orders,
   selectedOrderId,
   loading,
@@ -82,16 +84,18 @@ export default function MaterialOrderListPanel({
     })
   ), [orders, searchQuery, statusFilter, typeFilter]);
 
-  return (
-    <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
-      <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
-        <div className="flex items-end justify-between gap-2">
-          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
-          <SectionCountBadge className="translate-y-0.5">{filteredOrders.length}건</SectionCountBadge>
+  const listContent = (
+    <>
+      {variant === "panel" ? (
+        <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
+          <div className="flex items-end justify-between gap-2">
+            <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
+            <SectionCountBadge className="translate-y-0.5">{filteredOrders.length}건</SectionCountBadge>
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      <div className="mt-3 grid shrink-0 gap-1.5 border-b border-[var(--pbp-border)] pb-3">
+      <div className={`${variant === "panel" ? "mt-3" : ""} grid shrink-0 gap-1.5 border-b border-[var(--pbp-border)] pb-3`}>
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
@@ -128,7 +132,7 @@ export default function MaterialOrderListPanel({
         </AppButton>
       </div>
 
-      <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
+      <div className={variant === "panel" ? MATERIAL_ORDER_PANEL_LIST_CLASS : "mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0"}>
         {loading ? (
           <MaterialOrderPanelMessage title="불러오는 중" description="원단·부자재 발주서를 조회하고 있습니다." kind="loading" />
         ) : errorMessage ? (
@@ -158,6 +162,16 @@ export default function MaterialOrderListPanel({
           ))
         )}
       </div>
+    </>
+  );
+
+  if (variant === "drawer") {
+    return <div className="flex h-full min-h-0 flex-col overflow-hidden">{listContent}</div>;
+  }
+
+  return (
+    <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+      {listContent}
     </AppCard>
   );
 }

@@ -68,7 +68,7 @@ export function useWorkOrderWorkspaceController({
   const [workflowProcessingLabel, setWorkflowProcessingLabel] = useState<string | null>(null);
   const [manualWriteLockMessage, setManualWriteLockMessage] = useState<string | null>(null);
 
-  const renderHasSelection = selection.hasVisibleWorkOrders && selection.hasActiveSelection;
+  const renderHasSelection = selection.hasActiveSelection;
   const isRepositoryLoading = repository.repositoryStatus === "loading";
   const isSelectedDetailLoading = Boolean(renderHasSelection && selection.isSelectedWorkOrderDetailLoading);
   const isCreatingWorkOrder = runtime.actionStatusMap.create === "loading";
@@ -227,7 +227,6 @@ export function useWorkOrderWorkspaceController({
     url.searchParams.set("sort", nextSort);
     if (nextSearchQuery.trim()) url.searchParams.set("q", nextSearchQuery.trim());
     else url.searchParams.delete("q");
-    url.searchParams.delete("workOrderId");
     const nextQuery = url.searchParams.toString();
     window.history.replaceState(null, "", nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname);
   };
