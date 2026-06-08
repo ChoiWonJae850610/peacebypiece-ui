@@ -55,7 +55,6 @@ export const MATERIAL_TYPE_OPTIONS = [
   MATERIAL_TYPE.unselected,
   MATERIAL_TYPE.fabric,
   MATERIAL_TYPE.subsidiary,
-  MATERIAL_TYPE.other,
 ] as const satisfies readonly MaterialTypeValue[];
 
 export const MATERIAL_UNIT_OPTIONS = [

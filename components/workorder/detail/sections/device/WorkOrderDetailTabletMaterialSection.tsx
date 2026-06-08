@@ -3,7 +3,7 @@ import { MATERIAL_TYPE_OPTIONS } from "@/lib/constants/material";
 import { getWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
-import { AddButton, DeleteButton, EditableValue, EDITABLE_FIELD_PANEL_CLASS, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
+import { AddButton, DeleteButton, EditableValue, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/material";
 
 type Props = {
@@ -21,6 +21,9 @@ type Props = {
   vendorOptionsById: Record<string, string[]>;
   locked?: boolean;
 };
+
+const fieldCardClass = "min-w-0 rounded-xl border border-stone-200 bg-white px-3 py-2.5";
+const labelClass = "mb-1 text-[11px] font-medium text-stone-500";
 
 export default function WorkOrderDetailTabletMaterialSection({
   materials,
@@ -47,10 +50,10 @@ export default function WorkOrderDetailTabletMaterialSection({
     : copy.empty;
 
   return (
-    <section className="overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
+    <section className="overflow-hidden rounded-2xl bg-stone-50 p-3.5">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-3 grid gap-2.5">
+        <div className="mt-3 grid gap-3">
           {!locked && zeroQuantityCount > 0 ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
               <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
@@ -65,33 +68,35 @@ export default function WorkOrderDetailTabletMaterialSection({
             </div>
           ) : null}
           {materials.map((item, index) => (
-            <article key={item.id} className="rounded-xl bg-stone-50/80 p-3">
+            <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
-                  <div className="mt-1 text-sm text-stone-500">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
+                  <div className="text-[11px] font-medium text-stone-500">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
+                  <div className="mt-1 text-sm font-semibold text-stone-900">
+                    <EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+                  </div>
                 </div>
                 {!locked ? <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} /> : null}
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2.5">
-                <div className={EDITABLE_FIELD_PANEL_CLASS}>
-                  <div className="text-xs text-stone-500">{copy.fields.type}</div>
-                  <div className="mt-1"><EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getWorkOrderSelectDisplayValue(item.type)} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
+              <div className="mt-3 grid gap-2.5 md:grid-cols-[1.1fr_0.9fr_0.9fr]">
+                <div className={fieldCardClass}>
+                  <div className={labelClass}>{copy.fields.type}</div>
+                  <EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getWorkOrderSelectDisplayValue(item.type)} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                 </div>
-                <div className={EDITABLE_FIELD_PANEL_CLASS}>
-                  <div className="text-xs text-stone-500">{copy.fields.quantity}</div>
-                  <div className="mt-1"><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
+                <div className={fieldCardClass}>
+                  <div className={labelClass}>{copy.fields.quantity}</div>
+                  <EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                 </div>
-                <div className={EDITABLE_FIELD_PANEL_CLASS}>
-                  <div className="text-xs text-stone-500">{copy.fields.unit}</div>
-                  <div className="mt-1"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} displayValue={translateWorkOrderDisplayText(item.unit, locale)} options={materialUnitOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
+                <div className={fieldCardClass}>
+                  <div className={labelClass}>{copy.fields.unit}</div>
+                  <EditableValue section="material" rowId={item.id} field="unit" value={item.unit} displayValue={translateWorkOrderDisplayText(item.unit, locale)} options={materialUnitOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                 </div>
               </div>
             </article>
           ))}
 
-          <div className="rounded-xl border border-stone-200 bg-stone-50/70 px-3 py-3 text-xs leading-5 text-stone-500">
+          <div className="rounded-2xl border border-stone-200 bg-white px-3 py-2.5 text-[11px] leading-5 text-stone-500">
             {copy.handoffNote}
           </div>
 

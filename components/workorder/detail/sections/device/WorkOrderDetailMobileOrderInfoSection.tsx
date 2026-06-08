@@ -19,9 +19,9 @@ function MobileDetailField({
   span?: boolean;
 }) {
   return (
-    <div className={`min-w-0 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 ${span ? "min-[360px]:col-span-2" : ""}`}>
+    <div className={`min-w-0 rounded-xl border border-stone-200 bg-white px-3 py-2 ${span ? "min-[360px]:col-span-2" : ""}`}>
       <div className="mb-1 text-xs text-stone-500">{label}</div>
-      <div className="min-h-8 text-sm font-medium text-stone-900">{children}</div>
+      <div className="min-h-7 text-[13px] font-medium text-stone-900">{children}</div>
     </div>
   );
 }
@@ -88,7 +88,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
 
           {visibleOrderEntries.map((item) => {
             return (
-              <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3.5 shadow-sm sm:p-4">
+              <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3 sm:p-3.5">
                 <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                   <div>
                     <div className="text-[11px] font-semibold text-stone-500">{copy.fields.lineType}</div>
@@ -96,7 +96,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
                   </div>
                 </div>
 
-                <div className="mt-3 grid grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-2 text-[13px] min-[380px]:grid-cols-2">
                   <MobileDetailField label={copy.fields.item}>
                     <EditableValue section="order" rowId={item.id} field="type" value={item.type} displayValue={translateWorkOrderDisplayText(item.type, locale)} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                   </MobileDetailField>
@@ -119,7 +119,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
 
           {outsourcing.map((item, rowIndex) => {
             return (
-              <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3.5 shadow-sm sm:p-4">
+              <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3 sm:p-3.5">
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div>
                     <div className="text-[11px] font-semibold text-stone-500">{copy.fields.lineType}</div>
@@ -132,7 +132,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
                   </div>
                 </div>
 
-                <div className="mt-3 grid grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-2 text-[13px] min-[380px]:grid-cols-2">
                   <MobileDetailField label={copy.fields.item}>
                     <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.process, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingProcessOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                   </MobileDetailField>

@@ -22,17 +22,17 @@ function TabletSummaryAction({ label, value, disabled, onClick }: { label: strin
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="pbp-interactive-button pbp-detail-summary-action rounded-2xl border px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
+      className="pbp-interactive-button pbp-detail-summary-action flex min-w-0 items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-xs font-medium text-stone-500">{label}</div>
-        {canAct ? (
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]" aria-hidden="true">
-            <PencilIcon />
-          </span>
-        ) : null}
-      </div>
-      <div className="mt-1 text-sm font-semibold text-stone-900">{value}</div>
+      <span className="grid min-w-0 gap-1">
+        <span className="text-xs font-medium text-stone-500">{label}</span>
+        <span className="break-words text-sm font-semibold text-stone-900">{value}</span>
+      </span>
+      {canAct ? (
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]" aria-hidden="true">
+          <PencilIcon />
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -106,8 +106,8 @@ export default function WorkOrderDetailTabletHeaderSection({
   };
 
   return (
-    <section className="pbp-detail-summary-card rounded-2xl border p-5">
-      <div className="grid gap-4 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+    <section className="pbp-detail-summary-card rounded-2xl border p-4">
+      <div className="grid gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-start gap-2">
             {isEditingTitle ? (
@@ -128,7 +128,7 @@ export default function WorkOrderDetailTabletHeaderSection({
               </div>
             ) : (
               <>
-                <h2 className="min-w-0 break-keep text-2xl font-semibold text-stone-950">{title}</h2>
+                <h2 className="min-w-0 break-keep text-xl font-semibold text-stone-950">{title}</h2>
                 {canEditTitle ? (
                   <button
                     type="button"
@@ -142,15 +142,12 @@ export default function WorkOrderDetailTabletHeaderSection({
               </>
             )}
           </div>
-          <div className="mt-3">
+          <div className="mt-3 grid gap-2">
             <TabletSummaryAction label={copy.summaryLabel} value={summaryValue} onClick={onOpenBasicInfoModal} disabled={locked} />
+            <TabletSummaryAction label={copy.managerLabel} value={managerValue} onClick={onOpenManagerAssignModal} disabled={!canChangeManager || managerLocked} />
+            <TabletSummaryAction label={copy.currentInventoryLabel} value={inventoryValue} onClick={onOpenInventoryEditor} disabled={!canEditInventory} />
+            <div className="text-right text-[11px] text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
           </div>
-        </div>
-
-        <div className="grid gap-3">
-          <TabletSummaryAction label={copy.managerLabel} value={managerValue} onClick={onOpenManagerAssignModal} disabled={!canChangeManager || managerLocked} />
-          <TabletSummaryAction label={copy.currentInventoryLabel} value={inventoryValue} onClick={onOpenInventoryEditor} disabled={!canEditInventory} />
-          <div className="text-right text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
         </div>
       </div>
     </section>

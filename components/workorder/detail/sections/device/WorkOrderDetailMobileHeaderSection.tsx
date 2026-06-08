@@ -138,7 +138,7 @@ export default function WorkOrderDetailMobileHeaderSection({
           </div>
         ) : (
           <>
-            <h2 className="min-w-0 break-keep text-lg font-semibold leading-7 text-stone-950 sm:text-xl">{title}</h2>
+            <h2 className="min-w-0 break-keep text-lg font-semibold leading-7 text-stone-950">{title}</h2>
             {canEditTitle ? (
               <button
                 type="button"
@@ -152,7 +152,7 @@ export default function WorkOrderDetailMobileHeaderSection({
           </>
         )}
       </div>
-      <p className="mt-2 break-keep text-sm leading-6 text-stone-600">{summaryValue}</p>
+      <p className="mt-2 break-keep text-xs leading-5 text-stone-500">{summaryValue}</p>
 
       <div className="mt-4 grid gap-2">
         <MobileSummaryAction

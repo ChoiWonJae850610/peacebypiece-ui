@@ -510,9 +510,9 @@ export const workorderEn = {
       material: {
         title: "Required fabric / trims",
         empty: "No required fabric or trim items have been registered yet.",
-        fallbackItem: "Required material {index}",
+        fallbackItem: "Material {index}",
         amountLabel: "Amount",
-        addButton: "+ Add required item",
+        addButton: "+ Add material",
         summaryFormat: "{name}{andMore}",
         handoffNote: "Supplier, unit cost, confirmed quantity, amount, and delivery details are finalized in the fabric / trims order screen.",
         zeroQuantityNoticeTitle: "{count} material item(s) have quantity 0.",

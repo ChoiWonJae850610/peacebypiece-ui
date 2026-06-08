@@ -198,8 +198,8 @@ function AttachmentUploadHint({
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <span className={`pbp-sidepanel-preview-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}>＋</span>
         <span className="min-w-0 flex-1">
-          <span className="block break-words text-[13px] font-semibold pbp-text-primary">{title}</span>
-          <span className="mt-0.5 block break-words text-xs leading-4 pbp-text-muted">{description}</span>
+          <span className="block break-words text-xs font-semibold pbp-text-primary">{title}</span>
+          <span className="mt-0.5 block break-words text-[11px] leading-4 pbp-text-muted">{description}</span>
         </span>
       </div>
     </div>
@@ -330,7 +330,7 @@ export default function WorkOrderAttachmentPanel({
               aria-hidden="true"
             />
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold pbp-text-primary">
+              <div className="text-xs font-semibold pbp-text-primary">
                 {hasGeneratedOrderRequestPdf ? ui.attachmentPanel.orderRequestPdfSavedTitle : ui.attachmentPanel.orderRequestPdfMissingTitle}
               </div>
               <p className="mt-1 text-xs leading-5 pbp-text-muted">
@@ -419,7 +419,7 @@ export default function WorkOrderAttachmentPanel({
         </div>
       ) : (
         <div>
-          <div className="pbp-empty-state mt-3 min-w-0 rounded-2xl border border-dashed px-3 py-5 text-center text-sm sm:px-4 sm:py-6">{emptyText}</div>
+          <div className="pbp-empty-state mt-3 min-w-0 whitespace-pre-line rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5">{emptyText}</div>
           <AttachmentUploadHint
             scope={uploadScope}
             canManageAttachments={canManageAttachments}

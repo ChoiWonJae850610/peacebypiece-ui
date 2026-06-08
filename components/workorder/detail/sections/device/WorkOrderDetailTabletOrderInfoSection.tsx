@@ -21,7 +21,7 @@ function TabletDetailField({
   return (
     <div className={`pbp-workorder-editable-panel min-w-0 rounded-xl border px-3 py-3 ${span ? "md:col-span-2" : ""}`}>
       <div className="mb-1 text-xs text-stone-500">{label}</div>
-      <div className="min-h-8 text-sm font-medium text-stone-900">{children}</div>
+      <div className="min-h-7 text-[13px] font-medium text-stone-900">{children}</div>
     </div>
   );
 }
@@ -59,7 +59,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
   const hasRows = visibleOrderEntries.length > 0 || outsourcing.length > 0;
 
   return (
-    <section className="overflow-hidden rounded-2xl bg-stone-50 p-4">
+    <section className="overflow-hidden rounded-2xl bg-stone-50 p-3.5">
       <SectionHeader
         title={copy.title}
         summary={formatOrderSummary(visibleOrderEntries, i18n)}
@@ -87,7 +87,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
 
           {visibleOrderEntries.map((item) => {
             return (
-              <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+              <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-[11px] font-semibold text-stone-500">{copy.fields.lineType}</div>
@@ -95,7 +95,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-3 text-sm md:grid-cols-2 xl:grid-cols-3">
+                <div className="mt-3 grid gap-2.5 text-[13px] md:grid-cols-2 xl:grid-cols-3">
                   <TabletDetailField label={copy.fields.item}>
                     <EditableValue section="order" rowId={item.id} field="type" value={item.type} displayValue={translateWorkOrderDisplayText(item.type, locale)} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                   </TabletDetailField>
@@ -118,7 +118,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
 
           {outsourcing.map((item, rowIndex) => {
             return (
-              <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+              <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-[11px] font-semibold text-stone-500">{copy.fields.lineType}</div>
@@ -131,7 +131,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-3 text-sm md:grid-cols-2 xl:grid-cols-3">
+                <div className="mt-3 grid gap-2.5 text-[13px] md:grid-cols-2 xl:grid-cols-3">
                   <TabletDetailField label={copy.fields.item}>
                     <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getTranslatedWorkOrderSelectDisplayValue(item.process, (value) => translateWorkOrderDisplayText(value, locale))} options={outsourcingProcessOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                   </TabletDetailField>
