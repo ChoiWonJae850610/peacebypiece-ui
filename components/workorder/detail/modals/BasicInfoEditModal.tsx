@@ -126,9 +126,8 @@ export default function BasicInfoEditModal({
       description={copy.description}
       maxWidthClass="md:max-w-xl"
       footer={renderModalFooterActions({
-        layout: "split",
-        secondary: { label: i18n.common.ui.common.cancel, onClick: onClose, width: "fill" },
-        primary: { label: i18n.common.ui.common.apply, onClick: onSave, tone: "primary", width: "fill" },
+        layout: "end",
+        primary: { label: i18n.common.ui.common.apply, onClick: onSave, tone: "primary" },
       })}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

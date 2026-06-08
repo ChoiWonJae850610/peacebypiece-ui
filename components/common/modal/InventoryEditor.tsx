@@ -101,9 +101,8 @@ export default function InventoryEditor({
       title={copy.title}
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
-        layout: "split",
-        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill", className: "rounded-2xl" },
-        primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary", width: "fill", className: "rounded-2xl disabled:opacity-50" },
+        layout: "end",
+        primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary", className: "rounded-2xl disabled:opacity-50" },
       })}
     >
       <div className="grid grid-cols-2 gap-3">

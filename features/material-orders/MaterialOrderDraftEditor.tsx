@@ -44,6 +44,7 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
   const orientation = useResponsiveOrientation();
   const [viewportWidth, setViewportWidth] = useState(getViewportWidth);
   const tabletCanUseThreePanel = orientation === "landscape" && viewportWidth >= RESPONSIVE_BREAKPOINTS.tabletThreePanelMin;
+  const compactTabletLandscape = deviceType === "tablet" && orientation === "landscape" && !tabletCanUseThreePanel;
   const useDrawerNavigation = deviceType === "mobile" || (deviceType === "tablet" && !tabletCanUseThreePanel);
   const useStackedProgress = deviceType === "mobile";
   const canUseThreePanelWorkspace = deviceType === "desktop" || (deviceType === "tablet" && tabletCanUseThreePanel);
@@ -183,6 +184,46 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
       mobile={deviceType === "mobile"}
     />
   );
+
+  if (compactTabletLandscape) {
+    return (
+      <div className="flex h-full min-h-0 flex-col gap-3">
+        {topbar}
+        <WaflMobileListDrawer
+          open={mobileOrderListDrawerOpen}
+          onClose={() => setMobileOrderListDrawerOpen(false)}
+          title="발주서 목록"
+          closeLabel="닫기"
+          closeOverlayAria="발주서 목록 드로어 닫기"
+          titleId="material-order-tablet-drawer-title"
+        >
+          <div className="min-h-[72dvh] min-w-0">
+            <MaterialOrderListPanel
+              variant="drawer"
+              orders={orders}
+              selectedOrderId={selectedOrderId}
+              loading={ordersLoading}
+              errorMessage={ordersError}
+              creating={creatingOrder}
+              onSelectOrder={handleSelectOrder}
+              onCreateOrder={createOrder}
+              onRetry={() => void refreshOrders()}
+              selectedDraftMaterialType={materialType}
+              selectedDraftSupplierName={selectedDraftSupplierName}
+              selectedDraftLines={lines}
+            />
+          </div>
+        </WaflMobileListDrawer>
+        <AppResponsiveWorkspace device="tablet">
+          {statusToast}
+          <div className="grid h-full min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,0.46fr)] gap-3">
+            <section className="min-h-0 min-w-0 overflow-y-auto rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">{detailPanel}</section>
+            <section className="min-h-0 min-w-0 overflow-y-auto rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">{allocationPanel}</section>
+          </div>
+        </AppResponsiveWorkspace>
+      </div>
+    );
+  }
 
   if (useDrawerNavigation) {
     const mobileToolTabs: Array<AppSegmentedTabItem<MaterialOrderMobileToolKey>> = [

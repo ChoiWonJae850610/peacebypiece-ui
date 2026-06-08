@@ -43,14 +43,14 @@ export default function BaseModal({
 
   const modalContent = (
     <div
-      className={`fixed inset-0 z-[90] ${rootClassName}`.trim()}
+      className={`fixed inset-0 z-[120] pointer-events-auto ${rootClassName}`.trim()}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className={`absolute inset-0 pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
-      <div className="absolute inset-0 md:p-6" onClick={handleBackdropClick}>
+      <div className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
+      <div className="absolute inset-0 pointer-events-auto md:p-6" onClick={handleBackdropClick}>
         <div
           ref={dialogRef}
           tabIndex={-1}

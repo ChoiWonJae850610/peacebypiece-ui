@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_CONTENT_MUTED_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
+import { MODAL_ACTION_LABELS, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { formatRoles } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
 import { useI18n } from "@/lib/i18n";
@@ -25,10 +26,21 @@ export default function ManagerAssignModal({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.managerAssign;
+  const [draftManagerId, setDraftManagerId] = useState<string>(currentManagerId ?? "");
   const managerCandidates = useMemo(
     () => users.filter((user) => Boolean(user.id) && Boolean(user.companyMemberId)),
     [users],
   );
+
+  useEffect(() => {
+    if (open) setDraftManagerId(currentManagerId ?? "");
+  }, [currentManagerId, open]);
+
+  const applyDisabled = getModalActionDisabledState(!draftManagerId || draftManagerId === (currentManagerId ?? ""));
+  const handleApply = () => {
+    if (applyDisabled || !draftManagerId) return;
+    onSelectManager(draftManagerId);
+  };
 
   return (
     <ModalShell
@@ -37,6 +49,10 @@ export default function ManagerAssignModal({
       title={copy.title}
       description={copy.description}
       maxWidthClass="md:max-w-lg"
+      footer={renderModalFooterActions({
+        layout: "end",
+        primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary" },
+      })}
     >
       <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-3 text-sm text-[var(--pbp-text-secondary)]`}>
         {copy.currentManagerLabel} <span className="ml-1 font-medium text-[var(--pbp-text-primary)]">{currentManagerName || "-"}</span>
@@ -44,12 +60,12 @@ export default function ManagerAssignModal({
 
       <div className="mt-4 space-y-2">
         {managerCandidates.map((user) => {
-          const selected = currentManagerId ? user.id === currentManagerId : user.name === currentManagerName;
+          const selected = draftManagerId ? user.id === draftManagerId : user.name === currentManagerName;
           return (
             <button
               key={user.id}
               type="button"
-              onClick={() => onSelectManager(user.id)}
+              onClick={() => setDraftManagerId(user.id)}
               className={[
                 "flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition",
                 selected
