@@ -55,7 +55,7 @@ export default function WorkOrderDetailMobileView({
           <WorkOrderDetailMobileHeaderSection {...viewModel.headerProps} />
           {viewModel.rejectionReasonNoticeProps ? <RejectionReasonNotice {...viewModel.rejectionReasonNoticeProps} /> : null}
           <WorkOrderDetailMobileActionSection {...viewModel.actionProps} />
-          {viewModel.showCostSummary ? <WorkOrderDetailMobileCostSummarySection {...viewModel.costSummaryProps} /> : null}
+          <WorkOrderDetailMobileCostSummarySection {...viewModel.costSummaryProps} />
         </MobileSectionStack>
       ) : null}
 

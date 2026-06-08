@@ -685,7 +685,7 @@ export const workorderEn = {
         loadingSideTitle: "Loading attachments, design files, and memos.",
         loadingSideDescription: "Checking files and work memos for the right panel.",
         detailTabs: {
-          basic: "Basic",
+          basic: "Summary",
           order: "Process",
           production: "Items",
           aria: "Work order detail sections",

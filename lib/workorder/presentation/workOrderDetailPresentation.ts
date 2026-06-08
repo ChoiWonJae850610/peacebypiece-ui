@@ -24,7 +24,7 @@ export function buildWorkOrderDetailViewModel(args: BuildWorkOrderDetailViewMode
     orderInfoProps: buildOrderInfoSectionProps(args, orderInfoHubPolicy),
     productionCompositionProps: buildProductionCompositionSectionProps(args),
     costSummaryProps: buildCostSummarySectionProps(args),
-    showCostSummary: args.canSeeCostSections,
+    showCostSummary: true,
     showProductionComposition: args.canSeeProductionSections,
   };
 }

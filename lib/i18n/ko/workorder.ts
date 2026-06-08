@@ -685,7 +685,7 @@ export const workorderKo = {
         loadingSideTitle: "첨부·디자인·메모를 불러오는 중입니다.",
         loadingSideDescription: "오른쪽 패널에 표시할 파일과 작업메모 정보를 확인하고 있습니다.",
         detailTabs: {
-          basic: "기본",
+          basic: "요약",
           order: "공정",
           production: "구성",
           aria: "작업지시서 상세 섹션",

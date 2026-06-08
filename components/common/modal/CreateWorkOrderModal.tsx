@@ -103,6 +103,7 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate, isCreati
   const handleTitleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
     event.preventDefault();
+    event.currentTarget.blur();
     handleCreate();
   };
 
@@ -135,6 +136,7 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate, isCreati
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={handleTitleKeyDown}
             placeholder={copy.titlePlaceholder}
+            enterKeyHint="done"
             className={MODAL_INPUT_CLASS}
             disabled={isCreating}
           />
