@@ -26,6 +26,8 @@ export type WorkflowProgressPanelAction = {
 
 type WorkflowProgressPanelDensity = "default" | "compact";
 
+export type WorkflowProgressPanelLayout = "horizontal" | "vertical";
+
 export type WorkflowProgressPanelPathMode = "standard" | "directOrder";
 
 export type WorkflowProgressPanelDirectPath = {
@@ -82,6 +84,7 @@ export function WorkflowProgressPanel({
   actions = [],
   footer,
   density = "default",
+  layout = "horizontal",
   className = "",
   pathMode = "standard",
   directPath,
@@ -91,6 +94,7 @@ export function WorkflowProgressPanel({
   actions?: WorkflowProgressPanelAction[];
   footer?: ReactNode;
   density?: WorkflowProgressPanelDensity;
+  layout?: WorkflowProgressPanelLayout;
   className?: string;
   pathMode?: WorkflowProgressPanelPathMode;
   directPath?: WorkflowProgressPanelDirectPath;
@@ -112,6 +116,82 @@ export function WorkflowProgressPanel({
   );
   const shouldEmphasizeDirectPath =
     pathMode === "directOrder" || Boolean(directPath?.isActive);
+
+  if (layout === "vertical") {
+    return (
+      <div className={`pbp-workflow-panel min-w-0 overflow-hidden rounded-2xl border p-3.5 shadow-sm sm:p-4 ${className}`}>
+        <div className="text-sm font-semibold text-stone-900">{title}</div>
+        <ol className="mt-3 grid min-w-0 gap-2">
+          {steps.map((step, index) => {
+            const fillClassName = step.fillClassName ?? "bg-[var(--pbp-selected-border)]";
+            const currentTextClassName = step.currentTextClassName ?? "pbp-text-primary";
+            const dotClassName = step.isCurrent
+              ? `${fillClassName} text-white`
+              : step.isDone
+                ? "bg-[var(--pbp-selected-border)] text-white"
+                : "bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]";
+
+            return (
+              <li
+                key={step.key}
+                className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border px-3 py-2.5 text-xs font-medium ${
+                  step.isCurrent ? "pbp-workflow-step-current" : "pbp-workflow-step-idle"
+                }`}
+              >
+                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${dotClassName}`}>
+                  {index + 1}
+                </span>
+                <span className={`min-w-0 break-keep ${step.isCurrent ? currentTextClassName : "text-[var(--pbp-text-muted)]"}`}>
+                  {step.label}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+
+        {actions.length > 0 ? (
+          <div className="mt-4 grid gap-2">
+            {actions.map((action) => {
+              const isDisabled = Boolean(action.disabled);
+              const helperId = action.disabledReason
+                ? getWorkflowActionReasonId(action.key)
+                : undefined;
+
+              return (
+                <div key={action.key} className="grid gap-1">
+                  <button
+                    type="button"
+                    onClick={action.onClick}
+                    disabled={isDisabled}
+                    title={action.title}
+                    aria-label={action.ariaLabel}
+                    aria-describedby={isDisabled ? helperId : undefined}
+                    className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl px-3 py-3 text-center text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-70 ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
+                  >
+                    {action.isProcessing ? (
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                    ) : null}
+                    <span className="min-w-0 break-keep">{action.label}</span>
+                  </button>
+                  {isDisabled && action.disabledReason ? (
+                    <span id={helperId} className="text-center text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]">
+                      {action.disabledReason}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {footer ? (
+          <div className="mt-3 flex items-center gap-2 text-[11px] text-[var(--pbp-text-muted)]">
+            {footer}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div

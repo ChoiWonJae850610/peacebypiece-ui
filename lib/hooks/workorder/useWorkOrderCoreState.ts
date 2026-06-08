@@ -115,12 +115,10 @@ function mergeCurrentUserWithDirectoryProfile(input: {
 
 function resolveInitialSelectedId(input: {
   requestedId: string | null;
-  fallbackId: string;
   workOrders: WorkOrder[];
 }): string {
   if (input.requestedId && input.workOrders.some((item) => item.id === input.requestedId)) return input.requestedId;
-  if (input.fallbackId && input.workOrders.some((item) => item.id === input.fallbackId)) return input.fallbackId;
-  return input.workOrders[0]?.id ?? "";
+  return "";
 }
 
 export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}) {
@@ -128,7 +126,6 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   const initialUsers = useMemo(() => repository.getInitialUsers(), [repository]);
   const initialWorkOrders = useMemo(() => repository.getInitialWorkOrders(), [repository]);
   const initialHistoryLogs = useMemo(() => repository.getInitialHistoryLogs(), [repository]);
-  const repositoryDefaultSelectedId = useMemo(() => repository.getDefaultSelectedId(), [repository]);
   const initialCurrentUserId = useMemo(() => repository.getDefaultCurrentUserId(), [repository]);
   const initialPermissionTargetUserId = useMemo(() => repository.getDefaultPermissionTargetId(), [repository]);
   const initialCurrentUser = useMemo(
@@ -145,7 +142,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   const [persistedWorkOrders, setPersistedWorkOrders] = useState<WorkOrder[]>(normalizedInitialWorkOrders);
   const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(initialHistoryLogs);
   const [selectedId, setSelectedId] = useState(() =>
-    resolveInitialSelectedId({ requestedId: options.initialWorkOrderId ?? null, fallbackId: repositoryDefaultSelectedId, workOrders: normalizedInitialWorkOrders }),
+    resolveInitialSelectedId({ requestedId: options.initialWorkOrderId ?? null, workOrders: normalizedInitialWorkOrders }),
   );
   const [searchQuery, setSearchQuery] = useState(options.initialSearchQuery ?? "");
   const [listStatusFilter, setListStatusFilter] = useState<WorkOrderListStatusFilter>(
@@ -158,7 +155,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   const [repositoryError, setRepositoryError] = useState<WorkOrderRepositoryError | null>(null);
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(
-    initialWorkOrders.find((item) => item.id === selectedId)?.lastSavedAt ?? initialWorkOrders[0]?.lastSavedAt ?? null,
+    selectedId ? initialWorkOrders.find((item) => item.id === selectedId)?.lastSavedAt ?? null : null,
   );
   const detailLoadInFlightIdsRef = useRef<Set<string>>(new Set());
   const isMountedRef = useRef(true);
@@ -193,11 +190,10 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
         setHistoryLogs(nextState.historyLogs);
         const nextSelectedId = resolveInitialSelectedId({
           requestedId: options.initialWorkOrderId ?? null,
-          fallbackId: nextState.selectedId,
           workOrders: normalizedLoadedWorkOrders,
         });
         setSelectedId(nextSelectedId);
-        const nextSelected = normalizedLoadedWorkOrders.find((item) => item.id === nextSelectedId) ?? normalizedLoadedWorkOrders[0];
+        const nextSelected = normalizedLoadedWorkOrders.find((item) => item.id === nextSelectedId) ?? null;
         setLastSavedAt(nextSelected?.lastSavedAt ?? null);
         setRepositoryStatus("ready");
       })
@@ -210,7 +206,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     return () => {
       cancelled = true;
     };
-  }, [listSort, listStatusFilter, options.initialWorkOrderId, repository]);
+  }, [options.initialWorkOrderId, repository]);
 
   useEffect(() => {
     if (repositoryStatus !== "ready") return;

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
 import { AppBadge, AppButton, AppCard, AppSelect, AppSection, WaflEmptyState, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
@@ -46,6 +47,7 @@ type MaterialOrderDetailPanelProps = {
   onRemoveLine: (lineId: string) => void;
   onChangeStatus: (status: MaterialOrderStatus) => void;
   mobile?: boolean;
+  progressLayout?: WorkflowProgressPanelLayout;
 };
 
 export default function MaterialOrderDetailPanel({
@@ -65,6 +67,7 @@ export default function MaterialOrderDetailPanel({
   onRemoveLine,
   onChangeStatus,
   mobile = false,
+  progressLayout = "horizontal",
 }: MaterialOrderDetailPanelProps) {
   const isDraftEditable = selectedOrder?.status === "draft";
 
@@ -83,7 +86,8 @@ export default function MaterialOrderDetailPanel({
             workflowPath={selectedOrder.workflowPath}
             changing={statusChanging}
             onChangeStatus={onChangeStatus}
-            compact={mobile}
+            compact={mobile || progressLayout === "vertical"}
+            layout={progressLayout}
           />
 
           <AppSection

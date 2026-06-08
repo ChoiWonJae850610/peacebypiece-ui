@@ -148,8 +148,8 @@ export function useMaterialOrderDraftEditor() {
       setOrders(nextOrders);
       setSelectedOrderId((currentSelectedOrderId) => {
         if (nextSelectedOrderId) return nextSelectedOrderId;
-        if (nextOrders.some((order) => order.id === currentSelectedOrderId)) return currentSelectedOrderId;
-        return nextOrders[0]?.id ?? "";
+        if (currentSelectedOrderId && nextOrders.some((order) => order.id === currentSelectedOrderId)) return currentSelectedOrderId;
+        return "";
       });
     } catch (error) {
       setOrdersError(toMaterialOrderWorkspaceError(error, "발주서 목록을 불러오지 못했습니다."));

@@ -1,4 +1,4 @@
-import { WorkflowProgressPanel, type WorkflowProgressPanelAction, type WorkflowProgressPanelStep } from "@/components/common/workflow/WorkflowProgressPanel";
+import { WorkflowProgressPanel, type WorkflowProgressPanelAction, type WorkflowProgressPanelLayout, type WorkflowProgressPanelStep } from "@/components/common/workflow/WorkflowProgressPanel";
 import { WORKFLOW_PATH } from "@/lib/constants/workflowPaths";
 import { formatMaterialOrderStatusLabel } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import {
@@ -13,6 +13,7 @@ type MaterialOrderStatusFlowProps = {
   changing: boolean;
   onChangeStatus: (status: MaterialOrderStatus) => void;
   compact?: boolean;
+  layout?: WorkflowProgressPanelLayout;
 };
 
 export function MaterialOrderStatusFlow({
@@ -21,6 +22,7 @@ export function MaterialOrderStatusFlow({
   changing,
   onChangeStatus,
   compact = false,
+  layout = "horizontal",
 }: MaterialOrderStatusFlowProps) {
   const currentIndex = Math.max(
     0,
@@ -56,7 +58,8 @@ export function MaterialOrderStatusFlow({
       steps={progressSteps}
       actions={progressActions}
       density={compact ? "compact" : "default"}
-      className={compact ? "rounded-3xl shadow-none" : undefined}
+      layout={layout}
+      className={compact || layout === "vertical" ? "rounded-3xl shadow-none" : undefined}
       pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
       directPath={{
         fromKey: "draft",

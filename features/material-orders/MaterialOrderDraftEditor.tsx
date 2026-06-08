@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import ToastMessage from "@/components/common/ToastMessage";
-import { AppButton, AppResponsiveWorkspace, AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileListDrawer, WaflMobileShell, WaflMobileTabbedActionSheet, type AppSegmentedTabItem } from "@/components/common/ui";
+import { AppButton, AppResponsiveWorkspace, AppSheet, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileListDrawer, WaflMobileShell, WaflMobileTabbedActionSheet, type AppSegmentedTabItem } from "@/components/common/ui";
 import MobileTopBar from "@/components/layout/MobileTopBar";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
@@ -11,6 +11,7 @@ import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderList
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
 import { useResponsiveDeviceType } from "@/lib/responsive/useResponsiveDeviceType";
+import { useResponsiveOrientation } from "@/lib/responsive/useResponsiveOrientation";
 
 const MATERIAL_ORDER_PANEL_GRID_STYLE = {
   gridTemplateColumns: "minmax(220px, 0.7fr) minmax(640px, 1fr) minmax(220px, 0.7fr)",
@@ -31,6 +32,8 @@ const MATERIAL_ORDER_MOBILE_HOME_NAVIGATION = {
 
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
+  const orientation = useResponsiveOrientation();
+  const useStackedProgress = deviceType === "mobile" || (deviceType === "tablet" && orientation === "portrait");
   const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] = useState(false);
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] = useState<MaterialOrderMobileToolKey>("workorders");
@@ -129,6 +132,7 @@ export default function MaterialOrderDraftEditor() {
       onRemoveLine={removeLine}
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
       mobile={deviceType === "mobile"}
+      progressLayout={useStackedProgress ? "vertical" : "horizontal"}
     />
   );
 

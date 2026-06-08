@@ -119,15 +119,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       return;
     }
 
-    if (coreState.selectedId === "") {
-      const firstWorkOrder = coreState.workOrders[0];
-      if (!firstWorkOrder) return;
-
-      coreState.setSelectedId(firstWorkOrder.id);
-      coreState.setLastSavedAt(firstWorkOrder.lastSavedAt ?? null);
-      coreState.setSaveStatus("saved");
-      return;
-    }
+    if (coreState.selectedId === "") return;
 
     const selectedExists = coreState.workOrders.some((item) => item.id === coreState.selectedId);
     if (selectedExists) return;
