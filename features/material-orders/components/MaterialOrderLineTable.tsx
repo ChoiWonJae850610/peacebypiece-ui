@@ -224,3 +224,142 @@ function compactInputClassName(extra = "") {
     .filter(Boolean)
     .join(" ");
 }
+
+export function MaterialOrderLineMobileCards({
+  lines,
+  editable,
+  onChangeLine,
+  onRemoveLine,
+}: MaterialOrderLineTableProps) {
+  if (lines.length === 0) {
+    return (
+      <WaflEmptyState
+        title="발주 품목을 추가하세요."
+        description="작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다."
+        size="sm"
+        minHeightClassName="min-h-[120px]"
+        className="rounded-2xl border-dashed bg-[var(--pbp-surface-soft)]"
+      />
+    );
+  }
+
+  return (
+    <div className="grid min-w-0 gap-2">
+      {lines.map((line) => (
+        <MaterialOrderLineMobileCard
+          key={line.id}
+          line={line}
+          editable={editable}
+          onChangeLine={onChangeLine}
+          onRemoveLine={onRemoveLine}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MaterialOrderLineMobileCard({
+  line,
+  editable,
+  onChangeLine,
+  onRemoveLine,
+}: {
+  line: MaterialOrderDraftLine;
+  editable: boolean;
+  onChangeLine: (
+    lineId: string,
+    patch: Partial<MaterialOrderDraftLine>,
+  ) => void;
+  onRemoveLine: (lineId: string) => void;
+}) {
+  const lineAmount = calculateMaterialOrderLineAmount(line);
+
+  return (
+    <article className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 shadow-sm">
+      <div className="grid gap-2">
+        <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+          품목명
+          <input
+            value={line.itemName}
+            disabled={!editable}
+            onChange={(event) =>
+              onChangeLine(line.id, { itemName: event.target.value })
+            }
+            placeholder="예: 30수 면 블랙"
+            className={compactInputClassName()}
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+            단위
+            <AppSelect
+              value={resolveUnitSelectValue(line.unit)}
+              disabled={!editable}
+              onValueChange={(value) => onChangeLine(line.id, { unit: value })}
+              options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
+              placeholder="단위"
+              size="sm"
+              ariaLabel="발주 단위"
+            />
+          </label>
+          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+            수량
+            <input
+              type="text"
+              inputMode="decimal"
+              value={line.orderQuantity}
+              disabled={!editable}
+              onChange={(event) => {
+                const nextOrderQuantity = normalizeNumberInput(event.target.value);
+                onChangeLine(line.id, {
+                  orderQuantity: nextOrderQuantity,
+                  allocations: line.allocations.length > 0
+                    ? line.allocations.map((allocation) => ({
+                      ...allocation,
+                      allocatedQuantity: nextOrderQuantity,
+                    }))
+                    : line.allocations,
+                });
+              }}
+              className={compactInputClassName("text-right tabular-nums")}
+            />
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+            단가
+            <input
+              type="text"
+              inputMode="numeric"
+              value={line.unitPrice}
+              disabled={!editable}
+              onChange={(event) =>
+                onChangeLine(line.id, {
+                  unitPrice: normalizeNumberInput(event.target.value),
+                })
+              }
+              className={compactInputClassName("text-right tabular-nums")}
+            />
+          </label>
+          <div className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+            금액
+            <div className="flex min-h-8 items-center justify-end rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 text-xs font-semibold tabular-nums pbp-text-primary">
+              {formatMaterialOrderAmount(lineAmount)}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <MaterialOrderMiniActionButton
+            label="발주 품목 삭제"
+            tone="dangerSoft"
+            disabled={!editable}
+            title={editable ? "발주 품목을 삭제합니다." : "작성중 상태에서만 발주 품목을 삭제할 수 있습니다."}
+            onClick={() => onRemoveLine(line.id)}
+          >
+            <span aria-hidden="true">−</span>
+          </MaterialOrderMiniActionButton>
+        </div>
+      </div>
+    </article>
+  );
+}

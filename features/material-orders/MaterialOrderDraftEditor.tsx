@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 
 import ToastMessage from "@/components/common/ToastMessage";
-import { AppSegmentedTabs } from "@/components/common/ui";
-import { AppButton, AppResponsiveWorkspace, AppSheet } from "@/components/common/ui";
+import { AppButton, AppResponsiveWorkspace, AppSheet, WaflMobileContentSection, WaflMobileFixedActionBar, WaflMobileShell } from "@/components/common/ui";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
@@ -19,17 +18,11 @@ const MATERIAL_ORDER_TABLET_GRID_STYLE = {
   gridTemplateColumns: "minmax(240px, 0.72fr) minmax(0, 1fr)",
 } as const;
 
-type MaterialOrderPanelKey = "orders" | "detail" | "materials";
-
-const MATERIAL_ORDER_PANEL_TABS: Array<{ key: MaterialOrderPanelKey; label: string }> = [
-  { key: "orders", label: "발주서" },
-  { key: "detail", label: "상세 입력" },
-  { key: "materials", label: "자재 선택" },
-];
+type MaterialOrderMobileMode = "list" | "detail";
 
 export default function MaterialOrderDraftEditor() {
   const deviceType = useResponsiveDeviceType();
-  const [mobilePanel, setMobilePanel] = useState<Exclude<MaterialOrderPanelKey, "materials">>("orders");
+  const [mobileMode, setMobileMode] = useState<MaterialOrderMobileMode>("list");
   const [mobileMaterialSheetOpen, setMobileMaterialSheetOpen] = useState(false);
   const [tabletMaterialSheetOpen, setTabletMaterialSheetOpen] = useState(false);
 
@@ -72,7 +65,7 @@ export default function MaterialOrderDraftEditor() {
 
   useEffect(() => {
     if (!selectedOrderId) {
-      setMobilePanel("orders");
+      setMobileMode("list");
       setMobileMaterialSheetOpen(false);
       setTabletMaterialSheetOpen(false);
     }
@@ -80,17 +73,8 @@ export default function MaterialOrderDraftEditor() {
 
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
-    setMobilePanel("detail");
+    setMobileMode("detail");
     setTabletMaterialSheetOpen(false);
-  };
-
-  const handleMobilePanelChange = (panel: MaterialOrderPanelKey) => {
-    if (panel === "materials") {
-      setMobileMaterialSheetOpen(true);
-      return;
-    }
-
-    setMobilePanel(panel);
   };
 
   const statusToast = (
@@ -98,17 +82,6 @@ export default function MaterialOrderDraftEditor() {
       message={statusToastMessage}
       tone={statusToastTone}
       eventKey={statusToastEventKey}
-    />
-  );
-
-  const mobilePanelTabs = (
-    <AppSegmentedTabs
-      items={MATERIAL_ORDER_PANEL_TABS}
-      value={mobilePanel}
-      onChange={handleMobilePanelChange}
-      className="-mx-1 mb-3 bg-[var(--pbp-surface)]/95"
-      sticky
-      ariaLabel="원단·부자재 발주 화면 전환"
     />
   );
 
@@ -142,9 +115,10 @@ export default function MaterialOrderDraftEditor() {
       onChangeSupplierPartnerId={setSupplierPartnerId}
       onRetrySuppliers={() => void refreshSuppliers(materialType)}
       statusChanging={statusChanging}
-       onChangeLine={updateLine}
+      onChangeLine={updateLine}
       onRemoveLine={removeLine}
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
+      mobile={deviceType === "mobile"}
     />
   );
 
@@ -163,31 +137,44 @@ export default function MaterialOrderDraftEditor() {
   );
 
   if (deviceType === "mobile") {
-    return (
-      <AppResponsiveWorkspace device="mobile">
-        {statusToast}
-        {mobilePanelTabs}
-        <div className="min-h-0 min-w-0">
-          {mobilePanel === "orders" ? <section className="min-h-[520px] min-w-0">{listPanel}</section> : null}
-          {mobilePanel === "detail" ? (
-            <section className="min-h-[620px] min-w-0 space-y-3">
-              <div className="sticky bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-20 flex justify-end rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-2 shadow-[0_-10px_26px_rgba(28,25,23,0.10)] backdrop-blur">
-                <AppButton
-                  type="button"
-                  variant="secondary"
-                  size="md"
-                  className="w-full"
-                  title="이번 발주서에 담을 작업지시서 자재를 선택합니다."
-                  aria-label="작업지시서 자재 선택 패널 열기"
-                  onClick={() => setMobileMaterialSheetOpen(true)}
-                >
-                  자재 선택
-                </AppButton>
-              </div>
-              {detailPanel}
-            </section>
-          ) : null}
+    const actionBar = selectedOrderId ? (
+      <WaflMobileFixedActionBar>
+        <div className="grid grid-cols-2 gap-2">
+          <AppButton
+            type="button"
+            variant="secondary"
+            size="md"
+            width="full"
+            aria-label="발주서 목록으로 돌아가기"
+            onClick={() => setMobileMode("list")}
+          >
+            목록
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="primary"
+            size="md"
+            width="full"
+            disabled={!selectedOrderId}
+            title="이번 발주서에 담을 작업지시서 자재를 선택합니다."
+            aria-label="작업지시서 자재 선택 패널 열기"
+            onClick={() => setMobileMaterialSheetOpen(true)}
+          >
+            자재 선택
+          </AppButton>
         </div>
+      </WaflMobileFixedActionBar>
+    ) : null;
+
+    return (
+      <WaflMobileShell actionBar={actionBar} contentClassName="gap-3">
+        {statusToast}
+        <WaflMobileContentSection className={mobileMode === "list" ? "block" : "hidden"}>
+          {listPanel}
+        </WaflMobileContentSection>
+        <WaflMobileContentSection className={mobileMode === "detail" ? "block" : "hidden"}>
+          {detailPanel}
+        </WaflMobileContentSection>
         <AppSheet
           open={mobileMaterialSheetOpen}
           onOpenChange={setMobileMaterialSheetOpen}
@@ -199,7 +186,7 @@ export default function MaterialOrderDraftEditor() {
         >
           <div className="min-h-[62dvh] min-w-0">{allocationPanel}</div>
         </AppSheet>
-      </AppResponsiveWorkspace>
+      </WaflMobileShell>
     );
   }
 

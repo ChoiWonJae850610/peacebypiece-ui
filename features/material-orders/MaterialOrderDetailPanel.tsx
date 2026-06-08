@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AppButton, AppCard, AppSelect, AppSection, WaflEmptyState, type AppSelectOption } from "@/components/common/ui";
-import { MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
+import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
 import {
@@ -40,6 +40,7 @@ type MaterialOrderDetailPanelProps = {
   ) => void;
   onRemoveLine: (lineId: string) => void;
   onChangeStatus: (status: MaterialOrderStatus) => void;
+  mobile?: boolean;
 };
 
 export default function MaterialOrderDetailPanel({
@@ -58,6 +59,7 @@ export default function MaterialOrderDetailPanel({
   onChangeLine,
   onRemoveLine,
   onChangeStatus,
+  mobile = false,
 }: MaterialOrderDetailPanelProps) {
   const isDraftEditable = selectedOrder?.status === "draft";
 
@@ -124,14 +126,23 @@ export default function MaterialOrderDetailPanel({
             cardClassName={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}
             bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
-            <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
-              <MaterialOrderLineTable
+            {mobile ? (
+              <MaterialOrderLineMobileCards
                 lines={lines}
                 editable={isDraftEditable}
                 onChangeLine={onChangeLine}
                 onRemoveLine={onRemoveLine}
               />
-            </div>
+            ) : (
+              <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
+                <MaterialOrderLineTable
+                  lines={lines}
+                  editable={isDraftEditable}
+                  onChangeLine={onChangeLine}
+                  onRemoveLine={onRemoveLine}
+                />
+              </div>
+            )}
             {!isDraftEditable ? (
               <p className="mt-2 text-[11px] font-medium pbp-text-muted">
                 발주서가 작성중 상태일 때만 품목을 수정할 수 있습니다.

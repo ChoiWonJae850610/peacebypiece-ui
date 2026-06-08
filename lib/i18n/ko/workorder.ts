@@ -644,24 +644,6 @@ export const workorderKo = {
         loadingDetailDescription: "작업지시서 상세 정보와 연결 데이터를 불러오는 중입니다.",
         loadingSideTitle: "첨부·디자인·메모를 불러오는 중입니다.",
         loadingSideDescription: "오른쪽 패널에 표시할 파일과 작업메모 정보를 확인하고 있습니다.",
-        detailTabs: {
-          basic: "기본",
-          order: "공정",
-          production: "구성",
-          aria: "작업지시서 상세 섹션",
-        },
-        relatedSections: {
-          attachment: "첨부",
-          design: "디자인",
-          memo: "메모",
-          tabsAria: "작업지시서 연결 정보 섹션",
-          description: "모바일에서는 첨부, 디자인, 메모를 분리해서 확인합니다.",
-          titles: {
-            attachment: "첨부 파일",
-            design: "디자인 파일",
-            memo: "작업 메모",
-          },
-        },
       },
       mobileTopBar: {
         title: "WAFL",
@@ -697,6 +679,24 @@ export const workorderKo = {
         loadingDetailDescription: "작업지시서 상세 정보와 연결 데이터를 불러오는 중입니다.",
         loadingSideTitle: "첨부·디자인·메모를 불러오는 중입니다.",
         loadingSideDescription: "오른쪽 패널에 표시할 파일과 작업메모 정보를 확인하고 있습니다.",
+        detailTabs: {
+          basic: "기본",
+          order: "공정",
+          production: "구성",
+          aria: "작업지시서 상세 섹션",
+        },
+        relatedSections: {
+          attachment: "첨부",
+          design: "디자인",
+          memo: "메모",
+          tabsAria: "작업지시서 연결 정보 섹션",
+          description: "모바일에서는 첨부, 디자인, 메모를 분리해서 확인합니다.",
+          titles: {
+            attachment: "첨부 파일",
+            design: "디자인 파일",
+            memo: "작업 메모",
+          },
+        },
       },
       workOrderListCard: {
         uncategorized: "분류 미지정",
