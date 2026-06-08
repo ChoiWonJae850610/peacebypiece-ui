@@ -88,7 +88,7 @@ export default function MaterialOrderDetailPanel({
 
           <AppSection
             title="발주 기본정보"
-            description={mobile ? "공급처와 발주 종류를 확인합니다." : "자재 종류와 실제 공급처를 먼저 정합니다."}
+            description={mobile ? undefined : "자재 종류와 실제 공급처를 먼저 정합니다."}
             className="shrink-0"
             cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}
             bodyClassName={mobile ? "grid gap-2" : "grid gap-3 xl:grid-cols-2"}
@@ -133,7 +133,7 @@ export default function MaterialOrderDetailPanel({
 
           <AppSection
             title="발주 품목"
-            description={mobile ? "카드별 수량·단가를 확인하고 수정합니다." : "실제 주문 수량과 단가를 입력합니다. 금액은 자동 계산됩니다."}
+            description={mobile ? undefined : "실제 주문 수량과 단가를 입력합니다. 금액은 자동 계산됩니다."}
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
             cardClassName={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}
             bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -207,15 +207,12 @@ function MaterialOrderMobileStatusHeader({
       </div>
       <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px] font-semibold">
         <span className="rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2 pbp-text-muted">
-          {statusChanging ? "상태 변경 처리 중" : "상태 액션은 아래 단계 카드"}
+          {statusChanging ? "상태 변경 중" : "상태 변경 가능"}
         </span>
         <span className="rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2 text-right pbp-text-muted">
           {orderedAtLabel}
         </span>
       </div>
-      <p className="mt-2 text-[11px] leading-relaxed pbp-text-subtle">
-        PDF 생성과 납기 입력 액션은 후속 기능 연결 전까지 이 상세 영역 하단 기준으로 배치합니다.
-      </p>
     </section>
   );
 }

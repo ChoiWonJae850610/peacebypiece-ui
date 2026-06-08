@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode, type RefObject } from "react";
 
-import { AppButton, AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFixedActionBar, WaflMobileShell, WAFL_MOBILE_SAFE_AREA_CLASS_NAMES, type AppSegmentedTabItem } from "@/components/common/ui";
+import { AppSegmentedTabs, AppSheet, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileShell, WAFL_MOBILE_SAFE_AREA_CLASS_NAMES, type AppSegmentedTabItem } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 type MobileRelatedSectionKey = "attachment" | "design" | "memo";
@@ -54,21 +54,14 @@ export default function MobileSectionStack({
       topBar={topBar}
       drawer={drawer}
       actionBar={showDetailActionBar ? (
-        <WaflMobileFixedActionBar>
-          <div className="grid grid-cols-3 gap-2">
-            {relatedTabs.map((item) => (
-              <AppButton
-                key={item.key}
-                className="w-full"
-                variant="secondary"
-                size="lg"
-                onClick={() => openRelatedSection(item.key)}
-              >
-                {item.label}
-              </AppButton>
-            ))}
-          </div>
-        </WaflMobileFixedActionBar>
+        <WaflMobileFloatingActionButton
+          ariaLabel={relatedCopy.openAria}
+          title={relatedCopy.openTitle}
+          onClick={() => openRelatedSection(activeRelatedSection)}
+        >
+          <span aria-hidden="true">＋</span>
+          <span>{relatedCopy.openLabel}</span>
+        </WaflMobileFloatingActionButton>
       ) : undefined}
       contentClassName={showDetailActionBar ? undefined : "pb-[calc(1rem+env(safe-area-inset-bottom))]"}
     >

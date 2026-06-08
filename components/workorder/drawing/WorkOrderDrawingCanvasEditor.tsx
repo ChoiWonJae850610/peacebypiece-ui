@@ -984,10 +984,17 @@ export default function WorkOrderDrawingCanvasEditor({
               aria-label={ui.canvasAria}
             />
             {landscapeBlocked ? (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-[var(--pbp-surface)]/92 px-5 text-center backdrop-blur-sm">
-                <div className="max-w-xs rounded-3xl border border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] px-5 py-4 text-[var(--pbp-warning-text)] shadow-xl">
+              <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[var(--pbp-surface)]/95 px-5 text-center backdrop-blur-sm">
+                <div className="w-full max-w-sm rounded-3xl border border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] px-5 py-4 text-[var(--pbp-warning-text)] shadow-xl">
                   <div className="text-sm font-bold">{ui.landscapeBlockedTitle}</div>
                   <div className="mt-2 text-xs font-semibold leading-5">{ui.landscapeBlockedMessage}</div>
+                  <button
+                    type="button"
+                    onClick={requestClose}
+                    className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-xs font-bold pbp-text-primary shadow-sm"
+                  >
+                    {ui.landscapeBlockedClose}
+                  </button>
                 </div>
               </div>
             ) : null}

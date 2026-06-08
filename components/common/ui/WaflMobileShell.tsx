@@ -71,6 +71,15 @@ export type WaflMobileFixedActionBarProps = {
   className?: string;
 };
 
+export type WaflMobileFloatingActionButtonProps = {
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  ariaLabel: string;
+  title?: string;
+  className?: string;
+};
+
 export function WaflMobileFixedActionBar({ children, className }: WaflMobileFixedActionBarProps) {
   return (
     <div
@@ -81,6 +90,38 @@ export function WaflMobileFixedActionBar({ children, className }: WaflMobileFixe
       )}
     >
       {children}
+    </div>
+  );
+}
+
+
+export function WaflMobileFloatingActionButton({
+  children,
+  onClick,
+  disabled = false,
+  ariaLabel,
+  title,
+  className,
+}: WaflMobileFloatingActionButtonProps) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 flex justify-end px-4",
+        className,
+      )}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        title={title ?? ariaLabel}
+        className={cn(
+          "pointer-events-auto inline-flex min-h-14 min-w-14 items-center justify-center gap-2 rounded-full border border-transparent pbp-action-primary px-4 text-sm font-bold shadow-[0_18px_40px_rgba(28,25,23,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50",
+        )}
+      >
+        {children}
+      </button>
     </div>
   );
 }

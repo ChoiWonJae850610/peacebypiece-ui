@@ -74,11 +74,6 @@ export default function MaterialOrderAllocationPanel({
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0">
             <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 자재 선택</h2>
-            {mobile ? (
-              <p className="mt-1 text-[11px] leading-relaxed pbp-text-subtle">
-                남은 자재와 진행 상태를 확인한 뒤 이번 발주서에 담을 품목만 선택합니다.
-              </p>
-            ) : null}
           </div>
           <SectionCountBadge className="translate-y-0.5">{filteredCandidates.length}건</SectionCountBadge>
         </div>
