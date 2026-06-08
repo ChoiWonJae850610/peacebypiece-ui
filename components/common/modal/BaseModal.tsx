@@ -43,19 +43,20 @@ export default function BaseModal({
 
   const modalContent = (
     <div
-      className={`fixed inset-0 z-[120] pointer-events-auto ${rootClassName}`.trim()}
+      className={`pbp-mobile-no-zoom fixed inset-0 z-[500] pointer-events-auto ${rootClassName}`.trim()}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
       <div className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
-      <div className="absolute inset-0 pointer-events-auto md:p-6" onClick={handleBackdropClick}>
+      <div className="absolute inset-0 pointer-events-auto touch-none md:p-6" onClick={handleBackdropClick}>
         <div
           ref={dialogRef}
           tabIndex={-1}
+          onPointerDown={(event) => event.stopPropagation()}
           className={[
-            "absolute inset-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain pbp-mobile-sheet-enter pbp-modal-panel",
+            "absolute inset-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain touch-pan-y pointer-events-auto pbp-mobile-sheet-enter pbp-modal-panel",
             "border-0 md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[min(92dvh,960px)] md:w-full md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:border",
             maxWidthClassName,
             panelClassName,

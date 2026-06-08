@@ -1253,7 +1253,7 @@ export default function AdminSettingsHub() {
   const activeMenuItem = ADMIN_SETTINGS_MENU_ITEMS.find((item) => item.id === activeMenuId) ?? ADMIN_SETTINGS_MENU_ITEMS[0];
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0 sm:gap-4 sm:pr-1 md:gap-5">
+    <div className="flex min-h-0 w-full flex-1 flex-col gap-3 overflow-y-auto sm:gap-4 md:gap-5">
       <WaflPageHero
         eyebrow={t("settings.hub.eyebrow", "고객사 환경설정")}
         title={t("settings.hub.title", "환경설정")}

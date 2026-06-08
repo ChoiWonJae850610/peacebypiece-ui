@@ -22,6 +22,8 @@ const MATERIAL_ORDER_TABLET_GRID_STYLE = {
   gridTemplateColumns: "minmax(240px, 0.72fr) minmax(0, 1fr)",
 } as const;
 
+const MATERIAL_ORDER_WORKSPACE_STACK_CLASS = "flex h-full min-h-0 flex-col gap-3 sm:gap-4 md:gap-5";
+
 type MaterialOrderMobileToolKey = "workorders" | "schedule";
 
 function SearchIcon() {
@@ -187,7 +189,7 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
 
   if (compactTabletLandscape) {
     return (
-      <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
         <WaflMobileListDrawer
           open={mobileOrderListDrawerOpen}
@@ -304,7 +306,7 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
   if (deviceType === "tablet") {
     if (canUseThreePanelWorkspace) {
       return (
-        <div className="flex h-full min-h-0 flex-col gap-3">
+        <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
           {topbar}
           <AppResponsiveWorkspace device="desktop">
             {statusToast}
@@ -322,7 +324,7 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
     }
 
     return (
-      <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
         <AppResponsiveWorkspace device="tablet">
           {statusToast}
@@ -336,7 +338,7 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
       {topbar}
       <AppResponsiveWorkspace device="desktop">
         {statusToast}

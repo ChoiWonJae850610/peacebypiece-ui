@@ -89,7 +89,7 @@ export default function AppSelect({
           position="popper"
           sideOffset={6}
           className={cn(
-            "z-[70] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-xl",
+            "z-[650] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-xl",
             contentClassName,
           )}
         >
