@@ -290,10 +290,8 @@ export const workorderKo = {
       previewUnavailableTitle: "미리보기를 사용할 수 없습니다.",
       previewAriaSuffix: "미리보기",
       previewUnavailableAriaSuffix: "미리보기 불가",
-      empty: "첨부 없음
-PDF, 이미지, 문서를 추가할 수 있습니다.",
-      designEmpty: "디자인 없음
-이미지를 추가하거나 직접 그릴 수 있습니다.",
+      empty: "첨부 없음\nPDF, 이미지, 문서를 추가할 수 있습니다.",
+      designEmpty: "디자인 없음\n이미지를 추가하거나 직접 그릴 수 있습니다.",
       legacyOwnerFallback: "기존 첨부",
       previewFallback: "파일",
       previewPdf: "PDF",
