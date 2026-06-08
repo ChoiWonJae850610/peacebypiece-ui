@@ -18,6 +18,7 @@ export default function ProductionCompositionSection({
   onCancelEdit,
   onAddMaterial,
   onRemoveMaterial,
+  onRemoveZeroQuantityMaterials,
   onAddOutsourcing,
   onRemoveOutsourcing,
   materialVendorOptionsById,
@@ -40,6 +41,7 @@ export default function ProductionCompositionSection({
   onCancelEdit: () => void;
   onAddMaterial: () => void;
   onRemoveMaterial: (id: string) => void;
+  onRemoveZeroQuantityMaterials: () => void;
   onAddOutsourcing: () => void;
   onRemoveOutsourcing: (id: string) => void;
   materialVendorOptionsById: Record<string, string[]>;
@@ -71,6 +73,7 @@ export default function ProductionCompositionSection({
         onCancelEdit={onCancelEdit}
         onAdd={onAddMaterial}
         onRemove={onRemoveMaterial}
+        onRemoveZeroQuantity={onRemoveZeroQuantityMaterials}
         locked={locked}
       />
     </div>
