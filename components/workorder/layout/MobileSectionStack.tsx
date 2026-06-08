@@ -41,6 +41,12 @@ export default function MobileSectionStack({
     setActiveRelatedSection("attachment");
     setSidePanelOpen(true);
   };
+  const handleRelatedSheetOpenChange = (nextOpen: boolean) => {
+    setSidePanelOpen(nextOpen);
+    if (!nextOpen) {
+      setActiveRelatedSection("attachment");
+    }
+  };
   const showDetailActionBar = hasSelection;
 
   useEffect(() => {
@@ -69,7 +75,7 @@ export default function MobileSectionStack({
 
       <WaflMobileTabbedActionSheet
         open={sidePanelOpen}
-        onOpenChange={setSidePanelOpen}
+        onOpenChange={handleRelatedSheetOpenChange}
         title={relatedTitle}
         description={relatedCopy.description}
         items={relatedTabs}

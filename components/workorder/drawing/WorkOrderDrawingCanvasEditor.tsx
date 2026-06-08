@@ -622,6 +622,11 @@ export default function WorkOrderDrawingCanvasEditor({
     setEraserCursor(getEraserCursorFromCanvasPoint(canvas, point, eraserLineWidth));
   };
 
+  const shouldUseTouchEventFallback = () => {
+    if (typeof window === "undefined") return false;
+    return typeof window.PointerEvent === "undefined";
+  };
+
   const getTouchCanvasPoint = (event: DrawingTouchEvent) => {
     const canvas = canvasRef.current;
     const touch = event.touches[0] ?? event.changedTouches[0];
@@ -866,7 +871,6 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (event.pointerType === "touch") return;
     if (drawingInputDisabled) return;
     event.preventDefault();
     updateEraserCursor(event);
@@ -878,7 +882,6 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (event.pointerType === "touch") return;
     const canvas = canvasRef.current;
     if (!canvas || drawingInputDisabled) return;
     event.preventDefault();
@@ -911,7 +914,6 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const stopDrawing = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (event.pointerType === "touch") return;
     const canvas = canvasRef.current;
     if (drawingInputDisabled) {
       drawingRef.current = false;
@@ -969,6 +971,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handleTouchStart = (event: DrawingTouchEvent) => {
+    if (!shouldUseTouchEventFallback()) return;
     const canvas = canvasRef.current;
     const startPoint = getTouchCanvasPoint(event);
     if (!canvas || !startPoint || drawingInputDisabled) return;
@@ -995,6 +998,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handleTouchMove = (event: DrawingTouchEvent) => {
+    if (!shouldUseTouchEventFallback()) return;
     const nextPoint = getTouchCanvasPoint(event);
     if (!nextPoint || drawingInputDisabled) return;
     event.preventDefault();
@@ -1007,6 +1011,7 @@ export default function WorkOrderDrawingCanvasEditor({
   };
 
   const handleTouchEnd = (event: DrawingTouchEvent) => {
+    if (!shouldUseTouchEventFallback()) return;
     const endPoint = getTouchCanvasPoint(event);
     if (!drawingInputDisabled) {
       event.preventDefault();
