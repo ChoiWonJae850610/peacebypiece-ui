@@ -123,7 +123,11 @@ function AttachmentActionMenu({
       )}
       {open ? (
         <div
-          className={`pbp-card absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}
+          className={
+            trigger === "plus"
+              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg"
+              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg"
+          }
         >
           <button
             type="button"
@@ -667,8 +671,10 @@ export default function WorkOrderAttachmentPanel({
               )}
             </div>
           ) : (
-            <div>
-              <div className="pbp-empty-state mt-3 min-w-0 whitespace-pre-line rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5">
+            <div className={isFlatDevice ? "space-y-2.5" : undefined}>
+              <div
+                className={`pbp-empty-state min-w-0 whitespace-pre-line rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5 ${isFlatDevice ? "" : "mt-3"}`}
+              >
                 {emptyText}
               </div>
               {isFlatDevice ? (
