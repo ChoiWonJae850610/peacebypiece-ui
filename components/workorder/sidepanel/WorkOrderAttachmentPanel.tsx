@@ -97,7 +97,7 @@ function AttachmentActionMenu({
   }, [open]);
 
   return (
-    <div ref={menuRef} className="relative shrink-0">
+    <div ref={menuRef} data-wafl-component="menu" className="relative shrink-0">
       {trigger === "plus" ? (
         <WorkOrderAddIconButton
           label={addButtonLabel}
@@ -125,8 +125,8 @@ function AttachmentActionMenu({
         <div
           className={
             trigger === "plus"
-              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm"
-              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm"
+              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-[var(--pbp-radius-wafl)] p-1.5 text-sm"
+              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-[var(--pbp-radius-wafl)] p-1.5 text-sm"
           }
         >
           <button
@@ -135,7 +135,7 @@ function AttachmentActionMenu({
               setOpen(false);
               if (!disabled) onOpenAttachmentPicker();
             }}
-            className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+            className="pbp-interactive-button flex w-full items-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
           >
             <WorkOrderPlusIcon className="h-3.5 w-3.5" />
             <span>{addButtonLabel}</span>
@@ -147,7 +147,7 @@ function AttachmentActionMenu({
                 setOpen(false);
                 onOpenDrawingPlaceholder();
               }}
-              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+              className="pbp-interactive-button flex w-full items-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
               title={ui.attachmentPanel.drawingActionPending}
             >
               <span aria-hidden="true">✎</span>
@@ -161,7 +161,7 @@ function AttachmentActionMenu({
                 setOpen(false);
                 onOpenAdvancedDrawing();
               }}
-              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+              className="pbp-interactive-button flex w-full items-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
               title={ui.attachmentPanel.advancedDrawingActionPending}
             >
               <span aria-hidden="true">✦</span>
@@ -239,6 +239,7 @@ function AttachmentUploadHint({
 
   return (
     <div
+      data-wafl-component="add-card"
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
       onDragEnter={handleDragOver}
@@ -246,7 +247,7 @@ function AttachmentUploadHint({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       aria-label={title}
-      className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 flex w-full min-w-0 items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
+      className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 flex w-full min-w-0 items-center justify-center rounded-[var(--pbp-radius-wafl)] border border-dashed active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
         dragActive ? "pbp-sidepanel-upload-zone-active" : ""
       } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
     >
@@ -306,7 +307,7 @@ function AttachmentFlatAddHint({
   const isDesign = isDesignAttachmentScope(scope);
 
   return (
-    <div className="flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4">
+    <div data-wafl-component="add-card" className="flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-wafl)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4">
       {isDesign ? (
         <AttachmentActionMenu
           scope={scope}
@@ -447,7 +448,7 @@ export default function WorkOrderAttachmentPanel({
             : undefined
         }
       >
-        <div className={isFlatDevice ? "min-w-0 space-y-2.5" : "rounded-[24px] p-4 pbp-card min-w-0"}>
+        <div data-wafl-component="section-card" className={isFlatDevice ? "min-w-0 space-y-2.5" : "rounded-[var(--pbp-radius-wafl)] p-4 pbp-card min-w-0"}>
           {!isFlatDevice ? (
           <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
             <div className="flex min-w-0 items-center gap-2">
@@ -465,7 +466,7 @@ export default function WorkOrderAttachmentPanel({
           </div>
           ) : null}
           {showOrderRequestPdfStatus ? (
-            <div className="mt-3 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left">
+            <div data-wafl-component="info-card" className="mt-3 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left">
               <div className="flex min-w-0 items-start gap-2">
                 <span
                   className={`mt-0.5 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
@@ -536,12 +537,13 @@ export default function WorkOrderAttachmentPanel({
               {attachments.map((attachment) => (
                 <div
                   key={attachment.id}
+                  data-wafl-component="file-card"
                   className={
                     isMobile
-                      ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-content-card)] border p-2.5 pr-9"
+                      ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-wafl)] border p-2.5 pr-9"
                       : isTablet
-                        ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-content-card)] border p-3 pr-11"
-                        : "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-content-card)] border p-3 pr-12"
+                        ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-wafl)] border p-3 pr-11"
+                        : "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-wafl)] border p-3 pr-12"
                   }
                 >
                   {attachment.canSetPrimary ? (
@@ -601,8 +603,8 @@ export default function WorkOrderAttachmentPanel({
                     <div
                       className={
                         isMobile
-                          ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl"
-                          : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+                          ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[var(--pbp-radius-wafl)]"
+                          : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[var(--pbp-radius-wafl)]"
                       }
                     >
                       {attachment.type === "image" ? (
@@ -673,7 +675,8 @@ export default function WorkOrderAttachmentPanel({
           ) : (
             <div className={isFlatDevice ? "space-y-2.5" : undefined}>
               <div
-                className={`pbp-empty-state min-w-0 whitespace-pre-line rounded-[var(--pbp-radius-content-card)] border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5 ${isFlatDevice ? "" : "mt-3"}`}
+                data-wafl-component="empty-card"
+                className={`pbp-empty-state min-w-0 whitespace-pre-line rounded-[var(--pbp-radius-wafl)] border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5 ${isFlatDevice ? "" : "mt-3"}`}
               >
                 {emptyText}
               </div>

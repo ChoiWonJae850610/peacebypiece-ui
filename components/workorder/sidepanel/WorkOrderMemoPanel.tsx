@@ -97,8 +97,8 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className={isMobile
-          ? "pbp-field-interaction pbp-workorder-editable-input h-[34px] w-full resize-none overflow-hidden rounded-lg border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60"
-          : "pbp-field-interaction pbp-workorder-editable-input h-[32px] w-full resize-none overflow-hidden rounded-lg border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"}
+          ? "pbp-field-interaction pbp-workorder-editable-input h-[34px] w-full resize-none overflow-hidden rounded-[var(--pbp-radius-wafl)] border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60"
+          : "pbp-field-interaction pbp-workorder-editable-input h-[32px] w-full resize-none overflow-hidden rounded-[var(--pbp-radius-wafl)] border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"}
       />
       <div className={isMobile ? "mt-1.5 flex flex-wrap items-center justify-between gap-2" : "mt-1.5 flex items-center justify-end gap-2"}>
         <span className="mr-auto text-[10px] font-medium text-[var(--pbp-field-disabled-text)]" aria-live="polite">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
@@ -241,7 +241,7 @@ function MemoThreadCard({
   };
 
   return (
-    <div className={isMobile ? "pbp-sidepanel-item min-w-0 rounded-[var(--pbp-radius-content-card)] border p-2.5" : "pbp-sidepanel-item min-w-0 rounded-[var(--pbp-radius-content-card)] border p-3"}>
+    <div data-wafl-component="memo-card" className={isMobile ? "pbp-sidepanel-item min-w-0 rounded-[var(--pbp-radius-wafl)] border p-2.5" : "pbp-sidepanel-item min-w-0 rounded-[var(--pbp-radius-wafl)] border p-3"}>
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
           <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 pbp-text-primary" : "truncate text-sm font-semibold pbp-text-primary"}>{getMemoAuthorDisplayName(thread, users, ui.memo)}</div>
@@ -261,7 +261,7 @@ function MemoThreadCard({
       </div>
 
       {editingThread ? (
-        <div className="pbp-workorder-editable-panel mt-2 rounded-xl border p-2">
+        <div data-wafl-component="input-card" className="pbp-workorder-editable-panel mt-2 rounded-[var(--pbp-radius-wafl)] border p-2">
           <MemoInputField
             value={threadEditDraft}
             disabled={!canMutateThread}
@@ -294,7 +294,7 @@ function MemoThreadCard({
                 <MemoItemActions canMutate={canMutateAuthor(reply.authorId) && !writeLocked} disabledReason={writeLockMessage} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
-                <div className="pbp-workorder-editable-panel mt-1.5 rounded-xl border p-2">
+                <div data-wafl-component="input-card" className="pbp-workorder-editable-panel mt-1.5 rounded-[var(--pbp-radius-wafl)] border p-2">
                   <MemoInputField
                     value={replyEditDraft}
                     disabled={!canMutateAuthor(reply.authorId) || writeLocked}
@@ -318,13 +318,13 @@ function MemoThreadCard({
         }) : null}
 
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 pt-1">
-          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} title={writeLocked ? writeLockMessage : undefined} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} title={writeLocked ? writeLockMessage : undefined} data-wafl-component="button" className="pbp-interactive-button pbp-action-secondary rounded-[var(--pbp-radius-wafl)] px-3 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-50">
             {replyComposerOpen ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
           </button>
         </div>
 
         {replyComposerOpen ? (
-          <div className="pbp-workorder-editable-panel min-w-0 rounded-xl border p-2.5">
+          <div data-wafl-component="input-card" className="pbp-workorder-editable-panel min-w-0 rounded-[var(--pbp-radius-wafl)] border p-2.5">
             <MemoInputField value={replyDraft} disabled={!canEditMemo || writeLocked || isThreadDeleted} placeholder={ui.memo.replyPlaceholder} submitLabel={ui.memo.submit} onChange={setReplyDraft} onSubmit={submitReply} isMobile={isMobile} />
           </div>
         ) : null}
@@ -394,7 +394,7 @@ export default function WorkOrderMemoPanel({
           <SectionCountBadge>{`${memoThreads.length}${ui.memo.countSuffix}`}</SectionCountBadge>
         </div>
       ) : null}
-      <div className={isMobile ? "pbp-workorder-editable-panel min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
+      <div data-wafl-component="input-card" className={isMobile ? "pbp-workorder-editable-panel min-w-0 rounded-[var(--pbp-radius-wafl)] border p-2" : isTablet ? "pbp-workorder-editable-panel min-w-0 rounded-[var(--pbp-radius-wafl)] border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-[var(--pbp-radius-wafl)] border p-2.5"}>
         <div className="text-[11px] pbp-text-muted">{ui.memo.authorPrefix} {getMemoAuthorDisplayName({ authorId: currentUserId, authorName: currentUserName, authorRole: currentUserRole }, users, ui.memo)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
@@ -419,7 +419,7 @@ export default function WorkOrderMemoPanel({
             currentUserRole={currentUserRole}
             users={users}
           />
-        )) : <div className="pbp-empty-state min-w-0 rounded-xl border border-dashed px-3 py-5 text-center text-sm">{ui.memo.empty}</div>}
+        )) : <div data-wafl-component="empty-card" className="pbp-empty-state min-w-0 rounded-[var(--pbp-radius-wafl)] border border-dashed px-3 py-5 text-center text-sm">{ui.memo.empty}</div>}
       </div>
     </>
   );
