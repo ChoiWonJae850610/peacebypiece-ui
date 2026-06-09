@@ -30,7 +30,7 @@ export default function WaflFilterBar({
   layoutClassName,
 }: WaflFilterBarProps) {
   return (
-    <div className={cn(WAFL_FILTER_BAR_CLASS, className)}>
+    <div data-wafl-component="filter-bar" className={cn(WAFL_FILTER_BAR_CLASS, className)}>
       <div className={cn(WAFL_FILTER_BAR_LAYOUT_CLASS, layoutClassName)}>{children}</div>
     </div>
   );

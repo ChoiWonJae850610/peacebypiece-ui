@@ -33,7 +33,7 @@ export default function AdminSegmentedTabs<TId extends string>({
         .join(" ")}
       aria-label={ariaLabel}
     >
-      <div className="inline-flex min-w-max rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1 shadow-sm">
+      <div data-wafl-component="segmented-tabs" className="inline-flex min-w-max rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1 shadow-none">
         {items.map((item) => {
           const isActive = item.id === activeId;
           return (
@@ -41,10 +41,11 @@ export default function AdminSegmentedTabs<TId extends string>({
               key={item.id}
               type="button"
               onClick={() => onChange(item.id)}
+              data-wafl-component="segmented-tab"
               className={[
                 "rounded-full px-4 py-2 text-xs font-semibold transition",
                 isActive
-                  ? "bg-[var(--pbp-action-primary)] text-[var(--pbp-action-primary-text)] shadow-sm"
+                  ? "bg-[var(--pbp-action-primary)] text-[var(--pbp-action-primary-text)] shadow-none"
                   : "pbp-text-muted hover:bg-[var(--pbp-surface)] hover:text-[var(--pbp-text-primary)]",
               ].join(" ")}
               aria-pressed={isActive}

@@ -54,11 +54,13 @@ export default function AdminSummaryMetricCards({
     <section
       className={[className, "shrink-0"].filter(Boolean).join(" ")}
       aria-label={ariaLabel}
+      data-wafl-component="metric-card-group"
     >
       <div className={gridClassName}>
         {cards.map((card) => (
           <article
             key={card.id}
+            data-wafl-component="metric-card"
             className={[CARD_BASE_CLASS, DENSITY_CLASS[density]].join(" ")}
           >
             <span className="pointer-events-none absolute inset-y-3 left-0 w-1 rounded-r-full bg-[var(--pbp-brand-soft)] opacity-70" />

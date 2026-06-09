@@ -71,7 +71,7 @@ type WaflDataTableGridProps = {
 };
 
 export function WaflDataTableShell({ children, className }: WaflDataTableShellProps) {
-  return <section className={cn(WAFL_DATA_TABLE_SHELL_CLASS, className)}>{children}</section>;
+  return <section data-wafl-component="data-table" className={cn(WAFL_DATA_TABLE_SHELL_CLASS, className)}>{children}</section>;
 }
 
 export function WaflDataTableHeader({
@@ -82,14 +82,14 @@ export function WaflDataTableHeader({
   const style = gridTemplateColumns ? ({ gridTemplateColumns } as CSSProperties) : undefined;
 
   return (
-    <div className={cn(WAFL_DATA_TABLE_HEADER_CLASS, className)} style={style}>
+    <div data-wafl-component="data-table-header" className={cn(WAFL_DATA_TABLE_HEADER_CLASS, className)} style={style}>
       {children}
     </div>
   );
 }
 
 export function WaflDataTableBody({ children, className }: WaflDataTableShellProps) {
-  return <div className={cn(WAFL_DATA_TABLE_DIVIDER_CLASS, className)}>{children}</div>;
+  return <div data-wafl-component="data-table-body" className={cn(WAFL_DATA_TABLE_DIVIDER_CLASS, className)}>{children}</div>;
 }
 
 type WaflDataTableRowProps = HTMLAttributes<HTMLDivElement> & {
@@ -112,6 +112,7 @@ export function WaflDataTableRow({
 
   return (
     <div
+      data-wafl-component="data-table-row"
       className={cn(
         WAFL_DATA_TABLE_ROW_CLASS,
         clickable ? WAFL_DATA_TABLE_CLICKABLE_ROW_CLASS : undefined,

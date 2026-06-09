@@ -64,7 +64,7 @@ export default function WaflSectionPanel({
   density = "standard",
 }: WaflSectionPanelProps) {
   return (
-    <section className={joinClassNames(WAFL_SECTION_PANEL_CLASS, PANEL_DENSITY_CLASS[density], className)}>
+    <section data-wafl-component="section-panel" className={joinClassNames(WAFL_SECTION_PANEL_CLASS, PANEL_DENSITY_CLASS[density], className)}>
       <div
         className={joinClassNames(
           "flex flex-col gap-3 border-b border-[var(--pbp-border)] sm:flex-row sm:items-start sm:justify-between",

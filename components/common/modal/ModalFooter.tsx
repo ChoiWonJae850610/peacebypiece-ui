@@ -11,5 +11,5 @@ export default function ModalFooter({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={getWaflModalFooterClassName(className)}>{children}</div>;
+  return <div data-wafl-component="modal-footer" className={getWaflModalFooterClassName(className)}>{children}</div>;
 }

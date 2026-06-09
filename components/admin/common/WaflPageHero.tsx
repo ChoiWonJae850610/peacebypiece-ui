@@ -42,7 +42,7 @@ export default function WaflPageHero({
   sectionRef,
 }: WaflPageHeroProps) {
   return (
-    <section ref={sectionRef} className={joinClassNames(WAFL_PAGE_HERO_CLASS, className)}>
+    <section ref={sectionRef} data-wafl-component="page-hero" className={joinClassNames(WAFL_PAGE_HERO_CLASS, className)}>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <p className={WAFL_PAGE_HERO_EYEBROW_CLASS}>{eyebrow}</p>

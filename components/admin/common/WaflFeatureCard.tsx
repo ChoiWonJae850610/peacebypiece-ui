@@ -83,11 +83,11 @@ export default function WaflFeatureCard({
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={cardClassName}>
+      <button type="button" data-wafl-component="feature-card" onClick={onClick} className={cardClassName}>
         {content}
       </button>
     );
   }
 
-  return <article className={cardClassName}>{content}</article>;
+  return <article data-wafl-component="feature-card" className={cardClassName}>{content}</article>;
 }

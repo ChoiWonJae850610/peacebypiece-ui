@@ -11,5 +11,5 @@ export default function ModalBody({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={getWaflModalBodyClassName(className)}>{children}</div>;
+  return <div data-wafl-component="modal-body" className={getWaflModalBodyClassName(className)}>{children}</div>;
 }

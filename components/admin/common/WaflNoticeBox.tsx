@@ -26,6 +26,7 @@ export default function WaflNoticeBox({
 }: WaflNoticeBoxProps) {
   return (
     <div
+      data-wafl-component="notice-box"
       className={[
         "rounded-2xl border px-4 py-3 text-xs font-medium leading-5",
         TONE_CLASS[tone],

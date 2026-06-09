@@ -21,7 +21,7 @@ export default function ModalHeader({
 }: ModalHeaderProps) {
   const { i18n } = useI18n();
   return (
-    <div className={getWaflModalHeaderClassName()}>
+    <div data-wafl-component="modal-header" className={getWaflModalHeaderClassName()}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div id={titleId} className="text-base font-semibold md:text-lg pbp-text-primary">

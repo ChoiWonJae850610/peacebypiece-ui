@@ -254,6 +254,43 @@ body[data-wafl-component-debug="true"] :where([data-wafl-component="workspace-pa
   outline-offset: 3px;
 }
 
+/* WAFL migration debug for semantic primitives that already use shared WAFL tokens
+   but are still emitted by legacy screen components instead of a single React wrapper. */
+body[data-wafl-component-debug="true"] :where(
+  .pbp-field-interaction,
+  .pbp-field-search,
+  .pbp-field-selectable,
+  .pbp-workorder-editable-input,
+  .pbp-workorder-editable-display,
+  .pbp-action-primary,
+  .pbp-action-secondary,
+  .pbp-button-surface,
+  .pbp-workorder-status-badge,
+  .pbp-cost-row,
+  .pbp-sidepanel-preview-surface,
+  .pbp-sidepanel-upload-zone,
+  .pbp-empty-state,
+  .pbp-modal-panel,
+  .pbp-modal-chrome,
+  .pbp-modal-body,
+  .pbp-modal-section
+) {
+  outline: 1.5px solid rgba(255, 80, 180, 0.64) !important;
+  outline-offset: 2px;
+}
+
+body[data-wafl-component-debug="true"] :where(
+  .pbp-field-interaction,
+  .pbp-field-search,
+  .pbp-field-selectable,
+  .pbp-workorder-editable-input,
+  .pbp-workorder-editable-display,
+  .pbp-workorder-status-badge,
+  .pbp-cost-row
+) {
+  outline-offset: 1px;
+}
+
 /* WAFL theme primitives.
    Keep new shared UI styles on these variables so future accent/theme changes
    do not require editing each work-order component. */
