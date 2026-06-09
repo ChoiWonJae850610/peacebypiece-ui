@@ -1,10 +1,11 @@
 import {
-  ADMIN_STORAGE_CARD_CLASS,
   ADMIN_STORAGE_LABEL_CLASS,
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
   ADMIN_STORAGE_VALUE_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
+import AppBadge from "@/components/common/ui/AppBadge";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import type { AdminFileTypeDistributionItem } from "@/lib/admin/files/types";
 import { formatCountWithUnit } from "@/lib/admin/files/storageSummaryPresentation";
 import { getAdminFileTypeChartColor } from "@/lib/admin/chartPalette";
@@ -24,14 +25,21 @@ export function FileTypeChartCard({
           { label: t("terms.files.document", "문서"), value: 0, percent: 0 },
           { label: t("terms.files.design", "디자인"), value: 0, percent: 0 },
         ]
-  ).map((item) => ({ ...item, label: translateAdminFileTypeTerm(item.label, t) }));
+  ).map((item) => ({
+    ...item,
+    label: translateAdminFileTypeTerm(item.label, t),
+  }));
   const total = normalizedItems.reduce((sum, item) => sum + item.value, 0);
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
 
   return (
-    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[138px] flex-col px-4 py-3 md:min-h-[148px] md:px-4 md:py-3.5 2xl:min-h-[156px] 2xl:px-5`}>
+    <WaflSurface
+      component="storage-file-type-card"
+      tone="surface"
+      className="flex h-full min-h-[138px] flex-col px-4 py-3 md:min-h-[148px] md:px-4 md:py-3.5 2xl:min-h-[156px] 2xl:px-5"
+    >
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className={ADMIN_STORAGE_LABEL_CLASS}>
@@ -41,12 +49,15 @@ export function FileTypeChartCard({
             {t("filesSummary.fileType", "파일 유형")}
           </h3>
         </div>
-        <span className="rounded-full bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-xs font-bold text-[var(--pbp-text-muted)]">
+        <AppBadge tone="neutral" size="sm">
           {formatCountWithUnit(total, t)}
-        </span>
+        </AppBadge>
       </div>
       <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 sm:flex-row sm:gap-7">
-        <div className="relative h-[124px] w-[124px] shrink-0 2xl:h-[132px] 2xl:w-[132px]">
+        <div
+          data-wafl-component="storage-type-chart"
+          className="relative h-[124px] w-[124px] shrink-0 2xl:h-[132px] 2xl:w-[132px]"
+        >
           <svg
             viewBox="0 0 148 148"
             className="h-[124px] w-[124px] -rotate-90 2xl:h-[132px] 2xl:w-[132px]"
@@ -65,7 +76,10 @@ export function FileTypeChartCard({
                   const dash = (item.value / total) * circumference;
                   const strokeDasharray = `${dash} ${circumference - dash}`;
                   const strokeDashoffset = -offset;
-                  const segmentColor = getAdminFileTypeChartColor(item.label, index);
+                  const segmentColor = getAdminFileTypeChartColor(
+                    item.label,
+                    index,
+                  );
                   offset += dash;
                   return (
                     <circle
@@ -86,35 +100,61 @@ export function FileTypeChartCard({
               : null}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className={`${ADMIN_STORAGE_VALUE_CLASS} text-2xl`}>{total}</span>
-            <span className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[11px] font-semibold`}>{t("filesSummary.totalLabel", "전체")}</span>
+            <span className={`${ADMIN_STORAGE_VALUE_CLASS} text-2xl`}>
+              {total}
+            </span>
+            <span
+              className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[11px] font-semibold`}
+            >
+              {t("filesSummary.totalLabel", "전체")}
+            </span>
           </div>
         </div>
         <div className="min-w-0 flex-[0.85] space-y-2">
           {normalizedItems.map((item, index) => (
             <div key={item.label} className="min-w-0">
               <div className="flex items-center justify-between gap-2 text-xs">
-                <span className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} flex min-w-0 items-center gap-2 font-semibold`}>
+                <span
+                  className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} flex min-w-0 items-center gap-2 font-semibold`}
+                >
                   <span
                     className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: getAdminFileTypeChartColor(item.label, index) }}
+                    style={{
+                      backgroundColor: getAdminFileTypeChartColor(
+                        item.label,
+                        index,
+                      ),
+                    }}
                   />
-                  <span className="truncate" title={item.label}>{item.label}</span>
+                  <span className="truncate" title={item.label}>
+                    {item.label}
+                  </span>
                 </span>
-                <span className={`${ADMIN_STORAGE_VALUE_CLASS} shrink-0 font-bold`}>
+                <span
+                  className={`${ADMIN_STORAGE_VALUE_CLASS} shrink-0 font-bold`}
+                >
                   {formatCountWithUnit(item.value, t)} · {item.percent}%
                 </span>
               </div>
-              <div className="mt-1 h-1.5 max-w-[360px] overflow-hidden rounded-full bg-[var(--pbp-surface-muted)]">
+              <div
+                data-wafl-component="storage-type-progress-track"
+                className="mt-1 h-1.5 max-w-[360px] overflow-hidden rounded-full bg-[var(--pbp-surface-muted)]"
+              >
                 <div
                   className="h-full rounded-full"
-                  style={{ width: `${Math.max(2, item.percent)}%`, backgroundColor: getAdminFileTypeChartColor(item.label, index) }}
+                  style={{
+                    width: `${Math.max(2, item.percent)}%`,
+                    backgroundColor: getAdminFileTypeChartColor(
+                      item.label,
+                      index,
+                    ),
+                  }}
                 />
               </div>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </WaflSurface>
   );
 }

@@ -1,14 +1,14 @@
 "use client";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { WaflInfoBox } from "@/components/common/ui/WaflForm";
+import { WaflLinkButton } from "@/components/common/ui/WaflButton";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import {
-  ADMIN_STORAGE_DANGER_BOX_CLASS,
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
-  ADMIN_STORAGE_SUBTLE_BOX_CLASS,
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
   ADMIN_STORAGE_VALUE_CLASS,
-  ADMIN_STORAGE_WARNING_BOX_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -67,12 +67,14 @@ export function EmptyTrashConfirmModal({
         </div>
       }
     >
-      <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-sm font-medium`}>
-        {t(
-          "filesList.emptyTrashConfirmDescription",
-          "휴지통의 모든 항목을 삭제 요청하시겠습니까?",
-        )}
-      </p>
+      <WaflInfoBox component="trash-empty-confirm-message" tone="muted">
+        <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-sm font-medium`}>
+          {t(
+            "filesList.emptyTrashConfirmDescription",
+            "휴지통의 모든 항목을 삭제 요청하시겠습니까?",
+          )}
+        </p>
+      </WaflInfoBox>
     </AdminModal>
   );
 }
@@ -133,11 +135,17 @@ export function TrashSelectionConfirmModal({
     >
       {summary ? (
         <div className="space-y-4">
-          <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-4 py-3`}>
+          <WaflInfoBox
+            component="trash-selection-summary"
+            tone="muted"
+            className="px-4 py-3"
+          >
             <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-xs font-semibold`}>
               {summary.summaryLabel}
             </p>
-            <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-xs leading-5`}>
+            <p
+              className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-xs leading-5`}
+            >
               {isPurge
                 ? t(
                     "filesList.selectionConfirm.purgeQuestion",
@@ -148,22 +156,30 @@ export function TrashSelectionConfirmModal({
                     "위 항목을 복원하시겠습니까?",
                   )}
             </p>
-          </div>
+          </WaflInfoBox>
           {summary.skippedCount > 0 ? (
-            <p className={`${ADMIN_STORAGE_WARNING_BOX_CLASS} px-4`}>
+            <WaflInfoBox
+              component="trash-selection-skipped-notice"
+              tone="neutral"
+              className="border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-warning)]"
+            >
               {t(
                 "filesList.selectionConfirm.skippedNotice",
                 "처리할 수 없는 선택 항목 {count}개는 제외합니다.",
               ).replace("{count}", String(summary.skippedCount))}
-            </p>
+            </WaflInfoBox>
           ) : null}
           {isPurge ? (
-            <p className={ADMIN_STORAGE_DANGER_BOX_CLASS}>
+            <WaflInfoBox
+              component="trash-selection-danger-notice"
+              tone="neutral"
+              className="border-[var(--pbp-status-danger)] bg-[var(--pbp-status-danger-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-danger)]"
+            >
               {t(
                 "filesList.selectionConfirm.purgePolicyNotice",
                 "삭제는 고객관리자 삭제 요청으로 처리되며, 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
               )}
-            </p>
+            </WaflInfoBox>
           ) : null}
         </div>
       ) : null}
@@ -244,7 +260,11 @@ export function WorkOrderActionPreviewModal({
     >
       {actionPreview && previewWorkOrder ? (
         <div className="space-y-4">
-          <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-4 py-3`}>
+          <WaflInfoBox
+            component="trash-workorder-preview-card"
+            tone="muted"
+            className="px-4 py-3"
+          >
             <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-xs font-semibold`}>
               {previewWorkOrder.title}
             </p>
@@ -253,7 +273,7 @@ export function WorkOrderActionPreviewModal({
               · {t("filesList.columns.deletedAt", "삭제일시")}{" "}
               {previewWorkOrder.deletedAt || "-"}
             </p>
-          </div>
+          </WaflInfoBox>
 
           <div className="grid gap-2 md:grid-cols-4">
             <PreviewStatCard
@@ -283,7 +303,11 @@ export function WorkOrderActionPreviewModal({
             />
           </div>
 
-          <div className={`${ADMIN_STORAGE_WARNING_BOX_CLASS} space-y-2 px-4`}>
+          <WaflInfoBox
+            component="trash-workorder-action-notice"
+            tone="muted"
+            className="space-y-2 border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-warning)]"
+          >
             <p className="font-semibold">
               {t(
                 "filesList.workorderActionGuardTitle",
@@ -312,7 +336,7 @@ export function WorkOrderActionPreviewModal({
                     "삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
                   )}
             </p>
-          </div>
+          </WaflInfoBox>
         </div>
       ) : null}
     </AdminModal>
@@ -321,10 +345,22 @@ export function WorkOrderActionPreviewModal({
 
 function PreviewStatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-2`}>
-      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>{label}</p>
-      <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-[11px] font-medium`}>{value}</p>
-    </div>
+    <WaflInfoBox
+      component="trash-preview-stat-card"
+      tone="muted"
+      className="px-3 py-2"
+    >
+      <p
+        className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}
+      >
+        {label}
+      </p>
+      <p
+        className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-[11px] font-medium`}
+      >
+        {value}
+      </p>
+    </WaflInfoBox>
   );
 }
 
@@ -426,7 +462,11 @@ export function TrashDetailModal({
 function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
   return (
     <div className="space-y-4">
-      <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} flex items-start gap-3 px-3 py-3 sm:px-4`}>
+      <WaflInfoBox
+        component="trash-detail-target-card"
+        tone="muted"
+        className="flex items-start gap-3 px-3 py-3 sm:px-4"
+      >
         <TrashItemVisual
           label={row.visualLabel}
           tone={row.visualTone}
@@ -450,17 +490,20 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
             {row.workorderTitle}
           </p>
         </div>
-      </div>
+      </WaflInfoBox>
 
       {row.kind === "attachment" && row.previewUrl ? (
-        <a
+        <WaflLinkButton
           href={row.previewUrl}
           target="_blank"
           rel="noreferrer"
-          className="block rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-xs font-medium text-[var(--pbp-text-muted)] shadow-sm transition hover:bg-[var(--pbp-surface-muted)]"
+          variant="secondary"
+          size="md"
+          width="full"
+          className="justify-start text-xs font-medium text-[var(--pbp-text-muted)]"
         >
           {t("filesList.detail.openPreview", "파일 미리보기 열기")}
-        </a>
+        </WaflLinkButton>
       ) : null}
       {row.kind === "workorder" ? (
         <WorkOrderStageInline statusLabel={row.sourceItem.statusLabel} t={t} />
@@ -468,11 +511,15 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
 
       <div className="grid gap-2 sm:grid-cols-2">
         {getTrashDetailFields(row, t).map(([label, value]) => (
-          <div
+          <WaflSurface
             key={label}
-            className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3"
+            component="trash-detail-field-card"
+            tone="surface"
+            className="px-4 py-3"
           >
-            <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium uppercase tracking-[0.12em]`}>
+            <p
+              className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium uppercase tracking-[0.12em]`}
+            >
               {label}
             </p>
             <p
@@ -481,22 +528,28 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
             >
               {value}
             </p>
-          </div>
+          </WaflSurface>
         ))}
       </div>
-      <p className="rounded-2xl bg-[var(--pbp-surface-muted)] px-4 py-3 text-xs leading-5 text-[var(--pbp-text-muted)]">
-        {row.kind === "workorder"
-          ? t(
-              "filesList.detail.workorderActionHint",
-              "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
-            )
-          : row.restoreDisabledReason ||
-            row.purgeDisabledReason ||
-            t(
-              "filesList.detail.fileActionHint",
-              "이 파일만 복원하거나 삭제 요청할 수 있습니다.",
-            )}
-      </p>
+      <WaflInfoBox
+        component="trash-detail-action-hint"
+        tone="muted"
+        className="px-4 py-3"
+      >
+        <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">
+          {row.kind === "workorder"
+            ? t(
+                "filesList.detail.workorderActionHint",
+                "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+              )
+            : row.restoreDisabledReason ||
+              row.purgeDisabledReason ||
+              t(
+                "filesList.detail.fileActionHint",
+                "이 파일만 복원하거나 삭제 요청할 수 있습니다.",
+              )}
+        </p>
+      </WaflInfoBox>
     </div>
   );
 }

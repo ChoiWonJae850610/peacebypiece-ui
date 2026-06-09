@@ -23,6 +23,7 @@ import {
   getStorageSummaryLayoutMode,
 } from "./summary/storageSummaryLayout";
 import WaflPageHero from "@/components/admin/common/WaflPageHero";
+import AppBadge from "@/components/common/ui/AppBadge";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
@@ -59,11 +60,14 @@ export default function FileStorageSummary({
       sectionRef={summaryRef}
       eyebrow={t("filesSummary.visualEyebrow", "Storage management")}
       title={t("filesSummary.visualTitle", "저장공간과 휴지통을 관리합니다.")}
-      description={t("filesSummary.visualDescription", "파일 사용량, 파일 유형, 휴지통 상태를 확인하고 필요한 정리 작업을 처리합니다.")}
+      description={t(
+        "filesSummary.visualDescription",
+        "파일 사용량, 파일 유형, 휴지통 상태를 확인하고 필요한 정리 작업을 처리합니다.",
+      )}
       badges={
-        <span className="w-fit rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1.5 text-xs font-bold text-[var(--pbp-text-muted)] shadow-sm">
+        <AppBadge tone="neutral" size="md">
           {statusLabel}
-        </span>
+        </AppBadge>
       }
       bodyClassName="mt-4"
     >
