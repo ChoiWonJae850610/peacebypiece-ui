@@ -59,7 +59,7 @@ export function MaterialOrderStatusFlow({
       actions={progressActions}
       density={compact ? "compact" : "default"}
       layout={layout}
-      className={compact || layout === "vertical" ? "rounded-3xl shadow-none" : undefined}
+      className={compact || layout === "vertical" ? "rounded-[var(--pbp-radius-wafl)] shadow-none" : undefined}
       pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
       directPath={{
         fromKey: "draft",

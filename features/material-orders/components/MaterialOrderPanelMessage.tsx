@@ -31,7 +31,7 @@ export default function MaterialOrderPanelMessage({
         action={action}
         size="sm"
         minHeightClassName="min-h-[132px]"
-        className="rounded-2xl bg-[var(--pbp-surface-soft)]"
+        className="rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-empty-state-surface)]"
       />
     );
   }
@@ -44,7 +44,7 @@ export default function MaterialOrderPanelMessage({
         action={action}
         size="sm"
         minHeightClassName="min-h-[132px]"
-        className="rounded-2xl"
+        className="rounded-[var(--pbp-radius-wafl)]"
       />
     );
   }
@@ -57,7 +57,7 @@ export default function MaterialOrderPanelMessage({
       action={action}
       size="sm"
       minHeightClassName="min-h-[132px]"
-      className="rounded-2xl bg-[var(--pbp-surface-soft)]"
+      className="rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-empty-state-surface)]"
     />
   );
 }

@@ -62,6 +62,39 @@ export function WaflInfoRow({
   );
 }
 
+
+export function WaflSurfaceButton({
+  children,
+  className,
+  component = "surface-button",
+  selected = false,
+  tone = "surface",
+  type = "button",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  children: ReactNode;
+  component?: string;
+  selected?: boolean;
+  tone?: WaflSurfaceTone;
+}) {
+  return (
+    <button
+      type={type}
+      data-wafl-component={component}
+      className={cn(
+        "pbp-interactive-card min-w-0 rounded-[var(--pbp-radius-wafl)] border p-3 text-left shadow-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        selected
+          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
+          : surfaceToneClassMap[tone],
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function WaflEmptyCard({
   children,
   className,

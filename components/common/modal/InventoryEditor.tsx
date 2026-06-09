@@ -291,7 +291,7 @@ export default function InventoryEditor({
                 <WaflInfoBox
                   key={item.id}
                   component="log-card"
-                  tone="surface"
+                  tone="neutral"
                   className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} text-sm`}
                 >
                   <div className="flex items-center justify-between gap-3">

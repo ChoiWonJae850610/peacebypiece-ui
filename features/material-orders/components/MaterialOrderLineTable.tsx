@@ -1,4 +1,4 @@
-import { AppSelect, WaflEmptyState, type AppSelectOption } from "@/components/common/ui";
+import { AppSelect, WaflEmptyCard, WaflInfoRow, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import {
   CALCULATED_TABLE_CELL_CLASS,
   EDITABLE_TABLE_CELL_CLASS,
@@ -73,13 +73,10 @@ export function MaterialOrderLineTable({
         {lines.length === 0 ? (
           <tr>
             <td className="px-3 py-4" colSpan={6}>
-              <WaflEmptyState
-                title="발주 품목을 추가하세요."
-                description="작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다."
-                size="sm"
-                minHeightClassName="min-h-[96px]"
-                className="rounded-[var(--pbp-radius-empty-card)] border-dashed bg-[var(--pbp-empty-state-surface)] shadow-none"
-              />
+              <WaflEmptyCard component="material-order-line-empty" className="min-h-[96px] px-4 py-5">
+                <p className="font-semibold pbp-text-primary">발주 품목을 추가하세요.</p>
+                <p className="mt-1 text-xs pbp-text-muted">작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다.</p>
+              </WaflEmptyCard>
             </td>
           </tr>
         ) : (
@@ -234,13 +231,10 @@ export function MaterialOrderLineMobileCards({
 }: MaterialOrderLineTableProps) {
   if (lines.length === 0) {
     return (
-      <WaflEmptyState
-        title="발주 품목을 추가하세요."
-        description="작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다."
-        size="sm"
-        minHeightClassName="min-h-[120px]"
-        className="rounded-[var(--pbp-radius-empty-card)] border-dashed bg-[var(--pbp-empty-state-surface)] shadow-none"
-      />
+      <WaflEmptyCard component="material-order-line-mobile-empty" className="min-h-[120px] px-4 py-5">
+        <p className="font-semibold pbp-text-primary">발주 품목을 추가하세요.</p>
+        <p className="mt-1 text-xs pbp-text-muted">작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다.</p>
+      </WaflEmptyCard>
     );
   }
 
@@ -276,7 +270,7 @@ function MaterialOrderLineMobileCard({
   const lineAmount = calculateMaterialOrderLineAmount(line);
 
   return (
-    <article className="min-w-0 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-[var(--pbp-shadow-content-card)]">
+    <WaflSurface as="article" component="material-order-line-mobile-card" className="p-3">
       <div className="grid gap-2">
         <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
           <span className="flex min-w-0 items-center justify-between gap-2">
@@ -354,13 +348,13 @@ function MaterialOrderLineMobileCard({
           </label>
           <div className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
             금액
-            <div className="flex min-h-8 items-center justify-end rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-info-surface)] px-2.5 text-xs font-semibold tabular-nums pbp-text-primary">
-              {formatMaterialOrderAmount(lineAmount)}
-            </div>
+            <WaflInfoRow component="material-order-line-amount" tone="muted" className="min-h-8 justify-end px-2.5 py-1 text-xs font-semibold tabular-nums pbp-text-primary">
+              <span>{formatMaterialOrderAmount(lineAmount)}</span>
+            </WaflInfoRow>
           </div>
         </div>
 
       </div>
-    </article>
+    </WaflSurface>
   );
 }

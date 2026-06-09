@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import ToastMessage from "@/components/common/ToastMessage";
-import { AppResponsiveWorkspace, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileListDrawer, WaflMobileShell, WaflMobileTabbedActionSheet, type AppSegmentedTabItem } from "@/components/common/ui";
+import { AppResponsiveWorkspace, WaflEmptyCard, WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileListDrawer, WaflMobileShell, WaflMobileTabbedActionSheet, WaflSurface, type AppSegmentedTabItem } from "@/components/common/ui";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
@@ -220,8 +220,8 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
         <AppResponsiveWorkspace device="tablet">
           {statusToast}
           <div className="grid h-full min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,0.46fr)] gap-3">
-            <section className="min-h-0 min-w-0 overflow-y-auto rounded-[var(--pbp-radius-page-panel)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-content-card)]">{detailPanel}</section>
-            <section className="min-h-0 min-w-0 overflow-y-auto rounded-[var(--pbp-radius-page-panel)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-content-card)]">{allocationPanel}</section>
+            <WaflSurface as="section" component="material-order-tablet-detail-shell" className="min-h-0 min-w-0 overflow-y-auto">{detailPanel}</WaflSurface>
+            <WaflSurface as="section" component="material-order-tablet-allocation-shell" className="min-h-0 min-w-0 overflow-y-auto">{allocationPanel}</WaflSurface>
           </div>
         </AppResponsiveWorkspace>
       </div>
@@ -295,10 +295,10 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
             <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>
           ) : null}
           {mobileActiveTool === "schedule" ? (
-            <div className="min-h-[42dvh] rounded-[var(--pbp-radius-empty-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] p-4 shadow-none">
+            <WaflEmptyCard component="material-order-schedule-empty" className="min-h-[42dvh] p-4 text-left">
               <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
               <p className="mt-2 text-xs leading-5 pbp-text-muted">PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에 배치합니다.</p>
-            </div>
+            </WaflEmptyCard>
           ) : null}
         </WaflMobileTabbedActionSheet>
       </WaflMobileShell>

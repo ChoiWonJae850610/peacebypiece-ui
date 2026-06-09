@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { AppBadge, AppCard } from "@/components/common/ui";
+import { AppBadge, WaflInfoRow, WaflInput, WaflSurface } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
@@ -71,7 +71,7 @@ export default function MaterialOrderAllocationPanel({
   ), [candidates, searchQuery]);
 
   return (
-    <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+    <WaflSurface component="material-order-allocation-panel" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-end justify-between gap-2 pb-2.5">
           <div className="min-w-0">
@@ -80,7 +80,7 @@ export default function MaterialOrderAllocationPanel({
           <SectionCountBadge className="translate-y-0.5">{filteredCandidates.length}건</SectionCountBadge>
         </div>
         <div className={MATERIAL_ORDER_PANEL_DIVIDER_CLASS} aria-hidden="true" />
-        <input
+        <WaflInput
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="제품·자재·담당자 검색"
@@ -116,7 +116,7 @@ export default function MaterialOrderAllocationPanel({
           ))
         )}
       </div>
-    </AppCard>
+    </WaflSurface>
   );
 }
 
@@ -192,7 +192,7 @@ function AllocationCandidateCard({
   const materialItemsCount = workOrder.materialItems.length;
 
   return (
-    <AppCard padding="sm" variant="interactive" className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
+    <WaflSurface component="material-order-allocation-card" className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS} p-3`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
@@ -213,7 +213,7 @@ function AllocationCandidateCard({
       </div>
 
       <details className="group mt-2.5">
-        <summary className="flex cursor-pointer list-none items-center justify-between rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-muted)]">
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2 text-[11px] font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface)]">
           <span>발주 대기 자재 · {materialItemsCount}개</span>
           <span aria-hidden="true" className="transition group-open:rotate-180">▾</span>
         </summary>
@@ -233,7 +233,7 @@ function AllocationCandidateCard({
           ))}
         </div>
       </details>
-    </AppCard>
+    </WaflSurface>
   );
 }
 
@@ -245,10 +245,10 @@ function SummaryChip({
   value: string;
 }) {
   return (
-    <span className="min-w-0 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-2 shadow-none">
+    <WaflInfoRow component="material-order-summary-chip" className="block min-w-0 px-2.5 py-2 shadow-none">
       <span className="block text-[10px] font-semibold pbp-text-subtle">{label}</span>
       <span className="mt-0.5 block truncate font-semibold pbp-text-muted">{value}</span>
-    </span>
+    </WaflInfoRow>
   );
 }
 
@@ -333,7 +333,7 @@ function WorkOrderMaterialRequestRow({
   });
 
   return (
-    <AppCard padding="none" variant="flat" className={`${MATERIAL_ORDER_NESTED_ROW_CLASS} ${mobile ? "grid gap-2" : ""}`}>
+    <WaflSurface component="material-order-material-row" className={`${MATERIAL_ORDER_NESTED_ROW_CLASS} ${mobile ? "grid gap-2" : ""}`}>
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <AppBadge tone="neutral" size="sm" className="shrink-0 text-[10px]">
@@ -346,8 +346,12 @@ function WorkOrderMaterialRequestRow({
         </p>
         {mobile ? (
           <div className="mt-2 grid grid-cols-2 gap-1.5 text-[10px] font-semibold pbp-text-subtle">
-            <span className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2 py-1.5">진행 {formatMaterialQuantity(orderedQuantity, material.unit)}</span>
-            <span className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2 py-1.5 text-right">남음 {formatMaterialQuantity(completionRemainingQuantity, material.unit)}</span>
+            <WaflInfoRow component="material-order-quantity-row" className="px-2 py-1.5">
+              <span>진행</span><span>{formatMaterialQuantity(orderedQuantity, material.unit)}</span>
+            </WaflInfoRow>
+            <WaflInfoRow component="material-order-quantity-row" className="px-2 py-1.5 text-right">
+              <span>남음</span><span>{formatMaterialQuantity(completionRemainingQuantity, material.unit)}</span>
+            </WaflInfoRow>
           </div>
         ) : null}
       </div>
@@ -364,7 +368,7 @@ function WorkOrderMaterialRequestRow({
       >
         <span aria-hidden="true">{selectionButtonLabel}</span>
       </MaterialOrderActionButton>
-    </AppCard>
+    </WaflSurface>
   );
 }
 

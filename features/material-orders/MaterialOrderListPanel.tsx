@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { AppBadge, AppButton, AppCard, AppListRow, AppSelect, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppButton, AppSelect, WaflInput, WaflSurface, WaflSurfaceButton, type AppSelectOption } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
@@ -95,7 +95,7 @@ export default function MaterialOrderListPanel({
       </div>
 
       <div className="mt-3 grid shrink-0 gap-1.5">
-        <input
+        <WaflInput
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="공급처·품목·작업지시서 검색"
@@ -170,9 +170,9 @@ export default function MaterialOrderListPanel({
   }
 
   return (
-    <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+    <WaflSurface component="material-order-list-panel" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       {listContent}
-    </AppCard>
+    </WaflSurface>
   );
 }
 
@@ -197,24 +197,25 @@ function MaterialOrderListButton({
   const primaryLineLabel = draftLines ? formatMaterialOrderDraftLineLabel(draftLines) : formatMaterialOrderPrimaryLineLabel(order);
 
   return (
-    <AppListRow
-      as="button"
-      type="button"
+    <WaflSurfaceButton
+      component="material-order-list-card"
       selected={selected}
-      title={displayTitle}
-      description={primaryLineLabel}
-      trailing={
-        <AppBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="sm">
+      className="w-full"
+      onClick={() => onSelectOrder(order.id)}
+    >
+      <div className="flex min-w-0 items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</p>
+          <p className="mt-1 truncate text-[11px] pbp-text-muted">{primaryLineLabel}</p>
+        </div>
+        <AppBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="sm" className="shrink-0">
           {formatMaterialOrderStatusLabel(order.status)}
         </AppBadge>
-      }
-      meta={
-        <span className="flex w-full min-w-0 items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2 pbp-text-subtle">
-          <span>{formatMaterialOrderTypeLabel(materialType)}</span>
-          <span className="truncate">{supplierLabel}</span>
-        </span>
-      }
-      onClick={() => onSelectOrder(order.id)}
-    />
+      </div>
+      <div className="mt-2 flex w-full min-w-0 items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2 text-[11px] font-semibold pbp-text-subtle">
+        <span>{formatMaterialOrderTypeLabel(materialType)}</span>
+        <span className="truncate">{supplierLabel}</span>
+      </div>
+    </WaflSurfaceButton>
   );
 }
