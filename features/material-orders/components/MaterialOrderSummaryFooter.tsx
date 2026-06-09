@@ -11,7 +11,7 @@ type MaterialOrderSummaryFooterProps = {
 
 export function MaterialOrderSummaryFooter({ totals }: MaterialOrderSummaryFooterProps) {
   return (
-    <AppCard variant="subtle" padding="sm" className="shrink-0 text-[11px] xl:px-4">
+    <AppCard variant="subtle" padding="sm" className="shrink-0 border-[var(--pbp-info-border)] bg-[var(--pbp-info-surface)] text-[11px] shadow-none xl:px-4">
       <div className="grid grid-cols-3 items-center gap-3">
         <SummaryValue label="품목" value={`${totals.lineCount}종`} />
         <SummaryValue label="주문" value={String(totals.totalOrderQuantity)} />

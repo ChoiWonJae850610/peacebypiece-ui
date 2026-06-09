@@ -78,7 +78,7 @@ export function MaterialOrderLineTable({
                 description="작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다."
                 size="sm"
                 minHeightClassName="min-h-[96px]"
-                className="rounded-2xl border-dashed bg-[var(--pbp-surface-soft)]"
+                className="rounded-[var(--pbp-radius-empty-card)] border-dashed bg-[var(--pbp-empty-state-surface)] shadow-none"
               />
             </td>
           </tr>
@@ -238,7 +238,7 @@ export function MaterialOrderLineMobileCards({
         description="작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다."
         size="sm"
         minHeightClassName="min-h-[120px]"
-        className="rounded-2xl border-dashed bg-[var(--pbp-surface-soft)]"
+        className="rounded-[var(--pbp-radius-empty-card)] border-dashed bg-[var(--pbp-empty-state-surface)] shadow-none"
       />
     );
   }
@@ -275,7 +275,7 @@ function MaterialOrderLineMobileCard({
   const lineAmount = calculateMaterialOrderLineAmount(line);
 
   return (
-    <article className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 shadow-sm">
+    <article className="min-w-0 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-[var(--pbp-shadow-content-card)]">
       <div className="grid gap-2">
         <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
           품목명
@@ -343,7 +343,7 @@ function MaterialOrderLineMobileCard({
           </label>
           <div className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
             금액
-            <div className="flex min-h-8 items-center justify-end rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 text-xs font-semibold tabular-nums pbp-text-primary">
+            <div className="flex min-h-8 items-center justify-end rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-info-surface)] px-2.5 text-xs font-semibold tabular-nums pbp-text-primary">
               {formatMaterialOrderAmount(lineAmount)}
             </div>
           </div>

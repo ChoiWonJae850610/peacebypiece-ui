@@ -193,7 +193,7 @@ function MaterialOrderMobileStatusHeader({
   const orderedAtLabel = selectedOrder.orderedAt ? `발주완료 ${selectedOrder.orderedAt.slice(0, 10)}` : "발주완료 전";
 
   return (
-    <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm">
+    <section className="rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-[var(--pbp-shadow-content-card)]">
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold pbp-text-subtle">원단·부자재 발주</p>
@@ -210,10 +210,10 @@ function MaterialOrderMobileStatusHeader({
         </AppBadge>
       </div>
       <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px] font-semibold">
-        <span className="rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2 pbp-text-muted">
+        <span className="rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-2 pbp-text-muted">
           {statusChanging ? "상태 변경 중" : "상태 변경 가능"}
         </span>
-        <span className="rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2 text-right pbp-text-muted">
+        <span className="rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-2 text-right pbp-text-muted">
           {orderedAtLabel}
         </span>
       </div>

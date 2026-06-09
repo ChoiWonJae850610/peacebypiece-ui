@@ -8,6 +8,7 @@ import {
   MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
   MATERIAL_ORDER_NESTED_ROW_CLASS,
   MATERIAL_ORDER_PANEL_CARD_CLASS,
+  MATERIAL_ORDER_PANEL_DIVIDER_CLASS,
   MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
   MATERIAL_ORDER_PANEL_HEADER_CLASS,
   MATERIAL_ORDER_PANEL_LIST_CLASS,
@@ -71,18 +72,20 @@ export default function MaterialOrderAllocationPanel({
   return (
     <AppCard padding="none" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
-        <div className="flex items-end justify-between gap-2">
+        <div className="flex items-end justify-between gap-2 pb-2.5">
           <div className="min-w-0">
             <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 자재 선택</h2>
           </div>
           <SectionCountBadge className="translate-y-0.5">{filteredCandidates.length}건</SectionCountBadge>
         </div>
+        <div className={MATERIAL_ORDER_PANEL_DIVIDER_CLASS} aria-hidden="true" />
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="제품·자재·담당자 검색"
           className={fieldClassName("mt-3 min-h-9 text-xs")}
         />
+        <div className={`mt-3 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`} aria-hidden="true" />
       </div>
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
@@ -188,7 +191,7 @@ function AllocationCandidateCard({
   const materialItemsCount = workOrder.materialItems.length;
 
   return (
-    <AppCard padding="sm" className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
+    <AppCard padding="sm" variant="interactive" className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
@@ -209,7 +212,7 @@ function AllocationCandidateCard({
       </div>
 
       <details className="group mt-2.5">
-        <summary className="flex cursor-pointer list-none items-center justify-between rounded-2xl bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-muted)]">
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-muted)]">
           <span>발주 대기 자재 · {materialItemsCount}개</span>
           <span aria-hidden="true" className="transition group-open:rotate-180">▾</span>
         </summary>
@@ -241,7 +244,7 @@ function SummaryChip({
   value: string;
 }) {
   return (
-    <span className="min-w-0 rounded-2xl bg-[var(--pbp-surface-soft)] px-2.5 py-2">
+    <span className="min-w-0 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-2 shadow-none">
       <span className="block text-[10px] font-semibold pbp-text-subtle">{label}</span>
       <span className="mt-0.5 block truncate font-semibold pbp-text-muted">{value}</span>
     </span>
@@ -342,8 +345,8 @@ function WorkOrderMaterialRequestRow({
         </p>
         {mobile ? (
           <div className="mt-2 grid grid-cols-2 gap-1.5 text-[10px] font-semibold pbp-text-subtle">
-            <span className="rounded-xl bg-[var(--pbp-surface-soft)] px-2 py-1.5">진행 {formatMaterialQuantity(orderedQuantity, material.unit)}</span>
-            <span className="rounded-xl bg-[var(--pbp-surface-soft)] px-2 py-1.5 text-right">남음 {formatMaterialQuantity(completionRemainingQuantity, material.unit)}</span>
+            <span className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2 py-1.5">진행 {formatMaterialQuantity(orderedQuantity, material.unit)}</span>
+            <span className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2 py-1.5 text-right">남음 {formatMaterialQuantity(completionRemainingQuantity, material.unit)}</span>
           </div>
         ) : null}
       </div>
