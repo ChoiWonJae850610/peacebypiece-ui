@@ -39,6 +39,7 @@ type AppCardProps = HTMLAttributes<HTMLElement> & {
 
 export default function AppCard({ as: Component = "div", className, variant = "surface", padding = "md", ...props }: AppCardProps) {
   return createElement(Component, {
+    "data-wafl-component": "card",
     className: cn("pbp-card min-w-0", variantClassMap[variant], paddingClassMap[padding], className),
     ...props,
   });

@@ -33,7 +33,7 @@ export default function AppSection({
   ...props
 }: AppSectionProps) {
   return (
-    <section className={cn("min-w-0", className)} {...props}>
+    <section data-wafl-component="section" className={cn("min-w-0", className)} {...props}>
       <AppCard className={cardClassName} variant={variant} padding={padding}>
         {title || description || action ? (
           <div className={cn("mb-4 flex min-w-0 items-start justify-between gap-3", headerClassName)}>

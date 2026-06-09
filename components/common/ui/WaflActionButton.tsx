@@ -77,6 +77,7 @@ export function WaflActionButton({
   return (
     <button
       type={type}
+      data-wafl-component="action-button"
       aria-label={label}
       title={label}
       className={getWaflActionButtonClassName({ tone, size, compact, className })}
@@ -115,6 +116,7 @@ export function WaflActionLink({
   return (
     <a
       href={disabled ? undefined : href}
+      data-wafl-component="action-button"
       aria-label={label}
       title={label}
       aria-disabled={disabled || undefined}

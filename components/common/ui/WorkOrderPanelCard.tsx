@@ -10,5 +10,5 @@ export default function WorkOrderPanelCard({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={cn(WORKORDER_PANEL_CARD_CLASS, className)}>{children}</div>;
+  return <div data-wafl-component="panel-card" className={cn(WORKORDER_PANEL_CARD_CLASS, className)}>{children}</div>;
 }

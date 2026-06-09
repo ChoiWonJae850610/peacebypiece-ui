@@ -49,6 +49,7 @@ export default function AppListRow({
   return createElement(
     Component,
     {
+      "data-wafl-component": "list-row",
       className: cn(
         "flex min-w-0 items-start gap-3 rounded-[var(--pbp-radius-wafl)] border text-left transition",
         Component === "button" ? "w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-60" : null,

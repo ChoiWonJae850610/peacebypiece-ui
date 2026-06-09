@@ -16,7 +16,7 @@ const variantClassMap: Record<WaflButtonVariant, string> = {
 };
 
 const sizeClassMap: Record<WaflButtonSize, string> = {
-  sm: "min-h-8 rounded-full px-3 py-1.5 text-xs",
+  sm: "min-h-8 rounded-[var(--pbp-radius-wafl)] px-3 py-1.5 text-xs",
   md: "min-h-10 rounded-[var(--pbp-radius-wafl)] px-4 py-2 text-sm",
   lg: "min-h-12 rounded-[var(--pbp-radius-wafl)] px-5 py-3 text-base",
 };
@@ -70,7 +70,7 @@ export function WaflButton({
   type = "button",
   ...props
 }: WaflButtonProps) {
-  return <button type={type} className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
+  return <button type={type} data-wafl-component="button" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
 }
 
 type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -81,5 +81,5 @@ type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 };
 
 export function WaflLinkButton({ className, variant = "secondary", size = "md", width = "auto", ...props }: WaflLinkButtonProps) {
-  return <a className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
+  return <a data-wafl-component="button" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
 }

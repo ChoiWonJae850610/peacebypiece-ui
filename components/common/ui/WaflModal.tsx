@@ -31,7 +31,7 @@ export function getWaflModalPanelClassName({
   className?: string;
   minHeightClassName?: string;
 } = {}) {
-  return cn("overflow-hidden rounded-[28px]", minHeightClassName, className);
+  return cn("overflow-hidden rounded-[var(--pbp-radius-wafl)]", minHeightClassName, className);
 }
 
 export function getWaflModalHeaderClassName(className?: string) {
@@ -78,7 +78,7 @@ export function WaflModalSection({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-3xl border p-4", WAFL_MODAL_SECTION_CLASS, className)}>
+    <section data-wafl-component="modal-section" className={cn("rounded-[var(--pbp-radius-wafl)] border p-4", WAFL_MODAL_SECTION_CLASS, className)}>
       {title || description ? (
         <div className="mb-4">
           {title ? <h3 className="text-sm font-semibold pbp-text-primary">{title}</h3> : null}

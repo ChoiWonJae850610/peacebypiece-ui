@@ -51,8 +51,9 @@ export default function AppSheet({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
+        <Dialog.Overlay data-wafl-component="sheet-overlay" className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content
+          data-wafl-component="sheet"
           className={cn(
             "pbp-mobile-no-zoom fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-none outline-none",
             sideClassMap[side],

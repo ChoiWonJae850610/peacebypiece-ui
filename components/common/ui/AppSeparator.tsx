@@ -9,6 +9,7 @@ type AppSeparatorProps = HTMLAttributes<HTMLDivElement> & {
 export default function AppSeparator({ orientation = "horizontal", className, ...props }: AppSeparatorProps) {
   return (
     <div
+      data-wafl-component="separator"
       aria-hidden="true"
       className={cn(
         orientation === "horizontal" ? "h-px w-full" : "h-full w-px",

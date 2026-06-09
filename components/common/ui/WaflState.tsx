@@ -75,8 +75,9 @@ export function WaflStateBlock({
 
   return (
     <section
+      data-wafl-component="state"
       className={cn(
-        "flex w-full min-w-0 items-center rounded-[22px] border",
+        "flex w-full min-w-0 items-center rounded-[var(--pbp-radius-wafl)] border",
         centered ? "justify-center text-center" : "justify-start text-left",
         sizeClassMap[size],
         minHeightClassName,

@@ -232,6 +232,22 @@ body {
   border-radius: var(--pbp-radius-wafl) !important;
 }
 
+/* WAFL component adoption debug.
+   Enabled by app/layout.tsx during current UI standardization work.
+   Elements using WAFL shared components expose data-wafl-component and receive
+   a temporary pink outline so screen-specific UI can be found visually. */
+body[data-wafl-component-debug="true"] :where([data-wafl-component]) {
+  outline: 1.5px solid rgba(255, 80, 180, 0.78) !important;
+  outline-offset: 2px;
+}
+
+body[data-wafl-component-debug="true"] :where([data-wafl-component="badge"]) {
+  outline-offset: 1px;
+}
+
+body[data-wafl-component-debug="true"] :where([data-wafl-component="button"], [data-wafl-component="action-button"]) {
+  outline-offset: 2px;
+}
 
 /* WAFL theme primitives.
    Keep new shared UI styles on these variables so future accent/theme changes

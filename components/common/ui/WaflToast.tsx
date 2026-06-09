@@ -74,6 +74,7 @@ export function WaflToastContent({ message, tone = "info", className }: WaflToas
 
   return (
     <div
+      data-wafl-component="toast"
       className={cn("pbp-toast pbp-toast--floating", className)}
       data-tone={tone}
       role={config.role}

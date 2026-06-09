@@ -32,7 +32,7 @@ export default function RootLayout({
       data-pbp-theme-tone={initialThemeRootAttributes["data-pbp-theme-tone"]}
       style={initialThemeRootAttributes.style}
     >
-      <body className="min-h-full">
+      <body className="min-h-full" data-wafl-component-debug="true">
         <PbpThemeProvider initialThemeId={DEFAULT_PBP_THEME_ID}>
           <I18nProvider initialLocale={DEFAULT_LOCALE}>
             <CurrentUserProvider>
