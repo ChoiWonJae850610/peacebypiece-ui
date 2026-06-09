@@ -125,8 +125,8 @@ function AttachmentActionMenu({
         <div
           className={
             trigger === "plus"
-              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm shadow-lg"
-              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm shadow-lg"
+              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm shadow-none"
+              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm shadow-none"
           }
         >
           <button

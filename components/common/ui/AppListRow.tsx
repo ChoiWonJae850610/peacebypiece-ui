@@ -50,7 +50,7 @@ export default function AppListRow({
     Component,
     {
       className: cn(
-        "flex min-w-0 items-start gap-3 rounded-3xl border text-left transition",
+        "flex min-w-0 items-start gap-3 rounded-[var(--pbp-radius-wafl)] border text-left transition",
         Component === "button" ? "w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-60" : null,
         densityClassMap[density],
         selected ? selectedClassName : variantClassMap[variant],

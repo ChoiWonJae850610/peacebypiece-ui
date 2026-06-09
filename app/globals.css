@@ -35,17 +35,17 @@
   --pbp-status-danger-fg: #C93A3A;
   --pbp-status-neutral-bg: #F1EFEC;
   --pbp-status-neutral-fg: #6F665D;
-  --pbp-radius-xs: 6px;
-  --pbp-radius-sm: 8px;
-  --pbp-radius-md: 12px;
-  --pbp-radius-lg: 16px;
-  --pbp-radius-xl: 20px;
-  --pbp-radius-card: 20px;
-  --pbp-radius-modal: 24px;
+  --pbp-radius-xs: 22px;
+  --pbp-radius-sm: 22px;
+  --pbp-radius-md: 22px;
+  --pbp-radius-lg: 22px;
+  --pbp-radius-xl: 22px;
+  --pbp-radius-card: 22px;
+  --pbp-radius-modal: 22px;
   --pbp-radius-pill: 999px;
-  --pbp-shadow-card-a-type: 0 1px 2px rgba(43, 33, 24, 0.04);
-  --pbp-shadow-elevated-a-type: 0 8px 24px rgba(43, 33, 24, 0.08);
-  --pbp-shadow-modal-a-type: 0 24px 80px rgba(43, 33, 24, 0.18);
+  --pbp-shadow-card-a-type: none;
+  --pbp-shadow-elevated-a-type: none;
+  --pbp-shadow-modal-a-type: none;
   --pbp-surface: #FFFFFF;
   --pbp-surface-muted: #EFE6DA;
   --pbp-surface-soft: #F7F1E8;
@@ -172,13 +172,13 @@
   --pbp-toast-danger: var(--pbp-status-danger-fg);
   --pbp-toast-info: var(--pbp-brand-soft);
   --pbp-toast-loading: var(--pbp-brand-soft);
-  --pbp-shadow-card: 0 1px 2px rgba(28, 25, 23, 0.035);
-  --pbp-shadow-elevated: 0 18px 55px rgba(28, 25, 23, 0.22);
-  --pbp-radius-page-panel: 28px;
+  --pbp-shadow-card: none;
+  --pbp-shadow-elevated: none;
+  --pbp-radius-page-panel: 22px;
   --pbp-radius-content-card: 22px;
   --pbp-radius-empty-card: 22px;
-  --pbp-shadow-content-card: 0 1px 2px rgba(28, 25, 23, 0.035);
-  --pbp-shadow-action-button: 0 1px 2px rgba(28, 25, 23, 0.05);
+  --pbp-shadow-content-card: none;
+  --pbp-shadow-action-button: none;
   --pbp-info-surface: #F7F1E8;
   --pbp-info-border: #E8DED1;
   --pbp-info-text: #2B2118;
@@ -215,6 +215,21 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* WAFL Global Visual Grammar
+   Shadow is disabled across the product. Visual hierarchy must come from
+   border, background, spacing, typography, and shared radius tokens. */
+:root {
+  --pbp-radius-wafl: 22px;
+}
+
+:where(.pbp-card, .pbp-card-muted, .pbp-detail-summary-card, .pbp-action-secondary, [class*="shadow"]) {
+  box-shadow: none !important;
+}
+
+:where([class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-t-"]):not([class*="rounded-b-"]):not([class*="rounded-l-"]):not([class*="rounded-r-"])) {
+  border-radius: var(--pbp-radius-wafl) !important;
 }
 
 
@@ -898,7 +913,6 @@ body {
 .pbp-sidepanel-upload-zone-active {
   border-color: var(--pbp-sidepanel-upload-active-border);
   background: var(--pbp-sidepanel-upload-active-surface);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pbp-sidepanel-upload-active-border) 16%, transparent);
 }
 
 .pbp-sidepanel-count-badge {
@@ -1336,4 +1350,31 @@ body[data-pbp-drawing-modal-open="true"] .pbp-drawing-modal-top-layer {
 body[data-pbp-drawing-modal-open="true"] .pbp-drawing-modal-top-layer canvas {
   pointer-events: auto !important;
   touch-action: none !important;
+}
+
+/* WAFL no-shadow final override. Keep after legacy semantic classes so older screen-level
+   styles cannot reintroduce decorative depth while the component migration continues. */
+:where(
+  .pbp-topbar-shell,
+  .pbp-admin-card,
+  .pbp-admin-card-interactive:hover,
+  .pbp-admin-filter-bar,
+  .pbp-admin-action-tile:hover,
+  .pbp-workorder-list-card:hover,
+  .pbp-workorder-list-card-selected,
+  .pbp-workorder-status-badge,
+  .pbp-toast,
+  .pbp-modal-panel,
+  .pbp-modal-section,
+  .pbp-detail-summary-card,
+  .pbp-cost-total,
+  .pbp-cost-grand-total,
+  .pbp-workflow-panel,
+  .pbp-sidepanel-upload-zone-active,
+  .pbp-interactive-card,
+  .pbp-interactive-card:hover,
+  .pbp-interactive-button,
+  .pbp-field-interaction
+) {
+  box-shadow: none !important;
 }

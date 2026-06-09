@@ -13,7 +13,7 @@ export type AppSheetSize = "sm" | "md" | "lg" | "full";
 const sideClassMap: Record<AppSheetSide, string> = {
   right: "inset-y-0 right-0 h-full border-l",
   left: "inset-y-0 left-0 h-full border-r",
-  bottom: "inset-x-0 bottom-0 max-h-[min(88dvh,calc(100dvh-env(safe-area-inset-top)-0.75rem))] rounded-t-[28px] border-t",
+  bottom: "inset-x-0 bottom-0 max-h-[min(88dvh,calc(100dvh-env(safe-area-inset-top)-0.75rem))] rounded-t-[var(--pbp-radius-wafl)] border-t",
 };
 
 const sizeClassMap: Record<AppSheetSize, string> = {
@@ -54,7 +54,7 @@ export default function AppSheet({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content
           className={cn(
-            "pbp-mobile-no-zoom fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-2xl outline-none",
+            "pbp-mobile-no-zoom fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-none outline-none",
             sideClassMap[side],
             side === "bottom" ? "min-h-[42dvh]" : sizeClassMap[size],
             className,
