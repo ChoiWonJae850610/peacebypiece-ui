@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 import { AppCard, SectionCountBadge } from "@/components/common/ui";
-import { WorkOrderAddIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderDeleteIconButton, WorkOrderEditIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
 import {
-  DeleteButton,
   type EditableCell,
   type EditableSectionKey,
 } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -15,25 +14,6 @@ import WorkOrderMaterialEditSheet, {
   type MaterialSheetDraft,
 } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
 import type { Material } from "@/types/workorder";
-
-function SectionAddButton({
-  label,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <WorkOrderAddIconButton
-      label={label}
-      size="md"
-      onClick={onClick}
-      disabled={disabled}
-    />
-  );
-}
 
 function MaterialListCard({
   item,
@@ -73,17 +53,8 @@ function MaterialListCard({
         </div>
         {!locked ? (
           <div className="flex shrink-0 items-center gap-1.5">
-            <button
-              type="button"
-              onClick={onEdit}
-              className="pbp-interactive-button rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1 text-[11px] font-semibold pbp-text-secondary shadow-sm"
-            >
-              {copy.editButton}
-            </button>
-            <DeleteButton
-              onClick={onRemove}
-              srLabel={`${title} ${common.deleteSuffix}`}
-            />
+            <WorkOrderEditIconButton label={`${title} ${copy.editButton}`} onClick={onEdit} />
+            <WorkOrderDeleteIconButton label={`${title} ${common.deleteSuffix}`} onClick={onRemove} />
           </div>
         ) : null}
       </div>
@@ -151,13 +122,7 @@ export default function MaterialSection({
           </h3>
           <SectionCountBadge>{materials.length}건</SectionCountBadge>
         </div>
-        {!locked ? (
-          <SectionAddButton
-            label={copy.addButton}
-            disabled={locked}
-            onClick={openAddSheet}
-          />
-        ) : null}
+
       </div>
       <AppCard
         className="space-y-2 xl:max-h-[320px] xl:overflow-auto xl:p-4"
@@ -200,6 +165,19 @@ export default function MaterialSection({
             onRemove={() => onRemove(item.id)}
           />
         ))}
+        {!locked ? (
+          <button
+            type="button"
+            onClick={openAddSheet}
+            className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-4"
+            aria-label={copy.addButton}
+            title={copy.addButton}
+          >
+            <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm" aria-hidden="true">
+              <WorkOrderPlusIcon />
+            </span>
+          </button>
+        ) : null}
       </AppCard>
       {!locked ? (
         <WorkOrderMaterialEditSheet

@@ -172,18 +172,26 @@ function AttachmentActionMenu({
 
 function AttachmentUploadHint({
   scope,
+  addButtonLabel,
   canManageAttachments,
   onOpenAttachmentPicker,
+  onOpenDrawingPlaceholder,
+  onOpenAdvancedDrawing,
   onUploadFiles,
   compact,
+  isMobile,
   disabled = false,
   disabledReason,
 }: {
   scope: AttachmentPanelScope;
+  addButtonLabel: string;
   canManageAttachments: boolean;
   onOpenAttachmentPicker: () => void;
+  onOpenDrawingPlaceholder: () => void;
+  onOpenAdvancedDrawing: () => void;
   onUploadFiles: (files: File[]) => void;
   compact: boolean;
+  isMobile: boolean;
   disabled?: boolean;
   disabledReason?: string;
 }) {
@@ -223,22 +231,12 @@ function AttachmentUploadHint({
   };
 
   if (!canManageAttachments) return null;
+  const isDesign = isDesignAttachmentScope(scope);
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => {
-        if (!disabled) onOpenAttachmentPicker();
-      }}
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          if (!disabled) onOpenAttachmentPicker();
-        }
-      }}
       onDragEnter={handleDragOver}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -248,11 +246,32 @@ function AttachmentUploadHint({
         dragActive ? "pbp-sidepanel-upload-zone-active shadow-sm" : ""
       } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
     >
-      <span
-        className={`pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
-      >
-        <WorkOrderPlusIcon className="h-3.5 w-3.5" />
-      </span>
+      {isDesign ? (
+        <AttachmentActionMenu
+          scope={scope}
+          addButtonLabel={addButtonLabel}
+          onOpenAttachmentPicker={onOpenAttachmentPicker}
+          onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
+          onOpenAdvancedDrawing={onOpenAdvancedDrawing}
+          isMobile={isMobile}
+          disabled={disabled}
+          disabledReason={disabledReason}
+          trigger="plus"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            if (!disabled) onOpenAttachmentPicker();
+          }}
+          disabled={disabled}
+          title={disabled ? disabledReason : addButtonLabel}
+          aria-label={addButtonLabel}
+          className={`pbp-interactive-button pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm disabled:cursor-not-allowed disabled:opacity-45 ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
+        >
+          <WorkOrderPlusIcon />
+        </button>
+      )}
       <span className="sr-only">{title}</span>
     </div>
   );
@@ -438,18 +457,7 @@ export default function WorkOrderAttachmentPanel({
                 )}
               </SectionCountBadge>
             </div>
-            {canManageAttachments ? (
-              <AttachmentActionMenu
-                scope={uploadScope}
-                addButtonLabel={addButtonLabel}
-                onOpenAttachmentPicker={onOpenAttachmentPicker}
-                onOpenDrawingPlaceholder={openDesignDrawingModal}
-                onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
-                isMobile={isMobile}
-                disabled={writeLocked}
-                disabledReason={writeLockMessage}
-              />
-            ) : null}
+
           </div>
           ) : null}
           {showOrderRequestPdfStatus ? (
@@ -645,10 +653,14 @@ export default function WorkOrderAttachmentPanel({
               ) : (
                 <AttachmentUploadHint
                   scope={uploadScope}
+                  addButtonLabel={addButtonLabel}
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
+                  onOpenDrawingPlaceholder={openDesignDrawingModal}
+                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
                   onUploadFiles={onUploadFiles}
                   compact={isMobile || isTablet}
+                  isMobile={isMobile}
                   disabled={writeLocked}
                   disabledReason={writeLockMessage}
                 />
@@ -674,10 +686,14 @@ export default function WorkOrderAttachmentPanel({
               ) : (
                 <AttachmentUploadHint
                   scope={uploadScope}
+                  addButtonLabel={addButtonLabel}
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
+                  onOpenDrawingPlaceholder={openDesignDrawingModal}
+                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
                   onUploadFiles={onUploadFiles}
                   compact={isMobile || isTablet}
+                  isMobile={isMobile}
                   disabled={writeLocked}
                   disabledReason={writeLockMessage}
                 />

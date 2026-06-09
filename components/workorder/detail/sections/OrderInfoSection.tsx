@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { AppCard, SectionCountBadge } from "@/components/common/ui";
-import { WorkOrderAddIconButton, WorkOrderDeleteIconButton, WorkOrderEditIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderDeleteIconButton, WorkOrderEditIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import WorkOrderProcessEditSheet, {
   type WorkOrderProcessSheetDraft,
@@ -23,25 +23,6 @@ type SheetState =
   | { mode: "order"; orderEntry: OrderEntryState | null; outsourcing: null }
   | { mode: "outsourcing"; orderEntry: null; outsourcing: Outsourcing | null };
 
-function SectionAddButton({
-  label,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <WorkOrderAddIconButton
-      label={label}
-      size="md"
-      onClick={onClick}
-      disabled={disabled}
-    />
-  );
-}
-
 function ProcessCard({
   title,
   meta,
@@ -58,6 +39,7 @@ function ProcessCard({
   onRemove?: () => void;
 }) {
   const { i18n } = useI18n();
+  const common = i18n.workorder.ui.common;
   return (
     <AppCard variant="subtle" padding="sm" className="rounded-[22px]">
       <div className="flex items-start justify-between gap-3">
@@ -276,17 +258,7 @@ export default function OrderInfoSection({
             </h3>
             <SectionCountBadge>{processCount}건</SectionCountBadge>
           </div>
-          {!locked ? (
-            <SectionAddButton
-              label={
-                visibleOrderEntries.length === 0
-                  ? copy.factoryAddButton
-                  : copy.outsourcingOrder.addButton
-              }
-              disabled={locked}
-              onClick={openPrimaryAddSheet}
-            />
-          ) : null}
+
         </div>
       ) : null}
 
