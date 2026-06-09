@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { AppSelect, type AppSelectOption } from "@/components/common/ui";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
 import { DEFAULT_ORDER_TYPE } from "@/lib/constants/workorderOptions";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -77,8 +78,19 @@ function toOutsourcingDraft(outsourcing: Outsourcing | null): WorkOrderOutsourci
   };
 }
 
-function buildOptions(values: readonly string[], locale: string): AppSelectOption[] {
+function buildOptions(values: readonly string[], locale: Locale): AppSelectOption[] {
   return values.map((value) => ({ value, label: translateWorkOrderDisplayText(value, locale) }));
+}
+
+function handleProcessInputPointerDown() {
+  blurActiveModalElement();
+}
+
+function handleProcessInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.blur();
 }
 
 export default function WorkOrderProcessEditSheet({
@@ -114,6 +126,8 @@ export default function WorkOrderProcessEditSheet({
 
   const handleApply = () => {
     if (isApplyDisabled) return;
+
+    blurActiveModalElement();
 
     if (isOrderMode) {
       onApply({
@@ -162,24 +176,24 @@ export default function WorkOrderProcessEditSheet({
         <div className="grid gap-4">
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.item}</label>
-            <AppSelect value={orderDraft.type} options={orderTypeSelectOptions} onValueChange={(value) => setOrderDraft((current) => ({ ...current, type: value }))} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
+            <AppSelect value={orderDraft.type} options={orderTypeSelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOrderDraft((current) => ({ ...current, type: value })); }} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
           </div>
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.vendor}</label>
-            <AppSelect value={orderDraft.factory} options={factorySelectOptions} onValueChange={(value) => setOrderDraft((current) => ({ ...current, factory: value }))} ariaLabel={copy.fields.vendor} contentClassName="z-[4000]" />
+            <AppSelect value={orderDraft.factory} options={factorySelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOrderDraft((current) => ({ ...current, factory: value })); }} ariaLabel={copy.fields.vendor} contentClassName="z-[4000]" />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" value={orderDraft.quantity} onChange={(event) => setOrderDraft((current) => ({ ...current, quantity: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" onPointerDown={handleProcessInputPointerDown} onTouchStart={handleProcessInputPointerDown} onKeyDown={handleProcessInputKeyDown} value={orderDraft.quantity} onChange={(event) => setOrderDraft((current) => ({ ...current, quantity: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" value={orderDraft.laborCost} onChange={(event) => setOrderDraft((current) => ({ ...current, laborCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" onPointerDown={handleProcessInputPointerDown} onTouchStart={handleProcessInputPointerDown} onKeyDown={handleProcessInputKeyDown} value={orderDraft.laborCost} onChange={(event) => setOrderDraft((current) => ({ ...current, laborCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" value={orderDraft.lossCost} onChange={(event) => setOrderDraft((current) => ({ ...current, lossCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" onPointerDown={handleProcessInputPointerDown} onTouchStart={handleProcessInputPointerDown} onKeyDown={handleProcessInputKeyDown} value={orderDraft.lossCost} onChange={(event) => setOrderDraft((current) => ({ ...current, lossCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
             </label>
           </div>
         </div>
@@ -187,24 +201,24 @@ export default function WorkOrderProcessEditSheet({
         <div className="grid gap-4">
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.item}</label>
-            <AppSelect value={outsourcingDraft.process} options={outsourcingProcessSelectOptions} onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, process: value }))} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
+            <AppSelect value={outsourcingDraft.process} options={outsourcingProcessSelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOutsourcingDraft((current) => ({ ...current, process: value })); }} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
           </div>
           <label className={fieldPanelClass}>
             <span className={labelClass}>{copy.fields.vendor}</span>
-            <input type="text" value={outsourcingDraft.vendor} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, vendor: event.target.value }))} className={inputClass} />
+            <input type="text" enterKeyHint="done" onPointerDown={handleProcessInputPointerDown} onTouchStart={handleProcessInputPointerDown} onKeyDown={handleProcessInputKeyDown} value={outsourcingDraft.vendor} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, vendor: event.target.value }))} className={inputClass} />
           </label>
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" value={outsourcingDraft.quantity} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, quantity: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" onPointerDown={handleProcessInputPointerDown} onTouchStart={handleProcessInputPointerDown} onKeyDown={handleProcessInputKeyDown} value={outsourcingDraft.quantity} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, quantity: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" value={outsourcingDraft.unitCost} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, unitCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" onPointerDown={handleProcessInputPointerDown} onTouchStart={handleProcessInputPointerDown} onKeyDown={handleProcessInputKeyDown} value={outsourcingDraft.unitCost} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, unitCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" value={outsourcingDraft.lossCost} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, lossCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" onPointerDown={handleProcessInputPointerDown} onTouchStart={handleProcessInputPointerDown} onKeyDown={handleProcessInputKeyDown} value={outsourcingDraft.lossCost} onChange={(event) => setOutsourcingDraft((current) => ({ ...current, lossCost: toNumber(event.target.value) }))} className={`${inputClass} text-right tabular-nums`} />
             </label>
           </div>
         </div>
