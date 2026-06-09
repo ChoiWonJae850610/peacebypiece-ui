@@ -78,7 +78,8 @@ export default function WorkOrderListCard({
 
   return (
     <div
-      className={`group pbp-interactive-card w-full min-w-0 rounded-[22px] border px-3 py-3 transition-all duration-150 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
+      data-wafl-component="list-card"
+      className={`group pbp-interactive-card w-full min-w-0 rounded-[var(--pbp-radius-wafl)] border px-3 py-3 transition-all duration-150 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
     >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">

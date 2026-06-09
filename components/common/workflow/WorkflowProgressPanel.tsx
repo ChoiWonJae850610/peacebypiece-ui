@@ -119,7 +119,7 @@ export function WorkflowProgressPanel({
 
   if (layout === "vertical") {
     return (
-      <div className={`pbp-workflow-panel min-w-0 overflow-hidden rounded-[var(--pbp-radius-wafl)] border p-3.5 sm:p-4 ${className}`}>
+      <div data-wafl-component="workflow-panel" className={`pbp-workflow-panel min-w-0 overflow-hidden rounded-[var(--pbp-radius-wafl)] border p-3.5 sm:p-4 ${className}`}>
         <div className="text-sm font-semibold text-stone-900">{title}</div>
         <ol className="mt-3 grid min-w-0 gap-2">
           {steps.map((step, index) => {
@@ -160,6 +160,7 @@ export function WorkflowProgressPanel({
               return (
                 <div key={action.key} className="grid gap-1">
                   <button
+                    data-wafl-component="button"
                     type="button"
                     onClick={action.onClick}
                     disabled={isDisabled}
@@ -195,6 +196,7 @@ export function WorkflowProgressPanel({
 
   return (
     <div
+      data-wafl-component="workflow-panel"
       className={`pbp-workflow-panel rounded-[var(--pbp-radius-wafl)] border ${isCompact ? "px-4 py-3" : "p-4"} ${className}`}
     >
       <div
@@ -220,6 +222,7 @@ export function WorkflowProgressPanel({
               return (
                 <div key={action.key} className="flex flex-col items-end gap-1">
                   <button
+                    data-wafl-component="button"
                     type="button"
                     onClick={action.onClick}
                     disabled={isDisabled}

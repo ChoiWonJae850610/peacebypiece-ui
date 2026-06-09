@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
-import { AppSelect, SectionCountBadge } from "@/components/common/ui";
+import { AppSelect, SectionCountBadge, WaflButton } from "@/components/common/ui";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
@@ -282,6 +282,7 @@ export default function SidebarContent({
               <label className="min-w-0 flex-1">
                 <span className="sr-only">{controlsUi.searchAria}</span>
                 <input
+                  data-wafl-component="input"
                   type="search"
                   value={searchQuery}
                   onChange={(event) => onSearchQueryChange(event.target.value)}
@@ -325,8 +326,10 @@ export default function SidebarContent({
           </div>
         </div>
         {canCreate ? (
-          <button
-            type="button"
+          <WaflButton
+            variant="primary"
+            size="md"
+            width="full"
             onClick={() => {
               if (!writeLocked) onCreate();
             }}
@@ -336,10 +339,10 @@ export default function SidebarContent({
                 ? (writeLockMessage ?? "상태 변경 처리 중입니다.")
                 : undefined
             }
-            className="pbp-touch-target pbp-interactive-button pbp-action-primary mt-2.5 w-full rounded-xl px-4 py-2 text-sm font-medium active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+            className="pbp-touch-target mt-2.5 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
           >
             {controlsUi.create}
-          </button>
+          </WaflButton>
         ) : null}
         <div className="mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
       </div>
@@ -363,7 +366,7 @@ export default function SidebarContent({
           ))}
         </div>
         {workOrders.length === 0 ? (
-          <div className="pbp-empty-state rounded-2xl border border-dashed px-4 py-6 text-center text-sm">
+          <div data-wafl-component="state" className="pbp-empty-state rounded-[var(--pbp-radius-wafl)] border border-dashed px-4 py-6 text-center text-sm">
             {controlsUi.empty}
           </div>
         ) : null}

@@ -88,6 +88,7 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
   return (
     <div className="min-w-0">
       <textarea
+        data-wafl-component="input"
         rows={1}
         maxLength={MEMO_MAX_LENGTH}
         value={value}
@@ -102,18 +103,19 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
       <div className={isMobile ? "mt-1.5 flex flex-wrap items-center justify-between gap-2" : "mt-1.5 flex items-center justify-end gap-2"}>
         <span className="mr-auto text-[10px] font-medium text-[var(--pbp-field-disabled-text)]" aria-live="polite">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
         {onCancel ? (
-          <button type="button" onClick={onCancel} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1.5 text-[11px] font-semibold">
+          <button data-wafl-component="button" type="button" onClick={onCancel} className="pbp-interactive-button pbp-action-secondary rounded-[var(--pbp-radius-wafl)] px-3 py-1.5 text-[11px] font-semibold">
             {cancelLabel}
           </button>
         ) : null}
         <button
+          data-wafl-component="button"
           type="button"
           onClick={onSubmit}
           disabled={disabled || !trimmed}
           title={disabled ? placeholder : submitLabel}
           className={isMobile
-            ? "pbp-interactive-button pbp-action-primary rounded-full px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-            : "pbp-interactive-button pbp-action-primary rounded-full px-3 py-1.5 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"}
+            ? "pbp-interactive-button pbp-action-primary rounded-[var(--pbp-radius-wafl)] px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+            : "pbp-interactive-button pbp-action-primary rounded-[var(--pbp-radius-wafl)] px-3 py-1.5 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"}
         >
           {submitLabel}
         </button>

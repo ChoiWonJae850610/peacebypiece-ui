@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export type WorkOrderActionTone = WaflActionButtonTone;
 
 const activeActionClassName =
-  "border-white/20 bg-white/10 text-white shadow-sm hover:border-white/30 hover:bg-white/15 focus-visible:ring-white/50 focus-visible:ring-offset-stone-950";
+  "border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/15 focus-visible:ring-white/50 focus-visible:ring-offset-stone-950";
 
 export function getWorkOrderActionButtonClassName({
   active = false,

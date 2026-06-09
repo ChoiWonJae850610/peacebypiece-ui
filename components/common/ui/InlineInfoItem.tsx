@@ -29,6 +29,7 @@ export default function InlineInfoItem({ label, value, onClick, valueClassName =
   if (onClick) {
     return (
       <button
+        data-wafl-component="button"
         type="button"
         onClick={onClick}
         className="group pbp-interactive-button inline-flex min-w-0 items-center gap-1 rounded-full bg-transparent p-0 text-sm font-medium text-stone-600 hover:text-stone-900"

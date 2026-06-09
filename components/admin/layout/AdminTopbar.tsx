@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import LogoutConfirmModal from "@/components/common/navigation/LogoutConfirmModal";
 import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
+import { AppBadge, WaflButton, WaflLinkButton, WaflWorkspacePanel } from "@/components/common/ui";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminTopbarProps = {
@@ -124,19 +124,19 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
   const summary = getTopbarSummary(localizedTitle, description, t);
 
   return (
-    <header className="pbp-topbar-shell relative z-20 rounded-[24px] px-4 py-3 backdrop-blur sm:rounded-[30px] sm:px-5 sm:py-4">
+    <WaflWorkspacePanel as="header" panelRole="toolbar" className="pbp-topbar-shell relative z-20 px-4 py-3 backdrop-blur sm:px-5 sm:py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="pbp-topbar-chip-primary rounded-full px-3 py-1.5 text-xs font-semibold">
+            <AppBadge tone="inverse" size="md" className="pbp-topbar-chip-primary px-3 py-1.5 text-xs">
               WAFL
-            </span>
-            <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">{displayCompanyName}</span>
-            <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">v{appVersion}</span>
+            </AppBadge>
+            <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">{displayCompanyName}</AppBadge>
+            <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">v{appVersion}</AppBadge>
           </div>
           {summary ? (
             <div className="mt-2 flex sm:mt-3">
-              <span className="pbp-topbar-chip-muted rounded-2xl px-3 py-1.5 text-xs font-semibold leading-5">{summary}</span>
+              <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs leading-5">{summary}</AppBadge>
             </div>
           ) : null}
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--pbp-text-primary)] sm:text-2xl">{localizedTitle}</h1>
@@ -144,54 +144,61 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
 
         <div key={reviveKey} className="relative z-30 flex shrink-0 flex-wrap gap-2">
           {onOpenMenu ? (
-            <button
-              type="button"
+            <WaflButton
+              variant="icon"
+              size="sm"
               onClick={onOpenMenu}
               aria-label={menuAriaLabel ?? menuLabel}
               title={menuLabel}
-              className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold transition"
+              className="pbp-topbar-icon-button text-xs"
             >
               <MenuIcon />
-            </button>
+            </WaflButton>
           ) : null}
-          <Link
+          <WaflLinkButton
             href="/workspace"
+            variant="icon"
+            size="sm"
             aria-label={t("topbar.actions.home", "홈")}
             title={t("topbar.actions.home", "홈")}
-            className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+            className="pbp-topbar-icon-button"
             onClick={() => showWaflLoadingToast(t("topbar.loading.home", "업무 홈을 여는 중입니다."))}
           >
             <HomeIcon />
-          </Link>
-          <button
-            type="button"
+          </WaflLinkButton>
+          <WaflButton
+            variant="icon"
+            size="sm"
             onClick={() => setPersonalSettingsOpen(true)}
             aria-label={t("topbar.actions.personalSettings", "개인 설정")}
             title={t("topbar.actions.personalSettings", "개인 설정")}
-            className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+            className="pbp-topbar-icon-button"
           >
             <UserIcon />
-          </button>
+          </WaflButton>
           {canOpenAdminSettings ? (
-            <Link
+            <WaflLinkButton
               href="/workspace/settings"
+              variant="icon"
+              size="sm"
               aria-label={t("topbar.actions.adminSettings", "환경설정")}
               title={t("topbar.actions.adminSettings", "환경설정")}
-              className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+              className="pbp-topbar-icon-button"
               onClick={() => showWaflLoadingToast(t("topbar.loading.settings", "환경설정을 여는 중입니다."))}
             >
               <SettingsIcon />
-            </Link>
+            </WaflLinkButton>
           ) : null}
-          <button
-            type="button"
+          <WaflButton
+            variant="icon"
+            size="sm"
             onClick={() => setLogoutConfirmOpen(true)}
             aria-label={t("topbar.actions.logout", "로그아웃")}
             title={t("topbar.actions.logout", "로그아웃")}
-            className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+            className="pbp-topbar-icon-button"
           >
             <LogoutIcon />
-          </button>
+          </WaflButton>
         </div>
       </div>
       <LogoutConfirmModal
@@ -214,6 +221,6 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
       >
         <PersonalSettingsPanel />
       </AdminModal>
-    </header>
+    </WaflWorkspacePanel>
   );
 }

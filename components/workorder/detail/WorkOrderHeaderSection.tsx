@@ -117,6 +117,7 @@ export default function WorkOrderHeaderSection({
       {isEditingTitle ? (
         <div className="min-w-0 flex-1">
           <input
+            data-wafl-component="input"
             ref={inputRef}
             type="text"
             value={titleDraft}
@@ -126,12 +127,12 @@ export default function WorkOrderHeaderSection({
             aria-label={copy.titleInputAria}
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button type="button" onClick={saveTitle} className="pbp-interactive-button pbp-action-primary rounded-xl px-3 py-1.5 text-xs font-semibold">{copy.titleEditSave}</button>
-            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button pbp-action-secondary rounded-xl border px-3 py-1.5 text-xs font-medium">{copy.titleEditCancel}</button>
+            <button data-wafl-component="button" type="button" onClick={saveTitle} className="pbp-interactive-button pbp-action-primary rounded-[var(--pbp-radius-wafl)] px-3 py-1.5 text-xs font-semibold">{copy.titleEditSave}</button>
+            <button data-wafl-component="button" type="button" onClick={closeTitleEditor} className="pbp-interactive-button pbp-action-secondary rounded-[var(--pbp-radius-wafl)] border px-3 py-1.5 text-xs font-medium">{copy.titleEditCancel}</button>
             <span className="text-[11px] text-stone-500">{copy.titleEditHint}</span>
           </div>
           {recommendedCategory ? (
-            <div className="pbp-detail-summary-readonly mt-2 rounded-xl border px-3 py-2 text-[11px] leading-5">
+            <div data-wafl-component="card" className="pbp-detail-summary-readonly mt-2 rounded-[var(--pbp-radius-wafl)] border px-3 py-2 text-[11px] leading-5">
               {i18n.workorder.ui.modals.createWorkOrder.recommendedCategory}: {recommendedCategory.category1} / {recommendedCategory.category2} / {recommendedCategory.category3}
             </div>
           ) : null}
