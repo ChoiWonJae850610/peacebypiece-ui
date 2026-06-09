@@ -40,9 +40,10 @@ export function PartnerMasterSearchField({
   onChange,
 }: PartnerMasterSearchFieldProps) {
   return (
-    <label className={`${WAFL_FILTER_FIELD_CLASS} min-[720px]:col-span-1`}>
+    <label data-wafl-component="filter-field" className={`${WAFL_FILTER_FIELD_CLASS} min-[720px]:col-span-1`}>
       <span className={WAFL_FILTER_LABEL_CLASS}>{label}</span>
       <input
+        data-wafl-component="search-input"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
@@ -59,7 +60,7 @@ export function PartnerMasterSelectField<TValue extends string>({
   onChange,
 }: PartnerMasterSelectFieldProps<TValue>) {
   return (
-    <label className={WAFL_FILTER_FIELD_CLASS}>
+    <label data-wafl-component="filter-field" className={WAFL_FILTER_FIELD_CLASS}>
       <span className={WAFL_FILTER_LABEL_CLASS}>{label}</span>
       <AppSelect
         value={value}
