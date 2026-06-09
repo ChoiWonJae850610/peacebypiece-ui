@@ -3,7 +3,10 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { ADMIN_SURFACE_ITEM_CLASS } from "@/components/admin/common/adminSemanticClassNames";
+import {
+  WaflSurface,
+  WaflSurfaceButton,
+} from "@/components/common/ui/WaflSurface";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import type {
@@ -157,26 +160,41 @@ export default function AdminOperationsDashboard({
   const activeInsight = insightsById.get(selectedQueueId);
 
   return (
-    <section className="relative shrink-0 overflow-hidden rounded-[36px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-elevated)]">
-      <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-[var(--pbp-brand-muted)] opacity-35 blur-3xl" aria-hidden="true" />
-      <div className="absolute -bottom-28 left-10 h-72 w-72 rounded-full bg-[var(--pbp-surface-selected)] opacity-70 blur-3xl" aria-hidden="true" />
-
+    <WaflSurface
+      as="section"
+      component="admin-operations-dashboard"
+      className="relative shrink-0 overflow-hidden"
+    >
       <div className="relative grid gap-6 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] xl:p-7">
-        <header className="rounded-[30px] border border-[var(--pbp-brand-muted)] bg-[var(--pbp-brand-primary)] p-6 text-[var(--pbp-text-inverse)] shadow-[var(--pbp-shadow-card)] sm:p-8">
+        <WaflSurface
+          as="header"
+          component="admin-dashboard-hero"
+          className="border-[var(--pbp-brand-muted)] bg-[var(--pbp-brand-primary)] p-6 text-[var(--pbp-text-inverse)] sm:p-8"
+        >
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+            <span
+              data-wafl-component="admin-dashboard-hero-badge"
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70"
+            >
               {t("operationsDashboard.eyebrow", "Work order flow")}
             </span>
             {activeInsight ? (
-              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/80">
-                {translateInsightLabel(selectedQueueId, activeInsight.label, t)} {activeInsight.value}
+              <span
+                data-wafl-component="admin-dashboard-hero-badge"
+                className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/80"
+              >
+                {translateInsightLabel(selectedQueueId, activeInsight.label, t)}{" "}
+                {activeInsight.value}
               </span>
             ) : null}
           </div>
 
           <div className="mt-8 max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl lg:text-5xl">
-              {t("operationsDashboard.visualTitle", "오늘 처리할 흐름을 먼저 확인하세요.")}
+              {t(
+                "operationsDashboard.visualTitle",
+                "오늘 처리할 흐름을 먼저 확인하세요.",
+              )}
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-7 text-white/68 sm:text-base">
               {t(
@@ -187,14 +205,25 @@ export default function AdminOperationsDashboard({
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <AdminLinkButton href="/workspace/workorders" variant="secondary" size="lg" className="border-white/20 bg-white text-[var(--pbp-brand-primary)] hover:bg-white/90">
+            <AdminLinkButton
+              href="/workspace/workorders"
+              variant="secondary"
+              size="lg"
+              className="border-white/20 bg-white text-[var(--pbp-brand-primary)] hover:bg-white/90"
+            >
               {t("operationsDashboard.actions.openWorkorderShort", "업무화면")}
             </AdminLinkButton>
-            <span className="inline-flex min-h-12 items-center rounded-full border border-white/20 bg-white/10 px-5 text-sm font-semibold text-white/75">
-              {t("operationsDashboard.visualHelper", "대기 상태를 선택하면 목록이 바뀝니다.")}
+            <span
+              data-wafl-component="admin-dashboard-hero-helper"
+              className="inline-flex min-h-12 items-center rounded-[var(--pbp-radius-wafl)] border border-white/20 bg-white/10 px-5 text-sm font-semibold text-white/75"
+            >
+              {t(
+                "operationsDashboard.visualHelper",
+                "대기 상태를 선택하면 목록이 바뀝니다.",
+              )}
             </span>
           </div>
-        </header>
+        </WaflSurface>
 
         <aside className="grid gap-3 sm:grid-cols-2">
           {ADMIN_DASHBOARD_QUEUE_ORDER.map((queueId, index) => {
@@ -202,19 +231,20 @@ export default function AdminOperationsDashboard({
             if (!item) return null;
             const isActive = selectedQueueId === queueId;
             return (
-              <button
+              <WaflSurfaceButton
                 key={queueId}
+                component="admin-dashboard-queue-card"
+                selected={isActive}
                 type="button"
                 onClick={() => setSelectedQueueId(queueId)}
                 aria-pressed={isActive}
-                className={`group min-h-[152px] rounded-[28px] border p-5 text-left shadow-[var(--pbp-shadow-card)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-brand-primary)] ${
-                  isActive
-                    ? "border-[var(--pbp-brand-primary)] bg-[var(--pbp-surface-selected)]"
-                    : "border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-soft)]"
-                }`}
+                className="group min-h-[152px] p-5"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--pbp-brand-primary)] text-xs font-semibold text-[var(--pbp-text-inverse)]">
+                  <span
+                    data-wafl-component="admin-dashboard-queue-index"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--pbp-brand-primary)] text-xs font-semibold text-[var(--pbp-text-inverse)]"
+                  >
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="text-3xl font-semibold tracking-[-0.05em] pbp-text-primary">
@@ -227,18 +257,25 @@ export default function AdminOperationsDashboard({
                 <p className="mt-2 max-h-12 overflow-hidden text-sm leading-6 pbp-text-muted">
                   {translateInsightDescription(queueId, item.description, t)}
                 </p>
-              </button>
+              </WaflSurfaceButton>
             );
           })}
         </aside>
       </div>
 
       <div className="relative border-t border-[var(--pbp-border)] bg-[var(--pbp-bg-page)] p-5 sm:p-6 xl:p-7">
-        <section className="rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-4 shadow-[var(--pbp-shadow-card)] sm:p-5">
+        <WaflSurface
+          as="section"
+          component="admin-dashboard-selected-queue"
+          className="p-4 sm:p-5"
+        >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">
-                {t("operationsDashboard.selectedQueueEyebrow", "Selected queue")}
+                {t(
+                  "operationsDashboard.selectedQueueEyebrow",
+                  "Selected queue",
+                )}
               </p>
               <h2 className="mt-1 truncate text-xl font-semibold tracking-tight pbp-text-primary">
                 {queueTitle}
@@ -258,7 +295,8 @@ export default function AdminOperationsDashboard({
                   "operationsDashboard.actions.openWorkorderWorkspace",
                   "작업지시서 업무 화면으로 이동",
                 )}
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-sm transition pbp-action-secondary"
+                data-wafl-component="admin-dashboard-workorder-shortcut"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-none transition pbp-action-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
               >
                 <WorkorderShortcutIcon />
               </Link>
@@ -268,11 +306,16 @@ export default function AdminOperationsDashboard({
           <div className="mt-5 max-h-[430px] space-y-3 overflow-y-auto pr-1">
             {selectedTasks.length > 0 ? (
               selectedTasks.map((task) => (
-                <article
+                <WaflSurface
                   key={task.id}
-                  className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-3 rounded-[24px] p-3.5 sm:grid-cols-[72px_1fr_auto] sm:items-center sm:p-4`}
+                  as="article"
+                  component="admin-dashboard-queue-item"
+                  className="grid gap-3 p-3.5 sm:grid-cols-[72px_1fr_auto] sm:items-center sm:p-4"
                 >
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-[var(--pbp-surface-soft)] text-[11px] font-semibold pbp-text-subtle ring-1 ring-[var(--pbp-border)]">
+                  <div
+                    data-wafl-component="admin-dashboard-task-preview"
+                    className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-surface-soft)] text-[11px] font-semibold pbp-text-subtle ring-1 ring-[var(--pbp-border)]"
+                  >
                     <AdminTaskPreview
                       task={task}
                       label={t("operationsDashboard.previewEmpty", "미리보기")}
@@ -296,7 +339,8 @@ export default function AdminOperationsDashboard({
                         )}
                       </AdminStatusBadge>
                       <AdminStatusBadge tone="neutral">
-                        {t("operationsDashboard.attachmentLabel", "첨부")} {formatAdminDashboardCount(task.attachmentCount, t)}
+                        {t("operationsDashboard.attachmentLabel", "첨부")}{" "}
+                        {formatAdminDashboardCount(task.attachmentCount, t)}
                       </AdminStatusBadge>
                     </div>
                     <p className="mt-2 truncate text-sm font-semibold pbp-text-primary sm:text-base">
@@ -304,10 +348,12 @@ export default function AdminOperationsDashboard({
                     </p>
                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium pbp-text-muted">
                       <span>
-                        {t("operationsDashboard.factoryLabel", "공장")} : {task.factoryName}
+                        {t("operationsDashboard.factoryLabel", "공장")} :{" "}
+                        {task.factoryName}
                       </span>
                       <span>
-                        {t("operationsDashboard.quantityLabel", "수량")} : {formatAdminDashboardQuantity(task, t)}
+                        {t("operationsDashboard.quantityLabel", "수량")} :{" "}
+                        {formatAdminDashboardQuantity(task, t)}
                       </span>
                     </div>
                   </div>
@@ -330,7 +376,7 @@ export default function AdminOperationsDashboard({
                       {t("operationsDashboard.openWorkorder", "열기")}
                     </AdminLinkButton>
                   </div>
-                </article>
+                </WaflSurface>
               ))
             ) : (
               <AdminEmptyState
@@ -339,8 +385,8 @@ export default function AdminOperationsDashboard({
               />
             )}
           </div>
-        </section>
+        </WaflSurface>
       </div>
-    </section>
+    </WaflSurface>
   );
 }

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { showWaflLoadingToast } from "@/components/common/ToastMessage";
-import { AdminSection, AdminCard } from "@/components/admin/common/AdminSection";
+import { AdminSection } from "@/components/admin/common/AdminSection";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
@@ -25,7 +26,10 @@ function useWorkspaceCardText() {
 
   return (item: AdminWorkspaceCard) => ({
     label: t(`adminConsole.links.${item.id}.label`, item.label),
-    description: t(`adminConsole.links.${item.id}.description`, item.description),
+    description: t(
+      `adminConsole.links.${item.id}.description`,
+      item.description,
+    ),
     statusLabel: t(`adminConsole.statuses.${item.status}`, item.statusLabel),
     openLabel: t("adminConsole.actions.open", "화면 열기"),
     preparingLabel: t("adminConsole.statuses.planned", "준비중"),
@@ -35,21 +39,29 @@ function useWorkspaceCardText() {
 function WorkspaceCardIcon({ index }: { index: number }) {
   return (
     <span
+      data-wafl-component="workspace-card-index"
       aria-hidden="true"
-      className="inline-flex h-11 w-11 items-center justify-center rounded-[18px] bg-[var(--pbp-surface-soft)] text-sm font-semibold pbp-text-primary ring-1 ring-[var(--pbp-border)]"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--pbp-surface-soft)] text-sm font-semibold pbp-text-primary ring-1 ring-[var(--pbp-border)]"
     >
       {String(index + 1).padStart(2, "0")}
     </span>
   );
 }
 
-function AdminWorkspaceCardView({ item, index }: { item: AdminWorkspaceCard; index: number }) {
+function AdminWorkspaceCardView({
+  item,
+  index,
+}: {
+  item: AdminWorkspaceCard;
+  index: number;
+}) {
   const translateItem = useWorkspaceCardText();
   const text = translateItem(item);
   const content = (
-    <AdminCard
+    <WaflSurface
       as="article"
-      className="group flex h-full min-h-[188px] overflow-hidden border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] p-0 transition hover:-translate-y-0.5 hover:shadow-[var(--pbp-shadow-elevated)]"
+      component="admin-workspace-card"
+      className="group flex h-full min-h-[188px] overflow-hidden bg-[var(--pbp-surface-base)] p-0 transition hover:-translate-y-0.5 hover:border-[var(--pbp-border-strong)]"
     >
       <div className="relative flex h-full min-w-0 flex-1 flex-col justify-between gap-6 p-5 sm:p-6">
         <div className="relative min-w-0">
@@ -70,26 +82,44 @@ function AdminWorkspaceCardView({ item, index }: { item: AdminWorkspaceCard; ind
 
         <div className="relative flex items-center justify-between gap-3">
           {item.href ? (
-            <span className="inline-flex min-h-10 items-center rounded-full border px-4 text-sm font-semibold pbp-action-secondary">
+            <span
+              data-wafl-component="workspace-card-open-button"
+              data-wafl-primitive="button"
+              className="inline-flex min-h-10 items-center rounded-[var(--pbp-radius-wafl)] border px-4 text-sm font-semibold pbp-action-secondary"
+            >
               {text.openLabel}
             </span>
           ) : (
-            <span className="inline-flex min-h-10 items-center rounded-full border px-4 text-sm font-semibold pbp-action-secondary">
+            <span
+              data-wafl-component="workspace-card-open-button"
+              data-wafl-primitive="button"
+              className="inline-flex min-h-10 items-center rounded-[var(--pbp-radius-wafl)] border px-4 text-sm font-semibold pbp-action-secondary"
+            >
               {text.preparingLabel}
             </span>
           )}
-          <span className="text-lg transition group-hover:translate-x-1 pbp-text-muted" aria-hidden="true">
+          <span
+            className="text-lg transition group-hover:translate-x-1 pbp-text-muted"
+            aria-hidden="true"
+          >
             →
           </span>
         </div>
       </div>
-    </AdminCard>
+    </WaflSurface>
   );
 
   if (!item.href) return content;
 
   return (
-    <Link href={item.href} className="block h-full min-w-0" prefetch={false} onClick={() => showWaflLoadingToast(`${text.label} 화면을 여는 중입니다.`)}>
+    <Link
+      href={item.href}
+      className="block h-full min-w-0"
+      prefetch={false}
+      onClick={() =>
+        showWaflLoadingToast(`${text.label} 화면을 여는 중입니다.`)
+      }
+    >
       {content}
     </Link>
   );
@@ -100,12 +130,21 @@ type AdminConsoleSectionsProps = {
   role?: AdminWorkspaceRole | null;
 };
 
-export default function AdminConsoleSections({ permissionCodes, role }: AdminConsoleSectionsProps) {
+export default function AdminConsoleSections({
+  permissionCodes,
+  role,
+}: AdminConsoleSectionsProps) {
   const t = useAdminTranslation();
-  const cardAccessInput = { permissionCodes: permissionCodes ?? ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES, role };
+  const cardAccessInput = {
+    permissionCodes:
+      permissionCodes ?? ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
+    role,
+  };
   const primaryCards = [
     ...getVisibleAdminHomePrimaryCards(cardAccessInput),
-    ...(role === "member" ? getVisibleAdminHomeMemberCards(cardAccessInput) : []),
+    ...(role === "member"
+      ? getVisibleAdminHomeMemberCards(cardAccessInput)
+      : []),
   ];
 
   return (
@@ -118,7 +157,10 @@ export default function AdminConsoleSections({ permissionCodes, role }: AdminCon
       )}
       actions={
         <AdminStatusBadge tone="neutral">
-          {t("adminConsole.managementCards.cardCount", "{count}개 화면").replace("{count}", String(primaryCards.length))}
+          {t(
+            "adminConsole.managementCards.cardCount",
+            "{count}개 화면",
+          ).replace("{count}", String(primaryCards.length))}
         </AdminStatusBadge>
       }
       className="overflow-hidden p-5 sm:p-6"

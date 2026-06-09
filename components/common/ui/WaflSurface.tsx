@@ -1,14 +1,22 @@
-import { createElement, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
+import {
+  createElement,
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
 
 import { cn } from "@/lib/utils";
 
 export type WaflSurfaceTone = "surface" | "muted" | "empty";
-type WaflSurfaceElement = "div" | "section" | "article";
+type WaflSurfaceElement = "div" | "section" | "article" | "header";
 
 const surfaceToneClassMap: Record<WaflSurfaceTone, string> = {
-  surface: "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
-  muted: "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]",
-  empty: "border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] text-[var(--pbp-text-muted)]",
+  surface:
+    "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
+  muted:
+    "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]",
+  empty:
+    "border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] text-[var(--pbp-text-muted)]",
 };
 
 export function WaflSurface({
@@ -54,14 +62,16 @@ export function WaflInfoRow({
     <WaflSurface
       component={component}
       tone={tone}
-      className={cn("flex items-center justify-between gap-4 px-3 py-2", className)}
+      className={cn(
+        "flex items-center justify-between gap-4 px-3 py-2",
+        className,
+      )}
       {...props}
     >
       {children}
     </WaflSurface>
   );
 }
-
 
 export function WaflSurfaceButton({
   children,
@@ -212,7 +222,10 @@ export function WaflFileCard({
     <WaflSurface
       component="file-card"
       tone="surface"
-      className={cn("pbp-sidepanel-item pbp-interactive-card relative p-3", className)}
+      className={cn(
+        "pbp-sidepanel-item pbp-interactive-card relative p-3",
+        className,
+      )}
       {...props}
     >
       {children}
