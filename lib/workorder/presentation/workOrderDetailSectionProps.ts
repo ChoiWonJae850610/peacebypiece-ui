@@ -66,6 +66,7 @@ export type BuildWorkOrderDetailViewModelArgs = {
   outsourcingItems: ProductionCompositionProps["outsourcing"];
   materialVendorOptionsById: ProductionCompositionProps["materialVendorOptionsById"];
   outsourcingVendorOptionsById: ProductionCompositionProps["outsourcingVendorOptionsById"];
+  outsourcingVendorOptions: OrderInfoProps["outsourcingVendorOptions"];
   outsourcingProcessOptions: ProductionCompositionProps["outsourcingProcessOptions"];
   costSummary: {
     laborCost: number;
@@ -202,6 +203,7 @@ export function buildOrderInfoSectionProps(
     orderTypeOptions: getAvailableOrderTypeOptions({ id: args.workOrder.id, reorderGroupId: args.workOrder.reorderGroupId }).filter((option) => orderInfoHubPolicy.allowedOrderTypes.includes(option)),
     outsourcing: args.outsourcingItems,
     outsourcingVendorOptionsById: args.outsourcingVendorOptionsById,
+    outsourcingVendorOptions: args.outsourcingVendorOptions,
     outsourcingProcessOptions: args.outsourcingProcessOptions,
     onAddOutsourcing: args.onAddOutsourcing,
     onRemoveOutsourcing: args.onRemoveOutsourcing,

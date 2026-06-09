@@ -111,6 +111,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     outsourcingItems: editor.outsourcingItems,
     materialVendorOptionsById: editor.materialVendorOptionsById,
     outsourcingVendorOptionsById: editor.outsourcingVendorOptionsById,
+    outsourcingVendorOptions: editor.outsourcingVendorOptions,
     outsourcingProcessOptions: editor.outsourcingProcessOptions,
     costSummary: editor.costSummary,
     onSave: isWorkspaceWriteLocked ? () => undefined : () => runAfterPendingDetailFlush(() => actionModel.onSave(editor.getDraftWorkOrderSnapshot())),

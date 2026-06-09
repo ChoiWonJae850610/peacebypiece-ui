@@ -2,7 +2,7 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
-import { useState, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -59,8 +59,29 @@ export default function AppSelect({
   name,
 }: AppSelectProps) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const rootValue = value === undefined ? undefined : value === "" ? EMPTY_SELECT_VALUE : value;
   const rootDefaultValue = defaultValue === undefined ? undefined : defaultValue === "" ? EMPTY_SELECT_VALUE : defaultValue;
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: globalThis.PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+
+      const isInsideTrigger = Boolean(triggerRef.current?.contains(target));
+      const isInsideContent = Boolean(contentRef.current?.contains(target));
+      if (isInsideTrigger || isInsideContent) return;
+
+      setOpen(false);
+      triggerRef.current?.blur();
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    return () => document.removeEventListener("pointerdown", handlePointerDown, true);
+  }, [open]);
 
   return (
     <Select.Root
@@ -76,6 +97,7 @@ export default function AppSelect({
       disabled={disabled}
     >
       <Select.Trigger
+        ref={triggerRef}
         aria-label={ariaLabel ?? placeholder}
         onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
           if (!open) return;
@@ -99,10 +121,11 @@ export default function AppSelect({
       </Select.Trigger>
       <Select.Portal>
         <Select.Content
+          ref={contentRef}
           position="popper"
           sideOffset={6}
           className={cn(
-            "z-[1100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-xl",
+            "z-[4000] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-xl",
             contentClassName,
           )}
         >
