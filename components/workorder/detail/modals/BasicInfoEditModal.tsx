@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
-
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
+import CreateWorkOrderCategoryFields from "@/components/common/modal/createWorkOrder/CreateWorkOrderCategoryFields";
 import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
@@ -55,81 +54,6 @@ function normalizeDraftWithSource(source: CategorySource, value: BasicInfoState)
   };
 }
 
-function CategoryOptionButton({
-  label,
-  selected,
-  expanded,
-  onClick,
-}: {
-  label: string;
-  selected: boolean;
-  expanded?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onPointerDown={(event) => {
-        blurActiveModalElement();
-        event.stopPropagation();
-      }}
-      onTouchEnd={(event) => event.stopPropagation()}
-      onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onClick();
-      }}
-      className={[
-        "flex min-h-11 w-full items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 text-left text-base font-semibold transition md:text-sm",
-        selected
-          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
-          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)]",
-      ].join(" ")}
-    >
-      <span className="min-w-0 truncate">{label}</span>
-      <span className="inline-flex items-center gap-2 text-[var(--pbp-text-muted)]">
-        {selected ? <Check className="h-4 w-4 text-[var(--pbp-accent)]" aria-hidden="true" /> : null}
-        <ChevronDown className={`h-4 w-4 transition ${expanded ? "rotate-180" : ""}`} aria-hidden="true" />
-      </span>
-    </button>
-  );
-}
-
-function LeafOptionButton({
-  label,
-  selected,
-  onClick,
-}: {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onPointerDown={(event) => {
-        blurActiveModalElement();
-        event.stopPropagation();
-      }}
-      onTouchEnd={(event) => event.stopPropagation()}
-      onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onClick();
-      }}
-      className={[
-        "flex min-h-10 w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-base font-semibold transition md:text-sm",
-        selected
-          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
-          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)]",
-      ].join(" ")}
-    >
-      <span className="min-w-0 truncate">{label}</span>
-      {selected ? <Check className="h-4 w-4 text-[var(--pbp-accent)]" aria-hidden="true" /> : null}
-    </button>
-  );
-}
-
 export default function BasicInfoEditModal({
   open,
   value,
@@ -147,16 +71,12 @@ export default function BasicInfoEditModal({
   const copy = i18n.workorder.ui.modals.basicInfo;
   const [categorySource, setCategorySource] = useState<CategorySource>(() => buildCategorySourceFromValue(value));
   const [draft, setDraft] = useState<BasicInfoState>(value);
-  const [expandedCategory1, setExpandedCategory1] = useState<string | null>(value.category1 || null);
-  const [expandedCategory2, setExpandedCategory2] = useState<string | null>(value.category2 || null);
 
   useEffect(() => {
     if (!open) return;
     const fallbackSource = buildCategorySourceFromValue(value);
     setCategorySource(fallbackSource);
     setDraft(value);
-    setExpandedCategory1(value.category1 || null);
-    setExpandedCategory2(value.category2 || null);
     let isMounted = true;
     fetchAdminStandardsFromApi()
       .then((payload) => {
@@ -165,8 +85,6 @@ export default function BasicInfoEditModal({
         const nextDraft = normalizeDraftWithSource(nextSource, value);
         setCategorySource(nextSource);
         setDraft(nextDraft);
-        setExpandedCategory1(nextDraft.category1 || null);
-        setExpandedCategory2(nextDraft.category2 || null);
       })
       .catch(() => undefined);
     return () => {
@@ -177,45 +95,42 @@ export default function BasicInfoEditModal({
   const category2Options = useMemo(() => getCategory2Options(categorySource, draft.category1), [categorySource, draft.category1]);
   const category3Options = useMemo(() => getCategory3Options(categorySource, draft.category2), [categorySource, draft.category2]);
 
-  const handleCategory1Toggle = (option: CategoryOption) => {
-    if (expandedCategory1 === option.name) {
-      setExpandedCategory1(null);
-      setExpandedCategory2(null);
-      return;
-    }
+  const handleCategory1Change = (nextValue: string) => {
+    const nextCategory1 = findCategoryOption(categorySource.category1Options, nextValue, categorySource.defaultCategory1);
+    const nextCategory2Options = getCategory2Options(categorySource, nextCategory1.name);
+    const nextCategory2 = nextCategory2Options[0] ?? categorySource.defaultCategory2;
+    const nextCategory3Options = getCategory3Options(categorySource, nextCategory2.name);
+    const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
     setDraft((current) => ({
       ...current,
-      category1: option.name,
-      category2: current.category1 === option.name ? current.category2 : "",
-      category3: current.category1 === option.name ? current.category3 : "",
-      category1Id: option.id,
-      category2Id: current.category1 === option.name ? current.category2Id : null,
-      category3Id: current.category1 === option.name ? current.category3Id : null,
+      category1: nextCategory1.name,
+      category2: nextCategory2.name,
+      category3: nextCategory3.name,
+      category1Id: nextCategory1.id,
+      category2Id: nextCategory2.id,
+      category3Id: nextCategory3.id,
     }));
-    setExpandedCategory1(option.name);
-    setExpandedCategory2(null);
   };
 
-  const handleCategory2Toggle = (option: CategoryOption) => {
-    if (expandedCategory2 === option.name) {
-      setExpandedCategory2(null);
-      return;
-    }
+  const handleCategory2Change = (nextValue: string) => {
+    const nextCategory2 = findCategoryOption(category2Options, nextValue, categorySource.defaultCategory2);
+    const nextCategory3Options = getCategory3Options(categorySource, nextCategory2.name);
+    const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
     setDraft((current) => ({
       ...current,
-      category2: option.name,
-      category3: current.category2 === option.name ? current.category3 : "",
-      category2Id: option.id,
-      category3Id: current.category2 === option.name ? current.category3Id : null,
+      category2: nextCategory2.name,
+      category3: nextCategory3.name,
+      category2Id: nextCategory2.id,
+      category3Id: nextCategory3.id,
     }));
-    setExpandedCategory2(option.name);
   };
 
-  const handleCategory3Select = (option: CategoryOption) => {
+  const handleCategory3Change = (nextValue: string) => {
+    const nextCategory3 = findCategoryOption(category3Options, nextValue, categorySource.defaultCategory3);
     setDraft((current) => ({
       ...current,
-      category3: option.name,
-      category3Id: option.id,
+      category3: nextCategory3.name,
+      category3Id: nextCategory3.id,
     }));
   };
 
@@ -240,59 +155,12 @@ export default function BasicInfoEditModal({
         primary: { label: i18n.common.ui.common.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary" },
       })}
     >
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
-          <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category1}</div>
-          <div className="mt-2 space-y-2">
-            {categorySource.category1Options.map((option) => (
-              <CategoryOptionButton
-                key={option.name}
-                label={option.name}
-                selected={draft.category1 === option.name}
-                expanded={expandedCategory1 === option.name}
-                onClick={() => handleCategory1Toggle(option)}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
-          <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category2}</div>
-          {expandedCategory1 === draft.category1 ? (
-            <div className="mt-2 space-y-2">
-              {category2Options.map((option) => (
-                <CategoryOptionButton
-                  key={option.name}
-                  label={option.name}
-                  selected={draft.category2 === option.name}
-                  expanded={expandedCategory2 === option.name}
-                  onClick={() => handleCategory2Toggle(option)}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category1 || "상위 분류"} 항목을 열면 세부 분류를 확인할 수 있습니다.</p>
-          )}
-        </div>
-
-        <div className="pbp-workorder-selectable-panel rounded-2xl border p-3">
-          <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category3}</div>
-          {expandedCategory2 === draft.category2 ? (
-            <div className="mt-2 space-y-2">
-              {category3Options.map((option) => (
-                <LeafOptionButton
-                  key={option.name}
-                  label={option.name}
-                  selected={draft.category3 === option.name}
-                  onClick={() => handleCategory3Select(option)}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 rounded-xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">{draft.category2 || "중분류"} 항목을 열면 세부 항목을 확인할 수 있습니다.</p>
-          )}
-        </div>
-      </div>
+      <CreateWorkOrderCategoryFields
+        labels={{ category1: copy.category1, category2: copy.category2, category3: copy.category3 }}
+        values={{ category1: draft.category1, category2: draft.category2, category3: draft.category3 }}
+        options={{ category1Options: categorySource.category1Options, category2Options, category3Options }}
+        onChange={{ category1: handleCategory1Change, category2: handleCategory2Change, category3: handleCategory3Change }}
+      />
 
       <div className="pbp-detail-summary-readonly mt-4 rounded-2xl border px-4 py-3">
         <div className="text-xs text-[var(--pbp-text-muted)]">{copy.previewLabel}</div>

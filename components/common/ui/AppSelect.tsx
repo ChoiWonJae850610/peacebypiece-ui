@@ -59,6 +59,7 @@ export default function AppSelect({
   name,
 }: AppSelectProps) {
   const [open, setOpen] = useState(false);
+  const suppressNextOpenRef = useRef(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const rootValue = value === undefined ? undefined : value === "" ? EMPTY_SELECT_VALUE : value;
@@ -87,7 +88,10 @@ export default function AppSelect({
     <Select.Root
       name={name}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(nextOpen) => {
+        if (suppressNextOpenRef.current && nextOpen) return;
+        setOpen(nextOpen);
+      }}
       value={rootValue}
       defaultValue={rootDefaultValue}
       onValueChange={(nextValue) => {
@@ -99,12 +103,16 @@ export default function AppSelect({
       <Select.Trigger
         ref={triggerRef}
         aria-label={ariaLabel ?? placeholder}
-        onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+        onPointerDownCapture={(event: PointerEvent<HTMLButtonElement>) => {
           if (!open) return;
+          suppressNextOpenRef.current = true;
           event.preventDefault();
           event.stopPropagation();
           setOpen(false);
           event.currentTarget.blur();
+          window.setTimeout(() => {
+            suppressNextOpenRef.current = false;
+          }, 0);
         }}
         className={cn(
           "inline-flex items-center justify-between gap-3 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] font-semibold text-[var(--pbp-text-primary)] shadow-sm transition hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--pbp-surface)]",
