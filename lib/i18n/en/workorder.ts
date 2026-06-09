@@ -703,7 +703,7 @@ export const workorderEn = {
     layout: {
       sidebar: {
         title: "WAFL",
-        workList: "Work list",
+        workList: "Work order list",
       },
       sidebarControls: {
         subtitle: "Work order list",
@@ -765,7 +765,7 @@ export const workorderEn = {
       },
       mobileDrawer: {
         closeOverlayAria: "Close drawer",
-        title: "Work list",
+        title: "Work order list",
         subtitle: "",
         close: "Close",
         backToList: "List",

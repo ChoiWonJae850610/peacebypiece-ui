@@ -717,7 +717,7 @@ export const workorderKo = {
         subtitle: "모바일 작업 메뉴",
         openAdminPanelAria: "관리자 패널 열기",
         openSettingsAria: "환경 설정 열기",
-        openMenuAria: "작업 목록 열기",
+        openMenuAria: "작업지시서 목록 열기",
         menu: "메뉴",
       },
       homeNavigation: {
@@ -734,7 +734,7 @@ export const workorderKo = {
       },
       mobileDrawer: {
         closeOverlayAria: "드로어 닫기",
-        title: "작업 목록",
+        title: "작업지시서 목록",
         subtitle: "",
         close: "닫기",
         backToList: "목록",

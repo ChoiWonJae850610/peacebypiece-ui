@@ -276,7 +276,8 @@ export default function SidebarContent({
               {workOrders.length}건
             </SectionCountBadge>
           </div>
-          <div className="grid shrink-0 gap-1.5 border-b border-[var(--pbp-border)] pb-3">
+          <div className="mx-1 border-b border-[var(--pbp-border)]" aria-hidden="true" />
+          <div className="mt-3 grid shrink-0 gap-1.5">
             <div className="flex items-center gap-2">
               <label className="min-w-0 flex-1">
                 <span className="sr-only">{controlsUi.searchAria}</span>
@@ -340,6 +341,7 @@ export default function SidebarContent({
             {controlsUi.create}
           </button>
         ) : null}
+        <div className="mx-1 mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-24 pr-2 [scrollbar-gutter:stable]">
         <div className="space-y-2">

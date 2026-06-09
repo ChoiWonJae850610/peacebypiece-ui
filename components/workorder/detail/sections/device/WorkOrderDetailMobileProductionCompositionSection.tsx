@@ -1,6 +1,5 @@
 import { useI18n } from "@/lib/i18n";
 import { formatProductionCompositionSummary } from "@/lib/workorder/detail/detailFormatting";
-import { SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
 import WorkOrderDetailMobileMaterialSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileMaterialSection";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
@@ -12,28 +11,23 @@ export default function WorkOrderDetailMobileProductionCompositionSection(props:
   const summary = formatProductionCompositionSummary(props.materials, [], i18n);
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-2xl bg-stone-50 p-3 sm:p-3.5">
-      <SectionHeader title={copy.title} summary={summary} open={props.open} onToggle={props.onToggle} />
-      {props.open ? (
-        <div className="mt-3 grid gap-3">
-          <WorkOrderDetailMobileMaterialSection
-            materials={props.materials}
-            open={props.materialOpen}
-            onToggle={props.onToggleMaterial}
-            editingCell={props.editingCell}
-            editingValue={props.editingValue}
-            onStartEdit={props.onStartEdit}
-            onCommitEdit={props.onCommitEdit}
-            onCancelEdit={props.onCancelEdit}
-            onAdd={props.onAddMaterial}
-            onRemove={props.onRemoveMaterial}
-            onRemoveZeroQuantity={props.onRemoveZeroQuantityMaterials}
-            onSaveDraft={props.onSaveMaterialDraft}
-            vendorOptionsById={props.materialVendorOptionsById}
-            locked={props.locked}
-          />
-        </div>
-      ) : null}
-    </section>
+    <WorkOrderDetailMobileMaterialSection
+      materials={props.materials}
+      open={props.open}
+      onToggle={props.onToggle}
+      editingCell={props.editingCell}
+      editingValue={props.editingValue}
+      onStartEdit={props.onStartEdit}
+      onCommitEdit={props.onCommitEdit}
+      onCancelEdit={props.onCancelEdit}
+      onAdd={props.onAddMaterial}
+      onRemove={props.onRemoveMaterial}
+      onRemoveZeroQuantity={props.onRemoveZeroQuantityMaterials}
+      onSaveDraft={props.onSaveMaterialDraft}
+      vendorOptionsById={props.materialVendorOptionsById}
+      locked={props.locked}
+      title={copy.title}
+      summary={summary}
+    />
   );
 }

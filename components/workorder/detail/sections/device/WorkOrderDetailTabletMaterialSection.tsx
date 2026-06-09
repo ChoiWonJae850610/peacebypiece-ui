@@ -22,6 +22,9 @@ type Props = {
   onSaveDraft: (materialId: string | null, draft: MaterialSheetDraft) => void;
   vendorOptionsById: Record<string, string[]>;
   locked?: boolean;
+  title?: string;
+  summary?: string;
+  sectionClassName?: string;
 };
 
 export default function WorkOrderDetailTabletMaterialSection({
@@ -32,6 +35,9 @@ export default function WorkOrderDetailTabletMaterialSection({
   onRemoveZeroQuantity,
   onSaveDraft,
   locked = false,
+  title,
+  summary,
+  sectionClassName = "overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5",
 }: Props) {
   const { i18n, locale } = useI18n();
   const { materialUnitOptions } = useCompanyStandardOptions();
@@ -41,9 +47,11 @@ export default function WorkOrderDetailTabletMaterialSection({
   const [sheetOpen, setSheetOpen] = useState(false);
   const zeroQuantityCount = materials.filter((item) => Math.max(0, Number(item.quantity) || 0) <= 0).length;
   const andMore = materials.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(materials.length - 1))}` : "";
-  const summary = materials.length > 0
+  const defaultSummary = materials.length > 0
     ? copy.summaryFormat.replace("{name}", materials[0].name).replace("{andMore}", andMore)
     : copy.empty;
+  const headerTitle = title ?? copy.title;
+  const headerSummary = summary ?? defaultSummary;
 
   const openAddSheet = () => {
     setEditingMaterial(null);
@@ -56,8 +64,8 @@ export default function WorkOrderDetailTabletMaterialSection({
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl bg-stone-50 p-3.5">
-      <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
+    <section className={sectionClassName}>
+      <SectionHeader title={headerTitle} summary={headerSummary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-3 grid gap-3">
           {!locked && zeroQuantityCount > 0 ? (
