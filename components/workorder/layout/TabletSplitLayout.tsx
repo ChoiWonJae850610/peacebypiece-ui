@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 
-import { AppButton, AppSheet } from "@/components/common/ui";
+import { AppButton, AppSheet, WaflWorkspacePanel } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 type TabletSplitLayoutProps = {
@@ -36,26 +36,28 @@ export default function TabletSplitLayout({
     <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
       <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
         {topbar ? <div className="shrink-0">{topbar}</div> : null}
-        <div className="grid min-h-0 flex-1 grid-cols-12 overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
-          <aside className="col-span-4 min-h-0 border-r border-stone-200 bg-white">
+        <WaflWorkspacePanel panelRole="shell" className="grid min-h-0 flex-1 grid-cols-12 overflow-hidden">
+          <WaflWorkspacePanel as="aside" panelRole="sidebar" className="col-span-4 min-h-0 rounded-none border-0 border-r border-[var(--pbp-border)] bg-transparent">
             {sidebar}
-          </aside>
+          </WaflWorkspacePanel>
 
-          <section
+          <WaflWorkspacePanel
+            as="section"
+            panelRole="detail"
             ref={contentScrollRef}
-            className="col-span-8 min-h-0 overflow-y-auto px-4 py-4 pb-[calc(7rem+env(safe-area-inset-bottom))]"
+            className="col-span-8 min-h-0 overflow-y-auto rounded-none border-0 bg-transparent px-4 py-4 pb-[calc(7rem+env(safe-area-inset-bottom))]"
           >
             <div className="grid min-h-full grid-cols-1 gap-4">
               <div>{detail}</div>
             </div>
-          </section>
-        </div>
+          </WaflWorkspacePanel>
+        </WaflWorkspacePanel>
 
-        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(33.333333%+2rem)] right-8 z-30 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 backdrop-blur">
+        <WaflWorkspacePanel panelRole="toolbar" className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(33.333333%+2rem)] right-8 z-30 p-3 backdrop-blur">
           <AppButton className="w-full" size="lg" onClick={() => setSidePanelOpen(true)}>
             {sidePanelTitle}
           </AppButton>
-        </div>
+        </WaflWorkspacePanel>
 
         <AppSheet
           open={sidePanelOpen}

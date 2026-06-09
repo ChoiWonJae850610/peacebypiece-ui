@@ -249,6 +249,11 @@ body[data-wafl-component-debug="true"] :where([data-wafl-component="button"], [d
   outline-offset: 2px;
 }
 
+body[data-wafl-component-debug="true"] :where([data-wafl-component="workspace-panel"]) {
+  outline-width: 2px !important;
+  outline-offset: 3px;
+}
+
 /* WAFL theme primitives.
    Keep new shared UI styles on these variables so future accent/theme changes
    do not require editing each work-order component. */

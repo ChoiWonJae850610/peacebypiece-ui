@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { WaflWorkspacePanel } from "@/components/common/ui";
+
 export default function DesktopWorkspaceLayout({ children }: { children: ReactNode }) {
-  return <div className="rounded-[var(--pbp-radius-wafl)] p-6 pbp-card">{children}</div>;
+  return <WaflWorkspacePanel panelRole="content" className="p-6">{children}</WaflWorkspacePanel>;
 }

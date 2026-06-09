@@ -26,3 +26,5 @@ export * from "./WaflState";
 export * from "./WaflModal";
 
 export * from "./WaflMobileShell";
+
+export { default as WaflWorkspacePanel, type WaflWorkspacePanelRole } from "./WaflWorkspacePanel";
