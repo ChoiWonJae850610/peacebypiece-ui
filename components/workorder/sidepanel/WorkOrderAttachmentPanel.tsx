@@ -1,9 +1,17 @@
 "use client";
 
-import { ATTACHMENT_SCOPE, isDesignAttachmentScope, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
+import {
+  ATTACHMENT_SCOPE,
+  isDesignAttachmentScope,
+  type UploadableAttachmentScopeValue,
+} from "@/lib/constants/workorderIdentity";
 import { useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
-import { SectionCountBadge, WorkOrderPanelCard, WaflButton } from "@/components/common/ui";
+import {
+  SectionCountBadge,
+  WorkOrderPanelCard,
+  WaflButton,
+} from "@/components/common/ui";
 import { WorkOrderActionButton } from "@/components/workorder/common/WorkOrderActionButton";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
@@ -15,22 +23,29 @@ import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrder
 type AttachmentPanelScope = UploadableAttachmentScopeValue;
 
 function readDroppedFiles(event: DragEvent<HTMLElement>) {
-  return Array.from(event.dataTransfer?.files ?? []).filter((file) => file.size > 0);
+  return Array.from(event.dataTransfer?.files ?? []).filter(
+    (file) => file.size > 0,
+  );
 }
 
 function hasDroppedFiles(event: DragEvent<HTMLElement>) {
   return Array.from(event.dataTransfer?.types ?? []).includes("Files");
 }
 
-function getUploadGuideLabel(scope: AttachmentPanelScope, ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"]) {
-  return isDesignAttachmentScope(scope) ? ui.attachmentPanel.designUploadGuide : ui.attachmentPanel.attachmentUploadGuide;
+function getUploadGuideLabel(
+  scope: AttachmentPanelScope,
+  ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"],
+) {
+  return isDesignAttachmentScope(scope)
+    ? ui.attachmentPanel.designUploadGuide
+    : ui.attachmentPanel.attachmentUploadGuide;
 }
 
-function getUploadGuideDescription(scope: AttachmentPanelScope, ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"]) {
-  return isDesignAttachmentScope(scope) ? ui.attachmentPanel.designUploadGuideDescription : ui.attachmentPanel.attachmentUploadGuideDescription;
-}
-
-function logAttachmentDropDebug(scope: AttachmentPanelScope, message: string, payload?: Record<string, unknown>) {
+function logAttachmentDropDebug(
+  scope: AttachmentPanelScope,
+  message: string,
+  payload?: Record<string, unknown>,
+) {
   if (process.env.NODE_ENV === "production") return;
   console.info(`[attachment-dnd:${scope}] ${message}`, payload ?? {});
 }
@@ -62,13 +77,16 @@ function AttachmentActionMenu({
   const ui = i18n.workorder.ui;
   const [open, setOpen] = useState(false);
   const canShowDrawingAction = isDesignAttachmentScope(scope);
-  const canShowAdvancedDrawingAction = canShowDrawingAction && RUNTIME_VISIBILITY.showAdvancedDrawingTools;
+  const canShowAdvancedDrawingAction =
+    canShowDrawingAction && RUNTIME_VISIBILITY.showAdvancedDrawingTools;
 
   return (
     <div className="relative shrink-0">
       <WorkOrderActionButton
         label={ui.attachmentPanel.actionMenuAria}
-        onClick={() => { if (!disabled) setOpen((value) => !value); }}
+        onClick={() => {
+          if (!disabled) setOpen((value) => !value);
+        }}
         disabled={disabled}
         title={disabled ? disabledReason : undefined}
         showSrLabel={false}
@@ -77,7 +95,9 @@ function AttachmentActionMenu({
         ···
       </WorkOrderActionButton>
       {open ? (
-        <div className={`pbp-card absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}>
+        <div
+          className={`pbp-card absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}
+        >
           <button
             type="button"
             onClick={() => {
@@ -127,7 +147,6 @@ function AttachmentUploadHint({
   scope,
   canManageAttachments,
   onOpenAttachmentPicker,
-  onOpenDesignDrawingModal,
   onUploadFiles,
   compact,
   disabled = false,
@@ -136,7 +155,6 @@ function AttachmentUploadHint({
   scope: AttachmentPanelScope;
   canManageAttachments: boolean;
   onOpenAttachmentPicker: () => void;
-  onOpenDesignDrawingModal?: () => void;
   onUploadFiles: (files: File[]) => void;
   compact: boolean;
   disabled?: boolean;
@@ -145,8 +163,9 @@ function AttachmentUploadHint({
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
   const [dragActive, setDragActive] = useState(false);
-  const title = dragActive ? ui.attachmentPanel.dropUploadGuide : getUploadGuideLabel(scope, ui);
-  const description = dragActive ? ui.attachmentPanel.dropUploadGuideDescription : getUploadGuideDescription(scope, ui);
+  const title = dragActive
+    ? ui.attachmentPanel.dropUploadGuide
+    : getUploadGuideLabel(scope, ui);
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
     if (disabled || !hasDroppedFiles(event)) return;
@@ -157,7 +176,8 @@ function AttachmentUploadHint({
   };
 
   const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    if (event.currentTarget.contains(event.relatedTarget as Node | null))
+      return;
     setDragActive(false);
   };
 
@@ -167,7 +187,10 @@ function AttachmentUploadHint({
     event.stopPropagation();
     setDragActive(false);
     const files = readDroppedFiles(event);
-    logAttachmentDropDebug(scope, "drop on hint", { fileCount: files.length, fileNames: files.map((file) => file.name) });
+    logAttachmentDropDebug(scope, "drop on hint", {
+      fileCount: files.length,
+      fileNames: files.map((file) => file.name),
+    });
     if (files.length === 0) return;
     onUploadFiles(files);
   };
@@ -178,7 +201,9 @@ function AttachmentUploadHint({
     <div
       role="button"
       tabIndex={0}
-      onClick={() => { if (!disabled) onOpenAttachmentPicker(); }}
+      onClick={() => {
+        if (!disabled) onOpenAttachmentPicker();
+      }}
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
       onKeyDown={(event) => {
@@ -191,17 +216,17 @@ function AttachmentUploadHint({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 w-full min-w-0 rounded-2xl border border-dashed text-left active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
+      aria-label={title}
+      className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 flex w-full min-w-0 items-center justify-center rounded-2xl border border-dashed active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
         dragActive ? "pbp-sidepanel-upload-zone-active shadow-sm" : ""
-      } ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}
+      } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
     >
-      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-        <span className={`pbp-sidepanel-preview-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}>＋</span>
-        <span className="min-w-0 flex-1">
-          <span className="block break-words text-xs font-semibold pbp-text-primary">{title}</span>
-          <span className="mt-0.5 block break-words text-[11px] leading-4 pbp-text-muted">{description}</span>
-        </span>
-      </div>
+      <span
+        className={`pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
+      >
+        ＋
+      </span>
+      <span className="sr-only">{title}</span>
     </div>
   );
 }
@@ -249,12 +274,14 @@ export default function WorkOrderAttachmentPanel({
   const ui = i18n.workorder.ui;
   const attachmentPolicyText = WORK_ORDER_ATTACHMENT_POLICY.messages;
   const handleSetPrimaryDesignAttachment = (attachmentId: string) => {
-    if (writeLocked || typeof onSetPrimaryDesignAttachment !== "function") return;
+    if (writeLocked || typeof onSetPrimaryDesignAttachment !== "function")
+      return;
     onSetPrimaryDesignAttachment(attachmentId);
   };
 
   const [panelDragActive, setPanelDragActive] = useState(false);
-  const [advancedDrawingModalOpen, setAdvancedDrawingModalOpen] = useState(false);
+  const [advancedDrawingModalOpen, setAdvancedDrawingModalOpen] =
+    useState(false);
   const openDesignDrawingModal = () => {
     onOpenDesignDrawingModal?.();
   };
@@ -268,7 +295,8 @@ export default function WorkOrderAttachmentPanel({
   };
 
   const handlePanelDragLeave = (event: DragEvent<HTMLDivElement>) => {
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    if (event.currentTarget.contains(event.relatedTarget as Node | null))
+      return;
     setPanelDragActive(false);
   };
 
@@ -278,7 +306,10 @@ export default function WorkOrderAttachmentPanel({
     event.stopPropagation();
     setPanelDragActive(false);
     const files = readDroppedFiles(event);
-    logAttachmentDropDebug(uploadScope, "drop on panel", { fileCount: files.length, fileNames: files.map((file) => file.name) });
+    logAttachmentDropDebug(uploadScope, "drop on panel", {
+      fileCount: files.length,
+      fileNames: files.map((file) => file.name),
+    });
     if (files.length === 0) return;
     onUploadFiles(files);
   };
@@ -288,163 +319,271 @@ export default function WorkOrderAttachmentPanel({
   const isMobile = variant === "mobile";
   const isTablet = variant === "tablet";
   const isOfficialAttachmentScope = !isDesignAttachmentScope(uploadScope);
-  const hasGeneratedOrderRequestPdf = attachments.some((attachment) => isGeneratedOrderRequestPdfAttachment(attachment));
-  const showOrderRequestPdfStatus = isOfficialAttachmentScope && canGenerateOrderRequestPdf;
-  const showGenerateOrderRequestPdfAction = showOrderRequestPdfStatus && !hasGeneratedOrderRequestPdf;
+  const hasGeneratedOrderRequestPdf = attachments.some((attachment) =>
+    isGeneratedOrderRequestPdfAttachment(attachment),
+  );
+  const showOrderRequestPdfStatus =
+    isOfficialAttachmentScope && canGenerateOrderRequestPdf;
+  const showGenerateOrderRequestPdfAction =
+    showOrderRequestPdfStatus && !hasGeneratedOrderRequestPdf;
 
   return (
     <>
-    <div
-      onDragEnter={handlePanelDragOver}
-      onDragOver={handlePanelDragOver}
-      onDragLeave={handlePanelDragLeave}
-      onDrop={handlePanelDrop}
-      className={panelDragActive ? "rounded-[1.75rem] ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : undefined}
-    >
-      <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
-      <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="truncate text-sm font-semibold pbp-text-primary">{title}</h3>
-          <SectionCountBadge>{formatAttachmentCount(attachments.length, ui.attachmentPanel.countSuffix)}</SectionCountBadge>
-        </div>
-        {canManageAttachments ? (
-          <AttachmentActionMenu
-            scope={uploadScope}
-            addButtonLabel={addButtonLabel}
-            onOpenAttachmentPicker={onOpenAttachmentPicker}
-            onOpenDrawingPlaceholder={openDesignDrawingModal}
-            onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
-            isMobile={isMobile}
-            disabled={writeLocked}
-            disabledReason={writeLockMessage}
-          />
-        ) : null}
-      </div>
-      {showOrderRequestPdfStatus ? (
-        <div className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left shadow-sm">
-          <div className="flex min-w-0 items-start gap-2">
-            <span
-              className={`mt-0.5 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
-                hasGeneratedOrderRequestPdf ? "bg-[var(--pbp-status-success)]" : "bg-[var(--pbp-warning)]"
-              }`}
-              aria-hidden="true"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold pbp-text-primary">
-                {hasGeneratedOrderRequestPdf ? ui.attachmentPanel.orderRequestPdfSavedTitle : ui.attachmentPanel.orderRequestPdfMissingTitle}
-              </div>
-              <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                {hasGeneratedOrderRequestPdf ? ui.attachmentPanel.orderRequestPdfSavedDescription : ui.attachmentPanel.orderRequestPdfMissingDescription}
-              </p>
+      <div
+        onDragEnter={handlePanelDragOver}
+        onDragOver={handlePanelDragOver}
+        onDragLeave={handlePanelDragLeave}
+        onDrop={handlePanelDrop}
+        className={
+          panelDragActive
+            ? "rounded-[1.75rem] ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]"
+            : undefined
+        }
+      >
+        <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
+          <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <h3 className="truncate text-sm font-semibold pbp-text-primary">
+                {title}
+              </h3>
+              <SectionCountBadge>
+                {formatAttachmentCount(
+                  attachments.length,
+                  ui.attachmentPanel.countSuffix,
+                )}
+              </SectionCountBadge>
             </div>
+            {canManageAttachments ? (
+              <AttachmentActionMenu
+                scope={uploadScope}
+                addButtonLabel={addButtonLabel}
+                onOpenAttachmentPicker={onOpenAttachmentPicker}
+                onOpenDrawingPlaceholder={openDesignDrawingModal}
+                onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
+                isMobile={isMobile}
+                disabled={writeLocked}
+                disabledReason={writeLockMessage}
+              />
+            ) : null}
           </div>
-          {showGenerateOrderRequestPdfAction ? (
-            <WaflButton
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => { if (!writeLocked) onGenerateOrderRequestPdf?.(); }}
-              disabled={writeLocked || typeof onGenerateOrderRequestPdf !== "function"}
-              title={writeLocked ? writeLockMessage : ui.attachmentPanel.generateOrderRequestPdfButtonTitle}
-              aria-label={ui.attachmentPanel.generateOrderRequestPdfButtonAria}
-              className="mt-3"
-            >
-              {writeLocked ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
-              <span>{writeLocked && writeLockMessage ? writeLockMessage : ui.attachmentPanel.generateOrderRequestPdfButton}</span>
-            </WaflButton>
-          ) : null}
-        </div>
-      ) : null}
-      {attachments.length > 0 ? (
-        <div className={isMobile ? "mt-2.5 min-w-0 space-y-1.5" : "mt-2.5 min-w-0 space-y-2"}>
-          {attachments.map((attachment) => (
-            <div key={attachment.id} className={isMobile ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-2.5 pr-9" : isTablet ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-3 pr-11" : "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-3 pr-12"}>
-              {attachment.canSetPrimary ? (
-                <button
-                  type="button"
-                  onClick={() => handleSetPrimaryDesignAttachment(attachment.id)}
-                  disabled={writeLocked}
-                  className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
-                  title={writeLocked ? writeLockMessage : attachment.isPrimary ? attachmentPolicyText.primaryTitle : attachmentPolicyText.primaryActionTitle}
-                  aria-label={attachment.isPrimary ? `${attachment.name} ${attachmentPolicyText.primaryTitle}` : `${attachment.name} ${attachmentPolicyText.primaryActionTitle}`}
-                >
-                  {attachment.isPrimary ? attachmentPolicyText.primaryBadge : attachmentPolicyText.primaryAction}
-                </button>
-              ) : null}
-              {attachment.canDelete ? (
-                <div className="absolute right-3 top-3">
-                  <DeleteButton
-                    onClick={() => { if (!writeLocked) onDeleteAttachment(attachment.id); }}
-                    srLabel={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
-                    disabled={writeLocked}
-                    title={writeLocked ? writeLockMessage : ui.attachmentPanel.deleteTitle}
-                  />
-                </div>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => onPreviewAttachment(attachment.id)}
-                disabled={!attachment.canPreview}
-                title={attachment.canPreview ? ui.attachmentPanel.previewTitle : ui.attachmentPanel.previewUnavailableTitle}
-                aria-label={`${attachment.name} ${attachment.canPreview ? ui.attachmentPanel.previewAriaSuffix : ui.attachmentPanel.previewUnavailableAriaSuffix}`}
-                className="flex w-full min-w-0 items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
-              >
-                <div className={isMobile ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl" : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl"}>
-                  {attachment.type === "image" ? (
-                    <img src={attachment.thumbnailUrl} alt={attachment.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-semibold text-rose-700">{attachment.previewLabel}</span>
-                  )}
-                </div>
+          {showOrderRequestPdfStatus ? (
+            <div className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left shadow-sm">
+              <div className="flex min-w-0 items-start gap-2">
+                <span
+                  className={`mt-0.5 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
+                    hasGeneratedOrderRequestPdf
+                      ? "bg-[var(--pbp-status-success)]"
+                      : "bg-[var(--pbp-warning)]"
+                  }`}
+                  aria-hidden="true"
+                />
                 <div className="min-w-0 flex-1">
-                  <div className={isMobile ? "break-words pr-1 text-[13px] font-medium leading-4 pbp-text-primary" : "truncate pr-2 text-sm font-medium pbp-text-primary"}>{attachment.name}</div>
-                  <div className={isMobile ? "mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 break-words text-[11px] leading-4 pbp-text-muted" : "mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs pbp-text-muted"}>
-                    <span>{attachment.ownerLabel}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{attachment.previewLabel}</span>
+                  <div className="text-xs font-semibold pbp-text-primary">
+                    {hasGeneratedOrderRequestPdf
+                      ? ui.attachmentPanel.orderRequestPdfSavedTitle
+                      : ui.attachmentPanel.orderRequestPdfMissingTitle}
                   </div>
+                  <p className="mt-1 text-xs leading-5 pbp-text-muted">
+                    {hasGeneratedOrderRequestPdf
+                      ? ui.attachmentPanel.orderRequestPdfSavedDescription
+                      : ui.attachmentPanel.orderRequestPdfMissingDescription}
+                  </p>
                 </div>
-              </button>
+              </div>
+              {showGenerateOrderRequestPdfAction ? (
+                <WaflButton
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    if (!writeLocked) onGenerateOrderRequestPdf?.();
+                  }}
+                  disabled={
+                    writeLocked ||
+                    typeof onGenerateOrderRequestPdf !== "function"
+                  }
+                  title={
+                    writeLocked
+                      ? writeLockMessage
+                      : ui.attachmentPanel.generateOrderRequestPdfButtonTitle
+                  }
+                  aria-label={
+                    ui.attachmentPanel.generateOrderRequestPdfButtonAria
+                  }
+                  className="mt-3"
+                >
+                  {writeLocked ? (
+                    <span
+                      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  <span>
+                    {writeLocked && writeLockMessage
+                      ? writeLockMessage
+                      : ui.attachmentPanel.generateOrderRequestPdfButton}
+                  </span>
+                </WaflButton>
+              ) : null}
             </div>
-          ))}
-          <AttachmentUploadHint
-            scope={uploadScope}
-            canManageAttachments={canManageAttachments}
-            onOpenAttachmentPicker={onOpenAttachmentPicker}
-            onUploadFiles={onUploadFiles}
-            compact={isMobile || isTablet}
-            disabled={writeLocked}
-            disabledReason={writeLockMessage}
-          />
-        </div>
-      ) : (
-        <div>
-          <div className="pbp-empty-state mt-3 min-w-0 whitespace-pre-line rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5">{emptyText}</div>
-          <AttachmentUploadHint
-            scope={uploadScope}
-            canManageAttachments={canManageAttachments}
-            onOpenAttachmentPicker={onOpenAttachmentPicker}
-            onUploadFiles={onUploadFiles}
-            compact={isMobile || isTablet}
-            disabled={writeLocked}
-            disabledReason={writeLockMessage}
-          />
-        </div>
-      )}
-      </WorkOrderPanelCard>
-    </div>
-    {isDesignAttachmentScope(uploadScope) ? (
-      <>
-        {RUNTIME_VISIBILITY.showAdvancedDrawingTools ? (
-          <WorkOrderTldrawDrawingModal
-            open={advancedDrawingModalOpen}
-            onClose={() => setAdvancedDrawingModalOpen(false)}
-            onSaveDrawing={(file) => onUploadFiles([file])}
-            variant={variant}
-          />
-        ) : null}
-      </>
-    ) : null}
+          ) : null}
+          {attachments.length > 0 ? (
+            <div
+              className={
+                isMobile
+                  ? "mt-2.5 min-w-0 space-y-1.5"
+                  : "mt-2.5 min-w-0 space-y-2"
+              }
+            >
+              {attachments.map((attachment) => (
+                <div
+                  key={attachment.id}
+                  className={
+                    isMobile
+                      ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-2.5 pr-9"
+                      : isTablet
+                        ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-3 pr-11"
+                        : "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-3 pr-12"
+                  }
+                >
+                  {attachment.canSetPrimary ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSetPrimaryDesignAttachment(attachment.id)
+                      }
+                      disabled={writeLocked}
+                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
+                      title={
+                        writeLocked
+                          ? writeLockMessage
+                          : attachment.isPrimary
+                            ? attachmentPolicyText.primaryTitle
+                            : attachmentPolicyText.primaryActionTitle
+                      }
+                      aria-label={
+                        attachment.isPrimary
+                          ? `${attachment.name} ${attachmentPolicyText.primaryTitle}`
+                          : `${attachment.name} ${attachmentPolicyText.primaryActionTitle}`
+                      }
+                    >
+                      {attachment.isPrimary
+                        ? attachmentPolicyText.primaryBadge
+                        : attachmentPolicyText.primaryAction}
+                    </button>
+                  ) : null}
+                  {attachment.canDelete ? (
+                    <div className="absolute right-3 top-3">
+                      <DeleteButton
+                        onClick={() => {
+                          if (!writeLocked) onDeleteAttachment(attachment.id);
+                        }}
+                        srLabel={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
+                        disabled={writeLocked}
+                        title={
+                          writeLocked
+                            ? writeLockMessage
+                            : ui.attachmentPanel.deleteTitle
+                        }
+                      />
+                    </div>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => onPreviewAttachment(attachment.id)}
+                    disabled={!attachment.canPreview}
+                    title={
+                      attachment.canPreview
+                        ? ui.attachmentPanel.previewTitle
+                        : ui.attachmentPanel.previewUnavailableTitle
+                    }
+                    aria-label={`${attachment.name} ${attachment.canPreview ? ui.attachmentPanel.previewAriaSuffix : ui.attachmentPanel.previewUnavailableAriaSuffix}`}
+                    className="flex w-full min-w-0 items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
+                  >
+                    <div
+                      className={
+                        isMobile
+                          ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+                          : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+                      }
+                    >
+                      {attachment.type === "image" ? (
+                        <img
+                          src={attachment.thumbnailUrl}
+                          alt={attachment.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs font-semibold text-rose-700">
+                          {attachment.previewLabel}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className={
+                          isMobile
+                            ? "break-words pr-1 text-[13px] font-medium leading-4 pbp-text-primary"
+                            : "truncate pr-2 text-sm font-medium pbp-text-primary"
+                        }
+                      >
+                        {attachment.name}
+                      </div>
+                      <div
+                        className={
+                          isMobile
+                            ? "mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 break-words text-[11px] leading-4 pbp-text-muted"
+                            : "mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs pbp-text-muted"
+                        }
+                      >
+                        <span>{attachment.ownerLabel}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{attachment.previewLabel}</span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              ))}
+              <AttachmentUploadHint
+                scope={uploadScope}
+                canManageAttachments={canManageAttachments}
+                onOpenAttachmentPicker={onOpenAttachmentPicker}
+                onUploadFiles={onUploadFiles}
+                compact={isMobile || isTablet}
+                disabled={writeLocked}
+                disabledReason={writeLockMessage}
+              />
+            </div>
+          ) : (
+            <div>
+              <div className="pbp-empty-state mt-3 min-w-0 whitespace-pre-line rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5">
+                {emptyText}
+              </div>
+              <AttachmentUploadHint
+                scope={uploadScope}
+                canManageAttachments={canManageAttachments}
+                onOpenAttachmentPicker={onOpenAttachmentPicker}
+                onUploadFiles={onUploadFiles}
+                compact={isMobile || isTablet}
+                disabled={writeLocked}
+                disabledReason={writeLockMessage}
+              />
+            </div>
+          )}
+        </WorkOrderPanelCard>
+      </div>
+      {isDesignAttachmentScope(uploadScope) ? (
+        <>
+          {RUNTIME_VISIBILITY.showAdvancedDrawingTools ? (
+            <WorkOrderTldrawDrawingModal
+              open={advancedDrawingModalOpen}
+              onClose={() => setAdvancedDrawingModalOpen(false)}
+              onSaveDrawing={(file) => onUploadFiles([file])}
+              variant={variant}
+            />
+          ) : null}
+        </>
+      ) : null}
     </>
   );
 }

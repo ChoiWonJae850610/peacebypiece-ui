@@ -20,9 +20,12 @@ export const workorderEn = {
     draft: "Drafting and organizing work order details.",
     review_requested: "Designer requested manager review.",
     review_completed: "Review completed and ready for ordering.",
-    material_order_pending: "Work order request is confirmed and waiting for fabric/trim ordering to finish.",
-    request_order: "The work order request is confirmed and waits for fabric/trim ordering.",
-    inspection: "After the order request, inbound or inspection staff verify quantities and completion.",
+    material_order_pending:
+      "Work order request is confirmed and waiting for fabric/trim ordering to finish.",
+    request_order:
+      "The work order request is confirmed and waits for fabric/trim ordering.",
+    inspection:
+      "After the order request, inbound or inspection staff verify quantities and completion.",
     completed: "Work is complete and only archive management remains.",
     rejected: "Rejected by the manager and returned for designer editing.",
   },
@@ -51,7 +54,8 @@ export const workorderEn = {
   presentation: {
     emptyDisplay: "-",
     inventoryStatusPrefix: "Inventory status: ",
-    workflowDescriptionFallback: "No description is available for the current work status.",
+    workflowDescriptionFallback:
+      "No description is available for the current work status.",
     titleDraftFallback: "Draft",
     revisionSuffixFormat: "Rev {revision}",
     historyFilters: {
@@ -64,7 +68,8 @@ export const workorderEn = {
       title: "Full history",
       empty: "No history to display.",
       currentFilterFormat: "Current filter: {filter}",
-      currentRoleDesigner: "Current view permission: Work / Status / Attachment",
+      currentRoleDesigner:
+        "Current view permission: Work / Status / Attachment",
       currentRoleInspector: "Current view permission: Inventory / Attachment",
       defaultFilterLabel: "All",
     },
@@ -75,18 +80,21 @@ export const workorderEn = {
     saveHistoryTimeFormat: "Saved at {time}",
     workOrderLabel: "Work order",
     saveCompletedToast: "Saved successfully.",
-    orderInfoLockedToast: "This change is blocked by the order info transition policy.",
+    orderInfoLockedToast:
+      "This change is blocked by the order info transition policy.",
     saveFailedToast: "Failed to save work order.",
     reorderCreatedToastFormat: 'Reorder work order "{title}" has been created.',
     reorderFailedToast: "Failed to create reordered work order.",
     reworkConfirmFormat: 'Convert work order "{title}" to rework?',
-    reworkCompletedToastFormat: 'Work order "{title}" has been converted to rework.',
+    reworkCompletedToastFormat:
+      'Work order "{title}" has been converted to rework.',
     reworkFailedToast: "Failed to convert work order to rework.",
     deleteConfirmFormat: 'Delete work order "{title}"?',
     deleteModalTitle: "Delete work order",
     deleteModalDescription: "Review the work order before deleting it.",
     deleteModalTargetLabel: "Target",
-    deleteModalNotice: "The deleted work order moves to trash and can be restored within 30 days.",
+    deleteModalNotice:
+      "The deleted work order moves to trash and can be restored within 30 days.",
     deleteModalPolicyNotice: "",
     deleteModalConfirmLabel: "Move to trash",
     deleteCompletedToast: "Work order deleted.",
@@ -104,12 +112,14 @@ export const workorderEn = {
     orderRequestProcessingLabel: "Processing order request...",
     orderRequestPdfProcessingLabel: "Generating order PDF...",
     genericProcessingLabel: "Processing.",
-    renameAppliedToSeriesToast: "The work order title has been applied to the entire reorder series.",
+    renameAppliedToSeriesToast:
+      "The work order title has been applied to the entire reorder series.",
     renameAppliedToast: "The work order title has been changed.",
     renameFailedToast: "Failed to rename work order.",
   },
   actionFlow: {
-    orderInfoLockedToast: "This change is blocked by the order info transition policy.",
+    orderInfoLockedToast:
+      "This change is blocked by the order info transition policy.",
     inspectionCompletedToast: "Inspection completion has been applied.",
     officialAttachmentUploadedToast: "Attachment file has been uploaded.",
     memoThreadCreatedToast: "Work memo has been registered.",
@@ -118,31 +128,48 @@ export const workorderEn = {
     workflowChangedToastFormat: '"{label}" has been applied.',
     inventoryAppliedToast: "Inventory update has been applied.",
     factoryOrderRequestedToast: "Factory order request has been recorded.",
-    factoryOrderPdfSavedToast: "Factory order request completed. The order PDF has been saved to attachments.",
-    factoryOrderPdfRegeneratedToast: "The order PDF has been saved to attachments.",
+    factoryOrderPdfSavedToast:
+      "Factory order request completed. The order PDF has been saved to attachments.",
+    factoryOrderPdfRegeneratedToast:
+      "The order PDF has been saved to attachments.",
     factoryOrderPdfGenerateFailedToast: "Failed to generate the order PDF.",
-    factoryOrderPdfUploadFailedToast: "The order PDF was generated, but upload to file storage failed.",
-    factoryOrderPdfRegisterFailedToast: "The order PDF was uploaded, but attachment registration failed.",
-    factoryOrderPdfFailedToast: "Factory order request completed, but the order PDF could not be saved.",
-    factoryOrderAlreadyRequestedToast: "This work order has already been requested.",
-    factoryOrderRequiresApprovalToast: "You can request an order after review approval.",
+    factoryOrderPdfUploadFailedToast:
+      "The order PDF was generated, but upload to file storage failed.",
+    factoryOrderPdfRegisterFailedToast:
+      "The order PDF was uploaded, but attachment registration failed.",
+    factoryOrderPdfFailedToast:
+      "Factory order request completed, but the order PDF could not be saved.",
+    factoryOrderAlreadyRequestedToast:
+      "This work order has already been requested.",
+    factoryOrderRequiresApprovalToast:
+      "You can request an order after review approval.",
     factoryOrderFactoryRequiredToast: "Please select a factory.",
-    factoryOrderFactoryInvalidToast: "Please select the factory again. The registered factory id could not be verified.",
+    factoryOrderFactoryInvalidToast:
+      "Please select the factory again. The registered factory id could not be verified.",
     factoryOrderRowsRequiredToast: "Please enter at least one factory row.",
-    factoryOrderRowsInvalidToast: "Please check factory, due date, and quantity for every factory row.",
+    factoryOrderRowsInvalidToast:
+      "Please check factory, due date, and quantity for every factory row.",
     factoryOrderDueDateRequiredToast: "Please enter a due date.",
     factoryOrderQuantityRequiredToast: "Quantity must be at least 1.",
     factoryOrderLaborCostInvalidToast: "Labor cost cannot be negative.",
     factoryOrderLossCostInvalidToast: "Loss cost cannot be negative.",
-    factoryOrderNotAllowedToast: "You do not have permission to request this order.",
-    reviewApprovalValidationToast: "Please confirm factory and quantity before approving the review.",
+    factoryOrderNotAllowedToast:
+      "You do not have permission to request this order.",
+    reviewApprovalValidationToast:
+      "Please confirm factory and quantity before approving the review.",
     reinspectionRequestedToast: "Reinspection request has been applied.",
-    reviewRequestZeroCostWarningToast: "Review request applied. Labor cost and loss cost are both 0.",
-    reviewRequestZeroLaborCostWarningToast: "Review request applied. Labor cost is 0.",
-    reviewRequestZeroLossCostWarningToast: "Review request applied. Loss cost is 0.",
-    reviewApprovalZeroCostWarningToast: "Review approval applied. Labor cost and loss cost are both 0.",
-    reviewApprovalZeroLaborCostWarningToast: "Review approval applied. Labor cost is 0.",
-    reviewApprovalZeroLossCostWarningToast: "Review approval applied. Loss cost is 0.",
+    reviewRequestZeroCostWarningToast:
+      "Review request applied. Labor cost and loss cost are both 0.",
+    reviewRequestZeroLaborCostWarningToast:
+      "Review request applied. Labor cost is 0.",
+    reviewRequestZeroLossCostWarningToast:
+      "Review request applied. Loss cost is 0.",
+    reviewApprovalZeroCostWarningToast:
+      "Review approval applied. Labor cost and loss cost are both 0.",
+    reviewApprovalZeroLaborCostWarningToast:
+      "Review approval applied. Labor cost is 0.",
+    reviewApprovalZeroLossCostWarningToast:
+      "Review approval applied. Loss cost is 0.",
   },
   history: {
     actorSeparator: " · ",
@@ -173,7 +200,8 @@ export const workorderEn = {
       updated: "Updated.",
       statusChanged: "Status has changed.",
       inventoryChanged: "Inventory status has changed.",
-      inspectionCompleted: "Inspection completion and inventory update were recorded.",
+      inspectionCompleted:
+        "Inspection completion and inventory update were recorded.",
       officialAttachmentUploaded: "Attachment file has been uploaded.",
       designAttachmentUploaded: "Design file has been uploaded.",
       attachmentDeleted: "Attachment has been deleted.",
@@ -185,10 +213,12 @@ export const workorderEn = {
       reworkRestored: "The rework order has been restored to main.",
       deleted: "Work order has been deleted.",
       titleRenamed: "Work order title has been changed.",
-      titleRenamedSeries: "The work order title has been applied to the entire reorder series.",
+      titleRenamedSeries:
+        "The work order title has been applied to the entire reorder series.",
       managerChanged: "Manager has been changed.",
       factoryOrderRequested: "Factory order request has been recorded.",
-      reinspectionRequested: "The completed work order has been moved back to inspection.",
+      reinspectionRequested:
+        "The completed work order has been moved back to inspection.",
     },
     detailLabels: {
       author: "Author",
@@ -236,17 +266,22 @@ export const workorderEn = {
     },
     emptyWorkspace: {
       title: "No work orders to display",
-      description: "There are no work orders available for the current permission scope. Newly assigned work will appear in the list.",
+      description:
+        "There are no work orders available for the current permission scope. Newly assigned work will appear in the list.",
       detailTitle: "Select a work order",
-      detailDescription: "Select a work order from the left list to review details and progress status.",
-      sideTitle: "Select a work order to view attachments, design files, and memos",
-      sideDescription: "After selection, attachments, design files, and work memos appear in the right panel.",
+      detailDescription:
+        "Select a work order from the left list to review details and progress status.",
+      sideTitle:
+        "Select a work order to view attachments, design files, and memos",
+      sideDescription:
+        "After selection, attachments, design files, and work memos appear in the right panel.",
     },
     visualSummary: {
       productionLabel: "Production",
       productionCountSuffix: "items",
       productionEmpty: "Not entered",
-      productionDescriptionFormat: "Production {orderCount} · additional processes {outsourcingCount}",
+      productionDescriptionFormat:
+        "Production {orderCount} · additional processes {outsourcingCount}",
       productionDescriptionEmpty: "Production / additional processes",
       materialLabel: "Materials",
       materialCountSuffix: "types",
@@ -273,7 +308,8 @@ export const workorderEn = {
       save: "Save",
       cancel: "Cancel",
       deleteAria: "Delete memo",
-      empty: "No work memos yet. You can leave required checks or progress notes here.",
+      empty:
+        "No work memos yet. You can leave required checks or progress notes here.",
       adminAuthorFallback: "Admin",
       unknownAuthorFallback: "Unnamed",
       replyMarker: "↳",
@@ -290,8 +326,8 @@ export const workorderEn = {
       previewUnavailableTitle: "Preview is not available.",
       previewAriaSuffix: "preview",
       previewUnavailableAriaSuffix: "preview unavailable",
-      empty: "No attachments yet. You can add PDFs, reference images, or handoff documents.",
-      designEmpty: "No design files yet. Upload image files or save a direct drawing.",
+      empty: "No attachments.",
+      designEmpty: "No representative image.",
       legacyOwnerFallback: "Existing attachment",
       previewFallback: "File",
       previewPdf: "PDF",
@@ -299,12 +335,16 @@ export const workorderEn = {
       previewImage: "Image",
       compactAddButton: "Add attachment",
       orderRequestPdfMissingTitle: "The order PDF has not been attached yet.",
-      orderRequestPdfMissingDescription: "If the order request is complete but the PDF is missing or needs to be saved again, regenerate it here as an attachment.",
+      orderRequestPdfMissingDescription:
+        "If the order request is complete but the PDF is missing or needs to be saved again, regenerate it here as an attachment.",
       orderRequestPdfSavedTitle: "The order PDF is saved in attachments.",
-      orderRequestPdfSavedDescription: "You can preview or download the saved PDF from the attachment list.",
+      orderRequestPdfSavedDescription:
+        "You can preview or download the saved PDF from the attachment list.",
       generateOrderRequestPdfButton: "Save order PDF to attachments again",
-      generateOrderRequestPdfButtonTitle: "Generate the order PDF and save it to attachments again",
-      generateOrderRequestPdfButtonAria: "Generate the order PDF and save it to attachments again",
+      generateOrderRequestPdfButtonTitle:
+        "Generate the order PDF and save it to attachments again",
+      generateOrderRequestPdfButtonAria:
+        "Generate the order PDF and save it to attachments again",
       actionMenuAria: "Attachment and design action menu",
       drawingAction: "Draw directly",
       drawingActionPending: "Open the direct drawing window.",
@@ -312,12 +352,16 @@ export const workorderEn = {
       advancedDrawingActionPending: "Open the advanced drawing window.",
       drawingModal: {
         title: "Draw directly",
-        description: "Sketch a simple design on PC or tablet and save it as a design attachment.",
-        mobileDescription: "Mobile starts with simple sketching and saving only.",
+        description:
+          "Sketch a simple design on PC or tablet and save it as a design attachment.",
+        mobileDescription:
+          "Mobile starts with simple sketching and saving only.",
         hint: "Draw with a tablet pen or mouse, then save the result as a PNG design file.",
         mobileHint: "Landscape mode is recommended on smaller screens.",
-        toolHelp: "Choose pen, eraser, line, arrow, rectangle, or ellipse. Line tools support solid and dashed styles.",
-        mobileToolHelp: "Mobile uses simple mark-up mode. Landscape mode is more stable for lines and shapes.",
+        toolHelp:
+          "Choose pen, eraser, line, arrow, rectangle, or ellipse. Line tools support solid and dashed styles.",
+        mobileToolHelp:
+          "Mobile uses simple mark-up mode. Landscape mode is more stable for lines and shapes.",
         pen: "Pen",
         eraser: "Eraser",
         line: "Line",
@@ -373,10 +417,12 @@ export const workorderEn = {
           pan: "Pan",
         },
         landscapeBlockedTitle: "Portrait mode only.",
-        landscapeBlockedMessage: "Mobile direct drawing opens in portrait mode only. Rotate the device to portrait and try again.",
+        landscapeBlockedMessage:
+          "Mobile direct drawing opens in portrait mode only. Rotate the device to portrait and try again.",
         landscapeBlockedClose: "Close",
         canvasAria: "Direct drawing canvas",
-        navigationBlockedMessage: "Browser back is disabled while drawing. Use the close button instead.",
+        navigationBlockedMessage:
+          "Browser back is disabled while drawing. Use the close button instead.",
         unsavedCloseTitle: "There is an unsaved drawing.",
         unsavedCloseMessage: "Closing now will discard the current drawing.",
         keepDrawing: "Keep drawing",
@@ -384,26 +430,37 @@ export const workorderEn = {
       },
       advancedDrawingModal: {
         title: "Advanced drawing",
-        description: "Test pen, shapes, text, selection, and moving in the tldraw-based editor.",
-        mobileDescription: "The advanced editor can be heavy on mobile. Tablet or PC use is recommended.",
+        description:
+          "Test pen, shapes, text, selection, and moving in the tldraw-based editor.",
+        mobileDescription:
+          "The advanced editor can be heavy on mobile. Tablet or PC use is recommended.",
         hint: "Saving exports the current canvas shapes as a PNG design file.",
-        mobileHint: "Landscape mode or tablet use is recommended on smaller screens.",
-        toolHelp: "Use the default tldraw tools as-is. Compare pen, shapes, text, selection, movement, and zoom behavior.",
-        pocNotice: "This is a PoC. The existing direct drawing feature stays available while comparing usability with native canvas.",
+        mobileHint:
+          "Landscape mode or tablet use is recommended on smaller screens.",
+        toolHelp:
+          "Use the default tldraw tools as-is. Compare pen, shapes, text, selection, movement, and zoom behavior.",
+        pocNotice:
+          "This is a PoC. The existing direct drawing feature stays available while comparing usability with native canvas.",
         packageLoadingMessage: "Loading the advanced drawing module.",
-        packageUnavailableMessage: "The tldraw package is not available. Run npm install tldraw locally to test it in development mode.",
+        packageUnavailableMessage:
+          "The tldraw package is not available. Run npm install tldraw locally to test it in development mode.",
         cancel: "Close",
         save: "Save as design",
         saving: "Saving...",
-        emptyCanvasMessage: "There are no shapes to save. Add a line, shape, or text first.",
-        exportFailedMessage: "Image export failed. Reduce the canvas content or try again.",
+        emptyCanvasMessage:
+          "There are no shapes to save. Add a line, shape, or text first.",
+        exportFailedMessage:
+          "Image export failed. Reduce the canvas content or try again.",
       },
       designUploadGuide: "Add design files",
-      designUploadGuideDescription: "Click this area or drag files here to upload design images.",
+      designUploadGuideDescription:
+        "Click this area or drag files here to upload design images.",
       attachmentUploadGuide: "Add attachment files",
-      attachmentUploadGuideDescription: "Click this area or drag files here to upload PDFs, images, and reference documents.",
+      attachmentUploadGuideDescription:
+        "Click this area or drag files here to upload PDFs, images, and reference documents.",
       dropUploadGuide: "Drop files here to upload",
-      dropUploadGuideDescription: "Files are saved to the selected panel scope.",
+      dropUploadGuideDescription:
+        "Files are saved to the selected panel scope.",
     },
     header: {
       titleInputAria: "Work order title",
@@ -427,7 +484,8 @@ export const workorderEn = {
       disabledActionTitleFormat: "{label} is not available now.",
       actionAriaFormat: "Work order {label}",
       processingLockedReason: "A status change is being processed.",
-      workspaceLockedReason: "This action is not available at the current stage.",
+      workspaceLockedReason:
+        "This action is not available at the current stage.",
       materialOrderPendingBadge: "Material order pending",
     },
     rejectionReasonNotice: {
@@ -437,7 +495,11 @@ export const workorderEn = {
     detailGroups: {
       cost: { eyebrow: "", title: "Cost summary", description: "" },
       order: { eyebrow: "", title: "Process info", description: "" },
-      production: { eyebrow: "", title: "Product composition", description: "" },
+      production: {
+        eyebrow: "",
+        title: "Product composition",
+        description: "",
+      },
     },
     sections: {
       orderInfo: {
@@ -450,12 +512,15 @@ export const workorderEn = {
         factoryAddButton: "+ Add factory info",
         addOrderSheetTitle: "Add production process",
         editOrderSheetTitle: "Edit production process",
-        editOrderSheetDescription: "Enter item, vendor, quantity, unit price, and loss cost, then apply.",
+        editOrderSheetDescription:
+          "Enter item, vendor, quantity, unit price, and loss cost, then apply.",
         addOutsourcingSheetTitle: "Add extra process",
         editOutsourcingSheetTitle: "Edit extra process",
-        editOutsourcingSheetDescription: "Enter process, vendor, quantity, unit price, and loss cost, then apply.",
+        editOutsourcingSheetDescription:
+          "Enter process, vendor, quantity, unit price, and loss cost, then apply.",
         productionOrderTitle: "Production factory",
-        productionOrderDescription: "One production factory is used per work order and produces one order document.",
+        productionOrderDescription:
+          "One production factory is used per work order and produces one order document.",
         orderLineTitle: "",
         orderLineDescription: "",
         sewingLineTypeLabel: "Production",
@@ -467,7 +532,8 @@ export const workorderEn = {
           title: "Outsourcing orders",
           summaryFormat: "{count} outsourcing processes · {quantity} qty",
           addButton: "+ Add process",
-          handoffNote: "Multiple outsourcing processes can be added here. Supplier, due date, quantity, and outsourcing cost are managed in this section.",
+          handoffNote:
+            "Multiple outsourcing processes can be added here. Supplier, due date, quantity, and outsourcing cost are managed in this section.",
         },
         totalRow: "Total",
         empty: "No process information has been registered yet.",
@@ -499,13 +565,20 @@ export const workorderEn = {
           initialBadge: "Initial",
           reorderBadge: "Reorder",
           unlockedDraft: "Draft: order info and type can be edited.",
-          unlockedReviewAdmin: "Review requested: admin can still adjust order info and type.",
-          lockedReviewRequested: "Review requested: non-admin editing is locked.",
-          lockedOrderedOrLater: "Order requested and later: order info is locked.",
-          kindInitial: "Initial work order can switch among sample, main, and rework.",
-          kindReorder: "Reorder work order can switch only between main and rework.",
-          scopeEditable: "Title, type, factory, quantity, unit cost, and loss cost remain editable in this state.",
-          scopeLocked: "State, title display, logs, and reorder sequencing remain linked, but order info editing is blocked.",
+          unlockedReviewAdmin:
+            "Review requested: admin can still adjust order info and type.",
+          lockedReviewRequested:
+            "Review requested: non-admin editing is locked.",
+          lockedOrderedOrLater:
+            "Order requested and later: order info is locked.",
+          kindInitial:
+            "Initial work order can switch among sample, main, and rework.",
+          kindReorder:
+            "Reorder work order can switch only between main and rework.",
+          scopeEditable:
+            "Title, type, factory, quantity, unit cost, and loss cost remain editable in this state.",
+          scopeLocked:
+            "State, title display, logs, and reorder sequencing remain linked, but order info editing is blocked.",
           impactTitle: "Title / round reflect immediately",
           impactLogs: "Logs follow the action change",
           impactEntries: "Order row type stays synced",
@@ -522,12 +595,15 @@ export const workorderEn = {
         editButton: "Edit",
         addSheetTitle: "Add material",
         editSheetTitle: "Edit material",
-        editSheetDescription: "Enter the type, item name, quantity, and unit, then apply.",
+        editSheetDescription:
+          "Enter the type, item name, quantity, and unit, then apply.",
         namePlaceholder: "Material name",
         summaryFormat: "{name}{andMore}",
-        handoffNote: "Supplier, unit cost, confirmed quantity, amount, and delivery details are finalized in the fabric / trims order screen.",
+        handoffNote:
+          "Supplier, unit cost, confirmed quantity, amount, and delivery details are finalized in the fabric / trims order screen.",
         zeroQuantityNoticeTitle: "{count} material item(s) have quantity 0.",
-        zeroQuantityNoticeDescription: "Remove unused fabric / trim items before moving to the material order screen.",
+        zeroQuantityNoticeDescription:
+          "Remove unused fabric / trim items before moving to the material order screen.",
         zeroQuantityCleanupButton: "Clean up zero-quantity items",
         fields: {
           type: "Type",
@@ -546,7 +622,8 @@ export const workorderEn = {
         amountLabel: "Amount",
         addButton: "+ Add outsourcing process",
         summaryFormat: "{name}{andMore}",
-        handoffNote: "Supplier, unit cost, amount, due date, and completion are finalized later in the outsourcing screen.",
+        handoffNote:
+          "Supplier, unit cost, amount, due date, and completion are finalized later in the outsourcing screen.",
         fields: {
           process: "Process",
           vendor: "Supplier",
@@ -582,7 +659,8 @@ export const workorderEn = {
     modals: {
       basicInfo: {
         title: "Edit basic info",
-        description: "Edit the item category and season shown in the header summary.",
+        description:
+          "Edit the item category and season shown in the header summary.",
         category1: "Category 1",
         category2: "Category 2",
         category3: "Category 3",
@@ -592,7 +670,8 @@ export const workorderEn = {
       },
       inspection: {
         title: "Inspection",
-        description: "Choose a factory, enter the quantity to apply, and complete with a memo.",
+        description:
+          "Choose a factory, enter the quantity to apply, and complete with a memo.",
         factoryLabel: "Factory",
         orderTypeLabel: "Order type",
         optionFormat: "{type} · {quantity}",
@@ -606,7 +685,8 @@ export const workorderEn = {
 
       createWorkOrder: {
         title: "Create work order",
-        description: "Enter the basic information to create it in draft status.",
+        description:
+          "Enter the basic information to create it in draft status.",
         workOrderTitle: "Work order name",
         titlePlaceholder: "Example: Cotton layered short sleeve",
         recommendedCategory: "Recommended category",
@@ -657,9 +737,11 @@ export const workorderEn = {
         create: "Create work order",
         empty: "No search results.",
         loadingDetailTitle: "Loading work order.",
-        loadingDetailDescription: "Loading work order details and related data.",
+        loadingDetailDescription:
+          "Loading work order details and related data.",
         loadingSideTitle: "Loading attachments, design files, and memos.",
-        loadingSideDescription: "Checking files and work memos for the right panel.",
+        loadingSideDescription:
+          "Checking files and work memos for the right panel.",
       },
       mobileTopBar: {
         title: "WAFL",
@@ -692,9 +774,11 @@ export const workorderEn = {
         create: "Create work order",
         empty: "No work orders match the current conditions.",
         loadingDetailTitle: "Loading work order.",
-        loadingDetailDescription: "Loading work order details and related data.",
+        loadingDetailDescription:
+          "Loading work order details and related data.",
         loadingSideTitle: "Loading attachments, design files, and memos.",
-        loadingSideDescription: "Checking files and work memos for the right panel.",
+        loadingSideDescription:
+          "Checking files and work memos for the right panel.",
         detailTabs: {
           basic: "Summary",
           order: "Process",
@@ -704,12 +788,14 @@ export const workorderEn = {
         relatedSections: {
           openLabel: "More info",
           openAria: "Open files, design, and memos",
-          openTitle: "Open the additional information panel for files, design, and memos.",
+          openTitle:
+            "Open the additional information panel for files, design, and memos.",
           attachment: "Files",
           design: "Design",
           memo: "Memo",
           tabsAria: "Work order related information sections",
-          description: "Attachments, design files, and memos are separated on mobile.",
+          description:
+            "Attachments, design files, and memos are separated on mobile.",
           titles: {
             attachment: "Attached files",
             design: "Design files",
@@ -731,7 +817,8 @@ export const workorderEn = {
       },
       partnerFactoryRegistry: {
         title: "Register partner / factory",
-        description: "Add it to the list so it can be used immediately in the current select field.",
+        description:
+          "Add it to the list so it can be used immediately in the current select field.",
         save: "Save",
         typeLabel: "Register type",
         nameLabel: "Name",
@@ -742,7 +829,8 @@ export const workorderEn = {
           materialVendor: "Fabric vendor",
           subsidiaryVendor: "Subsidiary vendor",
         },
-        savedNotice: "After saving, it is added immediately to the current selection list.",
+        savedNotice:
+          "After saving, it is added immediately to the current selection list.",
       },
     },
     formatting: {

@@ -20,9 +20,12 @@ export const workorderKo = {
     draft: "작업지시 초안을 작성하고 구성 정보를 정리하는 단계입니다.",
     review_requested: "디자이너가 관리자 검토를 요청한 단계입니다.",
     review_completed: "관리자 검토가 끝나 발주 진행을 준비하는 단계입니다.",
-    material_order_pending: "작업지시서 발주요청은 완료됐고, 원단·부자재 발주 완료를 기다리는 단계입니다.",
-    request_order: "작업지시서 발주요청 후 원단·부자재 발주 완료를 기다리는 단계입니다.",
-    inspection: "발주 요청 이후 입고/검수 담당자가 재고를 반영하고 완료 여부를 확인하는 단계입니다.",
+    material_order_pending:
+      "작업지시서 발주요청은 완료됐고, 원단·부자재 발주 완료를 기다리는 단계입니다.",
+    request_order:
+      "작업지시서 발주요청 후 원단·부자재 발주 완료를 기다리는 단계입니다.",
+    inspection:
+      "발주 요청 이후 입고/검수 담당자가 재고를 반영하고 완료 여부를 확인하는 단계입니다.",
     completed: "작업이 종료되어 아카이브 관리만 남은 상태입니다.",
     rejected: "관리자가 반려하여 디자이너가 다시 수정할 수 있는 단계입니다.",
   },
@@ -86,7 +89,8 @@ export const workorderKo = {
     deleteModalTitle: "작업지시서 삭제",
     deleteModalDescription: "삭제 전 내용을 확인해 주세요.",
     deleteModalTargetLabel: "삭제 대상",
-    deleteModalNotice: "삭제한 작업지시서는 휴지통으로 이동하며, 30일 이내 복원할 수 있습니다.",
+    deleteModalNotice:
+      "삭제한 작업지시서는 휴지통으로 이동하며, 30일 이내 복원할 수 있습니다.",
     deleteModalPolicyNotice: "",
     deleteModalConfirmLabel: "휴지통으로 이동",
     deleteCompletedToast: "작업지시서가 삭제되었습니다.",
@@ -104,7 +108,8 @@ export const workorderKo = {
     orderRequestProcessingLabel: "발주요청 처리 중입니다...",
     orderRequestPdfProcessingLabel: "발주서 PDF를 생성하고 있습니다...",
     genericProcessingLabel: "처리 중입니다.",
-    renameAppliedToSeriesToast: "작업지시서명이 리오더 계열 전체에 반영되었습니다.",
+    renameAppliedToSeriesToast:
+      "작업지시서명이 리오더 계열 전체에 반영되었습니다.",
     renameAppliedToast: "작업지시서명이 변경되었습니다.",
     renameFailedToast: "작업지시서명 변경에 실패했습니다.",
   },
@@ -118,18 +123,24 @@ export const workorderKo = {
     workflowChangedToastFormat: '"{label}" 처리되었습니다.',
     inventoryAppliedToast: "재고 수정이 반영되었습니다.",
     factoryOrderRequestedToast: "공장 발주 요청이 반영되었습니다.",
-    factoryOrderPdfSavedToast: "발주요청이 완료되었습니다. 발주서 PDF가 첨부파일에 저장되었습니다.",
+    factoryOrderPdfSavedToast:
+      "발주요청이 완료되었습니다. 발주서 PDF가 첨부파일에 저장되었습니다.",
     factoryOrderPdfRegeneratedToast: "발주서 PDF가 첨부파일에 저장되었습니다.",
     factoryOrderPdfGenerateFailedToast: "발주서 PDF 생성에 실패했습니다.",
-    factoryOrderPdfUploadFailedToast: "발주서 PDF는 생성되었지만 파일 저장소 업로드에 실패했습니다.",
-    factoryOrderPdfRegisterFailedToast: "발주서 PDF는 업로드되었지만 첨부파일 등록에 실패했습니다.",
-    factoryOrderPdfFailedToast: "발주요청은 완료되었지만 발주서 PDF 저장에 실패했습니다.",
+    factoryOrderPdfUploadFailedToast:
+      "발주서 PDF는 생성되었지만 파일 저장소 업로드에 실패했습니다.",
+    factoryOrderPdfRegisterFailedToast:
+      "발주서 PDF는 업로드되었지만 첨부파일 등록에 실패했습니다.",
+    factoryOrderPdfFailedToast:
+      "발주요청은 완료되었지만 발주서 PDF 저장에 실패했습니다.",
     factoryOrderAlreadyRequestedToast: "이미 발주된 작업입니다.",
     factoryOrderRequiresApprovalToast: "검토 완료 후 발주할 수 있습니다.",
     factoryOrderFactoryRequiredToast: "공장을 선택해주세요.",
-    factoryOrderFactoryInvalidToast: "공장을 다시 선택하세요. 등록된 공장 id를 확인할 수 없습니다.",
+    factoryOrderFactoryInvalidToast:
+      "공장을 다시 선택하세요. 등록된 공장 id를 확인할 수 없습니다.",
     factoryOrderRowsRequiredToast: "공장 정보를 1개 이상 입력해주세요.",
-    factoryOrderRowsInvalidToast: "입력한 모든 공장 row의 공장과 수량을 확인해주세요.",
+    factoryOrderRowsInvalidToast:
+      "입력한 모든 공장 row의 공장과 수량을 확인해주세요.",
     factoryOrderDueDateRequiredToast: "납기일을 입력해주세요.",
     factoryOrderQuantityRequiredToast: "수량은 1 이상이어야 합니다.",
     factoryOrderLaborCostInvalidToast: "공임비는 음수가 될 수 없습니다.",
@@ -137,12 +148,18 @@ export const workorderKo = {
     factoryOrderNotAllowedToast: "현재 사용자에게 발주 권한이 없습니다.",
     reviewApprovalValidationToast: "검토완료 전 공장과 수량을 확인해주세요.",
     reinspectionRequestedToast: "재검수 요청이 반영되었습니다.",
-    reviewRequestZeroCostWarningToast: "검토요청이 반영되었습니다. 공임비와 로스비가 모두 0원입니다.",
-    reviewRequestZeroLaborCostWarningToast: "검토요청이 반영되었습니다. 공임비가 0원입니다.",
-    reviewRequestZeroLossCostWarningToast: "검토요청이 반영되었습니다. 로스비가 0원입니다.",
-    reviewApprovalZeroCostWarningToast: "검토완료가 반영되었습니다. 공임비와 로스비가 모두 0원입니다.",
-    reviewApprovalZeroLaborCostWarningToast: "검토완료가 반영되었습니다. 공임비가 0원입니다.",
-    reviewApprovalZeroLossCostWarningToast: "검토완료가 반영되었습니다. 로스비가 0원입니다.",
+    reviewRequestZeroCostWarningToast:
+      "검토요청이 반영되었습니다. 공임비와 로스비가 모두 0원입니다.",
+    reviewRequestZeroLaborCostWarningToast:
+      "검토요청이 반영되었습니다. 공임비가 0원입니다.",
+    reviewRequestZeroLossCostWarningToast:
+      "검토요청이 반영되었습니다. 로스비가 0원입니다.",
+    reviewApprovalZeroCostWarningToast:
+      "검토완료가 반영되었습니다. 공임비와 로스비가 모두 0원입니다.",
+    reviewApprovalZeroLaborCostWarningToast:
+      "검토완료가 반영되었습니다. 공임비가 0원입니다.",
+    reviewApprovalZeroLossCostWarningToast:
+      "검토완료가 반영되었습니다. 로스비가 0원입니다.",
   },
   history: {
     actorSeparator: " · ",
@@ -179,7 +196,8 @@ export const workorderKo = {
       attachmentDeleted: "첨부가 삭제되었습니다.",
       memoThreadCreated: "작업 메모가 등록되었습니다.",
       memoReplyCreated: "작업 메모 댓글이 등록되었습니다.",
-      reorderCreated: "이전 작업지시서를 복사해 새 작업지시서가 생성되었습니다.",
+      reorderCreated:
+        "이전 작업지시서를 복사해 새 작업지시서가 생성되었습니다.",
       kindChanged: "작업지시서 구분이 변경되었습니다.",
       reworkConverted: "작업지시서가 재작업으로 전환되었습니다.",
       reworkRestored: "재작업 작업지시서가 메인으로 복귀되었습니다.",
@@ -236,17 +254,21 @@ export const workorderKo = {
     },
     emptyWorkspace: {
       title: "표시할 작업지시서가 없습니다",
-      description: "현재 권한에서 조회할 수 있는 작업지시서가 없습니다. 새 작업이 배정되면 목록에 표시됩니다.",
+      description:
+        "현재 권한에서 조회할 수 있는 작업지시서가 없습니다. 새 작업이 배정되면 목록에 표시됩니다.",
       detailTitle: "작업지시서를 선택해 주세요",
-      detailDescription: "왼쪽 목록에서 작업지시서를 선택하면 상세 정보와 진행 상태를 확인할 수 있습니다.",
+      detailDescription:
+        "왼쪽 목록에서 작업지시서를 선택하면 상세 정보와 진행 상태를 확인할 수 있습니다.",
       sideTitle: "첨부·디자인·메모를 확인할 작업지시서를 선택해 주세요",
-      sideDescription: "작업지시서를 선택하면 오른쪽 패널에 첨부 파일, 디자인, 작업메모가 표시됩니다.",
+      sideDescription:
+        "작업지시서를 선택하면 오른쪽 패널에 첨부 파일, 디자인, 작업메모가 표시됩니다.",
     },
     visualSummary: {
       productionLabel: "생산",
       productionCountSuffix: "건",
       productionEmpty: "미입력",
-      productionDescriptionFormat: "제작 {orderCount} · 추가 공정 {outsourcingCount}",
+      productionDescriptionFormat:
+        "제작 {orderCount} · 추가 공정 {outsourcingCount}",
       productionDescriptionEmpty: "제작/추가 공정",
       materialLabel: "자재",
       materialCountSuffix: "종",
@@ -290,8 +312,8 @@ export const workorderKo = {
       previewUnavailableTitle: "미리보기를 사용할 수 없습니다.",
       previewAriaSuffix: "미리보기",
       previewUnavailableAriaSuffix: "미리보기 불가",
-      empty: "첨부 없음\nPDF, 이미지, 문서를 추가할 수 있습니다.",
-      designEmpty: "디자인 없음\n이미지를 추가하거나 직접 그릴 수 있습니다.",
+      empty: "첨부파일이 없습니다.",
+      designEmpty: "대표 이미지가 없습니다.",
       legacyOwnerFallback: "기존 첨부",
       previewFallback: "파일",
       previewPdf: "PDF",
@@ -299,12 +321,16 @@ export const workorderKo = {
       previewImage: "이미지",
       compactAddButton: "첨부 추가",
       orderRequestPdfMissingTitle: "발주서 PDF가 아직 첨부되지 않았습니다.",
-      orderRequestPdfMissingDescription: "발주요청은 완료되었지만 PDF가 보이지 않거나 다시 저장해야 하는 경우 이곳에서 첨부파일로 재생성할 수 있습니다.",
+      orderRequestPdfMissingDescription:
+        "발주요청은 완료되었지만 PDF가 보이지 않거나 다시 저장해야 하는 경우 이곳에서 첨부파일로 재생성할 수 있습니다.",
       orderRequestPdfSavedTitle: "발주서 PDF가 첨부파일에 저장되어 있습니다.",
-      orderRequestPdfSavedDescription: "저장된 PDF는 첨부파일 목록에서 미리보기 또는 다운로드할 수 있습니다.",
+      orderRequestPdfSavedDescription:
+        "저장된 PDF는 첨부파일 목록에서 미리보기 또는 다운로드할 수 있습니다.",
       generateOrderRequestPdfButton: "발주서 PDF 첨부파일로 다시 저장",
-      generateOrderRequestPdfButtonTitle: "발주서 PDF를 생성해 첨부파일에 다시 저장",
-      generateOrderRequestPdfButtonAria: "발주서 PDF를 생성해 첨부파일에 다시 저장",
+      generateOrderRequestPdfButtonTitle:
+        "발주서 PDF를 생성해 첨부파일에 다시 저장",
+      generateOrderRequestPdfButtonAria:
+        "발주서 PDF를 생성해 첨부파일에 다시 저장",
       actionMenuAria: "첨부·디자인 작업 메뉴",
       drawingAction: "직접 그리기",
       drawingActionPending: "직접 그리기 창을 엽니다.",
@@ -312,12 +338,15 @@ export const workorderKo = {
       advancedDrawingActionPending: "고급 그리기 창을 엽니다.",
       drawingModal: {
         title: "직접 그리기",
-        description: "PC와 태블릿에서 디자인을 간단히 스케치한 뒤 디자인 첨부로 저장합니다.",
+        description:
+          "PC와 태블릿에서 디자인을 간단히 스케치한 뒤 디자인 첨부로 저장합니다.",
         mobileDescription: "모바일에서는 간단 스케치와 저장만 우선 확인합니다.",
         hint: "태블릿 펜 또는 마우스로 그린 뒤 저장하면 PNG 디자인 파일로 업로드됩니다.",
         mobileHint: "작은 화면에서는 가로 모드 사용을 권장합니다.",
-        toolHelp: "펜, 지우개, 직선, 화살표, 사각형, 원/타원을 선택해 표시합니다. 선 스타일은 실선/점선을 선택할 수 있습니다.",
-        mobileToolHelp: "모바일은 간단 표시 모드입니다. 선/도형을 쓰려면 가로 모드가 더 안정적입니다.",
+        toolHelp:
+          "펜, 지우개, 직선, 화살표, 사각형, 원/타원을 선택해 표시합니다. 선 스타일은 실선/점선을 선택할 수 있습니다.",
+        mobileToolHelp:
+          "모바일은 간단 표시 모드입니다. 선/도형을 쓰려면 가로 모드가 더 안정적입니다.",
         pen: "펜",
         eraser: "지우개",
         line: "직선",
@@ -373,10 +402,12 @@ export const workorderKo = {
           pan: "손바닥 이동",
         },
         landscapeBlockedTitle: "세로모드에서만 사용할 수 있습니다.",
-        landscapeBlockedMessage: "모바일 직접 그리기는 세로 화면에서만 열 수 있습니다. 기기를 세로로 돌린 뒤 다시 사용하세요.",
+        landscapeBlockedMessage:
+          "모바일 직접 그리기는 세로 화면에서만 열 수 있습니다. 기기를 세로로 돌린 뒤 다시 사용하세요.",
         landscapeBlockedClose: "닫기",
         canvasAria: "직접 그리기 캔버스",
-        navigationBlockedMessage: "그리기 중에는 브라우저 뒤로가기를 사용할 수 없습니다. 닫기 버튼을 사용하세요.",
+        navigationBlockedMessage:
+          "그리기 중에는 브라우저 뒤로가기를 사용할 수 없습니다. 닫기 버튼을 사용하세요.",
         unsavedCloseTitle: "저장하지 않은 그림이 있습니다.",
         unsavedCloseMessage: "닫으면 현재 그린 내용은 저장되지 않습니다.",
         keepDrawing: "계속 그리기",
@@ -384,19 +415,26 @@ export const workorderKo = {
       },
       advancedDrawingModal: {
         title: "고급 그리기",
-        description: "tldraw 기반 editor에서 펜, 도형, 텍스트, 선택/이동을 테스트합니다.",
-        mobileDescription: "모바일에서는 고급 editor가 무거울 수 있어 tablet/PC 사용을 권장합니다.",
+        description:
+          "tldraw 기반 editor에서 펜, 도형, 텍스트, 선택/이동을 테스트합니다.",
+        mobileDescription:
+          "모바일에서는 고급 editor가 무거울 수 있어 tablet/PC 사용을 권장합니다.",
         hint: "저장하면 현재 캔버스의 도형을 PNG 디자인 파일로 업로드합니다.",
         mobileHint: "작은 화면에서는 가로 모드 또는 tablet 사용을 권장합니다.",
-        toolHelp: "기본 tldraw 도구를 그대로 사용합니다. 펜, 도형, 텍스트, 선택/이동, 확대/축소를 비교 테스트합니다.",
-        pocNotice: "PoC 단계입니다. native canvas와 사용성을 비교하기 위해 기존 직접 그리기 기능은 그대로 유지합니다.",
+        toolHelp:
+          "기본 tldraw 도구를 그대로 사용합니다. 펜, 도형, 텍스트, 선택/이동, 확대/축소를 비교 테스트합니다.",
+        pocNotice:
+          "PoC 단계입니다. native canvas와 사용성을 비교하기 위해 기존 직접 그리기 기능은 그대로 유지합니다.",
         packageLoadingMessage: "고급 그리기 모듈을 불러오는 중입니다.",
-        packageUnavailableMessage: "tldraw 패키지를 찾을 수 없습니다. 개발 모드에서 테스트하려면 로컬에서 npm install tldraw를 실행하세요.",
+        packageUnavailableMessage:
+          "tldraw 패키지를 찾을 수 없습니다. 개발 모드에서 테스트하려면 로컬에서 npm install tldraw를 실행하세요.",
         cancel: "닫기",
         save: "디자인으로 저장",
         saving: "저장 중...",
-        emptyCanvasMessage: "저장할 도형이 없습니다. 먼저 선, 도형 또는 텍스트를 추가하세요.",
-        exportFailedMessage: "이미지 내보내기에 실패했습니다. 캔버스 내용을 줄이거나 다시 시도하세요.",
+        emptyCanvasMessage:
+          "저장할 도형이 없습니다. 먼저 선, 도형 또는 텍스트를 추가하세요.",
+        exportFailedMessage:
+          "이미지 내보내기에 실패했습니다. 캔버스 내용을 줄이거나 다시 시도하세요.",
       },
       designUploadGuide: "디자인 파일 추가",
       designUploadGuideDescription: "이미지를 올리거나 직접 그립니다.",
@@ -450,12 +488,15 @@ export const workorderKo = {
         factoryAddButton: "+ 공장 정보 추가",
         addOrderSheetTitle: "제작 공정 추가",
         editOrderSheetTitle: "제작 공정 수정",
-        editOrderSheetDescription: "항목, 업체, 수량, 단가와 로스비를 입력한 뒤 적용합니다.",
+        editOrderSheetDescription:
+          "항목, 업체, 수량, 단가와 로스비를 입력한 뒤 적용합니다.",
         addOutsourcingSheetTitle: "추가 공정 추가",
         editOutsourcingSheetTitle: "추가 공정 수정",
-        editOutsourcingSheetDescription: "공정명, 업체, 수량, 단가와 로스비를 입력한 뒤 적용합니다.",
+        editOutsourcingSheetDescription:
+          "공정명, 업체, 수량, 단가와 로스비를 입력한 뒤 적용합니다.",
         productionOrderTitle: "생산 공장",
-        productionOrderDescription: "작업지시서당 생산 공장 1개를 기준으로 발주서를 생성합니다.",
+        productionOrderDescription:
+          "작업지시서당 생산 공장 1개를 기준으로 발주서를 생성합니다.",
         orderLineTitle: "",
         orderLineDescription: "",
         sewingLineTypeLabel: "제작",
@@ -467,7 +508,8 @@ export const workorderKo = {
           title: "외주공정 발주",
           summaryFormat: "외주공정 {count}개 · 수량 {quantity}장",
           addButton: "+ 공정 추가",
-          handoffNote: "외주공정은 여러 개 추가할 수 있으며, 실제 외주처·납기·수량·외주비는 이 영역에서 관리합니다.",
+          handoffNote:
+            "외주공정은 여러 개 추가할 수 있으며, 실제 외주처·납기·수량·외주비는 이 영역에서 관리합니다.",
         },
         totalRow: "합계",
         empty: "등록된 제작 공정이 없습니다.",
@@ -499,13 +541,16 @@ export const workorderKo = {
           initialBadge: "최초 작업",
           reorderBadge: "리오더 작업",
           unlockedDraft: "작성중: 발주정보와 구분을 수정할 수 있습니다.",
-          unlockedReviewAdmin: "검토요청: 관리자만 발주정보와 구분을 계속 조정할 수 있습니다.",
+          unlockedReviewAdmin:
+            "검토요청: 관리자만 발주정보와 구분을 계속 조정할 수 있습니다.",
           lockedReviewRequested: "검토요청: 관리자 외 편집이 잠금됩니다.",
           lockedOrderedOrLater: "발주요청 이후: 발주정보 편집이 잠금됩니다.",
           kindInitial: "최초 작업는 샘플·메인·재작업 전환이 가능합니다.",
           kindReorder: "리오더 작업는 메인·재작업만 전환 가능합니다.",
-          scopeEditable: "이 상태에서는 제목, 구분, 공장, 수량, 단가, 로스비를 수정할 수 있습니다.",
-          scopeLocked: "상태, 제목 표시, 로그, 차수 연동은 유지되지만 발주정보 편집은 막힙니다.",
+          scopeEditable:
+            "이 상태에서는 제목, 구분, 공장, 수량, 단가, 로스비를 수정할 수 있습니다.",
+          scopeLocked:
+            "상태, 제목 표시, 로그, 차수 연동은 유지되지만 발주정보 편집은 막힙니다.",
           impactTitle: "제목 / 차수 즉시 반영",
           impactLogs: "로그는 행위 기준으로 연동",
           impactEntries: "발주 행 구분도 함께 동기화",
@@ -522,12 +567,15 @@ export const workorderKo = {
         editButton: "수정",
         addSheetTitle: "자재 추가",
         editSheetTitle: "자재 수정",
-        editSheetDescription: "구분, 항목명, 수량과 단위를 입력한 뒤 적용합니다.",
+        editSheetDescription:
+          "구분, 항목명, 수량과 단위를 입력한 뒤 적용합니다.",
         namePlaceholder: "자재명 입력",
         summaryFormat: "{name}{andMore}",
-        handoffNote: "발주처, 단가, 배송 정보는 원단·부자재 발주 화면에서 정합니다.",
+        handoffNote:
+          "발주처, 단가, 배송 정보는 원단·부자재 발주 화면에서 정합니다.",
         zeroQuantityNoticeTitle: "수량이 0인 자재 {count}개가 있습니다.",
-        zeroQuantityNoticeDescription: "사용하지 않는 원단·부자재는 발주 전 정리하는 것이 좋습니다.",
+        zeroQuantityNoticeDescription:
+          "사용하지 않는 원단·부자재는 발주 전 정리하는 것이 좋습니다.",
         zeroQuantityCleanupButton: "0 수량 자재 정리",
         fields: {
           type: "구분",
@@ -546,7 +594,8 @@ export const workorderKo = {
         amountLabel: "금액",
         addButton: "+ 외주공정 추가",
         summaryFormat: "{name}{andMore}",
-        handoffNote: "실제 외주처, 단가, 금액, 납기와 완료 처리는 이후 외주공정 화면에서 확정합니다.",
+        handoffNote:
+          "실제 외주처, 단가, 금액, 납기와 완료 처리는 이후 외주공정 화면에서 확정합니다.",
         fields: {
           process: "공정",
           vendor: "외주처",
@@ -592,7 +641,8 @@ export const workorderKo = {
       },
       inspection: {
         title: "검수 진행",
-        description: "공장을 선택한 뒤 실제 검수 반영 수량을 입력하고 메모와 함께 완료 처리합니다.",
+        description:
+          "공장을 선택한 뒤 실제 검수 반영 수량을 입력하고 메모와 함께 완료 처리합니다.",
         factoryLabel: "공장",
         orderTypeLabel: "발주 유형",
         optionFormat: "{type} · {quantity}",
@@ -606,7 +656,8 @@ export const workorderKo = {
 
       createWorkOrder: {
         title: "작업지시서 생성",
-        description: "작업지시서 기본 정보를 입력하면 작성중 상태로 생성됩니다.",
+        description:
+          "작업지시서 기본 정보를 입력하면 작성중 상태로 생성됩니다.",
         workOrderTitle: "작업지시서명",
         titlePlaceholder: "예: 코튼 레이어드 반팔",
         recommendedCategory: "추천 분류",
@@ -731,7 +782,8 @@ export const workorderKo = {
       },
       partnerFactoryRegistry: {
         title: "거래처 / 공장 등록",
-        description: "현재 선택 필드에 바로 사용할 수 있도록 목록에 추가합니다.",
+        description:
+          "현재 선택 필드에 바로 사용할 수 있도록 목록에 추가합니다.",
         save: "저장",
         typeLabel: "등록 구분",
         nameLabel: "이름",

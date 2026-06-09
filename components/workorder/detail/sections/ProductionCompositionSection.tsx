@@ -1,6 +1,9 @@
 import MaterialSection from "@/components/workorder/detail/sections/MaterialSection";
 import type { MaterialSheetDraft } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
-import { type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
+import {
+  type EditableCell,
+  type EditableSectionKey,
+} from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material, Outsourcing } from "@/types/workorder";
 
 export default function ProductionCompositionSection({
@@ -38,13 +41,21 @@ export default function ProductionCompositionSection({
   onToggleOutsourcing: () => void;
   editingCell: EditableCell;
   editingValue: string;
-  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
+  onStartEdit: (
+    section: EditableSectionKey,
+    rowId: string,
+    field: string,
+    value: string,
+  ) => void;
   onCommitEdit: () => void;
   onCancelEdit: () => void;
   onAddMaterial: () => void;
   onRemoveMaterial: (id: string) => void;
   onRemoveZeroQuantityMaterials: () => void;
-  onSaveMaterialDraft: (materialId: string | null, draft: MaterialSheetDraft) => void;
+  onSaveMaterialDraft: (
+    materialId: string | null,
+    draft: MaterialSheetDraft,
+  ) => void;
   onAddOutsourcing: () => void;
   onRemoveOutsourcing: (id: string) => void;
   materialVendorOptionsById: Record<string, string[]>;
@@ -64,22 +75,20 @@ export default function ProductionCompositionSection({
   void outsourcingProcessOptions;
 
   return (
-    <div className="overflow-hidden rounded-[22px] border border-stone-200 bg-white p-3 shadow-sm xl:p-3.5">
-      <MaterialSection
-        materials={materials}
-        open={materialOpen}
-        onToggle={onToggleMaterial}
-        editingCell={editingCell}
-        editingValue={editingValue}
-        onStartEdit={onStartEdit}
-        onCommitEdit={onCommitEdit}
-        onCancelEdit={onCancelEdit}
-        onAdd={onAddMaterial}
-        onRemove={onRemoveMaterial}
-        onRemoveZeroQuantity={onRemoveZeroQuantityMaterials}
-        onSaveDraft={onSaveMaterialDraft}
-        locked={locked}
-      />
-    </div>
+    <MaterialSection
+      materials={materials}
+      open={materialOpen}
+      onToggle={onToggleMaterial}
+      editingCell={editingCell}
+      editingValue={editingValue}
+      onStartEdit={onStartEdit}
+      onCommitEdit={onCommitEdit}
+      onCancelEdit={onCancelEdit}
+      onAdd={onAddMaterial}
+      onRemove={onRemoveMaterial}
+      onRemoveZeroQuantity={onRemoveZeroQuantityMaterials}
+      onSaveDraft={onSaveMaterialDraft}
+      locked={locked}
+    />
   );
 }
