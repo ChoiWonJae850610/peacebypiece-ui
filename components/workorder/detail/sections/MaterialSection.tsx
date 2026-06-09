@@ -28,7 +28,7 @@ function SectionAddButton({
   return (
     <WorkOrderAddIconButton
       label={label}
-      size="lg"
+      size="md"
       onClick={onClick}
       disabled={disabled}
     />

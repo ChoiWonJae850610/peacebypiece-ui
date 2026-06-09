@@ -2,7 +2,7 @@ import { type ButtonHTMLAttributes } from "react";
 
 import { WaflActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
 
-export function WorkOrderPlusIcon({ className = "h-4 w-4" }: { className?: string }) {
+export function WorkOrderPlusIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return (
     <svg
       aria-hidden="true"
@@ -10,7 +10,7 @@ export function WorkOrderPlusIcon({ className = "h-4 w-4" }: { className?: strin
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -47,13 +47,13 @@ type WorkOrderIconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "a
 
 export function WorkOrderAddIconButton({
   label,
-  size = "lg",
+  size = "md",
   tone = "neutral",
   ...props
 }: WorkOrderIconButtonProps) {
   return (
     <WaflActionButton label={label} size={size} tone={tone} showSrLabel {...props}>
-      <WorkOrderPlusIcon />
+      <WorkOrderPlusIcon className="h-3.5 w-3.5" />
     </WaflActionButton>
   );
 }

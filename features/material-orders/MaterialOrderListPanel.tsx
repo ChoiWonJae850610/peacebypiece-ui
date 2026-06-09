@@ -85,12 +85,12 @@ export default function MaterialOrderListPanel({
 
   const listContent = (
     <>
-      <div className={variant === "panel" ? "shrink-0 pb-3" : "shrink-0"}>
-        <div className="flex items-end justify-between gap-2">
+      <div className="shrink-0">
+        <div className="flex items-end justify-between gap-2 pb-2.5">
           <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
           <SectionCountBadge className="translate-y-0.5">{filteredOrders.length}건</SectionCountBadge>
         </div>
-        <div className="mt-2.5 border-b border-[var(--pbp-border)]" aria-hidden="true" />
+        <div className="border-b border-[var(--pbp-border)]" aria-hidden="true" />
       </div>
 
       <div className="mt-3 grid shrink-0 gap-1.5">

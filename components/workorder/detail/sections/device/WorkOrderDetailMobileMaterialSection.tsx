@@ -34,7 +34,7 @@ function SectionAddButton({ label, disabled, onClick }: { label: string; disable
   return (
     <WorkOrderAddIconButton
       label={label}
-      size="lg"
+      size="md"
       onClick={onClick}
       disabled={disabled}
     />
@@ -115,7 +115,7 @@ export default function WorkOrderDetailMobileMaterialSection({
   };
 
   return (
-    <section className="min-w-0">
+    <section className="mt-5 min-w-0">
       <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
         <div className="flex min-w-0 items-center gap-2">
           <h3 className="min-w-0 text-sm font-semibold leading-5 text-stone-900">{headerTitle}</h3>

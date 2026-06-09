@@ -237,7 +237,7 @@ function AttachmentUploadHint({
       <span
         className={`pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
       >
-        <WorkOrderPlusIcon className="h-4 w-4" />
+        <WorkOrderPlusIcon className="h-3.5 w-3.5" />
       </span>
       <span className="sr-only">{title}</span>
     </div>
