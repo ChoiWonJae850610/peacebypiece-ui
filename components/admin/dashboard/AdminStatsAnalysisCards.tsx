@@ -3,14 +3,11 @@
 import type { ReactNode } from "react";
 
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
-import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
-  ADMIN_STATS_IDLE_ITEM_CLASS,
-  ADMIN_STATS_MUTED_PANEL_CLASS,
-  ADMIN_STATS_SELECTED_ITEM_CLASS,
   ADMIN_STATS_SUBTLE_TEXT_CLASS,
   ADMIN_STATS_TITLE_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
+import { WaflSurface, WaflSurfaceButton } from "@/components/common/ui/WaflSurface";
 import type { AdminStatsPeriodTopMode } from "@/lib/admin/stats/types";
 import {
   formatAdminStatsCount,
@@ -56,7 +53,10 @@ export function AdminStatsAnalysisCardShell({
       : "min-h-[188px] sm:min-h-[204px]";
 
   return (
-    <AdminCard
+    <WaflSurface
+      as="section"
+      component="stats-analysis-card"
+      tone="surface"
       className={`flex h-full ${minHeightClass} flex-col p-3 sm:p-3.5 ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -75,7 +75,7 @@ export function AdminStatsAnalysisCardShell({
         {actions ? <div className="shrink-0">{actions}</div> : null}
       </div>
       <div className={bodyClassName}>{children}</div>
-    </AdminCard>
+    </WaflSurface>
   );
 }
 
@@ -91,8 +91,10 @@ export function PeriodSummaryCard({
   onSelect: (key: AdminStatsPeriodTopMode) => void;
 }) {
   return (
-    <div
-      className={`${ADMIN_STATS_MUTED_PANEL_CLASS} flex h-full min-h-[188px] flex-col p-2.5 sm:min-h-[204px] sm:p-3`}
+    <WaflSurface
+      component="stats-period-summary-card"
+      tone="muted"
+      className="flex h-full min-h-[188px] flex-col p-2.5 sm:min-h-[204px] sm:p-3"
     >
       <h3 className={`text-sm font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>
         {title}
@@ -101,11 +103,12 @@ export function PeriodSummaryCard({
         {items.map((item) => {
           const isSelected = item.key === selectedKey;
           return (
-            <button
+            <WaflSurfaceButton
               key={item.key}
-              type="button"
+              component="stats-period-summary-row"
+              selected={isSelected}
               onClick={() => onSelect(item.key)}
-              className={`min-h-[52px] rounded-2xl border px-2.5 py-2 text-left shadow-sm transition sm:px-3 ${isSelected ? ADMIN_STATS_SELECTED_ITEM_CLASS : ADMIN_STATS_IDLE_ITEM_CLASS}`}
+              className="min-h-[52px] px-2.5 py-2 sm:px-3"
               aria-pressed={isSelected}
             >
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
@@ -127,11 +130,11 @@ export function PeriodSummaryCard({
                   {item.value}
                 </p>
               </div>
-            </button>
+            </WaflSurfaceButton>
           );
         })}
       </div>
-    </div>
+    </WaflSurface>
   );
 }
 

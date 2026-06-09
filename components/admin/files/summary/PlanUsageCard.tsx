@@ -54,7 +54,6 @@ export function PlanUsageCard({
             <AppBadge
               tone={isDanger ? "danger" : isCaution ? "warning" : "success"}
               size="sm"
-              variant="soft"
             >
               {statusLabel}
             </AppBadge>

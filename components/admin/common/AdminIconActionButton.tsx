@@ -67,6 +67,7 @@ export function AdminCompactActionButton({
   return (
     <button
       type={type}
+      data-wafl-component="compact-action-button"
       aria-pressed={active}
       className={getAdminCompactActionButtonClassName({ active, className })}
       {...props}

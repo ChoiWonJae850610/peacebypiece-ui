@@ -97,23 +97,24 @@ export function AdminDateRangePicker({
     <div ref={pickerRef} className="relative w-full min-w-0 md:max-w-[360px]">
       <button
         type="button"
+        data-wafl-component="date-range-trigger"
         onClick={() => setIsCalendarOpen((current) => !current)}
-        className="grid w-full min-w-0 grid-cols-2 gap-1 rounded-[16px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-left shadow-[var(--pbp-shadow-card)] transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]"
+        className="grid w-full min-w-0 grid-cols-2 gap-1 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-left shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]"
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
-        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2 py-1">
+        <span data-wafl-component="date-range-field" className="min-w-0 rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-surface-muted)] px-2 py-1">
           <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.start}</span>
           <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(startDate, locale)}</span>
         </span>
-        <span className="min-w-0 rounded-xl bg-[var(--pbp-surface-muted)] px-2 py-1">
+        <span data-wafl-component="date-range-field" className="min-w-0 rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-surface-muted)] px-2 py-1">
           <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.end}</span>
           <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(endDate, locale)}</span>
         </span>
       </button>
 
       {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-fit max-w-[calc(100vw-2rem)] max-h-[min(340px,calc(100vh-4rem))] overflow-y-auto rounded-[18px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 shadow-2xl">
+        <div data-wafl-component="date-range-calendar" className="absolute left-0 top-[calc(100%+6px)] z-30 w-fit max-w-[calc(100vw-2rem)] max-h-[min(340px,calc(100vh-4rem))] overflow-y-auto rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 shadow-none">
           <DayPicker
             mode="range"
             selected={selected}

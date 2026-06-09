@@ -37,9 +37,10 @@ export function AdminStatsBarRow({
 
   return (
     <div
+      data-wafl-component="stats-bar-row"
       className={
         density === "compact"
-          ? `${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2`
+          ? `${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2 shadow-none`
           : ""
       }
     >
@@ -56,8 +57,12 @@ export function AdminStatsBarRow({
           {valueLabel}
         </span>
       </div>
-      <div className={trackClass}>
-        <div className={barClass} style={{ width: `${widthPercent}%` }} />
+      <div data-wafl-component="stats-bar-track" className={trackClass}>
+        <div
+          data-wafl-component="stats-bar-fill"
+          className={barClass}
+          style={{ width: `${widthPercent}%` }}
+        />
       </div>
     </div>
   );

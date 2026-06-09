@@ -69,7 +69,8 @@ export function AdminStatsPeriodControls({
   return (
     <div
       ref={containerRef}
-      className={`${ADMIN_STATS_PANEL_TIGHT_CLASS} px-2.5 py-2 sm:px-3`}
+      data-wafl-component="stats-period-controls"
+      className={`min-w-0 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2.5 py-2 shadow-none sm:px-3 ${ADMIN_STATS_PANEL_TIGHT_CLASS}`}
     >
       <div
         className={
