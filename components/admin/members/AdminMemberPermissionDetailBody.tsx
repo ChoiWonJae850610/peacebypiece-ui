@@ -1,11 +1,13 @@
 "use client";
 
-import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AppSelect } from "@/components/common/ui";
+import { WaflButton } from "@/components/common/ui/WaflButton";
 import {
-  AdminModalSection,
-  adminModalInputClassName,
-} from "@/components/admin/layout/AdminModal";
+  WaflInfoBox,
+  WaflSelectableCard,
+} from "@/components/common/ui/WaflForm";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
+import { AdminModalSection } from "@/components/admin/layout/AdminModal";
 import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
 import {
   SIMPLE_PERMISSION_CONTROLS,
@@ -41,6 +43,9 @@ type MemberStatusOption = {
   fallbackLabel: string;
 };
 
+const MEMBER_DETAIL_SELECT_TRIGGER_CLASS =
+  "h-11 rounded-[var(--pbp-radius-wafl)]";
+
 type AdminMemberPermissionDetailBodyProps = {
   t: AdminTranslate;
   draft: MemberPermissionDetailDraft;
@@ -50,7 +55,9 @@ type AdminMemberPermissionDetailBodyProps = {
   manageableRoles: readonly AdminMemberRolePreview[];
   statusOptions: readonly MemberStatusOption[];
   onStatusChange: (status: AdminCompanyMemberRecord["status"]) => void;
-  onRoleTemplateChange: (roleTemplateCode: MemberPermissionRoleTemplateCode) => void;
+  onRoleTemplateChange: (
+    roleTemplateCode: MemberPermissionRoleTemplateCode,
+  ) => void;
   onApplyRoleTemplatePermissions: () => void;
   onToggleSimplePermissionControl: (control: SimplePermissionControl) => void;
 };
@@ -70,8 +77,12 @@ export default function AdminMemberPermissionDetailBody({
 }: AdminMemberPermissionDetailBodyProps) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4 md:grid-cols-[minmax(0,1.1fr)_160px_160px]">
-        <div className="min-w-0">
+      <WaflSurface
+        component="member-permission-summary"
+        tone="muted"
+        className="grid gap-3 p-4 md:grid-cols-[minmax(0,1.1fr)_160px_160px]"
+      >
+        <div className="min-w-0" data-wafl-component="member-summary-identity">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">
             {t("memberManagement.detailModal.summary.title", "선택 멤버")}
           </p>
@@ -82,7 +93,7 @@ export default function AdminMemberPermissionDetailBody({
             {selectedMember?.email ?? "-"}
           </p>
         </div>
-        <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2">
+        <WaflInfoBox component="member-summary-role" className="px-3 py-2">
           <p className="text-[11px] font-semibold pbp-text-muted">
             {t("memberManagement.detailModal.summary.role", "역할")}
           </p>
@@ -94,8 +105,11 @@ export default function AdminMemberPermissionDetailBody({
                 )
               : "-"}
           </p>
-        </div>
-        <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2">
+        </WaflInfoBox>
+        <WaflInfoBox
+          component="member-summary-permissions"
+          className="px-3 py-2"
+        >
           <p className="text-[11px] font-semibold pbp-text-muted">
             {t("memberManagement.detailModal.summary.permissions", "선택 항목")}
           </p>
@@ -105,9 +119,8 @@ export default function AdminMemberPermissionDetailBody({
               "{count}개 선택",
             ).replace("{count}", String(selectedPermissionCount))}
           </p>
-        </div>
-      </div>
-
+        </WaflInfoBox>
+      </WaflSurface>
 
       <AdminModalSection
         title={t(
@@ -133,12 +146,19 @@ export default function AdminMemberPermissionDetailBody({
                 value: option.value,
                 label: t(option.labelKey, option.fallbackLabel),
               }))}
-              ariaLabel={t("memberManagement.detailModal.fields.status", "상태")}
-              triggerClassName={adminModalInputClassName}
+              ariaLabel={t(
+                "memberManagement.detailModal.fields.status",
+                "상태",
+              )}
+              triggerClassName={MEMBER_DETAIL_SELECT_TRIGGER_CLASS}
             />
           </label>
 
-          <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-xs leading-5 pbp-text-muted">
+          <WaflInfoBox
+            component="member-status-helper"
+            tone="muted"
+            className="px-3 py-2 text-xs leading-5 pbp-text-muted"
+          >
             <p className="font-semibold pbp-text-primary">
               {t(
                 "memberManagement.detailModal.lifecycle.statusTitle",
@@ -151,12 +171,12 @@ export default function AdminMemberPermissionDetailBody({
                 "탈퇴 요청은 멤버가 탈퇴 의사를 표시한 상태이고, 탈퇴 완료는 관리자가 처리를 확정한 상태입니다. 실제 저장은 하단 저장 버튼을 눌렀을 때 반영됩니다.",
               )}
             </p>
-          </div>
+          </WaflInfoBox>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
           {statusOptions.map((option) => (
-            <AdminButton
+            <WaflButton
               key={option.value}
               type="button"
               variant={draft.status === option.value ? "primary" : "secondary"}
@@ -164,7 +184,7 @@ export default function AdminMemberPermissionDetailBody({
               onClick={() => onStatusChange(option.value)}
             >
               {t(option.labelKey, option.fallbackLabel)}
-            </AdminButton>
+            </WaflButton>
           ))}
         </div>
       </AdminModalSection>
@@ -194,18 +214,22 @@ export default function AdminMemberPermissionDetailBody({
                 label: t(`memberManagement.roles.${role.id}.label`, role.id),
               }))}
               ariaLabel={t("memberManagement.detailModal.fields.role", "역할")}
-              triggerClassName={adminModalInputClassName}
+              triggerClassName={MEMBER_DETAIL_SELECT_TRIGGER_CLASS}
             />
           </label>
 
-          <div className="flex flex-col gap-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+          <WaflInfoBox
+            component="member-role-template-helper"
+            tone="muted"
+            className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+          >
             <p className="text-xs leading-5 pbp-text-muted">
               {t(
                 "memberManagement.detailModal.roleTemplateHelper",
                 "역할은 담당자 표시와 업무 구분에 사용합니다. 실제 권한은 아래 체크 항목으로 결정되며, 필요할 때만 역할 기본값을 적용합니다.",
               )}
             </p>
-            <AdminButton
+            <WaflButton
               type="button"
               variant="secondary"
               size="sm"
@@ -215,15 +239,19 @@ export default function AdminMemberPermissionDetailBody({
                 "memberManagement.detailModal.actions.resetRoleTemplate",
                 "선택 역할의 권한 기본값 적용",
               )}
-            </AdminButton>
-          </div>
+            </WaflButton>
+          </WaflInfoBox>
 
-          <p className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-2 text-[11px] leading-5 pbp-text-muted">
+          <WaflInfoBox
+            component="member-permission-policy-notice"
+            tone="muted"
+            className="px-3 py-2 text-[11px] leading-5 pbp-text-muted"
+          >
             {t(
               "memberManagement.detailModal.policyNotice",
               "개인설정은 별도 권한 없이 모든 로그인 사용자가 접근할 수 있습니다.",
             )}
-          </p>
+          </WaflInfoBox>
 
           <div className="grid gap-3 md:grid-cols-2">
             {SIMPLE_PERMISSION_CONTROLS.map((control) => {
@@ -233,21 +261,25 @@ export default function AdminMemberPermissionDetailBody({
               );
 
               return (
-                <label
+                <WaflSelectableCard
                   key={control.id}
-                  className={[
-                    "flex cursor-pointer items-start gap-3 rounded-2xl border px-3 py-3 text-left transition",
-                    checked
-                      ? "border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)]"
-                      : "border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] hover:border-[var(--pbp-accent-border)]",
-                  ].join(" ")}
+                  component="member-permission-card"
+                  selected={checked}
+                  onClick={() => onToggleSimplePermissionControl(control)}
+                  className="items-start justify-start px-3 py-3"
                 >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => onToggleSimplePermissionControl(control)}
-                    className="mt-1 size-4 rounded border-[var(--pbp-border)]"
-                  />
+                  <span
+                    data-wafl-component="permission-check-indicator"
+                    className={[
+                      "mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border text-[10px] font-bold",
+                      checked
+                        ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-border)] text-white"
+                        : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-transparent",
+                    ].join(" ")}
+                    aria-hidden="true"
+                  >
+                    ✓
+                  </span>
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold pbp-text-primary">
                       {t(control.labelKey, control.fallbackLabel)}
@@ -256,7 +288,7 @@ export default function AdminMemberPermissionDetailBody({
                       {t(control.descriptionKey, control.fallbackDescription)}
                     </span>
                   </span>
-                </label>
+                </WaflSelectableCard>
               );
             })}
           </div>

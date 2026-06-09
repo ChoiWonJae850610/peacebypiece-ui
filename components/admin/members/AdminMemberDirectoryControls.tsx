@@ -28,13 +28,8 @@ type AdminMemberDirectoryControlsProps = {
   onRoleFilterChange: (value: string) => void;
 };
 
-const MEMBER_DIRECTORY_STATUS_FILTERS: readonly MemberDirectoryStatusFilter[] = [
-  "all",
-  "pending",
-  "approved",
-  "suspended",
-  "withdrawalRequested",
-] as const;
+const MEMBER_DIRECTORY_STATUS_FILTERS: readonly MemberDirectoryStatusFilter[] =
+  ["all", "pending", "approved", "suspended", "withdrawalRequested"] as const;
 
 export default function AdminMemberDirectoryControls({
   t,
@@ -47,12 +42,19 @@ export default function AdminMemberDirectoryControls({
   onRoleFilterChange,
 }: AdminMemberDirectoryControlsProps) {
   return (
-    <WaflFilterBar className="mb-3 shrink-0" layoutClassName="grid w-full min-w-0 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(140px,180px)] min-[720px]:items-end">
-      <label className={WAFL_FILTER_FIELD_CLASS}>
+    <WaflFilterBar
+      className="mb-3 shrink-0"
+      layoutClassName="grid w-full min-w-0 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(140px,180px)] min-[720px]:items-end"
+    >
+      <label
+        data-wafl-component="filter-field"
+        className={WAFL_FILTER_FIELD_CLASS}
+      >
         <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.search", "검색")}
         </span>
         <input
+          data-wafl-component="search-input"
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
           className={WAFL_FILTER_INPUT_CLASS}
@@ -62,23 +64,37 @@ export default function AdminMemberDirectoryControls({
           )}
         />
       </label>
-      <label className={WAFL_FILTER_FIELD_CLASS}>
+      <label
+        data-wafl-component="filter-field"
+        className={WAFL_FILTER_FIELD_CLASS}
+      >
         <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.status", "상태")}
         </span>
         <AppSelect
           value={statusFilter}
-          onValueChange={(value) => onStatusFilterChange(value as MemberDirectoryStatusFilter)}
+          onValueChange={(value) =>
+            onStatusFilterChange(value as MemberDirectoryStatusFilter)
+          }
           options={MEMBER_DIRECTORY_STATUS_FILTERS.map((status) => ({
             value: status,
-            label: t(`memberManagement.memberDirectory.statusFilters.${status}`, status),
+            label: t(
+              `memberManagement.memberDirectory.statusFilters.${status}`,
+              status,
+            ),
           }))}
           size="sm"
           triggerClassName={WAFL_FILTER_SELECT_TRIGGER_CLASS}
-          ariaLabel={t("memberManagement.memberDirectory.filters.status", "상태")}
+          ariaLabel={t(
+            "memberManagement.memberDirectory.filters.status",
+            "상태",
+          )}
         />
       </label>
-      <label className={WAFL_FILTER_FIELD_CLASS}>
+      <label
+        data-wafl-component="filter-field"
+        className={WAFL_FILTER_FIELD_CLASS}
+      >
         <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.role", "권한")}
         </span>
@@ -86,8 +102,17 @@ export default function AdminMemberDirectoryControls({
           value={roleFilter}
           onValueChange={onRoleFilterChange}
           options={[
-            { value: "all", label: t("memberManagement.memberDirectory.roleFilters.all", "전체") },
-            { value: "none", label: t("memberManagement.memberDirectory.none", "없음") },
+            {
+              value: "all",
+              label: t(
+                "memberManagement.memberDirectory.roleFilters.all",
+                "전체",
+              ),
+            },
+            {
+              value: "none",
+              label: t("memberManagement.memberDirectory.none", "없음"),
+            },
             ...roleOptions.map((role) => ({
               value: role.id,
               label: t(`memberManagement.roles.${role.id}.label`, role.id),
