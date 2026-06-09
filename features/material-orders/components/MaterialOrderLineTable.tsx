@@ -116,6 +116,7 @@ function MaterialOrderLineRow({
 
   return (
     <tr
+      data-wafl-component="material-order-line-row"
       className={`border-b border-[var(--pbp-border)] transition hover:bg-[var(--pbp-surface-soft)] ${rowIndex % 2 === 0 ? "bg-[var(--pbp-surface)]" : "bg-[var(--pbp-surface-soft)]"}`}
     >
       <td className={EDITABLE_TABLE_CELL_CLASS}>
@@ -138,7 +139,7 @@ function MaterialOrderLineRow({
           placeholder="단위"
           size="sm"
           ariaLabel="발주 단위"
-          triggerClassName="h-8 min-h-8 justify-center rounded-xl px-2.5 text-center text-xs"
+          triggerClassName="h-8 min-h-8 justify-center rounded-[var(--pbp-radius-wafl)] px-2.5 text-center text-xs"
         />
       </td>
       <td className={EDITABLE_TABLE_CELL_CLASS}>
@@ -216,7 +217,7 @@ function resolveUnitSelectValue(unit: string): string {
 
 function compactInputClassName(extra = "") {
   return [
-    "pbp-field-interaction pbp-workorder-editable-input h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-2.5 text-xs outline-none ring-0 disabled:cursor-not-allowed disabled:opacity-70",
+    "pbp-field-interaction pbp-workorder-editable-input h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 text-xs text-[var(--pbp-text-primary)] outline-none ring-0 disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)] disabled:opacity-70",
     extra,
   ]
     .filter(Boolean)

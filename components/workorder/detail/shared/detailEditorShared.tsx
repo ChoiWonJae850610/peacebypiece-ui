@@ -27,7 +27,8 @@ export type BasicInfoState = {
 export type OrderEntryState = OrderEntry;
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "min-h-8";
-const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 outline-none ring-0`;
+const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 outline-none ring-0`;
+const WAFL_PANEL_BASE_CLASS = "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none";
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-input text-xs`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-display text-xs flex items-center`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
@@ -39,10 +40,10 @@ export const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-1.5 alig
 export const EDITABLE_TABLE_CELL_CLASS = `${TABLE_BODY_CELL_CLASS} pbp-workorder-editable-cell`;
 export const SELECTABLE_TABLE_CELL_CLASS = `${TABLE_BODY_CELL_CLASS} pbp-workorder-selectable-cell`;
 export const CALCULATED_TABLE_CELL_CLASS = "pbp-workorder-calculated-cell min-w-0 overflow-hidden px-1.5 py-1.5 text-center align-middle text-[10px] font-medium tabular-nums lg:px-2 lg:text-[10px]";
-export const EDITABLE_FIELD_PANEL_CLASS = "pbp-workorder-editable-panel rounded-lg border p-2.5";
-export const SELECTABLE_FIELD_PANEL_CLASS = "pbp-workorder-selectable-panel rounded-lg border p-2.5";
-export const CALCULATED_FIELD_PANEL_CLASS = "pbp-workorder-calculated-panel rounded-lg border p-2.5";
-export const MOBILE_COMPOSITION_CARD_CLASS = "pbp-workorder-mobile-composition-card min-w-0 rounded-2xl border p-3 sm:p-3.5";
+export const EDITABLE_FIELD_PANEL_CLASS = `pbp-workorder-editable-panel ${WAFL_PANEL_BASE_CLASS} p-2.5`;
+export const SELECTABLE_FIELD_PANEL_CLASS = `pbp-workorder-selectable-panel ${WAFL_PANEL_BASE_CLASS} p-2.5`;
+export const CALCULATED_FIELD_PANEL_CLASS = `pbp-workorder-calculated-panel ${WAFL_PANEL_BASE_CLASS} p-2.5`;
+export const MOBILE_COMPOSITION_CARD_CLASS = `pbp-workorder-mobile-composition-card min-w-0 ${WAFL_PANEL_BASE_CLASS} p-3 sm:p-3.5`;
 export const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[minmax(68px,84px)_minmax(0,1fr)] items-start gap-x-2 sm:grid-cols-[minmax(72px,88px)_minmax(0,1fr)] sm:gap-x-3";
 export const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
 export const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden text-right";
@@ -59,11 +60,11 @@ export function CollapseToggleButton({
   return (
     <button
       type="button"
-      data-wafl-component={variant === "danger" ? "delete-button" : "icon-button"}
+      data-wafl-component="collapse-button"
       onClick={onToggle}
       aria-label={label}
       aria-expanded={open}
-      className="pbp-interactive-button inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-xs leading-none text-stone-600 transition-colors hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
+      className="pbp-interactive-button inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xs leading-none text-[var(--pbp-text-muted)] shadow-none transition-colors hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
     >
       <span aria-hidden="true" className={`inline-flex text-[13px] leading-none transition-transform ${open ? "rotate-180" : "rotate-0"}`}>▾</span>
     </button>
@@ -112,10 +113,10 @@ function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, r
 
 
 function CircleIconButton({ onClick, srLabel, disabled = false, variant, title, icon }: { onClick: () => void; srLabel: string; disabled?: boolean; variant: "default" | "danger"; title?: string; icon: ReactNode; }) {
-  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-white text-[14px] font-normal leading-none shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400";
+  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-[var(--pbp-surface)] text-[14px] font-normal leading-none shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]";
   const variantClassName = variant === "danger"
-    ? "border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
-    : "border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200";
+    ? "border-[var(--pbp-danger)] text-[var(--pbp-danger)] hover:bg-[var(--pbp-danger-soft)] active:bg-[var(--pbp-danger-soft)]"
+    : "border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]";
 
   return (
     <button

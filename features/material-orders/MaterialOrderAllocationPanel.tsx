@@ -213,7 +213,7 @@ function AllocationCandidateCard({
       </div>
 
       <details className="group mt-2.5">
-        <summary className="flex cursor-pointer list-none items-center justify-between rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2 text-[11px] font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface)]">
+        <summary data-wafl-component="material-order-details-summary" className="flex cursor-pointer list-none items-center justify-between rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2 text-[11px] font-semibold pbp-text-muted shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface)]">
           <span>발주 대기 자재 · {materialItemsCount}개</span>
           <span aria-hidden="true" className="transition group-open:rotate-180">▾</span>
         </summary>
