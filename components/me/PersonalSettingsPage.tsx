@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
+import { AppBadge, WaflButton, WaflInfoBox, WaflInput, WaflLinkButton, WaflSelectableCard, WaflSurface } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { usePbpTheme } from "@/lib/theme/PbpThemeProvider";
@@ -81,7 +81,7 @@ function ChoiceGroup<TValue extends string>({
   onChange: (value: TValue) => void;
 }) {
   return (
-    <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-sm sm:p-5">
+    <WaflSurface as="section" component="personal-settings-choice-section" className="p-4 sm:p-5">
       <div>
         <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{title}</h3>
         <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{description}</p>
@@ -90,15 +90,12 @@ function ChoiceGroup<TValue extends string>({
         {options.map((option) => {
           const selected = option.value === value;
           return (
-            <button
+            <WaflSelectableCard
               key={option.value}
-              type="button"
+              component="personal-settings-choice-card"
+              selected={selected}
               onClick={() => onChange(option.value)}
-              className={`flex min-h-[58px] items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
-                selected
-                  ? "border-[var(--pbp-accent)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-text-primary)] shadow-sm"
-                  : "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-border-strong)] hover:text-[var(--pbp-text-primary)]"
-              }`}
+              className="min-h-[58px] px-4 py-3 text-sm font-semibold"
               aria-pressed={selected}
             >
               <span>{option.label}</span>
@@ -112,11 +109,11 @@ function ChoiceGroup<TValue extends string>({
                   <span className="h-5 w-5 rounded-full" style={{ backgroundColor: option.preview.accent }} />
                 </span>
               ) : null}
-            </button>
+            </WaflSelectableCard>
           );
         })}
       </div>
-    </section>
+    </WaflSurface>
   );
 }
 
@@ -240,45 +237,37 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
   }
 
   return (
-    <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-sm sm:p-5">
+    <WaflSurface as="section" component="personal-profile-section" className="p-4 sm:p-5">
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.profile.title}</h3>
-          <span
-            className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
-              profileComplete
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border-amber-200 bg-amber-50 text-amber-700"
-            }`}
-          >
+          <AppBadge tone={profileComplete ? "success" : "warning"} size="sm">
             {profileComplete ? copy.profile.complete : copy.profile.incomplete}
-          </span>
+          </AppBadge>
         </div>
         <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.profile.description}</p>
       </div>
 
       {!profileComplete ? (
-        <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-800">
+        <WaflInfoBox component="personal-profile-required-notice" tone="muted" className="mt-4 px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-text-primary)]">
           {copy.profile.requiredNotice}
-        </p>
+        </WaflInfoBox>
       ) : null}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.name}
-          <input
+          <WaflInput
             value={draft.name}
             onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-            className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-accent)]"
             placeholder={copy.profile.placeholders.name}
           />
         </label>
         <label className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.phone}
-          <input
+          <WaflInput
             value={draft.phone}
             onChange={(event) => setDraft((current) => ({ ...current, phone: formatPhoneNumber(event.target.value) }))}
-            className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-accent)]"
             placeholder={copy.profile.placeholders.phone}
             inputMode="tel"
           />
@@ -286,33 +275,32 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
         <label className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.birthday}
           <div className="flex gap-2">
-            <input
+            <WaflInput
               value={draft.birthday}
               onChange={(event) => setDraft((current) => ({ ...current, birthday: event.target.value }))}
-              className="min-w-0 flex-1 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-accent)]"
+              className="min-w-0 flex-1"
               type="date"
             />
-            <button
-              type="button"
+            <WaflButton
+              variant="secondary"
+              size="md"
               onClick={() => setDraft((current) => ({ ...current, birthday: "" }))}
               disabled={!draft.birthday}
-              className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-secondary)] transition hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:opacity-40"
+              className="px-3 text-xs"
             >
               {copy.profile.clearBirthday}
-            </button>
+            </WaflButton>
           </div>
         </label>
         <div className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.email}
-          <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-subtle)]">
+          <WaflInfoBox component="personal-profile-email-field" tone="muted" className="px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-subtle)]">
             {profile?.email || "-"}
-          </div>
+          </WaflInfoBox>
         </div>
       </div>
 
-
-
-      <section className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3">
+      <WaflInfoBox component="personal-profile-withdrawal-card" tone="muted" className="mt-4 px-3 py-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-[var(--pbp-text-primary)]">{copy.profile.withdrawal.title}</p>
@@ -326,32 +314,32 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
                     : copy.profile.withdrawal.description}
             </p>
           </div>
-          <button
-            type="button"
+          <WaflButton
+            variant="danger"
+            size="sm"
             onClick={requestWithdrawal}
             disabled={!canRequestWithdrawal || requestingWithdrawal}
-            className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface)] disabled:text-[var(--pbp-text-subtle)]"
           >
             {requestingWithdrawal ? copy.profile.withdrawal.requesting : copy.profile.withdrawal.action}
-          </button>
+          </WaflButton>
         </div>
-      </section>
-
+      </WaflInfoBox>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+        <div data-wafl-component="personal-profile-message" className="text-xs font-semibold text-[var(--pbp-text-muted)]">
           {loading ? copy.profile.loading : message || error || copy.profile.helper}
         </div>
-        <button
-          type="button"
+        <WaflButton
+          variant="primary"
+          size="md"
           onClick={saveProfile}
           disabled={!canSave || saving}
-          className="rounded-2xl border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+          className="px-4 text-xs"
         >
           {saving ? copy.profile.saving : copy.profile.save}
-        </button>
+        </WaflButton>
       </div>
-    </section>
+    </WaflSurface>
   );
 }
 
@@ -419,20 +407,22 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
         onChange={updateTheme}
       />
 
-      <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-sm sm:p-5">
+      <WaflSurface as="section" component="personal-policy-access-section" className="p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.policyAccess.title}</h3>
             <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.policyAccess.description}</p>
           </div>
-          <Link
+          <WaflLinkButton
             href="/workspace/legal"
-            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--pbp-text-secondary)] transition hover:border-[var(--pbp-border-strong)] hover:text-[var(--pbp-text-primary)]"
+            variant="secondary"
+            size="sm"
+            className="px-4"
           >
             {copy.policyAccess.action}
-          </Link>
+          </WaflLinkButton>
         </div>
-      </section>
+      </WaflSurface>
       {!loaded ? <p className="text-xs font-semibold text-[var(--pbp-text-subtle)]">{copy.loading}</p> : null}
     </div>
   );
@@ -445,11 +435,11 @@ export default function PersonalSettingsPage() {
   return (
     <main className="min-h-screen bg-[var(--background)] px-4 py-5 text-[var(--pbp-text-primary)] md:px-6 md:py-8">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
-        <section className="rounded-[28px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-sm sm:p-6">
+        <WaflSurface as="section" component="personal-settings-hero" className="p-5 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-muted)]">WAFL</p>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--pbp-text-primary)]">{copy.title}</h1>
           <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.description}</p>
-        </section>
+        </WaflSurface>
         <PersonalSettingsPanel />
       </div>
     </main>
