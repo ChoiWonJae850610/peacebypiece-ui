@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { AppNumberInput, AppSelect, type AppSelectOption } from "@/components/common/ui";
+import { AppNumberInput, AppSelect, WAFL_FIELD_INPUT_CLASS, WaflInput, type AppSelectOption } from "@/components/common/ui";
 import { MATERIAL_TYPE, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT } from "@/lib/constants/material";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useI18n } from "@/lib/i18n";
@@ -27,7 +27,8 @@ type Props = {
 
 const fieldPanelClass = "grid gap-1.5";
 const labelClass = "text-xs font-semibold text-[var(--pbp-text-muted)]";
-const inputClass = "min-h-11 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-base font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-border-strong)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--pbp-surface)] md:text-sm";
+const inputClass = `${WAFL_FIELD_INPUT_CLASS} font-semibold`;
+const numberInputClass = `${WAFL_FIELD_INPUT_CLASS} font-semibold text-right tabular-nums`;
 
 function toDraft(material: Material | null): MaterialSheetDraft {
   return {
@@ -100,7 +101,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
         </div>
         <div className={fieldPanelClass}>
           <label className={labelClass} htmlFor="workorder-material-sheet-name">{copy.fields.name}</label>
-          <input
+          <WaflInput
             id="workorder-material-sheet-name"
             type="text"
             value={draft.name}
@@ -118,9 +119,10 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
               id="workorder-material-sheet-quantity"
               inputMode="decimal"
               value={draft.quantity}
+              component="material-quantity-input"
               onBeforeInteract={() => blurActiveModalElement()}
               onValueChange={(value) => setDraft((current) => ({ ...current, quantity: value }))}
-              className={inputClass}
+              className={numberInputClass}
             />
           </div>
           <div className={fieldPanelClass}>

@@ -227,6 +227,7 @@ export default function OrderInfoSection({
 
       {!locked ? (
         <WaflAddCardButton
+          component="process-add-button"
           onClick={openPrimaryAddSheet}
           className="min-h-[72px] w-full"
           aria-label={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}

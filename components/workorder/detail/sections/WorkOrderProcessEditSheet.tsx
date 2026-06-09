@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
-import { AppNumberInput, AppSelect, type AppSelectOption } from "@/components/common/ui";
+import { AppNumberInput, AppSelect, WAFL_FIELD_INPUT_CLASS, type AppSelectOption } from "@/components/common/ui";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { DEFAULT_ORDER_TYPE } from "@/lib/constants/workorderOptions";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -51,7 +51,7 @@ type Props = {
 
 const fieldPanelClass = "grid gap-1.5";
 const labelClass = "text-xs font-semibold text-[var(--pbp-text-muted)]";
-const inputClass = "min-h-11 w-full rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-base font-semibold text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-border-strong)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--pbp-surface)] md:text-sm";
+const inputClass = `${WAFL_FIELD_INPUT_CLASS} font-semibold text-right tabular-nums`;
 
 function toOrderDraft(orderEntry: OrderEntryState | null): WorkOrderOrderProcessDraft {
   return {
@@ -194,15 +194,15 @@ export default function WorkOrderProcessEditSheet({
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.quantity} onValueChange={(value) => setOrderDraft((current) => ({ ...current, quantity: value }))} className={inputClass} />
+              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.quantity} component="process-quantity-input" onValueChange={(value) => setOrderDraft((current) => ({ ...current, quantity: value }))} className={inputClass} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.laborCost} onValueChange={(value) => setOrderDraft((current) => ({ ...current, laborCost: value }))} className={inputClass} />
+              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.laborCost} component="process-unit-cost-input" onValueChange={(value) => setOrderDraft((current) => ({ ...current, laborCost: value }))} className={inputClass} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.lossCost} onValueChange={(value) => setOrderDraft((current) => ({ ...current, lossCost: value }))} className={inputClass} />
+              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.lossCost} component="process-loss-cost-input" onValueChange={(value) => setOrderDraft((current) => ({ ...current, lossCost: value }))} className={inputClass} />
             </label>
           </div>
         </div>
@@ -219,15 +219,15 @@ export default function WorkOrderProcessEditSheet({
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.quantity} onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, quantity: value }))} className={inputClass} />
+              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.quantity} component="process-quantity-input" onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, quantity: value }))} className={inputClass} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.unitCost} onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, unitCost: value }))} className={inputClass} />
+              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.unitCost} component="process-unit-cost-input" onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, unitCost: value }))} className={inputClass} />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.lossCost} onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, lossCost: value }))} className={inputClass} />
+              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.lossCost} component="process-loss-cost-input" onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, lossCost: value }))} className={inputClass} />
             </label>
           </div>
         </div>

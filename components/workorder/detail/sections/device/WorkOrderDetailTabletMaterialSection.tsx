@@ -33,6 +33,7 @@ type Props = {
 function AddItemCard({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
   return (
     <WaflAddCardButton
+      component="material-add-button"
       onClick={onClick}
       disabled={disabled}
       className="min-h-[72px] w-full"

@@ -172,6 +172,7 @@ export default function MaterialSection({
         ))}
         {!locked ? (
           <WaflAddCardButton
+            component="material-add-button"
             onClick={openAddSheet}
             className="min-h-[72px] w-full"
             aria-label={copy.addButton}

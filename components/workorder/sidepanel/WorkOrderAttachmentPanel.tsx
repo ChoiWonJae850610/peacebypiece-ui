@@ -10,6 +10,7 @@ import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrde
 import {
   SectionCountBadge,
   WaflAddCard,
+  WaflAddCardButton,
   WaflButton,
   WaflEmptyCard,
   WaflFileCard,
@@ -210,7 +211,7 @@ function AttachmentUploadHint({
     ? ui.attachmentPanel.dropUploadGuide
     : getUploadGuideLabel(scope, ui);
 
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (event: DragEvent<HTMLElement>) => {
     if (disabled || !hasDroppedFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -218,13 +219,13 @@ function AttachmentUploadHint({
     setDragActive(true);
   };
 
-  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (event: DragEvent<HTMLElement>) => {
     if (event.currentTarget.contains(event.relatedTarget as Node | null))
       return;
     setDragActive(false);
   };
 
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: DragEvent<HTMLElement>) => {
     if (disabled || !hasDroppedFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -241,8 +242,35 @@ function AttachmentUploadHint({
   if (!canManageAttachments) return null;
   const isDesign = isDesignAttachmentScope(scope);
 
+  if (!isDesign) {
+    return (
+      <WaflAddCardButton
+        component="attachment-add-button"
+        title={disabled ? disabledReason : addButtonLabel}
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) onOpenAttachmentPicker();
+        }}
+        onDragEnter={handleDragOver}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        aria-label={addButtonLabel}
+        className={`pbp-sidepanel-upload-zone mt-3 w-full active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
+          dragActive ? "pbp-sidepanel-upload-zone-active ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""
+        } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
+      >
+        <span className="pbp-sidepanel-preview-surface inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
+          <WorkOrderPlusIcon />
+        </span>
+        <span className="sr-only">{title}</span>
+      </WaflAddCardButton>
+    );
+  }
+
   return (
     <WaflAddCard
+      component="attachment-add-card"
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
       onDragEnter={handleDragOver}
@@ -254,32 +282,17 @@ function AttachmentUploadHint({
         dragActive ? "pbp-sidepanel-upload-zone-active" : ""
       } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
     >
-      {isDesign ? (
-        <AttachmentActionMenu
-          scope={scope}
-          addButtonLabel={addButtonLabel}
-          onOpenAttachmentPicker={onOpenAttachmentPicker}
-          onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
-          onOpenAdvancedDrawing={onOpenAdvancedDrawing}
-          isMobile={isMobile}
-          disabled={disabled}
-          disabledReason={disabledReason}
-          trigger="plus"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            if (!disabled) onOpenAttachmentPicker();
-          }}
-          disabled={disabled}
-          title={disabled ? disabledReason : addButtonLabel}
-          aria-label={addButtonLabel}
-          className={`pbp-interactive-button pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45 ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
-        >
-          <WorkOrderPlusIcon />
-        </button>
-      )}
+      <AttachmentActionMenu
+        scope={scope}
+        addButtonLabel={addButtonLabel}
+        onOpenAttachmentPicker={onOpenAttachmentPicker}
+        onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
+        onOpenAdvancedDrawing={onOpenAdvancedDrawing}
+        isMobile={isMobile}
+        disabled={disabled}
+        disabledReason={disabledReason}
+        trigger="plus"
+      />
       <span className="sr-only">{title}</span>
     </WaflAddCard>
   );
@@ -309,34 +322,38 @@ function AttachmentFlatAddHint({
   if (!canManageAttachments) return null;
   const isDesign = isDesignAttachmentScope(scope);
 
-  return (
-    <WaflAddCard className="min-h-[72px] w-full">
-      {isDesign ? (
-        <AttachmentActionMenu
-          scope={scope}
-          addButtonLabel={addButtonLabel}
-          onOpenAttachmentPicker={onOpenAttachmentPicker}
-          onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
-          onOpenAdvancedDrawing={onOpenAdvancedDrawing}
-          isMobile={isMobile}
-          disabled={disabled}
-          disabledReason={disabledReason}
-          trigger="plus"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            if (!disabled) onOpenAttachmentPicker();
-          }}
-          disabled={disabled}
-          title={disabled ? disabledReason : addButtonLabel}
-          aria-label={addButtonLabel}
-          className="pbp-interactive-button pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45"
-        >
+  if (!isDesign) {
+    return (
+      <WaflAddCardButton
+        component="attachment-add-button"
+        onClick={() => {
+          if (!disabled) onOpenAttachmentPicker();
+        }}
+        disabled={disabled}
+        title={disabled ? disabledReason : addButtonLabel}
+        aria-label={addButtonLabel}
+        className="min-h-[72px] w-full"
+      >
+        <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
           <WorkOrderPlusIcon />
-        </button>
-      )}
+        </span>
+      </WaflAddCardButton>
+    );
+  }
+
+  return (
+    <WaflAddCard component="attachment-add-card" className="min-h-[72px] w-full">
+      <AttachmentActionMenu
+        scope={scope}
+        addButtonLabel={addButtonLabel}
+        onOpenAttachmentPicker={onOpenAttachmentPicker}
+        onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
+        onOpenAdvancedDrawing={onOpenAdvancedDrawing}
+        isMobile={isMobile}
+        disabled={disabled}
+        disabledReason={disabledReason}
+        trigger="plus"
+      />
     </WaflAddCard>
   );
 }

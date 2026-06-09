@@ -13,6 +13,7 @@ type AppNumberInputProps = {
   inputMode?: "numeric" | "decimal";
   ariaLabel?: string;
   onBeforeInteract?: () => void;
+  component?: string;
 };
 
 function normalizeNumericText(value: string) {
@@ -54,6 +55,7 @@ export default function AppNumberInput({
   inputMode = "numeric",
   ariaLabel,
   onBeforeInteract,
+  component = "number-input",
 }: AppNumberInputProps) {
   const [focused, setFocused] = useState(false);
   const [displayValue, setDisplayValue] = useState(() => numberToDisplay(value));
@@ -83,6 +85,7 @@ export default function AppNumberInput({
       type="text"
       inputMode={inputMode}
       enterKeyHint="done"
+      data-wafl-component={component}
       aria-label={ariaLabel}
       value={displayValue}
       onPointerDown={() => onBeforeInteract?.()}
