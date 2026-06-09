@@ -110,6 +110,8 @@ export default function WorkOrderDetailTabletView({
           closeLabel="닫기"
           closeOverlayAria="작업지시서 목록 드로어 닫기"
           titleId="workorder-tablet-list-drawer-title"
+          showHeader={false}
+          bodyClassName="!px-0 !py-0"
         >
           <div className="min-h-[72dvh] min-w-0">{sidebar}</div>
         </WaflMobileListDrawer>

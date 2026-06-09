@@ -1,13 +1,12 @@
 "use client";
 
-import { AppSelect, WaflMobileListDrawer } from "@/components/common/ui";
+import { AppSelect, SectionCountBadge, WaflMobileListDrawer } from "@/components/common/ui";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 import {
   getWorkOrderListSortOptions,
   getWorkOrderListStatusFilterOptions,
-  isDefaultWorkOrderListControls,
 } from "@/lib/workorder/list/workOrderListControls";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 
@@ -65,23 +64,14 @@ export default function MobileDrawer({
   const controlsCopy = i18n.workorder.ui.layout.sidebarControls;
   const statusOptions = getWorkOrderListStatusFilterOptions(controlsCopy);
   const sortOptions = getWorkOrderListSortOptions(controlsCopy);
-  const statusLabel = statusOptions.find((option) => option.value === statusFilter)?.label ?? controlsCopy.statusFilters.active;
-  const sortLabel = sortOptions.find((option) => option.value === sort)?.label ?? controlsCopy.sorts.updatedDesc;
-  const listSummary = controlsCopy.resultSummary
-    .replace("{status}", statusLabel)
-    .replace("{sort}", sortLabel)
-    .replace("{count}", String(workOrders.length));
-  const hasCustomListControls = !isDefaultWorkOrderListControls({
-    statusFilter,
-    sort,
-    searchQuery,
-  });
+  void onResetListControls;
 
   if (!open) return null;
 
   const headerContent = (
     <>
-      <div className="flex items-center gap-2">
+      <div className="mx-1 border-b border-[var(--pbp-border)]" aria-hidden="true" />
+      <div className="mt-3 flex items-center gap-2">
         <label className="min-w-0 flex-1">
           <span className="sr-only">{copy.searchAria}</span>
           <input
@@ -121,19 +111,6 @@ export default function MobileDrawer({
           ariaLabel={controlsCopy.sortAria}
         />
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-medium leading-4 text-stone-500">
-        <span className="min-w-0 truncate">{listSummary}</span>
-        {hasCustomListControls ? (
-          <button
-            type="button"
-            onClick={onResetListControls}
-            disabled={writeLocked}
-            className="pbp-interactive-button pbp-filter-active shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {controlsCopy.resetControls}
-          </button>
-        ) : null}
-      </div>
       {canCreate ? (
         <button
           type="button"
@@ -149,6 +126,7 @@ export default function MobileDrawer({
           {copy.create}
         </button>
       ) : null}
+      <div className="mx-1 mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
     </>
   );
 
@@ -158,10 +136,13 @@ export default function MobileDrawer({
       onClose={onClose}
       title={copy.title}
       subtitle={copy.subtitle}
+      titleAccessory={<SectionCountBadge className="translate-y-0.5">{workOrders.length}건</SectionCountBadge>}
       closeLabel={copy.close}
       closeOverlayAria={copy.closeOverlayAria}
       titleId="mobile-drawer-title"
       headerContent={headerContent}
+      showCloseButton={false}
+      showHeaderBorder={false}
     >
       <div className="flex flex-col pbp-card-stack-mobile">
         {workOrders.map((workOrder) => (

@@ -1,11 +1,12 @@
 import { useState } from "react";
+
+import { AppCard, SectionCountBadge } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
-import { getWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
+import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
-import { AddButton, DeleteButton, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
+import { DeleteButton, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import WorkOrderMaterialEditSheet, { type MaterialSheetDraft } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
-import type { EditableCell, EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/material";
 
 type Props = {
@@ -28,34 +29,84 @@ type Props = {
   sectionClassName?: string;
 };
 
-const infoLabelClass = "text-[11px] font-medium text-stone-500";
-const infoValueClass = "mt-0.5 text-sm font-semibold text-stone-900";
+function SectionAddButton({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className="pbp-interactive-button inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xl font-semibold leading-none pbp-text-primary shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <span aria-hidden="true">＋</span>
+      <span className="sr-only">{label}</span>
+    </button>
+  );
+}
+
+function MaterialListCard({
+  item,
+  index,
+  locked,
+  onEdit,
+  onRemove,
+}: {
+  item: Material;
+  index: number;
+  locked: boolean;
+  onEdit: () => void;
+  onRemove: () => void;
+}) {
+  const { i18n, locale } = useI18n();
+  const copy = i18n.workorder.ui.sections.material;
+  const common = i18n.workorder.ui.common;
+  const title = item.name || copy.fallbackItem.replace("{index}", String(index + 1));
+
+  return (
+    <AppCard variant="subtle" padding="sm" className="rounded-[22px]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="inline-flex rounded-full bg-[var(--pbp-surface-muted)] px-2 py-0.5 text-[11px] font-semibold pbp-text-muted">
+            {getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))}
+          </div>
+          <div className="mt-2 truncate text-sm font-semibold pbp-text-primary">{title}</div>
+          <div className="mt-1 text-xs pbp-text-muted">
+            {item.quantity.toLocaleString()} {translateWorkOrderDisplayText(item.unit, locale)}
+          </div>
+        </div>
+        {!locked ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={onEdit}
+              className="pbp-interactive-button rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1 text-[11px] font-semibold pbp-text-secondary shadow-sm"
+            >
+              {copy.editButton}
+            </button>
+            <DeleteButton onClick={onRemove} srLabel={`${title} ${common.deleteSuffix}`} />
+          </div>
+        ) : null}
+      </div>
+    </AppCard>
+  );
+}
 
 export default function WorkOrderDetailMobileMaterialSection({
   materials,
-  open,
-  onToggle,
   onRemove,
   onRemoveZeroQuantity,
   onSaveDraft,
   locked = false,
   title,
-  summary,
-  sectionClassName = "min-w-0 overflow-hidden rounded-2xl border border-stone-200 bg-white p-3 sm:p-3.5",
 }: Props) {
-  const { i18n, locale } = useI18n();
+  const { i18n } = useI18n();
   const { materialUnitOptions } = useCompanyStandardOptions();
   const copy = i18n.workorder.ui.sections.material;
-  const common = i18n.workorder.ui.common;
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const zeroQuantityCount = materials.filter((item) => Math.max(0, Number(item.quantity) || 0) <= 0).length;
-  const andMore = materials.length > 1 ? ` ${common.andMoreFormat.replace("{count}", String(materials.length - 1))}` : "";
-  const defaultSummary = materials.length > 0
-    ? copy.summaryFormat.replace("{name}", materials[0].name).replace("{andMore}", andMore)
-    : copy.empty;
   const headerTitle = title ?? copy.title;
-  const headerSummary = summary ?? defaultSummary;
 
   const openAddSheet = () => {
     setEditingMaterial(null);
@@ -68,76 +119,46 @@ export default function WorkOrderDetailMobileMaterialSection({
   };
 
   return (
-    <section className={sectionClassName}>
-      <SectionHeader title={headerTitle} summary={headerSummary} open={open} onToggle={onToggle} />
-      {open ? (
-        <div className="mt-3 grid gap-3">
-          {!locked && zeroQuantityCount > 0 ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
-              <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
-              <div className="mt-0.5 text-amber-800">{copy.zeroQuantityNoticeDescription}</div>
-              <button
-                type="button"
-                onClick={onRemoveZeroQuantity}
-                className="pbp-interactive-button mt-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
-              >
-                {copy.zeroQuantityCleanupButton}
-              </button>
-            </div>
-          ) : null}
-
-          {materials.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-stone-200 bg-white px-4 py-6 text-center text-xs leading-5 text-stone-500">
-              {copy.empty}
-            </div>
-          ) : null}
-
-          {materials.map((item, index) => (
-            <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
-                    {getWorkOrderSelectDisplayValue(item.type)}
-                  </div>
-                  <div className="mt-2 text-sm font-semibold text-stone-900">{item.name || copy.fallbackItem.replace("{index}", String(index + 1))}</div>
-                </div>
-                {!locked ? (
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => openEditSheet(item)}
-                      className="pbp-interactive-button rounded-full border border-stone-200 bg-white px-3 py-1 text-[11px] font-semibold text-stone-700 shadow-sm"
-                    >
-                      {copy.editButton}
-                    </button>
-                    <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} />
-                  </div>
-                ) : null}
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-stone-50 px-3 py-2">
-                  <div className={infoLabelClass}>{copy.fields.quantity}</div>
-                  <div className={infoValueClass}>{item.quantity.toLocaleString()}</div>
-                </div>
-                <div className="rounded-xl bg-stone-50 px-3 py-2">
-                  <div className={infoLabelClass}>{copy.fields.unit}</div>
-                  <div className={infoValueClass}>{translateWorkOrderDisplayText(item.unit, locale)}</div>
-                </div>
-              </div>
-            </article>
-          ))}
-
-          <div className="rounded-2xl border border-stone-200 bg-white px-3 py-2.5 text-[11px] leading-5 text-stone-500">
-            {copy.handoffNote}
-          </div>
-
-          {!locked ? (
-            <div className="flex justify-center">
-              <AddButton onClick={openAddSheet} srLabel={copy.addButton} title={copy.addButton} />
-            </div>
-          ) : null}
+    <section className="min-w-0">
+      <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <h3 className="min-w-0 text-sm font-semibold leading-5 text-stone-900">{headerTitle}</h3>
+          <SectionCountBadge>{materials.length}건</SectionCountBadge>
         </div>
-      ) : null}
+        {!locked ? <SectionAddButton label={copy.addButton} disabled={locked} onClick={openAddSheet} /> : null}
+      </div>
+      <AppCard className="space-y-2" padding="sm">
+        {materials.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
+            {copy.empty}
+          </div>
+        ) : null}
+
+        {!locked && zeroQuantityCount > 0 ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+            <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
+            <div className="mt-0.5 text-amber-800">{copy.zeroQuantityNoticeDescription}</div>
+            <button
+              type="button"
+              onClick={onRemoveZeroQuantity}
+              className="pbp-interactive-button mt-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+            >
+              {copy.zeroQuantityCleanupButton}
+            </button>
+          </div>
+        ) : null}
+
+        {materials.map((item, index) => (
+          <MaterialListCard
+            key={item.id}
+            item={item}
+            index={index}
+            locked={locked}
+            onEdit={() => openEditSheet(item)}
+            onRemove={() => onRemove(item.id)}
+          />
+        ))}
+      </AppCard>
       {!locked ? (
         <WorkOrderMaterialEditSheet
           open={sheetOpen}

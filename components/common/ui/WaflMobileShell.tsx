@@ -141,11 +141,15 @@ export type WaflMobileListDrawerProps = {
   closeLabel: ReactNode;
   closeOverlayAria: string;
   titleId?: string;
+  titleAccessory?: ReactNode;
   children: ReactNode;
   headerContent?: ReactNode;
   footerContent?: ReactNode;
   className?: string;
   bodyClassName?: string;
+  showHeader?: boolean;
+  showCloseButton?: boolean;
+  showHeaderBorder?: boolean;
 };
 
 export function WaflMobileListDrawer({
@@ -156,11 +160,15 @@ export function WaflMobileListDrawer({
   closeLabel,
   closeOverlayAria,
   titleId = "wafl-mobile-list-drawer-title",
+  titleAccessory,
   children,
   headerContent,
   footerContent,
   className,
   bodyClassName,
+  showHeader = true,
+  showCloseButton = true,
+  showHeaderBorder = true,
 }: WaflMobileListDrawerProps) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
@@ -183,22 +191,29 @@ export function WaflMobileListDrawer({
           className,
         )}
       >
-        <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-3 pb-2 pt-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div id={titleId} className="truncate text-sm font-semibold leading-5 text-stone-900">{title}</div>
-              {subtitle ? <div className="truncate text-[11px] text-stone-500">{subtitle}</div> : null}
+        {showHeader ? (
+          <div className={cn("sticky top-0 z-10 bg-white/95 px-3 pb-2 pt-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur", showHeaderBorder ? "border-b border-stone-200" : "")}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="min-w-0">
+                  <div id={titleId} className="truncate text-sm font-semibold leading-5 text-stone-900">{title}</div>
+                  {subtitle ? <div className="truncate text-[11px] text-stone-500">{subtitle}</div> : null}
+                </div>
+                {titleAccessory ? <div className="shrink-0">{titleAccessory}</div> : null}
+              </div>
+              {showCloseButton ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                >
+                  {closeLabel}
+                </button>
+              ) : null}
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-            >
-              {closeLabel}
-            </button>
+            {headerContent ? <div className="mt-2.5">{headerContent}</div> : null}
           </div>
-          {headerContent ? <div className="mt-2.5">{headerContent}</div> : null}
-        </div>
+        ) : null}
         <div className={cn("pbp-mobile-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+0.875rem)]", bodyClassName)}>
           {children}
         </div>
