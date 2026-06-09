@@ -275,7 +275,7 @@ function AttachmentUploadHint({
           disabled={disabled}
           title={disabled ? disabledReason : addButtonLabel}
           aria-label={addButtonLabel}
-          className={`pbp-interactive-button pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45 ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
+          className={`pbp-interactive-button pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45 ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
         >
           <WorkOrderPlusIcon />
         </button>
@@ -332,7 +332,7 @@ function AttachmentFlatAddHint({
           disabled={disabled}
           title={disabled ? disabledReason : addButtonLabel}
           aria-label={addButtonLabel}
-          className="pbp-interactive-button pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
+          className="pbp-interactive-button pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45"
         >
           <WorkOrderPlusIcon />
         </button>
@@ -555,7 +555,7 @@ export default function WorkOrderAttachmentPanel({
                         handleSetPrimaryDesignAttachment(attachment.id)
                       }
                       disabled={writeLocked}
-                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
+                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
                       title={
                         writeLocked
                           ? writeLockMessage
@@ -600,7 +600,7 @@ export default function WorkOrderAttachmentPanel({
                         : ui.attachmentPanel.previewUnavailableTitle
                     }
                     aria-label={`${attachment.name} ${attachment.canPreview ? ui.attachmentPanel.previewAriaSuffix : ui.attachmentPanel.previewUnavailableAriaSuffix}`}
-                    className="flex w-full min-w-0 items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
+                    className="flex w-full min-w-0 items-center gap-2 rounded-[var(--pbp-radius-wafl)] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
                   >
                     <div
                       className={

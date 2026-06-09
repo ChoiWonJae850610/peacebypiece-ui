@@ -30,7 +30,7 @@ import {
   renderModalFooterActions,
 } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
-import { WaflInfoBox, WaflInput, WaflTextarea } from "@/components/common/ui";
+import { WaflEmptyCard, WaflInfoBox, WaflInput, WaflTextarea } from "@/components/common/ui";
 
 type InventoryMode = InventoryChangeTypeValue;
 
@@ -288,8 +288,10 @@ export default function InventoryEditor({
           <div className="mt-3 space-y-2">
             {logs.length > 0 ? (
               logs.slice(0, 3).map((item) => (
-                <div
+                <WaflInfoBox
                   key={item.id}
+                  component="log-card"
+                  tone="surface"
                   className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} text-sm`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -306,12 +308,12 @@ export default function InventoryEditor({
                   <div className="mt-1 text-sm text-[var(--pbp-text-secondary)]">
                     {item.memo || copy.noMemo}
                   </div>
-                </div>
+                </WaflInfoBox>
               ))
             ) : (
-              <div className={MODAL_CONTENT_EMPTY_STATE_CLASS}>
+              <WaflEmptyCard className={MODAL_CONTENT_EMPTY_STATE_CLASS}>
                 {copy.emptyLogs}
-              </div>
+              </WaflEmptyCard>
             )}
           </div>
         </div>

@@ -108,6 +108,31 @@ export function WaflAddCard({
   );
 }
 
+export function WaflAddCardButton({
+  children,
+  className,
+  component = "add-card",
+  type = "button",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  children: ReactNode;
+  component?: string;
+}) {
+  return (
+    <button
+      type={type}
+      data-wafl-component={component}
+      className={cn(
+        "pbp-interactive-button flex min-w-0 items-center justify-center rounded-[var(--pbp-radius-wafl)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function WaflFileCard({
   children,
   className,
@@ -142,7 +167,7 @@ export function WaflPlainButton({
       type={type}
       data-wafl-component={component}
       className={cn(
-        "pbp-interactive-button rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] disabled:cursor-not-allowed disabled:opacity-45",
+        "pbp-interactive-button rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
         className,
       )}
       {...props}

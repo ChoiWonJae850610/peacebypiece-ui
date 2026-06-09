@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { AppCard, SectionCountBadge } from "@/components/common/ui";
+import { AppCard, SectionCountBadge, WaflAddCardButton, WaflEmptyCard } from "@/components/common/ui";
 import { WorkOrderCardActionMenu, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -134,9 +134,9 @@ export default function MaterialSection({
         padding="sm"
       >
         {materials.length === 0 ? (
-          <div className="rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-8 text-center text-sm pbp-text-muted">
+          <WaflEmptyCard className="px-4 py-8 text-sm pbp-text-muted">
             {copy.empty}
-          </div>
+          </WaflEmptyCard>
         ) : null}
 
         {!locked && zeroQuantityCount > 0 ? (
@@ -171,17 +171,16 @@ export default function MaterialSection({
           />
         ))}
         {!locked ? (
-          <button
-            type="button"
+          <WaflAddCardButton
             onClick={openAddSheet}
-            className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4"
+            className="min-h-[72px] w-full"
             aria-label={copy.addButton}
             title={copy.addButton}
           >
             <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
               <WorkOrderPlusIcon />
             </span>
-          </button>
+          </WaflAddCardButton>
         ) : null}
       </AppCard>
       {!locked ? (

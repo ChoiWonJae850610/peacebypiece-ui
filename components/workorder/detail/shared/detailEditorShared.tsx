@@ -59,6 +59,7 @@ export function CollapseToggleButton({
   return (
     <button
       type="button"
+      data-wafl-component={variant === "danger" ? "delete-button" : "icon-button"}
       onClick={onToggle}
       aria-label={label}
       aria-expanded={open}
@@ -111,7 +112,7 @@ function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, r
 
 
 function CircleIconButton({ onClick, srLabel, disabled = false, variant, title, icon }: { onClick: () => void; srLabel: string; disabled?: boolean; variant: "default" | "danger"; title?: string; icon: ReactNode; }) {
-  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-white text-[14px] font-normal leading-none disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400";
+  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-white text-[14px] font-normal leading-none shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400";
   const variantClassName = variant === "danger"
     ? "border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
     : "border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200";
@@ -119,6 +120,7 @@ function CircleIconButton({ onClick, srLabel, disabled = false, variant, title, 
   return (
     <button
       type="button"
+      data-wafl-component={variant === "danger" ? "delete-button" : "icon-button"}
       onClick={onClick}
       aria-label={srLabel}
       title={title}

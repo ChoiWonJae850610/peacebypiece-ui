@@ -4,6 +4,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import CreateWorkOrderCategoryFields from "@/components/common/modal/createWorkOrder/CreateWorkOrderCategoryFields";
 import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { WaflInfoBox } from "@/components/common/ui";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
 import {
   buildCategorySourceFromDefinitions,
@@ -162,10 +163,10 @@ export default function BasicInfoEditModal({
         onChange={{ category1: handleCategory1Change, category2: handleCategory2Change, category3: handleCategory3Change }}
       />
 
-      <div className="pbp-detail-summary-readonly mt-4 rounded-2xl border px-4 py-3">
+      <WaflInfoBox component="preview-card" tone="muted" className="pbp-detail-summary-readonly mt-4 px-4 py-3">
         <div className="text-xs text-[var(--pbp-text-muted)]">{copy.previewLabel}</div>
         <div className="mt-2 text-sm font-medium text-[var(--pbp-text-primary)]">{formatBasicSummary(draft)}</div>
-      </div>
+      </WaflInfoBox>
     </ModalShell>
   );
 }

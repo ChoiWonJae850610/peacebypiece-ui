@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { AppCard, SectionCountBadge } from "@/components/common/ui";
+import { AppCard, SectionCountBadge, WaflAddCardButton, WaflEmptyCard } from "@/components/common/ui";
 import { WorkOrderCardActionMenu, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import WorkOrderProcessEditSheet, {
@@ -186,9 +186,9 @@ export default function OrderInfoSection({
     <>
       {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
       {!hasRows ? (
-        <div className="rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-8 text-center text-sm pbp-text-muted">
+        <WaflEmptyCard className="px-4 py-8 text-sm pbp-text-muted">
           {copy.empty}
-        </div>
+        </WaflEmptyCard>
       ) : null}
 
       <div className="space-y-2.5">
@@ -226,17 +226,16 @@ export default function OrderInfoSection({
       </div>
 
       {!locked ? (
-        <button
-          type="button"
+        <WaflAddCardButton
           onClick={openPrimaryAddSheet}
-          className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4"
+          className="min-h-[72px] w-full"
           aria-label={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
           title={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
         >
           <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
             <WorkOrderPlusIcon />
           </span>
-        </button>
+        </WaflAddCardButton>
       ) : null}
 
       {canOpenInspectionModal ? (

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { AppCard } from "@/components/common/ui";
+import { AppCard, WaflAddCardButton, WaflEmptyCard } from "@/components/common/ui";
 import { WorkOrderCardActionMenu, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
@@ -32,18 +32,17 @@ type Props = {
 
 function AddItemCard({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
+    <WaflAddCardButton
       onClick={onClick}
       disabled={disabled}
-      className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 disabled:cursor-not-allowed disabled:opacity-45"
+      className="min-h-[72px] w-full"
       aria-label={label}
       title={label}
     >
       <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
         <WorkOrderPlusIcon />
       </span>
-    </button>
+    </WaflAddCardButton>
   );
 }
 
@@ -120,9 +119,9 @@ export default function WorkOrderDetailTabletMaterialSection({
   return (
     <section className="min-w-0 space-y-2.5">
       {materials.length === 0 ? (
-        <div className="rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-8 text-center text-sm pbp-text-muted">
+        <WaflEmptyCard className="px-4 py-8 text-sm pbp-text-muted">
           {copy.empty}
-        </div>
+        </WaflEmptyCard>
       ) : null}
 
       {!locked && zeroQuantityCount > 0 ? (
