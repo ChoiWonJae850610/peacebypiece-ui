@@ -41,7 +41,7 @@ function ProcessCard({
   const { i18n } = useI18n();
   const common = i18n.workorder.ui.common;
   return (
-    <AppCard variant="subtle" padding="sm" className="rounded-[22px]">
+    <AppCard variant="subtle" padding="sm" className="rounded-[var(--pbp-radius-content-card)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold pbp-text-subtle">
@@ -186,7 +186,7 @@ export default function OrderInfoSection({
     <>
       {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
       {!hasRows ? (
-        <div className="rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
+        <div className="rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-8 text-center text-sm pbp-text-muted">
           {copy.empty}
         </div>
       ) : null}
@@ -229,11 +229,11 @@ export default function OrderInfoSection({
         <button
           type="button"
           onClick={openPrimaryAddSheet}
-          className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-4"
+          className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4"
           aria-label={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
           title={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
         >
-          <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm" aria-hidden="true">
+          <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-[var(--pbp-shadow-action-button)]" aria-hidden="true">
             <WorkOrderPlusIcon />
           </span>
         </button>

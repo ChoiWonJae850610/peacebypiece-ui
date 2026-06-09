@@ -7,13 +7,13 @@ export type WaflActionButtonSize = "sm" | "md" | "lg";
 
 const toneClassMap: Record<WaflActionButtonTone, string> = {
   neutral:
-    "border-[var(--pbp-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-secondary-text)] shadow-sm hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-action-secondary-surface-hover)]",
+    "border-[var(--pbp-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-secondary-text)] shadow-[var(--pbp-shadow-action-button)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-action-secondary-surface-hover)]",
   primary:
-    "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)] shadow-sm hover:bg-[var(--pbp-action-primary-surface-hover)]",
+    "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)] shadow-[var(--pbp-shadow-action-button)] hover:bg-[var(--pbp-action-primary-surface-hover)]",
   danger:
-    "border-transparent bg-[var(--pbp-action-danger-surface)] text-[var(--pbp-action-danger-text)] shadow-sm hover:bg-[var(--pbp-action-danger-surface-hover)]",
+    "border-transparent bg-[var(--pbp-action-danger-surface)] text-[var(--pbp-action-danger-text)] shadow-[var(--pbp-shadow-action-button)] hover:bg-[var(--pbp-action-danger-surface-hover)]",
   dangerSoft:
-    "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-danger-soft-text)] shadow-sm hover:bg-[var(--pbp-action-danger-soft-surface)]",
+    "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-danger-soft-text)] shadow-[var(--pbp-shadow-action-button)] hover:bg-[var(--pbp-action-danger-soft-surface)]",
 };
 
 const sizeClassMap: Record<WaflActionButtonSize, string> = {

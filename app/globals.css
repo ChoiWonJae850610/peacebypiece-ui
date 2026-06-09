@@ -172,9 +172,19 @@
   --pbp-toast-danger: var(--pbp-status-danger-fg);
   --pbp-toast-info: var(--pbp-brand-soft);
   --pbp-toast-loading: var(--pbp-brand-soft);
-  --pbp-shadow-card: 0 1px 3px rgba(28, 25, 23, 0.08), 0 1px 2px rgba(28, 25, 23, 0.04);
+  --pbp-shadow-card: 0 1px 2px rgba(28, 25, 23, 0.035);
   --pbp-shadow-elevated: 0 18px 55px rgba(28, 25, 23, 0.22);
+  --pbp-radius-page-panel: 28px;
+  --pbp-radius-content-card: 22px;
+  --pbp-radius-empty-card: 22px;
+  --pbp-shadow-content-card: 0 1px 2px rgba(28, 25, 23, 0.035);
+  --pbp-shadow-action-button: 0 1px 2px rgba(28, 25, 23, 0.05);
+  --pbp-info-surface: #F7F1E8;
+  --pbp-info-border: #E8DED1;
+  --pbp-info-text: #2B2118;
+  --pbp-info-muted-text: #66584A;
 }
+
 
 @theme inline {
   --color-background: var(--background);
@@ -238,17 +248,17 @@ body {
 }
 
 .pbp-card {
-  border: 1px solid var(--pbp-border-strong);
+  border: 1px solid var(--pbp-border);
   background: var(--pbp-surface);
   color: var(--pbp-text-primary);
-  box-shadow: var(--pbp-shadow-card);
+  box-shadow: var(--pbp-shadow-content-card);
 }
 
 .pbp-card-muted {
   border: 1px solid var(--pbp-border);
-  background: var(--pbp-surface-muted);
+  background: var(--pbp-surface);
   color: var(--pbp-text-primary);
-  box-shadow: var(--pbp-shadow-card);
+  box-shadow: var(--pbp-shadow-content-card);
 }
 
 .pbp-button-surface {
@@ -901,7 +911,7 @@ body {
   border-color: var(--pbp-border);
   background: var(--pbp-surface);
   color: var(--pbp-text-primary);
-  box-shadow: var(--pbp-shadow-card);
+  box-shadow: var(--pbp-shadow-content-card);
 }
 
 .pbp-detail-summary-action {
@@ -933,9 +943,9 @@ body {
 }
 
 .pbp-cost-grand-total {
-  border-color: color-mix(in srgb, var(--pbp-accent) 18%, transparent);
-  background: var(--pbp-action-primary-surface);
-  color: var(--pbp-action-primary-text);
+  border-color: var(--pbp-info-border);
+  background: var(--pbp-info-surface);
+  color: var(--pbp-info-text);
 }
 
 .pbp-workflow-panel {
@@ -1023,9 +1033,9 @@ body {
 }
 
 .pbp-cost-grand-total {
-  border-color: color-mix(in srgb, var(--pbp-accent) 18%, transparent);
-  background: var(--pbp-action-primary-surface);
-  color: var(--pbp-action-primary-text);
+  border-color: var(--pbp-info-border);
+  background: var(--pbp-info-surface);
+  color: var(--pbp-info-text);
 }
 
 .pbp-workflow-panel {

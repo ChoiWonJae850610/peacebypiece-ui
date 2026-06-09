@@ -239,7 +239,7 @@ function MemoThreadCard({
   };
 
   return (
-    <div className={isMobile ? "pbp-sidepanel-item min-w-0 rounded-2xl border p-2.5 shadow-sm" : "pbp-sidepanel-item min-w-0 rounded-2xl border p-3 shadow-sm"}>
+    <div className={isMobile ? "pbp-sidepanel-item min-w-0 rounded-[var(--pbp-radius-content-card)] border p-2.5 shadow-[var(--pbp-shadow-action-button)]" : "pbp-sidepanel-item min-w-0 rounded-[var(--pbp-radius-content-card)] border p-3 shadow-[var(--pbp-shadow-action-button)]"}>
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
           <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 pbp-text-primary" : "truncate text-sm font-semibold pbp-text-primary"}>{getMemoAuthorDisplayName(thread, users, ui.memo)}</div>

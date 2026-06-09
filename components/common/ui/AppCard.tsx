@@ -14,14 +14,14 @@ export type AppCardPadding = "none" | "sm" | "md" | "lg";
 type AppCardElement = "div" | "section" | "article" | "header";
 
 const variantClassMap: Record<AppCardVariant, string> = {
-  surface: "rounded-[28px]",
-  elevated: "rounded-[28px] shadow-[0_18px_42px_rgba(28,25,23,0.09)]",
-  flat: "rounded-3xl shadow-none",
+  surface: "rounded-[var(--pbp-radius-page-panel)]",
+  elevated: "rounded-[var(--pbp-radius-page-panel)] shadow-[var(--pbp-shadow-content-card)]",
+  flat: "rounded-[var(--pbp-radius-page-panel)] shadow-none",
   interactive:
-    "rounded-[28px] transition duration-150 ease-out hover:-translate-y-0.5 hover:border-[var(--pbp-border-strong)] hover:shadow-[0_10px_24px_rgba(28,25,23,0.08)]",
-  compact: "rounded-3xl",
-  default: "rounded-[28px]",
-  subtle: "rounded-[28px] pbp-card-muted",
+    "rounded-[var(--pbp-radius-content-card)] transition duration-150 ease-out hover:border-[var(--pbp-border-strong)] hover:shadow-[var(--pbp-shadow-content-card)]",
+  compact: "rounded-[var(--pbp-radius-content-card)]",
+  default: "rounded-[var(--pbp-radius-page-panel)]",
+  subtle: "rounded-[var(--pbp-radius-content-card)] pbp-card-muted",
 };
 
 const paddingClassMap: Record<AppCardPadding, string> = {

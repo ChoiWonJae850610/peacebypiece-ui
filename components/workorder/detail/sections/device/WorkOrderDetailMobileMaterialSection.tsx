@@ -36,11 +36,11 @@ function AddItemCard({ label, disabled, onClick }: { label: string; disabled: bo
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-4 disabled:cursor-not-allowed disabled:opacity-45"
+      className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 disabled:cursor-not-allowed disabled:opacity-45"
       aria-label={label}
       title={label}
     >
-      <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm" aria-hidden="true">
+      <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-[var(--pbp-shadow-action-button)]" aria-hidden="true">
         <WorkOrderPlusIcon />
       </span>
     </button>
@@ -66,7 +66,7 @@ function MaterialListCard({
   const title = item.name || copy.fallbackItem.replace("{index}", String(index + 1));
 
   return (
-    <AppCard variant="subtle" padding="sm" className="rounded-[22px]">
+    <AppCard variant="subtle" padding="sm" className="rounded-[var(--pbp-radius-content-card)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="inline-flex rounded-full bg-[var(--pbp-surface-muted)] px-2 py-0.5 text-[11px] font-semibold pbp-text-muted">
@@ -120,13 +120,13 @@ export default function WorkOrderDetailMobileMaterialSection({
   return (
     <section className="min-w-0 space-y-2.5">
       {materials.length === 0 ? (
-        <div className="rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
+        <div className="rounded-[var(--pbp-radius-content-card)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-8 text-center text-sm pbp-text-muted">
           {copy.empty}
         </div>
       ) : null}
 
       {!locked && zeroQuantityCount > 0 ? (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+        <div className="rounded-[var(--pbp-radius-content-card)] border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
           <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
           <div className="mt-0.5 text-amber-800">{copy.zeroQuantityNoticeDescription}</div>
           <button
