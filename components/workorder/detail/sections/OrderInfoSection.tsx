@@ -3,14 +3,13 @@
 import { useState } from "react";
 
 import { AppCard, SectionCountBadge } from "@/components/common/ui";
-import { WorkOrderAddIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderAddIconButton, WorkOrderDeleteIconButton, WorkOrderEditIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import WorkOrderProcessEditSheet, {
   type WorkOrderProcessSheetDraft,
   type WorkOrderProcessSheetMode,
 } from "@/components/workorder/detail/sections/WorkOrderProcessEditSheet";
 import {
-  DeleteButton,
   type EditableCell,
   type EditableSectionKey,
   type OrderEntryState,
@@ -59,7 +58,6 @@ function ProcessCard({
   onRemove?: () => void;
 }) {
   const { i18n } = useI18n();
-  const common = i18n.workorder.ui.common;
   return (
     <AppCard variant="subtle" padding="sm" className="rounded-[22px]">
       <div className="flex items-start justify-between gap-3">
@@ -80,18 +78,9 @@ function ProcessCard({
         </div>
         {!locked ? (
           <div className="flex shrink-0 items-center gap-1.5">
-            <button
-              type="button"
-              onClick={onEdit}
-              className="pbp-interactive-button rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1 text-[11px] font-semibold pbp-text-secondary shadow-sm"
-            >
-              수정
-            </button>
+            <WorkOrderEditIconButton label={`${title} 수정`} onClick={onEdit} />
             {onRemove ? (
-              <DeleteButton
-                onClick={onRemove}
-                srLabel={`${title} ${common.deleteSuffix}`}
-              />
+              <WorkOrderDeleteIconButton label={`${title} ${common.deleteSuffix}`} onClick={onRemove} />
             ) : null}
           </div>
         ) : null}
@@ -122,6 +111,7 @@ export default function OrderInfoSection({
   orderHubPolicy,
   onOpenInspectionModal,
   showDebugPanel = false,
+  variant = "desktop",
 }: {
   orderEntries: OrderEntryState[];
   factoryOptions: readonly string[];
@@ -160,14 +150,15 @@ export default function OrderInfoSection({
   orderHubPolicy: OrderInfoHubPolicy;
   onOpenInspectionModal: () => void;
   showDebugPanel?: boolean;
+  variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
-  const common = i18n.workorder.ui.common;
   const [sheetState, setSheetState] = useState<SheetState | null>(null);
   const visibleOrderEntries = orderEntries.slice(0, 1);
   const processCount = visibleOrderEntries.length + outsourcing.length;
   const hasRows = processCount > 0;
+  const isFlatDevice = variant === "mobile" || variant === "tablet";
   void open;
   void onToggle;
   void onAdd;
@@ -206,94 +197,113 @@ export default function OrderInfoSection({
     onSaveOutsourcingDraft(outsourcingId, draft);
   };
 
-  return (
-    <section className="mt-5 min-w-0">
-      <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="min-w-0 text-sm font-semibold leading-5 text-stone-900">
-            {copy.title}
-          </h3>
-          <SectionCountBadge>{processCount}건</SectionCountBadge>
+  const rows = (
+    <>
+      {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
+      {!hasRows ? (
+        <div className="rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
+          {copy.empty}
         </div>
-        {!locked ? (
-          <SectionAddButton
-            label={
-              visibleOrderEntries.length === 0
-                ? copy.factoryAddButton
-                : copy.outsourcingOrder.addButton
-            }
-            disabled={locked}
-            onClick={openPrimaryAddSheet}
+      ) : null}
+
+      <div className="space-y-2.5">
+        {visibleOrderEntries.map((item) => (
+          <ProcessCard
+            key={item.id}
+            title={translateWorkOrderDisplayText(item.type, locale)}
+            meta={copy.sewingLineTypeLabel}
+            details={[
+              item.factory,
+              `${item.quantity.toLocaleString()}장`,
+              `${copy.fields.laborCost} ${item.laborCost.toLocaleString()}원`,
+              `${copy.fields.lossCost} ${item.lossCost.toLocaleString()}원`,
+            ]}
+            locked={locked}
+            onEdit={() => openOrderSheet(item)}
           />
-        ) : null}
+        ))}
+        {outsourcing.map((item) => (
+          <ProcessCard
+            key={item.id}
+            title={item.process || copy.outsourcingLineTypeLabel}
+            meta={`${copy.outsourcingLineTypeLabelPrefix} ${copy.outsourcingLineTypeLabelSuffix}`}
+            details={[
+              item.vendor || "미선택",
+              `${item.quantity.toLocaleString()}장`,
+              `${copy.fields.laborCost} ${item.unitCost.toLocaleString()}원`,
+              `${copy.fields.lossCost} ${(item.lossCost ?? 0).toLocaleString()}원`,
+            ]}
+            locked={locked}
+            onEdit={() => openOutsourcingSheet(item)}
+            onRemove={() => onRemoveOutsourcing(item.id)}
+          />
+        ))}
       </div>
-      <AppCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">
-        {showDebugPanel ? (
-          <OrderInfoHubDebugPanel policy={orderHubPolicy} />
-        ) : null}
-        {!hasRows ? (
-          <div className="rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
-            {copy.empty}
+
+      {!locked ? (
+        <button
+          type="button"
+          onClick={openPrimaryAddSheet}
+          className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-4"
+          aria-label={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
+          title={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
+        >
+          <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm" aria-hidden="true">
+            <WorkOrderPlusIcon />
+          </span>
+        </button>
+      ) : null}
+
+      {canOpenInspectionModal ? (
+        <button
+          type="button"
+          onClick={onOpenInspectionModal}
+          className="pbp-interactive-button pbp-action-secondary w-full rounded-xl px-3 py-2 text-sm font-medium"
+        >
+          {copy.inspectionAction}
+        </button>
+      ) : null}
+    </>
+  );
+
+  return (
+    <section className={isFlatDevice ? "min-w-0 space-y-2.5" : "mt-5 min-w-0"}>
+      {!isFlatDevice ? (
+        <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="min-w-0 text-sm font-semibold leading-5 text-stone-900">
+              {copy.title}
+            </h3>
+            <SectionCountBadge>{processCount}건</SectionCountBadge>
           </div>
-        ) : null}
-
-        <div className="space-y-2.5">
-          {visibleOrderEntries.map((item) => (
-            <ProcessCard
-              key={item.id}
-              title={translateWorkOrderDisplayText(item.type, locale)}
-              meta={copy.sewingLineTypeLabel}
-              details={[
-                item.factory,
-                `${item.quantity.toLocaleString()}장`,
-                `${copy.fields.laborCost} ${item.laborCost.toLocaleString()}원`,
-                `${copy.fields.lossCost} ${item.lossCost.toLocaleString()}원`,
-              ]}
-              locked={locked}
-              onEdit={() => openOrderSheet(item)}
+          {!locked ? (
+            <SectionAddButton
+              label={
+                visibleOrderEntries.length === 0
+                  ? copy.factoryAddButton
+                  : copy.outsourcingOrder.addButton
+              }
+              disabled={locked}
+              onClick={openPrimaryAddSheet}
             />
-          ))}
-          {outsourcing.map((item) => (
-            <ProcessCard
-              key={item.id}
-              title={item.process || copy.outsourcingLineTypeLabel}
-              meta={`${copy.outsourcingLineTypeLabelPrefix} ${copy.outsourcingLineTypeLabelSuffix}`}
-              details={[
-                item.vendor || "미선택",
-                `${item.quantity.toLocaleString()}장`,
-                `${copy.fields.laborCost} ${item.unitCost.toLocaleString()}원`,
-                `${copy.fields.lossCost} ${(item.lossCost ?? 0).toLocaleString()}원`,
-              ]}
-              locked={locked}
-              onEdit={() => openOutsourcingSheet(item)}
-              onRemove={() => onRemoveOutsourcing(item.id)}
-            />
-          ))}
+          ) : null}
         </div>
+      ) : null}
 
-        {canOpenInspectionModal ? (
-          <button
-            type="button"
-            onClick={onOpenInspectionModal}
-            className="pbp-interactive-button pbp-action-secondary w-full rounded-xl px-3 py-2 text-sm font-medium"
-          >
-            {copy.inspectionAction}
-          </button>
-        ) : null}
+      {isFlatDevice ? rows : <AppCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">{rows}</AppCard>}
 
-        <WorkOrderProcessEditSheet
-          open={Boolean(sheetState)}
-          mode={sheetState?.mode ?? "order"}
-          orderEntry={sheetState?.orderEntry ?? null}
-          outsourcing={sheetState?.outsourcing ?? null}
-          orderTypeOptions={orderTypeOptions}
-          factoryOptions={factoryOptions}
-          outsourcingProcessOptions={outsourcingProcessOptions}
-          outsourcingVendorOptionsByProcess={outsourcingVendorOptionsByProcess}
-          onClose={closeSheet}
-          onApply={handleApplySheet}
-        />
-      </AppCard>
+      <WorkOrderProcessEditSheet
+        open={Boolean(sheetState)}
+        mode={sheetState?.mode ?? "order"}
+        orderEntry={sheetState?.orderEntry ?? null}
+        outsourcing={sheetState?.outsourcing ?? null}
+        orderTypeOptions={orderTypeOptions}
+        factoryOptions={factoryOptions}
+        outsourcingProcessOptions={outsourcingProcessOptions}
+        outsourcingVendorOptionsByProcess={outsourcingVendorOptionsByProcess}
+        onClose={closeSheet}
+        onApply={handleApplySheet}
+      />
     </section>
   );
 }

@@ -1,5 +1,4 @@
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
-import WorkOrderSidePanelMobileAccordionSection from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAccordionSection";
 import { isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 
@@ -38,17 +37,11 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
   writeLockMessage,
   collapseLabel,
 }: WorkOrderSidePanelMobileAttachmentSectionsProps) {
-  const attachmentCount = attachmentSections.reduce((sum, section) => sum + section.items.length, 0);
+  void collapseLabel;
 
-  return attachmentSections.map((section, index) => (
-    <WorkOrderSidePanelMobileAccordionSection
+  return attachmentSections.map((section) => (
+    <WorkOrderAttachmentPanel
       key={section.key}
-      title={section.title}
-      count={section.items.length}
-      defaultOpen={attachmentCount <= 2 && index === 0}
-      collapseLabel={collapseLabel}
-    >
-      <WorkOrderAttachmentPanel
         title={section.title}
         emptyText={section.emptyText}
         addButtonLabel={section.addButtonLabel}
@@ -71,6 +64,5 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
         writeLockMessage={writeLockMessage}
         variant="mobile"
       />
-    </WorkOrderSidePanelMobileAccordionSection>
   ));
 }

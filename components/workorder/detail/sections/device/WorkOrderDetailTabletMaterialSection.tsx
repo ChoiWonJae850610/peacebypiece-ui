@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { AppCard, SectionCountBadge } from "@/components/common/ui";
-import { WorkOrderAddIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
+import { AppCard } from "@/components/common/ui";
+import { WorkOrderDeleteIconButton, WorkOrderEditIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
-import { DeleteButton, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
+import { type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import WorkOrderMaterialEditSheet, { type MaterialSheetDraft } from "@/components/workorder/detail/sections/WorkOrderMaterialEditSheet";
 import type { Material } from "@/types/material";
 
@@ -30,14 +30,20 @@ type Props = {
   sectionClassName?: string;
 };
 
-function SectionAddButton({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
+function AddItemCard({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
   return (
-    <WorkOrderAddIconButton
-      label={label}
-      size="md"
+    <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
-    />
+      className="pbp-interactive-button flex min-h-[72px] w-full items-center justify-center rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-4 disabled:cursor-not-allowed disabled:opacity-45"
+      aria-label={label}
+      title={label}
+    >
+      <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm" aria-hidden="true">
+        <WorkOrderPlusIcon />
+      </span>
+    </button>
   );
 }
 
@@ -73,14 +79,8 @@ function MaterialListCard({
         </div>
         {!locked ? (
           <div className="flex shrink-0 items-center gap-1.5">
-            <button
-              type="button"
-              onClick={onEdit}
-              className="pbp-interactive-button rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-1 text-[11px] font-semibold pbp-text-secondary shadow-sm"
-            >
-              {copy.editButton}
-            </button>
-            <DeleteButton onClick={onRemove} srLabel={`${title} ${common.deleteSuffix}`} />
+            <WorkOrderEditIconButton label={`${title} ${copy.editButton}`} onClick={onEdit} />
+            <WorkOrderDeleteIconButton label={`${title} ${common.deleteSuffix}`} onClick={onRemove} />
           </div>
         ) : null}
       </div>
@@ -94,7 +94,6 @@ export default function WorkOrderDetailTabletMaterialSection({
   onRemoveZeroQuantity,
   onSaveDraft,
   locked = false,
-  title,
 }: Props) {
   const { i18n } = useI18n();
   const { materialUnitOptions } = useCompanyStandardOptions();
@@ -102,7 +101,6 @@ export default function WorkOrderDetailTabletMaterialSection({
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const zeroQuantityCount = materials.filter((item) => Math.max(0, Number(item.quantity) || 0) <= 0).length;
-  const headerTitle = title ?? copy.title;
 
   const openAddSheet = () => {
     setEditingMaterial(null);
@@ -115,46 +113,40 @@ export default function WorkOrderDetailTabletMaterialSection({
   };
 
   return (
-    <section className="mt-5 min-w-0">
-      <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="min-w-0 text-sm font-semibold leading-5 text-stone-900">{headerTitle}</h3>
-          <SectionCountBadge>{materials.length}건</SectionCountBadge>
+    <section className="min-w-0 space-y-2.5">
+      {materials.length === 0 ? (
+        <div className="rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
+          {copy.empty}
         </div>
-        {!locked ? <SectionAddButton label={copy.addButton} disabled={locked} onClick={openAddSheet} /> : null}
-      </div>
-      <AppCard className="space-y-2" padding="sm">
-        {materials.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-8 text-center text-sm pbp-text-muted">
-            {copy.empty}
-          </div>
-        ) : null}
+      ) : null}
 
-        {!locked && zeroQuantityCount > 0 ? (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
-            <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
-            <div className="mt-0.5 text-amber-800">{copy.zeroQuantityNoticeDescription}</div>
-            <button
-              type="button"
-              onClick={onRemoveZeroQuantity}
-              className="pbp-interactive-button mt-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
-            >
-              {copy.zeroQuantityCleanupButton}
-            </button>
-          </div>
-        ) : null}
+      {!locked && zeroQuantityCount > 0 ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+          <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
+          <div className="mt-0.5 text-amber-800">{copy.zeroQuantityNoticeDescription}</div>
+          <button
+            type="button"
+            onClick={onRemoveZeroQuantity}
+            className="pbp-interactive-button mt-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            {copy.zeroQuantityCleanupButton}
+          </button>
+        </div>
+      ) : null}
 
-        {materials.map((item, index) => (
-          <MaterialListCard
-            key={item.id}
-            item={item}
-            index={index}
-            locked={locked}
-            onEdit={() => openEditSheet(item)}
-            onRemove={() => onRemove(item.id)}
-          />
-        ))}
-      </AppCard>
+      {materials.map((item, index) => (
+        <MaterialListCard
+          key={item.id}
+          item={item}
+          index={index}
+          locked={locked}
+          onEdit={() => openEditSheet(item)}
+          onRemove={() => onRemove(item.id)}
+        />
+      ))}
+
+      {!locked ? <AddItemCard label={copy.addButton} disabled={locked} onClick={openAddSheet} /> : null}
+
       {!locked ? (
         <WorkOrderMaterialEditSheet
           open={sheetOpen}

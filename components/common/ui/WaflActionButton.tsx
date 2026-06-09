@@ -18,8 +18,8 @@ const toneClassMap: Record<WaflActionButtonTone, string> = {
 
 const sizeClassMap: Record<WaflActionButtonSize, string> = {
   sm: "h-8 min-h-8 w-8 min-w-8 [&>svg]:h-3 [&>svg]:w-3",
-  md: "h-9 min-h-9 w-9 min-w-9 [&>svg]:h-3.5 [&>svg]:w-3.5",
-  lg: "h-10 min-h-10 w-10 min-w-10 [&>svg]:h-4 [&>svg]:w-4",
+  md: "h-9 min-h-9 w-9 min-w-9 [&>svg]:h-3 [&>svg]:w-3",
+  lg: "h-10 min-h-10 w-10 min-w-10 [&>svg]:h-3.5 [&>svg]:w-3.5",
 };
 
 const compactSizeClassMap: Record<WaflActionButtonSize, string> = {

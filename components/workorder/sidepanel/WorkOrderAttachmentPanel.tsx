@@ -9,10 +9,9 @@ import { useEffect, useRef, useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import {
   SectionCountBadge,
-  WorkOrderPanelCard,
   WaflButton,
 } from "@/components/common/ui";
-import { WorkOrderMoreIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderAddIconButton, WorkOrderMoreIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
@@ -63,6 +62,7 @@ function AttachmentActionMenu({
   isMobile,
   disabled = false,
   disabledReason,
+  trigger = "more",
 }: {
   scope: AttachmentPanelScope;
   addButtonLabel: string;
@@ -72,6 +72,7 @@ function AttachmentActionMenu({
   isMobile: boolean;
   disabled?: boolean;
   disabledReason?: string;
+  trigger?: "more" | "plus";
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
@@ -97,16 +98,29 @@ function AttachmentActionMenu({
 
   return (
     <div ref={menuRef} className="relative shrink-0">
-      <WorkOrderMoreIconButton
-        label={ui.attachmentPanel.actionMenuAria}
-        size={isMobile ? "lg" : "md"}
-        onClick={() => {
-          if (!disabled) setOpen((value) => !value);
-        }}
-        disabled={disabled}
-        title={disabled ? disabledReason : undefined}
-        aria-expanded={open}
-      />
+      {trigger === "plus" ? (
+        <WorkOrderAddIconButton
+          label={addButtonLabel}
+          size="md"
+          onClick={() => {
+            if (!disabled) setOpen((value) => !value);
+          }}
+          disabled={disabled}
+          title={disabled ? disabledReason : undefined}
+          aria-expanded={open}
+        />
+      ) : (
+        <WorkOrderMoreIconButton
+          label={ui.attachmentPanel.actionMenuAria}
+          size={isMobile ? "lg" : "md"}
+          onClick={() => {
+            if (!disabled) setOpen((value) => !value);
+          }}
+          disabled={disabled}
+          title={disabled ? disabledReason : undefined}
+          aria-expanded={open}
+        />
+      )}
       {open ? (
         <div
           className={`pbp-card absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}
@@ -244,6 +258,62 @@ function AttachmentUploadHint({
   );
 }
 
+function AttachmentFlatAddHint({
+  scope,
+  addButtonLabel,
+  canManageAttachments,
+  onOpenAttachmentPicker,
+  onOpenDrawingPlaceholder,
+  onOpenAdvancedDrawing,
+  isMobile,
+  disabled = false,
+  disabledReason,
+}: {
+  scope: AttachmentPanelScope;
+  addButtonLabel: string;
+  canManageAttachments: boolean;
+  onOpenAttachmentPicker: () => void;
+  onOpenDrawingPlaceholder: () => void;
+  onOpenAdvancedDrawing: () => void;
+  isMobile: boolean;
+  disabled?: boolean;
+  disabledReason?: string;
+}) {
+  if (!canManageAttachments) return null;
+  const isDesign = isDesignAttachmentScope(scope);
+
+  return (
+    <div className="flex min-h-[72px] w-full items-center justify-center rounded-[22px] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] px-4 py-4">
+      {isDesign ? (
+        <AttachmentActionMenu
+          scope={scope}
+          addButtonLabel={addButtonLabel}
+          onOpenAttachmentPicker={onOpenAttachmentPicker}
+          onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
+          onOpenAdvancedDrawing={onOpenAdvancedDrawing}
+          isMobile={isMobile}
+          disabled={disabled}
+          disabledReason={disabledReason}
+          trigger="plus"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            if (!disabled) onOpenAttachmentPicker();
+          }}
+          disabled={disabled}
+          title={disabled ? disabledReason : addButtonLabel}
+          aria-label={addButtonLabel}
+          className="pbp-interactive-button pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          <WorkOrderPlusIcon />
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function WorkOrderAttachmentPanel({
   title,
   addButtonLabel,
@@ -331,6 +401,7 @@ export default function WorkOrderAttachmentPanel({
 
   const isMobile = variant === "mobile";
   const isTablet = variant === "tablet";
+  const isFlatDevice = isMobile || isTablet;
   const isOfficialAttachmentScope = !isDesignAttachmentScope(uploadScope);
   const hasGeneratedOrderRequestPdf = attachments.some((attachment) =>
     isGeneratedOrderRequestPdfAttachment(attachment),
@@ -353,7 +424,8 @@ export default function WorkOrderAttachmentPanel({
             : undefined
         }
       >
-        <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
+        <div className={isFlatDevice ? "min-w-0 space-y-2.5" : "rounded-[24px] p-4 pbp-card min-w-0"}>
+          {!isFlatDevice ? (
           <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
             <div className="flex min-w-0 items-center gap-2">
               <h3 className="truncate text-sm font-semibold pbp-text-primary">
@@ -379,6 +451,7 @@ export default function WorkOrderAttachmentPanel({
               />
             ) : null}
           </div>
+          ) : null}
           {showOrderRequestPdfStatus ? (
             <div className="mt-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left shadow-sm">
               <div className="flex min-w-0 items-start gap-2">
@@ -557,33 +630,61 @@ export default function WorkOrderAttachmentPanel({
                   </button>
                 </div>
               ))}
-              <AttachmentUploadHint
-                scope={uploadScope}
-                canManageAttachments={canManageAttachments}
-                onOpenAttachmentPicker={onOpenAttachmentPicker}
-                onUploadFiles={onUploadFiles}
-                compact={isMobile || isTablet}
-                disabled={writeLocked}
-                disabledReason={writeLockMessage}
-              />
+              {isFlatDevice ? (
+                <AttachmentFlatAddHint
+                  scope={uploadScope}
+                  addButtonLabel={addButtonLabel}
+                  canManageAttachments={canManageAttachments}
+                  onOpenAttachmentPicker={onOpenAttachmentPicker}
+                  onOpenDrawingPlaceholder={openDesignDrawingModal}
+                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
+                  isMobile={isMobile}
+                  disabled={writeLocked}
+                  disabledReason={writeLockMessage}
+                />
+              ) : (
+                <AttachmentUploadHint
+                  scope={uploadScope}
+                  canManageAttachments={canManageAttachments}
+                  onOpenAttachmentPicker={onOpenAttachmentPicker}
+                  onUploadFiles={onUploadFiles}
+                  compact={isMobile || isTablet}
+                  disabled={writeLocked}
+                  disabledReason={writeLockMessage}
+                />
+              )}
             </div>
           ) : (
             <div>
               <div className="pbp-empty-state mt-3 min-w-0 whitespace-pre-line rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5">
                 {emptyText}
               </div>
-              <AttachmentUploadHint
-                scope={uploadScope}
-                canManageAttachments={canManageAttachments}
-                onOpenAttachmentPicker={onOpenAttachmentPicker}
-                onUploadFiles={onUploadFiles}
-                compact={isMobile || isTablet}
-                disabled={writeLocked}
-                disabledReason={writeLockMessage}
-              />
+              {isFlatDevice ? (
+                <AttachmentFlatAddHint
+                  scope={uploadScope}
+                  addButtonLabel={addButtonLabel}
+                  canManageAttachments={canManageAttachments}
+                  onOpenAttachmentPicker={onOpenAttachmentPicker}
+                  onOpenDrawingPlaceholder={openDesignDrawingModal}
+                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
+                  isMobile={isMobile}
+                  disabled={writeLocked}
+                  disabledReason={writeLockMessage}
+                />
+              ) : (
+                <AttachmentUploadHint
+                  scope={uploadScope}
+                  canManageAttachments={canManageAttachments}
+                  onOpenAttachmentPicker={onOpenAttachmentPicker}
+                  onUploadFiles={onUploadFiles}
+                  compact={isMobile || isTablet}
+                  disabled={writeLocked}
+                  disabledReason={writeLockMessage}
+                />
+              )}
             </div>
           )}
-        </WorkOrderPanelCard>
+        </div>
       </div>
       {isDesignAttachmentScope(uploadScope) ? (
         <>

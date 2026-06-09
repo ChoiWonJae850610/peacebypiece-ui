@@ -383,19 +383,22 @@ export default function WorkOrderMemoPanel({
     setThreadDraft("");
   };
 
-  return (
-    <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
-      <div className={isMobile ? "flex min-w-0 items-center justify-between gap-2" : "flex min-w-0 items-center justify-between gap-3"}>
-        <h3 className="truncate text-sm font-semibold pbp-text-primary">{ui.memo.panelTitle}</h3>
-        <SectionCountBadge>{`${memoThreads.length}${ui.memo.countSuffix}`}</SectionCountBadge>
-      </div>
-      <div className={isMobile ? "pbp-workorder-editable-panel mt-2.5 min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
+  const isFlatDevice = isMobile || isTablet;
+  const content = (
+    <>
+      {!isFlatDevice ? (
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <h3 className="truncate text-sm font-semibold pbp-text-primary">{ui.memo.panelTitle}</h3>
+          <SectionCountBadge>{`${memoThreads.length}${ui.memo.countSuffix}`}</SectionCountBadge>
+        </div>
+      ) : null}
+      <div className={isMobile ? "pbp-workorder-editable-panel min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
         <div className="text-[11px] pbp-text-muted">{ui.memo.authorPrefix} {getMemoAuthorDisplayName({ authorId: currentUserId, authorName: currentUserName, authorRole: currentUserRole }, users, ui.memo)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>
       </div>
-      <div className={isMobile ? "mt-2.5 min-w-0 space-y-1.5" : "mt-2.5 min-w-0 space-y-2"}>
+      <div className={isMobile ? "min-w-0 space-y-1.5" : "min-w-0 space-y-2"}>
         {memoThreads.length > 0 ? memoThreads.map((thread, threadIndex) => (
           <MemoThreadCard
             key={`${workOrder.id}-${thread.id}-${threadIndex}`}
@@ -416,6 +419,12 @@ export default function WorkOrderMemoPanel({
           />
         )) : <div className="pbp-empty-state min-w-0 rounded-xl border border-dashed px-3 py-5 text-center text-sm">{ui.memo.empty}</div>}
       </div>
-    </WorkOrderPanelCard>
+    </>
+  );
+
+  return isFlatDevice ? (
+    <div className="min-w-0 space-y-2.5">{content}</div>
+  ) : (
+    <WorkOrderPanelCard className="min-w-0">{content}</WorkOrderPanelCard>
   );
 }

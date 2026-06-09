@@ -86,7 +86,6 @@ export default function MobileSectionStack({
         open={sidePanelOpen}
         onOpenChange={handleRelatedSheetOpenChange}
         title={relatedTitle}
-        description={relatedCopy.description}
         items={relatedTabs}
         value={activeRelatedSection}
         onChange={setActiveRelatedSection}

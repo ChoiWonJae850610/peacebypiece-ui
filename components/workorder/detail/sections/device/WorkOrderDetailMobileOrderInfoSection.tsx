@@ -4,5 +4,5 @@ import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/vie
 type OrderInfoProps = WorkOrderDetailViewModel["orderInfoProps"];
 
 export default function WorkOrderDetailMobileOrderInfoSection(props: OrderInfoProps) {
-  return <OrderInfoSection {...props} />;
+  return <OrderInfoSection {...props} variant="mobile" />;
 }
