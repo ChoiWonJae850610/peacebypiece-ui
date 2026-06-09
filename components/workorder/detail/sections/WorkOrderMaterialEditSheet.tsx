@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { AppSelect, type AppSelectOption } from "@/components/common/ui";
+import { AppNumberInput, AppSelect, type AppSelectOption } from "@/components/common/ui";
 import { MATERIAL_TYPE, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT } from "@/lib/constants/material";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useI18n } from "@/lib/i18n";
+import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import type { Material } from "@/types/workorder";
 
 export type MaterialSheetDraft = {
@@ -63,6 +64,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
   const applyDisabled = trimmedName.length === 0;
 
   const handleApply = () => {
+    blurActiveModalElement();
     if (applyDisabled) return;
     onApply(material?.id ?? null, {
       ...draft,
@@ -91,7 +93,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
           <AppSelect
             value={draft.type}
             options={typeOptions}
-            onValueChange={(nextValue) => setDraft((current) => ({ ...current, type: nextValue as Material["type"] }))}
+            onValueChange={(nextValue) => { blurActiveModalElement(); setDraft((current) => ({ ...current, type: nextValue as Material["type"] })); }}
             ariaLabel={copy.fields.type}
             contentClassName="z-[4000]"
           />
@@ -103,6 +105,8 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
             type="text"
             value={draft.name}
             placeholder={copy.namePlaceholder}
+            onPointerDown={() => blurActiveModalElement()}
+            onTouchStart={() => blurActiveModalElement()}
             onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
             className={inputClass}
           />
@@ -110,14 +114,13 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
         <div className="grid gap-4 sm:grid-cols-2">
           <div className={fieldPanelClass}>
             <label className={labelClass} htmlFor="workorder-material-sheet-quantity">{copy.fields.quantity}</label>
-            <input
+            <AppNumberInput
               id="workorder-material-sheet-quantity"
-              type="number"
-              min="0"
               inputMode="decimal"
               value={draft.quantity}
-              onChange={(event) => setDraft((current) => ({ ...current, quantity: Number(event.target.value) || 0 }))}
-              className={`${inputClass} text-right tabular-nums`}
+              onBeforeInteract={() => blurActiveModalElement()}
+              onValueChange={(value) => setDraft((current) => ({ ...current, quantity: value }))}
+              className={inputClass}
             />
           </div>
           <div className={fieldPanelClass}>
@@ -125,7 +128,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
             <AppSelect
               value={draft.unit}
               options={unitSelectOptions}
-              onValueChange={(nextValue) => setDraft((current) => ({ ...current, unit: nextValue as Material["unit"] }))}
+              onValueChange={(nextValue) => { blurActiveModalElement(); setDraft((current) => ({ ...current, unit: nextValue as Material["unit"] })); }}
               ariaLabel={copy.fields.unit}
               contentClassName="z-[4000]"
             />

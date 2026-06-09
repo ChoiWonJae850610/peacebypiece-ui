@@ -9,6 +9,7 @@ export { default as AppSegmentedTabs, type AppSegmentedTabItem } from "./AppSegm
 
 export { AppResponsiveSurface, AppResponsiveWorkspace } from "./AppResponsiveFrame";
 export { default as AppSelect, type AppSelectOption } from "./AppSelect";
+export { default as AppNumberInput } from "./AppNumberInput";
 export { default as AppInlineSelectEditor, type AppInlineSelectEditorOption } from "./AppInlineSelectEditor";
 export { default as AppTooltip } from "./AppTooltip";
 

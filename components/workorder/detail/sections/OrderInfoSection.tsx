@@ -67,6 +67,7 @@ export default function OrderInfoSection({
   orderTypeOptions,
   outsourcing,
   outsourcingProcessOptions,
+  outsourcingVendorOptionsById,
   open,
   onToggle,
   onAdd,
@@ -120,6 +121,10 @@ export default function OrderInfoSection({
   const openOrderSheet = (orderEntry: OrderEntryState | null) => setSheetState({ mode: "order", orderEntry, outsourcing: null });
   const openOutsourcingSheet = (item: Outsourcing | null) => setSheetState({ mode: "outsourcing", orderEntry: null, outsourcing: item });
   const closeSheet = () => setSheetState(null);
+  const allOutsourcingVendorOptions = Array.from(new Set(Object.values(outsourcingVendorOptionsById).flat()));
+  const activeOutsourcingVendorOptions = sheetState?.mode === "outsourcing" && sheetState.outsourcing?.id
+    ? outsourcingVendorOptionsById[sheetState.outsourcing.id] ?? allOutsourcingVendorOptions
+    : allOutsourcingVendorOptions;
   const handleApplySheet = ({ mode, orderEntryId, outsourcingId, draft }: { mode: WorkOrderProcessSheetMode; orderEntryId: string | null; outsourcingId: string | null; draft: WorkOrderProcessSheetDraft }) => {
     if (mode === "order") {
       onSaveOrderEntryDraft(orderEntryId, draft);
@@ -188,6 +193,7 @@ export default function OrderInfoSection({
         orderTypeOptions={orderTypeOptions}
         factoryOptions={factoryOptions}
         outsourcingProcessOptions={outsourcingProcessOptions}
+        outsourcingVendorOptions={activeOutsourcingVendorOptions}
         onClose={closeSheet}
         onApply={handleApplySheet}
       />

@@ -2,7 +2,7 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type PointerEvent, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -58,19 +58,32 @@ export default function AppSelect({
   ariaLabel,
   name,
 }: AppSelectProps) {
+  const [open, setOpen] = useState(false);
   const rootValue = value === undefined ? undefined : value === "" ? EMPTY_SELECT_VALUE : value;
   const rootDefaultValue = defaultValue === undefined ? undefined : defaultValue === "" ? EMPTY_SELECT_VALUE : defaultValue;
 
   return (
     <Select.Root
       name={name}
+      open={open}
+      onOpenChange={setOpen}
       value={rootValue}
       defaultValue={rootDefaultValue}
-      onValueChange={(nextValue) => onValueChange?.(nextValue === EMPTY_SELECT_VALUE ? "" : nextValue)}
+      onValueChange={(nextValue) => {
+        onValueChange?.(nextValue === EMPTY_SELECT_VALUE ? "" : nextValue);
+        setOpen(false);
+      }}
       disabled={disabled}
     >
       <Select.Trigger
         aria-label={ariaLabel ?? placeholder}
+        onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+          if (!open) return;
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(false);
+          event.currentTarget.blur();
+        }}
         className={cn(
           "inline-flex items-center justify-between gap-3 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] font-semibold text-[var(--pbp-text-primary)] shadow-sm transition hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--pbp-surface)]",
           sizeClassMap[size],
