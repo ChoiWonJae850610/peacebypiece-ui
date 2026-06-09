@@ -148,9 +148,9 @@ export function WorkOrderCardActionMenu({
   onDelete,
 }: {
   menuLabel: string;
-  editLabel: string;
-  editText: string;
-  onEdit: () => void;
+  editLabel?: string;
+  editText?: string;
+  onEdit?: () => void;
   deleteLabel?: string;
   deleteText?: string;
   onDelete?: () => void;
@@ -179,7 +179,7 @@ export function WorkOrderCardActionMenu({
 
   const handleEdit = () => {
     setOpen(false);
-    onEdit();
+    onEdit?.();
   };
   const handleDelete = () => {
     setOpen(false);
@@ -196,20 +196,22 @@ export function WorkOrderCardActionMenu({
       />
       {open ? (
         <div className="absolute right-0 top-9 z-30 min-w-[116px] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 text-xs font-semibold shadow-[0_14px_32px_rgba(15,23,42,0.14)]">
-          <button
-            type="button"
-            onClick={handleEdit}
-            className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
-            aria-label={editLabel}
-          >
-            <WorkOrderEditIcon className="h-3 w-3" />
-            <span>{editText}</span>
-          </button>
+          {onEdit && editLabel && editText ? (
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
+              aria-label={editLabel}
+            >
+              <WorkOrderEditIcon className="h-3 w-3" />
+              <span>{editText}</span>
+            </button>
+          ) : null}
           {onDelete && deleteLabel && deleteText ? (
             <button
               type="button"
               onClick={handleDelete}
-              className="pbp-interactive-button mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-action-danger-soft-text)] hover:bg-[var(--pbp-action-danger-soft-surface)]"
+              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-action-danger-soft-text)] hover:bg-[var(--pbp-action-danger-soft-surface)]"
               aria-label={deleteLabel}
             >
               <WorkOrderTrashIcon className="h-3 w-3" />

@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 
-import { AppBadge, AppButton, AppCard } from "@/components/common/ui";
+import { AppBadge, AppCard } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
+import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
   MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
@@ -350,17 +351,19 @@ function WorkOrderMaterialRequestRow({
           </div>
         ) : null}
       </div>
-      <AppButton
+      <MaterialOrderActionButton
+        label={`${material.itemName} ${selectionButtonLabel}`}
         size="sm"
-        className={mobile ? "min-h-9 w-full px-3 py-1 text-xs" : "min-h-7 px-3 py-1 text-xs"}
-        variant={isAdded ? "secondary" : isAllocationCovered ? "ghost" : "secondary"}
+        compact
+        showSrLabel={false}
+        tone={isAdded ? "neutral" : isAllocationCovered ? "neutral" : "primary"}
+        className={mobile ? "w-full" : ""}
         disabled={!editable || isCompletionFulfilled || (!isAdded && isAllocationCovered)}
         title={selectionButtonTitle}
-        aria-label={`${material.itemName} ${selectionButtonLabel}`}
         onClick={() => onAddMaterialToOrder(workOrder, material)}
       >
-        {selectionButtonLabel}
-      </AppButton>
+        <span aria-hidden="true">{selectionButtonLabel}</span>
+      </MaterialOrderActionButton>
     </AppCard>
   );
 }

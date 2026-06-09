@@ -5,7 +5,7 @@ import {
   SELECTABLE_TABLE_CELL_CLASS,
   TABLE_HEADER_CELL_CLASS,
 } from "@/components/workorder/detail/shared/detailEditorShared";
-import { MaterialOrderMiniActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
+import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
   calculateMaterialOrderLineAmount,
   formatMaterialOrderAmount,
@@ -55,7 +55,7 @@ export function MaterialOrderLineTable({
       </colgroup>
       <thead className="bg-[var(--pbp-surface-soft)] pbp-text-muted">
         <tr>
-          {["품목명", "단위", "수량", "단가", "금액", ""].map(
+          {["품목명", "단위", "수량", "단가", "금액", "관리"].map(
             (header, index) => (
               <th
                 key={`${header}-${index}`}
@@ -188,15 +188,16 @@ function MaterialOrderLineRow({
         </span>
       </td>
       <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-        <MaterialOrderMiniActionButton
-          label="발주 품목 삭제"
-          tone="dangerSoft"
-          disabled={!editable}
-          title={editable ? "발주 품목을 삭제합니다." : "작성중 상태에서만 발주 품목을 삭제할 수 있습니다."}
-          onClick={() => onRemoveLine(line.id)}
-        >
-          <span aria-hidden="true">−</span>
-        </MaterialOrderMiniActionButton>
+        <div className="flex justify-center">
+          {editable ? (
+            <WorkOrderCardActionMenu
+              menuLabel="발주 품목 작업"
+              deleteLabel="발주 품목 삭제"
+              deleteText="삭제"
+              onDelete={() => onRemoveLine(line.id)}
+            />
+          ) : null}
+        </div>
       </td>
     </tr>
   );
@@ -278,7 +279,17 @@ function MaterialOrderLineMobileCard({
     <article className="min-w-0 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-[var(--pbp-shadow-content-card)]">
       <div className="grid gap-2">
         <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-          품목명
+          <span className="flex min-w-0 items-center justify-between gap-2">
+            <span>품목명</span>
+            {editable ? (
+              <WorkOrderCardActionMenu
+                menuLabel="발주 품목 작업"
+                deleteLabel="발주 품목 삭제"
+                deleteText="삭제"
+                onDelete={() => onRemoveLine(line.id)}
+              />
+            ) : null}
+          </span>
           <input
             value={line.itemName}
             disabled={!editable}
@@ -348,17 +359,7 @@ function MaterialOrderLineMobileCard({
             </div>
           </div>
         </div>
-        <div className="flex justify-end">
-          <MaterialOrderMiniActionButton
-            label="발주 품목 삭제"
-            tone="dangerSoft"
-            disabled={!editable}
-            title={editable ? "발주 품목을 삭제합니다." : "작성중 상태에서만 발주 품목을 삭제할 수 있습니다."}
-            onClick={() => onRemoveLine(line.id)}
-          >
-            <span aria-hidden="true">−</span>
-          </MaterialOrderMiniActionButton>
-        </div>
+
       </div>
     </article>
   );
