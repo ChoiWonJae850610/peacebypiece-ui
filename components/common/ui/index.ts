@@ -73,3 +73,5 @@ export {
   default as WaflWorkspacePanel,
   type WaflWorkspacePanelRole,
 } from "./WaflWorkspacePanel";
+
+export * from "./WaflSurface";

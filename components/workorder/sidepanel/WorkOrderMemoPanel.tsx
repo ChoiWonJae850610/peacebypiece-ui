@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type KeyboardEvent } from "react";
-import { SectionCountBadge } from "@/components/common/ui";
+import { SectionCountBadge, WaflEmptyCard } from "@/components/common/ui";
 import { WorkOrderPanelCard } from "@/components/common/ui";
 import { WorkOrderMiniActionButton } from "@/components/workorder/common/WorkOrderActionButton";
 import { useI18n } from "@/lib/i18n";
@@ -419,7 +419,7 @@ export default function WorkOrderMemoPanel({
             currentUserRole={currentUserRole}
             users={users}
           />
-        )) : <div data-wafl-component="empty-card" className="pbp-empty-state min-w-0 rounded-[var(--pbp-radius-wafl)] border border-dashed px-3 py-5 text-center text-sm">{ui.memo.empty}</div>}
+        )) : <WaflEmptyCard className="pbp-empty-state px-3 py-5">{ui.memo.empty}</WaflEmptyCard>}
       </div>
     </>
   );

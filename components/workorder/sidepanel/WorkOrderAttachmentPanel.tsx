@@ -9,7 +9,11 @@ import { useEffect, useRef, useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import {
   SectionCountBadge,
+  WaflAddCard,
   WaflButton,
+  WaflEmptyCard,
+  WaflFileCard,
+  WaflSurface,
 } from "@/components/common/ui";
 import { WorkOrderAddIconButton, WorkOrderMoreIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -238,8 +242,7 @@ function AttachmentUploadHint({
   const isDesign = isDesignAttachmentScope(scope);
 
   return (
-    <div
-      data-wafl-component="add-card"
+    <WaflAddCard
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
       onDragEnter={handleDragOver}
@@ -247,7 +250,7 @@ function AttachmentUploadHint({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       aria-label={title}
-      className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 flex w-full min-w-0 items-center justify-center rounded-[var(--pbp-radius-wafl)] border border-dashed active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
+      className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 w-full active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
         dragActive ? "pbp-sidepanel-upload-zone-active" : ""
       } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
     >
@@ -278,7 +281,7 @@ function AttachmentUploadHint({
         </button>
       )}
       <span className="sr-only">{title}</span>
-    </div>
+    </WaflAddCard>
   );
 }
 
@@ -307,7 +310,7 @@ function AttachmentFlatAddHint({
   const isDesign = isDesignAttachmentScope(scope);
 
   return (
-    <div data-wafl-component="add-card" className="flex min-h-[72px] w-full items-center justify-center rounded-[var(--pbp-radius-wafl)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4">
+    <WaflAddCard className="min-h-[72px] w-full">
       {isDesign ? (
         <AttachmentActionMenu
           scope={scope}
@@ -334,7 +337,7 @@ function AttachmentFlatAddHint({
           <WorkOrderPlusIcon />
         </button>
       )}
-    </div>
+    </WaflAddCard>
   );
 }
 
@@ -466,7 +469,7 @@ export default function WorkOrderAttachmentPanel({
           </div>
           ) : null}
           {showOrderRequestPdfStatus ? (
-            <div data-wafl-component="info-card" className="mt-3 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left">
+            <WaflSurface component="info-card" tone="muted" className="mt-3 px-3 py-3 text-left">
               <div className="flex min-w-0 items-start gap-2">
                 <span
                   className={`mt-0.5 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
@@ -524,7 +527,7 @@ export default function WorkOrderAttachmentPanel({
                   </span>
                 </WaflButton>
               ) : null}
-            </div>
+            </WaflSurface>
           ) : null}
           {attachments.length > 0 ? (
             <div
@@ -535,15 +538,14 @@ export default function WorkOrderAttachmentPanel({
               }
             >
               {attachments.map((attachment) => (
-                <div
+                <WaflFileCard
                   key={attachment.id}
-                  data-wafl-component="file-card"
                   className={
                     isMobile
-                      ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-wafl)] border p-2.5 pr-9"
+                      ? "p-2.5 pr-9"
                       : isTablet
-                        ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-wafl)] border p-3 pr-11"
-                        : "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-[var(--pbp-radius-wafl)] border p-3 pr-12"
+                        ? "p-3 pr-11"
+                        : "p-3 pr-12"
                   }
                 >
                   {attachment.canSetPrimary ? (
@@ -642,7 +644,7 @@ export default function WorkOrderAttachmentPanel({
                       </div>
                     </div>
                   </button>
-                </div>
+                </WaflFileCard>
               ))}
               {isFlatDevice ? (
                 <AttachmentFlatAddHint
@@ -674,12 +676,11 @@ export default function WorkOrderAttachmentPanel({
             </div>
           ) : (
             <div className={isFlatDevice ? "space-y-2.5" : undefined}>
-              <div
-                data-wafl-component="empty-card"
-                className={`pbp-empty-state min-w-0 whitespace-pre-line rounded-[var(--pbp-radius-wafl)] border border-dashed px-3 py-4 text-center text-xs leading-5 sm:px-4 sm:py-5 ${isFlatDevice ? "" : "mt-3"}`}
+              <WaflEmptyCard
+                className={`pbp-empty-state whitespace-pre-line px-3 py-4 text-xs leading-5 sm:px-4 sm:py-5 ${isFlatDevice ? "" : "mt-3"}`}
               >
                 {emptyText}
-              </div>
+              </WaflEmptyCard>
               {isFlatDevice ? (
                 <AttachmentFlatAddHint
                   scope={uploadScope}
