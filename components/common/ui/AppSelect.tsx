@@ -2,7 +2,7 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -59,7 +59,7 @@ export default function AppSelect({
   name,
 }: AppSelectProps) {
   const [open, setOpen] = useState(false);
-  const suppressNextOpenRef = useRef(false);
+  const suppressOpenUntilRef = useRef(0);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const rootValue = value === undefined ? undefined : value === "" ? EMPTY_SELECT_VALUE : value;
@@ -89,7 +89,7 @@ export default function AppSelect({
       name={name}
       open={open}
       onOpenChange={(nextOpen) => {
-        if (suppressNextOpenRef.current && nextOpen) return;
+        if (nextOpen && Date.now() < suppressOpenUntilRef.current) return;
         setOpen(nextOpen);
       }}
       value={rootValue}
@@ -105,14 +105,16 @@ export default function AppSelect({
         aria-label={ariaLabel ?? placeholder}
         onPointerDownCapture={(event: PointerEvent<HTMLButtonElement>) => {
           if (!open) return;
-          suppressNextOpenRef.current = true;
+          suppressOpenUntilRef.current = Date.now() + 250;
           event.preventDefault();
           event.stopPropagation();
           setOpen(false);
           event.currentTarget.blur();
-          window.setTimeout(() => {
-            suppressNextOpenRef.current = false;
-          }, 0);
+        }}
+        onClickCapture={(event: MouseEvent<HTMLButtonElement>) => {
+          if (Date.now() >= suppressOpenUntilRef.current) return;
+          event.preventDefault();
+          event.stopPropagation();
         }}
         className={cn(
           "inline-flex items-center justify-between gap-3 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] font-semibold text-[var(--pbp-text-primary)] shadow-sm transition hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--pbp-surface)]",

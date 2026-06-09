@@ -515,6 +515,7 @@ export function useWorkOrderDetailEditor({
     materialVendorOptionsById,
     outsourcingVendorOptionsById,
     outsourcingVendorOptions: partnerWorkOrderOptions.outsourcingVendorOptions,
+    outsourcingVendorOptionsByProcess: partnerWorkOrderOptions.outsourcingVendorOptionsByProcess,
     outsourcingProcessOptions,
     startEdit,
     cancelEdit,

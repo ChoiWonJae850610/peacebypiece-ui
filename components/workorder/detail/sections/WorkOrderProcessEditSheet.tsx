@@ -39,7 +39,7 @@ type Props = {
   orderTypeOptions: readonly string[];
   factoryOptions: readonly string[];
   outsourcingProcessOptions: readonly string[];
-  outsourcingVendorOptions: readonly string[];
+  outsourcingVendorOptionsByProcess: Record<string, readonly string[]>;
   onClose: () => void;
   onApply: (payload: {
     mode: WorkOrderProcessSheetMode;
@@ -82,6 +82,16 @@ function buildOptionsWithCurrent(values: readonly string[], currentValue: string
   return buildOptions(resolvedValues, locale);
 }
 
+function normalizeProcessKey(value: string) {
+  return value.trim().toLocaleLowerCase("ko-KR");
+}
+
+function selectVendorOptionsByProcess(valuesByProcess: Record<string, readonly string[]>, process: string): readonly string[] {
+  const processKey = normalizeProcessKey(process);
+  if (!processKey) return [];
+  return valuesByProcess[processKey] ?? [];
+}
+
 function handleProcessInputPointerDown() {
   blurActiveModalElement();
 }
@@ -94,7 +104,7 @@ export default function WorkOrderProcessEditSheet({
   orderTypeOptions,
   factoryOptions,
   outsourcingProcessOptions,
-  outsourcingVendorOptions,
+  outsourcingVendorOptionsByProcess,
   onClose,
   onApply,
 }: Props) {
@@ -112,7 +122,11 @@ export default function WorkOrderProcessEditSheet({
   const orderTypeSelectOptions = useMemo(() => buildOptions(orderTypeOptions, locale), [locale, orderTypeOptions]);
   const factorySelectOptions = useMemo(() => buildOptions(factoryOptions, locale), [locale, factoryOptions]);
   const outsourcingProcessSelectOptions = useMemo(() => buildOptionsWithCurrent(outsourcingProcessOptions, outsourcingDraft.process, locale), [locale, outsourcingDraft.process, outsourcingProcessOptions]);
-  const outsourcingVendorSelectOptions = useMemo(() => buildOptionsWithCurrent(outsourcingVendorOptions, outsourcingDraft.vendor, locale), [locale, outsourcingDraft.vendor, outsourcingVendorOptions]);
+  const activeOutsourcingVendorOptions = useMemo(
+    () => selectVendorOptionsByProcess(outsourcingVendorOptionsByProcess, outsourcingDraft.process),
+    [outsourcingDraft.process, outsourcingVendorOptionsByProcess],
+  );
+  const outsourcingVendorSelectOptions = useMemo(() => buildOptions(activeOutsourcingVendorOptions, locale), [activeOutsourcingVendorOptions, locale]);
 
   const isOrderMode = mode === "order";
   const isApplyDisabled = isOrderMode
@@ -196,7 +210,7 @@ export default function WorkOrderProcessEditSheet({
         <div className="grid gap-4">
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.item}</label>
-            <AppSelect value={outsourcingDraft.process} options={outsourcingProcessSelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOutsourcingDraft((current) => ({ ...current, process: value })); }} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
+            <AppSelect value={outsourcingDraft.process} options={outsourcingProcessSelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOutsourcingDraft((current) => ({ ...current, process: value, vendor: "" })); }} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
           </div>
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.vendor}</label>

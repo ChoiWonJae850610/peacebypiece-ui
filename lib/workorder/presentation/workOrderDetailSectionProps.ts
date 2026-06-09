@@ -67,6 +67,7 @@ export type BuildWorkOrderDetailViewModelArgs = {
   materialVendorOptionsById: ProductionCompositionProps["materialVendorOptionsById"];
   outsourcingVendorOptionsById: ProductionCompositionProps["outsourcingVendorOptionsById"];
   outsourcingVendorOptions: OrderInfoProps["outsourcingVendorOptions"];
+  outsourcingVendorOptionsByProcess: OrderInfoProps["outsourcingVendorOptionsByProcess"];
   outsourcingProcessOptions: ProductionCompositionProps["outsourcingProcessOptions"];
   costSummary: {
     laborCost: number;
@@ -204,6 +205,7 @@ export function buildOrderInfoSectionProps(
     outsourcing: args.outsourcingItems,
     outsourcingVendorOptionsById: args.outsourcingVendorOptionsById,
     outsourcingVendorOptions: args.outsourcingVendorOptions,
+    outsourcingVendorOptionsByProcess: args.outsourcingVendorOptionsByProcess,
     outsourcingProcessOptions: args.outsourcingProcessOptions,
     onAddOutsourcing: args.onAddOutsourcing,
     onRemoveOutsourcing: args.onRemoveOutsourcing,

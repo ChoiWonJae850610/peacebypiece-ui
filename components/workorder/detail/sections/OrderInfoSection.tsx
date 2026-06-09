@@ -69,6 +69,7 @@ export default function OrderInfoSection({
   outsourcingProcessOptions,
   outsourcingVendorOptionsById,
   outsourcingVendorOptions,
+  outsourcingVendorOptionsByProcess,
   open,
   onToggle,
   onAdd,
@@ -89,6 +90,7 @@ export default function OrderInfoSection({
   outsourcing: Outsourcing[];
   outsourcingVendorOptionsById: Record<string, string[]>;
   outsourcingVendorOptions: readonly string[];
+  outsourcingVendorOptionsByProcess: Record<string, readonly string[]>;
   outsourcingProcessOptions: readonly string[];
   open: boolean;
   onToggle: () => void;
@@ -123,10 +125,8 @@ export default function OrderInfoSection({
   const openOrderSheet = (orderEntry: OrderEntryState | null) => setSheetState({ mode: "order", orderEntry, outsourcing: null });
   const openOutsourcingSheet = (item: Outsourcing | null) => setSheetState({ mode: "outsourcing", orderEntry: null, outsourcing: item });
   const closeSheet = () => setSheetState(null);
-  const allOutsourcingVendorOptions = Array.from(new Set([...outsourcingVendorOptions, ...Object.values(outsourcingVendorOptionsById).flat()]));
-  const activeOutsourcingVendorOptions = sheetState?.mode === "outsourcing" && sheetState.outsourcing?.id
-    ? Array.from(new Set([...(outsourcingVendorOptionsById[sheetState.outsourcing.id] ?? []), ...allOutsourcingVendorOptions]))
-    : allOutsourcingVendorOptions;
+  void outsourcingVendorOptionsById;
+  void outsourcingVendorOptions;
   const handleApplySheet = ({ mode, orderEntryId, outsourcingId, draft }: { mode: WorkOrderProcessSheetMode; orderEntryId: string | null; outsourcingId: string | null; draft: WorkOrderProcessSheetDraft }) => {
     if (mode === "order") {
       onSaveOrderEntryDraft(orderEntryId, draft);
@@ -195,7 +195,7 @@ export default function OrderInfoSection({
         orderTypeOptions={orderTypeOptions}
         factoryOptions={factoryOptions}
         outsourcingProcessOptions={outsourcingProcessOptions}
-        outsourcingVendorOptions={activeOutsourcingVendorOptions}
+        outsourcingVendorOptionsByProcess={outsourcingVendorOptionsByProcess}
         onClose={closeSheet}
         onApply={handleApplySheet}
       />
