@@ -1,4 +1,6 @@
-import { type ButtonHTMLAttributes } from "react";
+"use client";
+
+import { type ButtonHTMLAttributes, useEffect, useRef, useState } from "react";
 
 import { WaflActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
 
@@ -110,7 +112,6 @@ export function WorkOrderMoreIconButton({
   );
 }
 
-
 export function WorkOrderEditIconButton({
   label,
   size = "sm",
@@ -134,5 +135,89 @@ export function WorkOrderDeleteIconButton({
     <WaflActionButton label={label} size={size} tone={tone} showSrLabel {...props}>
       <WorkOrderTrashIcon />
     </WaflActionButton>
+  );
+}
+
+export function WorkOrderCardActionMenu({
+  menuLabel,
+  editLabel,
+  editText,
+  onEdit,
+  deleteLabel,
+  deleteText,
+  onDelete,
+}: {
+  menuLabel: string;
+  editLabel: string;
+  editText: string;
+  onEdit: () => void;
+  deleteLabel?: string;
+  deleteText?: string;
+  onDelete?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (menuRef.current?.contains(event.target as Node)) return;
+      setOpen(false);
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const handleEdit = () => {
+    setOpen(false);
+    onEdit();
+  };
+  const handleDelete = () => {
+    setOpen(false);
+    onDelete?.();
+  };
+
+  return (
+    <div ref={menuRef} className="relative shrink-0">
+      <WorkOrderMoreIconButton
+        label={menuLabel}
+        size="sm"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+      />
+      {open ? (
+        <div className="absolute right-0 top-9 z-30 min-w-[116px] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 text-xs font-semibold shadow-[0_14px_32px_rgba(15,23,42,0.14)]">
+          <button
+            type="button"
+            onClick={handleEdit}
+            className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
+            aria-label={editLabel}
+          >
+            <WorkOrderEditIcon className="h-3 w-3" />
+            <span>{editText}</span>
+          </button>
+          {onDelete && deleteLabel && deleteText ? (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="pbp-interactive-button mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-action-danger-soft-text)] hover:bg-[var(--pbp-action-danger-soft-surface)]"
+              aria-label={deleteLabel}
+            >
+              <WorkOrderTrashIcon className="h-3 w-3" />
+              <span>{deleteText}</span>
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }

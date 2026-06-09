@@ -261,6 +261,8 @@ export const workorderEn = {
       quantitySuffix: "pcs",
       currencySuffix: "KRW",
       totalPrefix: "Total",
+      editSuffix: "Edit",
+      actionMenuSuffix: "actions",
       deleteSuffix: "Delete",
       andMoreFormat: " +{count}",
     },

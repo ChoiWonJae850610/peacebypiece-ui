@@ -249,6 +249,8 @@ export const workorderKo = {
       quantitySuffix: "장",
       currencySuffix: "원",
       totalPrefix: "총",
+      editSuffix: "수정",
+      actionMenuSuffix: "작업 메뉴",
       deleteSuffix: "삭제",
       andMoreFormat: "외 {count}개",
     },

@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { AppCard, SectionCountBadge } from "@/components/common/ui";
-import { WorkOrderDeleteIconButton, WorkOrderEditIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderCardActionMenu, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import WorkOrderProcessEditSheet, {
   type WorkOrderProcessSheetDraft,
@@ -59,12 +59,15 @@ function ProcessCard({
           ) : null}
         </div>
         {!locked ? (
-          <div className="flex shrink-0 items-center gap-1.5">
-            <WorkOrderEditIconButton label={`${title} 수정`} onClick={onEdit} />
-            {onRemove ? (
-              <WorkOrderDeleteIconButton label={`${title} ${common.deleteSuffix}`} onClick={onRemove} />
-            ) : null}
-          </div>
+          <WorkOrderCardActionMenu
+            menuLabel={`${title} ${common.actionMenuSuffix}`}
+            editLabel={`${title} ${common.editSuffix}`}
+            editText={common.editSuffix}
+            onEdit={onEdit}
+            deleteLabel={onRemove ? `${title} ${common.deleteSuffix}` : undefined}
+            deleteText={onRemove ? common.deleteSuffix : undefined}
+            onDelete={onRemove}
+          />
         ) : null}
       </div>
     </AppCard>

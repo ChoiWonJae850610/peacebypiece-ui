@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { AppCard } from "@/components/common/ui";
-import { WorkOrderDeleteIconButton, WorkOrderEditIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderCardActionMenu, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -78,10 +78,15 @@ function MaterialListCard({
           </div>
         </div>
         {!locked ? (
-          <div className="flex shrink-0 items-center gap-1.5">
-            <WorkOrderEditIconButton label={`${title} ${copy.editButton}`} onClick={onEdit} />
-            <WorkOrderDeleteIconButton label={`${title} ${common.deleteSuffix}`} onClick={onRemove} />
-          </div>
+          <WorkOrderCardActionMenu
+            menuLabel={`${title} ${common.actionMenuSuffix}`}
+            editLabel={`${title} ${copy.editButton}`}
+            editText={copy.editButton}
+            onEdit={onEdit}
+            deleteLabel={`${title} ${common.deleteSuffix}`}
+            deleteText={common.deleteSuffix}
+            onDelete={onRemove}
+          />
         ) : null}
       </div>
     </AppCard>
