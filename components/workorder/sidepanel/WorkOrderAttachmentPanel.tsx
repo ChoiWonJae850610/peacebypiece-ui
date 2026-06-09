@@ -11,6 +11,7 @@ import {
   SectionCountBadge,
   WaflAddCard,
   WaflAddCardButton,
+  WaflAddIconBubble,
   WaflButton,
   WaflEmptyCard,
   WaflFileCard,
@@ -260,9 +261,7 @@ function AttachmentUploadHint({
           dragActive ? "pbp-sidepanel-upload-zone-active ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""
         } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
       >
-        <span className="pbp-sidepanel-preview-surface inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
-          <WorkOrderPlusIcon />
-        </span>
+<WaflAddIconBubble className="h-10 w-10" />
         <span className="sr-only">{title}</span>
       </WaflAddCardButton>
     );
@@ -334,9 +333,7 @@ function AttachmentFlatAddHint({
         aria-label={addButtonLabel}
         className="min-h-[72px] w-full"
       >
-        <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
-          <WorkOrderPlusIcon />
-        </span>
+<WaflAddIconBubble />
       </WaflAddCardButton>
     );
   }

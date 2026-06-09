@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { AppCard, WaflAddCardButton, WaflEmptyCard } from "@/components/common/ui";
-import { WorkOrderCardActionMenu, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { AppCard, WaflAddCardButton, WaflAddIconBubble, WaflEmptyCard } from "@/components/common/ui";
+import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -40,9 +40,7 @@ function AddItemCard({ label, disabled, onClick }: { label: string; disabled: bo
       aria-label={label}
       title={label}
     >
-      <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
-        <WorkOrderPlusIcon />
-      </span>
+<WaflAddIconBubble />
     </WaflAddCardButton>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { AppCard, SectionCountBadge, WaflAddCardButton, WaflEmptyCard } from "@/components/common/ui";
-import { WorkOrderCardActionMenu, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { AppCard, SectionCountBadge, WaflAddCardButton, WaflAddIconBubble, WaflEmptyCard } from "@/components/common/ui";
+import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
@@ -178,9 +178,7 @@ export default function MaterialSection({
             aria-label={copy.addButton}
             title={copy.addButton}
           >
-            <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
-              <WorkOrderPlusIcon />
-            </span>
+<WaflAddIconBubble />
           </WaflAddCardButton>
         ) : null}
       </AppCard>

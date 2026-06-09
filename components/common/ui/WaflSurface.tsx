@@ -167,6 +167,40 @@ export function WaflAddCardButton({
   );
 }
 
+export function WaflAddIconBubble({
+  className,
+  component = "add-card-button-icon",
+  ...props
+}: HTMLAttributes<HTMLSpanElement> & {
+  component?: string;
+}) {
+  return (
+    <span
+      data-wafl-component={component}
+      data-wafl-primitive="add-card-button-icon"
+      className={cn(
+        "pbp-sidepanel-preview-surface inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-none",
+        className,
+      )}
+      aria-hidden="true"
+      {...props}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-3 w-3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 5v14" />
+        <path d="M5 12h14" />
+      </svg>
+    </span>
+  );
+}
+
 export function WaflFileCard({
   children,
   className,
