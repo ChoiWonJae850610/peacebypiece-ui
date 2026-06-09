@@ -5,14 +5,14 @@ import {
   isDesignAttachmentScope,
   type UploadableAttachmentScopeValue,
 } from "@/lib/constants/workorderIdentity";
-import { useState, type DragEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent } from "react";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import {
   SectionCountBadge,
   WorkOrderPanelCard,
   WaflButton,
 } from "@/components/common/ui";
-import { WorkOrderActionButton } from "@/components/workorder/common/WorkOrderActionButton";
+import { WorkOrderMoreIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
@@ -76,24 +76,37 @@ function AttachmentActionMenu({
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const canShowDrawingAction = isDesignAttachmentScope(scope);
   const canShowAdvancedDrawingAction =
     canShowDrawingAction && RUNTIME_VISIBILITY.showAdvancedDrawingTools;
 
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [open]);
+
   return (
-    <div className="relative shrink-0">
-      <WorkOrderActionButton
+    <div ref={menuRef} className="relative shrink-0">
+      <WorkOrderMoreIconButton
         label={ui.attachmentPanel.actionMenuAria}
+        size={isMobile ? "lg" : "md"}
         onClick={() => {
           if (!disabled) setOpen((value) => !value);
         }}
         disabled={disabled}
         title={disabled ? disabledReason : undefined}
-        showSrLabel={false}
         aria-expanded={open}
-      >
-        ···
-      </WorkOrderActionButton>
+      />
       {open ? (
         <div
           className={`pbp-card absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}
@@ -106,7 +119,7 @@ function AttachmentActionMenu({
             }}
             className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
           >
-            <span aria-hidden="true">＋</span>
+            <WorkOrderPlusIcon className="h-3.5 w-3.5" />
             <span>{addButtonLabel}</span>
           </button>
           {canShowDrawingAction ? (
@@ -222,9 +235,9 @@ function AttachmentUploadHint({
       } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
     >
       <span
-        className={`pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
+        className={`pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
       >
-        ＋
+        <WorkOrderPlusIcon className="h-4 w-4" />
       </span>
       <span className="sr-only">{title}</span>
     </div>

@@ -5,7 +5,6 @@ import { SectionCountBadge } from "@/components/common/ui";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
-  MATERIAL_ORDER_PANEL_HEADER_CLASS,
   MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import {
@@ -86,16 +85,15 @@ export default function MaterialOrderListPanel({
 
   const listContent = (
     <>
-      {variant === "panel" ? (
-        <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
-          <div className="flex items-end justify-between gap-2">
-            <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
-            <SectionCountBadge className="translate-y-0.5">{filteredOrders.length}건</SectionCountBadge>
-          </div>
+      <div className={variant === "panel" ? "shrink-0 pb-3" : "shrink-0"}>
+        <div className="flex items-end justify-between gap-2">
+          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">발주서 목록</h2>
+          <SectionCountBadge className="translate-y-0.5">{filteredOrders.length}건</SectionCountBadge>
         </div>
-      ) : null}
+        <div className="mt-2.5 border-b border-[var(--pbp-border)]" aria-hidden="true" />
+      </div>
 
-      <div className={`${variant === "panel" ? "mt-3" : ""} grid shrink-0 gap-1.5 border-b border-[var(--pbp-border)] pb-3`}>
+      <div className="mt-3 grid shrink-0 gap-1.5">
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
@@ -130,6 +128,7 @@ export default function MaterialOrderListPanel({
         >
           {creating ? "생성 중" : "새 발주서 생성"}
         </AppButton>
+        <div className="mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
       </div>
 
       <div className={variant === "panel" ? MATERIAL_ORDER_PANEL_LIST_CLASS : "mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0"}>

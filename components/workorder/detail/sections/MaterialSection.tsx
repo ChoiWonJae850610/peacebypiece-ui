@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { AppCard, SectionCountBadge } from "@/components/common/ui";
+import { WorkOrderAddIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
@@ -25,17 +26,12 @@ function SectionAddButton({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
+    <WorkOrderAddIconButton
+      label={label}
+      size="lg"
       onClick={onClick}
       disabled={disabled}
-      aria-label={label}
-      title={label}
-      className="pbp-interactive-button inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-lg font-semibold leading-none pbp-text-primary shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      <span aria-hidden="true">＋</span>
-      <span className="sr-only">{label}</span>
-    </button>
+    />
   );
 }
 

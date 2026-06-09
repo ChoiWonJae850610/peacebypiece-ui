@@ -70,7 +70,7 @@ export default function MobileDrawer({
 
   const headerContent = (
     <>
-      <div className="mx-1 border-b border-[var(--pbp-border)]" aria-hidden="true" />
+      <div className="border-b border-[var(--pbp-border)]" aria-hidden="true" />
       <div className="mt-3 flex items-center gap-2">
         <label className="min-w-0 flex-1">
           <span className="sr-only">{copy.searchAria}</span>
@@ -126,7 +126,7 @@ export default function MobileDrawer({
           {copy.create}
         </button>
       ) : null}
-      <div className="mx-1 mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
+      <div className="mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
     </>
   );
 

@@ -198,6 +198,7 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
           closeLabel="닫기"
           closeOverlayAria="발주서 목록 드로어 닫기"
           titleId="material-order-tablet-drawer-title"
+          showHeader={false}
         >
           <div className="min-h-[72dvh] min-w-0">
             <MaterialOrderListPanel
@@ -257,6 +258,7 @@ export default function MaterialOrderDraftEditor({ companyName }: { companyName:
             closeLabel="닫기"
             closeOverlayAria="발주서 목록 드로어 닫기"
             titleId="material-order-mobile-drawer-title"
+            showHeader={false}
           >
             <div className="min-h-[72dvh] min-w-0">
               <MaterialOrderListPanel
