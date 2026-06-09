@@ -4,11 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { MODAL_CONTENT_MUTED_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
-import { MODAL_ACTION_LABELS, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import {
+  MODAL_ACTION_LABELS,
+  getModalActionDisabledState,
+  renderModalFooterActions,
+} from "@/components/common/modal/modalActions";
 import { formatRoles } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
 import { useI18n } from "@/lib/i18n";
-import { SELECTABLE_CARD_CLASS, SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
+import { SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
+import { WaflInfoBox, WaflSelectableCard } from "@/components/common/ui";
 
 export default function ManagerAssignModal({
   open,
@@ -27,9 +32,12 @@ export default function ManagerAssignModal({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.managerAssign;
-  const [draftManagerId, setDraftManagerId] = useState<string>(currentManagerId ?? "");
+  const [draftManagerId, setDraftManagerId] = useState<string>(
+    currentManagerId ?? "",
+  );
   const managerCandidates = useMemo(
-    () => users.filter((user) => Boolean(user.id) && Boolean(user.companyMemberId)),
+    () =>
+      users.filter((user) => Boolean(user.id) && Boolean(user.companyMemberId)),
     [users],
   );
 
@@ -37,7 +45,9 @@ export default function ManagerAssignModal({
     if (open) setDraftManagerId(currentManagerId ?? "");
   }, [currentManagerId, open]);
 
-  const applyDisabled = getModalActionDisabledState(!draftManagerId || draftManagerId === (currentManagerId ?? ""));
+  const applyDisabled = getModalActionDisabledState(
+    !draftManagerId || draftManagerId === (currentManagerId ?? ""),
+  );
   const handleApply = () => {
     if (applyDisabled || !draftManagerId) return;
     blurActiveModalElement();
@@ -53,20 +63,32 @@ export default function ManagerAssignModal({
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "end",
-        primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary" },
+        primary: {
+          label: MODAL_ACTION_LABELS.apply,
+          onClick: handleApply,
+          disabled: applyDisabled,
+          tone: "primary",
+        },
       })}
     >
-      <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-3 text-sm text-[var(--pbp-text-secondary)]`}>
-        {copy.currentManagerLabel} <span className="ml-1 font-medium text-[var(--pbp-text-primary)]">{currentManagerName || "-"}</span>
-      </div>
+      <WaflInfoBox
+        tone="muted"
+        className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-3 text-sm text-[var(--pbp-text-secondary)]`}
+      >
+        {copy.currentManagerLabel}{" "}
+        <span className="ml-1 font-medium text-[var(--pbp-text-primary)]">
+          {currentManagerName || "-"}
+        </span>
+      </WaflInfoBox>
 
       <div className="mt-4 space-y-2">
         {managerCandidates.map((user) => {
-          const selected = draftManagerId ? user.id === draftManagerId : user.name === currentManagerName;
+          const selected = draftManagerId
+            ? user.id === draftManagerId
+            : user.name === currentManagerName;
           return (
-            <button
+            <WaflSelectableCard
               key={user.id}
-              type="button"
               onPointerDown={(event) => {
                 blurActiveModalElement();
                 event.stopPropagation();
@@ -77,19 +99,20 @@ export default function ManagerAssignModal({
                 event.stopPropagation();
                 setDraftManagerId(user.id);
               }}
-              className={[
-                "flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition",
-                selected
-                  ? SELECTABLE_CARD_CLASS.active
-                  : SELECTABLE_CARD_CLASS.inactive,
-              ].join(" ")}
+              selected={selected}
             >
               <div>
                 <div className="text-sm font-semibold">{user.name}</div>
-                <div className={`mt-1 text-xs ${selected ? SELECTABLE_CARD_SUBTEXT_CLASS.active : SELECTABLE_CARD_SUBTEXT_CLASS.inactive}`}>{formatRoles(user.roles, user.role)}</div>
+                <div
+                  className={`mt-1 text-xs ${selected ? SELECTABLE_CARD_SUBTEXT_CLASS.active : SELECTABLE_CARD_SUBTEXT_CLASS.inactive}`}
+                >
+                  {formatRoles(user.roles, user.role)}
+                </div>
               </div>
-              {selected ? <span className="text-xs font-medium">{copy.currentBadge}</span> : null}
-            </button>
+              {selected ? (
+                <span className="text-xs font-medium">{copy.currentBadge}</span>
+              ) : null}
+            </WaflSelectableCard>
           );
         })}
       </div>

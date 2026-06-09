@@ -1,13 +1,36 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { blurActiveModalElement, shouldUseTouchModalFocusPolicy } from "@/components/common/modal/modalUtils";
-import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
-import { MODAL_CONTENT_EMPTY_STATE_CLASS, MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_MUTED_PANEL_CLASS, MODAL_CONTENT_READONLY_PANEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS, MODAL_CONTENT_VALUE_CLASS } from "@/components/common/modal/modalContentClassNames";
-import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import {
+  blurActiveModalElement,
+  shouldUseTouchModalFocusPolicy,
+} from "@/components/common/modal/modalUtils";
+import {
+  MODAL_CONTENT_EMPTY_STATE_CLASS,
+  MODAL_CONTENT_LABEL_CLASS,
+  MODAL_CONTENT_MUTED_PANEL_CLASS,
+  MODAL_CONTENT_SECTION_PANEL_CLASS,
+  MODAL_CONTENT_SUBTEXT_CLASS,
+  MODAL_CONTENT_VALUE_CLASS,
+} from "@/components/common/modal/modalContentClassNames";
+import {
+  MODAL_ACTION_LABELS,
+  createModalActionHandler,
+  getModalActionDisabledState,
+  renderModalFooterActions,
+} from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
+import { WaflInfoBox, WaflInput, WaflTextarea } from "@/components/common/ui";
 
 type InventoryMode = InventoryChangeTypeValue;
 
@@ -63,7 +86,9 @@ export default function InventoryEditor({
     }
   }, [open]);
 
-  const handleNumericFieldKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleNumericFieldKeyDown = (
+    event: KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
     if (shouldUseTouchModalFocusPolicy()) {
@@ -75,7 +100,9 @@ export default function InventoryEditor({
     event.currentTarget.blur();
   };
 
-  const allowMemoFocusFromPointer = (_event: PointerEvent<HTMLTextAreaElement>) => {
+  const allowMemoFocusFromPointer = (
+    _event: PointerEvent<HTMLTextAreaElement>,
+  ) => {
     allowMemoFocusUntilRef.current = Date.now() + 900;
   };
 
@@ -88,16 +115,25 @@ export default function InventoryEditor({
   const parsedInboundQuantity = Number(inboundQuantity || 0);
   const parsedAdjustmentQuantity = Number(adjustmentQuantity || 0);
   const parsedDeductionQuantity = Number(deductionQuantity || 0);
-  const hasAnyChange = parsedInboundQuantity > 0 || parsedAdjustmentQuantity > 0 || parsedDeductionQuantity > 0;
+  const hasAnyChange =
+    parsedInboundQuantity > 0 ||
+    parsedAdjustmentQuantity > 0 ||
+    parsedDeductionQuantity > 0;
   const applyDisabled = getModalActionDisabledState(!hasAnyChange);
 
   const nextStock = useMemo(() => {
     let next = currentStock;
     if (parsedInboundQuantity > 0) next += parsedInboundQuantity;
-    if (parsedDeductionQuantity > 0) next = Math.max(0, next - parsedDeductionQuantity);
+    if (parsedDeductionQuantity > 0)
+      next = Math.max(0, next - parsedDeductionQuantity);
     if (parsedAdjustmentQuantity > 0) next = parsedAdjustmentQuantity;
     return next;
-  }, [currentStock, parsedInboundQuantity, parsedAdjustmentQuantity, parsedDeductionQuantity]);
+  }, [
+    currentStock,
+    parsedInboundQuantity,
+    parsedAdjustmentQuantity,
+    parsedDeductionQuantity,
+  ]);
 
   const handleApply = createModalActionHandler({
     shouldProceed: !applyDisabled,
@@ -124,25 +160,45 @@ export default function InventoryEditor({
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "end",
-        primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary", className: "rounded-2xl disabled:opacity-50" },
+        primary: {
+          label: MODAL_ACTION_LABELS.apply,
+          onClick: handleApply,
+          disabled: applyDisabled,
+          tone: "primary",
+          className: "rounded-2xl disabled:opacity-50",
+        },
       })}
     >
       <div className="grid grid-cols-2 gap-3">
-        <div className={MODAL_CONTENT_READONLY_PANEL_CLASS}>
-          <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.currentStockLabel}</div>
-          <div className={`mt-1 tabular-nums ${MODAL_CONTENT_VALUE_CLASS}`}>{copy.quantityFormat.replace("{count}", String(currentStock))}</div>
-        </div>
-        <div className="rounded-2xl border border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] p-3">
-          <div className="text-xs text-[var(--pbp-selected-text)]">{copy.nextStockLabel}</div>
-          <div className="mt-1 text-lg font-semibold tabular-nums text-[var(--pbp-selected-text)]">{copy.quantityFormat.replace("{count}", String(nextStock))}</div>
-        </div>
+        <WaflInfoBox
+          tone="neutral"
+          component="readonly-card"
+          className="pbp-workorder-calculated-panel"
+        >
+          <div className={MODAL_CONTENT_LABEL_CLASS}>
+            {copy.currentStockLabel}
+          </div>
+          <div className={`mt-1 tabular-nums ${MODAL_CONTENT_VALUE_CLASS}`}>
+            {copy.quantityFormat.replace("{count}", String(currentStock))}
+          </div>
+        </WaflInfoBox>
+        <WaflInfoBox tone="selected" component="readonly-card">
+          <div className="text-xs text-[var(--pbp-selected-text)]">
+            {copy.nextStockLabel}
+          </div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-[var(--pbp-selected-text)]">
+            {copy.quantityFormat.replace("{count}", String(nextStock))}
+          </div>
+        </WaflInfoBox>
       </div>
 
       <div className="mt-4 space-y-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.inboundQuantityLabel}</label>
-            <input
+            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
+              {copy.inboundQuantityLabel}
+            </label>
+            <WaflInput
               type="number"
               inputMode="numeric"
               enterKeyHint="done"
@@ -151,12 +207,13 @@ export default function InventoryEditor({
               onChange={(event) => setInboundQuantity(event.target.value)}
               onKeyDown={handleNumericFieldKeyDown}
               placeholder={copy.inboundQuantityPlaceholder}
-              className={MODAL_INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.adjustmentQuantityLabel}</label>
-            <input
+            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
+              {copy.adjustmentQuantityLabel}
+            </label>
+            <WaflInput
               type="number"
               inputMode="numeric"
               enterKeyHint="done"
@@ -165,12 +222,13 @@ export default function InventoryEditor({
               onChange={(event) => setAdjustmentQuantity(event.target.value)}
               onKeyDown={handleNumericFieldKeyDown}
               placeholder={copy.adjustmentQuantityPlaceholder}
-              className={MODAL_INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.deductionQuantityLabel}</label>
-            <input
+            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
+              {copy.deductionQuantityLabel}
+            </label>
+            <WaflInput
               type="number"
               inputMode="numeric"
               enterKeyHint="done"
@@ -179,13 +237,14 @@ export default function InventoryEditor({
               onChange={(event) => setDeductionQuantity(event.target.value)}
               onKeyDown={handleNumericFieldKeyDown}
               placeholder={copy.deductionQuantityPlaceholder}
-              className={MODAL_INPUT_CLASS}
             />
           </div>
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.memoLabel}</label>
-          <textarea
+          <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
+            {copy.memoLabel}
+          </label>
+          <WaflTextarea
             value={memo}
             onPointerDown={allowMemoFocusFromPointer}
             onTouchStart={() => {
@@ -195,37 +254,64 @@ export default function InventoryEditor({
             onChange={(event) => setMemo(event.target.value)}
             placeholder={copy.memoPlaceholder}
             rows={3}
-            className={MODAL_TEXTAREA_CLASS}
           />
         </div>
-        <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} text-sm text-[var(--pbp-text-secondary)]`}>
+        <WaflInfoBox
+          tone="muted"
+          className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} text-sm text-[var(--pbp-text-secondary)]`}
+        >
           <div>
-            {copy.editorLabel}: <span className="font-medium text-[var(--pbp-text-primary)]">{currentUserName}</span>
+            {copy.editorLabel}:{" "}
+            <span className="font-medium text-[var(--pbp-text-primary)]">
+              {currentUserName}
+            </span>
           </div>
-          <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{copy.localTestNotice}</div>
-        </div>
+          <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>
+            {copy.localTestNotice}
+          </div>
+        </WaflInfoBox>
       </div>
 
       {showRecentLogs ? (
         <div className="mt-5 border-t border-[var(--pbp-border)] pt-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.recentLogsTitle}</div>
-            <span className={MODAL_CONTENT_LABEL_CLASS}>{copy.recentLogsCountFormat.replace("{count}", String(Math.min(logs.length, 3)))}</span>
+            <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">
+              {copy.recentLogsTitle}
+            </div>
+            <span className={MODAL_CONTENT_LABEL_CLASS}>
+              {copy.recentLogsCountFormat.replace(
+                "{count}",
+                String(Math.min(logs.length, 3)),
+              )}
+            </span>
           </div>
           <div className="mt-3 space-y-2">
             {logs.length > 0 ? (
               logs.slice(0, 3).map((item) => (
-                <div key={item.id} className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} text-sm`}>
+                <div
+                  key={item.id}
+                  className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} text-sm`}
+                >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-medium text-[var(--pbp-text-primary)]">{item.summary}</span>
-                    <span className={MODAL_CONTENT_LABEL_CLASS}>{item.time}</span>
+                    <span className="font-medium text-[var(--pbp-text-primary)]">
+                      {item.summary}
+                    </span>
+                    <span className={MODAL_CONTENT_LABEL_CLASS}>
+                      {item.time}
+                    </span>
                   </div>
-                  <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{item.user}</div>
-                  <div className="mt-1 text-sm text-[var(--pbp-text-secondary)]">{item.memo || copy.noMemo}</div>
+                  <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>
+                    {item.user}
+                  </div>
+                  <div className="mt-1 text-sm text-[var(--pbp-text-secondary)]">
+                    {item.memo || copy.noMemo}
+                  </div>
                 </div>
               ))
             ) : (
-              <div className={MODAL_CONTENT_EMPTY_STATE_CLASS}>{copy.emptyLogs}</div>
+              <div className={MODAL_CONTENT_EMPTY_STATE_CLASS}>
+                {copy.emptyLogs}
+              </div>
             )}
           </div>
         </div>
