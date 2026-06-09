@@ -55,7 +55,7 @@ export default function WorkOrderMobileListPanel({
   });
 
   return (
-    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
       <div className="shrink-0 border-b border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,transparent)] px-3 py-3 backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -152,7 +152,7 @@ export default function WorkOrderMobileListPanel({
           ))}
         </div>
         {workOrders.length === 0 ? (
-          <div className="pbp-empty-state rounded-2xl border border-dashed px-4 py-6 text-center text-sm">{copy.empty}</div>
+          <div className="pbp-empty-state rounded-[var(--pbp-radius-wafl)] border border-dashed px-4 py-6 text-center text-sm">{copy.empty}</div>
         ) : null}
       </div>
     </div>

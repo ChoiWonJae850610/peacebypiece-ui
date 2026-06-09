@@ -251,7 +251,7 @@ export default function SidebarContent({
                         : controlsUi.openSettingsAria
                     }
                     aria-label={controlsUi.openSettingsAria}
-                    className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                    className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span aria-hidden="true">⚙️</span>
                     <span>{controlsUi.openSettingsAria}</span>

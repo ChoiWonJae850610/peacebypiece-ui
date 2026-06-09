@@ -41,7 +41,7 @@ export default function WorkOrderDetailMobileActionSection({
   const showMaterialOrderPendingBadge = currentWorkflowState === WORKFLOW_STATE.materialOrderPending;
 
   return (
-    <section className="pbp-workflow-panel min-w-0 overflow-hidden rounded-2xl border p-3.5 sm:p-4">
+    <section className="pbp-workflow-panel min-w-0 overflow-hidden rounded-[var(--pbp-radius-wafl)] border p-3.5 sm:p-4">
       <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
       <ol className="mt-3 grid min-w-0 gap-2">
         {stages.map((stage, index) => {
@@ -50,7 +50,7 @@ export default function WorkOrderDetailMobileActionSection({
           return (
             <li
               key={stage}
-              className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border px-3 py-2.5 text-xs font-medium ${
+              className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-[var(--pbp-radius-wafl)] border px-3 py-2.5 text-xs font-medium ${
                 isCurrent ? "pbp-workflow-step-current" : "pbp-workflow-step-idle"
               }`}
             >
@@ -93,7 +93,7 @@ export default function WorkOrderDetailMobileActionSection({
                   title={isActionLocked ? formatActionCopy(copy.disabledActionTitleFormat, translatedLabel) : formatActionCopy(copy.actionTitleFormat, translatedLabel)}
                   aria-label={formatActionCopy(copy.actionAriaFormat, translatedLabel)}
                   aria-describedby={helperId}
-                  className={`inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-2xl px-3 py-3 text-center text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:opacity-70 ${
+                  className={`inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-3 text-center text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
                     isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"
                   }`}
                 >

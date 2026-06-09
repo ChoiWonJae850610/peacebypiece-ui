@@ -127,7 +127,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
               onClick={onOpenSettings}
               aria-label={copy.openSettingsAria}
               title={copy.openSettingsAria}
-              className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-8 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium shadow-sm"
+              className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-8 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium"
             >
               <span aria-hidden="true">⚙️</span>
               <span>{copy.openSettingsAria}</span>

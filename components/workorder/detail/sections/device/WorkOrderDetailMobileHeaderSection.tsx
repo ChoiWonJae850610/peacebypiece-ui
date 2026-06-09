@@ -32,7 +32,7 @@ function MobileSummaryAction({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`pbp-interactive-button pbp-detail-summary-action flex min-w-0 items-center gap-3 rounded-2xl border px-3.5 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60 ${
+      className={`pbp-interactive-button pbp-detail-summary-action flex min-w-0 items-center gap-3 rounded-[var(--pbp-radius-wafl)] border px-3.5 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60 ${
         canAct ? "shadow-sm" : ""
       }`}
     >
@@ -118,7 +118,7 @@ export default function WorkOrderDetailMobileHeaderSection({
   };
 
   return (
-    <section className="pbp-detail-summary-card min-w-0 overflow-hidden rounded-2xl border p-3.5 sm:p-4">
+    <section className="pbp-detail-summary-card min-w-0 overflow-hidden rounded-[var(--pbp-radius-wafl)] border p-3.5 sm:p-4">
       <div className="flex min-w-0 items-start gap-2">
         {isEditingTitle ? (
           <div className="min-w-0 flex-1">
@@ -128,7 +128,7 @@ export default function WorkOrderDetailMobileHeaderSection({
               value={titleDraft}
               onChange={(event) => setTitleDraft(event.target.value)}
               onKeyDown={handleTitleKeyDown}
-              className="pbp-field-interaction pbp-workorder-editable-input h-11 w-full rounded-2xl border px-3 text-lg font-semibold outline-none"
+              className="pbp-field-interaction pbp-workorder-editable-input h-11 w-full rounded-[var(--pbp-radius-wafl)] border px-3 text-lg font-semibold outline-none"
               aria-label={copy.titleInputAria}
             />
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -143,7 +143,7 @@ export default function WorkOrderDetailMobileHeaderSection({
               <button
                 type="button"
                 onClick={() => setIsEditingTitle(true)}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)] shadow-sm"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)]"
                 aria-label={copy.titleEditAria}
               >
                 <PencilIcon />

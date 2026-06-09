@@ -21,7 +21,7 @@ export default function WorkOrderEmptyState({ variant = "workspace" }: WorkOrder
       kind="empty"
       size={isSide ? "sm" : "lg"}
       minHeightClassName={isSide ? "min-h-[260px]" : "min-h-[360px] md:min-h-[520px]"}
-      className="border-dashed shadow-sm"
+      className="border-dashed"
     />
   );
 }

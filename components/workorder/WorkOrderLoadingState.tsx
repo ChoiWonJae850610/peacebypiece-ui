@@ -15,7 +15,7 @@ function SkeletonLine({ className = "" }: { className?: string }) {
 }
 
 function SkeletonCard({ children }: { children: ReactNode }) {
-  return <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-sm">{children}</div>;
+  return <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5">{children}</div>;
 }
 
 export default function WorkOrderLoadingState({ variant = "detail", title, description }: WorkOrderLoadingStateProps) {
@@ -32,8 +32,8 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
         <SkeletonCard>
           <SkeletonLine className="h-4 w-20" />
           <div className="mt-5 space-y-3">
-            <SkeletonLine className="h-20 w-full rounded-2xl" />
-            <SkeletonLine className="h-16 w-full rounded-2xl" />
+            <SkeletonLine className="h-20 w-full rounded-[var(--pbp-radius-wafl)]" />
+            <SkeletonLine className="h-16 w-full rounded-[var(--pbp-radius-wafl)]" />
           </div>
         </SkeletonCard>
         <SkeletonCard>
@@ -53,13 +53,13 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
         title={title}
         description={description}
         minHeightClassName="min-h-[120px]"
-        className="mb-5 shadow-sm"
+        className="mb-5"
       />
       <div className="grid gap-4 md:grid-cols-2">
         <SkeletonCard>
           <SkeletonLine className="h-7 w-44" />
           <SkeletonLine className="mt-4 h-4 w-64 max-w-full" />
-          <SkeletonLine className="mt-7 h-32 w-full rounded-2xl" />
+          <SkeletonLine className="mt-7 h-32 w-full rounded-[var(--pbp-radius-wafl)]" />
         </SkeletonCard>
         <SkeletonCard>
           <SkeletonLine className="h-5 w-28" />
@@ -81,7 +81,7 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
         </SkeletonCard>
         <SkeletonCard>
           <SkeletonLine className="h-5 w-28" />
-          <SkeletonLine className="mt-5 h-28 w-full rounded-2xl" />
+          <SkeletonLine className="mt-5 h-28 w-full rounded-[var(--pbp-radius-wafl)]" />
         </SkeletonCard>
       </div>
     </div>

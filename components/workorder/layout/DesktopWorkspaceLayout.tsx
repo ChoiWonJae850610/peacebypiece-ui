@@ -29,17 +29,17 @@ export default function DesktopWorkspaceLayout({
       <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
         {topbar ? <div className="shrink-0">{topbar}</div> : null}
         <div className="flex min-h-0 flex-1 gap-3 overflow-hidden sm:gap-4">
-          <aside className="flex min-h-0 w-[272px] shrink-0 overflow-hidden rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm xl:w-[284px]">
+          <aside className="flex min-h-0 w-[272px] shrink-0 overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] xl:w-[284px]">
             {sidebar}
           </aside>
 
-          <section ref={detailScrollRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain rounded-[30px] border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_92%,transparent)] px-4 py-4 pb-8 shadow-sm backdrop-blur [scrollbar-gutter:stable] xl:px-5 xl:py-5 xl:pb-10">
+          <section ref={detailScrollRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,var(--pbp-surface-muted))] px-4 py-4 pb-8 [scrollbar-gutter:stable] xl:px-5 xl:py-5 xl:pb-10">
             <div className="mx-auto min-h-full w-full max-w-[860px]">
               {detail}
             </div>
           </section>
 
-          <aside ref={sidePanelScrollRef} className="min-h-0 w-[302px] shrink-0 overflow-y-auto overscroll-contain rounded-[30px] border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_86%,transparent)] px-3.5 py-4 pb-8 shadow-sm backdrop-blur [scrollbar-gutter:stable] xl:w-[316px] xl:px-4 xl:pb-10">
+          <aside ref={sidePanelScrollRef} className="min-h-0 w-[302px] shrink-0 overflow-y-auto overscroll-contain rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,var(--pbp-surface-muted))] px-3.5 py-4 pb-8 [scrollbar-gutter:stable] xl:w-[316px] xl:px-4 xl:pb-10">
             {sidePanel}
           </aside>
         </div>

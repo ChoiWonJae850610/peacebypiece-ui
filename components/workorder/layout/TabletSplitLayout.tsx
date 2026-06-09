@@ -36,7 +36,7 @@ export default function TabletSplitLayout({
     <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
       <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
         {topbar ? <div className="shrink-0">{topbar}</div> : null}
-        <div className="grid min-h-0 flex-1 grid-cols-12 overflow-hidden rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm">
+        <div className="grid min-h-0 flex-1 grid-cols-12 overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
           <aside className="col-span-4 min-h-0 border-r border-stone-200 bg-white">
             {sidebar}
           </aside>
@@ -51,7 +51,7 @@ export default function TabletSplitLayout({
           </section>
         </div>
 
-        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(33.333333%+2rem)] right-8 z-30 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 shadow-[0_-16px_36px_rgba(28,25,23,0.12)] backdrop-blur">
+        <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(33.333333%+2rem)] right-8 z-30 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 backdrop-blur">
           <AppButton className="w-full" size="lg" onClick={() => setSidePanelOpen(true)}>
             {sidePanelTitle}
           </AppButton>

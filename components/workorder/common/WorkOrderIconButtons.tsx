@@ -195,7 +195,7 @@ export function WorkOrderCardActionMenu({
         aria-expanded={open}
       />
       {open ? (
-        <div className="absolute right-0 top-9 z-30 min-w-[116px] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 text-xs font-semibold shadow-[0_14px_32px_rgba(15,23,42,0.14)]">
+        <div className="absolute right-0 top-9 z-30 min-w-[116px] overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 text-xs font-semibold">
           {onEdit && editLabel && editText ? (
             <button
               type="button"

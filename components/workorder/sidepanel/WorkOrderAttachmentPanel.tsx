@@ -125,8 +125,8 @@ function AttachmentActionMenu({
         <div
           className={
             trigger === "plus"
-              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm shadow-none"
-              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm shadow-none"
+              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm"
+              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-[var(--pbp-radius-content-card)] p-1.5 text-sm"
           }
         >
           <button
@@ -247,7 +247,7 @@ function AttachmentUploadHint({
       onDrop={handleDrop}
       aria-label={title}
       className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 flex w-full min-w-0 items-center justify-center rounded-[var(--pbp-radius-content-card)] border border-dashed active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
-        dragActive ? "pbp-sidepanel-upload-zone-active shadow-[var(--pbp-shadow-action-button)]" : ""
+        dragActive ? "pbp-sidepanel-upload-zone-active" : ""
       } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
     >
       {isDesign ? (
@@ -271,7 +271,7 @@ function AttachmentUploadHint({
           disabled={disabled}
           title={disabled ? disabledReason : addButtonLabel}
           aria-label={addButtonLabel}
-          className={`pbp-interactive-button pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-[var(--pbp-shadow-action-button)] disabled:cursor-not-allowed disabled:opacity-45 ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
+          className={`pbp-interactive-button pbp-sidepanel-preview-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45 ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}
         >
           <WorkOrderPlusIcon />
         </button>
@@ -328,7 +328,7 @@ function AttachmentFlatAddHint({
           disabled={disabled}
           title={disabled ? disabledReason : addButtonLabel}
           aria-label={addButtonLabel}
-          className="pbp-interactive-button pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-[var(--pbp-shadow-action-button)] disabled:cursor-not-allowed disabled:opacity-45"
+          className="pbp-interactive-button pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
         >
           <WorkOrderPlusIcon />
         </button>
@@ -465,7 +465,7 @@ export default function WorkOrderAttachmentPanel({
           </div>
           ) : null}
           {showOrderRequestPdfStatus ? (
-            <div className="mt-3 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left shadow-[var(--pbp-shadow-action-button)]">
+            <div className="mt-3 rounded-[var(--pbp-radius-content-card)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-3 text-left">
               <div className="flex min-w-0 items-start gap-2">
                 <span
                   className={`mt-0.5 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
@@ -551,7 +551,7 @@ export default function WorkOrderAttachmentPanel({
                         handleSetPrimaryDesignAttachment(attachment.id)
                       }
                       disabled={writeLocked}
-                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-[var(--pbp-shadow-action-button)] ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
+                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
                       title={
                         writeLocked
                           ? writeLockMessage

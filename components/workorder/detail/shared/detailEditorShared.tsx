@@ -62,7 +62,7 @@ export function CollapseToggleButton({
       onClick={onToggle}
       aria-label={label}
       aria-expanded={open}
-      className="pbp-interactive-button inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-xs leading-none text-stone-600 shadow-sm transition-colors hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
+      className="pbp-interactive-button inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-xs leading-none text-stone-600 transition-colors hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
     >
       <span aria-hidden="true" className={`inline-flex text-[13px] leading-none transition-transform ${open ? "rotate-180" : "rotate-0"}`}>▾</span>
     </button>

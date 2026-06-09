@@ -119,7 +119,7 @@ export function WorkflowProgressPanel({
 
   if (layout === "vertical") {
     return (
-      <div className={`pbp-workflow-panel min-w-0 overflow-hidden rounded-2xl border p-3.5 shadow-sm sm:p-4 ${className}`}>
+      <div className={`pbp-workflow-panel min-w-0 overflow-hidden rounded-[var(--pbp-radius-wafl)] border p-3.5 sm:p-4 ${className}`}>
         <div className="text-sm font-semibold text-stone-900">{title}</div>
         <ol className="mt-3 grid min-w-0 gap-2">
           {steps.map((step, index) => {
@@ -166,7 +166,7 @@ export function WorkflowProgressPanel({
                     title={action.title}
                     aria-label={action.ariaLabel}
                     aria-describedby={isDisabled ? helperId : undefined}
-                    className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl px-3 py-3 text-center text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-70 ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
+                    className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-3 text-center text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
                   >
                     {action.isProcessing ? (
                       <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
@@ -195,7 +195,7 @@ export function WorkflowProgressPanel({
 
   return (
     <div
-      className={`pbp-workflow-panel rounded-[24px] border shadow-sm ${isCompact ? "px-4 py-3" : "p-4"} ${className}`}
+      className={`pbp-workflow-panel rounded-[var(--pbp-radius-wafl)] border ${isCompact ? "px-4 py-3" : "p-4"} ${className}`}
     >
       <div
         className={`flex items-start justify-between ${isCompact ? "gap-2" : "gap-4"}`}
@@ -226,7 +226,7 @@ export function WorkflowProgressPanel({
                     title={action.title}
                     aria-label={action.ariaLabel}
                     aria-describedby={isDisabled ? helperId : undefined}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-[var(--pbp-radius-wafl)] text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
                       isCompact ? "px-2.5 py-1" : "px-3 py-2"
                     } ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
                   >
@@ -399,7 +399,7 @@ export function WorkflowProgressPanel({
                   title={action.title}
                   aria-label={action.ariaLabel}
                   aria-describedby={isDisabled ? helperId : undefined}
-                  className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl px-3 py-3 text-center text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-70 ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
+                  className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-3 text-center text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${action.isPrimary ? "pbp-action-primary" : "pbp-action-secondary border"}`}
                 >
                   {action.isProcessing ? (
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />

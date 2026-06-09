@@ -178,7 +178,7 @@ export default function MaterialSection({
             aria-label={copy.addButton}
             title={copy.addButton}
           >
-            <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)] shadow-[var(--pbp-shadow-action-button)]" aria-hidden="true">
+            <span className="pbp-sidepanel-preview-surface inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--pbp-text-muted)]" aria-hidden="true">
               <WorkOrderPlusIcon />
             </span>
           </button>
