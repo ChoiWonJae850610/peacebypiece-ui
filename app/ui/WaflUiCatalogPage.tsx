@@ -549,10 +549,10 @@ const directStyleAuditRows = [
   {
     area: "통계/멤버관리",
     scope: "dashboard + members + admin common",
-    status: "확장 완료",
-    remaining: "rounded 34 / 상태색 36 / 직접 form 2",
-    decision: "chart dot, calendar range, table state 같은 예외가 섞여 있어 0.21.31에서 통계/멤버 잔여분을 먼저 줄인다.",
-    tone: "warning" as const,
+    status: "1차 정리",
+    remaining: "rounded 34 → 22 / stone 색상 일부 제거 / 직접 form 2",
+    decision: "0.21.31에서 audit panel, workspace card, admin layout tile의 직접 radius와 stone 색상을 Foundation 기준으로 정리했다. chart dot/calendar range/table state는 예외 후보로 남긴다.",
+    tone: "info" as const,
   },
   {
     area: "설정/결제/회사",
@@ -1139,7 +1139,7 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.30은 Direct Style 잔여 점검판이다. 작업지시서/발주/저장소/통계/멤버관리까지 확장한 뒤 남은 직접 rounded, 상태색, form class를 영역별로 분리해 다음 정리 순서를 고정한다.
+        0.21.31은 통계/멤버관리 Direct Style 잔여 제거 1차다. audit panel, workspace card, admin layout tile의 직접 radius/stone 색상 조합을 WAFL Foundation 기준으로 낮춘다.
       </WaflNoticeBox>
 
 
@@ -2327,12 +2327,11 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.30 기준으로 고객 업무 화면의 직접 radius/status/form class를 제거 대상과 예외 대상으로 나눈다.
-              숫자는 source scan 기준의 잔여 후보이며, 예외가 포함되어 있어 전부 오류라는 뜻은 아니다.
+              0.21.31 기준으로 통계/멤버관리 영역의 직접 radius/status/form class를 1차 제거했다. 숫자는 source scan 기준의 잔여 후보이며, chart/calendar 같은 예외가 포함되어 있어 전부 오류라는 뜻은 아니다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.30 audit
+            0.21.31 audit
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">

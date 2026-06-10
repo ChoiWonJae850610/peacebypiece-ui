@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import { AdminSection } from "@/components/admin/common/AdminSection";
-import { WaflSurface } from "@/components/common/ui/WaflSurface";
+import { getWaflButtonClassName, WaflSurface } from "@/components/common/ui";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
@@ -41,7 +41,7 @@ function WorkspaceCardIcon({ index }: { index: number }) {
     <span
       data-wafl-component="workspace-card-index"
       aria-hidden="true"
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--pbp-surface-soft)] text-sm font-semibold pbp-text-primary ring-1 ring-[var(--pbp-border)]"
+      className="inline-flex h-11 w-11 items-center justify-center wafl-shape-icon bg-[var(--pbp-surface-soft)] text-sm font-semibold pbp-text-primary ring-1 ring-[var(--pbp-border)]"
     >
       {String(index + 1).padStart(2, "0")}
     </span>
@@ -82,19 +82,11 @@ function AdminWorkspaceCardView({
 
         <div className="relative flex items-center justify-between gap-3">
           {item.href ? (
-            <span
-              data-wafl-component="workspace-card-open-button"
-              data-wafl-primitive="button"
-              className="inline-flex min-h-10 items-center rounded-[var(--pbp-radius-wafl)] border px-4 text-sm font-semibold pbp-action-secondary"
-            >
+            <span data-wafl-component="workspace-card-open-button" data-wafl-foundation="control" className={getWaflButtonClassName({ size: "sm", variant: "secondary", className: "pointer-events-none px-4" })}>
               {text.openLabel}
             </span>
           ) : (
-            <span
-              data-wafl-component="workspace-card-open-button"
-              data-wafl-primitive="button"
-              className="inline-flex min-h-10 items-center rounded-[var(--pbp-radius-wafl)] border px-4 text-sm font-semibold pbp-action-secondary"
-            >
+            <span data-wafl-component="workspace-card-open-button" data-wafl-foundation="control" className={getWaflButtonClassName({ size: "sm", variant: "secondary", className: "pointer-events-none px-4" })}>
               {text.preparingLabel}
             </span>
           )}

@@ -1,5 +1,6 @@
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
+import { WaflSurface } from "@/components/common/ui";
 import type { AdminDbCompletionSummary, AdminDbScreenAuditSourceType, AdminDbScreenAuditStatus } from "@/lib/admin/dbCompletionAudit";
 import { getAdminDbCompletionStatusPresentation, getAdminDbSourceTypeLabel, getAdminRepositoryModeLabel } from "@/lib/admin/dbCompletionAudit";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -41,10 +42,10 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
   const t = useAdminTranslation();
   return (
     <AdminCard className="mt-5">
-      <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-stone-950">{t("dbConnectionAudit.title", "데이터 연결 점검")}</h2>
-          <p className="mt-1 text-xs text-stone-500">{t("dbConnectionAudit.description", "관리자 화면별 실제 데이터 조회/저장 경계와 안전 표시 상태입니다.")}</p>
+          <h2 className="text-lg font-semibold text-[var(--pbp-text-primary)]">{t("dbConnectionAudit.title", "데이터 연결 점검")}</h2>
+          <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{t("dbConnectionAudit.description", "관리자 화면별 실제 데이터 조회/저장 경계와 안전 표시 상태입니다.")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.workorder", "작업지시서")} {translateRepositoryMode(summary.repositoryModes.workorder, t)}</AdminStatusBadge>
@@ -58,11 +59,11 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
           const statusPresentation = getAdminDbCompletionStatusPresentation(item.status);
 
           return (
-            <article key={item.key} className="rounded-2xl border border-stone-100 bg-stone-50/70 px-4 py-3">
+            <WaflSurface as="article" key={item.key} component="db-connection-audit-item" shape="control" tone="muted" className="px-4 py-3">
               <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-stone-950">{item.screen}</h3>
-                  <p className="mt-1 truncate text-xs text-stone-400">{item.routePath}</p>
+                  <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{item.screen}</h3>
+                  <p className="mt-1 truncate text-xs text-[var(--pbp-text-subtle)]">{item.routePath}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <AdminStatusBadge tone={getDbStatusTone(item.status)}>
@@ -73,25 +74,25 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
                   </AdminStatusBadge>
                 </div>
               </div>
-              <dl className="mt-3 grid gap-2 text-xs text-stone-500 lg:grid-cols-2">
+              <dl className="mt-3 grid gap-2 text-xs text-[var(--pbp-text-muted)] lg:grid-cols-2">
                 <div>
-                  <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.read", "조회")}</dt>
+                  <dt className="font-semibold text-[var(--pbp-text-primary)]">{t("dbConnectionAudit.read", "조회")}</dt>
                   <dd className="mt-1">{item.readSource}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.write", "저장")}</dt>
+                  <dt className="font-semibold text-[var(--pbp-text-primary)]">{t("dbConnectionAudit.write", "저장")}</dt>
                   <dd className="mt-1">{item.writeSource}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.alternateDisplay", "안전 표시")}</dt>
+                  <dt className="font-semibold text-[var(--pbp-text-primary)]">{t("dbConnectionAudit.alternateDisplay", "안전 표시")}</dt>
                   <dd className="mt-1">{item.alternateDisplay}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.nextCheck", "다음 확인")}</dt>
+                  <dt className="font-semibold text-[var(--pbp-text-primary)]">{t("dbConnectionAudit.nextCheck", "다음 확인")}</dt>
                   <dd className="mt-1">{item.nextCheck}</dd>
                 </div>
               </dl>
-            </article>
+            </WaflSurface>
           );
         })}
       </div>
