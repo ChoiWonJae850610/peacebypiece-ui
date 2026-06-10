@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
-import { MODAL_CONTENT_MUTED_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
 import {
   MODAL_ACTION_LABELS,
   getModalActionDisabledState,
@@ -74,7 +73,7 @@ export default function ManagerAssignModal({
       <WaflInfoRow
         tone="muted"
         component="manager-assign-current-row"
-        className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-3 text-sm`}
+        className="px-4 py-3 text-sm"
       >
         <span className="text-[var(--pbp-text-secondary)]">
           {copy.currentManagerLabel}
@@ -86,9 +85,10 @@ export default function ManagerAssignModal({
 
       <div className="mt-4 space-y-2">
         {managerCandidates.map((user) => {
+          const current = user.id === currentManagerId || (!currentManagerId && user.name === currentManagerName);
           const selected = draftManagerId
             ? user.id === draftManagerId
-            : user.name === currentManagerName;
+            : current;
           return (
             <WaflSelectableCard
               key={user.id}
@@ -103,6 +103,7 @@ export default function ManagerAssignModal({
                 setDraftManagerId(user.id);
               }}
               selected={selected}
+              current={current}
             >
               <div>
                 <div className="text-sm font-semibold">{user.name}</div>

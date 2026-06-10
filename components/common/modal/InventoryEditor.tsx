@@ -16,10 +16,7 @@ import {
   shouldUseTouchModalFocusPolicy,
 } from "@/components/common/modal/modalUtils";
 import {
-  MODAL_CONTENT_EMPTY_STATE_CLASS,
   MODAL_CONTENT_LABEL_CLASS,
-  MODAL_CONTENT_MUTED_PANEL_CLASS,
-  MODAL_CONTENT_SECTION_PANEL_CLASS,
   MODAL_CONTENT_SUBTEXT_CLASS,
   MODAL_CONTENT_VALUE_CLASS,
 } from "@/components/common/modal/modalContentClassNames";
@@ -165,7 +162,7 @@ export default function InventoryEditor({
           onClick: handleApply,
           disabled: applyDisabled,
           tone: "primary",
-          className: "rounded-2xl disabled:opacity-50",
+          className: "disabled:opacity-50",
         },
       })}
     >
@@ -173,6 +170,7 @@ export default function InventoryEditor({
         <WaflInfoBox
           tone="neutral"
           component="readonly-card"
+          shape="control"
           className="pbp-workorder-calculated-panel"
         >
           <div className={MODAL_CONTENT_LABEL_CLASS}>
@@ -182,7 +180,7 @@ export default function InventoryEditor({
             {copy.quantityFormat.replace("{count}", String(currentStock))}
           </div>
         </WaflInfoBox>
-        <WaflInfoBox tone="selected" component="readonly-card">
+        <WaflInfoBox tone="selected" shape="control" component="readonly-card" state="selected">
           <div className="text-xs text-[var(--pbp-selected-text)]">
             {copy.nextStockLabel}
           </div>
@@ -258,7 +256,8 @@ export default function InventoryEditor({
         </div>
         <WaflInfoBox
           tone="muted"
-          className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} text-sm text-[var(--pbp-text-secondary)]`}
+          shape="control"
+          className="text-sm text-[var(--pbp-text-secondary)]"
         >
           <div>
             {copy.editorLabel}:{" "}
@@ -292,7 +291,8 @@ export default function InventoryEditor({
                   key={item.id}
                   component="log-card"
                   tone="neutral"
-                  className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} text-sm`}
+                  shape="control"
+                  className="text-sm"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="font-medium text-[var(--pbp-text-primary)]">
@@ -311,7 +311,7 @@ export default function InventoryEditor({
                 </WaflInfoBox>
               ))
             ) : (
-              <WaflEmptyCard className={MODAL_CONTENT_EMPTY_STATE_CLASS}>
+              <WaflEmptyCard shape="control" className="px-4 py-6">
                 {copy.emptyLogs}
               </WaflEmptyCard>
             )}

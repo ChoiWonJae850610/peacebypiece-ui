@@ -114,17 +114,19 @@ export function WaflEmptyCard({
   children,
   className,
   component = "empty-card",
+  shape = "surface",
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   component?: string;
+  shape?: Extract<WaflPrimitiveShape, "surface" | "control">;
 }) {
   return (
     <div
       data-wafl-component={component}
-      data-wafl-foundation="surface"
+      data-wafl-foundation={shape}
       className={cn(
-        getWaflPrimitiveClassName({ shape: "surface", tone: "empty", className: "px-4 py-5 text-center text-sm" }),
+        getWaflPrimitiveClassName({ shape, tone: "empty", className: "px-4 py-5 text-center text-sm" }),
         className,
       )}
       {...props}

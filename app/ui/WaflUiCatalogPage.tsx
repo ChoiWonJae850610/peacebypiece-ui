@@ -884,7 +884,7 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.23부터 작업지시서 목록/검색/필터는 foundation control 밀도 기준을 먼저 맞춘다. 화면은 rounded/background/border 조합을 직접 만들지 않고 shape, density, tone, state만 고른다.
+        0.21.24부터 작업지시서 모달의 select, preview, summary, empty, row는 foundation control 기준으로 맞춘다. 상태는 selected/current tone으로만 구분하고 shape는 바꾸지 않는다.
       </WaflNoticeBox>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
@@ -943,6 +943,15 @@ function FoundationPrimitiveSamples() {
               <span className="text-xs font-bold text-[var(--pbp-text-primary)]">control info row</span>
               <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">same shape</span>
             </WaflInfoRow>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <WaflInfoBox component="catalog-modal-preview" tone="muted" shape="control" state="current">
+                <p className="text-xs font-bold text-[var(--pbp-text-primary)]">modal preview</p>
+                <p className="mt-1 text-xs font-medium text-[var(--pbp-text-muted)]">기본정보 미리보기</p>
+              </WaflInfoBox>
+              <WaflEmptyCard component="catalog-modal-empty" shape="control" className="px-4 py-4">
+                modal empty state
+              </WaflEmptyCard>
+            </div>
           </div>
         </WaflSurface>
       </div>

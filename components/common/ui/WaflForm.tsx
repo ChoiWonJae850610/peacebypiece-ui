@@ -63,7 +63,7 @@ export const WaflTextarea = forwardRef<HTMLTextAreaElement, WaflTextareaProps>(
   },
 );
 
-export type WaflInfoBoxTone = "neutral" | "selected" | "muted";
+export type WaflInfoBoxTone = "neutral" | "selected" | "muted" | "empty" | "warning" | "danger" | "info";
 export type WaflInfoBoxShape = "surface" | "control";
 
 export function WaflInfoBox({
@@ -72,19 +72,23 @@ export function WaflInfoBox({
   tone = "neutral",
   shape = "surface",
   component = "info-card",
+  state = "normal",
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   tone?: WaflInfoBoxTone;
   shape?: WaflInfoBoxShape;
   component?: string;
+  state?: "normal" | "selected" | "current" | "empty" | "warning" | "danger" | "info";
 }) {
+  const primitiveTone = tone === "neutral" ? "surface" : tone;
   return (
     <div
       data-wafl-component={component}
       data-wafl-foundation={shape}
+      data-wafl-state={state}
       className={cn(
-        getWaflPrimitiveClassName({ shape, tone: tone === "neutral" ? "surface" : tone, className: "p-3" }),
+        getWaflPrimitiveClassName({ shape, tone: primitiveTone, className: "p-3" }),
         className,
       )}
       {...props}
@@ -98,11 +102,13 @@ export function WaflSelectableCard({
   children,
   className,
   selected = false,
+  current = false,
   component = "selectable-card",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   selected?: boolean;
+  current?: boolean;
   component?: string;
 }) {
   return (
@@ -110,12 +116,15 @@ export function WaflSelectableCard({
       type="button"
       data-wafl-component={component}
       data-wafl-foundation="control"
+      data-wafl-state={selected ? "selected" : current ? "current" : "normal"}
       className={cn(
         "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-control border px-4 py-3 text-left disabled:pointer-events-none disabled:opacity-50",
         waflInteractiveClass,
         selected
-          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)]"
-          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
+          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
+          : current
+            ? "border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]"
+            : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
         className,
       )}
       {...props}
