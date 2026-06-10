@@ -29,7 +29,7 @@ const compactSizeClassMap: Record<WaflActionButtonSize, string> = {
 };
 
 export const WAFL_ACTION_BUTTON_BASE_CLASS =
-  "inline-flex shrink-0 items-center justify-center rounded-full border font-semibold transition disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] [&>svg]:pointer-events-none [&>svg]:shrink-0";
+  "inline-flex shrink-0 items-center justify-center rounded-[var(--pbp-radius-wafl-icon)] border font-semibold transition disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] [&>svg]:pointer-events-none [&>svg]:shrink-0";
 
 export function getWaflActionButtonClassName({
   tone = "neutral",

@@ -35,14 +35,14 @@
   --pbp-status-danger-fg: #C93A3A;
   --pbp-status-neutral-bg: #F1EFEC;
   --pbp-status-neutral-fg: #6F665D;
-  --pbp-radius-xs: 22px;
-  --pbp-radius-sm: 22px;
-  --pbp-radius-md: 22px;
-  --pbp-radius-lg: 22px;
-  --pbp-radius-xl: 22px;
-  --pbp-radius-card: 22px;
-  --pbp-radius-modal: 22px;
-  --pbp-radius-pill: 999px;
+  --pbp-radius-xs: 16px;
+  --pbp-radius-sm: 16px;
+  --pbp-radius-md: 16px;
+  --pbp-radius-lg: 16px;
+  --pbp-radius-xl: 16px;
+  --pbp-radius-card: 16px;
+  --pbp-radius-modal: 16px;
+  --pbp-radius-pill: 16px;
   --pbp-shadow-card-a-type: none;
   --pbp-shadow-elevated-a-type: none;
   --pbp-shadow-modal-a-type: none;
@@ -221,7 +221,9 @@ body {
    Shadow is disabled across the product. Visual hierarchy must come from
    border, background, spacing, typography, and shared radius tokens. */
 :root {
-  --pbp-radius-wafl: 22px;
+  --pbp-radius-wafl: 16px;
+  --pbp-radius-wafl-compact: 8px;
+  --pbp-radius-wafl-icon: 12px;
 }
 
 :where(.pbp-card, .pbp-card-muted, .pbp-detail-summary-card, .pbp-action-secondary, [class*="shadow"]) {

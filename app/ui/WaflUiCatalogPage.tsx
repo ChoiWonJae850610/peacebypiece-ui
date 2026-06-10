@@ -77,6 +77,13 @@ const catalogSections: CatalogSection[] = [
     status: "guide",
   },
   {
+    id: "shape-grammar",
+    title: "Shape grammar",
+    plainTitle: "모양 통일 기준",
+    description: "버튼, 배지, 입력창, 카드가 같은 둥근 네모 계열로 보이는지 확인한다.",
+    status: "guide",
+  },
+  {
     id: "touch-actions",
     title: "Touch actions",
     plainTitle: "누르는 것",
@@ -310,11 +317,18 @@ const containerRules = [
   "선택 상태는 shadow가 아니라 selected token으로 표현한다.",
 ];
 
-const statusRules = [
-  "짧은 상태값은 AppBadge를 쓴다.",
-  "긴 설명은 Badge가 아니라 InfoBox나 NoticeBox를 쓴다.",
-  "목록 데이터는 WaflDataTable 계열을 우선한다.",
-  "검색과 필터는 WaflFilterBar 안에서 묶는다.",
+const shapeGrammarRules = [
+  "WAFL의 기본 모양은 알약형이 아니라 둥근 네모형이다.",
+  "큰 카드, 작은 버튼, 배지는 같은 shape family 안에서 크기만 달라져야 한다.",
+  "실행/상태/입력의 차이는 모서리 모양이 아니라 색, 채움, 굵기, 간격으로 구분한다.",
+  "rounded-full은 진행 점, 아바타, 순수 원형 아이콘처럼 원형 의미가 있을 때만 예외로 쓴다.",
+];
+
+const shapeGrammarRows = [
+  { label: "큰 표면", component: "WaflSurface", sample: "카드/패널/정보 묶음", tone: "neutral" as const },
+  { label: "실행 버튼", component: "WaflButton", sample: "저장/삭제/이동", tone: "brand" as const },
+  { label: "짧은 상태", component: "AppBadge", sample: "작성중/승인/파일", tone: "info" as const },
+  { label: "입력 필드", component: "WaflInput", sample: "검색/이름/메모", tone: "success" as const },
 ];
 
 
@@ -361,7 +375,7 @@ const usageRuleCards = [
 const directClassReplacementRows = [
   {
     direct: "rounded-* 직접 지정",
-    replacement: "WaflSurface / WaflButton / WaflInput의 radius token",
+    replacement: "WaflSurface / WaflButton / WaflInput / AppBadge의 shape token",
     reason: "화면별 모서리 차이를 막는다.",
   },
   {
@@ -601,6 +615,71 @@ function ComparisonCard({
         </div>
       </div>
     </WaflSurface>
+  );
+}
+
+function ShapeGrammarSamples() {
+  return (
+    <div className="space-y-4">
+      <WaflNoticeBox tone="info">
+        현재 WAFL shape는 알약형을 줄이고 둥근 네모 계열로 맞추는 방향이다. 버튼과 배지도 카드/입력창과 같은 형태 계열로 보이도록 정리한다.
+      </WaflNoticeBox>
+
+      <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+        <WaflSurface component="catalog-shape-principle" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Shape family</p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">전부 같은 둥근 네모 계열</h3>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                역할은 달라도 기본 silhouette는 같게 둔다. 화면이 심심해지는 대신, 색과 상태값으로 의미를 구분한다.
+              </p>
+            </div>
+            <AppBadge tone="brand" size="xs">shape rule</AppBadge>
+          </div>
+          <div className="mt-4 grid gap-2">
+            {shapeGrammarRows.map((row) => (
+              <WaflInfoRow key={row.component} component="catalog-shape-row" tone="muted" className="items-start">
+                <span className="min-w-0">
+                  <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">{row.label}</span>
+                  <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{row.component} · {row.sample}</span>
+                </span>
+                <AppBadge tone={row.tone} size="xs">same shape</AppBadge>
+              </WaflInfoRow>
+            ))}
+          </div>
+        </WaflSurface>
+
+        <WaflSurface component="catalog-shape-visual-sample" tone="surface" className="p-4">
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">같은 모양 계열 샘플</p>
+          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            아래 요소들은 크기와 용도는 다르지만, 알약형이 아니라 같은 둥근 네모 계열로 읽혀야 한다.
+          </p>
+          <div className="mt-4 grid gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <WaflButton variant="primary" size="md">저장 실행</WaflButton>
+              <WaflButton variant="secondary" size="md">보조 실행</WaflButton>
+              <WaflButton variant="danger" size="md">삭제</WaflButton>
+              <WaflButton variant="icon" size="md" aria-label="아이콘 버튼">+</WaflButton>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <AppBadge tone="brand">작성중</AppBadge>
+              <AppBadge tone="success">승인</AppBadge>
+              <AppBadge tone="file">파일</AppBadge>
+              <AppBadge tone="danger">삭제 예정</AppBadge>
+            </div>
+            <WaflInput placeholder="검색 입력도 같은 모양 계열" />
+            <WaflInfoBox tone="muted" component="catalog-shape-info-sample">
+              <p className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                안내 박스도 같은 곡률 계열을 사용한다. 차이는 배경과 border tone으로 만든다.
+              </p>
+            </WaflInfoBox>
+          </div>
+        </WaflSurface>
+      </div>
+
+      <RuleList title="WAFL shape rule" rules={shapeGrammarRules} />
+    </div>
   );
 }
 
@@ -1134,7 +1213,7 @@ function SpecTable() {
             </div>
             <p className="text-[12px] font-bold leading-5 text-[var(--pbp-text-primary)]">{spec.plainRule}</p>
             <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-              <code className="min-w-0 truncate rounded-full bg-[var(--pbp-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--pbp-text-muted)]">
+              <code className="min-w-0 truncate rounded-[var(--pbp-radius-wafl-compact)] bg-[var(--pbp-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--pbp-text-muted)]">
                 {spec.path}
               </code>
               <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{spec.props}</p>
@@ -1191,6 +1270,12 @@ export default function WaflUiCatalogPage({
         <div id="start-here" className="scroll-mt-6">
           <WaflSectionPanel title="Start here" description="모양이 아니라 상황으로 컴포넌트를 고른다." density="compact">
             <QuickDecisionGrid />
+          </WaflSectionPanel>
+        </div>
+
+        <div id="shape-grammar" className="scroll-mt-6">
+          <WaflSectionPanel title="Shape grammar · 모양 통일 기준" description="버튼, 배지, 입력, 카드가 같은 둥근 네모 계열로 보이는지 확인한다." density="compact">
+            <ShapeGrammarSamples />
           </WaflSectionPanel>
         </div>
 

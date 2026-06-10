@@ -12,7 +12,7 @@ const variantClassMap: Record<WaflButtonVariant, string> = {
   ghost: "pbp-action-ghost border-transparent shadow-none hover:bg-[var(--pbp-surface-muted)]",
   danger: "pbp-action-danger border-transparent hover:bg-[var(--pbp-action-danger-surface-hover)]",
   subtle: "pbp-action-add border-[var(--pbp-border)] shadow-none hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
-  icon: "pbp-action-ghost rounded-full border-transparent shadow-none hover:bg-[var(--pbp-surface-muted)]",
+  icon: "pbp-action-ghost border-transparent shadow-none hover:bg-[var(--pbp-surface-muted)]",
 };
 
 const sizeClassMap: Record<WaflButtonSize, string> = {
@@ -22,9 +22,9 @@ const sizeClassMap: Record<WaflButtonSize, string> = {
 };
 
 const iconSizeClassMap: Record<WaflButtonSize, string> = {
-  sm: "h-8 min-h-8 w-8 rounded-full p-0 text-xs",
-  md: "h-10 min-h-10 w-10 rounded-full p-0 text-sm",
-  lg: "h-12 min-h-12 w-12 rounded-full p-0 text-base",
+  sm: "h-8 min-h-8 w-8 rounded-[var(--pbp-radius-wafl-icon)] p-0 text-xs",
+  md: "h-10 min-h-10 w-10 rounded-[var(--pbp-radius-wafl-icon)] p-0 text-sm",
+  lg: "h-12 min-h-12 w-12 rounded-[var(--pbp-radius-wafl-icon)] p-0 text-base",
 };
 
 const widthClassMap: Record<WaflButtonWidth, string> = {
