@@ -3,7 +3,6 @@ import { WaflButton, WaflLinkButton } from "@/components/common/ui/WaflButton";
 import { WaflInfoBox, WaflInput, WaflSelectableCard, WaflTextarea } from "@/components/common/ui/WaflForm";
 import {
   WaflAddCardButton,
-  WaflAddIconBubble,
   WaflEmptyCard,
   WaflInfoRow,
   WaflSurface,
@@ -646,13 +645,13 @@ const componentInventoryItems: ComponentInventoryItem[] = [
     note: "둘의 차이가 화면에서 애매하면 selected/pressed props 기준으로 합칠 수 있다.",
   },
   {
-    name: "WaflAddCardButton / WaflAddIconBubble",
+    name: "WaflAddCardButton / WaflAddIconBubble / WaflAddActionButton",
     group: "Pattern",
-    role: "빈 슬롯에 새 항목을 추가하는 CTA",
-    keepDecision: "통합 후보",
-    target: "WaflAddButton 또는 WaflAddCardButton 하나로 정리",
+    role: "빈 슬롯 또는 작은 아이콘 자리에서 새 항목을 추가하는 CTA",
+    keepDecision: "유지",
+    target: "카드형은 WaflAddCardButton, 작은 +는 WaflAddActionButton, 내부 glyph는 WaflAddIconBubble",
     priority: "높음",
-    note: "카드형 추가와 작은 + 버튼이 같은 추가 문법을 공유해야 한다.",
+    note: "이제 셋을 삭제 후보가 아니라 같은 Add 문법을 공유하는 한 계열로 관리한다.",
   },
   {
     name: "WaflInfoBox / WaflNoticeBox",
@@ -739,7 +738,7 @@ const componentInventoryItems: ComponentInventoryItem[] = [
 
 const inventoryNextSteps = [
   "... / 닫기 / 수정 / 삭제는 WaflIconButton 또는 WaflMoreActionButton 기준으로 통합한다.",
-  "+ 버튼은 WaflAddActionButton, 카드형 추가는 WaflAddCardButton + WaflAddIconBubble 기준으로 분리한다.",
+  "+ 버튼은 WaflAddActionButton, 카드형 추가 슬롯은 WaflAddCardButton, 카드 안 glyph는 WaflAddIconBubble으로 고정한다.",
   "아이콘 버튼 크기는 sm 28px, md 32px, lg 36px로 고정하고 작업지시서 more/add 버튼은 md를 기본으로 쓴다.",
   "WaflSurfaceButton과 WaflSelectableCard는 선택 가능 카드 기준으로 통합 가능한지 확인한다.",
   "AdminButton/AdminIconActionButton/AdminStatusBadge는 바로 삭제하지 말고 사용 위치를 줄인다.",
@@ -934,11 +933,11 @@ function TouchActionSamples() {
           </span>
           <AppBadge size="xs" tone="brand">selected</AppBadge>
         </WaflSurfaceButton>
-        <WaflAddCardButton className="min-h-28 flex-col gap-2">
-          <WaflAddIconBubble />
-          <span className="text-sm font-bold text-[var(--pbp-text-primary)]">새 항목 추가</span>
-          <span className="text-center text-xs leading-5 text-[var(--pbp-text-muted)]">카드 그리드의 빈 슬롯</span>
-        </WaflAddCardButton>
+        <WaflAddCardButton
+          className="min-h-28"
+          label="새 항목 추가"
+          description="카드 그리드의 빈 슬롯"
+        />
         <WaflSurface component="catalog-non-click-card" tone="surface" className="p-4">
           <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflSurface</p>
           <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">이건 누르는 요소가 아니라 정보를 담는 카드다.</p>
@@ -1143,11 +1142,11 @@ function PracticePatternSamples() {
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <WaflAddCardButton className="min-h-28 flex-col gap-2">
-              <WaflAddIconBubble />
-              <span className="text-sm font-bold text-[var(--pbp-text-primary)]">첨부 추가</span>
-              <span className="text-center text-xs leading-5 text-[var(--pbp-text-muted)]">빈 슬롯 CTA</span>
-            </WaflAddCardButton>
+            <WaflAddCardButton
+              className="min-h-28"
+              label="첨부 추가"
+              description="빈 슬롯 CTA"
+            />
 
             <WaflSurfaceButton component="catalog-process-card-sample" selected className="flex items-center justify-between gap-3">
               <span className="min-w-0">

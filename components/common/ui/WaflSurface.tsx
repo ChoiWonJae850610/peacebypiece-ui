@@ -155,41 +155,74 @@ export function WaflAddCardButton({
   children,
   className,
   component = "add-card-button",
+  description,
+  icon,
+  label,
   type = "button",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  children: ReactNode;
+  children?: ReactNode;
   component?: string;
+  description?: ReactNode;
+  icon?: ReactNode;
+  label?: ReactNode;
 }) {
+  const content = children ?? (
+    <>
+      {icon ?? <WaflAddIconBubble />}
+      {label ? (
+        <span className="text-sm font-bold text-[var(--pbp-text-primary)]">
+          {label}
+        </span>
+      ) : null}
+      {description ? (
+        <span className="text-center text-xs leading-5 text-[var(--pbp-text-muted)]">
+          {description}
+        </span>
+      ) : null}
+    </>
+  );
+
   return (
     <button
       type={type}
       data-wafl-component={component}
       data-wafl-primitive="add-card-button"
       className={cn(
-        "pbp-interactive-button flex min-w-0 items-center justify-center wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        "pbp-interactive-button group flex min-w-0 flex-col items-center justify-center gap-2 wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 text-center shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
         className,
       )}
       {...props}
     >
-      {children}
+      {content}
     </button>
   );
 }
 
+export type WaflAddIconBubbleSize = "sm" | "md" | "lg";
+
+const addIconBubbleSizeClassMap: Record<WaflAddIconBubbleSize, string> = {
+  sm: "h-7 w-7 [&>svg]:h-3 [&>svg]:w-3",
+  md: "h-8 w-8 [&>svg]:h-3 [&>svg]:w-3",
+  lg: "h-9 w-9 [&>svg]:h-3.5 [&>svg]:w-3.5",
+};
+
 export function WaflAddIconBubble({
   className,
   component = "add-card-button-icon",
+  size = "md",
   ...props
 }: HTMLAttributes<HTMLSpanElement> & {
   component?: string;
+  size?: WaflAddIconBubbleSize;
 }) {
   return (
     <span
       data-wafl-component={component}
       data-wafl-primitive="add-card-button-icon"
       className={cn(
-        "pbp-sidepanel-preview-surface inline-flex h-8 w-8 shrink-0 items-center justify-center wafl-shape-icon text-[var(--pbp-text-muted)] shadow-none",
+        "pbp-sidepanel-preview-surface inline-flex shrink-0 items-center justify-center wafl-shape-icon text-[var(--pbp-text-muted)] shadow-none",
+        addIconBubbleSizeClassMap[size],
         className,
       )}
       aria-hidden="true"
@@ -197,7 +230,6 @@ export function WaflAddIconBubble({
     >
       <svg
         viewBox="0 0 24 24"
-        className="h-3 w-3"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.65"

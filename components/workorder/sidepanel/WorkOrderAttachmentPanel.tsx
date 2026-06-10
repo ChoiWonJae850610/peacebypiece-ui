@@ -131,8 +131,8 @@ function AttachmentActionMenu({
         <div
           className={
             trigger === "plus"
-              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden rounded-[var(--pbp-radius-wafl)] p-1.5 text-sm"
-              : "pbp-card absolute right-0 top-8 z-30 mt-2 min-w-[160px] overflow-hidden rounded-[var(--pbp-radius-wafl)] p-1.5 text-sm"
+              ? "pbp-card absolute bottom-full right-1/2 z-30 mb-2 min-w-[160px] translate-x-1/2 overflow-hidden wafl-shape-surface p-1.5 text-sm"
+              : "pbp-card absolute right-0 top-9 z-30 mt-2 min-w-[160px] overflow-hidden wafl-shape-surface p-1.5 text-sm"
           }
         >
           <button
@@ -141,7 +141,7 @@ function AttachmentActionMenu({
               setOpen(false);
               if (!disabled) onOpenAttachmentPicker();
             }}
-            className="pbp-interactive-button flex w-full items-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+            className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
           >
             <WorkOrderPlusIcon className="h-3.5 w-3.5" />
             <span>{addButtonLabel}</span>
@@ -153,7 +153,7 @@ function AttachmentActionMenu({
                 setOpen(false);
                 onOpenDrawingPlaceholder();
               }}
-              className="pbp-interactive-button flex w-full items-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
               title={ui.attachmentPanel.drawingActionPending}
             >
               <span aria-hidden="true">✎</span>
@@ -167,7 +167,7 @@ function AttachmentActionMenu({
                 setOpen(false);
                 onOpenAdvancedDrawing();
               }}
-              className="pbp-interactive-button flex w-full items-center gap-2 rounded-[var(--pbp-radius-wafl)] px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
               title={ui.attachmentPanel.advancedDrawingActionPending}
             >
               <span aria-hidden="true">✦</span>
@@ -261,7 +261,7 @@ function AttachmentUploadHint({
           dragActive ? "pbp-sidepanel-upload-zone-active ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""
         } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
       >
-<WaflAddIconBubble />
+          <WaflAddIconBubble />
         <span className="sr-only">{title}</span>
       </WaflAddCardButton>
     );
@@ -333,7 +333,7 @@ function AttachmentFlatAddHint({
         aria-label={addButtonLabel}
         className="min-h-[72px] w-full"
       >
-<WaflAddIconBubble />
+          <WaflAddIconBubble />
       </WaflAddCardButton>
     );
   }
