@@ -41,6 +41,18 @@ type CatalogSection = {
   status: "sampled" | "skeleton";
 };
 
+type ComponentSpec = {
+  name: string;
+  path: string;
+  purpose: string;
+  props: string;
+  sizes: string;
+  tones: string;
+  variants: string;
+  avoid: string;
+  screens: string;
+};
+
 const catalogSections: CatalogSection[] = [
   {
     id: "foundation",
@@ -98,42 +110,118 @@ const catalogSections: CatalogSection[] = [
   },
 ];
 
-const componentSpecs = [
+const componentSpecs: ComponentSpec[] = [
   {
     name: "WaflButton",
     path: "@/components/common/ui/WaflButton",
-    purpose: "업무 화면의 기본 버튼. primary/secondary/ghost/danger/subtle/icon으로 의미를 구분한다.",
-    props: "variant, size, width, disabled, children",
-    avoid: "화면별 rounded, shadow, bg 색상 직접 지정으로 새 버튼을 만들지 않는다.",
+    purpose: "업무 화면의 기본 button. 저장, 생성, 삭제, 보조 액션, icon 액션을 의미 단위로 구분한다.",
+    props: "variant, size, width, disabled, type, children",
+    sizes: "sm / md / lg",
+    tones: "variant가 tone 역할을 겸함",
+    variants: "primary / secondary / ghost / danger / subtle / icon",
+    avoid: "rounded, shadow, bg, text 색상을 화면별 className으로 새로 조합하지 않는다.",
+    screens: "작업지시서, 발주, 저장소, 통계, 멤버관리, 환경설정",
+  },
+  {
+    name: "WaflLinkButton",
+    path: "@/components/common/ui/WaflButton",
+    purpose: "이동 성격의 CTA를 button과 같은 시각 문법으로 표시한다.",
+    props: "href, variant, size, width, children",
+    sizes: "sm / md / lg",
+    tones: "variant가 tone 역할을 겸함",
+    variants: "primary / secondary / ghost / danger / subtle / icon",
+    avoid: "링크를 별도 rounded pill 또는 임의 underline CTA로 만들지 않는다.",
+    screens: "홈, 운영 대시보드, 내부 catalog, 설정 이동",
+  },
+  {
+    name: "WaflAddCardButton",
+    path: "@/components/common/ui/WaflSurface",
+    purpose: "새 항목 추가를 카드 그리드 안에서 표시한다. 빈 슬롯 CTA에 사용한다.",
+    props: "children, className, button attributes",
+    sizes: "컨테이너 높이에 맞춤",
+    tones: "add surface token",
+    variants: "single visual variant",
+    avoid: "카드형 추가 버튼을 일반 WaflButton으로 억지 배치하지 않는다.",
+    screens: "작업지시서 첨부, 디자인, 메모, 구성 항목 추가",
+  },
+  {
+    name: "WaflAddIconBubble",
+    path: "@/components/common/ui/WaflSurface",
+    purpose: "AddCardButton 내부의 + 아이콘 버블. 단독 액션보다 카드 CTA 보조 시각 요소로 사용한다.",
+    props: "className, span attributes",
+    sizes: "fixed bubble",
+    tones: "add icon token",
+    variants: "single visual variant",
+    avoid: "+ 원형 아이콘을 화면마다 직접 border/bg 조합으로 만들지 않는다.",
+    screens: "작업지시서, 기준정보, 저장소 추가 카드",
   },
   {
     name: "AppBadge",
     path: "@/components/common/ui/AppBadge",
     purpose: "상태, 개수, 파일 유형, 업무 단계 등 짧은 라벨을 표시한다.",
     props: "tone, variant, size, children",
+    sizes: "xs / sm / md",
+    tones: "neutral / strong / info / success / warning / danger / brand / workorder / design / document / memo / file / inverse",
+    variants: "status / count / info / success / warning / danger / brand / neutral",
     avoid: "상태값별 색상을 개별 화면에서 직접 className으로 분기하지 않는다.",
+    screens: "전체 업무 화면, 파일 카드, 상태 row, table count",
   },
   {
-    name: "WaflSurface",
-    path: "@/components/common/ui/WaflSurface",
-    purpose: "card/panel/row/empty 영역의 기본 표면 토큰을 제공한다.",
-    props: "tone, component, as, children",
-    avoid: "카드 안 카드 depth를 과도하게 중첩하지 않는다.",
+    name: "WaflInput",
+    path: "@/components/common/ui/WaflForm",
+    purpose: "단일행 텍스트 입력. 검색, 이름, 연락처, 제목, 짧은 값 입력에 사용한다.",
+    props: "input attributes, className, ref",
+    sizes: "md 고정 / h-11",
+    tones: "surface field token",
+    variants: "single visual variant",
+    avoid: "input마다 h, border, focus ring을 직접 정의하지 않는다.",
+    screens: "멤버관리, 협력업체, 저장소, 작업지시서 생성/수정 모달",
   },
   {
-    name: "WaflFilterBar",
-    path: "@/components/admin/common/WaflFilterBar",
-    purpose: "검색, select, 필터 액션을 한 줄 또는 grid로 묶는다.",
-    props: "children, className, layoutClassName",
-    avoid: "검색 영역마다 별도 border/bg/radius 조합을 만들지 않는다.",
+    name: "WaflTextarea",
+    path: "@/components/common/ui/WaflForm",
+    purpose: "여러 줄 입력. 설명, 메모, 사유, 안내문 초안 입력에 사용한다.",
+    props: "textarea attributes, className, ref",
+    sizes: "md 고정 / min-h-24",
+    tones: "surface field token",
+    variants: "single visual variant",
+    avoid: "textarea 높이와 focus ring을 화면별로 새로 만들지 않는다.",
+    screens: "메모, 반려 사유, 설정 설명, 업체/파일 설명",
   },
   {
-    name: "WaflDataTable",
-    path: "@/components/admin/common/WaflDataTable",
-    purpose: "저장소, 협력업체, 멤버, 통계 등 admin table 문법을 통일한다.",
-    props: "Shell, Header, Body, Row, gridTemplateColumns, clickable",
-    avoid: "테이블마다 header/row height, divider, action alignment를 새로 정의하지 않는다.",
+    name: "Select trigger",
+    path: "WAFL field class 또는 WaflFilterBar field class",
+    purpose: "select 자체 또는 custom select trigger를 WAFL 입력 필드 문법으로 표시한다.",
+    props: "value, onChange/onSelect, disabled, options",
+    sizes: "md field 기준",
+    tones: "surface field token",
+    variants: "native select / custom trigger",
+    avoid: "셀렉트 화살표, 열린 상태, 닫힘 상태를 화면별 임의 스타일로 만들지 않는다.",
+    screens: "작업지시서 생성, 권한 모달, 통계 기간, 필터바",
   },
+];
+
+const buttonUsageRules = [
+  "primary는 저장·생성·확정처럼 화면의 주 액션에만 사용한다.",
+  "secondary는 취소가 아닌 보조 실행 액션에 사용한다.",
+  "ghost는 카드 내부 보조 액션이나 부담이 낮은 이동에 사용한다.",
+  "danger는 삭제·영구삭제·되돌릴 수 없는 흐름에만 사용한다.",
+  "subtle은 추가·가벼운 보조 CTA에 사용한다.",
+  "icon은 aria-label을 반드시 제공한다.",
+];
+
+const badgeUsageRules = [
+  "tone은 의미별로 고정한다. 성공은 success, 경고는 warning, 위험은 danger를 우선한다.",
+  "문서·디자인·메모·파일은 각각 document/design/memo/file tone을 사용한다.",
+  "개수 표시는 variant=count 또는 strong tone을 사용한다.",
+  "badge 안에는 긴 문장을 넣지 않고 짧은 상태·개수·유형만 넣는다.",
+];
+
+const formUsageRules = [
+  "label 텍스트는 입력 요소와 같은 그룹에 둔다.",
+  "입력 높이, border, focus ring은 WaflInput/WaflTextarea 또는 WAFL field class를 사용한다.",
+  "검색·필터 조합은 WaflFilterBar 안에서 구성한다.",
+  "select trigger는 다시 눌렀을 때 닫힘, 바깥 클릭 닫힘, Escape 닫힘을 유지해야 한다.",
 ];
 
 function SectionAnchorList() {
@@ -164,15 +252,17 @@ function SectionAnchorList() {
 function SpecTable() {
   return (
     <WaflDataTableShell>
-      <WaflDataTableHeader gridTemplateColumns="1fr 1.2fr 1.4fr 1fr">
+      <WaflDataTableHeader gridTemplateColumns="0.8fr 1.1fr 1.2fr 0.8fr 1fr 1fr">
         <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>Component</div>
         <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>Import</div>
         <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>Purpose / props</div>
-        <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>금지 기준</div>
+        <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>Size</div>
+        <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>Tone / variant</div>
+        <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>금지 기준 / 적용 화면</div>
       </WaflDataTableHeader>
       <WaflDataTableBody>
         {componentSpecs.map((spec) => (
-          <WaflDataTableRow key={spec.name} gridTemplateColumns="1fr 1.2fr 1.4fr 1fr">
+          <WaflDataTableRow key={spec.name} gridTemplateColumns="0.8fr 1.1fr 1.2fr 0.8fr 1fr 1fr">
             <div className={WAFL_DATA_TABLE_CELL_CLASS}>
               <p className={WAFL_DATA_TABLE_PRIMARY_TEXT_CLASS}>{spec.name}</p>
               <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>data-wafl-component 기준 확인 대상</p>
@@ -181,10 +271,18 @@ function SpecTable() {
               {spec.path}
             </code>
             <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-              <p className="truncate text-[12px] font-medium text-[var(--pbp-text-muted)]">{spec.purpose}</p>
+              <p className="line-clamp-2 text-[12px] font-medium leading-5 text-[var(--pbp-text-muted)]">{spec.purpose}</p>
               <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{spec.props}</p>
             </div>
-            <p className="line-clamp-2 text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">{spec.avoid}</p>
+            <p className="text-[11px] font-semibold leading-5 text-[var(--pbp-text-muted)]">{spec.sizes}</p>
+            <div className={WAFL_DATA_TABLE_CELL_CLASS}>
+              <p className="line-clamp-2 text-[11px] font-semibold leading-5 text-[var(--pbp-text-muted)]">{spec.tones}</p>
+              <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{spec.variants}</p>
+            </div>
+            <div className={WAFL_DATA_TABLE_CELL_CLASS}>
+              <p className="line-clamp-2 text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">{spec.avoid}</p>
+              <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{spec.screens}</p>
+            </div>
           </WaflDataTableRow>
         ))}
       </WaflDataTableBody>
@@ -222,41 +320,157 @@ function SampleSurfaceGrid() {
 
 function SampleButtonGrid() {
   const variants = ["primary", "secondary", "ghost", "danger", "subtle"] as const;
+  const sizes = ["sm", "md", "lg"] as const;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {variants.map((variant) => (
-        <WaflButton key={variant} variant={variant} size="md">
-          {variant}
-        </WaflButton>
-      ))}
-      <WaflButton variant="icon" size="md" aria-label="아이콘 버튼 샘플">+</WaflButton>
-      <WaflLinkButton href="#foundation" variant="secondary" size="sm">
-        link button
-      </WaflLinkButton>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--pbp-text-subtle)]">Variant</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {variants.map((variant) => (
+            <WaflButton key={variant} variant={variant} size="md">
+              {variant}
+            </WaflButton>
+          ))}
+          <WaflButton variant="icon" size="md" aria-label="아이콘 버튼 샘플">+</WaflButton>
+          <WaflLinkButton href="#foundation" variant="secondary" size="sm">
+            link button
+          </WaflLinkButton>
+        </div>
+      </div>
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--pbp-text-subtle)]">Size / width / disabled</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {sizes.map((size) => (
+            <WaflButton key={size} variant="secondary" size={size}>
+              {size}
+            </WaflButton>
+          ))}
+          <WaflButton variant="primary" size="md" width="full" className="max-w-52">
+            width full
+          </WaflButton>
+          <WaflButton variant="secondary" size="md" disabled>
+            disabled
+          </WaflButton>
+        </div>
+      </div>
+      <RuleList title="Button 사용 기준" rules={buttonUsageRules} />
     </div>
+  );
+}
+
+function SampleBadgeGrid() {
+  const tones = [
+    "neutral",
+    "strong",
+    "info",
+    "success",
+    "warning",
+    "danger",
+    "brand",
+    "workorder",
+    "design",
+    "document",
+    "memo",
+    "file",
+    "inverse",
+  ] as const;
+  const variants = ["status", "count", "info", "success", "warning", "danger", "brand", "neutral"] as const;
+  const sizes = ["xs", "sm", "md"] as const;
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--pbp-text-subtle)]">Tone</p>
+        <div className="flex flex-wrap items-center gap-2 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
+          {tones.map((tone) => (
+            <AppBadge key={tone} tone={tone}>
+              {tone}
+            </AppBadge>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--pbp-text-subtle)]">Variant / size</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {variants.map((variant) => (
+            <AppBadge key={variant} variant={variant}>
+              {variant}
+            </AppBadge>
+          ))}
+          {sizes.map((size) => (
+            <AppBadge key={size} tone="brand" size={size}>
+              size {size}
+            </AppBadge>
+          ))}
+        </div>
+      </div>
+      <RuleList title="Badge 사용 기준" rules={badgeUsageRules} />
+    </div>
+  );
+}
+
+function SelectTriggerSample() {
+  return (
+    <button
+      type="button"
+      data-wafl-component="select-trigger"
+      className="pbp-field-interaction flex h-11 w-full items-center justify-between gap-3 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-left text-sm font-semibold text-[var(--pbp-text-primary)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+    >
+      <span className="min-w-0 truncate">셀렉트 트리거 샘플</span>
+      <span aria-hidden="true" className="text-[var(--pbp-text-muted)]">⌄</span>
+    </button>
   );
 }
 
 function SampleFormGrid() {
   return (
-    <div className="grid gap-3 lg:grid-cols-3">
-      <label className="space-y-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
-        Input
-        <WaflInput placeholder="검색어 또는 이름 입력" />
-      </label>
-      <label className="space-y-2 text-xs font-semibold text-[var(--pbp-text-muted)] lg:col-span-2">
-        Textarea
-        <WaflTextarea placeholder="메모 또는 설명 입력" />
-      </label>
-      <WaflSelectableCard selected>
-        <span className="min-w-0">
-          <span className="block text-sm font-bold">Selectable card</span>
-          <span className="mt-1 block text-xs text-[var(--pbp-text-muted)]">권한, 역할, 옵션 선택에 사용</span>
-        </span>
-        <AppBadge size="xs" tone="brand">selected</AppBadge>
-      </WaflSelectableCard>
+    <div className="space-y-4">
+      <div className="grid gap-3 lg:grid-cols-3">
+        <label className="space-y-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
+          Input
+          <WaflInput placeholder="검색어 또는 이름 입력" />
+        </label>
+        <label className="space-y-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
+          Select trigger
+          <SelectTriggerSample />
+        </label>
+        <label className="space-y-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
+          Disabled input
+          <WaflInput placeholder="비활성 입력" disabled />
+        </label>
+        <label className="space-y-2 text-xs font-semibold text-[var(--pbp-text-muted)] lg:col-span-2">
+          Textarea
+          <WaflTextarea placeholder="메모 또는 설명 입력" />
+        </label>
+        <WaflSelectableCard selected>
+          <span className="min-w-0">
+            <span className="block text-sm font-bold">Selectable card</span>
+            <span className="mt-1 block text-xs text-[var(--pbp-text-muted)]">권한, 역할, 옵션 선택에 사용</span>
+          </span>
+          <AppBadge size="xs" tone="brand">selected</AppBadge>
+        </WaflSelectableCard>
+      </div>
+      <RuleList title="Form 사용 기준" rules={formUsageRules} />
     </div>
+  );
+}
+
+function RuleList({ title, rules }: { title: string; rules: string[] }) {
+  return (
+    <WaflInfoBox tone="muted" component="catalog-rule-list">
+      <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{title}</p>
+      <ul className="mt-2 grid gap-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] lg:grid-cols-2">
+        {rules.map((rule) => (
+          <li key={rule} className="flex gap-2">
+            <span aria-hidden="true" className="text-[var(--pbp-brand-primary)]">•</span>
+            <span>{rule}</span>
+          </li>
+        ))}
+      </ul>
+    </WaflInfoBox>
   );
 }
 
@@ -264,16 +478,7 @@ function SampleFeedbackGrid() {
   return (
     <div className="grid gap-3 lg:grid-cols-2">
       <WaflNoticeBox tone="info">개발/내부용 카탈로그 페이지다. production에서는 접근을 차단한다.</WaflNoticeBox>
-      <div className="flex flex-wrap items-center gap-2">
-        <AppBadge tone="neutral">neutral</AppBadge>
-        <AppBadge tone="brand">brand</AppBadge>
-        <AppBadge tone="success">success</AppBadge>
-        <AppBadge tone="warning">warning</AppBadge>
-        <AppBadge tone="danger">danger</AppBadge>
-        <AppBadge tone="document">document</AppBadge>
-        <AppBadge tone="design">design</AppBadge>
-        <AppBadge tone="memo">memo</AppBadge>
-      </div>
+      <SampleBadgeGrid />
     </div>
   );
 }
@@ -330,15 +535,15 @@ export default function WaflUiCatalogPage({
               </p>
             </WaflInfoBox>
             <WaflInfoBox tone="selected">
-              <p className="text-sm font-bold">0.20.99 범위</p>
-              <p className="mt-1 text-xs leading-5">라우팅, 접근 제한, layout, 대표 샘플 일부만 구성한다. 업무 기능 로직은 변경하지 않는다.</p>
+              <p className="text-sm font-bold">0.21.00 범위</p>
+              <p className="mt-1 text-xs leading-5">Button, Badge, Form 계열의 실제 샘플과 props/size/tone/variant/금지 기준을 채운다. 업무 기능 로직은 변경하지 않는다.</p>
             </WaflInfoBox>
           </div>
         </WaflPageHero>
 
         <WaflSectionPanel
           title="Catalog sections"
-          description="이번 버전에서는 전체 구조를 먼저 고정하고, 0.21.00부터 컴포넌트별 상세 스펙을 순차적으로 채운다."
+          description="0.21.00에서는 버튼, 뱃지, 입력 계열의 상세 스펙을 먼저 채우고, 이후 Surface/Table/Modal/실무 패턴을 확장한다."
           density="compact"
         >
           <SectionAnchorList />
@@ -375,19 +580,19 @@ export default function WaflUiCatalogPage({
         </div>
 
         <div id="buttons" className="scroll-mt-6">
-          <WaflSectionPanel title="Buttons" description="버튼 variant/size/tone의 대표 샘플." density="compact">
+          <WaflSectionPanel title="Buttons" description="WaflButton/WaflLinkButton/WaflAddCardButton/WaflAddIconBubble의 variant, size, width, disabled 기준." density="compact">
             <SampleButtonGrid />
           </WaflSectionPanel>
         </div>
 
         <div id="forms" className="scroll-mt-6">
-          <WaflSectionPanel title="Forms" description="입력 필드와 선택 카드의 대표 샘플." density="compact">
+          <WaflSectionPanel title="Forms" description="WaflInput, WaflTextarea, select trigger, WaflSelectableCard의 입력·선택 기준." density="compact">
             <SampleFormGrid />
           </WaflSectionPanel>
         </div>
 
         <div id="feedback" className="scroll-mt-6">
-          <WaflSectionPanel title="Feedback" description="notice, badge, empty 상태의 대표 샘플." density="compact">
+          <WaflSectionPanel title="Feedback" description="notice, badge, empty 상태의 대표 샘플. AppBadge tone/variant/size 기준은 이 섹션에서 확인한다." density="compact">
             <SampleFeedbackGrid />
           </WaflSectionPanel>
         </div>
