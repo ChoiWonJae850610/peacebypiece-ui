@@ -230,8 +230,8 @@ body {
    Do not use rounded-full for WAFL UI. Small components use smaller tokens
    so they visually match the surface family instead of becoming pill-shaped. */
 :root {
-  --pbp-radius-wafl-surface: 16px;
-  --pbp-radius-wafl-control: 8px;
+  --pbp-radius-wafl-surface: 12px;
+  --pbp-radius-wafl-control: 7px;
   --pbp-radius-wafl-compact: 6px;
   --pbp-radius-wafl-icon: 6px;
 

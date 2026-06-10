@@ -163,7 +163,7 @@ export default function BasicInfoEditModal({
         onChange={{ category1: handleCategory1Change, category2: handleCategory2Change, category3: handleCategory3Change }}
       />
 
-      <WaflInfoBox component="preview-card" tone="muted" className="pbp-detail-summary-readonly mt-4 px-4 py-3">
+      <WaflInfoBox component="preview-card" tone="muted" shape="control" className="pbp-detail-summary-readonly mt-4 px-4 py-3">
         <div className="text-xs text-[var(--pbp-text-muted)]">{copy.previewLabel}</div>
         <div className="mt-2 text-sm font-medium text-[var(--pbp-text-primary)]">{formatBasicSummary(draft)}</div>
       </WaflInfoBox>

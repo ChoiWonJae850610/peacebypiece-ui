@@ -51,6 +51,7 @@ export const WaflTextarea = forwardRef<HTMLTextAreaElement, WaflTextareaProps>(
 );
 
 export type WaflInfoBoxTone = "neutral" | "selected" | "muted";
+export type WaflInfoBoxShape = "surface" | "control";
 
 const infoBoxToneClassMap: Record<WaflInfoBoxTone, string> = {
   neutral:
@@ -65,18 +66,20 @@ export function WaflInfoBox({
   children,
   className,
   tone = "neutral",
+  shape = "surface",
   component = "info-card",
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   tone?: WaflInfoBoxTone;
+  shape?: WaflInfoBoxShape;
   component?: string;
 }) {
   return (
     <div
       data-wafl-component={component}
       className={cn(
-        "min-w-0 wafl-shape-surface border p-3",
+        shape === "control" ? "min-w-0 wafl-shape-control border p-3" : "min-w-0 wafl-shape-surface border p-3",
         infoBoxToneClassMap[tone],
         className,
       )}
@@ -103,7 +106,7 @@ export function WaflSelectableCard({
       type="button"
       data-wafl-component={component}
       className={cn(
-        "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-surface border px-4 py-3 text-left transition disabled:pointer-events-none disabled:opacity-50",
+        "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-control border px-4 py-3 text-left transition disabled:pointer-events-none disabled:opacity-50",
         selected
           ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)]"
           : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",

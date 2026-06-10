@@ -80,7 +80,7 @@ export default function WorkOrderListCard({
     <WaflSurface
       component="list-card"
       tone={active ? "selected" : "muted"}
-      className={`group pbp-interactive-card w-full px-3 py-3 transition-all duration-150 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
+      className={`group pbp-interactive-card w-full wafl-shape-control px-3 py-3 transition-all duration-150 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
     >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">
@@ -115,8 +115,8 @@ export default function WorkOrderListCard({
           />
           {menuOpen && canOpenMenu ? (
             <div
-              className={`absolute right-0 top-10 z-20 min-w-[132px] rounded-[var(--pbp-radius-wafl)] border p-1 ${
-                active ? "border-stone-700 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-900"
+              className={`absolute right-0 top-10 z-20 min-w-[132px] wafl-shape-control border p-1 ${
+                active ? "border-[var(--pbp-text-primary)] bg-[var(--pbp-text-primary)] text-[var(--pbp-surface)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]"
               }`}
             >
               {canShowReorder ? (
@@ -127,7 +127,7 @@ export default function WorkOrderListCard({
                     onReorder?.(workOrder.id);
                   }}
                   className={`flex w-full items-center wafl-shape-control px-3 py-2 text-left text-sm ${
-                    active ? "hover:bg-white/10" : "hover:bg-stone-100"
+                    active ? "hover:bg-white/10" : "hover:bg-[var(--pbp-surface-muted)]"
                   }`}
                 >
                   {copy.reorder}
@@ -141,7 +141,7 @@ export default function WorkOrderListCard({
                     onDelete?.(workOrder.id);
                   }}
                   className={`flex w-full items-center wafl-shape-control px-3 py-2 text-left text-sm ${
-                    active ? "text-rose-200 hover:bg-white/10" : "text-rose-600 hover:bg-rose-50"
+                    active ? "text-[var(--pbp-status-danger-bg)] hover:bg-white/10" : "text-[var(--pbp-status-danger-fg)] hover:bg-[var(--pbp-status-danger-bg)]"
                   }`}
                 >
                   {copy.delete}
