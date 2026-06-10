@@ -93,6 +93,13 @@ const catalogSections: CatalogSection[] = [
     status: "guide",
   },
   {
+    id: "foundation-primitive",
+    title: "Foundation primitive",
+    plainTitle: "WAFL 슈퍼클래스 기준",
+    description: "shape, density, tone, variant, state를 한 primitive에서 나눠 쓴다.",
+    status: "guide",
+  },
+  {
     id: "shape-grammar",
     title: "Shape grammar",
     plainTitle: "모양 통일 기준",
@@ -862,6 +869,72 @@ function ComparisonCard({
         </div>
       </div>
     </WaflSurface>
+  );
+}
+
+function FoundationPrimitiveSamples() {
+  const primitiveRows = [
+    { key: "shape", value: "surface / control / compact / icon", rule: "곡률 family를 고정한다." },
+    { key: "density", value: "compact / default / spacious", rule: "높이와 좌우 여백을 고정한다." },
+    { key: "tone", value: "surface / muted / selected / warning / danger / info", rule: "의미 색상은 공통 tone으로만 바꾼다." },
+    { key: "state", value: "normal / selected / current / disabled / danger", rule: "상태 때문에 shape가 바뀌지 않게 한다." },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <WaflNoticeBox tone="info">
+        0.21.22부터 WAFL 컴포넌트는 foundation primitive를 통과한다. 화면은 rounded/background/border 조합을 직접 만들지 않고 shape, density, tone, state만 고른다.
+      </WaflNoticeBox>
+
+      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <WaflSurface component="catalog-foundation-map" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Primitive map</p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">같은 계열은 같은 foundation을 쓴다</h3>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                WaflSurface, WaflButton, WaflInput, AppSelect, AppBadge, InfoRow, EmptyCard는 서로 다른 컴포넌트지만 shape/density/tone 값은 한 곳에서 공유한다.
+              </p>
+            </div>
+            <AppBadge tone="brand" size="xs">foundation</AppBadge>
+          </div>
+          <div className="mt-4 grid gap-2">
+            {primitiveRows.map((row) => (
+              <WaflInfoRow key={row.key} component="catalog-foundation-row" tone="muted" className="items-start">
+                <span className="min-w-0">
+                  <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">{row.key}</span>
+                  <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{row.value}</span>
+                </span>
+                <span className="max-w-[11rem] text-right text-[11px] font-semibold leading-5 text-[var(--pbp-text-muted)]">{row.rule}</span>
+              </WaflInfoRow>
+            ))}
+          </div>
+        </WaflSurface>
+
+        <WaflSurface component="catalog-foundation-visual" tone="surface" className="p-4">
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">control 계열 비교</p>
+          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            아래 요소는 모두 control foundation으로 읽혀야 한다. 버튼, 검색필드, 선택 row가 서로 다른 곡률로 보이면 해당 컴포넌트가 아직 primitive를 우회한 것이다.
+          </p>
+          <div className="mt-4 grid gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <WaflButton variant="secondary" size="md">control button</WaflButton>
+              <WaflButton variant="neutral" size="sm">compact control</WaflButton>
+              <WaflButton variant="icon" size="md" aria-label="foundation icon">+</WaflButton>
+            </div>
+            <WaflInput placeholder="control input" />
+            <WaflSelectableCard selected component="catalog-foundation-selectable">
+              <span className="text-sm font-bold">control row</span>
+              <AppBadge tone="brand" size="xs">selected</AppBadge>
+            </WaflSelectableCard>
+            <WaflInfoRow component="catalog-foundation-info-row" tone="muted">
+              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">control info row</span>
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">same shape</span>
+            </WaflInfoRow>
+          </div>
+        </WaflSurface>
+      </div>
+    </div>
   );
 }
 
@@ -1683,6 +1756,12 @@ export default function WaflUiCatalogPage({
         <div id="start-here" className="scroll-mt-6">
           <WaflSectionPanel title="Start here" description="모양이 아니라 상황으로 컴포넌트를 고른다." density="compact">
             <QuickDecisionGrid />
+          </WaflSectionPanel>
+        </div>
+
+        <div id="foundation-primitive" className="scroll-mt-6">
+          <WaflSectionPanel title="Foundation primitive · WAFL 슈퍼클래스 기준" description="모양을 화면별로 맞추지 않고 모든 공통 컴포넌트가 같은 foundation token을 통과하게 한다." density="compact">
+            <FoundationPrimitiveSamples />
           </WaflSectionPanel>
         </div>
 

@@ -1,6 +1,7 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { waflControlDensityClassMap, waflIconDensityClassMap, waflInteractiveClass } from "./WaflPrimitive";
 
 export type WaflButtonVariant = "primary" | "secondary" | "neutral" | "ghost" | "danger" | "subtle" | "icon";
 export type WaflButtonSize = "sm" | "md" | "lg";
@@ -17,15 +18,15 @@ const variantClassMap: Record<WaflButtonVariant, string> = {
 };
 
 const sizeClassMap: Record<WaflButtonSize, string> = {
-  sm: "min-h-8 wafl-shape-control px-3 py-1.5 text-xs",
-  md: "min-h-10 wafl-shape-control px-4 py-2 text-sm",
-  lg: "min-h-12 wafl-shape-control px-5 py-3 text-base",
+  sm: cn("wafl-shape-control", waflControlDensityClassMap.compact),
+  md: cn("wafl-shape-control", waflControlDensityClassMap.default),
+  lg: cn("wafl-shape-control", waflControlDensityClassMap.spacious),
 };
 
 const iconSizeClassMap: Record<WaflButtonSize, string> = {
-  sm: "h-8 min-h-8 w-8 wafl-shape-icon p-0 text-xs",
-  md: "h-10 min-h-10 w-10 wafl-shape-icon p-0 text-sm",
-  lg: "h-12 min-h-12 w-12 wafl-shape-icon p-0 text-base",
+  sm: cn("wafl-shape-icon", waflIconDensityClassMap.compact),
+  md: cn("wafl-shape-icon", waflIconDensityClassMap.default),
+  lg: cn("wafl-shape-icon", waflIconDensityClassMap.spacious),
 };
 
 const widthClassMap: Record<WaflButtonWidth, string> = {
@@ -34,7 +35,7 @@ const widthClassMap: Record<WaflButtonWidth, string> = {
 };
 
 export const WAFL_BUTTON_BASE_CLASS =
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap border font-semibold transition disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] [&>svg]:pointer-events-none [&>svg]:shrink-0";
+  cn("inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap border font-semibold [&>svg]:pointer-events-none [&>svg]:shrink-0", waflInteractiveClass);
 
 export function getWaflButtonClassName({
   className,
@@ -71,7 +72,7 @@ export function WaflButton({
   type = "button",
   ...props
 }: WaflButtonProps) {
-  return <button type={type} data-wafl-component="button" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
+  return <button type={type} data-wafl-component="button" data-wafl-foundation="control" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
 }
 
 type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -82,5 +83,5 @@ type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 };
 
 export function WaflLinkButton({ className, variant = "secondary", size = "md", width = "auto", ...props }: WaflLinkButtonProps) {
-  return <a data-wafl-component="button" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
+  return <a data-wafl-component="button" data-wafl-foundation="control" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
 }

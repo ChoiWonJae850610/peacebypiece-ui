@@ -8,13 +8,16 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
+import { waflFieldDensityClassMap, waflInteractiveClass, getWaflPrimitiveClassName } from "./WaflPrimitive";
 
 export type WaflFieldSize = "md";
 
-const fieldBaseClass =
-  "pbp-field-interaction w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-base text-[var(--pbp-text-primary)] outline-none transition placeholder:text-[var(--pbp-text-muted)] focus:border-[var(--pbp-selected-border)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)] md:text-sm";
+const fieldBaseClass = cn(
+  "pbp-field-interaction w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] outline-none placeholder:text-[var(--pbp-text-muted)] focus:border-[var(--pbp-selected-border)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]",
+  waflInteractiveClass,
+);
 
-export const WAFL_FIELD_INPUT_CLASS = cn(fieldBaseClass, "h-11 px-3");
+export const WAFL_FIELD_INPUT_CLASS = cn(fieldBaseClass, waflFieldDensityClassMap.default);
 export const WAFL_FIELD_TEXTAREA_CLASS = cn(
   fieldBaseClass,
   "min-h-24 resize-y px-3 py-2",
@@ -27,7 +30,7 @@ export const WaflInput = forwardRef<HTMLInputElement, WaflInputProps>(
     return (
       <input
         ref={ref}
-        data-wafl-component="input"
+        data-wafl-component="input" data-wafl-foundation="control"
         className={cn(WAFL_FIELD_INPUT_CLASS, className)}
         {...props}
       />
@@ -42,7 +45,7 @@ export const WaflTextarea = forwardRef<HTMLTextAreaElement, WaflTextareaProps>(
     return (
       <textarea
         ref={ref}
-        data-wafl-component="textarea"
+        data-wafl-component="textarea" data-wafl-foundation="control"
         className={cn(WAFL_FIELD_TEXTAREA_CLASS, className)}
         {...props}
       />
@@ -52,15 +55,6 @@ export const WaflTextarea = forwardRef<HTMLTextAreaElement, WaflTextareaProps>(
 
 export type WaflInfoBoxTone = "neutral" | "selected" | "muted";
 export type WaflInfoBoxShape = "surface" | "control";
-
-const infoBoxToneClassMap: Record<WaflInfoBoxTone, string> = {
-  neutral:
-    "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
-  selected:
-    "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]",
-  muted:
-    "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]",
-};
 
 export function WaflInfoBox({
   children,
@@ -78,9 +72,9 @@ export function WaflInfoBox({
   return (
     <div
       data-wafl-component={component}
+      data-wafl-foundation={shape}
       className={cn(
-        shape === "control" ? "min-w-0 wafl-shape-control border p-3" : "min-w-0 wafl-shape-surface border p-3",
-        infoBoxToneClassMap[tone],
+        getWaflPrimitiveClassName({ shape, tone: tone === "neutral" ? "surface" : tone, className: "p-3" }),
         className,
       )}
       {...props}
@@ -105,8 +99,10 @@ export function WaflSelectableCard({
     <button
       type="button"
       data-wafl-component={component}
+      data-wafl-foundation="control"
       className={cn(
-        "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-control border px-4 py-3 text-left transition disabled:pointer-events-none disabled:opacity-50",
+        "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-control border px-4 py-3 text-left disabled:pointer-events-none disabled:opacity-50",
+        waflInteractiveClass,
         selected
           ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)]"
           : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",

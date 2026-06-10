@@ -5,6 +5,7 @@ import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { waflFieldDensityClassMap, waflInteractiveClass } from "./WaflPrimitive";
 
 export type AppSelectOption = {
   value: string;
@@ -16,8 +17,8 @@ type AppSelectSize = "sm" | "md";
 type AppSelectWidth = "auto" | "full";
 
 const sizeClassMap: Record<AppSelectSize, string> = {
-  sm: "min-h-9 wafl-shape-control px-3 text-base md:text-xs",
-  md: "min-h-11 wafl-shape-control px-4 text-base md:text-sm",
+  sm: cn("wafl-shape-control", waflFieldDensityClassMap.compact),
+  md: cn("wafl-shape-control", waflFieldDensityClassMap.default, "px-4"),
 };
 
 const widthClassMap: Record<AppSelectWidth, string> = {
@@ -102,7 +103,7 @@ export default function AppSelect({
     >
       <Select.Trigger
         ref={triggerRef}
-        data-wafl-component="select"
+        data-wafl-component="select" data-wafl-foundation="control"
         aria-label={ariaLabel ?? placeholder}
         onPointerDownCapture={(event: PointerEvent<HTMLButtonElement>) => {
           if (!open) return;
@@ -118,7 +119,7 @@ export default function AppSelect({
           event.stopPropagation();
         }}
         className={cn(
-          "inline-flex items-center justify-between gap-3 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] font-semibold text-[var(--pbp-text-primary)] shadow-none transition hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--pbp-surface)]",
+          cn("inline-flex items-center justify-between gap-3 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] font-semibold text-[var(--pbp-text-primary)] shadow-none hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-faint)] focus:outline-none", waflInteractiveClass),
           sizeClassMap[size],
           widthClassMap[width],
           className,
@@ -135,7 +136,7 @@ export default function AppSelect({
           ref={contentRef}
           position="popper"
           sideOffset={6}
-          data-wafl-component="select-content"
+          data-wafl-component="select-content" data-wafl-foundation="surface"
           className={cn(
             "z-[4000] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-none",
             contentClassName,

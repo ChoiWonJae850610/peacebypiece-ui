@@ -6,27 +6,20 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
+import { getWaflPrimitiveClassName, waflInteractiveClass, waflToneClassMap } from "./WaflPrimitive";
 
 export type WaflSurfaceTone = "default" | "surface" | "selected" | "muted" | "empty" | "warning" | "danger" | "info";
 type WaflSurfaceElement = "div" | "section" | "article" | "header";
 
 const surfaceToneClassMap: Record<WaflSurfaceTone, string> = {
-  default:
-    "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
-  surface:
-    "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
-  selected:
-    "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]",
-  muted:
-    "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]",
-  empty:
-    "border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] text-[var(--pbp-text-muted)]",
-  warning:
-    "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]",
-  danger:
-    "border-[var(--pbp-status-danger-bg)] bg-[var(--pbp-status-danger-bg)] text-[var(--pbp-status-danger-fg)]",
-  info:
-    "border-[var(--pbp-status-info-bg)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-status-info-fg)]",
+  default: waflToneClassMap.surface,
+  surface: waflToneClassMap.surface,
+  selected: waflToneClassMap.selected,
+  muted: waflToneClassMap.muted,
+  empty: waflToneClassMap.empty,
+  warning: waflToneClassMap.warning,
+  danger: waflToneClassMap.danger,
+  info: waflToneClassMap.info,
 };
 
 export function WaflSurface({
@@ -46,11 +39,12 @@ export function WaflSurface({
     Component,
     {
       "data-wafl-component": component,
-      className: cn(
-        "min-w-0 wafl-shape-surface border shadow-none",
-        surfaceToneClassMap[tone],
+      "data-wafl-foundation": "surface",
+      className: getWaflPrimitiveClassName({
+        shape: "surface",
+        tone: tone === "default" ? "surface" : tone,
         className,
-      ),
+      }),
       ...props,
     },
     children,
@@ -71,9 +65,9 @@ export function WaflInfoRow({
   return (
     <div
       data-wafl-component={component}
+      data-wafl-foundation="control"
       className={cn(
-        "flex min-w-0 items-center justify-between gap-4 wafl-shape-control border px-3 py-2 shadow-none",
-        surfaceToneClassMap[tone],
+        getWaflPrimitiveClassName({ shape: "control", tone: tone === "default" ? "surface" : tone, className: "flex items-center justify-between gap-4 px-3 py-2" }),
         className,
       )}
       {...props}
@@ -101,8 +95,9 @@ export function WaflSurfaceButton({
     <button
       type={type}
       data-wafl-component={component}
+      data-wafl-foundation="surface"
       className={cn(
-        "pbp-interactive-card min-w-0 wafl-shape-surface border p-3 text-left shadow-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        cn("pbp-interactive-card min-w-0 wafl-shape-surface border p-3 text-left shadow-none disabled:cursor-not-allowed disabled:opacity-45", waflInteractiveClass),
         selected ? surfaceToneClassMap.selected : surfaceToneClassMap[tone],
         className,
       )}
@@ -125,8 +120,9 @@ export function WaflEmptyCard({
   return (
     <div
       data-wafl-component={component}
+      data-wafl-foundation="surface"
       className={cn(
-        "min-w-0 wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-5 text-center text-sm text-[var(--pbp-text-muted)] shadow-none",
+        getWaflPrimitiveClassName({ shape: "surface", tone: "empty", className: "px-4 py-5 text-center text-sm" }),
         className,
       )}
       {...props}
@@ -148,8 +144,9 @@ export function WaflAddCard({
   return (
     <div
       data-wafl-component={component}
+      data-wafl-foundation="surface"
       className={cn(
-        "flex min-w-0 items-center justify-center wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 shadow-none",
+        getWaflPrimitiveClassName({ shape: "surface", tone: "empty", className: "flex items-center justify-center px-4 py-4" }),
         className,
       )}
       {...props}
@@ -196,8 +193,9 @@ export function WaflAddCardButton({
       type={type}
       data-wafl-component={component}
       data-wafl-primitive="add-card-button"
+      data-wafl-foundation="surface"
       className={cn(
-        "pbp-interactive-button group flex min-w-0 flex-col items-center justify-center gap-2 wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 text-center shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        cn(getWaflPrimitiveClassName({ shape: "surface", tone: "empty", className: "pbp-interactive-button group flex flex-col items-center justify-center gap-2 px-4 py-4 text-center disabled:cursor-not-allowed disabled:opacity-45" }), "hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]", waflInteractiveClass),
         className,
       )}
       {...props}
@@ -228,6 +226,7 @@ export function WaflAddIconBubble({
     <span
       data-wafl-component={component}
       data-wafl-primitive="add-card-button-icon"
+      data-wafl-foundation="icon"
       className={cn(
         "pbp-sidepanel-preview-surface inline-flex shrink-0 items-center justify-center wafl-shape-icon border border-[var(--pbp-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-text-muted)] shadow-none transition group-hover:border-[var(--pbp-border-strong)] group-hover:bg-[var(--pbp-action-secondary-surface-hover)]",
         addIconBubbleSizeClassMap[size],
@@ -287,8 +286,9 @@ export function WaflPlainButton({
     <button
       type={type}
       data-wafl-component={component}
+      data-wafl-foundation="control"
       className={cn(
-        "pbp-interactive-button wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        cn(getWaflPrimitiveClassName({ shape: "control", tone: "surface", className: "pbp-interactive-button disabled:cursor-not-allowed disabled:opacity-45" }), "hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]", waflInteractiveClass),
         className,
       )}
       {...props}

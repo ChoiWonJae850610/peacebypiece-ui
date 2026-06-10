@@ -1,6 +1,7 @@
 import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
+import { waflCompactDensityClassMap } from "./WaflPrimitive";
 
 export type AppBadgeTone =
   | "neutral"
@@ -57,9 +58,9 @@ const variantToneMap: Record<AppBadgeVariant, AppBadgeTone> = {
 };
 
 const sizeClassMap: Record<AppBadgeSize, string> = {
-  xs: "px-2 py-0.5 text-[10px]",
-  sm: "px-2 py-0.5 text-[11px]",
-  md: "px-2.5 py-1 text-xs",
+  xs: waflCompactDensityClassMap.compact,
+  sm: waflCompactDensityClassMap.default,
+  md: waflCompactDensityClassMap.spacious,
 };
 
 type AppBadgeProps = HTMLAttributes<HTMLSpanElement> & {
@@ -79,7 +80,7 @@ export default function AppBadge({
 
   return (
     <span
-      data-wafl-component="badge"
+      data-wafl-component="badge" data-wafl-foundation="compact"
       className={cn(
         "inline-flex w-fit shrink-0 items-center justify-center gap-1 wafl-shape-compact border font-semibold leading-none",
         toneClassMap[resolvedTone],

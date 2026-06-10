@@ -60,6 +60,7 @@ export {
 } from "./WorkOrderPanelCard";
 
 export * from "./WaflActionButton";
+export * from "./WaflPrimitive";
 export * from "./WaflButton";
 export * from "./WaflToast";
 
