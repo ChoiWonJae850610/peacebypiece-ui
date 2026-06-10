@@ -7,6 +7,7 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminTable from "@/components/admin/common/AdminTable";
 import WaflNoticeBox from "@/components/admin/common/WaflNoticeBox";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import { AppSelect } from "@/components/common/ui";
 import {
   ADMIN_FIELD_CONTAINER_CLASS,
@@ -78,7 +79,7 @@ export default function AdminMemberInvitationSection({
       headerMinClassName="min-h-0"
       contentClassName={MEMBER_INVITATION_COMPACT_CONTENT_CLASS}
     >
-      <div className="rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-3 sm:p-4 2xl:hidden">
+      <WaflSurface component="member-invite-compact-form" shape="control" tone="muted" className="p-3 sm:p-4 2xl:hidden">
         <div className="grid gap-3 lg:grid-cols-[minmax(180px,240px)_160px_minmax(0,1fr)] lg:items-end">
           <label className={ADMIN_FIELD_CONTAINER_CLASS}>
             <span className="text-xs font-semibold pbp-text-muted">
@@ -127,7 +128,7 @@ export default function AdminMemberInvitationSection({
             ) : null}
           </div>
         </div>
-      </div>
+      </WaflSurface>
 
       <AdminTable
         items={visibleInvitations}
@@ -152,15 +153,16 @@ export default function AdminMemberInvitationSection({
       />
       {hasInvitationOverflow ? (
         <div className="flex justify-center pt-2">
-          <button
+          <AdminButton
             type="button"
-            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-xs font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-soft)]"
+            variant="secondary"
+            size="sm"
             onClick={() => setIsInvitationListExpanded((current) => !current)}
           >
             {isInvitationListExpanded
               ? t("memberManagement.inviteBuilder.actions.collapseList", "초대 링크 접기")
               : t("memberManagement.inviteBuilder.actions.expandList", "초대 링크 더 보기")}
-          </button>
+          </AdminButton>
         </div>
       ) : null}
     </AdminPanelSection>

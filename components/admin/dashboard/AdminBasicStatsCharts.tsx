@@ -78,7 +78,7 @@ function AdminDonutTooltip({ active, payload, valueSuffix }: AdminDonutTooltipPr
   const color = item.color ?? "var(--pbp-chart-1, var(--pbp-text-primary))";
 
   return (
-    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-primary)] shadow-[0_12px_30px_rgb(15_23_42_/_0.14)]">
+    <div className="wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-primary)] shadow-none">
       <div className="flex items-center gap-2">
         <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
         <span className="max-w-[132px] truncate">{label}</span>
@@ -94,7 +94,7 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
   return (
     <div className={`${ADMIN_STATS_MUTED_PANEL_CLASS} relative mt-3 min-h-[258px] px-3.5 py-4.5 sm:mt-5 sm:min-h-[316px] sm:px-5 sm:py-6`}>
       {total === 0 ? (
-        <div className={`absolute inset-x-5 top-5 z-10 rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)]/85 px-4 py-3 text-center text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}>
+        <div className={`absolute inset-x-5 top-5 z-10 wafl-shape-control border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)]/85 px-4 py-3 text-center text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}>
           {emptyLabel}
         </div>
       ) : null}
@@ -174,7 +174,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
               <span className="shrink-0">{getPointValueLabel(item, valueSuffix)}</span>
             </>
           );
-          const className = `flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2.5 text-xs font-semibold transition sm:px-3.5 ${isSelected ? `${ADMIN_STATS_SELECTED_ITEM_CLASS} text-[var(--pbp-text-primary)]` : `bg-[var(--pbp-surface-muted)] ${ADMIN_STATS_BODY_CLASS}`}`;
+          const className = `flex w-full items-center justify-between gap-2 wafl-shape-control px-3 py-2.5 text-xs font-semibold transition sm:px-3.5 ${isSelected ? `${ADMIN_STATS_SELECTED_ITEM_CLASS} text-[var(--pbp-text-primary)]` : `bg-[var(--pbp-surface-muted)] ${ADMIN_STATS_BODY_CLASS}`}`;
           if (!onSelectPoint) {
             return <div key={item.label} className={className}>{content}</div>;
           }

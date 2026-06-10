@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
+
 export type AdminSummaryMetricCard = {
   id: string;
   label: ReactNode;
@@ -21,11 +23,11 @@ type AdminSummaryMetricCardsProps = {
 };
 
 const CARD_BASE_CLASS =
-  "group relative flex min-w-0 flex-col overflow-hidden border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)] transition-colors hover:border-[var(--pbp-border-strong)]";
+  "group relative flex min-w-0 flex-col overflow-hidden transition-colors hover:border-[var(--pbp-border-strong)]";
 
 const DENSITY_CLASS: Record<AdminSummaryMetricDensity, string> = {
-  standard: "min-h-[104px] wafl-shape-surface px-4 py-3",
-  compact: "min-h-[88px] rounded-[22px] px-4 py-3",
+  standard: "min-h-[104px] px-4 py-3",
+  compact: "min-h-[88px] px-4 py-3",
 };
 
 const LABEL_CLASS: Record<AdminSummaryMetricDensity, string> = {
@@ -58,12 +60,14 @@ export default function AdminSummaryMetricCards({
     >
       <div className={gridClassName}>
         {cards.map((card) => (
-          <article
+          <WaflSurface
             key={card.id}
-            data-wafl-component="metric-card"
+            as="article"
+            component="metric-card"
+            shape="control"
             className={[CARD_BASE_CLASS, DENSITY_CLASS[density]].join(" ")}
           >
-            <span className="pointer-events-none absolute inset-y-3 left-0 w-1 rounded-r-full bg-[var(--pbp-brand-soft)] opacity-70" />
+            <span className="pointer-events-none absolute inset-y-3 left-0 w-1 wafl-shape-compact bg-[var(--pbp-brand-soft)] opacity-70" />
             <div className="flex min-w-0 items-start justify-between gap-3 pl-1">
               <div className="min-w-0">
                 <p className={["truncate font-semibold text-[var(--pbp-text-muted)]", LABEL_CLASS[density]].join(" ")}>
@@ -78,7 +82,7 @@ export default function AdminSummaryMetricCards({
             <p className={["truncate pl-1 text-[var(--pbp-text-muted)]", HELPER_CLASS[density]].join(" ")}>
               {card.helper}
             </p>
-          </article>
+          </WaflSurface>
         ))}
       </div>
     </section>

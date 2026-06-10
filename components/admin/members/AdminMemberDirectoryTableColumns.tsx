@@ -287,7 +287,7 @@ export function buildMemberDirectoryColumns({
               width="auto"
               ariaLabel={t("memberManagement.reviewActions.roleTemplate", "승인 역할")}
               disabled={reviewingJoinRequestId !== null}
-              triggerClassName="h-8 min-h-8 rounded-full px-2 text-[11px]"
+              triggerClassName="h-8 min-h-8 wafl-shape-control px-2 text-[11px]"
             />
             <AdminButton
               onClick={() => onReviewJoinRequest(row.joinRequest!, "approve")}

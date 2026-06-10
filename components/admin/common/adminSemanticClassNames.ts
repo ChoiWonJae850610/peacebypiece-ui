@@ -9,9 +9,9 @@ export const ADMIN_SURFACE_SUBTLE_BOX_CLASS =
 export const ADMIN_SURFACE_ITEM_CLASS =
   "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_FIELD_CONTAINER_CLASS =
-  "block wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4";
+  "block wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3";
 export const ADMIN_INPUT_CLASS =
-  "mt-2 w-full wafl-shape-control border bg-[var(--pbp-field-search-surface)] px-3 py-2 text-sm text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)]";
+  "mt-2 w-full wafl-shape-control border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-3 py-2 text-sm text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)]";
 export const ADMIN_TABLE_HEADER_CLASS =
   "bg-[var(--pbp-surface-muted)] text-xs font-semibold text-[var(--pbp-text-muted)]";
 export const ADMIN_TABLE_ROW_CLASS = "text-xs text-[var(--pbp-text-muted)]";
@@ -64,15 +64,15 @@ export const ADMIN_STORAGE_CHECKBOX_IDLE_CLASS =
 export const ADMIN_STATS_PANEL_CLASS =
   "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_STATS_PANEL_TIGHT_CLASS =
-  "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
+  "wafl-shape-control border border-[var(--pbp-border)] shadow-none";
 export const ADMIN_STATS_MUTED_PANEL_CLASS =
   "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_STATS_SUBTLE_BOX_CLASS =
-  "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]";
+  "wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]";
 export const ADMIN_STATS_ITEM_CLASS =
-  "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
+  "wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none";
 export const ADMIN_STATS_ITEM_MUTED_CLASS =
-  "wafl-shape-surface bg-[var(--pbp-surface-muted)]";
+  "wafl-shape-control bg-[var(--pbp-surface-muted)]";
 export const ADMIN_STATS_SELECTED_ITEM_CLASS =
   "border-[var(--pbp-border-strong)] bg-[var(--pbp-selected-surface)] ring-1 ring-inset ring-[var(--pbp-selected-border)]";
 export const ADMIN_STATS_IDLE_ITEM_CLASS =

@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Check, RotateCcw } from "lucide-react";
 
+
 import {
   AdminCompactActionButton,
   AdminIconActionLink,
@@ -70,7 +71,8 @@ export function AdminStatsPeriodControls({
     <div
       ref={containerRef}
       data-wafl-component="stats-period-controls"
-      className={`min-w-0 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2.5 py-2 shadow-none sm:px-3 ${ADMIN_STATS_PANEL_TIGHT_CLASS}`}
+      data-wafl-foundation="control"
+      className={`min-w-0 wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2.5 py-2 shadow-none sm:px-3 ${ADMIN_STATS_PANEL_TIGHT_CLASS}`}
     >
       <div
         className={

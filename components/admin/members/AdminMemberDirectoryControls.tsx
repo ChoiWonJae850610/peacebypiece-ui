@@ -6,7 +6,7 @@ import WaflFilterBar, {
   WAFL_FILTER_LABEL_CLASS,
   WAFL_FILTER_SELECT_TRIGGER_CLASS,
 } from "@/components/admin/common/WaflFilterBar";
-import { AppSelect } from "@/components/common/ui";
+import { AppSelect, WaflInput } from "@/components/common/ui";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 import type { MemberDirectoryStatusFilter } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
@@ -53,10 +53,11 @@ export default function AdminMemberDirectoryControls({
         <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.search", "검색")}
         </span>
-        <input
+        <WaflInput
           data-wafl-component="search-input"
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
+          fieldSize="sm"
           className={WAFL_FILTER_INPUT_CLASS}
           placeholder={t(
             "memberManagement.memberDirectory.filters.searchPlaceholder",

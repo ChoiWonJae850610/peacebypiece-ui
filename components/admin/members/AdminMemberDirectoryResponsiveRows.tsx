@@ -20,6 +20,8 @@ import {
 import type { AdminTableColumn, AdminTableSortState } from "@/lib/admin/common/types";
 import { AdminTableSortButton } from "@/components/admin/common/AdminTableSortButton";
 import { AdminTableState } from "@/components/admin/common/AdminTableState";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import { useElementSize } from "@/lib/responsive/useElementSize";
 import type { MemberDirectoryRow, MemberDirectorySortKey } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
 
@@ -151,7 +153,7 @@ function MemberDirectoryCompactListRows({
   const actionsColumn = getColumn(columns, "actions");
 
   return (
-    <section className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3.5 md:p-4">
+    <WaflSurface as="section" component="member-directory-compact-list" shape="control" className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible p-3.5 md:p-4">
       {isLoading ? (
         <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-[220px]" />
       ) : items.length === 0 ? (
@@ -205,18 +207,19 @@ function MemberDirectoryCompactListRows({
           ))}
           {hasOverflow ? (
             <div className="flex justify-center pt-1">
-              <button
+              <AdminButton
                 type="button"
-                className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-xs font-semibold pbp-text-muted transition hover:bg-[var(--pbp-surface-soft)]"
+                variant="secondary"
+                size="sm"
                 onClick={() => setIsExpanded((current) => !current)}
               >
                 {isExpanded ? collapseListLabel : expandListLabel}
-              </button>
+              </AdminButton>
             </div>
           ) : null}
         </div>
       )}
-    </section>
+    </WaflSurface>
   );
 }
 

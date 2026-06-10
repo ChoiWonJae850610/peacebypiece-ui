@@ -21,7 +21,7 @@ export function AdminStatsInlineToggle<T extends string>({
 }) {
   return (
     <div
-      className="flex max-w-full overflow-x-auto rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1"
+      className="flex max-w-full overflow-x-auto wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1"
       role="group"
       aria-label={ariaLabel}
     >

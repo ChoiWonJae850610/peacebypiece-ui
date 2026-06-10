@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { WaflInfoBox } from "@/components/common/ui/WaflForm";
 import { AppSelect } from "@/components/common/ui";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import {
@@ -46,7 +47,7 @@ export default function AdminMemberInviteBuilderPanel({
       contentClassName={contentClassName}
       footer={
         <div className="pt-3">
-          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <WaflInfoBox shape="control" tone="muted" component="member-invite-policy" className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold pbp-text-primary">
                 {t(
@@ -66,7 +67,7 @@ export default function AdminMemberInviteBuilderPanel({
                 </p>
               ) : null}
             </div>
-          </div>
+          </WaflInfoBox>
         </div>
       }
     >

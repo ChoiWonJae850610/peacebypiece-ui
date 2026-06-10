@@ -44,7 +44,7 @@ type MemberStatusOption = {
 };
 
 const MEMBER_DETAIL_SELECT_TRIGGER_CLASS =
-  "h-11 rounded-[var(--pbp-radius-wafl)]";
+  "h-11 wafl-shape-control";
 
 type AdminMemberPermissionDetailBodyProps = {
   t: AdminTranslate;

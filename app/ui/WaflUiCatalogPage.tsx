@@ -1079,25 +1079,25 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.28부터 저장소/첨부/파일 UI도 작업지시서 기준 Foundation을 확장 적용한다.
-        파일 카드, 휴지통 row, preview/empty box는 같은 control 계열로
+        0.21.29부터 통계/멤버관리 UI도 작업지시서 기준 Foundation을 확장 적용한다.
+        통계 summary card, 기간 필터, 멤버 검색/row/초대 form은 같은 control 계열로
         읽히는지 우선 확인한다.
       </WaflNoticeBox>
 
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan · storage/file
+          Direct style scan · stats/member
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: 저장소 panel/card/row/preview/empty/file icon의 직접 rounded, bg, border, text 조합
+            제거 대상: 통계 summary/filter/chart item과 멤버 search/row/invite form의 직접 rounded, bg, border, text 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
-            예외 대상: dot, spinner, progress track, chart/cylinder, modal full-screen reset
+            예외 대상: chart dot, donut center, progress track, spinner, avatar, modal full-screen reset
           </WaflInfoBox>
         </div>
       </WaflSurface>
@@ -2041,17 +2041,17 @@ function PracticePatternSamples() {
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan · storage/file
+          Direct style scan · stats/member
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: 저장소 panel/card/row/preview/empty/file icon의 직접 rounded, bg, border, text 조합
+            제거 대상: 통계 summary/filter/chart item과 멤버 search/row/invite form의 직접 rounded, bg, border, text 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
-            예외 대상: dot, spinner, progress track, chart/cylinder, modal full-screen reset
+            예외 대상: chart dot, donut center, progress track, spinner, avatar, modal full-screen reset
           </WaflInfoBox>
         </div>
       </WaflSurface>
