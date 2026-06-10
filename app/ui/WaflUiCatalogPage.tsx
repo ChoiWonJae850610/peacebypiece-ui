@@ -110,11 +110,11 @@ const catalogSections: CatalogSection[] = [
     status: "sampled",
   },
   {
-    id: "next-patterns",
-    title: "Next patterns",
-    plainTitle: "다음에 채울 실무 패턴",
-    description: "모달, 작업지시서, 발주, 저장소 패턴은 이후 버전에서 실제 화면 기준으로 연결한다.",
-    status: "skeleton",
+    id: "practice-patterns",
+    title: "Practice patterns",
+    plainTitle: "실제 업무 화면 패턴",
+    description: "작업지시서, 발주, 저장소에서 실제로 반복되는 카드/row/modal 구성을 샘플로 확인한다.",
+    status: "sampled",
   },
 ];
 
@@ -141,7 +141,7 @@ const quickDecisions: QuickDecision[] = [
     label: "비어 있는 자리에 새 항목을 추가한다",
     component: "WaflAddCardButton",
     rule: "카드 그리드 안의 빈 슬롯 CTA다. 일반 저장 버튼과 분리한다.",
-    example: "첨부 추가 / 디자인 추가 / 구성 항목 추가",
+    example: "작업지시서 첨부 추가 / 디자인 추가 / 구성 항목 추가",
   },
   {
     label: "그냥 내용을 담는다",
@@ -292,6 +292,14 @@ const statusRules = [
   "긴 설명은 Badge가 아니라 InfoBox나 NoticeBox를 쓴다.",
   "목록 데이터는 WaflDataTable 계열을 우선한다.",
   "검색과 필터는 WaflFilterBar 안에서 묶는다.",
+];
+
+
+const practiceRules = [
+  "작업지시서의 빈 슬롯은 WaflAddCardButton으로 통일한다.",
+  "제작 공정과 자재는 카드형 정보 단위로 보되, 선택/열기 동작이 있으면 WaflSurfaceButton을 쓴다.",
+  "발주 목록은 row를 우선하고, 모바일에서는 row 내용을 카드처럼 접어 읽는다.",
+  "저장소와 휴지통 상세는 리스트 row + detail modal 흐름으로 유지한다.",
 ];
 
 function SectionAnchorList() {
@@ -604,6 +612,162 @@ function WrongRightSamples() {
   );
 }
 
+
+function PracticePatternSamples() {
+  return (
+    <div className="space-y-5">
+      <WaflNoticeBox tone="info">
+        아래 샘플은 실제 데이터 저장/조회 로직이 없는 카탈로그용 정적 예시다. 화면에서 어떤 WAFL 컴포넌트를 선택해야 하는지 확인하는 용도다.
+      </WaflNoticeBox>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <WaflSurface component="catalog-workorder-pattern" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Workorder pattern</p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">작업지시서 구성 카드</h3>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                제품 구성, 공정, 첨부, 디자인, 메모처럼 반복되는 카드 묶음의 기준이다.
+              </p>
+            </div>
+            <AppBadge tone="document">작업지시서</AppBadge>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <WaflAddCardButton className="min-h-28 flex-col gap-2">
+              <WaflAddIconBubble />
+              <span className="text-sm font-bold text-[var(--pbp-text-primary)]">첨부 추가</span>
+              <span className="text-center text-xs leading-5 text-[var(--pbp-text-muted)]">빈 슬롯 CTA</span>
+            </WaflAddCardButton>
+
+            <WaflSurfaceButton component="catalog-process-card-sample" selected className="flex items-center justify-between gap-3">
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">봉제 공정</span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">단가 3,500원 · 수량 12장</span>
+              </span>
+              <AppBadge tone="brand" size="xs">선택</AppBadge>
+            </WaflSurfaceButton>
+
+            <WaflSurface component="catalog-material-card-sample" tone="surface" className="p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[var(--pbp-text-primary)]">원단 · 울 혼방</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">2.5 yd · 메인 원단</p>
+                </div>
+                <AppBadge tone="file" size="xs">원단</AppBadge>
+              </div>
+            </WaflSurface>
+
+            <WaflInfoBox tone="muted" component="catalog-workorder-note-sample">
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">메모 카드 내부 안내</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">카드 안 보조 설명은 InfoBox로 depth를 낮춘다.</p>
+            </WaflInfoBox>
+          </div>
+        </WaflSurface>
+
+        <WaflSurface component="catalog-order-pattern" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Order pattern</p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">원단·부자재 발주 row</h3>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                발주 목록은 row 구조를 우선하고, 모바일에서는 한 카드처럼 읽히게 묶는다.
+              </p>
+            </div>
+            <AppBadge tone="info">발주</AppBadge>
+          </div>
+
+          <div className="mt-4 grid gap-2">
+            {[
+              { name: "울 혼방 원단", meta: "거래처 A · 2.5 yd", status: "발주 대기", tone: "warning" as const },
+              { name: "금속 단추", meta: "부자재 B · 24 ea", status: "발주 완료", tone: "success" as const },
+            ].map((item) => (
+              <WaflSurfaceButton key={item.name} component="catalog-order-row-sample" className="flex items-center justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block text-sm font-bold">{item.name}</span>
+                  <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">{item.meta}</span>
+                </span>
+                <AppBadge tone={item.tone} size="xs">{item.status}</AppBadge>
+              </WaflSurfaceButton>
+            ))}
+          </div>
+
+          <WaflInfoBox tone="selected" component="catalog-order-rule" className="mt-3">
+            <p className="text-xs font-medium leading-5">
+              발주 row를 누르면 상세를 열 수 있으므로 WaflSurfaceButton을 쓴다. 단순 요약만 보여주면 WaflSurface로 낮춘다.
+            </p>
+          </WaflInfoBox>
+        </WaflSurface>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <WaflSurface component="catalog-storage-pattern" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Storage pattern</p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">저장소 row / 휴지통 detail</h3>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                파일 목록은 row, 상세 확인은 modal 내부 Surface/InfoBox 조합을 기준으로 한다.
+              </p>
+            </div>
+            <AppBadge tone="file">저장소</AppBadge>
+          </div>
+
+          <div className="mt-4 grid gap-2">
+            <WaflSurfaceButton component="catalog-storage-row-sample" className="flex items-center justify-between gap-3">
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">작업지시서_샘플.pdf</span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">PDF · 2.4MB · 2026-06-10</span>
+              </span>
+              <AppBadge tone="document" size="xs">문서</AppBadge>
+            </WaflSurfaceButton>
+            <WaflSurfaceButton component="catalog-trash-row-sample" className="flex items-center justify-between gap-3">
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">삭제된 디자인.png</span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">30일 후 영구삭제 · 복원 가능</span>
+              </span>
+              <AppBadge tone="danger" size="xs">휴지통</AppBadge>
+            </WaflSurfaceButton>
+          </div>
+        </WaflSurface>
+
+        <WaflSurface component="catalog-modal-pattern" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Detail modal pattern</p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">상세 모달 내부 구성</h3>
+            </div>
+            <WaflButton variant="secondary" size="sm">닫기</WaflButton>
+          </div>
+
+          <div className="mt-3 grid gap-2">
+            <WaflInfoRow component="catalog-modal-info-row-one">
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">파일명</span>
+              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">작업지시서_샘플.pdf</span>
+            </WaflInfoRow>
+            <WaflInfoRow component="catalog-modal-info-row-two" tone="muted">
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">상태</span>
+              <AppBadge tone="success" size="xs">복원 가능</AppBadge>
+            </WaflInfoRow>
+            <WaflInfoBox tone="muted" component="catalog-modal-info-box">
+              <p className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                모달 본문에서는 정보 row, 안내 box, footer button을 분리한다. 카드 안 카드 depth를 과하게 만들지 않는다.
+              </p>
+            </WaflInfoBox>
+          </div>
+
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <WaflButton variant="secondary" size="md">취소</WaflButton>
+            <WaflButton variant="primary" size="md">복원</WaflButton>
+          </div>
+        </WaflSurface>
+      </div>
+
+      <RuleList title="실무 패턴 선택 규칙" rules={practiceRules} />
+    </div>
+  );
+}
+
 function SpecTable() {
   return (
     <WaflDataTableShell>
@@ -719,13 +883,9 @@ export default function WaflUiCatalogPage({
           </WaflSectionPanel>
         </div>
 
-        <div id="next-patterns" className="scroll-mt-6">
-          <WaflSectionPanel title="Next patterns" description="이후 버전에서 실제 업무 화면 패턴과 연결한다." density="compact">
-            <div className="grid gap-3 lg:grid-cols-3">
-              <WaflEmptyCard component="catalog-modal-placeholder">Modal pattern은 다음 단계에서 실제 모달 구조와 연결한다.</WaflEmptyCard>
-              <WaflEmptyCard component="catalog-workorder-placeholder">작업지시서 Add 카드, 공정 카드, 첨부/메모 카드를 연결한다.</WaflEmptyCard>
-              <WaflEmptyCard component="catalog-storage-placeholder">저장소 row/detail modal 패턴을 연결한다.</WaflEmptyCard>
-            </div>
+        <div id="practice-patterns" className="scroll-mt-6">
+          <WaflSectionPanel title="Practice patterns · 실무 패턴" description="작업지시서, 발주, 저장소에서 실제로 반복되는 UI 조합을 샘플로 확인한다." density="compact">
+            <PracticePatternSamples />
           </WaflSectionPanel>
         </div>
       </div>
