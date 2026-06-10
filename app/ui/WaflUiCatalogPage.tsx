@@ -112,6 +112,72 @@ const catalogSections: CatalogSection[] = [
 
 const componentSpecs: ComponentSpec[] = [
   {
+    name: "WaflSurface",
+    path: "@/components/common/ui/WaflSurface",
+    purpose: "card/panel/section의 기본 표면. 콘텐츠를 담는 정적 container에 사용한다.",
+    props: "as, tone, component, className, children",
+    sizes: "content density에 따라 padding만 조정",
+    tones: "surface / muted / empty",
+    variants: "div / section / article / header element",
+    avoid: "rounded, border, bg, shadow 조합을 화면마다 직접 만들지 않는다.",
+    screens: "카탈로그, 파일 카드, 설정 카드, 업무 패널 내부 group",
+  },
+  {
+    name: "WaflSurfaceButton",
+    path: "@/components/common/ui/WaflSurface",
+    purpose: "선택 가능한 카드형 버튼. 항목 선택, 카드 액션, 옵션 선택에 사용한다.",
+    props: "selected, tone, component, disabled, onClick, children",
+    sizes: "p-3 기본 / 내부 콘텐츠에 맞춤",
+    tones: "surface / muted / empty + selected token",
+    variants: "selected / unselected / disabled",
+    avoid: "선택 상태를 border 색상 하나만 바꾸거나 shadow로 강조하지 않는다.",
+    screens: "권한 선택, 기준정보 선택, 작업 옵션 카드",
+  },
+  {
+    name: "WaflInfoBox",
+    path: "@/components/common/ui/WaflForm",
+    purpose: "안내, 선택 요약, 정책 설명처럼 card보다 낮은 depth의 정보 블록에 사용한다.",
+    props: "tone, component, className, children",
+    sizes: "p-3 기본",
+    tones: "neutral / selected / muted",
+    variants: "information block",
+    avoid: "안내문을 임의 bg 색상 박스나 shadow card로 만들지 않는다.",
+    screens: "카탈로그, 모달 안내, 설정 안내, 접근 조건 안내",
+  },
+  {
+    name: "WaflInfoRow",
+    path: "@/components/common/ui/WaflSurface",
+    purpose: "label/value, summary row, compact status row처럼 한 줄 정보를 정렬한다.",
+    props: "tone, component, className, children",
+    sizes: "px-3 py-2 / compact row",
+    tones: "surface / muted / empty",
+    variants: "label-value row / status row",
+    avoid: "row마다 border-bottom, radius, bg를 별도로 반복하지 않는다.",
+    screens: "요약 정보, 파일 메타, 통계 row, 멤버 정보 row",
+  },
+  {
+    name: "WaflEmptyCard",
+    path: "@/components/common/ui/WaflSurface",
+    purpose: "데이터 없음, 준비 중, 비어 있는 슬롯을 표시한다.",
+    props: "component, className, children",
+    sizes: "px-4 py-5 / center aligned",
+    tones: "empty state token",
+    variants: "empty / placeholder",
+    avoid: "빈 상태를 일반 회색 박스나 텍스트 한 줄만으로 방치하지 않는다.",
+    screens: "저장소, 작업지시서 첨부/메모, 카탈로그 placeholder",
+  },
+  {
+    name: "WaflSelectableCard",
+    path: "@/components/common/ui/WaflForm",
+    purpose: "폼 안에서 선택지를 카드 형태로 표시한다. 권한/역할/옵션 선택에 사용한다.",
+    props: "selected, component, disabled, onClick, children",
+    sizes: "px-4 py-3 / full width",
+    tones: "surface + selected action token",
+    variants: "selected / unselected / disabled",
+    avoid: "폼 선택지를 임의 radio card 스타일로 중복 구현하지 않는다.",
+    screens: "멤버 권한 모달, 설정 옵션, 작업 분류 선택",
+  },
+  {
     name: "WaflButton",
     path: "@/components/common/ui/WaflButton",
     purpose: "업무 화면의 기본 button. 저장, 생성, 삭제, 보조 액션, icon 액션을 의미 단위로 구분한다.",
@@ -224,6 +290,24 @@ const formUsageRules = [
   "select trigger는 다시 눌렀을 때 닫힘, 바깥 클릭 닫힘, Escape 닫힘을 유지해야 한다.",
 ];
 
+const surfaceUsageRules = [
+  "card는 정보를 담는 container이고, button은 선택/실행이 가능한 surface에만 사용한다.",
+  "panel은 화면의 큰 구획, card는 구획 내부의 단일 정보 묶음, row는 한 줄 요약에 사용한다.",
+  "selected 상태는 selected token으로만 표현하고 shadow나 임의 brand bg로 강조하지 않는다.",
+  "empty 상태는 dashed border와 empty-state surface를 사용해 실제 데이터 card와 구분한다.",
+  "카드 안 카드가 반복되면 depth가 과해지므로 InfoBox 또는 InfoRow로 낮춘다.",
+  "shadow는 금지에 가깝게 줄이고, border/radius/surface token으로 위계를 만든다.",
+];
+
+const surfacePurposeRules = [
+  { label: "card", value: "하나의 정보 묶음. 첨부 카드, 구성 카드, 설정 항목처럼 독립 단위에 사용한다." },
+  { label: "panel", value: "화면의 큰 구획. 제목·설명·액션을 포함하는 영역은 WaflSectionPanel을 우선한다." },
+  { label: "row", value: "label/value, 상태, 메타 정보를 한 줄로 정렬한다. 반복 목록의 최소 단위로 쓴다." },
+  { label: "info", value: "안내문·주의·요약을 낮은 depth로 표시한다. 카드 내부 보조 설명에 적합하다." },
+  { label: "selected", value: "선택된 항목은 selected token을 사용한다. 색상 직접 분기와 shadow 강조를 피한다." },
+  { label: "empty", value: "데이터 없음·준비 중 상태를 표시한다. 실제 데이터 card와 혼동되지 않게 dashed 기준을 유지한다." },
+];
+
 function SectionAnchorList() {
   return (
     <nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" aria-label="WAFL UI catalog sections">
@@ -290,30 +374,112 @@ function SpecTable() {
   );
 }
 
+function SurfacePurposeMatrix() {
+  return (
+    <div className="grid gap-2 lg:grid-cols-2">
+      {surfacePurposeRules.map((rule) => (
+        <WaflInfoRow key={rule.label} component="catalog-surface-purpose-row" tone="muted" className="items-start">
+          <span className="shrink-0 text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-brand-soft)]">
+            {rule.label}
+          </span>
+          <span className="text-right text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            {rule.value}
+          </span>
+        </WaflInfoRow>
+      ))}
+    </div>
+  );
+}
+
 function SampleSurfaceGrid() {
   return (
-    <div className="grid gap-3 lg:grid-cols-3">
-      <WaflSurface component="catalog-surface-card" className="p-4">
-        <p className="text-sm font-bold text-[var(--pbp-text-primary)]">Surface card</p>
-        <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">기본 card/panel 표면. shadow는 최소화하고 border와 surface 토큰을 우선한다.</p>
-      </WaflSurface>
-      <WaflSurfaceButton component="catalog-surface-button" selected>
-        <p className="text-sm font-bold">Selected surface button</p>
-        <p className="mt-1 text-xs leading-5">선택 가능한 카드형 액션. selected 상태는 selected token만 사용한다.</p>
-      </WaflSurfaceButton>
-      <WaflEmptyCard component="catalog-empty-card">데이터가 없을 때 쓰는 empty card 샘플</WaflEmptyCard>
-      <WaflInfoRow>
-        <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">Info row</span>
-        <AppBadge size="xs" tone="info">row</AppBadge>
-      </WaflInfoRow>
-      <WaflAddCardButton className="min-h-24 gap-3">
-        <WaflAddIconBubble />
-        <span className="text-sm font-semibold text-[var(--pbp-text-muted)]">Add card button</span>
-      </WaflAddCardButton>
-      <WaflInfoBox tone="selected">
-        <p className="text-sm font-bold">Info box</p>
-        <p className="mt-1 text-xs leading-5">안내, 선택 요약, 주의 내용을 card보다 낮은 depth로 표시한다.</p>
-      </WaflInfoBox>
+    <div className="space-y-4">
+      <div className="grid gap-3 lg:grid-cols-3">
+        <WaflSurface component="catalog-surface-card" tone="surface" className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflSurface · surface</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                기본 card/panel 표면. 정적 정보 container에 사용한다.
+              </p>
+            </div>
+            <AppBadge size="xs" tone="neutral">card</AppBadge>
+          </div>
+        </WaflSurface>
+
+        <WaflSurface component="catalog-muted-surface-card" tone="muted" className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflSurface · muted</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                배경보다 한 단계 낮은 보조 영역. 카드 내부 group에 사용한다.
+              </p>
+            </div>
+            <AppBadge size="xs" tone="info">muted</AppBadge>
+          </div>
+        </WaflSurface>
+
+        <WaflEmptyCard component="catalog-empty-card">
+          <span className="block text-sm font-bold">WaflEmptyCard</span>
+          <span className="mt-1 block text-xs leading-5">데이터 없음 또는 준비 중 상태</span>
+        </WaflEmptyCard>
+
+        <WaflSurfaceButton component="catalog-surface-button" selected>
+          <div className="flex items-start justify-between gap-3">
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">WaflSurfaceButton · selected</span>
+              <span className="mt-1 block text-xs leading-5">선택 가능한 카드형 액션</span>
+            </span>
+            <AppBadge size="xs" tone="brand">selected</AppBadge>
+          </div>
+        </WaflSurfaceButton>
+
+        <WaflSelectableCard selected>
+          <span className="min-w-0">
+            <span className="block text-sm font-bold">WaflSelectableCard</span>
+            <span className="mt-1 block text-xs text-[var(--pbp-text-muted)]">폼 내부 선택지 카드</span>
+          </span>
+          <AppBadge size="xs" tone="brand">form</AppBadge>
+        </WaflSelectableCard>
+
+        <WaflInfoBox tone="selected" component="catalog-selected-info-box">
+          <p className="text-sm font-bold">WaflInfoBox · selected</p>
+          <p className="mt-1 text-xs leading-5">선택 요약, 주의, 정책 안내를 낮은 depth로 표시한다.</p>
+        </WaflInfoBox>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+        <WaflSurface component="catalog-surface-composition" tone="surface" className="p-4">
+          <div className="flex flex-col gap-3">
+            <div>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">Surface composition</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                card 내부의 세부 정보는 다시 card를 중첩하기보다 InfoRow 또는 InfoBox로 낮춘다.
+              </p>
+            </div>
+            <WaflInfoRow component="catalog-surface-info-row">
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">Info row</span>
+              <AppBadge size="xs" tone="info">row</AppBadge>
+            </WaflInfoRow>
+            <WaflInfoBox tone="muted" component="catalog-surface-muted-info-box">
+              <p className="text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]">
+                보조 설명은 muted InfoBox로 처리해 depth를 낮춘다.
+              </p>
+            </WaflInfoBox>
+          </div>
+        </WaflSurface>
+
+        <WaflAddCardButton className="min-h-36 flex-col gap-3">
+          <WaflAddIconBubble />
+          <span className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflAddCardButton</span>
+          <span className="max-w-56 text-center text-xs leading-5 text-[var(--pbp-text-muted)]">
+            빈 슬롯에서 새 항목 추가를 유도한다.
+          </span>
+        </WaflAddCardButton>
+      </div>
+
+      <SurfacePurposeMatrix />
+      <RuleList title="Surface 사용 기준" rules={surfaceUsageRules} />
     </div>
   );
 }
@@ -535,15 +701,15 @@ export default function WaflUiCatalogPage({
               </p>
             </WaflInfoBox>
             <WaflInfoBox tone="selected">
-              <p className="text-sm font-bold">0.21.00 범위</p>
-              <p className="mt-1 text-xs leading-5">Button, Badge, Form 계열의 실제 샘플과 props/size/tone/variant/금지 기준을 채운다. 업무 기능 로직은 변경하지 않는다.</p>
+              <p className="text-sm font-bold">0.21.01 범위</p>
+              <p className="mt-1 text-xs leading-5">Surface 계열의 card/panel/row/info/selected/empty 용도와 샘플을 채운다. 업무 기능 로직은 변경하지 않는다.</p>
             </WaflInfoBox>
           </div>
         </WaflPageHero>
 
         <WaflSectionPanel
           title="Catalog sections"
-          description="0.21.00에서는 버튼, 뱃지, 입력 계열의 상세 스펙을 먼저 채우고, 이후 Surface/Table/Modal/실무 패턴을 확장한다."
+          description="0.21.01에서는 Surface 계열 상세 스펙을 채우고, 이후 Table/Modal/실무 패턴을 확장한다."
           density="compact"
         >
           <SectionAnchorList />
@@ -574,7 +740,7 @@ export default function WaflUiCatalogPage({
         </div>
 
         <div id="surface" className="scroll-mt-6">
-          <WaflSectionPanel title="Surface" description="card, panel, row, info, selected, empty 표면 샘플." density="compact">
+          <WaflSectionPanel title="Surface" description="WaflSurface, WaflSurfaceButton, WaflInfoBox, WaflInfoRow, WaflEmptyCard, WaflSelectableCard의 용도와 표면 문법." density="compact">
             <SampleSurfaceGrid />
           </WaflSectionPanel>
         </div>
