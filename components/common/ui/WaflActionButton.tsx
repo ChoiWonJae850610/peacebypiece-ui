@@ -17,15 +17,15 @@ const toneClassMap: Record<WaflActionButtonTone, string> = {
 };
 
 const sizeClassMap: Record<WaflActionButtonSize, string> = {
-  sm: "h-8 min-h-8 w-8 min-w-8 [&>svg]:h-3 [&>svg]:w-3",
-  md: "h-9 min-h-9 w-9 min-w-9 [&>svg]:h-3 [&>svg]:w-3",
-  lg: "h-10 min-h-10 w-10 min-w-10 [&>svg]:h-3.5 [&>svg]:w-3.5",
+  sm: "h-7 min-h-7 w-7 min-w-7 [&>svg]:h-3 [&>svg]:w-3",
+  md: "h-8 min-h-8 w-8 min-w-8 [&>svg]:h-3 [&>svg]:w-3",
+  lg: "h-9 min-h-9 w-9 min-w-9 [&>svg]:h-3.5 [&>svg]:w-3.5",
 };
 
 const compactSizeClassMap: Record<WaflActionButtonSize, string> = {
-  sm: "h-8 min-h-8 min-w-10 px-3 text-[11px] leading-none",
-  md: "h-9 min-h-9 min-w-12 px-3.5 text-xs leading-none",
-  lg: "h-10 min-h-10 min-w-14 px-4 text-sm leading-none",
+  sm: "h-7 min-h-7 min-w-9 px-2.5 text-[11px] leading-none",
+  md: "h-8 min-h-8 min-w-11 px-3 text-xs leading-none",
+  lg: "h-9 min-h-9 min-w-[52px] px-3.5 text-sm leading-none",
 };
 
 export const WAFL_ACTION_BUTTON_BASE_CLASS =
@@ -118,6 +118,34 @@ export function WaflMoreActionButton({ showSrLabel = false, ...props }: WaflMore
   return (
     <WaflIconButton showSrLabel={showSrLabel} {...props}>
       <WaflMoreHorizontalIcon />
+    </WaflIconButton>
+  );
+}
+
+function WaflPlusIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-3 w-3"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
+type WaflAddActionButtonProps = Omit<WaflActionButtonProps, "children">;
+
+export function WaflAddActionButton({ showSrLabel = false, ...props }: WaflAddActionButtonProps) {
+  return (
+    <WaflIconButton showSrLabel={showSrLabel} {...props}>
+      <WaflPlusIcon />
     </WaflIconButton>
   );
 }

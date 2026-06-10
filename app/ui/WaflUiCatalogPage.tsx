@@ -559,7 +559,7 @@ const componentGroupGuides: ComponentGroupGuide[] = [
     group: "Primitive",
     meaning: "가장 작은 공통 부품",
     rule: "역할이 명확하고 여러 화면에서 반복되면 유지한다. 모양 차이는 props와 shape token으로 처리한다.",
-    examples: "WaflButton, WaflIconButton 후보, WaflInput, WaflTextarea, AppBadge, WaflSurface",
+    examples: "WaflButton, WaflIconButton, WaflInput, WaflTextarea, AppBadge, WaflSurface",
   },
   {
     group: "Pattern",
@@ -738,8 +738,9 @@ const componentInventoryItems: ComponentInventoryItem[] = [
 ];
 
 const inventoryNextSteps = [
-  "... / + / 닫기 / 수정 / 삭제는 WaflIconButton 또는 WaflMoreActionButton 기준으로 통합하고, 화면별 직접 버튼은 전환한다.",
-  "WaflAddCardButton과 WaflAddIconBubble의 관계를 정리해 추가 CTA를 하나의 문법으로 묶는다.",
+  "... / 닫기 / 수정 / 삭제는 WaflIconButton 또는 WaflMoreActionButton 기준으로 통합한다.",
+  "+ 버튼은 WaflAddActionButton, 카드형 추가는 WaflAddCardButton + WaflAddIconBubble 기준으로 분리한다.",
+  "아이콘 버튼 크기는 sm 28px, md 32px, lg 36px로 고정하고 작업지시서 more/add 버튼은 md를 기본으로 쓴다.",
   "WaflSurfaceButton과 WaflSelectableCard는 선택 가능 카드 기준으로 통합 가능한지 확인한다.",
   "AdminButton/AdminIconActionButton/AdminStatusBadge는 바로 삭제하지 말고 사용 위치를 줄인다.",
   "화면 내부 직접 button/input/span은 신규 작성 금지 대상으로 표시한다.",

@@ -189,7 +189,7 @@ export function WaflAddIconBubble({
       data-wafl-component={component}
       data-wafl-primitive="add-card-button-icon"
       className={cn(
-        "pbp-sidepanel-preview-surface inline-flex h-9 w-9 shrink-0 items-center justify-center wafl-shape-icon text-[var(--pbp-text-muted)] shadow-none",
+        "pbp-sidepanel-preview-surface inline-flex h-8 w-8 shrink-0 items-center justify-center wafl-shape-icon text-[var(--pbp-text-muted)] shadow-none",
         className,
       )}
       aria-hidden="true"

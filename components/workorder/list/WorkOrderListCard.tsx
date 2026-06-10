@@ -107,14 +107,14 @@ export default function WorkOrderListCard({
             disabled={!canOpenMenu}
             title={writeLocked ? writeLockMessage ?? i18n.workorder.lifecycle.genericProcessingLabel : undefined}
             active={active}
-            size="sm"
+            size="md"
             className="pbp-touch-target"
             aria-haspopup="menu"
             aria-expanded={canOpenMenu && menuOpen}
           />
           {menuOpen && canOpenMenu ? (
             <div
-              className={`absolute right-0 top-11 z-20 min-w-[132px] rounded-[var(--pbp-radius-wafl)] border p-1 ${
+              className={`absolute right-0 top-10 z-20 min-w-[132px] rounded-[var(--pbp-radius-wafl)] border p-1 ${
                 active ? "border-stone-700 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-900"
               }`}
             >

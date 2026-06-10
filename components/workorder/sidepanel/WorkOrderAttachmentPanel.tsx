@@ -261,7 +261,7 @@ function AttachmentUploadHint({
           dragActive ? "pbp-sidepanel-upload-zone-active ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""
         } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
       >
-<WaflAddIconBubble className="h-10 w-10" />
+<WaflAddIconBubble />
         <span className="sr-only">{title}</span>
       </WaflAddCardButton>
     );

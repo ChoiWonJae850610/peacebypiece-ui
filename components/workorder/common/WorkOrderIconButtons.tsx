@@ -2,7 +2,7 @@
 
 import { type ButtonHTMLAttributes, useEffect, useRef, useState } from "react";
 
-import { WaflActionButton, WaflMoreActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
+import { WaflActionButton, WaflAddActionButton, WaflMoreActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
 import { cn } from "@/lib/utils";
 
 export function WorkOrderPlusIcon({ className = "h-3 w-3" }: { className?: string }) {
@@ -100,15 +100,20 @@ export function WorkOrderAddIconButton({
   ...props
 }: WorkOrderIconButtonProps) {
   return (
-    <WaflActionButton label={label} size={size} tone={tone} showSrLabel className={cn(active ? workOrderActiveIconButtonClassName : "", className)} {...props}>
-      <WorkOrderPlusIcon className="h-3 w-3" />
-    </WaflActionButton>
+    <WaflAddActionButton
+      label={label}
+      size={size}
+      tone={tone}
+      showSrLabel
+      className={cn(active ? workOrderActiveIconButtonClassName : "", className)}
+      {...props}
+    />
   );
 }
 
 export function WorkOrderMoreIconButton({
   label,
-  size = "sm",
+  size = "md",
   tone = "neutral",
   active = false,
   className,
@@ -208,7 +213,7 @@ export function WorkOrderCardActionMenu({
     <div ref={menuRef} className="relative shrink-0">
       <WorkOrderMoreIconButton
         label={menuLabel}
-        size="sm"
+        size="md"
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
       />
