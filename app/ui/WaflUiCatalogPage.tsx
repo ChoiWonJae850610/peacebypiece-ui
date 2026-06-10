@@ -103,17 +103,24 @@ const catalogSections: CatalogSection[] = [
     status: "guide",
   },
   {
-    id: "spec-table",
-    title: "Spec table",
-    plainTitle: "개발자용 스펙 표",
-    description: "import 경로, props, 금지 기준은 표에서 한 번에 확인한다.",
-    status: "sampled",
-  },
-  {
     id: "practice-patterns",
     title: "Practice patterns",
     plainTitle: "실제 업무 화면 패턴",
     description: "작업지시서, 발주, 저장소에서 실제로 반복되는 카드/row/modal 구성을 샘플로 확인한다.",
+    status: "sampled",
+  },
+  {
+    id: "usage-rules",
+    title: "Usage rules",
+    plainTitle: "언제 쓰고 언제 쓰지 않는가",
+    description: "직접 className 사용 금지 기준과 WAFL 컴포넌트 대체 기준을 확인한다.",
+    status: "guide",
+  },
+  {
+    id: "spec-table",
+    title: "Spec table",
+    plainTitle: "개발자용 스펙 표",
+    description: "import 경로, props, 금지 기준은 표에서 한 번에 확인한다.",
     status: "sampled",
   },
 ];
@@ -300,6 +307,83 @@ const practiceRules = [
   "제작 공정과 자재는 카드형 정보 단위로 보되, 선택/열기 동작이 있으면 WaflSurfaceButton을 쓴다.",
   "발주 목록은 row를 우선하고, 모바일에서는 row 내용을 카드처럼 접어 읽는다.",
   "저장소와 휴지통 상세는 리스트 row + detail modal 흐름으로 유지한다.",
+];
+
+const usageRuleCards = [
+  {
+    title: "언제 쓰는가",
+    badge: "Use",
+    tone: "success" as const,
+    body: [
+      "같은 UI가 2개 이상 화면에서 반복될 때",
+      "버튼/카드/입력/상태/테이블처럼 WAFL 문법이 이미 있는 경우",
+      "모바일에서 같은 구조를 유지해야 하는 업무 패턴",
+    ],
+  },
+  {
+    title: "언제 쓰지 않는가",
+    badge: "Avoid",
+    tone: "danger" as const,
+    body: [
+      "일회성 장식만 위해 새 박스를 만드는 경우",
+      "rounded, shadow, border, bg를 직접 조합해서 비슷하게 흉내 내는 경우",
+      "상태값을 화면마다 다른 색상 class로 분기하는 경우",
+    ],
+  },
+  {
+    title: "새 화면을 만들 때",
+    badge: "Check",
+    tone: "brand" as const,
+    body: [
+      "먼저 /ui에서 역할이 맞는 컴포넌트를 고른다",
+      "없으면 새 컴포넌트를 만들기 전에 기존 Surface/Form/Table 패턴으로 표현 가능한지 본다",
+      "직접 className은 layout 간격과 grid 배치에만 최소 사용한다",
+    ],
+  },
+];
+
+const directClassReplacementRows = [
+  {
+    direct: "rounded-* 직접 지정",
+    replacement: "WaflSurface / WaflButton / WaflInput의 radius token",
+    reason: "화면별 모서리 차이를 막는다.",
+  },
+  {
+    direct: "shadow-* 직접 지정",
+    replacement: "shadow-none 또는 WAFL Surface depth",
+    reason: "카드 안 카드의 depth 과다를 막는다.",
+  },
+  {
+    direct: "border-* / bg-* 직접 조합",
+    replacement: "tone, variant, selected prop",
+    reason: "상태 색과 배경이 화면마다 달라지는 것을 막는다.",
+  },
+  {
+    direct: "text 색상 직접 분기",
+    replacement: "AppBadge tone 또는 WAFL text token",
+    reason: "상태/유형 색상을 컴포넌트 기준으로 묶는다.",
+  },
+  {
+    direct: "검색/필터 영역 직접 구현",
+    replacement: "WaflFilterBar + WAFL_FILTER_* class",
+    reason: "관리 화면의 필터 높이와 간격을 통일한다.",
+  },
+];
+
+const waflNamingRules = [
+  "data-wafl-component는 kebab-case로 쓴다. 예: workorder-add-card",
+  "반복 row는 화면명 + 역할 + row 형태로 쓴다. 예: storage-file-row",
+  "모달 내부 요소는 modal-header / modal-body / modal-footer 역할을 드러낸다.",
+  "카탈로그 샘플은 catalog- 접두사를 붙여 실제 업무 요소와 구분한다.",
+];
+
+const newScreenChecklist = [
+  "이 요소가 누르는 것인지, 담는 것인지, 입력하는 것인지 먼저 분류했다.",
+  "WaflButton / WaflSurface / WaflForm / WaflDataTable / WaflFilterBar 중 대체 가능한 컴포넌트를 확인했다.",
+  "rounded, shadow, border, bg를 직접 조합하지 않았다.",
+  "모바일에서 row가 카드처럼 읽히는지 확인했다.",
+  "상태값은 AppBadge, 안내문은 WaflInfoBox로 분리했다.",
+  "data-wafl-component 이름을 부여했다.",
 ];
 
 function SectionAnchorList() {
@@ -768,6 +852,97 @@ function PracticePatternSamples() {
   );
 }
 
+function UsageRulesSamples() {
+  return (
+    <div className="space-y-5">
+      <WaflNoticeBox tone="warning">
+        이 섹션은 새 화면을 만들 때 먼저 보는 기준이다. 시각 모양을 비슷하게 맞추는 것이 아니라 WAFL 컴포넌트의 역할을 맞추는 것이 목표다.
+      </WaflNoticeBox>
+
+      <div className="grid gap-3 lg:grid-cols-3">
+        {usageRuleCards.map((card) => (
+          <WaflSurface key={card.title} component="catalog-usage-rule-card" tone="surface" className="p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{card.title}</p>
+              <AppBadge tone={card.tone} size="xs">{card.badge}</AppBadge>
+            </div>
+            <ul className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+              {card.body.map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span aria-hidden="true" className="text-[var(--pbp-brand-primary)]">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </WaflSurface>
+        ))}
+      </div>
+
+      <WaflSurface component="catalog-class-replacement-table" tone="surface" className="p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold text-[var(--pbp-text-primary)]">직접 className 사용 금지 기준</p>
+            <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+              layout 배치용 class는 허용하지만, WAFL 문법에 해당하는 색/테두리/그림자/모서리는 컴포넌트 prop으로 대체한다.
+            </p>
+          </div>
+          <AppBadge tone="danger" size="xs">no ad-hoc style</AppBadge>
+        </div>
+        <div className="mt-4 grid gap-2">
+          {directClassReplacementRows.map((row) => (
+            <WaflInfoRow key={row.direct} component="catalog-class-replacement-row" tone="muted" className="items-start">
+              <span className="min-w-0">
+                <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">{row.direct}</span>
+                <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">대체: {row.replacement}</span>
+              </span>
+              <span className="max-w-[44%] text-right text-xs font-medium leading-5 text-[var(--pbp-text-subtle)]">{row.reason}</span>
+            </WaflInfoRow>
+          ))}
+        </div>
+      </WaflSurface>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <WaflSurface component="catalog-naming-rules" tone="surface" className="p-4">
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">data-wafl-component naming</p>
+          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            debug outline을 다시 켰을 때 어떤 요소인지 바로 추적하기 위한 이름 규칙이다.
+          </p>
+          <ul className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            {waflNamingRules.map((rule) => (
+              <li key={rule} className="flex gap-2">
+                <span aria-hidden="true" className="text-[var(--pbp-brand-primary)]">•</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </WaflSurface>
+
+        <WaflSurface component="catalog-new-screen-checklist" tone="surface" className="p-4">
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">새 화면 개발 체크리스트</p>
+          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            신규 화면을 만들기 전후로 확인할 최소 기준이다.
+          </p>
+          <div className="mt-3 grid gap-2">
+            {newScreenChecklist.map((item, index) => (
+              <WaflInfoRow key={item} component="catalog-checklist-row" tone={index % 2 === 0 ? "muted" : "surface"}>
+                <span className="text-xs font-bold text-[var(--pbp-brand-primary)]">{String(index + 1).padStart(2, "0")}</span>
+                <span className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{item}</span>
+              </WaflInfoRow>
+            ))}
+          </div>
+        </WaflSurface>
+      </div>
+
+      <WaflInfoBox tone="selected" component="catalog-debug-outline-note">
+        <p className="text-sm font-bold text-[var(--pbp-text-primary)]">Debug outline</p>
+        <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+          현재 분홍색 outline은 모바일 확인을 위해 꺼져 있다. 다시 확인할 때는 app/layout.tsx 상단의 WAFL_COMPONENT_DEBUG_OUTLINE_ENABLED 값을 true로 바꾼다.
+        </p>
+      </WaflInfoBox>
+    </div>
+  );
+}
+
 function SpecTable() {
   return (
     <WaflDataTableShell>
@@ -877,15 +1052,21 @@ export default function WaflUiCatalogPage({
           </WaflSectionPanel>
         </div>
 
-        <div id="spec-table" className="scroll-mt-6">
-          <WaflSectionPanel title="Spec table" description="개발자가 import 경로와 props, 금지 기준을 확인하는 표다." density="compact">
-            <SpecTable />
-          </WaflSectionPanel>
-        </div>
-
         <div id="practice-patterns" className="scroll-mt-6">
           <WaflSectionPanel title="Practice patterns · 실무 패턴" description="작업지시서, 발주, 저장소에서 실제로 반복되는 UI 조합을 샘플로 확인한다." density="compact">
             <PracticePatternSamples />
+          </WaflSectionPanel>
+        </div>
+
+        <div id="usage-rules" className="scroll-mt-6">
+          <WaflSectionPanel title="Usage rules · 사용 기준" description="언제 쓰는가/쓰지 않는가, 직접 className 금지 기준, naming, 새 화면 체크리스트를 확인한다." density="compact">
+            <UsageRulesSamples />
+          </WaflSectionPanel>
+        </div>
+
+        <div id="spec-table" className="scroll-mt-6">
+          <WaflSectionPanel title="Spec table" description="개발자가 import 경로와 props, 금지 기준을 확인하는 표다." density="compact">
+            <SpecTable />
           </WaflSectionPanel>
         </div>
       </div>
