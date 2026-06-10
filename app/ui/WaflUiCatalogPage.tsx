@@ -520,6 +520,66 @@ const directClassReplacementRows = [
   },
 ];
 
+
+const directStyleAuditRows = [
+  {
+    area: "작업지시서",
+    scope: "components/workorder",
+    status: "기준 화면",
+    remaining: "rounded 69 / 상태색 17 / 직접 form 15",
+    decision: "0.21.26에서 기준 화면으로 고정했지만 detail/editor 내부의 table, progress, legacy form 잔여분은 다음 정리 대상이다.",
+    tone: "warning" as const,
+  },
+  {
+    area: "발주",
+    scope: "features/material-orders",
+    status: "통과",
+    remaining: "rounded 0 / 상태색 0 / 직접 form 0",
+    decision: "0.21.27 기준으로 Foundation 적용 구간은 direct style 잔여가 거의 없다. 이후 기능 변경 시 회귀만 방지한다.",
+    tone: "success" as const,
+  },
+  {
+    area: "저장소/첨부",
+    scope: "components/admin/files + Attachment modal",
+    status: "부분 통과",
+    remaining: "rounded 11 / 상태색 0 / 직접 form 0",
+    decision: "썸네일, preview wrapper, modal shell 계열의 원형/표면 예외 여부를 확인한 뒤 제거 대상을 분리한다.",
+    tone: "info" as const,
+  },
+  {
+    area: "통계/멤버관리",
+    scope: "dashboard + members + admin common",
+    status: "확장 완료",
+    remaining: "rounded 34 / 상태색 36 / 직접 form 2",
+    decision: "chart dot, calendar range, table state 같은 예외가 섞여 있어 0.21.31에서 통계/멤버 잔여분을 먼저 줄인다.",
+    tone: "warning" as const,
+  },
+  {
+    area: "설정/결제/회사",
+    scope: "settings + billing + companies",
+    status: "미확장",
+    remaining: "rounded 117 / 상태색 35 / 직접 form 2",
+    decision: "아직 WAFL Foundation 확장 전 영역이다. 0.21.32 이후 별도 라운드로 넘긴다.",
+    tone: "danger" as const,
+  },
+  {
+    area: "public/dev",
+    scope: "public error + dev test console",
+    status: "낮은 우선순위",
+    remaining: "rounded 13 / 상태색 27 / 직접 form 3",
+    decision: "고객 업무 화면이 아니므로 제품 화면 정리 후 마지막에 정리한다.",
+    tone: "neutral" as const,
+  },
+];
+
+const directStyleExceptionRows = [
+  { label: "원형 의미", examples: "progress node, dot, spinner, avatar", decision: "예외 허용" },
+  { label: "chart primitive", examples: "chart dot, tooltip anchor, donut center", decision: "시각화 내부 예외" },
+  { label: "calendar range", examples: "range_start, range_end, range_middle", decision: "외부 캘린더 문법 예외 검토" },
+  { label: "layout only", examples: "grid, flex, gap, width, overflow", decision: "WAFL style 아님" },
+  { label: "legacy/dev", examples: "dev console, public error page", decision: "고객 화면 이후 정리" },
+];
+
 const waflNamingRules = [
   "data-wafl-component는 kebab-case로 쓴다. 예: workorder-add-card",
   "반복 row는 화면명 + 역할 + row 형태로 쓴다. 예: storage-file-row",
@@ -1079,25 +1139,23 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.29부터 통계/멤버관리 UI도 작업지시서 기준 Foundation을 확장 적용한다.
-        통계 summary card, 기간 필터, 멤버 검색/row/초대 form은 같은 control 계열로
-        읽히는지 우선 확인한다.
+        0.21.30은 Direct Style 잔여 점검판이다. 작업지시서/발주/저장소/통계/멤버관리까지 확장한 뒤 남은 직접 rounded, 상태색, form class를 영역별로 분리해 다음 정리 순서를 고정한다.
       </WaflNoticeBox>
 
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan · stats/member
+          Direct style scan · full audit
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: 통계 summary/filter/chart item과 멤버 search/row/invite form의 직접 rounded, bg, border, text 조합
+            제거 대상: 고객 업무 화면에서 컴포넌트 prop으로 대체 가능한 rounded, bg, border, text, 직접 form class 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
-            예외 대상: chart dot, donut center, progress track, spinner, avatar, modal full-screen reset
+            예외 대상: 실제 원형 의미가 있는 dot/spinner/avatar, chart primitive, calendar range, layout-only class
           </WaflInfoBox>
         </div>
       </WaflSurface>
@@ -2041,17 +2099,17 @@ function PracticePatternSamples() {
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan · stats/member
+          Direct style scan · full audit
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: 통계 summary/filter/chart item과 멤버 search/row/invite form의 직접 rounded, bg, border, text 조합
+            제거 대상: 고객 업무 화면에서 컴포넌트 prop으로 대체 가능한 rounded, bg, border, text, 직접 form class 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
-            예외 대상: chart dot, donut center, progress track, spinner, avatar, modal full-screen reset
+            예외 대상: 실제 원형 의미가 있는 dot/spinner/avatar, chart primitive, calendar range, layout-only class
           </WaflInfoBox>
         </div>
       </WaflSurface>
@@ -2254,6 +2312,74 @@ function UsageRulesSamples() {
                 {row.reason}
               </span>
             </WaflInfoRow>
+          ))}
+        </div>
+      </WaflSurface>
+
+      <WaflSurface
+        component="catalog-direct-style-audit"
+        tone="surface"
+        className="p-4"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+              Direct Style 잔여 점검판
+            </p>
+            <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+              0.21.30 기준으로 고객 업무 화면의 직접 radius/status/form class를 제거 대상과 예외 대상으로 나눈다.
+              숫자는 source scan 기준의 잔여 후보이며, 예외가 포함되어 있어 전부 오류라는 뜻은 아니다.
+            </p>
+          </div>
+          <AppBadge tone="brand" size="xs">
+            0.21.30 audit
+          </AppBadge>
+        </div>
+        <div className="mt-4 grid gap-2">
+          {directStyleAuditRows.map((row) => (
+            <WaflInfoRow
+              key={row.area}
+              component="catalog-direct-style-audit-row"
+              tone="muted"
+              className="items-start"
+            >
+              <span className="min-w-0">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-bold text-[var(--pbp-text-primary)]">{row.area}</span>
+                  <AppBadge tone={row.tone} size="xs">
+                    {row.status}
+                  </AppBadge>
+                </span>
+                <span className="mt-1 block text-[11px] font-semibold text-[var(--pbp-text-subtle)]">
+                  {row.scope}
+                </span>
+                <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                  {row.decision}
+                </span>
+              </span>
+              <span className="max-w-[34%] text-right text-[11px] font-bold leading-5 text-[var(--pbp-text-subtle)]">
+                {row.remaining}
+              </span>
+            </WaflInfoRow>
+          ))}
+        </div>
+      </WaflSurface>
+
+      <WaflSurface
+        component="catalog-direct-style-exceptions"
+        tone="surface"
+        className="p-4"
+      >
+        <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+          예외 판정 기준
+        </p>
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          {directStyleExceptionRows.map((row) => (
+            <WaflInfoBox key={row.label} shape="control" tone="muted" className="p-3">
+              <p className="text-xs font-bold text-[var(--pbp-text-primary)]">{row.label}</p>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{row.examples}</p>
+              <p className="mt-2 text-[11px] font-bold text-[var(--pbp-text-subtle)]">{row.decision}</p>
+            </WaflInfoBox>
           ))}
         </div>
       </WaflSurface>
