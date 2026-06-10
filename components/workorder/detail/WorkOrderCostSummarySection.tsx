@@ -1,5 +1,10 @@
 import { useI18n } from "@/lib/i18n";
-import { SummaryCard, WaflEmptyCard, WaflInfoRow, WaflSurface } from "@/components/common/ui";
+import {
+  SummaryCard,
+  WaflEmptyCard,
+  WaflInfoRow,
+  WaflSurface,
+} from "@/components/common/ui";
 import DesktopCostSummaryLayout from "@/components/workorder/detail/layout/DesktopCostSummaryLayout";
 import { buildWorkOrderCostSummaryPresentation } from "@/lib/workorder/presentation/workOrderCostSummaryPresentation";
 import type { OrderEntry, Outsourcing } from "@/types/workorder";
@@ -16,11 +21,15 @@ export type WorkOrderCostSummarySectionProps = {
   outsourcing: Outsourcing[];
 };
 
-const COST_LABEL_CLASS = "min-w-0 text-[12px] leading-4 text-[var(--pbp-text-muted)]";
-const COST_VALUE_CLASS = "shrink-0 text-[12px] font-semibold tabular-nums text-[var(--pbp-text-primary)]";
+const COST_LABEL_CLASS =
+  "min-w-0 text-[12px] leading-4 text-[var(--pbp-text-muted)]";
+const COST_VALUE_CLASS =
+  "shrink-0 text-[12px] font-semibold tabular-nums text-[var(--pbp-text-primary)]";
 
 function getCostValueClassName(value: number) {
-  return value === 0 ? `${COST_VALUE_CLASS} text-[var(--pbp-status-danger-fg)]` : COST_VALUE_CLASS;
+  return value === 0
+    ? `${COST_VALUE_CLASS} text-[var(--pbp-status-danger-fg)]`
+    : COST_VALUE_CLASS;
 }
 
 function formatCurrency(value: number, suffix: string) {
@@ -49,31 +58,95 @@ export default function WorkOrderCostSummarySection({
 
   return (
     <DesktopCostSummaryLayout
-      left={<SummaryCard title={copy.summaryTitle || undefined}>
-        <div className="space-y-2 text-sm">
-          <WaflSurface component="cost-grand-total" tone="info" className="pbp-cost-grand-total px-4 py-3">
-            <div className="text-[11px] font-medium opacity-75">{copy.grandTotal}</div>
-            <div className="mt-1 text-xl font-semibold leading-6 tabular-nums">{formatCurrency(costSummary.totalCost, common.currencySuffix)}</div>
-            <div className="mt-1 text-[11px] opacity-75">{copy.unitCost} {formatCurrency(costSummary.unitCost, common.currencySuffix)}</div>
-          </WaflSurface>
-          <WaflInfoRow className="pbp-cost-row"><span className={COST_LABEL_CLASS}>{copy.fabricTotal}</span><span className={getCostValueClassName(fabricTotal)}>{formatCurrency(fabricTotal, common.currencySuffix)}</span></WaflInfoRow>
-          <WaflInfoRow className="pbp-cost-row"><span className={COST_LABEL_CLASS}>{copy.subsidiaryTotal}</span><span className={getCostValueClassName(subsidiaryTotal)}>{formatCurrency(subsidiaryTotal, common.currencySuffix)}</span></WaflInfoRow>
-          <WaflInfoRow className="pbp-cost-row"><span className={COST_LABEL_CLASS}>{copy.laborCost}</span><span className={COST_VALUE_CLASS}>{formatCurrency(costSummary.processLaborCost, common.currencySuffix)}</span></WaflInfoRow>
-          <WaflInfoRow className="pbp-cost-row"><span className={COST_LABEL_CLASS}>{copy.lossCost}</span><span className={COST_VALUE_CLASS}>{formatCurrency(costSummary.processLossCost, common.currencySuffix)}</span></WaflInfoRow>
-        </div>
-      </SummaryCard>}
-      right={<SummaryCard title={copy.processTitle}>
-        <div className="space-y-2 text-sm">
-          {costSummary.processLines.length > 0 ? costSummary.processLines.map((item) => (
-            <WaflSurface key={item.id} component="cost-process-row" tone="muted" className="pbp-cost-row px-3 py-2">
-              <div className="min-w-0 truncate text-[12px] font-semibold text-[var(--pbp-text-primary)]">{item.label}</div>
-              <div className="mt-1 text-[11px] leading-4 text-[var(--pbp-text-muted)]">
-                {copy.unitPriceLabel} {formatCurrency(item.unitAmount, common.currencySuffix)} · {copy.lossPriceLabel} {formatCurrency(item.lossAmount, common.currencySuffix)} · {copy.lineTotalLabel} {formatCurrency(item.totalAmount, common.currencySuffix)}
+      left={
+        <SummaryCard title={copy.summaryTitle || undefined}>
+          <div className="space-y-2 text-sm">
+            <WaflSurface
+              component="cost-grand-total"
+              shape="control"
+              tone="info"
+              className="pbp-cost-grand-total px-4 py-3"
+            >
+              <div className="text-[11px] font-medium opacity-75">
+                {copy.grandTotal}
+              </div>
+              <div className="mt-1 text-xl font-semibold leading-6 tabular-nums">
+                {formatCurrency(costSummary.totalCost, common.currencySuffix)}
+              </div>
+              <div className="mt-1 text-[11px] opacity-75">
+                {copy.unitCost}{" "}
+                {formatCurrency(costSummary.unitCost, common.currencySuffix)}
               </div>
             </WaflSurface>
-          )) : <WaflEmptyCard className="pbp-empty-state px-4 py-6">{copy.empty}</WaflEmptyCard>}
-        </div>
-      </SummaryCard>}
+            <WaflInfoRow className="pbp-cost-row">
+              <span className={COST_LABEL_CLASS}>{copy.fabricTotal}</span>
+              <span className={getCostValueClassName(fabricTotal)}>
+                {formatCurrency(fabricTotal, common.currencySuffix)}
+              </span>
+            </WaflInfoRow>
+            <WaflInfoRow className="pbp-cost-row">
+              <span className={COST_LABEL_CLASS}>{copy.subsidiaryTotal}</span>
+              <span className={getCostValueClassName(subsidiaryTotal)}>
+                {formatCurrency(subsidiaryTotal, common.currencySuffix)}
+              </span>
+            </WaflInfoRow>
+            <WaflInfoRow className="pbp-cost-row">
+              <span className={COST_LABEL_CLASS}>{copy.laborCost}</span>
+              <span className={COST_VALUE_CLASS}>
+                {formatCurrency(
+                  costSummary.processLaborCost,
+                  common.currencySuffix,
+                )}
+              </span>
+            </WaflInfoRow>
+            <WaflInfoRow className="pbp-cost-row">
+              <span className={COST_LABEL_CLASS}>{copy.lossCost}</span>
+              <span className={COST_VALUE_CLASS}>
+                {formatCurrency(
+                  costSummary.processLossCost,
+                  common.currencySuffix,
+                )}
+              </span>
+            </WaflInfoRow>
+          </div>
+        </SummaryCard>
+      }
+      right={
+        <SummaryCard title={copy.processTitle}>
+          <div className="space-y-2 text-sm">
+            {costSummary.processLines.length > 0 ? (
+              costSummary.processLines.map((item) => (
+                <WaflSurface
+                  key={item.id}
+                  component="cost-process-row"
+                  shape="control"
+                  tone="muted"
+                  className="pbp-cost-row px-3 py-2"
+                >
+                  <div className="min-w-0 truncate text-[12px] font-semibold text-[var(--pbp-text-primary)]">
+                    {item.label}
+                  </div>
+                  <div className="mt-1 text-[11px] leading-4 text-[var(--pbp-text-muted)]">
+                    {copy.unitPriceLabel}{" "}
+                    {formatCurrency(item.unitAmount, common.currencySuffix)} ·{" "}
+                    {copy.lossPriceLabel}{" "}
+                    {formatCurrency(item.lossAmount, common.currencySuffix)} ·{" "}
+                    {copy.lineTotalLabel}{" "}
+                    {formatCurrency(item.totalAmount, common.currencySuffix)}
+                  </div>
+                </WaflSurface>
+              ))
+            ) : (
+              <WaflEmptyCard
+                shape="control"
+                className="pbp-empty-state px-4 py-6"
+              >
+                {copy.empty}
+              </WaflEmptyCard>
+            )}
+          </div>
+        </SummaryCard>
+      }
     />
   );
 }

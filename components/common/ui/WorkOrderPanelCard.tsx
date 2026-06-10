@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { WaflSurface } from "./WaflSurface";
 
-export const WORKORDER_PANEL_CARD_CLASS = "wafl-shape-surface p-4 pbp-card";
+export const WORKORDER_PANEL_CARD_CLASS = "p-4";
 
 export default function WorkOrderPanelCard({
   children,
@@ -10,5 +11,13 @@ export default function WorkOrderPanelCard({
   children: ReactNode;
   className?: string;
 }) {
-  return <div data-wafl-component="panel-card" className={cn(WORKORDER_PANEL_CARD_CLASS, className)}>{children}</div>;
+  return (
+    <WaflSurface
+      component="panel-card"
+      tone="surface"
+      className={cn(WORKORDER_PANEL_CARD_CLASS, className)}
+    >
+      {children}
+    </WaflSurface>
+  );
 }

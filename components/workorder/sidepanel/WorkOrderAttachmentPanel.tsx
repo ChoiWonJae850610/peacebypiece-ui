@@ -17,7 +17,11 @@ import {
   WaflFileCard,
   WaflSurface,
 } from "@/components/common/ui";
-import { WorkOrderAddIconButton, WorkOrderMoreIconButton, WorkOrderPlusIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import {
+  WorkOrderAddIconButton,
+  WorkOrderMoreIconButton,
+  WorkOrderPlusIcon,
+} from "@/components/workorder/common/WorkOrderIconButtons";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
@@ -99,7 +103,8 @@ function AttachmentActionMenu({
     };
 
     document.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    return () =>
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
   }, [open]);
 
   return (
@@ -258,10 +263,12 @@ function AttachmentUploadHint({
         onDrop={handleDrop}
         aria-label={addButtonLabel}
         className={`pbp-sidepanel-upload-zone mt-3 w-full active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
-          dragActive ? "pbp-sidepanel-upload-zone-active ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""
+          dragActive
+            ? "pbp-sidepanel-upload-zone-active ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]"
+            : ""
         } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
       >
-          <WaflAddIconBubble />
+        <WaflAddIconBubble />
         <span className="sr-only">{title}</span>
       </WaflAddCardButton>
     );
@@ -333,13 +340,16 @@ function AttachmentFlatAddHint({
         aria-label={addButtonLabel}
         className="min-h-[72px] w-full"
       >
-          <WaflAddIconBubble />
+        <WaflAddIconBubble />
       </WaflAddCardButton>
     );
   }
 
   return (
-    <WaflAddCard component="attachment-add-card" className="min-h-[72px] w-full">
+    <WaflAddCard
+      component="attachment-add-card"
+      className="min-h-[72px] w-full"
+    >
       <AttachmentActionMenu
         scope={scope}
         addButtonLabel={addButtonLabel}
@@ -465,25 +475,37 @@ export default function WorkOrderAttachmentPanel({
             : undefined
         }
       >
-        <div data-wafl-component="section-card" className={isFlatDevice ? "min-w-0 space-y-2.5" : "rounded-[var(--pbp-radius-wafl)] p-4 pbp-card min-w-0"}>
+        <WaflSurface
+          component="section-card"
+          tone="surface"
+          className={
+            isFlatDevice
+              ? "border-transparent bg-transparent p-0 shadow-none"
+              : "p-4"
+          }
+        >
           {!isFlatDevice ? (
-          <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <h3 className="truncate text-sm font-semibold pbp-text-primary">
-                {title}
-              </h3>
-              <SectionCountBadge>
-                {formatAttachmentCount(
-                  attachments.length,
-                  ui.attachmentPanel.countSuffix,
-                )}
-              </SectionCountBadge>
+            <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <h3 className="truncate text-sm font-semibold pbp-text-primary">
+                  {title}
+                </h3>
+                <SectionCountBadge>
+                  {formatAttachmentCount(
+                    attachments.length,
+                    ui.attachmentPanel.countSuffix,
+                  )}
+                </SectionCountBadge>
+              </div>
             </div>
-
-          </div>
           ) : null}
           {showOrderRequestPdfStatus ? (
-            <WaflSurface component="info-card" tone="muted" className="mt-3 px-3 py-3 text-left">
+            <WaflSurface
+              component="info-card"
+              shape="control"
+              tone="muted"
+              className="mt-3 px-3 py-3 text-left"
+            >
               <div className="flex min-w-0 items-start gap-2">
                 <span
                   className={`mt-0.5 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
@@ -614,13 +636,13 @@ export default function WorkOrderAttachmentPanel({
                         : ui.attachmentPanel.previewUnavailableTitle
                     }
                     aria-label={`${attachment.name} ${attachment.canPreview ? ui.attachmentPanel.previewAriaSuffix : ui.attachmentPanel.previewUnavailableAriaSuffix}`}
-                    className="flex w-full min-w-0 items-center gap-2 rounded-[var(--pbp-radius-wafl)] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
+                    className="flex w-full min-w-0 items-center gap-2 wafl-shape-control text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
                   >
                     <div
                       className={
                         isMobile
-                          ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[var(--pbp-radius-wafl)]"
-                          : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[var(--pbp-radius-wafl)]"
+                          ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden wafl-shape-control"
+                          : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden wafl-shape-control"
                       }
                     >
                       {attachment.type === "image" ? (
@@ -667,7 +689,9 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
+                  onOpenAdvancedDrawing={() =>
+                    setAdvancedDrawingModalOpen(true)
+                  }
                   isMobile={isMobile}
                   disabled={writeLocked}
                   disabledReason={writeLockMessage}
@@ -679,7 +703,9 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
+                  onOpenAdvancedDrawing={() =>
+                    setAdvancedDrawingModalOpen(true)
+                  }
                   onUploadFiles={onUploadFiles}
                   compact={isMobile || isTablet}
                   isMobile={isMobile}
@@ -691,6 +717,7 @@ export default function WorkOrderAttachmentPanel({
           ) : (
             <div className={isFlatDevice ? "space-y-2.5" : undefined}>
               <WaflEmptyCard
+                shape="control"
                 className={`pbp-empty-state whitespace-pre-line px-3 py-4 text-xs leading-5 sm:px-4 sm:py-5 ${isFlatDevice ? "" : "mt-3"}`}
               >
                 {emptyText}
@@ -702,7 +729,9 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
+                  onOpenAdvancedDrawing={() =>
+                    setAdvancedDrawingModalOpen(true)
+                  }
                   isMobile={isMobile}
                   disabled={writeLocked}
                   disabledReason={writeLockMessage}
@@ -714,7 +743,9 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
+                  onOpenAdvancedDrawing={() =>
+                    setAdvancedDrawingModalOpen(true)
+                  }
                   onUploadFiles={onUploadFiles}
                   compact={isMobile || isTablet}
                   isMobile={isMobile}
@@ -724,7 +755,7 @@ export default function WorkOrderAttachmentPanel({
               )}
             </div>
           )}
-        </div>
+        </WaflSurface>
       </div>
       {isDesignAttachmentScope(uploadScope) ? (
         <>

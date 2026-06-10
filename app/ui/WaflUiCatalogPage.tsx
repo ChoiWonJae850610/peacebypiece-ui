@@ -1,7 +1,12 @@
 import AppBadge from "@/components/common/ui/AppBadge";
 import AppSelect from "@/components/common/ui/AppSelect";
 import { WaflButton, WaflLinkButton } from "@/components/common/ui/WaflButton";
-import { WaflInfoBox, WaflInput, WaflSelectableCard, WaflTextarea } from "@/components/common/ui/WaflForm";
+import {
+  WaflInfoBox,
+  WaflInput,
+  WaflSelectableCard,
+  WaflTextarea,
+} from "@/components/common/ui/WaflForm";
 import {
   WaflAddCardButton,
   WaflEmptyCard,
@@ -97,21 +102,24 @@ const catalogSections: CatalogSection[] = [
     id: "foundation-primitive",
     title: "Foundation primitive",
     plainTitle: "WAFL 슈퍼클래스 기준",
-    description: "shape, density, tone, variant, state를 한 primitive에서 나눠 쓴다.",
+    description:
+      "shape, density, tone, variant, state를 한 primitive에서 나눠 쓴다.",
     status: "guide",
   },
   {
     id: "shape-grammar",
     title: "Shape grammar",
     plainTitle: "모양 통일 기준",
-    description: "버튼, 배지, 입력창, 카드가 같은 둥근 네모 계열로 보이는지 확인한다.",
+    description:
+      "버튼, 배지, 입력창, 카드가 같은 둥근 네모 계열로 보이는지 확인한다.",
     status: "guide",
   },
   {
     id: "visual-styling",
     title: "Visual styling",
     plainTitle: "꾸밈 기준",
-    description: "shape는 고정하고 tone, variant, state, depth만 공통 props로 조절한다.",
+    description:
+      "shape는 고정하고 tone, variant, state, depth만 공통 props로 조절한다.",
     status: "guide",
   },
   {
@@ -125,56 +133,64 @@ const catalogSections: CatalogSection[] = [
     id: "containers",
     title: "Containers",
     plainTitle: "담는 것",
-    description: "Surface, InfoBox, EmptyCard, SelectableCard의 역할 차이를 비교한다.",
+    description:
+      "Surface, InfoBox, EmptyCard, SelectableCard의 역할 차이를 비교한다.",
     status: "guide",
   },
   {
     id: "inputs",
     title: "Inputs",
     plainTitle: "입력하는 것",
-    description: "Input, Textarea, Select trigger, 선택 카드의 사용 기준을 확인한다.",
+    description:
+      "Input, Textarea, Select trigger, 선택 카드의 사용 기준을 확인한다.",
     status: "sampled",
   },
   {
     id: "status",
     title: "Status",
     plainTitle: "상태를 보여주는 것",
-    description: "Badge, notice, empty, table row처럼 정보를 표시하는 기준을 확인한다.",
+    description:
+      "Badge, notice, empty, table row처럼 정보를 표시하는 기준을 확인한다.",
     status: "sampled",
   },
   {
     id: "wrong-right",
     title: "Wrong / Right",
     plainTitle: "잘못 쓴 예와 맞게 쓴 예",
-    description: "같아 보이는 컴포넌트를 어떤 상황에서 다르게 써야 하는지 비교한다.",
+    description:
+      "같아 보이는 컴포넌트를 어떤 상황에서 다르게 써야 하는지 비교한다.",
     status: "guide",
   },
   {
     id: "practice-patterns",
     title: "Practice patterns",
     plainTitle: "실제 업무 화면 패턴",
-    description: "작업지시서, 발주, 저장소에서 실제로 반복되는 카드/row/modal 구성을 샘플로 확인한다.",
+    description:
+      "작업지시서, 발주, 저장소에서 실제로 반복되는 카드/row/modal 구성을 샘플로 확인한다.",
     status: "sampled",
   },
   {
     id: "usage-rules",
     title: "Usage rules",
     plainTitle: "언제 쓰고 언제 쓰지 않는가",
-    description: "직접 className 사용 금지 기준과 WAFL 컴포넌트 대체 기준을 확인한다.",
+    description:
+      "직접 className 사용 금지 기준과 WAFL 컴포넌트 대체 기준을 확인한다.",
     status: "guide",
   },
   {
     id: "screen-checklist",
     title: "Screen checklist",
     plainTitle: "기존 화면별 점검표",
-    description: "작업지시서부터 개인설정까지 화면별로 써야 하는 WAFL 컴포넌트를 확인한다.",
+    description:
+      "작업지시서부터 개인설정까지 화면별로 써야 하는 WAFL 컴포넌트를 확인한다.",
     status: "guide",
   },
   {
     id: "component-inventory",
     title: "Component inventory",
     plainTitle: "컴포넌트 재고표",
-    description: "현재 WAFL 컴포넌트를 Primitive / Pattern / Domain / Legacy로 분류하고 유지·통합·폐기 후보를 본다.",
+    description:
+      "현재 WAFL 컴포넌트를 Primitive / Pattern / Domain / Legacy로 분류하고 유지·통합·폐기 후보를 본다.",
     status: "guide",
   },
   {
@@ -253,7 +269,8 @@ const componentSpecs: ComponentSpec[] = [
     plainRule: "실행이 아니라 이동이면 이걸 쓴다.",
     purpose: "href 기반 이동 CTA를 버튼 문법으로 표시한다.",
     props: "href, variant, size, width, children",
-    avoid: "링크를 별도 pill, underline CTA, 임의 button class로 만들지 않는다.",
+    avoid:
+      "링크를 별도 pill, underline CTA, 임의 button class로 만들지 않는다.",
     screens: "홈, 운영 대시보드, 내부 catalog, 설정 이동",
   },
   {
@@ -287,7 +304,8 @@ const componentSpecs: ComponentSpec[] = [
     name: "WaflInfoBox",
     path: "@/components/common/ui/WaflForm",
     plainRule: "안내문과 보조 설명이다.",
-    purpose: "선택 요약, 정책 설명, 주의 안내처럼 card보다 낮은 depth의 정보 블록.",
+    purpose:
+      "선택 요약, 정책 설명, 주의 안내처럼 card보다 낮은 depth의 정보 블록.",
     props: "tone, component, className, children",
     avoid: "안내문을 임의 bg 박스나 shadow card로 만들지 않는다.",
     screens: "모달 안내, 설정 안내, 접근 조건 안내",
@@ -355,7 +373,6 @@ const containerRules = [
   "선택 상태는 shadow가 아니라 selected token으로 표현한다.",
 ];
 
-
 const statusRules = [
   "AppBadge는 작성중·승인·파일 수처럼 짧은 상태값에만 쓴다.",
   "긴 안내문이나 설명 문장은 WaflInfoBox 또는 WaflNoticeBox로 보낸다.",
@@ -371,10 +388,30 @@ const shapeGrammarRules = [
 ];
 
 const shapeGrammarRows = [
-  { label: "큰 표면", component: "WaflSurface", sample: "카드/패널/정보 묶음", tone: "neutral" as const },
-  { label: "실행 버튼", component: "WaflButton", sample: "저장/삭제/이동", tone: "brand" as const },
-  { label: "짧은 상태", component: "AppBadge", sample: "작성중/승인/파일", tone: "info" as const },
-  { label: "입력 필드", component: "WaflInput", sample: "검색/이름/메모", tone: "success" as const },
+  {
+    label: "큰 표면",
+    component: "WaflSurface",
+    sample: "카드/패널/정보 묶음",
+    tone: "neutral" as const,
+  },
+  {
+    label: "실행 버튼",
+    component: "WaflButton",
+    sample: "저장/삭제/이동",
+    tone: "brand" as const,
+  },
+  {
+    label: "짧은 상태",
+    component: "AppBadge",
+    sample: "작성중/승인/파일",
+    tone: "info" as const,
+  },
+  {
+    label: "입력 필드",
+    component: "WaflInput",
+    sample: "검색/이름/메모",
+    tone: "success" as const,
+  },
 ];
 
 const visualStylingRules = [
@@ -387,13 +424,32 @@ const visualStylingRules = [
 ];
 
 const visualStateRows = [
-  { label: "normal", rule: "기본 정보. default/surface tone.", tone: "neutral" as const },
-  { label: "selected", rule: "사용자가 고른 항목. selected tone 또는 selected prop.", tone: "brand" as const },
-  { label: "current", rule: "현재 진행 위치. selected보다 약간 강한 status badge 또는 workflow token.", tone: "info" as const },
-  { label: "disabled", rule: "비활성. disabled attribute와 opacity 기준.", tone: "neutral" as const },
-  { label: "danger", rule: "삭제/반려/오류. danger tone과 danger variant.", tone: "danger" as const },
+  {
+    label: "normal",
+    rule: "기본 정보. default/surface tone.",
+    tone: "neutral" as const,
+  },
+  {
+    label: "selected",
+    rule: "사용자가 고른 항목. selected tone 또는 selected prop.",
+    tone: "brand" as const,
+  },
+  {
+    label: "current",
+    rule: "현재 진행 위치. selected보다 약간 강한 status badge 또는 workflow token.",
+    tone: "info" as const,
+  },
+  {
+    label: "disabled",
+    rule: "비활성. disabled attribute와 opacity 기준.",
+    tone: "neutral" as const,
+  },
+  {
+    label: "danger",
+    rule: "삭제/반려/오류. danger tone과 danger variant.",
+    tone: "danger" as const,
+  },
 ];
-
 
 const practiceRules = [
   "작업지시서의 빈 슬롯은 WaflAddCardButton으로 통일한다.",
@@ -438,7 +494,8 @@ const usageRuleCards = [
 const directClassReplacementRows = [
   {
     direct: "rounded-* 직접 지정",
-    replacement: "WaflSurface / WaflButton / WaflInput / AppBadge의 shape token",
+    replacement:
+      "WaflSurface / WaflButton / WaflInput / AppBadge의 shape token",
     reason: "화면별 모서리 차이를 막는다.",
   },
   {
@@ -484,97 +541,160 @@ const screenChecklists: ScreenChecklist[] = [
     screen: "작업지시서",
     routeHint: "workorder / order sheet",
     purpose: "좌·중·우 3패널에서 작성, 검토, 첨부, 디자인, 메모를 다룬다.",
-    requiredComponents: ["WaflSurface", "WaflSurfaceButton", "WaflAddCardButton", "WaflInfoBox", "AppBadge", "WaflButton"],
+    requiredComponents: [
+      "WaflSurface",
+      "WaflSurfaceButton",
+      "WaflAddCardButton",
+      "WaflInfoBox",
+      "AppBadge",
+      "WaflButton",
+    ],
     checkItems: [
       "빈 첨부/디자인/메모 슬롯은 WaflAddCardButton으로 보인다.",
       "선택 가능한 공정/자재 카드는 WaflSurfaceButton 또는 WaflSelectableCard 역할로 분리된다.",
       "단계 상태는 AppBadge로 짧게 표시되고, 긴 설명은 InfoBox로 내려간다.",
     ],
-    missingRisk: "카드 안 카드 depth가 과해지고, 추가 버튼과 실행 버튼이 같은 의미로 보일 수 있다.",
+    missingRisk:
+      "카드 안 카드 depth가 과해지고, 추가 버튼과 실행 버튼이 같은 의미로 보일 수 있다.",
   },
   {
     screen: "원단·부자재 발주",
     routeHint: "material order",
     purpose: "발주서 목록, 발주 기본정보, 공정/주문내역, 작지 연결을 확인한다.",
-    requiredComponents: ["WaflDataTable", "WaflFilterBar", "WaflSurface", "WaflInfoRow", "AppBadge", "WaflButton"],
+    requiredComponents: [
+      "WaflDataTable",
+      "WaflFilterBar",
+      "WaflSurface",
+      "WaflInfoRow",
+      "AppBadge",
+      "WaflButton",
+    ],
     checkItems: [
       "발주 목록은 row 기준으로 읽히고 모바일에서는 카드처럼 접힌다.",
       "발주 대기/완료/검수 가능 상태는 AppBadge로 구분된다.",
       "검색, 구분, 상태 필터는 WaflFilterBar 안에 묶인다.",
     ],
-    missingRisk: "발주 row가 화면마다 다른 카드 모양이 되고, 상태 색상이 직접 className으로 흩어질 수 있다.",
+    missingRisk:
+      "발주 row가 화면마다 다른 카드 모양이 되고, 상태 색상이 직접 className으로 흩어질 수 있다.",
   },
   {
     screen: "운영 대시보드",
     routeHint: "admin dashboard",
     purpose: "주요 지표, 요약 카드, 이동 CTA, 알림을 빠르게 확인한다.",
-    requiredComponents: ["WaflPageHero", "WaflSectionPanel", "WaflSurface", "WaflLinkButton", "AppBadge", "WaflNoticeBox"],
+    requiredComponents: [
+      "WaflPageHero",
+      "WaflSectionPanel",
+      "WaflSurface",
+      "WaflLinkButton",
+      "AppBadge",
+      "WaflNoticeBox",
+    ],
     checkItems: [
       "이동 CTA는 WaflLinkButton으로 분리된다.",
       "지표 카드는 WaflSurface 안에서 InfoRow/Badge 중심으로 구성된다.",
       "공지나 제한 안내는 WaflNoticeBox 또는 WaflInfoBox를 쓴다.",
     ],
-    missingRisk: "카드 이동과 버튼 실행이 섞이고, dashboard 전용 박스가 늘어날 수 있다.",
+    missingRisk:
+      "카드 이동과 버튼 실행이 섞이고, dashboard 전용 박스가 늘어날 수 있다.",
   },
   {
     screen: "협력업체",
     routeHint: "partners / vendors",
     purpose: "업체 검색, 상태 필터, 업체 row, 등록/수정 모달을 다룬다.",
-    requiredComponents: ["WaflFilterBar", "WaflDataTable", "WaflInput", "WaflTextarea", "WaflInfoBox", "WaflButton"],
+    requiredComponents: [
+      "WaflFilterBar",
+      "WaflDataTable",
+      "WaflInput",
+      "WaflTextarea",
+      "WaflInfoBox",
+      "WaflButton",
+    ],
     checkItems: [
       "검색/분류/상태 필터는 WaflFilterBar 기준으로 정렬된다.",
       "업체 목록은 WaflDataTable 계열 row를 유지한다.",
       "등록/수정 모달의 안내문은 InfoBox로 낮춘다.",
     ],
-    missingRisk: "멤버관리/저장소 테이블과 다른 행 높이·버튼 위치가 생길 수 있다.",
+    missingRisk:
+      "멤버관리/저장소 테이블과 다른 행 높이·버튼 위치가 생길 수 있다.",
   },
   {
     screen: "저장소",
     routeHint: "files / storage",
     purpose: "파일 목록, 요약 카드, 미리보기/상세, 휴지통 흐름을 다룬다.",
-    requiredComponents: ["WaflFilterBar", "WaflDataTable", "WaflSurface", "WaflInfoRow", "WaflEmptyCard", "AppBadge"],
+    requiredComponents: [
+      "WaflFilterBar",
+      "WaflDataTable",
+      "WaflSurface",
+      "WaflInfoRow",
+      "WaflEmptyCard",
+      "AppBadge",
+    ],
     checkItems: [
       "파일/휴지통 목록은 같은 row 문법을 쓴다.",
       "파일 없음 상태는 WaflEmptyCard로 보인다.",
       "상세 모달은 InfoRow, InfoBox, footer buttons로 분리된다.",
     ],
-    missingRisk: "파일 카드, 휴지통 row, 상세 모달의 border/radius가 서로 달라질 수 있다.",
+    missingRisk:
+      "파일 카드, 휴지통 row, 상세 모달의 border/radius가 서로 달라질 수 있다.",
   },
   {
     screen: "통계",
     routeHint: "statistics",
     purpose: "기간 필터, 요약 지표, 분석 카드, chart panel을 확인한다.",
-    requiredComponents: ["WaflFilterBar", "WaflSurface", "WaflSectionPanel", "WaflInfoRow", "AppBadge"],
+    requiredComponents: [
+      "WaflFilterBar",
+      "WaflSurface",
+      "WaflSectionPanel",
+      "WaflInfoRow",
+      "AppBadge",
+    ],
     checkItems: [
       "기간 선택과 분석 조건은 WaflFilterBar 기준으로 묶인다.",
       "metric card는 WaflSurface 안에서 숫자/단위/상태 badge로 정리된다.",
       "chart panel은 별도 shadow를 만들지 않고 section surface 기준을 따른다.",
     ],
-    missingRisk: "통계 전용 카드가 늘어나면서 다른 관리 화면과 depth가 달라질 수 있다.",
+    missingRisk:
+      "통계 전용 카드가 늘어나면서 다른 관리 화면과 depth가 달라질 수 있다.",
   },
   {
     screen: "멤버관리",
     routeHint: "members",
     purpose: "멤버 검색, 초대/승인 row, 권한 모달, 상태 변경을 다룬다.",
-    requiredComponents: ["WaflFilterBar", "WaflDataTable", "WaflSelectableCard", "WaflInfoBox", "AppBadge", "WaflButton"],
+    requiredComponents: [
+      "WaflFilterBar",
+      "WaflDataTable",
+      "WaflSelectableCard",
+      "WaflInfoBox",
+      "AppBadge",
+      "WaflButton",
+    ],
     checkItems: [
       "검색 필드는 WaflFilterBar 안에서 다른 관리 화면과 같은 높이를 유지한다.",
       "권한 선택은 WaflSelectableCard로 보이고 선택 상태가 명확하다.",
       "초대/승인/비활성 상태는 AppBadge로 짧게 표시된다.",
     ],
-    missingRisk: "권한 모달 내부 선택지가 일반 카드처럼 보여 실제 선택 상태가 흐려질 수 있다.",
+    missingRisk:
+      "권한 모달 내부 선택지가 일반 카드처럼 보여 실제 선택 상태가 흐려질 수 있다.",
   },
   {
     screen: "개인설정",
     routeHint: "profile / settings",
     purpose: "개인 정보, 계정 상태, 탈퇴 요청, 개발용 언어 전환 영역을 다룬다.",
-    requiredComponents: ["WaflSectionPanel", "WaflSurface", "WaflInfoRow", "WaflInfoBox", "WaflButton", "AppBadge"],
+    requiredComponents: [
+      "WaflSectionPanel",
+      "WaflSurface",
+      "WaflInfoRow",
+      "WaflInfoBox",
+      "WaflButton",
+      "AppBadge",
+    ],
     checkItems: [
       "프로필 정보는 InfoRow로 정렬하고, 설명은 InfoBox로 낮춘다.",
       "탈퇴 요청 같은 위험 액션은 WaflButton danger 기준을 따른다.",
       "개발용 언어 전환은 운영 고객용 주요 CTA처럼 보이지 않게 분리한다.",
     ],
-    missingRisk: "설정 화면이 기능별 임의 박스로 나뉘어 WAFL 공통 패널 문법에서 벗어날 수 있다.",
+    missingRisk:
+      "설정 화면이 기능별 임의 박스로 나뉘어 WAFL 공통 패널 문법에서 벗어날 수 있다.",
   },
 ];
 
@@ -590,25 +710,29 @@ const componentGroupGuides: ComponentGroupGuide[] = [
     group: "Primitive",
     meaning: "가장 작은 공통 부품",
     rule: "역할이 명확하고 여러 화면에서 반복되면 유지한다. 모양 차이는 props와 shape token으로 처리한다.",
-    examples: "WaflButton, WaflIconButton, WaflInput, WaflTextarea, AppBadge, WaflSurface",
+    examples:
+      "WaflButton, WaflIconButton, WaflInput, WaflTextarea, AppBadge, WaflSurface",
   },
   {
     group: "Pattern",
     meaning: "primitive를 조합한 반복 패턴",
     rule: "필터바, 테이블, 빈 상태, 추가 카드처럼 화면마다 같은 구조가 반복될 때 유지한다.",
-    examples: "WaflFilterBar, WaflDataTable, WaflEmptyCard, WaflAddCardButton, WaflInfoBox",
+    examples:
+      "WaflFilterBar, WaflDataTable, WaflEmptyCard, WaflAddCardButton, WaflInfoBox",
   },
   {
     group: "Domain",
     meaning: "업무 도메인 전용 조합",
     rule: "작업지시서/발주/저장소의 데이터와 로직이 붙어 있으면 남기되 내부는 primitive/pattern을 쓰게 한다.",
-    examples: "WorkOrderListCard, WorkOrderMemoPanel, StorageFileRow, MaterialOrderRow",
+    examples:
+      "WorkOrderListCard, WorkOrderMemoPanel, StorageFileRow, MaterialOrderRow",
   },
   {
     group: "Legacy",
     meaning: "교체해야 할 이전 구현",
     rule: "일반 button/span/input에 직접 rounded/bg/border를 박은 요소는 전환 대상으로 표시한다.",
-    examples: "화면 내부 직접 button, 직접 badge span, Admin* 구형 컴포넌트 일부",
+    examples:
+      "화면 내부 직접 button, 직접 badge span, Admin* 구형 컴포넌트 일부",
   },
 ];
 
@@ -681,7 +805,8 @@ const componentInventoryItems: ComponentInventoryItem[] = [
     group: "Pattern",
     role: "빈 슬롯 또는 작은 아이콘 자리에서 새 항목을 추가하는 CTA",
     keepDecision: "유지",
-    target: "카드형은 WaflAddCardButton, 작은 +는 WaflAddActionButton, 내부 glyph는 WaflAddIconBubble",
+    target:
+      "카드형은 WaflAddCardButton, 작은 +는 WaflAddActionButton, 내부 glyph는 WaflAddIconBubble",
     priority: "높음",
     note: "카드 안 + glyph도 border가 있는 WaflAddIconBubble을 사용해 화면별로 테두리가 사라지지 않게 관리한다.",
   },
@@ -779,7 +904,10 @@ const inventoryNextSteps = [
 
 function SectionAnchorList() {
   return (
-    <nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-label="WAFL UI catalog sections">
+    <nav
+      className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4"
+      aria-label="WAFL UI catalog sections"
+    >
       {catalogSections.map((section) => (
         <a
           key={section.id}
@@ -789,11 +917,22 @@ function SectionAnchorList() {
         >
           <span className="flex items-center justify-between gap-3">
             {section.title}
-            <AppBadge size="xs" tone={section.status === "guide" ? "brand" : section.status === "sampled" ? "info" : "neutral"}>
+            <AppBadge
+              size="xs"
+              tone={
+                section.status === "guide"
+                  ? "brand"
+                  : section.status === "sampled"
+                    ? "info"
+                    : "neutral"
+              }
+            >
               {section.status}
             </AppBadge>
           </span>
-          <span className="mt-1 block text-xs font-bold text-[var(--pbp-text-primary)]">{section.plainTitle}</span>
+          <span className="mt-1 block text-xs font-bold text-[var(--pbp-text-primary)]">
+            {section.plainTitle}
+          </span>
           <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
             {section.description}
           </span>
@@ -806,11 +945,18 @@ function SectionAnchorList() {
 function RuleList({ title, rules }: { title: string; rules: string[] }) {
   return (
     <WaflInfoBox tone="muted" component="catalog-rule-list">
-      <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{title}</p>
+      <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+        {title}
+      </p>
       <ul className="mt-2 grid gap-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] lg:grid-cols-2">
         {rules.map((rule) => (
           <li key={rule} className="flex gap-2">
-            <span aria-hidden="true" className="text-[var(--pbp-brand-primary)]">•</span>
+            <span
+              aria-hidden="true"
+              className="text-[var(--pbp-brand-primary)]"
+            >
+              •
+            </span>
             <span>{rule}</span>
           </li>
         ))}
@@ -823,17 +969,32 @@ function QuickDecisionGrid() {
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       {quickDecisions.map((item) => (
-        <WaflSurface key={item.component + item.label} component="catalog-decision-card" tone="surface" className="p-4">
+        <WaflSurface
+          key={item.component + item.label}
+          component="catalog-decision-card"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex h-full flex-col gap-3">
             <div className="space-y-1">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">상황</p>
-              <p className="text-sm font-bold leading-5 text-[var(--pbp-text-primary)]">{item.label}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                상황
+              </p>
+              <p className="text-sm font-bold leading-5 text-[var(--pbp-text-primary)]">
+                {item.label}
+              </p>
             </div>
             <div className="wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2">
-              <p className="text-xs font-bold text-[var(--pbp-brand-primary)]">{item.component}</p>
-              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{item.rule}</p>
+              <p className="text-xs font-bold text-[var(--pbp-brand-primary)]">
+                {item.component}
+              </p>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                {item.rule}
+              </p>
             </div>
-            <p className="mt-auto text-xs font-medium leading-5 text-[var(--pbp-text-subtle)]">예: {item.example}</p>
+            <p className="mt-auto text-xs font-medium leading-5 text-[var(--pbp-text-subtle)]">
+              예: {item.example}
+            </p>
           </div>
         </WaflSurface>
       ))}
@@ -855,18 +1016,36 @@ function ComparisonCard({
   rightBody: string;
 }) {
   return (
-    <WaflSurface component="catalog-comparison-card" tone="surface" className="p-4">
-      <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{title}</p>
+    <WaflSurface
+      component="catalog-comparison-card"
+      tone="surface"
+      className="p-4"
+    >
+      <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+        {title}
+      </p>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <div className="wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
-          <AppBadge size="xs" tone="neutral">비슷해 보이는 것</AppBadge>
-          <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">{leftTitle}</p>
-          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{leftBody}</p>
+          <AppBadge size="xs" tone="neutral">
+            비슷해 보이는 것
+          </AppBadge>
+          <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">
+            {leftTitle}
+          </p>
+          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            {leftBody}
+          </p>
         </div>
         <div className="wafl-shape-surface border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3">
-          <AppBadge size="xs" tone="brand">판단 기준</AppBadge>
-          <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">{rightTitle}</p>
-          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{rightBody}</p>
+          <AppBadge size="xs" tone="brand">
+            판단 기준
+          </AppBadge>
+          <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">
+            {rightTitle}
+          </p>
+          <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+            {rightBody}
+          </p>
         </div>
       </div>
     </WaflSurface>
@@ -875,53 +1054,108 @@ function ComparisonCard({
 
 function FoundationPrimitiveSamples() {
   const primitiveRows = [
-    { key: "shape", value: "surface / control / compact / icon", rule: "곡률 family를 고정한다." },
-    { key: "density", value: "compact / default / spacious", rule: "높이와 좌우 여백을 고정한다." },
-    { key: "tone", value: "surface / muted / selected / warning / danger / info", rule: "의미 색상은 공통 tone으로만 바꾼다." },
-    { key: "state", value: "normal / selected / current / disabled / danger", rule: "상태 때문에 shape가 바뀌지 않게 한다." },
+    {
+      key: "shape",
+      value: "surface / control / compact / icon",
+      rule: "곡률 family를 고정한다.",
+    },
+    {
+      key: "density",
+      value: "compact / default / spacious",
+      rule: "높이와 좌우 여백을 고정한다.",
+    },
+    {
+      key: "tone",
+      value: "surface / muted / selected / warning / danger / info",
+      rule: "의미 색상은 공통 tone으로만 바꾼다.",
+    },
+    {
+      key: "state",
+      value: "normal / selected / current / disabled / danger",
+      rule: "상태 때문에 shape가 바뀌지 않게 한다.",
+    },
   ];
 
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.24부터 작업지시서 모달의 select, preview, summary, empty, row는 foundation control 기준으로 맞춘다. 상태는 selected/current tone으로만 구분하고 shape는 바꾸지 않는다.
+        0.21.25부터 작업지시서 진행 단계, 비용 요약, 우측 첨부/메모 패널도
+        Foundation Surface/Control 기준을 통과한다. 패널은 surface, 내부
+        row/empty/summary/file/memo는 control 중심으로 맞춘다.
       </WaflNoticeBox>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <WaflSurface component="catalog-foundation-map" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-foundation-map"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Primitive map</p>
-              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">같은 계열은 같은 foundation을 쓴다</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                Primitive map
+              </p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+                같은 계열은 같은 foundation을 쓴다
+              </h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                WaflSurface, WaflButton, WaflInput, AppSelect, AppBadge, InfoRow, EmptyCard는 서로 다른 컴포넌트지만 shape/density/tone 값은 한 곳에서 공유한다.
+                WaflSurface, WaflButton, WaflInput, AppSelect, AppBadge,
+                InfoRow, EmptyCard는 서로 다른 컴포넌트지만 shape/density/tone
+                값은 한 곳에서 공유한다.
               </p>
             </div>
-            <AppBadge tone="brand" size="xs">foundation</AppBadge>
+            <AppBadge tone="brand" size="xs">
+              foundation
+            </AppBadge>
           </div>
           <div className="mt-4 grid gap-2">
             {primitiveRows.map((row) => (
-              <WaflInfoRow key={row.key} component="catalog-foundation-row" tone="muted" className="items-start">
+              <WaflInfoRow
+                key={row.key}
+                component="catalog-foundation-row"
+                tone="muted"
+                className="items-start"
+              >
                 <span className="min-w-0">
-                  <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">{row.key}</span>
-                  <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{row.value}</span>
+                  <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">
+                    {row.key}
+                  </span>
+                  <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                    {row.value}
+                  </span>
                 </span>
-                <span className="max-w-[11rem] text-right text-[11px] font-semibold leading-5 text-[var(--pbp-text-muted)]">{row.rule}</span>
+                <span className="max-w-[11rem] text-right text-[11px] font-semibold leading-5 text-[var(--pbp-text-muted)]">
+                  {row.rule}
+                </span>
               </WaflInfoRow>
             ))}
           </div>
         </WaflSurface>
 
-        <WaflSurface component="catalog-foundation-visual" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">control 계열 비교</p>
+        <WaflSurface
+          component="catalog-foundation-visual"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            control 계열 비교
+          </p>
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-            아래 요소는 모두 control foundation으로 읽혀야 한다. 버튼, 검색필드, 선택 row가 서로 다른 곡률로 보이면 해당 컴포넌트가 아직 primitive를 우회한 것이다.
+            아래 요소는 모두 control foundation으로 읽혀야 한다. 버튼, 검색필드,
+            선택 row가 서로 다른 곡률로 보이면 해당 컴포넌트가 아직 primitive를
+            우회한 것이다.
           </p>
           <div className="mt-4 grid gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <WaflButton variant="secondary" size="md">control button</WaflButton>
-              <WaflButton variant="neutral" size="sm">compact control</WaflButton>
-              <WaflButton variant="icon" size="md" aria-label="foundation icon">+</WaflButton>
+              <WaflButton variant="secondary" size="md">
+                control button
+              </WaflButton>
+              <WaflButton variant="neutral" size="sm">
+                compact control
+              </WaflButton>
+              <WaflButton variant="icon" size="md" aria-label="foundation icon">
+                +
+              </WaflButton>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <WaflInput fieldSize="sm" placeholder="검색필드 · control sm" />
@@ -935,22 +1169,76 @@ function FoundationPrimitiveSamples() {
                 ariaLabel="foundation select sample"
               />
             </div>
-            <WaflSelectableCard selected component="catalog-foundation-selectable">
+            <WaflSelectableCard
+              selected
+              component="catalog-foundation-selectable"
+            >
               <span className="text-sm font-bold">control row</span>
-              <AppBadge tone="brand" size="xs">selected</AppBadge>
+              <AppBadge tone="brand" size="xs">
+                selected
+              </AppBadge>
             </WaflSelectableCard>
             <WaflInfoRow component="catalog-foundation-info-row" tone="muted">
-              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">control info row</span>
-              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">same shape</span>
+              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                control info row
+              </span>
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+                same shape
+              </span>
             </WaflInfoRow>
             <div className="grid gap-2 sm:grid-cols-2">
-              <WaflInfoBox component="catalog-modal-preview" tone="muted" shape="control" state="current">
-                <p className="text-xs font-bold text-[var(--pbp-text-primary)]">modal preview</p>
-                <p className="mt-1 text-xs font-medium text-[var(--pbp-text-muted)]">기본정보 미리보기</p>
+              <WaflInfoBox
+                component="catalog-modal-preview"
+                tone="muted"
+                shape="control"
+                state="current"
+              >
+                <p className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                  modal preview
+                </p>
+                <p className="mt-1 text-xs font-medium text-[var(--pbp-text-muted)]">
+                  기본정보 미리보기
+                </p>
               </WaflInfoBox>
-              <WaflEmptyCard component="catalog-modal-empty" shape="control" className="px-4 py-4">
+              <WaflEmptyCard
+                component="catalog-modal-empty"
+                shape="control"
+                className="px-4 py-4"
+              >
                 modal empty state
               </WaflEmptyCard>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <WaflSurface
+                component="catalog-side-panel"
+                tone="surface"
+                className="p-3"
+              >
+                <p className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                  side panel surface
+                </p>
+                <WaflInfoRow
+                  component="catalog-side-panel-row"
+                  tone="muted"
+                  className="mt-2"
+                >
+                  <span className="text-xs font-semibold">첨부/메모 row</span>
+                  <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+                    control
+                  </span>
+                </WaflInfoRow>
+              </WaflSurface>
+              <WaflSurface
+                component="catalog-cost-summary"
+                shape="control"
+                tone="info"
+                className="p-3"
+              >
+                <p className="text-xs font-bold">cost summary control</p>
+                <p className="mt-1 text-xs font-semibold opacity-75">
+                  총 비용 / 공정별 금액
+                </p>
+              </WaflSurface>
             </div>
           </div>
         </WaflSurface>
@@ -963,45 +1251,83 @@ function ShapeGrammarSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        현재 WAFL shape는 최상위 토큰으로 구조화했다. 카드·패널은 surface, 버튼·입력은 control, 배지는 compact, 아이콘 버튼은 icon token을 쓴다.
+        현재 WAFL shape는 최상위 토큰으로 구조화했다. 카드·패널은 surface,
+        버튼·입력은 control, 배지는 compact, 아이콘 버튼은 icon token을 쓴다.
       </WaflNoticeBox>
 
       <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
-        <WaflSurface component="catalog-shape-principle" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-shape-principle"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Shape family</p>
-              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">하나의 shape family, 네 개의 token</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                Shape family
+              </p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+                하나의 shape family, 네 개의 token
+              </h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                컨테이너 모양을 기준으로 삼되, 작은 요소는 더 작은 radius token을 써서 눈에 보이는 곡률을 맞춘다.
+                컨테이너 모양을 기준으로 삼되, 작은 요소는 더 작은 radius
+                token을 써서 눈에 보이는 곡률을 맞춘다.
               </p>
             </div>
-            <AppBadge tone="brand" size="xs">shape token</AppBadge>
+            <AppBadge tone="brand" size="xs">
+              shape token
+            </AppBadge>
           </div>
           <div className="mt-4 grid gap-2">
             {shapeGrammarRows.map((row) => (
-              <WaflInfoRow key={row.component} component="catalog-shape-row" tone="muted" className="items-start">
+              <WaflInfoRow
+                key={row.component}
+                component="catalog-shape-row"
+                tone="muted"
+                className="items-start"
+              >
                 <span className="min-w-0">
-                  <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">{row.label}</span>
-                  <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{row.component} · {row.sample}</span>
+                  <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">
+                    {row.label}
+                  </span>
+                  <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                    {row.component} · {row.sample}
+                  </span>
                 </span>
-                <AppBadge tone={row.tone} size="xs">token</AppBadge>
+                <AppBadge tone={row.tone} size="xs">
+                  token
+                </AppBadge>
               </WaflInfoRow>
             ))}
           </div>
         </WaflSurface>
 
-        <WaflSurface component="catalog-shape-visual-sample" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">같은 모양 계열 샘플</p>
+        <WaflSurface
+          component="catalog-shape-visual-sample"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            같은 모양 계열 샘플
+          </p>
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-            아래 요소들은 서로 다른 token을 쓰지만 같은 둥근 네모 계열로 읽혀야 한다. 알약형으로 보이면 token 값이 아직 큰 것이다.
+            아래 요소들은 서로 다른 token을 쓰지만 같은 둥근 네모 계열로 읽혀야
+            한다. 알약형으로 보이면 token 값이 아직 큰 것이다.
           </p>
           <div className="mt-4 grid gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <WaflButton variant="primary" size="md">저장 실행</WaflButton>
-              <WaflButton variant="secondary" size="md">보조 실행</WaflButton>
-              <WaflButton variant="danger" size="md">삭제</WaflButton>
-              <WaflButton variant="icon" size="md" aria-label="아이콘 버튼">+</WaflButton>
+              <WaflButton variant="primary" size="md">
+                저장 실행
+              </WaflButton>
+              <WaflButton variant="secondary" size="md">
+                보조 실행
+              </WaflButton>
+              <WaflButton variant="danger" size="md">
+                삭제
+              </WaflButton>
+              <WaflButton variant="icon" size="md" aria-label="아이콘 버튼">
+                +
+              </WaflButton>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <AppBadge tone="brand">작성중</AppBadge>
@@ -1012,7 +1338,8 @@ function ShapeGrammarSamples() {
             <WaflInput placeholder="검색 입력도 같은 모양 계열" />
             <WaflInfoBox tone="muted" component="catalog-shape-info-sample">
               <p className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                안내 박스도 같은 곡률 계열을 사용한다. 차이는 배경과 border tone으로 만든다.
+                안내 박스도 같은 곡률 계열을 사용한다. 차이는 배경과 border
+                tone으로 만든다.
               </p>
             </WaflInfoBox>
           </div>
@@ -1028,63 +1355,149 @@ function VisualStylingSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        꾸밈은 화면별 className이 아니라 공통 컴포넌트의 tone, variant, selected, disabled 기준으로만 확장한다. 모바일에서는 contrast가 과하지 않은지 먼저 확인한다.
+        꾸밈은 화면별 className이 아니라 공통 컴포넌트의 tone, variant,
+        selected, disabled 기준으로만 확장한다. 모바일에서는 contrast가 과하지
+        않은지 먼저 확인한다.
       </WaflNoticeBox>
 
       <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-        <WaflSurface component="catalog-visual-button-guide" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-visual-button-guide"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflButton tone / variant</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">명령의 강도는 variant로 고르고, 상태는 disabled prop으로 둔다.</p>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                WaflButton tone / variant
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                명령의 강도는 variant로 고르고, 상태는 disabled prop으로 둔다.
+              </p>
             </div>
-            <AppBadge tone="brand" size="xs">control</AppBadge>
+            <AppBadge tone="brand" size="xs">
+              control
+            </AppBadge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <WaflButton variant="primary" size="sm">primary</WaflButton>
-            <WaflButton variant="secondary" size="sm">secondary</WaflButton>
-            <WaflButton variant="neutral" size="sm">neutral</WaflButton>
-            <WaflButton variant="ghost" size="sm">ghost</WaflButton>
-            <WaflButton variant="subtle" size="sm">subtle</WaflButton>
-            <WaflButton variant="danger" size="sm">danger</WaflButton>
-            <WaflButton variant="secondary" size="sm" disabled>disabled</WaflButton>
+            <WaflButton variant="primary" size="sm">
+              primary
+            </WaflButton>
+            <WaflButton variant="secondary" size="sm">
+              secondary
+            </WaflButton>
+            <WaflButton variant="neutral" size="sm">
+              neutral
+            </WaflButton>
+            <WaflButton variant="ghost" size="sm">
+              ghost
+            </WaflButton>
+            <WaflButton variant="subtle" size="sm">
+              subtle
+            </WaflButton>
+            <WaflButton variant="danger" size="sm">
+              danger
+            </WaflButton>
+            <WaflButton variant="secondary" size="sm" disabled>
+              disabled
+            </WaflButton>
           </div>
         </WaflSurface>
 
-        <WaflSurface component="catalog-visual-badge-guide" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-visual-badge-guide"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">AppBadge tone</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">짧은 상태·유형·개수만 badge로 표시한다.</p>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                AppBadge tone
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                짧은 상태·유형·개수만 badge로 표시한다.
+              </p>
             </div>
-            <AppBadge tone="memo" size="xs">compact</AppBadge>
+            <AppBadge tone="memo" size="xs">
+              compact
+            </AppBadge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {(["neutral", "info", "success", "warning", "danger", "brand", "document", "memo", "file"] as const).map((tone) => (
-              <AppBadge key={tone} tone={tone}>{tone}</AppBadge>
+            {(
+              [
+                "neutral",
+                "info",
+                "success",
+                "warning",
+                "danger",
+                "brand",
+                "document",
+                "memo",
+                "file",
+              ] as const
+            ).map((tone) => (
+              <AppBadge key={tone} tone={tone}>
+                {tone}
+              </AppBadge>
             ))}
           </div>
         </WaflSurface>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <WaflSurface component="catalog-visual-surface-guide" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflSurface tone / state</p>
+        <WaflSurface
+          component="catalog-visual-surface-guide"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            WaflSurface tone / state
+          </p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <WaflSurface component="catalog-surface-default" tone="default" className="p-3">
-              <AppBadge tone="neutral" size="xs">default</AppBadge>
-              <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">기본 카드와 패널.</p>
+            <WaflSurface
+              component="catalog-surface-default"
+              tone="default"
+              className="p-3"
+            >
+              <AppBadge tone="neutral" size="xs">
+                default
+              </AppBadge>
+              <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                기본 카드와 패널.
+              </p>
             </WaflSurface>
-            <WaflSurface component="catalog-surface-selected" tone="selected" className="p-3">
-              <AppBadge tone="brand" size="xs">selected</AppBadge>
-              <p className="mt-2 text-xs leading-5">선택 목록 카드, current row.</p>
+            <WaflSurface
+              component="catalog-surface-selected"
+              tone="selected"
+              className="p-3"
+            >
+              <AppBadge tone="brand" size="xs">
+                selected
+              </AppBadge>
+              <p className="mt-2 text-xs leading-5">
+                선택 목록 카드, current row.
+              </p>
             </WaflSurface>
-            <WaflSurface component="catalog-surface-muted" tone="muted" className="p-3">
-              <AppBadge tone="neutral" size="xs">muted</AppBadge>
-              <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">카드 안 보조 row.</p>
+            <WaflSurface
+              component="catalog-surface-muted"
+              tone="muted"
+              className="p-3"
+            >
+              <AppBadge tone="neutral" size="xs">
+                muted
+              </AppBadge>
+              <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                카드 안 보조 row.
+              </p>
             </WaflSurface>
-            <WaflSurface component="catalog-surface-warning" tone="warning" className="p-3">
-              <AppBadge tone="warning" size="xs">warning</AppBadge>
+            <WaflSurface
+              component="catalog-surface-warning"
+              tone="warning"
+              className="p-3"
+            >
+              <AppBadge tone="warning" size="xs">
+                warning
+              </AppBadge>
               <p className="mt-2 text-xs leading-5">주의 안내나 대기 상태.</p>
             </WaflSurface>
           </div>
@@ -1101,11 +1514,18 @@ function VisualStylingSamples() {
         </WaflDataTableHeader>
         <WaflDataTableBody>
           {visualStateRows.map((row) => (
-            <WaflDataTableRow key={row.label} gridTemplateColumns="0.55fr 1.2fr 0.45fr">
+            <WaflDataTableRow
+              key={row.label}
+              gridTemplateColumns="0.55fr 1.2fr 0.45fr"
+            >
               <p className={WAFL_DATA_TABLE_PRIMARY_TEXT_CLASS}>{row.label}</p>
-              <p className="text-[12px] font-medium leading-5 text-[var(--pbp-text-muted)]">{row.rule}</p>
+              <p className="text-[12px] font-medium leading-5 text-[var(--pbp-text-muted)]">
+                {row.rule}
+              </p>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge tone={row.tone} size="xs">{row.tone}</AppBadge>
+                <AppBadge tone={row.tone} size="xs">
+                  {row.tone}
+                </AppBadge>
               </div>
             </WaflDataTableRow>
           ))}
@@ -1122,15 +1542,26 @@ function TouchActionSamples() {
         <WaflInfoBox tone="selected" component="catalog-action-guide">
           <p className="text-sm font-bold">핵심 구분</p>
           <p className="mt-1 text-xs font-medium leading-5">
-            같은 버튼처럼 보여도 “실행”, “이동”, “카드 선택”, “빈 슬롯 추가”는 서로 다른 컴포넌트를 쓴다.
+            같은 버튼처럼 보여도 “실행”, “이동”, “카드 선택”, “빈 슬롯 추가”는
+            서로 다른 컴포넌트를 쓴다.
           </p>
         </WaflInfoBox>
         <div className="flex flex-wrap items-center gap-2 wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
-          <WaflButton variant="primary" size="md">저장 실행</WaflButton>
-          <WaflButton variant="secondary" size="md">보조 실행</WaflButton>
-          <WaflButton variant="danger" size="md">삭제</WaflButton>
-          <WaflLinkButton href="#start-here" variant="secondary" size="md">섹션 이동</WaflLinkButton>
-          <WaflButton variant="icon" size="md" aria-label="추가 아이콘 버튼">+</WaflButton>
+          <WaflButton variant="primary" size="md">
+            저장 실행
+          </WaflButton>
+          <WaflButton variant="secondary" size="md">
+            보조 실행
+          </WaflButton>
+          <WaflButton variant="danger" size="md">
+            삭제
+          </WaflButton>
+          <WaflLinkButton href="#start-here" variant="secondary" size="md">
+            섹션 이동
+          </WaflLinkButton>
+          <WaflButton variant="icon" size="md" aria-label="추가 아이콘 버튼">
+            +
+          </WaflButton>
         </div>
       </div>
 
@@ -1138,18 +1569,30 @@ function TouchActionSamples() {
         <WaflSurfaceButton component="catalog-surface-button-sample" selected>
           <span className="min-w-0">
             <span className="block text-sm font-bold">WaflSurfaceButton</span>
-            <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">카드처럼 보이는 클릭 항목</span>
+            <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">
+              카드처럼 보이는 클릭 항목
+            </span>
           </span>
-          <AppBadge size="xs" tone="brand">selected</AppBadge>
+          <AppBadge size="xs" tone="brand">
+            selected
+          </AppBadge>
         </WaflSurfaceButton>
         <WaflAddCardButton
           className="min-h-28"
           label="새 항목 추가"
           description="카드 그리드의 빈 슬롯"
         />
-        <WaflSurface component="catalog-non-click-card" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflSurface</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">이건 누르는 요소가 아니라 정보를 담는 카드다.</p>
+        <WaflSurface
+          component="catalog-non-click-card"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            WaflSurface
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            이건 누르는 요소가 아니라 정보를 담는 카드다.
+          </p>
         </WaflSurface>
       </div>
       <RuleList title="누르는 요소 선택 규칙" rules={buttonRules} />
@@ -1161,15 +1604,31 @@ function ContainerSamples() {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 lg:grid-cols-4">
-        <WaflSurface component="catalog-surface-card" tone="surface" className="p-4">
-          <AppBadge size="xs" tone="neutral">정보 카드</AppBadge>
-          <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">WaflSurface</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">정적 정보를 담는다.</p>
+        <WaflSurface
+          component="catalog-surface-card"
+          tone="surface"
+          className="p-4"
+        >
+          <AppBadge size="xs" tone="neutral">
+            정보 카드
+          </AppBadge>
+          <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">
+            WaflSurface
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            정적 정보를 담는다.
+          </p>
         </WaflSurface>
         <WaflInfoBox tone="muted" component="catalog-info-box-sample">
-          <AppBadge size="xs" tone="info">안내문</AppBadge>
-          <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">WaflInfoBox</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">카드보다 낮은 depth의 설명.</p>
+          <AppBadge size="xs" tone="info">
+            안내문
+          </AppBadge>
+          <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">
+            WaflInfoBox
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            카드보다 낮은 depth의 설명.
+          </p>
         </WaflInfoBox>
         <WaflEmptyCard component="catalog-empty-card-sample">
           <span className="block text-sm font-bold">WaflEmptyCard</span>
@@ -1178,29 +1637,50 @@ function ContainerSamples() {
         <WaflSelectableCard selected>
           <span className="min-w-0">
             <span className="block text-sm font-bold">WaflSelectableCard</span>
-            <span className="mt-1 block text-xs text-[var(--pbp-text-muted)]">폼 안 선택지</span>
+            <span className="mt-1 block text-xs text-[var(--pbp-text-muted)]">
+              폼 안 선택지
+            </span>
           </span>
-          <AppBadge size="xs" tone="brand">선택</AppBadge>
+          <AppBadge size="xs" tone="brand">
+            선택
+          </AppBadge>
         </WaflSelectableCard>
       </div>
 
       <div className="grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
-        <WaflSurface component="catalog-container-composition" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">카드 내부 구성 예시</p>
+        <WaflSurface
+          component="catalog-container-composition"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            카드 내부 구성 예시
+          </p>
           <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
-            큰 card 안에서 또 card를 반복하기보다 InfoRow와 InfoBox를 섞어 depth를 낮춘다.
+            큰 card 안에서 또 card를 반복하기보다 InfoRow와 InfoBox를 섞어
+            depth를 낮춘다.
           </p>
           <div className="mt-3 grid gap-2">
             <WaflInfoRow component="catalog-info-row-one">
-              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">상태</span>
-              <AppBadge size="xs" tone="success">정상</AppBadge>
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+                상태
+              </span>
+              <AppBadge size="xs" tone="success">
+                정상
+              </AppBadge>
             </WaflInfoRow>
             <WaflInfoRow component="catalog-info-row-two" tone="muted">
-              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">사용 화면</span>
-              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">저장소 / 멤버관리 / 작업지시서</span>
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+                사용 화면
+              </span>
+              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                저장소 / 멤버관리 / 작업지시서
+              </span>
             </WaflInfoRow>
             <WaflInfoBox tone="muted" component="catalog-nested-info-note">
-              <p className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">보조 설명은 이 정도 depth로 낮춘다.</p>
+              <p className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                보조 설명은 이 정도 depth로 낮춘다.
+              </p>
             </WaflInfoBox>
           </div>
         </WaflSurface>
@@ -1228,7 +1708,9 @@ function InputSamples() {
             aria-expanded="false"
           >
             <span className="min-w-0 truncate">구분 선택</span>
-            <span aria-hidden="true" className="text-[var(--pbp-text-muted)]">⌄</span>
+            <span aria-hidden="true" className="text-[var(--pbp-text-muted)]">
+              ⌄
+            </span>
           </button>
         </label>
         <label className="space-y-2 text-xs font-semibold text-[var(--pbp-text-muted)]">
@@ -1242,32 +1724,64 @@ function InputSamples() {
         <WaflSelectableCard selected>
           <span className="min-w-0">
             <span className="block text-sm font-bold">선택형 입력</span>
-            <span className="mt-1 block text-xs text-[var(--pbp-text-muted)]">권한/역할/옵션을 고른다.</span>
+            <span className="mt-1 block text-xs text-[var(--pbp-text-muted)]">
+              권한/역할/옵션을 고른다.
+            </span>
           </span>
-          <AppBadge size="xs" tone="brand">선택됨</AppBadge>
+          <AppBadge size="xs" tone="brand">
+            선택됨
+          </AppBadge>
         </WaflSelectableCard>
       </div>
-      <WaflNoticeBox tone="info">select trigger는 다시 누르면 닫힘, 바깥 클릭 닫힘, Escape 닫힘을 유지해야 한다.</WaflNoticeBox>
+      <WaflNoticeBox tone="info">
+        select trigger는 다시 누르면 닫힘, 바깥 클릭 닫힘, Escape 닫힘을
+        유지해야 한다.
+      </WaflNoticeBox>
     </div>
   );
 }
 
 function StatusSamples() {
-  const tones = ["neutral", "info", "success", "warning", "danger", "brand", "document", "design", "memo", "file"] as const;
+  const tones = [
+    "neutral",
+    "info",
+    "success",
+    "warning",
+    "danger",
+    "brand",
+    "document",
+    "design",
+    "memo",
+    "file",
+  ] as const;
 
   return (
     <div className="space-y-4">
       <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
-        <WaflSurface component="catalog-badge-samples" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">AppBadge</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">짧은 상태·개수·유형만 표시한다.</p>
+        <WaflSurface
+          component="catalog-badge-samples"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            AppBadge
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            짧은 상태·개수·유형만 표시한다.
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {tones.map((tone) => (
-              <AppBadge key={tone} tone={tone}>{tone}</AppBadge>
+              <AppBadge key={tone} tone={tone}>
+                {tone}
+              </AppBadge>
             ))}
             <AppBadge variant="count">12</AppBadge>
-            <AppBadge size="xs" tone="brand">xs</AppBadge>
-            <AppBadge size="md" tone="brand">md</AppBadge>
+            <AppBadge size="xs" tone="brand">
+              xs
+            </AppBadge>
+            <AppBadge size="md" tone="brand">
+              md
+            </AppBadge>
           </div>
         </WaflSurface>
         <RuleList title="보여주는 요소 선택 규칙" rules={statusRules} />
@@ -1276,7 +1790,10 @@ function StatusSamples() {
       <WaflFilterBar layoutClassName="lg:grid-cols-[1fr_180px_auto]">
         <label className={WAFL_FILTER_FIELD_CLASS}>
           <span className={WAFL_FILTER_LABEL_CLASS}>검색</span>
-          <input className={WAFL_FILTER_INPUT_CLASS} placeholder="컴포넌트명 검색" />
+          <input
+            className={WAFL_FILTER_INPUT_CLASS}
+            placeholder="컴포넌트명 검색"
+          />
         </label>
         <label className={WAFL_FILTER_FIELD_CLASS}>
           <span className={WAFL_FILTER_LABEL_CLASS}>상태</span>
@@ -1287,7 +1804,9 @@ function StatusSamples() {
           </select>
         </label>
         <div className="flex items-end">
-          <WaflButton variant="secondary" size="md">필터 적용</WaflButton>
+          <WaflButton variant="secondary" size="md">
+            필터 적용
+          </WaflButton>
         </div>
       </WaflFilterBar>
     </div>
@@ -1329,22 +1848,31 @@ function WrongRightSamples() {
   );
 }
 
-
 function PracticePatternSamples() {
   return (
     <div className="space-y-5">
       <WaflNoticeBox tone="info">
-        아래 샘플은 실제 데이터 저장/조회 로직이 없는 카탈로그용 정적 예시다. 화면에서 어떤 WAFL 컴포넌트를 선택해야 하는지 확인하는 용도다.
+        아래 샘플은 실제 데이터 저장/조회 로직이 없는 카탈로그용 정적 예시다.
+        화면에서 어떤 WAFL 컴포넌트를 선택해야 하는지 확인하는 용도다.
       </WaflNoticeBox>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <WaflSurface component="catalog-workorder-pattern" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-workorder-pattern"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Workorder pattern</p>
-              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">작업지시서 구성 카드</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                Workorder pattern
+              </p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+                작업지시서 구성 카드
+              </h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                제품 구성, 공정, 첨부, 디자인, 메모처럼 반복되는 카드 묶음의 기준이다.
+                제품 구성, 공정, 첨부, 디자인, 메모처럼 반복되는 카드 묶음의
+                기준이다.
               </p>
             </div>
             <AppBadge tone="document">작업지시서</AppBadge>
@@ -1357,38 +1885,69 @@ function PracticePatternSamples() {
               description="빈 슬롯 CTA"
             />
 
-            <WaflSurfaceButton component="catalog-process-card-sample" selected className="flex items-center justify-between gap-3">
+            <WaflSurfaceButton
+              component="catalog-process-card-sample"
+              selected
+              className="flex items-center justify-between gap-3"
+            >
               <span className="min-w-0">
                 <span className="block text-sm font-bold">봉제 공정</span>
-                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">단가 3,500원 · 수량 12장</span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">
+                  단가 3,500원 · 수량 12장
+                </span>
               </span>
-              <AppBadge tone="brand" size="xs">선택</AppBadge>
+              <AppBadge tone="brand" size="xs">
+                선택
+              </AppBadge>
             </WaflSurfaceButton>
 
-            <WaflSurface component="catalog-material-card-sample" tone="surface" className="p-3">
+            <WaflSurface
+              component="catalog-material-card-sample"
+              tone="surface"
+              className="p-3"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-[var(--pbp-text-primary)]">원단 · 울 혼방</p>
-                  <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">2.5 yd · 메인 원단</p>
+                  <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                    원단 · 울 혼방
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                    2.5 yd · 메인 원단
+                  </p>
                 </div>
-                <AppBadge tone="file" size="xs">원단</AppBadge>
+                <AppBadge tone="file" size="xs">
+                  원단
+                </AppBadge>
               </div>
             </WaflSurface>
 
             <WaflInfoBox tone="muted" component="catalog-workorder-note-sample">
-              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">메모 카드 내부 안내</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">카드 안 보조 설명은 InfoBox로 depth를 낮춘다.</p>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                메모 카드 내부 안내
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+                카드 안 보조 설명은 InfoBox로 depth를 낮춘다.
+              </p>
             </WaflInfoBox>
           </div>
         </WaflSurface>
 
-        <WaflSurface component="catalog-order-pattern" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-order-pattern"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Order pattern</p>
-              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">원단·부자재 발주 row</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                Order pattern
+              </p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+                원단·부자재 발주 row
+              </h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                발주 목록은 row 구조를 우선하고, 모바일에서는 한 카드처럼 읽히게 묶는다.
+                발주 목록은 row 구조를 우선하고, 모바일에서는 한 카드처럼 읽히게
+                묶는다.
               </p>
             </div>
             <AppBadge tone="info">발주</AppBadge>
@@ -1396,86 +1955,159 @@ function PracticePatternSamples() {
 
           <div className="mt-4 grid gap-2">
             {[
-              { name: "울 혼방 원단", meta: "거래처 A · 2.5 yd", status: "발주 대기", tone: "warning" as const },
-              { name: "금속 단추", meta: "부자재 B · 24 ea", status: "발주 완료", tone: "success" as const },
+              {
+                name: "울 혼방 원단",
+                meta: "거래처 A · 2.5 yd",
+                status: "발주 대기",
+                tone: "warning" as const,
+              },
+              {
+                name: "금속 단추",
+                meta: "부자재 B · 24 ea",
+                status: "발주 완료",
+                tone: "success" as const,
+              },
             ].map((item) => (
-              <WaflSurfaceButton key={item.name} component="catalog-order-row-sample" className="flex items-center justify-between gap-3">
+              <WaflSurfaceButton
+                key={item.name}
+                component="catalog-order-row-sample"
+                className="flex items-center justify-between gap-3"
+              >
                 <span className="min-w-0">
                   <span className="block text-sm font-bold">{item.name}</span>
-                  <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">{item.meta}</span>
+                  <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">
+                    {item.meta}
+                  </span>
                 </span>
-                <AppBadge tone={item.tone} size="xs">{item.status}</AppBadge>
+                <AppBadge tone={item.tone} size="xs">
+                  {item.status}
+                </AppBadge>
               </WaflSurfaceButton>
             ))}
           </div>
 
-          <WaflInfoBox tone="selected" component="catalog-order-rule" className="mt-3">
+          <WaflInfoBox
+            tone="selected"
+            component="catalog-order-rule"
+            className="mt-3"
+          >
             <p className="text-xs font-medium leading-5">
-              발주 row를 누르면 상세를 열 수 있으므로 WaflSurfaceButton을 쓴다. 단순 요약만 보여주면 WaflSurface로 낮춘다.
+              발주 row를 누르면 상세를 열 수 있으므로 WaflSurfaceButton을 쓴다.
+              단순 요약만 보여주면 WaflSurface로 낮춘다.
             </p>
           </WaflInfoBox>
         </WaflSurface>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <WaflSurface component="catalog-storage-pattern" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-storage-pattern"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Storage pattern</p>
-              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">저장소 row / 휴지통 detail</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                Storage pattern
+              </p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+                저장소 row / 휴지통 detail
+              </h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                파일 목록은 row, 상세 확인은 modal 내부 Surface/InfoBox 조합을 기준으로 한다.
+                파일 목록은 row, 상세 확인은 modal 내부 Surface/InfoBox 조합을
+                기준으로 한다.
               </p>
             </div>
             <AppBadge tone="file">저장소</AppBadge>
           </div>
 
           <div className="mt-4 grid gap-2">
-            <WaflSurfaceButton component="catalog-storage-row-sample" className="flex items-center justify-between gap-3">
+            <WaflSurfaceButton
+              component="catalog-storage-row-sample"
+              className="flex items-center justify-between gap-3"
+            >
               <span className="min-w-0">
-                <span className="block text-sm font-bold">작업지시서_샘플.pdf</span>
-                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">PDF · 2.4MB · 2026-06-10</span>
+                <span className="block text-sm font-bold">
+                  작업지시서_샘플.pdf
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">
+                  PDF · 2.4MB · 2026-06-10
+                </span>
               </span>
-              <AppBadge tone="document" size="xs">문서</AppBadge>
+              <AppBadge tone="document" size="xs">
+                문서
+              </AppBadge>
             </WaflSurfaceButton>
-            <WaflSurfaceButton component="catalog-trash-row-sample" className="flex items-center justify-between gap-3">
+            <WaflSurfaceButton
+              component="catalog-trash-row-sample"
+              className="flex items-center justify-between gap-3"
+            >
               <span className="min-w-0">
-                <span className="block text-sm font-bold">삭제된 디자인.png</span>
-                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">30일 후 영구삭제 · 복원 가능</span>
+                <span className="block text-sm font-bold">
+                  삭제된 디자인.png
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--pbp-text-muted)]">
+                  30일 후 영구삭제 · 복원 가능
+                </span>
               </span>
-              <AppBadge tone="danger" size="xs">휴지통</AppBadge>
+              <AppBadge tone="danger" size="xs">
+                휴지통
+              </AppBadge>
             </WaflSurfaceButton>
           </div>
         </WaflSurface>
 
-        <WaflSurface component="catalog-modal-pattern" tone="surface" className="p-4">
+        <WaflSurface
+          component="catalog-modal-pattern"
+          tone="surface"
+          className="p-4"
+        >
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Detail modal pattern</p>
-              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">상세 모달 내부 구성</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                Detail modal pattern
+              </p>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+                상세 모달 내부 구성
+              </h3>
             </div>
-            <WaflButton variant="secondary" size="sm">닫기</WaflButton>
+            <WaflButton variant="secondary" size="sm">
+              닫기
+            </WaflButton>
           </div>
 
           <div className="mt-3 grid gap-2">
             <WaflInfoRow component="catalog-modal-info-row-one">
-              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">파일명</span>
-              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">작업지시서_샘플.pdf</span>
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+                파일명
+              </span>
+              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                작업지시서_샘플.pdf
+              </span>
             </WaflInfoRow>
             <WaflInfoRow component="catalog-modal-info-row-two" tone="muted">
-              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">상태</span>
-              <AppBadge tone="success" size="xs">복원 가능</AppBadge>
+              <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
+                상태
+              </span>
+              <AppBadge tone="success" size="xs">
+                복원 가능
+              </AppBadge>
             </WaflInfoRow>
             <WaflInfoBox tone="muted" component="catalog-modal-info-box">
               <p className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                모달 본문에서는 정보 row, 안내 box, footer button을 분리한다. 카드 안 카드 depth를 과하게 만들지 않는다.
+                모달 본문에서는 정보 row, 안내 box, footer button을 분리한다.
+                카드 안 카드 depth를 과하게 만들지 않는다.
               </p>
             </WaflInfoBox>
           </div>
 
           <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <WaflButton variant="secondary" size="md">취소</WaflButton>
-            <WaflButton variant="primary" size="md">복원</WaflButton>
+            <WaflButton variant="secondary" size="md">
+              취소
+            </WaflButton>
+            <WaflButton variant="primary" size="md">
+              복원
+            </WaflButton>
           </div>
         </WaflSurface>
       </div>
@@ -1489,20 +2121,35 @@ function UsageRulesSamples() {
   return (
     <div className="space-y-5">
       <WaflNoticeBox tone="warning">
-        이 섹션은 새 화면을 만들 때 먼저 보는 기준이다. 시각 모양을 비슷하게 맞추는 것이 아니라 WAFL 컴포넌트의 역할을 맞추는 것이 목표다.
+        이 섹션은 새 화면을 만들 때 먼저 보는 기준이다. 시각 모양을 비슷하게
+        맞추는 것이 아니라 WAFL 컴포넌트의 역할을 맞추는 것이 목표다.
       </WaflNoticeBox>
 
       <div className="grid gap-3 lg:grid-cols-3">
         {usageRuleCards.map((card) => (
-          <WaflSurface key={card.title} component="catalog-usage-rule-card" tone="surface" className="p-4">
+          <WaflSurface
+            key={card.title}
+            component="catalog-usage-rule-card"
+            tone="surface"
+            className="p-4"
+          >
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{card.title}</p>
-              <AppBadge tone={card.tone} size="xs">{card.badge}</AppBadge>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                {card.title}
+              </p>
+              <AppBadge tone={card.tone} size="xs">
+                {card.badge}
+              </AppBadge>
             </div>
             <ul className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
               {card.body.map((item) => (
                 <li key={item} className="flex gap-2">
-                  <span aria-hidden="true" className="text-[var(--pbp-brand-primary)]">•</span>
+                  <span
+                    aria-hidden="true"
+                    className="text-[var(--pbp-brand-primary)]"
+                  >
+                    •
+                  </span>
                   <span>{item}</span>
                 </li>
               ))}
@@ -1511,55 +2158,101 @@ function UsageRulesSamples() {
         ))}
       </div>
 
-      <WaflSurface component="catalog-class-replacement-table" tone="surface" className="p-4">
+      <WaflSurface
+        component="catalog-class-replacement-table"
+        tone="surface"
+        className="p-4"
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-bold text-[var(--pbp-text-primary)]">직접 className 사용 금지 기준</p>
+            <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+              직접 className 사용 금지 기준
+            </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              layout 배치용 class는 허용하지만, WAFL 문법에 해당하는 색/테두리/그림자/모서리는 컴포넌트 prop으로 대체한다.
+              layout 배치용 class는 허용하지만, WAFL 문법에 해당하는
+              색/테두리/그림자/모서리는 컴포넌트 prop으로 대체한다.
             </p>
           </div>
-          <AppBadge tone="danger" size="xs">no ad-hoc style</AppBadge>
+          <AppBadge tone="danger" size="xs">
+            no ad-hoc style
+          </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">
           {directClassReplacementRows.map((row) => (
-            <WaflInfoRow key={row.direct} component="catalog-class-replacement-row" tone="muted" className="items-start">
+            <WaflInfoRow
+              key={row.direct}
+              component="catalog-class-replacement-row"
+              tone="muted"
+              className="items-start"
+            >
               <span className="min-w-0">
-                <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">{row.direct}</span>
-                <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">대체: {row.replacement}</span>
+                <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">
+                  {row.direct}
+                </span>
+                <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                  대체: {row.replacement}
+                </span>
               </span>
-              <span className="max-w-[44%] text-right text-xs font-medium leading-5 text-[var(--pbp-text-subtle)]">{row.reason}</span>
+              <span className="max-w-[44%] text-right text-xs font-medium leading-5 text-[var(--pbp-text-subtle)]">
+                {row.reason}
+              </span>
             </WaflInfoRow>
           ))}
         </div>
       </WaflSurface>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <WaflSurface component="catalog-naming-rules" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">data-wafl-component naming</p>
+        <WaflSurface
+          component="catalog-naming-rules"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            data-wafl-component naming
+          </p>
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-            debug outline을 다시 켰을 때 어떤 요소인지 바로 추적하기 위한 이름 규칙이다.
+            debug outline을 다시 켰을 때 어떤 요소인지 바로 추적하기 위한 이름
+            규칙이다.
           </p>
           <ul className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
             {waflNamingRules.map((rule) => (
               <li key={rule} className="flex gap-2">
-                <span aria-hidden="true" className="text-[var(--pbp-brand-primary)]">•</span>
+                <span
+                  aria-hidden="true"
+                  className="text-[var(--pbp-brand-primary)]"
+                >
+                  •
+                </span>
                 <span>{rule}</span>
               </li>
             ))}
           </ul>
         </WaflSurface>
 
-        <WaflSurface component="catalog-new-screen-checklist" tone="surface" className="p-4">
-          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">새 화면 개발 체크리스트</p>
+        <WaflSurface
+          component="catalog-new-screen-checklist"
+          tone="surface"
+          className="p-4"
+        >
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+            새 화면 개발 체크리스트
+          </p>
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
             신규 화면을 만들기 전후로 확인할 최소 기준이다.
           </p>
           <div className="mt-3 grid gap-2">
             {newScreenChecklist.map((item, index) => (
-              <WaflInfoRow key={item} component="catalog-checklist-row" tone={index % 2 === 0 ? "muted" : "surface"}>
-                <span className="text-xs font-bold text-[var(--pbp-brand-primary)]">{String(index + 1).padStart(2, "0")}</span>
-                <span className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{item}</span>
+              <WaflInfoRow
+                key={item}
+                component="catalog-checklist-row"
+                tone={index % 2 === 0 ? "muted" : "surface"}
+              >
+                <span className="text-xs font-bold text-[var(--pbp-brand-primary)]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                  {item}
+                </span>
               </WaflInfoRow>
             ))}
           </div>
@@ -1567,9 +2260,13 @@ function UsageRulesSamples() {
       </div>
 
       <WaflInfoBox tone="selected" component="catalog-debug-outline-note">
-        <p className="text-sm font-bold text-[var(--pbp-text-primary)]">Debug outline</p>
+        <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+          Debug outline
+        </p>
         <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-          현재 분홍색 outline은 모바일 확인을 위해 꺼져 있다. 다시 확인할 때는 app/layout.tsx 상단의 WAFL_COMPONENT_DEBUG_OUTLINE_ENABLED 값을 true로 바꾼다.
+          현재 분홍색 outline은 모바일 확인을 위해 꺼져 있다. 다시 확인할 때는
+          app/layout.tsx 상단의 WAFL_COMPONENT_DEBUG_OUTLINE_ENABLED 값을 true로
+          바꾼다.
         </p>
       </WaflInfoBox>
     </div>
@@ -1580,42 +2277,78 @@ function ScreenChecklistSamples() {
   return (
     <div className="space-y-5">
       <WaflNoticeBox tone="info">
-        화면별 체크리스트는 실제 화면을 바로 리팩토링하라는 뜻이 아니다. 먼저 어떤 WAFL 컴포넌트를 써야 하는지 기준을 고정하고, 이후 잔여 요소만 소규모로 보정한다.
+        화면별 체크리스트는 실제 화면을 바로 리팩토링하라는 뜻이 아니다. 먼저
+        어떤 WAFL 컴포넌트를 써야 하는지 기준을 고정하고, 이후 잔여 요소만
+        소규모로 보정한다.
       </WaflNoticeBox>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {screenChecklists.map((screen) => (
-          <WaflSurface key={screen.screen} component="catalog-screen-checklist-card" tone="surface" className="p-4">
+          <WaflSurface
+            key={screen.screen}
+            component="catalog-screen-checklist-card"
+            tone="surface"
+            className="p-4"
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">{screen.routeHint}</p>
-                <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">{screen.screen}</h3>
-                <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{screen.purpose}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+                  {screen.routeHint}
+                </p>
+                <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+                  {screen.screen}
+                </h3>
+                <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                  {screen.purpose}
+                </p>
               </div>
-              <AppBadge tone="brand" size="xs">check</AppBadge>
+              <AppBadge tone="brand" size="xs">
+                check
+              </AppBadge>
             </div>
 
             <div className="mt-4">
-              <p className="text-xs font-bold text-[var(--pbp-text-primary)]">필수 WAFL 컴포넌트</p>
+              <p className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                필수 WAFL 컴포넌트
+              </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {screen.requiredComponents.map((component) => (
-                  <AppBadge key={component} tone="neutral" size="xs">{component}</AppBadge>
+                  <AppBadge key={component} tone="neutral" size="xs">
+                    {component}
+                  </AppBadge>
                 ))}
               </div>
             </div>
 
             <div className="mt-4 grid gap-2">
               {screen.checkItems.map((item, index) => (
-                <WaflInfoRow key={item} component="catalog-screen-checklist-row" tone={index % 2 === 0 ? "muted" : "surface"} className="items-start">
-                  <span className="text-xs font-bold text-[var(--pbp-brand-primary)]">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{item}</span>
+                <WaflInfoRow
+                  key={item}
+                  component="catalog-screen-checklist-row"
+                  tone={index % 2 === 0 ? "muted" : "surface"}
+                  className="items-start"
+                >
+                  <span className="text-xs font-bold text-[var(--pbp-brand-primary)]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                    {item}
+                  </span>
                 </WaflInfoRow>
               ))}
             </div>
 
-            <WaflInfoBox tone="muted" component="catalog-screen-risk-note" className="mt-4">
-              <p className="text-xs font-bold text-[var(--pbp-text-primary)]">누락 시 위험</p>
-              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{screen.missingRisk}</p>
+            <WaflInfoBox
+              tone="muted"
+              component="catalog-screen-risk-note"
+              className="mt-4"
+            >
+              <p className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                누락 시 위험
+              </p>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                {screen.missingRisk}
+              </p>
             </WaflInfoBox>
           </WaflSurface>
         ))}
@@ -1643,21 +2376,37 @@ function ComponentInventorySamples() {
   return (
     <div className="space-y-5">
       <WaflNoticeBox tone="info">
-        재고표는 바로 삭제 목록이 아니다. 먼저 Primitive / Pattern / Domain / Legacy로 분류하고, 같은 역할인데 모양만 다른 컴포넌트부터 합친다.
+        재고표는 바로 삭제 목록이 아니다. 먼저 Primitive / Pattern / Domain /
+        Legacy로 분류하고, 같은 역할인데 모양만 다른 컴포넌트부터 합친다.
       </WaflNoticeBox>
 
       <div className="grid gap-3 lg:grid-cols-4">
         {componentGroupGuides.map((guide) => (
-          <WaflSurface key={guide.group} component="catalog-inventory-group-card" tone="surface" className="p-4">
+          <WaflSurface
+            key={guide.group}
+            component="catalog-inventory-group-card"
+            tone="surface"
+            className="p-4"
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{guide.group}</p>
-                <p className="mt-1 text-xs font-bold text-[var(--pbp-brand-primary)]">{guide.meaning}</p>
+                <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                  {guide.group}
+                </p>
+                <p className="mt-1 text-xs font-bold text-[var(--pbp-brand-primary)]">
+                  {guide.meaning}
+                </p>
               </div>
-              <AppBadge tone="neutral" size="xs">group</AppBadge>
+              <AppBadge tone="neutral" size="xs">
+                group
+              </AppBadge>
             </div>
-            <p className="mt-3 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{guide.rule}</p>
-            <p className="mt-3 text-[11px] font-semibold leading-5 text-[var(--pbp-text-subtle)]">{guide.examples}</p>
+            <p className="mt-3 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+              {guide.rule}
+            </p>
+            <p className="mt-3 text-[11px] font-semibold leading-5 text-[var(--pbp-text-subtle)]">
+              {guide.examples}
+            </p>
           </WaflSurface>
         ))}
       </div>
@@ -1668,28 +2417,56 @@ function ComponentInventorySamples() {
           <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>분류</div>
           <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>역할</div>
           <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>판정</div>
-          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>통합/전환 기준</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>
+            통합/전환 기준
+          </div>
           <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>우선순위</div>
         </WaflDataTableHeader>
         <WaflDataTableBody>
           {componentInventoryItems.map((item) => (
-            <WaflDataTableRow key={item.name} gridTemplateColumns="0.9fr 0.7fr 1.2fr 0.8fr 1.1fr 0.6fr">
+            <WaflDataTableRow
+              key={item.name}
+              gridTemplateColumns="0.9fr 0.7fr 1.2fr 0.8fr 1.1fr 0.6fr"
+            >
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <p className={WAFL_DATA_TABLE_PRIMARY_TEXT_CLASS}>{item.name}</p>
-                <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{item.note}</p>
+                <p className={WAFL_DATA_TABLE_PRIMARY_TEXT_CLASS}>
+                  {item.name}
+                </p>
+                <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>
+                  {item.note}
+                </p>
               </div>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge tone={item.group === "Legacy" ? "danger" : item.group === "Domain" ? "info" : item.group === "Pattern" ? "warning" : "brand"} size="xs">
+                <AppBadge
+                  tone={
+                    item.group === "Legacy"
+                      ? "danger"
+                      : item.group === "Domain"
+                        ? "info"
+                        : item.group === "Pattern"
+                          ? "warning"
+                          : "brand"
+                  }
+                  size="xs"
+                >
                   {item.group}
                 </AppBadge>
               </div>
-              <p className="text-[12px] font-semibold leading-5 text-[var(--pbp-text-muted)]">{item.role}</p>
+              <p className="text-[12px] font-semibold leading-5 text-[var(--pbp-text-muted)]">
+                {item.role}
+              </p>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge tone={decisionTone[item.keepDecision]} size="xs">{item.keepDecision}</AppBadge>
+                <AppBadge tone={decisionTone[item.keepDecision]} size="xs">
+                  {item.keepDecision}
+                </AppBadge>
               </div>
-              <p className="text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">{item.target}</p>
+              <p className="text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">
+                {item.target}
+              </p>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge tone={priorityTone[item.priority]} size="xs">{item.priority}</AppBadge>
+                <AppBadge tone={priorityTone[item.priority]} size="xs">
+                  {item.priority}
+                </AppBadge>
               </div>
             </WaflDataTableRow>
           ))}
@@ -1713,20 +2490,33 @@ function SpecTable() {
       </WaflDataTableHeader>
       <WaflDataTableBody>
         {componentSpecs.map((spec) => (
-          <WaflDataTableRow key={spec.name} gridTemplateColumns="0.8fr 1.1fr 1.2fr 1fr 1fr">
+          <WaflDataTableRow
+            key={spec.name}
+            gridTemplateColumns="0.8fr 1.1fr 1.2fr 1fr 1fr"
+          >
             <div className={WAFL_DATA_TABLE_CELL_CLASS}>
               <p className={WAFL_DATA_TABLE_PRIMARY_TEXT_CLASS}>{spec.name}</p>
-              <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{spec.purpose}</p>
+              <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>
+                {spec.purpose}
+              </p>
             </div>
-            <p className="text-[12px] font-bold leading-5 text-[var(--pbp-text-primary)]">{spec.plainRule}</p>
+            <p className="text-[12px] font-bold leading-5 text-[var(--pbp-text-primary)]">
+              {spec.plainRule}
+            </p>
             <div className={WAFL_DATA_TABLE_CELL_CLASS}>
               <code className="min-w-0 truncate wafl-shape-compact bg-[var(--pbp-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--pbp-text-muted)]">
                 {spec.path}
               </code>
-              <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{spec.props}</p>
+              <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>
+                {spec.props}
+              </p>
             </div>
-            <p className="text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">{spec.avoid}</p>
-            <p className="text-[11px] font-semibold leading-5 text-[var(--pbp-text-muted)]">{spec.screens}</p>
+            <p className="text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">
+              {spec.avoid}
+            </p>
+            <p className="text-[11px] font-semibold leading-5 text-[var(--pbp-text-muted)]">
+              {spec.screens}
+            </p>
           </WaflDataTableRow>
         ))}
       </WaflDataTableBody>
@@ -1758,102 +2548,166 @@ export default function WaflUiCatalogPage({
             <WaflInfoBox tone="selected">
               <p className="text-sm font-bold">보는 순서</p>
               <p className="mt-1 text-xs leading-5">
-                1. 상황별 판단 기준을 본다. 2. 누르는 것/담는 것/입력하는 것을 비교한다. 3. 마지막에 개발자용 스펙 표를 확인한다.
+                1. 상황별 판단 기준을 본다. 2. 누르는 것/담는 것/입력하는 것을
+                비교한다. 3. 마지막에 개발자용 스펙 표를 확인한다.
               </p>
             </WaflInfoBox>
             <WaflInfoBox tone="muted">
-              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">현재 접근 상태</p>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
+                현재 접근 상태
+              </p>
               <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
-                모바일 확인을 위해 /ui 접근 제한은 임시 해제 상태다. 원래 허용 모드는 {allowedRuntimeModes.join(" / ")} 이다.
+                모바일 확인을 위해 /ui 접근 제한은 임시 해제 상태다. 원래 허용
+                모드는 {allowedRuntimeModes.join(" / ")} 이다.
               </p>
             </WaflInfoBox>
           </div>
         </WaflPageHero>
 
-        <WaflSectionPanel title="Catalog sections" description="모바일에서는 위에서 아래로 내려가며 상황별로 보면 된다." density="compact">
+        <WaflSectionPanel
+          title="Catalog sections"
+          description="모바일에서는 위에서 아래로 내려가며 상황별로 보면 된다."
+          density="compact"
+        >
           <SectionAnchorList />
         </WaflSectionPanel>
 
         <div id="start-here" className="scroll-mt-6">
-          <WaflSectionPanel title="Start here" description="모양이 아니라 상황으로 컴포넌트를 고른다." density="compact">
+          <WaflSectionPanel
+            title="Start here"
+            description="모양이 아니라 상황으로 컴포넌트를 고른다."
+            density="compact"
+          >
             <QuickDecisionGrid />
           </WaflSectionPanel>
         </div>
 
         <div id="foundation-primitive" className="scroll-mt-6">
-          <WaflSectionPanel title="Foundation primitive · WAFL 슈퍼클래스 기준" description="모양을 화면별로 맞추지 않고 모든 공통 컴포넌트가 같은 foundation token을 통과하게 한다." density="compact">
+          <WaflSectionPanel
+            title="Foundation primitive · WAFL 슈퍼클래스 기준"
+            description="모양을 화면별로 맞추지 않고 모든 공통 컴포넌트가 같은 foundation token을 통과하게 한다."
+            density="compact"
+          >
             <FoundationPrimitiveSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="shape-grammar" className="scroll-mt-6">
-          <WaflSectionPanel title="Shape grammar · 모양 통일 기준" description="버튼, 배지, 입력, 카드가 같은 둥근 네모 계열로 보이는지 확인한다." density="compact">
+          <WaflSectionPanel
+            title="Shape grammar · 모양 통일 기준"
+            description="버튼, 배지, 입력, 카드가 같은 둥근 네모 계열로 보이는지 확인한다."
+            density="compact"
+          >
             <ShapeGrammarSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="visual-styling" className="scroll-mt-6">
-          <WaflSectionPanel title="Visual styling · 꾸밈 기준" description="shape는 고정하고 tone, variant, selected/current/disabled/danger 상태만 공통 props로 조절한다." density="compact">
+          <WaflSectionPanel
+            title="Visual styling · 꾸밈 기준"
+            description="shape는 고정하고 tone, variant, selected/current/disabled/danger 상태만 공통 props로 조절한다."
+            density="compact"
+          >
             <VisualStylingSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="touch-actions" className="scroll-mt-6">
-          <WaflSectionPanel title="Touch actions · 누르는 것" description="실행 버튼, 이동 버튼, 카드형 버튼, 추가 카드 버튼을 분리한다." density="compact">
+          <WaflSectionPanel
+            title="Touch actions · 누르는 것"
+            description="실행 버튼, 이동 버튼, 카드형 버튼, 추가 카드 버튼을 분리한다."
+            density="compact"
+          >
             <TouchActionSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="containers" className="scroll-mt-6">
-          <WaflSectionPanel title="Containers · 담는 것" description="Surface, InfoBox, EmptyCard, SelectableCard는 모두 박스처럼 보이지만 역할이 다르다." density="compact">
+          <WaflSectionPanel
+            title="Containers · 담는 것"
+            description="Surface, InfoBox, EmptyCard, SelectableCard는 모두 박스처럼 보이지만 역할이 다르다."
+            density="compact"
+          >
             <ContainerSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="inputs" className="scroll-mt-6">
-          <WaflSectionPanel title="Inputs · 입력하는 것" description="짧은 입력, 긴 입력, 선택 트리거, 선택 카드의 기본 문법." density="compact">
+          <WaflSectionPanel
+            title="Inputs · 입력하는 것"
+            description="짧은 입력, 긴 입력, 선택 트리거, 선택 카드의 기본 문법."
+            density="compact"
+          >
             <InputSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="status" className="scroll-mt-6">
-          <WaflSectionPanel title="Status · 보여주는 것" description="상태 라벨, 안내 박스, 필터바, 데이터 표시 패턴." density="compact">
+          <WaflSectionPanel
+            title="Status · 보여주는 것"
+            description="상태 라벨, 안내 박스, 필터바, 데이터 표시 패턴."
+            density="compact"
+          >
             <StatusSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="wrong-right" className="scroll-mt-6">
-          <WaflSectionPanel title="Wrong / Right" description="같아 보이는 컴포넌트의 판단 기준을 비교한다." density="compact">
+          <WaflSectionPanel
+            title="Wrong / Right"
+            description="같아 보이는 컴포넌트의 판단 기준을 비교한다."
+            density="compact"
+          >
             <WrongRightSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="practice-patterns" className="scroll-mt-6">
-          <WaflSectionPanel title="Practice patterns · 실무 패턴" description="작업지시서, 발주, 저장소에서 실제로 반복되는 UI 조합을 샘플로 확인한다." density="compact">
+          <WaflSectionPanel
+            title="Practice patterns · 실무 패턴"
+            description="작업지시서, 발주, 저장소에서 실제로 반복되는 UI 조합을 샘플로 확인한다."
+            density="compact"
+          >
             <PracticePatternSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="usage-rules" className="scroll-mt-6">
-          <WaflSectionPanel title="Usage rules · 사용 기준" description="언제 쓰는가/쓰지 않는가, 직접 className 금지 기준, naming, 새 화면 체크리스트를 확인한다." density="compact">
+          <WaflSectionPanel
+            title="Usage rules · 사용 기준"
+            description="언제 쓰는가/쓰지 않는가, 직접 className 금지 기준, naming, 새 화면 체크리스트를 확인한다."
+            density="compact"
+          >
             <UsageRulesSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="screen-checklist" className="scroll-mt-6">
-          <WaflSectionPanel title="Screen checklist · 기존 화면별 점검표" description="작업지시서, 발주, 운영 대시보드, 협력업체, 저장소, 통계, 멤버관리, 개인설정에서 써야 하는 WAFL 컴포넌트를 연결한다." density="compact">
+          <WaflSectionPanel
+            title="Screen checklist · 기존 화면별 점검표"
+            description="작업지시서, 발주, 운영 대시보드, 협력업체, 저장소, 통계, 멤버관리, 개인설정에서 써야 하는 WAFL 컴포넌트를 연결한다."
+            density="compact"
+          >
             <ScreenChecklistSamples />
           </WaflSectionPanel>
         </div>
 
         <div id="component-inventory" className="scroll-mt-6">
-          <WaflSectionPanel title="Component inventory · 컴포넌트 재고표" description="현재 컴포넌트를 유지/통합/전환/폐기 후보로 분류하고 다음 리팩토링 순서를 정한다." density="compact">
+          <WaflSectionPanel
+            title="Component inventory · 컴포넌트 재고표"
+            description="현재 컴포넌트를 유지/통합/전환/폐기 후보로 분류하고 다음 리팩토링 순서를 정한다."
+            density="compact"
+          >
             <ComponentInventorySamples />
           </WaflSectionPanel>
         </div>
 
         <div id="spec-table" className="scroll-mt-6">
-          <WaflSectionPanel title="Spec table" description="개발자가 import 경로와 props, 금지 기준을 확인하는 표다." density="compact">
+          <WaflSectionPanel
+            title="Spec table"
+            description="개발자가 import 경로와 props, 금지 기준을 확인하는 표다."
+            density="compact"
+          >
             <SpecTable />
           </WaflSectionPanel>
         </div>

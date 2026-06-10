@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 
 import { getWaflButtonClassName } from "@/components/common/ui/WaflButton";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
 
 export type WorkflowProgressPanelStep = {
   key: string;
@@ -61,10 +62,7 @@ function getWorkflowActionReasonId(actionKey: string) {
 
 function getDirectPathD(fromX: number, toX: number) {
   const direction = fromX < toX ? 1 : -1;
-  const cornerX = Math.min(
-    DIRECT_BRIDGE_CORNER_X,
-    Math.abs(toX - fromX) / 4,
-  );
+  const cornerX = Math.min(DIRECT_BRIDGE_CORNER_X, Math.abs(toX - fromX) / 4);
   const startCornerX = fromX + cornerX * direction;
   const endCornerX = toX - cornerX * direction;
   const circleTopY = TRACK_CENTER_Y - STEP_DOT_RADIUS_Y;
@@ -111,22 +109,30 @@ export function WorkflowProgressPanel({
     : -1;
   const canShowDirectPath = Boolean(
     directPath &&
-      directPath.isVisible !== false &&
-      directPathFromIndex >= 0 &&
-      directPathToIndex >= 0 &&
-      directPathFromIndex !== directPathToIndex,
+    directPath.isVisible !== false &&
+    directPathFromIndex >= 0 &&
+    directPathToIndex >= 0 &&
+    directPathFromIndex !== directPathToIndex,
   );
   const shouldEmphasizeDirectPath =
     pathMode === "directOrder" || Boolean(directPath?.isActive);
 
   if (layout === "vertical") {
     return (
-      <div data-wafl-component="workflow-panel" className={`pbp-workflow-panel min-w-0 overflow-hidden wafl-shape-surface border p-3.5 sm:p-4 ${className}`}>
-        <div className="text-sm font-semibold text-stone-900">{title}</div>
+      <WaflSurface
+        component="workflow-panel"
+        tone="surface"
+        className={`pbp-workflow-panel min-w-0 overflow-hidden p-3.5 sm:p-4 ${className}`}
+      >
+        <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">
+          {title}
+        </div>
         <ol className="mt-3 grid min-w-0 gap-2">
           {steps.map((step, index) => {
-            const fillClassName = step.fillClassName ?? "bg-[var(--pbp-selected-border)]";
-            const currentTextClassName = step.currentTextClassName ?? "pbp-text-primary";
+            const fillClassName =
+              step.fillClassName ?? "bg-[var(--pbp-selected-border)]";
+            const currentTextClassName =
+              step.currentTextClassName ?? "pbp-text-primary";
             const dotClassName = step.isCurrent
               ? `${fillClassName} text-white`
               : step.isDone
@@ -137,13 +143,19 @@ export function WorkflowProgressPanel({
               <li
                 key={step.key}
                 className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 wafl-shape-control border px-3 py-2.5 text-xs font-medium ${
-                  step.isCurrent ? "pbp-workflow-step-current" : "pbp-workflow-step-idle"
+                  step.isCurrent
+                    ? "pbp-workflow-step-current"
+                    : "pbp-workflow-step-idle"
                 }`}
               >
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${dotClassName}`}>
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${dotClassName}`}
+                >
                   {index + 1}
                 </span>
-                <span className={`min-w-0 break-keep ${step.isCurrent ? currentTextClassName : "text-[var(--pbp-text-muted)]"}`}>
+                <span
+                  className={`min-w-0 break-keep ${step.isCurrent ? currentTextClassName : "text-[var(--pbp-text-muted)]"}`}
+                >
                   {step.label}
                 </span>
               </li>
@@ -177,12 +189,18 @@ export function WorkflowProgressPanel({
                     })}
                   >
                     {action.isProcessing ? (
-                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                      <span
+                        className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+                        aria-hidden="true"
+                      />
                     ) : null}
                     <span className="min-w-0 break-keep">{action.label}</span>
                   </button>
                   {isDisabled && action.disabledReason ? (
-                    <span id={helperId} className="text-center text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]">
+                    <span
+                      id={helperId}
+                      className="text-center text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]"
+                    >
                       {action.disabledReason}
                     </span>
                   ) : null}
@@ -197,29 +215,28 @@ export function WorkflowProgressPanel({
             {footer}
           </div>
         ) : null}
-      </div>
+      </WaflSurface>
     );
   }
 
   return (
-    <div
-      data-wafl-component="workflow-panel"
-      className={`pbp-workflow-panel wafl-shape-surface border ${isCompact ? "px-4 py-3" : "p-4"} ${className}`}
+    <WaflSurface
+      component="workflow-panel"
+      tone="surface"
+      className={`pbp-workflow-panel ${isCompact ? "px-4 py-3" : "p-4"} ${className}`}
     >
       <div
         className={`flex items-start justify-between ${isCompact ? "gap-2" : "gap-4"}`}
       >
         <div className="min-w-0">
           <div
-            className={`${isCompact ? "text-xs" : "text-sm"} font-semibold text-stone-900`}
+            className={`${isCompact ? "text-xs" : "text-sm"} font-semibold text-[var(--pbp-text-primary)]`}
           >
             {title}
           </div>
         </div>
         {actions.length > 0 && !isCompact ? (
-          <div
-            className="flex flex-wrap justify-end gap-2"
-          >
+          <div className="flex flex-wrap justify-end gap-2">
             {actions.map((action) => {
               const isDisabled = Boolean(action.disabled);
               const helperId = action.disabledReason
@@ -251,7 +268,10 @@ export function WorkflowProgressPanel({
                     <span>{action.label}</span>
                   </button>
                   {isDisabled && action.disabledReason ? (
-                    <span id={helperId} className="max-w-[12rem] text-right text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]">
+                    <span
+                      id={helperId}
+                      className="max-w-[12rem] text-right text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]"
+                    >
                       {action.disabledReason}
                     </span>
                   ) : null}
@@ -412,19 +432,25 @@ export function WorkflowProgressPanel({
                   aria-label={action.ariaLabel}
                   aria-describedby={isDisabled ? helperId : undefined}
                   className={getWaflButtonClassName({
-                      variant: action.isPrimary ? "primary" : "secondary",
-                      size: "md",
-                      width: "full",
-                      className: "text-center",
-                    })}
+                    variant: action.isPrimary ? "primary" : "secondary",
+                    size: "md",
+                    width: "full",
+                    className: "text-center",
+                  })}
                 >
                   {action.isProcessing ? (
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                    <span
+                      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+                      aria-hidden="true"
+                    />
                   ) : null}
                   <span className="min-w-0 break-keep">{action.label}</span>
                 </button>
                 {isDisabled && action.disabledReason ? (
-                  <span id={helperId} className="text-center text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]">
+                  <span
+                    id={helperId}
+                    className="text-center text-[10px] font-medium leading-snug text-[var(--pbp-text-muted)]"
+                  >
                     {action.disabledReason}
                   </span>
                 ) : null}
@@ -441,6 +467,6 @@ export function WorkflowProgressPanel({
           {footer}
         </div>
       ) : null}
-    </div>
+    </WaflSurface>
   );
 }
