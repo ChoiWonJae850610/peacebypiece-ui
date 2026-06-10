@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { AppCard, SectionCountBadge, WaflAddCardButton, WaflAddIconBubble, WaflEmptyCard } from "@/components/common/ui";
+import { AppBadge, AppCard, SectionCountBadge, WaflAddCardButton, WaflAddIconBubble, WaflButton, WaflEmptyCard, WaflInfoBox, WaflSurface } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -35,14 +35,14 @@ function MaterialListCard({
     item.name || copy.fallbackItem.replace("{index}", String(index + 1));
 
   return (
-    <AppCard variant="subtle" padding="sm" className="rounded-[var(--pbp-radius-content-card)]">
+    <WaflSurface component="material-list-card" shape="control" tone="muted" className="p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="inline-flex rounded-full bg-[var(--pbp-surface-muted)] px-2 py-0.5 text-[11px] font-semibold pbp-text-muted">
+          <AppBadge tone="neutral" size="sm">
             {getTranslatedWorkOrderSelectDisplayValue(item.type, (value) =>
               translateWorkOrderDisplayText(value, locale),
             )}
-          </div>
+          </AppBadge>
           <div className="mt-2 truncate text-sm font-semibold pbp-text-primary">
             {title}
           </div>
@@ -63,7 +63,7 @@ function MaterialListCard({
           />
         ) : null}
       </div>
-    </AppCard>
+    </WaflSurface>
   );
 }
 
@@ -122,7 +122,7 @@ export default function MaterialSection({
     <section className="mt-5 min-w-0 xl:h-full">
       <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
         <div className="flex min-w-0 items-center gap-2">
-          <h3 className="min-w-0 text-sm font-semibold leading-5 text-stone-900">
+          <h3 className="min-w-0 text-sm font-semibold leading-5 text-[var(--pbp-text-primary)]">
             {copy.title}
           </h3>
           <SectionCountBadge>{materials.length}건</SectionCountBadge>
@@ -140,24 +140,25 @@ export default function MaterialSection({
         ) : null}
 
         {!locked && zeroQuantityCount > 0 ? (
-          <div className="rounded-[var(--pbp-radius-content-card)] border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+          <WaflInfoBox tone="warning" shape="control" state="warning" className="text-xs leading-5">
             <div className="font-semibold">
               {copy.zeroQuantityNoticeTitle.replace(
                 "{count}",
                 String(zeroQuantityCount),
               )}
             </div>
-            <div className="mt-0.5 text-amber-800">
+            <div className="mt-0.5">
               {copy.zeroQuantityNoticeDescription}
             </div>
-            <button
-              type="button"
+            <WaflButton
+              size="sm"
+              variant="neutral"
               onClick={onRemoveZeroQuantity}
-              className="pbp-interactive-button mt-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+              className="mt-2"
             >
               {copy.zeroQuantityCleanupButton}
-            </button>
-          </div>
+            </WaflButton>
+          </WaflInfoBox>
         ) : null}
 
         {materials.map((item, rowIndex) => (

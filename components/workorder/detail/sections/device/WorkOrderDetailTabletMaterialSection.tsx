@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { AppCard, WaflAddCardButton, WaflAddIconBubble, WaflEmptyCard } from "@/components/common/ui";
+import { AppBadge, WaflAddCardButton, WaflAddIconBubble, WaflButton, WaflEmptyCard, WaflInfoBox, WaflSurface } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { getTranslatedWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
@@ -64,12 +64,12 @@ function MaterialListCard({
   const title = item.name || copy.fallbackItem.replace("{index}", String(index + 1));
 
   return (
-    <AppCard variant="subtle" padding="sm" className="rounded-[var(--pbp-radius-content-card)]">
+    <WaflSurface component="tablet-material-list-card" shape="control" tone="muted" className="p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="inline-flex rounded-full bg-[var(--pbp-surface-muted)] px-2 py-0.5 text-[11px] font-semibold pbp-text-muted">
+          <AppBadge tone="neutral" size="sm">
             {getTranslatedWorkOrderSelectDisplayValue(item.type, (value) => translateWorkOrderDisplayText(value, locale))}
-          </div>
+          </AppBadge>
           <div className="mt-2 truncate text-sm font-semibold pbp-text-primary">{title}</div>
           <div className="mt-1 text-xs pbp-text-muted">
             {item.quantity.toLocaleString()} {translateWorkOrderDisplayText(item.unit, locale)}
@@ -87,7 +87,7 @@ function MaterialListCard({
           />
         ) : null}
       </div>
-    </AppCard>
+    </WaflSurface>
   );
 }
 
@@ -124,17 +124,13 @@ export default function WorkOrderDetailTabletMaterialSection({
       ) : null}
 
       {!locked && zeroQuantityCount > 0 ? (
-        <div className="rounded-[var(--pbp-radius-content-card)] border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+        <WaflInfoBox tone="warning" shape="control" state="warning" className="text-xs leading-5">
           <div className="font-semibold">{copy.zeroQuantityNoticeTitle.replace("{count}", String(zeroQuantityCount))}</div>
-          <div className="mt-0.5 text-amber-800">{copy.zeroQuantityNoticeDescription}</div>
-          <button
-            type="button"
-            onClick={onRemoveZeroQuantity}
-            className="pbp-interactive-button mt-2 rounded-full border border-amber-300 bg-white px-3 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
-          >
+          <div className="mt-0.5">{copy.zeroQuantityNoticeDescription}</div>
+          <WaflButton size="sm" variant="neutral" onClick={onRemoveZeroQuantity} className="mt-2">
             {copy.zeroQuantityCleanupButton}
-          </button>
-        </div>
+          </WaflButton>
+        </WaflInfoBox>
       ) : null}
 
       {materials.map((item, index) => (

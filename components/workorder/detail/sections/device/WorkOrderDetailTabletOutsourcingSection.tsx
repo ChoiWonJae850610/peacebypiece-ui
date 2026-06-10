@@ -1,3 +1,4 @@
+import { WaflInfoBox, WaflSurface } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
 import { getWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
@@ -44,36 +45,36 @@ export default function WorkOrderDetailTabletOutsourcingSection({
     : copy.empty;
 
   return (
-    <section className="overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
+    <WaflSurface as="section" component="tablet-outsourcing-section" shape="control" tone="surface" className="p-3">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-3 grid gap-2.5">
           {outsourcing.map((item, index) => (
-            <article key={item.id} className="rounded-xl bg-stone-50/80 p-3">
+            <WaflSurface as="article" key={item.id} component="tablet-outsourcing-row" shape="control" tone="muted" className="p-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getWorkOrderSelectDisplayValue(item.process)} options={processOptions} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
-                  <div className="mt-1 text-sm text-stone-500">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
+                  <div className="mt-1 text-sm text-[var(--pbp-text-muted)]">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
                 </div>
                 {!locked ? <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} /> : null}
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2.5">
                 <div className={EDITABLE_FIELD_PANEL_CLASS}>
-                  <div className="text-xs text-stone-500">{copy.fields.quantity}</div>
+                  <div className="text-xs text-[var(--pbp-text-muted)]">{copy.fields.quantity}</div>
                   <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
                 </div>
                 <div className={EDITABLE_FIELD_PANEL_CLASS}>
-                  <div className="text-xs text-stone-500">{copy.fields.unitType}</div>
+                  <div className="text-xs text-[var(--pbp-text-muted)]">{copy.fields.unitType}</div>
                   <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={priceBasisOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
                 </div>
               </div>
-            </article>
+            </WaflSurface>
           ))}
 
-          <div className="rounded-xl border border-stone-200 bg-stone-50/70 px-3 py-3 text-xs leading-5 text-stone-500">
+          <WaflInfoBox shape="control" tone="muted" className="px-3 py-3 text-xs leading-5">
             {copy.handoffNote}
-          </div>
+          </WaflInfoBox>
 
           {!locked ? (
             <div className="flex justify-center">
@@ -82,6 +83,6 @@ export default function WorkOrderDetailTabletOutsourcingSection({
           ) : null}
         </div>
       ) : null}
-    </section>
+    </WaflSurface>
   );
 }

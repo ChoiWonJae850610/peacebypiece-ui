@@ -1079,10 +1079,28 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.25부터 작업지시서 진행 단계, 비용 요약, 우측 첨부/메모 패널도
-        Foundation Surface/Control 기준을 통과한다. 패널은 surface, 내부
-        row/empty/summary/file/memo는 control 중심으로 맞춘다.
+        0.21.26부터 작업지시서 기준 화면은 Foundation 통과 여부와 direct style
+        잔여 여부를 같이 본다. Material/Process/Outsourcing section도
+        목록 카드, 안내 박스, add/action을 control 중심으로 맞춘다.
       </WaflNoticeBox>
+
+
+      <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+          Direct style scan
+        </p>
+        <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+          제거 대상과 예외 대상을 분리한다
+        </h3>
+        <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
+          <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
+            제거 대상: section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
+          </WaflInfoBox>
+          <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
+            예외 대상: dot, spinner, progress node, drawing canvas, modal full-screen reset
+          </WaflInfoBox>
+        </div>
+      </WaflSurface>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <WaflSurface
@@ -1998,6 +2016,24 @@ function PracticePatternSamples() {
           </WaflInfoBox>
         </WaflSurface>
       </div>
+
+
+      <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+          Direct style scan
+        </p>
+        <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+          제거 대상과 예외 대상을 분리한다
+        </h3>
+        <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
+          <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
+            제거 대상: section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
+          </WaflInfoBox>
+          <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
+            예외 대상: dot, spinner, progress node, drawing canvas, modal full-screen reset
+          </WaflInfoBox>
+        </div>
+      </WaflSurface>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <WaflSurface

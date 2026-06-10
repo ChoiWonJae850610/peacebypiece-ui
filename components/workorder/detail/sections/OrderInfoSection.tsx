@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { AppCard, SectionCountBadge, WaflAddCardButton, WaflAddIconBubble, WaflEmptyCard } from "@/components/common/ui";
+import { AppCard, SectionCountBadge, WaflAddCardButton, WaflAddIconBubble, WaflButton, WaflEmptyCard, WaflSurface } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import WorkOrderProcessEditSheet, {
@@ -41,7 +41,7 @@ function ProcessCard({
   const { i18n } = useI18n();
   const common = i18n.workorder.ui.common;
   return (
-    <AppCard variant="subtle" padding="sm" className="rounded-[var(--pbp-radius-content-card)]">
+    <WaflSurface component="process-list-card" shape="control" tone="muted" className="p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold pbp-text-subtle">
@@ -70,7 +70,7 @@ function ProcessCard({
           />
         ) : null}
       </div>
-    </AppCard>
+    </WaflSurface>
   );
 }
 
@@ -238,13 +238,13 @@ export default function OrderInfoSection({
       ) : null}
 
       {canOpenInspectionModal ? (
-        <button
-          type="button"
+        <WaflButton
+          variant="secondary"
+          width="full"
           onClick={onOpenInspectionModal}
-          className="pbp-interactive-button pbp-action-secondary w-full rounded-xl px-3 py-2 text-sm font-medium"
         >
           {copy.inspectionAction}
-        </button>
+        </WaflButton>
       ) : null}
     </>
   );
@@ -254,7 +254,7 @@ export default function OrderInfoSection({
       {!isFlatDevice ? (
         <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
           <div className="flex min-w-0 items-center gap-2">
-            <h3 className="min-w-0 text-sm font-semibold leading-5 text-stone-900">
+            <h3 className="min-w-0 text-sm font-semibold leading-5 text-[var(--pbp-text-primary)]">
               {copy.title}
             </h3>
             <SectionCountBadge>{processCount}건</SectionCountBadge>
