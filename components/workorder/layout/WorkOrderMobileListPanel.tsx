@@ -84,7 +84,8 @@ export default function WorkOrderMobileListPanel({
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
               placeholder={copy.searchPlaceholder}
-              className="pbp-field-search h-10 text-sm"
+              fieldSize="sm"
+              className="pbp-field-search text-sm"
             />
           </label>
           {searchQuery ? (
@@ -93,7 +94,7 @@ export default function WorkOrderMobileListPanel({
               disabled={writeLocked}
               variant="secondary"
               size="sm"
-              className="h-10 shrink-0 px-2.5"
+              className="h-10 min-h-10 shrink-0 px-2.5"
             >
               {controlsCopy.clearSearch}
             </WaflButton>
@@ -108,6 +109,7 @@ export default function WorkOrderMobileListPanel({
             disabled={writeLocked}
             size="sm"
             ariaLabel={controlsCopy.statusFilterAria}
+            triggerClassName="text-sm"
           />
           <AppSelect
             value={sort}
@@ -116,6 +118,7 @@ export default function WorkOrderMobileListPanel({
             disabled={writeLocked}
             size="sm"
             ariaLabel={controlsCopy.sortAria}
+            triggerClassName="text-sm"
           />
         </div>
 

@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
-import { getWaflPrimitiveClassName, waflInteractiveClass, waflToneClassMap } from "./WaflPrimitive";
+import { getWaflPrimitiveClassName, waflInteractiveClass, waflToneClassMap, type WaflPrimitiveShape } from "./WaflPrimitive";
 
 export type WaflSurfaceTone = "default" | "surface" | "selected" | "muted" | "empty" | "warning" | "danger" | "info";
 type WaflSurfaceElement = "div" | "section" | "article" | "header";
@@ -28,20 +28,22 @@ export function WaflSurface({
   className,
   component = "surface",
   tone = "surface",
+  shape = "surface",
   ...props
 }: HTMLAttributes<HTMLElement> & {
   as?: WaflSurfaceElement;
   children?: ReactNode;
   component?: string;
   tone?: WaflSurfaceTone;
+  shape?: Extract<WaflPrimitiveShape, "surface" | "control">;
 }) {
   return createElement(
     Component,
     {
       "data-wafl-component": component,
-      "data-wafl-foundation": "surface",
+      "data-wafl-foundation": shape,
       className: getWaflPrimitiveClassName({
-        shape: "surface",
+        shape,
         tone: tone === "default" ? "surface" : tone,
         className,
       }),

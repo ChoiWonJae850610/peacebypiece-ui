@@ -1,4 +1,5 @@
 import AppBadge from "@/components/common/ui/AppBadge";
+import AppSelect from "@/components/common/ui/AppSelect";
 import { WaflButton, WaflLinkButton } from "@/components/common/ui/WaflButton";
 import { WaflInfoBox, WaflInput, WaflSelectableCard, WaflTextarea } from "@/components/common/ui/WaflForm";
 import {
@@ -883,7 +884,7 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.22부터 WAFL 컴포넌트는 foundation primitive를 통과한다. 화면은 rounded/background/border 조합을 직접 만들지 않고 shape, density, tone, state만 고른다.
+        0.21.23부터 작업지시서 목록/검색/필터는 foundation control 밀도 기준을 먼저 맞춘다. 화면은 rounded/background/border 조합을 직접 만들지 않고 shape, density, tone, state만 고른다.
       </WaflNoticeBox>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
@@ -922,7 +923,18 @@ function FoundationPrimitiveSamples() {
               <WaflButton variant="neutral" size="sm">compact control</WaflButton>
               <WaflButton variant="icon" size="md" aria-label="foundation icon">+</WaflButton>
             </div>
-            <WaflInput placeholder="control input" />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <WaflInput fieldSize="sm" placeholder="검색필드 · control sm" />
+              <AppSelect
+                size="sm"
+                value="active"
+                options={[
+                  { value: "active", label: "셀렉트 · control sm" },
+                  { value: "all", label: "전체" },
+                ]}
+                ariaLabel="foundation select sample"
+              />
+            </div>
             <WaflSelectableCard selected component="catalog-foundation-selectable">
               <span className="text-sm font-bold">control row</span>
               <AppBadge tone="brand" size="xs">selected</AppBadge>

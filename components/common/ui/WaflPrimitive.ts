@@ -20,7 +20,7 @@ export const waflControlDensityClassMap: Record<WaflPrimitiveDensity, string> = 
 };
 
 export const waflFieldDensityClassMap: Record<WaflPrimitiveDensity, string> = {
-  compact: "h-9 px-3 text-base md:text-xs",
+  compact: "h-10 px-3 text-base md:text-sm",
   default: "h-11 px-3 text-base md:text-sm",
   spacious: "h-12 px-4 text-base",
 };

@@ -103,7 +103,9 @@ export default function AppSelect({
     >
       <Select.Trigger
         ref={triggerRef}
-        data-wafl-component="select" data-wafl-foundation="control"
+        data-wafl-component="select"
+        data-wafl-foundation="control"
+        data-wafl-density={size === "sm" ? "sm" : "md"}
         aria-label={ariaLabel ?? placeholder}
         onPointerDownCapture={(event: PointerEvent<HTMLButtonElement>) => {
           if (!open) return;

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
-import { AppSelect, SectionCountBadge, WaflButton } from "@/components/common/ui";
+import { AppSelect, SectionCountBadge, WaflButton, WaflEmptyCard, WaflInput } from "@/components/common/ui";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
@@ -281,24 +281,25 @@ export default function SidebarContent({
             <div className="flex items-center gap-2">
               <label className="min-w-0 flex-1">
                 <span className="sr-only">{controlsUi.searchAria}</span>
-                <input
-                  data-wafl-component="input"
+                <WaflInput
                   type="search"
+                  fieldSize="sm"
                   value={searchQuery}
                   onChange={(event) => onSearchQueryChange(event.target.value)}
                   placeholder={controlsUi.searchPlaceholder}
-                  className="pbp-field-interaction pbp-field-search h-9 w-full wafl-shape-control border px-3 text-sm outline-none"
+                  className="pbp-field-search text-sm"
                 />
               </label>
               {searchQuery ? (
-                <button
-                  type="button"
+                <WaflButton
                   onClick={() => onSearchQueryChange("")}
                   disabled={writeLocked}
-                  className="pbp-interactive-button pbp-action-secondary inline-flex h-9 shrink-0 items-center justify-center wafl-shape-control px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                  variant="secondary"
+                  size="sm"
+                  className="h-10 min-h-10 shrink-0 px-2.5 text-xs"
                 >
                   {controlsUi.clearSearch}
-                </button>
+                </WaflButton>
               ) : null}
             </div>
             <div className="grid grid-cols-2 gap-1.5">
@@ -311,6 +312,7 @@ export default function SidebarContent({
                 disabled={writeLocked}
                 size="sm"
                 ariaLabel={controlsUi.statusFilterAria}
+                triggerClassName="text-sm"
               />
               <AppSelect
                 value={sort}
@@ -321,6 +323,7 @@ export default function SidebarContent({
                 disabled={writeLocked}
                 size="sm"
                 ariaLabel={controlsUi.sortAria}
+                triggerClassName="text-sm"
               />
             </div>
           </div>
@@ -366,9 +369,9 @@ export default function SidebarContent({
           ))}
         </div>
         {workOrders.length === 0 ? (
-          <div data-wafl-component="state" className="pbp-empty-state rounded-[var(--pbp-radius-wafl)] border border-dashed px-4 py-6 text-center text-sm">
+          <WaflEmptyCard className="pbp-empty-state px-4 py-6">
             {controlsUi.empty}
-          </div>
+          </WaflEmptyCard>
         ) : null}
       </div>
 

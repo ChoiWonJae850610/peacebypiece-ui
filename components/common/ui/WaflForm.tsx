@@ -10,28 +10,38 @@ import {
 import { cn } from "@/lib/utils";
 import { waflFieldDensityClassMap, waflInteractiveClass, getWaflPrimitiveClassName } from "./WaflPrimitive";
 
-export type WaflFieldSize = "md";
+export type WaflFieldSize = "sm" | "md" | "lg";
+
+const fieldSizeClassMap: Record<WaflFieldSize, string> = {
+  sm: waflFieldDensityClassMap.compact,
+  md: waflFieldDensityClassMap.default,
+  lg: waflFieldDensityClassMap.spacious,
+};
 
 const fieldBaseClass = cn(
   "pbp-field-interaction w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] outline-none placeholder:text-[var(--pbp-text-muted)] focus:border-[var(--pbp-selected-border)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]",
   waflInteractiveClass,
 );
 
-export const WAFL_FIELD_INPUT_CLASS = cn(fieldBaseClass, waflFieldDensityClassMap.default);
+export const WAFL_FIELD_INPUT_CLASS = cn(fieldBaseClass, fieldSizeClassMap.md);
 export const WAFL_FIELD_TEXTAREA_CLASS = cn(
   fieldBaseClass,
   "min-h-24 resize-y px-3 py-2",
 );
 
-export type WaflInputProps = InputHTMLAttributes<HTMLInputElement>;
+export type WaflInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
+  fieldSize?: WaflFieldSize;
+};
 
 export const WaflInput = forwardRef<HTMLInputElement, WaflInputProps>(
-  function WaflInput({ className, ...props }, ref) {
+  function WaflInput({ className, fieldSize = "md", ...props }, ref) {
     return (
       <input
         ref={ref}
-        data-wafl-component="input" data-wafl-foundation="control"
-        className={cn(WAFL_FIELD_INPUT_CLASS, className)}
+        data-wafl-component="input"
+        data-wafl-foundation="control"
+        data-wafl-density={fieldSize}
+        className={cn(fieldBaseClass, fieldSizeClassMap[fieldSize], className)}
         {...props}
       />
     );
