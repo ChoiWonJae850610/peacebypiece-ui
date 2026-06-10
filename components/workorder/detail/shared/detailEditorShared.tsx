@@ -1,16 +1,33 @@
 import { type KeyboardEvent, type ReactNode } from "react";
-import { AppInlineSelectEditor, type AppInlineSelectEditorOption } from "@/components/common/ui";
-import { PbpSingleDatePicker, type PbpSingleDatePickerLabels } from "@/components/common/date/PbpSingleDatePicker";
-import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detail/detailFormatting";
+import {
+  AppInlineSelectEditor,
+  WaflIconButton,
+  type AppInlineSelectEditorOption,
+} from "@/components/common/ui";
+import {
+  PbpSingleDatePicker,
+  type PbpSingleDatePickerLabels,
+} from "@/components/common/date/PbpSingleDatePicker";
+import {
+  getDisplayValue,
+  getEditingInitialValue,
+} from "@/lib/workorder/detail/detailFormatting";
 import { isUnavailableWorkOrderSelectOption } from "@/lib/constants/workorderDomain";
 import { normalizeEditingValue } from "@/lib/workorder/detail/detailSanitizers";
-import { clampPastDateInputValue, getTodayDateInputValue } from "@/lib/workorder/datePolicy";
+import {
+  clampPastDateInputValue,
+  getTodayDateInputValue,
+} from "@/lib/workorder/datePolicy";
 import type { OrderEntry } from "@/types/workorder";
 import type { PbpDateLocale } from "@/lib/date/localDate";
 
 export type RowValue = string | number | null | undefined;
 export type EditableSectionKey = "material" | "outsourcing" | "order";
-export type EditableCell = { section: EditableSectionKey; rowId: string; field: string } | null;
+export type EditableCell = {
+  section: EditableSectionKey;
+  rowId: string;
+  field: string;
+} | null;
 export type SelectOption = readonly string[];
 export type BasicInfoState = {
   category1: string;
@@ -28,25 +45,35 @@ export type OrderEntryState = OrderEntry;
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "min-h-8";
 const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 outline-none ring-0`;
-const WAFL_PANEL_BASE_CLASS = "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none";
+const WAFL_PANEL_BASE_CLASS =
+  "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none";
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-input text-xs`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-display text-xs flex items-center`;
-const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
-const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
+const EDITABLE_VALUE_TEXT_CLASS =
+  "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
+const EDITABLE_VALUE_TEXT_WRAP_CLASS =
+  "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
 
-export const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
-export const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-1.5 text-center text-[10px] font-medium leading-4 text-stone-600 lg:px-2 lg:text-[10px]";
-export const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-1.5 align-middle text-center text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[10px]";
+export const TABLE_VALUE_TEXT_CLASS =
+  "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
+export const TABLE_HEADER_CELL_CLASS =
+  "min-w-0 overflow-hidden px-1.5 py-1.5 text-center text-[10px] font-medium leading-4 text-[var(--pbp-text-muted)] lg:px-2 lg:text-[10px]";
+export const TABLE_BODY_CELL_CLASS =
+  "min-w-0 overflow-hidden px-1.5 py-1.5 align-middle text-center text-[10px] leading-4 text-[var(--pbp-text-primary)] lg:px-2 lg:text-[10px]";
 export const EDITABLE_TABLE_CELL_CLASS = `${TABLE_BODY_CELL_CLASS} pbp-workorder-editable-cell`;
 export const SELECTABLE_TABLE_CELL_CLASS = `${TABLE_BODY_CELL_CLASS} pbp-workorder-selectable-cell`;
-export const CALCULATED_TABLE_CELL_CLASS = "pbp-workorder-calculated-cell min-w-0 overflow-hidden px-1.5 py-1.5 text-center align-middle text-[10px] font-medium tabular-nums lg:px-2 lg:text-[10px]";
+export const CALCULATED_TABLE_CELL_CLASS =
+  "pbp-workorder-calculated-cell min-w-0 overflow-hidden px-1.5 py-1.5 text-center align-middle text-[10px] font-medium tabular-nums lg:px-2 lg:text-[10px]";
 export const EDITABLE_FIELD_PANEL_CLASS = `pbp-workorder-editable-panel ${WAFL_PANEL_BASE_CLASS} p-2.5`;
 export const SELECTABLE_FIELD_PANEL_CLASS = `pbp-workorder-selectable-panel ${WAFL_PANEL_BASE_CLASS} p-2.5`;
 export const CALCULATED_FIELD_PANEL_CLASS = `pbp-workorder-calculated-panel ${WAFL_PANEL_BASE_CLASS} p-2.5`;
 export const MOBILE_COMPOSITION_CARD_CLASS = `pbp-workorder-mobile-composition-card min-w-0 ${WAFL_PANEL_BASE_CLASS} p-3 sm:p-3.5`;
-export const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[minmax(68px,84px)_minmax(0,1fr)] items-start gap-x-2 sm:grid-cols-[minmax(72px,88px)_minmax(0,1fr)] sm:gap-x-3";
-export const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
-export const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden text-right";
+export const MOBILE_INFO_ROW_CLASS =
+  "grid min-w-0 grid-cols-[minmax(68px,84px)_minmax(0,1fr)] items-start gap-x-2 sm:grid-cols-[minmax(72px,88px)_minmax(0,1fr)] sm:gap-x-3";
+export const MOBILE_LABEL_CLASS =
+  "min-w-0 text-left text-[11px] leading-5 tracking-tight text-[var(--pbp-text-muted)]";
+export const MOBILE_VALUE_WRAPPER_CLASS =
+  "flex min-w-0 max-w-full items-center justify-end overflow-hidden text-right";
 
 export function CollapseToggleButton({
   open,
@@ -58,16 +85,22 @@ export function CollapseToggleButton({
   label: string;
 }) {
   return (
-    <button
-      type="button"
+    <WaflIconButton
       data-wafl-component="collapse-button"
+      label={label}
       onClick={onToggle}
-      aria-label={label}
       aria-expanded={open}
-      className="pbp-interactive-button inline-flex h-7 w-7 shrink-0 items-center justify-center wafl-shape-icon border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xs leading-none text-[var(--pbp-text-muted)] shadow-none transition-colors hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+      size="sm"
+      showSrLabel={false}
+      className="text-xs leading-none"
     >
-      <span aria-hidden="true" className={`inline-flex text-[13px] leading-none transition-transform ${open ? "rotate-180" : "rotate-0"}`}>▾</span>
-    </button>
+      <span
+        aria-hidden="true"
+        className={`inline-flex text-[13px] leading-none transition-transform ${open ? "rotate-180" : "rotate-0"}`}
+      >
+        ▾
+      </span>
+    </WaflIconButton>
   );
 }
 
@@ -87,7 +120,7 @@ export function SectionHeader({
   toggleLabel?: string;
 }) {
   return (
-    <div className="flex min-w-0 items-start gap-2 border-b border-stone-200 pb-1.5 sm:gap-3">
+    <div className="flex min-w-0 items-start gap-2 border-b border-[var(--pbp-border)] pb-1.5 sm:gap-3">
       <button
         type="button"
         onClick={onToggle}
@@ -95,50 +128,122 @@ export function SectionHeader({
         className="pbp-touch-target pbp-interactive-button min-w-0 flex-1 wafl-shape-control px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
       >
         <div className="min-w-0 overflow-hidden">
-          <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
-          <div className="mt-0.5 block min-w-0 max-w-full break-words text-[11px] leading-4 text-stone-500 sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap md:text-xs">{summary}</div>
+          <div className="text-sm font-semibold leading-5 text-[var(--pbp-text-primary)]">
+            {title}
+          </div>
+          <div className="mt-0.5 block min-w-0 max-w-full break-words text-[11px] leading-4 text-[var(--pbp-text-muted)] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap md:text-xs">
+            {summary}
+          </div>
         </div>
       </button>
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
-        <CollapseToggleButton open={open} onToggle={onToggle} label={toggleLabel ?? title} />
+        <CollapseToggleButton
+          open={open}
+          onToggle={onToggle}
+          label={toggleLabel ?? title}
+        />
       </div>
     </div>
   );
 }
 
-function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, rowId: string, field: string) {
-  return editingCell?.section === section && editingCell.rowId === rowId && editingCell.field === field;
-}
-
-
-function CircleIconButton({ onClick, srLabel, disabled = false, variant, title, icon }: { onClick: () => void; srLabel: string; disabled?: boolean; variant: "default" | "danger"; title?: string; icon: ReactNode; }) {
-  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center wafl-shape-icon border bg-[var(--pbp-surface)] text-[14px] font-normal leading-none shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]";
-  const variantClassName = variant === "danger"
-    ? "border-[var(--pbp-danger)] text-[var(--pbp-danger)] hover:bg-[var(--pbp-danger-soft)] active:bg-[var(--pbp-danger-soft)]"
-    : "border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]";
-
+function isEditingCell(
+  editingCell: EditableCell,
+  section: EditableSectionKey,
+  rowId: string,
+  field: string,
+) {
   return (
-    <button
-      type="button"
-      data-wafl-component={variant === "danger" ? "delete-button" : "icon-button"}
-      onClick={onClick}
-      aria-label={srLabel}
-      title={title}
-      disabled={disabled}
-      className={`${baseClassName} ${variantClassName}`}
-    >
-      <span aria-hidden="true" className="inline-flex translate-y-[-0.5px] items-center justify-center leading-none">{icon}</span>
-    </button>
+    editingCell?.section === section &&
+    editingCell.rowId === rowId &&
+    editingCell.field === field
   );
 }
 
-export function AddButton({ onClick, srLabel, disabled = false, title }: { onClick: () => void; srLabel: string; disabled?: boolean; title?: string }) {
-  return <CircleIconButton onClick={onClick} srLabel={srLabel} disabled={disabled} title={title} variant="default" icon='+' />;
+function CircleIconButton({
+  onClick,
+  srLabel,
+  disabled = false,
+  variant,
+  title,
+  icon,
+}: {
+  onClick: () => void;
+  srLabel: string;
+  disabled?: boolean;
+  variant: "default" | "danger";
+  title?: string;
+  icon: ReactNode;
+}) {
+  return (
+    <WaflIconButton
+      data-wafl-component={
+        variant === "danger" ? "delete-button" : "icon-button"
+      }
+      label={srLabel}
+      onClick={onClick}
+      title={title ?? srLabel}
+      disabled={disabled}
+      tone={variant === "danger" ? "dangerSoft" : "neutral"}
+      size="md"
+      showSrLabel={false}
+      className="text-[14px] font-normal leading-none"
+    >
+      <span
+        aria-hidden="true"
+        className="inline-flex translate-y-[-0.5px] items-center justify-center leading-none"
+      >
+        {icon}
+      </span>
+    </WaflIconButton>
+  );
 }
 
-export function DeleteButton({ onClick, srLabel, disabled = false, title }: { onClick: () => void; srLabel: string; disabled?: boolean; title?: string }) {
-  return <CircleIconButton onClick={onClick} srLabel={srLabel} disabled={disabled} title={title} variant="danger" icon='-' />;
+export function AddButton({
+  onClick,
+  srLabel,
+  disabled = false,
+  title,
+}: {
+  onClick: () => void;
+  srLabel: string;
+  disabled?: boolean;
+  title?: string;
+}) {
+  return (
+    <CircleIconButton
+      onClick={onClick}
+      srLabel={srLabel}
+      disabled={disabled}
+      title={title}
+      variant="default"
+      icon="+"
+    />
+  );
+}
+
+export function DeleteButton({
+  onClick,
+  srLabel,
+  disabled = false,
+  title,
+}: {
+  onClick: () => void;
+  srLabel: string;
+  disabled?: boolean;
+  title?: string;
+}) {
+  return (
+    <CircleIconButton
+      onClick={onClick}
+      srLabel={srLabel}
+      disabled={disabled}
+      title={title}
+      variant="danger"
+      icon="-"
+    />
+  );
 }
 
 export function EditableValue({
@@ -180,11 +285,17 @@ export function EditableValue({
   displayValue?: string;
   datePickerLabels?: PbpSingleDatePickerLabels;
   datePickerLocale?: PbpDateLocale;
-  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
+  onStartEdit: (
+    section: EditableSectionKey,
+    rowId: string,
+    field: string,
+    value: string,
+  ) => void;
   onCommit: (nextValue?: string) => void;
   onCancel: () => void;
 }) {
-  const editing = !disabled && isEditingCell(editingCell, section, rowId, field);
+  const editing =
+    !disabled && isEditingCell(editingCell, section, rowId, field);
 
   const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -209,7 +320,9 @@ export function EditableValue({
   };
 
   if (editing && options) {
-    const selectValue = options.includes(editingValue) ? editingValue : (options[0] ?? "");
+    const selectValue = options.includes(editingValue)
+      ? editingValue
+      : (options[0] ?? "");
     const commitSelectValue = (nextValue: string) => {
       if (isUnavailableWorkOrderSelectOption(nextValue)) {
         onCancel();
@@ -218,10 +331,12 @@ export function EditableValue({
       onCommit(nextValue);
     };
 
-    const selectOptions: AppInlineSelectEditorOption[] = options.map((option) => ({
-      value: option,
-      disabled: isUnavailableWorkOrderSelectOption(option),
-    }));
+    const selectOptions: AppInlineSelectEditorOption[] = options.map(
+      (option) => ({
+        value: option,
+        disabled: isUnavailableWorkOrderSelectOption(option),
+      }),
+    );
 
     return (
       <AppInlineSelectEditor
@@ -235,7 +350,8 @@ export function EditableValue({
   }
 
   if (editing) {
-    const minDateValue = inputType === "date" ? getTodayDateInputValue() : undefined;
+    const minDateValue =
+      inputType === "date" ? getTodayDateInputValue() : undefined;
 
     if (inputType === "date" && datePickerLabels && datePickerLocale) {
       return (
@@ -244,7 +360,9 @@ export function EditableValue({
           labels={datePickerLabels}
           locale={datePickerLocale}
           minDateValue={minDateValue}
-          onChange={(nextValue) => onCommit(clampPastDateInputValue(nextValue, minDateValue))}
+          onChange={(nextValue) =>
+            onCommit(clampPastDateInputValue(nextValue, minDateValue))
+          }
           onClose={onCancel}
           commitOnSelect
           defaultOpen
@@ -279,7 +397,13 @@ export function EditableValue({
           event.currentTarget.select();
         }}
         onClick={(event) => openDatePicker(event.currentTarget)}
-        onBlur={(event) => onCommit(inputType === "date" ? clampPastDateInputValue(event.target.value, minDateValue) : event.target.value)}
+        onBlur={(event) =>
+          onCommit(
+            inputType === "date"
+              ? clampPastDateInputValue(event.target.value, minDateValue)
+              : event.target.value,
+          )
+        }
         onKeyDown={handleInputKeyDown}
         className={`${EDITABLE_INPUT_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
       />
@@ -289,11 +413,19 @@ export function EditableValue({
   return (
     <button
       type="button"
-      onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
+      onClick={() =>
+        onStartEdit(section, rowId, field, getEditingInitialValue(field, value))
+      }
       disabled={disabled}
       className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "items-center justify-center w-[48px] text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"} ${disabled ? "pbp-workorder-field-disabled cursor-not-allowed opacity-70" : ""}`}
     >
-      <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{(displayValue ?? getDisplayValue(field, value)) || "-"}</span>
+      <span
+        className={
+          wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS
+        }
+      >
+        {(displayValue ?? getDisplayValue(field, value)) || "-"}
+      </span>
     </button>
   );
 }
