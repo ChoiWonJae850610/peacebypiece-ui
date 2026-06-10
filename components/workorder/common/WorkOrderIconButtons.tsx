@@ -2,7 +2,8 @@
 
 import { type ButtonHTMLAttributes, useEffect, useRef, useState } from "react";
 
-import { WaflActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
+import { WaflActionButton, WaflMoreActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
+import { cn } from "@/lib/utils";
 
 export function WorkOrderPlusIcon({ className = "h-3 w-3" }: { className?: string }) {
   return (
@@ -84,16 +85,22 @@ type WorkOrderIconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "a
   label: string;
   size?: WaflActionButtonSize;
   tone?: WaflActionButtonTone;
+  active?: boolean;
 };
+
+const workOrderActiveIconButtonClassName =
+  "border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/15 focus-visible:ring-white/50 focus-visible:ring-offset-stone-950";
 
 export function WorkOrderAddIconButton({
   label,
   size = "md",
   tone = "neutral",
+  active = false,
+  className,
   ...props
 }: WorkOrderIconButtonProps) {
   return (
-    <WaflActionButton label={label} size={size} tone={tone} showSrLabel {...props}>
+    <WaflActionButton label={label} size={size} tone={tone} showSrLabel className={cn(active ? workOrderActiveIconButtonClassName : "", className)} {...props}>
       <WorkOrderPlusIcon className="h-3 w-3" />
     </WaflActionButton>
   );
@@ -101,14 +108,21 @@ export function WorkOrderAddIconButton({
 
 export function WorkOrderMoreIconButton({
   label,
-  size = "lg",
+  size = "sm",
   tone = "neutral",
+  active = false,
+  className,
   ...props
 }: WorkOrderIconButtonProps) {
   return (
-    <WaflActionButton label={label} size={size} tone={tone} showSrLabel={false} {...props}>
-      <WorkOrderMoreHorizontalIcon />
-    </WaflActionButton>
+    <WaflMoreActionButton
+      label={label}
+      size={size}
+      tone={tone}
+      showSrLabel={false}
+      className={cn(active ? workOrderActiveIconButtonClassName : "", className)}
+      {...props}
+    />
   );
 }
 
@@ -116,10 +130,12 @@ export function WorkOrderEditIconButton({
   label,
   size = "sm",
   tone = "neutral",
+  active = false,
+  className,
   ...props
 }: WorkOrderIconButtonProps) {
   return (
-    <WaflActionButton label={label} size={size} tone={tone} showSrLabel {...props}>
+    <WaflActionButton label={label} size={size} tone={tone} showSrLabel className={cn(active ? workOrderActiveIconButtonClassName : "", className)} {...props}>
       <WorkOrderEditIcon />
     </WaflActionButton>
   );
@@ -129,10 +145,12 @@ export function WorkOrderDeleteIconButton({
   label,
   size = "sm",
   tone = "dangerSoft",
+  active = false,
+  className,
   ...props
 }: WorkOrderIconButtonProps) {
   return (
-    <WaflActionButton label={label} size={size} tone={tone} showSrLabel {...props}>
+    <WaflActionButton label={label} size={size} tone={tone} showSrLabel className={cn(active ? workOrderActiveIconButtonClassName : "", className)} {...props}>
       <WorkOrderTrashIcon />
     </WaflActionButton>
   );

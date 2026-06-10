@@ -604,10 +604,10 @@ const componentInventoryItems: ComponentInventoryItem[] = [
     name: "WaflIconButton / WaflMoreActionButton",
     group: "Primitive",
     role: "..., +, 닫기, 수정, 삭제 같은 아이콘 액션",
-    keepDecision: "통합 후보",
-    target: "WaflActionButton을 기준으로 명확한 icon action primitive 신설/정리",
+    keepDecision: "유지",
+    target: "WaflActionButton 기반 icon/more action 기준 컴포넌트",
     priority: "높음",
-    note: "제작 공정 카드의 ... 버튼과 작업지시서 목록 ... 버튼을 같은 컴포넌트로 맞춘다.",
+    note: "제작 공정 카드의 ... 버튼과 작업지시서 목록 ... 버튼을 같은 more action primitive로 맞춘다.",
   },
   {
     name: "AppBadge",
@@ -738,7 +738,7 @@ const componentInventoryItems: ComponentInventoryItem[] = [
 ];
 
 const inventoryNextSteps = [
-  "... / + / 닫기 / 수정 / 삭제를 WaflIconButton 또는 WaflMoreActionButton 기준으로 먼저 통합한다.",
+  "... / + / 닫기 / 수정 / 삭제는 WaflIconButton 또는 WaflMoreActionButton 기준으로 통합하고, 화면별 직접 버튼은 전환한다.",
   "WaflAddCardButton과 WaflAddIconBubble의 관계를 정리해 추가 CTA를 하나의 문법으로 묶는다.",
   "WaflSurfaceButton과 WaflSelectableCard는 선택 가능 카드 기준으로 통합 가능한지 확인한다.",
   "AdminButton/AdminIconActionButton/AdminStatusBadge는 바로 삭제하지 말고 사용 위치를 줄인다.",

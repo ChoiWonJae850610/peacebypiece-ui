@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
 import { AppBadge } from "@/components/common/ui";
-import { WorkOrderActionButton } from "@/components/workorder/common/WorkOrderActionButton";
+import { WorkOrderMoreIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getCategoryPath, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -101,20 +101,17 @@ export default function WorkOrderListCard({
           </div>
         </button>
         <div className="relative shrink-0" ref={menuRef}>
-          <WorkOrderActionButton
+          <WorkOrderMoreIconButton
             label={copy.moreActionsAria}
             onClick={() => { if (canOpenMenu) setMenuOpen((prev) => !prev); }}
             disabled={!canOpenMenu}
             title={writeLocked ? writeLockMessage ?? i18n.workorder.lifecycle.genericProcessingLabel : undefined}
             active={active}
-            size="md"
-            showSrLabel={false}
-            className="pbp-touch-target text-base"
+            size="sm"
+            className="pbp-touch-target"
             aria-haspopup="menu"
             aria-expanded={canOpenMenu && menuOpen}
-          >
-            …
-          </WorkOrderActionButton>
+          />
           {menuOpen && canOpenMenu ? (
             <div
               className={`absolute right-0 top-11 z-20 min-w-[132px] rounded-[var(--pbp-radius-wafl)] border p-1 ${
