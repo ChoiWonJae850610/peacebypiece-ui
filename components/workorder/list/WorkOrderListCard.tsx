@@ -108,7 +108,7 @@ export default function WorkOrderListCard({
             title={writeLocked ? writeLockMessage ?? i18n.workorder.lifecycle.genericProcessingLabel : undefined}
             active={active}
             size="md"
-            className="pbp-touch-target"
+            className=""
             aria-haspopup="menu"
             aria-expanded={canOpenMenu && menuOpen}
           />

@@ -651,7 +651,7 @@ const componentInventoryItems: ComponentInventoryItem[] = [
     keepDecision: "유지",
     target: "카드형은 WaflAddCardButton, 작은 +는 WaflAddActionButton, 내부 glyph는 WaflAddIconBubble",
     priority: "높음",
-    note: "이제 셋을 삭제 후보가 아니라 같은 Add 문법을 공유하는 한 계열로 관리한다.",
+    note: "카드 안 + glyph도 border가 있는 WaflAddIconBubble을 사용해 화면별로 테두리가 사라지지 않게 관리한다.",
   },
   {
     name: "WaflInfoBox / WaflNoticeBox",
@@ -737,7 +737,7 @@ const componentInventoryItems: ComponentInventoryItem[] = [
 ];
 
 const inventoryNextSteps = [
-  "... / 닫기 / 수정 / 삭제는 WaflIconButton 또는 WaflMoreActionButton 기준으로 통합한다.",
+  "... / 닫기 / 수정 / 삭제는 WaflIconButton 또는 WaflMoreActionButton 기준으로 통합하고, 데스크톱 카드 안에서는 pbp-touch-target으로 크기를 키우지 않는다.",
   "+ 버튼은 WaflAddActionButton, 카드형 추가 슬롯은 WaflAddCardButton, 카드 안 glyph는 WaflAddIconBubble으로 고정한다.",
   "아이콘 버튼 크기는 sm 28px, md 32px, lg 36px로 고정하고 작업지시서 more/add 버튼은 md를 기본으로 쓴다.",
   "WaflSurfaceButton과 WaflSelectableCard는 선택 가능 카드 기준으로 통합 가능한지 확인한다.",

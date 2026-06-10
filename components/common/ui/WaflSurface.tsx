@@ -221,7 +221,7 @@ export function WaflAddIconBubble({
       data-wafl-component={component}
       data-wafl-primitive="add-card-button-icon"
       className={cn(
-        "pbp-sidepanel-preview-surface inline-flex shrink-0 items-center justify-center wafl-shape-icon text-[var(--pbp-text-muted)] shadow-none",
+        "pbp-sidepanel-preview-surface inline-flex shrink-0 items-center justify-center wafl-shape-icon border border-[var(--pbp-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-text-muted)] shadow-none transition group-hover:border-[var(--pbp-border-strong)] group-hover:bg-[var(--pbp-action-secondary-surface-hover)]",
         addIconBubbleSizeClassMap[size],
         className,
       )}
