@@ -59,6 +59,15 @@ type ComponentSpec = {
   screens: string;
 };
 
+type ScreenChecklist = {
+  screen: string;
+  routeHint: string;
+  purpose: string;
+  requiredComponents: string[];
+  checkItems: string[];
+  missingRisk: string;
+};
+
 const catalogSections: CatalogSection[] = [
   {
     id: "start-here",
@@ -114,6 +123,13 @@ const catalogSections: CatalogSection[] = [
     title: "Usage rules",
     plainTitle: "언제 쓰고 언제 쓰지 않는가",
     description: "직접 className 사용 금지 기준과 WAFL 컴포넌트 대체 기준을 확인한다.",
+    status: "guide",
+  },
+  {
+    id: "screen-checklist",
+    title: "Screen checklist",
+    plainTitle: "기존 화면별 점검표",
+    description: "작업지시서부터 개인설정까지 화면별로 써야 하는 WAFL 컴포넌트를 확인한다.",
     status: "guide",
   },
   {
@@ -384,6 +400,112 @@ const newScreenChecklist = [
   "모바일에서 row가 카드처럼 읽히는지 확인했다.",
   "상태값은 AppBadge, 안내문은 WaflInfoBox로 분리했다.",
   "data-wafl-component 이름을 부여했다.",
+];
+
+const screenChecklists: ScreenChecklist[] = [
+  {
+    screen: "작업지시서",
+    routeHint: "workorder / order sheet",
+    purpose: "좌·중·우 3패널에서 작성, 검토, 첨부, 디자인, 메모를 다룬다.",
+    requiredComponents: ["WaflSurface", "WaflSurfaceButton", "WaflAddCardButton", "WaflInfoBox", "AppBadge", "WaflButton"],
+    checkItems: [
+      "빈 첨부/디자인/메모 슬롯은 WaflAddCardButton으로 보인다.",
+      "선택 가능한 공정/자재 카드는 WaflSurfaceButton 또는 WaflSelectableCard 역할로 분리된다.",
+      "단계 상태는 AppBadge로 짧게 표시되고, 긴 설명은 InfoBox로 내려간다.",
+    ],
+    missingRisk: "카드 안 카드 depth가 과해지고, 추가 버튼과 실행 버튼이 같은 의미로 보일 수 있다.",
+  },
+  {
+    screen: "원단·부자재 발주",
+    routeHint: "material order",
+    purpose: "발주서 목록, 발주 기본정보, 공정/주문내역, 작지 연결을 확인한다.",
+    requiredComponents: ["WaflDataTable", "WaflFilterBar", "WaflSurface", "WaflInfoRow", "AppBadge", "WaflButton"],
+    checkItems: [
+      "발주 목록은 row 기준으로 읽히고 모바일에서는 카드처럼 접힌다.",
+      "발주 대기/완료/검수 가능 상태는 AppBadge로 구분된다.",
+      "검색, 구분, 상태 필터는 WaflFilterBar 안에 묶인다.",
+    ],
+    missingRisk: "발주 row가 화면마다 다른 카드 모양이 되고, 상태 색상이 직접 className으로 흩어질 수 있다.",
+  },
+  {
+    screen: "운영 대시보드",
+    routeHint: "admin dashboard",
+    purpose: "주요 지표, 요약 카드, 이동 CTA, 알림을 빠르게 확인한다.",
+    requiredComponents: ["WaflPageHero", "WaflSectionPanel", "WaflSurface", "WaflLinkButton", "AppBadge", "WaflNoticeBox"],
+    checkItems: [
+      "이동 CTA는 WaflLinkButton으로 분리된다.",
+      "지표 카드는 WaflSurface 안에서 InfoRow/Badge 중심으로 구성된다.",
+      "공지나 제한 안내는 WaflNoticeBox 또는 WaflInfoBox를 쓴다.",
+    ],
+    missingRisk: "카드 이동과 버튼 실행이 섞이고, dashboard 전용 박스가 늘어날 수 있다.",
+  },
+  {
+    screen: "협력업체",
+    routeHint: "partners / vendors",
+    purpose: "업체 검색, 상태 필터, 업체 row, 등록/수정 모달을 다룬다.",
+    requiredComponents: ["WaflFilterBar", "WaflDataTable", "WaflInput", "WaflTextarea", "WaflInfoBox", "WaflButton"],
+    checkItems: [
+      "검색/분류/상태 필터는 WaflFilterBar 기준으로 정렬된다.",
+      "업체 목록은 WaflDataTable 계열 row를 유지한다.",
+      "등록/수정 모달의 안내문은 InfoBox로 낮춘다.",
+    ],
+    missingRisk: "멤버관리/저장소 테이블과 다른 행 높이·버튼 위치가 생길 수 있다.",
+  },
+  {
+    screen: "저장소",
+    routeHint: "files / storage",
+    purpose: "파일 목록, 요약 카드, 미리보기/상세, 휴지통 흐름을 다룬다.",
+    requiredComponents: ["WaflFilterBar", "WaflDataTable", "WaflSurface", "WaflInfoRow", "WaflEmptyCard", "AppBadge"],
+    checkItems: [
+      "파일/휴지통 목록은 같은 row 문법을 쓴다.",
+      "파일 없음 상태는 WaflEmptyCard로 보인다.",
+      "상세 모달은 InfoRow, InfoBox, footer buttons로 분리된다.",
+    ],
+    missingRisk: "파일 카드, 휴지통 row, 상세 모달의 border/radius가 서로 달라질 수 있다.",
+  },
+  {
+    screen: "통계",
+    routeHint: "statistics",
+    purpose: "기간 필터, 요약 지표, 분석 카드, chart panel을 확인한다.",
+    requiredComponents: ["WaflFilterBar", "WaflSurface", "WaflSectionPanel", "WaflInfoRow", "AppBadge"],
+    checkItems: [
+      "기간 선택과 분석 조건은 WaflFilterBar 기준으로 묶인다.",
+      "metric card는 WaflSurface 안에서 숫자/단위/상태 badge로 정리된다.",
+      "chart panel은 별도 shadow를 만들지 않고 section surface 기준을 따른다.",
+    ],
+    missingRisk: "통계 전용 카드가 늘어나면서 다른 관리 화면과 depth가 달라질 수 있다.",
+  },
+  {
+    screen: "멤버관리",
+    routeHint: "members",
+    purpose: "멤버 검색, 초대/승인 row, 권한 모달, 상태 변경을 다룬다.",
+    requiredComponents: ["WaflFilterBar", "WaflDataTable", "WaflSelectableCard", "WaflInfoBox", "AppBadge", "WaflButton"],
+    checkItems: [
+      "검색 필드는 WaflFilterBar 안에서 다른 관리 화면과 같은 높이를 유지한다.",
+      "권한 선택은 WaflSelectableCard로 보이고 선택 상태가 명확하다.",
+      "초대/승인/비활성 상태는 AppBadge로 짧게 표시된다.",
+    ],
+    missingRisk: "권한 모달 내부 선택지가 일반 카드처럼 보여 실제 선택 상태가 흐려질 수 있다.",
+  },
+  {
+    screen: "개인설정",
+    routeHint: "profile / settings",
+    purpose: "개인 정보, 계정 상태, 탈퇴 요청, 개발용 언어 전환 영역을 다룬다.",
+    requiredComponents: ["WaflSectionPanel", "WaflSurface", "WaflInfoRow", "WaflInfoBox", "WaflButton", "AppBadge"],
+    checkItems: [
+      "프로필 정보는 InfoRow로 정렬하고, 설명은 InfoBox로 낮춘다.",
+      "탈퇴 요청 같은 위험 액션은 WaflButton danger 기준을 따른다.",
+      "개발용 언어 전환은 운영 고객용 주요 CTA처럼 보이지 않게 분리한다.",
+    ],
+    missingRisk: "설정 화면이 기능별 임의 박스로 나뉘어 WAFL 공통 패널 문법에서 벗어날 수 있다.",
+  },
+];
+
+const screenChecklistSummary = [
+  "새 화면 리팩토링보다 /ui 기준 정리가 우선이다.",
+  "모든 화면에서 누르는 것, 담는 것, 입력하는 것, 보여주는 것을 먼저 분류한다.",
+  "직접 rounded/shadow/border/bg 검색 결과는 이 표의 required components로 치환한다.",
+  "누락 컴포넌트가 있어도 한 번에 대규모 수정하지 말고 화면별 소규모 보정으로 나눈다.",
 ];
 
 function SectionAnchorList() {
@@ -943,6 +1065,56 @@ function UsageRulesSamples() {
   );
 }
 
+function ScreenChecklistSamples() {
+  return (
+    <div className="space-y-5">
+      <WaflNoticeBox tone="info">
+        화면별 체크리스트는 실제 화면을 바로 리팩토링하라는 뜻이 아니다. 먼저 어떤 WAFL 컴포넌트를 써야 하는지 기준을 고정하고, 이후 잔여 요소만 소규모로 보정한다.
+      </WaflNoticeBox>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        {screenChecklists.map((screen) => (
+          <WaflSurface key={screen.screen} component="catalog-screen-checklist-card" tone="surface" className="p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">{screen.routeHint}</p>
+                <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">{screen.screen}</h3>
+                <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{screen.purpose}</p>
+              </div>
+              <AppBadge tone="brand" size="xs">check</AppBadge>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-xs font-bold text-[var(--pbp-text-primary)]">필수 WAFL 컴포넌트</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {screen.requiredComponents.map((component) => (
+                  <AppBadge key={component} tone="neutral" size="xs">{component}</AppBadge>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-2">
+              {screen.checkItems.map((item, index) => (
+                <WaflInfoRow key={item} component="catalog-screen-checklist-row" tone={index % 2 === 0 ? "muted" : "surface"} className="items-start">
+                  <span className="text-xs font-bold text-[var(--pbp-brand-primary)]">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{item}</span>
+                </WaflInfoRow>
+              ))}
+            </div>
+
+            <WaflInfoBox tone="muted" component="catalog-screen-risk-note" className="mt-4">
+              <p className="text-xs font-bold text-[var(--pbp-text-primary)]">누락 시 위험</p>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{screen.missingRisk}</p>
+            </WaflInfoBox>
+          </WaflSurface>
+        ))}
+      </div>
+
+      <RuleList title="화면별 점검 순서" rules={screenChecklistSummary} />
+    </div>
+  );
+}
+
 function SpecTable() {
   return (
     <WaflDataTableShell>
@@ -1061,6 +1233,12 @@ export default function WaflUiCatalogPage({
         <div id="usage-rules" className="scroll-mt-6">
           <WaflSectionPanel title="Usage rules · 사용 기준" description="언제 쓰는가/쓰지 않는가, 직접 className 금지 기준, naming, 새 화면 체크리스트를 확인한다." density="compact">
             <UsageRulesSamples />
+          </WaflSectionPanel>
+        </div>
+
+        <div id="screen-checklist" className="scroll-mt-6">
+          <WaflSectionPanel title="Screen checklist · 기존 화면별 점검표" description="작업지시서, 발주, 운영 대시보드, 협력업체, 저장소, 통계, 멤버관리, 개인설정에서 써야 하는 WAFL 컴포넌트를 연결한다." density="compact">
+            <ScreenChecklistSamples />
           </WaflSectionPanel>
         </div>
 
