@@ -7,16 +7,26 @@ import {
 
 import { cn } from "@/lib/utils";
 
-export type WaflSurfaceTone = "surface" | "muted" | "empty";
+export type WaflSurfaceTone = "default" | "surface" | "selected" | "muted" | "empty" | "warning" | "danger" | "info";
 type WaflSurfaceElement = "div" | "section" | "article" | "header";
 
 const surfaceToneClassMap: Record<WaflSurfaceTone, string> = {
+  default:
+    "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
   surface:
     "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]",
+  selected:
+    "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]",
   muted:
     "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]",
   empty:
     "border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] text-[var(--pbp-text-muted)]",
+  warning:
+    "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]",
+  danger:
+    "border-[var(--pbp-status-danger-bg)] bg-[var(--pbp-status-danger-bg)] text-[var(--pbp-status-danger-fg)]",
+  info:
+    "border-[var(--pbp-status-info-bg)] bg-[var(--pbp-status-info-bg)] text-[var(--pbp-status-info-fg)]",
 };
 
 export function WaflSurface({
@@ -93,9 +103,7 @@ export function WaflSurfaceButton({
       data-wafl-component={component}
       className={cn(
         "pbp-interactive-card min-w-0 wafl-shape-surface border p-3 text-left shadow-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
-        selected
-          ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
-          : surfaceToneClassMap[tone],
+        selected ? surfaceToneClassMap.selected : surfaceToneClassMap[tone],
         className,
       )}
       {...props}

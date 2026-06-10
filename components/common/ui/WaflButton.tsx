@@ -2,13 +2,14 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 
 import { cn } from "@/lib/utils";
 
-export type WaflButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "subtle" | "icon";
+export type WaflButtonVariant = "primary" | "secondary" | "neutral" | "ghost" | "danger" | "subtle" | "icon";
 export type WaflButtonSize = "sm" | "md" | "lg";
 export type WaflButtonWidth = "auto" | "full";
 
 const variantClassMap: Record<WaflButtonVariant, string> = {
   primary: "pbp-action-primary border-transparent hover:bg-[var(--pbp-action-primary-surface-hover)]",
   secondary: "pbp-action-secondary border-[var(--pbp-border)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-action-secondary-surface-hover)]",
+  neutral: "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
   ghost: "pbp-action-ghost border-transparent shadow-none hover:bg-[var(--pbp-surface-muted)]",
   danger: "pbp-action-danger border-transparent hover:bg-[var(--pbp-action-danger-surface-hover)]",
   subtle: "pbp-action-add border-[var(--pbp-border)] shadow-none hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",

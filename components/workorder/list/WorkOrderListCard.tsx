@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
-import { AppBadge } from "@/components/common/ui";
+import { AppBadge, WaflSurface } from "@/components/common/ui";
 import { WorkOrderMoreIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -77,9 +77,10 @@ export default function WorkOrderListCard({
   }, [menuOpen, writeLocked]);
 
   return (
-    <div
-      data-wafl-component="list-card"
-      className={`group pbp-interactive-card w-full min-w-0 rounded-[var(--pbp-radius-wafl)] border px-3 py-3 transition-all duration-150 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
+    <WaflSurface
+      component="list-card"
+      tone={active ? "selected" : "muted"}
+      className={`group pbp-interactive-card w-full px-3 py-3 transition-all duration-150 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
     >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">
@@ -150,6 +151,6 @@ export default function WorkOrderListCard({
           ) : null}
         </div>
       </div>
-    </div>
+    </WaflSurface>
   );
 }

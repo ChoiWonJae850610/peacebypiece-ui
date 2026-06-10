@@ -100,6 +100,13 @@ const catalogSections: CatalogSection[] = [
     status: "guide",
   },
   {
+    id: "visual-styling",
+    title: "Visual styling",
+    plainTitle: "꾸밈 기준",
+    description: "shape는 고정하고 tone, variant, state, depth만 공통 props로 조절한다.",
+    status: "guide",
+  },
+  {
     id: "touch-actions",
     title: "Touch actions",
     plainTitle: "누르는 것",
@@ -360,6 +367,23 @@ const shapeGrammarRows = [
   { label: "실행 버튼", component: "WaflButton", sample: "저장/삭제/이동", tone: "brand" as const },
   { label: "짧은 상태", component: "AppBadge", sample: "작성중/승인/파일", tone: "info" as const },
   { label: "입력 필드", component: "WaflInput", sample: "검색/이름/메모", tone: "success" as const },
+];
+
+const visualStylingRules = [
+  "shape는 surface/control/compact/icon token으로 고정하고 꾸밈 때문에 radius를 바꾸지 않는다.",
+  "의미 구분은 tone으로 처리한다. 정보는 info, 성공은 success, 주의는 warning, 위험은 danger, 브랜드 강조는 brand를 쓴다.",
+  "채움/외곽/투명 차이는 variant로 처리한다. 화면에서 bg/text/border 색상 class를 직접 조합하지 않는다.",
+  "selected/current는 border와 background의 작은 차이로 표시하고 shadow를 강조 수단으로 쓰지 않는다.",
+  "disabled는 opacity와 pointer 상태로 충분히 표현하고 별도 회색 팔레트를 화면마다 만들지 않는다.",
+  "depth는 border/background 차이만 최소로 사용한다. 카드 안 카드가 필요하면 InfoBox나 muted Surface로 낮춘다.",
+];
+
+const visualStateRows = [
+  { label: "normal", rule: "기본 정보. default/surface tone.", tone: "neutral" as const },
+  { label: "selected", rule: "사용자가 고른 항목. selected tone 또는 selected prop.", tone: "brand" as const },
+  { label: "current", rule: "현재 진행 위치. selected보다 약간 강한 status badge 또는 workflow token.", tone: "info" as const },
+  { label: "disabled", rule: "비활성. disabled attribute와 opacity 기준.", tone: "neutral" as const },
+  { label: "danger", rule: "삭제/반려/오류. danger tone과 danger variant.", tone: "danger" as const },
 ];
 
 
@@ -902,6 +926,97 @@ function ShapeGrammarSamples() {
       </div>
 
       <RuleList title="WAFL shape token" rules={shapeGrammarRules} />
+    </div>
+  );
+}
+
+function VisualStylingSamples() {
+  return (
+    <div className="space-y-4">
+      <WaflNoticeBox tone="info">
+        꾸밈은 화면별 className이 아니라 공통 컴포넌트의 tone, variant, selected, disabled 기준으로만 확장한다. 모바일에서는 contrast가 과하지 않은지 먼저 확인한다.
+      </WaflNoticeBox>
+
+      <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <WaflSurface component="catalog-visual-button-guide" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflButton tone / variant</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">명령의 강도는 variant로 고르고, 상태는 disabled prop으로 둔다.</p>
+            </div>
+            <AppBadge tone="brand" size="xs">control</AppBadge>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <WaflButton variant="primary" size="sm">primary</WaflButton>
+            <WaflButton variant="secondary" size="sm">secondary</WaflButton>
+            <WaflButton variant="neutral" size="sm">neutral</WaflButton>
+            <WaflButton variant="ghost" size="sm">ghost</WaflButton>
+            <WaflButton variant="subtle" size="sm">subtle</WaflButton>
+            <WaflButton variant="danger" size="sm">danger</WaflButton>
+            <WaflButton variant="secondary" size="sm" disabled>disabled</WaflButton>
+          </div>
+        </WaflSurface>
+
+        <WaflSurface component="catalog-visual-badge-guide" tone="surface" className="p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-[var(--pbp-text-primary)]">AppBadge tone</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">짧은 상태·유형·개수만 badge로 표시한다.</p>
+            </div>
+            <AppBadge tone="memo" size="xs">compact</AppBadge>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(["neutral", "info", "success", "warning", "danger", "brand", "document", "memo", "file"] as const).map((tone) => (
+              <AppBadge key={tone} tone={tone}>{tone}</AppBadge>
+            ))}
+          </div>
+        </WaflSurface>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+        <WaflSurface component="catalog-visual-surface-guide" tone="surface" className="p-4">
+          <p className="text-sm font-bold text-[var(--pbp-text-primary)]">WaflSurface tone / state</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <WaflSurface component="catalog-surface-default" tone="default" className="p-3">
+              <AppBadge tone="neutral" size="xs">default</AppBadge>
+              <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">기본 카드와 패널.</p>
+            </WaflSurface>
+            <WaflSurface component="catalog-surface-selected" tone="selected" className="p-3">
+              <AppBadge tone="brand" size="xs">selected</AppBadge>
+              <p className="mt-2 text-xs leading-5">선택 목록 카드, current row.</p>
+            </WaflSurface>
+            <WaflSurface component="catalog-surface-muted" tone="muted" className="p-3">
+              <AppBadge tone="neutral" size="xs">muted</AppBadge>
+              <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">카드 안 보조 row.</p>
+            </WaflSurface>
+            <WaflSurface component="catalog-surface-warning" tone="warning" className="p-3">
+              <AppBadge tone="warning" size="xs">warning</AppBadge>
+              <p className="mt-2 text-xs leading-5">주의 안내나 대기 상태.</p>
+            </WaflSurface>
+          </div>
+        </WaflSurface>
+
+        <RuleList title="Visual styling rule" rules={visualStylingRules} />
+      </div>
+
+      <WaflDataTableShell>
+        <WaflDataTableHeader gridTemplateColumns="0.55fr 1.2fr 0.45fr">
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>State</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>적용 기준</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>Tone</div>
+        </WaflDataTableHeader>
+        <WaflDataTableBody>
+          {visualStateRows.map((row) => (
+            <WaflDataTableRow key={row.label} gridTemplateColumns="0.55fr 1.2fr 0.45fr">
+              <p className={WAFL_DATA_TABLE_PRIMARY_TEXT_CLASS}>{row.label}</p>
+              <p className="text-[12px] font-medium leading-5 text-[var(--pbp-text-muted)]">{row.rule}</p>
+              <div className={WAFL_DATA_TABLE_CELL_CLASS}>
+                <AppBadge tone={row.tone} size="xs">{row.tone}</AppBadge>
+              </div>
+            </WaflDataTableRow>
+          ))}
+        </WaflDataTableBody>
+      </WaflDataTableShell>
     </div>
   );
 }
@@ -1574,6 +1689,12 @@ export default function WaflUiCatalogPage({
         <div id="shape-grammar" className="scroll-mt-6">
           <WaflSectionPanel title="Shape grammar · 모양 통일 기준" description="버튼, 배지, 입력, 카드가 같은 둥근 네모 계열로 보이는지 확인한다." density="compact">
             <ShapeGrammarSamples />
+          </WaflSectionPanel>
+        </div>
+
+        <div id="visual-styling" className="scroll-mt-6">
+          <WaflSectionPanel title="Visual styling · 꾸밈 기준" description="shape는 고정하고 tone, variant, selected/current/disabled/danger 상태만 공통 props로 조절한다." density="compact">
+            <VisualStylingSamples />
           </WaflSectionPanel>
         </div>
 
