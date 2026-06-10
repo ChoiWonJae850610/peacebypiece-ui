@@ -69,7 +69,7 @@ export default function AppInlineSelectEditor({
       }}
       onKeyDown={handleKeyDown}
       className={cn(
-        "pbp-field-interaction pbp-workorder-editable-input block w-full min-w-0 max-w-full overflow-hidden rounded-lg border px-2 outline-none ring-0",
+        "pbp-field-interaction pbp-workorder-editable-input block w-full min-w-0 max-w-full overflow-hidden wafl-shape-control border px-2 outline-none ring-0",
         "min-h-8 appearance-none whitespace-nowrap pr-6 text-xs",
         className,
       )}

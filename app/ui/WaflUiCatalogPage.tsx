@@ -327,7 +327,7 @@ const statusRules = [
 
 const shapeGrammarRules = [
   "WAFL의 최상위 shape는 surface/control/compact/icon token으로 관리한다.",
-  "카드는 surface 16px, 버튼·입력은 control 10px, 배지는 compact 7px, 아이콘은 icon 10px을 쓴다.",
+  "카드는 surface 16px, 버튼·입력은 control 8px, 배지는 compact 6px, 아이콘은 icon 6px을 쓴다.",
   "실행/상태/입력의 차이는 모서리 모양이 아니라 색, 채움, 굵기, 간격으로 구분한다.",
   "rounded-full은 진행 점, 아바타, 스피너처럼 원형 의미가 있을 때만 예외로 쓴다.",
 ];

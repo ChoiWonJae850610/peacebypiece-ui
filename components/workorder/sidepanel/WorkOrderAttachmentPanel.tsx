@@ -461,7 +461,7 @@ export default function WorkOrderAttachmentPanel({
         onDrop={handlePanelDrop}
         className={
           panelDragActive
-            ? "rounded-[1.75rem] ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]"
+            ? "wafl-shape-surface ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]"
             : undefined
         }
       >
@@ -569,7 +569,7 @@ export default function WorkOrderAttachmentPanel({
                         handleSetPrimaryDesignAttachment(attachment.id)
                       }
                       disabled={writeLocked}
-                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
+                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center wafl-shape-icon border font-bold shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
                       title={
                         writeLocked
                           ? writeLockMessage

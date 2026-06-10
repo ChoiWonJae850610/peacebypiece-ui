@@ -200,7 +200,7 @@ export function WorkOrderCardActionMenu({
             <button
               type="button"
               onClick={handleEdit}
-              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
+              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
               aria-label={editLabel}
             >
               <WorkOrderEditIcon className="h-3 w-3" />
@@ -211,7 +211,7 @@ export function WorkOrderCardActionMenu({
             <button
               type="button"
               onClick={handleDelete}
-              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[var(--pbp-action-danger-soft-text)] hover:bg-[var(--pbp-action-danger-soft-surface)]"
+              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[var(--pbp-action-danger-soft-text)] hover:bg-[var(--pbp-action-danger-soft-surface)]"
               aria-label={deleteLabel}
             >
               <WorkOrderTrashIcon className="h-3 w-3" />

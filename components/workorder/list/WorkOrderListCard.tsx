@@ -109,7 +109,7 @@ export default function WorkOrderListCard({
             active={active}
             size="md"
             showSrLabel={false}
-            className="pbp-touch-target rounded-xl text-base"
+            className="pbp-touch-target text-base"
             aria-haspopup="menu"
             aria-expanded={canOpenMenu && menuOpen}
           >
@@ -128,7 +128,7 @@ export default function WorkOrderListCard({
                     setMenuOpen(false);
                     onReorder?.(workOrder.id);
                   }}
-                  className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm ${
+                  className={`flex w-full items-center wafl-shape-control px-3 py-2 text-left text-sm ${
                     active ? "hover:bg-white/10" : "hover:bg-stone-100"
                   }`}
                 >
@@ -142,7 +142,7 @@ export default function WorkOrderListCard({
                     setMenuOpen(false);
                     onDelete?.(workOrder.id);
                   }}
-                  className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm ${
+                  className={`flex w-full items-center wafl-shape-control px-3 py-2 text-left text-sm ${
                     active ? "text-rose-200 hover:bg-white/10" : "text-rose-600 hover:bg-rose-50"
                   }`}
                 >

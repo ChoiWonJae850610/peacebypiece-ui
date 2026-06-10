@@ -123,7 +123,7 @@ export default function WorkOrderHeaderSection({
             value={titleDraft}
             onChange={(event) => setTitleDraft(event.target.value)}
             onKeyDown={handleTitleKeyDown}
-            className="pbp-field-interaction pbp-workorder-editable-input h-11 w-full rounded-2xl border px-3 text-lg font-semibold outline-none md:text-2xl"
+            className="pbp-field-interaction pbp-workorder-editable-input h-11 w-full wafl-shape-control border px-3 text-lg font-semibold outline-none md:text-2xl"
             aria-label={copy.titleInputAria}
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">

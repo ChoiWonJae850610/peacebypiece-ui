@@ -23,7 +23,7 @@ import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusSt
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
 
 const WORKORDER_TOOLBAR_ICON_BUTTON_CLASS =
-  "pbp-topbar-icon-button inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition";
+  "pbp-topbar-icon-button inline-flex h-9 w-9 shrink-0 items-center justify-center wafl-shape-icon transition";
 
 function PersonalSettingsIcon() {
   return (
@@ -233,7 +233,7 @@ export default function SidebarContent({
                 {dbStatusPresentation ? (
                   <span
                     title={dbStatusPresentation.title ?? undefined}
-                    className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${dbStatusPresentation.toneClass}`}
+                    className={`wafl-shape-compact border px-2 py-0.5 text-[10px] font-medium ${dbStatusPresentation.toneClass}`}
                   >
                     {dbStatusPresentation.label}
                   </span>
@@ -251,7 +251,7 @@ export default function SidebarContent({
                         : controlsUi.openSettingsAria
                     }
                     aria-label={controlsUi.openSettingsAria}
-                    className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                    className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 wafl-shape-control px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span aria-hidden="true">⚙️</span>
                     <span>{controlsUi.openSettingsAria}</span>
@@ -287,7 +287,7 @@ export default function SidebarContent({
                   value={searchQuery}
                   onChange={(event) => onSearchQueryChange(event.target.value)}
                   placeholder={controlsUi.searchPlaceholder}
-                  className="pbp-field-interaction pbp-field-search h-9 w-full rounded-xl border px-3 text-sm outline-none"
+                  className="pbp-field-interaction pbp-field-search h-9 w-full wafl-shape-control border px-3 text-sm outline-none"
                 />
               </label>
               {searchQuery ? (
@@ -295,7 +295,7 @@ export default function SidebarContent({
                   type="button"
                   onClick={() => onSearchQueryChange("")}
                   disabled={writeLocked}
-                  className="pbp-interactive-button pbp-action-secondary inline-flex h-9 shrink-0 items-center justify-center rounded-xl px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                  className="pbp-interactive-button pbp-action-secondary inline-flex h-9 shrink-0 items-center justify-center wafl-shape-control px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {controlsUi.clearSearch}
                 </button>

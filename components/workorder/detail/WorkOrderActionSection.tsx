@@ -179,7 +179,7 @@ export default function WorkOrderActionSection({
           {showMaterialOrderPendingBadge ? (
             <>
               <span>·</span>
-              <span className="rounded-full bg-[var(--pbp-workorder-status-request-order-bg)] px-2 py-0.5 font-semibold text-[var(--pbp-workorder-status-request-order-text)]">
+              <span className="wafl-shape-compact bg-[var(--pbp-workorder-status-request-order-bg)] px-2 py-0.5 font-semibold text-[var(--pbp-workorder-status-request-order-text)]">
                 {copy.materialOrderPendingBadge}
               </span>
             </>

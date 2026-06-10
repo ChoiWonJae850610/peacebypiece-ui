@@ -64,7 +64,7 @@ export function CollapseToggleButton({
       onClick={onToggle}
       aria-label={label}
       aria-expanded={open}
-      className="pbp-interactive-button inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xs leading-none text-[var(--pbp-text-muted)] shadow-none transition-colors hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+      className="pbp-interactive-button inline-flex h-7 w-7 shrink-0 items-center justify-center wafl-shape-icon border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-xs leading-none text-[var(--pbp-text-muted)] shadow-none transition-colors hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
     >
       <span aria-hidden="true" className={`inline-flex text-[13px] leading-none transition-transform ${open ? "rotate-180" : "rotate-0"}`}>▾</span>
     </button>
@@ -92,7 +92,7 @@ export function SectionHeader({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="pbp-touch-target pbp-interactive-button min-w-0 flex-1 rounded-xl px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
+        className="pbp-touch-target pbp-interactive-button min-w-0 flex-1 wafl-shape-control px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
       >
         <div className="min-w-0 overflow-hidden">
           <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
@@ -113,7 +113,7 @@ function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, r
 
 
 function CircleIconButton({ onClick, srLabel, disabled = false, variant, title, icon }: { onClick: () => void; srLabel: string; disabled?: boolean; variant: "default" | "danger"; title?: string; icon: ReactNode; }) {
-  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-[var(--pbp-surface)] text-[14px] font-normal leading-none shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]";
+  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center wafl-shape-icon border bg-[var(--pbp-surface)] text-[14px] font-normal leading-none shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:border-[var(--pbp-border)] disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]";
   const variantClassName = variant === "danger"
     ? "border-[var(--pbp-danger)] text-[var(--pbp-danger)] hover:bg-[var(--pbp-danger-soft)] active:bg-[var(--pbp-danger-soft)]"
     : "border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]";
