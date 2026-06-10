@@ -59,17 +59,17 @@ export function WaflInfoRow({
   tone?: WaflSurfaceTone;
 }) {
   return (
-    <WaflSurface
-      component={component}
-      tone={tone}
+    <div
+      data-wafl-component={component}
       className={cn(
-        "flex items-center justify-between gap-4 px-3 py-2",
+        "flex min-w-0 items-center justify-between gap-4 wafl-shape-control border px-3 py-2 shadow-none",
+        surfaceToneClassMap[tone],
         className,
       )}
       {...props}
     >
       {children}
-    </WaflSurface>
+    </div>
   );
 }
 

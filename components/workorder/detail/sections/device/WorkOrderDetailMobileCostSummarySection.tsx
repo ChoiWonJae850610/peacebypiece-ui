@@ -3,7 +3,7 @@ import type { WorkOrderCostSummarySectionProps } from "@/components/workorder/de
 import { buildWorkOrderCostSummaryPresentation } from "@/lib/workorder/presentation/workOrderCostSummaryPresentation";
 import { useI18n } from "@/lib/i18n";
 
-const COST_ROW_CLASS = "pbp-cost-row flex min-w-0 items-center justify-between gap-3 rounded-xl px-3 py-2";
+const COST_ROW_CLASS = "pbp-cost-row flex min-w-0 items-center justify-between gap-3 wafl-shape-control px-3 py-2";
 const COST_LABEL_CLASS = "min-w-0 text-[12px] leading-4 text-[var(--pbp-text-muted)]";
 const COST_VALUE_CLASS = "shrink-0 text-[12px] font-semibold tabular-nums text-[var(--pbp-text-primary)]";
 
@@ -54,7 +54,7 @@ export default function WorkOrderDetailMobileCostSummarySection({
       <SummaryCard title={copy.processTitle}>
         <div className="space-y-2 text-sm">
           {costSummary.processLines.length > 0 ? costSummary.processLines.map((item) => (
-            <div key={item.id} className="pbp-cost-row rounded-xl px-3 py-2">
+            <div key={item.id} className="pbp-cost-row wafl-shape-control px-3 py-2">
               <div className="min-w-0 truncate text-[12px] font-semibold text-[var(--pbp-text-primary)]">{item.label}</div>
               <div className="mt-1 text-[11px] leading-4 text-[var(--pbp-text-muted)]">
                 {copy.unitPriceLabel} {formatCurrency(item.unitAmount, common.currencySuffix)} · {copy.lossPriceLabel} {formatCurrency(item.lossAmount, common.currencySuffix)} · {copy.lineTotalLabel} {formatCurrency(item.totalAmount, common.currencySuffix)}
