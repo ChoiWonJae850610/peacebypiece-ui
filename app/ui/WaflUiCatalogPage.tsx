@@ -68,6 +68,23 @@ type ScreenChecklist = {
   missingRisk: string;
 };
 
+type ComponentInventoryItem = {
+  name: string;
+  group: "Primitive" | "Pattern" | "Domain" | "Legacy";
+  role: string;
+  keepDecision: "유지" | "통합 후보" | "폐기 후보" | "전환 대상";
+  target: string;
+  priority: "높음" | "중간" | "낮음";
+  note: string;
+};
+
+type ComponentGroupGuide = {
+  group: ComponentInventoryItem["group"];
+  meaning: string;
+  rule: string;
+  examples: string;
+};
+
 const catalogSections: CatalogSection[] = [
   {
     id: "start-here",
@@ -137,6 +154,13 @@ const catalogSections: CatalogSection[] = [
     title: "Screen checklist",
     plainTitle: "기존 화면별 점검표",
     description: "작업지시서부터 개인설정까지 화면별로 써야 하는 WAFL 컴포넌트를 확인한다.",
+    status: "guide",
+  },
+  {
+    id: "component-inventory",
+    title: "Component inventory",
+    plainTitle: "컴포넌트 재고표",
+    description: "현재 WAFL 컴포넌트를 Primitive / Pattern / Domain / Legacy로 분류하고 유지·통합·폐기 후보를 본다.",
     status: "guide",
   },
   {
@@ -528,6 +552,197 @@ const screenChecklistSummary = [
   "모든 화면에서 누르는 것, 담는 것, 입력하는 것, 보여주는 것을 먼저 분류한다.",
   "직접 rounded/shadow/border/bg 검색 결과는 이 표의 required components로 치환한다.",
   "누락 컴포넌트가 있어도 한 번에 대규모 수정하지 말고 화면별 소규모 보정으로 나눈다.",
+];
+
+const componentGroupGuides: ComponentGroupGuide[] = [
+  {
+    group: "Primitive",
+    meaning: "가장 작은 공통 부품",
+    rule: "역할이 명확하고 여러 화면에서 반복되면 유지한다. 모양 차이는 props와 shape token으로 처리한다.",
+    examples: "WaflButton, WaflIconButton 후보, WaflInput, WaflTextarea, AppBadge, WaflSurface",
+  },
+  {
+    group: "Pattern",
+    meaning: "primitive를 조합한 반복 패턴",
+    rule: "필터바, 테이블, 빈 상태, 추가 카드처럼 화면마다 같은 구조가 반복될 때 유지한다.",
+    examples: "WaflFilterBar, WaflDataTable, WaflEmptyCard, WaflAddCardButton, WaflInfoBox",
+  },
+  {
+    group: "Domain",
+    meaning: "업무 도메인 전용 조합",
+    rule: "작업지시서/발주/저장소의 데이터와 로직이 붙어 있으면 남기되 내부는 primitive/pattern을 쓰게 한다.",
+    examples: "WorkOrderListCard, WorkOrderMemoPanel, StorageFileRow, MaterialOrderRow",
+  },
+  {
+    group: "Legacy",
+    meaning: "교체해야 할 이전 구현",
+    rule: "일반 button/span/input에 직접 rounded/bg/border를 박은 요소는 전환 대상으로 표시한다.",
+    examples: "화면 내부 직접 button, 직접 badge span, Admin* 구형 컴포넌트 일부",
+  },
+];
+
+const componentInventoryItems: ComponentInventoryItem[] = [
+  {
+    name: "WaflButton",
+    group: "Primitive",
+    role: "저장, 등록, 삭제, 승인처럼 실행하는 버튼",
+    keepDecision: "유지",
+    target: "실행 버튼의 기준 컴포넌트",
+    priority: "높음",
+    note: "tone/variant/size로 처리하고 별도 저장 버튼 컴포넌트를 늘리지 않는다.",
+  },
+  {
+    name: "WaflLinkButton",
+    group: "Primitive",
+    role: "버튼처럼 보이는 화면 이동 링크",
+    keepDecision: "유지",
+    target: "이동 CTA 전용",
+    priority: "중간",
+    note: "실행이 아니라 href 이동이면 WaflButton으로 합치지 않는다.",
+  },
+  {
+    name: "WaflIconButton / WaflMoreActionButton",
+    group: "Primitive",
+    role: "..., +, 닫기, 수정, 삭제 같은 아이콘 액션",
+    keepDecision: "통합 후보",
+    target: "WaflActionButton을 기준으로 명확한 icon action primitive 신설/정리",
+    priority: "높음",
+    note: "제작 공정 카드의 ... 버튼과 작업지시서 목록 ... 버튼을 같은 컴포넌트로 맞춘다.",
+  },
+  {
+    name: "AppBadge",
+    group: "Primitive",
+    role: "짧은 상태, 유형, 개수 표시",
+    keepDecision: "유지",
+    target: "상태 라벨 기준",
+    priority: "높음",
+    note: "작성중/발주완료/파일 유형 같은 짧은 값만 담당한다.",
+  },
+  {
+    name: "WaflInput / WaflTextarea / WaflSelect trigger",
+    group: "Primitive",
+    role: "입력과 선택의 기본 control",
+    keepDecision: "유지",
+    target: "모든 검색/메모/폼 입력의 기준",
+    priority: "높음",
+    note: "화면별 input class는 wafl-shape-control과 이 컴포넌트로 흡수한다.",
+  },
+  {
+    name: "WaflSurface",
+    group: "Primitive",
+    role: "내용을 담는 기본 컨테이너",
+    keepDecision: "유지",
+    target: "카드/패널의 shape 기준",
+    priority: "높음",
+    note: "클릭이 필요하면 SurfaceButton 계열로 분리한다.",
+  },
+  {
+    name: "WaflSurfaceButton / WaflSelectableCard",
+    group: "Pattern",
+    role: "카드처럼 보이지만 선택/클릭 가능한 항목",
+    keepDecision: "통합 후보",
+    target: "선택 카드 패턴으로 정리",
+    priority: "중간",
+    note: "둘의 차이가 화면에서 애매하면 selected/pressed props 기준으로 합칠 수 있다.",
+  },
+  {
+    name: "WaflAddCardButton / WaflAddIconBubble",
+    group: "Pattern",
+    role: "빈 슬롯에 새 항목을 추가하는 CTA",
+    keepDecision: "통합 후보",
+    target: "WaflAddButton 또는 WaflAddCardButton 하나로 정리",
+    priority: "높음",
+    note: "카드형 추가와 작은 + 버튼이 같은 추가 문법을 공유해야 한다.",
+  },
+  {
+    name: "WaflInfoBox / WaflNoticeBox",
+    group: "Pattern",
+    role: "안내, 주의, 보조 설명 박스",
+    keepDecision: "통합 후보",
+    target: "안내 박스 계열 tone 기준 통합",
+    priority: "중간",
+    note: "관리 화면용 Notice와 일반 InfoBox의 역할 중복을 줄인다.",
+  },
+  {
+    name: "WaflEmptyCard",
+    group: "Pattern",
+    role: "데이터가 없을 때만 쓰는 빈 상태 카드",
+    keepDecision: "유지",
+    target: "empty state 기준",
+    priority: "중간",
+    note: "일반 Surface에 '없음' 문구만 넣는 방식보다 우선 사용한다.",
+  },
+  {
+    name: "WaflFilterBar",
+    group: "Pattern",
+    role: "검색, select, 필터 적용 버튼 묶음",
+    keepDecision: "유지",
+    target: "관리 화면 필터 기준",
+    priority: "높음",
+    note: "검색창/셀렉트/필터 버튼 shape와 간격을 한곳에서 통제한다.",
+  },
+  {
+    name: "WaflDataTable",
+    group: "Pattern",
+    role: "관리 화면 table/row/mobile card 구조",
+    keepDecision: "유지",
+    target: "저장소/멤버/협력업체/통계 table 기준",
+    priority: "높음",
+    note: "AdminTable 계열과 역할 중복을 계속 줄인다.",
+  },
+  {
+    name: "WaflPageHero / WaflSectionPanel",
+    group: "Pattern",
+    role: "페이지 상단 설명과 섹션 패널",
+    keepDecision: "유지",
+    target: "관리/내부 페이지 layout 기준",
+    priority: "중간",
+    note: "페이지별 임의 header/card를 줄이는 역할이다.",
+  },
+  {
+    name: "BaseModal / ModalHeader / ModalBody / ModalFooter",
+    group: "Pattern",
+    role: "모달 shell과 내부 구획",
+    keepDecision: "유지",
+    target: "모달 구조 기준",
+    priority: "중간",
+    note: "모달 내부 버튼/입력/InfoBox는 primitive를 쓰게 유지한다.",
+  },
+  {
+    name: "WorkOrderListCard / WorkOrderMemoPanel",
+    group: "Domain",
+    role: "작업지시서 전용 카드와 메모 패널",
+    keepDecision: "유지",
+    target: "도메인 조합은 유지, 내부 버튼은 primitive로 교체",
+    priority: "높음",
+    note: "업무 로직은 남기고 .../댓글/수정/삭제 버튼은 icon action primitive로 통합한다.",
+  },
+  {
+    name: "AdminButton / AdminIconActionButton / AdminStatusBadge",
+    group: "Legacy",
+    role: "관리 화면 이전 버튼/아이콘/상태 컴포넌트",
+    keepDecision: "전환 대상",
+    target: "WaflButton / WaflIconButton / AppBadge",
+    priority: "중간",
+    note: "바로 삭제하지 않고 사용 위치를 줄이면서 WAFL 컴포넌트로 전환한다.",
+  },
+  {
+    name: "화면 내부 직접 button/input/span",
+    group: "Legacy",
+    role: "data-wafl-component만 있거나 직접 className으로 만든 요소",
+    keepDecision: "폐기 후보",
+    target: "가장 가까운 primitive/pattern으로 교체",
+    priority: "높음",
+    note: "분홍색 outline이 있어도 shape token을 안 타는 원인이다.",
+  },
+];
+
+const inventoryNextSteps = [
+  "... / + / 닫기 / 수정 / 삭제를 WaflIconButton 또는 WaflMoreActionButton 기준으로 먼저 통합한다.",
+  "WaflAddCardButton과 WaflAddIconBubble의 관계를 정리해 추가 CTA를 하나의 문법으로 묶는다.",
+  "WaflSurfaceButton과 WaflSelectableCard는 선택 가능 카드 기준으로 통합 가능한지 확인한다.",
+  "AdminButton/AdminIconActionButton/AdminStatusBadge는 바로 삭제하지 말고 사용 위치를 줄인다.",
+  "화면 내부 직접 button/input/span은 신규 작성 금지 대상으로 표시한다.",
 ];
 
 function SectionAnchorList() {
@@ -1202,6 +1417,81 @@ function ScreenChecklistSamples() {
   );
 }
 
+function ComponentInventorySamples() {
+  const decisionTone = {
+    유지: "success",
+    "통합 후보": "warning",
+    "폐기 후보": "danger",
+    "전환 대상": "info",
+  } as const;
+
+  const priorityTone = {
+    높음: "danger",
+    중간: "warning",
+    낮음: "neutral",
+  } as const;
+
+  return (
+    <div className="space-y-5">
+      <WaflNoticeBox tone="info">
+        재고표는 바로 삭제 목록이 아니다. 먼저 Primitive / Pattern / Domain / Legacy로 분류하고, 같은 역할인데 모양만 다른 컴포넌트부터 합친다.
+      </WaflNoticeBox>
+
+      <div className="grid gap-3 lg:grid-cols-4">
+        {componentGroupGuides.map((guide) => (
+          <WaflSurface key={guide.group} component="catalog-inventory-group-card" tone="surface" className="p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{guide.group}</p>
+                <p className="mt-1 text-xs font-bold text-[var(--pbp-brand-primary)]">{guide.meaning}</p>
+              </div>
+              <AppBadge tone="neutral" size="xs">group</AppBadge>
+            </div>
+            <p className="mt-3 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{guide.rule}</p>
+            <p className="mt-3 text-[11px] font-semibold leading-5 text-[var(--pbp-text-subtle)]">{guide.examples}</p>
+          </WaflSurface>
+        ))}
+      </div>
+
+      <WaflDataTableShell>
+        <WaflDataTableHeader gridTemplateColumns="0.9fr 0.7fr 1.2fr 0.8fr 1.1fr 0.6fr">
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>Component</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>분류</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>역할</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>판정</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>통합/전환 기준</div>
+          <div className={WAFL_DATA_TABLE_HEADER_CELL_CLASS}>우선순위</div>
+        </WaflDataTableHeader>
+        <WaflDataTableBody>
+          {componentInventoryItems.map((item) => (
+            <WaflDataTableRow key={item.name} gridTemplateColumns="0.9fr 0.7fr 1.2fr 0.8fr 1.1fr 0.6fr">
+              <div className={WAFL_DATA_TABLE_CELL_CLASS}>
+                <p className={WAFL_DATA_TABLE_PRIMARY_TEXT_CLASS}>{item.name}</p>
+                <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{item.note}</p>
+              </div>
+              <div className={WAFL_DATA_TABLE_CELL_CLASS}>
+                <AppBadge tone={item.group === "Legacy" ? "danger" : item.group === "Domain" ? "info" : item.group === "Pattern" ? "warning" : "brand"} size="xs">
+                  {item.group}
+                </AppBadge>
+              </div>
+              <p className="text-[12px] font-semibold leading-5 text-[var(--pbp-text-muted)]">{item.role}</p>
+              <div className={WAFL_DATA_TABLE_CELL_CLASS}>
+                <AppBadge tone={decisionTone[item.keepDecision]} size="xs">{item.keepDecision}</AppBadge>
+              </div>
+              <p className="text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">{item.target}</p>
+              <div className={WAFL_DATA_TABLE_CELL_CLASS}>
+                <AppBadge tone={priorityTone[item.priority]} size="xs">{item.priority}</AppBadge>
+              </div>
+            </WaflDataTableRow>
+          ))}
+        </WaflDataTableBody>
+      </WaflDataTableShell>
+
+      <RuleList title="재고표 기준 다음 정리 순서" rules={inventoryNextSteps} />
+    </div>
+  );
+}
+
 function SpecTable() {
   return (
     <WaflDataTableShell>
@@ -1332,6 +1622,12 @@ export default function WaflUiCatalogPage({
         <div id="screen-checklist" className="scroll-mt-6">
           <WaflSectionPanel title="Screen checklist · 기존 화면별 점검표" description="작업지시서, 발주, 운영 대시보드, 협력업체, 저장소, 통계, 멤버관리, 개인설정에서 써야 하는 WAFL 컴포넌트를 연결한다." density="compact">
             <ScreenChecklistSamples />
+          </WaflSectionPanel>
+        </div>
+
+        <div id="component-inventory" className="scroll-mt-6">
+          <WaflSectionPanel title="Component inventory · 컴포넌트 재고표" description="현재 컴포넌트를 유지/통합/전환/폐기 후보로 분류하고 다음 리팩토링 순서를 정한다." density="compact">
+            <ComponentInventorySamples />
           </WaflSectionPanel>
         </div>
 
