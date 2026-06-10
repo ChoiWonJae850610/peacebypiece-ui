@@ -317,6 +317,14 @@ const containerRules = [
   "선택 상태는 shadow가 아니라 selected token으로 표현한다.",
 ];
 
+
+const statusRules = [
+  "AppBadge는 작성중·승인·파일 수처럼 짧은 상태값에만 쓴다.",
+  "긴 안내문이나 설명 문장은 WaflInfoBox 또는 WaflNoticeBox로 보낸다.",
+  "개수·유형·상태는 badge로 작게 붙이고, 본문 정보처럼 크게 쓰지 않는다.",
+  "상태 색상은 tone으로만 고르고 화면별 text/bg class를 직접 조합하지 않는다.",
+];
+
 const shapeGrammarRules = [
   "WAFL의 기본 모양은 알약형이 아니라 둥근 네모형이다.",
   "큰 카드, 작은 버튼, 배지는 같은 shape family 안에서 크기만 달라져야 한다.",
