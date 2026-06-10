@@ -27,7 +27,7 @@ export function AdminFeedbackMessage({
   return (
     <div
       className={joinAdminClassNames(
-        "rounded-2xl border px-4 py-3 text-sm leading-6",
+        "wafl-shape-surface border px-4 py-3 text-sm leading-6",
         toneClassNames[tone],
         className,
       )}

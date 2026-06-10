@@ -43,7 +43,7 @@ function WaflFeatureCardInner({
           {details.map((detail, index) => (
             <span
               key={index}
-              className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-[var(--pbp-text-muted)]"
+              className="wafl-shape-compact border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-[var(--pbp-text-muted)]"
             >
               {detail}
             </span>
@@ -65,7 +65,7 @@ export default function WaflFeatureCard({
   className = "",
 }: WaflFeatureCardProps) {
   const cardClassName = joinClassNames(
-    "flex min-h-[132px] w-full min-w-0 flex-col justify-between rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 text-left shadow-[var(--pbp-shadow-card)] transition",
+    "flex min-h-[132px] w-full min-w-0 flex-col justify-between wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 text-left shadow-[var(--pbp-shadow-card)] transition",
     onClick ? "hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-soft)]" : null,
     active ? "ring-2 ring-[var(--pbp-focus-ring)]/20" : null,
     className,

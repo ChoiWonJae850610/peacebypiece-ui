@@ -77,7 +77,7 @@ export function WaflStateBlock({
     <section
       data-wafl-component="state"
       className={cn(
-        "flex w-full min-w-0 items-center rounded-[var(--pbp-radius-wafl)] border",
+        "flex w-full min-w-0 items-center wafl-shape-surface border",
         centered ? "justify-center text-center" : "justify-start text-left",
         sizeClassMap[size],
         minHeightClassName,
@@ -88,7 +88,7 @@ export function WaflStateBlock({
       aria-live={kind === "error" ? "assertive" : "polite"}
     >
       <div className={cn("max-w-md", centered ? "mx-auto" : "") }>
-        <div className={cn("mx-auto mb-3 flex items-center justify-center rounded-full border", iconToneClassMap[tone], iconSizeClassMap[size], centered ? "" : "ml-0") } aria-hidden="true">
+        <div className={cn("mx-auto mb-3 flex items-center justify-center wafl-shape-icon border", iconToneClassMap[tone], iconSizeClassMap[size], centered ? "" : "ml-0") } aria-hidden="true">
           <StateIcon className={isLoading ? "animate-spin" : ""} />
         </div>
         <p className={cn("font-semibold text-[var(--pbp-text)]", titleClassMap[size])}>{title}</p>

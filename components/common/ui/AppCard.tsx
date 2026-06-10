@@ -14,14 +14,14 @@ export type AppCardPadding = "none" | "sm" | "md" | "lg";
 type AppCardElement = "div" | "section" | "article" | "header";
 
 const variantClassMap: Record<AppCardVariant, string> = {
-  surface: "rounded-[var(--pbp-radius-wafl)]",
-  elevated: "rounded-[var(--pbp-radius-wafl)] shadow-none",
-  flat: "rounded-[var(--pbp-radius-wafl)] shadow-none",
+  surface: "wafl-shape-surface",
+  elevated: "wafl-shape-surface shadow-none",
+  flat: "wafl-shape-surface shadow-none",
   interactive:
-    "rounded-[var(--pbp-radius-wafl)] transition duration-150 ease-out hover:border-[var(--pbp-border-strong)] hover:shadow-none",
-  compact: "rounded-[var(--pbp-radius-wafl)]",
-  default: "rounded-[var(--pbp-radius-wafl)]",
-  subtle: "rounded-[var(--pbp-radius-wafl)] pbp-card-muted",
+    "wafl-shape-surface transition duration-150 ease-out hover:border-[var(--pbp-border-strong)] hover:shadow-none",
+  compact: "wafl-shape-surface",
+  default: "wafl-shape-surface",
+  subtle: "wafl-shape-surface pbp-card-muted",
 };
 
 const paddingClassMap: Record<AppCardPadding, string> = {

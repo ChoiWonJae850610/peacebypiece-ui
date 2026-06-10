@@ -35,7 +35,7 @@ export default function AppTooltip({
             side={side}
             sideOffset={8}
             className={cn(
-              "z-[80] max-w-xs rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-text-primary)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-surface)] shadow-xl",
+              "z-[80] max-w-xs wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-text-primary)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-surface)] shadow-none",
               className,
             )}
           >

@@ -11,14 +11,14 @@ type WaflWorkspacePanelProps = HTMLAttributes<HTMLElement> & {
 };
 
 const roleClassMap: Record<WaflWorkspacePanelRole, string> = {
-  shell: "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
-  sidebar: "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
+  shell: "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
+  sidebar: "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
   detail:
-    "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,var(--pbp-surface-muted))]",
+    "wafl-shape-surface border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,var(--pbp-surface-muted))]",
   side:
-    "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,var(--pbp-surface-muted))]",
-  content: "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
-  toolbar: "rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95",
+    "wafl-shape-surface border border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,var(--pbp-surface-muted))]",
+  content: "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)]",
+  toolbar: "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95",
 };
 
 const WaflWorkspacePanel = forwardRef<HTMLElement, WaflWorkspacePanelProps>(function WaflWorkspacePanel(

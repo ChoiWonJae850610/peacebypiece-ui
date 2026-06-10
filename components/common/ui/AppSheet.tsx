@@ -73,7 +73,7 @@ export default function AppSheet({
               ) : null}
             </div>
             <Dialog.Close asChild>
-              <AppButton variant="ghost" size="sm" className="shrink-0 rounded-full px-3" aria-label="닫기">
+              <AppButton variant="ghost" size="sm" className="shrink-0 wafl-shape-control px-3" aria-label="닫기">
                 닫기
               </AppButton>
             </Dialog.Close>

@@ -26,7 +26,7 @@ export default function AdminSettingsToggleRow({
   return (
     <div
       className={[
-        "flex min-h-[64px] items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left transition",
+        "flex min-h-[64px] items-center justify-between gap-3 wafl-shape-surface border border-stone-200 bg-white px-4 py-3 text-left transition",
         disabled ? "opacity-75" : "hover:border-stone-300",
         className,
       ].join(" ")}

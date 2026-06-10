@@ -34,7 +34,7 @@ export default function AppSegmentedTabs<TKey extends string>({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        "grid min-w-0 gap-2 rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-1 shadow-sm",
+        "grid min-w-0 gap-2 wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-1 shadow-none",
         sticky ? "sticky top-0 z-10 backdrop-blur" : null,
         className,
       )}
@@ -54,7 +54,7 @@ export default function AppSegmentedTabs<TKey extends string>({
             width="full"
             className={cn(
               "rounded-[18px] shadow-none",
-              selected ? "shadow-sm" : "text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface)]",
+              selected ? "shadow-none" : "text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface)]",
               itemClassName,
             )}
             onClick={() => onChange(item.key)}

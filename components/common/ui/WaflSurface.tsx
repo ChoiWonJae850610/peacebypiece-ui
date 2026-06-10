@@ -37,7 +37,7 @@ export function WaflSurface({
     {
       "data-wafl-component": component,
       className: cn(
-        "min-w-0 rounded-[var(--pbp-radius-wafl)] border shadow-none",
+        "min-w-0 wafl-shape-surface border shadow-none",
         surfaceToneClassMap[tone],
         className,
       ),
@@ -92,7 +92,7 @@ export function WaflSurfaceButton({
       type={type}
       data-wafl-component={component}
       className={cn(
-        "pbp-interactive-card min-w-0 rounded-[var(--pbp-radius-wafl)] border p-3 text-left shadow-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        "pbp-interactive-card min-w-0 wafl-shape-surface border p-3 text-left shadow-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
         selected
           ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
           : surfaceToneClassMap[tone],
@@ -118,7 +118,7 @@ export function WaflEmptyCard({
     <div
       data-wafl-component={component}
       className={cn(
-        "min-w-0 rounded-[var(--pbp-radius-wafl)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-5 text-center text-sm text-[var(--pbp-text-muted)] shadow-none",
+        "min-w-0 wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-5 text-center text-sm text-[var(--pbp-text-muted)] shadow-none",
         className,
       )}
       {...props}
@@ -141,7 +141,7 @@ export function WaflAddCard({
     <div
       data-wafl-component={component}
       className={cn(
-        "flex min-w-0 items-center justify-center rounded-[var(--pbp-radius-wafl)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 shadow-none",
+        "flex min-w-0 items-center justify-center wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 shadow-none",
         className,
       )}
       {...props}
@@ -167,7 +167,7 @@ export function WaflAddCardButton({
       data-wafl-component={component}
       data-wafl-primitive="add-card-button"
       className={cn(
-        "pbp-interactive-button flex min-w-0 items-center justify-center rounded-[var(--pbp-radius-wafl)] border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        "pbp-interactive-button flex min-w-0 items-center justify-center wafl-shape-surface border border-dashed border-[var(--pbp-empty-state-border)] bg-[var(--pbp-empty-state-surface)] px-4 py-4 shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
         className,
       )}
       {...props}
@@ -189,7 +189,7 @@ export function WaflAddIconBubble({
       data-wafl-component={component}
       data-wafl-primitive="add-card-button-icon"
       className={cn(
-        "pbp-sidepanel-preview-surface inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--pbp-radius-wafl-icon)] text-[var(--pbp-text-muted)] shadow-none",
+        "pbp-sidepanel-preview-surface inline-flex h-9 w-9 shrink-0 items-center justify-center wafl-shape-icon text-[var(--pbp-text-muted)] shadow-none",
         className,
       )}
       aria-hidden="true"
@@ -248,7 +248,7 @@ export function WaflPlainButton({
       type={type}
       data-wafl-component={component}
       className={cn(
-        "pbp-interactive-button rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
+        "pbp-interactive-button wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-45",
         className,
       )}
       {...props}

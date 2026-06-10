@@ -41,7 +41,7 @@ export default function WaflSettingsSectionGroup({
   className = "",
 }: WaflSettingsSectionGroupProps) {
   return (
-    <section className={joinClassNames("rounded-[24px] border p-3.5 sm:rounded-[28px] sm:p-5", TONE_CLASS[tone], className)}>
+    <section className={joinClassNames("wafl-shape-surface border p-3.5 sm:p-5", TONE_CLASS[tone], className)}>
       <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           {eyebrow ? <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--pbp-text-subtle)]">{eyebrow}</p> : null}

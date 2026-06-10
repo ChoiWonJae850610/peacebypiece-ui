@@ -31,7 +31,7 @@ export function getWaflModalPanelClassName({
   className?: string;
   minHeightClassName?: string;
 } = {}) {
-  return cn("overflow-hidden rounded-[var(--pbp-radius-wafl)]", minHeightClassName, className);
+  return cn("overflow-hidden wafl-shape-surface", minHeightClassName, className);
 }
 
 export function getWaflModalHeaderClassName(className?: string) {
@@ -60,7 +60,7 @@ export function getWaflModalFooterClassName(className?: string) {
 
 export function WaflModalCloseButton({ label, onClose }: { label: string; onClose: () => void }) {
   return (
-    <WaflButton variant="secondary" size="sm" onClick={onClose} className="rounded-xl px-4">
+    <WaflButton variant="secondary" size="sm" onClick={onClose} className="wafl-shape-control px-4">
       {label}
     </WaflButton>
   );
@@ -78,7 +78,7 @@ export function WaflModalSection({
   className?: string;
 }) {
   return (
-    <section data-wafl-component="modal-section" className={cn("rounded-[var(--pbp-radius-wafl)] border p-4", WAFL_MODAL_SECTION_CLASS, className)}>
+    <section data-wafl-component="modal-section" className={cn("wafl-shape-surface border p-4", WAFL_MODAL_SECTION_CLASS, className)}>
       {title || description ? (
         <div className="mb-4">
           {title ? <h3 className="text-sm font-semibold pbp-text-primary">{title}</h3> : null}

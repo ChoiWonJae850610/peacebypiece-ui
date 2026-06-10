@@ -32,7 +32,7 @@ export default function InlineInfoItem({ label, value, onClick, valueClassName =
         data-wafl-component="button"
         type="button"
         onClick={onClick}
-        className="group pbp-interactive-button inline-flex min-w-0 items-center gap-1 rounded-full bg-transparent p-0 text-sm font-medium text-stone-600 hover:text-stone-900"
+        className="group pbp-interactive-button inline-flex min-w-0 items-center gap-1 wafl-shape-control bg-transparent px-1 py-0 text-sm font-medium text-stone-600 hover:text-stone-900"
       >
         <span className="shrink-0 text-stone-500">{label}</span>
         <span className={`truncate ${valueClassName}`}>{value}</span>

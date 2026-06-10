@@ -33,7 +33,7 @@ const TONE_ACCENT_CLASS: Record<WaflSettingCardTone, string> = {
 };
 
 export const WAFL_SETTING_CARD_CLASS =
-  "relative min-w-0 overflow-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
+  "relative min-w-0 overflow-hidden wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)]";
 
 const DENSITY_CLASS: Record<NonNullable<WaflSettingCardProps["density"]>, string> = {
   default: "p-3.5 sm:p-4",

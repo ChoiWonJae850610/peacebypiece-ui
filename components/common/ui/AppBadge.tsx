@@ -81,7 +81,7 @@ export default function AppBadge({
     <span
       data-wafl-component="badge"
       className={cn(
-        "inline-flex w-fit shrink-0 items-center justify-center gap-1 rounded-[var(--pbp-radius-wafl-compact)] border font-semibold leading-none",
+        "inline-flex w-fit shrink-0 items-center justify-center gap-1 wafl-shape-compact border font-semibold leading-none",
         toneClassMap[resolvedTone],
         sizeClassMap[size],
         className,

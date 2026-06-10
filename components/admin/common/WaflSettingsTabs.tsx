@@ -57,7 +57,7 @@ export default function WaflSettingsTabs<TId extends string>({
               aria-pressed={active}
               onClick={() => onChange(item.id)}
               className={joinClassNames(
-                "flex min-h-[58px] w-full min-w-0 snap-start flex-col rounded-2xl border px-3.5 py-3 text-left transition sm:min-h-[64px] sm:px-4",
+                "flex min-h-[58px] w-full min-w-0 snap-start flex-col wafl-shape-surface border px-3.5 py-3 text-left transition sm:min-h-[64px] sm:px-4",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]",
                 active
                   ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-text-primary)] shadow-sm"

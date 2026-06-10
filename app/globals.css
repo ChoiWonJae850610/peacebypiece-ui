@@ -219,19 +219,48 @@ body {
 
 /* WAFL Global Visual Grammar
    Shadow is disabled across the product. Visual hierarchy must come from
-   border, background, spacing, typography, and shared radius tokens. */
+   border, background, spacing, typography, and shared shape tokens.
+
+   Shape rule:
+   - surface: card, panel, info box, empty state
+   - control: button, input, select, filter control
+   - compact: badge, chip, small label
+   - icon: icon-only button, add icon bubble
+
+   Do not use rounded-full for WAFL UI. Small components use smaller tokens
+   so they visually match the surface family instead of becoming pill-shaped. */
 :root {
-  --pbp-radius-wafl: 16px;
-  --pbp-radius-wafl-compact: 8px;
-  --pbp-radius-wafl-icon: 12px;
+  --pbp-radius-wafl-surface: 16px;
+  --pbp-radius-wafl-control: 10px;
+  --pbp-radius-wafl-compact: 7px;
+  --pbp-radius-wafl-icon: 10px;
+
+  /* Backward-compatible alias for legacy WAFL surface classes. */
+  --pbp-radius-wafl: var(--pbp-radius-wafl-surface);
 }
 
 :where(.pbp-card, .pbp-card-muted, .pbp-detail-summary-card, .pbp-action-secondary, [class*="shadow"]) {
   box-shadow: none !important;
 }
 
+.wafl-shape-surface {
+  border-radius: var(--pbp-radius-wafl-surface) !important;
+}
+
+.wafl-shape-control {
+  border-radius: var(--pbp-radius-wafl-control) !important;
+}
+
+.wafl-shape-compact {
+  border-radius: var(--pbp-radius-wafl-compact) !important;
+}
+
+.wafl-shape-icon {
+  border-radius: var(--pbp-radius-wafl-icon) !important;
+}
+
 :where([class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-t-"]):not([class*="rounded-b-"]):not([class*="rounded-l-"]):not([class*="rounded-r-"])) {
-  border-radius: var(--pbp-radius-wafl) !important;
+  border-radius: var(--pbp-radius-wafl-surface);
 }
 
 /* WAFL component adoption debug.
@@ -613,7 +642,7 @@ body[data-wafl-component-debug="true"] :where(
   grid-template-columns: 1.5rem minmax(0, 1fr);
   align-items: center;
   column-gap: 0.7rem;
-  border-radius: 999px;
+  border-radius: var(--pbp-radius-wafl-control);
   padding: 0.72rem 1.05rem 0.72rem 0.95rem;
 }
 
@@ -624,7 +653,7 @@ body[data-wafl-component-debug="true"] :where(
   flex: 0 0 1.5rem;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--pbp-radius-wafl-icon);
   background: color-mix(in srgb, var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft))) 10%, transparent);
   color: var(--pbp-toast-tone-color, var(--pbp-toast-accent, var(--pbp-brand-soft)));
 }
@@ -666,7 +695,7 @@ body[data-wafl-component-debug="true"] :where(
 }
 
 .pbp-toast--processing {
-  border-radius: 999px;
+  border-radius: var(--pbp-radius-wafl-control);
   background: color-mix(in srgb, var(--pbp-toast-background) 96%, transparent);
 }
 

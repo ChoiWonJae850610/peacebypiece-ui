@@ -46,7 +46,7 @@ export default function AdminUsageToggle({
   }
 
   return (
-    <div className={["rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3", className].join(" ") }>
+    <div className={["wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3", className].join(" ") }>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{label}</p>

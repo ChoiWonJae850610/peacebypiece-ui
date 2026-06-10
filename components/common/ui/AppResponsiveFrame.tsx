@@ -24,8 +24,8 @@ type AppResponsiveSurfaceProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const surfaceClassMap: Record<Exclude<ResponsiveDevice, "desktop">, string> = {
-  mobile: "min-w-0 overflow-x-hidden rounded-[24px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-sm sm:rounded-3xl sm:p-4",
-  tablet: "min-w-0 overflow-x-hidden rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-sm",
+  mobile: "min-w-0 overflow-x-hidden wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3 shadow-none sm:p-4",
+  tablet: "min-w-0 overflow-x-hidden wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-none",
 };
 
 export function AppResponsiveSurface({ device, className, ...props }: AppResponsiveSurfaceProps) {

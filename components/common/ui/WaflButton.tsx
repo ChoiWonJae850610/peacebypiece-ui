@@ -16,15 +16,15 @@ const variantClassMap: Record<WaflButtonVariant, string> = {
 };
 
 const sizeClassMap: Record<WaflButtonSize, string> = {
-  sm: "min-h-8 rounded-[var(--pbp-radius-wafl)] px-3 py-1.5 text-xs",
-  md: "min-h-10 rounded-[var(--pbp-radius-wafl)] px-4 py-2 text-sm",
-  lg: "min-h-12 rounded-[var(--pbp-radius-wafl)] px-5 py-3 text-base",
+  sm: "min-h-8 wafl-shape-control px-3 py-1.5 text-xs",
+  md: "min-h-10 wafl-shape-control px-4 py-2 text-sm",
+  lg: "min-h-12 wafl-shape-control px-5 py-3 text-base",
 };
 
 const iconSizeClassMap: Record<WaflButtonSize, string> = {
-  sm: "h-8 min-h-8 w-8 rounded-[var(--pbp-radius-wafl-icon)] p-0 text-xs",
-  md: "h-10 min-h-10 w-10 rounded-[var(--pbp-radius-wafl-icon)] p-0 text-sm",
-  lg: "h-12 min-h-12 w-12 rounded-[var(--pbp-radius-wafl-icon)] p-0 text-base",
+  sm: "h-8 min-h-8 w-8 wafl-shape-icon p-0 text-xs",
+  md: "h-10 min-h-10 w-10 wafl-shape-icon p-0 text-sm",
+  lg: "h-12 min-h-12 w-12 wafl-shape-icon p-0 text-base",
 };
 
 const widthClassMap: Record<WaflButtonWidth, string> = {

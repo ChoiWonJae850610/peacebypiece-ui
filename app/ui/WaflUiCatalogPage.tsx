@@ -326,10 +326,10 @@ const statusRules = [
 ];
 
 const shapeGrammarRules = [
-  "WAFL의 기본 모양은 알약형이 아니라 둥근 네모형이다.",
-  "큰 카드, 작은 버튼, 배지는 같은 shape family 안에서 크기만 달라져야 한다.",
+  "WAFL의 최상위 shape는 surface/control/compact/icon token으로 관리한다.",
+  "카드는 surface 16px, 버튼·입력은 control 10px, 배지는 compact 7px, 아이콘은 icon 10px을 쓴다.",
   "실행/상태/입력의 차이는 모서리 모양이 아니라 색, 채움, 굵기, 간격으로 구분한다.",
-  "rounded-full은 진행 점, 아바타, 순수 원형 아이콘처럼 원형 의미가 있을 때만 예외로 쓴다.",
+  "rounded-full은 진행 점, 아바타, 스피너처럼 원형 의미가 있을 때만 예외로 쓴다.",
 ];
 
 const shapeGrammarRows = [
@@ -538,7 +538,7 @@ function SectionAnchorList() {
           key={section.id}
           href={`#${section.id}`}
           data-wafl-component="catalog-nav-card"
-          className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm font-semibold text-[var(--pbp-text-primary)] shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
+          className="wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm font-semibold text-[var(--pbp-text-primary)] shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
         >
           <span className="flex items-center justify-between gap-3">
             {section.title}
@@ -582,7 +582,7 @@ function QuickDecisionGrid() {
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">상황</p>
               <p className="text-sm font-bold leading-5 text-[var(--pbp-text-primary)]">{item.label}</p>
             </div>
-            <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2">
+            <div className="wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2">
               <p className="text-xs font-bold text-[var(--pbp-brand-primary)]">{item.component}</p>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{item.rule}</p>
             </div>
@@ -611,12 +611,12 @@ function ComparisonCard({
     <WaflSurface component="catalog-comparison-card" tone="surface" className="p-4">
       <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{title}</p>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
-        <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
+        <div className="wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
           <AppBadge size="xs" tone="neutral">비슷해 보이는 것</AppBadge>
           <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">{leftTitle}</p>
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{leftBody}</p>
         </div>
-        <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3">
+        <div className="wafl-shape-surface border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3">
           <AppBadge size="xs" tone="brand">판단 기준</AppBadge>
           <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">{rightTitle}</p>
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{rightBody}</p>
@@ -630,7 +630,7 @@ function ShapeGrammarSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        현재 WAFL shape는 알약형을 줄이고 둥근 네모 계열로 맞추는 방향이다. 버튼과 배지도 카드/입력창과 같은 형태 계열로 보이도록 정리한다.
+        현재 WAFL shape는 최상위 토큰으로 구조화했다. 카드·패널은 surface, 버튼·입력은 control, 배지는 compact, 아이콘 버튼은 icon token을 쓴다.
       </WaflNoticeBox>
 
       <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
@@ -638,12 +638,12 @@ function ShapeGrammarSamples() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">Shape family</p>
-              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">전부 같은 둥근 네모 계열</h3>
+              <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">하나의 shape family, 네 개의 token</h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                역할은 달라도 기본 silhouette는 같게 둔다. 화면이 심심해지는 대신, 색과 상태값으로 의미를 구분한다.
+                컨테이너 모양을 기준으로 삼되, 작은 요소는 더 작은 radius token을 써서 눈에 보이는 곡률을 맞춘다.
               </p>
             </div>
-            <AppBadge tone="brand" size="xs">shape rule</AppBadge>
+            <AppBadge tone="brand" size="xs">shape token</AppBadge>
           </div>
           <div className="mt-4 grid gap-2">
             {shapeGrammarRows.map((row) => (
@@ -652,7 +652,7 @@ function ShapeGrammarSamples() {
                   <span className="block text-xs font-bold text-[var(--pbp-text-primary)]">{row.label}</span>
                   <span className="mt-1 block text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{row.component} · {row.sample}</span>
                 </span>
-                <AppBadge tone={row.tone} size="xs">same shape</AppBadge>
+                <AppBadge tone={row.tone} size="xs">token</AppBadge>
               </WaflInfoRow>
             ))}
           </div>
@@ -661,7 +661,7 @@ function ShapeGrammarSamples() {
         <WaflSurface component="catalog-shape-visual-sample" tone="surface" className="p-4">
           <p className="text-sm font-bold text-[var(--pbp-text-primary)]">같은 모양 계열 샘플</p>
           <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-            아래 요소들은 크기와 용도는 다르지만, 알약형이 아니라 같은 둥근 네모 계열로 읽혀야 한다.
+            아래 요소들은 서로 다른 token을 쓰지만 같은 둥근 네모 계열로 읽혀야 한다. 알약형으로 보이면 token 값이 아직 큰 것이다.
           </p>
           <div className="mt-4 grid gap-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -686,7 +686,7 @@ function ShapeGrammarSamples() {
         </WaflSurface>
       </div>
 
-      <RuleList title="WAFL shape rule" rules={shapeGrammarRules} />
+      <RuleList title="WAFL shape token" rules={shapeGrammarRules} />
     </div>
   );
 }
@@ -701,7 +701,7 @@ function TouchActionSamples() {
             같은 버튼처럼 보여도 “실행”, “이동”, “카드 선택”, “빈 슬롯 추가”는 서로 다른 컴포넌트를 쓴다.
           </p>
         </WaflInfoBox>
-        <div className="flex flex-wrap items-center gap-2 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
+        <div className="flex flex-wrap items-center gap-2 wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
           <WaflButton variant="primary" size="md">저장 실행</WaflButton>
           <WaflButton variant="secondary" size="md">보조 실행</WaflButton>
           <WaflButton variant="danger" size="md">삭제</WaflButton>
@@ -799,7 +799,7 @@ function InputSamples() {
           <button
             type="button"
             data-wafl-component="select-trigger"
-            className="pbp-field-interaction flex h-11 w-full items-center justify-between gap-3 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-left text-sm font-semibold text-[var(--pbp-text-primary)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
+            className="pbp-field-interaction flex h-11 w-full items-center justify-between gap-3 wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-left text-sm font-semibold text-[var(--pbp-text-primary)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)]"
             aria-haspopup="listbox"
             aria-expanded="false"
           >
@@ -1221,7 +1221,7 @@ function SpecTable() {
             </div>
             <p className="text-[12px] font-bold leading-5 text-[var(--pbp-text-primary)]">{spec.plainRule}</p>
             <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-              <code className="min-w-0 truncate rounded-[var(--pbp-radius-wafl-compact)] bg-[var(--pbp-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--pbp-text-muted)]">
+              <code className="min-w-0 truncate wafl-shape-compact bg-[var(--pbp-surface-muted)] px-2 py-1 text-[10px] font-semibold text-[var(--pbp-text-muted)]">
                 {spec.path}
               </code>
               <p className={WAFL_DATA_TABLE_SECONDARY_TEXT_CLASS}>{spec.props}</p>

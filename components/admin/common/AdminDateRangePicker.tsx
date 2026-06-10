@@ -99,22 +99,22 @@ export function AdminDateRangePicker({
         type="button"
         data-wafl-component="date-range-trigger"
         onClick={() => setIsCalendarOpen((current) => !current)}
-        className="grid w-full min-w-0 grid-cols-2 gap-1 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-left shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]"
+        className="grid w-full min-w-0 grid-cols-2 gap-1 wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-left shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]"
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
-        <span data-wafl-component="date-range-field" className="min-w-0 rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-surface-muted)] px-2 py-1">
+        <span data-wafl-component="date-range-field" className="min-w-0 wafl-shape-surface bg-[var(--pbp-surface-muted)] px-2 py-1">
           <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.start}</span>
           <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(startDate, locale)}</span>
         </span>
-        <span data-wafl-component="date-range-field" className="min-w-0 rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-surface-muted)] px-2 py-1">
+        <span data-wafl-component="date-range-field" className="min-w-0 wafl-shape-surface bg-[var(--pbp-surface-muted)] px-2 py-1">
           <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--pbp-text-subtle)]">{labels.end}</span>
           <span className="mt-0.5 block truncate text-[11px] font-semibold text-[var(--pbp-text-primary)]">{formatAdminDateDisplay(endDate, locale)}</span>
         </span>
       </button>
 
       {isCalendarOpen ? (
-        <div data-wafl-component="date-range-calendar" className="absolute left-0 top-[calc(100%+6px)] z-30 w-fit max-w-[calc(100vw-2rem)] max-h-[min(340px,calc(100vh-4rem))] overflow-y-auto rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 shadow-none">
+        <div data-wafl-component="date-range-calendar" className="absolute left-0 top-[calc(100%+6px)] z-30 w-fit max-w-[calc(100vw-2rem)] max-h-[min(340px,calc(100vh-4rem))] overflow-y-auto wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 shadow-none">
           <DayPicker
             mode="range"
             selected={selected}
@@ -131,16 +131,16 @@ export function AdminDateRangePicker({
               month_caption: "flex items-center justify-center px-0 py-0.5 text-[11px] font-semibold text-[var(--pbp-text-primary)]",
               caption_label: "text-xs font-semibold",
               nav: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto flex items-center justify-between`,
-              button_previous: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
-              button_next: "h-6 w-6 rounded-full border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              button_previous: "h-6 w-6 wafl-shape-icon border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
+              button_next: "h-6 w-6 wafl-shape-icon border border-[var(--pbp-border)] text-[var(--pbp-text-muted)] hover:bg-[var(--pbp-surface-muted)]",
               month_grid: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto table-fixed border-collapse`,
               weekdays: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--pbp-text-subtle)]`,
               weekday: "flex h-5 w-5 items-center justify-center",
               week: `${CALENDAR_GRID_WIDTH_CLASS} mx-auto grid grid-cols-7 gap-0`,
               day: "flex h-5 w-5 items-center justify-center",
-              day_button: "h-5 w-5 rounded-full p-0 text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
+              day_button: "h-5 w-5 wafl-shape-icon p-0 text-[10px] font-semibold transition hover:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-subtle)]",
               today: "font-bold text-[var(--admin-theme-surface)]",
-              selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
+              selected: "wafl-shape-icon bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_end: "rounded-r-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_middle: "rounded-none bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-primary)]",

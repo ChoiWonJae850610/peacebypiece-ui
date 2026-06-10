@@ -123,7 +123,7 @@ export function WaflMobileFloatingActionButton({
         aria-label={ariaLabel}
         title={title ?? ariaLabel}
         className={cn(
-          "pointer-events-auto inline-flex min-h-14 min-w-14 items-center justify-center gap-2 rounded-full border border-transparent pbp-action-primary px-4 text-sm font-bold shadow-[0_18px_40px_rgba(28,25,23,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50",
+          "pointer-events-auto inline-flex min-h-14 min-w-14 items-center justify-center gap-2 wafl-shape-control border border-transparent pbp-action-primary px-4 text-sm font-bold shadow-[0_18px_40px_rgba(28,25,23,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50",
         )}
       >
         {children}
@@ -205,7 +205,7 @@ export function WaflMobileListDrawer({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                  className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center wafl-shape-control border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
                 >
                   {closeLabel}
                 </button>

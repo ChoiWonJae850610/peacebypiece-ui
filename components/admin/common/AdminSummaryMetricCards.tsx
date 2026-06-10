@@ -24,7 +24,7 @@ const CARD_BASE_CLASS =
   "group relative flex min-w-0 flex-col overflow-hidden border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-card)] transition-colors hover:border-[var(--pbp-border-strong)]";
 
 const DENSITY_CLASS: Record<AdminSummaryMetricDensity, string> = {
-  standard: "min-h-[104px] rounded-[24px] px-4 py-3",
+  standard: "min-h-[104px] wafl-shape-surface px-4 py-3",
   compact: "min-h-[88px] rounded-[22px] px-4 py-3",
 };
 
