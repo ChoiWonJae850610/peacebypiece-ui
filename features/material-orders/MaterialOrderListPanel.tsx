@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { AppBadge, AppButton, AppSelect, WaflInput, WaflSurface, WaflSurfaceButton, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppSelect, WaflButton, WaflInput, WaflSurface, WaflSurfaceButton, type AppSelectOption } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
@@ -96,6 +96,7 @@ export default function MaterialOrderListPanel({
 
       <div className="mt-3 grid shrink-0 gap-1.5">
         <WaflInput
+          fieldSize="sm"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="공급처·품목·작업지시서 검색"
@@ -117,18 +118,18 @@ export default function MaterialOrderListPanel({
             ariaLabel="발주 상태 필터"
           />
         </div>
-        <AppButton
-          size="md"
+        <WaflButton
+          size="sm"
           variant="primary"
           width="full"
-          className="mt-1 min-h-10 text-sm"
+          className="mt-1"
           disabled={creating}
           title={creating ? "새 발주서를 생성하고 있습니다." : "새 원단·부자재 발주서를 생성합니다."}
           aria-label={creating ? "새 발주서 생성 중" : "새 원단·부자재 발주서 생성"}
           onClick={onCreateOrder}
         >
           {creating ? "생성 중" : "새 발주서 생성"}
-        </AppButton>
+        </WaflButton>
         <div className={`mt-3 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`} aria-hidden="true" />
       </div>
 
@@ -200,6 +201,7 @@ function MaterialOrderListButton({
     <WaflSurfaceButton
       component="material-order-list-card"
       selected={selected}
+      shape="control"
       className="w-full"
       onClick={() => onSelectOrder(order.id)}
     >

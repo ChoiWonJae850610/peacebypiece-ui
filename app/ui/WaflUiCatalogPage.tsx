@@ -1061,7 +1061,7 @@ function FoundationPrimitiveSamples() {
     },
     {
       key: "density",
-      value: "compact / default / spacious",
+      value: "micro / compact / default / spacious",
       rule: "높이와 좌우 여백을 고정한다.",
     },
     {
@@ -1079,22 +1079,22 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.26부터 작업지시서 기준 화면은 Foundation 통과 여부와 direct style
-        잔여 여부를 같이 본다. Material/Process/Outsourcing section도
-        목록 카드, 안내 박스, add/action을 control 중심으로 맞춘다.
+        0.21.27부터 발주 화면도 작업지시서 기준 Foundation을 확장 적용한다.
+        목록/검색/필터/발주 품목 input/select/action은 같은 control 계열로
+        읽히는지 우선 확인한다.
       </WaflNoticeBox>
 
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan
+          Direct style scan · material order
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
+            제거 대상: 발주 section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
             예외 대상: dot, spinner, progress node, drawing canvas, modal full-screen reset
@@ -1185,6 +1185,18 @@ function FoundationPrimitiveSamples() {
                   { value: "all", label: "전체" },
                 ]}
                 ariaLabel="foundation select sample"
+              />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <WaflInput fieldSize="xs" placeholder="발주 table input · micro" />
+              <AppSelect
+                size="xs"
+                value="unit"
+                options={[
+                  { value: "unit", label: "발주 table select · micro" },
+                  { value: "ma", label: "마" },
+                ]}
+                ariaLabel="foundation micro select sample"
               />
             </div>
             <WaflSelectableCard
@@ -2020,14 +2032,14 @@ function PracticePatternSamples() {
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan
+          Direct style scan · material order
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
+            제거 대상: 발주 section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
             예외 대상: dot, spinner, progress node, drawing canvas, modal full-screen reset

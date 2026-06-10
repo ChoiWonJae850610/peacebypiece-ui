@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 export type WaflPrimitiveShape = "surface" | "control" | "compact" | "icon";
-export type WaflPrimitiveDensity = "compact" | "default" | "spacious";
+export type WaflPrimitiveDensity = "micro" | "compact" | "default" | "spacious";
 export type WaflPrimitiveTone = "surface" | "muted" | "selected" | "empty" | "warning" | "danger" | "info";
 export type WaflPrimitiveState = "normal" | "selected" | "current" | "disabled" | "danger";
 export type WaflPrimitiveVariant = "solid" | "outline" | "ghost" | "subtle";
@@ -14,24 +14,28 @@ export const waflShapeClassMap: Record<WaflPrimitiveShape, string> = {
 };
 
 export const waflControlDensityClassMap: Record<WaflPrimitiveDensity, string> = {
+  micro: "min-h-8 px-2.5 py-1 text-xs",
   compact: "min-h-8 px-3 py-1.5 text-xs",
   default: "min-h-10 px-4 py-2 text-sm",
   spacious: "min-h-12 px-5 py-3 text-base",
 };
 
 export const waflFieldDensityClassMap: Record<WaflPrimitiveDensity, string> = {
+  micro: "h-8 min-h-8 px-2.5 text-xs",
   compact: "h-10 px-3 text-base md:text-sm",
   default: "h-11 px-3 text-base md:text-sm",
   spacious: "h-12 px-4 text-base",
 };
 
 export const waflIconDensityClassMap: Record<WaflPrimitiveDensity, string> = {
+  micro: "h-7 min-h-7 w-7 p-0 text-[11px]",
   compact: "h-8 min-h-8 w-8 p-0 text-xs",
   default: "h-10 min-h-10 w-10 p-0 text-sm",
   spacious: "h-12 min-h-12 w-12 p-0 text-base",
 };
 
 export const waflCompactDensityClassMap: Record<WaflPrimitiveDensity, string> = {
+  micro: "px-1.5 py-0.5 text-[10px]",
   compact: "px-2 py-0.5 text-[10px]",
   default: "px-2 py-0.5 text-[11px]",
   spacious: "px-2.5 py-1 text-xs",

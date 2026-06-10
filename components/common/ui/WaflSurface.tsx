@@ -63,6 +63,7 @@ export function WaflInfoRow({
   children: ReactNode;
   component?: string;
   tone?: WaflSurfaceTone;
+  shape?: Extract<WaflPrimitiveShape, "surface" | "control">;
 }) {
   return (
     <div
@@ -85,6 +86,7 @@ export function WaflSurfaceButton({
   component = "surface-button",
   selected = false,
   tone = "surface",
+  shape = "surface",
   type = "button",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -92,14 +94,15 @@ export function WaflSurfaceButton({
   component?: string;
   selected?: boolean;
   tone?: WaflSurfaceTone;
+  shape?: Extract<WaflPrimitiveShape, "surface" | "control">;
 }) {
   return (
     <button
       type={type}
       data-wafl-component={component}
-      data-wafl-foundation="surface"
+      data-wafl-foundation={shape}
       className={cn(
-        cn("pbp-interactive-card min-w-0 wafl-shape-surface border p-3 text-left shadow-none disabled:cursor-not-allowed disabled:opacity-45", waflInteractiveClass),
+        cn("pbp-interactive-card min-w-0 border p-3 text-left shadow-none disabled:cursor-not-allowed disabled:opacity-45", shape === "control" ? "wafl-shape-control" : "wafl-shape-surface", waflInteractiveClass),
         selected ? surfaceToneClassMap.selected : surfaceToneClassMap[tone],
         className,
       )}

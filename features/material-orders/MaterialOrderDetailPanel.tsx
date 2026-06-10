@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppBadge, AppButton, AppSelect, AppSection, WaflEmptyCard, WaflInfoRow, WaflSurface, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppSelect, AppSection, WaflButton, WaflEmptyCard, WaflInfoRow, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import {
@@ -120,17 +120,17 @@ export default function MaterialOrderDetailPanel({
                   onValueChange={(value) => onChangeSupplierPartnerId(value || null)}
                 />
                 {suppliersError ? (
-                  <AppButton
+                  <WaflButton
                     type="button"
                     onClick={onRetrySuppliers}
                     variant="danger"
                     size="sm"
-                    className="mt-1 w-fit min-h-7 px-3 py-1 text-[11px]"
+                    className="mt-1 w-fit text-[11px]"
                     title="공급처 목록을 다시 조회합니다."
                     aria-label="공급처 목록 다시 조회"
                   >
                     공급처 다시 조회
-                  </AppButton>
+                  </WaflButton>
                 ) : null}
               </FieldLabel>
           </AppSection>
@@ -169,7 +169,7 @@ export default function MaterialOrderDetailPanel({
           <MaterialOrderSummaryFooter totals={totals} />
         </div>
       ) : (
-        <WaflEmptyCard component="material-order-detail-empty" className="flex min-h-full flex-1 items-center justify-center px-5 py-10">
+        <WaflEmptyCard component="material-order-detail-empty" shape="control" className="flex min-h-full flex-1 items-center justify-center px-5 py-10">
           <div>
             <p className="text-sm font-semibold pbp-text-primary">발주서를 선택하세요.</p>
             <p className="mt-1 text-xs leading-5 pbp-text-muted">왼쪽 발주서 목록에서 새 발주서를 만들거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다.</p>

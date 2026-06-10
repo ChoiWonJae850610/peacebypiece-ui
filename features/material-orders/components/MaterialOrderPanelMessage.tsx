@@ -1,4 +1,4 @@
-import { AppButton, WaflErrorState, WaflLoadingState, WaflStateBlock } from "@/components/common/ui";
+import { WaflButton, WaflErrorState, WaflLoadingState, WaflStateBlock } from "@/components/common/ui";
 
 export type MaterialOrderPanelMessageKind = "empty" | "loading" | "error" | "search";
 
@@ -18,9 +18,9 @@ export default function MaterialOrderPanelMessage({
   kind = "empty",
 }: MaterialOrderPanelMessageProps) {
   const action = actionLabel && onAction ? (
-    <AppButton size="sm" variant={kind === "error" ? "danger" : "ghost"} onClick={onAction}>
+    <WaflButton size="sm" variant={kind === "error" ? "danger" : "ghost"} onClick={onAction}>
       {actionLabel}
-    </AppButton>
+    </WaflButton>
   ) : null;
 
   if (kind === "loading") {
@@ -31,7 +31,7 @@ export default function MaterialOrderPanelMessage({
         action={action}
         size="sm"
         minHeightClassName="min-h-[132px]"
-        className="rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-empty-state-surface)]"
+        className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
       />
     );
   }
@@ -44,7 +44,7 @@ export default function MaterialOrderPanelMessage({
         action={action}
         size="sm"
         minHeightClassName="min-h-[132px]"
-        className="rounded-[var(--pbp-radius-wafl)]"
+        className="wafl-shape-control"
       />
     );
   }
@@ -57,7 +57,7 @@ export default function MaterialOrderPanelMessage({
       action={action}
       size="sm"
       minHeightClassName="min-h-[132px]"
-      className="rounded-[var(--pbp-radius-wafl)] bg-[var(--pbp-empty-state-surface)]"
+      className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
     />
   );
 }

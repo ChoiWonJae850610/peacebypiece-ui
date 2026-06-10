@@ -13,10 +13,11 @@ export type AppSelectOption = {
   disabled?: boolean;
 };
 
-type AppSelectSize = "sm" | "md";
+type AppSelectSize = "xs" | "sm" | "md";
 type AppSelectWidth = "auto" | "full";
 
 const sizeClassMap: Record<AppSelectSize, string> = {
+  xs: cn("wafl-shape-control", waflFieldDensityClassMap.micro),
   sm: cn("wafl-shape-control", waflFieldDensityClassMap.compact),
   md: cn("wafl-shape-control", waflFieldDensityClassMap.default, "px-4"),
 };
@@ -105,7 +106,7 @@ export default function AppSelect({
         ref={triggerRef}
         data-wafl-component="select"
         data-wafl-foundation="control"
-        data-wafl-density={size === "sm" ? "sm" : "md"}
+        data-wafl-density={size === "xs" ? "xs" : size === "sm" ? "sm" : "md"}
         aria-label={ariaLabel ?? placeholder}
         onPointerDownCapture={(event: PointerEvent<HTMLButtonElement>) => {
           if (!open) return;

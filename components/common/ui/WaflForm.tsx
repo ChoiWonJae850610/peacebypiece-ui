@@ -10,9 +10,10 @@ import {
 import { cn } from "@/lib/utils";
 import { waflFieldDensityClassMap, waflInteractiveClass, getWaflPrimitiveClassName } from "./WaflPrimitive";
 
-export type WaflFieldSize = "sm" | "md" | "lg";
+export type WaflFieldSize = "xs" | "sm" | "md" | "lg";
 
 const fieldSizeClassMap: Record<WaflFieldSize, string> = {
+  xs: waflFieldDensityClassMap.micro,
   sm: waflFieldDensityClassMap.compact,
   md: waflFieldDensityClassMap.default,
   lg: waflFieldDensityClassMap.spacious,

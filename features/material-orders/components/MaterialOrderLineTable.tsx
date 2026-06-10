@@ -1,4 +1,4 @@
-import { AppSelect, WaflEmptyCard, WaflInfoRow, WaflSurface, type AppSelectOption } from "@/components/common/ui";
+import { AppSelect, WaflEmptyCard, WaflInfoRow, WaflInput, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import {
   CALCULATED_TABLE_CELL_CLASS,
   EDITABLE_TABLE_CELL_CLASS,
@@ -73,7 +73,7 @@ export function MaterialOrderLineTable({
         {lines.length === 0 ? (
           <tr>
             <td className="px-3 py-4" colSpan={6}>
-              <WaflEmptyCard component="material-order-line-empty" className="min-h-[96px] px-4 py-5">
+              <WaflEmptyCard component="material-order-line-empty" shape="control" className="min-h-[96px] px-4 py-5">
                 <p className="font-semibold pbp-text-primary">발주 품목을 추가하세요.</p>
                 <p className="mt-1 text-xs pbp-text-muted">작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다.</p>
               </WaflEmptyCard>
@@ -120,7 +120,8 @@ function MaterialOrderLineRow({
       className={`border-b border-[var(--pbp-border)] transition hover:bg-[var(--pbp-surface-soft)] ${rowIndex % 2 === 0 ? "bg-[var(--pbp-surface)]" : "bg-[var(--pbp-surface-soft)]"}`}
     >
       <td className={EDITABLE_TABLE_CELL_CLASS}>
-        <input
+        <WaflInput
+          fieldSize="xs"
           value={line.itemName}
           disabled={!editable}
           onChange={(event) =>
@@ -137,13 +138,14 @@ function MaterialOrderLineRow({
           onValueChange={(value) => onChangeLine(line.id, { unit: value })}
           options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
           placeholder="단위"
-          size="sm"
+          size="xs"
           ariaLabel="발주 단위"
-          triggerClassName="h-8 min-h-8 justify-center rounded-[var(--pbp-radius-wafl)] px-2.5 text-center text-xs"
+          triggerClassName="justify-center text-center"
         />
       </td>
       <td className={EDITABLE_TABLE_CELL_CLASS}>
-        <input
+        <WaflInput
+          fieldSize="xs"
           type="text"
           inputMode="decimal"
           value={line.orderQuantity}
@@ -164,7 +166,8 @@ function MaterialOrderLineRow({
         />
       </td>
       <td className={EDITABLE_TABLE_CELL_CLASS}>
-        <input
+        <WaflInput
+          fieldSize="xs"
           type="text"
           inputMode="numeric"
           value={line.unitPrice}
@@ -217,7 +220,7 @@ function resolveUnitSelectValue(unit: string): string {
 
 function compactInputClassName(extra = "") {
   return [
-    "pbp-field-interaction pbp-workorder-editable-input h-8 block w-full min-w-0 max-w-full overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2.5 text-xs text-[var(--pbp-text-primary)] outline-none ring-0 disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)] disabled:opacity-70",
+    "block min-w-0 max-w-full overflow-hidden text-xs",
     extra,
   ]
     .filter(Boolean)
@@ -232,7 +235,7 @@ export function MaterialOrderLineMobileCards({
 }: MaterialOrderLineTableProps) {
   if (lines.length === 0) {
     return (
-      <WaflEmptyCard component="material-order-line-mobile-empty" className="min-h-[120px] px-4 py-5">
+      <WaflEmptyCard component="material-order-line-mobile-empty" shape="control" className="min-h-[120px] px-4 py-5">
         <p className="font-semibold pbp-text-primary">발주 품목을 추가하세요.</p>
         <p className="mt-1 text-xs pbp-text-muted">작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다.</p>
       </WaflEmptyCard>
@@ -271,7 +274,7 @@ function MaterialOrderLineMobileCard({
   const lineAmount = calculateMaterialOrderLineAmount(line);
 
   return (
-    <WaflSurface as="article" component="material-order-line-mobile-card" className="p-3">
+    <WaflSurface as="article" component="material-order-line-mobile-card" shape="control" className="p-3">
       <div className="grid gap-2">
         <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
           <span className="flex min-w-0 items-center justify-between gap-2">
@@ -285,7 +288,8 @@ function MaterialOrderLineMobileCard({
               />
             ) : null}
           </span>
-          <input
+          <WaflInput
+            fieldSize="sm"
             value={line.itemName}
             disabled={!editable}
             onChange={(event) =>
@@ -310,7 +314,8 @@ function MaterialOrderLineMobileCard({
           </label>
           <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
             수량
-            <input
+            <WaflInput
+              fieldSize="sm"
               type="text"
               inputMode="decimal"
               value={line.orderQuantity}
@@ -334,7 +339,8 @@ function MaterialOrderLineMobileCard({
         <div className="grid grid-cols-2 gap-2">
           <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
             단가
-            <input
+            <WaflInput
+              fieldSize="sm"
               type="text"
               inputMode="numeric"
               value={line.unitPrice}
