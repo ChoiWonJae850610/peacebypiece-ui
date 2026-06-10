@@ -13,7 +13,7 @@ import { formatRoles } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
 import { useI18n } from "@/lib/i18n";
 import { SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
-import { WaflInfoBox, WaflSelectableCard } from "@/components/common/ui";
+import { WaflInfoRow, WaflSelectableCard } from "@/components/common/ui";
 
 export default function ManagerAssignModal({
   open,
@@ -71,15 +71,18 @@ export default function ManagerAssignModal({
         },
       })}
     >
-      <WaflInfoBox
+      <WaflInfoRow
         tone="muted"
-        className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-3 text-sm text-[var(--pbp-text-secondary)]`}
+        component="manager-assign-current-row"
+        className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-3 text-sm`}
       >
-        {copy.currentManagerLabel}{" "}
-        <span className="ml-1 font-medium text-[var(--pbp-text-primary)]">
+        <span className="text-[var(--pbp-text-secondary)]">
+          {copy.currentManagerLabel}
+        </span>
+        <span className="font-medium text-[var(--pbp-text-primary)]">
           {currentManagerName || "-"}
         </span>
-      </WaflInfoBox>
+      </WaflInfoRow>
 
       <div className="mt-4 space-y-2">
         {managerCandidates.map((user) => {
