@@ -60,7 +60,7 @@ export default function AttachmentPreviewModal({
                   download={attachment.name}
                   target="_blank"
                   rel="noreferrer"
-                  className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 items-center justify-center rounded-xl border shadow-sm transition active:scale-[0.98]"
+                  className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 items-center justify-center wafl-shape-icon border shadow-sm transition active:scale-[0.98]"
                   aria-label={copy.download}
                   title={copy.download}
                 >
@@ -78,10 +78,10 @@ export default function AttachmentPreviewModal({
               <img
                 src={previewUrl}
                 alt={attachment.name}
-                className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-[var(--pbp-modal-section-border)] bg-[var(--pbp-modal-section-surface)] object-contain shadow-sm"
+                className="mx-auto max-h-[70dvh] w-auto wafl-shape-surface border border-[var(--pbp-modal-section-border)] bg-[var(--pbp-modal-section-surface)] object-contain shadow-sm"
               />
             ) : attachment.type === "pdf" ? (
-              <div className="overflow-hidden rounded-2xl border border-[var(--pbp-modal-section-border)] bg-[var(--pbp-modal-section-surface)] shadow-sm">
+              <div className="overflow-hidden wafl-shape-surface border border-[var(--pbp-modal-section-border)] bg-[var(--pbp-modal-section-surface)] shadow-sm">
                 <div className="border-b border-[var(--pbp-border)] px-4 py-3 text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.pdfPreview}</div>
                 <iframe
                   title={attachment.name}

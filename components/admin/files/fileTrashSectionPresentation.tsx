@@ -6,10 +6,9 @@ import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
 import { WORKORDER_STAGE_STEPS, getWorkOrderStageIndex } from "@/lib/admin/files/trashTablePresentation";
 import {
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
-  ADMIN_STORAGE_SUBTLE_BOX_CLASS,
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
-import { getWaflActionButtonClassName, type WaflActionButtonTone } from "@/components/common/ui";
+import { AppBadge, WaflSurface, getWaflActionButtonClassName, type WaflActionButtonTone } from "@/components/common/ui";
 
 type TrashActionTone = "neutral" | "danger" | "dangerSolid";
 
@@ -68,7 +67,7 @@ export function WorkOrderStageInline({
   const currentIndex = getWorkOrderStageIndex(statusLabel);
 
   return (
-    <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-4 py-3`}>
+    <WaflSurface component="storage-trash-stage" shape="control" tone="muted" className="px-4 py-3">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium uppercase tracking-[0.12em]`}>
@@ -78,9 +77,9 @@ export function WorkOrderStageInline({
             {getLocalizedWorkOrderStageLabel(statusLabel, t)}
           </p>
         </div>
-        <span className="rounded-full bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-[11px] font-medium text-[var(--pbp-text-muted)]">
+        <AppBadge tone="neutral" size="xs">
           {t("filesList.workorderStage.deletedAtStage", "삭제 당시")}
-        </span>
+        </AppBadge>
       </div>
       <div className="mt-4 grid grid-cols-5 items-start gap-1.5">
         {WORKORDER_STAGE_STEPS.map((step, index) => {
@@ -109,7 +108,7 @@ export function WorkOrderStageInline({
           );
         })}
       </div>
-    </div>
+    </WaflSurface>
   );
 }
 
@@ -140,7 +139,7 @@ export function TrashItemVisual({
   if (tone === "image" && thumbnailUrl && !hasPreviewError) {
     return (
       <span
-        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] ${sizeClass} shadow-sm`}
+        className={`flex shrink-0 items-center justify-center overflow-hidden wafl-shape-icon border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] ${sizeClass} shadow-sm`}
         aria-hidden="true"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -157,7 +156,7 @@ export function TrashItemVisual({
 
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-xl border ${toneClass} ${sizeClass} font-medium shadow-sm`}
+      className={`flex shrink-0 items-center justify-center wafl-shape-icon border ${toneClass} ${sizeClass} font-medium shadow-sm`}
       aria-hidden="true"
       title={hasPreviewError ? previewFailedLabel : undefined}
     >

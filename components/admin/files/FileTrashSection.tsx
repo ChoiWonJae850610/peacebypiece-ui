@@ -232,7 +232,7 @@ export default function FileTrashSection({
                 : t("terms.actions.restore", "복원")}
             </span>
             {selectedCount > 0 ? (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center wafl-shape-compact border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
                 {selectedCount}
               </span>
             ) : null}
@@ -261,7 +261,7 @@ export default function FileTrashSection({
                 : t("filesList.delete", "삭제")}
             </span>
             {selectedCount > 0 ? (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center wafl-shape-compact border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-1 text-[9px] font-bold text-[var(--pbp-text-primary)] shadow-sm">
                 {selectedCount}
               </span>
             ) : null}

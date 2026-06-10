@@ -268,6 +268,7 @@ export function WaflFileCard({
     <WaflSurface
       component="file-card"
       tone="surface"
+      shape="control"
       className={cn(
         "pbp-sidepanel-item pbp-interactive-card relative p-3",
         className,

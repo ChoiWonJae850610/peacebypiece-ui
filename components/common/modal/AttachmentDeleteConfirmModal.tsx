@@ -52,13 +52,13 @@ export default function AttachmentDeleteConfirmModal({
             ) : attachment ? (
               <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>
                 <div className="flex items-center gap-3">
-                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-danger-soft-surface)] text-sm font-semibold text-[var(--pbp-action-danger-soft-text)]">{ui.modal.attachmentDelete.pdfTypeLabel}</div>
+                  <div className="inline-flex h-12 w-12 items-center justify-center wafl-shape-icon border border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-danger-soft-surface)] text-sm font-semibold text-[var(--pbp-action-danger-soft-text)]">{ui.modal.attachmentDelete.pdfTypeLabel}</div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-[var(--pbp-text-primary)]">{attachment.name}</div>
                     <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{ui.modal.attachmentDelete.pdfNotice}</div>
                   </div>
                 </div>
-                <div className="mt-4 overflow-hidden rounded-xl border border-[var(--pbp-border)]">
+                <div className="mt-4 overflow-hidden wafl-shape-control border border-[var(--pbp-border)]">
                   <iframe title={attachment.name} src={previewUrl} className="h-[240px] w-full bg-[var(--pbp-surface-muted)]" />
                 </div>
               </div>

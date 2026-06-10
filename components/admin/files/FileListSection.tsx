@@ -2,13 +2,12 @@
 
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AppSelect } from "@/components/common/ui";
+import { AppSelect, WaflSurface } from "@/components/common/ui";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_STORAGE_CHECKBOX_CLASS,
   ADMIN_STORAGE_CHECKBOX_IDLE_CLASS,
   ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS,
-  ADMIN_STORAGE_PANEL_CLASS,
   ADMIN_STORAGE_ROW_CLASS,
   ADMIN_STORAGE_SELECTED_ROW_CLASS,
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
@@ -40,7 +39,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className={`${ADMIN_STORAGE_PANEL_CLASS} flex h-full min-h-[420px] flex-col p-2.5 md:p-4`}>
+    <WaflSurface as="section" component="storage-file-list-panel" tone="surface" className="flex h-full min-h-[420px] flex-col p-2.5 md:p-4">
       <AdminActionBar
         title={t("filesList.title", `${t("terms.files.documentDesignGroup", "문서/디자인")} 목록`)}
         actionsClassName="w-full [&>button]:flex-1 sm:w-auto sm:[&>button]:flex-none"
@@ -114,6 +113,6 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
           { key: "size", label: t("filesList.columns.size", "용량"), render: (item) => <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px]`}>{item.fileSizeLabel}</p> },
         ]}
       />
-    </section>
+    </WaflSurface>
   );
 }

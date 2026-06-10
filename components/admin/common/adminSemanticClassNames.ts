@@ -31,7 +31,7 @@ export const ADMIN_STORAGE_CARD_CLASS =
 export const ADMIN_STORAGE_CARD_MUTED_CLASS =
   "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] shadow-[var(--pbp-shadow-card)]";
 export const ADMIN_STORAGE_SUBTLE_BOX_CLASS =
-  "wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]";
+  "wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]";
 export const ADMIN_STORAGE_PILL_CLASS =
   "wafl-shape-compact border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]";
 export const ADMIN_STORAGE_LABEL_CLASS =
@@ -47,15 +47,15 @@ export const ADMIN_STORAGE_ROW_CLASS =
 export const ADMIN_STORAGE_GROUPED_ROW_CLASS =
   "bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]";
 export const ADMIN_STORAGE_WARNING_BOX_CLASS =
-  "wafl-shape-surface border border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] px-3 py-3 text-xs leading-5 text-[var(--pbp-status-warning)]";
+  "wafl-shape-control border border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] px-3 py-3 text-xs leading-5 text-[var(--pbp-status-warning)]";
 export const ADMIN_STORAGE_DANGER_BOX_CLASS =
-  "wafl-shape-surface border border-[var(--pbp-status-danger)] bg-[var(--pbp-status-danger-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-danger)]";
+  "wafl-shape-control border border-[var(--pbp-status-danger)] bg-[var(--pbp-status-danger-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-danger)]";
 export const ADMIN_STORAGE_TABLE_HEADER_CLASS =
   "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid";
 export const ADMIN_STORAGE_TABLE_HEADER_COMPACT_CLASS =
   "hidden shrink-0 gap-3 bg-[var(--pbp-surface-muted)] px-3.5 py-1.5 text-[10px] font-semibold text-[var(--pbp-text-muted)] 2xl:grid";
 export const ADMIN_STORAGE_CHECKBOX_CLASS =
-  "flex h-4 w-4 items-center justify-center rounded border text-[10px]";
+  "flex h-4 w-4 items-center justify-center wafl-shape-compact border text-[10px]";
 export const ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS =
   "border-[var(--pbp-action-primary-surface)] bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)]";
 export const ADMIN_STORAGE_CHECKBOX_IDLE_CLASS =

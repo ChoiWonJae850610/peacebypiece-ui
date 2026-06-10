@@ -5,13 +5,11 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import {
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
-  ADMIN_STORAGE_PANEL_CLASS,
   ADMIN_STORAGE_PILL_CLASS,
-  ADMIN_STORAGE_SUBTLE_BOX_CLASS,
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
   ADMIN_STORAGE_VALUE_CLASS,
-  ADMIN_STORAGE_WARNING_BOX_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
+import { WaflInfoBox, WaflSurface } from "@/components/common/ui";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
@@ -50,7 +48,7 @@ export default function WorkOrderStorageSection({
   const trashMemoCount = getTotalCount(items, (item) => item.trashMemoCount);
 
   return (
-    <section className={`${ADMIN_STORAGE_PANEL_CLASS} flex h-full min-h-[420px] flex-col p-2.5 md:p-4`}>
+    <WaflSurface as="section" component="storage-workorder-panel" tone="surface" className="flex h-full min-h-[420px] flex-col p-2.5 md:p-4">
       <AdminActionBar
         title={t("filesWorkOrders.title", "작업지시서 저장소")}
         description={t(
@@ -73,7 +71,7 @@ export default function WorkOrderStorageSection({
         </AdminButton>
       </AdminActionBar>
 
-      <div className={`mt-3 ${ADMIN_STORAGE_WARNING_BOX_CLASS}`}>
+      <WaflInfoBox component="storage-workorder-restore-policy" tone="warning" shape="control" className="mt-3">
         <p className="font-semibold">
           {t("filesWorkOrders.restorePolicyNoticeTitle", "복원 정책 확인")}
         </p>
@@ -83,10 +81,10 @@ export default function WorkOrderStorageSection({
             "작업지시서가 삭제 상태이면 문서·디자인·메모는 개별 복원하거나 개별 삭제하지 않고 작업지시서 묶음 복원/삭제에서 함께 처리합니다. 삭제 완료 파일은 복원 대상에서 제외됩니다.",
           )}
         </p>
-      </div>
+      </WaflInfoBox>
 
       <div className="mt-3 grid gap-2.5 md:grid-cols-3">
-        <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-3`}>
+        <WaflSurface component="storage-workorder-summary-card" shape="control" tone="muted" className="px-3 py-3">
           <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
             {t(
               "filesWorkOrders.summary.deletedWorkOrders",
@@ -96,23 +94,23 @@ export default function WorkOrderStorageSection({
           <p className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1.5 text-lg font-semibold`}>
             {formatCount(deletedWorkOrderCount, t)}
           </p>
-        </div>
-        <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-3`}>
+        </WaflSurface>
+        <WaflSurface component="storage-workorder-summary-card" shape="control" tone="muted" className="px-3 py-3">
           <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
             {t("filesWorkOrders.summary.trashAttachments", "묶음 문서/디자인")}
           </p>
           <p className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1.5 text-lg font-semibold`}>
             {formatCount(trashAttachmentCount, t)}
           </p>
-        </div>
-        <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-3`}>
+        </WaflSurface>
+        <WaflSurface component="storage-workorder-summary-card" shape="control" tone="muted" className="px-3 py-3">
           <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
             {t("filesWorkOrders.summary.trashMemos", "묶음 휴지통 메모")}
           </p>
           <p className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1.5 text-lg font-semibold`}>
             {formatCount(trashMemoCount, t)}
           </p>
-        </div>
+        </WaflSurface>
       </div>
 
       <AdminTable
@@ -206,6 +204,6 @@ export default function WorkOrderStorageSection({
           },
         ]}
       />
-    </section>
+    </WaflSurface>
   );
 }

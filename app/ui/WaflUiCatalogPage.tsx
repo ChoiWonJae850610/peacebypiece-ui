@@ -1079,25 +1079,25 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.27부터 발주 화면도 작업지시서 기준 Foundation을 확장 적용한다.
-        목록/검색/필터/발주 품목 input/select/action은 같은 control 계열로
+        0.21.28부터 저장소/첨부/파일 UI도 작업지시서 기준 Foundation을 확장 적용한다.
+        파일 카드, 휴지통 row, preview/empty box는 같은 control 계열로
         읽히는지 우선 확인한다.
       </WaflNoticeBox>
 
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan · material order
+          Direct style scan · storage/file
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: 발주 section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
+            제거 대상: 저장소 panel/card/row/preview/empty/file icon의 직접 rounded, bg, border, text 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
-            예외 대상: dot, spinner, progress node, drawing canvas, modal full-screen reset
+            예외 대상: dot, spinner, progress track, chart/cylinder, modal full-screen reset
           </WaflInfoBox>
         </div>
       </WaflSurface>
@@ -1198,6 +1198,15 @@ function FoundationPrimitiveSamples() {
                 ]}
                 ariaLabel="foundation micro select sample"
               />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <WaflSurface component="catalog-storage-file-row" shape="control" tone="surface" className="flex items-center justify-between gap-3 p-3">
+                <span className="min-w-0 text-xs font-bold text-[var(--pbp-text-primary)]">파일 row · control</span>
+                <AppBadge tone="file" size="xs">file</AppBadge>
+              </WaflSurface>
+              <WaflEmptyCard component="catalog-storage-empty" shape="control" className="px-3 py-3 text-xs">
+                storage empty · control
+              </WaflEmptyCard>
             </div>
             <WaflSelectableCard
               selected
@@ -2032,17 +2041,17 @@ function PracticePatternSamples() {
 
       <WaflSurface component="catalog-foundation-scan" shape="control" tone="muted" className="p-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
-          Direct style scan · material order
+          Direct style scan · storage/file
         </p>
         <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
           제거 대상과 예외 대상을 분리한다
         </h3>
         <div className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)] md:grid-cols-2">
           <WaflInfoBox shape="control" tone="danger" state="danger" className="p-3">
-            제거 대상: 발주 section/card/row/button/input/select의 직접 rounded, bg, border, text 조합
+            제거 대상: 저장소 panel/card/row/preview/empty/file icon의 직접 rounded, bg, border, text 조합
           </WaflInfoBox>
           <WaflInfoBox shape="control" tone="info" state="info" className="p-3">
-            예외 대상: dot, spinner, progress node, drawing canvas, modal full-screen reset
+            예외 대상: dot, spinner, progress track, chart/cylinder, modal full-screen reset
           </WaflInfoBox>
         </div>
       </WaflSurface>
