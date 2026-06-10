@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { WaflButton, WaflInput, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
@@ -28,24 +29,23 @@ function MobileSummaryAction({
 }) {
   const canAct = !disabled;
   return (
-    <button
-      type="button"
+    <WaflSurfaceButton
       onClick={onClick}
       disabled={disabled}
-      className={`pbp-interactive-button pbp-detail-summary-action flex min-w-0 items-center gap-3 rounded-[var(--pbp-radius-wafl)] border px-3.5 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60 ${
-        canAct ? "shadow-sm" : ""
-      }`}
+      component="detail-summary-action"
+      tone={canAct ? "surface" : "muted"}
+      className="pbp-detail-summary-action flex items-center gap-3 px-3.5 py-3 disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="grid min-w-0 flex-1 gap-1.5">
-        <span className="text-xs font-medium text-stone-500">{label}</span>
-        <span className="max-w-full break-words text-sm font-medium text-stone-900">{value}</span>
+        <span className="text-xs font-medium text-[var(--pbp-text-muted)]">{label}</span>
+        <span className="max-w-full break-words text-sm font-medium text-[var(--pbp-text-primary)]">{value}</span>
       </span>
       {canAct ? (
-        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]" aria-hidden="true">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center wafl-shape-icon bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]" aria-hidden="true">
           <PencilIcon />
         </span>
       ) : null}
-    </button>
+    </WaflSurfaceButton>
   );
 }
 
@@ -118,41 +118,42 @@ export default function WorkOrderDetailMobileHeaderSection({
   };
 
   return (
-    <section className="pbp-detail-summary-card min-w-0 overflow-hidden rounded-[var(--pbp-radius-wafl)] border p-3.5 sm:p-4">
+    <WaflSurface as="section" component="detail-summary-card" className="pbp-detail-summary-card overflow-hidden p-3.5 sm:p-4">
       <div className="flex min-w-0 items-start gap-2">
         {isEditingTitle ? (
           <div className="min-w-0 flex-1">
-            <input
+            <WaflInput
               ref={inputRef}
               type="text"
               value={titleDraft}
               onChange={(event) => setTitleDraft(event.target.value)}
               onKeyDown={handleTitleKeyDown}
-              className="pbp-field-interaction pbp-workorder-editable-input h-11 w-full rounded-[var(--pbp-radius-wafl)] border px-3 text-lg font-semibold outline-none"
+              className="pbp-workorder-editable-input text-lg font-semibold"
               aria-label={copy.titleInputAria}
             />
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <button type="button" onClick={saveTitle} className="pbp-interactive-button pbp-action-primary rounded-xl px-3 py-1.5 text-xs font-semibold">{copy.titleEditSave}</button>
-              <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button pbp-action-secondary rounded-xl border px-3 py-1.5 text-xs font-medium">{copy.titleEditCancel}</button>
+              <WaflButton onClick={saveTitle} variant="primary" size="sm">{copy.titleEditSave}</WaflButton>
+              <WaflButton onClick={closeTitleEditor} variant="secondary" size="sm">{copy.titleEditCancel}</WaflButton>
             </div>
           </div>
         ) : (
           <>
-            <h2 className="min-w-0 break-keep text-lg font-semibold leading-7 text-stone-950">{title}</h2>
+            <h2 className="min-w-0 break-keep text-lg font-semibold leading-7 text-[var(--pbp-text-primary)]">{title}</h2>
             {canEditTitle ? (
-              <button
-                type="button"
+              <WaflButton
                 onClick={() => setIsEditingTitle(true)}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)]"
+                variant="icon"
+                size="sm"
+                className="shrink-0 text-[var(--pbp-text-muted)]"
                 aria-label={copy.titleEditAria}
               >
                 <PencilIcon />
-              </button>
+              </WaflButton>
             ) : null}
           </>
         )}
       </div>
-      <p className="mt-2 break-keep text-xs leading-5 text-stone-500">{summaryValue}</p>
+      <p className="mt-2 break-keep text-xs leading-5 text-[var(--pbp-text-muted)]">{summaryValue}</p>
 
       <div className="mt-4 grid gap-2">
         <MobileSummaryAction
@@ -175,7 +176,7 @@ export default function WorkOrderDetailMobileHeaderSection({
         />
       </div>
 
-      <div className="mt-3 text-right text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
-    </section>
+      <div className="mt-3 text-right text-xs text-[var(--pbp-text-muted)]">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
+    </WaflSurface>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSelect } from "@/components/common/ui";
+import { AppSelect, WaflButton, WaflEmptyCard, WaflInput, WaflSurface } from "@/components/common/ui";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import type { SidebarListProps } from "@/components/workorder/layout/types";
 import { useI18n } from "@/lib/i18n";
@@ -55,7 +55,7 @@ export default function WorkOrderMobileListPanel({
   });
 
   return (
-    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]">
+    <WaflSurface component="mobile-workorder-list-panel" className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
       <div className="shrink-0 border-b border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_96%,transparent)] px-3 py-3 backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -63,38 +63,40 @@ export default function WorkOrderMobileListPanel({
             <div className="mt-0.5 text-[11px] leading-4 text-[var(--pbp-text-muted)]">{controlsCopy.subtitle}</div>
           </div>
           {canCreate ? (
-            <button
-              type="button"
+            <WaflButton
               onClick={() => { if (!writeLocked) onCreate(); }}
               disabled={writeLocked}
               title={writeLocked ? writeLockMessage ?? i18n.common.workorderToolbar.writeLocked : undefined}
-              className="pbp-touch-target pbp-interactive-button pbp-action-primary shrink-0 rounded-xl px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              variant="primary"
+              size="sm"
+              className="pbp-touch-target shrink-0"
             >
               {copy.create}
-            </button>
+            </WaflButton>
           ) : null}
         </div>
 
         <div className="mt-2.5 flex items-center gap-2">
           <label className="min-w-0 flex-1">
             <span className="sr-only">{copy.searchAria}</span>
-            <input
+            <WaflInput
               type="search"
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
               placeholder={copy.searchPlaceholder}
-              className="pbp-field-interaction pbp-field-search h-10 w-full rounded-xl border px-3 text-sm outline-none"
+              className="pbp-field-search h-10 text-sm"
             />
           </label>
           {searchQuery ? (
-            <button
-              type="button"
+            <WaflButton
               onClick={() => onSearchQueryChange("")}
               disabled={writeLocked}
-              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 shrink-0 items-center justify-center rounded-xl px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+              variant="secondary"
+              size="sm"
+              className="h-10 shrink-0 px-2.5"
             >
               {controlsCopy.clearSearch}
-            </button>
+            </WaflButton>
           ) : null}
         </div>
 
@@ -120,14 +122,15 @@ export default function WorkOrderMobileListPanel({
         <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-medium leading-4 text-[var(--pbp-text-muted)]">
           <span className="min-w-0 truncate">{listSummary}</span>
           {hasCustomListControls ? (
-            <button
-              type="button"
+            <WaflButton
               onClick={onResetListControls}
               disabled={writeLocked}
-              className="pbp-interactive-button pbp-filter-active shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              variant="subtle"
+              size="sm"
+              className="pbp-filter-active min-h-6 shrink-0 px-2 py-0.5 text-[10px]"
             >
               {controlsCopy.resetControls}
-            </button>
+            </WaflButton>
           ) : null}
         </div>
       </div>
@@ -152,9 +155,9 @@ export default function WorkOrderMobileListPanel({
           ))}
         </div>
         {workOrders.length === 0 ? (
-          <div className="pbp-empty-state rounded-[var(--pbp-radius-wafl)] border border-dashed px-4 py-6 text-center text-sm">{copy.empty}</div>
+          <WaflEmptyCard className="pbp-empty-state px-4 py-6">{copy.empty}</WaflEmptyCard>
         ) : null}
       </div>
-    </div>
+    </WaflSurface>
   );
 }
