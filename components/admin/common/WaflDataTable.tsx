@@ -45,13 +45,13 @@ export const WAFL_DATA_TABLE_SUBTLE_TEXT_CLASS =
   "text-[var(--pbp-text-subtle)]";
 
 export const WAFL_DATA_TABLE_COMPACT_CARD_CLASS =
-  "w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3.5 py-3 text-left text-[12px] shadow-none transition focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)]";
+  "w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2.5 text-left text-[12px] shadow-none transition focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)] sm:px-3.5 sm:py-3";
 
 export const WAFL_DATA_TABLE_COMPACT_CARD_CLICKABLE_CLASS =
   "cursor-pointer hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]";
 
 export const WAFL_DATA_TABLE_COMPACT_META_BOX_CLASS =
-  "min-w-0 wafl-shape-control bg-[var(--pbp-surface-muted)] px-3 py-2.5";
+  "min-w-0 wafl-shape-control bg-[var(--pbp-surface-muted)] px-2.5 py-2 sm:px-3 sm:py-2.5";
 
 export const WAFL_DATA_TABLE_COMPACT_META_LABEL_CLASS =
   "text-[10px] font-semibold text-[var(--pbp-text-subtle)]";

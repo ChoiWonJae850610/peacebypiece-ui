@@ -718,9 +718,9 @@ export default function AdminCompanyFilesPanel() {
               <WaflSurface
                 shape="control"
                 tone="muted"
-                className="mt-3 overflow-hidden sm:mt-4"
+                className="mt-3 overflow-hidden sm:mt-4" data-wafl-device-density="company-file-preview"
               >
-                <div className="flex min-h-[164px] items-center justify-center px-3 py-4 text-center sm:min-h-[216px] sm:px-4 sm:py-5">
+                <div className="flex min-h-[140px] items-center justify-center px-3 py-3.5 text-center sm:min-h-[188px] sm:px-4 sm:py-5 lg:min-h-[216px]">
                   {file ? (
                     <button
                       type="button"
@@ -738,11 +738,11 @@ export default function AdminCompanyFilesPanel() {
                           <img
                             src={previewUrl}
                             alt={slot.title}
-                            className="h-[124px] w-full wafl-shape-control object-contain sm:h-[168px]"
+                            className="h-[108px] w-full wafl-shape-control object-contain sm:h-[148px] lg:h-[168px]"
                           />
                         </div>
                       ) : (
-                        <div className="mx-auto flex h-[124px] w-full max-w-[220px] flex-col items-center justify-center wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-center shadow-sm sm:h-[168px]">
+                        <div className="mx-auto flex h-[108px] w-full max-w-[220px] flex-col items-center justify-center wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 text-center shadow-sm sm:h-[148px] lg:h-[168px]">
                           <span className="text-2xl font-black tracking-[-0.04em] text-[var(--pbp-text-subtle)]">
                             {isCompanyFilePdf(file)
                               ? "PDF"
@@ -788,7 +788,8 @@ export default function AdminCompanyFilesPanel() {
                 <WaflInfoBox
                   shape="control"
                   tone="danger"
-                  className="mt-3 px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-status-danger-fg)]"
+                  density="compact"
+                  className="mt-3 text-xs font-semibold leading-5 text-[var(--pbp-status-danger-fg)]"
                 >
                   {t("settings.companyFiles.rejectionReason", "반려 사유")}:{" "}
                   {file.rejectionReason}
@@ -798,7 +799,8 @@ export default function AdminCompanyFilesPanel() {
               <WaflInfoBox
                 shape="control"
                 tone="muted"
-                className="mt-3 border-dashed px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]"
+                density="compact"
+                className="mt-3 border-dashed text-xs font-semibold leading-5 text-[var(--pbp-text-muted)]"
               >
                 업로드 가능: {allowedUploadText}
               </WaflInfoBox>
@@ -871,7 +873,8 @@ export default function AdminCompanyFilesPanel() {
         <WaflInfoBox
           shape="control"
           tone="warning"
-          className="mt-3 px-3 py-3 text-xs font-semibold leading-5 text-[var(--pbp-status-warning-fg)]"
+          density="compact"
+          className="mt-3 text-xs font-semibold leading-5 text-[var(--pbp-status-warning-fg)]"
         >
           {t(
             "settings.companyFiles.loadFailedDescription",

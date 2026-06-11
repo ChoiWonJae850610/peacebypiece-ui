@@ -1,6 +1,7 @@
 "use client";
 
 import { WaflEmptyCard } from "@/components/common/ui";
+import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import {
   ADMIN_RESPONSIVE_COMPACT_CARD_CLASS,
   ADMIN_RESPONSIVE_COMPACT_CARD_CLICKABLE_CLASS,
@@ -40,14 +41,17 @@ function CompactTrashRow({
   previewWorkOrderId,
 }: FileTrashRowsCommonProps & { row: UnifiedTrashRow }) {
   return (
-    <div
+    <WaflSurface
+      as="article"
+      component="storage-trash-compact-row"
+      shape="control"
       role="button"
       tabIndex={0}
       onClick={() => onRowClick(row)}
       onKeyDown={(event) => handleTrashRowKeyDown(event, row, onRowClick)}
       className={`${ADMIN_RESPONSIVE_COMPACT_CARD_CLASS} ${ADMIN_RESPONSIVE_COMPACT_CARD_CLICKABLE_CLASS} ${getFileTrashRowToneClass(row, previewWorkOrderId)}`}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5 sm:gap-3">
         <div className="pt-1">
           <TrashSelectionControl
             row={row}
@@ -82,7 +86,7 @@ function CompactTrashRow({
           </div>
         </div>
       </div>
-    </div>
+    </WaflSurface>
   );
 }
 
@@ -97,7 +101,8 @@ export function EmptyTrashRows({
     <WaflEmptyCard
       component="storage-trash-empty"
       shape="control"
-      className="flex min-h-[220px] flex-col items-center justify-center px-4 py-8"
+      density="spacious"
+      className="flex min-h-40 flex-col items-center justify-center px-4 py-6 md:min-h-[220px] md:py-8"
     >
       <p className="text-sm font-bold text-[var(--pbp-text-primary)]">{emptyLabel}</p>
       <p className="mt-2 max-w-md text-center text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">{emptyDescription}</p>
@@ -117,7 +122,7 @@ export function FileTrashCompactListRows({
   t: AdminTrashTranslation;
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-wafl-device-density="storage-trash-compact-list">
       {rows.map((row) => (
         <CompactTrashRow
           key={row.rowId}

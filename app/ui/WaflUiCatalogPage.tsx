@@ -1166,9 +1166,7 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.40은 PC/태블릿/모바일 공통 Add/Empty/Upload 기준에 이어 작업지시서 모바일/태블릿,
-        개인설정, 저장소 상세 모달의 InfoBox·summary·row 계열을 control
-        foundation과 density 값으로 다시 묶는다.
+        0.21.41은 작업지시서 모바일/태블릿 보정 뒤 멤버관리 compact row, 저장소 휴지통 compact row, 설정 파일 preview, 개인설정 모달의 device density를 한 번 더 맞춘다.
       </WaflNoticeBox>
 
       <WaflSurface
@@ -2394,14 +2392,11 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.40 기준으로 Add/Empty/Upload dashed box, 모달 내부, 작업지시서 모바일/태블릿
-              InfoBox/summary/row 계열까지 control foundation과 density 기준으로
-              묶었다. login, date picker, calendar range, progress bar처럼
-              의미가 있는 UI는 예외 후보로 유지한다.
+              0.21.41 기준으로 Add/Empty/Upload dashed box, 모달 내부, 작업지시서 모바일/태블릿에 이어 멤버관리·저장소·설정 모달의 compact row와 preview density까지 control foundation 기준으로 묶었다. login, date picker, calendar range, progress bar처럼 의미가 있는 UI는 예외 후보로 유지한다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.40 device density
+            0.21.41 device density
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">

@@ -122,7 +122,7 @@ function ChoiceGroup<TValue extends string>({
               component="personal-settings-choice-card"
               selected={selected}
               onClick={() => onChange(option.value)}
-              className="min-h-12 px-3 py-3 text-sm font-semibold sm:min-h-14 sm:px-4"
+              className="min-h-11 px-3 py-2.5 text-sm font-semibold sm:min-h-12 sm:px-4"
               aria-pressed={selected}
             >
               <span>{option.label}</span>
@@ -328,6 +328,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
         <label className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.name}
           <WaflInput
+            fieldSize="sm"
             value={draft.name}
             onChange={(event) =>
               setDraft((current) => ({ ...current, name: event.target.value }))
@@ -338,6 +339,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
         <label className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.phone}
           <WaflInput
+            fieldSize="sm"
             value={draft.phone}
             onChange={(event) =>
               setDraft((current) => ({
@@ -353,6 +355,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
           {copy.profile.fields.birthday}
           <div className="flex gap-2">
             <WaflInput
+              fieldSize="sm"
               value={draft.birthday}
               onChange={(event) =>
                 setDraft((current) => ({
@@ -365,7 +368,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
             />
             <WaflButton
               variant="secondary"
-              size="md"
+              size="sm"
               onClick={() =>
                 setDraft((current) => ({ ...current, birthday: "" }))
               }
@@ -393,7 +396,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
         component="personal-profile-withdrawal-card"
         tone="warning"
         state="warning"
-        density="spacious"
+        density="default"
         className="mt-4"
       >
         <div className="flex flex-wrap items-start justify-between gap-3">

@@ -83,9 +83,9 @@ function MemberDirectoryWideTableRows({
       </WaflDataTableHeader>
 
       {isLoading ? (
-        <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-[220px]" />
+        <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-40 md:min-h-[220px]" />
       ) : items.length === 0 ? (
-        <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
+        <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-40 md:min-h-[220px]" />
       ) : (
         <WaflDataTableBody>
           {items.map((row) => (
@@ -153,13 +153,13 @@ function MemberDirectoryCompactListRows({
   const actionsColumn = getColumn(columns, "actions");
 
   return (
-    <WaflSurface as="section" component="member-directory-compact-list" shape="control" className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible p-3.5 md:p-4">
+    <WaflSurface as="section" component="member-directory-compact-list" shape="control" className="mb-1 flex min-h-fit touch-pan-y flex-col overflow-visible p-2.5 sm:p-3.5 md:p-4" data-wafl-device-density="member-directory-compact">
       {isLoading ? (
-        <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-[220px]" />
+        <AdminTableState title={loadingLabel} kind="loading" minHeightClassName="min-h-40 md:min-h-[220px]" />
       ) : items.length === 0 ? (
-        <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-[220px]" />
+        <AdminTableState title={emptyLabel} description={emptyDescription} minHeightClassName="min-h-40 md:min-h-[220px]" />
       ) : (
-        <div className="grid gap-3.5">
+        <div className="grid gap-2.5 sm:gap-3.5">
           {visibleItems.map((row) => (
             <article
               key={row.id}
@@ -184,7 +184,7 @@ function MemberDirectoryCompactListRows({
                 <div className="shrink-0">{statusColumn?.render(row)}</div>
               </div>
 
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <div className="mt-2.5 grid gap-2 sm:mt-3 sm:grid-cols-3">
                 {phoneColumn ? <MemberMetaItem label={phoneColumn.label} value={phoneColumn.render(row)} /> : null}
                 {roleColumn ? <MemberMetaItem label={roleColumn.label} value={roleColumn.render(row)} /> : null}
                 {lastActiveAtColumn ? (
@@ -199,7 +199,7 @@ function MemberDirectoryCompactListRows({
               </div>
 
               {actionsColumn ? (
-                <div className="mt-3 flex justify-end" onClick={(event) => event.stopPropagation()}>
+                <div className="mt-2.5 flex justify-end sm:mt-3" onClick={(event) => event.stopPropagation()}>
                   {actionsColumn.render(row)}
                 </div>
               ) : null}
