@@ -574,7 +574,7 @@ const directStyleAuditRows = [
     remaining:
       "public/dev 핵심 page rounded 직접 조합 제거 / 공통 컴포넌트 data-wafl 기준 보강 / calendar·login·modal 예외 후보 유지",
     decision:
-      "0.21.38에서 Add/Empty/Upload dashed box 계열을 PC/태블릿/모바일 공통 control/density 기준으로 1차 고정했다. public/dev는 0.21.35에서 1차 정리 완료.",
+      "0.21.39에서 모달 내부 InfoBox/summary/row 계열까지 control foundation과 density 기준으로 재정리했다. public/dev는 0.21.35에서 1차 정리 완료.",
     tone: "info" as const,
   },
 ];
@@ -1166,9 +1166,9 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.38은 PC/태블릿/모바일 공통으로 보이는 Add/Empty/Upload dashed box
-        계열을 먼저 고정한다. 빈 슬롯과 추가 슬롯은 기본적으로 control
-        foundation과 density 값을 공유한다.
+        0.21.39는 PC/태블릿/모바일 공통 Add/Empty/Upload 기준에 이어 멤버 권한,
+        개인설정, 저장소 상세 모달의 InfoBox·summary·row 계열을 control
+        foundation과 density 값으로 다시 묶는다.
       </WaflNoticeBox>
 
       <WaflSurface
@@ -2394,13 +2394,14 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.38 기준으로 Add/Empty/Upload dashed box 계열까지 control
-              foundation과 density 기준으로 묶었다. login, date picker, calendar
-              range, progress bar처럼 의미가 있는 UI는 예외 후보로 유지한다.
+              0.21.39 기준으로 Add/Empty/Upload dashed box와 모달 내부
+              InfoBox/summary/row 계열까지 control foundation과 density 기준으로
+              묶었다. login, date picker, calendar range, progress bar처럼
+              의미가 있는 UI는 예외 후보로 유지한다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.38 responsive
+            0.21.39 modal density
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">

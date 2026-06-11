@@ -43,8 +43,7 @@ type MemberStatusOption = {
   fallbackLabel: string;
 };
 
-const MEMBER_DETAIL_SELECT_TRIGGER_CLASS =
-  "h-11 wafl-shape-control";
+const MEMBER_DETAIL_SELECT_TRIGGER_CLASS = "h-11 wafl-shape-control";
 
 type AdminMemberPermissionDetailBodyProps = {
   t: AdminTranslate;
@@ -79,8 +78,9 @@ export default function AdminMemberPermissionDetailBody({
     <div className="space-y-4">
       <WaflSurface
         component="member-permission-summary"
+        shape="control"
         tone="muted"
-        className="grid gap-3 p-4 md:grid-cols-[minmax(0,1.1fr)_160px_160px]"
+        className="grid gap-3 p-3 sm:p-4 md:grid-cols-[minmax(0,1.1fr)_160px_160px]"
       >
         <div className="min-w-0" data-wafl-component="member-summary-identity">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">
@@ -93,7 +93,11 @@ export default function AdminMemberPermissionDetailBody({
             {selectedMember?.email ?? "-"}
           </p>
         </div>
-        <WaflInfoBox component="member-summary-role" className="px-3 py-2">
+        <WaflInfoBox
+          component="member-summary-role"
+          tone="neutral"
+          density="compact"
+        >
           <p className="text-[11px] font-semibold pbp-text-muted">
             {t("memberManagement.detailModal.summary.role", "역할")}
           </p>
@@ -108,7 +112,8 @@ export default function AdminMemberPermissionDetailBody({
         </WaflInfoBox>
         <WaflInfoBox
           component="member-summary-permissions"
-          className="px-3 py-2"
+          tone="neutral"
+          density="compact"
         >
           <p className="text-[11px] font-semibold pbp-text-muted">
             {t("memberManagement.detailModal.summary.permissions", "선택 항목")}
@@ -156,8 +161,10 @@ export default function AdminMemberPermissionDetailBody({
 
           <WaflInfoBox
             component="member-status-helper"
-            tone="muted"
-            className="px-3 py-2 text-xs leading-5 pbp-text-muted"
+            tone="info"
+            state="info"
+            density="compact"
+            className="text-xs leading-5 pbp-text-muted"
           >
             <p className="font-semibold pbp-text-primary">
               {t(
@@ -220,8 +227,10 @@ export default function AdminMemberPermissionDetailBody({
 
           <WaflInfoBox
             component="member-role-template-helper"
-            tone="muted"
-            className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+            tone="info"
+            state="info"
+            density="compact"
+            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
           >
             <p className="text-xs leading-5 pbp-text-muted">
               {t(
@@ -245,7 +254,8 @@ export default function AdminMemberPermissionDetailBody({
           <WaflInfoBox
             component="member-permission-policy-notice"
             tone="muted"
-            className="px-3 py-2 text-[11px] leading-5 pbp-text-muted"
+            density="compact"
+            className="text-[11px] leading-5 pbp-text-muted"
           >
             {t(
               "memberManagement.detailModal.policyNotice",
@@ -271,10 +281,10 @@ export default function AdminMemberPermissionDetailBody({
                   <span
                     data-wafl-component="permission-check-indicator"
                     className={[
-                      "mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border text-[10px] font-bold",
+                      "mt-1 inline-flex size-4 shrink-0 items-center justify-center wafl-shape-icon border text-[10px] font-bold",
                       checked
                         ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-border)] text-white"
-                        : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-transparent",
+                        : "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-transparent",
                     ].join(" ")}
                     aria-hidden="true"
                   >

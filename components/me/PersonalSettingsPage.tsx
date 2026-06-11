@@ -3,12 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
-import { AppBadge, WaflButton, WaflInfoBox, WaflInput, WaflLinkButton, WaflSelectableCard, WaflSurface } from "@/components/common/ui";
+import {
+  AppBadge,
+  WaflButton,
+  WaflInfoBox,
+  WaflInput,
+  WaflLinkButton,
+  WaflSelectableCard,
+  WaflSurface,
+} from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { usePbpTheme } from "@/lib/theme/PbpThemeProvider";
 import { getPbpThemeDefinition } from "@/lib/theme/themeRegistry";
-import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
+import {
+  formatPhoneNumber,
+  normalizePhoneNumber,
+} from "@/lib/utils/phoneFormat";
 import {
   DEFAULT_PERSONAL_SETTINGS,
   PERSONAL_LANGUAGE_OPTIONS,
@@ -21,11 +32,16 @@ import {
   type PersonalSettingsTheme,
 } from "@/lib/me/personalSettings";
 
-type PersonalSettingsCopy = ReturnType<typeof useI18n>["i18n"]["common"]["personalSettings"];
+type PersonalSettingsCopy = ReturnType<
+  typeof useI18n
+>["i18n"]["common"]["personalSettings"];
 
-const PERSONAL_LANGUAGE_SWITCHER_ENABLED = RUNTIME_VISIBILITY.showPersonalLanguageSwitcher;
+const PERSONAL_LANGUAGE_SWITCHER_ENABLED =
+  RUNTIME_VISIBILITY.showPersonalLanguageSwitcher;
 
-function resolveVisiblePersonalSettings(settings: PersonalSettingsDraft): PersonalSettingsDraft {
+function resolveVisiblePersonalSettings(
+  settings: PersonalSettingsDraft,
+): PersonalSettingsDraft {
   if (PERSONAL_LANGUAGE_SWITCHER_ENABLED) return settings;
   return { ...settings, language: DEFAULT_PERSONAL_SETTINGS.language };
 }
@@ -62,7 +78,8 @@ function getThemePreviewColors(theme: PersonalSettingsTheme) {
   return {
     accent: themeDefinition.cssVariables["--pbp-accent"] ?? "#1c1917",
     surface: themeDefinition.cssVariables["--pbp-surface"] ?? "#ffffff",
-    selected: themeDefinition.cssVariables["--pbp-selected-surface"] ?? "#f5f5f4",
+    selected:
+      themeDefinition.cssVariables["--pbp-selected-surface"] ?? "#f5f5f4",
     border: themeDefinition.cssVariables["--pbp-border"] ?? "#e7e5e4",
   };
 }
@@ -81,10 +98,20 @@ function ChoiceGroup<TValue extends string>({
   onChange: (value: TValue) => void;
 }) {
   return (
-    <WaflSurface as="section" component="personal-settings-choice-section" className="p-4 sm:p-5">
+    <WaflSurface
+      as="section"
+      component="personal-settings-choice-section"
+      shape="control"
+      tone="surface"
+      className="p-3 sm:p-4"
+    >
       <div>
-        <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{title}</h3>
-        <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{description}</p>
+        <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">
+          {title}
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+          {description}
+        </p>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {options.map((option) => {
@@ -95,7 +122,7 @@ function ChoiceGroup<TValue extends string>({
               component="personal-settings-choice-card"
               selected={selected}
               onClick={() => onChange(option.value)}
-              className="min-h-[58px] px-4 py-3 text-sm font-semibold"
+              className="min-h-12 px-3 py-3 text-sm font-semibold sm:min-h-14 sm:px-4"
               aria-pressed={selected}
             >
               <span>{option.label}</span>
@@ -103,10 +130,19 @@ function ChoiceGroup<TValue extends string>({
                 <span className="flex items-center gap-1" aria-hidden="true">
                   <span
                     className="h-5 w-5 rounded-full border"
-                    style={{ backgroundColor: option.preview.surface, borderColor: option.preview.border }}
+                    style={{
+                      backgroundColor: option.preview.surface,
+                      borderColor: option.preview.border,
+                    }}
                   />
-                  <span className="h-5 w-5 rounded-full" style={{ backgroundColor: option.preview.selected }} />
-                  <span className="h-5 w-5 rounded-full" style={{ backgroundColor: option.preview.accent }} />
+                  <span
+                    className="h-5 w-5 rounded-full"
+                    style={{ backgroundColor: option.preview.selected }}
+                  />
+                  <span
+                    className="h-5 w-5 rounded-full"
+                    style={{ backgroundColor: option.preview.accent }}
+                  />
                 </span>
               ) : null}
             </WaflSelectableCard>
@@ -117,7 +153,9 @@ function ChoiceGroup<TValue extends string>({
   );
 }
 
-function buildProfileDraft(profile: PersonalProfile | null): PersonalProfileDraft {
+function buildProfileDraft(
+  profile: PersonalProfile | null,
+): PersonalProfileDraft {
   return {
     name: profile?.name ?? "",
     phone: formatPhoneNumber(profile?.phone ?? ""),
@@ -128,7 +166,9 @@ function buildProfileDraft(profile: PersonalProfile | null): PersonalProfileDraf
 function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
   const { refreshCurrentUser } = useCurrentUser();
   const [profile, setProfile] = useState<PersonalProfile | null>(null);
-  const [draft, setDraft] = useState<PersonalProfileDraft>(() => buildProfileDraft(null));
+  const [draft, setDraft] = useState<PersonalProfileDraft>(() =>
+    buildProfileDraft(null),
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [requestingWithdrawal, setRequestingWithdrawal] = useState(false);
@@ -137,11 +177,19 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
 
   const profileComplete = Boolean(profile?.profileComplete);
   const isCompanyAdminProfile = profile?.roleTemplateCode === "company_admin";
-  const isWithdrawalRequested = profile?.memberStatus === "withdrawal_requested";
+  const isWithdrawalRequested =
+    profile?.memberStatus === "withdrawal_requested";
   const isWithdrawn = profile?.memberStatus === "withdrawn";
-  const canRequestWithdrawal = Boolean(profile?.companyMemberId && !isCompanyAdminProfile && !isWithdrawalRequested && !isWithdrawn);
+  const canRequestWithdrawal = Boolean(
+    profile?.companyMemberId &&
+    !isCompanyAdminProfile &&
+    !isWithdrawalRequested &&
+    !isWithdrawn,
+  );
   const canSave = useMemo(() => {
-    return Boolean(draft.name.trim() && normalizePhoneNumber(draft.phone).length >= 10);
+    return Boolean(
+      draft.name.trim() && normalizePhoneNumber(draft.phone).length >= 10,
+    );
   }, [draft]);
 
   useEffect(() => {
@@ -157,7 +205,9 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
           cache: "no-store",
         });
         if (!response.ok) throw new Error("PROFILE_LOAD_FAILED");
-        const payload = (await response.json()) as { profile: PersonalProfile | null };
+        const payload = (await response.json()) as {
+          profile: PersonalProfile | null;
+        };
         if (!alive) return;
         setProfile(payload.profile);
         setDraft(buildProfileDraft(payload.profile));
@@ -173,7 +223,6 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
       alive = false;
     };
   }, [copy.profile.errors.load]);
-
 
   async function requestWithdrawal() {
     if (!canRequestWithdrawal || requestingWithdrawal) return;
@@ -192,7 +241,9 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
       });
 
       if (!response.ok) throw new Error("PROFILE_WITHDRAWAL_REQUEST_FAILED");
-      const payload = (await response.json()) as { profile: PersonalProfile | null };
+      const payload = (await response.json()) as {
+        profile: PersonalProfile | null;
+      };
       setProfile(payload.profile);
       setDraft(buildProfileDraft(payload.profile));
       setMessage(copy.profile.withdrawal.requested);
@@ -223,10 +274,13 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
       });
 
       if (!response.ok) throw new Error("PROFILE_SAVE_FAILED");
-      const payload = (await response.json()) as { profile: PersonalProfile | null };
+      const payload = (await response.json()) as {
+        profile: PersonalProfile | null;
+      };
       setProfile(payload.profile);
       setDraft(buildProfileDraft(payload.profile));
-      if (typeof window !== "undefined") window.dispatchEvent(new Event("wafl-profile-updated"));
+      if (typeof window !== "undefined")
+        window.dispatchEvent(new Event("wafl-profile-updated"));
       setMessage(copy.profile.saved);
       await refreshCurrentUser();
     } catch {
@@ -237,19 +291,35 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
   }
 
   return (
-    <WaflSurface as="section" component="personal-profile-section" className="p-4 sm:p-5">
+    <WaflSurface
+      as="section"
+      component="personal-profile-section"
+      shape="control"
+      tone="surface"
+      className="p-3 sm:p-4"
+    >
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.profile.title}</h3>
+          <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">
+            {copy.profile.title}
+          </h3>
           <AppBadge tone={profileComplete ? "success" : "warning"} size="sm">
             {profileComplete ? copy.profile.complete : copy.profile.incomplete}
           </AppBadge>
         </div>
-        <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.profile.description}</p>
+        <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+          {copy.profile.description}
+        </p>
       </div>
 
       {!profileComplete ? (
-        <WaflInfoBox component="personal-profile-required-notice" tone="muted" className="mt-4 px-3 py-2 text-xs font-semibold leading-5 text-[var(--pbp-text-primary)]">
+        <WaflInfoBox
+          component="personal-profile-required-notice"
+          tone="info"
+          state="info"
+          density="compact"
+          className="mt-4 text-xs font-semibold leading-5 text-[var(--pbp-text-primary)]"
+        >
           {copy.profile.requiredNotice}
         </WaflInfoBox>
       ) : null}
@@ -259,7 +329,9 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
           {copy.profile.fields.name}
           <WaflInput
             value={draft.name}
-            onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, name: event.target.value }))
+            }
             placeholder={copy.profile.placeholders.name}
           />
         </label>
@@ -267,7 +339,12 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
           {copy.profile.fields.phone}
           <WaflInput
             value={draft.phone}
-            onChange={(event) => setDraft((current) => ({ ...current, phone: formatPhoneNumber(event.target.value) }))}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                phone: formatPhoneNumber(event.target.value),
+              }))
+            }
             placeholder={copy.profile.placeholders.phone}
             inputMode="tel"
           />
@@ -277,14 +354,21 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
           <div className="flex gap-2">
             <WaflInput
               value={draft.birthday}
-              onChange={(event) => setDraft((current) => ({ ...current, birthday: event.target.value }))}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  birthday: event.target.value,
+                }))
+              }
               className="min-w-0 flex-1"
               type="date"
             />
             <WaflButton
               variant="secondary"
               size="md"
-              onClick={() => setDraft((current) => ({ ...current, birthday: "" }))}
+              onClick={() =>
+                setDraft((current) => ({ ...current, birthday: "" }))
+              }
               disabled={!draft.birthday}
               className="px-3 text-xs"
             >
@@ -294,16 +378,29 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
         </label>
         <div className="flex flex-col gap-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">
           {copy.profile.fields.email}
-          <WaflInfoBox component="personal-profile-email-field" tone="muted" className="px-3 py-2.5 text-sm font-semibold text-[var(--pbp-text-subtle)]">
+          <WaflInfoBox
+            component="personal-profile-email-field"
+            tone="muted"
+            density="compact"
+            className="text-sm font-semibold text-[var(--pbp-text-subtle)]"
+          >
             {profile?.email || "-"}
           </WaflInfoBox>
         </div>
       </div>
 
-      <WaflInfoBox component="personal-profile-withdrawal-card" tone="muted" className="mt-4 px-3 py-3">
+      <WaflInfoBox
+        component="personal-profile-withdrawal-card"
+        tone="warning"
+        state="warning"
+        density="spacious"
+        className="mt-4"
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-[var(--pbp-text-primary)]">{copy.profile.withdrawal.title}</p>
+            <p className="text-xs font-semibold text-[var(--pbp-text-primary)]">
+              {copy.profile.withdrawal.title}
+            </p>
             <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
               {isCompanyAdminProfile
                 ? copy.profile.withdrawal.companyAdminBlocked
@@ -320,14 +417,21 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
             onClick={requestWithdrawal}
             disabled={!canRequestWithdrawal || requestingWithdrawal}
           >
-            {requestingWithdrawal ? copy.profile.withdrawal.requesting : copy.profile.withdrawal.action}
+            {requestingWithdrawal
+              ? copy.profile.withdrawal.requesting
+              : copy.profile.withdrawal.action}
           </WaflButton>
         </div>
       </WaflInfoBox>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <div data-wafl-component="personal-profile-message" className="text-xs font-semibold text-[var(--pbp-text-muted)]">
-          {loading ? copy.profile.loading : message || error || copy.profile.helper}
+        <div
+          data-wafl-component="personal-profile-message"
+          className="text-xs font-semibold text-[var(--pbp-text-muted)]"
+        >
+          {loading
+            ? copy.profile.loading
+            : message || error || copy.profile.helper}
         </div>
         <WaflButton
           variant="primary"
@@ -343,15 +447,23 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
   );
 }
 
-export function PersonalSettingsPanel({ className = "" }: { className?: string }) {
+export function PersonalSettingsPanel({
+  className = "",
+}: {
+  className?: string;
+}) {
   const { i18n, setLocale } = useI18n();
   const copy = i18n.common.personalSettings;
   const { setThemeId } = usePbpTheme();
-  const [draft, setDraft] = useState<PersonalSettingsDraft>(DEFAULT_PERSONAL_SETTINGS);
+  const [draft, setDraft] = useState<PersonalSettingsDraft>(
+    DEFAULT_PERSONAL_SETTINGS,
+  );
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const storedSettings = resolveVisiblePersonalSettings(readStoredPersonalSettings(window.localStorage));
+    const storedSettings = resolveVisiblePersonalSettings(
+      readStoredPersonalSettings(window.localStorage),
+    );
     setDraft(storedSettings);
     setLocale(storedSettings.language);
     setThemeId(storedSettings.theme);
@@ -361,7 +473,10 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
 
   function commitDraft(nextDraft: PersonalSettingsDraft) {
     const visibleDraft = resolveVisiblePersonalSettings(nextDraft);
-    const normalizedDraft = writeStoredPersonalSettings(window.localStorage, visibleDraft);
+    const normalizedDraft = writeStoredPersonalSettings(
+      window.localStorage,
+      visibleDraft,
+    );
     setDraft(normalizedDraft);
     setLocale(normalizedDraft.language);
     setThemeId(normalizedDraft.theme);
@@ -407,11 +522,21 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
         onChange={updateTheme}
       />
 
-      <WaflSurface as="section" component="personal-policy-access-section" className="p-4 sm:p-5">
+      <WaflSurface
+        as="section"
+        component="personal-policy-access-section"
+        shape="control"
+        tone="surface"
+        className="p-3 sm:p-4"
+      >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.policyAccess.title}</h3>
-            <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{copy.policyAccess.description}</p>
+            <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">
+              {copy.policyAccess.title}
+            </h3>
+            <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
+              {copy.policyAccess.description}
+            </p>
           </div>
           <WaflLinkButton
             href="/workspace/legal"
@@ -423,7 +548,11 @@ export function PersonalSettingsPanel({ className = "" }: { className?: string }
           </WaflLinkButton>
         </div>
       </WaflSurface>
-      {!loaded ? <p className="text-xs font-semibold text-[var(--pbp-text-subtle)]">{copy.loading}</p> : null}
+      {!loaded ? (
+        <p className="text-xs font-semibold text-[var(--pbp-text-subtle)]">
+          {copy.loading}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -435,10 +564,20 @@ export default function PersonalSettingsPage() {
   return (
     <main className="min-h-screen bg-[var(--background)] px-4 py-5 text-[var(--pbp-text-primary)] md:px-6 md:py-8">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
-        <WaflSurface as="section" component="personal-settings-hero" className="p-5 sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-muted)]">WAFL</p>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--pbp-text-primary)]">{copy.title}</h1>
-          <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.description}</p>
+        <WaflSurface
+          as="section"
+          component="personal-settings-hero"
+          className="p-5 sm:p-6"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-muted)]">
+            WAFL
+          </p>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--pbp-text-primary)]">
+            {copy.title}
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
+            {copy.description}
+          </p>
         </WaflSurface>
         <PersonalSettingsPanel />
       </div>

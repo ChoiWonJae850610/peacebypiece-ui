@@ -9,6 +9,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import {
+  waflControlDensityClassMap,
   waflFieldDensityClassMap,
   waflInteractiveClass,
   getWaflPrimitiveClassName,
@@ -82,12 +83,20 @@ export type WaflInfoBoxTone =
   | "danger"
   | "info";
 export type WaflInfoBoxShape = "surface" | "control";
+export type WaflInfoBoxDensity = "compact" | "default" | "spacious";
+
+const infoBoxDensityClassMap: Record<WaflInfoBoxDensity, string> = {
+  compact: waflControlDensityClassMap.compact,
+  default: "px-3 py-3 text-sm",
+  spacious: "px-4 py-3 text-sm sm:px-4 sm:py-4",
+};
 
 export function WaflInfoBox({
   children,
   className,
   tone = "neutral",
   shape = "control",
+  density = "default",
   component = "info-card",
   state = "normal",
   ...props
@@ -95,6 +104,7 @@ export function WaflInfoBox({
   children: ReactNode;
   tone?: WaflInfoBoxTone;
   shape?: WaflInfoBoxShape;
+  density?: WaflInfoBoxDensity;
   component?: string;
   state?:
     | "normal"
@@ -112,11 +122,12 @@ export function WaflInfoBox({
       data-wafl-foundation={shape}
       data-wafl-tone={tone}
       data-wafl-state={state}
+      data-wafl-density={density}
       className={cn(
         getWaflPrimitiveClassName({
           shape,
           tone: primitiveTone,
-          className: "p-3",
+          className: infoBoxDensityClassMap[density],
         }),
         className,
       )}

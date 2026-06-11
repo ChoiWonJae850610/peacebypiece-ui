@@ -67,7 +67,11 @@ export function EmptyTrashConfirmModal({
         </div>
       }
     >
-      <WaflInfoBox component="trash-empty-confirm-message" tone="muted">
+      <WaflInfoBox
+        component="trash-empty-confirm-message"
+        tone="muted"
+        density="compact"
+      >
         <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-sm font-medium`}>
           {t(
             "filesList.emptyTrashConfirmDescription",
@@ -138,7 +142,7 @@ export function TrashSelectionConfirmModal({
           <WaflInfoBox
             component="trash-selection-summary"
             tone="muted"
-            className="px-4 py-3"
+            density="spacious"
           >
             <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-xs font-semibold`}>
               {summary.summaryLabel}
@@ -160,8 +164,10 @@ export function TrashSelectionConfirmModal({
           {summary.skippedCount > 0 ? (
             <WaflInfoBox
               component="trash-selection-skipped-notice"
-              tone="neutral"
-              className="border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-warning)]"
+              tone="warning"
+              state="warning"
+              density="spacious"
+              className="text-xs leading-5"
             >
               {t(
                 "filesList.selectionConfirm.skippedNotice",
@@ -172,8 +178,10 @@ export function TrashSelectionConfirmModal({
           {isPurge ? (
             <WaflInfoBox
               component="trash-selection-danger-notice"
-              tone="neutral"
-              className="border-[var(--pbp-status-danger)] bg-[var(--pbp-status-danger-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-danger)]"
+              tone="danger"
+              state="danger"
+              density="spacious"
+              className="text-xs leading-5"
             >
               {t(
                 "filesList.selectionConfirm.purgePolicyNotice",
@@ -263,7 +271,7 @@ export function WorkOrderActionPreviewModal({
           <WaflInfoBox
             component="trash-workorder-preview-card"
             tone="muted"
-            className="px-4 py-3"
+            density="spacious"
           >
             <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-xs font-semibold`}>
               {previewWorkOrder.title}
@@ -305,8 +313,10 @@ export function WorkOrderActionPreviewModal({
 
           <WaflInfoBox
             component="trash-workorder-action-notice"
-            tone="muted"
-            className="space-y-2 border-[var(--pbp-status-warning)] bg-[var(--pbp-status-warning-soft)] px-4 py-3 text-xs leading-5 text-[var(--pbp-status-warning)]"
+            tone="warning"
+            state="warning"
+            density="spacious"
+            className="space-y-2 text-xs leading-5"
           >
             <p className="font-semibold">
               {t(
@@ -347,8 +357,8 @@ function PreviewStatCard({ label, value }: { label: string; value: string }) {
   return (
     <WaflInfoBox
       component="trash-preview-stat-card"
-      tone="muted"
-      className="px-3 py-2"
+      tone="neutral"
+      density="compact"
     >
       <p
         className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}
@@ -465,7 +475,8 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
       <WaflInfoBox
         component="trash-detail-target-card"
         tone="muted"
-        className="flex items-start gap-3 px-3 py-3 sm:px-4"
+        density="spacious"
+        className="flex items-start gap-3"
       >
         <TrashItemVisual
           label={row.visualLabel}
@@ -514,8 +525,9 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
           <WaflSurface
             key={label}
             component="trash-detail-field-card"
+            shape="control"
             tone="surface"
-            className="px-4 py-3"
+            className="px-3 py-3 sm:px-4"
           >
             <p
               className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium uppercase tracking-[0.12em]`}
@@ -533,8 +545,9 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
       </div>
       <WaflInfoBox
         component="trash-detail-action-hint"
-        tone="muted"
-        className="px-4 py-3"
+        tone="info"
+        state="info"
+        density="spacious"
       >
         <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">
           {row.kind === "workorder"
