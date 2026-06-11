@@ -4,6 +4,7 @@ import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 import { PolicyAgreementStatusPanel, PolicyReagreementStatusPanel } from "@/components/policies/PolicyAgreementStatusPanel";
 import { CUSTOMER_POLICY_DOCUMENTS, getRequiredPolicyDocumentCount, type CustomerPolicyDocumentCategory } from "@/lib/policies/customerPolicyDocuments";
+import { AppBadge, WaflSurface } from "@/components/common/ui";
 
 const categoryTone: Record<CustomerPolicyDocumentCategory, AdminStatusBadgeTone> = {
   service: "brand",
@@ -73,17 +74,17 @@ export default async function WorkspaceLegalPage() {
                   <p className="mt-1 text-sm font-semibold pbp-text-muted">{document.subtitle}</p>
                   <p className="mt-3 text-sm leading-6 pbp-text-muted">{document.summary}</p>
                 </div>
-                <span className="shrink-0 rounded-full bg-[var(--pbp-surface-soft)] px-3 py-1 text-xs font-semibold pbp-text-muted">
+                <AppBadge tone="neutral" size="sm" className="shrink-0">
                   {document.effectiveDateLabel}
-                </span>
+                </AppBadge>
               </div>
 
               <div className="mt-4 grid gap-3">
                 {document.sections.map((section) => (
-                  <section key={section.title} className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+                  <WaflSurface key={section.title} as="section" shape="control" tone="muted" component="policy-document-section" className="p-4">
                     <h3 className="text-sm font-semibold pbp-text-primary">{section.title}</h3>
                     <p className="mt-2 text-sm leading-6 pbp-text-muted">{section.body}</p>
-                  </section>
+                  </WaflSurface>
                 ))}
               </div>
             </AdminCard>

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { WaflButton, WaflInfoBox, WaflLinkButton, WaflSurface } from "@/components/common/ui";
+
 type SessionSummary = {
   userId: string;
   email: string;
@@ -111,49 +113,49 @@ export default function DevTestConsoleClient() {
   }
 
   if (!options) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">테스트 콘솔 정보를 불러오는 중입니다.</div>;
+    return <WaflInfoBox shape="control" tone="muted" className="p-6 text-sm">테스트 콘솔 정보를 불러오는 중입니다.</WaflInfoBox>;
   }
 
   const isOverlayActive = options.actualSession.userId !== options.effectiveSession.userId;
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-8 text-slate-900">
+    <main className="min-h-screen bg-[var(--pbp-surface-soft)] px-6 py-8 text-[var(--pbp-text-primary)]">
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
-        <header className="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">DEV ONLY</p>
+        <WaflSurface as="header" tone="warning" className="p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pbp-status-warning-fg)]">DEV ONLY</p>
           <h1 className="mt-2 text-2xl font-semibold">개발 전용 테스트 사용자 전환</h1>
-          <p className="mt-2 text-sm text-amber-900">
+          <p className="mt-2 text-sm text-[var(--pbp-status-warning-fg)]">
             실제 Google 로그인은 유지하고, 앱 내부 업무 컨텍스트만 테스트 fixture 사용자로 전환합니다. production에서는 사용할 수 없습니다.
           </p>
-        </header>
+        </WaflSurface>
 
         <section className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <WaflSurface shape="control" className="p-5 shadow-sm">
             <h2 className="text-base font-semibold">실제 로그인 사용자</h2>
             <dl className="mt-4 space-y-2 text-sm">
-              <div><dt className="text-slate-500">이름</dt><dd className="font-medium">{options.actualSession.name}</dd></div>
-              <div><dt className="text-slate-500">이메일</dt><dd>{options.actualSession.email}</dd></div>
-              <div><dt className="text-slate-500">역할</dt><dd>{formatRole(options.actualSession.role)}</dd></div>
+              <div><dt className="text-[var(--pbp-text-muted)]">이름</dt><dd className="font-medium">{options.actualSession.name}</dd></div>
+              <div><dt className="text-[var(--pbp-text-muted)]">이메일</dt><dd>{options.actualSession.email}</dd></div>
+              <div><dt className="text-[var(--pbp-text-muted)]">역할</dt><dd>{formatRole(options.actualSession.role)}</dd></div>
             </dl>
-          </div>
+          </WaflSurface>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <WaflSurface shape="control" className="p-5 shadow-sm">
             <h2 className="text-base font-semibold">현재 업무 컨텍스트</h2>
             <dl className="mt-4 space-y-2 text-sm">
-              <div><dt className="text-slate-500">상태</dt><dd className="font-medium">{isOverlayActive ? "테스트 사용자 적용 중" : "원래 사용자"}</dd></div>
-              <div><dt className="text-slate-500">회사</dt><dd>{options.effectiveSession.companyName ?? "-"}</dd></div>
-              <div><dt className="text-slate-500">사용자</dt><dd>{options.effectiveSession.name}</dd></div>
-              <div><dt className="text-slate-500">역할</dt><dd>{formatRole(options.effectiveSession.role, options.activeTarget?.roleTemplateCode)}</dd></div>
+              <div><dt className="text-[var(--pbp-text-muted)]">상태</dt><dd className="font-medium">{isOverlayActive ? "테스트 사용자 적용 중" : "원래 사용자"}</dd></div>
+              <div><dt className="text-[var(--pbp-text-muted)]">회사</dt><dd>{options.effectiveSession.companyName ?? "-"}</dd></div>
+              <div><dt className="text-[var(--pbp-text-muted)]">사용자</dt><dd>{options.effectiveSession.name}</dd></div>
+              <div><dt className="text-[var(--pbp-text-muted)]">역할</dt><dd>{formatRole(options.effectiveSession.role, options.activeTarget?.roleTemplateCode)}</dd></div>
             </dl>
-          </div>
+          </WaflSurface>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <WaflSurface as="section" shape="control" className="p-5 shadow-sm">
           <h2 className="text-base font-semibold">테스트 사용자 선택</h2>
-          <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="dev-test-target">전환 대상</label>
+          <label className="mt-4 block text-sm font-medium text-[var(--pbp-text-muted)]" htmlFor="dev-test-target">전환 대상</label>
           <select
             id="dev-test-target"
-            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-slate-500"
+            className="mt-2 h-10 w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm text-[var(--pbp-text-primary)] outline-none focus:border-[var(--pbp-selected-border)]"
             value={selectedMemberId}
             onChange={(event) => setSelectedMemberId(event.target.value)}
           >
@@ -169,29 +171,19 @@ export default function DevTestConsoleClient() {
           </select>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={switchContext}
-              disabled={isBusy || !selectedMemberId}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <WaflButton onClick={switchContext} disabled={isBusy || !selectedMemberId} variant="primary" size="sm">
               이 사용자로 보기
-            </button>
-            <button
-              type="button"
-              onClick={clearContext}
-              disabled={isBusy}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            </WaflButton>
+            <WaflButton onClick={clearContext} disabled={isBusy} variant="secondary" size="sm">
               원래 사용자로 복구
-            </button>
-            <a className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700" href="/workspace">
+            </WaflButton>
+            <WaflLinkButton href="/workspace" variant="secondary" size="sm">
               workspace로 이동
-            </a>
+            </WaflLinkButton>
           </div>
 
-          {message ? <p className="mt-4 text-sm text-slate-600">{message}</p> : null}
-        </section>
+          {message ? <p className="mt-4 text-sm text-[var(--pbp-text-muted)]">{message}</p> : null}
+        </WaflSurface>
       </div>
     </main>
   );

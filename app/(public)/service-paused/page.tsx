@@ -3,6 +3,7 @@ import {
   ATypePublicFrame,
   ATypePublicNotice,
 } from "@/components/public/ATypePublicFrame";
+import { WaflLinkButton, WaflSurface } from "@/components/common/ui";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { getCompanyAccessState } from "@/lib/billing/companyAccessRepository";
 import { buildServicePausedViewModel } from "@/lib/billing/companyAccessPresentation";
@@ -33,37 +34,31 @@ export default async function ServicePausedPage() {
       footer={<p>{viewModel.notice}</p>}
     >
       <ATypePublicCard eyebrow="접근 상태" title={viewModel.statusLabel}>
-        <dl className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-sm">
+        <WaflSurface shape="control" tone="muted" component="public-access-state" className="grid gap-3 p-4 text-sm">
           <div>
-            <dt className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.company}</dt>
-            <dd className="mt-1 font-bold text-[var(--pbp-text-primary)]">{viewModel.companyName}</dd>
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.company}</p>
+            <p className="mt-1 font-bold text-[var(--pbp-text-primary)]">{viewModel.companyName}</p>
           </div>
           <div>
-            <dt className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.account}</dt>
-            <dd className="mt-1 truncate font-bold text-[var(--pbp-text-primary)]">{viewModel.accountEmail}</dd>
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.account}</p>
+            <p className="mt-1 truncate font-bold text-[var(--pbp-text-primary)]">{viewModel.accountEmail}</p>
           </div>
           <div>
-            <dt className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.status}</dt>
-            <dd className="mt-1 font-bold text-[var(--pbp-text-primary)]">{viewModel.statusLabel}</dd>
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">{viewModel.labels.status}</p>
+            <p className="mt-1 font-bold text-[var(--pbp-text-primary)]">{viewModel.statusLabel}</p>
           </div>
-        </dl>
+        </WaflSurface>
 
         <ATypePublicNotice tone="warning">{viewModel.notice}</ATypePublicNotice>
 
         <div className="flex flex-wrap gap-2">
-          <a
-            href={viewModel.primaryActionHref}
-            className="inline-flex h-11 items-center justify-center rounded-[var(--pbp-radius-lg)] bg-[var(--pbp-action-primary-surface)] px-5 text-sm font-bold text-[var(--pbp-action-primary-text)]"
-          >
+          <WaflLinkButton href={viewModel.primaryActionHref} variant="primary" size="md">
             {viewModel.primaryActionLabel}
-          </a>
+          </WaflLinkButton>
           {viewModel.primaryActionHref !== viewModel.secondaryActionHref ? (
-            <a
-              href={viewModel.secondaryActionHref}
-              className="inline-flex h-11 items-center justify-center rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-5 text-sm font-bold text-[var(--pbp-text-primary)]"
-            >
+            <WaflLinkButton href={viewModel.secondaryActionHref} variant="secondary" size="md">
               {viewModel.secondaryActionLabel}
-            </a>
+            </WaflLinkButton>
           ) : null}
         </div>
       </ATypePublicCard>

@@ -3,6 +3,7 @@ import {
   ATypePublicFrame,
   ATypePublicNotice,
 } from "@/components/public/ATypePublicFrame";
+import { WaflLinkButton } from "@/components/common/ui";
 import { resolveInviteAuthErrorMessage } from "@/lib/invitations/invitationErrorPresentation";
 
 type InviteErrorPageProps = {
@@ -35,12 +36,9 @@ export default async function InviteErrorPage({ searchParams }: InviteErrorPageP
     >
       <ATypePublicCard eyebrow="초대 링크 안내" title="링크 상태를 확인해 주세요.">
         <ATypePublicNotice tone="danger">{resolveInviteAuthErrorMessage(error)}</ATypePublicNotice>
-        <a
-          href="/login"
-          className="flex w-full items-center justify-center rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-5 py-4 text-sm font-black text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-soft)]"
-        >
+        <WaflLinkButton href="/login" variant="secondary" width="full" size="lg">
           로그인 화면으로 이동
-        </a>
+        </WaflLinkButton>
       </ATypePublicCard>
     </ATypePublicFrame>
   );

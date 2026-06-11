@@ -569,11 +569,12 @@ const directStyleAuditRows = [
   },
   {
     area: "public/dev",
-    scope: "public error + dev test console",
-    status: "낮은 우선순위",
-    remaining: "rounded 13 / 상태색 27 / 직접 form 3",
-    decision: "고객 업무 화면이 아니므로 제품 화면 정리 후 마지막에 정리한다.",
-    tone: "neutral" as const,
+    scope: "public error + service paused + workspace legal + dev test console",
+    status: "1차 정리",
+    remaining: "public/dev 핵심 page rounded 직접 조합 제거 / calendar·login·modal 예외 후보 유지",
+    decision:
+      "0.21.35에서 public 초대 오류, 서비스 일시중지, workspace 약관, dev test console의 카드/버튼/필드 shape를 WAFL Foundation 기준으로 정리했다.",
+    tone: "info" as const,
   },
 ];
 
@@ -1164,9 +1165,9 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.34는 설정/결제/회사 화면 Direct Style 제거 2차다. 회사 설정
-        summary, 조직 설정, 구독 콘솔, 권한 preview의 직접 radius/status box를
-        WAFL Foundation 기준으로 낮춘다.
+        0.21.35는 public/dev 및 낮은 우선순위 화면 Direct Style 제거 1차다.
+        초대 오류, 서비스 일시중지, workspace 약관, dev test console의 카드/버튼/필드
+        shape를 WAFL Foundation 기준으로 낮춘다.
       </WaflNoticeBox>
 
       <WaflSurface
@@ -2392,14 +2393,14 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.34 기준으로 설정/결제/회사 영역의 settings hub, 정책
-              overview, 회사 파일 preview/card, feedback form을 2차 정리했다.
-              남은 rounded-full은 progress bar처럼 의미가 있는 예외 후보이며,
-              color swatch도 표시 목적 예외로 분리한다.
+              0.21.35 기준으로 public 초대 오류, 서비스 일시중지, workspace 약관,
+              dev test console의 카드/버튼/필드 shape를 Foundation 기준으로 정리했다.
+              login, date picker, calendar range, progress bar처럼 의미가 있는 UI는
+              예외 후보로 유지한다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.34 audit
+            0.21.35 audit
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">
