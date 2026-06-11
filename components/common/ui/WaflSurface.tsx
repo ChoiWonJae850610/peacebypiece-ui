@@ -83,7 +83,7 @@ export function WaflInfoRow({
     <div
       data-wafl-component={component}
       data-wafl-foundation="control"
-      data-wafl-tone={tone}
+      data-wafl-tone="surface"
       className={cn(
         getWaflPrimitiveClassName({
           shape: "control",
@@ -343,7 +343,7 @@ export function WaflPlainButton({
       type={type}
       data-wafl-component={component}
       data-wafl-foundation="control"
-      data-wafl-tone={tone}
+      data-wafl-tone="surface"
       className={cn(
         cn(
           getWaflPrimitiveClassName({
