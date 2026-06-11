@@ -58,7 +58,7 @@ export default function WorkOrderDetailMobileOutsourcingSection({
     : copy.empty;
 
   return (
-    <WaflSurface as="section" component="outsourcing-section" className="overflow-hidden p-3 sm:p-3.5">
+    <WaflSurface as="section" component="mobile-outsourcing-section" shape="control" className="overflow-hidden p-3 sm:p-3.5">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-3 grid gap-3">
@@ -87,7 +87,7 @@ export default function WorkOrderDetailMobileOutsourcingSection({
             </article>
           ))}
 
-          <WaflSurface component="outsourcing-handoff-note" tone="muted" className="px-3 py-3 text-xs leading-5 text-[var(--pbp-text-muted)] sm:px-4">
+          <WaflSurface component="mobile-outsourcing-handoff-note" shape="control" tone="muted" className="px-3 py-3 text-xs leading-5 text-[var(--pbp-text-muted)] sm:px-4">
             {copy.handoffNote}
           </WaflSurface>
 

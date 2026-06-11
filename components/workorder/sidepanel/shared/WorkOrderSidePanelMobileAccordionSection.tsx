@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { WaflSurface } from "@/components/common/ui";
+
 type WorkOrderSidePanelMobileAccordionSectionProps = {
   title: string;
   count?: number;
@@ -20,7 +22,7 @@ export default function WorkOrderSidePanelMobileAccordionSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="pbp-card min-w-0 overflow-hidden rounded-[20px] sm:rounded-[22px]">
+    <WaflSurface as="section" component="mobile-sidepanel-accordion" shape="control" className="min-w-0 overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
@@ -33,6 +35,6 @@ export default function WorkOrderSidePanelMobileAccordionSection({
         <span className="text-sm pbp-text-muted">{open ? collapseLabel : "+"}</span>
       </button>
       {open ? <div className="min-w-0 overflow-x-hidden border-t border-[var(--pbp-border)] p-2 sm:p-2.5">{children}</div> : null}
-    </section>
+    </WaflSurface>
   );
 }

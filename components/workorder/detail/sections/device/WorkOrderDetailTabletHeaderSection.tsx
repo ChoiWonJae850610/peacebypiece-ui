@@ -55,6 +55,7 @@ function TabletSummaryAction({
       onClick={onClick}
       disabled={disabled}
       component="detail-summary-action"
+      shape="control"
       className="flex items-center justify-between gap-3 px-3.5 py-3 disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="grid min-w-0 gap-1">
@@ -147,7 +148,7 @@ export default function WorkOrderDetailTabletHeaderSection({
   };
 
   return (
-    <WaflSurface as="section" component="detail-summary-card" className="p-4">
+    <WaflSurface as="section" component="tablet-detail-summary-card" shape="control" className="p-4">
       <div className="grid gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-start gap-2">
@@ -159,7 +160,7 @@ export default function WorkOrderDetailTabletHeaderSection({
                   value={titleDraft}
                   onChange={(event) => setTitleDraft(event.target.value)}
                   onKeyDown={handleTitleKeyDown}
-                  className="pbp-workorder-editable-input h-11 text-xl font-semibold"
+                  fieldSize="md" className="pbp-workorder-editable-input text-xl font-semibold"
                   aria-label={copy.titleInputAria}
                 />
                 <div className="mt-2 flex flex-wrap items-center gap-2">

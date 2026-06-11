@@ -158,7 +158,7 @@ export default function WorkOrderDetailTabletMaterialSection({
   return (
     <section className="min-w-0 space-y-2.5">
       {materials.length === 0 ? (
-        <WaflEmptyCard density="spacious" className="pbp-text-muted">
+        <WaflEmptyCard density="default" className="pbp-text-muted">
           {copy.empty}
         </WaflEmptyCard>
       ) : null}
@@ -168,6 +168,7 @@ export default function WorkOrderDetailTabletMaterialSection({
           tone="warning"
           shape="control"
           state="warning"
+          density="compact"
           className="text-xs leading-5"
         >
           <div className="font-semibold">

@@ -6,6 +6,7 @@ import {
   WaflAddIconBubble,
   WaflButton,
   WaflEmptyCard,
+  WaflInfoBox,
   WaflSurface,
 } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
@@ -91,7 +92,7 @@ function MaterialListCard({
     item.name || copy.fallbackItem.replace("{index}", String(index + 1));
 
   return (
-    <WaflSurface component="material-card" tone="muted" className="p-3">
+    <WaflSurface component="mobile-material-card" shape="control" tone="muted" className="p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <AppBadge tone="neutral" size="sm">
@@ -158,10 +159,13 @@ export default function WorkOrderDetailMobileMaterialSection({
       ) : null}
 
       {!locked && zeroQuantityCount > 0 ? (
-        <WaflSurface
-          component="zero-quantity-notice"
+        <WaflInfoBox
+          component="mobile-zero-quantity-notice"
           tone="warning"
-          className="px-3 py-2.5 text-xs leading-5"
+          shape="control"
+          state="warning"
+          density="compact"
+          className="text-xs leading-5"
         >
           <div className="font-semibold">
             {copy.zeroQuantityNoticeTitle.replace(
@@ -176,11 +180,11 @@ export default function WorkOrderDetailMobileMaterialSection({
             onClick={onRemoveZeroQuantity}
             variant="neutral"
             size="sm"
-            className="mt-2 min-h-7 px-3 py-1 text-[11px]"
+            className="mt-2"
           >
             {copy.zeroQuantityCleanupButton}
           </WaflButton>
-        </WaflSurface>
+        </WaflInfoBox>
       ) : null}
 
       {materials.map((item, index) => (

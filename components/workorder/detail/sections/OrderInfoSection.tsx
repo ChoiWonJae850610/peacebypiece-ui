@@ -159,6 +159,8 @@ export default function OrderInfoSection({
   const processCount = visibleOrderEntries.length + outsourcing.length;
   const hasRows = processCount > 0;
   const isFlatDevice = variant === "mobile" || variant === "tablet";
+  const deviceDensity = variant === "mobile" ? "default" : "spacious";
+  const deviceStackClass = variant === "mobile" ? "space-y-2.5" : "space-y-3";
   void open;
   void onToggle;
   void onAdd;
@@ -203,12 +205,12 @@ export default function OrderInfoSection({
         <OrderInfoHubDebugPanel policy={orderHubPolicy} />
       ) : null}
       {!hasRows ? (
-        <WaflEmptyCard density="spacious" className="pbp-text-muted">
+        <WaflEmptyCard density={deviceDensity} className="pbp-text-muted">
           {copy.empty}
         </WaflEmptyCard>
       ) : null}
 
-      <div className="space-y-2.5">
+      <div className={deviceStackClass}>
         {visibleOrderEntries.map((item) => (
           <ProcessCard
             key={item.id}
@@ -245,7 +247,7 @@ export default function OrderInfoSection({
       {!locked ? (
         <WaflAddCardButton
           component="process-add-button"
-          density="default"
+          density={deviceDensity}
           onClick={openPrimaryAddSheet}
           className="w-full"
           aria-label={
@@ -276,7 +278,7 @@ export default function OrderInfoSection({
   );
 
   return (
-    <section className={isFlatDevice ? "min-w-0 space-y-2.5" : "mt-5 min-w-0"}>
+    <section className={isFlatDevice ? `min-w-0 ${deviceStackClass}` : "mt-5 min-w-0"}>
       {!isFlatDevice ? (
         <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
           <div className="flex min-w-0 items-center gap-2">

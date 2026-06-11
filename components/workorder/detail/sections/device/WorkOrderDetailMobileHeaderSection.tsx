@@ -33,8 +33,9 @@ function MobileSummaryAction({
       onClick={onClick}
       disabled={disabled}
       component="detail-summary-action"
+      shape="control"
       tone={canAct ? "surface" : "muted"}
-      className="pbp-detail-summary-action flex items-center gap-3 px-3.5 py-3 disabled:cursor-not-allowed disabled:opacity-60"
+      className="pbp-detail-summary-action flex items-center gap-3 px-3 py-2.5 disabled:cursor-not-allowed disabled:opacity-60 sm:px-3.5 sm:py-3"
     >
       <span className="grid min-w-0 flex-1 gap-1.5">
         <span className="text-xs font-medium text-[var(--pbp-text-muted)]">{label}</span>
@@ -118,7 +119,7 @@ export default function WorkOrderDetailMobileHeaderSection({
   };
 
   return (
-    <WaflSurface as="section" component="detail-summary-card" className="pbp-detail-summary-card overflow-hidden p-3.5 sm:p-4">
+    <WaflSurface as="section" component="mobile-detail-summary-card" shape="control" className="pbp-detail-summary-card overflow-hidden p-3 sm:p-3.5">
       <div className="flex min-w-0 items-start gap-2">
         {isEditingTitle ? (
           <div className="min-w-0 flex-1">
@@ -128,7 +129,7 @@ export default function WorkOrderDetailMobileHeaderSection({
               value={titleDraft}
               onChange={(event) => setTitleDraft(event.target.value)}
               onKeyDown={handleTitleKeyDown}
-              className="pbp-workorder-editable-input text-lg font-semibold"
+              fieldSize="sm" className="pbp-workorder-editable-input text-lg font-semibold"
               aria-label={copy.titleInputAria}
             />
             <div className="mt-2 flex flex-wrap items-center gap-2">
