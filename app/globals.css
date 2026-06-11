@@ -35,14 +35,14 @@
   --pbp-status-danger-fg: #C93A3A;
   --pbp-status-neutral-bg: #F1EFEC;
   --pbp-status-neutral-fg: #6F665D;
-  --pbp-radius-xs: 16px;
-  --pbp-radius-sm: 16px;
-  --pbp-radius-md: 16px;
-  --pbp-radius-lg: 16px;
-  --pbp-radius-xl: 16px;
-  --pbp-radius-card: 16px;
-  --pbp-radius-modal: 16px;
-  --pbp-radius-pill: 16px;
+  --pbp-radius-xs: 6px;
+  --pbp-radius-sm: 7px;
+  --pbp-radius-md: 8px;
+  --pbp-radius-lg: 8px;
+  --pbp-radius-xl: 8px;
+  --pbp-radius-card: 8px;
+  --pbp-radius-modal: 10px;
+  --pbp-radius-pill: 8px;
   --pbp-shadow-card-a-type: none;
   --pbp-shadow-elevated-a-type: none;
   --pbp-shadow-modal-a-type: none;
@@ -174,9 +174,9 @@
   --pbp-toast-loading: var(--pbp-brand-soft);
   --pbp-shadow-card: none;
   --pbp-shadow-elevated: none;
-  --pbp-radius-page-panel: 22px;
-  --pbp-radius-content-card: 22px;
-  --pbp-radius-empty-card: 22px;
+  --pbp-radius-page-panel: 8px;
+  --pbp-radius-content-card: 8px;
+  --pbp-radius-empty-card: 8px;
   --pbp-shadow-content-card: none;
   --pbp-shadow-action-button: none;
   --pbp-info-surface: #F7F1E8;
@@ -222,15 +222,16 @@ body {
    border, background, spacing, typography, and shared shape tokens.
 
    Shape rule:
-   - surface: card, panel, info box, empty state
-   - control: button, input, select, filter control
-   - compact: badge, chip, small label
-   - icon: icon-only button, add icon bubble
+   - surface: card, panel, info box, empty state (8px; inner summary box 기준)
+   - control: button, input, select, filter control (7px)
+   - compact: badge, chip, small label (6px)
+   - icon: icon-only button, add icon bubble (6px)
 
-   Do not use rounded-full for WAFL UI. Small components use smaller tokens
-   so they visually match the surface family instead of becoming pill-shaped. */
+   WAFL keeps a more rectangular business-tool silhouette. Direct rounded-* utilities
+   must not create a different radius family; they are normalized to the shared
+   surface token unless they are directional trims or semantic circles. */
 :root {
-  --pbp-radius-wafl-surface: 12px;
+  --pbp-radius-wafl-surface: 8px;
   --pbp-radius-wafl-control: 7px;
   --pbp-radius-wafl-compact: 6px;
   --pbp-radius-wafl-icon: 6px;
@@ -260,7 +261,7 @@ body {
 }
 
 :where([class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-t-"]):not([class*="rounded-b-"]):not([class*="rounded-l-"]):not([class*="rounded-r-"])) {
-  border-radius: var(--pbp-radius-wafl-surface);
+  border-radius: var(--pbp-radius-wafl-surface) !important;
 }
 
 /* WAFL component adoption debug.
