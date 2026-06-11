@@ -221,6 +221,15 @@ export async function updateMaterialOrderStatus(input: {
   return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
 }
 
+export async function cancelMaterialOrder(input: {
+  materialOrderId: string;
+}): Promise<MaterialOrderWorkspaceMutationResult> {
+  return updateMaterialOrderStatus({
+    materialOrderId: input.materialOrderId,
+    status: "cancelled",
+  });
+}
+
 export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrderWorkspaceWorkOrderCandidate[]> {
   const response = await fetch("/api/workorders/summary?status=active", {
     method: "GET",

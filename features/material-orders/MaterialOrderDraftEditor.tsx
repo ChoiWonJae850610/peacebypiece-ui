@@ -130,6 +130,7 @@ export default function MaterialOrderDraftEditor({
     refreshWorkOrderCandidates,
     refreshSuppliers,
     createOrder,
+    cancelOrder,
     changeMaterialType,
     changeSelectedOrderStatus,
     updateLine,
@@ -184,6 +185,7 @@ export default function MaterialOrderDraftEditor({
       creating={creatingOrder}
       onSelectOrder={handleSelectOrder}
       onCreateOrder={createOrder}
+      onCancelOrder={cancelOrder}
       onRetry={() => void refreshOrders()}
       selectedDraftMaterialType={materialType}
       selectedDraftSupplierName={selectedDraftSupplierName}
@@ -253,6 +255,7 @@ export default function MaterialOrderDraftEditor({
               creating={creatingOrder}
               onSelectOrder={handleSelectOrder}
               onCreateOrder={createOrder}
+              onCancelOrder={cancelOrder}
               onRetry={() => void refreshOrders()}
               selectedDraftMaterialType={materialType}
               selectedDraftSupplierName={selectedDraftSupplierName}
@@ -327,6 +330,7 @@ export default function MaterialOrderDraftEditor({
                 creating={creatingOrder}
                 onSelectOrder={handleSelectOrder}
                 onCreateOrder={createOrder}
+                onCancelOrder={cancelOrder}
                 onRetry={() => void refreshOrders()}
                 selectedDraftMaterialType={materialType}
                 selectedDraftSupplierName={selectedDraftSupplierName}

@@ -42,6 +42,10 @@ export function isMaterialOrderStatusTransitionAllowed(
   currentStatus: MaterialOrderStatus,
   nextStatus: MaterialOrderStatus,
 ): boolean {
+  if (currentStatus === MATERIAL_ORDER_STATUS.draft && nextStatus === MATERIAL_ORDER_STATUS.cancelled) {
+    return true;
+  }
+
   return resolveMaterialOrderStatusActions(currentStatus).some(
     (action) => action.nextStatus === nextStatus,
   );

@@ -102,7 +102,7 @@ function normalizeMaterialOrderLines(value: unknown): MaterialOrderLineInput[] {
 }
 
 function resolveStatusPermission(status: MaterialOrderStatus) {
-  if (status === "review_requested" || status === "draft") {
+  if (status === "review_requested" || status === "draft" || status === "cancelled") {
     return MEMBER_PERMISSION_CODE.materialOrderRequest;
   }
 

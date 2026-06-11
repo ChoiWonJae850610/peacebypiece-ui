@@ -8,6 +8,7 @@ import {
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import {
+  cancelMaterialOrder,
   createEmptyMaterialOrder,
   fetchAllocationCandidateWorkOrders,
   fetchMaterialOrderSuppliers,
@@ -388,6 +389,34 @@ export function useMaterialOrderDraftEditor() {
     ],
   );
 
+  const cancelOrder = useCallback(
+    async (materialOrderId: string) => {
+      const targetOrder = orders.find((order) => order.id === materialOrderId);
+      if (!targetOrder || targetOrder.status !== "draft") return;
+
+      setStatusChanging(true);
+      showStatusToast("발주서를 삭제하는 중입니다.", "loading");
+
+      try {
+        const result = await cancelMaterialOrder({ materialOrderId });
+        setOrders(result.materialOrders);
+        setSelectedOrderId((currentSelectedOrderId) =>
+          currentSelectedOrderId === materialOrderId ? "" : currentSelectedOrderId,
+        );
+        await refreshWorkOrderCandidates();
+        showStatusToast("발주서를 삭제했습니다.", "success");
+      } catch (error) {
+        showStatusToast(
+          toMaterialOrderWorkspaceError(error, "발주서를 삭제하지 못했습니다."),
+          "danger",
+        );
+      } finally {
+        setStatusChanging(false);
+      }
+    },
+    [orders, refreshWorkOrderCandidates, showStatusToast],
+  );
+
   const updateLine = useCallback(
     (lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
       setLines((current) =>
@@ -474,6 +503,7 @@ export function useMaterialOrderDraftEditor() {
     refreshWorkOrderCandidates,
     refreshSuppliers,
     createOrder,
+    cancelOrder,
     changeMaterialType,
     changeSelectedOrderStatus,
     updateLine,
