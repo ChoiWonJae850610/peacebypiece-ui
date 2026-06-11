@@ -173,7 +173,7 @@ export function TargetSummary({
 }
 
 export function handleTrashRowKeyDown(
-  event: KeyboardEvent<HTMLDivElement>,
+  event: KeyboardEvent<HTMLElement>,
   row: UnifiedTrashRow,
   onRowClick: (row: UnifiedTrashRow) => void,
 ) {
