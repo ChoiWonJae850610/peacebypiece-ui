@@ -524,11 +524,11 @@ const directStyleAuditRows = [
   {
     area: "작업지시서",
     scope: "components/workorder",
-    status: "기준 화면",
-    remaining: "rounded 69 / 상태색 17 / 직접 form 15",
+    status: "device 기준 고정",
+    remaining: "Add/Empty/Upload + 모바일/태블릿 density 1차 통과 / progress·editor table은 예외 검토",
     decision:
-      "0.21.26에서 기준 화면으로 고정했지만 detail/editor 내부의 table, progress, legacy form 잔여분은 다음 정리 대상이다.",
-    tone: "warning" as const,
+      "0.21.38~0.21.40에서 Add/Empty/Upload, 모달 내부, 모바일/태블릿 detail density를 control foundation 기준으로 묶었다.",
+    tone: "success" as const,
   },
   {
     area: "발주",
@@ -542,39 +542,39 @@ const directStyleAuditRows = [
   {
     area: "저장소/첨부",
     scope: "components/admin/files + Attachment modal",
-    status: "부분 통과",
-    remaining: "rounded 11 / 상태색 0 / 직접 form 0",
+    status: "device 기준 고정",
+    remaining: "compact row / preview / modal summary density 1차 통과 / thumbnail·file visual은 icon 예외 검토",
     decision:
-      "썸네일, preview wrapper, modal shell 계열의 원형/표면 예외 여부를 확인한 뒤 제거 대상을 분리한다.",
-    tone: "info" as const,
+      "0.21.39~0.21.41에서 휴지통 상세 모달, compact row, preview box를 device density 기준으로 재정리했다.",
+    tone: "success" as const,
   },
   {
     area: "통계/멤버관리",
     scope: "dashboard + members + admin common",
-    status: "1차 정리",
-    remaining: "rounded 34 → 22 / stone 색상 일부 제거 / 직접 form 2",
+    status: "device 기준 고정",
+    remaining: "compact row / modal info / permission row density 1차 통과 / chart·calendar는 예외 검토",
     decision:
-      "0.21.31에서 audit panel, workspace card, admin layout tile의 직접 radius와 stone 색상을 Foundation 기준으로 정리했다. chart dot/calendar range/table state는 예외 후보로 남긴다.",
-    tone: "info" as const,
+      "0.21.31 정리 후 0.21.39~0.21.41에서 멤버 권한 모달과 compact row의 모바일/태블릿 density를 추가로 맞췄다.",
+    tone: "success" as const,
   },
   {
     area: "설정/결제/회사",
     scope: "settings + billing + companies",
-    status: "2차 정리",
+    status: "device 기준 고정",
     remaining:
-      "rounded 96 → progress bar 예외 중심 / 상태색 27 → 정책·파일 preview 일부 정리 / 직접 form 2 → feedback form 전환",
+      "settings/file preview/personal modal density 1차 통과 / progress bar·color swatch는 의미 예외",
     decision:
-      "0.21.34에서 설정 hub, 정책 overview, 회사 파일 preview/card, feedback form의 직접 radius/form 조합을 Foundation 기준으로 추가 정리했다. 진행률 bar와 color swatch는 예외 후보로 유지한다.",
-    tone: "info" as const,
+      "0.21.32~0.21.34 정리 후 0.21.39~0.21.41에서 개인설정 모달과 회사 파일 preview를 device density 기준으로 추가 보정했다.",
+    tone: "success" as const,
   },
   {
     area: "public/dev",
     scope: "public error + service paused + workspace legal + dev test console",
-    status: "1차 정리 + 공통 품질 보강",
+    status: "낮은 우선순위 정리",
     remaining:
-      "public/dev 핵심 page rounded 직접 조합 제거 / 공통 컴포넌트 data-wafl 기준 보강 / calendar·login·modal 예외 후보 유지",
+      "public/dev 핵심 page rounded 직접 조합 제거 / login hero·dev 임시 UI는 낮은 우선순위 예외",
     decision:
-      "0.21.40에서 작업지시서 모바일/태블릿 detail density를 추가 점검하고 summary/action/cost/material/sidepanel accordion 계열을 control foundation 기준으로 재정리했다.",
+      "0.21.35에서 public/dev 핵심 page를 WAFL 기준으로 낮췄고, 고객 업무 화면 기준 고정 뒤 회귀 방지만 관리한다.",
     tone: "info" as const,
   },
 ];
@@ -604,6 +604,26 @@ const directStyleExceptionRows = [
     label: "legacy/dev",
     examples: "dev console, public error page",
     decision: "고객 화면 이후 정리",
+  },
+];
+
+
+const waflDeviceBaselineRows = [
+  {
+    label: "PC",
+    rule: "3패널·모달·table shell은 surface를 쓰고 내부 row/add/empty/info는 control을 쓴다.",
+  },
+  {
+    label: "Tablet",
+    rule: "PC와 같은 shape family를 유지하되 density만 compact/default로 낮춘다.",
+  },
+  {
+    label: "Mobile",
+    rule: "카드처럼 보이는 row도 control shape를 유지하고 높이만 줄인다.",
+  },
+  {
+    label: "예외",
+    rule: "dot, spinner, avatar, progress bar, chart, color swatch, calendar range만 의미 예외로 둔다.",
   },
 ];
 
@@ -1166,8 +1186,46 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.41은 작업지시서 모바일/태블릿 보정 뒤 멤버관리 compact row, 저장소 휴지통 compact row, 설정 파일 preview, 개인설정 모달의 device density를 한 번 더 맞춘다.
+        0.21.43은 PC/태블릿/모바일 WAFL UI 1차 기준을 고정한다. Add/Empty/Upload, 모달 내부 InfoBox/summary/row, 작업지시서·멤버관리·저장소·설정 device density는 control foundation 기준으로 묶고 의미 있는 예외만 남긴다.
       </WaflNoticeBox>
+
+      <WaflSurface
+        component="catalog-device-baseline"
+        shape="control"
+        tone="surface"
+        className="p-4"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--pbp-text-subtle)]">
+              Device baseline
+            </p>
+            <h3 className="mt-1 text-base font-bold text-[var(--pbp-text-primary)]">
+              PC·태블릿·모바일은 shape를 공유하고 density만 낮춘다
+            </h3>
+          </div>
+          <AppBadge tone="brand" size="xs">
+            0.21.43 기준 고정
+          </AppBadge>
+        </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          {waflDeviceBaselineRows.map((row) => (
+            <WaflInfoRow
+              key={row.label}
+              component="catalog-device-baseline-row"
+              tone="muted"
+              className="items-start"
+            >
+              <span className="text-xs font-bold text-[var(--pbp-text-primary)]">
+                {row.label}
+              </span>
+              <span className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
+                {row.rule}
+              </span>
+            </WaflInfoRow>
+          ))}
+        </div>
+      </WaflSurface>
 
       <WaflSurface
         component="catalog-foundation-scan"
@@ -2392,11 +2450,11 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.41 기준으로 Add/Empty/Upload dashed box, 모달 내부, 작업지시서 모바일/태블릿에 이어 멤버관리·저장소·설정 모달의 compact row와 preview density까지 control foundation 기준으로 묶었다. login, date picker, calendar range, progress bar처럼 의미가 있는 UI는 예외 후보로 유지한다.
+              0.21.43 기준으로 PC/태블릿/모바일 WAFL UI 1차 기준을 고정했다. Add/Empty/Upload dashed box, 모달 내부 InfoBox/summary/row, 작업지시서·멤버관리·저장소·설정 device density는 control foundation 기준으로 묶고, login/date picker/calendar range/progress bar처럼 의미가 있는 UI만 예외 후보로 유지한다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.41 device density
+            0.21.43 baseline
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">
