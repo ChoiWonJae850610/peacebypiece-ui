@@ -8,7 +8,11 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
-import { waflFieldDensityClassMap, waflInteractiveClass, getWaflPrimitiveClassName } from "./WaflPrimitive";
+import {
+  waflFieldDensityClassMap,
+  waflInteractiveClass,
+  getWaflPrimitiveClassName,
+} from "./WaflPrimitive";
 
 export type WaflFieldSize = "xs" | "sm" | "md" | "lg";
 
@@ -30,7 +34,10 @@ export const WAFL_FIELD_TEXTAREA_CLASS = cn(
   "min-h-24 resize-y px-3 py-2",
 );
 
-export type WaflInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
+export type WaflInputProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> & {
   fieldSize?: WaflFieldSize;
 };
 
@@ -56,7 +63,9 @@ export const WaflTextarea = forwardRef<HTMLTextAreaElement, WaflTextareaProps>(
     return (
       <textarea
         ref={ref}
-        data-wafl-component="textarea" data-wafl-foundation="control"
+        data-wafl-component="textarea"
+        data-wafl-foundation="control"
+        data-wafl-density="md"
         className={cn(WAFL_FIELD_TEXTAREA_CLASS, className)}
         {...props}
       />
@@ -64,7 +73,14 @@ export const WaflTextarea = forwardRef<HTMLTextAreaElement, WaflTextareaProps>(
   },
 );
 
-export type WaflInfoBoxTone = "neutral" | "selected" | "muted" | "empty" | "warning" | "danger" | "info";
+export type WaflInfoBoxTone =
+  | "neutral"
+  | "selected"
+  | "muted"
+  | "empty"
+  | "warning"
+  | "danger"
+  | "info";
 export type WaflInfoBoxShape = "surface" | "control";
 
 export function WaflInfoBox({
@@ -80,16 +96,28 @@ export function WaflInfoBox({
   tone?: WaflInfoBoxTone;
   shape?: WaflInfoBoxShape;
   component?: string;
-  state?: "normal" | "selected" | "current" | "empty" | "warning" | "danger" | "info";
+  state?:
+    | "normal"
+    | "selected"
+    | "current"
+    | "empty"
+    | "warning"
+    | "danger"
+    | "info";
 }) {
   const primitiveTone = tone === "neutral" ? "surface" : tone;
   return (
     <div
       data-wafl-component={component}
       data-wafl-foundation={shape}
+      data-wafl-tone={tone}
       data-wafl-state={state}
       className={cn(
-        getWaflPrimitiveClassName({ shape, tone: primitiveTone, className: "p-3" }),
+        getWaflPrimitiveClassName({
+          shape,
+          tone: primitiveTone,
+          className: "p-3",
+        }),
         className,
       )}
       {...props}
@@ -117,6 +145,7 @@ export function WaflSelectableCard({
       type="button"
       data-wafl-component={component}
       data-wafl-foundation="control"
+      data-wafl-tone={selected ? "selected" : current ? "muted" : "surface"}
       data-wafl-state={selected ? "selected" : current ? "current" : "normal"}
       className={cn(
         "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-control border px-4 py-3 text-left disabled:pointer-events-none disabled:opacity-50",

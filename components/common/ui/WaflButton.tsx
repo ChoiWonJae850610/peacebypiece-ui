@@ -1,19 +1,40 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from "react";
 
 import { cn } from "@/lib/utils";
-import { waflControlDensityClassMap, waflIconDensityClassMap, waflInteractiveClass } from "./WaflPrimitive";
+import {
+  waflControlDensityClassMap,
+  waflIconDensityClassMap,
+  waflInteractiveClass,
+} from "./WaflPrimitive";
 
-export type WaflButtonVariant = "primary" | "secondary" | "neutral" | "ghost" | "danger" | "subtle" | "icon";
+export type WaflButtonVariant =
+  | "primary"
+  | "secondary"
+  | "neutral"
+  | "ghost"
+  | "danger"
+  | "subtle"
+  | "icon";
 export type WaflButtonSize = "sm" | "md" | "lg";
 export type WaflButtonWidth = "auto" | "full";
 
 const variantClassMap: Record<WaflButtonVariant, string> = {
-  primary: "pbp-action-primary border-transparent hover:bg-[var(--pbp-action-primary-surface-hover)]",
-  secondary: "pbp-action-secondary border-[var(--pbp-border)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-action-secondary-surface-hover)]",
-  neutral: "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
-  ghost: "pbp-action-ghost border-transparent shadow-none hover:bg-[var(--pbp-surface-muted)]",
-  danger: "pbp-action-danger border-transparent hover:bg-[var(--pbp-action-danger-surface-hover)]",
-  subtle: "pbp-action-add border-[var(--pbp-border)] shadow-none hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
+  primary:
+    "pbp-action-primary border-transparent hover:bg-[var(--pbp-action-primary-surface-hover)]",
+  secondary:
+    "pbp-action-secondary border-[var(--pbp-border)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-action-secondary-surface-hover)]",
+  neutral:
+    "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
+  ghost:
+    "pbp-action-ghost border-transparent shadow-none hover:bg-[var(--pbp-surface-muted)]",
+  danger:
+    "pbp-action-danger border-transparent hover:bg-[var(--pbp-action-danger-surface-hover)]",
+  subtle:
+    "pbp-action-add border-[var(--pbp-border)] shadow-none hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
   icon: "pbp-action-ghost border-transparent shadow-none hover:bg-[var(--pbp-surface-muted)]",
 };
 
@@ -34,8 +55,10 @@ const widthClassMap: Record<WaflButtonWidth, string> = {
   full: "w-full",
 };
 
-export const WAFL_BUTTON_BASE_CLASS =
-  cn("inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap border font-semibold [&>svg]:pointer-events-none [&>svg]:shrink-0", waflInteractiveClass);
+export const WAFL_BUTTON_BASE_CLASS = cn(
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap border font-semibold [&>svg]:pointer-events-none [&>svg]:shrink-0",
+  waflInteractiveClass,
+);
 
 export function getWaflButtonClassName({
   className,
@@ -72,7 +95,17 @@ export function WaflButton({
   type = "button",
   ...props
 }: WaflButtonProps) {
-  return <button type={type} data-wafl-component="button" data-wafl-foundation="control" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
+  return (
+    <button
+      type={type}
+      data-wafl-component="button"
+      data-wafl-foundation={variant === "icon" ? "icon" : "control"}
+      data-wafl-variant={variant}
+      data-wafl-density={size}
+      className={getWaflButtonClassName({ variant, size, width, className })}
+      {...props}
+    />
+  );
 }
 
 type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -82,6 +115,21 @@ type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   children?: ReactNode;
 };
 
-export function WaflLinkButton({ className, variant = "secondary", size = "md", width = "auto", ...props }: WaflLinkButtonProps) {
-  return <a data-wafl-component="button" data-wafl-foundation="control" className={getWaflButtonClassName({ variant, size, width, className })} {...props} />;
+export function WaflLinkButton({
+  className,
+  variant = "secondary",
+  size = "md",
+  width = "auto",
+  ...props
+}: WaflLinkButtonProps) {
+  return (
+    <a
+      data-wafl-component="button"
+      data-wafl-foundation={variant === "icon" ? "icon" : "control"}
+      data-wafl-variant={variant}
+      data-wafl-density={size}
+      className={getWaflButtonClassName({ variant, size, width, className })}
+      {...props}
+    />
+  );
 }

@@ -2,10 +2,20 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 
 import { cn } from "@/lib/utils";
-import { waflFieldDensityClassMap, waflInteractiveClass } from "./WaflPrimitive";
+import {
+  waflFieldDensityClassMap,
+  waflInteractiveClass,
+} from "./WaflPrimitive";
 
 export type AppSelectOption = {
   value: string;
@@ -64,8 +74,14 @@ export default function AppSelect({
   const suppressOpenUntilRef = useRef(0);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const rootValue = value === undefined ? undefined : value === "" ? EMPTY_SELECT_VALUE : value;
-  const rootDefaultValue = defaultValue === undefined ? undefined : defaultValue === "" ? EMPTY_SELECT_VALUE : defaultValue;
+  const rootValue =
+    value === undefined ? undefined : value === "" ? EMPTY_SELECT_VALUE : value;
+  const rootDefaultValue =
+    defaultValue === undefined
+      ? undefined
+      : defaultValue === ""
+        ? EMPTY_SELECT_VALUE
+        : defaultValue;
 
   useEffect(() => {
     if (!open) return;
@@ -83,7 +99,8 @@ export default function AppSelect({
     };
 
     document.addEventListener("pointerdown", handlePointerDown, true);
-    return () => document.removeEventListener("pointerdown", handlePointerDown, true);
+    return () =>
+      document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [open]);
 
   return (
@@ -106,7 +123,7 @@ export default function AppSelect({
         ref={triggerRef}
         data-wafl-component="select"
         data-wafl-foundation="control"
-        data-wafl-density={size === "xs" ? "xs" : size === "sm" ? "sm" : "md"}
+        data-wafl-density={size}
         aria-label={ariaLabel ?? placeholder}
         onPointerDownCapture={(event: PointerEvent<HTMLButtonElement>) => {
           if (!open) return;
@@ -122,7 +139,10 @@ export default function AppSelect({
           event.stopPropagation();
         }}
         className={cn(
-          cn("inline-flex items-center justify-between gap-3 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] font-semibold text-[var(--pbp-text-primary)] shadow-none hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-faint)] focus:outline-none", waflInteractiveClass),
+          cn(
+            "pbp-field-interaction inline-flex items-center justify-between gap-3 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] font-semibold text-[var(--pbp-text-primary)] shadow-none hover:border-[var(--pbp-border-strong)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-faint)] focus:outline-none",
+            waflInteractiveClass,
+          ),
           sizeClassMap[size],
           widthClassMap[width],
           className,
@@ -139,7 +159,8 @@ export default function AppSelect({
           ref={contentRef}
           position="popper"
           sideOffset={6}
-          data-wafl-component="select-content" data-wafl-foundation="surface"
+          data-wafl-component="select-content"
+          data-wafl-foundation="surface"
           className={cn(
             "z-[4000] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1 text-[var(--pbp-text-primary)] shadow-none",
             contentClassName,
@@ -151,7 +172,9 @@ export default function AppSelect({
                 key={option.value}
                 value={option.value === "" ? EMPTY_SELECT_VALUE : option.value}
                 disabled={option.disabled}
-                className="relative flex min-h-9 cursor-pointer select-none items-center wafl-shape-control px-8 py-2 text-base font-semibold md:text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-[var(--pbp-surface-muted)] data-[disabled]:text-[var(--pbp-text-faint)]"
+                data-wafl-component="select-item"
+                data-wafl-foundation="control"
+                className="relative flex min-h-9 cursor-pointer select-none items-center wafl-shape-control px-8 py-2 text-base font-semibold outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-[var(--pbp-surface-muted)] data-[disabled]:text-[var(--pbp-text-faint)] md:text-sm"
               >
                 <Select.ItemIndicator className="absolute left-2 inline-flex items-center text-[var(--pbp-accent)]">
                   <Check className="h-4 w-4" aria-hidden="true" />

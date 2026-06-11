@@ -570,10 +570,11 @@ const directStyleAuditRows = [
   {
     area: "public/dev",
     scope: "public error + service paused + workspace legal + dev test console",
-    status: "1차 정리",
-    remaining: "public/dev 핵심 page rounded 직접 조합 제거 / calendar·login·modal 예외 후보 유지",
+    status: "1차 정리 + 공통 품질 보강",
+    remaining:
+      "public/dev 핵심 page rounded 직접 조합 제거 / 공통 컴포넌트 data-wafl 기준 보강 / calendar·login·modal 예외 후보 유지",
     decision:
-      "0.21.35에서 public 초대 오류, 서비스 일시중지, workspace 약관, dev test console의 카드/버튼/필드 shape를 WAFL Foundation 기준으로 정리했다.",
+      "0.21.36에서 Button/Input/Select/Badge/Surface의 foundation, tone, density, state 표시를 보강했다. public/dev는 0.21.35에서 1차 정리 완료.",
     tone: "info" as const,
   },
 ];
@@ -1165,9 +1166,9 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.35는 public/dev 및 낮은 우선순위 화면 Direct Style 제거 1차다.
-        초대 오류, 서비스 일시중지, workspace 약관, dev test console의 카드/버튼/필드
-        shape를 WAFL Foundation 기준으로 낮춘다.
+        0.21.36은 Button/Input/Select/Badge/Surface 품질 보정 1차다. 공통
+        컴포넌트의 foundation, tone, density, state 표시를 보강해서 실제 화면
+        점검 기준을 더 고정한다.
       </WaflNoticeBox>
 
       <WaflSurface
@@ -2393,14 +2394,14 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.35 기준으로 public 초대 오류, 서비스 일시중지, workspace 약관,
-              dev test console의 카드/버튼/필드 shape를 Foundation 기준으로 정리했다.
-              login, date picker, calendar range, progress bar처럼 의미가 있는 UI는
-              예외 후보로 유지한다.
+              0.21.36 기준으로 public/dev 직접 스타일 1차 정리 이후
+              Button/Input/Select/Badge/Surface의 foundation, tone, density,
+              state 표시를 보강했다. login, date picker, calendar range,
+              progress bar처럼 의미가 있는 UI는 예외 후보로 유지한다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.35 audit
+            0.21.36 quality
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">
