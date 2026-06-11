@@ -175,7 +175,7 @@ export function WaflEmptyCard({
         getWaflPrimitiveClassName({
           shape,
           tone: "empty",
-          className: cn("text-center", emptyDensityClassMap[density]),
+          className: cn("flex min-w-0 flex-col items-center justify-center text-center", emptyDensityClassMap[density]),
         }),
         className,
       )}

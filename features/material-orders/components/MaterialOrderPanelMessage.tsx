@@ -4,7 +4,7 @@ export type MaterialOrderPanelMessageKind = "empty" | "loading" | "error" | "sea
 
 type MaterialOrderPanelMessageProps = {
   title: string;
-  description: string;
+  description?: string;
   actionLabel?: string;
   onAction?: () => void;
   kind?: MaterialOrderPanelMessageKind;

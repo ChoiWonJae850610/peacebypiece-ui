@@ -100,7 +100,7 @@ export default function MaterialOrderAllocationPanel({
             description="자재 발주 대기 상태의 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
-          <MaterialOrderPanelMessage title="검색 결과 없음" description="제품명, 자재명, 담당자 검색어를 조정하세요." kind="search" />
+          <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
         ) : (
           filteredCandidates.map((workOrder) => (
             <AllocationCandidateCard

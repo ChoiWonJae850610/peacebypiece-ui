@@ -166,11 +166,7 @@ export default function MaterialOrderListPanel({
             description="새 발주서 생성 버튼으로 공급처별 발주서를 시작합니다."
           />
         ) : filteredOrders.length === 0 ? (
-          <MaterialOrderPanelMessage
-            title="검색 결과 없음"
-            description="검색어 또는 상태/종류 필터를 조정하세요."
-            kind="search"
-          />
+          <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
         ) : (
           filteredOrders.map((order) => (
             <MaterialOrderListButton

@@ -384,7 +384,7 @@ export default function SidebarContent({
             title={hasActiveListControls ? "검색 결과 없음" : controlsUi.empty}
             description={
               hasActiveListControls
-                ? "검색어 또는 진행 상태/정렬 조건을 조정하세요."
+                ? undefined
                 : "작업지시서 생성 버튼으로 첫 작업지시서를 시작합니다."
             }
             size="sm"

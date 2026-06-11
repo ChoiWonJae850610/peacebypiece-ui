@@ -562,7 +562,7 @@ export const workorderKo = {
       },
       material: {
         title: "원단·부자재",
-        empty: "아직 등록된 원단·부자재가 없습니다.",
+        empty: "원단·부자재가 없습니다.",
         fallbackItem: "자재 {index}",
         amountLabel: "금액",
         addButton: "+ 자재 추가",
