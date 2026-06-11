@@ -560,10 +560,11 @@ const directStyleAuditRows = [
   {
     area: "설정/결제/회사",
     scope: "settings + billing + companies",
-    status: "1차 정리",
-    remaining: "rounded 117 → 96 / 상태색 35 → 27 / 직접 form 2",
+    status: "2차 정리",
+    remaining:
+      "rounded 96 → progress bar 예외 중심 / 상태색 27 → 정책·파일 preview 일부 정리 / 직접 form 2 → feedback form 전환",
     decision:
-      "0.21.32에서 회사 설정 summary, 조직 설정, 구독 콘솔, 권한 preview의 직접 radius/status box 일부를 Foundation 기준으로 낮췄다.",
+      "0.21.34에서 설정 hub, 정책 overview, 회사 파일 preview/card, feedback form의 직접 radius/form 조합을 Foundation 기준으로 추가 정리했다. 진행률 bar와 color swatch는 예외 후보로 유지한다.",
     tone: "info" as const,
   },
   {
@@ -1163,7 +1164,7 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.32는 설정/결제/회사 화면 Direct Style 제거 1차다. 회사 설정
+        0.21.34는 설정/결제/회사 화면 Direct Style 제거 2차다. 회사 설정
         summary, 조직 설정, 구독 콘솔, 권한 preview의 직접 radius/status box를
         WAFL Foundation 기준으로 낮춘다.
       </WaflNoticeBox>
@@ -2391,13 +2392,14 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.32 기준으로 설정/결제/회사 영역의 직접 radius/status box를
-              1차 제거했다. 숫자는 source scan 기준의 잔여 후보이며, color
-              swatch/avatar 같은 예외가 포함되어 있어 전부 오류라는 뜻은 아니다.
+              0.21.34 기준으로 설정/결제/회사 영역의 settings hub, 정책
+              overview, 회사 파일 preview/card, feedback form을 2차 정리했다.
+              남은 rounded-full은 progress bar처럼 의미가 있는 예외 후보이며,
+              color swatch도 표시 목적 예외로 분리한다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.32 audit
+            0.21.34 audit
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">

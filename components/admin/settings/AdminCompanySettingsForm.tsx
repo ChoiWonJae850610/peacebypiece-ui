@@ -185,7 +185,7 @@ export default function AdminCompanySettingsForm({
                 </p>
               </div>
               <span
-                className={`h-8 w-8 rounded-2xl shadow-sm ring-1 ring-white ${currentTheme.swatchClassName}`}
+                className={`h-8 w-8 wafl-shape-icon shadow-sm ring-1 ring-white ${currentTheme.swatchClassName}`}
               />
             </div>
             <div className="mt-3 grid grid-cols-4 gap-2">
@@ -205,7 +205,7 @@ export default function AdminCompanySettingsForm({
                   className={`h-9 wafl-shape-control border transition disabled:cursor-not-allowed disabled:opacity-60 ${draft.ui.themeColor === option.value ? "border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)]" : "border-[var(--pbp-border)] bg-[var(--pbp-surface)]/70 hover:bg-[var(--pbp-surface)]"}`}
                 >
                   <span
-                    className={`mx-auto block h-5 w-5 rounded-full ${option.swatchClassName}`}
+                    className={`mx-auto block h-5 w-5 wafl-shape-compact ${option.swatchClassName}`}
                   />
                 </button>
               ))}
