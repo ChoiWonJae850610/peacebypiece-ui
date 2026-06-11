@@ -7,6 +7,15 @@ import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { AppSelect, SectionCountBadge, WaflButton, WaflInput, WaflStateBlock } from "@/components/common/ui";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
+import {
+  WAFL_LIST_CLEAR_BUTTON_CLASS,
+  WAFL_LIST_CONTROL_ROW_CLASS,
+  WAFL_LIST_CREATE_BUTTON_CLASS,
+  WAFL_LIST_CREATE_BUTTON_TOP_GAP_CLASS,
+  WAFL_LIST_SEARCH_INPUT_CLASS,
+  WAFL_LIST_SEARCH_ROW_CLASS,
+  WAFL_LIST_SELECT_TRIGGER_CLASS,
+} from "@/components/common/ui/waflListControlSet";
 
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
@@ -278,8 +287,8 @@ export default function SidebarContent({
             </SectionCountBadge>
           </div>
           <div className="border-b border-[var(--pbp-border)]" aria-hidden="true" />
-          <div className="mt-3 grid shrink-0 gap-1.5">
-            <div className="flex items-center gap-2">
+          <div className={`mt-3 ${WAFL_LIST_CONTROL_ROW_CLASS}`}>
+            <div className={WAFL_LIST_SEARCH_ROW_CLASS}>
               <label className="min-w-0 flex-1">
                 <span className="sr-only">{controlsUi.searchAria}</span>
                 <WaflInput
@@ -288,7 +297,7 @@ export default function SidebarContent({
                   value={searchQuery}
                   onChange={(event) => onSearchQueryChange(event.target.value)}
                   placeholder={controlsUi.searchPlaceholder}
-                  className="pbp-field-search text-xs"
+                  className={WAFL_LIST_SEARCH_INPUT_CLASS}
                 />
               </label>
               {searchQuery ? (
@@ -297,13 +306,13 @@ export default function SidebarContent({
                   disabled={writeLocked}
                   variant="secondary"
                   size="sm"
-                  className="h-10 min-h-10 shrink-0 px-2.5 text-xs"
+                  className={WAFL_LIST_CLEAR_BUTTON_CLASS}
                 >
                   {controlsUi.clearSearch}
                 </WaflButton>
               ) : null}
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2">
               <AppSelect
                 value={statusFilter}
                 onValueChange={(value) =>
@@ -313,7 +322,7 @@ export default function SidebarContent({
                 disabled={writeLocked}
                 size="sm"
                 ariaLabel={controlsUi.statusFilterAria}
-                triggerClassName="text-sm"
+                triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
               />
               <AppSelect
                 value={sort}
@@ -324,7 +333,7 @@ export default function SidebarContent({
                 disabled={writeLocked}
                 size="sm"
                 ariaLabel={controlsUi.sortAria}
-                triggerClassName="text-sm"
+                triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
               />
             </div>
           </div>
@@ -343,7 +352,7 @@ export default function SidebarContent({
                 ? (writeLockMessage ?? "상태 변경 처리 중입니다.")
                 : undefined
             }
-            className="pbp-touch-target mt-2.5 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+            className={`${WAFL_LIST_CREATE_BUTTON_CLASS} ${WAFL_LIST_CREATE_BUTTON_TOP_GAP_CLASS} active:bg-black disabled:cursor-not-allowed disabled:opacity-50`}
           >
             {controlsUi.create}
           </WaflButton>

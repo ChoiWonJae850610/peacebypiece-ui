@@ -1,3 +1,11 @@
+import {
+  WAFL_LIST_CLEAR_BUTTON_CLASS,
+  WAFL_LIST_CONTROL_ROW_CLASS,
+  WAFL_LIST_SEARCH_INPUT_CLASS,
+  WAFL_LIST_SEARCH_ROW_CLASS,
+  WAFL_LIST_SELECT_TRIGGER_CLASS,
+} from "@/components/common/ui/waflListControlSet";
+
 export const MATERIAL_ORDER_PANEL_CARD_CLASS =
   "flex h-full min-h-0 flex-col overflow-hidden p-3.5";
 
@@ -11,7 +19,19 @@ export const MATERIAL_ORDER_PANEL_LIST_CLASS =
   "mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1";
 
 export const MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS =
-  "pbp-field-search text-xs";
+  WAFL_LIST_SEARCH_INPUT_CLASS;
+
+export const MATERIAL_ORDER_LIST_CONTROL_ROW_CLASS =
+  WAFL_LIST_CONTROL_ROW_CLASS;
+
+export const MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS =
+  WAFL_LIST_SEARCH_ROW_CLASS;
+
+export const MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS =
+  WAFL_LIST_SELECT_TRIGGER_CLASS;
+
+export const MATERIAL_ORDER_LIST_CLEAR_BUTTON_CLASS =
+  WAFL_LIST_CLEAR_BUTTON_CLASS;
 
 export const MATERIAL_ORDER_SECTION_GAP_CLASS = "gap-3";
 

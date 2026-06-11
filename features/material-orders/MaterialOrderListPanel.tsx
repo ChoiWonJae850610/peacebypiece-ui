@@ -5,6 +5,10 @@ import { SectionCountBadge } from "@/components/common/ui";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_PANEL_DIVIDER_CLASS,
+  MATERIAL_ORDER_LIST_CLEAR_BUTTON_CLASS,
+  MATERIAL_ORDER_LIST_CONTROL_ROW_CLASS,
+  MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS,
+  MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS,
   MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
   MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
@@ -94,8 +98,8 @@ export default function MaterialOrderListPanel({
         <div className={MATERIAL_ORDER_PANEL_DIVIDER_CLASS} aria-hidden="true" />
       </div>
 
-      <div className="mt-3 grid shrink-0 gap-1.5">
-        <div className="flex items-center gap-2">
+      <div className={`mt-3 ${MATERIAL_ORDER_LIST_CONTROL_ROW_CLASS}`}>
+        <div className={MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS}>
           <label className="min-w-0 flex-1">
             <span className="sr-only">발주서 검색</span>
             <WaflInput
@@ -112,20 +116,20 @@ export default function MaterialOrderListPanel({
               onClick={() => setSearchQuery("")}
               variant="secondary"
               size="sm"
-              className="h-10 min-h-10 shrink-0 px-2.5 text-xs"
+              className={MATERIAL_ORDER_LIST_CLEAR_BUTTON_CLASS}
             >
               지우기
             </WaflButton>
           ) : null}
         </div>
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-2 gap-2">
           <AppSelect
             value={typeFilter}
             onValueChange={(value) => setTypeFilter(value as MaterialOrderFilterType)}
             options={MATERIAL_ORDER_TYPE_OPTIONS}
             size="sm"
             ariaLabel="자재 종류 필터"
-            triggerClassName="text-sm"
+            triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
           />
           <AppSelect
             value={statusFilter}
@@ -133,14 +137,14 @@ export default function MaterialOrderListPanel({
             options={MATERIAL_ORDER_STATUS_OPTIONS}
             size="sm"
             ariaLabel="발주 상태 필터"
-            triggerClassName="text-sm"
+            triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
           />
         </div>
         <WaflButton
           size="md"
           variant="primary"
           width="full"
-          className="pbp-touch-target mt-2.5"
+          className="pbp-touch-target mt-0"
           disabled={creating}
           title={creating ? "새 발주서를 생성하고 있습니다." : "새 원단·부자재 발주서를 생성합니다."}
           aria-label={creating ? "새 발주서 생성 중" : "새 원단·부자재 발주서 생성"}
