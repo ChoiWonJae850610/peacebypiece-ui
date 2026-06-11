@@ -20,7 +20,7 @@ export const WAFL_FILTER_LABEL_CLASS =
   "text-[12px] font-semibold text-[var(--pbp-text-muted)]";
 
 export const WAFL_FILTER_INPUT_CLASS =
-  "h-10 w-full min-w-0 border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] shadow-none placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)]";
+  "h-10 w-full min-w-0 wafl-shape-control border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-3 text-base text-[var(--pbp-text-primary)] shadow-none outline-none transition placeholder:text-[var(--pbp-text-subtle)] focus:border-[var(--pbp-focus-ring)] focus:ring-2 focus:ring-[var(--pbp-focus-ring)] md:text-sm";
 
 export const WAFL_FILTER_SELECT_TRIGGER_CLASS = "h-10 wafl-shape-control";
 
