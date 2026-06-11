@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import { WaflInput, WaflSurface } from "@/components/common/ui";
-import { SectionCountBadge } from "@/components/common/ui";
+import { WaflSurface } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
 import {
@@ -9,13 +8,10 @@ import {
   MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
   MATERIAL_ORDER_NESTED_ROW_CLASS,
   MATERIAL_ORDER_PANEL_CARD_CLASS,
-  MATERIAL_ORDER_PANEL_DIVIDER_CLASS,
-  MATERIAL_ORDER_PANEL_HEADER_CLASS,
   MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import { type MaterialOrderDraftLine } from "@/lib/material-orders/materialOrderDraftCalculator";
 import {
-  filterMaterialOrderCandidates,
   calculateMaterialRequestCompletionRemainingQuantity,
   calculateMaterialRequestCurrentDraftQuantity,
   calculateMaterialRequestOrderedQuantity,
@@ -33,6 +29,7 @@ type MaterialOrderAllocationPanelProps = {
   materialRequestQuantityMap: MaterialRequestQuantityMap;
   materialRequestCompletionMap: MaterialRequestQuantityMap;
   selectedMaterialType: MaterialOrderDraftType;
+  hasSelectedOrder: boolean;
   editable: boolean;
   loading: boolean;
   errorMessage: string | null;
@@ -50,6 +47,7 @@ export default function MaterialOrderAllocationPanel({
   materialRequestQuantityMap,
   materialRequestCompletionMap,
   selectedMaterialType,
+  hasSelectedOrder,
   editable,
   loading,
   errorMessage,
@@ -57,7 +55,6 @@ export default function MaterialOrderAllocationPanel({
   onRetry,
   mobile = false,
 }: MaterialOrderAllocationPanelProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const visibleCandidates = useMemo(
     () =>
       candidates.flatMap((workOrder) => {
@@ -83,85 +80,50 @@ export default function MaterialOrderAllocationPanel({
     ],
   );
 
-  const filteredCandidates = useMemo(
-    () =>
-      filterMaterialOrderCandidates({
-        candidates: visibleCandidates,
-        searchQuery,
-      }),
-    [searchQuery, visibleCandidates],
-  );
-
   return (
     <WaflSurface
       component="material-order-allocation-panel"
       className={MATERIAL_ORDER_PANEL_CARD_CLASS}
     >
-      <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
-        <div className="flex items-end justify-between gap-2 pb-2.5">
-          <div className="min-w-0">
-            <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">
-              작업지시서 자재 선택
-            </h2>
-          </div>
-          <SectionCountBadge className="translate-y-0.5">
-            {filteredCandidates.length}건
-          </SectionCountBadge>
-        </div>
-        <div
-          className={MATERIAL_ORDER_PANEL_DIVIDER_CLASS}
-          aria-hidden="true"
-        />
-        <WaflInput
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="제품·자재·담당자 검색"
-          fieldSize="sm"
-          className="mt-3 text-xs"
-        />
-        <div
-          className={`mt-3 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`}
-          aria-hidden="true"
-        />
-      </div>
-
-      <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
-        {loading ? (
-          <MaterialOrderPanelMessage
-            title="불러오는 중"
-            description="자재 발주 대기 작업지시서를 조회하고 있습니다."
-            kind="loading"
-          />
-        ) : errorMessage ? (
-          <MaterialOrderPanelMessage
-            title="조회 실패"
-            description={errorMessage}
-            actionLabel="다시 조회"
-            onAction={onRetry}
-            kind="error"
-          />
-        ) : visibleCandidates.length === 0 ? (
-          <MaterialOrderPanelMessage
-            title="선택 가능한 자재 없음"
-            description="현재 자재 종류에서 발주할 작업지시서가 없습니다."
-          />
-        ) : filteredCandidates.length === 0 ? (
-          <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
-        ) : (
-          filteredCandidates.map((workOrder) => (
-            <AllocationCandidateCard
-              key={workOrder.id}
-              workOrder={workOrder}
-              lines={lines}
-              materialRequestQuantityMap={materialRequestQuantityMap}
-              materialRequestCompletionMap={materialRequestCompletionMap}
-              editable={editable}
-              onAddMaterialToOrder={onAddMaterialToOrder}
-              mobile={mobile}
+      {!hasSelectedOrder ? (
+        <div aria-hidden="true" className="min-h-full" />
+      ) : (
+        <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
+          {loading ? (
+            <MaterialOrderPanelMessage
+              title="불러오는 중"
+              description="자재 발주 대기 작업지시서를 조회하고 있습니다."
+              kind="loading"
             />
-          ))
-        )}
-      </div>
+          ) : errorMessage ? (
+            <MaterialOrderPanelMessage
+              title="조회 실패"
+              description={errorMessage}
+              actionLabel="다시 조회"
+              onAction={onRetry}
+              kind="error"
+            />
+          ) : visibleCandidates.length === 0 ? (
+            <MaterialOrderPanelMessage
+              title="선택 가능한 자재 없음"
+              description="현재 자재 종류에서 발주할 작업지시서가 없습니다."
+            />
+          ) : (
+            visibleCandidates.map((workOrder) => (
+              <AllocationCandidateCard
+                key={workOrder.id}
+                workOrder={workOrder}
+                lines={lines}
+                materialRequestQuantityMap={materialRequestQuantityMap}
+                materialRequestCompletionMap={materialRequestCompletionMap}
+                editable={editable}
+                onAddMaterialToOrder={onAddMaterialToOrder}
+                mobile={mobile}
+              />
+            ))
+          )}
+        </div>
+      )}
     </WaflSurface>
   );
 }

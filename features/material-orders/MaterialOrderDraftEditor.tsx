@@ -145,7 +145,9 @@ export default function MaterialOrderDraftEditor({
   }, [selectedOrderId]);
 
   const handleSelectOrder = (orderId: string) => {
-    setSelectedOrderId(orderId);
+    setSelectedOrderId((currentOrderId) =>
+      currentOrderId === orderId ? "" : orderId,
+    );
     setMobileOrderListDrawerOpen(false);
   };
 
@@ -218,6 +220,7 @@ export default function MaterialOrderDraftEditor({
       materialRequestQuantityMap={materialRequestQuantityMap}
       materialRequestCompletionMap={materialRequestCompletionMap}
       selectedMaterialType={materialType}
+      hasSelectedOrder={Boolean(selectedOrderId)}
       editable={selectedOrder?.status === "draft"}
       loading={workOrdersLoading}
       errorMessage={workOrdersError}
