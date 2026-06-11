@@ -11,7 +11,7 @@ export const MATERIAL_ORDER_PANEL_LIST_CLASS =
   "mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1";
 
 export const MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS =
-  "h-9 min-h-9 text-xs";
+  "pbp-field-search text-xs";
 
 export const MATERIAL_ORDER_SECTION_GAP_CLASS = "gap-3";
 

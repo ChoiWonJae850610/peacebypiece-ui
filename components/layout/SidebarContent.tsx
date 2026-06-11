@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
-import { AppSelect, SectionCountBadge, WaflButton, WaflEmptyCard, WaflInput } from "@/components/common/ui";
+import { AppSelect, SectionCountBadge, WaflButton, WaflInput, WaflStateBlock } from "@/components/common/ui";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
@@ -155,6 +155,7 @@ export default function SidebarContent({
   );
   const statusOptions = getWorkOrderListStatusFilterOptions(controlsUi);
   const sortOptions = getWorkOrderListSortOptions(controlsUi);
+  const hasActiveListControls = searchQuery.trim().length > 0 || statusFilter !== "active" || sort !== "updatedDesc";
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
@@ -287,7 +288,7 @@ export default function SidebarContent({
                   value={searchQuery}
                   onChange={(event) => onSearchQueryChange(event.target.value)}
                   placeholder={controlsUi.searchPlaceholder}
-                  className="pbp-field-search text-sm"
+                  className="pbp-field-search text-xs"
                 />
               </label>
               {searchQuery ? (
@@ -369,9 +370,18 @@ export default function SidebarContent({
           ))}
         </div>
         {workOrders.length === 0 ? (
-          <WaflEmptyCard className="pbp-empty-state px-4 py-6">
-            {controlsUi.empty}
-          </WaflEmptyCard>
+          <WaflStateBlock
+            kind={hasActiveListControls ? "search" : "empty"}
+            title={hasActiveListControls ? "검색 결과 없음" : controlsUi.empty}
+            description={
+              hasActiveListControls
+                ? "검색어 또는 진행 상태/정렬 조건을 조정하세요."
+                : "작업지시서 생성 버튼으로 첫 작업지시서를 시작합니다."
+            }
+            size="sm"
+            minHeightClassName="min-h-[132px]"
+            className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
+          />
         ) : null}
       </div>
 

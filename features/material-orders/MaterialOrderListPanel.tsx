@@ -95,13 +95,29 @@ export default function MaterialOrderListPanel({
       </div>
 
       <div className="mt-3 grid shrink-0 gap-1.5">
-        <WaflInput
-          fieldSize="sm"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="공급처·품목·작업지시서 검색"
-          className={MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS}
-        />
+        <div className="flex items-center gap-2">
+          <label className="min-w-0 flex-1">
+            <span className="sr-only">발주서 검색</span>
+            <WaflInput
+              type="search"
+              fieldSize="sm"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="공급처·품목·작업지시서 검색"
+              className={MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS}
+            />
+          </label>
+          {searchQuery ? (
+            <WaflButton
+              onClick={() => setSearchQuery("")}
+              variant="secondary"
+              size="sm"
+              className="h-10 min-h-10 shrink-0 px-2.5 text-xs"
+            >
+              지우기
+            </WaflButton>
+          ) : null}
+        </div>
         <div className="grid grid-cols-2 gap-1.5">
           <AppSelect
             value={typeFilter}
@@ -109,6 +125,7 @@ export default function MaterialOrderListPanel({
             options={MATERIAL_ORDER_TYPE_OPTIONS}
             size="sm"
             ariaLabel="자재 종류 필터"
+            triggerClassName="text-sm"
           />
           <AppSelect
             value={statusFilter}
@@ -116,13 +133,14 @@ export default function MaterialOrderListPanel({
             options={MATERIAL_ORDER_STATUS_OPTIONS}
             size="sm"
             ariaLabel="발주 상태 필터"
+            triggerClassName="text-sm"
           />
         </div>
         <WaflButton
-          size="sm"
+          size="md"
           variant="primary"
           width="full"
-          className="mt-1"
+          className="pbp-touch-target mt-2.5"
           disabled={creating}
           title={creating ? "새 발주서를 생성하고 있습니다." : "새 원단·부자재 발주서를 생성합니다."}
           aria-label={creating ? "새 발주서 생성 중" : "새 원단·부자재 발주서 생성"}
