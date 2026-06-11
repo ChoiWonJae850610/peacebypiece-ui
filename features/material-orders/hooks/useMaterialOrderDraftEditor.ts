@@ -29,7 +29,12 @@ import {
 } from "@/features/material-orders/materialOrderPanelUtils";
 import { shouldPersistMaterialOrderDetailBeforeStatusChange } from "@/lib/material-orders/statusFlow";
 
-type MaterialOrderStatusToastTone = "info" | "success" | "warning" | "danger" | "loading";
+type MaterialOrderStatusToastTone =
+  | "info"
+  | "success"
+  | "warning"
+  | "danger"
+  | "loading";
 
 type SelectedOrderDetailPayload = {
   materialOrderId: string;
@@ -61,7 +66,9 @@ function createDraftLineFromMaterial(
     itemName: material.itemName,
     unit: material.unit || "마",
     orderQuantity,
-    unitPrice: Number.isFinite(material.unitCost ?? 0) ? material.unitCost ?? 0 : 0,
+    unitPrice: Number.isFinite(material.unitCost ?? 0)
+      ? (material.unitCost ?? 0)
+      : 0,
     sourceWorkOrderId: workOrder.id,
     sourceMaterialKey: material.key,
     allocations: [
@@ -75,25 +82,27 @@ function createDraftLineFromMaterial(
   };
 }
 
-function mapSelectedOrderToDraftLines(selectedOrder: MaterialOrder): MaterialOrderDraftLine[] {
+function mapSelectedOrderToDraftLines(
+  selectedOrder: MaterialOrder,
+): MaterialOrderDraftLine[] {
   return selectedOrder.lines.map((line) => {
     const primaryAllocation = line.allocations[0] ?? null;
 
     return {
-    id: line.id,
-    itemName: line.itemName,
-    unit: line.unit,
-    orderQuantity: line.orderQuantity,
-    unitPrice: line.unitPrice,
-    sourceWorkOrderId: primaryAllocation?.workOrderId,
-    sourceMaterialKey: primaryAllocation?.sourceMaterialKey ?? undefined,
-    allocations: line.allocations.map((allocation) => ({
-      workOrderId: allocation.workOrderId,
-      sourceMaterialKey: allocation.sourceMaterialKey,
-      allocatedQuantity: allocation.allocatedQuantity,
-      allocationNote: allocation.allocationNote ?? "",
-    })),
-  };
+      id: line.id,
+      itemName: line.itemName,
+      unit: line.unit,
+      orderQuantity: line.orderQuantity,
+      unitPrice: line.unitPrice,
+      sourceWorkOrderId: primaryAllocation?.workOrderId,
+      sourceMaterialKey: primaryAllocation?.sourceMaterialKey ?? undefined,
+      allocations: line.allocations.map((allocation) => ({
+        workOrderId: allocation.workOrderId,
+        sourceMaterialKey: allocation.sourceMaterialKey,
+        allocatedQuantity: allocation.allocatedQuantity,
+        allocationNote: allocation.allocationNote ?? "",
+      })),
+    };
   });
 }
 
@@ -104,38 +113,65 @@ export function useMaterialOrderDraftEditor() {
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [statusChanging, setStatusChanging] = useState(false);
-  const [statusToastMessage, setStatusToastMessage] = useState<string | null>(null);
-  const [statusToastTone, setStatusToastTone] = useState<MaterialOrderStatusToastTone>("info");
+  const [statusToastMessage, setStatusToastMessage] = useState<string | null>(
+    null,
+  );
+  const [statusToastTone, setStatusToastTone] =
+    useState<MaterialOrderStatusToastTone>("info");
   const [statusToastEventKey, setStatusToastEventKey] = useState(0);
-  const [workOrderCandidates, setWorkOrderCandidates] = useState<MaterialOrderWorkspaceWorkOrderCandidate[]>([]);
+  const [workOrderCandidates, setWorkOrderCandidates] = useState<
+    MaterialOrderWorkspaceWorkOrderCandidate[]
+  >([]);
   const [suppliers, setSuppliers] = useState<MaterialOrderSupplier[]>([]);
   const [suppliersLoading, setSuppliersLoading] = useState(false);
   const [suppliersError, setSuppliersError] = useState<string | null>(null);
   const [workOrdersLoading, setWorkOrdersLoading] = useState(true);
   const [workOrdersError, setWorkOrdersError] = useState<string | null>(null);
-  const [materialType, setMaterialType] = useState<MaterialOrderDraftType>("fabric");
-  const [supplierPartnerId, setSupplierPartnerId] = useState<string | null>(null);
+  const [materialType, setMaterialType] =
+    useState<MaterialOrderDraftType>("fabric");
+  const [supplierPartnerId, setSupplierPartnerId] = useState<string | null>(
+    null,
+  );
   const [lines, setLines] = useState<MaterialOrderDraftLine[]>([]);
 
   const selectedOrder = useMemo(
     () => orders.find((order) => order.id === selectedOrderId) ?? null,
     [orders, selectedOrderId],
   );
-  const totals = useMemo(() => calculateMaterialOrderDraftTotals(lines), [lines]);
-  const materialRequestQuantityMap = useMemo(() => buildMaterialRequestQuantityMap({
-    orders,
-    excludedOrderId: selectedOrder?.id,
-    draftLines: lines,
-    quantityScope: "active",
-  }), [lines, orders, selectedOrder?.id]);
-  const materialRequestCompletionMap = useMemo(() => buildMaterialRequestQuantityMap({
-    orders,
-    excludedOrderId: selectedOrder?.id,
-    draftLines: lines,
-    quantityScope: "completed",
-  }), [lines, orders, selectedOrder?.id]);
+  const totals = useMemo(
+    () => calculateMaterialOrderDraftTotals(lines),
+    [lines],
+  );
+  const selectedDraftOrderId =
+    selectedOrder?.status === "draft" ? selectedOrder.id : null;
+  const selectedDraftLines = useMemo(
+    () => (selectedDraftOrderId ? lines : []),
+    [lines, selectedDraftOrderId],
+  );
+  const materialRequestQuantityMap = useMemo(
+    () =>
+      buildMaterialRequestQuantityMap({
+        orders,
+        excludedOrderId: selectedDraftOrderId,
+        draftLines: selectedDraftLines,
+        quantityScope: "active",
+      }),
+    [orders, selectedDraftLines, selectedDraftOrderId],
+  );
+  const materialRequestCompletionMap = useMemo(
+    () =>
+      buildMaterialRequestQuantityMap({
+        orders,
+        excludedOrderId: selectedDraftOrderId,
+        draftLines: selectedDraftLines,
+        quantityScope: "completed",
+      }),
+    [orders, selectedDraftLines, selectedDraftOrderId],
+  );
   const selectedDraftSupplierName = useMemo(
-    () => suppliers.find((supplier) => supplier.id === supplierPartnerId)?.name ?? null,
+    () =>
+      suppliers.find((supplier) => supplier.id === supplierPartnerId)?.name ??
+      null,
     [supplierPartnerId, suppliers],
   );
 
@@ -148,11 +184,20 @@ export function useMaterialOrderDraftEditor() {
       setOrders(nextOrders);
       setSelectedOrderId((currentSelectedOrderId) => {
         if (nextSelectedOrderId) return nextSelectedOrderId;
-        if (currentSelectedOrderId && nextOrders.some((order) => order.id === currentSelectedOrderId)) return currentSelectedOrderId;
+        if (
+          currentSelectedOrderId &&
+          nextOrders.some((order) => order.id === currentSelectedOrderId)
+        )
+          return currentSelectedOrderId;
         return "";
       });
     } catch (error) {
-      setOrdersError(toMaterialOrderWorkspaceError(error, "발주서 목록을 불러오지 못했습니다."));
+      setOrdersError(
+        toMaterialOrderWorkspaceError(
+          error,
+          "발주서 목록을 불러오지 못했습니다.",
+        ),
+      );
       setOrders([]);
       setSelectedOrderId("");
     } finally {
@@ -167,26 +212,39 @@ export function useMaterialOrderDraftEditor() {
     try {
       setWorkOrderCandidates(await fetchAllocationCandidateWorkOrders());
     } catch (error) {
-      setWorkOrdersError(toMaterialOrderWorkspaceError(error, "작업지시서 목록을 불러오지 못했습니다."));
+      setWorkOrdersError(
+        toMaterialOrderWorkspaceError(
+          error,
+          "작업지시서 목록을 불러오지 못했습니다.",
+        ),
+      );
       setWorkOrderCandidates([]);
     } finally {
       setWorkOrdersLoading(false);
     }
   }, []);
 
-  const refreshSuppliers = useCallback(async (nextMaterialType: MaterialOrderDraftType) => {
-    setSuppliersLoading(true);
-    setSuppliersError(null);
+  const refreshSuppliers = useCallback(
+    async (nextMaterialType: MaterialOrderDraftType) => {
+      setSuppliersLoading(true);
+      setSuppliersError(null);
 
-    try {
-      setSuppliers(await fetchMaterialOrderSuppliers(nextMaterialType));
-    } catch (error) {
-      setSuppliersError(toMaterialOrderWorkspaceError(error, "공급처 목록을 불러오지 못했습니다."));
-      setSuppliers([]);
-    } finally {
-      setSuppliersLoading(false);
-    }
-  }, []);
+      try {
+        setSuppliers(await fetchMaterialOrderSuppliers(nextMaterialType));
+      } catch (error) {
+        setSuppliersError(
+          toMaterialOrderWorkspaceError(
+            error,
+            "공급처 목록을 불러오지 못했습니다.",
+          ),
+        );
+        setSuppliers([]);
+      } finally {
+        setSuppliersLoading(false);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     void refreshOrders();
@@ -211,11 +269,14 @@ export function useMaterialOrderDraftEditor() {
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
   }, [selectedOrder]);
 
-  const showStatusToast = useCallback((message: string, tone: MaterialOrderStatusToastTone) => {
-    setStatusToastMessage(message);
-    setStatusToastTone(tone);
-    setStatusToastEventKey((currentKey) => currentKey + 1);
-  }, []);
+  const showStatusToast = useCallback(
+    (message: string, tone: MaterialOrderStatusToastTone) => {
+      setStatusToastMessage(message);
+      setStatusToastTone(tone);
+      setStatusToastEventKey((currentKey) => currentKey + 1);
+    },
+    [],
+  );
 
   const createOrder = useCallback(async () => {
     setCreatingOrder(true);
@@ -224,111 +285,160 @@ export function useMaterialOrderDraftEditor() {
     try {
       const result = await createEmptyMaterialOrder();
       setOrders(result.materialOrders);
-      setSelectedOrderId(result.materialOrder?.id ?? result.materialOrders[0]?.id ?? "");
+      setSelectedOrderId(
+        result.materialOrder?.id ?? result.materialOrders[0]?.id ?? "",
+      );
     } catch (error) {
-      setOrdersError(toMaterialOrderWorkspaceError(error, "새 발주서를 만들지 못했습니다."));
+      setOrdersError(
+        toMaterialOrderWorkspaceError(error, "새 발주서를 만들지 못했습니다."),
+      );
     } finally {
       setCreatingOrder(false);
     }
   }, []);
 
-  const changeMaterialType = useCallback((nextMaterialType: MaterialOrderDraftType) => {
-    setMaterialType(nextMaterialType);
-    setSupplierPartnerId(null);
-  }, []);
-
-  const buildSelectedOrderDetailPayload = useCallback((): SelectedOrderDetailPayload | null => {
-    if (!selectedOrder) return null;
-
-    return {
-      materialOrderId: selectedOrder.id,
-      supplierPartnerId,
-      note: selectedOrder.note ?? "",
-      lines: lines.map((line) => ({
-        itemName: line.itemName,
-        itemType: materialType,
-        unit: line.unit,
-        orderQuantity: line.orderQuantity,
-        unitPrice: line.unitPrice,
-        allocations: line.allocations.map((allocation) => ({
-          workOrderId: allocation.workOrderId,
-          sourceMaterialKey: allocation.sourceMaterialKey ?? line.sourceMaterialKey ?? null,
-          allocatedQuantity: allocation.allocatedQuantity,
-          allocationNote: allocation.allocationNote,
-        })),
-      })),
-    };
-  }, [lines, materialType, selectedOrder, supplierPartnerId]);
-
-  const changeSelectedOrderStatus = useCallback(async (status: MaterialOrderStatus) => {
-    if (!selectedOrder) return;
-
-    setStatusChanging(true);
-    showStatusToast("상태를 변경하는 중입니다.", "loading");
-
-    try {
-      let nextSelectedOrderId = selectedOrder.id;
-
-      if (shouldPersistMaterialOrderDetailBeforeStatusChange(selectedOrder.status)) {
-        const detailPayload = buildSelectedOrderDetailPayload();
-        if (detailPayload) {
-          const detailResult = await updateMaterialOrderDetail(detailPayload);
-          nextSelectedOrderId = detailResult.materialOrder?.id ?? selectedOrder.id;
-          setOrders(detailResult.materialOrders);
+  const changeMaterialType = useCallback(
+    (nextMaterialType: MaterialOrderDraftType) => {
+      setMaterialType((currentMaterialType) => {
+        if (currentMaterialType !== nextMaterialType) {
+          setLines([]);
         }
-      }
-
-      const result = await updateMaterialOrderStatus({
-        materialOrderId: nextSelectedOrderId,
-        status,
+        return nextMaterialType;
       });
+      setSupplierPartnerId(null);
+    },
+    [],
+  );
 
-      setOrders(result.materialOrders);
-      setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
-      await refreshWorkOrderCandidates();
-      showStatusToast("상태가 변경되었습니다.", "success");
-    } catch (error) {
-      showStatusToast(toMaterialOrderWorkspaceError(error, "발주서 상태를 변경하지 못했습니다."), "danger");
-    } finally {
-      setStatusChanging(false);
-    }
-  }, [buildSelectedOrderDetailPayload, refreshWorkOrderCandidates, selectedOrder, showStatusToast]);
+  const buildSelectedOrderDetailPayload =
+    useCallback((): SelectedOrderDetailPayload | null => {
+      if (!selectedOrder) return null;
 
-  const updateLine = useCallback((lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
-    setLines((current) => current.map((line) => (line.id === lineId ? { ...line, ...patch } : line)));
-  }, []);
+      return {
+        materialOrderId: selectedOrder.id,
+        supplierPartnerId,
+        note: selectedOrder.note ?? "",
+        lines: lines.map((line) => ({
+          itemName: line.itemName,
+          itemType: materialType,
+          unit: line.unit,
+          orderQuantity: line.orderQuantity,
+          unitPrice: line.unitPrice,
+          allocations: line.allocations.map((allocation) => ({
+            workOrderId: allocation.workOrderId,
+            sourceMaterialKey:
+              allocation.sourceMaterialKey ?? line.sourceMaterialKey ?? null,
+            allocatedQuantity: allocation.allocatedQuantity,
+            allocationNote: allocation.allocationNote,
+          })),
+        })),
+      };
+    }, [lines, materialType, selectedOrder, supplierPartnerId]);
 
-  const addWorkOrderMaterialLine = useCallback((
-    workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
-    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
-  ) => {
-    if (!selectedOrder || selectedOrder.status !== "draft") return;
+  const changeSelectedOrderStatus = useCallback(
+    async (status: MaterialOrderStatus) => {
+      if (!selectedOrder) return;
 
-    setLines((current) => {
-      const existingLine = current.find((line) => (
-        line.sourceWorkOrderId === workOrder.id
-        && line.sourceMaterialKey === material.key
-      ));
+      setStatusChanging(true);
+      showStatusToast("상태를 변경하는 중입니다.", "loading");
 
-      if (existingLine) {
-        return current.filter((line) => line.id !== existingLine.id);
+      try {
+        let nextSelectedOrderId = selectedOrder.id;
+
+        if (
+          shouldPersistMaterialOrderDetailBeforeStatusChange(
+            selectedOrder.status,
+          )
+        ) {
+          const detailPayload = buildSelectedOrderDetailPayload();
+          if (detailPayload) {
+            const detailResult = await updateMaterialOrderDetail(detailPayload);
+            nextSelectedOrderId =
+              detailResult.materialOrder?.id ?? selectedOrder.id;
+            setOrders(detailResult.materialOrders);
+          }
+        }
+
+        const result = await updateMaterialOrderStatus({
+          materialOrderId: nextSelectedOrderId,
+          status,
+        });
+
+        setOrders(result.materialOrders);
+        setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
+        await refreshWorkOrderCandidates();
+        showStatusToast("상태가 변경되었습니다.", "success");
+      } catch (error) {
+        showStatusToast(
+          toMaterialOrderWorkspaceError(
+            error,
+            "발주서 상태를 변경하지 못했습니다.",
+          ),
+          "danger",
+        );
+      } finally {
+        setStatusChanging(false);
       }
+    },
+    [
+      buildSelectedOrderDetailPayload,
+      refreshWorkOrderCandidates,
+      selectedOrder,
+      showStatusToast,
+    ],
+  );
 
-      const remainingQuantity = calculateMaterialRequestRemainingQuantity({
-        quantityMap: materialRequestQuantityMap,
-        workOrderId: workOrder.id,
-        materialKey: material.key,
-        requiredQuantity: material.quantity,
+  const updateLine = useCallback(
+    (lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
+      setLines((current) =>
+        current.map((line) =>
+          line.id === lineId ? { ...line, ...patch } : line,
+        ),
+      );
+    },
+    [],
+  );
+
+  const addWorkOrderMaterialLine = useCallback(
+    (
+      workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
+      material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+    ) => {
+      if (!selectedOrder || selectedOrder.status !== "draft") return;
+
+      setLines((current) => {
+        const existingLine = current.find(
+          (line) =>
+            line.sourceWorkOrderId === workOrder.id &&
+            line.sourceMaterialKey === material.key,
+        );
+
+        if (existingLine) {
+          return current.filter((line) => line.id !== existingLine.id);
+        }
+
+        const remainingQuantity = calculateMaterialRequestRemainingQuantity({
+          quantityMap: materialRequestQuantityMap,
+          workOrderId: workOrder.id,
+          materialKey: material.key,
+          requiredQuantity: material.quantity,
+        });
+
+        if (remainingQuantity <= 0) return current;
+
+        return [
+          ...current,
+          createDraftLineFromMaterial(
+            current.length,
+            workOrder,
+            material,
+            remainingQuantity,
+          ),
+        ];
       });
-
-      if (remainingQuantity <= 0) return current;
-
-      return [
-        ...current,
-        createDraftLineFromMaterial(current.length, workOrder, material, remainingQuantity),
-      ];
-    });
-  }, [materialRequestQuantityMap, selectedOrder]);
+    },
+    [materialRequestQuantityMap, selectedOrder],
+  );
 
   const removeLine = useCallback((lineId: string) => {
     setLines((current) => current.filter((line) => line.id !== lineId));

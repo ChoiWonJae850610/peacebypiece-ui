@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { AppBadge, WaflInfoRow, WaflInput, WaflSurface } from "@/components/common/ui";
+import { WaflInput, WaflSurface } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
@@ -13,24 +13,18 @@ import {
   MATERIAL_ORDER_PANEL_HEADER_CLASS,
   MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
-import {
-  type MaterialOrderDraftLine,
-} from "@/lib/material-orders/materialOrderDraftCalculator";
+import { type MaterialOrderDraftLine } from "@/lib/material-orders/materialOrderDraftCalculator";
 import {
   filterMaterialOrderCandidates,
-  calculateMaterialRequestCompletedQuantity,
   calculateMaterialRequestCompletionRemainingQuantity,
   calculateMaterialRequestCurrentDraftQuantity,
   calculateMaterialRequestOrderedQuantity,
   calculateMaterialRequestRemainingQuantity,
-  formatMaterialItemTypeLabel,
   formatMaterialQuantity,
-  formatMaterialRequestReadableStatus,
-  formatWorkOrderMaterialCompletionLabel,
   isMaterialRequestAlreadyAdded,
-  summarizeWorkOrderMaterialCompletion,
   type MaterialRequestQuantityMap,
 } from "@/features/material-orders/materialOrderPanelUtils";
+import type { MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
 
 type MaterialOrderAllocationPanelProps = {
@@ -38,6 +32,7 @@ type MaterialOrderAllocationPanelProps = {
   lines: MaterialOrderDraftLine[];
   materialRequestQuantityMap: MaterialRequestQuantityMap;
   materialRequestCompletionMap: MaterialRequestQuantityMap;
+  selectedMaterialType: MaterialOrderDraftType;
   editable: boolean;
   loading: boolean;
   errorMessage: string | null;
@@ -54,6 +49,7 @@ export default function MaterialOrderAllocationPanel({
   lines,
   materialRequestQuantityMap,
   materialRequestCompletionMap,
+  selectedMaterialType,
   editable,
   loading,
   errorMessage,
@@ -62,23 +58,60 @@ export default function MaterialOrderAllocationPanel({
   mobile = false,
 }: MaterialOrderAllocationPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const filteredCandidates = useMemo(() => (
-    filterMaterialOrderCandidates({
+  const visibleCandidates = useMemo(
+    () =>
+      candidates.flatMap((workOrder) => {
+        const materialItems = workOrder.materialItems.filter((material) =>
+          shouldShowMaterialRequest({
+            workOrderId: workOrder.id,
+            material,
+            selectedMaterialType,
+            materialRequestQuantityMap,
+            materialRequestCompletionMap,
+          }),
+        );
+
+        return materialItems.length > 0
+          ? [{ ...workOrder, materialItems }]
+          : [];
+      }),
+    [
       candidates,
-      searchQuery,
-    })
-  ), [candidates, searchQuery]);
+      materialRequestCompletionMap,
+      materialRequestQuantityMap,
+      selectedMaterialType,
+    ],
+  );
+
+  const filteredCandidates = useMemo(
+    () =>
+      filterMaterialOrderCandidates({
+        candidates: visibleCandidates,
+        searchQuery,
+      }),
+    [searchQuery, visibleCandidates],
+  );
 
   return (
-    <WaflSurface component="material-order-allocation-panel" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+    <WaflSurface
+      component="material-order-allocation-panel"
+      className={MATERIAL_ORDER_PANEL_CARD_CLASS}
+    >
       <div className={MATERIAL_ORDER_PANEL_HEADER_CLASS}>
         <div className="flex items-end justify-between gap-2 pb-2.5">
           <div className="min-w-0">
-            <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">작업지시서 자재 선택</h2>
+            <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">
+              작업지시서 자재 선택
+            </h2>
           </div>
-          <SectionCountBadge className="translate-y-0.5">{filteredCandidates.length}건</SectionCountBadge>
+          <SectionCountBadge className="translate-y-0.5">
+            {filteredCandidates.length}건
+          </SectionCountBadge>
         </div>
-        <div className={MATERIAL_ORDER_PANEL_DIVIDER_CLASS} aria-hidden="true" />
+        <div
+          className={MATERIAL_ORDER_PANEL_DIVIDER_CLASS}
+          aria-hidden="true"
+        />
         <WaflInput
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
@@ -86,18 +119,31 @@ export default function MaterialOrderAllocationPanel({
           fieldSize="sm"
           className="mt-3 text-xs"
         />
-        <div className={`mt-3 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`} aria-hidden="true" />
+        <div
+          className={`mt-3 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`}
+          aria-hidden="true"
+        />
       </div>
 
       <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
         {loading ? (
-          <MaterialOrderPanelMessage title="불러오는 중" description="자재 발주 대기 작업지시서를 조회하고 있습니다." kind="loading" />
+          <MaterialOrderPanelMessage
+            title="불러오는 중"
+            description="자재 발주 대기 작업지시서를 조회하고 있습니다."
+            kind="loading"
+          />
         ) : errorMessage ? (
-          <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} kind="error" />
-        ) : candidates.length === 0 ? (
+          <MaterialOrderPanelMessage
+            title="조회 실패"
+            description={errorMessage}
+            actionLabel="다시 조회"
+            onAction={onRetry}
+            kind="error"
+          />
+        ) : visibleCandidates.length === 0 ? (
           <MaterialOrderPanelMessage
             title="선택 가능한 자재 없음"
-            description="자재 발주 대기 상태의 작업지시서가 없습니다."
+            description="현재 자재 종류에서 발주할 작업지시서가 없습니다."
           />
         ) : filteredCandidates.length === 0 ? (
           <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
@@ -120,39 +166,53 @@ export default function MaterialOrderAllocationPanel({
   );
 }
 
+type AllocationCandidateMaterialItem =
+  MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
 
-function countMaterialItemsByType(
-  items: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"],
-) {
-  return items.reduce(
-    (acc, item) => {
-      if (item.itemType === "submaterial") {
-        acc.subsidiary += 1;
-      } else {
-        acc.fabric += 1;
-      }
-      return acc;
-    },
-    { fabric: 0, subsidiary: 0 },
-  );
-}
-
-function countRemainingMaterialItems({
-  workOrder,
+function shouldShowMaterialRequest({
+  workOrderId,
+  material,
+  selectedMaterialType,
+  materialRequestQuantityMap,
   materialRequestCompletionMap,
 }: {
-  workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
+  workOrderId: string;
+  material: AllocationCandidateMaterialItem;
+  selectedMaterialType: MaterialOrderDraftType;
+  materialRequestQuantityMap: MaterialRequestQuantityMap;
   materialRequestCompletionMap: MaterialRequestQuantityMap;
 }) {
-  return workOrder.materialItems.reduce((count, material) => {
-    const completionRemainingQuantity = calculateMaterialRequestCompletionRemainingQuantity({
+  if (material.itemType !== selectedMaterialType) return false;
+
+  const currentDraftQuantity = calculateMaterialRequestCurrentDraftQuantity(
+    materialRequestQuantityMap,
+    workOrderId,
+    material.key,
+  );
+  const remainingQuantity = calculateMaterialRequestRemainingQuantity({
+    quantityMap: materialRequestQuantityMap,
+    workOrderId,
+    materialKey: material.key,
+    requiredQuantity: material.quantity,
+  });
+  const completionRemainingQuantity =
+    calculateMaterialRequestCompletionRemainingQuantity({
       quantityMap: materialRequestCompletionMap,
-      workOrderId: workOrder.id,
+      workOrderId,
       materialKey: material.key,
       requiredQuantity: material.quantity,
     });
-    return completionRemainingQuantity > 0 ? count + 1 : count;
-  }, 0);
+
+  if (currentDraftQuantity > 0) return true;
+  if (completionRemainingQuantity <= 0) return false;
+  return remainingQuantity > 0;
+}
+
+function formatMaterialTypeCountLabel(
+  materialType: MaterialOrderDraftType,
+  count: number,
+) {
+  return `${materialType === "fabric" ? "원단" : "부자재"} ${count}종`;
 }
 
 function AllocationCandidateCard({
@@ -175,80 +235,51 @@ function AllocationCandidateCard({
   ) => void;
   mobile?: boolean;
 }) {
-  const completionSummary = summarizeWorkOrderMaterialCompletion({
-    workOrder,
-    materialRequestQuantityMap,
-    materialRequestCompletionMap,
-  });
-  const itemTypeSummary = countMaterialItemsByType(workOrder.materialItems);
-  const remainingItemCount = countRemainingMaterialItems({
-    workOrder,
-    materialRequestCompletionMap,
-  });
-  const materialSummaryLabel = `원단 ${itemTypeSummary.fabric}종 · 부자재 ${itemTypeSummary.subsidiary}종`;
-  const remainingSummaryLabel = completionSummary.isComplete
-    ? "자재 발주 완료"
-    : `남은 자재 ${remainingItemCount}개`;
-  const materialItemsCount = workOrder.materialItems.length;
+  const materialTypeLabel = workOrder.materialItems[0]
+    ? formatMaterialTypeCountLabel(
+        workOrder.materialItems[0].itemType,
+        workOrder.materialItems.length,
+      )
+    : "자재 0종";
 
   return (
-    <WaflSurface component="material-order-allocation-card" shape="control" className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS} p-3`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold pbp-text-primary">{workOrder.productName || workOrder.code}</p>
-          <p className="mt-1 text-[11px] pbp-text-subtle">{workOrder.managerLabel} · {workOrder.dueDateLabel}</p>
+    <WaflSurface
+      component="material-order-allocation-card"
+      shape="control"
+      className={`${MATERIAL_ORDER_LIST_CARD_BASE_CLASS} ${MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS} p-3`}
+    >
+      <div className="min-w-0">
+        <div className="flex min-w-0 items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold pbp-text-primary">
+              {workOrder.productName || workOrder.code}
+            </p>
+            <p className="mt-1 text-[11px] pbp-text-subtle">
+              {workOrder.managerLabel} · {workOrder.dueDateLabel}
+            </p>
+          </div>
+          <span className="shrink-0 text-[11px] font-semibold pbp-text-muted">
+            {materialTypeLabel}
+          </span>
         </div>
-        <AppBadge
-          tone={completionSummary.isComplete ? "success" : completionSummary.isInProgressCovered ? "info" : "neutral"}
-          size="sm"
-          className="shrink-0"
-        >
-          {formatWorkOrderMaterialCompletionLabel(completionSummary)}
-        </AppBadge>
       </div>
 
-      <div className={mobile ? "mt-2 grid gap-1.5 text-[11px]" : "mt-2 grid grid-cols-2 gap-1.5 text-[11px]"}>
-        <SummaryChip label="구성" value={materialSummaryLabel} />
-        <SummaryChip label="상태" value={remainingSummaryLabel} />
+      <div className="mt-2.5 grid gap-1.5">
+        {workOrder.materialItems.map((material) => (
+          <WorkOrderMaterialRequestRow
+            key={material.key}
+            workOrder={workOrder}
+            material={material}
+            lines={lines}
+            materialRequestQuantityMap={materialRequestQuantityMap}
+            materialRequestCompletionMap={materialRequestCompletionMap}
+            editable={editable}
+            onAddMaterialToOrder={onAddMaterialToOrder}
+            mobile={mobile}
+          />
+        ))}
       </div>
-
-      <details className="group mt-2.5">
-        <summary data-wafl-component="material-order-details-summary" className="flex cursor-pointer list-none items-center justify-between wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-3 py-2 text-[11px] font-semibold pbp-text-muted shadow-none transition hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface)]">
-          <span>발주 대기 자재 · {materialItemsCount}개</span>
-          <span aria-hidden="true" className="transition group-open:rotate-180">▾</span>
-        </summary>
-        <div className="mt-2 grid gap-1.5">
-          {workOrder.materialItems.map((material) => (
-            <WorkOrderMaterialRequestRow
-              key={material.key}
-              workOrder={workOrder}
-              material={material}
-              lines={lines}
-              materialRequestQuantityMap={materialRequestQuantityMap}
-              materialRequestCompletionMap={materialRequestCompletionMap}
-              editable={editable}
-              onAddMaterialToOrder={onAddMaterialToOrder}
-              mobile={mobile}
-            />
-          ))}
-        </div>
-      </details>
     </WaflSurface>
-  );
-}
-
-function SummaryChip({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <WaflInfoRow component="material-order-summary-chip" className="block min-w-0 px-2.5 py-2 shadow-none">
-      <span className="block text-[10px] font-semibold pbp-text-subtle">{label}</span>
-      <span className="mt-0.5 block truncate font-semibold pbp-text-muted">{value}</span>
-    </WaflInfoRow>
   );
 }
 
@@ -295,36 +326,20 @@ function WorkOrderMaterialRequestRow({
     materialKey: material.key,
     requiredQuantity: material.quantity,
   });
-  const completedQuantity = calculateMaterialRequestCompletedQuantity(
-    materialRequestCompletionMap,
-    workOrder.id,
-    material.key,
-  );
-  const completionRemainingQuantity = calculateMaterialRequestCompletionRemainingQuantity({
-    quantityMap: materialRequestCompletionMap,
-    workOrderId: workOrder.id,
-    materialKey: material.key,
-    requiredQuantity: material.quantity,
-  });
+  const completionRemainingQuantity =
+    calculateMaterialRequestCompletionRemainingQuantity({
+      quantityMap: materialRequestCompletionMap,
+      workOrderId: workOrder.id,
+      materialKey: material.key,
+      requiredQuantity: material.quantity,
+    });
   const isCompletionFulfilled = completionRemainingQuantity <= 0;
   const isAllocationCovered = remainingQuantity <= 0;
-  const readableStatus = formatMaterialRequestReadableStatus({
-    requiredQuantity: material.quantity,
-    orderedQuantity,
-    currentDraftQuantity,
-    remainingQuantity,
-    completedQuantity,
-    completionRemainingQuantity,
-    unit: material.unit,
-  });
-
   const selectionButtonLabel = isAdded
-    ? "선택됨"
-    : isCompletionFulfilled
-      ? "발주 완료"
-      : isAllocationCovered
-        ? "진행중"
-        : "선택";
+    ? "빼기"
+    : isAllocationCovered
+      ? "대기"
+      : "추가";
   const selectionButtonTitle = resolveMaterialSelectionButtonTitle({
     editable,
     isAdded,
@@ -333,26 +348,27 @@ function WorkOrderMaterialRequestRow({
   });
 
   return (
-    <WaflSurface component="material-order-material-row" shape="control" className={`${MATERIAL_ORDER_NESTED_ROW_CLASS} ${mobile ? "grid gap-2" : ""}`}>
+    <WaflSurface
+      component="material-order-material-row"
+      shape="control"
+      className={`${MATERIAL_ORDER_NESTED_ROW_CLASS} ${mobile ? "grid gap-2" : ""}`}
+    >
       <div className="min-w-0">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <AppBadge tone="neutral" size="sm" className="shrink-0 text-[10px]">
-            {formatMaterialItemTypeLabel(material.itemType)}
-          </AppBadge>
-          <p className="truncate text-xs font-semibold pbp-text-primary">{material.itemName}</p>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <p className="truncate text-xs font-semibold pbp-text-primary">
+            {material.itemName}
+          </p>
+          <MaterialRequestQuantityRatio
+            orderedQuantity={orderedQuantity}
+            requiredQuantity={material.quantity}
+            currentDraftQuantity={currentDraftQuantity}
+            unit={material.unit}
+          />
         </div>
-        <p className="mt-1 text-[11px] pbp-text-muted">
-          필요 수량 {formatMaterialQuantity(material.quantity, material.unit)} · {readableStatus}
-        </p>
-        {mobile ? (
-          <div className="mt-2 grid grid-cols-2 gap-1.5 text-[10px] font-semibold pbp-text-subtle">
-            <WaflInfoRow component="material-order-quantity-row" className="px-2 py-1.5">
-              <span>진행</span><span>{formatMaterialQuantity(orderedQuantity, material.unit)}</span>
-            </WaflInfoRow>
-            <WaflInfoRow component="material-order-quantity-row" className="px-2 py-1.5 text-right">
-              <span>남음</span><span>{formatMaterialQuantity(completionRemainingQuantity, material.unit)}</span>
-            </WaflInfoRow>
-          </div>
+        {currentDraftQuantity > 0 ? (
+          <p className="mt-1 text-[10px] font-semibold text-[var(--pbp-status-success-fg)]">
+            이번 발주서에 선택됨
+          </p>
         ) : null}
       </div>
       <MaterialOrderActionButton
@@ -362,7 +378,11 @@ function WorkOrderMaterialRequestRow({
         showSrLabel={false}
         tone={isAdded ? "neutral" : isAllocationCovered ? "neutral" : "primary"}
         className={mobile ? "w-full" : ""}
-        disabled={!editable || isCompletionFulfilled || (!isAdded && isAllocationCovered)}
+        disabled={
+          !editable ||
+          isCompletionFulfilled ||
+          (!isAdded && isAllocationCovered)
+        }
         title={selectionButtonTitle}
         onClick={() => onAddMaterialToOrder(workOrder, material)}
       >
@@ -370,6 +390,67 @@ function WorkOrderMaterialRequestRow({
       </MaterialOrderActionButton>
     </WaflSurface>
   );
+}
+
+function MaterialRequestQuantityRatio({
+  orderedQuantity,
+  requiredQuantity,
+  currentDraftQuantity,
+  unit,
+}: {
+  orderedQuantity: number;
+  requiredQuantity: number;
+  currentDraftQuantity: number;
+  unit: string;
+}) {
+  const normalizedOrderedQuantity =
+    normalizeMaterialQuantityNumber(orderedQuantity);
+  const normalizedRequiredQuantity =
+    normalizeMaterialQuantityNumber(requiredQuantity);
+  const numberClassName = resolveMaterialQuantityNumberClassName({
+    orderedQuantity,
+    requiredQuantity,
+    currentDraftQuantity,
+  });
+
+  return (
+    <span
+      className="shrink-0 whitespace-nowrap text-xs font-semibold pbp-text-muted"
+      title={formatMaterialQuantity(orderedQuantity, unit)}
+    >
+      <span className={numberClassName}>{normalizedOrderedQuantity}</span>
+      <span className="pbp-text-subtle">/{normalizedRequiredQuantity}</span>
+      {unit.trim() ? (
+        <span className="ml-1 text-[10px] pbp-text-subtle">{unit.trim()}</span>
+      ) : null}
+    </span>
+  );
+}
+
+function normalizeMaterialQuantityNumber(value: number) {
+  const normalizedValue = Number.isFinite(value) ? value : 0;
+  if (Number.isInteger(normalizedValue)) return String(normalizedValue);
+  return normalizedValue
+    .toFixed(3)
+    .replace(/\.0+$/, "")
+    .replace(/(\.\d*?)0+$/, "$1");
+}
+
+function resolveMaterialQuantityNumberClassName({
+  orderedQuantity,
+  requiredQuantity,
+  currentDraftQuantity,
+}: {
+  orderedQuantity: number;
+  requiredQuantity: number;
+  currentDraftQuantity: number;
+}) {
+  if (orderedQuantity <= 0) return "text-[var(--pbp-status-danger-fg)]";
+  if (orderedQuantity >= requiredQuantity && currentDraftQuantity > 0)
+    return "text-[var(--pbp-status-success-fg)]";
+  if (orderedQuantity >= requiredQuantity)
+    return "text-[var(--pbp-status-info-fg)]";
+  return "text-[var(--pbp-status-warning-fg)]";
 }
 
 function resolveMaterialSelectionButtonTitle({
@@ -384,8 +465,9 @@ function resolveMaterialSelectionButtonTitle({
   isAllocationCovered: boolean;
 }) {
   if (!editable) return "작성중 발주서에서만 자재를 선택할 수 있습니다.";
-  if (isAdded) return "다시 누르면 이번 발주서 선택을 취소합니다.";
+  if (isAdded) return "이번 발주서에서 선택한 자재를 뺍니다.";
   if (isCompletionFulfilled) return "필요 수량의 자재 발주가 완료되었습니다.";
-  if (isAllocationCovered) return "다른 진행 중 발주서에서 필요한 수량이 이미 선택되었습니다.";
+  if (isAllocationCovered)
+    return "다른 진행 중 발주서에서 필요한 수량이 이미 선택되었습니다.";
   return "이번 발주서에 자재를 추가합니다.";
 }
