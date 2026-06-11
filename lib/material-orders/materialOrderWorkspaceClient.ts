@@ -123,6 +123,20 @@ export function formatMaterialOrderDateLabel(value: string | null | undefined): 
   return new Intl.DateTimeFormat("ko-KR", { month: "2-digit", day: "2-digit" }).format(date);
 }
 
+export function formatMaterialOrderCreatedAtLabel(value: string | null | undefined): string {
+  if (!value) return "생성일시 확인 불가";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "생성일시 확인 불가";
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
 export function formatMaterialOrderAmount(value: number): string {
   return new Intl.NumberFormat("ko-KR", {
     style: "currency",

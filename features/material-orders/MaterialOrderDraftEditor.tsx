@@ -189,7 +189,6 @@ export default function MaterialOrderDraftEditor({
       onRetry={() => void refreshOrders()}
       selectedDraftMaterialType={materialType}
       selectedDraftSupplierName={selectedDraftSupplierName}
-      selectedDraftLines={lines}
     />
   );
 
@@ -259,8 +258,7 @@ export default function MaterialOrderDraftEditor({
               onRetry={() => void refreshOrders()}
               selectedDraftMaterialType={materialType}
               selectedDraftSupplierName={selectedDraftSupplierName}
-              selectedDraftLines={lines}
-            />
+                    />
           </div>
         </WaflMobileListDrawer>
         <AppResponsiveWorkspace device="tablet">
@@ -334,8 +332,7 @@ export default function MaterialOrderDraftEditor({
                 onRetry={() => void refreshOrders()}
                 selectedDraftMaterialType={materialType}
                 selectedDraftSupplierName={selectedDraftSupplierName}
-                selectedDraftLines={lines}
-              />
+                        />
             </div>
           </WaflMobileListDrawer>
         }

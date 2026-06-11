@@ -14,8 +14,7 @@ import {
   MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import {
-  formatMaterialOrderDisplayTitle,
-  formatMaterialOrderPrimaryLineLabel,
+  formatMaterialOrderCreatedAtLabel,
   formatMaterialOrderStatusLabel,
   formatMaterialOrderTypeLabel,
   resolveMaterialOrderStatusBadgeTone,
@@ -24,12 +23,11 @@ import {
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import {
   filterMaterialOrders,
-  formatMaterialOrderDraftLineLabel,
   type MaterialOrderFilterStatus,
   type MaterialOrderFilterType,
 } from "@/features/material-orders/materialOrderPanelUtils";
 import type { MaterialOrder, MaterialOrderLineItemType, MaterialOrderStatus } from "@/lib/material-orders/types";
-import type { MaterialOrderDraftLine, MaterialOrderDraftSelectionType } from "@/lib/material-orders/materialOrderDraftCalculator";
+import type { MaterialOrderDraftSelectionType } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderListPanelProps = {
   variant?: "panel" | "drawer";
@@ -44,7 +42,6 @@ type MaterialOrderListPanelProps = {
   onRetry: () => void;
   selectedDraftMaterialType: MaterialOrderDraftSelectionType;
   selectedDraftSupplierName: string | null;
-  selectedDraftLines: MaterialOrderDraftLine[];
 };
 
 const MATERIAL_ORDER_STATUS_OPTIONS: Array<AppSelectOption & { value: "all" | MaterialOrderStatus }> = [
@@ -76,7 +73,6 @@ export default function MaterialOrderListPanel({
   onRetry,
   selectedDraftMaterialType,
   selectedDraftSupplierName,
-  selectedDraftLines,
 }: MaterialOrderListPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<MaterialOrderFilterStatus>("draft");
@@ -179,7 +175,6 @@ export default function MaterialOrderListPanel({
               onSelectOrder={onSelectOrder}
               draftMaterialType={order.id === selectedOrderId ? selectedDraftMaterialType : null}
               draftSupplierName={order.id === selectedOrderId ? selectedDraftSupplierName : null}
-              draftLines={order.id === selectedOrderId ? selectedDraftLines : null}
               onCancelOrder={onCancelOrder}
             />
           ))
@@ -206,7 +201,6 @@ function MaterialOrderListButton({
   onCancelOrder,
   draftMaterialType,
   draftSupplierName,
-  draftLines,
 }: {
   order: MaterialOrder;
   selected: boolean;
@@ -214,14 +208,13 @@ function MaterialOrderListButton({
   onCancelOrder: (orderId: string) => void;
   draftMaterialType: MaterialOrderDraftSelectionType | null;
   draftSupplierName: string | null;
-  draftLines: MaterialOrderDraftLine[] | null;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const materialType = draftMaterialType ?? resolveMaterialOrderType(order);
-  const supplierLabel = draftSupplierName?.trim() || order.supplierPartnerName?.trim() || "공급처 미지정";
-  const displayTitle = selected ? `${formatMaterialOrderTypeLabel(materialType)} · ${supplierLabel}` : formatMaterialOrderDisplayTitle(order);
-  const primaryLineLabel = draftLines ? formatMaterialOrderDraftLineLabel(draftLines) : formatMaterialOrderPrimaryLineLabel(order);
+  const typeLabel = materialType ? formatMaterialOrderTypeLabel(materialType) : "자재 종류 선택 전";
+  const supplierLabel = draftSupplierName?.trim() || order.supplierPartnerName?.trim() || "공급처 선택 전";
+  const createdAtLabel = formatMaterialOrderCreatedAtLabel(order.createdAt);
   const canCancelOrder = order.status === "draft";
 
   useEffect(() => {
@@ -265,12 +258,15 @@ function MaterialOrderListButton({
           className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left"
           onClick={() => onSelectOrder(order.id)}
         >
-          <p className="truncate text-sm font-semibold pbp-text-primary">{displayTitle}</p>
-          <p className="mt-1 truncate text-[11px] pbp-text-muted">{primaryLineLabel}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
             <AppBadge tone={resolveMaterialOrderStatusBadgeTone(order.status)} size="sm" className="shrink-0">
               {formatMaterialOrderStatusLabel(order.status)}
             </AppBadge>
+          </div>
+          <p className="mt-1.5 truncate text-[11px] font-medium pbp-text-muted">{createdAtLabel}</p>
+          <div className="mt-2.5 space-y-1">
+            <p className="truncate text-sm font-semibold pbp-text-primary">{typeLabel}</p>
+            <p className="truncate text-[11px] font-medium pbp-text-muted">{supplierLabel}</p>
           </div>
         </button>
         <div className="relative shrink-0" ref={menuRef}>
@@ -309,10 +305,6 @@ function MaterialOrderListButton({
             </div>
           ) : null}
         </div>
-      </div>
-      <div className="mt-2 flex w-full min-w-0 items-center justify-between gap-2 border-t border-[var(--pbp-border)] pt-2 text-[11px] font-semibold pbp-text-subtle">
-        <span>{formatMaterialOrderTypeLabel(materialType)}</span>
-        <span className="truncate">{supplierLabel}</span>
       </div>
     </WaflSurface>
   );
