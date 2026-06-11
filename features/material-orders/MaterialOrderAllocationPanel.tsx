@@ -20,7 +20,7 @@ import {
   isMaterialRequestAlreadyAdded,
   type MaterialRequestQuantityMap,
 } from "@/features/material-orders/materialOrderPanelUtils";
-import type { MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
+import type { MaterialOrderDraftSelectionType, MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
 
 type MaterialOrderAllocationPanelProps = {
@@ -28,7 +28,7 @@ type MaterialOrderAllocationPanelProps = {
   lines: MaterialOrderDraftLine[];
   materialRequestQuantityMap: MaterialRequestQuantityMap;
   materialRequestCompletionMap: MaterialRequestQuantityMap;
-  selectedMaterialType: MaterialOrderDraftType;
+  selectedMaterialType: MaterialOrderDraftSelectionType;
   hasSelectedOrder: boolean;
   editable: boolean;
   loading: boolean;
@@ -56,8 +56,10 @@ export default function MaterialOrderAllocationPanel({
   mobile = false,
 }: MaterialOrderAllocationPanelProps) {
   const visibleCandidates = useMemo(
-    () =>
-      candidates.flatMap((workOrder) => {
+    () => {
+      if (!selectedMaterialType) return [];
+
+      return candidates.flatMap((workOrder) => {
         const materialItems = workOrder.materialItems.filter((material) =>
           shouldShowMaterialRequest({
             workOrderId: workOrder.id,
@@ -71,7 +73,8 @@ export default function MaterialOrderAllocationPanel({
         return materialItems.length > 0
           ? [{ ...workOrder, materialItems }]
           : [];
-      }),
+      });
+    },
     [
       candidates,
       materialRequestCompletionMap,
@@ -85,7 +88,7 @@ export default function MaterialOrderAllocationPanel({
       component="material-order-allocation-panel"
       className={MATERIAL_ORDER_PANEL_CARD_CLASS}
     >
-      {!hasSelectedOrder ? (
+      {!hasSelectedOrder || !selectedMaterialType ? (
         <div aria-hidden="true" className="min-h-full" />
       ) : (
         <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
@@ -140,7 +143,7 @@ function shouldShowMaterialRequest({
 }: {
   workOrderId: string;
   material: AllocationCandidateMaterialItem;
-  selectedMaterialType: MaterialOrderDraftType;
+  selectedMaterialType: MaterialOrderDraftSelectionType;
   materialRequestQuantityMap: MaterialRequestQuantityMap;
   materialRequestCompletionMap: MaterialRequestQuantityMap;
 }) {

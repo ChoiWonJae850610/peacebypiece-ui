@@ -19,7 +19,7 @@ import {
 import type {
   MaterialOrderDraftLine,
   MaterialOrderDraftTotals,
-  MaterialOrderDraftType,
+  MaterialOrderDraftSelectionType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import type {
   MaterialOrder,
@@ -29,14 +29,14 @@ import type {
 
 type MaterialOrderDetailPanelProps = {
   selectedOrder: MaterialOrder | null;
-  materialType: MaterialOrderDraftType;
+  materialType: MaterialOrderDraftSelectionType;
   supplierPartnerId: string | null;
   suppliers: MaterialOrderSupplier[];
   suppliersLoading: boolean;
   suppliersError: string | null;
   lines: MaterialOrderDraftLine[];
   totals: MaterialOrderDraftTotals;
-  onChangeMaterialType: (materialType: MaterialOrderDraftType) => void;
+  onChangeMaterialType: (materialType: MaterialOrderDraftSelectionType) => void;
   onChangeSupplierPartnerId: (partnerId: string | null) => void;
   onRetrySuppliers: () => void;
   statusChanging: boolean;
@@ -105,17 +105,17 @@ export default function MaterialOrderDetailPanel({
                   options={MATERIAL_TYPE_SELECT_OPTIONS}
                   ariaLabel="자재 종류"
                   onValueChange={(value) =>
-                    onChangeMaterialType(value as MaterialOrderDraftType)
+                    onChangeMaterialType(value as MaterialOrderDraftSelectionType)
                   }
                 />
               </FieldLabel>
               <FieldLabel label="공급처">
                 <AppSelect
                   value={supplierPartnerId ?? ""}
-                  disabled={!isDraftEditable || suppliersLoading}
+                  disabled={!isDraftEditable || !materialType || suppliersLoading}
                   size="sm"
-                  placeholder={resolveSupplierPlaceholder(suppliersLoading, suppliers.length)}
-                  options={buildSupplierSelectOptions(suppliersLoading, suppliers)}
+                  placeholder={resolveSupplierPlaceholder(materialType, suppliersLoading, suppliers.length)}
+                  options={buildSupplierSelectOptions(materialType, suppliersLoading, suppliers)}
                   ariaLabel="공급처"
                   onValueChange={(value) => onChangeSupplierPartnerId(value || null)}
                 />
@@ -221,19 +221,21 @@ function MaterialOrderMobileStatusHeader({
 }
 
 const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [
+  { value: "", label: "선택 안함" },
   { value: "fabric", label: "원단" },
   { value: "submaterial", label: "부자재" },
 ];
 
 function buildSupplierSelectOptions(
+  materialType: MaterialOrderDraftSelectionType,
   loading: boolean,
   suppliers: MaterialOrderSupplier[],
 ): AppSelectOption[] {
   return [
     {
       value: "",
-      label: resolveSupplierPlaceholder(loading, suppliers.length),
-      disabled: loading || suppliers.length === 0,
+      label: resolveSupplierPlaceholder(materialType, loading, suppliers.length),
+      disabled: !materialType || loading || suppliers.length === 0,
     },
     ...suppliers.map((supplier) => ({
       value: supplier.id,
@@ -258,9 +260,11 @@ function FieldLabel({
 }
 
 function resolveSupplierPlaceholder(
+  materialType: MaterialOrderDraftSelectionType,
   loading: boolean,
   supplierCount: number,
 ): string {
+  if (!materialType) return "자재 종류를 먼저 선택";
   if (loading) return "공급처 조회 중";
   if (supplierCount === 0) return "선택 가능한 공급처 없음";
   return "공급처 선택";

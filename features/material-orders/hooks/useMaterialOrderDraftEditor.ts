@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   calculateMaterialOrderDraftTotals,
   type MaterialOrderDraftLine,
+  type MaterialOrderDraftSelectionType,
   type MaterialOrderDraftType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import {
@@ -129,7 +130,7 @@ export function useMaterialOrderDraftEditor() {
   const [workOrdersLoading, setWorkOrdersLoading] = useState(true);
   const [workOrdersError, setWorkOrdersError] = useState<string | null>(null);
   const [materialType, setMaterialType] =
-    useState<MaterialOrderDraftType>("fabric");
+    useState<MaterialOrderDraftSelectionType>("");
   const [supplierPartnerId, setSupplierPartnerId] = useState<string | null>(
     null,
   );
@@ -226,9 +227,16 @@ export function useMaterialOrderDraftEditor() {
   }, []);
 
   const refreshSuppliers = useCallback(
-    async (nextMaterialType: MaterialOrderDraftType) => {
-      setSuppliersLoading(true);
+    async (nextMaterialType: MaterialOrderDraftSelectionType) => {
       setSuppliersError(null);
+
+      if (!nextMaterialType) {
+        setSuppliers([]);
+        setSuppliersLoading(false);
+        return;
+      }
+
+      setSuppliersLoading(true);
 
       try {
         setSuppliers(await fetchMaterialOrderSuppliers(nextMaterialType));
@@ -258,13 +266,13 @@ export function useMaterialOrderDraftEditor() {
 
   useEffect(() => {
     if (!selectedOrder) {
-      setMaterialType("fabric");
+      setMaterialType("");
       setSupplierPartnerId(null);
       setLines([]);
       return;
     }
 
-    setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "fabric");
+    setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "");
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
     setStatusToastMessage(null);
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
@@ -299,7 +307,7 @@ export function useMaterialOrderDraftEditor() {
   }, []);
 
   const changeMaterialType = useCallback(
-    (nextMaterialType: MaterialOrderDraftType) => {
+    (nextMaterialType: MaterialOrderDraftSelectionType) => {
       setMaterialType((currentMaterialType) => {
         if (currentMaterialType !== nextMaterialType) {
           setLines([]);
@@ -314,6 +322,7 @@ export function useMaterialOrderDraftEditor() {
   const buildSelectedOrderDetailPayload =
     useCallback((): SelectedOrderDetailPayload | null => {
       if (!selectedOrder) return null;
+      if (!materialType && lines.length > 0) return null;
 
       return {
         materialOrderId: selectedOrder.id,
@@ -321,7 +330,7 @@ export function useMaterialOrderDraftEditor() {
         note: selectedOrder.note ?? "",
         lines: lines.map((line) => ({
           itemName: line.itemName,
-          itemType: materialType,
+          itemType: (materialType || "fabric") as MaterialOrderDraftType,
           unit: line.unit,
           orderQuantity: line.orderQuantity,
           unitPrice: line.unitPrice,

@@ -29,7 +29,7 @@ import {
   type MaterialOrderFilterType,
 } from "@/features/material-orders/materialOrderPanelUtils";
 import type { MaterialOrder, MaterialOrderLineItemType, MaterialOrderStatus } from "@/lib/material-orders/types";
-import type { MaterialOrderDraftLine, MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
+import type { MaterialOrderDraftLine, MaterialOrderDraftSelectionType } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderListPanelProps = {
   variant?: "panel" | "drawer";
@@ -42,7 +42,7 @@ type MaterialOrderListPanelProps = {
   onCreateOrder: () => void;
   onCancelOrder: (orderId: string) => void;
   onRetry: () => void;
-  selectedDraftMaterialType: MaterialOrderDraftType;
+  selectedDraftMaterialType: MaterialOrderDraftSelectionType;
   selectedDraftSupplierName: string | null;
   selectedDraftLines: MaterialOrderDraftLine[];
 };
@@ -212,7 +212,7 @@ function MaterialOrderListButton({
   selected: boolean;
   onSelectOrder: (orderId: string) => void;
   onCancelOrder: (orderId: string) => void;
-  draftMaterialType: MaterialOrderDraftType | null;
+  draftMaterialType: MaterialOrderDraftSelectionType | null;
   draftSupplierName: string | null;
   draftLines: MaterialOrderDraftLine[] | null;
 }) {

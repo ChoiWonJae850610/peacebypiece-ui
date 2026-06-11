@@ -1,4 +1,5 @@
 export type MaterialOrderDraftType = "fabric" | "submaterial";
+export type MaterialOrderDraftSelectionType = MaterialOrderDraftType | "";
 
 export type MaterialOrderDraftAllocation = {
   workOrderId: string;

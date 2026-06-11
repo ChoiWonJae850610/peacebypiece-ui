@@ -110,7 +110,7 @@ export function resolveMaterialOrderStatusBadgeTone(status: MaterialOrder["statu
   }
 }
 
-export function formatMaterialOrderTypeLabel(type: MaterialOrderLineItemType | null): string {
+export function formatMaterialOrderTypeLabel(type: MaterialOrderLineItemType | null | ""): string {
   if (type === "fabric") return "원단";
   if (type === "submaterial") return "부자재";
   return "미지정";
