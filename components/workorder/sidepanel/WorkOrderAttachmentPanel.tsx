@@ -252,6 +252,7 @@ function AttachmentUploadHint({
     return (
       <WaflAddCardButton
         component="attachment-add-button"
+        density={compact ? "compact" : "default"}
         title={disabled ? disabledReason : addButtonLabel}
         disabled={disabled}
         onClick={() => {
@@ -266,7 +267,7 @@ function AttachmentUploadHint({
           dragActive
             ? "pbp-sidepanel-upload-zone-active ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]"
             : ""
-        } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
+        }`}
       >
         <WaflAddIconBubble />
         <span className="sr-only">{title}</span>
@@ -277,6 +278,7 @@ function AttachmentUploadHint({
   return (
     <WaflAddCard
       component="attachment-add-card"
+      density={compact ? "compact" : "default"}
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
       onDragEnter={handleDragOver}
@@ -286,7 +288,7 @@ function AttachmentUploadHint({
       aria-label={title}
       className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 w-full active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
         dragActive ? "pbp-sidepanel-upload-zone-active" : ""
-      } ${compact ? "px-3 py-4" : "px-4 py-5"}`}
+      }`}
     >
       <AttachmentActionMenu
         scope={scope}
@@ -338,7 +340,8 @@ function AttachmentFlatAddHint({
         disabled={disabled}
         title={disabled ? disabledReason : addButtonLabel}
         aria-label={addButtonLabel}
-        className="min-h-[72px] w-full"
+        density="default"
+        className="w-full"
       >
         <WaflAddIconBubble />
       </WaflAddCardButton>
@@ -348,7 +351,8 @@ function AttachmentFlatAddHint({
   return (
     <WaflAddCard
       component="attachment-add-card"
-      className="min-h-[72px] w-full"
+      density="default"
+      className="w-full"
     >
       <AttachmentActionMenu
         scope={scope}
@@ -718,7 +722,8 @@ export default function WorkOrderAttachmentPanel({
             <div className={isFlatDevice ? "space-y-2.5" : undefined}>
               <WaflEmptyCard
                 shape="control"
-                className={`pbp-empty-state whitespace-pre-line px-3 py-4 text-xs leading-5 sm:px-4 sm:py-5 ${isFlatDevice ? "" : "mt-3"}`}
+                density={isFlatDevice ? "compact" : "default"}
+                className={`pbp-empty-state whitespace-pre-line leading-5 ${isFlatDevice ? "" : "mt-3"}`}
               >
                 {emptyText}
               </WaflEmptyCard>

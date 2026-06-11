@@ -1,6 +1,16 @@
 import { useState } from "react";
 
-import { AppBadge, AppCard, SectionCountBadge, WaflAddCardButton, WaflAddIconBubble, WaflButton, WaflEmptyCard, WaflInfoBox, WaflSurface } from "@/components/common/ui";
+import {
+  AppBadge,
+  AppCard,
+  SectionCountBadge,
+  WaflAddCardButton,
+  WaflAddIconBubble,
+  WaflButton,
+  WaflEmptyCard,
+  WaflInfoBox,
+  WaflSurface,
+} from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -35,7 +45,12 @@ function MaterialListCard({
     item.name || copy.fallbackItem.replace("{index}", String(index + 1));
 
   return (
-    <WaflSurface component="material-list-card" shape="control" tone="muted" className="p-3">
+    <WaflSurface
+      component="material-list-card"
+      shape="control"
+      tone="muted"
+      className="p-3"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <AppBadge tone="neutral" size="sm">
@@ -127,29 +142,31 @@ export default function MaterialSection({
           </h3>
           <SectionCountBadge>{materials.length}건</SectionCountBadge>
         </div>
-
       </div>
       <AppCard
         className="space-y-2 xl:max-h-[320px] xl:overflow-auto xl:p-4"
         padding="sm"
       >
         {materials.length === 0 ? (
-          <WaflEmptyCard className="px-4 py-8 text-sm pbp-text-muted">
+          <WaflEmptyCard density="spacious" className="pbp-text-muted">
             {copy.empty}
           </WaflEmptyCard>
         ) : null}
 
         {!locked && zeroQuantityCount > 0 ? (
-          <WaflInfoBox tone="warning" shape="control" state="warning" className="text-xs leading-5">
+          <WaflInfoBox
+            tone="warning"
+            shape="control"
+            state="warning"
+            className="text-xs leading-5"
+          >
             <div className="font-semibold">
               {copy.zeroQuantityNoticeTitle.replace(
                 "{count}",
                 String(zeroQuantityCount),
               )}
             </div>
-            <div className="mt-0.5">
-              {copy.zeroQuantityNoticeDescription}
-            </div>
+            <div className="mt-0.5">{copy.zeroQuantityNoticeDescription}</div>
             <WaflButton
               size="sm"
               variant="neutral"
@@ -174,12 +191,13 @@ export default function MaterialSection({
         {!locked ? (
           <WaflAddCardButton
             component="material-add-button"
+            density="default"
             onClick={openAddSheet}
-            className="min-h-[72px] w-full"
+            className="w-full"
             aria-label={copy.addButton}
             title={copy.addButton}
           >
-<WaflAddIconBubble />
+            <WaflAddIconBubble />
           </WaflAddCardButton>
         ) : null}
       </AppCard>

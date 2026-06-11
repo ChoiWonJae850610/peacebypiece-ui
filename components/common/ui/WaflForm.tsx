@@ -87,7 +87,7 @@ export function WaflInfoBox({
   children,
   className,
   tone = "neutral",
-  shape = "surface",
+  shape = "control",
   component = "info-card",
   state = "normal",
   ...props

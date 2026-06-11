@@ -574,7 +574,7 @@ const directStyleAuditRows = [
     remaining:
       "public/dev 핵심 page rounded 직접 조합 제거 / 공통 컴포넌트 data-wafl 기준 보강 / calendar·login·modal 예외 후보 유지",
     decision:
-      "0.21.36에서 Button/Input/Select/Badge/Surface의 foundation, tone, density, state 표시를 보강했다. public/dev는 0.21.35에서 1차 정리 완료.",
+      "0.21.38에서 Add/Empty/Upload dashed box 계열을 PC/태블릿/모바일 공통 control/density 기준으로 1차 고정했다. public/dev는 0.21.35에서 1차 정리 완료.",
     tone: "info" as const,
   },
 ];
@@ -1166,9 +1166,9 @@ function FoundationPrimitiveSamples() {
   return (
     <div className="space-y-4">
       <WaflNoticeBox tone="info">
-        0.21.36은 Button/Input/Select/Badge/Surface 품질 보정 1차다. 공통
-        컴포넌트의 foundation, tone, density, state 표시를 보강해서 실제 화면
-        점검 기준을 더 고정한다.
+        0.21.38은 PC/태블릿/모바일 공통으로 보이는 Add/Empty/Upload dashed box
+        계열을 먼저 고정한다. 빈 슬롯과 추가 슬롯은 기본적으로 control
+        foundation과 density 값을 공유한다.
       </WaflNoticeBox>
 
       <WaflSurface
@@ -1216,8 +1216,8 @@ function FoundationPrimitiveSamples() {
               </h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
                 WaflSurface, WaflButton, WaflInput, AppSelect, AppBadge,
-                InfoRow, EmptyCard는 서로 다른 컴포넌트지만 shape/density/tone
-                값은 한 곳에서 공유한다.
+                InfoRow, EmptyCard, AddCard, AddCardButton은 서로 다른
+                컴포넌트지만 shape/density/tone 값은 한 곳에서 공유한다.
               </p>
             </div>
             <AppBadge tone="brand" size="xs">
@@ -1317,9 +1317,9 @@ function FoundationPrimitiveSamples() {
               <WaflEmptyCard
                 component="catalog-storage-empty"
                 shape="control"
-                className="px-3 py-3 text-xs"
+                density="compact"
               >
-                storage empty · control
+                storage empty · control compact
               </WaflEmptyCard>
             </div>
             <WaflSelectableCard
@@ -1356,7 +1356,7 @@ function FoundationPrimitiveSamples() {
               <WaflEmptyCard
                 component="catalog-modal-empty"
                 shape="control"
-                className="px-4 py-4"
+                density="default"
               >
                 modal empty state
               </WaflEmptyCard>
@@ -1731,7 +1731,7 @@ function TouchActionSamples() {
           </AppBadge>
         </WaflSurfaceButton>
         <WaflAddCardButton
-          className="min-h-28"
+          density="spacious"
           label="새 항목 추가"
           description="카드 그리드의 빈 슬롯"
         />
@@ -2394,14 +2394,13 @@ function UsageRulesSamples() {
               Direct Style 잔여 점검판
             </p>
             <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-              0.21.36 기준으로 public/dev 직접 스타일 1차 정리 이후
-              Button/Input/Select/Badge/Surface의 foundation, tone, density,
-              state 표시를 보강했다. login, date picker, calendar range,
-              progress bar처럼 의미가 있는 UI는 예외 후보로 유지한다.
+              0.21.38 기준으로 Add/Empty/Upload dashed box 계열까지 control
+              foundation과 density 기준으로 묶었다. login, date picker, calendar
+              range, progress bar처럼 의미가 있는 UI는 예외 후보로 유지한다.
             </p>
           </div>
           <AppBadge tone="brand" size="xs">
-            0.21.36 quality
+            0.21.38 responsive
           </AppBadge>
         </div>
         <div className="mt-4 grid gap-2">

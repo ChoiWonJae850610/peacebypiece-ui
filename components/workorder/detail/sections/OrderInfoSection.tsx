@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 
-import { AppCard, SectionCountBadge, WaflAddCardButton, WaflAddIconBubble, WaflButton, WaflEmptyCard, WaflSurface } from "@/components/common/ui";
+import {
+  AppCard,
+  SectionCountBadge,
+  WaflAddCardButton,
+  WaflAddIconBubble,
+  WaflButton,
+  WaflEmptyCard,
+  WaflSurface,
+} from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import WorkOrderProcessEditSheet, {
@@ -41,7 +49,12 @@ function ProcessCard({
   const { i18n } = useI18n();
   const common = i18n.workorder.ui.common;
   return (
-    <WaflSurface component="process-list-card" shape="control" tone="muted" className="p-3">
+    <WaflSurface
+      component="process-list-card"
+      shape="control"
+      tone="muted"
+      className="p-3"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold pbp-text-subtle">
@@ -64,7 +77,9 @@ function ProcessCard({
             editLabel={`${title} ${common.editSuffix}`}
             editText={common.editSuffix}
             onEdit={onEdit}
-            deleteLabel={onRemove ? `${title} ${common.deleteSuffix}` : undefined}
+            deleteLabel={
+              onRemove ? `${title} ${common.deleteSuffix}` : undefined
+            }
             deleteText={onRemove ? common.deleteSuffix : undefined}
             onDelete={onRemove}
           />
@@ -184,9 +199,11 @@ export default function OrderInfoSection({
 
   const rows = (
     <>
-      {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
+      {showDebugPanel ? (
+        <OrderInfoHubDebugPanel policy={orderHubPolicy} />
+      ) : null}
       {!hasRows ? (
-        <WaflEmptyCard className="px-4 py-8 text-sm pbp-text-muted">
+        <WaflEmptyCard density="spacious" className="pbp-text-muted">
           {copy.empty}
         </WaflEmptyCard>
       ) : null}
@@ -228,12 +245,21 @@ export default function OrderInfoSection({
       {!locked ? (
         <WaflAddCardButton
           component="process-add-button"
+          density="default"
           onClick={openPrimaryAddSheet}
-          className="min-h-[72px] w-full"
-          aria-label={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
-          title={visibleOrderEntries.length === 0 ? copy.factoryAddButton : copy.outsourcingOrder.addButton}
+          className="w-full"
+          aria-label={
+            visibleOrderEntries.length === 0
+              ? copy.factoryAddButton
+              : copy.outsourcingOrder.addButton
+          }
+          title={
+            visibleOrderEntries.length === 0
+              ? copy.factoryAddButton
+              : copy.outsourcingOrder.addButton
+          }
         >
-<WaflAddIconBubble />
+          <WaflAddIconBubble />
         </WaflAddCardButton>
       ) : null}
 
@@ -259,11 +285,16 @@ export default function OrderInfoSection({
             </h3>
             <SectionCountBadge>{processCount}건</SectionCountBadge>
           </div>
-
         </div>
       ) : null}
 
-      {isFlatDevice ? rows : <AppCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">{rows}</AppCard>}
+      {isFlatDevice ? (
+        rows
+      ) : (
+        <AppCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">
+          {rows}
+        </AppCard>
+      )}
 
       <WorkOrderProcessEditSheet
         open={Boolean(sheetState)}

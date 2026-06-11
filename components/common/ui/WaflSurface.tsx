@@ -23,6 +23,19 @@ export type WaflSurfaceTone =
   | "danger"
   | "info";
 type WaflSurfaceElement = "div" | "section" | "article" | "header" | "aside";
+export type WaflEmptyDensity = "compact" | "default" | "spacious";
+
+const emptyDensityClassMap: Record<WaflEmptyDensity, string> = {
+  compact: "min-h-12 px-3 py-3 text-xs sm:min-h-14 sm:px-4",
+  default: "min-h-14 px-4 py-4 text-sm sm:min-h-16",
+  spacious: "min-h-20 px-4 py-5 text-sm sm:min-h-24",
+};
+
+const addCardDensityClassMap: Record<WaflEmptyDensity, string> = {
+  compact: "min-h-12 px-3 py-3 sm:min-h-14",
+  default: "min-h-14 px-4 py-4 sm:min-h-16",
+  spacious: "min-h-20 px-4 py-5 sm:min-h-24",
+};
 
 const surfaceToneClassMap: Record<WaflSurfaceTone, string> = {
   default: waflToneClassMap.surface,
@@ -142,11 +155,13 @@ export function WaflEmptyCard({
   children,
   className,
   component = "empty-card",
-  shape = "surface",
+  density = "default",
+  shape = "control",
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   component?: string;
+  density?: WaflEmptyDensity;
   shape?: Extract<WaflPrimitiveShape, "surface" | "control">;
 }) {
   return (
@@ -155,11 +170,12 @@ export function WaflEmptyCard({
       data-wafl-foundation={shape}
       data-wafl-tone="empty"
       data-wafl-state="empty"
+      data-wafl-density={density}
       className={cn(
         getWaflPrimitiveClassName({
           shape,
           tone: "empty",
-          className: "px-4 py-5 text-center text-sm",
+          className: cn("text-center", emptyDensityClassMap[density]),
         }),
         className,
       )}
@@ -174,22 +190,30 @@ export function WaflAddCard({
   children,
   className,
   component = "add-card",
+  density = "default",
+  shape = "control",
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   component?: string;
+  density?: WaflEmptyDensity;
+  shape?: Extract<WaflPrimitiveShape, "surface" | "control">;
 }) {
   return (
     <div
       data-wafl-component={component}
-      data-wafl-foundation="surface"
+      data-wafl-foundation={shape}
       data-wafl-tone="empty"
       data-wafl-state="empty"
+      data-wafl-density={density}
       className={cn(
         getWaflPrimitiveClassName({
-          shape: "surface",
+          shape,
           tone: "empty",
-          className: "flex items-center justify-center px-4 py-4",
+          className: cn(
+            "flex items-center justify-center",
+            addCardDensityClassMap[density],
+          ),
         }),
         className,
       )}
@@ -204,17 +228,21 @@ export function WaflAddCardButton({
   children,
   className,
   component = "add-card-button",
+  density = "default",
   description,
   icon,
   label,
+  shape = "control",
   type = "button",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: ReactNode;
   component?: string;
+  density?: WaflEmptyDensity;
   description?: ReactNode;
   icon?: ReactNode;
   label?: ReactNode;
+  shape?: Extract<WaflPrimitiveShape, "surface" | "control">;
 }) {
   const content = children ?? (
     <>
@@ -237,16 +265,19 @@ export function WaflAddCardButton({
       type={type}
       data-wafl-component={component}
       data-wafl-primitive="add-card-button"
-      data-wafl-foundation="surface"
+      data-wafl-foundation={shape}
       data-wafl-tone="empty"
       data-wafl-state="empty"
+      data-wafl-density={density}
       className={cn(
         cn(
           getWaflPrimitiveClassName({
-            shape: "surface",
+            shape,
             tone: "empty",
-            className:
-              "pbp-interactive-button group flex flex-col items-center justify-center gap-2 px-4 py-4 text-center disabled:cursor-not-allowed disabled:opacity-45",
+            className: cn(
+              "pbp-interactive-button group flex flex-col items-center justify-center gap-2 text-center disabled:cursor-not-allowed disabled:opacity-45",
+              addCardDensityClassMap[density],
+            ),
           }),
           "hover:border-[var(--pbp-border-strong)] hover:bg-[var(--pbp-surface-muted)]",
           waflInteractiveClass,
