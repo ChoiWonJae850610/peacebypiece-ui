@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { getWaflPrimitiveClassName, waflInteractiveClass, waflToneClassMap, type WaflPrimitiveShape } from "./WaflPrimitive";
 
 export type WaflSurfaceTone = "default" | "surface" | "selected" | "muted" | "empty" | "warning" | "danger" | "info";
-type WaflSurfaceElement = "div" | "section" | "article" | "header";
+type WaflSurfaceElement = "div" | "section" | "article" | "header" | "aside";
 
 const surfaceToneClassMap: Record<WaflSurfaceTone, string> = {
   default: waflToneClassMap.surface,
