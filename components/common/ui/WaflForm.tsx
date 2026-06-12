@@ -1,6 +1,5 @@
 import {
   forwardRef,
-  type ButtonHTMLAttributes,
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -144,22 +143,25 @@ export function WaflSelectableCard({
   selected = false,
   current = false,
   component = "selectable-card",
+  disabled = false,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
+}: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   selected?: boolean;
   current?: boolean;
   component?: string;
+  disabled?: boolean;
 }) {
   return (
-    <button
-      type="button"
+    <div
       data-wafl-component={component}
       data-wafl-foundation="control"
       data-wafl-tone={selected ? "selected" : current ? "muted" : "surface"}
       data-wafl-state={selected ? "selected" : current ? "current" : "normal"}
+      data-disabled={disabled ? "true" : undefined}
+      aria-disabled={disabled || undefined}
       className={cn(
-        "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-control border px-4 py-3 text-left disabled:pointer-events-none disabled:opacity-50",
+        "flex w-full min-w-0 items-center justify-between gap-3 wafl-shape-control border px-4 py-3 text-left data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
         waflInteractiveClass,
         selected
           ? "border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] text-[var(--pbp-selected-text)]"
@@ -171,6 +173,6 @@ export function WaflSelectableCard({
       {...props}
     >
       {children}
-    </button>
+    </div>
   );
 }
