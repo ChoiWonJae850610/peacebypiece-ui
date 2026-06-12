@@ -91,16 +91,18 @@ function ModalActionButton({ label, onClick, disabled, tone = "neutral", width =
 
 export function renderModalFooterActions({
   primary,
-  secondary,
   layout = "end",
 }: {
   primary: ModalActionButtonConfig;
+  /**
+   * Deprecated. WAFL modal footers keep only explicit primary/danger actions.
+   * Use the top-right close button for dismissing the modal.
+   */
   secondary?: ModalActionButtonConfig;
   layout?: ModalFooterLayout;
 }): ReactNode {
   return (
     <div className={LAYOUT_CLASS_MAP[layout]}>
-      {secondary ? <ModalActionButton {...secondary} /> : null}
       <ModalActionButton {...primary} />
     </div>
   );
