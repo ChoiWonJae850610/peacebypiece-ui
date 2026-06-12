@@ -230,7 +230,7 @@ export const commonKo = {
       },
       managerAssign: {
         title: "담당자 변경",
-        description: "완료 전 단계에서 고객사 관리자만 담당자를 변경할 수 있습니다.",
+        description: "",
         currentManagerLabel: "현재 담당자",
         currentBadge: "현재",
       },

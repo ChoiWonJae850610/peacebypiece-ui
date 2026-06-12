@@ -32,21 +32,23 @@ export default function WorkOrderDetailDesktopSections({
         <WorkOrderActionSection {...viewModel.actionProps} />
       </div>
 
-      <DetailSectionGroup
-        eyebrow={groups.cost.eyebrow}
-        title={groups.cost.title}
-        description={groups.cost.description}
-      >
-        <WorkOrderCostSummarySection {...viewModel.costSummaryProps} />
-      </DetailSectionGroup>
+      <div className="px-5">
+        <DetailSectionGroup
+          eyebrow={groups.cost.eyebrow}
+          title={groups.cost.title}
+          description={groups.cost.description}
+        >
+          <WorkOrderCostSummarySection {...viewModel.costSummaryProps} />
+        </DetailSectionGroup>
 
-      <OrderInfoSection {...viewModel.orderInfoProps} />
+        <OrderInfoSection {...viewModel.orderInfoProps} />
 
-      {viewModel.showProductionComposition ? (
-        <ProductionCompositionSection
-          {...viewModel.productionCompositionProps}
-        />
-      ) : null}
+        {viewModel.showProductionComposition ? (
+          <ProductionCompositionSection
+            {...viewModel.productionCompositionProps}
+          />
+        ) : null}
+      </div>
     </>
   );
 }

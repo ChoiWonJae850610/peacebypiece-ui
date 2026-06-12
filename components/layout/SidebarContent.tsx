@@ -359,7 +359,7 @@ export default function SidebarContent({
         ) : null}
         <div className="mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 py-3 pb-24 [scrollbar-gutter:auto]">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pl-3.5 pr-0 py-3 pb-24 [scrollbar-gutter:auto]">
         <div className="space-y-2">
           {workOrders.map((workOrder) => (
             <WorkOrderListCard

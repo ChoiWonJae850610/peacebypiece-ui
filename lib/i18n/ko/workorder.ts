@@ -297,7 +297,7 @@ export const workorderKo = {
       save: "저장",
       cancel: "취소",
       deleteAria: "메모 삭제",
-      empty: "메모 없음\n필요한 내용을 남겨보세요.",
+      empty: "메모 없음",
       adminAuthorFallback: "대표",
       unknownAuthorFallback: "이름 없음",
       replyMarker: "ㄴ",
@@ -490,12 +490,10 @@ export const workorderKo = {
         factoryAddButton: "+ 공장 정보 추가",
         addOrderSheetTitle: "제작 공정 추가",
         editOrderSheetTitle: "제작 공정 수정",
-        editOrderSheetDescription:
-          "항목, 업체, 수량, 단가와 로스비를 입력한 뒤 적용합니다.",
+        editOrderSheetDescription: "",
         addOutsourcingSheetTitle: "추가 공정 추가",
         editOutsourcingSheetTitle: "추가 공정 수정",
-        editOutsourcingSheetDescription:
-          "공정명, 업체, 수량, 단가와 로스비를 입력한 뒤 적용합니다.",
+        editOutsourcingSheetDescription: "",
         productionOrderTitle: "생산 공장",
         productionOrderDescription:
           "작업지시서당 생산 공장 1개를 기준으로 발주서를 생성합니다.",
@@ -569,8 +567,7 @@ export const workorderKo = {
         editButton: "수정",
         addSheetTitle: "자재 추가",
         editSheetTitle: "자재 수정",
-        editSheetDescription:
-          "구분, 항목명, 수량과 단위를 입력한 뒤 적용합니다.",
+        editSheetDescription: "",
         namePlaceholder: "자재명 입력",
         summaryFormat: "{name}{andMore}",
         handoffNote:
@@ -633,7 +630,7 @@ export const workorderKo = {
     modals: {
       basicInfo: {
         title: "기본정보 수정",
-        description: "헤더 요약에 표시되는 품목 분류와 시즌 정보를 수정합니다.",
+        description: "",
         category1: "대분류",
         category2: "중분류",
         category3: "소분류",
@@ -658,8 +655,7 @@ export const workorderKo = {
 
       createWorkOrder: {
         title: "작업지시서 생성",
-        description:
-          "작업지시서 기본 정보를 입력하면 작성중 상태로 생성됩니다.",
+        description: "",
         workOrderTitle: "작업지시서명",
         titlePlaceholder: "예: 코튼 레이어드 반팔",
         recommendedCategory: "추천 분류",

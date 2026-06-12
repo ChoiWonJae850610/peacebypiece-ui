@@ -230,7 +230,7 @@ export const commonEn = {
       },
       managerAssign: {
         title: "Change manager",
-        description: "Only company admins can change the manager before completion.",
+        description: "",
         currentManagerLabel: "Current manager",
         currentBadge: "Current",
       },
