@@ -9,7 +9,7 @@ import {
   type AppSelectOption,
 } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
-import { WorkOrderMoreIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderMoreIconButton, WorkOrderTrashIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_PANEL_DIVIDER_CLASS,
@@ -396,13 +396,14 @@ function MaterialOrderListButton({
                 type="button"
                 role="menuitem"
                 onClick={handleCancelOrder}
-                className={`flex w-full items-center wafl-shape-control px-3 py-2 text-left text-sm ${
+                className={`flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-sm ${
                   selected
                     ? "text-[var(--pbp-status-danger-bg)] hover:bg-white/10"
                     : "text-[var(--pbp-status-danger-fg)] hover:bg-[var(--pbp-status-danger-bg)]"
                 }`}
               >
-                삭제
+                <WorkOrderTrashIcon className="h-3 w-3" />
+                <span>삭제</span>
               </button>
             </div>
           ) : null}

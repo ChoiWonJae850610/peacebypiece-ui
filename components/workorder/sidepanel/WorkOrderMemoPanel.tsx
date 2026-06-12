@@ -9,7 +9,7 @@ import {
   WaflTextarea,
 } from "@/components/common/ui";
 import { WorkOrderPanelCard } from "@/components/common/ui";
-import { WorkOrderMiniActionButton } from "@/components/workorder/common/WorkOrderActionButton";
+import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import {
   getMemoDisplayContent,
@@ -185,62 +185,39 @@ function MemoInputField({
   );
 }
 
-function MemoPencilIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3 w-3">
-      <path
-        d="M13.9 2.6a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1l-8.8 8.8-3.6.7.7-3.6 8.2-8.2Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m12.5 4 3.5 3.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function MemoItemActions({
   canMutate,
+  canReply = false,
   editLabel,
+  replyLabel = "댓글",
   deleteAriaLabel,
   onEdit,
+  onReply,
   onDelete,
-  disabledReason,
 }: {
   canMutate: boolean;
+  canReply?: boolean;
   editLabel: string;
+  replyLabel?: string;
   deleteAriaLabel: string;
   onEdit: () => void;
+  onReply?: () => void;
   onDelete: () => void;
-  disabledReason?: string;
 }) {
-  if (!canMutate) return null;
+  if (!canMutate && !canReply) return null;
   return (
-    <div className="flex shrink-0 items-center gap-1">
-      <WorkOrderMiniActionButton
-        label={editLabel}
-        onClick={onEdit}
-        title={disabledReason ?? editLabel}
-        className="text-[var(--pbp-warning)]"
-      >
-        <MemoPencilIcon />
-      </WorkOrderMiniActionButton>
-      <WorkOrderMiniActionButton
-        label={deleteAriaLabel}
-        tone="dangerSoft"
-        onClick={onDelete}
-        title={disabledReason ?? deleteAriaLabel}
-      >
-        -
-      </WorkOrderMiniActionButton>
-    </div>
+    <WorkOrderCardActionMenu
+      menuLabel="작업메모 작업 더보기"
+      editLabel={canMutate ? editLabel : undefined}
+      editText={canMutate ? editLabel : undefined}
+      onEdit={canMutate ? onEdit : undefined}
+      replyLabel={canReply ? replyLabel : undefined}
+      replyText={canReply ? replyLabel : undefined}
+      onReply={canReply ? onReply : undefined}
+      deleteLabel={canMutate ? deleteAriaLabel : undefined}
+      deleteText={canMutate ? "삭제" : undefined}
+      onDelete={canMutate ? onDelete : undefined}
+    />
   );
 }
 
@@ -361,13 +338,15 @@ function MemoThreadCard({
         </div>
         <MemoItemActions
           canMutate={canMutateThread}
-          disabledReason={writeLockMessage}
+          canReply={canEditMemo && !writeLocked && !isThreadDeleted}
           editLabel={ui.memo.edit}
+          replyLabel={ui.memo.toggleReplyOpen}
           deleteAriaLabel={ui.memo.deleteAria}
           onEdit={() => {
             setEditingThread(true);
             setThreadEditDraft(normalizeMemoInput(thread.content));
           }}
+          onReply={() => setReplyComposerOpen((prev) => !prev)}
           onDelete={() => onDeleteThread(thread.id)}
         />
       </div>
@@ -406,103 +385,78 @@ function MemoThreadCard({
         </div>
       )}
 
-      <div className="mt-3 space-y-2 border-t border-[var(--pbp-border)] pt-3">
-        {getVisibleMemoReplies(thread.replies ?? []).length > 0
-          ? getVisibleMemoReplies(thread.replies ?? []).map(
-              (reply, replyIndex) => {
-                const isEditingReply = editingReplyId === reply.id;
-                return (
-                  <div
-                    key={`${thread.id}-${reply.id}-${replyIndex}`}
-                    className="min-w-0 pl-2 text-[var(--pbp-text-muted)] sm:pl-3"
-                  >
-                    <div className="flex min-w-0 items-start justify-between gap-2">
-                      <div className="min-w-0 break-words text-[11px] leading-4 pbp-text-muted">
-                        {ui.memo.replyMarker}{" "}
-                        {getMemoAuthorDisplayName(reply, users, ui.memo)} ·{" "}
-                        {formatMemoTimestamp(reply.createdAt)}
-                      </div>
-                      <MemoItemActions
-                        canMutate={
-                          canMutateAuthor(reply.authorId) && !writeLocked
-                        }
-                        disabledReason={writeLockMessage}
-                        editLabel={ui.memo.edit}
-                        deleteAriaLabel={ui.memo.deleteAria}
-                        onEdit={() => startReplyEdit(reply)}
-                        onDelete={() => onDeleteReply(thread.id, reply.id)}
-                      />
-                    </div>
-                    {isEditingReply ? (
-                      <WaflSurface
-                        component="input-card"
-                        shape="control"
-                        tone="muted"
-                        className="pbp-workorder-editable-panel mt-1.5 p-2"
-                      >
-                        <MemoInputField
-                          value={replyEditDraft}
-                          disabled={
-                            !canMutateAuthor(reply.authorId) || writeLocked
-                          }
-                          placeholder={ui.memo.replyPlaceholder}
-                          submitLabel={ui.memo.save}
-                          cancelLabel={ui.memo.cancel}
-                          onChange={setReplyEditDraft}
-                          onSubmit={() => submitReplyEdit(reply.id)}
-                          onCancel={() => {
-                            setEditingReplyId(null);
-                            setReplyEditDraft("");
-                          }}
-                          isMobile={isMobile}
-                        />
-                      </WaflSurface>
-                    ) : (
-                      <div className="mt-0.5 break-words whitespace-pre-wrap text-[13px] leading-5">
-                        {reply.content}
-                      </div>
-                    )}
+      {getVisibleMemoReplies(thread.replies ?? []).length > 0 || replyComposerOpen ? (
+        <div className="mt-3 space-y-2 border-t border-[var(--pbp-border)] pt-3">
+          {getVisibleMemoReplies(thread.replies ?? []).map((reply, replyIndex) => {
+            const isEditingReply = editingReplyId === reply.id;
+            return (
+              <div
+                key={`${thread.id}-${reply.id}-${replyIndex}`}
+                className="min-w-0 pl-2 text-[var(--pbp-text-muted)] sm:pl-3"
+              >
+                <div className="flex min-w-0 items-start justify-between gap-2">
+                  <div className="min-w-0 break-words text-[11px] leading-4 pbp-text-muted">
+                    {ui.memo.replyMarker} {getMemoAuthorDisplayName(reply, users, ui.memo)} · {formatMemoTimestamp(reply.createdAt)}
                   </div>
-                );
-              },
-            )
-          : null}
+                  <MemoItemActions
+                    canMutate={canMutateAuthor(reply.authorId) && !writeLocked}
+                    editLabel={ui.memo.edit}
+                    deleteAriaLabel={ui.memo.deleteAria}
+                    onEdit={() => startReplyEdit(reply)}
+                    onDelete={() => onDeleteReply(thread.id, reply.id)}
+                  />
+                </div>
+                {isEditingReply ? (
+                  <WaflSurface
+                    component="input-card"
+                    shape="control"
+                    tone="muted"
+                    className="pbp-workorder-editable-panel mt-1.5 p-2"
+                  >
+                    <MemoInputField
+                      value={replyEditDraft}
+                      disabled={!canMutateAuthor(reply.authorId) || writeLocked}
+                      placeholder={ui.memo.replyPlaceholder}
+                      submitLabel={ui.memo.save}
+                      cancelLabel={ui.memo.cancel}
+                      onChange={setReplyEditDraft}
+                      onSubmit={() => submitReplyEdit(reply.id)}
+                      onCancel={() => {
+                        setEditingReplyId(null);
+                        setReplyEditDraft("");
+                      }}
+                      isMobile={isMobile}
+                    />
+                  </WaflSurface>
+                ) : (
+                  <div className="mt-0.5 break-words whitespace-pre-wrap text-[13px] leading-5">
+                    {reply.content}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
-        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 pt-1">
-          <WaflButton
-            type="button"
-            onClick={() => setReplyComposerOpen((prev) => !prev)}
-            disabled={!canEditMemo || writeLocked || isThreadDeleted}
-            title={writeLocked ? writeLockMessage : undefined}
-            variant="secondary"
-            size="sm"
-            className="min-h-7 px-3 py-1 text-[11px]"
-          >
-            {replyComposerOpen
-              ? ui.memo.toggleReplyClose
-              : ui.memo.toggleReplyOpen}
-          </WaflButton>
+          {replyComposerOpen ? (
+            <WaflSurface
+              component="input-card"
+              shape="control"
+              tone="muted"
+              className="pbp-workorder-editable-panel p-2.5"
+            >
+              <MemoInputField
+                value={replyDraft}
+                disabled={!canEditMemo || writeLocked || isThreadDeleted}
+                placeholder={ui.memo.replyPlaceholder}
+                submitLabel={ui.memo.submit}
+                onChange={setReplyDraft}
+                onSubmit={submitReply}
+                isMobile={isMobile}
+              />
+            </WaflSurface>
+          ) : null}
         </div>
-
-        {replyComposerOpen ? (
-          <WaflSurface
-            component="input-card"
-            shape="control"
-            tone="muted"
-            className="pbp-workorder-editable-panel p-2.5"
-          >
-            <MemoInputField
-              value={replyDraft}
-              disabled={!canEditMemo || writeLocked || isThreadDeleted}
-              placeholder={ui.memo.replyPlaceholder}
-              submitLabel={ui.memo.submit}
-              onChange={setReplyDraft}
-              onSubmit={submitReply}
-              isMobile={isMobile}
-            />
-          </WaflSurface>
-        ) : null}
-      </div>
+      ) : null}
     </WaflSurface>
   );
 }

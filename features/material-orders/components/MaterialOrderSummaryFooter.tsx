@@ -7,7 +7,21 @@ import {
 
 type MaterialOrderSummaryFooterProps = {
   totals: MaterialOrderDraftTotals;
+  materialType?: "fabric" | "submaterial" | "";
 };
+
+export function MaterialOrderSummaryCards({ totals, materialType = "" }: MaterialOrderSummaryFooterProps) {
+  const fabricAmount = materialType === "fabric" ? totals.totalAmount : 0;
+  const submaterialAmount = materialType === "submaterial" ? totals.totalAmount : 0;
+
+  return (
+    <div className="grid gap-2 sm:grid-cols-3">
+      <SummaryCard label="총 비용" value={formatMaterialOrderAmount(totals.totalAmount)} emphasize />
+      <SummaryCard label="원단 합계" value={formatMaterialOrderAmount(fabricAmount)} />
+      <SummaryCard label="부자재 합계" value={formatMaterialOrderAmount(submaterialAmount)} />
+    </div>
+  );
+}
 
 export function MaterialOrderSummaryFooter({ totals }: MaterialOrderSummaryFooterProps) {
   return (
@@ -51,5 +65,29 @@ function SummaryValue({
         {value}
       </span>
     </div>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  emphasize = false,
+}: {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+}) {
+  return (
+    <WaflSurface
+      component="material-order-summary-card"
+      shape="control"
+      tone={emphasize ? "selected" : "muted"}
+      className="min-w-0 px-3 py-2.5"
+    >
+      <p className="text-[11px] font-semibold pbp-text-subtle">{label}</p>
+      <p className={`mt-1 truncate text-sm font-semibold tabular-nums ${emphasize ? "pbp-text-primary" : "pbp-text-muted"}`}>
+        {value}
+      </p>
+    </WaflSurface>
   );
 }

@@ -87,14 +87,22 @@ function toOutsourcingDraft(
   };
 }
 
+function isSelectNoneValue(value: string, locale: Locale) {
+  const normalizedValue = value.trim();
+  const translatedValue = translateWorkOrderDisplayText(value, locale).trim();
+  return !normalizedValue || normalizedValue === "선택 안함" || translatedValue === "선택 안함";
+}
+
 function buildOptions(
   values: readonly string[],
   locale: Locale,
 ): AppSelectOption[] {
-  return values.map((value) => ({
-    value,
-    label: translateWorkOrderDisplayText(value, locale),
-  }));
+  return values
+    .filter((value) => !isSelectNoneValue(value, locale))
+    .map((value) => ({
+      value,
+      label: translateWorkOrderDisplayText(value, locale),
+    }));
 }
 
 function buildOptionsWithCurrent(
@@ -102,8 +110,9 @@ function buildOptionsWithCurrent(
   currentValue: string,
   locale: Locale,
 ): AppSelectOption[] {
+  const current = currentValue.trim();
   const resolvedValues = Array.from(
-    new Set([...values, ...(currentValue.trim() ? [currentValue.trim()] : [])]),
+    new Set([...values, ...(current && !isSelectNoneValue(current, locale) ? [current] : [])]),
   );
   return buildOptions(resolvedValues, locale);
 }

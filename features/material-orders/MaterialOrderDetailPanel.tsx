@@ -9,7 +9,7 @@ import {
   formatMaterialOrderStatusLabel,
   resolveMaterialOrderStatusBadgeTone,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import { MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
+import { MaterialOrderSummaryCards, MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_SECTION_CARD_CLASS,
@@ -92,11 +92,11 @@ export default function MaterialOrderDetailPanel({
 
           <AppSection
             title="발주 기본정보"
-            description={mobile ? undefined : "자재 종류와 실제 공급처를 먼저 정합니다."}
             className="shrink-0"
             cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}
-            bodyClassName={mobile ? "grid gap-2" : "grid gap-3 xl:grid-cols-2"}
+            bodyClassName="grid gap-3"
           >
+            <div className={mobile ? "grid gap-2" : "grid gap-3 xl:grid-cols-2"}>
               <FieldLabel label="자재 종류">
                 <AppSelect
                   value={materialType}
@@ -112,7 +112,12 @@ export default function MaterialOrderDetailPanel({
               <FieldLabel label="공급처">
                 <AppSelect
                   value={supplierPartnerId ?? ""}
-                  disabled={!isDraftEditable || !materialType || suppliersLoading}
+                  disabled={isSupplierSelectDisabled(
+                    isDraftEditable,
+                    materialType,
+                    suppliersLoading,
+                    suppliers.length,
+                  )}
                   size="sm"
                   placeholder={resolveSupplierPlaceholder(materialType, suppliersLoading, suppliers.length)}
                   options={buildSupplierSelectOptions(materialType, suppliersLoading, suppliers)}
@@ -133,6 +138,8 @@ export default function MaterialOrderDetailPanel({
                   </WaflButton>
                 ) : null}
               </FieldLabel>
+            </div>
+            <MaterialOrderSummaryCards totals={totals} materialType={materialType} />
           </AppSection>
 
           <AppSection
@@ -231,17 +238,32 @@ function buildSupplierSelectOptions(
   loading: boolean,
   suppliers: MaterialOrderSupplier[],
 ): AppSelectOption[] {
+  if (!materialType || loading || suppliers.length === 0) {
+    return [
+      {
+        value: "",
+        label: resolveSupplierPlaceholder(materialType, loading, suppliers.length),
+        disabled: true,
+      },
+    ];
+  }
+
   return [
-    {
-      value: "",
-      label: resolveSupplierPlaceholder(materialType, loading, suppliers.length),
-      disabled: !materialType || loading || suppliers.length === 0,
-    },
+    { value: "", label: "공급처 선택" },
     ...suppliers.map((supplier) => ({
       value: supplier.id,
       label: supplier.name,
     })),
   ];
+}
+
+function isSupplierSelectDisabled(
+  editable: boolean,
+  materialType: MaterialOrderDraftSelectionType,
+  loading: boolean,
+  supplierCount: number,
+) {
+  return !editable || !materialType || loading || supplierCount === 0;
 }
 
 function FieldLabel({

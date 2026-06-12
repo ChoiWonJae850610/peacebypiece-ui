@@ -81,6 +81,25 @@ export function WorkOrderTrashIcon({ className = "h-3 w-3" }: { className?: stri
   );
 }
 
+export function WorkOrderReplyIcon({ className = "h-3 w-3" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" />
+      <path d="M8 10h7" />
+      <path d="M12 7l3 3-3 3" />
+    </svg>
+  );
+}
+
 type WorkOrderIconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label" | "children"> & {
   label: string;
   size?: WaflActionButtonSize;
@@ -166,6 +185,9 @@ export function WorkOrderCardActionMenu({
   editLabel,
   editText,
   onEdit,
+  replyLabel,
+  replyText,
+  onReply,
   deleteLabel,
   deleteText,
   onDelete,
@@ -174,6 +196,9 @@ export function WorkOrderCardActionMenu({
   editLabel?: string;
   editText?: string;
   onEdit?: () => void;
+  replyLabel?: string;
+  replyText?: string;
+  onReply?: () => void;
   deleteLabel?: string;
   deleteText?: string;
   onDelete?: () => void;
@@ -204,6 +229,10 @@ export function WorkOrderCardActionMenu({
     setOpen(false);
     onEdit?.();
   };
+  const handleReply = () => {
+    setOpen(false);
+    onReply?.();
+  };
   const handleDelete = () => {
     setOpen(false);
     onDelete?.();
@@ -228,6 +257,17 @@ export function WorkOrderCardActionMenu({
             >
               <WorkOrderEditIcon className="h-3 w-3" />
               <span>{editText}</span>
+            </button>
+          ) : null}
+          {onReply && replyLabel && replyText ? (
+            <button
+              type="button"
+              onClick={handleReply}
+              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
+              aria-label={replyLabel}
+            >
+              <WorkOrderReplyIcon className="h-3 w-3" />
+              <span>{replyText}</span>
             </button>
           ) : null}
           {onDelete && deleteLabel && deleteText ? (
