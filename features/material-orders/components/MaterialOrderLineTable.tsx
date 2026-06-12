@@ -196,7 +196,7 @@ function MaterialOrderLineEditModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 backdrop-blur-[1px]" role="dialog" aria-modal="true" aria-label="발주 품목 수정">
-      <WaflSurface component="material-order-line-edit-modal" shape="surface" className="w-full max-w-[460px] overflow-hidden p-0 shadow-xl">
+      <WaflSurface component="material-order-line-edit-modal" shape="surface" className="w-full max-w-lg overflow-hidden p-0 shadow-xl" style={{ maxWidth: "520px" }}>
         <div className="flex items-start justify-between gap-3 border-b border-[var(--pbp-border)] px-5 py-4">
           <div>
             <h3 className="text-base font-semibold pbp-text-primary">발주 품목 수정</h3>
@@ -213,7 +213,7 @@ function MaterialOrderLineEditModal({
               placeholder="예: 30수 면"
             />
           </FieldLabel>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <FieldLabel label="단위">
               <AppSelect
                 value={draft.unit}
