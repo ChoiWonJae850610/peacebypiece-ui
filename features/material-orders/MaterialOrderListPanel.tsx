@@ -193,18 +193,18 @@ export default function MaterialOrderListPanel({
           disabled={creating}
           title={
             creating
-              ? "새 발주서를 생성하고 있습니다."
-              : "새 원단·부자재 발주서를 생성합니다."
+              ? "발주서를 생성하고 있습니다."
+              : "원단·부자재 발주서를 생성합니다."
           }
           aria-label={
-            creating ? "새 발주서 생성 중" : "새 원단·부자재 발주서 생성"
+            creating ? "발주서 생성 중" : "원단·부자재 발주서 생성"
           }
           onClick={onCreateOrder}
         >
-          {creating ? "생성 중" : "새 발주서 생성"}
+          {creating ? "생성 중" : "발주서 생성"}
         </WaflButton>
         <div
-          className={`mt-1 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`}
+          className={`mt-3 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`}
           aria-hidden="true"
         />
       </div>
@@ -213,7 +213,7 @@ export default function MaterialOrderListPanel({
         className={
           variant === "panel"
             ? MATERIAL_ORDER_PANEL_LIST_CLASS
-            : "mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0"
+            : "min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain py-3 pr-0 [scrollbar-gutter:stable]"
         }
       >
         {loading ? (
@@ -233,7 +233,7 @@ export default function MaterialOrderListPanel({
         ) : orders.length === 0 ? (
           <MaterialOrderPanelMessage
             title="등록된 발주서 없음"
-            description="새 발주서 생성 버튼으로 공급처별 발주서를 시작합니다."
+            description="발주서 생성 버튼으로 공급처별 발주서를 시작합니다."
           />
         ) : filteredOrders.length === 0 ? (
           <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
@@ -349,12 +349,12 @@ function MaterialOrderListButton({
         </button>
         {canCancelOrder ? (
           <div className="absolute right-3 top-3">
-          <WorkOrderCardActionMenu
-            menuLabel="발주서 작업 더보기"
-            deleteLabel="발주서 삭제"
-            deleteText="삭제"
-            onDelete={handleCancelOrder}
-          />
+            <WorkOrderCardActionMenu
+              menuLabel="발주서 작업 더보기"
+              deleteLabel="발주서 삭제"
+              deleteText="삭제"
+              onDelete={handleCancelOrder}
+            />
           </div>
         ) : null}
       </div>
