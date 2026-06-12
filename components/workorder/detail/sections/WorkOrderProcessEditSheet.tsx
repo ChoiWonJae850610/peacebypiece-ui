@@ -2,9 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import {
+  MODAL_ACTION_LABELS,
+  renderModalFooterActions,
+} from "@/components/common/modal/modalActions";
 import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
-import { AppNumberInput, AppSelect, WAFL_FIELD_INPUT_CLASS, type AppSelectOption } from "@/components/common/ui";
+import {
+  AppNumberInput,
+  AppSelect,
+  WAFL_FIELD_INPUT_CLASS,
+  type AppSelectOption,
+} from "@/components/common/ui";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { DEFAULT_ORDER_TYPE } from "@/lib/constants/workorderOptions";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -29,7 +37,9 @@ export type WorkOrderOutsourcingProcessDraft = {
   lossCost: number;
 };
 
-export type WorkOrderProcessSheetDraft = WorkOrderOrderProcessDraft | WorkOrderOutsourcingProcessDraft;
+export type WorkOrderProcessSheetDraft =
+  | WorkOrderOrderProcessDraft
+  | WorkOrderOutsourcingProcessDraft;
 
 type Props = {
   open: boolean;
@@ -53,7 +63,9 @@ const fieldPanelClass = "grid gap-1.5";
 const labelClass = "text-xs font-semibold text-[var(--pbp-text-muted)]";
 const inputClass = `${WAFL_FIELD_INPUT_CLASS} font-semibold text-right tabular-nums`;
 
-function toOrderDraft(orderEntry: OrderEntryState | null): WorkOrderOrderProcessDraft {
+function toOrderDraft(
+  orderEntry: OrderEntryState | null,
+): WorkOrderOrderProcessDraft {
   return {
     type: orderEntry?.type ?? DEFAULT_ORDER_TYPE,
     factory: orderEntry?.factory ?? "",
@@ -63,7 +75,9 @@ function toOrderDraft(orderEntry: OrderEntryState | null): WorkOrderOrderProcess
   };
 }
 
-function toOutsourcingDraft(outsourcing: Outsourcing | null): WorkOrderOutsourcingProcessDraft {
+function toOutsourcingDraft(
+  outsourcing: Outsourcing | null,
+): WorkOrderOutsourcingProcessDraft {
   return {
     process: outsourcing?.process ?? "",
     vendor: outsourcing?.vendor ?? "",
@@ -73,20 +87,74 @@ function toOutsourcingDraft(outsourcing: Outsourcing | null): WorkOrderOutsourci
   };
 }
 
-function buildOptions(values: readonly string[], locale: Locale): AppSelectOption[] {
-  return values.map((value) => ({ value, label: translateWorkOrderDisplayText(value, locale) }));
+function buildOptions(
+  values: readonly string[],
+  locale: Locale,
+): AppSelectOption[] {
+  return values.map((value) => ({
+    value,
+    label: translateWorkOrderDisplayText(value, locale),
+  }));
 }
 
-function buildOptionsWithCurrent(values: readonly string[], currentValue: string, locale: Locale): AppSelectOption[] {
-  const resolvedValues = Array.from(new Set([...values, ...(currentValue.trim() ? [currentValue.trim()] : [])]));
+function buildOptionsWithCurrent(
+  values: readonly string[],
+  currentValue: string,
+  locale: Locale,
+): AppSelectOption[] {
+  const resolvedValues = Array.from(
+    new Set([...values, ...(currentValue.trim() ? [currentValue.trim()] : [])]),
+  );
   return buildOptions(resolvedValues, locale);
+}
+
+function buildFactorySelectOptions(
+  values: readonly string[],
+  currentValue: string,
+  locale: Locale,
+): AppSelectOption[] {
+  const options = buildOptionsWithCurrent(values, currentValue, locale);
+  if (options.length === 0) {
+    return [{ value: "", label: "선택 가능한 업체 없음", disabled: true }];
+  }
+  return [{ value: "", label: "업체 선택" }, ...options];
+}
+
+function buildOutsourcingProcessSelectOptions(
+  values: readonly string[],
+  currentValue: string,
+  locale: Locale,
+): AppSelectOption[] {
+  return [
+    { value: "", label: "선택 안함" },
+    ...buildOptionsWithCurrent(values, currentValue, locale),
+  ];
+}
+
+function buildOutsourcingVendorSelectOptions(
+  values: readonly string[],
+  currentValue: string,
+  process: string,
+  locale: Locale,
+): AppSelectOption[] {
+  if (!process.trim()) {
+    return [{ value: "", label: "항목을 먼저 선택", disabled: true }];
+  }
+  const options = buildOptionsWithCurrent(values, currentValue, locale);
+  if (options.length === 0) {
+    return [{ value: "", label: "선택 가능한 업체 없음", disabled: true }];
+  }
+  return [{ value: "", label: "업체 선택" }, ...options];
 }
 
 function normalizeProcessKey(value: string) {
   return value.trim().toLocaleLowerCase("ko-KR");
 }
 
-function selectVendorOptionsByProcess(valuesByProcess: Record<string, readonly string[]>, process: string): readonly string[] {
+function selectVendorOptionsByProcess(
+  valuesByProcess: Record<string, readonly string[]>,
+  process: string,
+): readonly string[] {
   const processKey = normalizeProcessKey(process);
   if (!processKey) return [];
   return valuesByProcess[processKey] ?? [];
@@ -110,8 +178,13 @@ export default function WorkOrderProcessEditSheet({
 }: Props) {
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
-  const [orderDraft, setOrderDraft] = useState<WorkOrderOrderProcessDraft>(() => toOrderDraft(orderEntry));
-  const [outsourcingDraft, setOutsourcingDraft] = useState<WorkOrderOutsourcingProcessDraft>(() => toOutsourcingDraft(outsourcing));
+  const [orderDraft, setOrderDraft] = useState<WorkOrderOrderProcessDraft>(() =>
+    toOrderDraft(orderEntry),
+  );
+  const [outsourcingDraft, setOutsourcingDraft] =
+    useState<WorkOrderOutsourcingProcessDraft>(() =>
+      toOutsourcingDraft(outsourcing),
+    );
 
   useEffect(() => {
     if (!open) return;
@@ -119,14 +192,53 @@ export default function WorkOrderProcessEditSheet({
     setOutsourcingDraft(toOutsourcingDraft(outsourcing));
   }, [open, orderEntry, outsourcing]);
 
-  const orderTypeSelectOptions = useMemo(() => buildOptions(orderTypeOptions, locale), [locale, orderTypeOptions]);
-  const factorySelectOptions = useMemo(() => buildOptions(factoryOptions, locale), [locale, factoryOptions]);
-  const outsourcingProcessSelectOptions = useMemo(() => buildOptionsWithCurrent(outsourcingProcessOptions, outsourcingDraft.process, locale), [locale, outsourcingDraft.process, outsourcingProcessOptions]);
+  const orderTypeSelectOptions = useMemo(
+    () => buildOptions(orderTypeOptions, locale),
+    [locale, orderTypeOptions],
+  );
+  const factorySelectOptions = useMemo(
+    () => buildFactorySelectOptions(factoryOptions, orderDraft.factory, locale),
+    [factoryOptions, locale, orderDraft.factory],
+  );
+  const outsourcingProcessSelectOptions = useMemo(
+    () =>
+      buildOutsourcingProcessSelectOptions(
+        outsourcingProcessOptions,
+        outsourcingDraft.process,
+        locale,
+      ),
+    [locale, outsourcingDraft.process, outsourcingProcessOptions],
+  );
   const activeOutsourcingVendorOptions = useMemo(
-    () => selectVendorOptionsByProcess(outsourcingVendorOptionsByProcess, outsourcingDraft.process),
+    () =>
+      selectVendorOptionsByProcess(
+        outsourcingVendorOptionsByProcess,
+        outsourcingDraft.process,
+      ),
     [outsourcingDraft.process, outsourcingVendorOptionsByProcess],
   );
-  const outsourcingVendorSelectOptions = useMemo(() => buildOptions(activeOutsourcingVendorOptions, locale), [activeOutsourcingVendorOptions, locale]);
+  const outsourcingVendorSelectOptions = useMemo(
+    () =>
+      buildOutsourcingVendorSelectOptions(
+        activeOutsourcingVendorOptions,
+        outsourcingDraft.vendor,
+        outsourcingDraft.process,
+        locale,
+      ),
+    [
+      activeOutsourcingVendorOptions,
+      locale,
+      outsourcingDraft.process,
+      outsourcingDraft.vendor,
+    ],
+  );
+  const isFactorySelectDisabled =
+    factorySelectOptions.length === 1 &&
+    Boolean(factorySelectOptions[0]?.disabled);
+  const isOutsourcingVendorSelectDisabled =
+    !outsourcingDraft.process.trim() ||
+    (outsourcingVendorSelectOptions.length === 1 &&
+      Boolean(outsourcingVendorSelectOptions[0]?.disabled));
 
   const isOrderMode = mode === "order";
   const isApplyDisabled = isOrderMode
@@ -172,37 +284,104 @@ export default function WorkOrderProcessEditSheet({
     <ModalShell
       open={open}
       onClose={onClose}
-      title={isOrderMode ? (orderEntry ? copy.editOrderSheetTitle : copy.addOrderSheetTitle) : (outsourcing ? copy.editOutsourcingSheetTitle : copy.addOutsourcingSheetTitle)}
-      description={isOrderMode ? copy.editOrderSheetDescription : copy.editOutsourcingSheetDescription}
+      title={
+        isOrderMode
+          ? orderEntry
+            ? copy.editOrderSheetTitle
+            : copy.addOrderSheetTitle
+          : outsourcing
+            ? copy.editOutsourcingSheetTitle
+            : copy.addOutsourcingSheetTitle
+      }
+      description={
+        isOrderMode
+          ? copy.editOrderSheetDescription
+          : copy.editOutsourcingSheetDescription
+      }
       maxWidthClass="md:max-w-lg"
       bodyClassName="pbp-mobile-no-zoom"
       footer={renderModalFooterActions({
         layout: "end",
-        primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: isApplyDisabled, tone: "primary" },
+        primary: {
+          label: MODAL_ACTION_LABELS.apply,
+          onClick: handleApply,
+          disabled: isApplyDisabled,
+          tone: "primary",
+        },
       })}
     >
       {isOrderMode ? (
         <div className="grid gap-4">
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.item}</label>
-            <AppSelect value={orderDraft.type} options={orderTypeSelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOrderDraft((current) => ({ ...current, type: value })); }} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
+            <AppSelect
+              value={orderDraft.type}
+              options={orderTypeSelectOptions}
+              onValueChange={(value) => {
+                blurActiveModalElement();
+                setOrderDraft((current) => ({
+                  ...current,
+                  type: value,
+                  factory: "",
+                }));
+              }}
+              ariaLabel={copy.fields.item}
+              contentClassName="z-[4000]"
+            />
           </div>
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.vendor}</label>
-            <AppSelect value={orderDraft.factory} options={factorySelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOrderDraft((current) => ({ ...current, factory: value })); }} ariaLabel={copy.fields.vendor} contentClassName="z-[4000]" />
+            <AppSelect
+              value={orderDraft.factory}
+              options={factorySelectOptions}
+              onValueChange={(value) => {
+                blurActiveModalElement();
+                setOrderDraft((current) => ({ ...current, factory: value }));
+              }}
+              ariaLabel={copy.fields.vendor}
+              disabled={isFactorySelectDisabled}
+              contentClassName="z-[4000]"
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.quantity} component="process-quantity-input" onValueChange={(value) => setOrderDraft((current) => ({ ...current, quantity: value }))} className={inputClass} />
+              <AppNumberInput
+                inputMode="numeric"
+                onBeforeInteract={handleProcessInputPointerDown}
+                value={orderDraft.quantity}
+                component="process-quantity-input"
+                onValueChange={(value) =>
+                  setOrderDraft((current) => ({ ...current, quantity: value }))
+                }
+                className={inputClass}
+              />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.laborCost} component="process-unit-cost-input" onValueChange={(value) => setOrderDraft((current) => ({ ...current, laborCost: value }))} className={inputClass} />
+              <AppNumberInput
+                inputMode="numeric"
+                onBeforeInteract={handleProcessInputPointerDown}
+                value={orderDraft.laborCost}
+                component="process-unit-cost-input"
+                onValueChange={(value) =>
+                  setOrderDraft((current) => ({ ...current, laborCost: value }))
+                }
+                className={inputClass}
+              />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={orderDraft.lossCost} component="process-loss-cost-input" onValueChange={(value) => setOrderDraft((current) => ({ ...current, lossCost: value }))} className={inputClass} />
+              <AppNumberInput
+                inputMode="numeric"
+                onBeforeInteract={handleProcessInputPointerDown}
+                value={orderDraft.lossCost}
+                component="process-loss-cost-input"
+                onValueChange={(value) =>
+                  setOrderDraft((current) => ({ ...current, lossCost: value }))
+                }
+                className={inputClass}
+              />
             </label>
           </div>
         </div>
@@ -210,24 +389,86 @@ export default function WorkOrderProcessEditSheet({
         <div className="grid gap-4">
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.item}</label>
-            <AppSelect value={outsourcingDraft.process} options={outsourcingProcessSelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOutsourcingDraft((current) => ({ ...current, process: value, vendor: "" })); }} ariaLabel={copy.fields.item} contentClassName="z-[4000]" />
+            <AppSelect
+              value={outsourcingDraft.process}
+              options={outsourcingProcessSelectOptions}
+              onValueChange={(value) => {
+                blurActiveModalElement();
+                setOutsourcingDraft((current) => ({
+                  ...current,
+                  process: value,
+                  vendor: "",
+                }));
+              }}
+              ariaLabel={copy.fields.item}
+              contentClassName="z-[4000]"
+            />
           </div>
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.vendor}</label>
-            <AppSelect value={outsourcingDraft.vendor} options={outsourcingVendorSelectOptions} onValueChange={(value) => { blurActiveModalElement(); setOutsourcingDraft((current) => ({ ...current, vendor: value })); }} ariaLabel={copy.fields.vendor} contentClassName="z-[4000]" />
+            <AppSelect
+              value={outsourcingDraft.vendor}
+              options={outsourcingVendorSelectOptions}
+              onValueChange={(value) => {
+                blurActiveModalElement();
+                setOutsourcingDraft((current) => ({
+                  ...current,
+                  vendor: value,
+                }));
+              }}
+              ariaLabel={copy.fields.vendor}
+              disabled={isOutsourcingVendorSelectDisabled}
+              contentClassName="z-[4000]"
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.quantity} component="process-quantity-input" onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, quantity: value }))} className={inputClass} />
+              <AppNumberInput
+                inputMode="numeric"
+                onBeforeInteract={handleProcessInputPointerDown}
+                value={outsourcingDraft.quantity}
+                component="process-quantity-input"
+                onValueChange={(value) =>
+                  setOutsourcingDraft((current) => ({
+                    ...current,
+                    quantity: value,
+                  }))
+                }
+                className={inputClass}
+              />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.unitCost} component="process-unit-cost-input" onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, unitCost: value }))} className={inputClass} />
+              <AppNumberInput
+                inputMode="numeric"
+                onBeforeInteract={handleProcessInputPointerDown}
+                value={outsourcingDraft.unitCost}
+                component="process-unit-cost-input"
+                onValueChange={(value) =>
+                  setOutsourcingDraft((current) => ({
+                    ...current,
+                    unitCost: value,
+                  }))
+                }
+                className={inputClass}
+              />
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <AppNumberInput inputMode="numeric" onBeforeInteract={handleProcessInputPointerDown} value={outsourcingDraft.lossCost} component="process-loss-cost-input" onValueChange={(value) => setOutsourcingDraft((current) => ({ ...current, lossCost: value }))} className={inputClass} />
+              <AppNumberInput
+                inputMode="numeric"
+                onBeforeInteract={handleProcessInputPointerDown}
+                value={outsourcingDraft.lossCost}
+                component="process-loss-cost-input"
+                onValueChange={(value) =>
+                  setOutsourcingDraft((current) => ({
+                    ...current,
+                    lossCost: value,
+                  }))
+                }
+                className={inputClass}
+              />
             </label>
           </div>
         </div>
