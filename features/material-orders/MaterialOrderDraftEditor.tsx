@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import ToastMessage from "@/components/common/ToastMessage";
+import WorkflowValidationModal from "@/components/common/modal/WorkflowValidationModal";
 import {
   AppResponsiveWorkspace,
   WaflEmptyCard,
@@ -124,6 +125,7 @@ export default function MaterialOrderDraftEditor({
     selectedDraftSupplierName,
     materialRequestQuantityMap,
     materialRequestCompletionMap,
+    materialOrderValidationModal,
     setSelectedOrderId,
     setSupplierPartnerId,
     refreshOrders,
@@ -174,6 +176,10 @@ export default function MaterialOrderDraftEditor({
       tone={statusToastTone}
       eventKey={statusToastEventKey}
     />
+  );
+
+  const validationModal = (
+    <WorkflowValidationModal {...materialOrderValidationModal} />
   );
 
   const listPanel = (
@@ -235,6 +241,7 @@ export default function MaterialOrderDraftEditor({
     return (
       <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
+        {validationModal}
         <WaflMobileListDrawer
           open={mobileOrderListDrawerOpen}
           onClose={() => setMobileOrderListDrawerOpen(false)}
@@ -305,6 +312,8 @@ export default function MaterialOrderDraftEditor({
     );
 
     return (
+      <>
+      {validationModal}
       <WaflMobileShell
         topBar={topbar}
         actionBar={actionBar}
@@ -366,6 +375,7 @@ export default function MaterialOrderDraftEditor({
           ) : null}
         </WaflMobileTabbedActionSheet>
       </WaflMobileShell>
+      </>
     );
   }
 
@@ -374,6 +384,7 @@ export default function MaterialOrderDraftEditor({
       return (
         <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
           {topbar}
+          {validationModal}
           <AppResponsiveWorkspace device="desktop">
             {statusToast}
             <div
@@ -392,6 +403,7 @@ export default function MaterialOrderDraftEditor({
     return (
       <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
+        {validationModal}
         <AppResponsiveWorkspace device="tablet">
           {statusToast}
           <div
@@ -409,6 +421,7 @@ export default function MaterialOrderDraftEditor({
   return (
     <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
       {topbar}
+      {validationModal}
       <AppResponsiveWorkspace device="desktop">
         {statusToast}
         <div

@@ -203,12 +203,9 @@ function MaterialOrderLineEditModal({
       onClose={onClose}
       maxWidthClass="md:max-w-xl"
       bodyClassName="grid gap-3"
-      footerClassName="flex justify-end gap-2"
+      footerClassName="flex justify-end"
       footer={
-        <>
-          <WaflButton type="button" variant="secondary" size="sm" onClick={onClose}>취소</WaflButton>
-          <WaflButton type="button" variant="primary" size="sm" onClick={onApply}>적용</WaflButton>
-        </>
+        <WaflButton type="button" variant="primary" size="sm" onClick={onApply}>적용</WaflButton>
       }
     >
       <WaflModalSection className="grid gap-3">

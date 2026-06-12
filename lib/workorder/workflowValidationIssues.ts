@@ -6,7 +6,7 @@ import type { WorkOrder } from "@/types/workorder";
 export type WorkflowValidationIssueLevel = "blocking" | "warning";
 
 export type WorkflowValidationIssue = {
-  id: "missing_design" | "missing_attachment" | "missing_fabric" | "missing_subsidiary" | "zero_amount";
+  id: string;
   level: WorkflowValidationIssueLevel;
   message: string;
 };

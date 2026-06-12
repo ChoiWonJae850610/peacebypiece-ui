@@ -20,16 +20,13 @@ import {
   updateMaterialOrderStatus,
   type MaterialOrderWorkspaceWorkOrderCandidate,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import type {
-  MaterialOrder,
-  MaterialOrderStatus,
-  MaterialOrderSupplier,
-} from "@/lib/material-orders/types";
+import { MATERIAL_ORDER_STATUS, type MaterialOrder, type MaterialOrderStatus, type MaterialOrderSupplier } from "@/lib/material-orders/types";
 import {
   buildMaterialRequestQuantityMap,
   calculateMaterialRequestRemainingQuantity,
 } from "@/features/material-orders/materialOrderPanelUtils";
 import { shouldPersistMaterialOrderDetailBeforeStatusChange } from "@/lib/material-orders/statusFlow";
+import type { WorkflowValidationIssue } from "@/lib/workorder/workflowValidationIssues";
 
 type MaterialOrderStatusToastTone =
   | "info"
@@ -56,6 +53,62 @@ type SelectedOrderDetailPayload = {
     }>;
   }>;
 };
+
+function getMaterialOrderStatusValidationIssues({
+  materialType,
+  supplierPartnerId,
+  lines,
+}: {
+  materialType: MaterialOrderDraftSelectionType;
+  supplierPartnerId: string | null;
+  lines: MaterialOrderDraftLine[];
+}): WorkflowValidationIssue[] {
+  const issues: WorkflowValidationIssue[] = [];
+
+  if (!materialType) {
+    issues.push({
+      id: "missing_material_type",
+      level: "blocking",
+      message: "자재 종류를 선택한 뒤 진행해주세요.",
+    });
+  }
+
+  if (!supplierPartnerId) {
+    issues.push({
+      id: "missing_supplier",
+      level: "blocking",
+      message: "공급처를 선택한 뒤 진행해주세요.",
+    });
+  }
+
+  if (lines.length === 0) {
+    issues.push({
+      id: "missing_order_lines",
+      level: "blocking",
+      message: "발주 품목을 추가한 뒤 진행해주세요.",
+    });
+  }
+
+  const hasInvalidQuantity = lines.some((line) => Number(line.orderQuantity) <= 0);
+  if (hasInvalidQuantity) {
+    issues.push({
+      id: "invalid_order_quantity",
+      level: "blocking",
+      message: "수량이 0 이하인 발주 품목을 수정해주세요.",
+    });
+  }
+
+  const hasZeroUnitPrice = lines.some((line) => Number(line.unitPrice) <= 0);
+  if (hasZeroUnitPrice) {
+    issues.push({
+      id: "zero_unit_price",
+      level: "warning",
+      message: "단가가 0원인 발주 품목이 있습니다. 필요하면 단가를 입력한 뒤 진행해주세요.",
+    });
+  }
+
+  return issues;
+}
 
 function createDraftLineFromMaterial(
   currentLineCount: number,
@@ -135,6 +188,10 @@ export function useMaterialOrderDraftEditor() {
     null,
   );
   const [lines, setLines] = useState<MaterialOrderDraftLine[]>([]);
+  const [pendingStatusValidation, setPendingStatusValidation] = useState<{
+    nextStatus: MaterialOrderStatus;
+    issues: WorkflowValidationIssue[];
+  } | null>(null);
 
   const selectedOrder = useMemo(
     () => orders.find((order) => order.id === selectedOrderId) ?? null,
@@ -345,7 +402,7 @@ export function useMaterialOrderDraftEditor() {
       };
     }, [lines, materialType, selectedOrder, supplierPartnerId]);
 
-  const changeSelectedOrderStatus = useCallback(
+  const applySelectedOrderStatusChange = useCallback(
     async (status: MaterialOrderStatus) => {
       if (!selectedOrder) return;
 
@@ -397,6 +454,44 @@ export function useMaterialOrderDraftEditor() {
       showStatusToast,
     ],
   );
+
+  const changeSelectedOrderStatus = useCallback(
+    (status: MaterialOrderStatus) => {
+      if (!selectedOrder) return;
+
+      if (selectedOrder.status === MATERIAL_ORDER_STATUS.draft) {
+        const issues = getMaterialOrderStatusValidationIssues({
+          materialType,
+          supplierPartnerId,
+          lines,
+        });
+        if (issues.length > 0) {
+          setPendingStatusValidation({ nextStatus: status, issues });
+          return;
+        }
+      }
+
+      void applySelectedOrderStatusChange(status);
+    },
+    [
+      applySelectedOrderStatusChange,
+      lines,
+      materialType,
+      selectedOrder,
+      supplierPartnerId,
+    ],
+  );
+
+  const closeMaterialOrderValidation = useCallback(() => {
+    setPendingStatusValidation(null);
+  }, []);
+
+  const confirmMaterialOrderValidation = useCallback(() => {
+    const pending = pendingStatusValidation;
+    if (!pending) return;
+    setPendingStatusValidation(null);
+    void applySelectedOrderStatusChange(pending.nextStatus);
+  }, [applySelectedOrderStatusChange, pendingStatusValidation]);
 
   const cancelOrder = useCallback(
     async (materialOrderId: string) => {
@@ -506,6 +601,21 @@ export function useMaterialOrderDraftEditor() {
     selectedDraftSupplierName,
     materialRequestQuantityMap,
     materialRequestCompletionMap,
+    materialOrderValidationModal: {
+      open: pendingStatusValidation !== null,
+      issues: pendingStatusValidation?.issues ?? [],
+      title: "진행 전 확인이 필요합니다",
+      description: pendingStatusValidation?.issues.some((issue) => issue.level === "blocking")
+        ? "아래 항목은 먼저 수정해야 다음 단계로 진행할 수 있습니다."
+        : "확인이 필요한 항목이 있습니다. 그대로 진행할 수 있지만 먼저 확인하는 것이 좋습니다.",
+      blockingLabel: "진행 차단 항목",
+      warningLabel: "확인 필요 항목",
+      cancelLabel: "닫기",
+      confirmLabel: "그대로 진행",
+      fixLabel: "확인 후 수정",
+      onClose: closeMaterialOrderValidation,
+      onConfirm: confirmMaterialOrderValidation,
+    },
     setSelectedOrderId,
     setSupplierPartnerId,
     refreshOrders,

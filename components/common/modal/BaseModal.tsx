@@ -29,7 +29,7 @@ export default function BaseModal({
   maxWidthClassName = "md:max-w-2xl",
   panelClassName = "",
   overlayClassName = WAFL_MODAL_OVERLAY_CLASS,
-  closeOnBackdrop = true,
+  closeOnBackdrop = false,
   rootClassName = "",
 }: BaseModalProps) {
   if (!open) return null;
