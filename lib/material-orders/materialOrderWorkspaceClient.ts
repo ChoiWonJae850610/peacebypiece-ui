@@ -138,11 +138,10 @@ export function formatMaterialOrderCreatedAtLabel(value: string | null | undefin
 }
 
 export function formatMaterialOrderAmount(value: number): string {
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
+  const safeValue = Number.isFinite(value) ? value : 0;
+  return `${new Intl.NumberFormat("ko-KR", {
     maximumFractionDigits: 0,
-  }).format(Number.isFinite(value) ? value : 0);
+  }).format(safeValue)}원`;
 }
 
 export function toMaterialOrderWorkspaceError(error: unknown, fallbackMessage: string): string {

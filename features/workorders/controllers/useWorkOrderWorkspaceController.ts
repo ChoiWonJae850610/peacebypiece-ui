@@ -235,7 +235,8 @@ export function useWorkOrderWorkspaceController({
     if (typeof window === "undefined") return;
 
     const url = new URL(window.location.href);
-    url.searchParams.set("workOrderId", workOrderId);
+    if (workOrderId) url.searchParams.set("workOrderId", workOrderId);
+    else url.searchParams.delete("workOrderId");
     const nextQuery = url.searchParams.toString();
     window.history.replaceState(null, "", nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname);
   };
@@ -276,10 +277,10 @@ export function useWorkOrderWorkspaceController({
 
   const handleSelectWorkOrder = (workOrderId: string) => {
     if (isWorkspaceWriteLocked) return;
-    if (workOrderId === selection.selectedId) return;
 
-    traceWaflFlow("action", "workorder.select", { workOrderId });
-    replaceSelectedWorkOrderQuery(workOrderId);
+    const nextWorkOrderId = workOrderId === selection.selectedId ? "" : workOrderId;
+    traceWaflFlow("action", "workorder.select", { workOrderId: nextWorkOrderId });
+    replaceSelectedWorkOrderQuery(nextWorkOrderId);
     actions.handleSelectWorkOrder(workOrderId);
   };
 

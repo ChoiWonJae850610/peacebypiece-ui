@@ -14,7 +14,6 @@ import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_SECTION_CARD_CLASS,
   MATERIAL_ORDER_SECTION_GAP_CLASS,
-  MATERIAL_ORDER_TABLE_SHELL_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import type {
   MaterialOrderDraftLine,
@@ -144,7 +143,6 @@ export default function MaterialOrderDetailPanel({
 
           <AppSection
             title="발주 품목"
-            description={mobile ? undefined : "실제 주문 수량과 단가를 입력합니다. 금액은 자동 계산됩니다."}
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
             cardClassName={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}
             bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -157,7 +155,7 @@ export default function MaterialOrderDetailPanel({
                 onRemoveLine={onRemoveLine}
               />
             ) : (
-              <div className={`${MATERIAL_ORDER_TABLE_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
+              <div className="min-h-0 flex-1 overflow-y-auto pr-1">
                 <MaterialOrderLineTable
                   lines={lines}
                   editable={isDraftEditable}

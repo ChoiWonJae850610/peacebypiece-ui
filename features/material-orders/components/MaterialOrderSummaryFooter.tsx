@@ -81,8 +81,8 @@ function SummaryCard({
     <WaflSurface
       component="material-order-summary-card"
       shape="control"
-      tone={emphasize ? "selected" : "muted"}
-      className="min-w-0 px-3 py-2.5"
+      tone={emphasize ? "info" : "muted"}
+      className={`min-w-0 px-3 py-2.5 ${emphasize ? "pbp-cost-grand-total" : ""}`}
     >
       <p className="text-[11px] font-semibold pbp-text-subtle">{label}</p>
       <p className={`mt-1 truncate text-sm font-semibold tabular-nums ${emphasize ? "pbp-text-primary" : "pbp-text-muted"}`}>

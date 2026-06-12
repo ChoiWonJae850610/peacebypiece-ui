@@ -1,10 +1,8 @@
-import { AppSelect, WaflEmptyCard, WaflInfoRow, WaflInput, WaflSurface, type AppSelectOption } from "@/components/common/ui";
-import {
-  CALCULATED_TABLE_CELL_CLASS,
-  EDITABLE_TABLE_CELL_CLASS,
-  SELECTABLE_TABLE_CELL_CLASS,
-  TABLE_HEADER_CELL_CLASS,
-} from "@/components/workorder/detail/shared/detailEditorShared";
+"use client";
+
+import { useState, type ReactNode } from "react";
+
+import { AppSelect, WaflButton, WaflEmptyCard, WaflInput, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
   calculateMaterialOrderLineAmount,
@@ -37,175 +35,241 @@ type MaterialOrderLineTableProps = {
   onRemoveLine: (lineId: string) => void;
 };
 
-export function MaterialOrderLineTable({
+type MaterialOrderLineEditDraft = {
+  itemName: string;
+  unit: string;
+  orderQuantity: number;
+  unitPrice: number;
+};
+
+export function MaterialOrderLineTable(props: MaterialOrderLineTableProps) {
+  return <MaterialOrderLineCards {...props} />;
+}
+
+export function MaterialOrderLineMobileCards(props: MaterialOrderLineTableProps) {
+  return <MaterialOrderLineCards {...props} mobile />;
+}
+
+function MaterialOrderLineCards({
   lines,
   editable,
   onChangeLine,
   onRemoveLine,
-}: MaterialOrderLineTableProps) {
+  mobile = false,
+}: MaterialOrderLineTableProps & { mobile?: boolean }) {
+  const [editingLineId, setEditingLineId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<MaterialOrderLineEditDraft | null>(null);
+  const editingLine = editingLineId ? lines.find((line) => line.id === editingLineId) ?? null : null;
+
+  const openEditModal = (line: MaterialOrderDraftLine) => {
+    setEditingLineId(line.id);
+    setEditDraft({
+      itemName: line.itemName,
+      unit: resolveUnitSelectValue(line.unit),
+      orderQuantity: line.orderQuantity,
+      unitPrice: line.unitPrice,
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditingLineId(null);
+    setEditDraft(null);
+  };
+
+  const applyEdit = () => {
+    if (!editingLine || !editDraft) return;
+    onChangeLine(editingLine.id, {
+      itemName: editDraft.itemName,
+      unit: editDraft.unit,
+      orderQuantity: editDraft.orderQuantity,
+      unitPrice: editDraft.unitPrice,
+      allocations: editingLine.allocations.length > 0
+        ? editingLine.allocations.map((allocation) => ({
+          ...allocation,
+          allocatedQuantity: editDraft.orderQuantity,
+        }))
+        : editingLine.allocations,
+    });
+    closeEditModal();
+  };
+
+  if (lines.length === 0) {
+    return (
+      <WaflEmptyCard
+        component={mobile ? "material-order-line-mobile-empty" : "material-order-line-empty"}
+        shape="control"
+        className={`${mobile ? "min-h-[120px]" : "min-h-[96px]"} px-4 py-5`}
+      >
+        <p className="font-semibold pbp-text-primary">발주 품목을 추가하세요.</p>
+        <p className="mt-1 text-xs pbp-text-muted">작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다.</p>
+      </WaflEmptyCard>
+    );
+  }
+
   return (
-    <table className="w-full min-w-[540px] table-fixed border-separate border-spacing-0 text-left">
-      <colgroup>
-        <col className="w-[27%]" />
-        <col className="w-[13%]" />
-        <col className="w-[15%]" />
-        <col className="w-[18%]" />
-        <col className="w-[20%]" />
-        <col className="w-[7%]" />
-      </colgroup>
-      <thead className="bg-[var(--pbp-surface-soft)] pbp-text-muted">
-        <tr>
-          {["품목명", "단위", "수량", "단가", "금액", "관리"].map(
-            (header, index) => (
-              <th
-                key={`${header}-${index}`}
-                className={`${TABLE_HEADER_CELL_CLASS} text-center`}
-              >
-                <span className="block w-full whitespace-nowrap leading-4">
-                  {header}
-                </span>
-              </th>
-            ),
-          )}
-        </tr>
-      </thead>
-      <tbody>
-        {lines.length === 0 ? (
-          <tr>
-            <td className="px-3 py-4" colSpan={6}>
-              <WaflEmptyCard component="material-order-line-empty" shape="control" className="min-h-[96px] px-4 py-5">
-                <p className="font-semibold pbp-text-primary">발주 품목을 추가하세요.</p>
-                <p className="mt-1 text-xs pbp-text-muted">작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다.</p>
-              </WaflEmptyCard>
-            </td>
-          </tr>
-        ) : (
-          lines.map((line, rowIndex) => (
-            <MaterialOrderLineRow
-              key={line.id}
-              line={line}
-              rowIndex={rowIndex}
-              editable={editable}
-              onChangeLine={onChangeLine}
-              onRemoveLine={onRemoveLine}
-            />
-          ))
-        )}
-      </tbody>
-    </table>
+    <>
+      <div className="grid min-w-0 gap-2">
+        {lines.map((line) => (
+          <MaterialOrderLineCard
+            key={line.id}
+            line={line}
+            editable={editable}
+            onEdit={() => openEditModal(line)}
+            onRemove={() => onRemoveLine(line.id)}
+          />
+        ))}
+      </div>
+      {editingLine && editDraft ? (
+        <MaterialOrderLineEditModal
+          draft={editDraft}
+          lineAmount={calculateMaterialOrderLineAmount({ ...editingLine, ...editDraft })}
+          onChangeDraft={setEditDraft}
+          onClose={closeEditModal}
+          onApply={applyEdit}
+        />
+      ) : null}
+    </>
   );
 }
 
-function MaterialOrderLineRow({
+function MaterialOrderLineCard({
   line,
-  rowIndex,
   editable,
-  onChangeLine,
-  onRemoveLine,
+  onEdit,
+  onRemove,
 }: {
   line: MaterialOrderDraftLine;
-  rowIndex: number;
   editable: boolean;
-  onChangeLine: (
-    lineId: string,
-    patch: Partial<MaterialOrderDraftLine>,
-  ) => void;
-  onRemoveLine: (lineId: string) => void;
+  onEdit: () => void;
+  onRemove: () => void;
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
 
   return (
-    <tr
-      data-wafl-component="material-order-line-row"
-      className={`border-b border-[var(--pbp-border)] transition hover:bg-[var(--pbp-surface-soft)] ${rowIndex % 2 === 0 ? "bg-[var(--pbp-surface)]" : "bg-[var(--pbp-surface-soft)]"}`}
+    <WaflSurface
+      as="article"
+      component="material-order-line-card"
+      shape="control"
+      tone="muted"
+      className="p-3"
     >
-      <td className={EDITABLE_TABLE_CELL_CLASS}>
-        <WaflInput
-          fieldSize="xs"
-          value={line.itemName}
-          disabled={!editable}
-          onChange={(event) =>
-            onChangeLine(line.id, { itemName: event.target.value })
-          }
-          placeholder="예: 30수 면 블랙"
-          className={compactInputClassName("text-center")}
-        />
-      </td>
-      <td className={SELECTABLE_TABLE_CELL_CLASS}>
-        <AppSelect
-          value={resolveUnitSelectValue(line.unit)}
-          disabled={!editable}
-          onValueChange={(value) => onChangeLine(line.id, { unit: value })}
-          options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
-          placeholder="단위"
-          size="xs"
-          ariaLabel="발주 단위"
-          triggerClassName="justify-center text-center"
-        />
-      </td>
-      <td className={EDITABLE_TABLE_CELL_CLASS}>
-        <WaflInput
-          fieldSize="xs"
-          type="text"
-          inputMode="decimal"
-          value={line.orderQuantity}
-          disabled={!editable}
-          onChange={(event) => {
-            const nextOrderQuantity = normalizeNumberInput(event.target.value);
-            onChangeLine(line.id, {
-              orderQuantity: nextOrderQuantity,
-              allocations: line.allocations.length > 0
-                ? line.allocations.map((allocation) => ({
-                  ...allocation,
-                  allocatedQuantity: nextOrderQuantity,
-                }))
-                : line.allocations,
-            });
-          }}
-          className={compactInputClassName("text-center tabular-nums")}
-        />
-      </td>
-      <td className={EDITABLE_TABLE_CELL_CLASS}>
-        <WaflInput
-          fieldSize="xs"
-          type="text"
-          inputMode="numeric"
-          value={line.unitPrice}
-          disabled={!editable}
-          onChange={(event) =>
-            onChangeLine(line.id, {
-              unitPrice: normalizeNumberInput(event.target.value),
-            })
-          }
-          className={compactInputClassName("text-right tabular-nums")}
-        />
-      </td>
-      <td
-        className={CALCULATED_TABLE_CELL_CLASS}
-        title={formatMaterialOrderAmount(lineAmount)}
-      >
-        <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap">
-          {formatMaterialOrderAmount(lineAmount)}
-        </span>
-      </td>
-      <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-        <div className="flex justify-center">
-          {editable ? (
-            <WorkOrderCardActionMenu
-              menuLabel="발주 품목 작업"
-              deleteLabel="발주 품목 삭제"
-              deleteText="삭제"
-              onDelete={() => onRemoveLine(line.id)}
-            />
-          ) : null}
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold pbp-text-primary">
+            {line.itemName || "품목명 미입력"}
+          </p>
+          <p className="mt-1 truncate text-[11px] font-medium leading-4 pbp-text-muted">
+            단위 {line.unit || "미선택"} · 수량 {line.orderQuantity.toLocaleString()} · 단가 {formatMaterialOrderAmount(line.unitPrice)}
+          </p>
+          <p className="mt-1 text-[11px] font-semibold tabular-nums pbp-text-primary">
+            금액 {formatMaterialOrderAmount(lineAmount)}
+          </p>
         </div>
-      </td>
-    </tr>
+        {editable ? (
+          <WorkOrderCardActionMenu
+            menuLabel="발주 품목 작업"
+            editLabel="발주 품목 수정"
+            editText="수정"
+            onEdit={onEdit}
+            deleteLabel="발주 품목 삭제"
+            deleteText="삭제"
+            onDelete={onRemove}
+          />
+        ) : null}
+      </div>
+    </WaflSurface>
   );
 }
 
-function normalizeNumberInput(value: string): number {
-  const normalizedValue = value.replace(/,/g, "").trim();
+function MaterialOrderLineEditModal({
+  draft,
+  lineAmount,
+  onChangeDraft,
+  onClose,
+  onApply,
+}: {
+  draft: MaterialOrderLineEditDraft;
+  lineAmount: number;
+  onChangeDraft: (draft: MaterialOrderLineEditDraft) => void;
+  onClose: () => void;
+  onApply: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 backdrop-blur-[1px]" role="dialog" aria-modal="true" aria-label="발주 품목 수정">
+      <WaflSurface component="material-order-line-edit-modal" shape="surface" className="w-full max-w-[460px] overflow-hidden p-0 shadow-xl">
+        <div className="flex items-start justify-between gap-3 border-b border-[var(--pbp-border)] px-5 py-4">
+          <div>
+            <h3 className="text-base font-semibold pbp-text-primary">발주 품목 수정</h3>
+            <p className="mt-1 text-xs pbp-text-muted">품목명, 단위, 수량과 단가를 입력한 뒤 적용합니다.</p>
+          </div>
+          <WaflButton type="button" variant="secondary" size="sm" onClick={onClose}>닫기</WaflButton>
+        </div>
+        <div className="grid gap-3 px-5 py-4">
+          <FieldLabel label="품목명">
+            <WaflInput
+              fieldSize="sm"
+              value={draft.itemName}
+              onChange={(event) => onChangeDraft({ ...draft, itemName: event.target.value })}
+              placeholder="예: 30수 면"
+            />
+          </FieldLabel>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <FieldLabel label="단위">
+              <AppSelect
+                value={draft.unit}
+                onValueChange={(value) => onChangeDraft({ ...draft, unit: value })}
+                options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
+                placeholder="단위"
+                size="sm"
+                ariaLabel="발주 단위"
+              />
+            </FieldLabel>
+            <FieldLabel label="수량">
+              <WaflInput
+                fieldSize="sm"
+                type="text"
+                inputMode="decimal"
+                value={draft.orderQuantity}
+                onChange={(event) => onChangeDraft({ ...draft, orderQuantity: normalizeNumberInput(event.target.value) })}
+                className="text-right tabular-nums"
+              />
+            </FieldLabel>
+            <FieldLabel label="단가">
+              <WaflInput
+                fieldSize="sm"
+                type="text"
+                inputMode="numeric"
+                value={draft.unitPrice}
+                onChange={(event) => onChangeDraft({ ...draft, unitPrice: normalizeNumberInput(event.target.value) })}
+                className="text-right tabular-nums"
+              />
+            </FieldLabel>
+          </div>
+          <WaflSurface component="material-order-line-edit-amount" shape="control" tone="muted" className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold">
+            <span className="pbp-text-subtle">금액</span>
+            <span className="tabular-nums pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</span>
+          </WaflSurface>
+        </div>
+        <div className="flex justify-end gap-2 border-t border-[var(--pbp-border)] px-5 py-4">
+          <WaflButton type="button" variant="secondary" size="sm" onClick={onClose}>취소</WaflButton>
+          <WaflButton type="button" variant="primary" size="sm" onClick={onApply}>적용</WaflButton>
+        </div>
+      </WaflSurface>
+    </div>
+  );
+}
+
+function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+      <span>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function normalizeNumberInput(value: string | number): number {
+  const normalizedValue = String(value).replace(/,/g, "").trim();
   const parsed = Number(normalizedValue);
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -216,152 +280,4 @@ function resolveUnitSelectValue(unit: string): string {
   )
     ? unit
     : "";
-}
-
-function compactInputClassName(extra = "") {
-  return [
-    "block min-w-0 max-w-full overflow-hidden text-xs",
-    extra,
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-export function MaterialOrderLineMobileCards({
-  lines,
-  editable,
-  onChangeLine,
-  onRemoveLine,
-}: MaterialOrderLineTableProps) {
-  if (lines.length === 0) {
-    return (
-      <WaflEmptyCard component="material-order-line-mobile-empty" shape="control" className="min-h-[120px] px-4 py-5">
-        <p className="font-semibold pbp-text-primary">발주 품목을 추가하세요.</p>
-        <p className="mt-1 text-xs pbp-text-muted">작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다.</p>
-      </WaflEmptyCard>
-    );
-  }
-
-  return (
-    <div className="grid min-w-0 gap-2">
-      {lines.map((line) => (
-        <MaterialOrderLineMobileCard
-          key={line.id}
-          line={line}
-          editable={editable}
-          onChangeLine={onChangeLine}
-          onRemoveLine={onRemoveLine}
-        />
-      ))}
-    </div>
-  );
-}
-
-function MaterialOrderLineMobileCard({
-  line,
-  editable,
-  onChangeLine,
-  onRemoveLine,
-}: {
-  line: MaterialOrderDraftLine;
-  editable: boolean;
-  onChangeLine: (
-    lineId: string,
-    patch: Partial<MaterialOrderDraftLine>,
-  ) => void;
-  onRemoveLine: (lineId: string) => void;
-}) {
-  const lineAmount = calculateMaterialOrderLineAmount(line);
-
-  return (
-    <WaflSurface as="article" component="material-order-line-mobile-card" shape="control" className="p-3">
-      <div className="grid gap-2">
-        <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-          <span className="flex min-w-0 items-center justify-between gap-2">
-            <span>품목명</span>
-            {editable ? (
-              <WorkOrderCardActionMenu
-                menuLabel="발주 품목 작업"
-                deleteLabel="발주 품목 삭제"
-                deleteText="삭제"
-                onDelete={() => onRemoveLine(line.id)}
-              />
-            ) : null}
-          </span>
-          <WaflInput
-            fieldSize="sm"
-            value={line.itemName}
-            disabled={!editable}
-            onChange={(event) =>
-              onChangeLine(line.id, { itemName: event.target.value })
-            }
-            placeholder="예: 30수 면 블랙"
-            className={compactInputClassName()}
-          />
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-            단위
-            <AppSelect
-              value={resolveUnitSelectValue(line.unit)}
-              disabled={!editable}
-              onValueChange={(value) => onChangeLine(line.id, { unit: value })}
-              options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
-              placeholder="단위"
-              size="sm"
-              ariaLabel="발주 단위"
-            />
-          </label>
-          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-            수량
-            <WaflInput
-              fieldSize="sm"
-              type="text"
-              inputMode="decimal"
-              value={line.orderQuantity}
-              disabled={!editable}
-              onChange={(event) => {
-                const nextOrderQuantity = normalizeNumberInput(event.target.value);
-                onChangeLine(line.id, {
-                  orderQuantity: nextOrderQuantity,
-                  allocations: line.allocations.length > 0
-                    ? line.allocations.map((allocation) => ({
-                      ...allocation,
-                      allocatedQuantity: nextOrderQuantity,
-                    }))
-                    : line.allocations,
-                });
-              }}
-              className={compactInputClassName("text-right tabular-nums")}
-            />
-          </label>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-            단가
-            <WaflInput
-              fieldSize="sm"
-              type="text"
-              inputMode="numeric"
-              value={line.unitPrice}
-              disabled={!editable}
-              onChange={(event) =>
-                onChangeLine(line.id, {
-                  unitPrice: normalizeNumberInput(event.target.value),
-                })
-              }
-              className={compactInputClassName("text-right tabular-nums")}
-            />
-          </label>
-          <div className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-            금액
-            <WaflInfoRow component="material-order-line-amount" tone="muted" className="min-h-8 justify-end px-2.5 py-1 text-xs font-semibold tabular-nums pbp-text-primary">
-              <span>{formatMaterialOrderAmount(lineAmount)}</span>
-            </WaflInfoRow>
-          </div>
-        </div>
-
-      </div>
-    </WaflSurface>
-  );
 }

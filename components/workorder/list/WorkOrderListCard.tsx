@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
 import { AppBadge, WaflSurface } from "@/components/common/ui";
-import { WorkOrderMoreIconButton } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderMoreIconButton, WorkOrderTrashIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getCategoryPath, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -128,7 +128,7 @@ export default function WorkOrderListCard({
                     setMenuOpen(false);
                     onReorder?.(workOrder.id);
                   }}
-                  className={`flex w-full items-center wafl-shape-control px-3 py-2 text-left text-sm ${
+                  className={`flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-sm ${
                     active ? "hover:bg-white/10" : "hover:bg-[var(--pbp-surface-muted)]"
                   }`}
                 >
@@ -142,11 +142,12 @@ export default function WorkOrderListCard({
                     setMenuOpen(false);
                     onDelete?.(workOrder.id);
                   }}
-                  className={`flex w-full items-center wafl-shape-control px-3 py-2 text-left text-sm ${
+                  className={`flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-sm ${
                     active ? "text-[var(--pbp-status-danger-bg)] hover:bg-white/10" : "text-[var(--pbp-status-danger-fg)] hover:bg-[var(--pbp-status-danger-bg)]"
                   }`}
                 >
-                  {copy.delete}
+                  <WorkOrderTrashIcon className="h-3 w-3" />
+                  <span>{copy.delete}</span>
                 </button>
               ) : null}
             </div>
