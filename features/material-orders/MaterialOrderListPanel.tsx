@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   AppBadge,
   AppSelect,
   WaflButton,
   WaflInput,
+  WaflSelectableCard,
   WaflSurface,
   type AppSelectOption,
 } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
-import { WorkOrderMoreIconButton, WorkOrderTrashIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
   MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_PANEL_DIVIDER_CLASS,
@@ -290,8 +291,6 @@ function MaterialOrderListButton({
   draftMaterialType: MaterialOrderDraftSelectionType | null;
   draftSupplierName: string | null;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
   const materialType = draftMaterialType ?? resolveMaterialOrderType(order);
   const typeLabel = materialType
     ? formatMaterialOrderTypeLabel(materialType)
@@ -303,28 +302,8 @@ function MaterialOrderListButton({
   const createdAtLabel = formatMaterialOrderCreatedAtLabel(order.createdAt);
   const canCancelOrder = order.status === "draft";
 
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [menuOpen]);
 
   const handleCancelOrder = () => {
-    setMenuOpen(false);
     const confirmed = window.confirm(
       "이 발주서를 삭제하시겠습니까? 삭제한 발주서는 취소 상태로 이동합니다.",
     );
@@ -333,12 +312,9 @@ function MaterialOrderListButton({
   };
 
   return (
-    <WaflSurface
-      component="material-order-list-card"
-      shape="control"
-      tone={selected ? "selected" : "surface"}
-      data-wafl-state={selected ? "selected" : "normal"}
-      className="pbp-interactive-card w-full p-3 transition-all duration-150"
+    <WaflSelectableCard
+      selected={selected}
+      className="p-3"
     >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <button
@@ -371,44 +347,15 @@ function MaterialOrderListButton({
             </p>
           </div>
         </button>
-        <div className="relative shrink-0" ref={menuRef}>
-          <WorkOrderMoreIconButton
-            label="발주서 작업 더보기"
-            onClick={() => {
-              if (canCancelOrder) setMenuOpen((current) => !current);
-            }}
-            disabled={!canCancelOrder}
-            active={selected}
-            size="md"
-            aria-haspopup="menu"
-            aria-expanded={canCancelOrder && menuOpen}
+        {canCancelOrder ? (
+          <WorkOrderCardActionMenu
+            menuLabel="발주서 작업 더보기"
+            deleteLabel="발주서 삭제"
+            deleteText="삭제"
+            onDelete={handleCancelOrder}
           />
-          {menuOpen && canCancelOrder ? (
-            <div
-              role="menu"
-              className={`absolute right-0 top-10 z-20 min-w-[132px] wafl-shape-control border p-1 ${
-                selected
-                  ? "border-[var(--pbp-text-primary)] bg-[var(--pbp-text-primary)] text-[var(--pbp-surface)]"
-                  : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)]"
-              }`}
-            >
-              <button
-                type="button"
-                role="menuitem"
-                onClick={handleCancelOrder}
-                className={`flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-sm ${
-                  selected
-                    ? "text-[var(--pbp-status-danger-bg)] hover:bg-white/10"
-                    : "text-[var(--pbp-status-danger-fg)] hover:bg-[var(--pbp-status-danger-bg)]"
-                }`}
-              >
-                <WorkOrderTrashIcon className="h-3 w-3" />
-                <span>삭제</span>
-              </button>
-            </div>
-          ) : null}
-        </div>
+        ) : null}
       </div>
-    </WaflSurface>
+    </WaflSelectableCard>
   );
 }

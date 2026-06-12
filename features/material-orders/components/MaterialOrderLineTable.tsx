@@ -2,7 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 
-import { AppSelect, WaflButton, WaflEmptyCard, WaflInput, WaflSurface, type AppSelectOption } from "@/components/common/ui";
+import ModalShell from "@/components/common/modal/ModalShell";
+import { AppSelect, WaflButton, WaflEmptyCard, WaflInput, WaflModalSection, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
   calculateMaterialOrderLineAmount,
@@ -195,67 +196,68 @@ function MaterialOrderLineEditModal({
   onApply: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 backdrop-blur-[1px]" role="dialog" aria-modal="true" aria-label="발주 품목 수정">
-      <WaflSurface component="material-order-line-edit-modal" shape="surface" className="w-full max-w-lg overflow-hidden p-0 shadow-xl" style={{ maxWidth: "520px" }}>
-        <div className="flex items-start justify-between gap-3 border-b border-[var(--pbp-border)] px-5 py-4">
-          <div>
-            <h3 className="text-base font-semibold pbp-text-primary">발주 품목 수정</h3>
-            <p className="mt-1 text-xs pbp-text-muted">품목명, 단위, 수량과 단가를 입력한 뒤 적용합니다.</p>
-          </div>
-          <WaflButton type="button" variant="secondary" size="sm" onClick={onClose}>닫기</WaflButton>
-        </div>
-        <div className="grid gap-3 px-5 py-4">
-          <FieldLabel label="품목명">
-            <WaflInput
-              fieldSize="sm"
-              value={draft.itemName}
-              onChange={(event) => onChangeDraft({ ...draft, itemName: event.target.value })}
-              placeholder="예: 30수 면"
-            />
-          </FieldLabel>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FieldLabel label="단위">
-              <AppSelect
-                value={draft.unit}
-                onValueChange={(value) => onChangeDraft({ ...draft, unit: value })}
-                options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
-                placeholder="단위"
-                size="sm"
-                ariaLabel="발주 단위"
-              />
-            </FieldLabel>
-            <FieldLabel label="수량">
-              <WaflInput
-                fieldSize="sm"
-                type="text"
-                inputMode="decimal"
-                value={draft.orderQuantity}
-                onChange={(event) => onChangeDraft({ ...draft, orderQuantity: normalizeNumberInput(event.target.value) })}
-                className="text-right tabular-nums"
-              />
-            </FieldLabel>
-            <FieldLabel label="단가">
-              <WaflInput
-                fieldSize="sm"
-                type="text"
-                inputMode="numeric"
-                value={draft.unitPrice}
-                onChange={(event) => onChangeDraft({ ...draft, unitPrice: normalizeNumberInput(event.target.value) })}
-                className="text-right tabular-nums"
-              />
-            </FieldLabel>
-          </div>
-          <WaflSurface component="material-order-line-edit-amount" shape="control" tone="muted" className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold">
-            <span className="pbp-text-subtle">금액</span>
-            <span className="tabular-nums pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</span>
-          </WaflSurface>
-        </div>
-        <div className="flex justify-end gap-2 border-t border-[var(--pbp-border)] px-5 py-4">
+    <ModalShell
+      open
+      title="발주 품목 수정"
+      description="품목명, 단위, 수량과 단가를 입력한 뒤 적용합니다."
+      onClose={onClose}
+      maxWidthClass="md:max-w-xl"
+      bodyClassName="grid gap-3"
+      footerClassName="flex justify-end gap-2"
+      footer={
+        <>
           <WaflButton type="button" variant="secondary" size="sm" onClick={onClose}>취소</WaflButton>
           <WaflButton type="button" variant="primary" size="sm" onClick={onApply}>적용</WaflButton>
+        </>
+      }
+    >
+      <WaflModalSection className="grid gap-3">
+        <FieldLabel label="품목명">
+          <WaflInput
+            fieldSize="sm"
+            value={draft.itemName}
+            onChange={(event) => onChangeDraft({ ...draft, itemName: event.target.value })}
+            placeholder="예: 30수 면"
+          />
+        </FieldLabel>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <FieldLabel label="단위">
+            <AppSelect
+              value={draft.unit}
+              onValueChange={(value) => onChangeDraft({ ...draft, unit: value })}
+              options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
+              placeholder="단위"
+              size="sm"
+              ariaLabel="발주 단위"
+            />
+          </FieldLabel>
+          <FieldLabel label="수량">
+            <WaflInput
+              fieldSize="sm"
+              type="text"
+              inputMode="decimal"
+              value={draft.orderQuantity}
+              onChange={(event) => onChangeDraft({ ...draft, orderQuantity: normalizeNumberInput(event.target.value) })}
+              className="text-right tabular-nums"
+            />
+          </FieldLabel>
+          <FieldLabel label="단가">
+            <WaflInput
+              fieldSize="sm"
+              type="text"
+              inputMode="numeric"
+              value={draft.unitPrice}
+              onChange={(event) => onChangeDraft({ ...draft, unitPrice: normalizeNumberInput(event.target.value) })}
+              className="text-right tabular-nums"
+            />
+          </FieldLabel>
         </div>
-      </WaflSurface>
-    </div>
+        <WaflSurface component="material-order-line-edit-amount" shape="control" tone="muted" className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold">
+          <span className="pbp-text-subtle">금액</span>
+          <span className="tabular-nums pbp-text-primary">{formatMaterialOrderAmount(lineAmount)}</span>
+        </WaflSurface>
+      </WaflModalSection>
+    </ModalShell>
   );
 }
 

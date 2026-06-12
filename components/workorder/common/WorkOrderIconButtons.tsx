@@ -2,7 +2,7 @@
 
 import { type ButtonHTMLAttributes, useEffect, useRef, useState } from "react";
 
-import { WaflActionButton, WaflAddActionButton, WaflMoreActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
+import { WaflActionButton, WaflActionMenuItem, WaflActionMenuPanel, WaflAddActionButton, WaflMoreActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
 import { cn } from "@/lib/utils";
 
 export function WorkOrderPlusIcon({ className = "h-3 w-3" }: { className?: string }) {
@@ -247,41 +247,23 @@ export function WorkOrderCardActionMenu({
         aria-expanded={open}
       />
       {open ? (
-        <div className="absolute right-0 top-9 z-30 min-w-[116px] overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 text-xs font-semibold">
+        <WaflActionMenuPanel className="top-9 min-w-[116px]">
           {onEdit && editLabel && editText ? (
-            <button
-              type="button"
-              onClick={handleEdit}
-              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
-              aria-label={editLabel}
-            >
-              <WorkOrderEditIcon className="h-3 w-3" />
-              <span>{editText}</span>
-            </button>
+            <WaflActionMenuItem onClick={handleEdit} aria-label={editLabel} icon={<WorkOrderEditIcon className="h-3 w-3" />}>
+              {editText}
+            </WaflActionMenuItem>
           ) : null}
           {onReply && replyLabel && replyText ? (
-            <button
-              type="button"
-              onClick={handleReply}
-              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)]"
-              aria-label={replyLabel}
-            >
-              <WorkOrderReplyIcon className="h-3 w-3" />
-              <span>{replyText}</span>
-            </button>
+            <WaflActionMenuItem onClick={handleReply} aria-label={replyLabel} icon={<WorkOrderReplyIcon className="h-3 w-3" />}>
+              {replyText}
+            </WaflActionMenuItem>
           ) : null}
           {onDelete && deleteLabel && deleteText ? (
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[var(--pbp-action-danger-soft-text)] hover:bg-[var(--pbp-action-danger-soft-surface)]"
-              aria-label={deleteLabel}
-            >
-              <WorkOrderTrashIcon className="h-3 w-3" />
-              <span>{deleteText}</span>
-            </button>
+            <WaflActionMenuItem onClick={handleDelete} aria-label={deleteLabel} tone="danger" icon={<WorkOrderTrashIcon className="h-3 w-3" />}>
+              {deleteText}
+            </WaflActionMenuItem>
           ) : null}
-        </div>
+        </WaflActionMenuPanel>
       ) : null}
     </div>
   );
