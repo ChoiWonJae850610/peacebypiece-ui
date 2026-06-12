@@ -314,12 +314,12 @@ function MaterialOrderListButton({
   return (
     <WaflSelectableCard
       selected={selected}
-      className="p-3"
+      className="relative p-3"
     >
-      <div className="flex min-w-0 items-start justify-between gap-3">
+      <div className="min-w-0 pr-11">
         <button
           type="button"
-          className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left"
+          className="pbp-touch-target pbp-press-subtle block w-full min-w-0 text-left"
           onClick={() => onSelectOrder(order.id)}
         >
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
@@ -348,12 +348,14 @@ function MaterialOrderListButton({
           </div>
         </button>
         {canCancelOrder ? (
+          <div className="absolute right-3 top-3">
           <WorkOrderCardActionMenu
             menuLabel="발주서 작업 더보기"
             deleteLabel="발주서 삭제"
             deleteText="삭제"
             onDelete={handleCancelOrder}
           />
+          </div>
         ) : null}
       </div>
     </WaflSelectableCard>

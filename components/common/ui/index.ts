@@ -69,7 +69,19 @@ export * from "./WaflToast";
 export * from "./WaflState";
 export * from "./WaflSelectableCard";
 export * from "./WaflModal";
-export * from "./WaflForm";
+export {
+  WAFL_FIELD_INPUT_CLASS,
+  WAFL_FIELD_TEXTAREA_CLASS,
+  WaflInfoBox,
+  WaflInput,
+  WaflTextarea,
+  type WaflFieldSize,
+  type WaflInfoBoxDensity,
+  type WaflInfoBoxShape,
+  type WaflInfoBoxTone,
+  type WaflInputProps,
+  type WaflTextareaProps,
+} from "./WaflForm";
 
 export * from "./WaflMobileShell";
 

@@ -49,10 +49,10 @@ export default function WorkOrderListCard({
   return (
     <WaflSelectableCard
       selected={active}
-      className={`group px-3 py-3 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
+      className={`group relative px-3 py-3 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
     >
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">
+      <div className="min-w-0 pr-11">
+        <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle block w-full min-w-0 text-left">
           <div className="min-w-0 truncate text-[15px] font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <AppBadge
@@ -71,6 +71,7 @@ export default function WorkOrderListCard({
           </div>
         </button>
         {canOpenMenu ? (
+          <div className="absolute right-3 top-3">
           <WorkOrderCardActionMenu
             menuLabel={copy.moreActionsAria}
             editLabel={canShowReorder ? copy.reorder : undefined}
@@ -80,8 +81,9 @@ export default function WorkOrderListCard({
             deleteText={canShowDelete ? copy.delete : undefined}
             onDelete={canShowDelete ? () => onDelete?.(workOrder.id) : undefined}
           />
+          </div>
         ) : (
-          <div className="h-10 w-10 shrink-0" title={writeLocked ? writeLockMessage ?? i18n.workorder.lifecycle.genericProcessingLabel : undefined} />
+          <div className="absolute right-3 top-3 h-10 w-10" title={writeLocked ? writeLockMessage ?? i18n.workorder.lifecycle.genericProcessingLabel : undefined} />
         )}
       </div>
     </WaflSelectableCard>
