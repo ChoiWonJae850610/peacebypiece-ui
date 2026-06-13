@@ -167,8 +167,8 @@ export default function SidebarContent({
   const hasActiveListControls = searchQuery.trim().length > 0 || statusFilter !== "active" || sort !== "updatedDesc";
 
   return (
-    <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
-      <div className="shrink-0 p-3.5">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col p-3.5">
+      <div className="shrink-0">
         {showHeaderActions ? (
           <>
             <div className="flex items-start justify-between gap-3">
@@ -359,7 +359,7 @@ export default function SidebarContent({
         ) : null}
         <div className="mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pl-3.5 pr-0 py-3 pb-24 [scrollbar-gutter:auto]">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pb-24 [scrollbar-gutter:auto]">
         <div className="space-y-2">
           {workOrders.map((workOrder) => (
             <WorkOrderListCard
