@@ -1,8 +1,15 @@
 "use client";
 
 import ModalShell from "@/components/common/modal/ModalShell";
-import { useRef, type MouseEvent, type PointerEvent, type TouchEvent } from "react";
-import { AppNumberInput, WaflButton, WaflInput, WaflModalSection, WaflSurface, WAFL_FIELD_INPUT_CLASS } from "@/components/common/ui";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
+import { WaflButton, WaflInput, WaflModalSection, WaflSurface } from "@/components/common/ui";
 import { formatMaterialOrderAmount } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderLineAddModalProps = {
@@ -17,6 +24,38 @@ type MaterialOrderLineAddModalProps = {
   onConfirm: (values?: { orderQuantity: number; unitPrice: number }) => void;
 };
 
+function parseNumberInput(value: string) {
+  const normalized = value.replace(/,/g, "").trim();
+  if (!normalized) return 0;
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatNumberInput(value: number) {
+  if (!Number.isFinite(value)) return "";
+  return value.toLocaleString();
+}
+
+function normalizeNumberInput(value: string, allowDecimal = false) {
+  const stripped = value
+    .replace(/,/g, "")
+    .replace(allowDecimal ? /[^\d.]/g : /\D/g, "");
+
+  if (!stripped) return "";
+
+  const [integerPart, ...decimalParts] = stripped.split(".");
+  const safeIntegerPart = integerPart.replace(/^0+(?=\d)/, "") || "0";
+  const formattedIntegerPart = Number(safeIntegerPart).toLocaleString();
+
+  if (!allowDecimal || decimalParts.length === 0) {
+    return formattedIntegerPart;
+  }
+
+  const decimalPart = decimalParts.join("").slice(0, 2);
+  return `${formattedIntegerPart}.${decimalPart}`;
+}
+
 export default function MaterialOrderLineAddModal({
   open,
   itemName,
@@ -29,12 +68,34 @@ export default function MaterialOrderLineAddModal({
   onConfirm,
 }: MaterialOrderLineAddModalProps) {
   const confirmLockRef = useRef(false);
-  const lastConfirmAtRef = useRef(0);
-  const normalizedOrderQuantity = Number.isFinite(orderQuantity) ? orderQuantity : 0;
-  const normalizedUnitPrice = Number.isFinite(unitPrice) ? unitPrice : 0;
-  const canConfirm = normalizedOrderQuantity >= 1;
-  const extraQuantity = Math.max(0, Number((normalizedOrderQuantity - requiredQuantity).toFixed(2)));
-  const amount = Number((normalizedOrderQuantity * normalizedUnitPrice).toFixed(2));
+  const [orderQuantityInput, setOrderQuantityInput] = useState(() => formatNumberInput(orderQuantity));
+  const [unitPriceInput, setUnitPriceInput] = useState(() => formatNumberInput(unitPrice));
+
+  useEffect(() => {
+    if (!open) {
+      confirmLockRef.current = false;
+      return;
+    }
+
+    setOrderQuantityInput(formatNumberInput(orderQuantity));
+    setUnitPriceInput(formatNumberInput(unitPrice));
+    confirmLockRef.current = false;
+  }, [open, orderQuantity, unitPrice]);
+
+  const parsedValues = useMemo(() => {
+    const parsedOrderQuantity = parseNumberInput(orderQuantityInput);
+    const parsedUnitPrice = parseNumberInput(unitPriceInput);
+
+    return {
+      orderQuantity: Number.isFinite(parsedOrderQuantity) ? parsedOrderQuantity : 0,
+      unitPrice: Number.isFinite(parsedUnitPrice) ? parsedUnitPrice : 0,
+    };
+  }, [orderQuantityInput, unitPriceInput]);
+
+  const canConfirm = parsedValues.orderQuantity >= 1;
+  const extraQuantity = Math.max(0, Number((parsedValues.orderQuantity - requiredQuantity).toFixed(2)));
+  const amount = Number((parsedValues.orderQuantity * parsedValues.unitPrice).toFixed(2));
+
   const blurActiveInput = () => {
     if (typeof document === "undefined") return;
     const activeElement = document.activeElement;
@@ -43,42 +104,48 @@ export default function MaterialOrderLineAddModal({
     }
   };
 
+  const syncParsedValues = () => {
+    onChange({
+      orderQuantity: parsedValues.orderQuantity,
+      unitPrice: parsedValues.unitPrice,
+    });
+  };
+
   const commitConfirm = () => {
     if (!canConfirm || confirmLockRef.current) return;
     confirmLockRef.current = true;
-    lastConfirmAtRef.current = Date.now();
     blurActiveInput();
+
     const values = {
-      orderQuantity: Math.max(1, Number.isFinite(normalizedOrderQuantity) ? normalizedOrderQuantity : 0),
-      unitPrice: Math.max(0, Number.isFinite(normalizedUnitPrice) ? normalizedUnitPrice : 0),
+      orderQuantity: Math.max(1, parsedValues.orderQuantity),
+      unitPrice: Math.max(0, parsedValues.unitPrice),
     };
+
+    onChange(values);
+    onConfirm(values);
+
     window.setTimeout(() => {
-      onConfirm(values);
-      window.setTimeout(() => {
-        confirmLockRef.current = false;
-      }, 120);
-    }, 32);
+      confirmLockRef.current = false;
+    }, 160);
   };
 
-  const handleConfirmClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    if (Date.now() - lastConfirmAtRef.current < 220) return;
-    commitConfirm();
-  };
-
-  const handleConfirmPointerDown = () => {
-    blurActiveInput();
-  };
-
-  const handleConfirmPointerUp = (event: PointerEvent<HTMLButtonElement>) => {
+  const handleConfirmPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === "mouse") return;
     event.preventDefault();
     commitConfirm();
   };
 
-  const handleConfirmTouchEnd = (event: TouchEvent<HTMLButtonElement>) => {
+  const handleConfirmClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     commitConfirm();
+  };
+
+  const handleOrderQuantityChange = (value: string) => {
+    setOrderQuantityInput(normalizeNumberInput(value, true));
+  };
+
+  const handleUnitPriceChange = (value: string) => {
+    setUnitPriceInput(normalizeNumberInput(value));
   };
 
   return (
@@ -97,8 +164,6 @@ export default function MaterialOrderLineAddModal({
           size="sm"
           disabled={!canConfirm}
           onPointerDown={handleConfirmPointerDown}
-          onPointerUp={handleConfirmPointerUp}
-          onTouchEnd={handleConfirmTouchEnd}
           onClick={handleConfirmClick}
         >
           추가
@@ -117,24 +182,24 @@ export default function MaterialOrderLineAddModal({
           </label>
           <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
             <span>주문수량</span>
-            <AppNumberInput
+            <WaflInput
+              fieldSize="sm"
               inputMode="decimal"
-              min={0}
-              value={normalizedOrderQuantity}
-              onValueChange={(value) => onChange({ orderQuantity: value })}
-              component="material-order-line-quantity-input"
-              className={WAFL_FIELD_INPUT_CLASS}
+              value={orderQuantityInput}
+              onChange={(event) => handleOrderQuantityChange(event.target.value)}
+              onBlur={syncParsedValues}
+              aria-label="주문수량"
             />
           </label>
           <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
             <span>단가</span>
-            <AppNumberInput
+            <WaflInput
+              fieldSize="sm"
               inputMode="numeric"
-              min={0}
-              value={normalizedUnitPrice}
-              onValueChange={(value) => onChange({ unitPrice: value })}
-              component="material-order-line-unit-price-input"
-              className={WAFL_FIELD_INPUT_CLASS}
+              value={unitPriceInput}
+              onChange={(event) => handleUnitPriceChange(event.target.value)}
+              onBlur={syncParsedValues}
+              aria-label="단가"
             />
           </label>
           <WaflSurface component="material-order-line-add-extra" shape="control" tone="muted" className="grid content-center gap-1 px-3 py-2">
@@ -150,4 +215,3 @@ export default function MaterialOrderLineAddModal({
     </ModalShell>
   );
 }
-
