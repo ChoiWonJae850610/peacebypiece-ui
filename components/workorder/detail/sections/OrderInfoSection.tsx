@@ -9,9 +9,12 @@ import {
   WaflAddIconBubble,
   WaflButton,
   WaflEmptyCard,
-  WaflSurface,
 } from "@/components/common/ui";
-import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
+import {
+  formatWorkOrderMoney,
+  formatWorkOrderQuantity,
+  WorkOrderSectionListCard,
+} from "@/components/workorder/detail/sections/WorkOrderSectionListPrimitives";
 import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import WorkOrderProcessEditSheet, {
   type WorkOrderProcessSheetDraft,
@@ -30,64 +33,6 @@ import type { Outsourcing } from "@/types/workorder";
 type SheetState =
   | { mode: "order"; orderEntry: OrderEntryState | null; outsourcing: null }
   | { mode: "outsourcing"; orderEntry: null; outsourcing: Outsourcing | null };
-
-function ProcessCard({
-  title,
-  meta,
-  details,
-  locked,
-  onEdit,
-  onRemove,
-}: {
-  title: string;
-  meta: string;
-  details: string[];
-  locked: boolean;
-  onEdit: () => void;
-  onRemove?: () => void;
-}) {
-  const { i18n } = useI18n();
-  const common = i18n.workorder.ui.common;
-  return (
-    <WaflSurface
-      component="process-list-card"
-      shape="control"
-      tone="muted"
-      className="p-3"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[11px] font-semibold pbp-text-subtle">
-            {meta}
-          </div>
-          <div className="mt-1 truncate text-sm font-semibold pbp-text-primary">
-            {title}
-          </div>
-          {details.length > 0 ? (
-            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs pbp-text-muted">
-              {details.map((detail) => (
-                <span key={detail}>{detail}</span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-        {!locked ? (
-          <WorkOrderCardActionMenu
-            menuLabel={`${title} ${common.actionMenuSuffix}`}
-            editLabel={`${title} ${common.editSuffix}`}
-            editText={common.editSuffix}
-            onEdit={onEdit}
-            deleteLabel={
-              onRemove ? `${title} ${common.deleteSuffix}` : undefined
-            }
-            deleteText={onRemove ? common.deleteSuffix : undefined}
-            onDelete={onRemove}
-          />
-        ) : null}
-      </div>
-    </WaflSurface>
-  );
-}
 
 export default function OrderInfoSection({
   orderEntries,
@@ -212,30 +157,32 @@ export default function OrderInfoSection({
 
       <div className={deviceStackClass}>
         {visibleOrderEntries.map((item) => (
-          <ProcessCard
+          <WorkOrderSectionListCard
             key={item.id}
+            component="process-list-card"
             title={translateWorkOrderDisplayText(item.type, locale)}
-            meta={copy.sewingLineTypeLabel}
+            eyebrow={copy.sewingLineTypeLabel}
             details={[
               item.factory,
-              `${item.quantity.toLocaleString()}장`,
-              `${copy.fields.laborCost} ${item.laborCost.toLocaleString()}원`,
-              `${copy.fields.lossCost} ${item.lossCost.toLocaleString()}원`,
+              formatWorkOrderQuantity(item.quantity, "장"),
+              `${copy.fields.laborCost} ${formatWorkOrderMoney(item.laborCost)}`,
+              `${copy.fields.lossCost} ${formatWorkOrderMoney(item.lossCost)}`,
             ]}
             locked={locked}
             onEdit={() => openOrderSheet(item)}
           />
         ))}
         {outsourcing.map((item) => (
-          <ProcessCard
+          <WorkOrderSectionListCard
             key={item.id}
+            component="process-list-card"
             title={item.process || copy.outsourcingLineTypeLabel}
-            meta={`${copy.outsourcingLineTypeLabelPrefix} ${copy.outsourcingLineTypeLabelSuffix}`}
+            eyebrow={`${copy.outsourcingLineTypeLabelPrefix} ${copy.outsourcingLineTypeLabelSuffix}`}
             details={[
               item.vendor || "미선택",
-              `${item.quantity.toLocaleString()}장`,
-              `${copy.fields.laborCost} ${item.unitCost.toLocaleString()}원`,
-              `${copy.fields.lossCost} ${(item.lossCost ?? 0).toLocaleString()}원`,
+              formatWorkOrderQuantity(item.quantity, "장"),
+              `${copy.fields.laborCost} ${formatWorkOrderMoney(item.unitCost)}`,
+              `${copy.fields.lossCost} ${formatWorkOrderMoney(item.lossCost ?? 0)}`,
             ]}
             locked={locked}
             onEdit={() => openOutsourcingSheet(item)}
@@ -278,7 +225,9 @@ export default function OrderInfoSection({
   );
 
   return (
-    <section className={isFlatDevice ? `min-w-0 ${deviceStackClass}` : "min-w-0"}>
+    <section
+      className={isFlatDevice ? `min-w-0 ${deviceStackClass}` : "min-w-0"}
+    >
       {!isFlatDevice ? (
         <div className="mb-2 flex min-w-0 items-end justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
