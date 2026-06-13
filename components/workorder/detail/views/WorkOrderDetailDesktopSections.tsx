@@ -20,7 +20,7 @@ export default function WorkOrderDetailDesktopSections({
 
   return (
     <>
-      <div className="overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-transparent bg-transparent px-5 py-5">
+      <div className="overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-transparent bg-transparent">
         <WorkOrderHeaderSection {...viewModel.headerProps} />
 
         {viewModel.rejectionReasonNoticeProps ? (
@@ -32,7 +32,7 @@ export default function WorkOrderDetailDesktopSections({
         <WorkOrderActionSection {...viewModel.actionProps} />
       </div>
 
-      <div className="px-5">
+      <div>
         <DetailSectionGroup
           eyebrow={groups.cost.eyebrow}
           title={groups.cost.title}

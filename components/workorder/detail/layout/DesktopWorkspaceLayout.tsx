@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { WAFL_WORKSPACE_PANEL_PADDING_CLASS, WaflWorkspacePanel } from "@/components/common/ui";
+import { WAFL_WORKSPACE_PANEL_PADDING_CLASS } from "@/components/common/ui";
 
 export default function DesktopWorkspaceLayout({ children }: { children: ReactNode }) {
-  return <WaflWorkspacePanel panelRole="content" className={WAFL_WORKSPACE_PANEL_PADDING_CLASS}>{children}</WaflWorkspacePanel>;
+  return <div className={`min-h-full w-full ${WAFL_WORKSPACE_PANEL_PADDING_CLASS}`}>{children}</div>;
 }

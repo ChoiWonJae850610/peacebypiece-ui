@@ -5,13 +5,11 @@ import { useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
-import { AppSelect, SectionCountBadge, WaflButton, WaflInput, WaflStateBlock } from "@/components/common/ui";
+import { AppSelect, WaflButton, WaflInput, WaflListPanelShell, WaflStateBlock } from "@/components/common/ui";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 import {
   WAFL_LIST_CLEAR_BUTTON_CLASS,
-  WAFL_LIST_CONTROL_ROW_CLASS,
   WAFL_LIST_CREATE_BUTTON_CLASS,
-  WAFL_LIST_CREATE_BUTTON_TOP_GAP_CLASS,
   WAFL_LIST_SEARCH_INPUT_CLASS,
   WAFL_LIST_SEARCH_ROW_CLASS,
   WAFL_LIST_SELECT_TRIGGER_CLASS,
@@ -271,129 +269,103 @@ export default function SidebarContent({
             ) : null}
           </>
         ) : null}
-        <div
-          className={
-            showHeaderActions
-              ? "mt-3 border-t border-[var(--pbp-border)] pt-3"
-              : ""
-          }
-        >
-          <div className="flex items-end justify-between gap-2 pb-2.5">
-            <h2 className="min-w-0 text-base font-semibold tracking-tight text-[var(--pbp-text-primary)]">
-              작업지시서 목록
-            </h2>
-            <SectionCountBadge className="translate-y-0.5">
-              {workOrders.length}건
-            </SectionCountBadge>
-          </div>
-          <div className="border-b border-[var(--pbp-border)]" aria-hidden="true" />
-          <div className={`mt-3 ${WAFL_LIST_CONTROL_ROW_CLASS}`}>
-            <div className={WAFL_LIST_SEARCH_ROW_CLASS}>
-              <label className="min-w-0 flex-1">
-                <span className="sr-only">{controlsUi.searchAria}</span>
-                <WaflInput
-                  type="search"
-                  fieldSize="sm"
-                  value={searchQuery}
-                  onChange={(event) => onSearchQueryChange(event.target.value)}
-                  placeholder={controlsUi.searchPlaceholder}
-                  className={WAFL_LIST_SEARCH_INPUT_CLASS}
-                />
-              </label>
-              {searchQuery ? (
-                <WaflButton
-                  onClick={() => onSearchQueryChange("")}
+        <WaflListPanelShell
+          title="작업지시서 목록"
+          count={workOrders.length}
+          className={showHeaderActions ? "mt-3 border-t border-[var(--pbp-border)] pt-3 !px-0 !pb-0" : "!p-0"}
+          controls={(
+            <>
+              <div className={WAFL_LIST_SEARCH_ROW_CLASS}>
+                <label className="min-w-0 flex-1">
+                  <span className="sr-only">{controlsUi.searchAria}</span>
+                  <WaflInput
+                    type="search"
+                    fieldSize="sm"
+                    value={searchQuery}
+                    onChange={(event) => onSearchQueryChange(event.target.value)}
+                    placeholder={controlsUi.searchPlaceholder}
+                    className={WAFL_LIST_SEARCH_INPUT_CLASS}
+                  />
+                </label>
+                {searchQuery ? (
+                  <WaflButton
+                    onClick={() => onSearchQueryChange("")}
+                    disabled={writeLocked}
+                    variant="secondary"
+                    size="sm"
+                    className={WAFL_LIST_CLEAR_BUTTON_CLASS}
+                  >
+                    {controlsUi.clearSearch}
+                  </WaflButton>
+                ) : null}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <AppSelect
+                  value={statusFilter}
+                  onValueChange={(value) => onStatusFilterChange(value as WorkOrderListStatusFilter)}
+                  options={statusOptions}
                   disabled={writeLocked}
-                  variant="secondary"
                   size="sm"
-                  className={WAFL_LIST_CLEAR_BUTTON_CLASS}
-                >
-                  {controlsUi.clearSearch}
-                </WaflButton>
-              ) : null}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <AppSelect
-                value={statusFilter}
-                onValueChange={(value) =>
-                  onStatusFilterChange(value as WorkOrderListStatusFilter)
-                }
-                options={statusOptions}
-                disabled={writeLocked}
-                size="sm"
-                ariaLabel={controlsUi.statusFilterAria}
-                triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
+                  ariaLabel={controlsUi.statusFilterAria}
+                  triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
+                />
+                <AppSelect
+                  value={sort}
+                  onValueChange={(value) => onSortChange(value as WorkOrderListSort)}
+                  options={sortOptions}
+                  disabled={writeLocked}
+                  size="sm"
+                  ariaLabel={controlsUi.sortAria}
+                  triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
+                />
+              </div>
+            </>
+          )}
+          action={canCreate ? (
+            <WaflButton
+              variant="primary"
+              size="md"
+              width="full"
+              onClick={() => { if (!writeLocked) onCreate(); }}
+              disabled={writeLocked}
+              title={writeLocked ? (writeLockMessage ?? "상태 변경 처리 중입니다.") : undefined}
+              className={`${WAFL_LIST_CREATE_BUTTON_CLASS} active:bg-black disabled:cursor-not-allowed disabled:opacity-50`}
+            >
+              {controlsUi.create}
+            </WaflButton>
+          ) : null}
+          listClassName="pb-24"
+        >
+          <div className="space-y-2">
+            {workOrders.map((workOrder) => (
+              <WorkOrderListCard
+                key={workOrder.id}
+                workOrder={workOrder}
+                selectedId={selectedId}
+                workflowStateById={workflowStateById}
+                onClick={onSelect}
+                onReorder={onReorder}
+                onDelete={onDelete}
+                onRework={onRework}
+                canDelete={canManageListActions ? canDelete : undefined}
+                canReorder={canManageListActions && Boolean(onReorder)}
+                writeLocked={writeLocked}
+                writeLockMessage={writeLockMessage}
               />
-              <AppSelect
-                value={sort}
-                onValueChange={(value) =>
-                  onSortChange(value as WorkOrderListSort)
-                }
-                options={sortOptions}
-                disabled={writeLocked}
-                size="sm"
-                ariaLabel={controlsUi.sortAria}
-                triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
-              />
-            </div>
+            ))}
           </div>
-        </div>
-        {canCreate ? (
-          <WaflButton
-            variant="primary"
-            size="md"
-            width="full"
-            onClick={() => {
-              if (!writeLocked) onCreate();
-            }}
-            disabled={writeLocked}
-            title={
-              writeLocked
-                ? (writeLockMessage ?? "상태 변경 처리 중입니다.")
-                : undefined
-            }
-            className={`${WAFL_LIST_CREATE_BUTTON_CLASS} ${WAFL_LIST_CREATE_BUTTON_TOP_GAP_CLASS} active:bg-black disabled:cursor-not-allowed disabled:opacity-50`}
-          >
-            {controlsUi.create}
-          </WaflButton>
-        ) : null}
-        <div className="mt-3 border-b border-[var(--pbp-border)]" aria-hidden="true" />
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pb-24 [scrollbar-gutter:auto]">
-        <div className="space-y-2">
-          {workOrders.map((workOrder) => (
-            <WorkOrderListCard
-              key={workOrder.id}
-              workOrder={workOrder}
-              selectedId={selectedId}
-              workflowStateById={workflowStateById}
-              onClick={onSelect}
-              onReorder={onReorder}
-              onDelete={onDelete}
-              onRework={onRework}
-              canDelete={canManageListActions ? canDelete : undefined}
-              canReorder={canManageListActions && Boolean(onReorder)}
-              writeLocked={writeLocked}
-              writeLockMessage={writeLockMessage}
+          {workOrders.length === 0 ? (
+            <WaflStateBlock
+              kind={hasActiveListControls ? "search" : "empty"}
+              title={hasActiveListControls ? "검색 결과 없음" : controlsUi.empty}
+              description={hasActiveListControls ? undefined : "작업지시서 생성 버튼으로 첫 작업지시서를 시작합니다."}
+              size="sm"
+              minHeightClassName="min-h-[132px]"
+              className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
             />
-          ))}
-        </div>
-        {workOrders.length === 0 ? (
-          <WaflStateBlock
-            kind={hasActiveListControls ? "search" : "empty"}
-            title={hasActiveListControls ? "검색 결과 없음" : controlsUi.empty}
-            description={
-              hasActiveListControls
-                ? undefined
-                : "작업지시서 생성 버튼으로 첫 작업지시서를 시작합니다."
-            }
-            size="sm"
-            minHeightClassName="min-h-[132px]"
-            className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
-          />
-        ) : null}
+          ) : null}
+        </WaflListPanelShell>
       </div>
-
       <AdminModal
         open={personalSettingsOpen}
         title={i18n.common.personalSettings.title}

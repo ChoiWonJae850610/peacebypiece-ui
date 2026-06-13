@@ -7,21 +7,15 @@ import {
   WaflInput,
   WaflSelectableCard,
   WaflSurface,
-  WAFL_LIST_PANEL_PADDING_CLASS,
+  WaflListPanelShell,
   type AppSelectOption,
 } from "@/components/common/ui";
-import { SectionCountBadge } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
-  MATERIAL_ORDER_PANEL_CARD_CLASS,
-  MATERIAL_ORDER_PANEL_DIVIDER_CLASS,
   MATERIAL_ORDER_LIST_CLEAR_BUTTON_CLASS,
-  MATERIAL_ORDER_LIST_CONTROL_ROW_CLASS,
-  MATERIAL_ORDER_LIST_CREATE_BUTTON_TOP_GAP_CLASS,
   MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS,
   MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS,
   MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS,
-  MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import {
   formatMaterialOrderCreatedAtLabel,
@@ -123,155 +117,104 @@ export default function MaterialOrderListPanel({
     [orders, searchQuery, statusFilter, typeFilter],
   );
 
-  const listContent = (
+  const controls = (
     <>
-      <div className="shrink-0">
-        <div className="flex items-end justify-between gap-2 pb-2.5">
-          <h2 className="min-w-0 text-base font-semibold tracking-tight pbp-text-primary">
-            발주서 목록
-          </h2>
-          <SectionCountBadge className="translate-y-0.5">
-            {filteredOrders.length}건
-          </SectionCountBadge>
-        </div>
-        <div
-          className={MATERIAL_ORDER_PANEL_DIVIDER_CLASS}
-          aria-hidden="true"
-        />
-      </div>
-
-      <div className={`mt-3 ${MATERIAL_ORDER_LIST_CONTROL_ROW_CLASS}`}>
-        <div className={MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS}>
-          <label className="min-w-0 flex-1">
-            <span className="sr-only">발주서 검색</span>
-            <WaflInput
-              type="search"
-              fieldSize="sm"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="공급처·품목·작업지시서 검색"
-              className={MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS}
-            />
-          </label>
-          {searchQuery ? (
-            <WaflButton
-              onClick={() => setSearchQuery("")}
-              variant="secondary"
-              size="sm"
-              className={MATERIAL_ORDER_LIST_CLEAR_BUTTON_CLASS}
-            >
-              지우기
-            </WaflButton>
-          ) : null}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <AppSelect
-            value={typeFilter}
-            onValueChange={(value) =>
-              setTypeFilter(value as MaterialOrderFilterType)
-            }
-            options={MATERIAL_ORDER_TYPE_OPTIONS}
+      <div className={MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS}>
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">발주서 검색</span>
+          <WaflInput
+            type="search"
+            fieldSize="sm"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="공급처·품목·작업지시서 검색"
+            className={MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS}
+          />
+        </label>
+        {searchQuery ? (
+          <WaflButton
+            onClick={() => setSearchQuery("")}
+            variant="secondary"
             size="sm"
-            ariaLabel="자재 종류 필터"
-            triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
-          />
-          <AppSelect
-            value={statusFilter}
-            onValueChange={(value) =>
-              setStatusFilter(value as MaterialOrderFilterStatus)
-            }
-            options={MATERIAL_ORDER_STATUS_OPTIONS}
-            size="sm"
-            ariaLabel="발주 상태 필터"
-            triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
-          />
-        </div>
-        <WaflButton
-          size="md"
-          variant="primary"
-          width="full"
-          className={`${MATERIAL_ORDER_LIST_CREATE_BUTTON_TOP_GAP_CLASS} pbp-touch-target`}
-          disabled={creating}
-          title={
-            creating
-              ? "발주서를 생성하고 있습니다."
-              : "원단·부자재 발주서를 생성합니다."
-          }
-          aria-label={
-            creating ? "발주서 생성 중" : "원단·부자재 발주서 생성"
-          }
-          onClick={onCreateOrder}
-        >
-          {creating ? "생성 중" : "발주서 생성"}
-        </WaflButton>
-        <div
-          className={`mt-3 ${MATERIAL_ORDER_PANEL_DIVIDER_CLASS}`}
-          aria-hidden="true"
-        />
+            className={MATERIAL_ORDER_LIST_CLEAR_BUTTON_CLASS}
+          >
+            지우기
+          </WaflButton>
+        ) : null}
       </div>
-
-      <div
-        className={
-          variant === "panel"
-            ? MATERIAL_ORDER_PANEL_LIST_CLASS
-            : "min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain py-3 pr-0 [scrollbar-gutter:stable]"
-        }
-      >
-        {loading ? (
-          <MaterialOrderPanelMessage
-            title="불러오는 중"
-            description="원단·부자재 발주서를 조회하고 있습니다."
-            kind="loading"
-          />
-        ) : errorMessage ? (
-          <MaterialOrderPanelMessage
-            title="조회 실패"
-            description={errorMessage}
-            actionLabel="다시 조회"
-            onAction={onRetry}
-            kind="error"
-          />
-        ) : orders.length === 0 ? (
-          <MaterialOrderPanelMessage
-            title="등록된 발주서 없음"
-            description="발주서 생성 버튼으로 공급처별 발주서를 시작합니다."
-          />
-        ) : filteredOrders.length === 0 ? (
-          <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
-        ) : (
-          filteredOrders.map((order) => (
-            <MaterialOrderListButton
-              key={order.id}
-              order={order}
-              selected={order.id === selectedOrderId}
-              onSelectOrder={onSelectOrder}
-              draftMaterialType={
-                order.id === selectedOrderId ? selectedDraftMaterialType : null
-              }
-              draftSupplierName={
-                order.id === selectedOrderId ? selectedDraftSupplierName : null
-              }
-              onCancelOrder={onCancelOrder}
-            />
-          ))
-        )}
+      <div className="grid grid-cols-2 gap-2">
+        <AppSelect
+          value={typeFilter}
+          onValueChange={(value) => setTypeFilter(value as MaterialOrderFilterType)}
+          options={MATERIAL_ORDER_TYPE_OPTIONS}
+          size="sm"
+          ariaLabel="자재 종류 필터"
+          triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
+        />
+        <AppSelect
+          value={statusFilter}
+          onValueChange={(value) => setStatusFilter(value as MaterialOrderFilterStatus)}
+          options={MATERIAL_ORDER_STATUS_OPTIONS}
+          size="sm"
+          ariaLabel="발주 상태 필터"
+          triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
+        />
       </div>
     </>
   );
 
-  if (variant === "drawer") {
-    return (
-      <div className={`flex h-full min-h-0 flex-col overflow-hidden ${WAFL_LIST_PANEL_PADDING_CLASS}`}>
-        {listContent}
-      </div>
-    );
-  }
+  const action = (
+    <WaflButton
+      size="md"
+      variant="primary"
+      width="full"
+      className="pbp-touch-target"
+      disabled={creating}
+      title={creating ? "발주서를 생성하고 있습니다." : "원단·부자재 발주서를 생성합니다."}
+      aria-label={creating ? "발주서 생성 중" : "원단·부자재 발주서 생성"}
+      onClick={onCreateOrder}
+    >
+      {creating ? "생성 중" : "발주서 생성"}
+    </WaflButton>
+  );
+
+  const listItems = loading ? (
+    <MaterialOrderPanelMessage title="불러오는 중" description="원단·부자재 발주서를 조회하고 있습니다." kind="loading" />
+  ) : errorMessage ? (
+    <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} kind="error" />
+  ) : orders.length === 0 ? (
+    <MaterialOrderPanelMessage title="등록된 발주서 없음" description="발주서 생성 버튼으로 공급처별 발주서를 시작합니다." />
+  ) : filteredOrders.length === 0 ? (
+    <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
+  ) : (
+    filteredOrders.map((order) => (
+      <MaterialOrderListButton
+        key={order.id}
+        order={order}
+        selected={order.id === selectedOrderId}
+        onSelectOrder={onSelectOrder}
+        draftMaterialType={order.id === selectedOrderId ? selectedDraftMaterialType : null}
+        draftSupplierName={order.id === selectedOrderId ? selectedDraftSupplierName : null}
+        onCancelOrder={onCancelOrder}
+      />
+    ))
+  );
+
+  const listContent = (
+    <WaflListPanelShell
+      title="발주서 목록"
+      count={filteredOrders.length}
+      controls={controls}
+      action={action}
+      listClassName="space-y-2"
+    >
+      {listItems}
+    </WaflListPanelShell>
+  );
+  if (variant === "drawer") return listContent;
 
   return (
-    <WaflSurface
-      component="material-order-list-panel"
-      className={MATERIAL_ORDER_PANEL_CARD_CLASS}
-    >
+    <WaflSurface component="material-order-list-panel" className="flex h-full min-h-0 flex-col overflow-hidden">
       {listContent}
     </WaflSurface>
   );
