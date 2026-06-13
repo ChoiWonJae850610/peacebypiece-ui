@@ -247,9 +247,17 @@ export default function WorkOrderProcessEditSheet({
       Boolean(outsourcingVendorSelectOptions[0]?.disabled));
 
   const isOrderMode = mode === "order";
+  const hasSelectedFactory = orderDraft.factory.trim().length > 0;
+  const hasSelectedOutsourcingProcess = outsourcingDraft.process.trim().length > 0;
+  const hasSelectedOutsourcingVendor = outsourcingDraft.vendor.trim().length > 0;
+  const isOrderNumericInputDisabled = !hasSelectedFactory;
+  const isOutsourcingNumericInputDisabled = !hasSelectedOutsourcingVendor;
   const isApplyDisabled = isOrderMode
-    ? orderDraft.factory.trim().length === 0
-    : outsourcingDraft.process.trim().length === 0;
+    ? !hasSelectedFactory || !Number.isFinite(orderDraft.quantity) || orderDraft.quantity < 0
+    : !hasSelectedOutsourcingProcess ||
+      !hasSelectedOutsourcingVendor ||
+      !Number.isFinite(outsourcingDraft.quantity) ||
+      outsourcingDraft.quantity < 0;
 
   const handleApply = () => {
     if (isApplyDisabled) return;
@@ -339,6 +347,7 @@ export default function WorkOrderProcessEditSheet({
                 inputMode="numeric"
                 onBeforeInteract={handleProcessInputPointerDown}
                 value={orderDraft.quantity}
+                disabled={isOrderNumericInputDisabled}
                 component="process-quantity-input"
                 onValueChange={(value) =>
                   setOrderDraft((current) => ({ ...current, quantity: value }))
@@ -352,6 +361,7 @@ export default function WorkOrderProcessEditSheet({
                 inputMode="numeric"
                 onBeforeInteract={handleProcessInputPointerDown}
                 value={orderDraft.laborCost}
+                disabled={isOrderNumericInputDisabled}
                 component="process-unit-cost-input"
                 onValueChange={(value) =>
                   setOrderDraft((current) => ({ ...current, laborCost: value }))
@@ -365,6 +375,7 @@ export default function WorkOrderProcessEditSheet({
                 inputMode="numeric"
                 onBeforeInteract={handleProcessInputPointerDown}
                 value={orderDraft.lossCost}
+                disabled={isOrderNumericInputDisabled}
                 component="process-loss-cost-input"
                 onValueChange={(value) =>
                   setOrderDraft((current) => ({ ...current, lossCost: value }))
@@ -417,6 +428,7 @@ export default function WorkOrderProcessEditSheet({
                 inputMode="numeric"
                 onBeforeInteract={handleProcessInputPointerDown}
                 value={outsourcingDraft.quantity}
+                disabled={isOutsourcingNumericInputDisabled}
                 component="process-quantity-input"
                 onValueChange={(value) =>
                   setOutsourcingDraft((current) => ({
@@ -433,6 +445,7 @@ export default function WorkOrderProcessEditSheet({
                 inputMode="numeric"
                 onBeforeInteract={handleProcessInputPointerDown}
                 value={outsourcingDraft.unitCost}
+                disabled={isOutsourcingNumericInputDisabled}
                 component="process-unit-cost-input"
                 onValueChange={(value) =>
                   setOutsourcingDraft((current) => ({
@@ -449,6 +462,7 @@ export default function WorkOrderProcessEditSheet({
                 inputMode="numeric"
                 onBeforeInteract={handleProcessInputPointerDown}
                 value={outsourcingDraft.lossCost}
+                disabled={isOutsourcingNumericInputDisabled}
                 component="process-loss-cost-input"
                 onValueChange={(value) =>
                   setOutsourcingDraft((current) => ({

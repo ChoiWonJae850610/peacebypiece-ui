@@ -62,7 +62,12 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
   })), [locale, resolvedUnitOptions]);
 
   const trimmedName = draft.name.trim();
-  const applyDisabled = trimmedName.length === 0;
+  const isQuantityInputDisabled = trimmedName.length === 0;
+  const applyDisabled =
+    !draft.type ||
+    trimmedName.length === 0 ||
+    !Number.isFinite(draft.quantity) ||
+    draft.quantity < 0;
 
   const handleApply = () => {
     blurActiveModalElement();
@@ -119,6 +124,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
               id="workorder-material-sheet-quantity"
               inputMode="decimal"
               value={draft.quantity}
+              disabled={isQuantityInputDisabled}
               component="material-quantity-input"
               onBeforeInteract={() => blurActiveModalElement()}
               onValueChange={(value) => setDraft((current) => ({ ...current, quantity: value }))}

@@ -84,8 +84,16 @@ export default function MaterialOrderAllocationPanel({
 
   return (
     <WaflSideWorkspacePanel>
-      {!hasSelectedOrder || !selectedMaterialType ? (
-        <div aria-hidden="true" />
+      {!hasSelectedOrder ? (
+        <MaterialOrderPanelMessage
+          title="발주 대상을 선택하세요."
+          description="발주서를 선택하면 이 영역에서 작업지시서별 자재를 발주 품목으로 추가할 수 있습니다."
+        />
+      ) : !selectedMaterialType ? (
+        <MaterialOrderPanelMessage
+          title="자재 종류를 선택하세요."
+          description="발주 기본정보에서 원단 또는 부자재를 선택하면 발주 가능한 작업지시서 자재가 표시됩니다."
+        />
       ) : (
         <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
           {loading ? (

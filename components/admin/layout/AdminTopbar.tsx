@@ -19,20 +19,6 @@ type AdminTopbarProps = {
   menuAriaLabel?: string;
 };
 
-function getTopbarSummary(title: string, description: string | undefined, t: ReturnType<typeof useAdminTranslation>): string | null {
-  if (title.includes(t("historySection.title", "히스토리"))) return t("topbar.summaries.history", "상태 변경 · 주요 작업 기록");
-
-  const summaries: Record<string, string> = {
-    [t("navigation.storage", "저장소 관리")]: t("topbar.summaries.storage", "저장소 · 휴지통 · 용량 관리"),
-    [t("navigation.partners", "협력업체 관리")]: t("topbar.summaries.partners", "협력업체 · 공장 · 외주 관리"),
-    [t("dashboardPage.title", "통계정보")]: t("topbar.summaries.dashboard", "기간별 작업 · 협력업체 · 저장소"),
-    [t("navigation.settings", "환경설정")]: t("topbar.summaries.settings", "회사 계정 · 기준정보 · 정책 관리"),
-    [t("memberManagement.title", "멤버 관리")]: t("topbar.summaries.members", "멤버 · 권한 · 승인 관리"),
-  };
-
-  return summaries[title] ?? description ?? null;
-}
-
 function getLocalizedTopbarTitle(title: string, t: ReturnType<typeof useAdminTranslation>): string {
   const titleMap: Record<string, string> = {
     "고객관리자 메인": t("operationsDashboard.title", "운영 대시보드"),
@@ -121,24 +107,15 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
   const displayCompanyName = user?.companyName ?? companyName;
   const canOpenAdminSettings = user?.role === "company_admin";
   const localizedTitle = getLocalizedTopbarTitle(title, t);
-  const summary = getTopbarSummary(localizedTitle, description, t);
 
   return (
     <WaflWorkspacePanel as="header" panelRole="toolbar" className="pbp-topbar-shell relative z-20 px-4 py-3 backdrop-blur sm:px-5 sm:py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <AppBadge tone="inverse" size="md" className="pbp-topbar-chip-primary px-3 py-1.5 text-xs">
-              WAFL
-            </AppBadge>
             <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">{displayCompanyName}</AppBadge>
             <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">v{appVersion}</AppBadge>
           </div>
-          {summary ? (
-            <div className="mt-2 flex sm:mt-3">
-              <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs leading-5">{summary}</AppBadge>
-            </div>
-          ) : null}
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--pbp-text-primary)] sm:text-2xl">{localizedTitle}</h1>
         </div>
 

@@ -14,6 +14,7 @@ type AppNumberInputProps = {
   ariaLabel?: string;
   onBeforeInteract?: () => void;
   component?: string;
+  disabled?: boolean;
 };
 
 function normalizeNumericText(value: string) {
@@ -56,6 +57,7 @@ export default function AppNumberInput({
   ariaLabel,
   onBeforeInteract,
   component = "number-input",
+  disabled = false,
 }: AppNumberInputProps) {
   const [focused, setFocused] = useState(false);
   const [displayValue, setDisplayValue] = useState(() => numberToDisplay(value));
@@ -87,6 +89,7 @@ export default function AppNumberInput({
       enterKeyHint="done"
       data-wafl-component={component}
       aria-label={ariaLabel}
+      disabled={disabled}
       value={displayValue}
       onPointerDown={() => onBeforeInteract?.()}
       onTouchStart={() => onBeforeInteract?.()}
