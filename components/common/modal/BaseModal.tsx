@@ -59,7 +59,7 @@ export default function BaseModal({
           onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"
           className={[
-            "absolute inset-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain touch-pan-y pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel",
+            "absolute inset-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain touch-pan-y pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel pbp-responsive-modal-panel",
             "border-0 md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[min(92dvh,960px)] md:w-full md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:border",
             maxWidthClassName,
             panelClassName,

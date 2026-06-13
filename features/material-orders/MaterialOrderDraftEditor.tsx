@@ -119,6 +119,12 @@ export default function MaterialOrderDraftEditor({
     }
   }, [selectedOrderId]);
 
+  useEffect(() => {
+    if (materialOrderLineAddModal.open) {
+      setMobileToolSheetOpen(false);
+    }
+  }, [materialOrderLineAddModal.open]);
+
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId((currentOrderId) =>
       currentOrderId === orderId ? "" : orderId,
@@ -326,7 +332,7 @@ export default function MaterialOrderDraftEditor({
             contentClassName={deviceType === "tablet" ? "px-5 py-5" : undefined}
           >
             {mobileActiveTool === "workorders" ? (
-              <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>
+              <div className={deviceType === "tablet" ? "min-h-0 min-w-0" : "min-h-[58dvh] min-w-0"}>{allocationPanel}</div>
             ) : null}
             {mobileActiveTool === "schedule" ? (
               <WaflEmptyCard
