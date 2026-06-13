@@ -610,7 +610,6 @@ export function useMaterialOrderDraftEditor() {
         : "확인이 필요한 항목이 있습니다. 그대로 진행할 수 있지만 먼저 확인하는 것이 좋습니다.",
       blockingLabel: "진행 차단 항목",
       warningLabel: "확인 필요 항목",
-      cancelLabel: "닫기",
       confirmLabel: "그대로 진행",
       fixLabel: "확인 후 수정",
       onClose: closeMaterialOrderValidation,

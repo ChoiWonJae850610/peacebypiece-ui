@@ -782,7 +782,6 @@ export function useWorkOrderWorkflowActions({
         : workflowValidationText.warningDescription,
       blockingLabel: workflowValidationText.blockingLabel,
       warningLabel: workflowValidationText.warningLabel,
-      cancelLabel: workflowValidationText.cancelLabel,
       confirmLabel: workflowValidationText.confirmLabel,
       fixLabel: workflowValidationText.fixLabel,
       onClose: handleCloseWorkflowValidation,

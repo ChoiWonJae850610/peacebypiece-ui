@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { WaflButton } from "@/components/common/ui";
 import ModalShell from "@/components/common/modal/ModalShell";
 import type { WorkflowValidationIssue } from "@/lib/workorder/workflowValidationIssues";
 
@@ -10,7 +11,6 @@ type WorkflowValidationModalProps = {
   description: string;
   blockingLabel: string;
   warningLabel: string;
-  cancelLabel: string;
   confirmLabel: string;
   fixLabel: string;
   issues: WorkflowValidationIssue[];
@@ -24,7 +24,6 @@ export default function WorkflowValidationModal({
   description,
   blockingLabel,
   warningLabel,
-  cancelLabel,
   confirmLabel,
   fixLabel,
   issues,
@@ -45,23 +44,16 @@ export default function WorkflowValidationModal({
       overlayClassName="pbp-modal-overlay"
       bodyClassName="bg-[var(--pbp-modal-section-muted)]"
       footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="pbp-interactive-button pbp-action-secondary inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-semibold"
-          >
-            {hasBlockingIssue ? fixLabel : cancelLabel}
-          </button>
-          {!hasBlockingIssue ? (
-            <button
-              type="button"
-              onClick={onConfirm}
-              className="pbp-interactive-button pbp-action-primary inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold"
-            >
+        <div className="flex items-center justify-end">
+          {hasBlockingIssue ? (
+            <WaflButton type="button" variant="primary" onClick={onClose}>
+              {fixLabel}
+            </WaflButton>
+          ) : (
+            <WaflButton type="button" variant="primary" onClick={onConfirm}>
               {confirmLabel}
-            </button>
-          ) : null}
+            </WaflButton>
+          )}
         </div>
       }
     >
