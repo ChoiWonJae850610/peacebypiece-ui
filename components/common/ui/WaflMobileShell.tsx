@@ -46,7 +46,11 @@ export function WaflMobileShell({
   return (
     <main className={cn("pbp-mobile-no-zoom min-h-screen overflow-x-hidden", mobileShellToneClassMap[tone], className)}>
       <div ref={shellRef} className="min-h-screen overflow-x-hidden">
-        {topBar}
+        {topBar ? (
+          <div className="mx-auto w-full max-w-full px-2.5 pt-2.5 sm:px-3 sm:pt-3">
+            {topBar}
+          </div>
+        ) : null}
         {drawer}
         <div
           className={cn(
