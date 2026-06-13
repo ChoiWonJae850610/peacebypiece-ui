@@ -13,6 +13,7 @@ import {
   WaflMobileShell,
   WaflMobileTabbedActionSheet,
   WaflThreePanelWorkspace,
+  WaflTwoPanelWorkspace,
   type AppSegmentedTabItem,
 } from "@/components/common/ui";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
@@ -22,9 +23,7 @@ import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderList
 import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
-import { RESPONSIVE_BREAKPOINTS } from "@/lib/responsive/responsiveLayoutPolicy";
-import { useResponsiveDeviceType } from "@/lib/responsive/useResponsiveDeviceType";
-import { useResponsiveOrientation } from "@/lib/responsive/useResponsiveOrientation";
+import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
 const MATERIAL_ORDER_WORKSPACE_STACK_CLASS =
   "flex h-full min-h-0 flex-col gap-3 sm:gap-4 md:gap-5";
@@ -49,14 +48,6 @@ function SearchIcon() {
   );
 }
 
-function getViewportSize() {
-  if (typeof window === "undefined") {
-    return { width: RESPONSIVE_BREAKPOINTS.desktopMin, height: 900 };
-  }
-
-  return { width: window.innerWidth, height: window.innerHeight };
-}
-
 export default function MaterialOrderDraftEditor({
   companyName,
   canRequestMaterialOrder,
@@ -66,44 +57,18 @@ export default function MaterialOrderDraftEditor({
   canRequestMaterialOrder: boolean;
   canPlaceMaterialOrder: boolean;
 }) {
-  const deviceType = useResponsiveDeviceType();
-  const orientation = useResponsiveOrientation();
-  const [viewportSize, setViewportSize] = useState(getViewportSize);
-  const viewportWidth = viewportSize.width;
-  const viewportHeight = viewportSize.height;
-  const isViewportLandscape =
-    orientation === "landscape" || viewportWidth > viewportHeight;
-  const tabletCanUseThreePanel =
-    isViewportLandscape &&
-    viewportWidth >= RESPONSIVE_BREAKPOINTS.tabletThreePanelMin;
-  const compactTabletLandscape =
-    deviceType === "tablet" &&
-    isViewportLandscape &&
-    viewportWidth >= RESPONSIVE_BREAKPOINTS.tabletNarrowTwoPanelMin &&
-    !tabletCanUseThreePanel;
-  const useDrawerNavigation =
-    deviceType === "mobile" ||
-    (deviceType === "tablet" && !tabletCanUseThreePanel);
-  const useStackedProgress = deviceType === "mobile";
-  const canUseThreePanelWorkspace =
-    deviceType === "desktop" ||
-    (deviceType === "tablet" && tabletCanUseThreePanel);
+  const {
+    deviceType,
+    useDrawerNavigation,
+    useStackedProgress,
+    useTabletTwoPanel,
+    useThreePanel,
+  } = useWorkspaceLayoutMode();
   const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] =
     useState(false);
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] =
     useState<MaterialOrderMobileToolKey>("workorders");
-
-  useEffect(() => {
-    const handleResize = () => setViewportSize(getViewportSize());
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("orientationchange", handleResize);
-    };
-  }, []);
 
   const {
     orders,
@@ -252,7 +217,7 @@ export default function MaterialOrderDraftEditor({
     />
   );
 
-  if (compactTabletLandscape) {
+  if (useTabletTwoPanel) {
     return (
       <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
@@ -285,14 +250,7 @@ export default function MaterialOrderDraftEditor({
         </WaflMobileListDrawer>
         <AppResponsiveWorkspace device="tablet">
           {statusToast}
-          <div className="grid h-full min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(300px,0.46fr)] gap-3 overflow-hidden">
-            <div data-wafl-slot="detail" className="min-h-0 min-w-0 overflow-hidden">
-              {detailPanel}
-            </div>
-            <div data-wafl-slot="side" className="min-h-0 min-w-0 overflow-hidden">
-              {allocationPanel}
-            </div>
-          </div>
+          <WaflTwoPanelWorkspace detail={detailPanel} side={allocationPanel} />
         </AppResponsiveWorkspace>
       </div>
     );
@@ -322,118 +280,86 @@ export default function MaterialOrderDraftEditor({
       <>
         {validationModal}
         <WaflMobileShell
-        topBar={topbar}
-        actionBar={actionBar}
-        drawer={
-          <WaflMobileListDrawer
-            open={mobileOrderListDrawerOpen}
-            onClose={() => setMobileOrderListDrawerOpen(false)}
-            title="발주서 목록"
-            closeLabel="닫기"
-            closeOverlayAria="발주서 목록 드로어 닫기"
-            titleId="material-order-mobile-drawer-title"
-            showHeader={false}
-          >
-            <div className="min-h-[72dvh] min-w-0">
-              <MaterialOrderListPanel
-                variant="drawer"
-                orders={orders}
-                selectedOrderId={selectedOrderId}
-                loading={ordersLoading}
-                errorMessage={ordersError}
-                creating={creatingOrder}
-                onSelectOrder={handleSelectOrder}
-                onCreateOrder={createOrder}
-                onCancelOrder={cancelOrder}
-                onRetry={() => void refreshOrders()}
-                selectedDraftMaterialType={materialType}
-                selectedDraftSupplierName={selectedDraftSupplierName}
-              />
-            </div>
-          </WaflMobileListDrawer>
-        }
-        contentClassName="gap-3"
-      >
-        {statusToast}
-        <WaflMobileContentSection>{detailPanel}</WaflMobileContentSection>
-        <WaflMobileTabbedActionSheet
-          open={mobileToolSheetOpen}
-          onOpenChange={setMobileToolSheetOpen}
-          title="발주 대상"
-          items={mobileToolTabs}
-          value={mobileActiveTool}
-          onChange={setMobileActiveTool}
-          ariaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
-        >
-          {mobileActiveTool === "workorders" ? (
-            <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>
-          ) : null}
-          {mobileActiveTool === "schedule" ? (
-            <WaflEmptyCard
-              component="material-order-schedule-empty"
-              className="min-h-[42dvh] p-4 text-left"
+          topBar={topbar}
+          actionBar={actionBar}
+          drawer={
+            <WaflMobileListDrawer
+              open={mobileOrderListDrawerOpen}
+              onClose={() => setMobileOrderListDrawerOpen(false)}
+              title="발주서 목록"
+              closeLabel="닫기"
+              closeOverlayAria="발주서 목록 드로어 닫기"
+              titleId="material-order-mobile-drawer-title"
+              showHeader={false}
             >
-              <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
-              <p className="mt-2 text-xs leading-5 pbp-text-muted">
-                PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에
-                배치합니다.
-              </p>
-            </WaflEmptyCard>
-          ) : null}
-        </WaflMobileTabbedActionSheet>
+              <div className="min-h-[72dvh] min-w-0">
+                <MaterialOrderListPanel
+                  variant="drawer"
+                  orders={orders}
+                  selectedOrderId={selectedOrderId}
+                  loading={ordersLoading}
+                  errorMessage={ordersError}
+                  creating={creatingOrder}
+                  onSelectOrder={handleSelectOrder}
+                  onCreateOrder={createOrder}
+                  onCancelOrder={cancelOrder}
+                  onRetry={() => void refreshOrders()}
+                  selectedDraftMaterialType={materialType}
+                  selectedDraftSupplierName={selectedDraftSupplierName}
+                />
+              </div>
+            </WaflMobileListDrawer>
+          }
+          contentClassName="gap-3"
+        >
+          {statusToast}
+          <WaflMobileContentSection>{detailPanel}</WaflMobileContentSection>
+          <WaflMobileTabbedActionSheet
+            open={mobileToolSheetOpen}
+            onOpenChange={setMobileToolSheetOpen}
+            title="발주 대상"
+            items={mobileToolTabs}
+            value={mobileActiveTool}
+            onChange={setMobileActiveTool}
+            ariaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
+          >
+            {mobileActiveTool === "workorders" ? (
+              <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>
+            ) : null}
+            {mobileActiveTool === "schedule" ? (
+              <WaflEmptyCard
+                component="material-order-schedule-empty"
+                className="min-h-[42dvh] p-4 text-left"
+              >
+                <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
+                <p className="mt-2 text-xs leading-5 pbp-text-muted">
+                  PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에
+                  배치합니다.
+                </p>
+              </WaflEmptyCard>
+            ) : null}
+          </WaflMobileTabbedActionSheet>
         </WaflMobileShell>
       </>
     );
   }
 
-  if (deviceType === "tablet") {
-    if (canUseThreePanelWorkspace) {
-      return (
-        <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
-          {topbar}
-          {validationModal}
-          <AppResponsiveWorkspace device="desktop">
-            {statusToast}
-            <WaflThreePanelWorkspace
-              list={listPanel}
-              detail={detailPanel}
-              side={allocationPanel}
-            />
-          </AppResponsiveWorkspace>
-        </div>
-      );
-    }
-
+  if (useThreePanel) {
     return (
       <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
         {validationModal}
-        <AppResponsiveWorkspace device="tablet">
+        <AppResponsiveWorkspace device="desktop">
           {statusToast}
-          <div
-            className="grid min-h-0 min-w-0 gap-3"
-            style={{ gridTemplateColumns: "minmax(240px, 0.72fr) minmax(0, 1fr)" }}
-          >
-            <section className="min-h-[680px] min-w-0">{listPanel}</section>
-            <section className="min-h-[680px] min-w-0">{detailPanel}</section>
-          </div>
+          <WaflThreePanelWorkspace
+            list={listPanel}
+            detail={detailPanel}
+            side={allocationPanel}
+          />
         </AppResponsiveWorkspace>
       </div>
     );
   }
 
-  return (
-    <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
-      {topbar}
-      {validationModal}
-      <AppResponsiveWorkspace device="desktop">
-        {statusToast}
-        <WaflThreePanelWorkspace
-          list={listPanel}
-          detail={detailPanel}
-          side={allocationPanel}
-        />
-      </AppResponsiveWorkspace>
-    </div>
-  );
+  return null;
 }
