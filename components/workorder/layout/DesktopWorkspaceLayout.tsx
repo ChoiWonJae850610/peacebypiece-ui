@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 
-import { WaflSidePanelShell, WaflThreePanelWorkspace, WaflWorkspacePanel } from "@/components/common/ui";
+import { WaflDetailWorkspacePanel, WaflListWorkspacePanel, WaflSideWorkspacePanel, WaflThreePanelWorkspace } from "@/components/common/ui";
 
 type DesktopWorkspaceLayoutProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
@@ -33,29 +33,17 @@ export default function DesktopWorkspaceLayout({
         <div className="min-h-0 flex-1 overflow-hidden">
           <WaflThreePanelWorkspace
             list={(
-              <WaflWorkspacePanel as="aside" panelRole="sidebar" className="flex h-full min-h-0 overflow-hidden">
-                {sidebar}
-              </WaflWorkspacePanel>
+              <WaflListWorkspacePanel>{sidebar}</WaflListWorkspacePanel>
             )}
             detail={(
-              <WaflWorkspacePanel
-                as="section"
-                panelRole="detail"
-                ref={detailScrollRef}
-                className="h-full min-h-0 overflow-y-auto overscroll-contain pb-8 [scrollbar-gutter:stable] xl:pb-10"
-              >
+              <WaflDetailWorkspacePanel ref={detailScrollRef}>
                 {detail}
-              </WaflWorkspacePanel>
+              </WaflDetailWorkspacePanel>
             )}
             side={(
-              <WaflWorkspacePanel
-                as="aside"
-                panelRole="side"
-                ref={sidePanelScrollRef}
-                className="h-full min-h-0 overflow-y-auto overscroll-contain pb-8 [scrollbar-gutter:stable] xl:pb-10"
-              >
-                <WaflSidePanelShell>{sidePanel}</WaflSidePanelShell>
-              </WaflWorkspacePanel>
+              <WaflSideWorkspacePanel ref={sidePanelScrollRef}>
+                {sidePanel}
+              </WaflSideWorkspacePanel>
             )}
           />
         </div>

@@ -1,18 +1,10 @@
 import {
   WAFL_LIST_CLEAR_BUTTON_CLASS,
-  WAFL_LIST_CONTROL_ROW_CLASS,
-  WAFL_LIST_CREATE_BUTTON_TOP_GAP_CLASS,
   WAFL_LIST_SEARCH_INPUT_CLASS,
   WAFL_LIST_SEARCH_ROW_CLASS,
   WAFL_LIST_SELECT_TRIGGER_CLASS,
 } from "@/components/common/ui/waflListControlSet";
-import { WAFL_LIST_PANEL_PADDING_CLASS, WAFL_WORKSPACE_SECTION_GAP_CLASS, WAFL_WORKSPACE_SECTION_PADDING_CLASS } from "@/components/common/ui";
-
-export const MATERIAL_ORDER_PANEL_CARD_CLASS =
-  `flex h-full min-h-0 flex-col overflow-hidden ${WAFL_LIST_PANEL_PADDING_CLASS}`;
-
-export const MATERIAL_ORDER_PANEL_SHELL_CLASS =
-  "flex h-full min-h-0 flex-col overflow-hidden";
+import { WAFL_WORKSPACE_SECTION_GAP_CLASS, WAFL_WORKSPACE_SECTION_PADDING_CLASS } from "@/components/common/ui";
 
 export const MATERIAL_ORDER_PANEL_HEADER_CLASS = "shrink-0 pb-3";
 
@@ -20,16 +12,10 @@ export const MATERIAL_ORDER_PANEL_DIVIDER_CLASS =
   "border-b border-[var(--pbp-border)] mx-0";
 
 export const MATERIAL_ORDER_PANEL_LIST_CLASS =
-  "min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]";
+  "flex min-h-0 flex-col space-y-3";
 
 export const MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS =
   WAFL_LIST_SEARCH_INPUT_CLASS;
-
-export const MATERIAL_ORDER_LIST_CONTROL_ROW_CLASS =
-  WAFL_LIST_CONTROL_ROW_CLASS;
-
-export const MATERIAL_ORDER_LIST_CREATE_BUTTON_TOP_GAP_CLASS =
-  WAFL_LIST_CREATE_BUTTON_TOP_GAP_CLASS;
 
 export const MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS = WAFL_LIST_SEARCH_ROW_CLASS;
 

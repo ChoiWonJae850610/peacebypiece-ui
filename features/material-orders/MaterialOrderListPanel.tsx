@@ -6,8 +6,8 @@ import {
   WaflButton,
   WaflInput,
   WaflSelectableCard,
-  WaflSurface,
   WaflListPanelShell,
+  WaflListWorkspacePanel,
   type AppSelectOption,
 } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
@@ -216,9 +216,9 @@ export default function MaterialOrderListPanel({
   if (variant === "drawer") return listContent;
 
   return (
-    <WaflSurface component="material-order-list-panel" className="flex h-full min-h-0 flex-col overflow-hidden">
+    <WaflListWorkspacePanel>
       {listContent}
-    </WaflSurface>
+    </WaflListWorkspacePanel>
   );
 }
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppBadge, AppSelect, AppSection, WaflButton, WaflEmptyCard, WaflInfoRow, WaflSurface, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import {
@@ -11,7 +11,6 @@ import {
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import { MaterialOrderSummaryCards, MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
 import {
-  MATERIAL_ORDER_PANEL_CARD_CLASS,
   MATERIAL_ORDER_SECTION_CARD_CLASS,
   MATERIAL_ORDER_SECTION_GAP_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
@@ -71,7 +70,8 @@ export default function MaterialOrderDetailPanel({
   const isDraftEditable = selectedOrder?.status === "draft";
 
   return (
-    <WaflSurface component="material-order-detail-panel" className={MATERIAL_ORDER_PANEL_CARD_CLASS}>
+    <WaflDetailWorkspacePanel>
+      <WaflPanelContentShell>
       {selectedOrder ? (
         <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_SECTION_GAP_CLASS}`}>
           {mobile ? (
@@ -181,7 +181,8 @@ export default function MaterialOrderDetailPanel({
           </div>
         </WaflEmptyCard>
       )}
-    </WaflSurface>
+      </WaflPanelContentShell>
+    </WaflDetailWorkspacePanel>
   );
 }
 
