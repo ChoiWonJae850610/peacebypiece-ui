@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { InlineInfoItem } from "@/components/common/ui";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { WaflSurface } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
@@ -138,8 +138,8 @@ export default function WorkOrderHeaderSection({
           ) : null}
         </div>
       ) : (
-        <div className="flex min-w-0 items-start gap-1.5">
-          <h2 className="min-w-0 flex-1 break-keep text-2xl font-semibold text-stone-950">{title}</h2>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <h2 className="min-w-0 flex-1 truncate text-2xl font-semibold text-stone-950" title={title}>{title}</h2>
           {canEditTitle ? (
             <button
               type="button"
@@ -156,18 +156,72 @@ export default function WorkOrderHeaderSection({
   );
 
   return (
-    <div className="border-b border-[var(--pbp-border)] pb-3">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-2">
-        <div className="min-w-0">{titleEditor}</div>
-        <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right">
-          <InlineInfoItem label={copy.managerLabel} value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
-          <InlineInfoItem label={copy.currentInventoryLabel} value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
-        </div>
-        <div className="min-w-0">
-          <InlineInfoItem label={copy.summaryLabel} value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
-        </div>
-        <div className="text-right text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
+    <WaflSurface
+      as="section"
+      component="workorder-header-summary"
+      className="shrink-0 p-3.5 sm:p-4"
+    >
+      <div className="min-w-0">{titleEditor}</div>
+
+      <div className="mt-3 grid min-w-0 grid-cols-3 gap-3 border-t border-[var(--pbp-border)] pt-3">
+        <WorkOrderHeaderInfoCell
+          label={copy.summaryLabel}
+          value={summaryValue}
+          onClick={canEditSummary ? onOpenBasicInfoModal : undefined}
+        />
+        <WorkOrderHeaderInfoCell
+          label={copy.managerLabel}
+          value={managerValue}
+          onClick={canEditManager ? onOpenManagerAssignModal : undefined}
+        />
+        <WorkOrderHeaderInfoCell
+          label={copy.currentInventoryLabel}
+          value={inventoryValue}
+          onClick={canEditInventory ? onOpenInventoryEditor : undefined}
+          valueClassName="tabular-nums"
+        />
       </div>
-    </div>
+
+      <p className="mt-3 truncate text-right text-xs pbp-text-subtle">
+        {copy.lastUpdatedPrefix} {lastSavedAt || "-"}
+      </p>
+    </WaflSurface>
+  );
+}
+
+function WorkOrderHeaderInfoCell({
+  label,
+  value,
+  onClick,
+  valueClassName = "",
+}: {
+  label: string;
+  value: ReactNode;
+  onClick?: () => void;
+  valueClassName?: string;
+}) {
+  const content = (
+    <>
+      <span className="block truncate text-[11px] font-medium pbp-text-subtle">
+        {label}
+      </span>
+      <span className={`mt-1 block truncate text-sm font-semibold pbp-text-primary ${valueClassName}`}>
+        {value}
+      </span>
+    </>
+  );
+
+  if (!onClick) {
+    return <div className="min-w-0">{content}</div>;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="pbp-interactive-button min-w-0 text-left"
+    >
+      {content}
+    </button>
   );
 }

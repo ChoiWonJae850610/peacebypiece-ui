@@ -268,7 +268,10 @@ function MaterialOrderListButton({
           className="pbp-touch-target pbp-press-subtle block w-full min-w-0 text-left"
           onClick={() => onSelectOrder(order.id)}
         >
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <p className="truncate text-sm font-semibold pbp-text-primary">
+            {typeLabel}
+          </p>
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
             <AppBadge
               tone="neutral"
               size="sm"
@@ -284,14 +287,9 @@ function MaterialOrderListButton({
           <p className="mt-1.5 truncate text-[11px] font-medium pbp-text-muted">
             {createdAtLabel}
           </p>
-          <div className="mt-2.5 space-y-1">
-            <p className="truncate text-sm font-semibold pbp-text-primary">
-              {typeLabel}
-            </p>
-            <p className="truncate text-[11px] font-medium pbp-text-muted">
-              {supplierLabel}
-            </p>
-          </div>
+          <p className="mt-1 truncate text-[11px] font-medium pbp-text-muted">
+            {supplierLabel}
+          </p>
         </button>
         {canCancelOrder ? (
           <div className="absolute right-3 top-3">

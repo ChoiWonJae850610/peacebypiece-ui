@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import {
@@ -80,15 +80,6 @@ export default function MaterialOrderDetailPanel({
               statusChanging={statusChanging}
             />
           ) : null}
-          <MaterialOrderStatusFlow
-            status={selectedOrder.status}
-            workflowPath={selectedOrder.workflowPath}
-            changing={statusChanging}
-            onChangeStatus={onChangeStatus}
-            compact={mobile || progressLayout === "vertical"}
-            layout={progressLayout}
-          />
-
           <AppSection
             title="발주 기본정보"
             className="shrink-0"
@@ -140,6 +131,15 @@ export default function MaterialOrderDetailPanel({
             </div>
             <MaterialOrderSummaryCards totals={totals} materialType={materialType} />
           </AppSection>
+
+          <MaterialOrderStatusFlow
+            status={selectedOrder.status}
+            workflowPath={selectedOrder.workflowPath}
+            changing={statusChanging}
+            onChangeStatus={onChangeStatus}
+            compact={mobile || progressLayout === "vertical"}
+            layout={progressLayout}
+          />
 
           <AppSection
             title="발주 품목"
