@@ -117,8 +117,7 @@ export default function MaterialOrderListPanel({
     [orders, searchQuery, statusFilter, typeFilter],
   );
 
-  const controls = (
-    <>
+  const searchControl = (
       <div className={MATERIAL_ORDER_LIST_SEARCH_ROW_CLASS}>
         <label className="min-w-0 flex-1">
           <span className="sr-only">발주서 검색</span>
@@ -142,6 +141,9 @@ export default function MaterialOrderListPanel({
           </WaflButton>
         ) : null}
       </div>
+  );
+
+  const filterControls = (
       <div className="grid grid-cols-2 gap-2">
         <AppSelect
           value={typeFilter}
@@ -160,7 +162,6 @@ export default function MaterialOrderListPanel({
           triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
         />
       </div>
-    </>
   );
 
   const action = (
@@ -204,7 +205,8 @@ export default function MaterialOrderListPanel({
     <WaflListPanelShell
       title="발주서 목록"
       count={filteredOrders.length}
-      controls={controls}
+      search={searchControl}
+      filters={filterControls}
       action={action}
       listClassName="space-y-2"
     >

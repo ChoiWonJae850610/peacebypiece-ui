@@ -90,7 +90,7 @@ export default function MaterialOrderAllocationPanel({
     >
       <WaflSidePanelShell className="flex min-h-0 flex-1 flex-col">
       {!hasSelectedOrder || !selectedMaterialType ? (
-        <div aria-hidden="true" className="min-h-full" />
+        <div aria-hidden="true" />
       ) : (
         <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
           {loading ? (

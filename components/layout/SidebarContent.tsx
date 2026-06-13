@@ -165,9 +165,9 @@ export default function SidebarContent({
   const hasActiveListControls = searchQuery.trim().length > 0 || statusFilter !== "active" || sort !== "updatedDesc";
 
   return (
-    <div className="flex h-full min-h-0 w-full min-w-0 flex-col p-3.5">
-      <div className="shrink-0">
-        {showHeaderActions ? (
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
+      {showHeaderActions ? (
+        <div className="shrink-0 p-3.5 sm:p-4">
           <>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -268,13 +268,13 @@ export default function SidebarContent({
               </div>
             ) : null}
           </>
-        ) : null}
-        <WaflListPanelShell
+        </div>
+      ) : null}
+      <WaflListPanelShell
           title="작업지시서 목록"
           count={workOrders.length}
-          className={showHeaderActions ? "mt-3 border-t border-[var(--pbp-border)] pt-3 !px-0 !pb-0" : "!p-0"}
-          controls={(
-            <>
+          className="min-h-0 flex-1"
+          search={(
               <div className={WAFL_LIST_SEARCH_ROW_CLASS}>
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">{controlsUi.searchAria}</span>
@@ -299,6 +299,8 @@ export default function SidebarContent({
                   </WaflButton>
                 ) : null}
               </div>
+          )}
+          filters={(
               <div className="grid grid-cols-2 gap-2">
                 <AppSelect
                   value={statusFilter}
@@ -319,7 +321,6 @@ export default function SidebarContent({
                   triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
                 />
               </div>
-            </>
           )}
           action={canCreate ? (
             <WaflButton
@@ -365,7 +366,6 @@ export default function SidebarContent({
             />
           ) : null}
         </WaflListPanelShell>
-      </div>
       <AdminModal
         open={personalSettingsOpen}
         title={i18n.common.personalSettings.title}
