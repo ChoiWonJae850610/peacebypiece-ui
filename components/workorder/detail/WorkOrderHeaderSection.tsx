@@ -164,9 +164,9 @@ export default function WorkOrderHeaderSection({
       component="workorder-header-summary"
       title={titleEditor}
       columns={3}
+      footerColumns={3}
       footerLeft={(
-        <div className="min-w-0">
-          <span className="block text-[11px] font-medium pbp-text-subtle">작업구분</span>
+        <WaflSummaryInfoCell label="작업구분">
           <AppSelect
             value={workOrderKind || "sample"}
             options={[
@@ -177,15 +177,16 @@ export default function WorkOrderHeaderSection({
             onValueChange={(value) => onChangeWorkOrderKind(value as NonNullable<WorkOrder["workOrderKind"]>)}
             ariaLabel="작업구분 선택"
             disabled={locked}
-            triggerClassName="!h-auto !border-0 !bg-transparent !px-0 !py-1 text-sm font-semibold shadow-none"
+            triggerClassName="!h-auto !min-h-0 justify-center !border-0 !bg-transparent !px-1.5 !py-1 text-center text-sm font-semibold shadow-none"
           />
-        </div>
+        </WaflSummaryInfoCell>
       )}
       footerCenter={(
-        <PbpSingleDatePicker
+        <WaflSummaryInfoCell label="납기일">
+          <PbpSingleDatePicker
           value={dueDate}
           labels={{
-            label: "납기일",
+            label: undefined,
             placeholder: "날짜 선택",
             clear: "지우기",
             done: "완료",
@@ -198,13 +199,16 @@ export default function WorkOrderHeaderSection({
           popoverMode="fixed"
           disabled={locked}
           triggerVariant="subtle"
-          className="w-full sm:w-[190px]"
+          className="mx-auto w-full max-w-[190px]"
         />
+        </WaflSummaryInfoCell>
       )}
       footerRight={(
-        <p className="truncate text-xs pbp-text-subtle">
-          {copy.lastUpdatedPrefix} {lastSavedAt || "-"}
-        </p>
+        <WaflSummaryInfoCell label={copy.lastUpdatedPrefix}>
+          <span className="block truncate text-sm font-semibold pbp-text-primary">
+            {lastSavedAt || "-"}
+          </span>
+        </WaflSummaryInfoCell>
       )}
     >
       <WorkOrderHeaderInfoCell

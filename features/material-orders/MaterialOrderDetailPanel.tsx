@@ -94,28 +94,33 @@ export default function MaterialOrderDetailPanel({
           <WaflSummaryHeaderCard
             component="material-order-header-summary"
             columns={2}
+            footerColumns={2}
             title={(
               <h2 className="truncate text-2xl font-semibold text-stone-950" title={resolveMaterialOrderTitle(materialType)}>
                 {resolveMaterialOrderTitle(materialType)}
               </h2>
             )}
             footerLeft={(
-              <PbpSingleDatePicker
+              <WaflSummaryInfoCell label="납기일">
+                <PbpSingleDatePicker
                 value={dueDate}
-                labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "발주서 납기일 선택" }}
+                labels={{ label: undefined, placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "발주서 납기일 선택" }}
                 locale="ko"
                 minDateValue={getTodayPbpLocalDateValue()}
                 onChange={onChangeDueDate}
                 popoverMode="fixed"
                 disabled={!isDraftEditable}
                 triggerVariant="subtle"
-                className="w-full sm:w-[190px]"
+                className="mx-auto w-full max-w-[190px]"
               />
+              </WaflSummaryInfoCell>
             )}
             footerRight={(
-              <p className="truncate text-xs pbp-text-subtle">
-                작성일 {selectedOrder.createdAt.slice(0, 10)}
-              </p>
+              <WaflSummaryInfoCell label="작성일">
+                <span className="block truncate text-sm font-semibold pbp-text-primary">
+                  {selectedOrder.createdAt.slice(0, 10)}
+                </span>
+              </WaflSummaryInfoCell>
             )}
           >
             <WaflSummaryInfoCell label="자재 종류">
