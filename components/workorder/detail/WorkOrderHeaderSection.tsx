@@ -156,7 +156,7 @@ export default function WorkOrderHeaderSection({
   );
 
   return (
-    <div className="border-b border-[var(--pbp-border)] pb-4">
+    <div className="border-b border-[var(--pbp-border)] pb-3">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-2">
         <div className="min-w-0">{titleEditor}</div>
         <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right">

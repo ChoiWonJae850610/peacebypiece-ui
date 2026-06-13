@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "react";
 import { WAFL_WORKSPACE_PANEL_PADDING_CLASS } from "@/components/common/ui/waflWorkspaceSpacing";
 import { cn } from "@/lib/utils";
 
-export const WAFL_SIDE_PANEL_STACK_CLASS = "flex min-h-0 flex-col gap-3";
+export const WAFL_SIDE_PANEL_STACK_CLASS = "flex min-h-0 flex-col gap-3 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0";
 
 export default function WaflSidePanelShell({
   className,
@@ -15,6 +15,7 @@ export default function WaflSidePanelShell({
       data-wafl-component="side-panel-shell"
       className={cn(
         "h-full min-h-0 w-full",
+        WAFL_SIDE_PANEL_STACK_CLASS,
         WAFL_WORKSPACE_PANEL_PADDING_CLASS,
         className,
       )}

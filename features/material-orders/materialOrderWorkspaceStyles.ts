@@ -20,7 +20,7 @@ export const MATERIAL_ORDER_PANEL_DIVIDER_CLASS =
   "border-b border-[var(--pbp-border)] mx-0";
 
 export const MATERIAL_ORDER_PANEL_LIST_CLASS =
-  "min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain py-3 [scrollbar-gutter:auto]";
+  "min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]";
 
 export const MATERIAL_ORDER_PANEL_FILTER_FIELD_CLASS =
   WAFL_LIST_SEARCH_INPUT_CLASS;

@@ -16,8 +16,8 @@ export default function DetailSectionGroup({
   children,
 }: DetailSectionGroupProps) {
   return (
-    <section className="mt-5 min-w-0">
-      <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
+    <section className="min-w-0">
+      <div className="mb-2 flex min-w-0 items-end justify-between gap-3">
         <div className="min-w-0">
           {eyebrow ? (
             <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">

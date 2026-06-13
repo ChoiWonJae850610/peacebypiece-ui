@@ -102,3 +102,4 @@ export {
 export * from "./waflWorkspaceSpacing";
 export { default as WaflThreePanelWorkspace, WAFL_THREE_PANEL_GRID_STYLE } from "./WaflThreePanelWorkspace";
 export { default as WaflSidePanelShell, WAFL_SIDE_PANEL_STACK_CLASS } from "./WaflSidePanelShell";
+export { default as WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS } from "./WaflPanelContentShell";

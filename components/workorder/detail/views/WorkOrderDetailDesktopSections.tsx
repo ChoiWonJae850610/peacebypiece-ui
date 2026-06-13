@@ -1,4 +1,5 @@
 import { useI18n } from "@/lib/i18n";
+import { WAFL_PANEL_CONTENT_STACK_CLASS } from "@/components/common/ui";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
@@ -19,12 +20,12 @@ export default function WorkOrderDetailDesktopSections({
   const groups = i18n.workorder.ui.detailGroups;
 
   return (
-    <>
-      <div className="overflow-hidden rounded-[var(--pbp-radius-wafl)] border border-transparent bg-transparent">
+    <div className={WAFL_PANEL_CONTENT_STACK_CLASS}>
+      <div className={WAFL_PANEL_CONTENT_STACK_CLASS}>
         <WorkOrderHeaderSection {...viewModel.headerProps} />
 
         {viewModel.rejectionReasonNoticeProps ? (
-          <div className="mt-4">
+          <div className="mt-0">
             <RejectionReasonNotice {...viewModel.rejectionReasonNoticeProps} />
           </div>
         ) : null}
@@ -32,7 +33,7 @@ export default function WorkOrderDetailDesktopSections({
         <WorkOrderActionSection {...viewModel.actionProps} />
       </div>
 
-      <div>
+      <div className={WAFL_PANEL_CONTENT_STACK_CLASS}>
         <DetailSectionGroup
           eyebrow={groups.cost.eyebrow}
           title={groups.cost.title}
@@ -49,6 +50,6 @@ export default function WorkOrderDetailDesktopSections({
           />
         ) : null}
       </div>
-    </>
+    </div>
   );
 }

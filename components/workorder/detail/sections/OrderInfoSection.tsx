@@ -278,9 +278,9 @@ export default function OrderInfoSection({
   );
 
   return (
-    <section className={isFlatDevice ? `min-w-0 ${deviceStackClass}` : "mt-5 min-w-0"}>
+    <section className={isFlatDevice ? `min-w-0 ${deviceStackClass}` : "min-w-0"}>
       {!isFlatDevice ? (
-        <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
+        <div className="mb-2 flex min-w-0 items-end justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <h3 className="min-w-0 text-sm font-semibold leading-5 text-[var(--pbp-text-primary)]">
               {copy.title}

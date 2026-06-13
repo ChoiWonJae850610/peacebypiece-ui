@@ -166,7 +166,7 @@ export default function WorkOrderActionSection({
       title={copy.title}
       steps={progressSteps}
       actions={progressActions}
-      className="mt-5"
+      className="mt-0"
       pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
       directPath={directOrderPath}
       footer={
