@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 
 import ModalShell from "@/components/common/modal/ModalShell";
 import { AppSelect, WaflButton, WaflEmptyWorkspaceState, WaflInput, WaflModalSection, WaflSurface, type AppSelectOption } from "@/components/common/ui";
+import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
   calculateMaterialOrderLineAllocatedQuantity,
@@ -92,8 +93,8 @@ function MaterialOrderLineCards({
   if (lines.length === 0) {
     return (
       <WaflEmptyWorkspaceState
-        title="발주 품목이 없습니다."
-        description="작업지시서 자재 선택 패널에서 이번 발주서에 담을 품목을 추가합니다."
+        title={MATERIAL_ORDER_EMPTY_STATE_COPY.noOrderLines.title}
+        description={MATERIAL_ORDER_EMPTY_STATE_COPY.noOrderLines.description}
         variant="inline-section"
         className={mobile ? "min-h-[120px]" : "min-h-[96px]"}
       />

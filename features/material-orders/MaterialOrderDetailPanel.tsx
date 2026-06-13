@@ -25,6 +25,7 @@ import type {
   MaterialOrderSupplier,
 } from "@/lib/material-orders/types";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
+import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
 import { formatRecentKstDateTime } from "@/lib/workorder/presentation/dateTimePresentation";
 
 type MaterialOrderDetailPanelProps = {
@@ -218,8 +219,8 @@ export default function MaterialOrderDetailPanel({
         </div>
       ) : (
         <WaflEmptyWorkspaceState
-          title="발주서를 선택해 주세요"
-          description="왼쪽 발주서 목록에서 새 발주서를 만들거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다."
+          title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.title}
+          description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.description}
           variant="center-panel"
           className="min-h-full flex-1"
         />

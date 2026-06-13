@@ -24,6 +24,7 @@ import {
   resolveMaterialOrderType,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
+import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
 import {
   filterMaterialOrders,
   type MaterialOrderFilterStatus,
@@ -184,9 +185,9 @@ export default function MaterialOrderListPanel({
   ) : errorMessage ? (
     <MaterialOrderPanelMessage title="조회 실패" description={errorMessage} actionLabel="다시 조회" onAction={onRetry} kind="error" />
   ) : orders.length === 0 ? (
-    <MaterialOrderPanelMessage title="등록된 발주서 없음" description="발주서 생성 버튼으로 공급처별 발주서를 시작합니다." />
+    <MaterialOrderPanelMessage title={MATERIAL_ORDER_EMPTY_STATE_COPY.noOrders.title} description={MATERIAL_ORDER_EMPTY_STATE_COPY.noOrders.description} />
   ) : filteredOrders.length === 0 ? (
-    <MaterialOrderPanelMessage title="검색 결과 없음" kind="search" />
+    <MaterialOrderPanelMessage title={MATERIAL_ORDER_EMPTY_STATE_COPY.noSearchResults.title} kind="search" />
   ) : (
     filteredOrders.map((order) => (
       <MaterialOrderListButton

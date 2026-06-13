@@ -1,4 +1,4 @@
-import { WaflCostSummaryCard, WaflSurface } from "@/components/common/ui";
+import { WaflCostSummaryCard, WaflEmptyWorkspaceState, WaflSurface } from "@/components/common/ui";
 
 import {
   calculateMaterialOrderLineAllocatedQuantity,
@@ -8,6 +8,7 @@ import {
   type MaterialOrderDraftTotals,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
+import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
 
 type MaterialOrderSummaryFooterProps = {
   totals: MaterialOrderDraftTotals;
@@ -69,7 +70,11 @@ export function MaterialOrderSummaryCards({
             ))}
           </div>
         ) : (
-          <p className="mt-2 text-xs pbp-text-muted">추가된 발주 품목이 없습니다.</p>
+          <WaflEmptyWorkspaceState
+            title={MATERIAL_ORDER_EMPTY_STATE_COPY.noOrderLineSummary.title}
+            variant="inline-section"
+            className="mt-2 min-h-[72px]"
+          />
         )}
       </WaflSurface>
     </div>

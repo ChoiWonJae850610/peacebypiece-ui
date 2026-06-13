@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import { WaflSideWorkspacePanel, WaflSurface } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
+import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
 import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
@@ -86,13 +87,13 @@ export default function MaterialOrderAllocationPanel({
     <WaflSideWorkspacePanel>
       {!hasSelectedOrder ? (
         <MaterialOrderPanelMessage
-          title="발주 대상을 선택해 주세요"
-          description="발주서를 선택하면 이 영역에서 작업지시서별 자재를 발주 품목으로 추가할 수 있습니다."
+          title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.title}
+          description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.description}
         />
       ) : !selectedMaterialType ? (
         <MaterialOrderPanelMessage
-          title="자재 종류를 선택해 주세요"
-          description="발주 기본정보에서 원단 또는 부자재를 선택하면 발주 가능한 작업지시서 자재가 표시됩니다."
+          title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectMaterialType.title}
+          description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectMaterialType.description}
         />
       ) : (
         <div className={MATERIAL_ORDER_PANEL_LIST_CLASS}>
@@ -112,8 +113,8 @@ export default function MaterialOrderAllocationPanel({
             />
           ) : visibleCandidates.length === 0 ? (
             <MaterialOrderPanelMessage
-              title="선택 가능한 자재 없음"
-              description="현재 자재 종류에서 발주할 작업지시서가 없습니다."
+              title={MATERIAL_ORDER_EMPTY_STATE_COPY.noAvailableMaterial.title}
+              description={MATERIAL_ORDER_EMPTY_STATE_COPY.noAvailableMaterial.description}
             />
           ) : (
             visibleCandidates.map((workOrder) => (
