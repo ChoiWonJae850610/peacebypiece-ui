@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useI18n } from "@/lib/i18n";
+import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import {
   WaflButton,
   WaflInput,
@@ -85,6 +86,8 @@ export default function WorkOrderDetailTabletHeaderSection({
   managerName,
   currentInventoryQuantity,
   lastSavedAt,
+  dueDate,
+  onChangeDueDate,
   canChangeManager,
   canRenameTitle = false,
   canEditInventory,
@@ -219,6 +222,14 @@ export default function WorkOrderDetailTabletHeaderSection({
               value={inventoryValue}
               onClick={onOpenInventoryEditor}
               disabled={!canEditInventory}
+            />
+            <PbpSingleDatePicker
+              value={dueDate}
+              labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "납기일 선택" }}
+              locale="ko"
+              onChange={onChangeDueDate}
+              popoverMode="fixed"
+              disabled={locked}
             />
             <div className="text-right text-[11px] text-[var(--pbp-text-subtle)]">
               {copy.lastUpdatedPrefix} {lastSavedAt || "-"}

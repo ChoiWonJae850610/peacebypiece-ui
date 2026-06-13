@@ -120,6 +120,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     onOpenManagerAssignModal: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenManagerAssignModal,
     onOpenInventoryEditor: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenInventoryEditor,
     onRenameWorkOrderTitle: isWorkspaceWriteLocked ? () => undefined : actionModel.onRenameWorkOrderTitle,
+    onUpdateWorkOrder: isWorkspaceWriteLocked ? () => undefined : actionModel.onUpdateWorkOrder,
     onAction: isWorkspaceWriteLocked ? () => undefined : runActionWithCurrentDetailDraft,
     onToggleBasicInfo: disclosureModel.onToggleBasicInfo,
     onStartEdit: isWorkspaceWriteLocked ? () => undefined : editor.startEdit,

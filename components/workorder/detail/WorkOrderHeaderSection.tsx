@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { WaflButton, WaflInput, WaflSurface } from "@/components/common/ui";
+import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
@@ -23,6 +24,8 @@ type WorkOrderHeaderSectionProps = {
   managerName: string;
   currentInventoryQuantity: number;
   lastSavedAt: string | null;
+  dueDate: string;
+  onChangeDueDate: (value: string) => void;
   canChangeManager: boolean;
   currentUserRole: RoleType;
   canRenameTitle?: boolean;
@@ -43,6 +46,8 @@ export default function WorkOrderHeaderSection({
   managerName,
   currentInventoryQuantity,
   lastSavedAt,
+  dueDate,
+  onChangeDueDate,
   canChangeManager,
   currentUserRole,
   canRenameTitle = false,
@@ -113,7 +118,7 @@ export default function WorkOrderHeaderSection({
   };
 
   const titleEditor = (
-    <div className="flex min-w-0 items-start gap-2">
+    <div className="flex min-w-0 items-start justify-center gap-2 text-center">
       {isEditingTitle ? (
         <div className="min-w-0 flex-1">
           <WaflInput
@@ -138,7 +143,7 @@ export default function WorkOrderHeaderSection({
           ) : null}
         </div>
       ) : (
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="flex min-w-0 items-center justify-center gap-1.5">
           <h2 className="min-w-0 flex-1 truncate text-2xl font-semibold text-stone-950" title={title}>{title}</h2>
           {canEditTitle ? (
             <WaflButton
@@ -163,9 +168,9 @@ export default function WorkOrderHeaderSection({
       component="workorder-header-summary"
       className="shrink-0 p-3.5 sm:p-4"
     >
-      <div className="min-w-0">{titleEditor}</div>
+      <div className="min-w-0 text-center">{titleEditor}</div>
 
-      <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 border-t border-[var(--pbp-border)] pt-3 sm:grid-cols-3">
+      <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 border-t border-[var(--pbp-border)] pt-3 text-center sm:grid-cols-3">
         <WorkOrderHeaderInfoCell
           label={copy.summaryLabel}
           value={summaryValue}
@@ -186,9 +191,27 @@ export default function WorkOrderHeaderSection({
         </div>
       </div>
 
-      <p className="mt-3 truncate text-right text-xs pbp-text-subtle">
-        {copy.lastUpdatedPrefix} {lastSavedAt || "-"}
-      </p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <PbpSingleDatePicker
+          value={dueDate}
+          labels={{
+            label: "납기일",
+            placeholder: "날짜 선택",
+            clear: "지우기",
+            done: "완료",
+            selected: "선택일 {date}",
+            calendarAria: "납기일 선택",
+          }}
+          locale="ko"
+          onChange={onChangeDueDate}
+          popoverMode="fixed"
+          disabled={locked}
+          className="w-full sm:w-[180px]"
+        />
+        <p className="truncate text-right text-xs pbp-text-subtle">
+          {copy.lastUpdatedPrefix} {lastSavedAt || "-"}
+        </p>
+      </div>
     </WaflSurface>
   );
 }
@@ -216,14 +239,14 @@ function WorkOrderHeaderInfoCell({
   );
 
   if (!onClick) {
-    return <div className="min-w-0">{content}</div>;
+    return <div className="min-w-0 text-center">{content}</div>;
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="pbp-interactive-button min-w-0 text-left"
+      className="pbp-interactive-button min-w-0 text-center"
     >
       {content}
     </button>

@@ -80,6 +80,7 @@ export type BuildWorkOrderDetailViewModelArgs = {
   onOpenManagerAssignModal: HeaderProps["onOpenManagerAssignModal"];
   onOpenInventoryEditor: HeaderProps["onOpenInventoryEditor"];
   onRenameWorkOrderTitle: HeaderProps["onRenameTitle"];
+  onUpdateWorkOrder: (patch: Partial<WorkOrder>) => void;
   onAction: ActionProps["onAction"];
   onToggleBasicInfo: () => void;
   onStartEdit: OrderInfoProps["onStartEdit"];
@@ -129,6 +130,7 @@ export function buildHeaderSectionProps({
   onOpenManagerAssignModal,
   onOpenInventoryEditor,
   onRenameWorkOrderTitle,
+  onUpdateWorkOrder,
 }: BuildWorkOrderDetailViewModelArgs): HeaderProps {
   return {
     title: getWorkOrderDisplayTitle(workOrder),
@@ -137,6 +139,8 @@ export function buildHeaderSectionProps({
     managerName: workOrder.manager || "-",
     currentInventoryQuantity,
     lastSavedAt,
+    dueDate: workOrder.dueDate || "",
+    onChangeDueDate: (value) => onUpdateWorkOrder({ dueDate: value }),
     canChangeManager,
     currentUserRole,
     canRenameTitle,

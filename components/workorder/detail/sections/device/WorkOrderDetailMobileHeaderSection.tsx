@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { WaflButton, WaflInput, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
+import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type HeaderProps = WorkOrderDetailViewModel["headerProps"];
@@ -57,6 +58,8 @@ export default function WorkOrderDetailMobileHeaderSection({
   managerName,
   currentInventoryQuantity,
   lastSavedAt,
+  dueDate,
+  onChangeDueDate,
   canChangeManager,
   canRenameTitle = false,
   canEditInventory,
@@ -177,7 +180,17 @@ export default function WorkOrderDetailMobileHeaderSection({
         />
       </div>
 
-      <div className="mt-3 text-right text-xs text-[var(--pbp-text-muted)]">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
+      <div className="mt-3 grid gap-2">
+        <PbpSingleDatePicker
+          value={dueDate}
+          labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "납기일 선택" }}
+          locale="ko"
+          onChange={onChangeDueDate}
+          popoverMode="fixed"
+          disabled={locked}
+        />
+        <div className="text-right text-xs text-[var(--pbp-text-muted)]">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
+      </div>
     </WaflSurface>
   );
 }

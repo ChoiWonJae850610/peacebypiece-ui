@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
   SectionCountBadge,
   WaflButton,
@@ -114,6 +114,14 @@ function MemoInputField({
   isMobile = false,
 }: MemoInputFieldProps) {
   const trimmed = value.trim();
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 112)}px`;
+  }, [value]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter") {
@@ -130,6 +138,7 @@ function MemoInputField({
   return (
     <div className="min-w-0">
       <WaflTextarea
+        ref={textareaRef}
         rows={1}
         maxLength={MEMO_MAX_LENGTH}
         value={value}
@@ -139,8 +148,8 @@ function MemoInputField({
         placeholder={placeholder}
         className={
           isMobile
-            ? "h-[34px] min-h-0 resize-none overflow-hidden px-2.5 py-1.5 text-base"
-            : "h-[32px] min-h-0 resize-none overflow-hidden px-2.5 py-1.5 text-base md:text-sm"
+            ? "min-h-[34px] resize-none overflow-y-auto px-2.5 py-1.5 text-base"
+            : "min-h-[32px] resize-none overflow-y-auto px-2.5 py-1.5 text-base md:text-sm"
         }
       />
       <div
@@ -564,7 +573,7 @@ export default function WorkOrderMemoPanel({
           />
         </div>
       </WaflSurface>
-      <div className={isMobile ? "min-w-0 space-y-1.5" : "min-w-0 space-y-2"}>
+      <div className={isMobile ? "mt-2.5 min-w-0 space-y-2.5" : "mt-3 min-w-0 space-y-3"}>
         {memoThreads.length > 0 ? (
           memoThreads.map((thread, threadIndex) => (
             <MemoThreadCard
