@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { WaflSurface } from "@/components/common/ui";
+import { WaflButton, WaflInput, WaflSurface } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
@@ -116,19 +116,19 @@ export default function WorkOrderHeaderSection({
     <div className="flex min-w-0 items-start gap-2">
       {isEditingTitle ? (
         <div className="min-w-0 flex-1">
-          <input
-            data-wafl-component="input"
+          <WaflInput
             ref={inputRef}
             type="text"
+            fieldSize="md"
             value={titleDraft}
             onChange={(event) => setTitleDraft(event.target.value)}
             onKeyDown={handleTitleKeyDown}
-            className="pbp-field-interaction pbp-workorder-editable-input h-11 w-full wafl-shape-control border px-3 text-lg font-semibold outline-none md:text-2xl"
+            className="w-full text-lg font-semibold md:text-2xl"
             aria-label={copy.titleInputAria}
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button data-wafl-component="button" type="button" onClick={saveTitle} className="pbp-interactive-button pbp-action-primary rounded-[var(--pbp-radius-wafl)] px-3 py-1.5 text-xs font-semibold">{copy.titleEditSave}</button>
-            <button data-wafl-component="button" type="button" onClick={closeTitleEditor} className="pbp-interactive-button pbp-action-secondary rounded-[var(--pbp-radius-wafl)] border px-3 py-1.5 text-xs font-medium">{copy.titleEditCancel}</button>
+            <WaflButton type="button" onClick={saveTitle} variant="primary" size="sm">{copy.titleEditSave}</WaflButton>
+            <WaflButton type="button" onClick={closeTitleEditor} variant="secondary" size="sm">{copy.titleEditCancel}</WaflButton>
             <span className="text-[11px] text-stone-500">{copy.titleEditHint}</span>
           </div>
           {recommendedCategory ? (
@@ -141,14 +141,16 @@ export default function WorkOrderHeaderSection({
         <div className="flex min-w-0 items-center gap-1.5">
           <h2 className="min-w-0 flex-1 truncate text-2xl font-semibold text-stone-950" title={title}>{title}</h2>
           {canEditTitle ? (
-            <button
+            <WaflButton
               type="button"
+              variant="icon"
+              size="sm"
               onClick={() => setIsEditingTitle(true)}
-              className="inline-flex shrink-0 items-center justify-center self-start p-0.5 text-stone-400 hover:text-stone-600"
+              className="self-start pbp-text-subtle"
               aria-label={copy.titleEditAria}
             >
               <PencilIcon />
-            </button>
+            </WaflButton>
           ) : null}
         </div>
       )}
@@ -163,7 +165,7 @@ export default function WorkOrderHeaderSection({
     >
       <div className="min-w-0">{titleEditor}</div>
 
-      <div className="mt-3 grid min-w-0 grid-cols-3 gap-3 border-t border-[var(--pbp-border)] pt-3">
+      <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 border-t border-[var(--pbp-border)] pt-3 sm:grid-cols-3">
         <WorkOrderHeaderInfoCell
           label={copy.summaryLabel}
           value={summaryValue}
@@ -174,12 +176,14 @@ export default function WorkOrderHeaderSection({
           value={managerValue}
           onClick={canEditManager ? onOpenManagerAssignModal : undefined}
         />
-        <WorkOrderHeaderInfoCell
-          label={copy.currentInventoryLabel}
-          value={inventoryValue}
-          onClick={canEditInventory ? onOpenInventoryEditor : undefined}
-          valueClassName="tabular-nums"
-        />
+        <div className="col-span-2 min-w-0 sm:col-span-1">
+          <WorkOrderHeaderInfoCell
+            label={copy.currentInventoryLabel}
+            value={inventoryValue}
+            onClick={canEditInventory ? onOpenInventoryEditor : undefined}
+            valueClassName="tabular-nums"
+          />
+        </div>
       </div>
 
       <p className="mt-3 truncate text-right text-xs pbp-text-subtle">

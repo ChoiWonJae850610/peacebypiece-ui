@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, WaflSurface, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import {
@@ -12,7 +12,6 @@ import {
 import { MaterialOrderSummaryCards, MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
 import {
   MATERIAL_ORDER_SECTION_CARD_CLASS,
-  MATERIAL_ORDER_SECTION_GAP_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import type {
   MaterialOrderDraftLine,
@@ -73,7 +72,7 @@ export default function MaterialOrderDetailPanel({
     <WaflDetailWorkspacePanel>
       <WaflPanelContentShell>
       {selectedOrder ? (
-        <div className={`flex min-h-0 flex-1 flex-col ${MATERIAL_ORDER_SECTION_GAP_CLASS}`}>
+        <div className={`${WAFL_PANEL_CONTENT_STACK_CLASS} flex-1`}>
           {mobile ? (
             <MaterialOrderMobileStatusHeader
               selectedOrder={selectedOrder}
@@ -227,7 +226,7 @@ function MaterialOrderMobileStatusHeader({
 }
 
 const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [
-  { value: "", label: "선택 안함" },
+  { value: "", label: "자재 종류 선택", disabled: true },
   { value: "fabric", label: "원단" },
   { value: "submaterial", label: "부자재" },
 ];
