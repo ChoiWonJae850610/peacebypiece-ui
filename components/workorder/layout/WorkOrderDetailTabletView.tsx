@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
-import { AppResponsiveWorkspace, WaflMobileListDrawer } from "@/components/common/ui";
+import { AppResponsiveWorkspace, WaflMobileListDrawer, WaflSidePanelShell } from "@/components/common/ui";
 import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
@@ -92,7 +92,7 @@ export default function WorkOrderDetailTabletView({
   }
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
+    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
       <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
         <AdminTopbar
           companyName={sidebarListProps.companyName}
@@ -121,7 +121,7 @@ export default function WorkOrderDetailTabletView({
               {detail}
             </section>
             <section className="min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] [scrollbar-gutter:stable]">
-              {sidePanel}
+              <WaflSidePanelShell>{sidePanel}</WaflSidePanelShell>
             </section>
           </div>
         </AppResponsiveWorkspace>

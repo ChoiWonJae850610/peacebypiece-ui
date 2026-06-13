@@ -13,6 +13,7 @@ import {
   WaflMobileShell,
   WaflMobileTabbedActionSheet,
   WaflSurface,
+  WaflThreePanelWorkspace,
   type AppSegmentedTabItem,
 } from "@/components/common/ui";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
@@ -24,11 +25,6 @@ import { APP_VERSION } from "@/lib/constants/version";
 import { RESPONSIVE_BREAKPOINTS } from "@/lib/responsive/responsiveLayoutPolicy";
 import { useResponsiveDeviceType } from "@/lib/responsive/useResponsiveDeviceType";
 import { useResponsiveOrientation } from "@/lib/responsive/useResponsiveOrientation";
-
-const MATERIAL_ORDER_PANEL_GRID_STYLE = {
-  gridTemplateColumns:
-    "minmax(220px, 0.7fr) minmax(640px, 1fr) minmax(220px, 0.7fr)",
-} as const;
 
 const MATERIAL_ORDER_TABLET_GRID_STYLE = {
   gridTemplateColumns: "minmax(240px, 0.72fr) minmax(0, 1fr)",
@@ -387,14 +383,11 @@ export default function MaterialOrderDraftEditor({
           {validationModal}
           <AppResponsiveWorkspace device="desktop">
             {statusToast}
-            <div
-              className="grid h-full min-h-0 min-w-[1080px] gap-3"
-              style={MATERIAL_ORDER_PANEL_GRID_STYLE}
-            >
-              {listPanel}
-              {detailPanel}
-              {allocationPanel}
-            </div>
+            <WaflThreePanelWorkspace
+              list={listPanel}
+              detail={detailPanel}
+              side={allocationPanel}
+            />
           </AppResponsiveWorkspace>
         </div>
       );
@@ -424,14 +417,11 @@ export default function MaterialOrderDraftEditor({
       {validationModal}
       <AppResponsiveWorkspace device="desktop">
         {statusToast}
-        <div
-          className="grid h-full min-h-0 min-w-[1080px] gap-3"
-          style={MATERIAL_ORDER_PANEL_GRID_STYLE}
-        >
-          {listPanel}
-          {detailPanel}
-          {allocationPanel}
-        </div>
+        <WaflThreePanelWorkspace
+          list={listPanel}
+          detail={detailPanel}
+          side={allocationPanel}
+        />
       </AppResponsiveWorkspace>
     </div>
   );

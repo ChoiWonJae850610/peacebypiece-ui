@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 
-import { AppButton, AppSheet, WaflWorkspacePanel } from "@/components/common/ui";
+import { AppButton, AppSheet, WaflSidePanelShell, WaflWorkspacePanel } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 type TabletSplitLayoutProps = {
@@ -33,7 +33,7 @@ export default function TabletSplitLayout({
   }, [scrollResetKey]);
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
+    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
       <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
         {topbar ? <div className="shrink-0">{topbar}</div> : null}
         <WaflWorkspacePanel panelRole="shell" className="grid min-h-0 flex-1 grid-cols-12 overflow-hidden">
@@ -66,9 +66,9 @@ export default function TabletSplitLayout({
           description={i18n.workorder.ui.emptyWorkspace.sideDescription}
           side="right"
           size="lg"
-          contentClassName="px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+          contentClassName="p-0 pb-[calc(1rem+env(safe-area-inset-bottom))]"
         >
-          {sidePanel}
+          <WaflSidePanelShell>{sidePanel}</WaflSidePanelShell>
         </AppSheet>
       </div>
     </main>

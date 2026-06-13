@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 
-import { WaflSurface } from "@/components/common/ui";
+import { WaflSidePanelShell, WaflSurface } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
   MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
   MATERIAL_ORDER_NESTED_ROW_CLASS,
-  MATERIAL_ORDER_PANEL_CARD_CLASS,
+  MATERIAL_ORDER_PANEL_SHELL_CLASS,
   MATERIAL_ORDER_PANEL_LIST_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import { type MaterialOrderDraftLine } from "@/lib/material-orders/materialOrderDraftCalculator";
@@ -86,8 +86,9 @@ export default function MaterialOrderAllocationPanel({
   return (
     <WaflSurface
       component="material-order-allocation-panel"
-      className={MATERIAL_ORDER_PANEL_CARD_CLASS}
+      className={MATERIAL_ORDER_PANEL_SHELL_CLASS}
     >
+      <WaflSidePanelShell className="flex min-h-0 flex-1 flex-col">
       {!hasSelectedOrder || !selectedMaterialType ? (
         <div aria-hidden="true" className="min-h-full" />
       ) : (
@@ -127,6 +128,7 @@ export default function MaterialOrderAllocationPanel({
           )}
         </div>
       )}
+      </WaflSidePanelShell>
     </WaflSurface>
   );
 }

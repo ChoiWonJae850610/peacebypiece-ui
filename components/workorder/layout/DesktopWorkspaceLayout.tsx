@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 
-import { WAFL_WORKSPACE_PANEL_GAP_CLASS, WaflWorkspacePanel } from "@/components/common/ui";
+import { WaflSidePanelShell, WaflThreePanelWorkspace, WaflWorkspacePanel } from "@/components/common/ui";
 
 type DesktopWorkspaceLayoutProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
@@ -27,23 +27,37 @@ export default function DesktopWorkspaceLayout({
     sidePanelScrollRef.current?.scrollTo({ top: 0, left: 0 });
   }, [scrollResetKey]);
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-app-bg)] p-3 pbp-text-primary sm:p-4 md:p-6 lg:p-8">
+    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 pbp-text-primary sm:p-4 md:p-6 lg:p-8">
       <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
         {topbar ? <div className="shrink-0">{topbar}</div> : null}
-        <div className={`flex min-h-0 flex-1 overflow-hidden ${WAFL_WORKSPACE_PANEL_GAP_CLASS}`}>
-          <WaflWorkspacePanel as="aside" panelRole="sidebar" className="flex min-h-0 w-[296px] shrink-0 overflow-hidden xl:w-[312px]">
-            {sidebar}
-          </WaflWorkspacePanel>
-
-          <WaflWorkspacePanel as="section" panelRole="detail" ref={detailScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-8 [scrollbar-gutter:stable] xl:pb-10">
-            <div className="mx-auto min-h-full w-full max-w-[780px]">
-              {detail}
-            </div>
-          </WaflWorkspacePanel>
-
-          <WaflWorkspacePanel as="aside" panelRole="side" ref={sidePanelScrollRef} className="min-h-0 w-[302px] shrink-0 overflow-y-auto overscroll-contain px-3.5 py-4 pb-8 [scrollbar-gutter:stable] xl:w-[316px] xl:px-4 xl:pb-10">
-            {sidePanel}
-          </WaflWorkspacePanel>
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <WaflThreePanelWorkspace
+            list={(
+              <WaflWorkspacePanel as="aside" panelRole="sidebar" className="flex h-full min-h-0 overflow-hidden">
+                {sidebar}
+              </WaflWorkspacePanel>
+            )}
+            detail={(
+              <WaflWorkspacePanel
+                as="section"
+                panelRole="detail"
+                ref={detailScrollRef}
+                className="h-full min-h-0 overflow-y-auto overscroll-contain pb-8 [scrollbar-gutter:stable] xl:pb-10"
+              >
+                {detail}
+              </WaflWorkspacePanel>
+            )}
+            side={(
+              <WaflWorkspacePanel
+                as="aside"
+                panelRole="side"
+                ref={sidePanelScrollRef}
+                className="h-full min-h-0 overflow-y-auto overscroll-contain pb-8 [scrollbar-gutter:stable] xl:pb-10"
+              >
+                <WaflSidePanelShell>{sidePanel}</WaflSidePanelShell>
+              </WaflWorkspacePanel>
+            )}
+          />
         </div>
       </div>
     </main>

@@ -93,3 +93,5 @@ export {
 export * from "./WaflSurface";
 export { default as WaflListPanelShell, WAFL_LIST_PANEL_PADDING_CLASS, WAFL_LIST_PANEL_CONTROL_GAP_CLASS, WAFL_LIST_PANEL_LIST_CLASS } from "./WaflListPanelShell";
 export * from "./waflWorkspaceSpacing";
+export { default as WaflThreePanelWorkspace, WAFL_THREE_PANEL_GRID_STYLE } from "./WaflThreePanelWorkspace";
+export { default as WaflSidePanelShell } from "./WaflSidePanelShell";

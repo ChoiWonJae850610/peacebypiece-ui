@@ -11,6 +11,9 @@ import { WAFL_LIST_PANEL_PADDING_CLASS, WAFL_WORKSPACE_SECTION_GAP_CLASS, WAFL_W
 export const MATERIAL_ORDER_PANEL_CARD_CLASS =
   `flex h-full min-h-0 flex-col overflow-hidden ${WAFL_LIST_PANEL_PADDING_CLASS}`;
 
+export const MATERIAL_ORDER_PANEL_SHELL_CLASS =
+  "flex h-full min-h-0 flex-col overflow-hidden";
+
 export const MATERIAL_ORDER_PANEL_HEADER_CLASS = "shrink-0 pb-3";
 
 export const MATERIAL_ORDER_PANEL_DIVIDER_CLASS =
