@@ -14,6 +14,7 @@ import {
   type AppSelectOption,
 } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
+import { MaterialOrderQuantityText } from "@/features/material-orders/components/MaterialOrderQuantityDisplay";
 import {
   calculateMaterialOrderLineAllocatedQuantity,
   calculateMaterialOrderLineAmount,
@@ -80,9 +81,9 @@ export function MaterialOrderLineCard({
             {line.itemName || "품목명 미입력"}
           </p>
           <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-medium leading-4 pbp-text-muted sm:grid-cols-4">
-            <span className="truncate">필요수량 {requiredQuantity.toLocaleString()} {unitLabel}</span>
-            <span className="truncate">주문수량 {line.orderQuantity.toLocaleString()} {unitLabel}</span>
-            <span className="truncate">여유주문 {extraQuantity.toLocaleString()} {unitLabel}</span>
+            <span className="truncate">필요수량 <MaterialOrderQuantityText quantity={requiredQuantity} unit={unitLabel} /></span>
+            <span className="truncate">주문수량 <MaterialOrderQuantityText quantity={line.orderQuantity} unit={unitLabel} /></span>
+            <span className="truncate">여유주문 <MaterialOrderQuantityText quantity={extraQuantity} unit={unitLabel} /></span>
             <span className="truncate">단가 {formatMaterialOrderAmount(line.unitPrice)}</span>
           </div>
           <p className="mt-2 text-[11px] font-semibold tabular-nums pbp-text-primary">

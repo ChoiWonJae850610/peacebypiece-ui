@@ -1,5 +1,6 @@
 import { WaflSurface } from "@/components/common/ui";
 import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
+import { MaterialOrderQuantityRatio } from "@/features/material-orders/components/MaterialOrderQuantityDisplay";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
   MATERIAL_ORDER_LIST_CARD_DEFAULT_CLASS,
@@ -11,10 +12,7 @@ import {
   calculateMaterialRequestOrderedQuantity,
   calculateMaterialRequestRemainingQuantity,
   formatMaterialItemTypeCountLabel,
-  formatMaterialQuantity,
   isMaterialRequestAlreadyAdded,
-  normalizeMaterialQuantityNumber,
-  resolveMaterialQuantityNumberClassName,
   type MaterialRequestQuantityMap,
 } from "@/features/material-orders/materialOrderPanelUtils";
 import type { MaterialOrderDraftLine } from "@/lib/material-orders/materialOrderDraftCalculator";
@@ -186,41 +184,6 @@ function MaterialOrderAllocationRow({
         <span aria-hidden="true">{selectionButtonLabel}</span>
       </MaterialOrderActionButton>
     </WaflSurface>
-  );
-}
-
-function MaterialOrderQuantityRatio({
-  orderedQuantity,
-  requiredQuantity,
-  currentDraftQuantity,
-  unit,
-}: {
-  orderedQuantity: number;
-  requiredQuantity: number;
-  currentDraftQuantity: number;
-  unit: string;
-}) {
-  const normalizedOrderedQuantity =
-    normalizeMaterialQuantityNumber(orderedQuantity);
-  const normalizedRequiredQuantity =
-    normalizeMaterialQuantityNumber(requiredQuantity);
-  const numberClassName = resolveMaterialQuantityNumberClassName({
-    orderedQuantity,
-    requiredQuantity,
-    currentDraftQuantity,
-  });
-
-  return (
-    <span
-      className="shrink-0 whitespace-nowrap text-xs font-semibold pbp-text-muted"
-      title={formatMaterialQuantity(orderedQuantity, unit)}
-    >
-      <span className={numberClassName}>{normalizedOrderedQuantity}</span>
-      <span className="pbp-text-subtle">/{normalizedRequiredQuantity}</span>
-      {unit.trim() ? (
-        <span className="ml-1 text-[10px] pbp-text-subtle">{unit.trim()}</span>
-      ) : null}
-    </span>
   );
 }
 
