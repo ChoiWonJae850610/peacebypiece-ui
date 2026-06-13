@@ -106,3 +106,5 @@ export { default as WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS } from
 export { default as WaflListWorkspacePanel } from "./WaflListWorkspacePanel";
 export { default as WaflDetailWorkspacePanel } from "./WaflDetailWorkspacePanel";
 export { default as WaflSideWorkspacePanel } from "./WaflSideWorkspacePanel";
+
+export { default as WaflSummaryHeaderCard, WaflSummaryInfoCell } from "./WaflSummaryHeaderCard";

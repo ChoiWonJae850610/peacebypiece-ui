@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { WaflButton, WaflInput, WaflSurface } from "@/components/common/ui";
+import { WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -156,35 +156,11 @@ export default function WorkOrderHeaderSection({
   );
 
   return (
-    <WaflSurface
-      as="section"
+    <WaflSummaryHeaderCard
       component="workorder-header-summary"
-      className="shrink-0 p-3.5 sm:p-4"
-    >
-      <div className="min-w-0 text-center">{titleEditor}</div>
-
-      <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 border-t border-[var(--pbp-border)] pt-3 text-center sm:grid-cols-3">
-        <WorkOrderHeaderInfoCell
-          label={copy.summaryLabel}
-          value={summaryValue}
-          onClick={canEditSummary ? onOpenBasicInfoModal : undefined}
-        />
-        <WorkOrderHeaderInfoCell
-          label={copy.managerLabel}
-          value={managerValue}
-          onClick={canEditManager ? onOpenManagerAssignModal : undefined}
-        />
-        <div className="col-span-2 min-w-0 sm:col-span-1">
-          <WorkOrderHeaderInfoCell
-            label={copy.currentInventoryLabel}
-            value={inventoryValue}
-            onClick={canEditInventory ? onOpenInventoryEditor : undefined}
-            valueClassName="tabular-nums"
-          />
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      title={titleEditor}
+      columns={3}
+      footerLeft={(
         <PbpSingleDatePicker
           value={dueDate}
           labels={{
@@ -203,11 +179,32 @@ export default function WorkOrderHeaderSection({
           triggerVariant="subtle"
           className="w-full sm:w-[190px]"
         />
-        <p className="truncate text-right text-xs pbp-text-subtle">
+      )}
+      footerRight={(
+        <p className="truncate text-xs pbp-text-subtle">
           {copy.lastUpdatedPrefix} {lastSavedAt || "-"}
         </p>
+      )}
+    >
+      <WorkOrderHeaderInfoCell
+        label={copy.summaryLabel}
+        value={summaryValue}
+        onClick={canEditSummary ? onOpenBasicInfoModal : undefined}
+      />
+      <WorkOrderHeaderInfoCell
+        label={copy.managerLabel}
+        value={managerValue}
+        onClick={canEditManager ? onOpenManagerAssignModal : undefined}
+      />
+      <div className="col-span-2 min-w-0 sm:col-span-1">
+        <WorkOrderHeaderInfoCell
+          label={copy.currentInventoryLabel}
+          value={inventoryValue}
+          onClick={canEditInventory ? onOpenInventoryEditor : undefined}
+          valueClassName="tabular-nums"
+        />
       </div>
-    </WaflSurface>
+    </WaflSummaryHeaderCard>
   );
 }
 
@@ -222,28 +219,25 @@ function WorkOrderHeaderInfoCell({
   onClick?: () => void;
   valueClassName?: string;
 }) {
-  const content = (
-    <>
-      <span className="block truncate text-[11px] font-medium pbp-text-subtle">
-        {label}
-      </span>
-      <span className={`mt-1 block truncate text-sm font-semibold pbp-text-primary ${valueClassName}`}>
-        {value}
-      </span>
-    </>
+  const valueNode = (
+    <span className={`block truncate text-sm font-semibold pbp-text-primary ${valueClassName}`}>
+      {value}
+    </span>
   );
 
   if (!onClick) {
-    return <div className="min-w-0 text-center">{content}</div>;
+    return <WaflSummaryInfoCell label={label}>{valueNode}</WaflSummaryInfoCell>;
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="pbp-interactive-button min-w-0 rounded-[var(--pbp-radius-wafl)] px-1.5 py-1 text-center transition hover:bg-[var(--pbp-surface-muted)] focus-visible:bg-[var(--pbp-surface-muted)]"
-    >
-      {content}
-    </button>
+    <WaflSummaryInfoCell label={label}>
+      <button
+        type="button"
+        onClick={onClick}
+        className="pbp-interactive-button w-full min-w-0 rounded-[var(--pbp-radius-wafl)] px-1.5 py-1 text-center transition hover:bg-[var(--pbp-surface-muted)] focus-visible:bg-[var(--pbp-surface-muted)]"
+      >
+        {valueNode}
+      </button>
+    </WaflSummaryInfoCell>
   );
 }

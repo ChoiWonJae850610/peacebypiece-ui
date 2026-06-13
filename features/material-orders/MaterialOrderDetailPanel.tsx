@@ -1,9 +1,8 @@
-import type { ReactNode } from "react";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSurface, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSurface, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import {
@@ -85,71 +84,77 @@ export default function MaterialOrderDetailPanel({
               statusChanging={statusChanging}
             />
           ) : null}
-          <AppSection
-            title="발주 기본정보"
-            className="shrink-0"
-            cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}
-            bodyClassName="grid gap-3"
+          <WaflSummaryHeaderCard
+            component="material-order-header-summary"
+            columns={2}
+            title={(
+              <h2 className="truncate text-2xl font-semibold text-stone-950" title={resolveMaterialOrderTitle(materialType)}>
+                {resolveMaterialOrderTitle(materialType)}
+              </h2>
+            )}
+            footerLeft={(
+              <PbpSingleDatePicker
+                value={dueDate}
+                labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "발주서 납기일 선택" }}
+                locale="ko"
+                minDateValue={getTodayPbpLocalDateValue()}
+                onChange={onChangeDueDate}
+                popoverMode="fixed"
+                disabled={!isDraftEditable}
+                triggerVariant="subtle"
+                className="w-full sm:w-[190px]"
+              />
+            )}
+            footerRight={(
+              <p className="truncate text-xs pbp-text-subtle">
+                작성일 {selectedOrder.createdAt.slice(0, 10)}
+              </p>
+            )}
           >
-            <div className={mobile ? "grid gap-2" : "grid gap-3 xl:grid-cols-2"}>
-              <FieldLabel label="자재 종류">
-                <AppSelect
-                  value={materialType}
-                  disabled={!isDraftEditable}
+            <WaflSummaryInfoCell label="자재 종류">
+              <AppSelect
+                value={materialType}
+                disabled={!isDraftEditable}
+                size="sm"
+                options={MATERIAL_TYPE_SELECT_OPTIONS}
+                ariaLabel="자재 종류"
+                triggerClassName="min-h-0 justify-center border-transparent bg-transparent px-1.5 py-1 text-center hover:border-transparent hover:bg-[var(--pbp-surface-muted)] disabled:bg-transparent"
+                onValueChange={(value) =>
+                  onChangeMaterialType(value as MaterialOrderDraftSelectionType)
+                }
+              />
+            </WaflSummaryInfoCell>
+            <WaflSummaryInfoCell label="공급처">
+              <AppSelect
+                value={supplierPartnerId ?? ""}
+                disabled={isSupplierSelectDisabled(
+                  isDraftEditable,
+                  materialType,
+                  suppliersLoading,
+                  suppliers.length,
+                )}
+                size="sm"
+                placeholder={resolveSupplierPlaceholder(materialType, suppliersLoading, suppliers.length)}
+                options={buildSupplierSelectOptions(materialType, suppliersLoading, suppliers)}
+                ariaLabel="공급처"
+                triggerClassName="min-h-0 justify-center border-transparent bg-transparent px-1.5 py-1 text-center hover:border-transparent hover:bg-[var(--pbp-surface-muted)] disabled:bg-transparent"
+                onValueChange={(value) => onChangeSupplierPartnerId(value || null)}
+              />
+              {suppliersError ? (
+                <WaflButton
+                  type="button"
+                  onClick={onRetrySuppliers}
+                  variant="danger"
                   size="sm"
-                  options={MATERIAL_TYPE_SELECT_OPTIONS}
-                  ariaLabel="자재 종류"
-                  onValueChange={(value) =>
-                    onChangeMaterialType(value as MaterialOrderDraftSelectionType)
-                  }
-                />
-              </FieldLabel>
-              <FieldLabel label="공급처">
-                <AppSelect
-                  value={supplierPartnerId ?? ""}
-                  disabled={isSupplierSelectDisabled(
-                    isDraftEditable,
-                    materialType,
-                    suppliersLoading,
-                    suppliers.length,
-                  )}
-                  size="sm"
-                  placeholder={resolveSupplierPlaceholder(materialType, suppliersLoading, suppliers.length)}
-                  options={buildSupplierSelectOptions(materialType, suppliersLoading, suppliers)}
-                  ariaLabel="공급처"
-                  onValueChange={(value) => onChangeSupplierPartnerId(value || null)}
-                />
-                {suppliersError ? (
-                  <WaflButton
-                    type="button"
-                    onClick={onRetrySuppliers}
-                    variant="danger"
-                    size="sm"
-                    className="mt-1 w-fit text-[11px]"
-                    title="공급처 목록을 다시 조회합니다."
-                    aria-label="공급처 목록 다시 조회"
-                  >
-                    공급처 다시 조회
-                  </WaflButton>
-                ) : null}
-              </FieldLabel>
-              <FieldLabel label="납기일">
-                <PbpSingleDatePicker
-                  value={dueDate}
-                  labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "발주서 납기일 선택" }}
-                  locale="ko"
-                  minDateValue={getTodayPbpLocalDateValue()}
-                  onChange={onChangeDueDate}
-                  popoverMode="fixed"
-                  disabled={!isDraftEditable}
-                />
-              </FieldLabel>
-              <div className="grid content-end gap-1 text-[11px] font-semibold pbp-text-subtle">
-                <span>작성일</span>
-                <span className="min-h-8 px-1.5 py-2 text-xs font-medium pbp-text-primary">{selectedOrder.createdAt.slice(0, 10)}</span>
-              </div>
-            </div>
-          </AppSection>
+                  className="mx-auto mt-1 text-[11px]"
+                  title="공급처 목록을 다시 조회합니다."
+                  aria-label="공급처 목록 다시 조회"
+                >
+                  공급처 다시 조회
+                </WaflButton>
+              ) : null}
+            </WaflSummaryInfoCell>
+          </WaflSummaryHeaderCard>
 
           <AppSection title="비용 요약" className="shrink-0" cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}>
             <MaterialOrderSummaryCards totals={totals} lines={lines} materialType={materialType} />
@@ -287,19 +292,10 @@ function isSupplierSelectDisabled(
   return !editable || !materialType || loading || supplierCount === 0;
 }
 
-function FieldLabel({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-      {label}
-      {children}
-    </label>
-  );
+function resolveMaterialOrderTitle(materialType: MaterialOrderDraftSelectionType): string {
+  if (materialType === "fabric") return "원단 발주서";
+  if (materialType === "submaterial") return "부자재 발주서";
+  return "자재 발주서";
 }
 
 function resolveSupplierPlaceholder(
