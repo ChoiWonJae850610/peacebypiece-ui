@@ -45,7 +45,7 @@ export default function TabletSplitLayout({
             as="section"
             panelRole="detail"
             ref={contentScrollRef}
-            className="col-span-8 min-h-0 overflow-y-auto rounded-none border-0 bg-transparent px-4 py-4 pb-[calc(7rem+env(safe-area-inset-bottom))]"
+            className="col-span-8 min-h-0 overflow-y-auto rounded-none border-0 bg-transparent pb-[calc(7rem+env(safe-area-inset-bottom))]"
           >
             <div className="grid min-h-full grid-cols-1 gap-4">
               <div>{detail}</div>

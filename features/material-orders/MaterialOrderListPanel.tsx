@@ -7,6 +7,7 @@ import {
   WaflInput,
   WaflSelectableCard,
   WaflSurface,
+  WAFL_LIST_PANEL_PADDING_CLASS,
   type AppSelectOption,
 } from "@/components/common/ui";
 import { SectionCountBadge } from "@/components/common/ui";
@@ -260,7 +261,7 @@ export default function MaterialOrderListPanel({
 
   if (variant === "drawer") {
     return (
-      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className={`flex h-full min-h-0 flex-col overflow-hidden ${WAFL_LIST_PANEL_PADDING_CLASS}`}>
         {listContent}
       </div>
     );

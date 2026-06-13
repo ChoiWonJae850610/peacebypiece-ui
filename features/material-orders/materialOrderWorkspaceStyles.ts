@@ -6,9 +6,10 @@ import {
   WAFL_LIST_SEARCH_ROW_CLASS,
   WAFL_LIST_SELECT_TRIGGER_CLASS,
 } from "@/components/common/ui/waflListControlSet";
+import { WAFL_LIST_PANEL_PADDING_CLASS, WAFL_WORKSPACE_SECTION_GAP_CLASS, WAFL_WORKSPACE_SECTION_PADDING_CLASS } from "@/components/common/ui";
 
 export const MATERIAL_ORDER_PANEL_CARD_CLASS =
-  "flex h-full min-h-0 flex-col overflow-hidden p-3.5";
+  `flex h-full min-h-0 flex-col overflow-hidden ${WAFL_LIST_PANEL_PADDING_CLASS}`;
 
 export const MATERIAL_ORDER_PANEL_HEADER_CLASS = "shrink-0 pb-3";
 
@@ -35,10 +36,10 @@ export const MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS =
 export const MATERIAL_ORDER_LIST_CLEAR_BUTTON_CLASS =
   WAFL_LIST_CLEAR_BUTTON_CLASS;
 
-export const MATERIAL_ORDER_SECTION_GAP_CLASS = "gap-3";
+export const MATERIAL_ORDER_SECTION_GAP_CLASS = WAFL_WORKSPACE_SECTION_GAP_CLASS;
 
 export const MATERIAL_ORDER_SECTION_CARD_CLASS =
-  "wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-none xl:p-4";
+  `wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] ${WAFL_WORKSPACE_SECTION_PADDING_CLASS} shadow-none`;
 
 export const MATERIAL_ORDER_TABLE_SHELL_CLASS =
   "max-w-full min-h-0 flex-1 overflow-auto wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-none";
