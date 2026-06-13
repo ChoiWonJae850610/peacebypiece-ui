@@ -211,6 +211,7 @@ export type WorkOrderSummary = Pick<
   | "lastSavedAt"
 > & {
   orderEntryCount: number;
+  representativeFactory?: string;
   materialCount: number;
   materialFabricCount?: number;
   materialSubmaterialCount?: number;

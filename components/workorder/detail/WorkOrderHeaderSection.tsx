@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
+import { AppSelect, WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
-import type { RoleType } from "@/types/workorder";
+import type { RoleType, WorkOrder } from "@/types/workorder";
 
 type WorkOrderHeaderSectionProps = {
   title: string;
@@ -18,7 +18,9 @@ type WorkOrderHeaderSectionProps = {
   currentInventoryQuantity: number;
   lastSavedAt: string | null;
   dueDate: string;
+  workOrderKind: WorkOrder["workOrderKind"];
   onChangeDueDate: (value: string) => void;
+  onChangeWorkOrderKind: (value: NonNullable<WorkOrder["workOrderKind"]>) => void;
   canChangeManager: boolean;
   currentUserRole: RoleType;
   canRenameTitle?: boolean;
@@ -40,7 +42,9 @@ export default function WorkOrderHeaderSection({
   currentInventoryQuantity,
   lastSavedAt,
   dueDate,
+  workOrderKind,
   onChangeDueDate,
+  onChangeWorkOrderKind,
   canChangeManager,
   currentUserRole,
   canRenameTitle = false,
@@ -161,6 +165,23 @@ export default function WorkOrderHeaderSection({
       title={titleEditor}
       columns={3}
       footerLeft={(
+        <div className="min-w-0">
+          <span className="block text-[11px] font-medium pbp-text-subtle">작업구분</span>
+          <AppSelect
+            value={workOrderKind || "sample"}
+            options={[
+              { value: "sample", label: "샘플" },
+              { value: "main", label: "메인작업" },
+              { value: "rework", label: "재작업" },
+            ]}
+            onValueChange={(value) => onChangeWorkOrderKind(value as NonNullable<WorkOrder["workOrderKind"]>)}
+            ariaLabel="작업구분 선택"
+            disabled={locked}
+            triggerClassName="!h-auto !border-0 !bg-transparent !px-0 !py-1 text-sm font-semibold shadow-none"
+          />
+        </div>
+      )}
+      footerCenter={(
         <PbpSingleDatePicker
           value={dueDate}
           labels={{

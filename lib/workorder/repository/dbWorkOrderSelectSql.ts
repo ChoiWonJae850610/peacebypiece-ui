@@ -402,6 +402,7 @@ export function buildSpecSheetSummarySelectQuery(
       SELECT
         s.*,
         COALESCE(order_counts.order_entry_count, 0)::integer AS order_entry_count,
+        COALESCE(order_counts.representative_factory, '')::text AS representative_factory,
         COALESCE(material_counts.material_count, 0)::integer AS material_count,
         COALESCE(material_counts.material_fabric_count, 0)::integer AS material_fabric_count,
         COALESCE(material_counts.material_submaterial_count, 0)::integer AS material_submaterial_count,
@@ -412,7 +413,8 @@ export function buildSpecSheetSummarySelectQuery(
         COALESCE(memo_counts.memo_thread_count, 0)::integer AS memo_thread_count
       FROM spec_sheet_summaries s
       LEFT JOIN LATERAL (
-        SELECT COUNT(*)::integer AS order_entry_count
+        SELECT COUNT(*)::integer AS order_entry_count,
+               (ARRAY_AGG(NULLIF(TRIM(COALESCE(o.factory_name, '')), '') ORDER BY o.id) FILTER (WHERE NULLIF(TRIM(COALESCE(o.factory_name, '')), '') IS NOT NULL))[1] AS representative_factory
         FROM orders o
         WHERE o.company_id = s.company_id
           AND o.spec_sheet_id = s.id

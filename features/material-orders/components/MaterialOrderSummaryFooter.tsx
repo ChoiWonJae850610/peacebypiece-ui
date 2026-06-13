@@ -55,10 +55,10 @@ export function MaterialOrderSummaryCards({
             {groups.map((group) => (
               <div key={group.key} className="border-t border-[var(--pbp-border)] pt-2 first:border-t-0 first:pt-0">
                 <p className="truncate text-xs font-semibold pbp-text-primary">{group.itemName}</p>
-                <div className="mt-1.5 grid gap-1.5 pl-3">
+                <div className="mt-1.5 grid gap-2 border-l border-[var(--pbp-border)] pl-5">
                   {group.rows.map((row) => (
                     <div key={row.key} className="grid min-w-0 gap-1 text-[11px] font-medium pbp-text-muted sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-3">
-                      <p className="truncate">{row.factoryName}</p>
+                      <p className="truncate font-semibold pbp-text-primary">{row.factoryName}</p>
                       <p className="tabular-nums sm:text-right">
                         발주 {row.orderQuantity.toLocaleString()}{row.unit} · 여유 {row.extraQuantity.toLocaleString()}{row.unit} · 금액 {formatMaterialOrderAmount(row.amount)}
                       </p>

@@ -201,10 +201,7 @@ export default function WorkOrderProcessEditSheet({
     setOutsourcingDraft(toOutsourcingDraft(outsourcing));
   }, [open, orderEntry, outsourcing]);
 
-  const orderTypeSelectOptions = useMemo(
-    () => buildOptions(orderTypeOptions, locale),
-    [locale, orderTypeOptions],
-  );
+  void orderTypeOptions;
   const factorySelectOptions = useMemo(
     () => buildFactorySelectOptions(factoryOptions, orderDraft.factory, locale),
     [factoryOptions, locale, orderDraft.factory],
@@ -251,7 +248,7 @@ export default function WorkOrderProcessEditSheet({
 
   const isOrderMode = mode === "order";
   const isApplyDisabled = isOrderMode
-    ? orderDraft.type.trim().length === 0
+    ? orderDraft.factory.trim().length === 0
     : outsourcingDraft.process.trim().length === 0;
 
   const handleApply = () => {
@@ -321,23 +318,6 @@ export default function WorkOrderProcessEditSheet({
     >
       {isOrderMode ? (
         <div className="grid gap-4">
-          <div className={fieldPanelClass}>
-            <label className={labelClass}>{copy.fields.item}</label>
-            <AppSelect
-              value={orderDraft.type}
-              options={orderTypeSelectOptions}
-              onValueChange={(value) => {
-                blurActiveModalElement();
-                setOrderDraft((current) => ({
-                  ...current,
-                  type: value,
-                  factory: "",
-                }));
-              }}
-              ariaLabel={copy.fields.item}
-              contentClassName="z-[4000]"
-            />
-          </div>
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.vendor}</label>
             <AppSelect

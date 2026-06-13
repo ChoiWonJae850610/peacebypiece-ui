@@ -1,11 +1,31 @@
 "use client";
 
-import { type ButtonHTMLAttributes, useEffect, useRef, useState } from "react";
+import {
+  type ButtonHTMLAttributes,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 
-import { WaflActionButton, WaflActionMenuItem, WaflActionMenuPanel, WaflAddActionButton, WaflMoreActionButton, type WaflActionButtonSize, type WaflActionButtonTone } from "@/components/common/ui";
+import {
+  WaflActionButton,
+  WaflActionMenuItem,
+  WaflActionMenuPanel,
+  WaflAddActionButton,
+  WaflMoreActionButton,
+  type WaflActionButtonSize,
+  type WaflActionButtonTone,
+} from "@/components/common/ui";
 import { cn } from "@/lib/utils";
 
-export function WorkOrderPlusIcon({ className = "h-3 w-3" }: { className?: string }) {
+export function WorkOrderPlusIcon({
+  className = "h-3 w-3",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       aria-hidden="true"
@@ -23,7 +43,11 @@ export function WorkOrderPlusIcon({ className = "h-3 w-3" }: { className?: strin
   );
 }
 
-export function WorkOrderMoreHorizontalIcon({ className = "h-4 w-4" }: { className?: string }) {
+export function WorkOrderMoreHorizontalIcon({
+  className = "h-4 w-4",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       aria-hidden="true"
@@ -42,7 +66,11 @@ export function WorkOrderMoreHorizontalIcon({ className = "h-4 w-4" }: { classNa
   );
 }
 
-export function WorkOrderEditIcon({ className = "h-3 w-3" }: { className?: string }) {
+export function WorkOrderEditIcon({
+  className = "h-3 w-3",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       aria-hidden="true"
@@ -60,7 +88,11 @@ export function WorkOrderEditIcon({ className = "h-3 w-3" }: { className?: strin
   );
 }
 
-export function WorkOrderTrashIcon({ className = "h-3 w-3" }: { className?: string }) {
+export function WorkOrderTrashIcon({
+  className = "h-3 w-3",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       aria-hidden="true"
@@ -81,7 +113,11 @@ export function WorkOrderTrashIcon({ className = "h-3 w-3" }: { className?: stri
   );
 }
 
-export function WorkOrderReplyIcon({ className = "h-3 w-3" }: { className?: string }) {
+export function WorkOrderReplyIcon({
+  className = "h-3 w-3",
+}: {
+  className?: string;
+}) {
   return (
     <svg
       aria-hidden="true"
@@ -100,7 +136,10 @@ export function WorkOrderReplyIcon({ className = "h-3 w-3" }: { className?: stri
   );
 }
 
-type WorkOrderIconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label" | "children"> & {
+type WorkOrderIconButtonProps = Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "aria-label" | "children"
+> & {
   label: string;
   size?: WaflActionButtonSize;
   tone?: WaflActionButtonTone;
@@ -124,7 +163,10 @@ export function WorkOrderAddIconButton({
       size={size}
       tone={tone}
       showSrLabel
-      className={cn(active ? workOrderActiveIconButtonClassName : "", className)}
+      className={cn(
+        active ? workOrderActiveIconButtonClassName : "",
+        className,
+      )}
       {...props}
     />
   );
@@ -144,7 +186,10 @@ export function WorkOrderMoreIconButton({
       size={size}
       tone={tone}
       showSrLabel={false}
-      className={cn(active ? workOrderActiveIconButtonClassName : "", className)}
+      className={cn(
+        active ? workOrderActiveIconButtonClassName : "",
+        className,
+      )}
       {...props}
     />
   );
@@ -159,7 +204,17 @@ export function WorkOrderEditIconButton({
   ...props
 }: WorkOrderIconButtonProps) {
   return (
-    <WaflActionButton label={label} size={size} tone={tone} showSrLabel className={cn(active ? workOrderActiveIconButtonClassName : "", className)} {...props}>
+    <WaflActionButton
+      label={label}
+      size={size}
+      tone={tone}
+      showSrLabel
+      className={cn(
+        active ? workOrderActiveIconButtonClassName : "",
+        className,
+      )}
+      {...props}
+    >
       <WorkOrderEditIcon />
     </WaflActionButton>
   );
@@ -174,7 +229,17 @@ export function WorkOrderDeleteIconButton({
   ...props
 }: WorkOrderIconButtonProps) {
   return (
-    <WaflActionButton label={label} size={size} tone={tone} showSrLabel className={cn(active ? workOrderActiveIconButtonClassName : "", className)} {...props}>
+    <WaflActionButton
+      label={label}
+      size={size}
+      tone={tone}
+      showSrLabel
+      className={cn(
+        active ? workOrderActiveIconButtonClassName : "",
+        className,
+      )}
+      {...props}
+    >
       <WorkOrderTrashIcon />
     </WaflActionButton>
   );
@@ -206,67 +271,124 @@ export function WorkOrderCardActionMenu({
   menuPanelClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLSpanElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  const updatePosition = useCallback(() => {
+    const trigger = triggerRef.current;
+    const panel = panelRef.current;
+    if (!trigger || !panel) return;
+    const triggerRect = trigger.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    const margin = 8;
+    const preferredTop = triggerRect.bottom + 6;
+    const canOpenBelow =
+      preferredTop + panelRect.height <= window.innerHeight - margin;
+    const top = canOpenBelow
+      ? preferredTop
+      : Math.max(margin, triggerRect.top - panelRect.height - 6);
+    const left = Math.min(
+      window.innerWidth - panelRect.width - margin,
+      Math.max(margin, triggerRect.right - panelRect.width),
+    );
+    setPosition({ top, left });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updatePosition();
+  }, [open, updatePosition]);
 
   useEffect(() => {
     if (!open) return;
-
     const handlePointerDown = (event: PointerEvent) => {
-      if (menuRef.current?.contains(event.target as Node)) return;
+      const target = event.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        panelRef.current?.contains(target)
+      )
+        return;
       setOpen(false);
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
-
+    const handleViewportChange = () => updatePosition();
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
     };
-  }, [open]);
+  }, [open, updatePosition]);
 
-  const handleEdit = () => {
+  const closeAndRun = (action?: () => void) => {
     setOpen(false);
-    onEdit?.();
-  };
-  const handleReply = () => {
-    setOpen(false);
-    onReply?.();
-  };
-  const handleDelete = () => {
-    setOpen(false);
-    onDelete?.();
+    action?.();
   };
 
   return (
-    <div ref={menuRef} className="relative shrink-0">
-      <WorkOrderMoreIconButton
-        label={menuLabel}
-        size="md"
-        onClick={() => setOpen((current) => !current)}
-        aria-expanded={open}
-      />
-      {open ? (
-        <WaflActionMenuPanel className={cn("top-9 min-w-[116px]", menuPanelClassName)}>
-          {onEdit && editLabel && editText ? (
-            <WaflActionMenuItem onClick={handleEdit} aria-label={editLabel} icon={<WorkOrderEditIcon className="h-3 w-3" />}>
-              {editText}
-            </WaflActionMenuItem>
-          ) : null}
-          {onReply && replyLabel && replyText ? (
-            <WaflActionMenuItem onClick={handleReply} aria-label={replyLabel} icon={<WorkOrderReplyIcon className="h-3 w-3" />}>
-              {replyText}
-            </WaflActionMenuItem>
-          ) : null}
-          {onDelete && deleteLabel && deleteText ? (
-            <WaflActionMenuItem onClick={handleDelete} aria-label={deleteLabel} tone="danger" icon={<WorkOrderTrashIcon className="h-3 w-3" />}>
-              {deleteText}
-            </WaflActionMenuItem>
-          ) : null}
-        </WaflActionMenuPanel>
-      ) : null}
+    <div className="relative shrink-0">
+      <span ref={triggerRef} className="inline-flex">
+        <WorkOrderMoreIconButton
+          label={menuLabel}
+          size="md"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={open}
+        />
+      </span>
+      {open && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={panelRef}
+              style={{
+                position: "fixed",
+                top: position.top,
+                left: position.left,
+                zIndex: 5000,
+              }}
+            >
+              <WaflActionMenuPanel
+                className={cn("!static min-w-[116px]", menuPanelClassName)}
+              >
+                {onEdit && editLabel && editText ? (
+                  <WaflActionMenuItem
+                    onClick={() => closeAndRun(onEdit)}
+                    aria-label={editLabel}
+                    icon={<WorkOrderEditIcon className="h-3 w-3" />}
+                  >
+                    {editText}
+                  </WaflActionMenuItem>
+                ) : null}
+                {onReply && replyLabel && replyText ? (
+                  <WaflActionMenuItem
+                    onClick={() => closeAndRun(onReply)}
+                    aria-label={replyLabel}
+                    icon={<WorkOrderReplyIcon className="h-3 w-3" />}
+                  >
+                    {replyText}
+                  </WaflActionMenuItem>
+                ) : null}
+                {onDelete && deleteLabel && deleteText ? (
+                  <WaflActionMenuItem
+                    onClick={() => closeAndRun(onDelete)}
+                    aria-label={deleteLabel}
+                    tone="danger"
+                    icon={<WorkOrderTrashIcon className="h-3 w-3" />}
+                  >
+                    {deleteText}
+                  </WaflActionMenuItem>
+                ) : null}
+              </WaflActionMenuPanel>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

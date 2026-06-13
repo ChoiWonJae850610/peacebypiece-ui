@@ -218,6 +218,7 @@ export function mapSpecSheetRowToWorkOrderSummary(
     workflowPath: normalizedWorkflowPath,
     lastSavedAt,
     orderEntryCount: readCountValue(row.order_entry_count),
+    representativeFactory: readStringRowValue(row.representative_factory),
     materialCount: readCountValue(row.material_count),
     materialFabricCount: readCountValue(row.material_fabric_count),
     materialSubmaterialCount: readCountValue(row.material_submaterial_count),

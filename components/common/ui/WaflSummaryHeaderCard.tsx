@@ -7,6 +7,7 @@ type WaflSummaryHeaderCardProps = {
   title: ReactNode;
   children: ReactNode;
   footerLeft?: ReactNode;
+  footerCenter?: ReactNode;
   footerRight?: ReactNode;
   columns?: 2 | 3;
   component?: string;
@@ -17,6 +18,7 @@ export default function WaflSummaryHeaderCard({
   title,
   children,
   footerLeft,
+  footerCenter,
   footerRight,
   columns = 3,
   component = "summary-header-card",
@@ -37,9 +39,10 @@ export default function WaflSummaryHeaderCard({
       >
         {children}
       </div>
-      {footerLeft || footerRight ? (
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">{footerLeft}</div>
+      {footerLeft || footerCenter || footerRight ? (
+        <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-3 sm:items-center">
+          <div className="min-w-0 sm:text-left">{footerLeft}</div>
+          <div className="min-w-0 sm:text-center">{footerCenter}</div>
           <div className="min-w-0 sm:text-right">{footerRight}</div>
         </div>
       ) : null}
