@@ -233,9 +233,14 @@ export function patchWorkOrder(
   const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? WORK_ORDER_KIND.sample;
   const currentRound = getWorkOrderReorderRound(workOrder);
   const isTransitioningFromReworkToMain = isReworkToMainTransition(workOrder.workOrderKind, requestedKind);
+  const explicitRound = patch.reorderRound == null ? null : Number(patch.reorderRound);
   const nextRound = isTransitioningFromReworkToMain
     ? Math.max(currentRound + 1, REWORK_TO_MAIN_APPEND_ROUND)
-    : Number(patch.reorderRound ?? currentRound);
+    : explicitRound != null && Number.isFinite(explicitRound)
+      ? explicitRound
+      : isWorkOrderKind(requestedKind, WORK_ORDER_KIND.sample)
+        ? 0
+        : Math.max(1, currentRound);
   const nextIsDefectOrder = isWorkOrderKind(requestedKind, WORK_ORDER_KIND.rework)
     ? Boolean(patch.isDefectOrder ?? workOrder.isDefectOrder ?? true)
     : false;

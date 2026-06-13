@@ -1,9 +1,15 @@
 import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import MaterialOrderWorkspacePage from "@/features/material-orders/MaterialOrderWorkspacePage";
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
+import { hasWorkspaceApiPermission } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 
 export default async function WorkspaceMaterialOrdersPageRoute() {
   const session = await requireWorkspacePagePermission("material.order.request");
+  const [canRequestMaterialOrder, canPlaceMaterialOrder] = await Promise.all([
+    hasWorkspaceApiPermission(session, MEMBER_PERMISSION_CODE.materialOrderRequest),
+    hasWorkspaceApiPermission(session, MEMBER_PERMISSION_CODE.materialOrderPlace),
+  ]);
 
   return (
     <WorkspacePageShell
@@ -14,7 +20,11 @@ export default async function WorkspaceMaterialOrdersPageRoute() {
       contentMode="fixed-md"
       hideTopbar
     >
-      <MaterialOrderWorkspacePage companyName={session.companyName ?? ""} />
+      <MaterialOrderWorkspacePage
+        companyName={session.companyName ?? ""}
+        canRequestMaterialOrder={canRequestMaterialOrder}
+        canPlaceMaterialOrder={canPlaceMaterialOrder}
+      />
     </WorkspacePageShell>
   );
 }

@@ -12,6 +12,8 @@ type MaterialOrderStatusFlowProps = {
   workflowPath: MaterialOrder["workflowPath"];
   changing: boolean;
   onChangeStatus: (status: MaterialOrderStatus) => void;
+  canRequestMaterialOrder: boolean;
+  canPlaceMaterialOrder: boolean;
   compact?: boolean;
   layout?: WorkflowProgressPanelLayout;
 };
@@ -21,6 +23,8 @@ export function MaterialOrderStatusFlow({
   workflowPath,
   changing,
   onChangeStatus,
+  canRequestMaterialOrder,
+  canPlaceMaterialOrder,
   compact = false,
   layout = "horizontal",
 }: MaterialOrderStatusFlowProps) {
@@ -28,7 +32,10 @@ export function MaterialOrderStatusFlow({
     0,
     MATERIAL_ORDER_STATUS_STEPS.findIndex((step) => step.status === status),
   );
-  const actions = resolveMaterialOrderStatusActions(status);
+  const actions = resolveMaterialOrderStatusActions(status, {
+    canRequestMaterialOrder,
+    canPlaceMaterialOrder,
+  });
   const primaryActionIndex = actions.length > 0 ? actions.length - 1 : -1;
   const progressSteps: WorkflowProgressPanelStep[] = MATERIAL_ORDER_STATUS_STEPS.map(
     (step, index) => ({

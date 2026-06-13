@@ -607,7 +607,7 @@ export function useMaterialOrderDraftEditor() {
         pending.workOrder,
         pending.material,
         pending.orderQuantity,
-        pending.requiredQuantity,
+        Math.min(pending.orderQuantity, pending.requiredQuantity),
         pending.unitPrice,
       ),
     ]);

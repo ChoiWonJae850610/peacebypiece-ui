@@ -61,8 +61,12 @@ function getViewportWidth() {
 
 export default function MaterialOrderDraftEditor({
   companyName,
+  canRequestMaterialOrder,
+  canPlaceMaterialOrder,
 }: {
   companyName: string;
+  canRequestMaterialOrder: boolean;
+  canPlaceMaterialOrder: boolean;
 }) {
   const deviceType = useResponsiveDeviceType();
   const orientation = useResponsiveOrientation();
@@ -220,6 +224,8 @@ export default function MaterialOrderDraftEditor({
       onChangeLine={updateLine}
       onRemoveLine={removeLine}
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
+      canRequestMaterialOrder={canRequestMaterialOrder}
+      canPlaceMaterialOrder={canPlaceMaterialOrder}
       mobile={deviceType === "mobile"}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
     />

@@ -46,6 +46,8 @@ type MaterialOrderDetailPanelProps = {
   ) => void;
   onRemoveLine: (lineId: string) => void;
   onChangeStatus: (status: MaterialOrderStatus) => void;
+  canRequestMaterialOrder: boolean;
+  canPlaceMaterialOrder: boolean;
   mobile?: boolean;
   progressLayout?: WorkflowProgressPanelLayout;
 };
@@ -68,6 +70,8 @@ export default function MaterialOrderDetailPanel({
   onChangeLine,
   onRemoveLine,
   onChangeStatus,
+  canRequestMaterialOrder,
+  canPlaceMaterialOrder,
   mobile = false,
   progressLayout = "horizontal",
 }: MaterialOrderDetailPanelProps) {
@@ -156,18 +160,20 @@ export default function MaterialOrderDetailPanel({
             </WaflSummaryInfoCell>
           </WaflSummaryHeaderCard>
 
-          <AppSection title="비용 요약" className="shrink-0" cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}>
-            <MaterialOrderSummaryCards totals={totals} lines={lines} materialType={materialType} />
-          </AppSection>
-
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             workflowPath={selectedOrder.workflowPath}
             changing={statusChanging}
             onChangeStatus={onChangeStatus}
+            canRequestMaterialOrder={canRequestMaterialOrder}
+            canPlaceMaterialOrder={canPlaceMaterialOrder}
             compact={mobile || progressLayout === "vertical"}
             layout={progressLayout}
           />
+
+          <AppSection title="비용 요약" className="shrink-0" cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}>
+            <MaterialOrderSummaryCards totals={totals} lines={lines} materialType={materialType} />
+          </AppSection>
 
           <AppSection
             title="발주 품목"
