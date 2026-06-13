@@ -97,6 +97,39 @@ export function formatMaterialQuantity(quantity: number, unit: string): string {
   return `${normalizedQuantity}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
 }
 
+export function formatMaterialItemTypeCountLabel(
+  itemType: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number]["itemType"],
+  count: number,
+): string {
+  return `${itemType === "fabric" ? "원단" : "부자재"} ${count}종`;
+}
+
+export function normalizeMaterialQuantityNumber(value: number): string {
+  const normalizedValue = Number.isFinite(value) ? value : 0;
+  if (Number.isInteger(normalizedValue)) return String(normalizedValue);
+  return normalizedValue
+    .toFixed(3)
+    .replace(/\.0+$/, "")
+    .replace(/(\.\d*?)0+$/, "$1");
+}
+
+export function resolveMaterialQuantityNumberClassName({
+  orderedQuantity,
+  requiredQuantity,
+  currentDraftQuantity,
+}: {
+  orderedQuantity: number;
+  requiredQuantity: number;
+  currentDraftQuantity: number;
+}): string {
+  if (orderedQuantity <= 0) return "text-[var(--pbp-status-danger-fg)]";
+  if (orderedQuantity >= requiredQuantity && currentDraftQuantity > 0)
+    return "text-[var(--pbp-status-success-fg)]";
+  if (orderedQuantity >= requiredQuantity)
+    return "text-[var(--pbp-status-info-fg)]";
+  return "text-[var(--pbp-status-warning-fg)]";
+}
+
 
 export type MaterialRequestAllocationSummary = {
   allocatedQuantity: number;
