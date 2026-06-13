@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { WaflSideWorkspacePanel } from "@/components/common/ui";
+import { WaflSideWorkspacePanel, WaflSurface } from "@/components/common/ui";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
 import {
