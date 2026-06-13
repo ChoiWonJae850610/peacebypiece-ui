@@ -108,3 +108,4 @@ export { default as WaflDetailWorkspacePanel } from "./WaflDetailWorkspacePanel"
 export { default as WaflSideWorkspacePanel } from "./WaflSideWorkspacePanel";
 
 export { default as WaflSummaryHeaderCard, WaflSummaryInfoCell } from "./WaflSummaryHeaderCard";
+export * from "./WaflEmptyWorkspaceState";

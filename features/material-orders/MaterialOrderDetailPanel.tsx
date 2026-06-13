@@ -2,7 +2,7 @@ import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicke
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSurface, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
+import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyWorkspaceState, WaflInfoRow, WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSurface, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import {
@@ -217,12 +217,12 @@ export default function MaterialOrderDetailPanel({
 
         </div>
       ) : (
-        <WaflEmptyCard component="material-order-detail-empty" shape="control" className="flex min-h-full flex-1 items-center justify-center px-5 py-10">
-          <div>
-            <p className="text-sm font-semibold pbp-text-primary">발주서를 선택하세요.</p>
-            <p className="mt-1 text-xs leading-5 pbp-text-muted">왼쪽 발주서 목록에서 새 발주서를 만들거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다.</p>
-          </div>
-        </WaflEmptyCard>
+        <WaflEmptyWorkspaceState
+          title="발주서를 선택해 주세요"
+          description="왼쪽 발주서 목록에서 새 발주서를 만들거나 기존 발주서를 선택하면 상세 입력 영역이 열립니다."
+          variant="center-panel"
+          className="min-h-full flex-1"
+        />
       )}
       </WaflPanelContentShell>
     </WaflDetailWorkspacePanel>

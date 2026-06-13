@@ -1,4 +1,4 @@
-import { WaflButton, WaflErrorState, WaflLoadingState, WaflStateBlock } from "@/components/common/ui";
+import { WaflButton, WaflEmptyWorkspaceState, WaflErrorState, WaflLoadingState } from "@/components/common/ui";
 
 export type MaterialOrderPanelMessageKind = "empty" | "loading" | "error" | "search";
 
@@ -8,6 +8,7 @@ type MaterialOrderPanelMessageProps = {
   actionLabel?: string;
   onAction?: () => void;
   kind?: MaterialOrderPanelMessageKind;
+  variant?: "center-panel" | "side-panel" | "inline-section";
 };
 
 export default function MaterialOrderPanelMessage({
@@ -16,6 +17,7 @@ export default function MaterialOrderPanelMessage({
   actionLabel,
   onAction,
   kind = "empty",
+  variant = "side-panel",
 }: MaterialOrderPanelMessageProps) {
   const action = actionLabel && onAction ? (
     <WaflButton size="sm" variant={kind === "error" ? "danger" : "ghost"} onClick={onAction}>
@@ -30,7 +32,7 @@ export default function MaterialOrderPanelMessage({
         description={description}
         action={action}
         size="sm"
-        minHeightClassName="min-h-[132px]"
+        minHeightClassName={variant === "inline-section" ? "min-h-[96px]" : "min-h-[132px]"}
         className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
       />
     );
@@ -43,21 +45,20 @@ export default function MaterialOrderPanelMessage({
         description={description}
         action={action}
         size="sm"
-        minHeightClassName="min-h-[132px]"
+        minHeightClassName={variant === "inline-section" ? "min-h-[96px]" : "min-h-[132px]"}
         className="wafl-shape-control"
       />
     );
   }
 
   return (
-    <WaflStateBlock
+    <WaflEmptyWorkspaceState
       kind={kind}
       title={title}
       description={description}
       action={action}
-      size="sm"
-      minHeightClassName="min-h-[132px]"
-      className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
+      variant={variant}
+      className="wafl-shape-control"
     />
   );
 }
