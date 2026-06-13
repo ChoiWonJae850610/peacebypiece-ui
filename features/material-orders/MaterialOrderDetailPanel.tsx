@@ -9,7 +9,7 @@ import {
   formatMaterialOrderStatusLabel,
   resolveMaterialOrderStatusBadgeTone,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import { MaterialOrderSummaryCards, MaterialOrderSummaryFooter } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
+import { MaterialOrderSummaryCards } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
 import {
   MATERIAL_ORDER_SECTION_CARD_CLASS,
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
@@ -170,7 +170,6 @@ export default function MaterialOrderDetailPanel({
             ) : null}
           </AppSection>
 
-          <MaterialOrderSummaryFooter totals={totals} />
         </div>
       ) : (
         <WaflEmptyCard component="material-order-detail-empty" shape="control" className="flex min-h-full flex-1 items-center justify-center px-5 py-10">

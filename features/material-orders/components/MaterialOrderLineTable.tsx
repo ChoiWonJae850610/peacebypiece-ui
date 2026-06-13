@@ -6,6 +6,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import { AppSelect, WaflButton, WaflEmptyCard, WaflInput, WaflModalSection, WaflSurface, type AppSelectOption } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
+  calculateMaterialOrderLineAllocatedQuantity,
   calculateMaterialOrderLineAmount,
   formatMaterialOrderAmount,
   type MaterialOrderDraftLine,
@@ -84,12 +85,6 @@ function MaterialOrderLineCards({
       unit: editDraft.unit,
       orderQuantity: editDraft.orderQuantity,
       unitPrice: editDraft.unitPrice,
-      allocations: editingLine.allocations.length > 0
-        ? editingLine.allocations.map((allocation) => ({
-          ...allocation,
-          allocatedQuantity: editDraft.orderQuantity,
-        }))
-        : editingLine.allocations,
     });
     closeEditModal();
   };
@@ -145,6 +140,9 @@ function MaterialOrderLineCard({
   onRemove: () => void;
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
+  const requiredQuantity = calculateMaterialOrderLineAllocatedQuantity(line);
+  const extraQuantity = Math.max(0, Number((line.orderQuantity - requiredQuantity).toFixed(2)));
+  const unitLabel = line.unit || "미선택";
 
   return (
     <WaflSurface
@@ -159,10 +157,13 @@ function MaterialOrderLineCard({
           <p className="truncate text-sm font-semibold pbp-text-primary">
             {line.itemName || "품목명 미입력"}
           </p>
-          <p className="mt-1 truncate text-[11px] font-medium leading-4 pbp-text-muted">
-            단위 {line.unit || "미선택"} · 수량 {line.orderQuantity.toLocaleString()} · 단가 {formatMaterialOrderAmount(line.unitPrice)}
-          </p>
-          <p className="mt-1 text-[11px] font-semibold tabular-nums pbp-text-primary">
+          <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-medium leading-4 pbp-text-muted sm:grid-cols-4">
+            <span className="truncate">필요수량 {requiredQuantity.toLocaleString()} {unitLabel}</span>
+            <span className="truncate">주문수량 {line.orderQuantity.toLocaleString()} {unitLabel}</span>
+            <span className="truncate">여유주문 {extraQuantity.toLocaleString()} {unitLabel}</span>
+            <span className="truncate">단가 {formatMaterialOrderAmount(line.unitPrice)}</span>
+          </div>
+          <p className="mt-2 text-[11px] font-semibold tabular-nums pbp-text-primary">
             금액 {formatMaterialOrderAmount(lineAmount)}
           </p>
         </div>
