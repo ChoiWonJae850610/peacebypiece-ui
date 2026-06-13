@@ -204,6 +204,7 @@ export async function updateMaterialOrderDetail(input: {
   materialOrderId: string;
   supplierPartnerId?: string | null;
   note?: string | null;
+  dueDate?: string | null;
   lines: MaterialOrderLineInput[];
 }): Promise<MaterialOrderWorkspaceMutationResult> {
   const response = await fetch("/api/material-orders", {

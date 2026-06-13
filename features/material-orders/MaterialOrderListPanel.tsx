@@ -292,6 +292,11 @@ function MaterialOrderListButton({
           <p className="mt-1.5 truncate text-[11px] font-medium pbp-text-muted">
             업체: {supplierLabel}
           </p>
+          {order.dueDate ? (
+            <p className="mt-1 truncate text-[11px] font-medium pbp-text-muted">
+              납기일: {order.dueDate}
+            </p>
+          ) : null}
         </button>
         {canCancelOrder ? (
           <div className="absolute right-3 top-3">

@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
+import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
 import { AppBadge, AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyCard, WaflInfoRow, WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSurface, type AppSelectOption } from "@/components/common/ui";
@@ -33,6 +35,8 @@ type MaterialOrderDetailPanelProps = {
   suppliersError: string | null;
   lines: MaterialOrderDraftLine[];
   totals: MaterialOrderDraftTotals;
+  dueDate: string;
+  onChangeDueDate: (value: string) => void;
   onChangeMaterialType: (materialType: MaterialOrderDraftSelectionType) => void;
   onChangeSupplierPartnerId: (partnerId: string | null) => void;
   onRetrySuppliers: () => void;
@@ -56,6 +60,8 @@ export default function MaterialOrderDetailPanel({
   suppliersError,
   lines,
   totals,
+  dueDate,
+  onChangeDueDate,
   onChangeMaterialType,
   onChangeSupplierPartnerId,
   onRetrySuppliers,
@@ -127,8 +133,26 @@ export default function MaterialOrderDetailPanel({
                   </WaflButton>
                 ) : null}
               </FieldLabel>
+              <FieldLabel label="납기일">
+                <PbpSingleDatePicker
+                  value={dueDate}
+                  labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "발주서 납기일 선택" }}
+                  locale="ko"
+                  minDateValue={getTodayPbpLocalDateValue()}
+                  onChange={onChangeDueDate}
+                  popoverMode="fixed"
+                  disabled={!isDraftEditable}
+                />
+              </FieldLabel>
+              <div className="grid content-end gap-1 text-[11px] font-semibold pbp-text-subtle">
+                <span>작성일</span>
+                <span className="min-h-8 px-1.5 py-2 text-xs font-medium pbp-text-primary">{selectedOrder.createdAt.slice(0, 10)}</span>
+              </div>
             </div>
-            <MaterialOrderSummaryCards totals={totals} materialType={materialType} />
+          </AppSection>
+
+          <AppSection title="비용 요약" className="shrink-0" cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}>
+            <MaterialOrderSummaryCards totals={totals} lines={lines} materialType={materialType} />
           </AppSection>
 
           <MaterialOrderStatusFlow

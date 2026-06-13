@@ -54,7 +54,7 @@ export function MaterialOrderStatusFlow({
 
   return (
     <WorkflowProgressPanel
-      title="발주 진행 단계"
+      title="진행 단계"
       steps={progressSteps}
       actions={progressActions}
       density={compact ? "compact" : "default"}

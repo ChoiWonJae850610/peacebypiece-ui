@@ -35,6 +35,7 @@ type PbpSingleDatePickerProps = {
   disabled?: boolean;
   defaultOpen?: boolean;
   className?: string;
+  triggerVariant?: "field" | "subtle";
 };
 
 export function PbpSingleDatePicker({
@@ -51,6 +52,7 @@ export function PbpSingleDatePicker({
   disabled = false,
   defaultOpen = false,
   className = "",
+  triggerVariant = "field",
 }: PbpSingleDatePickerProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(defaultOpen && !disabled);
   const [fixedPopoverStyle, setFixedPopoverStyle] = useState<CSSProperties | null>(null);
@@ -198,7 +200,9 @@ export function PbpSingleDatePicker({
         type="button"
         onClick={() => setIsCalendarOpen((current) => !current)}
         disabled={disabled}
-        className="pbp-field-interaction pbp-field-selectable flex min-h-8 w-full min-w-0 items-center justify-between gap-2 rounded-lg border px-2 text-left text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60"
+        className={triggerVariant === "subtle"
+          ? "pbp-interactive-button flex min-h-8 w-full min-w-0 items-center justify-between gap-2 rounded-[var(--pbp-radius-wafl)] px-1.5 text-left text-xs font-medium transition hover:bg-[var(--pbp-surface-muted)] focus-visible:bg-[var(--pbp-surface-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+          : "pbp-field-interaction pbp-field-selectable flex min-h-8 w-full min-w-0 items-center justify-between gap-2 rounded-lg border px-2 text-left text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60"}
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >

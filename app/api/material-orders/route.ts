@@ -24,6 +24,7 @@ type MaterialOrderRequestBody = {
   supplierPartnerId?: unknown;
   status?: unknown;
   note?: unknown;
+  dueDate?: unknown;
   lines?: unknown;
 };
 
@@ -198,6 +199,7 @@ export async function POST(request: NextRequest) {
         requestedByUserId: guard.session.userId,
         status,
         note: normalizeOptionalText(body.note),
+        dueDate: normalizeOptionalText(body.dueDate),
         lines: normalizeMaterialOrderLines(body.lines),
       }),
     );
@@ -236,6 +238,7 @@ export async function PUT(request: NextRequest) {
         materialOrderId,
         supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
         note: normalizeOptionalText(body.note),
+        dueDate: normalizeOptionalText(body.dueDate),
         lines: normalizeMaterialOrderLines(body.lines),
       }),
     );

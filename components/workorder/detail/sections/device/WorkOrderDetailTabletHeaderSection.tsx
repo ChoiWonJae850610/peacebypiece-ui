@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useI18n } from "@/lib/i18n";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -12,32 +13,6 @@ import {
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type HeaderProps = WorkOrderDetailViewModel["headerProps"];
-
-function PencilIcon() {
-  return (
-    <svg
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-      className="h-3.5 w-3.5"
-    >
-      <path
-        d="M13.9 2.6a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1l-8.8 8.8-3.6.7.7-3.6 8.2-8.2Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m12.5 4 3.5 3.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function TabletSummaryAction({
   label,
@@ -72,7 +47,7 @@ function TabletSummaryAction({
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center wafl-shape-icon bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]"
           aria-hidden="true"
         >
-          <PencilIcon />
+          <WorkOrderEditIcon className="h-3.5 w-3.5" />
         </span>
       ) : null}
     </WaflSurfaceButton>
@@ -198,7 +173,7 @@ export default function WorkOrderDetailTabletHeaderSection({
                     size="sm"
                     aria-label={copy.titleEditAria}
                   >
-                    <PencilIcon />
+                    <WorkOrderEditIcon className="h-3.5 w-3.5" />
                   </WaflButton>
                 ) : null}
               </>

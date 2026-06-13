@@ -20,6 +20,7 @@ import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
+import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
 import { RESPONSIVE_BREAKPOINTS } from "@/lib/responsive/responsiveLayoutPolicy";
@@ -117,13 +118,16 @@ export default function MaterialOrderDraftEditor({
     materialType,
     supplierPartnerId,
     lines,
+    dueDate,
     totals,
     selectedDraftSupplierName,
     materialRequestQuantityMap,
     materialRequestCompletionMap,
+    materialOrderLineAddModal,
     materialOrderValidationModal,
     setSelectedOrderId,
     setSupplierPartnerId,
+    setDueDate,
     refreshOrders,
     refreshWorkOrderCandidates,
     refreshSuppliers,
@@ -175,7 +179,10 @@ export default function MaterialOrderDraftEditor({
   );
 
   const validationModal = (
-    <WorkflowValidationModal {...materialOrderValidationModal} />
+    <>
+      <MaterialOrderLineAddModal {...materialOrderLineAddModal} />
+      <WorkflowValidationModal {...materialOrderValidationModal} />
+    </>
   );
 
   const listPanel = (
@@ -204,6 +211,8 @@ export default function MaterialOrderDraftEditor({
       suppliersError={suppliersError}
       lines={lines}
       totals={totals}
+      dueDate={dueDate}
+      onChangeDueDate={setDueDate}
       onChangeMaterialType={changeMaterialType}
       onChangeSupplierPartnerId={setSupplierPartnerId}
       onRetrySuppliers={() => void refreshSuppliers(materialType)}

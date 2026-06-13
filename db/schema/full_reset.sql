@@ -974,6 +974,7 @@ CREATE TABLE material_orders (
   requested_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
   approved_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
   ordered_at timestamptz,
+  due_date date,
   total_amount numeric(14, 2) NOT NULL DEFAULT 0,
   note text,
   created_at timestamptz NOT NULL DEFAULT now(),

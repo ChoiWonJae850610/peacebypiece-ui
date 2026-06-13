@@ -64,6 +64,7 @@ export type MaterialOrder = {
   requestedByDisplayName: string | null;
   approvedByUserId: string | null;
   orderedAt: string | null;
+  dueDate: string | null;
   totalAmount: number;
   note: string | null;
   lines: MaterialOrderLine[];
@@ -125,6 +126,7 @@ export type MaterialOrderCreateInput = {
   requestedByUserId: string;
   status?: MaterialOrderStatus;
   note?: string | null;
+  dueDate?: string | null;
   lines?: MaterialOrderLineInput[];
 };
 
@@ -134,6 +136,7 @@ export type MaterialOrderUpdateInput = {
   materialOrderId: string;
   supplierPartnerId?: string | null;
   note?: string | null;
+  dueDate?: string | null;
   lines: MaterialOrderLineInput[];
 };
 

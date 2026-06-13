@@ -39,6 +39,7 @@ type SelectedOrderDetailPayload = {
   materialOrderId: string;
   supplierPartnerId: string | null;
   note: string;
+  dueDate: string | null;
   lines: Array<{
     itemName: string;
     itemType: MaterialOrderDraftType;
@@ -58,10 +59,12 @@ function getMaterialOrderStatusValidationIssues({
   materialType,
   supplierPartnerId,
   lines,
+  dueDate,
 }: {
   materialType: MaterialOrderDraftSelectionType;
   supplierPartnerId: string | null;
   lines: MaterialOrderDraftLine[];
+  dueDate: string;
 }): WorkflowValidationIssue[] {
   const issues: WorkflowValidationIssue[] = [];
 
@@ -98,6 +101,10 @@ function getMaterialOrderStatusValidationIssues({
     });
   }
 
+  if (!dueDate) {
+    issues.push({ id: "missing_due_date", level: "warning", message: "납기일이 입력되지 않았습니다. 필요하면 날짜를 선택한 뒤 진행해주세요." });
+  }
+
   const hasZeroUnitPrice = lines.some((line) => Number(line.unitPrice) <= 0);
   if (hasZeroUnitPrice) {
     issues.push({
@@ -115,22 +122,22 @@ function createDraftLineFromMaterial(
   workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
   material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   orderQuantity: number,
+  allocatedQuantity = orderQuantity,
+  unitPrice = material.unitCost ?? 0,
 ): MaterialOrderDraftLine {
   return {
     id: `draft-line-${Date.now()}-${currentLineCount + 1}`,
     itemName: material.itemName,
     unit: material.unit || "마",
     orderQuantity,
-    unitPrice: Number.isFinite(material.unitCost ?? 0)
-      ? (material.unitCost ?? 0)
-      : 0,
+    unitPrice: Number.isFinite(unitPrice) ? unitPrice : 0,
     sourceWorkOrderId: workOrder.id,
     sourceMaterialKey: material.key,
     allocations: [
       {
         workOrderId: workOrder.id,
         sourceMaterialKey: material.key,
-        allocatedQuantity: orderQuantity,
+        allocatedQuantity,
         allocationNote: "",
       },
     ],
@@ -188,6 +195,14 @@ export function useMaterialOrderDraftEditor() {
     null,
   );
   const [lines, setLines] = useState<MaterialOrderDraftLine[]>([]);
+  const [dueDate, setDueDate] = useState("");
+  const [pendingLineAddition, setPendingLineAddition] = useState<{
+    workOrder: MaterialOrderWorkspaceWorkOrderCandidate;
+    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
+    requiredQuantity: number;
+    orderQuantity: number;
+    unitPrice: number;
+  } | null>(null);
   const [pendingStatusValidation, setPendingStatusValidation] = useState<{
     nextStatus: MaterialOrderStatus;
     issues: WorkflowValidationIssue[];
@@ -326,12 +341,14 @@ export function useMaterialOrderDraftEditor() {
       setMaterialType("");
       setSupplierPartnerId(null);
       setLines([]);
+      setDueDate("");
       return;
     }
 
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "");
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
     setStatusToastMessage(null);
+    setDueDate(selectedOrder.dueDate ?? "");
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
   }, [selectedOrder]);
 
@@ -385,6 +402,7 @@ export function useMaterialOrderDraftEditor() {
         materialOrderId: selectedOrder.id,
         supplierPartnerId,
         note: selectedOrder.note ?? "",
+        dueDate: dueDate || null,
         lines: lines.map((line) => ({
           itemName: line.itemName,
           itemType: (materialType || "fabric") as MaterialOrderDraftType,
@@ -400,7 +418,7 @@ export function useMaterialOrderDraftEditor() {
           })),
         })),
       };
-    }, [lines, materialType, selectedOrder, supplierPartnerId]);
+    }, [dueDate, lines, materialType, selectedOrder, supplierPartnerId]);
 
   const applySelectedOrderStatusChange = useCallback(
     async (status: MaterialOrderStatus) => {
@@ -464,6 +482,7 @@ export function useMaterialOrderDraftEditor() {
           materialType,
           supplierPartnerId,
           lines,
+          dueDate,
         });
         if (issues.length > 0) {
           setPendingStatusValidation({ nextStatus: status, issues });
@@ -559,19 +578,41 @@ export function useMaterialOrderDraftEditor() {
 
         if (remainingQuantity <= 0) return current;
 
-        return [
-          ...current,
-          createDraftLineFromMaterial(
-            current.length,
-            workOrder,
-            material,
-            remainingQuantity,
-          ),
-        ];
+        setPendingLineAddition({
+          workOrder,
+          material,
+          requiredQuantity: remainingQuantity,
+          orderQuantity: remainingQuantity,
+          unitPrice: Number.isFinite(material.unitCost ?? 0) ? (material.unitCost ?? 0) : 0,
+        });
+        return current;
       });
     },
     [materialRequestQuantityMap, selectedOrder],
   );
+
+  const updatePendingLineAddition = useCallback((patch: Partial<{ orderQuantity: number; unitPrice: number }>) => {
+    setPendingLineAddition((current) => current ? { ...current, ...patch } : current);
+  }, []);
+
+  const closePendingLineAddition = useCallback(() => setPendingLineAddition(null), []);
+
+  const confirmPendingLineAddition = useCallback(() => {
+    const pending = pendingLineAddition;
+    if (!pending || pending.orderQuantity <= 0) return;
+    setLines((current) => [
+      ...current,
+      createDraftLineFromMaterial(
+        current.length,
+        pending.workOrder,
+        pending.material,
+        pending.orderQuantity,
+        pending.requiredQuantity,
+        pending.unitPrice,
+      ),
+    ]);
+    setPendingLineAddition(null);
+  }, [pendingLineAddition]);
 
   const removeLine = useCallback((lineId: string) => {
     setLines((current) => current.filter((line) => line.id !== lineId));
@@ -597,10 +638,22 @@ export function useMaterialOrderDraftEditor() {
     materialType,
     supplierPartnerId,
     lines,
+    dueDate,
     totals,
     selectedDraftSupplierName,
     materialRequestQuantityMap,
     materialRequestCompletionMap,
+    materialOrderLineAddModal: {
+      open: pendingLineAddition !== null,
+      itemName: pendingLineAddition?.material.itemName ?? "",
+      unit: pendingLineAddition?.material.unit || "마",
+      requiredQuantity: pendingLineAddition?.requiredQuantity ?? 0,
+      orderQuantity: pendingLineAddition?.orderQuantity ?? 0,
+      unitPrice: pendingLineAddition?.unitPrice ?? 0,
+      onChange: updatePendingLineAddition,
+      onClose: closePendingLineAddition,
+      onConfirm: confirmPendingLineAddition,
+    },
     materialOrderValidationModal: {
       open: pendingStatusValidation !== null,
       issues: pendingStatusValidation?.issues ?? [],
@@ -617,6 +670,7 @@ export function useMaterialOrderDraftEditor() {
     },
     setSelectedOrderId,
     setSupplierPartnerId,
+    setDueDate,
     refreshOrders,
     refreshWorkOrderCandidates,
     refreshSuppliers,

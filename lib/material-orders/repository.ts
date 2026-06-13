@@ -28,6 +28,7 @@ type MaterialOrderRow = {
   requested_by_display_name: string | null;
   approved_by_user_id: string | null;
   ordered_at: Date | string | null;
+  due_date: Date | string | null;
   total_amount: string | number;
   note: string | null;
   created_at: Date | string;
@@ -168,6 +169,7 @@ function mapOrderRow(
     requestedByDisplayName: row.requested_by_display_name,
     approvedByUserId: row.approved_by_user_id,
     orderedAt: toIsoStringOrNull(row.ordered_at),
+    dueDate: row.due_date ? String(row.due_date).slice(0, 10) : null,
     totalAmount: toNumber(row.total_amount),
     note: row.note,
     lines: linesByOrderId.get(row.id) ?? [],
@@ -224,6 +226,7 @@ const MATERIAL_ORDER_SELECT_SQL = `
     ) AS requested_by_display_name,
     orders.approved_by_user_id,
     orders.ordered_at,
+    orders.due_date,
     orders.total_amount,
     orders.note,
     orders.created_at,
@@ -490,9 +493,10 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
          workflow_path,
          requested_by_user_id,
          total_amount,
-         note
+         note,
+         due_date
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id`,
       [
         input.companyId,
@@ -502,6 +506,7 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
         input.requestedByUserId,
         calculateTotalAmount(input.lines),
         normalizeText(input.note),
+        normalizeText(input.dueDate),
       ],
     );
 
@@ -531,6 +536,7 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
       normalizeText(input.supplierPartnerId),
       calculateTotalAmount(input.lines),
       normalizeText(input.note),
+      normalizeText(input.dueDate),
     ];
     const visibilityPredicate = buildRequestedByVisibilityPredicate(
       input.visibility,
@@ -543,6 +549,7 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
        SET supplier_partner_id = $3,
            total_amount = $4,
            note = $5,
+           due_date = $6,
            updated_at = now()
        WHERE company_id = $1
          AND id = $2

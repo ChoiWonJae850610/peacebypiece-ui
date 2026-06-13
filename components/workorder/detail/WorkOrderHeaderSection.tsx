@@ -2,20 +2,13 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { WaflButton, WaflInput, WaflSurface } from "@/components/common/ui";
+import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
+import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 import type { RoleType } from "@/types/workorder";
-
-function PencilIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3.5 w-3.5">
-      <path d="M13.9 2.6a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1l-8.8 8.8-3.6.7.7-3.6 8.2-8.2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="m12.5 4 3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 type WorkOrderHeaderSectionProps = {
   title: string;
@@ -154,7 +147,7 @@ export default function WorkOrderHeaderSection({
               className="self-start pbp-text-subtle"
               aria-label={copy.titleEditAria}
             >
-              <PencilIcon />
+              <WorkOrderEditIcon className="h-3.5 w-3.5" />
             </WaflButton>
           ) : null}
         </div>
@@ -204,9 +197,11 @@ export default function WorkOrderHeaderSection({
           }}
           locale="ko"
           onChange={onChangeDueDate}
+          minDateValue={getTodayPbpLocalDateValue()}
           popoverMode="fixed"
           disabled={locked}
-          className="w-full sm:w-[180px]"
+          triggerVariant="subtle"
+          className="w-full sm:w-[190px]"
         />
         <p className="truncate text-right text-xs pbp-text-subtle">
           {copy.lastUpdatedPrefix} {lastSavedAt || "-"}
@@ -246,7 +241,7 @@ function WorkOrderHeaderInfoCell({
     <button
       type="button"
       onClick={onClick}
-      className="pbp-interactive-button min-w-0 text-center"
+      className="pbp-interactive-button min-w-0 rounded-[var(--pbp-radius-wafl)] px-1.5 py-1 text-center transition hover:bg-[var(--pbp-surface-muted)] focus-visible:bg-[var(--pbp-surface-muted)]"
     >
       {content}
     </button>
