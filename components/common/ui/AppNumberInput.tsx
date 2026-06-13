@@ -102,7 +102,9 @@ export default function AppNumberInput({
         if (displayValue.trim() === "") {
           onValueChange(min);
           setDisplayValue(numberToDisplay(min));
+          return;
         }
+        commitValue(displayValue);
       }}
       onKeyDown={handleKeyDown}
       onChange={(event) => commitValue(event.target.value)}

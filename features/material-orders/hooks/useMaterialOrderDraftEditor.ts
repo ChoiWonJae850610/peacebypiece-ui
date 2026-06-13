@@ -614,15 +614,17 @@ export function useMaterialOrderDraftEditor() {
 
   const closePendingLineAddition = useCallback(() => setPendingLineAddition(null), []);
 
-  const confirmPendingLineAddition = useCallback(() => {
+  const confirmPendingLineAddition = useCallback((override?: { orderQuantity: number; unitPrice: number }) => {
     const pending = pendingLineAddition;
     if (!pending) return;
 
-    const orderQuantity = Number.isFinite(pending.orderQuantity)
-      ? Math.max(0, pending.orderQuantity)
+    const rawOrderQuantity = override?.orderQuantity ?? pending.orderQuantity;
+    const rawUnitPrice = override?.unitPrice ?? pending.unitPrice;
+    const orderQuantity = Number.isFinite(rawOrderQuantity)
+      ? Math.max(0, rawOrderQuantity)
       : 0;
-    const unitPrice = Number.isFinite(pending.unitPrice)
-      ? Math.max(0, pending.unitPrice)
+    const unitPrice = Number.isFinite(rawUnitPrice)
+      ? Math.max(0, rawUnitPrice)
       : 0;
 
     if (orderQuantity < 1) return;

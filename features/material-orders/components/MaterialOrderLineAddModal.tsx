@@ -1,6 +1,7 @@
 "use client";
 
 import ModalShell from "@/components/common/modal/ModalShell";
+import { useRef, type MouseEvent, type PointerEvent, type TouchEvent } from "react";
 import { AppNumberInput, WaflButton, WaflInput, WaflModalSection, WaflSurface, WAFL_FIELD_INPUT_CLASS } from "@/components/common/ui";
 import { formatMaterialOrderAmount } from "@/lib/material-orders/materialOrderDraftCalculator";
 
@@ -13,7 +14,7 @@ type MaterialOrderLineAddModalProps = {
   unitPrice: number;
   onChange: (patch: Partial<{ orderQuantity: number; unitPrice: number }>) => void;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (values?: { orderQuantity: number; unitPrice: number }) => void;
 };
 
 export default function MaterialOrderLineAddModal({
@@ -27,19 +28,57 @@ export default function MaterialOrderLineAddModal({
   onClose,
   onConfirm,
 }: MaterialOrderLineAddModalProps) {
+  const confirmLockRef = useRef(false);
+  const lastConfirmAtRef = useRef(0);
   const normalizedOrderQuantity = Number.isFinite(orderQuantity) ? orderQuantity : 0;
   const normalizedUnitPrice = Number.isFinite(unitPrice) ? unitPrice : 0;
   const canConfirm = normalizedOrderQuantity >= 1;
   const extraQuantity = Math.max(0, Number((normalizedOrderQuantity - requiredQuantity).toFixed(2)));
   const amount = Number((normalizedOrderQuantity * normalizedUnitPrice).toFixed(2));
-  const handleConfirm = () => {
-    if (!canConfirm) return;
-    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
+  const blurActiveInput = () => {
+    if (typeof document === "undefined") return;
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement) {
+      activeElement.blur();
     }
-    window.requestAnimationFrame(() => {
-      onConfirm();
-    });
+  };
+
+  const commitConfirm = () => {
+    if (!canConfirm || confirmLockRef.current) return;
+    confirmLockRef.current = true;
+    lastConfirmAtRef.current = Date.now();
+    blurActiveInput();
+    const values = {
+      orderQuantity: Math.max(1, Number.isFinite(normalizedOrderQuantity) ? normalizedOrderQuantity : 0),
+      unitPrice: Math.max(0, Number.isFinite(normalizedUnitPrice) ? normalizedUnitPrice : 0),
+    };
+    window.setTimeout(() => {
+      onConfirm(values);
+      window.setTimeout(() => {
+        confirmLockRef.current = false;
+      }, 120);
+    }, 32);
+  };
+
+  const handleConfirmClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (Date.now() - lastConfirmAtRef.current < 220) return;
+    commitConfirm();
+  };
+
+  const handleConfirmPointerDown = () => {
+    blurActiveInput();
+  };
+
+  const handleConfirmPointerUp = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === "mouse") return;
+    event.preventDefault();
+    commitConfirm();
+  };
+
+  const handleConfirmTouchEnd = (event: TouchEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    commitConfirm();
   };
 
   return (
@@ -52,7 +91,16 @@ export default function MaterialOrderLineAddModal({
       bodyClassName="grid gap-3"
       footerClassName="flex justify-end"
       footer={
-        <WaflButton type="button" variant="primary" size="sm" disabled={!canConfirm} onClick={handleConfirm}>
+        <WaflButton
+          type="button"
+          variant="primary"
+          size="sm"
+          disabled={!canConfirm}
+          onPointerDown={handleConfirmPointerDown}
+          onPointerUp={handleConfirmPointerUp}
+          onTouchEnd={handleConfirmTouchEnd}
+          onClick={handleConfirmClick}
+        >
           추가
         </WaflButton>
       }
