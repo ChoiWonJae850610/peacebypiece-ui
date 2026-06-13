@@ -199,6 +199,7 @@ export default function WorkOrderHeaderSection({
           popoverMode="fixed"
           disabled={locked}
           triggerVariant="subtle"
+          triggerClassName="!min-h-0 !justify-center !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)]"
           className="mx-auto w-full max-w-[190px]"
         />
         </WaflSummaryInfoCell>

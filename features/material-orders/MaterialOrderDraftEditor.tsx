@@ -12,7 +12,8 @@ import {
   WaflMobileListDrawer,
   WaflMobileShell,
   WaflMobileTabbedActionSheet,
-  WaflSurface,
+  WaflDetailWorkspacePanel,
+  WaflSideWorkspacePanel,
   WaflThreePanelWorkspace,
   type AppSegmentedTabItem,
 } from "@/components/common/ui";
@@ -283,20 +284,12 @@ export default function MaterialOrderDraftEditor({
         <AppResponsiveWorkspace device="tablet">
           {statusToast}
           <div className="grid h-full min-h-0 min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,0.46fr)] gap-3">
-            <WaflSurface
-              as="section"
-              component="material-order-tablet-detail-shell"
-              className="min-h-0 min-w-0 overflow-y-auto"
-            >
+            <WaflDetailWorkspacePanel data-wafl-component="material-order-tablet-detail-shell">
               {detailPanel}
-            </WaflSurface>
-            <WaflSurface
-              as="section"
-              component="material-order-tablet-allocation-shell"
-              className="min-h-0 min-w-0 overflow-y-auto"
-            >
+            </WaflDetailWorkspacePanel>
+            <WaflSideWorkspacePanel data-wafl-component="material-order-tablet-allocation-shell">
               {allocationPanel}
-            </WaflSurface>
+            </WaflSideWorkspacePanel>
           </div>
         </AppResponsiveWorkspace>
       </div>

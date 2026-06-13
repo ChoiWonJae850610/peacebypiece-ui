@@ -25,6 +25,7 @@ import type {
   MaterialOrderSupplier,
 } from "@/lib/material-orders/types";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
+import { formatRecentKstDateTime } from "@/lib/workorder/presentation/dateTimePresentation";
 
 type MaterialOrderDetailPanelProps = {
   selectedOrder: MaterialOrder | null;
@@ -111,6 +112,7 @@ export default function MaterialOrderDetailPanel({
                 popoverMode="fixed"
                 disabled={!isDraftEditable}
                 triggerVariant="subtle"
+                triggerClassName="!min-h-0 !justify-center !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)]"
                 className="mx-auto w-full max-w-[190px]"
               />
               </WaflSummaryInfoCell>
@@ -118,7 +120,7 @@ export default function MaterialOrderDetailPanel({
             footerRight={(
               <WaflSummaryInfoCell label="작성일">
                 <span className="block truncate text-sm font-semibold pbp-text-primary">
-                  {selectedOrder.createdAt.slice(0, 10)}
+                  {formatRecentKstDateTime(selectedOrder.createdAt) || "-"}
                 </span>
               </WaflSummaryInfoCell>
             )}
