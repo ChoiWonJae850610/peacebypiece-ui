@@ -21,10 +21,10 @@ import {
 } from "@/lib/constants/workorderDefaults";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
-import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderKind, getWorkOrderReorderGroupId, getWorkOrderReorderRound, isReworkToMainTransition, isWorkOrderKind, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
+import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderKindFromOrderType, getWorkOrderBaseTitle, getWorkOrderKind, getWorkOrderReorderGroupId, getWorkOrderReorderRound, isReworkToMainTransition, isWorkOrderKind, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
-import { syncWorkOrderOrderSnapshot } from "@/lib/workorder/orderSubmission";
+import { getRepresentativeOrderEntry, syncWorkOrderOrderSnapshot } from "@/lib/workorder/orderSubmission";
 import { resolveOrderRequestWorkflowState } from "@/lib/workorder/materialOrderReadiness";
 import type { Attachment, FactoryOrderRequest, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
@@ -230,7 +230,12 @@ export function patchWorkOrder(
   workOrder: WorkOrder,
   patch: Partial<WorkOrder>,
 ): WorkOrder {
-  const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? WORK_ORDER_KIND.sample;
+  const requestedEntryType = patch.orderEntries
+    ? getRepresentativeOrderEntry(patch.orderEntries)?.type
+    : null;
+  const requestedKind = requestedEntryType
+    ? getWorkOrderKindFromOrderType(requestedEntryType)
+    : patch.workOrderKind ?? workOrder.workOrderKind ?? WORK_ORDER_KIND.sample;
   const currentRound = getWorkOrderReorderRound(workOrder);
   const isTransitioningFromReworkToMain = isReworkToMainTransition(workOrder.workOrderKind, requestedKind);
   const explicitRound = patch.reorderRound == null ? null : Number(patch.reorderRound);

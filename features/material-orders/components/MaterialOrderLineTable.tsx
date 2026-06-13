@@ -112,6 +112,7 @@ function MaterialOrderLineCards({
             editable={editable}
             onEdit={() => openEditModal(line)}
             onRemove={() => onRemoveLine(line.id)}
+            menuPanelClassName="bottom-9 top-auto"
           />
         ))}
       </div>
@@ -133,11 +134,13 @@ function MaterialOrderLineCard({
   editable,
   onEdit,
   onRemove,
+  menuPanelClassName,
 }: {
   line: MaterialOrderDraftLine;
   editable: boolean;
   onEdit: () => void;
   onRemove: () => void;
+  menuPanelClassName?: string;
 }) {
   const lineAmount = calculateMaterialOrderLineAmount(line);
   const requiredQuantity = calculateMaterialOrderLineAllocatedQuantity(line);
@@ -176,6 +179,7 @@ function MaterialOrderLineCard({
             deleteLabel="발주 품목 삭제"
             deleteText="삭제"
             onDelete={onRemove}
+            menuPanelClassName={menuPanelClassName}
           />
         ) : null}
       </div>

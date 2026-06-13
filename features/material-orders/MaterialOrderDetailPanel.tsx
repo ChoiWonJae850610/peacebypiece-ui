@@ -24,6 +24,7 @@ import type {
   MaterialOrderStatus,
   MaterialOrderSupplier,
 } from "@/lib/material-orders/types";
+import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
 
 type MaterialOrderDetailPanelProps = {
   selectedOrder: MaterialOrder | null;
@@ -48,6 +49,7 @@ type MaterialOrderDetailPanelProps = {
   onChangeStatus: (status: MaterialOrderStatus) => void;
   canRequestMaterialOrder: boolean;
   canPlaceMaterialOrder: boolean;
+  workOrderCandidates: MaterialOrderWorkspaceWorkOrderCandidate[];
   mobile?: boolean;
   progressLayout?: WorkflowProgressPanelLayout;
 };
@@ -72,6 +74,7 @@ export default function MaterialOrderDetailPanel({
   onChangeStatus,
   canRequestMaterialOrder,
   canPlaceMaterialOrder,
+  workOrderCandidates,
   mobile = false,
   progressLayout = "horizontal",
 }: MaterialOrderDetailPanelProps) {
@@ -172,7 +175,7 @@ export default function MaterialOrderDetailPanel({
           />
 
           <AppSection title="비용 요약" className="shrink-0" cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}>
-            <MaterialOrderSummaryCards totals={totals} lines={lines} materialType={materialType} />
+            <MaterialOrderSummaryCards totals={totals} lines={lines} materialType={materialType} workOrderCandidates={workOrderCandidates} />
           </AppSection>
 
           <AppSection

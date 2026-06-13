@@ -191,6 +191,7 @@ export function WorkOrderCardActionMenu({
   deleteLabel,
   deleteText,
   onDelete,
+  menuPanelClassName,
 }: {
   menuLabel: string;
   editLabel?: string;
@@ -202,6 +203,7 @@ export function WorkOrderCardActionMenu({
   deleteLabel?: string;
   deleteText?: string;
   onDelete?: () => void;
+  menuPanelClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -247,7 +249,7 @@ export function WorkOrderCardActionMenu({
         aria-expanded={open}
       />
       {open ? (
-        <WaflActionMenuPanel className="top-9 min-w-[116px]">
+        <WaflActionMenuPanel className={cn("top-9 min-w-[116px]", menuPanelClassName)}>
           {onEdit && editLabel && editText ? (
             <WaflActionMenuItem onClick={handleEdit} aria-label={editLabel} icon={<WorkOrderEditIcon className="h-3 w-3" />}>
               {editText}

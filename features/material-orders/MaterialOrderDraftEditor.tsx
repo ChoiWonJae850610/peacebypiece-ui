@@ -226,6 +226,7 @@ export default function MaterialOrderDraftEditor({
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
       canRequestMaterialOrder={canRequestMaterialOrder}
       canPlaceMaterialOrder={canPlaceMaterialOrder}
+      workOrderCandidates={workOrderCandidates}
       mobile={deviceType === "mobile"}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
     />

@@ -543,12 +543,29 @@ export function useMaterialOrderDraftEditor() {
   const updateLine = useCallback(
     (lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
       setLines((current) =>
-        current.map((line) =>
-          line.id === lineId ? { ...line, ...patch } : line,
-        ),
+        current.map((line) => {
+          if (line.id !== lineId) return line;
+          const nextLine = { ...line, ...patch };
+          if (patch.orderQuantity == null || line.allocations.length === 0) return nextLine;
+
+          const candidate = workOrderCandidates.find((item) => item.id === line.sourceWorkOrderId);
+          const material = candidate?.materialItems.find((item) => item.key === line.sourceMaterialKey);
+          const requiredQuantity = Number(material?.quantity ?? 0);
+          if (!(requiredQuantity > 0)) return nextLine;
+
+          let remainingAllocation = Math.min(Math.max(0, patch.orderQuantity), requiredQuantity);
+          return {
+            ...nextLine,
+            allocations: line.allocations.map((allocation) => {
+              const allocatedQuantity = Math.min(remainingAllocation, requiredQuantity);
+              remainingAllocation = Math.max(0, remainingAllocation - allocatedQuantity);
+              return { ...allocation, allocatedQuantity };
+            }),
+          };
+        }),
       );
     },
-    [],
+    [workOrderCandidates],
   );
 
   const addWorkOrderMaterialLine = useCallback(

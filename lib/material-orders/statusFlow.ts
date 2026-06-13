@@ -29,25 +29,21 @@ export function resolveMaterialOrderStatusActions(
     canPlaceMaterialOrder: true,
   },
 ): MaterialOrderStatusAction[] {
-  const actions: MaterialOrderStatusAction[] = [];
-
   switch (status) {
     case MATERIAL_ORDER_STATUS.draft:
-      if (capabilities.canRequestMaterialOrder) {
-        actions.push({ label: "검토 요청", nextStatus: MATERIAL_ORDER_STATUS.reviewRequested });
-      }
       if (capabilities.canPlaceMaterialOrder) {
-        actions.push({ label: "발주 요청", nextStatus: MATERIAL_ORDER_STATUS.approved });
+        return [{ label: "검토 완료", nextStatus: MATERIAL_ORDER_STATUS.approved }];
       }
-      return actions;
+      return capabilities.canRequestMaterialOrder
+        ? [{ label: "검토 요청", nextStatus: MATERIAL_ORDER_STATUS.reviewRequested }]
+        : [];
     case MATERIAL_ORDER_STATUS.reviewRequested:
-      if (capabilities.canRequestMaterialOrder) {
-        actions.push({ label: "검토 취소", nextStatus: MATERIAL_ORDER_STATUS.draft });
-      }
       if (capabilities.canPlaceMaterialOrder) {
-        actions.push({ label: "발주 요청", nextStatus: MATERIAL_ORDER_STATUS.approved });
+        return [{ label: "검토 완료", nextStatus: MATERIAL_ORDER_STATUS.approved }];
       }
-      return actions;
+      return capabilities.canRequestMaterialOrder
+        ? [{ label: "검토 취소", nextStatus: MATERIAL_ORDER_STATUS.draft }]
+        : [];
     case MATERIAL_ORDER_STATUS.approved:
       return capabilities.canPlaceMaterialOrder
         ? [{ label: "발주 완료", nextStatus: MATERIAL_ORDER_STATUS.orderPlaced }]

@@ -34,6 +34,7 @@ export type MaterialOrderWorkspaceWorkOrderCandidate = {
   productName: string;
   reorderLabel: string;
   managerLabel: string;
+  factoryLabel: string;
   requestedMaterialLabel: string;
   materialCountLabel: string;
   dueDateLabel: string;
@@ -266,6 +267,7 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
         productName: workOrder.baseTitle || workOrder.title || "제목 없음",
         reorderLabel: resolveReorderLabel(workOrder.reorderRound),
         managerLabel: workOrder.manager ? `담당 ${workOrder.manager}` : "담당자 미확인",
+        factoryLabel: workOrder.vendor?.trim() || "공장 미지정",
         requestedMaterialLabel: resolveWorkOrderMaterialSummary(workOrder.materialSummary, workOrder.materialCount),
         materialCountLabel: resolveWorkOrderMaterialCountLabel(workOrder),
         dueDateLabel: workOrder.dueDate ? `납기 ${workOrder.dueDate}` : "납기 미정",
