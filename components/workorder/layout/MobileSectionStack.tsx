@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode, type RefObject } from "react";
 
 import { WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileShell, WaflMobileTabbedActionSheet, type AppSegmentedTabItem } from "@/components/common/ui";
+import type { AppSheetPresentation } from "@/components/common/ui/AppSheet";
 import { useI18n } from "@/lib/i18n";
 
 type MobileRelatedSectionKey = "attachment" | "design" | "memo";
@@ -24,6 +25,7 @@ type MobileSectionStackProps = {
   sidePanel: (activeSection: MobileRelatedSectionKey) => ReactNode;
   hasSelection: boolean;
   scrollResetKey: string;
+  relatedPresentation?: AppSheetPresentation;
 };
 
 export default function MobileSectionStack({
@@ -34,6 +36,7 @@ export default function MobileSectionStack({
   sidePanel,
   hasSelection,
   scrollResetKey,
+  relatedPresentation = "sheet",
 }: MobileSectionStackProps) {
   const { i18n } = useI18n();
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -90,6 +93,8 @@ export default function MobileSectionStack({
         value={activeRelatedSection}
         onChange={setActiveRelatedSection}
         ariaLabel={relatedCopy.tabsAria}
+        presentation={relatedPresentation}
+        contentClassName={relatedPresentation === "modal" ? "px-5 py-5" : undefined}
       >
         {sidePanel(activeRelatedSection)}
       </WaflMobileTabbedActionSheet>

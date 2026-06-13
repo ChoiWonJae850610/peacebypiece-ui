@@ -9,6 +9,7 @@ import AppButton from "./AppButton";
 
 export type AppSheetSide = "right" | "left" | "bottom";
 export type AppSheetSize = "sm" | "md" | "lg" | "full";
+export type AppSheetPresentation = "sheet" | "modal";
 
 const sideClassMap: Record<AppSheetSide, string> = {
   right: "inset-y-0 right-0 h-full border-l",
@@ -34,6 +35,7 @@ type AppSheetProps = {
   size?: AppSheetSize;
   className?: string;
   contentClassName?: string;
+  presentation?: AppSheetPresentation;
 };
 
 export default function AppSheet({
@@ -47,17 +49,24 @@ export default function AppSheet({
   size = "md",
   className,
   contentClassName,
+  presentation = "sheet",
 }: AppSheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay data-wafl-component="sheet-overlay" className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content
-          data-wafl-component="sheet"
+          data-wafl-component={presentation === "modal" ? "sheet-modal" : "sheet"}
           className={cn(
             "pbp-mobile-no-zoom fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-none outline-none",
-            sideClassMap[side],
-            side === "bottom" ? "min-h-[42dvh]" : sizeClassMap[size],
+            presentation === "modal"
+              ? "left-1/2 top-1/2 max-h-[min(86dvh,760px)] w-[min(92vw,760px)] -translate-x-1/2 -translate-y-1/2 wafl-shape-surface"
+              : sideClassMap[side],
+            presentation === "modal"
+              ? ""
+              : side === "bottom"
+                ? "min-h-[42dvh]"
+                : sizeClassMap[size],
             className,
           )}
         >

@@ -4,7 +4,7 @@ import { useRef, type ReactNode, type Ref } from "react";
 
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import AppSegmentedTabs, { type AppSegmentedTabItem } from "./AppSegmentedTabs";
-import AppSheet, { type AppSheetSize } from "./AppSheet";
+import AppSheet, { type AppSheetPresentation, type AppSheetSize } from "./AppSheet";
 
 import { cn } from "@/lib/utils";
 
@@ -241,6 +241,7 @@ export type WaflMobileTabbedActionSheetProps<Key extends string> = {
   contentClassName?: string;
   bodyClassName?: string;
   itemClassName?: string;
+  presentation?: AppSheetPresentation;
 };
 
 export function WaflMobileTabbedActionSheet<Key extends string>({
@@ -257,6 +258,7 @@ export function WaflMobileTabbedActionSheet<Key extends string>({
   contentClassName,
   bodyClassName,
   itemClassName = "text-xs",
+  presentation = "sheet",
 }: WaflMobileTabbedActionSheetProps<Key>) {
   return (
     <AppSheet
@@ -267,6 +269,7 @@ export function WaflMobileTabbedActionSheet<Key extends string>({
       side="bottom"
       size={size}
       contentClassName={cn(`px-3 py-3 ${WAFL_MOBILE_SAFE_AREA_CLASS_NAMES.sheetBottomPadding}`, contentClassName)}
+      presentation={presentation}
     >
       <div className={cn("space-y-3", bodyClassName)}>
         <AppSegmentedTabs

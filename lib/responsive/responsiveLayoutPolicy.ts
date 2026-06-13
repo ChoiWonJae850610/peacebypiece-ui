@@ -5,6 +5,8 @@ export type ResponsiveOverlayPattern = "drawer" | "bottomSheet" | "fullScreenMod
 
 export const RESPONSIVE_BREAKPOINTS = {
   mobileMax: 767,
+  compactTabletMin: 600,
+  compactTabletLongSideMin: 900,
   tabletMin: 768,
   tabletMax: 1279,
   desktopMin: 1280,

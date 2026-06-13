@@ -7,6 +7,16 @@ export type { ResponsiveDeviceType } from "@/lib/responsive/responsiveLayoutPoli
 
 function resolveResponsiveDeviceType(): ResponsiveDeviceType {
   if (typeof window === "undefined") return "desktop";
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const shortSide = Math.min(width, height);
+  const longSide = Math.max(width, height);
+  const isCompactTablet =
+    shortSide >= RESPONSIVE_BREAKPOINTS.compactTabletMin &&
+    longSide >= RESPONSIVE_BREAKPOINTS.compactTabletLongSideMin;
+
+  if (isCompactTablet) return "tablet";
   if (window.matchMedia(RESPONSIVE_MEDIA_QUERIES.mobile).matches) return "mobile";
   if (window.matchMedia(RESPONSIVE_MEDIA_QUERIES.tablet).matches) return "tablet";
   return "desktop";

@@ -8,6 +8,7 @@ import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/typ
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
+import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
 export default function WorkOrderDetailMobileView({
   appShellRef,
@@ -19,6 +20,7 @@ export default function WorkOrderDetailMobileView({
   mobileDrawerProps,
   loadingState,
 }: WorkOrderLayoutViewProps) {
+  const { deviceType } = useWorkspaceLayoutMode();
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
   const detailScrollResetKey = selectedId;
 
@@ -70,6 +72,7 @@ export default function WorkOrderDetailMobileView({
       detail={detailContent}
       sidePanel={renderRelatedSection}
       hasSelection={hasSelection}
+      relatedPresentation={deviceType === "tablet" ? "modal" : "sheet"}
     />
   );
 }

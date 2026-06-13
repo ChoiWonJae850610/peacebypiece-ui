@@ -322,6 +322,8 @@ export default function MaterialOrderDraftEditor({
             value={mobileActiveTool}
             onChange={setMobileActiveTool}
             ariaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
+            presentation={deviceType === "tablet" ? "modal" : "sheet"}
+            contentClassName={deviceType === "tablet" ? "px-5 py-5" : undefined}
           >
             {mobileActiveTool === "workorders" ? (
               <div className="min-h-[58dvh] min-w-0">{allocationPanel}</div>
