@@ -67,7 +67,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
     !draft.type ||
     trimmedName.length === 0 ||
     !Number.isFinite(draft.quantity) ||
-    draft.quantity < 0;
+    draft.quantity <= 0;
 
   const handleApply = () => {
     blurActiveModalElement();
@@ -75,7 +75,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
     onApply(material?.id ?? null, {
       ...draft,
       name: trimmedName,
-      quantity: Number.isFinite(draft.quantity) ? Math.max(0, draft.quantity) : 0,
+      quantity: Number.isFinite(draft.quantity) ? Math.max(1, draft.quantity) : 1,
     });
     onClose();
   };

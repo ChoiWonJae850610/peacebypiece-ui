@@ -253,11 +253,11 @@ export default function WorkOrderProcessEditSheet({
   const isOrderNumericInputDisabled = !hasSelectedFactory;
   const isOutsourcingNumericInputDisabled = !hasSelectedOutsourcingVendor;
   const isApplyDisabled = isOrderMode
-    ? !hasSelectedFactory || !Number.isFinite(orderDraft.quantity) || orderDraft.quantity < 0
+    ? !hasSelectedFactory || !Number.isFinite(orderDraft.quantity) || orderDraft.quantity <= 0
     : !hasSelectedOutsourcingProcess ||
       !hasSelectedOutsourcingVendor ||
       !Number.isFinite(outsourcingDraft.quantity) ||
-      outsourcingDraft.quantity < 0;
+      outsourcingDraft.quantity <= 0;
 
   const handleApply = () => {
     if (isApplyDisabled) return;
@@ -271,7 +271,7 @@ export default function WorkOrderProcessEditSheet({
         outsourcingId: null,
         draft: {
           ...orderDraft,
-          quantity: Math.max(0, Number(orderDraft.quantity) || 0),
+          quantity: Math.max(1, Number(orderDraft.quantity) || 0),
           laborCost: Math.max(0, Number(orderDraft.laborCost) || 0),
           lossCost: Math.max(0, Number(orderDraft.lossCost) || 0),
         },
@@ -285,7 +285,7 @@ export default function WorkOrderProcessEditSheet({
           ...outsourcingDraft,
           process: outsourcingDraft.process.trim(),
           vendor: outsourcingDraft.vendor.trim(),
-          quantity: Math.max(0, Number(outsourcingDraft.quantity) || 0),
+          quantity: Math.max(1, Number(outsourcingDraft.quantity) || 0),
           unitCost: Math.max(0, Number(outsourcingDraft.unitCost) || 0),
           lossCost: Math.max(0, Number(outsourcingDraft.lossCost) || 0),
         },

@@ -350,8 +350,6 @@ export const workorderEn = {
       actionMenuAria: "Attachment and design action menu",
       drawingAction: "Draw directly",
       drawingActionPending: "Open the direct drawing window.",
-      advancedDrawingAction: "Advanced drawing",
-      advancedDrawingActionPending: "Open the advanced drawing window.",
       drawingModal: {
         title: "Draw directly",
         description:
@@ -429,30 +427,6 @@ export const workorderEn = {
         unsavedCloseMessage: "Closing now will discard the current drawing.",
         keepDrawing: "Keep drawing",
         closeWithoutSaving: "Close without saving",
-      },
-      advancedDrawingModal: {
-        title: "Advanced drawing",
-        description:
-          "Test pen, shapes, text, selection, and moving in the tldraw-based editor.",
-        mobileDescription:
-          "The advanced editor can be heavy on mobile. Tablet or PC use is recommended.",
-        hint: "Saving exports the current canvas shapes as a PNG design file.",
-        mobileHint:
-          "Landscape mode or tablet use is recommended on smaller screens.",
-        toolHelp:
-          "Use the default tldraw tools as-is. Compare pen, shapes, text, selection, movement, and zoom behavior.",
-        pocNotice:
-          "This is a PoC. The existing direct drawing feature stays available while comparing usability with native canvas.",
-        packageLoadingMessage: "Loading the advanced drawing module.",
-        packageUnavailableMessage:
-          "The tldraw package is not available. Run npm install tldraw locally to test it in development mode.",
-        cancel: "Close",
-        save: "Save as design",
-        saving: "Saving...",
-        emptyCanvasMessage:
-          "There are no shapes to save. Add a line, shape, or text first.",
-        exportFailedMessage:
-          "Image export failed. Reduce the canvas content or try again.",
       },
       designUploadGuide: "Add design files",
       designUploadGuideDescription:

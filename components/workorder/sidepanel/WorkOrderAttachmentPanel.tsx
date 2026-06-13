@@ -6,7 +6,6 @@ import {
   type UploadableAttachmentScopeValue,
 } from "@/lib/constants/workorderIdentity";
 import { useEffect, useRef, useState, type DragEvent } from "react";
-import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import {
   SectionCountBadge,
   WaflAddCard,
@@ -24,7 +23,6 @@ import {
 } from "@/components/workorder/common/WorkOrderIconButtons";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
-import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import { isGeneratedOrderRequestPdfAttachment } from "@/lib/workorder/generatedDocuments";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
@@ -68,7 +66,6 @@ function AttachmentActionMenu({
   addButtonLabel,
   onOpenAttachmentPicker,
   onOpenDrawingPlaceholder,
-  onOpenAdvancedDrawing,
   isMobile,
   disabled = false,
   disabledReason,
@@ -78,7 +75,6 @@ function AttachmentActionMenu({
   addButtonLabel: string;
   onOpenAttachmentPicker: () => void;
   onOpenDrawingPlaceholder: () => void;
-  onOpenAdvancedDrawing: () => void;
   isMobile: boolean;
   disabled?: boolean;
   disabledReason?: string;
@@ -89,8 +85,6 @@ function AttachmentActionMenu({
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const canShowDrawingAction = isDesignAttachmentScope(scope);
-  const canShowAdvancedDrawingAction =
-    canShowDrawingAction && RUNTIME_VISIBILITY.showAdvancedDrawingTools;
 
   useEffect(() => {
     if (!open) return;
@@ -165,20 +159,6 @@ function AttachmentActionMenu({
               <span>{ui.attachmentPanel.drawingAction}</span>
             </button>
           ) : null}
-          {canShowAdvancedDrawingAction ? (
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                onOpenAdvancedDrawing();
-              }}
-              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
-              title={ui.attachmentPanel.advancedDrawingActionPending}
-            >
-              <span aria-hidden="true">✦</span>
-              <span>{ui.attachmentPanel.advancedDrawingAction}</span>
-            </button>
-          ) : null}
         </div>
       ) : null}
     </div>
@@ -191,7 +171,6 @@ function AttachmentUploadHint({
   canManageAttachments,
   onOpenAttachmentPicker,
   onOpenDrawingPlaceholder,
-  onOpenAdvancedDrawing,
   onUploadFiles,
   compact,
   isMobile,
@@ -203,7 +182,6 @@ function AttachmentUploadHint({
   canManageAttachments: boolean;
   onOpenAttachmentPicker: () => void;
   onOpenDrawingPlaceholder: () => void;
-  onOpenAdvancedDrawing: () => void;
   onUploadFiles: (files: File[]) => void;
   compact: boolean;
   isMobile: boolean;
@@ -295,7 +273,6 @@ function AttachmentUploadHint({
         addButtonLabel={addButtonLabel}
         onOpenAttachmentPicker={onOpenAttachmentPicker}
         onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
-        onOpenAdvancedDrawing={onOpenAdvancedDrawing}
         isMobile={isMobile}
         disabled={disabled}
         disabledReason={disabledReason}
@@ -312,7 +289,6 @@ function AttachmentFlatAddHint({
   canManageAttachments,
   onOpenAttachmentPicker,
   onOpenDrawingPlaceholder,
-  onOpenAdvancedDrawing,
   isMobile,
   disabled = false,
   disabledReason,
@@ -322,7 +298,6 @@ function AttachmentFlatAddHint({
   canManageAttachments: boolean;
   onOpenAttachmentPicker: () => void;
   onOpenDrawingPlaceholder: () => void;
-  onOpenAdvancedDrawing: () => void;
   isMobile: boolean;
   disabled?: boolean;
   disabledReason?: string;
@@ -359,7 +334,6 @@ function AttachmentFlatAddHint({
         addButtonLabel={addButtonLabel}
         onOpenAttachmentPicker={onOpenAttachmentPicker}
         onOpenDrawingPlaceholder={onOpenDrawingPlaceholder}
-        onOpenAdvancedDrawing={onOpenAdvancedDrawing}
         isMobile={isMobile}
         disabled={disabled}
         disabledReason={disabledReason}
@@ -418,8 +392,6 @@ export default function WorkOrderAttachmentPanel({
   };
 
   const [panelDragActive, setPanelDragActive] = useState(false);
-  const [advancedDrawingModalOpen, setAdvancedDrawingModalOpen] =
-    useState(false);
   const openDesignDrawingModal = () => {
     onOpenDesignDrawingModal?.();
   };
@@ -693,9 +665,6 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() =>
-                    setAdvancedDrawingModalOpen(true)
-                  }
                   isMobile={isMobile}
                   disabled={writeLocked}
                   disabledReason={writeLockMessage}
@@ -707,9 +676,6 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() =>
-                    setAdvancedDrawingModalOpen(true)
-                  }
                   onUploadFiles={onUploadFiles}
                   compact={isMobile || isTablet}
                   isMobile={isMobile}
@@ -734,9 +700,6 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() =>
-                    setAdvancedDrawingModalOpen(true)
-                  }
                   isMobile={isMobile}
                   disabled={writeLocked}
                   disabledReason={writeLockMessage}
@@ -748,9 +711,6 @@ export default function WorkOrderAttachmentPanel({
                   canManageAttachments={canManageAttachments}
                   onOpenAttachmentPicker={onOpenAttachmentPicker}
                   onOpenDrawingPlaceholder={openDesignDrawingModal}
-                  onOpenAdvancedDrawing={() =>
-                    setAdvancedDrawingModalOpen(true)
-                  }
                   onUploadFiles={onUploadFiles}
                   compact={isMobile || isTablet}
                   isMobile={isMobile}
@@ -762,18 +722,6 @@ export default function WorkOrderAttachmentPanel({
           )}
         </WaflSurface>
       </div>
-      {isDesignAttachmentScope(uploadScope) ? (
-        <>
-          {RUNTIME_VISIBILITY.showAdvancedDrawingTools ? (
-            <WorkOrderTldrawDrawingModal
-              open={advancedDrawingModalOpen}
-              onClose={() => setAdvancedDrawingModalOpen(false)}
-              onSaveDrawing={(file) => onUploadFiles([file])}
-              variant={variant}
-            />
-          ) : null}
-        </>
-      ) : null}
     </>
   );
 }

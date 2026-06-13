@@ -336,8 +336,6 @@ export const workorderKo = {
       actionMenuAria: "첨부·디자인 작업 메뉴",
       drawingAction: "직접 그리기",
       drawingActionPending: "직접 그리기 창을 엽니다.",
-      advancedDrawingAction: "고급 그리기",
-      advancedDrawingActionPending: "고급 그리기 창을 엽니다.",
       drawingModal: {
         title: "직접 그리기",
         description:
@@ -414,29 +412,6 @@ export const workorderKo = {
         unsavedCloseMessage: "닫으면 현재 그린 내용은 저장되지 않습니다.",
         keepDrawing: "계속 그리기",
         closeWithoutSaving: "저장하지 않고 닫기",
-      },
-      advancedDrawingModal: {
-        title: "고급 그리기",
-        description:
-          "tldraw 기반 editor에서 펜, 도형, 텍스트, 선택/이동을 테스트합니다.",
-        mobileDescription:
-          "모바일에서는 고급 editor가 무거울 수 있어 tablet/PC 사용을 권장합니다.",
-        hint: "저장하면 현재 캔버스의 도형을 PNG 디자인 파일로 업로드합니다.",
-        mobileHint: "작은 화면에서는 가로 모드 또는 tablet 사용을 권장합니다.",
-        toolHelp:
-          "기본 tldraw 도구를 그대로 사용합니다. 펜, 도형, 텍스트, 선택/이동, 확대/축소를 비교 테스트합니다.",
-        pocNotice:
-          "PoC 단계입니다. native canvas와 사용성을 비교하기 위해 기존 직접 그리기 기능은 그대로 유지합니다.",
-        packageLoadingMessage: "고급 그리기 모듈을 불러오는 중입니다.",
-        packageUnavailableMessage:
-          "tldraw 패키지를 찾을 수 없습니다. 개발 모드에서 테스트하려면 로컬에서 npm install tldraw를 실행하세요.",
-        cancel: "닫기",
-        save: "디자인으로 저장",
-        saving: "저장 중...",
-        emptyCanvasMessage:
-          "저장할 도형이 없습니다. 먼저 선, 도형 또는 텍스트를 추가하세요.",
-        exportFailedMessage:
-          "이미지 내보내기에 실패했습니다. 캔버스 내용을 줄이거나 다시 시도하세요.",
       },
       designUploadGuide: "디자인 파일 추가",
       designUploadGuideDescription: "이미지를 올리거나 직접 그립니다.",
