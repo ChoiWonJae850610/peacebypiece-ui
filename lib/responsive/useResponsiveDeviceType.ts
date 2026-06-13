@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { RESPONSIVE_MEDIA_QUERIES, type ResponsiveDeviceType } from "@/lib/responsive/responsiveLayoutPolicy";
+import { RESPONSIVE_BREAKPOINTS, RESPONSIVE_MEDIA_QUERIES, type ResponsiveDeviceType } from "@/lib/responsive/responsiveLayoutPolicy";
 export type { ResponsiveDeviceType } from "@/lib/responsive/responsiveLayoutPolicy";
 
 function resolveResponsiveDeviceType(): ResponsiveDeviceType {
