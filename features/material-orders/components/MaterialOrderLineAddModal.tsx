@@ -131,8 +131,7 @@ export default function MaterialOrderLineAddModal({
 
   const handleConfirmPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === "mouse") return;
-    event.preventDefault();
-    commitConfirm();
+    blurActiveInput();
   };
 
   const handleConfirmClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -157,6 +156,9 @@ export default function MaterialOrderLineAddModal({
       maxWidthClass="md:max-w-lg"
       bodyClassName="grid gap-3"
       footerClassName="flex justify-end"
+      lockBodyPosition={false}
+      rootClassName="z-[6000]"
+      panelClassName="touch-auto"
       footer={
         <WaflButton
           type="button"
