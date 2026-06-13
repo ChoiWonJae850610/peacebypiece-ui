@@ -846,7 +846,7 @@ body[data-wafl-component-debug="true"] :where(
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) {
   .pbp-mobile-sheet-enter {
     animation: pbpFadeIn 160ms ease-out both;
   }
@@ -1406,22 +1406,7 @@ textarea.pbp-field-interaction.pbp-field-selectable {
 }
 
 
-/* Treat compact tablets such as iPad mini as modal-capable devices even below the Tailwind md width. */
-@media (min-width: 600px) and (min-height: 900px), (min-width: 900px) and (min-height: 600px) {
-  .pbp-responsive-modal-panel {
-    left: 50% !important;
-    top: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    width: min(92vw, 760px) !important;
-    height: auto !important;
-    max-height: min(88dvh, 860px) !important;
-    transform: translate(-50%, -50%) !important;
-    border-width: 1px !important;
-    border-radius: var(--pbp-radius-wafl) !important;
-  }
-}
-
+/* Compact tablet modal positioning is handled by BaseModal responsive classes. */
 /* Prevent iOS/Safari focus zoom inside WAFL mobile business screens.
    Keep this scoped to WaflMobileShell so compact PC/tablet density is not changed. */
 @media (max-width: 1023px) {

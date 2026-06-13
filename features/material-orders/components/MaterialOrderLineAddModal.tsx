@@ -27,12 +27,19 @@ export default function MaterialOrderLineAddModal({
   onClose,
   onConfirm,
 }: MaterialOrderLineAddModalProps) {
-  const canConfirm = Number.isFinite(orderQuantity) && orderQuantity >= 1;
-  const extraQuantity = Math.max(0, Number((orderQuantity - requiredQuantity).toFixed(2)));
-  const amount = Number((orderQuantity * unitPrice).toFixed(2));
+  const normalizedOrderQuantity = Number.isFinite(orderQuantity) ? orderQuantity : 0;
+  const normalizedUnitPrice = Number.isFinite(unitPrice) ? unitPrice : 0;
+  const canConfirm = normalizedOrderQuantity >= 1;
+  const extraQuantity = Math.max(0, Number((normalizedOrderQuantity - requiredQuantity).toFixed(2)));
+  const amount = Number((normalizedOrderQuantity * normalizedUnitPrice).toFixed(2));
   const handleConfirm = () => {
     if (!canConfirm) return;
-    onConfirm();
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    window.requestAnimationFrame(() => {
+      onConfirm();
+    });
   };
 
   return (
@@ -65,7 +72,7 @@ export default function MaterialOrderLineAddModal({
             <AppNumberInput
               inputMode="decimal"
               min={0}
-              value={orderQuantity}
+              value={normalizedOrderQuantity}
               onValueChange={(value) => onChange({ orderQuantity: value })}
               component="material-order-line-quantity-input"
               className={WAFL_FIELD_INPUT_CLASS}
@@ -76,7 +83,7 @@ export default function MaterialOrderLineAddModal({
             <AppNumberInput
               inputMode="numeric"
               min={0}
-              value={unitPrice}
+              value={normalizedUnitPrice}
               onValueChange={(value) => onChange({ unitPrice: value })}
               component="material-order-line-unit-price-input"
               className={WAFL_FIELD_INPUT_CLASS}

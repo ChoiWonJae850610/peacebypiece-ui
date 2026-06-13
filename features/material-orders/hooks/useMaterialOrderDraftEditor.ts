@@ -616,16 +616,26 @@ export function useMaterialOrderDraftEditor() {
 
   const confirmPendingLineAddition = useCallback(() => {
     const pending = pendingLineAddition;
-    if (!pending || pending.orderQuantity <= 0) return;
+    if (!pending) return;
+
+    const orderQuantity = Number.isFinite(pending.orderQuantity)
+      ? Math.max(0, pending.orderQuantity)
+      : 0;
+    const unitPrice = Number.isFinite(pending.unitPrice)
+      ? Math.max(0, pending.unitPrice)
+      : 0;
+
+    if (orderQuantity < 1) return;
+
     setLines((current) => [
       ...current,
       createDraftLineFromMaterial(
         current.length,
         pending.workOrder,
         pending.material,
-        pending.orderQuantity,
-        Math.min(pending.orderQuantity, pending.requiredQuantity),
-        pending.unitPrice,
+        orderQuantity,
+        Math.min(orderQuantity, pending.requiredQuantity),
+        unitPrice,
       ),
     ]);
     setPendingLineAddition(null);
