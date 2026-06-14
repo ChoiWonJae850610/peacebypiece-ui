@@ -7,7 +7,6 @@ import { AppNumberInput, AppSelect, WAFL_FIELD_INPUT_CLASS, WaflInput, type AppS
 import { MATERIAL_TYPE, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT } from "@/lib/constants/material";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useI18n } from "@/lib/i18n";
-import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import type { Material } from "@/types/workorder";
 
 export type MaterialSheetDraft = {
@@ -70,7 +69,6 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
     draft.quantity <= 0;
 
   const handleApply = () => {
-    blurActiveModalElement();
     if (applyDisabled) return;
     onApply(material?.id ?? null, {
       ...draft,
@@ -99,7 +97,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
           <AppSelect
             value={draft.type}
             options={typeOptions}
-            onValueChange={(nextValue) => { blurActiveModalElement(); setDraft((current) => ({ ...current, type: nextValue as Material["type"] })); }}
+            onValueChange={(nextValue) => { setDraft((current) => ({ ...current, type: nextValue as Material["type"] })); }}
             ariaLabel={copy.fields.type}
             contentClassName="z-[4000]"
           />
@@ -111,8 +109,6 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
             type="text"
             value={draft.name}
             placeholder={copy.namePlaceholder}
-            onPointerDown={() => blurActiveModalElement()}
-            onTouchStart={() => blurActiveModalElement()}
             onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
             className={inputClass}
           />
@@ -126,7 +122,6 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
               value={draft.quantity}
               disabled={isQuantityInputDisabled}
               component="material-quantity-input"
-              onBeforeInteract={() => blurActiveModalElement()}
               onValueChange={(value) => setDraft((current) => ({ ...current, quantity: value }))}
               className={numberInputClass}
             />
@@ -136,7 +131,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
             <AppSelect
               value={draft.unit}
               options={unitSelectOptions}
-              onValueChange={(nextValue) => { blurActiveModalElement(); setDraft((current) => ({ ...current, unit: nextValue as Material["unit"] })); }}
+              onValueChange={(nextValue) => { setDraft((current) => ({ ...current, unit: nextValue as Material["unit"] })); }}
               ariaLabel={copy.fields.unit}
               contentClassName="z-[4000]"
             />

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
 import CreateWorkOrderCategoryFields from "@/components/common/modal/createWorkOrder/CreateWorkOrderCategoryFields";
-import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { WaflInfoBox } from "@/components/common/ui";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
@@ -139,7 +138,6 @@ export default function BasicInfoEditModal({
 
   const handleApply = () => {
     if (applyDisabled) return;
-    blurActiveModalElement();
     onChange(draft);
     onSave(draft);
   };

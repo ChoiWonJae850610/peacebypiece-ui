@@ -55,7 +55,7 @@ export default function AppNumberInput({
   className,
   inputMode = "numeric",
   ariaLabel,
-  onBeforeInteract,
+  onBeforeInteract: _onBeforeInteract,
   component = "number-input",
   disabled = false,
 }: AppNumberInputProps) {
@@ -91,8 +91,6 @@ export default function AppNumberInput({
       aria-label={ariaLabel}
       disabled={disabled}
       value={displayValue}
-      onPointerDown={() => onBeforeInteract?.()}
-      onTouchStart={() => onBeforeInteract?.()}
       onFocus={() => {
         setFocused(true);
         setDisplayValue(value === 0 ? "" : numberToDisplay(value));

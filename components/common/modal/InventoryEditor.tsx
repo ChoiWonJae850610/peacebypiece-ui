@@ -3,18 +3,11 @@
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
-  type FocusEvent,
   type KeyboardEvent,
-  type PointerEvent,
 } from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
-import {
-  blurActiveModalElement,
-  shouldUseTouchModalFocusPolicy,
-} from "@/components/common/modal/modalUtils";
 import {
   MODAL_CONTENT_LABEL_CLASS,
   MODAL_CONTENT_SUBTEXT_CLASS,
@@ -72,7 +65,6 @@ export default function InventoryEditor({
   const [adjustmentQuantity, setAdjustmentQuantity] = useState<string>("");
   const [deductionQuantity, setDeductionQuantity] = useState<string>("");
   const [memo, setMemo] = useState("");
-  const allowMemoFocusUntilRef = useRef(0);
 
   useEffect(() => {
     if (!open) {
@@ -83,30 +75,10 @@ export default function InventoryEditor({
     }
   }, [open]);
 
-  const handleNumericFieldKeyDown = (
-    event: KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleNumericFieldKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
-    if (shouldUseTouchModalFocusPolicy()) {
-      window.requestAnimationFrame(() => {
-        blurActiveModalElement();
-      });
-      return;
-    }
     event.currentTarget.blur();
-  };
-
-  const allowMemoFocusFromPointer = (
-    _event: PointerEvent<HTMLTextAreaElement>,
-  ) => {
-    allowMemoFocusUntilRef.current = Date.now() + 900;
-  };
-
-  const handleMemoFocus = (event: FocusEvent<HTMLTextAreaElement>) => {
-    if (!shouldUseTouchModalFocusPolicy()) return;
-    if (Date.now() <= allowMemoFocusUntilRef.current) return;
-    window.requestAnimationFrame(() => event.currentTarget.blur());
   };
 
   const parsedInboundQuantity = Number(inboundQuantity || 0);
@@ -134,9 +106,6 @@ export default function InventoryEditor({
 
   const handleApply = createModalActionHandler({
     shouldProceed: !applyDisabled,
-    beforeAction: () => {
-      blurActiveModalElement();
-    },
     action: () => {
       onApply({
         inboundQuantity: parsedInboundQuantity,
@@ -244,11 +213,6 @@ export default function InventoryEditor({
           </label>
           <WaflTextarea
             value={memo}
-            onPointerDown={allowMemoFocusFromPointer}
-            onTouchStart={() => {
-              allowMemoFocusUntilRef.current = Date.now() + 900;
-            }}
-            onFocus={handleMemoFocus}
             onChange={(event) => setMemo(event.target.value)}
             placeholder={copy.memoPlaceholder}
             rows={3}

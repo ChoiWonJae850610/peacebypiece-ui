@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import {
   MODAL_ACTION_LABELS,
   getModalActionDisabledState,
@@ -49,7 +48,6 @@ export default function ManagerAssignModal({
   );
   const handleApply = () => {
     if (applyDisabled || !draftManagerId) return;
-    blurActiveModalElement();
     onSelectManager(draftManagerId);
   };
 
@@ -93,8 +91,7 @@ export default function ManagerAssignModal({
             <WaflSelectableCard
               key={user.id}
               onPointerDown={(event) => {
-                blurActiveModalElement();
-                event.stopPropagation();
+                            event.stopPropagation();
               }}
               onTouchEnd={(event) => event.stopPropagation()}
               onClick={(event) => {

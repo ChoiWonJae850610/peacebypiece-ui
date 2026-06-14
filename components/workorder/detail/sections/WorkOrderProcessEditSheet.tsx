@@ -6,7 +6,6 @@ import {
   MODAL_ACTION_LABELS,
   renderModalFooterActions,
 } from "@/components/common/modal/modalActions";
-import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 import {
   AppNumberInput,
   AppSelect,
@@ -169,10 +168,6 @@ function selectVendorOptionsByProcess(
   return valuesByProcess[processKey] ?? [];
 }
 
-function handleProcessInputPointerDown() {
-  blurActiveModalElement();
-}
-
 export default function WorkOrderProcessEditSheet({
   open,
   mode,
@@ -262,7 +257,6 @@ export default function WorkOrderProcessEditSheet({
   const handleApply = () => {
     if (isApplyDisabled) return;
 
-    blurActiveModalElement();
 
     if (isOrderMode) {
       onApply({
@@ -332,7 +326,6 @@ export default function WorkOrderProcessEditSheet({
               value={orderDraft.factory}
               options={factorySelectOptions}
               onValueChange={(value) => {
-                blurActiveModalElement();
                 setOrderDraft((current) => ({ ...current, factory: value }));
               }}
               ariaLabel={copy.fields.vendor}
@@ -345,7 +338,6 @@ export default function WorkOrderProcessEditSheet({
               <span className={labelClass}>{copy.fields.quantity}</span>
               <AppNumberInput
                 inputMode="numeric"
-                onBeforeInteract={handleProcessInputPointerDown}
                 value={orderDraft.quantity}
                 disabled={isOrderNumericInputDisabled}
                 component="process-quantity-input"
@@ -359,7 +351,6 @@ export default function WorkOrderProcessEditSheet({
               <span className={labelClass}>{copy.fields.laborCost}</span>
               <AppNumberInput
                 inputMode="numeric"
-                onBeforeInteract={handleProcessInputPointerDown}
                 value={orderDraft.laborCost}
                 disabled={isOrderNumericInputDisabled}
                 component="process-unit-cost-input"
@@ -373,7 +364,6 @@ export default function WorkOrderProcessEditSheet({
               <span className={labelClass}>{copy.fields.lossCost}</span>
               <AppNumberInput
                 inputMode="numeric"
-                onBeforeInteract={handleProcessInputPointerDown}
                 value={orderDraft.lossCost}
                 disabled={isOrderNumericInputDisabled}
                 component="process-loss-cost-input"
@@ -393,7 +383,6 @@ export default function WorkOrderProcessEditSheet({
               value={outsourcingDraft.process}
               options={outsourcingProcessSelectOptions}
               onValueChange={(value) => {
-                blurActiveModalElement();
                 setOutsourcingDraft((current) => ({
                   ...current,
                   process: value,
@@ -410,7 +399,6 @@ export default function WorkOrderProcessEditSheet({
               value={outsourcingDraft.vendor}
               options={outsourcingVendorSelectOptions}
               onValueChange={(value) => {
-                blurActiveModalElement();
                 setOutsourcingDraft((current) => ({
                   ...current,
                   vendor: value,
@@ -426,7 +414,6 @@ export default function WorkOrderProcessEditSheet({
               <span className={labelClass}>{copy.fields.quantity}</span>
               <AppNumberInput
                 inputMode="numeric"
-                onBeforeInteract={handleProcessInputPointerDown}
                 value={outsourcingDraft.quantity}
                 disabled={isOutsourcingNumericInputDisabled}
                 component="process-quantity-input"
@@ -443,7 +430,6 @@ export default function WorkOrderProcessEditSheet({
               <span className={labelClass}>{copy.fields.laborCost}</span>
               <AppNumberInput
                 inputMode="numeric"
-                onBeforeInteract={handleProcessInputPointerDown}
                 value={outsourcingDraft.unitCost}
                 disabled={isOutsourcingNumericInputDisabled}
                 component="process-unit-cost-input"
@@ -460,7 +446,6 @@ export default function WorkOrderProcessEditSheet({
               <span className={labelClass}>{copy.fields.lossCost}</span>
               <AppNumberInput
                 inputMode="numeric"
-                onBeforeInteract={handleProcessInputPointerDown}
                 value={outsourcingDraft.lossCost}
                 disabled={isOutsourcingNumericInputDisabled}
                 component="process-loss-cost-input"

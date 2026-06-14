@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import type { MouseEvent, ReactNode, RefObject } from "react";
+import type { MouseEvent, PointerEvent, ReactNode, RefObject } from "react";
 
 import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui";
 
@@ -41,6 +41,19 @@ export default function BaseModal({
     }
   };
 
+
+  const handlePanelPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("input, textarea, select, button, a, [role=button], [contenteditable=true], [data-wafl-keep-focus=true]")) {
+      return;
+    }
+
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement && dialogRef.current?.contains(activeElement)) {
+      activeElement.blur();
+    }
+  };
+
   const modalContent = (
     <div
       className={`pbp-mobile-no-zoom fixed inset-0 z-[3000] pointer-events-auto ${rootClassName}`.trim()}
@@ -54,7 +67,10 @@ export default function BaseModal({
         <div
           ref={dialogRef}
           tabIndex={-1}
-          onPointerDown={(event) => event.stopPropagation()}
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            handlePanelPointerDown(event);
+          }}
           onTouchStart={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"

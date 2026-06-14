@@ -92,7 +92,7 @@ export function formatMaterialItemTypeLabel(
 }
 
 export function formatMaterialQuantity(quantity: number, unit: string): string {
-  const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
+  const normalizedQuantity = normalizeMaterialQuantityNumber(quantity);
   const normalizedUnit = unit.trim();
   return `${normalizedQuantity}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
 }
@@ -106,11 +106,10 @@ export function formatMaterialItemTypeCountLabel(
 
 export function normalizeMaterialQuantityNumber(value: number): string {
   const normalizedValue = Number.isFinite(value) ? value : 0;
-  if (Number.isInteger(normalizedValue)) return String(normalizedValue);
-  return normalizedValue
-    .toFixed(3)
-    .replace(/\.0+$/, "")
-    .replace(/(\.\d*?)0+$/, "$1");
+  return normalizedValue.toLocaleString("ko-KR", {
+    maximumFractionDigits: 3,
+    useGrouping: true,
+  });
 }
 
 export function resolveMaterialQuantityNumberClassName({
