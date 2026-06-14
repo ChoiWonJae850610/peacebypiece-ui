@@ -227,7 +227,7 @@ export default function MaterialOrderLineAddModal({
   return (
     <ModalShell
       open={open}
-      title="발주 품목 추가"
+      title="발주 품목 추가 [DEBUG 0.22.22]"
       description="필요수량을 확인하고 주문수량과 단가를 입력합니다."
       onClose={onClose}
       maxWidthClass="md:max-w-lg"
@@ -253,9 +253,15 @@ export default function MaterialOrderLineAddModal({
       <div
         aria-hidden="true"
         data-wafl-component="modal-touch-diagnostic"
-        className="pointer-events-none sticky top-0 z-20 max-h-[145px] overflow-hidden rounded-lg border border-black/30 bg-black/90 px-2 py-1.5 font-mono text-[9px] leading-3 text-white"
+        className="pointer-events-none sticky top-0 z-20 max-h-[160px] min-h-[72px] overflow-hidden rounded-lg px-2 py-1.5 font-mono text-[10px] leading-4"
+        style={{
+          backgroundColor: "#ffeb00",
+          color: "#000000",
+          border: "3px solid #ff0000",
+          boxShadow: "0 0 0 2px #000000",
+        }}
       >
-        <div className="font-semibold">WAFL MODAL DIAG 0.22.21 · {diagnosticSnapshot?.reason ?? "waiting"}</div>
+        <div className="font-semibold">WAFL MODAL DIAG 0.22.22 · {diagnosticSnapshot?.reason ?? "waiting"}</div>
         {diagnosticSnapshot ? (
           <>
             <div>event: {diagnosticSnapshot.eventTarget}</div>
