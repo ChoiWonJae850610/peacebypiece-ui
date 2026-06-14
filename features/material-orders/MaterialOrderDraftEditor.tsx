@@ -193,23 +193,28 @@ export default function MaterialOrderDraftEditor({
           />
           <p className="text-[11px] leading-4">모달·드로어·portal·fixed를 사용하지 않는 페이지 입력입니다.</p>
         </div>
-        <button
-          type="button"
-          className="min-h-10 rounded-md border border-slate-900 bg-white px-3 text-xs font-bold text-slate-950"
-          onClick={() => setFixedPanelOpen(true)}
-        >
-          B 고정 패널 열기
-        </button>
+        <div className="grid gap-2 sm:justify-items-end">
+          <button
+            type="button"
+            className="min-h-10 rounded-md border border-slate-900 bg-white px-3 text-xs font-bold text-slate-950"
+            onClick={() => setFixedPanelOpen(true)}
+          >
+            B 고정 패널 열기
+          </button>
+          <p className="max-w-[280px] text-[11px] leading-4 text-slate-700 sm:text-right">
+            C는 우측 발주 대상 카드의 <strong>[C 드로어]</strong> 버튼으로 엽니다.
+          </p>
+        </div>
       </section>
 
       {fixedPanelOpen ? (
         <div
-          className="fixed inset-y-0 right-0 z-[2600] flex w-[min(420px,92vw)] flex-col border-l-2 border-fuchsia-600 bg-white text-slate-950 shadow-none"
+          className="fixed bottom-0 right-0 top-[72px] z-[5000] flex w-[min(420px,92vw)] flex-col border-l-4 border-fuchsia-600 bg-white text-slate-950 shadow-none"
           data-focus-environment-test="fixed-no-portal"
         >
-          <header className="flex items-center justify-between gap-3 border-b border-slate-300 px-4 py-3">
+          <header className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-3 border-b-2 border-fuchsia-600 bg-fuchsia-100 px-4 py-3">
             <div>
-              <p className="text-sm font-bold">B. 비포털 fixed 패널</p>
+              <p className="text-sm font-bold">B. 비포털 fixed 패널 테스트</p>
               <p className="mt-1 text-[11px]">AppSheet와 portal 없이 현재 React 트리에 직접 렌더링됩니다.</p>
             </div>
             <button
@@ -220,7 +225,7 @@ export default function MaterialOrderDraftEditor({
               닫기
             </button>
           </header>
-          <div className="grid flex-1 content-start gap-4 overflow-y-auto p-4">
+          <div className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto overscroll-contain p-4">
             <label className="grid gap-1 text-xs font-bold">
               B-1 기본 HTML 비제어형
               <input

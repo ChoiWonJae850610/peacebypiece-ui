@@ -192,7 +192,7 @@ function MaterialOrderAllocationRow({
           <span aria-hidden="true">{selectionButtonLabel}</span>
         </MaterialOrderActionButton>
         <MaterialOrderActionButton
-          label={`${material.itemName} 오른쪽 드로어 테스트`}
+          label={`${material.itemName} C AppSheet 드로어 테스트`}
           size="sm"
           compact
           showSrLabel={false}
@@ -204,10 +204,10 @@ function MaterialOrderAllocationRow({
             isCompletionFulfilled ||
             isAllocationCovered
           }
-          title="오른쪽 드로어 방식으로 발주 품목 추가를 테스트합니다."
+          title="C 테스트: AppSheet와 portal을 사용하는 오른쪽 드로어를 엽니다."
           onClick={() => onAddMaterialToOrderDrawer(workOrder, material)}
         >
-          <span aria-hidden="true">드로어</span>
+          <span aria-hidden="true">C 드로어</span>
         </MaterialOrderActionButton>
       </div>
     </WaflSurface>

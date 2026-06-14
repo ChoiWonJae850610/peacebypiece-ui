@@ -107,8 +107,8 @@ export default function MaterialOrderLineAddDrawer({
       onOpenChange={(nextOpen) => {
         if (!nextOpen) onClose();
       }}
-      title="발주 품목 추가 · 드로어 테스트"
-      description="오른쪽 드로어 방식의 입력·포커스 동작을 비교합니다."
+      title="C. AppSheet 드로어 테스트"
+      description="C 환경입니다. AppSheet와 portal을 사용하는 오른쪽 드로어입니다."
       side="right"
       size="md"
       contentClassName="grid content-start gap-3"
@@ -122,11 +122,11 @@ export default function MaterialOrderLineAddDrawer({
     >
       <WaflModalSection className="grid gap-3">
         <div
-          className="grid gap-3 border-2 border-dashed border-amber-500 bg-amber-50 p-3 text-black"
+          className="grid gap-3 border-4 border-amber-600 bg-yellow-200 p-3 text-black"
           data-wafl-focus-diagnostic="true"
         >
           <div>
-            <p className="text-xs font-bold">C. AppSheet 입력 포커스 테스트</p>
+            <p className="text-sm font-black">C. APPSHEET 입력 포커스 테스트</p>
             <p className="mt-1 text-[11px] leading-4">현재 AppSheet/portal 드로어 환경입니다. 세 입력칸을 번갈아 누르고 키보드를 닫은 뒤, 헤더·닫기·추가 버튼도 눌러 비교합니다.</p>
           </div>
 
