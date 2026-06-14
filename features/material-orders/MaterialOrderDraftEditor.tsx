@@ -70,6 +70,8 @@ export default function MaterialOrderDraftEditor({
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] =
     useState<MaterialOrderMobileToolKey>("workorders");
+  const [pageFocusTestValue, setPageFocusTestValue] = useState("");
+  const [fixedPanelOpen, setFixedPanelOpen] = useState(false);
 
   const {
     orders,
@@ -159,6 +161,112 @@ export default function MaterialOrderDraftEditor({
 
   const handleAddMaterialToOrderDrawer = (...args: AddMaterialArgs) =>
     openMaterialLineEditor("drawer", ...args);
+
+  const focusEnvironmentDiagnostic = (
+    <>
+      <section
+        aria-label="A 페이지 입력 테스트"
+        className="grid gap-2 rounded-md border-2 border-dashed border-sky-500 bg-sky-50 p-3 text-slate-950 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+        data-focus-environment-test="page"
+      >
+        <div className="grid gap-1">
+          <label htmlFor="material-order-page-focus-test" className="text-xs font-bold">
+            A. 페이지 본문 일반 input
+          </label>
+          <input
+            id="material-order-page-focus-test"
+            inputMode="numeric"
+            value={pageFocusTestValue}
+            onChange={(event) => setPageFocusTestValue(event.target.value)}
+            aria-label="A 페이지 본문 일반 입력 테스트"
+            style={{
+              display: "block",
+              width: "100%",
+              minHeight: 40,
+              border: "1px solid #0f172a",
+              borderRadius: 4,
+              background: "#ffffff",
+              color: "#0f172a",
+              padding: "8px 10px",
+              fontSize: 16,
+            }}
+          />
+          <p className="text-[11px] leading-4">모달·드로어·portal·fixed를 사용하지 않는 페이지 입력입니다.</p>
+        </div>
+        <button
+          type="button"
+          className="min-h-10 rounded-md border border-slate-900 bg-white px-3 text-xs font-bold text-slate-950"
+          onClick={() => setFixedPanelOpen(true)}
+        >
+          B 고정 패널 열기
+        </button>
+      </section>
+
+      {fixedPanelOpen ? (
+        <div
+          className="fixed inset-y-0 right-0 z-[2600] flex w-[min(420px,92vw)] flex-col border-l-2 border-fuchsia-600 bg-white text-slate-950 shadow-none"
+          data-focus-environment-test="fixed-no-portal"
+        >
+          <header className="flex items-center justify-between gap-3 border-b border-slate-300 px-4 py-3">
+            <div>
+              <p className="text-sm font-bold">B. 비포털 fixed 패널</p>
+              <p className="mt-1 text-[11px]">AppSheet와 portal 없이 현재 React 트리에 직접 렌더링됩니다.</p>
+            </div>
+            <button
+              type="button"
+              className="min-h-9 rounded-md border border-slate-900 px-3 text-xs font-bold"
+              onClick={() => setFixedPanelOpen(false)}
+            >
+              닫기
+            </button>
+          </header>
+          <div className="grid flex-1 content-start gap-4 overflow-y-auto p-4">
+            <label className="grid gap-1 text-xs font-bold">
+              B-1 기본 HTML 비제어형
+              <input
+                inputMode="numeric"
+                defaultValue=""
+                aria-label="B-1 비포털 fixed 기본 입력"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  minHeight: 44,
+                  border: "1px solid #0f172a",
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  padding: "8px 10px",
+                  fontSize: 16,
+                }}
+              />
+            </label>
+            <label className="grid gap-1 text-xs font-bold">
+              B-2 기본 HTML 비제어형
+              <input
+                inputMode="numeric"
+                defaultValue=""
+                aria-label="B-2 비포털 fixed 기본 입력"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  minHeight: 44,
+                  border: "1px solid #0f172a",
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  padding: "8px 10px",
+                  fontSize: 16,
+                }}
+              />
+            </label>
+            <div className="min-h-28 rounded-md border border-dashed border-slate-400 p-3 text-xs">
+              패널 빈 영역입니다. 입력 사이 이동, 빈 영역 터치, 닫기를 반복합니다.
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
 
   const topbar = (
     <AdminTopbar
@@ -257,6 +365,7 @@ export default function MaterialOrderDraftEditor({
     return (
       <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
+        {focusEnvironmentDiagnostic}
         {validationModal}
         <WaflMobileListDrawer
           open={mobileOrderListDrawerOpen}
@@ -348,6 +457,7 @@ export default function MaterialOrderDraftEditor({
           }
           contentClassName="gap-3"
         >
+          {focusEnvironmentDiagnostic}
           {statusToast}
           <WaflMobileContentSection>{detailPanel}</WaflMobileContentSection>
           <WaflMobileTabbedActionSheet
@@ -386,6 +496,7 @@ export default function MaterialOrderDraftEditor({
     return (
       <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
         {topbar}
+        {focusEnvironmentDiagnostic}
         {validationModal}
         <AppResponsiveWorkspace device="desktop">
           {statusToast}

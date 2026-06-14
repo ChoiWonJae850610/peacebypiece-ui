@@ -126,8 +126,8 @@ export default function MaterialOrderLineAddDrawer({
           data-wafl-focus-diagnostic="true"
         >
           <div>
-            <p className="text-xs font-bold">입력 포커스 비교 테스트</p>
-            <p className="mt-1 text-[11px] leading-4">세 입력칸을 번갈아 누르고 키보드를 닫은 뒤, 헤더·닫기·추가 버튼도 눌러 비교합니다.</p>
+            <p className="text-xs font-bold">C. AppSheet 입력 포커스 테스트</p>
+            <p className="mt-1 text-[11px] leading-4">현재 AppSheet/portal 드로어 환경입니다. 세 입력칸을 번갈아 누르고 키보드를 닫은 뒤, 헤더·닫기·추가 버튼도 눌러 비교합니다.</p>
           </div>
 
           <div className="grid gap-1">
