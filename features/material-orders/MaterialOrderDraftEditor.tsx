@@ -72,6 +72,7 @@ export default function MaterialOrderDraftEditor({
     useState<MaterialOrderMobileToolKey>("workorders");
   const [pageFocusTestValue, setPageFocusTestValue] = useState("");
   const [fixedPanelOpen, setFixedPanelOpen] = useState(false);
+  const [inlinePanelOpen, setInlinePanelOpen] = useState(false);
 
   const {
     orders,
@@ -201,11 +202,88 @@ export default function MaterialOrderDraftEditor({
           >
             B 고정 패널 열기
           </button>
+          <button
+            type="button"
+            className="min-h-10 rounded-md border border-emerald-700 bg-emerald-50 px-3 text-xs font-bold text-emerald-950"
+            onClick={() => setInlinePanelOpen((current) => !current)}
+          >
+            {inlinePanelOpen ? "D 레이아웃 패널 닫기" : "D 레이아웃 패널 열기"}
+          </button>
           <p className="max-w-[280px] text-[11px] leading-4 text-slate-700 sm:text-right">
             C는 우측 발주 대상 카드의 <strong>[C 드로어]</strong> 버튼으로 엽니다.
           </p>
         </div>
       </section>
+
+      {inlinePanelOpen ? (
+        <section
+          aria-label="D 레이아웃 내부 패널 테스트"
+          className="grid gap-4 rounded-md border-4 border-emerald-600 bg-emerald-50 p-4 text-slate-950"
+          data-focus-environment-test="layout-inline"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold">D. 레이아웃 내부 패널 테스트</p>
+              <p className="mt-1 text-[11px] leading-4">
+                fixed, portal, AppSheet를 사용하지 않고 발주서 레이아웃 흐름 안에 직접 렌더링됩니다.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="min-h-9 shrink-0 rounded-md border border-emerald-800 bg-white px-3 text-xs font-bold text-emerald-950"
+              onClick={() => setInlinePanelOpen(false)}
+            >
+              닫기
+            </button>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="grid gap-1 text-xs font-bold">
+              D-1 기본 HTML 비제어형
+              <input
+                inputMode="numeric"
+                defaultValue=""
+                aria-label="D-1 레이아웃 내부 기본 입력"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  minHeight: 44,
+                  border: "1px solid #065f46",
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  padding: "8px 10px",
+                  fontSize: 16,
+                }}
+              />
+            </label>
+
+            <label className="grid gap-1 text-xs font-bold">
+              D-2 기본 HTML 비제어형
+              <input
+                inputMode="numeric"
+                defaultValue=""
+                aria-label="D-2 레이아웃 내부 기본 입력"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  minHeight: 44,
+                  border: "1px solid #065f46",
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  padding: "8px 10px",
+                  fontSize: 16,
+                }}
+              />
+            </label>
+          </div>
+
+          <div className="min-h-20 rounded-md border border-dashed border-emerald-700 bg-white/70 p-3 text-xs">
+            D 패널 빈 영역입니다. D-1/D-2 입력 전환, 빈 영역 터치, 닫기를 반복합니다.
+          </div>
+        </section>
+      ) : null}
 
       {fixedPanelOpen ? (
         <div
