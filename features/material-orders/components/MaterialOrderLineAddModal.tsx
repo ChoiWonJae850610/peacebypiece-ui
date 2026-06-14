@@ -1,7 +1,7 @@
 "use client";
 
 import ModalShell from "@/components/common/modal/ModalShell";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { WaflButton, WaflInput, WaflModalSection, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
 import { formatMaterialOrderAmount } from "@/lib/material-orders/materialOrderDraftCalculator";
 
@@ -59,6 +59,8 @@ export default function MaterialOrderLineAddModal({
   onConfirm,
 }: MaterialOrderLineAddModalProps) {
   const confirmLockRef = useRef(false);
+  const orderQuantityInputId = useId();
+  const unitPriceInputId = useId();
   const [orderQuantityInput, setOrderQuantityInput] = useState(() => formatNumberInput(orderQuantity));
   const [unitPriceInput, setUnitPriceInput] = useState(() => formatNumberInput(unitPrice));
 
@@ -140,26 +142,28 @@ export default function MaterialOrderLineAddModal({
             <span>필요수량</span>
             <WaflInput fieldSize="sm" value={`${requiredQuantity.toLocaleString()} ${unit}`} disabled />
           </label>
-          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-            <span>주문수량</span>
+          <div className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+            <label htmlFor={orderQuantityInputId}>주문수량</label>
             <WaflInput
+              id={orderQuantityInputId}
               fieldSize="sm"
               inputMode="decimal"
               value={orderQuantityInput}
               onChange={(event) => handleOrderQuantityChange(event.target.value)}
               aria-label="주문수량"
             />
-          </label>
-          <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
-            <span>단가</span>
+          </div>
+          <div className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
+            <label htmlFor={unitPriceInputId}>단가</label>
             <WaflInput
+              id={unitPriceInputId}
               fieldSize="sm"
               inputMode="numeric"
               value={unitPriceInput}
               onChange={(event) => handleUnitPriceChange(event.target.value)}
               aria-label="단가"
             />
-          </label>
+          </div>
           <WaflSurface component="material-order-line-add-extra" shape="control" tone="muted" className="grid content-center gap-1 px-3 py-2">
             <span className="text-[11px] font-semibold pbp-text-subtle">여유주문</span>
             <span className="text-sm font-semibold tabular-nums pbp-text-primary">{extraQuantity.toLocaleString()} {unit}</span>
