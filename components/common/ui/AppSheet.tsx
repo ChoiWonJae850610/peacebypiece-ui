@@ -36,6 +36,7 @@ type AppSheetProps = {
   className?: string;
   contentClassName?: string;
   presentation?: AppSheetPresentation;
+  restoreFocusOnClose?: boolean;
 };
 
 export default function AppSheet({
@@ -50,12 +51,16 @@ export default function AppSheet({
   className,
   contentClassName,
   presentation = "sheet",
+  restoreFocusOnClose = true,
 }: AppSheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay data-wafl-component="sheet-overlay" className="fixed inset-0 z-[2000] bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content
+          onCloseAutoFocus={(event) => {
+            if (!restoreFocusOnClose) event.preventDefault();
+          }}
           data-wafl-component={presentation === "modal" ? "sheet-modal" : "sheet"}
           className={cn(
             "pbp-mobile-no-zoom fixed z-[2000] flex flex-col touch-pan-y pointer-events-auto border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-none outline-none",

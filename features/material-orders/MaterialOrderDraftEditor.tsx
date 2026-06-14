@@ -67,6 +67,7 @@ export default function MaterialOrderDraftEditor({
   const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] =
     useState(false);
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
+  const [suppressMobileToolSheetFocusRestore, setSuppressMobileToolSheetFocusRestore] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] =
     useState<MaterialOrderMobileToolKey>("workorders");
 
@@ -122,8 +123,13 @@ export default function MaterialOrderDraftEditor({
   useEffect(() => {
     if (materialOrderLineAddModal.open) {
       setMobileToolSheetOpen(false);
+      return;
     }
-  }, [materialOrderLineAddModal.open]);
+
+    if (!mobileToolSheetOpen) {
+      setSuppressMobileToolSheetFocusRestore(false);
+    }
+  }, [materialOrderLineAddModal.open, mobileToolSheetOpen]);
 
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId((currentOrderId) =>
@@ -140,10 +146,9 @@ export default function MaterialOrderDraftEditor({
       return;
     }
 
+    setSuppressMobileToolSheetFocusRestore(true);
+    addWorkOrderMaterialLine(...args);
     setMobileToolSheetOpen(false);
-    window.requestAnimationFrame(() => {
-      addWorkOrderMaterialLine(...args);
-    });
   };
 
   const topbar = (
@@ -343,6 +348,7 @@ export default function MaterialOrderDraftEditor({
             onChange={setMobileActiveTool}
             ariaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
             presentation={deviceType === "tablet" ? "modal" : "sheet"}
+            restoreFocusOnClose={!suppressMobileToolSheetFocusRestore}
             contentClassName={deviceType === "tablet" ? "px-5 py-5" : undefined}
           >
             {mobileActiveTool === "workorders" ? (

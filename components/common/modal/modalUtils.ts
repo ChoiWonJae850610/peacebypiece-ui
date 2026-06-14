@@ -52,12 +52,12 @@ export function shouldUseTouchModalFocusPolicy() {
   return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 1024;
 }
 
-export function blurActiveModalElement() {
+export function blurActiveModalElement(container?: HTMLElement | null) {
   if (typeof document === "undefined") return;
   const activeElement = document.activeElement;
-  if (activeElement instanceof HTMLElement) {
-    activeElement.blur();
-  }
+  if (!(activeElement instanceof HTMLElement)) return;
+  if (container && !container.contains(activeElement)) return;
+  activeElement.blur();
 }
 
 export function getFocusableElements(container: HTMLElement) {
@@ -157,9 +157,15 @@ export function useModalEnvironment({
     lockDocumentScroll({ lockBodyPosition });
 
     const focusTimer = window.setTimeout(() => {
-      if (!isTopModal(modalId) || useTouchFocusPolicy) return;
+      if (!isTopModal(modalId)) return;
+
+      if (useTouchFocusPolicy) {
+        dialog.focus({ preventScroll: true });
+        return;
+      }
+
       const focusables = getFocusableElements(dialog);
-      (focusables[0] ?? dialog).focus();
+      (focusables[0] ?? dialog).focus({ preventScroll: true });
     }, 24);
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -202,7 +208,7 @@ export function useModalEnvironment({
       document.removeEventListener("keydown", handleKeyDown, true);
       removeModalStack(modalId);
       unlockDocumentScroll();
-      blurActiveModalElement();
+      blurActiveModalElement(dialog);
       if (!useTouchFocusPolicy && previousActive && document.contains(previousActive)) {
         previousActive.focus();
       }
