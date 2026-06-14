@@ -120,6 +120,7 @@ export default function MaterialOrderLineAddModal({
       lockBodyPosition={false}
       lockDocumentScroll={false}
       useNativeTouchInteractions
+      centerWithoutTransform
       footer={
         <WaflButton
           type="button"

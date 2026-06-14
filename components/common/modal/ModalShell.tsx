@@ -24,6 +24,7 @@ export default function ModalShell({
   lockDocumentScroll,
   useNativeTouchInteractions,
   rootClassName,
+  centerWithoutTransform,
 }: {
   open: boolean;
   title: string;
@@ -41,6 +42,7 @@ export default function ModalShell({
   lockDocumentScroll?: boolean;
   useNativeTouchInteractions?: boolean;
   rootClassName?: string;
+  centerWithoutTransform?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
@@ -62,6 +64,7 @@ export default function ModalShell({
       closeOnBackdrop={closeOnBackdrop}
       useNativeTouchInteractions={useNativeTouchInteractions}
       rootClassName={rootClassName}
+      centerWithoutTransform={centerWithoutTransform}
     >
       <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
       <ModalBody className={bodyClassName}>{children}</ModalBody>

@@ -18,6 +18,7 @@ type BaseModalProps = {
   closeOnBackdrop?: boolean;
   rootClassName?: string;
   useNativeTouchInteractions?: boolean;
+  centerWithoutTransform?: boolean;
 };
 
 export default function BaseModal({
@@ -33,6 +34,7 @@ export default function BaseModal({
   closeOnBackdrop = false,
   rootClassName = "",
   useNativeTouchInteractions = false,
+  centerWithoutTransform = false,
 }: BaseModalProps) {
   if (!open) return null;
 
@@ -54,7 +56,10 @@ export default function BaseModal({
     >
       <div className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
       <div
-        className={`absolute inset-0 pointer-events-auto md:p-6 ${useNativeTouchInteractions ? "" : "touch-pan-y"}`.trim()}
+        className={[
+          `absolute inset-0 pointer-events-auto md:p-6 ${useNativeTouchInteractions ? "" : "touch-pan-y"}`,
+          centerWithoutTransform ? "sm:flex sm:items-center sm:justify-center" : "",
+        ].join(" ").trim()}
         onClick={handleBackdropClick}
       >
         <div
@@ -66,7 +71,9 @@ export default function BaseModal({
           data-wafl-component="modal-panel"
           className={[
             `absolute inset-x-0 bottom-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
-            "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:h-auto sm:max-h-[min(92dvh,960px)] sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
+            centerWithoutTransform
+              ? "border-0 sm:relative sm:inset-auto sm:h-auto sm:max-h-[min(92dvh,960px)] sm:w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0 sm:rounded-3xl sm:border"
+              : "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:h-auto sm:max-h-[min(92dvh,960px)] sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
             maxWidthClassName,
             panelClassName,
           ].join(" ").trim()}
