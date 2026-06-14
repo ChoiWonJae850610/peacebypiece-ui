@@ -27,6 +27,7 @@ export default function ModalShell({
   centerWithoutTransform,
   isolateBackground,
   blockBackdropScroll,
+  useSimpleInteractionLayer,
 }: {
   open: boolean;
   title: string;
@@ -47,6 +48,7 @@ export default function ModalShell({
   centerWithoutTransform?: boolean;
   isolateBackground?: boolean;
   blockBackdropScroll?: boolean;
+  useSimpleInteractionLayer?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
@@ -70,6 +72,7 @@ export default function ModalShell({
       rootClassName={rootClassName}
       centerWithoutTransform={centerWithoutTransform}
       blockBackdropScroll={blockBackdropScroll}
+      useSimpleInteractionLayer={useSimpleInteractionLayer}
     >
       <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
       <ModalBody className={bodyClassName}>{children}</ModalBody>

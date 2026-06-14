@@ -121,8 +121,7 @@ export default function MaterialOrderLineAddModal({
       lockDocumentScroll={false}
       useNativeTouchInteractions
       centerWithoutTransform
-      isolateBackground
-      blockBackdropScroll
+      useSimpleInteractionLayer
       footer={
         <WaflButton
           type="button"

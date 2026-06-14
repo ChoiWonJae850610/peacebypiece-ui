@@ -21,6 +21,7 @@ type BaseModalProps = {
   useNativeTouchInteractions?: boolean;
   centerWithoutTransform?: boolean;
   blockBackdropScroll?: boolean;
+  useSimpleInteractionLayer?: boolean;
 };
 
 export default function BaseModal({
@@ -38,6 +39,7 @@ export default function BaseModal({
   useNativeTouchInteractions = false,
   centerWithoutTransform = false,
   blockBackdropScroll = false,
+  useSimpleInteractionLayer = false,
 }: BaseModalProps) {
   if (!open) return null;
 
@@ -64,9 +66,11 @@ export default function BaseModal({
       />
       <div
         className={[
-          "absolute inset-0 pointer-events-none md:p-6",
+          "absolute inset-0 md:p-6",
+          useSimpleInteractionLayer ? "pointer-events-auto touch-auto" : "pointer-events-none",
           centerWithoutTransform ? "sm:flex sm:items-center sm:justify-center" : "",
         ].join(" ").trim()}
+        onClick={useSimpleInteractionLayer ? handleBackdropClick : undefined}
       >
         <div
           ref={dialogRef}
