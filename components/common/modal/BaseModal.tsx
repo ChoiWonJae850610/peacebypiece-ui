@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from "react";
 
 import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui";
 import { getWaflModalPortalRoot } from "@/components/common/modal/modalUtils";
@@ -44,6 +44,7 @@ export default function BaseModal({
   syncVisualViewport = false,
 }: BaseModalProps) {
   const [viewportStyle, setViewportStyle] = useState<CSSProperties | undefined>(undefined);
+  const stableViewportSizeRef = useRef<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
     if (!open || !syncVisualViewport || typeof window === "undefined") {
@@ -52,11 +53,17 @@ export default function BaseModal({
     }
 
     let frame = 0;
+    const initialViewport = window.visualViewport;
+    stableViewportSizeRef.current = initialViewport
+      ? { width: initialViewport.width, height: initialViewport.height }
+      : { width: window.innerWidth, height: window.innerHeight };
+
     const updateViewport = () => {
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(() => {
         const viewport = window.visualViewport;
-        if (!viewport) {
+        const stableSize = stableViewportSizeRef.current;
+        if (!viewport || !stableSize) {
           setViewportStyle(undefined);
           return;
         }
@@ -64,11 +71,12 @@ export default function BaseModal({
         setViewportStyle({
           top: `${viewport.offsetTop}px`,
           left: `${viewport.offsetLeft}px`,
-          width: `${viewport.width}px`,
-          height: `${viewport.height}px`,
+          width: `${stableSize.width}px`,
+          height: `${stableSize.height}px`,
           right: "auto",
           bottom: "auto",
-        });
+          "--wafl-modal-stable-height": `${stableSize.height}px`,
+        } as CSSProperties);
       });
     };
 
@@ -88,6 +96,7 @@ export default function BaseModal({
     window.visualViewport?.addEventListener("scroll", updateViewport);
 
     return () => {
+      stableViewportSizeRef.current = null;
       window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", updateViewport);
       window.removeEventListener("orientationchange", refreshAfterFocusChange);
@@ -138,11 +147,13 @@ export default function BaseModal({
           onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"
           className={[
-            `absolute inset-x-0 bottom-0 flex ${syncVisualViewport ? "h-full max-h-full" : "h-[100dvh] max-h-[100dvh]"} flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
+            `absolute inset-x-0 bottom-0 flex ${syncVisualViewport ? "h-[var(--wafl-modal-stable-height)] max-h-[var(--wafl-modal-stable-height)]" : "h-[100dvh] max-h-[100dvh]"} flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
             centerWithoutTransform
               ? "border-0 sm:relative sm:inset-auto sm:w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0 sm:rounded-3xl sm:border"
               : "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
-            syncVisualViewport ? "sm:h-auto sm:max-h-[92%]" : "sm:h-auto sm:max-h-[min(92dvh,960px)]",
+            syncVisualViewport
+              ? "sm:h-auto sm:max-h-[min(calc(var(--wafl-modal-stable-height)*0.92),960px)]"
+              : "sm:h-auto sm:max-h-[min(92dvh,960px)]",
             maxWidthClassName,
             panelClassName,
           ].join(" ").trim()}
