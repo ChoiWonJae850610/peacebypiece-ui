@@ -88,7 +88,9 @@ function lockDocumentScroll({ lockBodyPosition = true }: { lockBodyPosition?: bo
     body.style.overflow = "hidden";
     body.style.overscrollBehavior = "none";
     body.style.width = "100%";
-    body.style.touchAction = "none";
+    // Do not force touch-action:none on document.body. The modal already
+    // contains scrolling, and iPad Safari can retain a stale hit-test state
+    // after the software keyboard closes when body touch actions are disabled.
     modalLockState.bodyPositionLocked = lockBodyPosition;
 
     if (lockBodyPosition) {
