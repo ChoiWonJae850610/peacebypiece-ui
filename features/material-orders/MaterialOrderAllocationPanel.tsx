@@ -29,6 +29,10 @@ type MaterialOrderAllocationPanelProps = {
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
+  onAddMaterialToOrderDrawer: (
+    workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
+    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+  ) => void;
   onRetry: () => void;
   mobile?: boolean;
 };
@@ -44,6 +48,7 @@ export default function MaterialOrderAllocationPanel({
   loading,
   errorMessage,
   onAddMaterialToOrder,
+  onAddMaterialToOrderDrawer,
   onRetry,
   mobile = false,
 }: MaterialOrderAllocationPanelProps) {
@@ -118,6 +123,7 @@ export default function MaterialOrderAllocationPanel({
                 materialRequestCompletionMap={materialRequestCompletionMap}
                 editable={editable}
                 onAddMaterialToOrder={onAddMaterialToOrder}
+                onAddMaterialToOrderDrawer={onAddMaterialToOrderDrawer}
                 mobile={mobile}
               />
             ))

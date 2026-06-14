@@ -28,6 +28,10 @@ type MaterialOrderAllocationCardProps = {
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
+  onAddMaterialToOrderDrawer: (
+    workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
+    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+  ) => void;
   mobile?: boolean;
 };
 
@@ -38,6 +42,7 @@ export function MaterialOrderAllocationCard({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
+  onAddMaterialToOrderDrawer,
   mobile = false,
 }: MaterialOrderAllocationCardProps) {
   const materialTypeLabel = workOrder.materialItems[0]
@@ -80,6 +85,7 @@ export function MaterialOrderAllocationCard({
             materialRequestCompletionMap={materialRequestCompletionMap}
             editable={editable}
             onAddMaterialToOrder={onAddMaterialToOrder}
+            onAddMaterialToOrderDrawer={onAddMaterialToOrderDrawer}
             mobile={mobile}
           />
         ))}
@@ -96,6 +102,7 @@ function MaterialOrderAllocationRow({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
+  onAddMaterialToOrderDrawer,
   mobile = false,
 }: MaterialOrderAllocationCardProps & {
   material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
@@ -166,23 +173,43 @@ function MaterialOrderAllocationRow({
           </p>
         ) : null}
       </div>
-      <MaterialOrderActionButton
-        label={`${material.itemName} ${selectionButtonLabel}`}
-        size="sm"
-        compact
-        showSrLabel={false}
-        tone={isAdded ? "neutral" : isAllocationCovered ? "neutral" : "primary"}
-        className={mobile ? "w-full" : ""}
-        disabled={
-          !editable ||
-          isCompletionFulfilled ||
-          (!isAdded && isAllocationCovered)
-        }
-        title={selectionButtonTitle}
-        onClick={() => onAddMaterialToOrder(workOrder, material)}
-      >
-        <span aria-hidden="true">{selectionButtonLabel}</span>
-      </MaterialOrderActionButton>
+      <div className={mobile ? "grid grid-cols-2 gap-1.5" : "flex shrink-0 items-center gap-1.5"}>
+        <MaterialOrderActionButton
+          label={`${material.itemName} ${selectionButtonLabel}`}
+          size="sm"
+          compact
+          showSrLabel={false}
+          tone={isAdded ? "neutral" : isAllocationCovered ? "neutral" : "primary"}
+          className={mobile ? "w-full" : ""}
+          disabled={
+            !editable ||
+            isCompletionFulfilled ||
+            (!isAdded && isAllocationCovered)
+          }
+          title={selectionButtonTitle}
+          onClick={() => onAddMaterialToOrder(workOrder, material)}
+        >
+          <span aria-hidden="true">{selectionButtonLabel}</span>
+        </MaterialOrderActionButton>
+        <MaterialOrderActionButton
+          label={`${material.itemName} 오른쪽 드로어 테스트`}
+          size="sm"
+          compact
+          showSrLabel={false}
+          tone="neutral"
+          className={mobile ? "w-full" : ""}
+          disabled={
+            !editable ||
+            isAdded ||
+            isCompletionFulfilled ||
+            isAllocationCovered
+          }
+          title="오른쪽 드로어 방식으로 발주 품목 추가를 테스트합니다."
+          onClick={() => onAddMaterialToOrderDrawer(workOrder, material)}
+        >
+          <span aria-hidden="true">드로어</span>
+        </MaterialOrderActionButton>
+      </div>
     </WaflSurface>
   );
 }

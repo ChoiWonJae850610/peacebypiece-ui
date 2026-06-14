@@ -20,6 +20,7 @@ import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
+import MaterialOrderLineAddDrawer from "@/features/material-orders/components/MaterialOrderLineAddDrawer";
 import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
@@ -96,6 +97,7 @@ export default function MaterialOrderDraftEditor({
     materialRequestQuantityMap,
     materialRequestCompletionMap,
     materialOrderLineAddModal,
+    materialOrderLineAddDrawer,
     materialOrderValidationModal,
     setSelectedOrderId,
     setSupplierPartnerId,
@@ -120,10 +122,10 @@ export default function MaterialOrderDraftEditor({
   }, [selectedOrderId]);
 
   useEffect(() => {
-    if (materialOrderLineAddModal.open) {
+    if (materialOrderLineAddModal.open || materialOrderLineAddDrawer.open) {
       setMobileToolSheetOpen(false);
     }
-  }, [materialOrderLineAddModal.open]);
+  }, [materialOrderLineAddDrawer.open, materialOrderLineAddModal.open]);
 
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId((currentOrderId) =>
@@ -132,19 +134,31 @@ export default function MaterialOrderDraftEditor({
     setMobileOrderListDrawerOpen(false);
   };
 
-  const handleAddMaterialToOrder = (
-    ...args: Parameters<typeof addWorkOrderMaterialLine>
+  type AddMaterialArgs = [
+    Parameters<typeof addWorkOrderMaterialLine>[0],
+    Parameters<typeof addWorkOrderMaterialLine>[1],
+  ];
+
+  const openMaterialLineEditor = (
+    presentation: "modal" | "drawer",
+    ...args: AddMaterialArgs
   ) => {
+    const openEditor = () => addWorkOrderMaterialLine(...args, presentation);
+
     if (!mobileToolSheetOpen) {
-      addWorkOrderMaterialLine(...args);
+      openEditor();
       return;
     }
 
     setMobileToolSheetOpen(false);
-    window.requestAnimationFrame(() => {
-      addWorkOrderMaterialLine(...args);
-    });
+    window.requestAnimationFrame(openEditor);
   };
+
+  const handleAddMaterialToOrder = (...args: AddMaterialArgs) =>
+    openMaterialLineEditor("modal", ...args);
+
+  const handleAddMaterialToOrderDrawer = (...args: AddMaterialArgs) =>
+    openMaterialLineEditor("drawer", ...args);
 
   const topbar = (
     <AdminTopbar
@@ -173,6 +187,7 @@ export default function MaterialOrderDraftEditor({
   const validationModal = (
     <>
       <MaterialOrderLineAddModal {...materialOrderLineAddModal} />
+      <MaterialOrderLineAddDrawer {...materialOrderLineAddDrawer} />
       <WorkflowValidationModal {...materialOrderValidationModal} />
     </>
   );
@@ -232,6 +247,7 @@ export default function MaterialOrderDraftEditor({
       loading={workOrdersLoading}
       errorMessage={workOrdersError}
       onAddMaterialToOrder={handleAddMaterialToOrder}
+      onAddMaterialToOrderDrawer={handleAddMaterialToOrderDrawer}
       onRetry={() => void refreshWorkOrderCandidates()}
       mobile={deviceType === "mobile"}
     />

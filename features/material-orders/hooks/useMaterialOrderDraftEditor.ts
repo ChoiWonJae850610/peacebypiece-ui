@@ -202,6 +202,7 @@ export function useMaterialOrderDraftEditor() {
     requiredQuantity: number;
     orderQuantity: number;
     unitPrice: number;
+    presentation: "modal" | "drawer";
   } | null>(null);
   const [pendingStatusValidation, setPendingStatusValidation] = useState<{
     nextStatus: MaterialOrderStatus;
@@ -572,6 +573,7 @@ export function useMaterialOrderDraftEditor() {
     (
       workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
       material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
+      presentation: "modal" | "drawer" = "modal",
     ) => {
       if (!selectedOrder || selectedOrder.status !== "draft") return;
 
@@ -601,6 +603,7 @@ export function useMaterialOrderDraftEditor() {
           requiredQuantity: remainingQuantity,
           orderQuantity: remainingQuantity,
           unitPrice: Number.isFinite(material.unitCost ?? 0) ? (material.unitCost ?? 0) : 0,
+          presentation,
         });
         return current;
       });
@@ -669,7 +672,17 @@ export function useMaterialOrderDraftEditor() {
     materialRequestQuantityMap,
     materialRequestCompletionMap,
     materialOrderLineAddModal: {
-      open: pendingLineAddition !== null,
+      open: pendingLineAddition?.presentation === "modal",
+      itemName: pendingLineAddition?.material.itemName ?? "",
+      unit: pendingLineAddition?.material.unit || "마",
+      requiredQuantity: pendingLineAddition?.requiredQuantity ?? 0,
+      orderQuantity: pendingLineAddition?.orderQuantity ?? 0,
+      unitPrice: pendingLineAddition?.unitPrice ?? 0,
+      onClose: closePendingLineAddition,
+      onConfirm: confirmPendingLineAddition,
+    },
+    materialOrderLineAddDrawer: {
+      open: pendingLineAddition?.presentation === "drawer",
       itemName: pendingLineAddition?.material.itemName ?? "",
       unit: pendingLineAddition?.material.unit || "마",
       requiredQuantity: pendingLineAddition?.requiredQuantity ?? 0,
