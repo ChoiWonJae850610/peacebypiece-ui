@@ -17,6 +17,7 @@ type BaseModalProps = {
   overlayClassName?: string;
   closeOnBackdrop?: boolean;
   rootClassName?: string;
+  useNativeTouchInteractions?: boolean;
 };
 
 export default function BaseModal({
@@ -31,6 +32,7 @@ export default function BaseModal({
   overlayClassName = WAFL_MODAL_OVERLAY_CLASS,
   closeOnBackdrop = false,
   rootClassName = "",
+  useNativeTouchInteractions = false,
 }: BaseModalProps) {
   if (!open) return null;
 
@@ -51,16 +53,19 @@ export default function BaseModal({
       aria-describedby={descriptionId}
     >
       <div className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
-      <div className="absolute inset-0 pointer-events-auto touch-pan-y md:p-6" onClick={handleBackdropClick}>
+      <div
+        className={`absolute inset-0 pointer-events-auto md:p-6 ${useNativeTouchInteractions ? "" : "touch-pan-y"}`.trim()}
+        onClick={handleBackdropClick}
+      >
         <div
           ref={dialogRef}
           tabIndex={-1}
-          onPointerDown={(event) => event.stopPropagation()}
-          onTouchStart={(event) => event.stopPropagation()}
+          onPointerDown={useNativeTouchInteractions ? undefined : (event) => event.stopPropagation()}
+          onTouchStart={useNativeTouchInteractions ? undefined : (event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"
           className={[
-            "absolute inset-x-0 bottom-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain touch-pan-y pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel",
+            `absolute inset-x-0 bottom-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
             "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:h-auto sm:max-h-[min(92dvh,960px)] sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
             maxWidthClassName,
             panelClassName,

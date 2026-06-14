@@ -2,7 +2,7 @@
 
 import ModalShell from "@/components/common/modal/ModalShell";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { WaflButton, WaflInput, WaflModalSection, WaflSurface } from "@/components/common/ui";
+import { WaflButton, WaflInput, WaflModalSection, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
 import { formatMaterialOrderAmount } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderLineAddModalProps = {
@@ -105,9 +105,6 @@ export default function MaterialOrderLineAddModal({
     setUnitPriceInput(normalizeNumberInput(value));
   };
 
-  const dismissKeyboard = (target: HTMLElement) => {
-    target.focus({ preventScroll: true });
-  };
 
   return (
     <ModalShell
@@ -119,6 +116,8 @@ export default function MaterialOrderLineAddModal({
       bodyClassName="grid gap-3"
       footerClassName="flex justify-end"
       lockBodyPosition={false}
+      lockDocumentScroll={false}
+      useNativeTouchInteractions
       footer={
         <WaflButton
           type="button"
@@ -166,18 +165,16 @@ export default function MaterialOrderLineAddModal({
             <span className="text-sm font-semibold tabular-nums pbp-text-primary">{extraQuantity.toLocaleString()} {unit}</span>
           </WaflSurface>
         </div>
-        <WaflSurface
+        <WaflSurfaceButton
           component="material-order-line-add-amount"
           shape="control"
           tone="muted"
-          tabIndex={-1}
           data-wafl-keyboard-dismiss="true"
-          onClick={(event) => dismissKeyboard(event.currentTarget)}
-          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold outline-none"
+          className="flex w-full items-center justify-between gap-3 px-3 py-2 text-xs font-semibold outline-none"
         >
           <span className="pbp-text-subtle">금액</span>
           <span className="tabular-nums pbp-text-primary">{formatMaterialOrderAmount(amount)}</span>
-        </WaflSurface>
+        </WaflSurfaceButton>
       </WaflModalSection>
     </ModalShell>
   );

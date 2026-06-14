@@ -133,11 +133,13 @@ export function useModalEnvironment({
   dialogRef,
   onClose,
   lockBodyPosition = true,
+  lockDocumentScroll: shouldLockDocumentScroll = true,
 }: {
   open: boolean;
   dialogRef: RefObject<HTMLElement | null>;
   onClose: () => void;
   lockBodyPosition?: boolean;
+  lockDocumentScroll?: boolean;
 }) {
   const modalId = useMemo(() => `modal-${Math.random().toString(36).slice(2, 11)}`, []);
   const onCloseRef = useRef(onClose);
@@ -154,7 +156,9 @@ export function useModalEnvironment({
     const previousActive = !useTouchFocusPolicy && document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     pushModalStack(modalId);
-    lockDocumentScroll({ lockBodyPosition });
+    if (shouldLockDocumentScroll) {
+      lockDocumentScroll({ lockBodyPosition });
+    }
 
     const focusTimer = window.setTimeout(() => {
       if (!isTopModal(modalId) || useTouchFocusPolicy) return;
@@ -201,13 +205,15 @@ export function useModalEnvironment({
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", handleKeyDown, true);
       removeModalStack(modalId);
-      unlockDocumentScroll();
+      if (shouldLockDocumentScroll) {
+        unlockDocumentScroll();
+      }
       blurActiveModalElement();
       if (!useTouchFocusPolicy && previousActive && document.contains(previousActive)) {
         previousActive.focus();
       }
     };
-  }, [open, dialogRef, modalId, lockBodyPosition]);
+  }, [open, dialogRef, modalId, lockBodyPosition, shouldLockDocumentScroll]);
 }
 
 export const useModalFocusTrap = useModalEnvironment;

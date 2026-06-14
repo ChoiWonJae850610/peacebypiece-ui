@@ -21,6 +21,8 @@ export default function ModalShell({
   overlayClassName,
   closeOnBackdrop,
   lockBodyPosition,
+  lockDocumentScroll,
+  useNativeTouchInteractions,
   rootClassName,
 }: {
   open: boolean;
@@ -36,6 +38,8 @@ export default function ModalShell({
   overlayClassName?: string;
   closeOnBackdrop?: boolean;
   lockBodyPosition?: boolean;
+  lockDocumentScroll?: boolean;
+  useNativeTouchInteractions?: boolean;
   rootClassName?: string;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -43,7 +47,7 @@ export default function ModalShell({
   const descriptionId = useId();
   const resolvedDescriptionId = description ? descriptionId : undefined;
 
-  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition });
+  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition, lockDocumentScroll });
 
   return (
     <BaseModal
@@ -56,6 +60,7 @@ export default function ModalShell({
       panelClassName={panelClassName}
       overlayClassName={overlayClassName}
       closeOnBackdrop={closeOnBackdrop}
+      useNativeTouchInteractions={useNativeTouchInteractions}
       rootClassName={rootClassName}
     >
       <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
