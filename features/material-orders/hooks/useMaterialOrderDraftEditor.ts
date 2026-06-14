@@ -575,35 +575,37 @@ export function useMaterialOrderDraftEditor() {
     ) => {
       if (!selectedOrder || selectedOrder.status !== "draft") return;
 
-      const existingLine = lines.find(
-        (line) =>
-          line.sourceWorkOrderId === workOrder.id &&
-          line.sourceMaterialKey === material.key,
-      );
+      setLines((current) => {
+        const existingLine = current.find(
+          (line) =>
+            line.sourceWorkOrderId === workOrder.id &&
+            line.sourceMaterialKey === material.key,
+        );
 
-      if (existingLine) {
-        setLines((current) => current.filter((line) => line.id !== existingLine.id));
-        return;
-      }
+        if (existingLine) {
+          return current.filter((line) => line.id !== existingLine.id);
+        }
 
-      const remainingQuantity = calculateMaterialRequestRemainingQuantity({
-        quantityMap: materialRequestQuantityMap,
-        workOrderId: workOrder.id,
-        materialKey: material.key,
-        requiredQuantity: material.quantity,
-      });
+        const remainingQuantity = calculateMaterialRequestRemainingQuantity({
+          quantityMap: materialRequestQuantityMap,
+          workOrderId: workOrder.id,
+          materialKey: material.key,
+          requiredQuantity: material.quantity,
+        });
 
-      if (remainingQuantity <= 0) return;
+        if (remainingQuantity <= 0) return current;
 
-      setPendingLineAddition({
-        workOrder,
-        material,
-        requiredQuantity: remainingQuantity,
-        orderQuantity: remainingQuantity,
-        unitPrice: Number.isFinite(material.unitCost ?? 0) ? (material.unitCost ?? 0) : 0,
+        setPendingLineAddition({
+          workOrder,
+          material,
+          requiredQuantity: remainingQuantity,
+          orderQuantity: remainingQuantity,
+          unitPrice: Number.isFinite(material.unitCost ?? 0) ? (material.unitCost ?? 0) : 0,
+        });
+        return current;
       });
     },
-    [lines, materialRequestQuantityMap, selectedOrder],
+    [materialRequestQuantityMap, selectedOrder],
   );
 
   const closePendingLineAddition = useCallback(() => setPendingLineAddition(null), []);

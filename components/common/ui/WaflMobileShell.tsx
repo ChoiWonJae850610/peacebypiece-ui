@@ -242,7 +242,6 @@ export type WaflMobileTabbedActionSheetProps<Key extends string> = {
   bodyClassName?: string;
   itemClassName?: string;
   presentation?: AppSheetPresentation;
-  restoreFocusOnClose?: boolean;
 };
 
 export function WaflMobileTabbedActionSheet<Key extends string>({
@@ -260,7 +259,6 @@ export function WaflMobileTabbedActionSheet<Key extends string>({
   bodyClassName,
   itemClassName = "text-xs",
   presentation = "sheet",
-  restoreFocusOnClose = true,
 }: WaflMobileTabbedActionSheetProps<Key>) {
   return (
     <AppSheet
@@ -272,7 +270,6 @@ export function WaflMobileTabbedActionSheet<Key extends string>({
       size={size}
       contentClassName={cn(`px-3 py-3 ${WAFL_MOBILE_SAFE_AREA_CLASS_NAMES.sheetBottomPadding}`, contentClassName)}
       presentation={presentation}
-      restoreFocusOnClose={restoreFocusOnClose}
     >
       <div className={cn("space-y-3", bodyClassName)}>
         <AppSegmentedTabs
