@@ -63,6 +63,7 @@ export default function MaterialOrderLineAddDrawer({
   const unitPriceInputId = useId();
   const [orderQuantityInput, setOrderQuantityInput] = useState(() => formatNumberInput(orderQuantity));
   const [unitPriceInput, setUnitPriceInput] = useState(() => formatNumberInput(unitPrice));
+  const [nativeControlledInput, setNativeControlledInput] = useState("");
 
   useEffect(() => {
     if (!open) {
@@ -72,6 +73,7 @@ export default function MaterialOrderLineAddDrawer({
 
     setOrderQuantityInput(formatNumberInput(orderQuantity));
     setUnitPriceInput(formatNumberInput(unitPrice));
+    setNativeControlledInput("");
     confirmLockRef.current = false;
   }, [open, orderQuantity, unitPrice]);
 
@@ -119,6 +121,71 @@ export default function MaterialOrderLineAddDrawer({
       }
     >
       <WaflModalSection className="grid gap-3">
+        <div
+          className="grid gap-3 border-2 border-dashed border-amber-500 bg-amber-50 p-3 text-black"
+          data-wafl-focus-diagnostic="true"
+        >
+          <div>
+            <p className="text-xs font-bold">입력 포커스 비교 테스트</p>
+            <p className="mt-1 text-[11px] leading-4">세 입력칸을 번갈아 누르고 키보드를 닫은 뒤, 헤더·닫기·추가 버튼도 눌러 비교합니다.</p>
+          </div>
+
+          <div className="grid gap-1">
+            <label htmlFor="wafl-focus-test" className="text-[11px] font-semibold">1. WAFL 제어형 입력</label>
+            <WaflInput
+              id="wafl-focus-test"
+              fieldSize="sm"
+              inputMode="numeric"
+              value={unitPriceInput}
+              onChange={(event) => setUnitPriceInput(normalizeNumberInput(event.target.value))}
+              aria-label="WAFL 제어형 입력 테스트"
+            />
+          </div>
+
+          <div className="grid gap-1">
+            <label htmlFor="native-controlled-focus-test" className="text-[11px] font-semibold">2. 기본 HTML 제어형 입력</label>
+            <input
+              id="native-controlled-focus-test"
+              inputMode="numeric"
+              value={nativeControlledInput}
+              onChange={(event) => setNativeControlledInput(event.target.value)}
+              aria-label="기본 HTML 제어형 입력 테스트"
+              style={{
+                display: "block",
+                width: "100%",
+                minHeight: 40,
+                border: "1px solid #111827",
+                borderRadius: 4,
+                background: "#ffffff",
+                color: "#111827",
+                padding: "8px 10px",
+                fontSize: 16,
+              }}
+            />
+          </div>
+
+          <div className="grid gap-1">
+            <label htmlFor="native-uncontrolled-focus-test" className="text-[11px] font-semibold">3. 기본 HTML 비제어형 입력</label>
+            <input
+              id="native-uncontrolled-focus-test"
+              inputMode="numeric"
+              defaultValue=""
+              aria-label="기본 HTML 비제어형 입력 테스트"
+              style={{
+                display: "block",
+                width: "100%",
+                minHeight: 40,
+                border: "1px solid #111827",
+                borderRadius: 4,
+                background: "#ffffff",
+                color: "#111827",
+                padding: "8px 10px",
+                fontSize: 16,
+              }}
+            />
+          </div>
+        </div>
+
         <div>
           <p className="text-[11px] font-semibold pbp-text-subtle">품목</p>
           <p className="mt-1 text-sm font-semibold pbp-text-primary">{itemName || "품목명 미입력"}</p>
