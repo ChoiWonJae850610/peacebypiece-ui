@@ -608,10 +608,6 @@ export function useMaterialOrderDraftEditor() {
     [materialRequestQuantityMap, selectedOrder],
   );
 
-  const updatePendingLineAddition = useCallback((patch: Partial<{ orderQuantity: number; unitPrice: number }>) => {
-    setPendingLineAddition((current) => current ? { ...current, ...patch } : current);
-  }, []);
-
   const closePendingLineAddition = useCallback(() => setPendingLineAddition(null), []);
 
   const confirmPendingLineAddition = useCallback((override?: { orderQuantity: number; unitPrice: number }) => {
@@ -679,7 +675,6 @@ export function useMaterialOrderDraftEditor() {
       requiredQuantity: pendingLineAddition?.requiredQuantity ?? 0,
       orderQuantity: pendingLineAddition?.orderQuantity ?? 0,
       unitPrice: pendingLineAddition?.unitPrice ?? 0,
-      onChange: updatePendingLineAddition,
       onClose: closePendingLineAddition,
       onConfirm: confirmPendingLineAddition,
     },

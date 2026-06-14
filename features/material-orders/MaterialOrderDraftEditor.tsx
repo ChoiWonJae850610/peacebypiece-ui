@@ -132,6 +132,20 @@ export default function MaterialOrderDraftEditor({
     setMobileOrderListDrawerOpen(false);
   };
 
+  const handleAddMaterialToOrder = (
+    ...args: Parameters<typeof addWorkOrderMaterialLine>
+  ) => {
+    if (!mobileToolSheetOpen) {
+      addWorkOrderMaterialLine(...args);
+      return;
+    }
+
+    setMobileToolSheetOpen(false);
+    window.requestAnimationFrame(() => {
+      addWorkOrderMaterialLine(...args);
+    });
+  };
+
   const topbar = (
     <AdminTopbar
       companyName={companyName || "WAFL"}
@@ -217,7 +231,7 @@ export default function MaterialOrderDraftEditor({
       editable={selectedOrder?.status === "draft"}
       loading={workOrdersLoading}
       errorMessage={workOrdersError}
-      onAddMaterialToOrder={addWorkOrderMaterialLine}
+      onAddMaterialToOrder={handleAddMaterialToOrder}
       onRetry={() => void refreshWorkOrderCandidates()}
       mobile={deviceType === "mobile"}
     />

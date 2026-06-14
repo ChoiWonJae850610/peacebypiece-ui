@@ -54,11 +54,11 @@ export default function AppSheet({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay data-wafl-component="sheet-overlay" className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
+        <Dialog.Overlay data-wafl-component="sheet-overlay" className="fixed inset-0 z-[2000] bg-black/30 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content
           data-wafl-component={presentation === "modal" ? "sheet-modal" : "sheet"}
           className={cn(
-            "pbp-mobile-no-zoom fixed z-50 flex flex-col border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-none outline-none",
+            "pbp-mobile-no-zoom fixed z-[2000] flex flex-col touch-pan-y pointer-events-auto border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-primary)] shadow-none outline-none",
             presentation === "modal"
               ? "left-1/2 top-1/2 max-h-[min(86dvh,760px)] w-[min(92vw,760px)] -translate-x-1/2 -translate-y-1/2 wafl-shape-surface"
               : sideClassMap[side],
