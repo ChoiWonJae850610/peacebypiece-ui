@@ -105,6 +105,10 @@ export default function MaterialOrderLineAddModal({
     setUnitPriceInput(normalizeNumberInput(value));
   };
 
+  const dismissKeyboard = (target: HTMLElement) => {
+    target.focus({ preventScroll: true });
+  };
+
   return (
     <ModalShell
       open={open}
@@ -162,7 +166,15 @@ export default function MaterialOrderLineAddModal({
             <span className="text-sm font-semibold tabular-nums pbp-text-primary">{extraQuantity.toLocaleString()} {unit}</span>
           </WaflSurface>
         </div>
-        <WaflSurface component="material-order-line-add-amount" shape="control" tone="muted" className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold">
+        <WaflSurface
+          component="material-order-line-add-amount"
+          shape="control"
+          tone="muted"
+          tabIndex={-1}
+          data-wafl-keyboard-dismiss="true"
+          onClick={(event) => dismissKeyboard(event.currentTarget)}
+          className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold outline-none"
+        >
           <span className="pbp-text-subtle">금액</span>
           <span className="tabular-nums pbp-text-primary">{formatMaterialOrderAmount(amount)}</span>
         </WaflSurface>

@@ -42,29 +42,6 @@ export default function BaseModal({
   };
 
 
-  const handlePanelClick = (event: MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-
-    const target = event.target as HTMLElement;
-    if (target.closest("input, textarea, select, button, a, [role=button], [contenteditable=true], [data-wafl-keep-focus=true]")) {
-      return;
-    }
-
-    const activeElement = document.activeElement;
-    if (!(activeElement instanceof HTMLElement) || !dialogRef.current?.contains(activeElement)) {
-      return;
-    }
-
-    // Complete the current tap/click before dismissing the software keyboard.
-    // Blurring during pointerdown can invalidate iPad Safari's next hit-test
-    // while the visual viewport is returning to its non-keyboard size.
-    window.requestAnimationFrame(() => {
-      if (document.activeElement === activeElement) {
-        activeElement.blur();
-      }
-    });
-  };
-
   const modalContent = (
     <div
       className={`pbp-mobile-no-zoom fixed inset-0 z-[3000] pointer-events-auto ${rootClassName}`.trim()}
@@ -80,7 +57,7 @@ export default function BaseModal({
           tabIndex={-1}
           onPointerDown={(event) => event.stopPropagation()}
           onTouchStart={(event) => event.stopPropagation()}
-          onClick={handlePanelClick}
+          onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"
           className={[
             "absolute inset-x-0 bottom-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain touch-pan-y pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel",
