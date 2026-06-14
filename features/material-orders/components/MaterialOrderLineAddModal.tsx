@@ -117,7 +117,6 @@ export default function MaterialOrderLineAddModal({
       footerClassName="flex justify-end"
       lockBodyPosition={false}
       lockDocumentScroll={false}
-      blockBackgroundScrollWithEvents
       useNativeTouchInteractions
       footer={
         <WaflButton

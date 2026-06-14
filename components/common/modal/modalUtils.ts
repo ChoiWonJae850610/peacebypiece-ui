@@ -134,14 +134,12 @@ export function useModalEnvironment({
   onClose,
   lockBodyPosition = true,
   lockDocumentScroll: shouldLockDocumentScroll = true,
-  blockBackgroundScrollWithEvents = false,
 }: {
   open: boolean;
   dialogRef: RefObject<HTMLElement | null>;
   onClose: () => void;
   lockBodyPosition?: boolean;
   lockDocumentScroll?: boolean;
-  blockBackgroundScrollWithEvents?: boolean;
 }) {
   const modalId = useMemo(() => `modal-${Math.random().toString(36).slice(2, 11)}`, []);
   const onCloseRef = useRef(onClose);
@@ -201,33 +199,10 @@ export function useModalEnvironment({
       }
     };
 
-    const handleBackgroundTouchMove = (event: TouchEvent) => {
-      if (!blockBackgroundScrollWithEvents || !isTopModal(modalId)) return;
-      const target = event.target;
-      if (target instanceof Node && dialog.contains(target)) return;
-      event.preventDefault();
-    };
-
-    const handleBackgroundWheel = (event: WheelEvent) => {
-      if (!blockBackgroundScrollWithEvents || !isTopModal(modalId)) return;
-      const target = event.target;
-      if (target instanceof Node && dialog.contains(target)) return;
-      event.preventDefault();
-    };
-
     document.addEventListener("keydown", handleKeyDown, true);
-    if (blockBackgroundScrollWithEvents) {
-      document.addEventListener("touchmove", handleBackgroundTouchMove, { capture: true, passive: false });
-      document.addEventListener("wheel", handleBackgroundWheel, { capture: true, passive: false });
-    }
-
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", handleKeyDown, true);
-      if (blockBackgroundScrollWithEvents) {
-        document.removeEventListener("touchmove", handleBackgroundTouchMove, true);
-        document.removeEventListener("wheel", handleBackgroundWheel, true);
-      }
       removeModalStack(modalId);
       if (shouldLockDocumentScroll) {
         unlockDocumentScroll();
@@ -237,7 +212,7 @@ export function useModalEnvironment({
         previousActive.focus();
       }
     };
-  }, [open, dialogRef, modalId, lockBodyPosition, shouldLockDocumentScroll, blockBackgroundScrollWithEvents]);
+  }, [open, dialogRef, modalId, lockBodyPosition, shouldLockDocumentScroll]);
 }
 
 export const useModalFocusTrap = useModalEnvironment;
