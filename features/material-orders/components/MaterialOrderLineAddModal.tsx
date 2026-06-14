@@ -250,6 +250,32 @@ export default function MaterialOrderLineAddModal({
         </WaflButton>
       }
     >
+      <div
+        aria-hidden="true"
+        data-wafl-component="modal-touch-diagnostic"
+        className="pointer-events-none sticky top-0 z-20 max-h-[145px] overflow-hidden rounded-lg border border-black/30 bg-black/90 px-2 py-1.5 font-mono text-[9px] leading-3 text-white"
+      >
+        <div className="font-semibold">WAFL MODAL DIAG 0.22.21 · {diagnosticSnapshot?.reason ?? "waiting"}</div>
+        {diagnosticSnapshot ? (
+          <>
+            <div>event: {diagnosticSnapshot.eventTarget}</div>
+            <div>point: {diagnosticSnapshot.pointTarget}</div>
+            <div>active: {diagnosticSnapshot.activeElement}</div>
+            <div>viewport: {diagnosticSnapshot.viewport}</div>
+            <div>scroll: {diagnosticSnapshot.scroll}</div>
+            <div>dialog: {diagnosticSnapshot.dialogRect}</div>
+            <div>qty: {diagnosticSnapshot.orderRect}</div>
+            <div>price: {diagnosticSnapshot.priceRect}</div>
+            <div>close: {diagnosticSnapshot.closeRect}</div>
+            <div>confirm: {diagnosticSnapshot.confirmRect}</div>
+            {diagnosticHistory.slice(0, 2).map((line, index) => (
+              <div key={`${line}-${index}`} className="truncate opacity-70">{line}</div>
+            ))}
+          </>
+        ) : (
+          <div>진단 이벤트 대기 중</div>
+        )}
+      </div>
       <WaflModalSection className="grid gap-3">
         <div>
           <p className="text-[11px] font-semibold pbp-text-subtle">품목</p>
@@ -300,28 +326,6 @@ export default function MaterialOrderLineAddModal({
           <span className="tabular-nums pbp-text-primary">{formatMaterialOrderAmount(amount)}</span>
         </WaflSurfaceButton>
       </WaflModalSection>
-      {diagnosticSnapshot ? (
-        <div
-          aria-hidden="true"
-          data-wafl-component="modal-touch-diagnostic"
-          className="pointer-events-none fixed bottom-2 left-2 right-2 z-[9999] max-h-[38dvh] overflow-hidden rounded-lg border border-black/30 bg-black/85 px-2 py-1.5 font-mono text-[9px] leading-3 text-white sm:left-auto sm:right-2 sm:w-[430px]"
-        >
-          <div className="font-semibold">WAFL MODAL DIAG 0.22.20 · {diagnosticSnapshot.reason}</div>
-          <div>event: {diagnosticSnapshot.eventTarget}</div>
-          <div>point: {diagnosticSnapshot.pointTarget}</div>
-          <div>active: {diagnosticSnapshot.activeElement}</div>
-          <div>viewport: {diagnosticSnapshot.viewport}</div>
-          <div>scroll: {diagnosticSnapshot.scroll}</div>
-          <div>dialog: {diagnosticSnapshot.dialogRect}</div>
-          <div>qty: {diagnosticSnapshot.orderRect}</div>
-          <div>price: {diagnosticSnapshot.priceRect}</div>
-          <div>close: {diagnosticSnapshot.closeRect}</div>
-          <div>confirm: {diagnosticSnapshot.confirmRect}</div>
-          {diagnosticHistory.map((line, index) => (
-            <div key={`${line}-${index}`} className="truncate opacity-70">{line}</div>
-          ))}
-        </div>
-      ) : null}
     </ModalShell>
   );
 }
