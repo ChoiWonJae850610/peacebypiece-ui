@@ -115,6 +115,7 @@ export default function MaterialOrderLineAddModal({
       description="필요수량을 확인하고 주문수량과 단가를 입력합니다."
       onClose={onClose}
       maxWidthClass="md:max-w-lg"
+      panelClassName="wafl-material-line-add-modal"
       bodyClassName="grid gap-3"
       footerClassName="flex justify-end"
       lockBodyPosition={false}
@@ -136,11 +137,11 @@ export default function MaterialOrderLineAddModal({
       }
     >
       <WaflModalSection className="grid gap-3">
-        <div>
+        <div data-wafl-material-item-summary>
           <p className="text-[11px] font-semibold pbp-text-subtle">품목</p>
           <p className="mt-1 text-sm font-semibold pbp-text-primary">{itemName || "품목명 미입력"}</p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="material-order-line-fields grid gap-3 sm:grid-cols-2">
           <label className="grid gap-1 text-[11px] font-semibold pbp-text-subtle">
             <span>필요수량</span>
             <WaflInput fieldSize="sm" value={`${requiredQuantity.toLocaleString()} ${unit}`} disabled />

@@ -1499,3 +1499,34 @@ body[data-pbp-drawing-modal-open="true"] .pbp-drawing-modal-top-layer canvas {
 :where(.pbp-sidepanel-item, .pbp-sidepanel-preview-surface, .pbp-sidepanel-upload-zone, .pbp-empty-state) {
   border-color: color-mix(in srgb, var(--pbp-border) 76%, transparent);
 }
+
+
+/* iPad landscape keyboard mode for the material-order line modal.
+   Keep the modal inside the live visual viewport without shrinking its fields
+   into a scrolling sheet. The compact layout is scoped to this modal only. */
+[data-wafl-keyboard-open="true"] .wafl-material-line-add-modal [data-wafl-component="modal-header"] {
+  padding: 0.5rem 0.75rem;
+}
+
+[data-wafl-keyboard-open="true"] .wafl-material-line-add-modal [data-wafl-modal-description],
+[data-wafl-keyboard-open="true"] .wafl-material-line-add-modal [data-wafl-material-item-summary] {
+  display: none;
+}
+
+[data-wafl-keyboard-open="true"] .wafl-material-line-add-modal [data-wafl-component="modal-body"] {
+  overflow: hidden;
+  padding: 0.5rem 0.75rem;
+}
+
+[data-wafl-keyboard-open="true"] .wafl-material-line-add-modal [data-wafl-component="modal-section"] {
+  padding: 0.5rem;
+}
+
+[data-wafl-keyboard-open="true"] .wafl-material-line-add-modal .material-order-line-fields {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.375rem;
+}
+
+[data-wafl-keyboard-open="true"] .wafl-material-line-add-modal [data-wafl-component="modal-footer"] {
+  padding: 0.5rem 0.75rem;
+}

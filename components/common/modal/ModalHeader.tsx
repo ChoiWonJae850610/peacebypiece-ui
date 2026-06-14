@@ -24,11 +24,11 @@ export default function ModalHeader({
     <div data-wafl-component="modal-header" className={getWaflModalHeaderClassName()}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div id={titleId} className="text-base font-semibold md:text-lg pbp-text-primary">
+          <div id={titleId} data-wafl-modal-title className="text-base font-semibold md:text-lg pbp-text-primary">
             {title}
           </div>
           {description ? (
-            <div id={descriptionId} className="mt-1 break-keep text-sm pbp-text-muted">
+            <div id={descriptionId} data-wafl-modal-description className="mt-1 break-keep text-sm pbp-text-muted">
               {description}
             </div>
           ) : null}

@@ -44,11 +44,13 @@ export default function BaseModal({
   syncVisualViewport = false,
 }: BaseModalProps) {
   const [viewportStyle, setViewportStyle] = useState<CSSProperties | undefined>(undefined);
+  const [visualKeyboardOpen, setVisualKeyboardOpen] = useState(false);
   const stableViewportSizeRef = useRef<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
     if (!open || !syncVisualViewport || typeof window === "undefined") {
       setViewportStyle(undefined);
+      setVisualKeyboardOpen(false);
       return;
     }
 
@@ -68,14 +70,17 @@ export default function BaseModal({
           return;
         }
 
+        const keyboardOpen = viewport.height < stableSize.height * 0.78;
+        setVisualKeyboardOpen(keyboardOpen);
         setViewportStyle({
           top: `${viewport.offsetTop}px`,
           left: `${viewport.offsetLeft}px`,
-          width: `${stableSize.width}px`,
-          height: `${stableSize.height}px`,
+          width: `${viewport.width}px`,
+          height: `${viewport.height}px`,
           right: "auto",
           bottom: "auto",
           "--wafl-modal-stable-height": `${stableSize.height}px`,
+          "--wafl-modal-viewport-height": `${viewport.height}px`,
         } as CSSProperties);
       });
     };
@@ -97,6 +102,7 @@ export default function BaseModal({
 
     return () => {
       stableViewportSizeRef.current = null;
+      setVisualKeyboardOpen(false);
       window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", updateViewport);
       window.removeEventListener("orientationchange", refreshAfterFocusChange);
@@ -125,6 +131,7 @@ export default function BaseModal({
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
+      data-wafl-keyboard-open={visualKeyboardOpen ? "true" : "false"}
     >
       <div
         className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${blockBackdropScroll ? "touch-none" : ""} ${overlayClassName}`.trim()}
@@ -135,7 +142,11 @@ export default function BaseModal({
         className={[
           "absolute inset-0 md:p-6",
           useSimpleInteractionLayer ? "pointer-events-auto touch-auto" : "pointer-events-none",
-          centerWithoutTransform ? "sm:flex sm:items-center sm:justify-center" : "",
+          centerWithoutTransform
+            ? visualKeyboardOpen
+              ? "sm:flex sm:items-start sm:justify-center sm:p-2"
+              : "sm:flex sm:items-center sm:justify-center"
+            : "",
         ].join(" ").trim()}
         onClick={useSimpleInteractionLayer ? handleBackdropClick : undefined}
       >
@@ -147,12 +158,12 @@ export default function BaseModal({
           onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"
           className={[
-            `absolute inset-x-0 bottom-0 flex ${syncVisualViewport ? "h-[var(--wafl-modal-stable-height)] max-h-[var(--wafl-modal-stable-height)]" : "h-[100dvh] max-h-[100dvh]"} flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
+            `absolute inset-x-0 bottom-0 flex ${syncVisualViewport ? "h-[var(--wafl-modal-viewport-height)] max-h-[var(--wafl-modal-viewport-height)]" : "h-[100dvh] max-h-[100dvh]"} flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
             centerWithoutTransform
               ? "border-0 sm:relative sm:inset-auto sm:w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0 sm:rounded-3xl sm:border"
               : "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
             syncVisualViewport
-              ? "sm:h-auto sm:max-h-[min(calc(var(--wafl-modal-stable-height)*0.92),960px)]"
+              ? "sm:h-auto sm:max-h-[calc(var(--wafl-modal-viewport-height)-1rem)]"
               : "sm:h-auto sm:max-h-[min(92dvh,960px)]",
             maxWidthClassName,
             panelClassName,
