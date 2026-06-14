@@ -22,6 +22,7 @@ export default function ModalShell({
   closeOnBackdrop,
   lockBodyPosition,
   lockDocumentScroll,
+  blockBackgroundScrollWithEvents,
   useNativeTouchInteractions,
   rootClassName,
 }: {
@@ -39,6 +40,7 @@ export default function ModalShell({
   closeOnBackdrop?: boolean;
   lockBodyPosition?: boolean;
   lockDocumentScroll?: boolean;
+  blockBackgroundScrollWithEvents?: boolean;
   useNativeTouchInteractions?: boolean;
   rootClassName?: string;
 }) {
@@ -47,7 +49,7 @@ export default function ModalShell({
   const descriptionId = useId();
   const resolvedDescriptionId = description ? descriptionId : undefined;
 
-  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition, lockDocumentScroll });
+  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition, lockDocumentScroll, blockBackgroundScrollWithEvents });
 
   return (
     <BaseModal
