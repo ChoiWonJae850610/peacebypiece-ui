@@ -2,6 +2,22 @@
 
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 
+const WAFL_MODAL_PORTAL_ROOT_ID = "wafl-modal-portal-root";
+
+type BackgroundIsolationState = {
+  count: number;
+  elements: Array<{
+    element: HTMLElement;
+    inert: boolean;
+    ariaHidden: string | null;
+  }>;
+};
+
+const backgroundIsolationState: BackgroundIsolationState = {
+  count: 0,
+  elements: [],
+};
+
 type LockState = {
   count: number;
   scrollY: number;
@@ -45,6 +61,64 @@ function removeModalStack(id: string) {
 
 function isTopModal(id: string) {
   return modalStack[modalStack.length - 1] === id;
+}
+
+
+export function getWaflModalPortalRoot() {
+  if (typeof document === "undefined") return null;
+
+  const existing = document.getElementById(WAFL_MODAL_PORTAL_ROOT_ID);
+  if (existing instanceof HTMLDivElement) return existing;
+
+  const portalRoot = document.createElement("div");
+  portalRoot.id = WAFL_MODAL_PORTAL_ROOT_ID;
+  portalRoot.dataset.waflModalPortalRoot = "true";
+  document.body.appendChild(portalRoot);
+  return portalRoot;
+}
+
+function isolateBackgroundFromModal() {
+  const portalRoot = getWaflModalPortalRoot();
+  if (!portalRoot) return;
+
+  if (backgroundIsolationState.count === 0) {
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement && !portalRoot.contains(activeElement)) {
+      activeElement.blur();
+    }
+
+    backgroundIsolationState.elements = Array.from(document.body.children)
+      .filter((element): element is HTMLElement => element instanceof HTMLElement && element !== portalRoot)
+      .map((element) => ({
+        element,
+        inert: element.inert,
+        ariaHidden: element.getAttribute("aria-hidden"),
+      }));
+
+    for (const { element } of backgroundIsolationState.elements) {
+      element.inert = true;
+      element.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  backgroundIsolationState.count += 1;
+}
+
+function restoreBackgroundAfterModal() {
+  backgroundIsolationState.count = Math.max(0, backgroundIsolationState.count - 1);
+  if (backgroundIsolationState.count > 0) return;
+
+  for (const { element, inert, ariaHidden } of backgroundIsolationState.elements) {
+    if (!document.contains(element)) continue;
+    element.inert = inert;
+    if (ariaHidden === null) {
+      element.removeAttribute("aria-hidden");
+    } else {
+      element.setAttribute("aria-hidden", ariaHidden);
+    }
+  }
+
+  backgroundIsolationState.elements = [];
 }
 
 export function shouldUseTouchModalFocusPolicy() {
@@ -134,12 +208,14 @@ export function useModalEnvironment({
   onClose,
   lockBodyPosition = true,
   lockDocumentScroll: shouldLockDocumentScroll = true,
+  isolateBackground = false,
 }: {
   open: boolean;
   dialogRef: RefObject<HTMLElement | null>;
   onClose: () => void;
   lockBodyPosition?: boolean;
   lockDocumentScroll?: boolean;
+  isolateBackground?: boolean;
 }) {
   const modalId = useMemo(() => `modal-${Math.random().toString(36).slice(2, 11)}`, []);
   const onCloseRef = useRef(onClose);
@@ -156,6 +232,9 @@ export function useModalEnvironment({
     const previousActive = !useTouchFocusPolicy && document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     pushModalStack(modalId);
+    if (isolateBackground) {
+      isolateBackgroundFromModal();
+    }
     if (shouldLockDocumentScroll) {
       lockDocumentScroll({ lockBodyPosition });
     }
@@ -207,12 +286,18 @@ export function useModalEnvironment({
       if (shouldLockDocumentScroll) {
         unlockDocumentScroll();
       }
-      blurActiveModalElement();
+      if (isolateBackground) {
+        restoreBackgroundAfterModal();
+      }
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLElement && dialog.contains(activeElement)) {
+        activeElement.blur();
+      }
       if (!useTouchFocusPolicy && previousActive && document.contains(previousActive)) {
         previousActive.focus();
       }
     };
-  }, [open, dialogRef, modalId, lockBodyPosition, shouldLockDocumentScroll]);
+  }, [open, dialogRef, modalId, lockBodyPosition, shouldLockDocumentScroll, isolateBackground]);
 }
 
 export const useModalFocusTrap = useModalEnvironment;

@@ -41,6 +41,7 @@ export default function RootLayout({
             <CurrentUserProvider>
               <WorkorderRepositoryProvider>{children}</WorkorderRepositoryProvider>
               <AppToaster />
+              <div id="wafl-modal-portal-root" data-wafl-modal-portal-root="true" />
             </CurrentUserProvider>
           </I18nProvider>
         </PbpThemeProvider>

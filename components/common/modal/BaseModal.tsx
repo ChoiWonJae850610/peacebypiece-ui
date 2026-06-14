@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import type { MouseEvent, ReactNode, RefObject } from "react";
 
 import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui";
+import { getWaflModalPortalRoot } from "@/components/common/modal/modalUtils";
 
 type BaseModalProps = {
   open: boolean;
@@ -19,6 +20,7 @@ type BaseModalProps = {
   rootClassName?: string;
   useNativeTouchInteractions?: boolean;
   centerWithoutTransform?: boolean;
+  blockBackdropScroll?: boolean;
 };
 
 export default function BaseModal({
@@ -35,6 +37,7 @@ export default function BaseModal({
   rootClassName = "",
   useNativeTouchInteractions = false,
   centerWithoutTransform = false,
+  blockBackdropScroll = false,
 }: BaseModalProps) {
   if (!open) return null;
 
@@ -54,13 +57,16 @@ export default function BaseModal({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
+      <div
+        className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${blockBackdropScroll ? "touch-none" : ""} ${overlayClassName}`.trim()}
+        aria-hidden="true"
+        onClick={handleBackdropClick}
+      />
       <div
         className={[
-          `absolute inset-0 pointer-events-auto md:p-6 ${useNativeTouchInteractions ? "" : "touch-pan-y"}`,
+          "absolute inset-0 pointer-events-none md:p-6",
           centerWithoutTransform ? "sm:flex sm:items-center sm:justify-center" : "",
         ].join(" ").trim()}
-        onClick={handleBackdropClick}
       >
         <div
           ref={dialogRef}
@@ -86,5 +92,6 @@ export default function BaseModal({
 
   if (typeof document === "undefined") return modalContent;
 
-  return createPortal(modalContent, document.body);
+  const portalRoot = getWaflModalPortalRoot();
+  return createPortal(modalContent, portalRoot ?? document.body);
 }

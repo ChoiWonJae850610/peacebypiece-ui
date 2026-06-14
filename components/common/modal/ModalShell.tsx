@@ -25,6 +25,8 @@ export default function ModalShell({
   useNativeTouchInteractions,
   rootClassName,
   centerWithoutTransform,
+  isolateBackground,
+  blockBackdropScroll,
 }: {
   open: boolean;
   title: string;
@@ -43,13 +45,15 @@ export default function ModalShell({
   useNativeTouchInteractions?: boolean;
   rootClassName?: string;
   centerWithoutTransform?: boolean;
+  isolateBackground?: boolean;
+  blockBackdropScroll?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
   const descriptionId = useId();
   const resolvedDescriptionId = description ? descriptionId : undefined;
 
-  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition, lockDocumentScroll });
+  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition, lockDocumentScroll, isolateBackground });
 
   return (
     <BaseModal
@@ -65,6 +69,7 @@ export default function ModalShell({
       useNativeTouchInteractions={useNativeTouchInteractions}
       rootClassName={rootClassName}
       centerWithoutTransform={centerWithoutTransform}
+      blockBackdropScroll={blockBackdropScroll}
     >
       <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
       <ModalBody className={bodyClassName}>{children}</ModalBody>
