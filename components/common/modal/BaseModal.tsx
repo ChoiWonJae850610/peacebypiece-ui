@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import type { MouseEvent, ReactNode, RefObject } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from "react";
 
 import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui";
 import { getWaflModalPortalRoot } from "@/components/common/modal/modalUtils";
@@ -22,6 +22,7 @@ type BaseModalProps = {
   centerWithoutTransform?: boolean;
   blockBackdropScroll?: boolean;
   useSimpleInteractionLayer?: boolean;
+  syncVisualViewport?: boolean;
 };
 
 export default function BaseModal({
@@ -40,7 +41,63 @@ export default function BaseModal({
   centerWithoutTransform = false,
   blockBackdropScroll = false,
   useSimpleInteractionLayer = false,
+  syncVisualViewport = false,
 }: BaseModalProps) {
+  const [viewportStyle, setViewportStyle] = useState<CSSProperties | undefined>(undefined);
+
+  useEffect(() => {
+    if (!open || !syncVisualViewport || typeof window === "undefined") {
+      setViewportStyle(undefined);
+      return;
+    }
+
+    let frame = 0;
+    const updateViewport = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const viewport = window.visualViewport;
+        if (!viewport) {
+          setViewportStyle(undefined);
+          return;
+        }
+
+        setViewportStyle({
+          top: `${viewport.offsetTop}px`,
+          left: `${viewport.offsetLeft}px`,
+          width: `${viewport.width}px`,
+          height: `${viewport.height}px`,
+          right: "auto",
+          bottom: "auto",
+        });
+      });
+    };
+
+    const refreshAfterFocusChange = () => {
+      updateViewport();
+      window.setTimeout(updateViewport, 60);
+      window.setTimeout(updateViewport, 180);
+      window.setTimeout(updateViewport, 360);
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    window.addEventListener("orientationchange", refreshAfterFocusChange);
+    document.addEventListener("focusin", refreshAfterFocusChange, true);
+    document.addEventListener("focusout", refreshAfterFocusChange, true);
+    window.visualViewport?.addEventListener("resize", updateViewport);
+    window.visualViewport?.addEventListener("scroll", updateViewport);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("orientationchange", refreshAfterFocusChange);
+      document.removeEventListener("focusin", refreshAfterFocusChange, true);
+      document.removeEventListener("focusout", refreshAfterFocusChange, true);
+      window.visualViewport?.removeEventListener("resize", updateViewport);
+      window.visualViewport?.removeEventListener("scroll", updateViewport);
+    };
+  }, [open, syncVisualViewport]);
+
   if (!open) return null;
 
   const handleBackdropClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -54,6 +111,7 @@ export default function BaseModal({
   const modalContent = (
     <div
       className={`pbp-mobile-no-zoom fixed inset-0 z-[3000] pointer-events-auto ${rootClassName}`.trim()}
+      style={viewportStyle}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -80,10 +138,11 @@ export default function BaseModal({
           onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"
           className={[
-            `absolute inset-x-0 bottom-0 flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
+            `absolute inset-x-0 bottom-0 flex ${syncVisualViewport ? "h-full max-h-full" : "h-[100dvh] max-h-[100dvh]"} flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
             centerWithoutTransform
-              ? "border-0 sm:relative sm:inset-auto sm:h-auto sm:max-h-[min(92dvh,960px)] sm:w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0 sm:rounded-3xl sm:border"
-              : "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:h-auto sm:max-h-[min(92dvh,960px)] sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
+              ? "border-0 sm:relative sm:inset-auto sm:w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0 sm:rounded-3xl sm:border"
+              : "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
+            syncVisualViewport ? "sm:h-auto sm:max-h-[92%]" : "sm:h-auto sm:max-h-[min(92dvh,960px)]",
             maxWidthClassName,
             panelClassName,
           ].join(" ").trim()}

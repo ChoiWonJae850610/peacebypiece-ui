@@ -28,6 +28,7 @@ export default function ModalShell({
   isolateBackground,
   blockBackdropScroll,
   useSimpleInteractionLayer,
+  syncVisualViewport,
 }: {
   open: boolean;
   title: string;
@@ -49,6 +50,7 @@ export default function ModalShell({
   isolateBackground?: boolean;
   blockBackdropScroll?: boolean;
   useSimpleInteractionLayer?: boolean;
+  syncVisualViewport?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
@@ -73,6 +75,7 @@ export default function ModalShell({
       centerWithoutTransform={centerWithoutTransform}
       blockBackdropScroll={blockBackdropScroll}
       useSimpleInteractionLayer={useSimpleInteractionLayer}
+      syncVisualViewport={syncVisualViewport}
     >
       <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
       <ModalBody className={bodyClassName}>{children}</ModalBody>
