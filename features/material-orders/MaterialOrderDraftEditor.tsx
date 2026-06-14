@@ -73,6 +73,7 @@ export default function MaterialOrderDraftEditor({
   const [pageFocusTestValue, setPageFocusTestValue] = useState("");
   const [fixedPanelOpen, setFixedPanelOpen] = useState(false);
   const [inlinePanelOpen, setInlinePanelOpen] = useState(false);
+  const [cleanModalOpen, setCleanModalOpen] = useState(false);
 
   const {
     orders,
@@ -164,7 +165,7 @@ export default function MaterialOrderDraftEditor({
     openMaterialLineEditor("drawer", ...args);
 
   const focusEnvironmentDiagnostic = (
-    <>
+    <div className="relative isolate grid gap-3">
       <section
         aria-label="A 페이지 입력 테스트"
         className="grid gap-2 rounded-md border-2 border-dashed border-sky-500 bg-sky-50 p-3 text-slate-950 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
@@ -208,6 +209,13 @@ export default function MaterialOrderDraftEditor({
             onClick={() => setInlinePanelOpen((current) => !current)}
           >
             {inlinePanelOpen ? "D 레이아웃 패널 닫기" : "D 레이아웃 패널 열기"}
+          </button>
+          <button
+            type="button"
+            className="min-h-10 rounded-md border border-amber-700 bg-amber-50 px-3 text-xs font-bold text-amber-950"
+            onClick={() => setCleanModalOpen(true)}
+          >
+            E 새 최소 모달 열기
           </button>
           <p className="max-w-[280px] text-[11px] leading-4 text-slate-700 sm:text-right">
             C는 우측 발주 대상 카드의 <strong>[C 드로어]</strong> 버튼으로 엽니다.
@@ -285,6 +293,81 @@ export default function MaterialOrderDraftEditor({
         </section>
       ) : null}
 
+      {cleanModalOpen ? (
+        <div
+          className="absolute inset-0 z-[60] grid min-h-[460px] place-items-center overflow-y-auto bg-slate-950/35 p-4"
+          data-focus-environment-test="clean-absolute-modal"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clean-modal-title"
+            className="grid w-full max-w-[420px] gap-4 rounded-md border-4 border-amber-600 bg-white p-4 text-slate-950"
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-amber-300 pb-3">
+              <div>
+                <p id="clean-modal-title" className="text-sm font-bold">E. 새 최소 모달 테스트</p>
+                <p className="mt-1 text-[11px] leading-4">
+                  공통 모달, portal, fixed, focus trap, scroll lock을 사용하지 않는 absolute 테스트입니다.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="min-h-9 shrink-0 rounded-md border border-slate-900 bg-white px-3 text-xs font-bold"
+                onClick={() => setCleanModalOpen(false)}
+              >
+                닫기
+              </button>
+            </div>
+
+            <label className="grid gap-1 text-xs font-bold">
+              E-1 기본 HTML 비제어형
+              <input
+                inputMode="numeric"
+                defaultValue=""
+                aria-label="E-1 새 최소 모달 기본 입력"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  minHeight: 44,
+                  border: "1px solid #92400e",
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  padding: "8px 10px",
+                  fontSize: 16,
+                }}
+              />
+            </label>
+
+            <label className="grid gap-1 text-xs font-bold">
+              E-2 기본 HTML 비제어형
+              <input
+                inputMode="numeric"
+                defaultValue=""
+                aria-label="E-2 새 최소 모달 기본 입력"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  minHeight: 44,
+                  border: "1px solid #92400e",
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  padding: "8px 10px",
+                  fontSize: 16,
+                }}
+              />
+            </label>
+
+            <div className="min-h-20 rounded-md border border-dashed border-amber-600 bg-amber-50 p-3 text-xs">
+              E 모달 빈 영역입니다. E-1/E-2 입력 전환, 빈 영역 터치, 닫기를 반복합니다.
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {fixedPanelOpen ? (
         <div
           className="fixed bottom-0 right-0 top-[72px] z-[5000] flex w-[min(420px,92vw)] flex-col border-l-4 border-fuchsia-600 bg-white text-slate-950 shadow-none"
@@ -348,7 +431,7 @@ export default function MaterialOrderDraftEditor({
           </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 
   const topbar = (
