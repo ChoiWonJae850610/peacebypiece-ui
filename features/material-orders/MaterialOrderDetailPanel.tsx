@@ -98,8 +98,6 @@ export default function MaterialOrderDetailPanel({
                 labels={{ label: undefined, placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "발주서 납기일 선택" }}
                 locale="ko"
               displayFormat="iso"
-                displayFormat="iso"
-          displayFormat="iso"
                 minDateValue={getTodayPbpLocalDateValue()}
                 onChange={onChangeDueDate}
                 popoverMode="fixed"
