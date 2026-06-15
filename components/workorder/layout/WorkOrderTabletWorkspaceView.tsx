@@ -53,7 +53,7 @@ export default function WorkOrderTabletWorkspaceView({
           <WorkOrderDetail {...detailProps} />
         </div>
       ) : (
-        <WorkOrderEmptyState variant="detail" />
+        <WorkOrderEmptyState variant="detail" panel />
       )}
     </>
   );
@@ -66,7 +66,7 @@ export default function WorkOrderTabletWorkspaceView({
   ) : hasSelection ? (
     <WorkOrderSidePanel {...sidePanelProps} />
   ) : (
-    <WorkOrderEmptyState variant="side" />
+    <WorkOrderEmptyState variant="side" panel />
   );
 
   if (useThreePanel) {
