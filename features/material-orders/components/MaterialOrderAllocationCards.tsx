@@ -28,7 +28,6 @@ type MaterialOrderAllocationCardProps = {
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
-  onOpenCleanModal?: () => void;
   mobile?: boolean;
 };
 
@@ -39,7 +38,6 @@ export function MaterialOrderAllocationCard({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
-  onOpenCleanModal,
   mobile = false,
 }: MaterialOrderAllocationCardProps) {
   const materialTypeLabel = workOrder.materialItems[0]
@@ -82,7 +80,6 @@ export function MaterialOrderAllocationCard({
             materialRequestCompletionMap={materialRequestCompletionMap}
             editable={editable}
             onAddMaterialToOrder={onAddMaterialToOrder}
-            onOpenCleanModal={onOpenCleanModal}
             mobile={mobile}
           />
         ))}
@@ -99,7 +96,6 @@ function MaterialOrderAllocationRow({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
-  onOpenCleanModal,
   mobile = false,
 }: MaterialOrderAllocationCardProps & {
   material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
@@ -188,20 +184,6 @@ function MaterialOrderAllocationRow({
         >
           <span aria-hidden="true">{selectionButtonLabel}</span>
         </MaterialOrderActionButton>
-        {!mobile && onOpenCleanModal ? (
-          <MaterialOrderActionButton
-            label={`${material.itemName} 새 최소 모달 테스트`}
-            size="sm"
-            compact
-            showSrLabel={false}
-            tone="neutral"
-            disabled={!editable}
-            title="0.22.09 기존 모달과 비교할 clean-room 최소 모달을 엽니다."
-            onClick={onOpenCleanModal}
-          >
-            <span aria-hidden="true">새 모달</span>
-          </MaterialOrderActionButton>
-        ) : null}
       </div>
     </WaflSurface>
   );

@@ -20,11 +20,9 @@ import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrd
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
 import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
-import MaterialOrderCleanRoomModal from "@/features/material-orders/dev/MaterialOrderCleanRoomModal";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
-import { isDebugFeatureEnabled } from "@/lib/runtime/runtimeMode";
 
 const MATERIAL_ORDER_WORKSPACE_STACK_CLASS =
   "flex h-full min-h-0 flex-col gap-3 sm:gap-4 md:gap-5";
@@ -70,7 +68,6 @@ export default function MaterialOrderDraftEditor({
   const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
   const [mobileActiveTool, setMobileActiveTool] =
     useState<MaterialOrderMobileToolKey>("workorders");
-  const [cleanModalOpen, setCleanModalOpen] = useState(false);
 
   const {
     orders,
@@ -172,20 +169,11 @@ export default function MaterialOrderDraftEditor({
     />
   );
 
-  const showCleanRoomModal = isDebugFeatureEnabled("materialOrderCleanRoomModal");
-
-  const cleanRoomModal = showCleanRoomModal ? (
-    <MaterialOrderCleanRoomModal
-      open={cleanModalOpen}
-      onClose={() => setCleanModalOpen(false)}
-    />
-  ) : null;
 
   const validationModal = (
     <>
       <MaterialOrderLineAddModal {...materialOrderLineAddModal} />
       <WorkflowValidationModal {...materialOrderValidationModal} />
-      {cleanRoomModal}
     </>
   );
 
@@ -244,7 +232,6 @@ export default function MaterialOrderDraftEditor({
       loading={workOrdersLoading}
       errorMessage={workOrdersError}
       onAddMaterialToOrder={handleAddMaterialToOrder}
-      onOpenCleanModal={showCleanRoomModal ? () => setCleanModalOpen(true) : undefined}
       onRetry={() => void refreshWorkOrderCandidates()}
       mobile={deviceType === "mobile"}
     />
