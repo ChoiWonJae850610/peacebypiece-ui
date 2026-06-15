@@ -13,6 +13,7 @@ import {
   WaflMobileTabbedActionSheet,
   WaflThreePanelWorkspace,
   WaflTwoPanelWorkspace,
+  WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS,
   type AppSegmentedTabItem,
 } from "@/components/common/ui";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
@@ -25,7 +26,7 @@ import { APP_VERSION } from "@/lib/constants/version";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
 const MATERIAL_ORDER_WORKSPACE_STACK_CLASS =
-  "flex h-full min-h-0 flex-col gap-3 sm:gap-4 md:gap-5";
+  `flex h-full min-h-0 flex-col ${WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS}`;
 
 type MaterialOrderMobileToolKey = "workorders" | "schedule";
 

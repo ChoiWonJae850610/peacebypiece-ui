@@ -2,7 +2,8 @@ import { type KeyboardEvent, type ReactNode } from "react";
 import {
   AppInlineSelectEditor,
   WaflIconButton,
-  type AppInlineSelectEditorOption,
+  type AppInlineSelectEditorOption,,
+  WaflCardButton,
 } from "@/components/common/ui";
 import {
   PbpSingleDatePicker,
@@ -121,11 +122,10 @@ export function SectionHeader({
 }) {
   return (
     <div className="flex min-w-0 items-start gap-2 border-b border-[var(--pbp-border)] pb-1.5 sm:gap-3">
-      <button
-        type="button"
+      <WaflCardButton
         onClick={onToggle}
         aria-expanded={open}
-        className="pbp-touch-target pbp-interactive-button min-w-0 flex-1 wafl-shape-control px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
+        className="min-w-0 flex-1 px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
       >
         <div className="min-w-0 overflow-hidden">
           <div className="text-sm font-semibold leading-5 text-[var(--pbp-text-primary)]">
@@ -135,7 +135,7 @@ export function SectionHeader({
             {summary}
           </div>
         </div>
-      </button>
+      </WaflCardButton>
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
         <CollapseToggleButton

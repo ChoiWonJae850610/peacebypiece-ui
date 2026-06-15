@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 
-import { WaflDetailWorkspacePanel, WaflListWorkspacePanel, WaflSideWorkspacePanel, WaflThreePanelWorkspace } from "@/components/common/ui";
+import { WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS, WaflDetailWorkspacePanel, WaflListWorkspacePanel, WaflSideWorkspacePanel, WaflThreePanelWorkspace } from "@/components/common/ui";
 
 type DesktopWorkspaceLayoutProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
@@ -28,7 +28,7 @@ export default function DesktopWorkspaceLayout({
   }, [scrollResetKey]);
   return (
     <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 pbp-text-primary sm:p-4 md:p-6 lg:p-8">
-      <div ref={appShellRef} className="mx-auto flex h-full w-full max-w-[1480px] flex-col gap-3 overflow-hidden sm:gap-4 md:gap-5">
+      <div ref={appShellRef} className={`mx-auto flex h-full w-full max-w-[1480px] flex-col overflow-hidden ${WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS}`}>
         {topbar ? <div className="shrink-0">{topbar}</div> : null}
         <div className="min-h-0 flex-1 overflow-hidden">
           <WaflThreePanelWorkspace
