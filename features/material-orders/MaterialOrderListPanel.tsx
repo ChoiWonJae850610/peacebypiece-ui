@@ -68,7 +68,7 @@ const MATERIAL_ORDER_STATUS_OPTIONS: Array<
 const MATERIAL_ORDER_TYPE_OPTIONS: Array<
   AppSelectOption & { value: "all" | MaterialOrderLineItemType }
 > = [
-  { value: "all", label: "종류 전체" },
+  { value: "all", label: "전체" },
   { value: "fabric", label: "원단" },
   { value: "submaterial", label: "부자재" },
 ];

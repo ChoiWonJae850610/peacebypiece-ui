@@ -6,6 +6,7 @@ import DesktopWorkspaceLayout from "@/components/workorder/layout/DesktopWorkspa
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
+import { WaflPanelContentShell } from "@/components/common/ui";
 
 export default function WorkOrderDesktopWorkspaceView({
   appShellRef,
@@ -43,7 +44,9 @@ export default function WorkOrderDesktopWorkspaceView({
               <WorkOrderDetail {...detailProps} />
             </div>
           ) : (
-            <WorkOrderEmptyState variant="detail" />
+            <WaflPanelContentShell>
+              <WorkOrderEmptyState variant="detail" />
+            </WaflPanelContentShell>
           )}
         </>
       )}

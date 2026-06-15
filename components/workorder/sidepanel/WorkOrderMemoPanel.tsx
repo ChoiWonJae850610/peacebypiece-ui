@@ -642,7 +642,7 @@ export default function WorkOrderMemoPanel({
             />
           ))
         ) : (
-          <WaflEmptyCard shape="control" className={`${WAFL_WORKSPACE_EMPTY_CARD_CLASS} px-3 py-5`}>
+          <WaflEmptyCard shape="control" className={`${WAFL_WORKSPACE_EMPTY_CARD_CLASS} px-3 py-5 text-sm leading-5`}>
             {ui.memo.empty}
           </WaflEmptyCard>
         )}
