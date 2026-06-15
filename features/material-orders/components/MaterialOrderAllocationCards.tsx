@@ -1,5 +1,4 @@
-import { WaflSurface } from "@/components/common/ui";
-import { MaterialOrderActionButton } from "@/features/material-orders/components/MaterialOrderActionButton";
+import { WaflActionButton, WaflSurface } from "@/components/common/ui";
 import { MaterialOrderQuantityRatio } from "@/features/material-orders/components/MaterialOrderQuantityDisplay";
 import {
   MATERIAL_ORDER_LIST_CARD_BASE_CLASS,
@@ -167,7 +166,7 @@ function MaterialOrderAllocationRow({
         ) : null}
       </div>
       <div className={mobile ? "grid" : "flex shrink-0 items-center gap-1.5"}>
-        <MaterialOrderActionButton
+        <WaflActionButton
           label={`${material.itemName} ${selectionButtonLabel}`}
           size="sm"
           compact
@@ -183,7 +182,7 @@ function MaterialOrderAllocationRow({
           onClick={() => onAddMaterialToOrder(workOrder, material)}
         >
           <span aria-hidden="true">{selectionButtonLabel}</span>
-        </MaterialOrderActionButton>
+        </WaflActionButton>
       </div>
     </WaflSurface>
   );
