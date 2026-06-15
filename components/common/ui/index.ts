@@ -125,3 +125,4 @@ export {
   WaflSummaryInfoCell,
 } from "./WaflSummaryHeaderCard";
 export * from "./WaflEmptyWorkspaceState";
+export { default as WaflWorkspaceEmptyPanel } from "./WaflWorkspaceEmptyPanel";

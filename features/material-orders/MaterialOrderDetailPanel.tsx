@@ -2,7 +2,7 @@ import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicke
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflEmptyWorkspaceState, WaflPanelContentShell, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
+import { AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflPanelContentShell, WaflWorkspaceEmptyPanel, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryCards } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
@@ -88,9 +88,9 @@ export default function MaterialOrderDetailPanel({
 
   return (
     <WaflDetailWorkspacePanel>
-      <WaflPanelContentShell>
       {selectedOrder ? (
-        <div className={`${WAFL_PANEL_CONTENT_STACK_CLASS} flex-1`}>
+        <WaflPanelContentShell>
+          <div className={`${WAFL_PANEL_CONTENT_STACK_CLASS} flex-1`}>
           <WaflSummaryHeaderCard
             component="material-order-header-summary"
             columns={2}
@@ -215,16 +215,15 @@ export default function MaterialOrderDetailPanel({
             ) : null}
           </AppSection>
 
-        </div>
+          </div>
+        </WaflPanelContentShell>
       ) : (
-        <WaflEmptyWorkspaceState
+        <WaflWorkspaceEmptyPanel
           title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.title}
           description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.description}
           variant="center-panel"
-          className="min-h-full flex-1"
         />
       )}
-      </WaflPanelContentShell>
     </WaflDetailWorkspacePanel>
   );
 }
