@@ -1,4 +1,5 @@
 import WorkOrderWorkspace from "@/components/workorder/WorkOrderWorkspace";
+import WorkspacePageShell from "@/components/workspace/layout/WorkspacePageShell";
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 import { ROLE } from "@/lib/constants/roles";
 import type { RoleType } from "@/types/permission";
@@ -42,13 +43,22 @@ export default async function WorkordersWorkspacePage({
   const initialHomeRole = resolveSessionHomeRole(session.role);
 
   return (
-    <WorkOrderWorkspace
-      initialHomeRole={initialHomeRole}
-      initialCompanyName={session.companyName ?? null}
-      initialWorkOrderId={initialWorkOrderId}
-      initialListStatusFilter={initialListStatusFilter}
-      initialListSort={initialListSort}
-      initialSearchQuery={initialSearchQuery}
-    />
+    <WorkspacePageShell
+      session={session}
+      activeHref="/workspace/workorders"
+      title="작업지시서"
+      description="작업지시서 작성부터 검토, 발주, 검수까지 전체 진행 상태를 관리합니다."
+      contentMode="fixed-md"
+      hideTopbar
+    >
+      <WorkOrderWorkspace
+        initialHomeRole={initialHomeRole}
+        initialCompanyName={session.companyName ?? null}
+        initialWorkOrderId={initialWorkOrderId}
+        initialListStatusFilter={initialListStatusFilter}
+        initialListSort={initialListSort}
+        initialSearchQuery={initialSearchQuery}
+      />
+    </WorkspacePageShell>
   );
 }
