@@ -58,6 +58,7 @@ export type MaterialOrder = {
   companyId: string;
   supplierPartnerId: string | null;
   supplierPartnerName: string | null;
+  materialType: MaterialOrderLineItemType | null;
   status: MaterialOrderStatus;
   workflowPath: WorkflowPathValue;
   requestedByUserId: string | null;
@@ -128,6 +129,15 @@ export type MaterialOrderCreateInput = {
   note?: string | null;
   dueDate?: string | null;
   lines?: MaterialOrderLineInput[];
+};
+
+export type MaterialOrderHeaderUpdateInput = {
+  companyId: string;
+  visibility?: MaterialOrderVisibilityScope;
+  materialOrderId: string;
+  materialType?: MaterialOrderLineItemType | null;
+  supplierPartnerId?: string | null;
+  dueDate?: string | null;
 };
 
 export type MaterialOrderUpdateInput = {

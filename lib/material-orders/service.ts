@@ -5,11 +5,13 @@ import {
   listMaterialOrdersByCompany,
   listMaterialOrderSuppliersByCompany,
   updateMaterialOrderDetailForCompany,
+  updateMaterialOrderHeaderForCompany,
   updateMaterialOrderStatusForCompany,
 } from "@/lib/material-orders/repository";
 import type {
   MaterialOrderCreateInput,
   MaterialOrderListParams,
+  MaterialOrderHeaderUpdateInput,
   MaterialOrderListResult,
   MaterialOrderMutationResult,
   MaterialOrderStatusUpdateInput,
@@ -43,6 +45,20 @@ export async function createWorkspaceMaterialOrder(
   return {
     materialOrder,
     materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId, visibility: input.visibility }),
+  };
+}
+
+export async function updateWorkspaceMaterialOrderHeader(
+  input: MaterialOrderHeaderUpdateInput,
+): Promise<MaterialOrderMutationResult> {
+  const materialOrder = await updateMaterialOrderHeaderForCompany(input);
+
+  return {
+    materialOrder,
+    materialOrders: await listMaterialOrdersByCompany({
+      companyId: input.companyId,
+      visibility: input.visibility,
+    }),
   };
 }
 

@@ -48,7 +48,7 @@ export type MaterialOrderWorkspaceWorkOrdersResult = {
 };
 
 export function resolveMaterialOrderType(order: MaterialOrder): MaterialOrderLineItemType | null {
-  return order.lines[0]?.itemType ?? null;
+  return order.materialType ?? order.lines[0]?.itemType ?? null;
 }
 
 export function formatMaterialOrderCode(order: Pick<MaterialOrder, "id">): string {
@@ -196,6 +196,24 @@ export async function createEmptyMaterialOrder(): Promise<MaterialOrderWorkspace
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+  });
+
+  return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
+}
+
+export async function updateMaterialOrderHeader(input: {
+  materialOrderId: string;
+  materialType?: MaterialOrderLineItemType | null;
+  supplierPartnerId?: string | null;
+  dueDate?: string | null;
+}): Promise<MaterialOrderWorkspaceMutationResult> {
+  const response = await fetch("/api/material-orders", {
+    method: "PUT",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...input, updateMode: "header" }),
   });
 
   return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);

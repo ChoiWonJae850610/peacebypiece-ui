@@ -38,6 +38,7 @@ type MaterialOrderDetailPanelProps = {
   onChangeSupplierPartnerId: (partnerId: string | null) => void;
   onRetrySuppliers: () => void;
   statusChanging: boolean;
+  headerSaving: boolean;
   onChangeLine: (
     lineId: string,
     patch: Partial<MaterialOrderDraftLine>,
@@ -66,6 +67,7 @@ export default function MaterialOrderDetailPanel({
   onChangeSupplierPartnerId,
   onRetrySuppliers,
   statusChanging,
+  headerSaving,
   onChangeLine,
   onRemoveLine,
   onChangeStatus,
@@ -75,7 +77,9 @@ export default function MaterialOrderDetailPanel({
   mobile = false,
   progressLayout = "horizontal",
 }: MaterialOrderDetailPanelProps) {
-  const isDraftEditable = selectedOrder?.status === "draft";
+  const isCoreEditable =
+    selectedOrder?.status === "draft" || selectedOrder?.status === "rejected";
+  const dueDateEditable = Boolean(selectedOrder) && !headerSaving;
 
   return (
     <WaflDetailWorkspacePanel>
@@ -101,7 +105,7 @@ export default function MaterialOrderDetailPanel({
                 minDateValue={getTodayPbpLocalDateValue()}
                 onChange={onChangeDueDate}
                 popoverMode="fixed"
-                disabled={!isDraftEditable}
+                disabled={!dueDateEditable}
                 triggerVariant="subtle"
                 triggerClassName="!min-h-0 !justify-center !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)]"
                 className="mx-auto w-full max-w-[190px]"
@@ -119,7 +123,7 @@ export default function MaterialOrderDetailPanel({
             <WaflSummaryInfoCell label="자재 종류">
               <AppSelect
                 value={materialType}
-                disabled={!isDraftEditable}
+                disabled={!isCoreEditable || headerSaving}
                 size="sm"
                 options={MATERIAL_TYPE_SELECT_OPTIONS}
                 ariaLabel="자재 종류"
@@ -133,7 +137,7 @@ export default function MaterialOrderDetailPanel({
               <AppSelect
                 value={supplierPartnerId ?? ""}
                 disabled={isSupplierSelectDisabled(
-                  isDraftEditable,
+                  isCoreEditable && !headerSaving,
                   materialType,
                   suppliersLoading,
                   suppliers.length,
@@ -185,7 +189,7 @@ export default function MaterialOrderDetailPanel({
             {mobile ? (
               <MaterialOrderLineMobileCards
                 lines={lines}
-                editable={isDraftEditable}
+                editable={isCoreEditable && !headerSaving}
                 onChangeLine={onChangeLine}
                 onRemoveLine={onRemoveLine}
               />
@@ -193,15 +197,15 @@ export default function MaterialOrderDetailPanel({
               <div className="min-h-0 flex-1 overflow-y-auto pr-1">
                 <MaterialOrderLineTable
                   lines={lines}
-                  editable={isDraftEditable}
+                  editable={isCoreEditable && !headerSaving}
                   onChangeLine={onChangeLine}
                   onRemoveLine={onRemoveLine}
                 />
               </div>
             )}
-            {!isDraftEditable ? (
+            {!isCoreEditable ? (
               <p className="mt-2 text-[11px] font-medium pbp-text-muted">
-                발주서가 작성중 상태일 때만 품목을 수정할 수 있습니다.
+                발주서가 작성중 또는 반려 상태일 때만 품목을 수정할 수 있습니다.
               </p>
             ) : null}
           </AppSection>

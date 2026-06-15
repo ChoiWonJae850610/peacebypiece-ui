@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
 import WorkflowValidationModal from "@/components/common/modal/WorkflowValidationModal";
+import ModalShell from "@/components/common/modal/ModalShell";
 import {
   AppResponsiveWorkspace,
   WaflEmptyCard,
@@ -13,6 +14,7 @@ import {
   WaflMobileTabbedActionSheet,
   WaflThreePanelWorkspace,
   WaflTwoPanelWorkspace,
+  WaflButton,
   WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS,
   type AppSegmentedTabItem,
 } from "@/components/common/ui";
@@ -78,6 +80,7 @@ export default function MaterialOrderDraftEditor({
     ordersError,
     creatingOrder,
     statusChanging,
+    headerSaving,
     statusToastMessage,
     statusToastTone,
     statusToastEventKey,
@@ -97,8 +100,9 @@ export default function MaterialOrderDraftEditor({
     materialRequestCompletionMap,
     materialOrderLineAddModal,
     materialOrderValidationModal,
+    materialTypeChangeConfirmationModal,
     setSelectedOrderId,
-    setSupplierPartnerId,
+    changeSupplierPartnerId,
     changeDueDate,
     refreshOrders,
     refreshWorkOrderCandidates,
@@ -175,6 +179,33 @@ export default function MaterialOrderDraftEditor({
     <>
       <MaterialOrderLineAddModal {...materialOrderLineAddModal} />
       <WorkflowValidationModal {...materialOrderValidationModal} />
+      <ModalShell
+        open={materialTypeChangeConfirmationModal.open}
+        title={materialTypeChangeConfirmationModal.title}
+        description={materialTypeChangeConfirmationModal.description}
+        onClose={materialTypeChangeConfirmationModal.onClose}
+        maxWidthClass="sm:max-w-md"
+        footer={(
+          <>
+            <WaflButton
+              variant="secondary"
+              onClick={materialTypeChangeConfirmationModal.onClose}
+            >
+              {materialTypeChangeConfirmationModal.cancelLabel}
+            </WaflButton>
+            <WaflButton
+              variant="danger"
+              onClick={materialTypeChangeConfirmationModal.onConfirm}
+            >
+              {materialTypeChangeConfirmationModal.confirmLabel}
+            </WaflButton>
+          </>
+        )}
+      >
+        <p className="text-sm leading-6 pbp-text-muted">
+          변경 후에는 새 자재 종류에 맞춰 공급처와 품목을 다시 선택해야 합니다.
+        </p>
+      </ModalShell>
     </>
   );
 
@@ -207,9 +238,10 @@ export default function MaterialOrderDraftEditor({
       dueDate={dueDate}
       onChangeDueDate={changeDueDate}
       onChangeMaterialType={changeMaterialType}
-      onChangeSupplierPartnerId={setSupplierPartnerId}
+      onChangeSupplierPartnerId={changeSupplierPartnerId}
       onRetrySuppliers={() => void refreshSuppliers(materialType)}
       statusChanging={statusChanging}
+      headerSaving={headerSaving}
       onChangeLine={updateLine}
       onRemoveLine={removeLine}
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
@@ -229,7 +261,7 @@ export default function MaterialOrderDraftEditor({
       materialRequestCompletionMap={materialRequestCompletionMap}
       selectedMaterialType={materialType}
       hasSelectedOrder={Boolean(selectedOrderId)}
-      editable={selectedOrder?.status === "draft"}
+      editable={selectedOrder?.status === "draft" || selectedOrder?.status === "rejected"}
       loading={workOrdersLoading}
       errorMessage={workOrdersError}
       onAddMaterialToOrder={handleAddMaterialToOrder}

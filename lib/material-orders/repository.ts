@@ -6,6 +6,7 @@ import type {
   MaterialOrderAllocation,
   MaterialOrderCreateInput,
   MaterialOrderLine,
+  MaterialOrderHeaderUpdateInput,
   MaterialOrderLineInput,
   MaterialOrderListParams,
   MaterialOrderStatus,
@@ -22,6 +23,7 @@ type MaterialOrderRow = {
   company_id: string;
   supplier_partner_id: string | null;
   supplier_partner_name: string | null;
+  material_type: "fabric" | "submaterial" | null;
   status: MaterialOrderStatus;
   workflow_path: string | null;
   requested_by_user_id: string | null;
@@ -163,6 +165,7 @@ function mapOrderRow(
     companyId: row.company_id,
     supplierPartnerId: row.supplier_partner_id,
     supplierPartnerName: row.supplier_partner_name,
+    materialType: row.material_type,
     status: row.status,
     workflowPath: normalizeWorkflowPath(row.workflow_path),
     requestedByUserId: row.requested_by_user_id,
@@ -216,6 +219,7 @@ const MATERIAL_ORDER_SELECT_SQL = `
     orders.company_id,
     orders.supplier_partner_id,
     supplier.name AS supplier_partner_name,
+    orders.material_type,
     orders.status,
     orders.workflow_path,
     orders.requested_by_user_id,
@@ -489,6 +493,7 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
       `INSERT INTO material_orders (
          company_id,
          supplier_partner_id,
+         material_type,
          status,
          workflow_path,
          requested_by_user_id,
@@ -496,11 +501,12 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
          note,
          due_date
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id`,
       [
         input.companyId,
         normalizeText(input.supplierPartnerId),
+        input.lines?.[0]?.itemType ?? null,
         input.status ?? "draft",
         WORKFLOW_PATH.standardReview,
         input.requestedByUserId,
@@ -520,6 +526,114 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
     }
 
     return orderId;
+  });
+
+  return getMaterialOrderById({
+    companyId: input.companyId,
+    materialOrderId,
+  });
+}
+
+
+export async function updateMaterialOrderHeaderForCompany(
+  input: MaterialOrderHeaderUpdateInput,
+): Promise<MaterialOrder | null> {
+  const materialOrderId = await withDbTransaction(async (client) => {
+    const currentValues: unknown[] = [input.companyId, input.materialOrderId];
+    const visibilityPredicate = buildRequestedByVisibilityPredicate(
+      input.visibility,
+      currentValues,
+      "requested_by_user_id",
+    );
+    const currentResult = await client.query<{
+      id: string;
+      status: MaterialOrderStatus;
+      material_type: "fabric" | "submaterial" | null;
+    }>(
+      `SELECT id, status, material_type
+       FROM material_orders
+       WHERE company_id = $1
+         AND id = $2
+         ${visibilityPredicate}
+       FOR UPDATE`,
+      currentValues,
+    );
+
+    const current = currentResult.rows[0];
+    if (!current) throw new Error("MATERIAL_ORDER_NOT_FOUND_OR_FORBIDDEN");
+
+    const changesCoreHeader =
+      Object.prototype.hasOwnProperty.call(input, "materialType") ||
+      Object.prototype.hasOwnProperty.call(input, "supplierPartnerId");
+    const coreHeaderEditable =
+      current.status === "draft" || current.status === "rejected";
+
+    if (changesCoreHeader && !coreHeaderEditable) {
+      throw new Error("MATERIAL_ORDER_HEADER_LOCKED_AFTER_REVIEW");
+    }
+
+    const nextMaterialType = Object.prototype.hasOwnProperty.call(input, "materialType")
+      ? input.materialType ?? null
+      : current.material_type;
+    const materialTypeChanged =
+      Object.prototype.hasOwnProperty.call(input, "materialType") &&
+      nextMaterialType !== current.material_type;
+
+    const hasSupplierPartnerId = Object.prototype.hasOwnProperty.call(
+      input,
+      "supplierPartnerId",
+    );
+    const hasDueDate = Object.prototype.hasOwnProperty.call(input, "dueDate");
+    const values: unknown[] = [
+      input.companyId,
+      input.materialOrderId,
+      nextMaterialType,
+      hasSupplierPartnerId,
+      normalizeText(input.supplierPartnerId),
+      hasDueDate,
+      normalizeText(input.dueDate),
+    ];
+
+    await client.query(
+      `UPDATE material_orders
+       SET material_type = $3,
+           supplier_partner_id = CASE
+             WHEN $4::boolean THEN $5::text
+             WHEN ${materialTypeChanged ? "TRUE" : "FALSE"} THEN NULL
+             ELSE supplier_partner_id
+           END,
+           due_date = CASE
+             WHEN $6::boolean THEN $7::text::date
+             ELSE due_date
+           END,
+           total_amount = CASE WHEN ${materialTypeChanged ? "TRUE" : "FALSE"} THEN 0 ELSE total_amount END,
+           updated_at = now()
+       WHERE company_id = $1
+         AND id = $2`,
+      values,
+    );
+
+    if (materialTypeChanged) {
+      await client.query(
+        `DELETE FROM material_order_allocations
+         WHERE company_id = $1
+           AND material_order_line_id IN (
+             SELECT id
+             FROM material_order_lines
+             WHERE company_id = $1
+               AND material_order_id = $2
+           )`,
+        [input.companyId, input.materialOrderId],
+      );
+      await client.query(
+        `DELETE FROM material_order_lines
+         WHERE company_id = $1
+           AND material_order_id = $2`,
+        [input.companyId, input.materialOrderId],
+      );
+    }
+
+    return input.materialOrderId;
   });
 
   return getMaterialOrderById({

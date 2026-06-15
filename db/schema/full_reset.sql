@@ -969,6 +969,7 @@ CREATE TABLE material_orders (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   supplier_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
+  material_type text,
   status text NOT NULL DEFAULT 'draft',
   workflow_path text NOT NULL DEFAULT 'standard_review',
   requested_by_user_id text REFERENCES users(id) ON DELETE SET NULL,
@@ -979,6 +980,8 @@ CREATE TABLE material_orders (
   note text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT material_orders_material_type_check
+    CHECK (material_type IS NULL OR material_type IN ('fabric', 'submaterial')),
   CONSTRAINT material_orders_status_check CHECK (
     status IN (
       'draft',

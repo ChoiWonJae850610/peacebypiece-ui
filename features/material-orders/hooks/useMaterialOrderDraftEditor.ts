@@ -17,6 +17,7 @@ import {
   resolveMaterialOrderType,
   toMaterialOrderWorkspaceError,
   updateMaterialOrderDetail,
+  updateMaterialOrderHeader,
   updateMaterialOrderStatus,
   type MaterialOrderWorkspaceWorkOrderCandidate,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
@@ -175,6 +176,7 @@ export function useMaterialOrderDraftEditor() {
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [statusChanging, setStatusChanging] = useState(false);
+  const [headerSaving, setHeaderSaving] = useState(false);
   const [statusToastMessage, setStatusToastMessage] = useState<string | null>(
     null,
   );
@@ -203,6 +205,8 @@ export function useMaterialOrderDraftEditor() {
     orderQuantity: number;
     unitPrice: number;
   } | null>(null);
+  const [pendingMaterialTypeChange, setPendingMaterialTypeChange] =
+    useState<MaterialOrderDraftSelectionType | null>(null);
   const [pendingStatusValidation, setPendingStatusValidation] = useState<{
     nextStatus: MaterialOrderStatus;
     issues: WorkflowValidationIssue[];
@@ -380,17 +384,117 @@ export function useMaterialOrderDraftEditor() {
     }
   }, []);
 
+  const persistMaterialTypeChange = useCallback(
+    async (nextMaterialType: MaterialOrderDraftSelectionType) => {
+      if (
+        !selectedOrder ||
+        (selectedOrder.status !== "draft" && selectedOrder.status !== "rejected") ||
+        !nextMaterialType
+      ) {
+        return;
+      }
+
+      const previousMaterialType = materialType;
+      const previousSupplierPartnerId = supplierPartnerId;
+      const previousLines = lines;
+
+      setHeaderSaving(true);
+      setMaterialType(nextMaterialType);
+      setSupplierPartnerId(null);
+      setLines([]);
+      setPendingLineAddition(null);
+      showStatusToast("자재 종류를 저장하는 중입니다.", "loading");
+
+      try {
+        const result = await updateMaterialOrderHeader({
+          materialOrderId: selectedOrder.id,
+          materialType: nextMaterialType,
+          supplierPartnerId: null,
+        });
+        setOrders(result.materialOrders);
+        setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+        await refreshWorkOrderCandidates();
+        showStatusToast("자재 종류가 변경되었습니다.", "success");
+      } catch (error) {
+        setMaterialType(previousMaterialType);
+        setSupplierPartnerId(previousSupplierPartnerId);
+        setLines(previousLines);
+        showStatusToast(
+          toMaterialOrderWorkspaceError(error, "자재 종류를 변경하지 못했습니다."),
+          "danger",
+        );
+      } finally {
+        setHeaderSaving(false);
+      }
+    },
+    [
+      lines,
+      materialType,
+      refreshWorkOrderCandidates,
+      selectedOrder,
+      showStatusToast,
+      supplierPartnerId,
+    ],
+  );
+
   const changeMaterialType = useCallback(
     (nextMaterialType: MaterialOrderDraftSelectionType) => {
-      setMaterialType((currentMaterialType) => {
-        if (currentMaterialType !== nextMaterialType) {
-          setLines([]);
-        }
-        return nextMaterialType;
-      });
-      setSupplierPartnerId(null);
+      if (!nextMaterialType || nextMaterialType === materialType) return;
+
+      if (lines.length > 0 || supplierPartnerId) {
+        setPendingMaterialTypeChange(nextMaterialType);
+        return;
+      }
+
+      void persistMaterialTypeChange(nextMaterialType);
     },
-    [],
+    [lines.length, materialType, persistMaterialTypeChange, supplierPartnerId],
+  );
+
+  const closeMaterialTypeChangeConfirmation = useCallback(() => {
+    setPendingMaterialTypeChange(null);
+  }, []);
+
+  const confirmMaterialTypeChange = useCallback(() => {
+    const nextMaterialType = pendingMaterialTypeChange;
+    if (!nextMaterialType) return;
+    setPendingMaterialTypeChange(null);
+    void persistMaterialTypeChange(nextMaterialType);
+  }, [pendingMaterialTypeChange, persistMaterialTypeChange]);
+
+  const changeSupplierPartnerId = useCallback(
+    async (nextSupplierPartnerId: string | null) => {
+      if (
+        !selectedOrder ||
+        (selectedOrder.status !== "draft" && selectedOrder.status !== "rejected")
+      ) {
+        return;
+      }
+
+      const previousSupplierPartnerId = supplierPartnerId;
+      setSupplierPartnerId(nextSupplierPartnerId);
+      setHeaderSaving(true);
+      showStatusToast("공급처를 저장하는 중입니다.", "loading");
+
+      try {
+        const result = await updateMaterialOrderHeader({
+          materialOrderId: selectedOrder.id,
+          supplierPartnerId: nextSupplierPartnerId,
+        });
+        setOrders(result.materialOrders);
+        setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+        showStatusToast("공급처가 저장되었습니다.", "success");
+      } catch (error) {
+        setSupplierPartnerId(previousSupplierPartnerId);
+        showStatusToast(
+          toMaterialOrderWorkspaceError(error, "공급처를 저장하지 못했습니다."),
+          "danger",
+        );
+      } finally {
+        setHeaderSaving(false);
+      }
+    },
+    [selectedOrder, showStatusToast, supplierPartnerId],
   );
 
   const buildSelectedOrderDetailPayload =
@@ -422,31 +526,16 @@ export function useMaterialOrderDraftEditor() {
 
   const changeDueDate = useCallback(
     async (nextDueDate: string) => {
-      if (!selectedOrder || selectedOrder.status !== "draft") return;
+      if (!selectedOrder) return;
 
       const previousDueDate = dueDate;
       setDueDate(nextDueDate);
+      setHeaderSaving(true);
 
       try {
-        const result = await updateMaterialOrderDetail({
+        const result = await updateMaterialOrderHeader({
           materialOrderId: selectedOrder.id,
-          supplierPartnerId,
-          note: selectedOrder.note ?? "",
           dueDate: nextDueDate || null,
-          lines: lines.map((line) => ({
-            itemName: line.itemName,
-            itemType: (materialType || "fabric") as MaterialOrderDraftType,
-            unit: line.unit,
-            orderQuantity: line.orderQuantity,
-            unitPrice: line.unitPrice,
-            allocations: line.allocations.map((allocation) => ({
-              workOrderId: allocation.workOrderId,
-              sourceMaterialKey:
-                allocation.sourceMaterialKey ?? line.sourceMaterialKey ?? null,
-              allocatedQuantity: allocation.allocatedQuantity,
-              allocationNote: allocation.allocationNote,
-            })),
-          })),
         });
 
         setOrders(result.materialOrders);
@@ -458,16 +547,11 @@ export function useMaterialOrderDraftEditor() {
           toMaterialOrderWorkspaceError(error, "납기일을 저장하지 못했습니다."),
           "danger",
         );
+      } finally {
+        setHeaderSaving(false);
       }
     },
-    [
-      dueDate,
-      lines,
-      materialType,
-      selectedOrder,
-      showStatusToast,
-      supplierPartnerId,
-    ],
+    [dueDate, selectedOrder, showStatusToast],
   );
 
   const applySelectedOrderStatusChange = useCallback(
@@ -701,6 +785,7 @@ export function useMaterialOrderDraftEditor() {
     ordersError,
     creatingOrder,
     statusChanging,
+    headerSaving,
     statusToastMessage,
     statusToastTone,
     statusToastEventKey,
@@ -728,6 +813,16 @@ export function useMaterialOrderDraftEditor() {
       onClose: closePendingLineAddition,
       onConfirm: confirmPendingLineAddition,
     },
+    materialTypeChangeConfirmationModal: {
+      open: pendingMaterialTypeChange !== null,
+      title: "자재 종류를 변경하시겠습니까?",
+      description:
+        "자재 종류를 변경하면 현재 선택한 공급처와 작성 중인 주문 품목이 모두 초기화됩니다.",
+      confirmLabel: "예, 변경",
+      cancelLabel: "아니오",
+      onClose: closeMaterialTypeChangeConfirmation,
+      onConfirm: confirmMaterialTypeChange,
+    },
     materialOrderValidationModal: {
       open: pendingStatusValidation !== null,
       issues: pendingStatusValidation?.issues ?? [],
@@ -743,7 +838,7 @@ export function useMaterialOrderDraftEditor() {
       onConfirm: confirmMaterialOrderValidation,
     },
     setSelectedOrderId,
-    setSupplierPartnerId,
+    changeSupplierPartnerId,
     changeDueDate,
     refreshOrders,
     refreshWorkOrderCandidates,

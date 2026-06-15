@@ -11,6 +11,7 @@ import {
   createWorkspaceMaterialOrder,
   listWorkspaceMaterialOrders,
   updateWorkspaceMaterialOrderDetail,
+  updateWorkspaceMaterialOrderHeader,
   updateWorkspaceMaterialOrderStatus,
 } from "@/lib/material-orders/service";
 import {
@@ -25,6 +26,8 @@ type MaterialOrderRequestBody = {
   status?: unknown;
   note?: unknown;
   dueDate?: unknown;
+  materialType?: unknown;
+  updateMode?: unknown;
   lines?: unknown;
 };
 
@@ -230,6 +233,35 @@ export async function PUT(request: NextRequest) {
 
     const permitted = await hasWorkspaceApiPermission(guard.session, MEMBER_PERMISSION_CODE.materialOrderRequest);
     if (!permitted) return createWorkspacePermissionRequiredResponse(MEMBER_PERMISSION_CODE.materialOrderRequest);
+
+    if (body.updateMode === "header") {
+      const headerInput: {
+        companyId: string;
+        visibility: typeof guard.scope.visibility;
+        materialOrderId: string;
+        materialType?: MaterialOrderLineInput["itemType"] | null;
+        supplierPartnerId?: string | null;
+        dueDate?: string | null;
+      } = {
+        companyId: guard.scope.companyId,
+        visibility: guard.scope.visibility,
+        materialOrderId,
+      };
+
+      if (Object.prototype.hasOwnProperty.call(body, "materialType")) {
+        headerInput.materialType = normalizeLineItemType(body.materialType);
+      }
+      if (Object.prototype.hasOwnProperty.call(body, "supplierPartnerId")) {
+        headerInput.supplierPartnerId = normalizeOptionalText(body.supplierPartnerId);
+      }
+      if (Object.prototype.hasOwnProperty.call(body, "dueDate")) {
+        headerInput.dueDate = normalizeOptionalText(body.dueDate);
+      }
+
+      return NextResponse.json(
+        await updateWorkspaceMaterialOrderHeader(headerInput),
+      );
+    }
 
     return NextResponse.json(
       await updateWorkspaceMaterialOrderDetail({
