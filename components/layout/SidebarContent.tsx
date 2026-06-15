@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
-import { AppSelect, WaflButton, WaflInput, WaflListPanelShell, WaflStateBlock } from "@/components/common/ui";
+import { AppSelect, WaflButton, WaflInput, WaflListPanelShell, WaflStateBlock, getWaflButtonClassName } from "@/components/common/ui";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 import {
   WAFL_LIST_CLEAR_BUTTON_CLASS,
@@ -29,8 +29,11 @@ import type {
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
 
-const WORKORDER_TOOLBAR_ICON_BUTTON_CLASS =
-  "pbp-topbar-icon-button inline-flex h-9 w-9 shrink-0 items-center justify-center wafl-shape-icon transition";
+const WORKORDER_TOOLBAR_ICON_BUTTON_CLASS = getWaflButtonClassName({
+  variant: "icon",
+  size: "sm",
+  className: "pbp-topbar-icon-button h-9 min-h-9 w-9",
+});
 
 function PersonalSettingsIcon() {
   return (
@@ -194,17 +197,19 @@ export default function SidebarContent({
                     <HomeIcon />
                   </Link>
                 ) : null}
-                <button
-                  type="button"
+                <WaflButton
+                  variant="icon"
+                  size="sm"
                   onClick={() => setPersonalSettingsOpen(true)}
                   aria-label={i18n.common.personalSettings.title}
                   title={i18n.common.personalSettings.title}
-                  className={WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
+                  className="pbp-topbar-icon-button h-9 min-h-9 w-9"
                 >
                   <PersonalSettingsIcon />
-                </button>
-                <button
-                  type="button"
+                </WaflButton>
+                <WaflButton
+                  variant="icon"
+                  size="sm"
                   onClick={() => {
                     if (!writeLocked) window.location.reload();
                   }}
@@ -216,23 +221,25 @@ export default function SidebarContent({
                       : i18n.common.workorderToolbar.refresh
                   }
                   disabled={writeLocked}
-                  className={`${WORKORDER_TOOLBAR_ICON_BUTTON_CLASS} disabled:cursor-not-allowed disabled:opacity-50`}
+                  className="pbp-topbar-icon-button h-9 min-h-9 w-9"
                 >
                   ↻
-                </button>
+                </WaflButton>
                 <form
                   action="/api/auth/logout"
                   method="post"
                   className="shrink-0"
                 >
-                  <button
+                  <WaflButton
                     type="submit"
+                    variant="icon"
+                    size="sm"
                     aria-label={i18n.common.workorderToolbar.logout}
                     title={i18n.common.workorderToolbar.logout}
-                    className={WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
+                    className="pbp-topbar-icon-button h-9 min-h-9 w-9"
                   >
                     <LogoutIcon />
-                  </button>
+                  </WaflButton>
                 </form>
               </div>
             </div>
@@ -247,8 +254,9 @@ export default function SidebarContent({
                   </span>
                 ) : null}
                 {showUserSwitchingTools ? (
-                  <button
-                    type="button"
+                  <WaflButton
+                    variant="secondary"
+                    size="sm"
                     onClick={() => {
                       if (!writeLocked) onOpenSettings();
                     }}
@@ -259,11 +267,11 @@ export default function SidebarContent({
                         : controlsUi.openSettingsAria
                     }
                     aria-label={controlsUi.openSettingsAria}
-                    className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 wafl-shape-control px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-8 min-h-8 gap-1 px-2.5 text-xs"
                   >
                     <span aria-hidden="true">⚙️</span>
                     <span>{controlsUi.openSettingsAria}</span>
-                  </button>
+                  </WaflButton>
                 ) : null}
               </div>
             ) : null}
