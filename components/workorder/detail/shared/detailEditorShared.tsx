@@ -2,7 +2,7 @@ import { type KeyboardEvent, type ReactNode } from "react";
 import {
   AppInlineSelectEditor,
   WaflIconButton,
-  type AppInlineSelectEditorOption,,
+  type AppInlineSelectEditorOption,
   WaflCardButton,
 } from "@/components/common/ui";
 import {
