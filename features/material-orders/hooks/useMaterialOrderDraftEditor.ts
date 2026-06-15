@@ -26,7 +26,10 @@ import {
   buildMaterialRequestQuantityMap,
   calculateMaterialRequestRemainingQuantity,
 } from "@/features/material-orders/materialOrderPanelUtils";
-import { shouldPersistMaterialOrderDetailBeforeStatusChange } from "@/lib/material-orders/statusFlow";
+import {
+  canEditMaterialOrderCoreFields,
+  shouldPersistMaterialOrderDetailBeforeStatusChange,
+} from "@/lib/material-orders/statusFlow";
 import type { WorkflowValidationIssue } from "@/lib/workorder/workflowValidationIssues";
 
 type MaterialOrderStatusToastTone =
@@ -169,7 +172,11 @@ function mapSelectedOrderToDraftLines(
   });
 }
 
-export function useMaterialOrderDraftEditor() {
+export function useMaterialOrderDraftEditor({
+  isAdmin,
+}: {
+  isAdmin: boolean;
+}) {
   const [orders, setOrders] = useState<MaterialOrder[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -221,7 +228,10 @@ export function useMaterialOrderDraftEditor() {
     [lines],
   );
   const selectedDraftOrderId =
-    selectedOrder?.status === "draft" ? selectedOrder.id : null;
+    selectedOrder &&
+    canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin)
+      ? selectedOrder.id
+      : null;
   const selectedDraftLines = useMemo(
     () => (selectedDraftOrderId ? lines : []),
     [lines, selectedDraftOrderId],
@@ -388,7 +398,7 @@ export function useMaterialOrderDraftEditor() {
     async (nextMaterialType: MaterialOrderDraftSelectionType) => {
       if (
         !selectedOrder ||
-        (selectedOrder.status !== "draft" && selectedOrder.status !== "rejected") ||
+        !canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin) ||
         !nextMaterialType
       ) {
         return;
@@ -434,6 +444,7 @@ export function useMaterialOrderDraftEditor() {
       selectedOrder,
       showStatusToast,
       supplierPartnerId,
+      isAdmin,
     ],
   );
 
@@ -466,7 +477,7 @@ export function useMaterialOrderDraftEditor() {
     async (nextSupplierPartnerId: string | null) => {
       if (
         !selectedOrder ||
-        (selectedOrder.status !== "draft" && selectedOrder.status !== "rejected")
+        !canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin)
       ) {
         return;
       }
@@ -494,7 +505,7 @@ export function useMaterialOrderDraftEditor() {
         setHeaderSaving(false);
       }
     },
-    [selectedOrder, showStatusToast, supplierPartnerId],
+    [isAdmin, selectedOrder, showStatusToast, supplierPartnerId],
   );
 
   const buildSelectedOrderDetailPayload =
@@ -526,7 +537,12 @@ export function useMaterialOrderDraftEditor() {
 
   const changeDueDate = useCallback(
     async (nextDueDate: string) => {
-      if (!selectedOrder) return;
+      if (
+        !selectedOrder ||
+        !canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin)
+      ) {
+        return;
+      }
 
       const previousDueDate = dueDate;
       setDueDate(nextDueDate);
@@ -551,7 +567,7 @@ export function useMaterialOrderDraftEditor() {
         setHeaderSaving(false);
       }
     },
-    [dueDate, selectedOrder, showStatusToast],
+    [dueDate, isAdmin, selectedOrder, showStatusToast],
   );
 
   const applySelectedOrderStatusChange = useCallback(
@@ -707,7 +723,12 @@ export function useMaterialOrderDraftEditor() {
       workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
       material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
     ) => {
-      if (!selectedOrder || selectedOrder.status !== "draft") return;
+      if (
+        !selectedOrder ||
+        !canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin)
+      ) {
+        return;
+      }
 
       setLines((current) => {
         const existingLine = current.find(
@@ -739,7 +760,7 @@ export function useMaterialOrderDraftEditor() {
         return current;
       });
     },
-    [materialRequestQuantityMap, selectedOrder],
+    [isAdmin, materialRequestQuantityMap, selectedOrder],
   );
 
   const closePendingLineAddition = useCallback(() => setPendingLineAddition(null), []);

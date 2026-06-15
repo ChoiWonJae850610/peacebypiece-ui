@@ -14,6 +14,7 @@ import type {
   MaterialOrderDraftTotals,
   MaterialOrderDraftSelectionType,
 } from "@/lib/material-orders/materialOrderDraftCalculator";
+import { canEditMaterialOrderCoreFields } from "@/lib/material-orders/statusFlow";
 import type {
   MaterialOrder,
   MaterialOrderStatus,
@@ -47,6 +48,7 @@ type MaterialOrderDetailPanelProps = {
   onChangeStatus: (status: MaterialOrderStatus) => void;
   canRequestMaterialOrder: boolean;
   canPlaceMaterialOrder: boolean;
+  isAdmin: boolean;
   workOrderCandidates: MaterialOrderWorkspaceWorkOrderCandidate[];
   mobile?: boolean;
   progressLayout?: WorkflowProgressPanelLayout;
@@ -73,13 +75,16 @@ export default function MaterialOrderDetailPanel({
   onChangeStatus,
   canRequestMaterialOrder,
   canPlaceMaterialOrder,
+  isAdmin,
   workOrderCandidates,
   mobile = false,
   progressLayout = "horizontal",
 }: MaterialOrderDetailPanelProps) {
-  const isCoreEditable =
-    selectedOrder?.status === "draft" || selectedOrder?.status === "rejected";
-  const dueDateEditable = Boolean(selectedOrder) && !headerSaving;
+  const isCoreEditable = Boolean(
+    selectedOrder &&
+      canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin),
+  );
+  const dueDateEditable = isCoreEditable && !headerSaving;
 
   return (
     <WaflDetailWorkspacePanel>
@@ -205,7 +210,7 @@ export default function MaterialOrderDetailPanel({
             )}
             {!isCoreEditable ? (
               <p className="mt-2 text-[11px] font-medium pbp-text-muted">
-                발주서가 작성중 또는 반려 상태일 때만 품목을 수정할 수 있습니다.
+                일반 사용자는 작성중·반려 상태에서, 관리자는 발주요청 전까지만 수정할 수 있습니다.
               </p>
             ) : null}
           </AppSection>

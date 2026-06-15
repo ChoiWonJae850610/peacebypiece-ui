@@ -15,6 +15,28 @@ export type MaterialOrderStatusCapabilities = {
   canPlaceMaterialOrder: boolean;
 };
 
+export function isMaterialOrderBeforeOrderRequest(
+  status: MaterialOrderStatus,
+): boolean {
+  return (
+    status === MATERIAL_ORDER_STATUS.draft ||
+    status === MATERIAL_ORDER_STATUS.reviewRequested ||
+    status === MATERIAL_ORDER_STATUS.rejected
+  );
+}
+
+export function canEditMaterialOrderCoreFields(
+  status: MaterialOrderStatus,
+  isAdmin: boolean,
+): boolean {
+  if (isAdmin) return isMaterialOrderBeforeOrderRequest(status);
+
+  return (
+    status === MATERIAL_ORDER_STATUS.draft ||
+    status === MATERIAL_ORDER_STATUS.rejected
+  );
+}
+
 export const MATERIAL_ORDER_STATUS_STEPS: readonly MaterialOrderStatusStep[] = [
   { status: MATERIAL_ORDER_STATUS.draft, label: "작성중" },
   { status: MATERIAL_ORDER_STATUS.reviewRequested, label: "검토요청" },
@@ -31,19 +53,48 @@ export function resolveMaterialOrderStatusActions(
 ): MaterialOrderStatusAction[] {
   switch (status) {
     case MATERIAL_ORDER_STATUS.draft:
-      if (capabilities.canPlaceMaterialOrder) {
-        return [{ label: "검토 완료", nextStatus: MATERIAL_ORDER_STATUS.approved }];
+    case MATERIAL_ORDER_STATUS.rejected: {
+      const actions: MaterialOrderStatusAction[] = [];
+
+      if (capabilities.canRequestMaterialOrder) {
+        actions.push({
+          label: "검토 요청",
+          nextStatus: MATERIAL_ORDER_STATUS.reviewRequested,
+        });
       }
-      return capabilities.canRequestMaterialOrder
-        ? [{ label: "검토 요청", nextStatus: MATERIAL_ORDER_STATUS.reviewRequested }]
-        : [];
-    case MATERIAL_ORDER_STATUS.reviewRequested:
       if (capabilities.canPlaceMaterialOrder) {
-        return [{ label: "검토 완료", nextStatus: MATERIAL_ORDER_STATUS.approved }];
+        actions.push({
+          label: "발주 요청",
+          nextStatus: MATERIAL_ORDER_STATUS.approved,
+        });
       }
-      return capabilities.canRequestMaterialOrder
-        ? [{ label: "검토 취소", nextStatus: MATERIAL_ORDER_STATUS.draft }]
-        : [];
+
+      return actions;
+    }
+    case MATERIAL_ORDER_STATUS.reviewRequested: {
+      const actions: MaterialOrderStatusAction[] = [];
+
+      if (capabilities.canRequestMaterialOrder) {
+        actions.push({
+          label: "검토 취소",
+          nextStatus: MATERIAL_ORDER_STATUS.draft,
+        });
+      }
+      if (capabilities.canPlaceMaterialOrder) {
+        actions.push(
+          {
+            label: "반려",
+            nextStatus: MATERIAL_ORDER_STATUS.rejected,
+          },
+          {
+            label: "발주 요청",
+            nextStatus: MATERIAL_ORDER_STATUS.approved,
+          },
+        );
+      }
+
+      return actions;
+    }
     case MATERIAL_ORDER_STATUS.approved:
       return capabilities.canPlaceMaterialOrder
         ? [{ label: "발주 완료", nextStatus: MATERIAL_ORDER_STATUS.orderPlaced }]
@@ -69,5 +120,5 @@ export function isMaterialOrderStatusTransitionAllowed(
 export function shouldPersistMaterialOrderDetailBeforeStatusChange(
   currentStatus: MaterialOrderStatus,
 ): boolean {
-  return currentStatus === MATERIAL_ORDER_STATUS.draft;
+  return isMaterialOrderBeforeOrderRequest(currentStatus);
 }

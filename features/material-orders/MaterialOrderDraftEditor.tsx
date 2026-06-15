@@ -54,10 +54,12 @@ export default function MaterialOrderDraftEditor({
   companyName,
   canRequestMaterialOrder,
   canPlaceMaterialOrder,
+  isAdmin,
 }: {
   companyName: string;
   canRequestMaterialOrder: boolean;
   canPlaceMaterialOrder: boolean;
+  isAdmin: boolean;
 }) {
   const {
     deviceType,
@@ -114,7 +116,7 @@ export default function MaterialOrderDraftEditor({
     updateLine,
     addWorkOrderMaterialLine,
     removeLine,
-  } = useMaterialOrderDraftEditor();
+  } = useMaterialOrderDraftEditor({ isAdmin });
 
   useEffect(() => {
     if (!selectedOrderId) {
@@ -247,6 +249,7 @@ export default function MaterialOrderDraftEditor({
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
       canRequestMaterialOrder={canRequestMaterialOrder}
       canPlaceMaterialOrder={canPlaceMaterialOrder}
+      isAdmin={isAdmin}
       workOrderCandidates={workOrderCandidates}
       mobile={deviceType === "mobile"}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}

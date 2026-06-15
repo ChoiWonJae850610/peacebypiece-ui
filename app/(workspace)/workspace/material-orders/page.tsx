@@ -3,6 +3,7 @@ import MaterialOrderWorkspacePage from "@/features/material-orders/MaterialOrder
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 import { hasWorkspaceApiPermission } from "@/lib/auth/apiRouteGuards";
 import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
+import { isCompanyAdminSessionRole } from "@/lib/constants/sessionRoles";
 
 export default async function WorkspaceMaterialOrdersPageRoute() {
   const session = await requireWorkspacePagePermission("material.order.request");
@@ -24,6 +25,7 @@ export default async function WorkspaceMaterialOrdersPageRoute() {
         companyName={session.companyName ?? ""}
         canRequestMaterialOrder={canRequestMaterialOrder}
         canPlaceMaterialOrder={canPlaceMaterialOrder}
+        isAdmin={isCompanyAdminSessionRole(session.role)}
       />
     </WorkspacePageShell>
   );
