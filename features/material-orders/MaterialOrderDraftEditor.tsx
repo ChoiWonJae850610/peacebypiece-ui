@@ -99,7 +99,7 @@ export default function MaterialOrderDraftEditor({
     materialOrderValidationModal,
     setSelectedOrderId,
     setSupplierPartnerId,
-    setDueDate,
+    changeDueDate,
     refreshOrders,
     refreshWorkOrderCandidates,
     refreshSuppliers,
@@ -205,7 +205,7 @@ export default function MaterialOrderDraftEditor({
       lines={lines}
       totals={totals}
       dueDate={dueDate}
-      onChangeDueDate={setDueDate}
+      onChangeDueDate={changeDueDate}
       onChangeMaterialType={changeMaterialType}
       onChangeSupplierPartnerId={setSupplierPartnerId}
       onRetrySuppliers={() => void refreshSuppliers(materialType)}

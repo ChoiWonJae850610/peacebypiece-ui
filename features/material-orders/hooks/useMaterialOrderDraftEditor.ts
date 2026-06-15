@@ -420,6 +420,56 @@ export function useMaterialOrderDraftEditor() {
       };
     }, [dueDate, lines, materialType, selectedOrder, supplierPartnerId]);
 
+  const changeDueDate = useCallback(
+    async (nextDueDate: string) => {
+      if (!selectedOrder || selectedOrder.status !== "draft") return;
+
+      const previousDueDate = dueDate;
+      setDueDate(nextDueDate);
+
+      try {
+        const result = await updateMaterialOrderDetail({
+          materialOrderId: selectedOrder.id,
+          supplierPartnerId,
+          note: selectedOrder.note ?? "",
+          dueDate: nextDueDate || null,
+          lines: lines.map((line) => ({
+            itemName: line.itemName,
+            itemType: (materialType || "fabric") as MaterialOrderDraftType,
+            unit: line.unit,
+            orderQuantity: line.orderQuantity,
+            unitPrice: line.unitPrice,
+            allocations: line.allocations.map((allocation) => ({
+              workOrderId: allocation.workOrderId,
+              sourceMaterialKey:
+                allocation.sourceMaterialKey ?? line.sourceMaterialKey ?? null,
+              allocatedQuantity: allocation.allocatedQuantity,
+              allocationNote: allocation.allocationNote,
+            })),
+          })),
+        });
+
+        setOrders(result.materialOrders);
+        setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+        showStatusToast("납기일이 저장되었습니다.", "success");
+      } catch (error) {
+        setDueDate(previousDueDate);
+        showStatusToast(
+          toMaterialOrderWorkspaceError(error, "납기일을 저장하지 못했습니다."),
+          "danger",
+        );
+      }
+    },
+    [
+      dueDate,
+      lines,
+      materialType,
+      selectedOrder,
+      showStatusToast,
+      supplierPartnerId,
+    ],
+  );
+
   const applySelectedOrderStatusChange = useCallback(
     async (status: MaterialOrderStatus) => {
       if (!selectedOrder) return;
@@ -694,7 +744,7 @@ export function useMaterialOrderDraftEditor() {
     },
     setSelectedOrderId,
     setSupplierPartnerId,
-    setDueDate,
+    changeDueDate,
     refreshOrders,
     refreshWorkOrderCandidates,
     refreshSuppliers,

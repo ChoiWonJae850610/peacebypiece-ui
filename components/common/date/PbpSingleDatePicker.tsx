@@ -37,6 +37,7 @@ type PbpSingleDatePickerProps = {
   className?: string;
   triggerClassName?: string;
   triggerVariant?: "field" | "subtle";
+  displayFormat?: "locale" | "iso";
 };
 
 export function PbpSingleDatePicker({
@@ -55,13 +56,15 @@ export function PbpSingleDatePicker({
   className = "",
   triggerClassName = "",
   triggerVariant = "field",
+  displayFormat = "locale",
 }: PbpSingleDatePickerProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(defaultOpen && !disabled);
+  const [displayValue, setDisplayValue] = useState(value);
   const [fixedPopoverStyle, setFixedPopoverStyle] = useState<CSSProperties | null>(null);
   const pickerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
-  const selectedDate = parsePbpLocalDateValue(value);
+  const selectedDate = parsePbpLocalDateValue(displayValue);
   const minDate = parsePbpLocalDateValue(minDateValue);
   const maxDate = parsePbpLocalDateValue(maxDateValue);
   const dayPickerLocale = locale === "ko" ? ko : enUS;
@@ -71,6 +74,10 @@ export function PbpSingleDatePicker({
       setIsCalendarOpen(true);
     }
   }, [defaultOpen, disabled]);
+
+  useEffect(() => {
+    setDisplayValue(value);
+  }, [value]);
 
   const closeCalendar = () => {
     setIsCalendarOpen(false);
@@ -122,12 +129,15 @@ export function PbpSingleDatePicker({
 
   const handleSelect = (date: Date | undefined) => {
     const nextValue = toPbpLocalDateValue(date);
+    setDisplayValue(nextValue);
     onChange(nextValue);
     if (commitOnSelect) closeCalendar();
   };
 
-  const selectedText = selectedDate ? formatPbpDateDisplay(value, locale) : labels.placeholder;
-  const selectedSummary = labels.selected.replace("{date}", formatPbpDateDisplay(value, locale));
+  const formatDisplayValue = (nextValue: string) =>
+    displayFormat === "iso" ? nextValue : formatPbpDateDisplay(nextValue, locale);
+  const selectedText = selectedDate ? formatDisplayValue(displayValue) : labels.placeholder;
+  const selectedSummary = labels.selected.replace("{date}", formatDisplayValue(displayValue));
   const disabledRange = minDate && maxDate
     ? { before: minDate, after: maxDate }
     : minDate
@@ -178,7 +188,7 @@ export function PbpSingleDatePicker({
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={() => { setDisplayValue(""); onChange(""); }}
             className="pbp-interactive-button min-h-7 rounded-lg border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 hover:bg-stone-50"
           >
             {labels.clear}
