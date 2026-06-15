@@ -17,7 +17,7 @@ function AttachmentIcon() {
 }
 
 
-type MobileSectionStackProps = {
+type WorkOrderMobileWorkspaceShellProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
   topBar: ReactNode;
   drawer: ReactNode;
@@ -28,7 +28,7 @@ type MobileSectionStackProps = {
   relatedPresentation?: AppSheetPresentation;
 };
 
-export default function MobileSectionStack({
+export default function WorkOrderMobileWorkspaceShell({
   appShellRef,
   topBar,
   drawer,
@@ -37,7 +37,7 @@ export default function MobileSectionStack({
   hasSelection,
   scrollResetKey,
   relatedPresentation = "sheet",
-}: MobileSectionStackProps) {
+}: WorkOrderMobileWorkspaceShellProps) {
   const { i18n } = useI18n();
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [activeRelatedSection, setActiveRelatedSection] = useState<MobileRelatedSectionKey>("attachment");

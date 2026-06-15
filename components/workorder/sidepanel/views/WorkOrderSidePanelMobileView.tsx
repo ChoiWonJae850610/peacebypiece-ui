@@ -1,4 +1,3 @@
-import SidePanelSectionStack from "@/components/workorder/sidepanel/layout/SidePanelSectionStack";
 import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPanel";
 import WorkOrderSidePanelMobileAttachmentSections from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAttachmentSections";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
@@ -10,7 +9,7 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
 
   return (
     <div className="min-w-0 overflow-x-hidden">
-      <SidePanelSectionStack compact>
+      <div className="flex min-h-0 flex-col gap-3 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
         <WorkOrderMemoPanel
           workOrder={props.workOrder}
           currentUserId={props.currentUserId}
@@ -45,7 +44,7 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
           writeLockMessage={props.writeLockMessage}
           collapseLabel={collapseLabel}
         />
-      </SidePanelSectionStack>
+      </div>
     </div>
   );
 }

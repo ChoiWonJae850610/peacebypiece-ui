@@ -2,7 +2,7 @@
 
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
-import MobileSectionStack from "@/components/workorder/layout/MobileSectionStack";
+import WorkOrderMobileWorkspaceShell from "@/components/workorder/layout/WorkOrderMobileWorkspaceShell";
 import WorkOrderMobileRelatedSectionPanels, { type WorkOrderMobileRelatedSectionKey } from "@/components/workorder/layout/WorkOrderMobileRelatedSectionPanels";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
@@ -54,7 +54,7 @@ export default function WorkOrderMobileWorkspaceView({
   };
 
   return (
-    <MobileSectionStack
+    <WorkOrderMobileWorkspaceShell
       appShellRef={appShellRef}
       scrollResetKey={detailScrollResetKey}
       topBar={(
