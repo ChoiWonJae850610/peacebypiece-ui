@@ -559,13 +559,15 @@ export default function WorkOrderAttachmentPanel({
                   }
                 >
                   {attachment.canSetPrimary ? (
-                    <button
+                    <WaflButton
                       type="button"
+                      variant="icon"
+                      size="sm"
                       onClick={() =>
                         handleSetPrimaryDesignAttachment(attachment.id)
                       }
                       disabled={writeLocked}
-                      className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center wafl-shape-icon border font-bold shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
+                      className={`${isMobile ? "left-9 top-9 !h-5 !min-h-5 !w-5 text-[11px]" : "left-11 top-11 !h-6 !min-h-6 !w-6 text-xs"} absolute z-10 border font-bold shadow-none ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)] hover:bg-[var(--pbp-warning-soft)]" : "pbp-action-secondary"}`}
                       title={
                         writeLocked
                           ? writeLockMessage
@@ -582,7 +584,7 @@ export default function WorkOrderAttachmentPanel({
                       {attachment.isPrimary
                         ? attachmentPolicyText.primaryBadge
                         : attachmentPolicyText.primaryAction}
-                    </button>
+                    </WaflButton>
                   ) : null}
                   {attachment.canDelete ? (
                     <div className="absolute right-3 top-3">
