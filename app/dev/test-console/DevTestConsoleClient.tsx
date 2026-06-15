@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { WaflButton, WaflInfoBox, WaflLinkButton, WaflSurface } from "@/components/common/ui";
+import MaterialOrderCleanRoomModal from "./MaterialOrderCleanRoomModal";
 
 type SessionSummary = {
   userId: string;
@@ -46,6 +47,7 @@ export default function DevTestConsoleClient() {
   const [selectedMemberId, setSelectedMemberId] = useState("");
   const [message, setMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [cleanRoomModalOpen, setCleanRoomModalOpen] = useState(false);
 
   const groupedTargets = useMemo(() => {
     const groups = new Map<string, DevTestContextTarget[]>();
@@ -184,6 +186,27 @@ export default function DevTestConsoleClient() {
 
           {message ? <p className="mt-4 text-sm text-[var(--pbp-text-muted)]">{message}</p> : null}
         </WaflSurface>
+
+        <WaflSurface as="section" shape="control" className="p-5 shadow-sm">
+          <h2 className="text-base font-semibold">아이패드 최소 모달 진단</h2>
+          <p className="mt-2 text-sm text-[var(--pbp-text-muted)]">
+            공통 모달 구조와 분리된 clean-room 모달을 개발 환경에서만 다시 확인할 때 사용합니다.
+          </p>
+          <div className="mt-4">
+            <WaflButton
+              variant="secondary"
+              size="sm"
+              onClick={() => setCleanRoomModalOpen(true)}
+            >
+              최소 모달 테스트 열기
+            </WaflButton>
+          </div>
+        </WaflSurface>
+
+        <MaterialOrderCleanRoomModal
+          open={cleanRoomModalOpen}
+          onClose={() => setCleanRoomModalOpen(false)}
+        />
       </div>
     </main>
   );
