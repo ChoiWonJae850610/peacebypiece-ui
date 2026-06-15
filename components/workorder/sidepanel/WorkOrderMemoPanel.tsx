@@ -204,6 +204,7 @@ function MemoItemActions({
   onEdit,
   onReply,
   onDelete,
+  directActions = false,
 }: {
   canMutate: boolean;
   canReply?: boolean;
@@ -213,8 +214,51 @@ function MemoItemActions({
   onEdit: () => void;
   onReply?: () => void;
   onDelete: () => void;
+  directActions?: boolean;
 }) {
   if (!canMutate && !canReply) return null;
+
+  if (directActions) {
+    return (
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+        {canReply && onReply ? (
+          <WaflButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onReply}
+            className="min-h-7 px-2 py-1 text-[11px]"
+          >
+            {replyLabel}
+          </WaflButton>
+        ) : null}
+        {canMutate ? (
+          <>
+            <WaflButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onEdit}
+              className="min-h-7 px-2 py-1 text-[11px]"
+            >
+              {editLabel}
+            </WaflButton>
+            <WaflButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              aria-label={deleteAriaLabel}
+              className="min-h-7 px-2 py-1 text-[11px] text-[var(--pbp-danger)]"
+            >
+              삭제
+            </WaflButton>
+          </>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <WorkOrderCardActionMenu
       menuLabel="작업메모 작업 더보기"
@@ -358,6 +402,7 @@ function MemoThreadCard({
           }}
           onReply={() => setReplyComposerOpen((prev) => !prev)}
           onDelete={() => onDeleteThread(thread.id)}
+          directActions={isMobile}
         />
       </div>
 
@@ -414,6 +459,7 @@ function MemoThreadCard({
                     deleteAriaLabel={ui.memo.deleteAria}
                     onEdit={() => startReplyEdit(reply)}
                     onDelete={() => onDeleteReply(thread.id, reply.id)}
+                    directActions={isMobile}
                   />
                 </div>
                 {isEditingReply ? (
