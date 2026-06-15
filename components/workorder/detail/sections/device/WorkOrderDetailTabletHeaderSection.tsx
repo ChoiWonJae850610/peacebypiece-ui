@@ -1,56 +1,55 @@
 "use client";
 
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import {
   WaflButton,
   WaflInput,
-  WaflSurface,
-  WaflSurfaceButton,
+  WaflSummaryHeaderCard,
+  WaflSummaryInfoCell,
 } from "@/components/common/ui";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type HeaderProps = WorkOrderDetailViewModel["headerProps"];
 
-function TabletSummaryAction({
+function TabletSummaryValue({
   label,
   value,
   disabled,
   onClick,
+  valueClassName = "",
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   disabled?: boolean;
   onClick: () => void;
+  valueClassName?: string;
 }) {
-  const canAct = !disabled;
+  const valueNode = (
+    <span className={`block truncate text-sm font-semibold text-[var(--pbp-text-primary)] ${valueClassName}`}>
+      {value}
+    </span>
+  );
+
+  if (disabled) {
+    return <WaflSummaryInfoCell label={label}>{valueNode}</WaflSummaryInfoCell>;
+  }
+
   return (
-    <WaflSurfaceButton
-      onClick={onClick}
-      disabled={disabled}
-      component="detail-summary-action"
-      shape="control"
-      className="flex items-center justify-between gap-3 px-3.5 py-3 disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <span className="grid min-w-0 gap-1">
-        <span className="text-xs font-medium text-[var(--pbp-text-muted)]">
-          {label}
-        </span>
-        <span className="break-words text-sm font-semibold text-[var(--pbp-text-primary)]">
-          {value}
-        </span>
-      </span>
-      {canAct ? (
-        <span
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center wafl-shape-icon bg-[var(--pbp-surface-soft)] text-[var(--pbp-text-muted)]"
-          aria-hidden="true"
-        >
-          <WorkOrderEditIcon className="h-3.5 w-3.5" />
-        </span>
-      ) : null}
-    </WaflSurfaceButton>
+    <WaflSummaryInfoCell label={label}>
+      <WaflButton
+        type="button"
+        variant="ghost"
+        size="sm"
+        width="full"
+        onClick={onClick}
+        className="min-w-0 px-1.5 py-1 text-center"
+      >
+        {valueNode}
+      </WaflButton>
+    </WaflSummaryInfoCell>
   );
 }
 
@@ -79,6 +78,7 @@ export default function WorkOrderDetailTabletHeaderSection({
   const managerValue = managerName || "-";
   const summaryValue = summaryText || "-";
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
+  void lastSavedAt;
   const canEditTitle =
     !locked && canRenameTitle && typeof onRenameTitle === "function";
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -125,94 +125,97 @@ export default function WorkOrderDetailTabletHeaderSection({
     }
   };
 
-  return (
-    <WaflSurface as="section" component="tablet-detail-summary-card" shape="control" className="p-4">
-      <div className="grid gap-3">
-        <div className="min-w-0">
-          <div className="flex min-w-0 items-start gap-2">
-            {isEditingTitle ? (
-              <div className="min-w-0 flex-1">
-                <WaflInput
-                  ref={inputRef}
-                  type="text"
-                  value={titleDraft}
-                  onChange={(event) => setTitleDraft(event.target.value)}
-                  onKeyDown={handleTitleKeyDown}
-                  fieldSize="md" className="pbp-workorder-editable-input text-xl font-semibold"
-                  aria-label={copy.titleInputAria}
-                />
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <WaflButton
-                    type="button"
-                    onClick={saveTitle}
-                    variant="primary"
-                    size="sm"
-                  >
-                    {copy.titleEditSave}
-                  </WaflButton>
-                  <WaflButton
-                    type="button"
-                    onClick={closeTitleEditor}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    {copy.titleEditCancel}
-                  </WaflButton>
-                </div>
-              </div>
-            ) : (
-              <>
-                <h2 className="min-w-0 break-keep text-xl font-semibold text-[var(--pbp-text-primary)]">
-                  {title}
-                </h2>
-                {canEditTitle ? (
-                  <WaflButton
-                    type="button"
-                    onClick={() => setIsEditingTitle(true)}
-                    variant="icon"
-                    size="sm"
-                    aria-label={copy.titleEditAria}
-                  >
-                    <WorkOrderEditIcon className="h-3.5 w-3.5" />
-                  </WaflButton>
-                ) : null}
-              </>
-            )}
-          </div>
-          <div className="mt-3 grid gap-2">
-            <TabletSummaryAction
-              label={copy.summaryLabel}
-              value={summaryValue}
-              onClick={onOpenBasicInfoModal}
-              disabled={locked}
-            />
-            <TabletSummaryAction
-              label={copy.managerLabel}
-              value={managerValue}
-              onClick={onOpenManagerAssignModal}
-              disabled={!canChangeManager || managerLocked}
-            />
-            <TabletSummaryAction
-              label={copy.currentInventoryLabel}
-              value={inventoryValue}
-              onClick={onOpenInventoryEditor}
-              disabled={!canEditInventory}
-            />
-            <PbpSingleDatePicker
-              value={dueDate}
-              labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "납기일 선택" }}
-              locale="ko"
-              displayFormat="iso"
-          onChange={onChangeDueDate}
-              popoverMode="fixed"
-              disabled={locked}
-            />
-            <div className="text-right text-[11px] text-[var(--pbp-text-subtle)]">
-              {copy.lastUpdatedPrefix} {lastSavedAt || "-"}
-            </div>
+  const titleEditor = (
+    <div className="flex min-w-0 items-start justify-center gap-2 text-center">
+      {isEditingTitle ? (
+        <div className="min-w-0 flex-1">
+          <WaflInput
+            ref={inputRef}
+            type="text"
+            value={titleDraft}
+            onChange={(event) => setTitleDraft(event.target.value)}
+            onKeyDown={handleTitleKeyDown}
+            fieldSize="md"
+            className="pbp-workorder-editable-input text-xl font-semibold"
+            aria-label={copy.titleInputAria}
+          />
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+            <WaflButton type="button" onClick={saveTitle} variant="primary" size="sm">
+              {copy.titleEditSave}
+            </WaflButton>
+            <WaflButton type="button" onClick={closeTitleEditor} variant="secondary" size="sm">
+              {copy.titleEditCancel}
+            </WaflButton>
           </div>
         </div>
-      </div>
-    </WaflSurface>
+      ) : (
+        <div className="flex min-w-0 items-center justify-center gap-1.5">
+          <h2 className="min-w-0 truncate text-xl font-semibold text-[var(--pbp-text-primary)]">
+            {title}
+          </h2>
+          {canEditTitle ? (
+            <WaflButton
+              type="button"
+              onClick={() => setIsEditingTitle(true)}
+              variant="icon"
+              size="sm"
+              aria-label={copy.titleEditAria}
+            >
+              <WorkOrderEditIcon className="h-3.5 w-3.5" />
+            </WaflButton>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <WaflSummaryHeaderCard
+      component="tablet-detail-summary-card"
+      title={titleEditor}
+      columns={2}
+      className="shadow-none"
+    >
+      <TabletSummaryValue
+        label={copy.summaryLabel}
+        value={summaryValue}
+        onClick={onOpenBasicInfoModal}
+        disabled={locked}
+      />
+      <TabletSummaryValue
+        label={copy.managerLabel}
+        value={managerValue}
+        onClick={onOpenManagerAssignModal}
+        disabled={!canChangeManager || managerLocked}
+      />
+      <WaflSummaryInfoCell label="납기일">
+        <PbpSingleDatePicker
+          value={dueDate}
+          labels={{
+            label: undefined,
+            placeholder: "날짜 선택",
+            clear: "지우기",
+            done: "완료",
+            selected: "선택일 {date}",
+            calendarAria: "납기일 선택",
+          }}
+          locale="ko"
+          displayFormat="iso"
+          onChange={onChangeDueDate}
+          popoverMode="fixed"
+          disabled={locked}
+          triggerVariant="subtle"
+          triggerClassName="!min-h-0 !justify-center !border-0 !bg-transparent !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)] shadow-none"
+          className="mx-auto w-full max-w-[190px]"
+        />
+      </WaflSummaryInfoCell>
+      <TabletSummaryValue
+        label={copy.currentInventoryLabel}
+        value={inventoryValue}
+        onClick={onOpenInventoryEditor}
+        disabled={!canEditInventory}
+        valueClassName="tabular-nums"
+      />
+    </WaflSummaryHeaderCard>
   );
 }

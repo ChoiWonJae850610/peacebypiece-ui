@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { AppSelect, WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
+import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -62,6 +62,9 @@ export default function WorkOrderHeaderSection({
   const common = i18n.workorder.ui.common;
   void onSave;
   void currentUserRole;
+  void lastSavedAt;
+  void workOrderKind;
+  void onChangeWorkOrderKind;
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(editableTitle ?? title);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -163,27 +166,21 @@ export default function WorkOrderHeaderSection({
     <WaflSummaryHeaderCard
       component="workorder-header-summary"
       title={titleEditor}
-      columns={3}
-      footerColumns={3}
-      footerLeft={(
-        <WaflSummaryInfoCell label="작업구분">
-          <AppSelect
-            value={workOrderKind || "sample"}
-            options={[
-              { value: "sample", label: "샘플" },
-              { value: "main", label: "메인작업" },
-              { value: "rework", label: "재작업" },
-            ]}
-            onValueChange={(value) => onChangeWorkOrderKind(value as NonNullable<WorkOrder["workOrderKind"]>)}
-            ariaLabel="작업구분 선택"
-            disabled={locked}
-            triggerClassName="!h-auto !min-h-0 justify-center !border-0 !bg-transparent !px-1.5 !py-1 text-center text-sm font-semibold shadow-none"
-          />
-        </WaflSummaryInfoCell>
-      )}
-      footerCenter={(
-        <WaflSummaryInfoCell label="납기일">
-          <PbpSingleDatePicker
+      columns={2}
+      className="shadow-none"
+    >
+      <WorkOrderHeaderInfoCell
+        label={copy.summaryLabel}
+        value={summaryValue}
+        onClick={canEditSummary ? onOpenBasicInfoModal : undefined}
+      />
+      <WorkOrderHeaderInfoCell
+        label={copy.managerLabel}
+        value={managerValue}
+        onClick={canEditManager ? onOpenManagerAssignModal : undefined}
+      />
+      <WaflSummaryInfoCell label="납기일">
+        <PbpSingleDatePicker
           value={dueDate}
           labels={{
             label: undefined,
@@ -200,37 +197,16 @@ export default function WorkOrderHeaderSection({
           popoverMode="fixed"
           disabled={locked}
           triggerVariant="subtle"
-          triggerClassName="!min-h-0 !justify-center !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)]"
+          triggerClassName="!min-h-0 !justify-center !border-0 !bg-transparent !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)] shadow-none"
           className="mx-auto w-full max-w-[190px]"
         />
-        </WaflSummaryInfoCell>
-      )}
-      footerRight={(
-        <WaflSummaryInfoCell label={copy.lastUpdatedPrefix}>
-          <span className="block truncate text-sm font-semibold pbp-text-primary">
-            {lastSavedAt || "-"}
-          </span>
-        </WaflSummaryInfoCell>
-      )}
-    >
+      </WaflSummaryInfoCell>
       <WorkOrderHeaderInfoCell
-        label={copy.summaryLabel}
-        value={summaryValue}
-        onClick={canEditSummary ? onOpenBasicInfoModal : undefined}
+        label={copy.currentInventoryLabel}
+        value={inventoryValue}
+        onClick={canEditInventory ? onOpenInventoryEditor : undefined}
+        valueClassName="tabular-nums"
       />
-      <WorkOrderHeaderInfoCell
-        label={copy.managerLabel}
-        value={managerValue}
-        onClick={canEditManager ? onOpenManagerAssignModal : undefined}
-      />
-      <div className="col-span-2 min-w-0 sm:col-span-1">
-        <WorkOrderHeaderInfoCell
-          label={copy.currentInventoryLabel}
-          value={inventoryValue}
-          onClick={canEditInventory ? onOpenInventoryEditor : undefined}
-          valueClassName="tabular-nums"
-        />
-      </div>
     </WaflSummaryHeaderCard>
   );
 }
