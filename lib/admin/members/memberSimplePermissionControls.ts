@@ -31,7 +31,7 @@ export const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "작업지시서 관리",
     descriptionKey: "memberManagement.detailModal.simplePermissions.workorderManage.description",
     fallbackDescription:
-      "해제하면 본인 담당 작업지시서 조회만 가능하고, 선택하면 생성·수정·삭제·검토요청이 가능합니다.",
+      "해제하면 본인 담당 작업지시서 조회만 가능하고, 선택하면 작성중 작업지시서의 생성·수정·삭제·검토요청이 가능합니다.",
     readPermissionCodes: [MEMBER_PERMISSION_CODE.workorderRead],
     permissionCodes: [
       MEMBER_PERMISSION_CODE.workorderCreate,
@@ -41,19 +41,12 @@ export const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     ],
   },
   {
-    id: "workorderReview",
-    labelKey: "memberManagement.detailModal.simplePermissions.workorderReview.label",
-    fallbackLabel: "검수 가능",
-    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderReview.description",
-    fallbackDescription: "선택하면 담당 작업지시서의 검수 상태를 변경할 수 있습니다.",
-    permissionCodes: [MEMBER_PERMISSION_CODE.workorderStatusInspect],
-  },
-  {
     id: "workorderOrderDirect",
     labelKey: "memberManagement.detailModal.simplePermissions.workorderOrderDirect.label",
     fallbackLabel: "작업지시서 발주 가능",
     descriptionKey: "memberManagement.detailModal.simplePermissions.workorderOrderDirect.description",
-    fallbackDescription: "선택하면 작업지시서 발주 요청과 발주 상태 변경을 진행할 수 있습니다.",
+    fallbackDescription:
+      "선택하면 검토요청을 거치지 않고 직접 발주요청할 수 있으며, 필요하면 검토요청 절차도 사용할 수 있습니다.",
     permissionCodes: [MEMBER_PERMISSION_CODE.workorderStatusOrder],
   },
   {
@@ -62,7 +55,7 @@ export const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     fallbackLabel: "원단·부자재 주문 가능",
     descriptionKey: "memberManagement.detailModal.simplePermissions.materialOrderRequest.description",
     fallbackDescription:
-      "선택하면 담당 작업지시서에서 원단·부자재 주문 요청을 등록하거나 수정할 수 있습니다.",
+      "선택하면 담당 작업지시서에 필요한 원단·부자재 주문 요청을 작성하거나 수정할 수 있습니다.",
     permissionCodes: [MEMBER_PERMISSION_CODE.materialOrderRequest],
   },
   {
@@ -70,8 +63,18 @@ export const SIMPLE_PERMISSION_CONTROLS: readonly SimplePermissionControl[] = [
     labelKey: "memberManagement.detailModal.simplePermissions.materialOrderPlace.label",
     fallbackLabel: "원단·부자재 발주 가능",
     descriptionKey: "memberManagement.detailModal.simplePermissions.materialOrderPlace.description",
-    fallbackDescription: "선택하면 원단·부자재 발주 처리와 발주 상태 변경을 진행할 수 있습니다.",
+    fallbackDescription:
+      "선택하면 원단·부자재 발주서의 발주요청과 발주 상태 변경을 진행할 수 있습니다.",
     permissionCodes: [MEMBER_PERMISSION_CODE.materialOrderPlace],
+  },
+  {
+    id: "workorderReview",
+    labelKey: "memberManagement.detailModal.simplePermissions.workorderReview.label",
+    fallbackLabel: "재고 검수 가능",
+    descriptionKey: "memberManagement.detailModal.simplePermissions.workorderReview.description",
+    fallbackDescription:
+      "선택하면 모든 업무 단계에서 작업지시서 현재 재고를 수정하고 검수 상태를 변경할 수 있습니다.",
+    permissionCodes: [MEMBER_PERMISSION_CODE.workorderStatusInspect],
   },
   {
     id: "partnerManage",
