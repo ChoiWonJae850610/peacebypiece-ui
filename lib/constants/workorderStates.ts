@@ -137,16 +137,16 @@ export function isWorkflowStateOneOf(state: WorkflowStateValue, targets: readonl
   return targets.some((target) => isWorkflowState(state, target));
 }
 
-export function canEditBeforeOrder(state: WorkflowStateValue, isAdmin = false) {
-  return isWorkflowStateBefore(state, WORKFLOW_STATE.reviewRequested) || isWorkflowState(state, WORKFLOW_STATE.rejected) || (isAdmin && isWorkflowState(state, WORKFLOW_STATE.reviewRequested));
+export function canEditBeforeOrder(state: WorkflowStateValue, _isAdmin = false) {
+  return isWorkflowState(state, WORKFLOW_STATE.draft) || isWorkflowState(state, WORKFLOW_STATE.rejected);
 }
 
 export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin = false) {
   return !canEditBeforeOrder(state, isAdmin);
 }
 
-export function canChangeWorkOrderAssigneeInWorkflow(state: WorkflowStateValue) {
-  return isWorkflowStateBefore(state, WORKFLOW_STATE.completed);
+export function canChangeWorkOrderAssigneeInWorkflow(_state: WorkflowStateValue) {
+  return true;
 }
 
 export function canEditManagerInWorkflow(state: WorkflowStateValue, _isReviewRequestLocked?: boolean) {
@@ -227,7 +227,7 @@ export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageV
   rejected: "text-[var(--pbp-workorder-status-rejected-text)]",
 };
 
-export const MANAGER_ASSIGNABLE_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested, WORKFLOW_STATE.reviewCompleted, WORKFLOW_STATE.materialOrderPending, WORKFLOW_STATE.inspection] as const;
+export const MANAGER_ASSIGNABLE_STATES = [...WORKFLOW_STATES] as const;
 export const INVENTORY_EDITABLE_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
 export const REORDERABLE_WORKFLOW_STATES = [WORKFLOW_STATE.inspection, WORKFLOW_STATE.completed] as const;
 export const DELETABLE_WORKFLOW_STATES = [WORKFLOW_STATE.draft, WORKFLOW_STATE.rejected, WORKFLOW_STATE.reviewRequested] as const;

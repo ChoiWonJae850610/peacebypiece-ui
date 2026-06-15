@@ -153,7 +153,10 @@ export function buildHeaderSectionProps({
     onOpenInventoryEditor,
     onRenameTitle: onRenameWorkOrderTitle,
     locked: isReviewRequestLocked || Boolean(isWorkspaceWriteLocked),
-    managerLocked: Boolean(isWorkspaceWriteLocked) || !canEditManagerInWorkflow(currentWorkflowState, isReviewRequestLocked),
+    managerLocked:
+      Boolean(isWorkspaceWriteLocked) ||
+      !canEditManagerInWorkflow(currentWorkflowState, isReviewRequestLocked),
+    dueDateLocked: Boolean(isWorkspaceWriteLocked),
   };
 }
 

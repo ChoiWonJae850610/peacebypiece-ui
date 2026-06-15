@@ -61,6 +61,7 @@ export default function WorkOrderDetailMobileHeaderSection({
   onRenameTitle,
   locked = false,
   managerLocked = locked,
+  dueDateLocked = locked,
 }: HeaderProps) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.header;
@@ -180,7 +181,7 @@ export default function WorkOrderDetailMobileHeaderSection({
           displayFormat="iso"
           onChange={onChangeDueDate}
           popoverMode="fixed"
-          disabled={locked}
+          disabled={dueDateLocked}
         />
         <div className="text-right text-xs text-[var(--pbp-text-muted)]">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
       </div>

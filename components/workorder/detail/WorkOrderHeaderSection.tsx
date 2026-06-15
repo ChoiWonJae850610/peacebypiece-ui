@@ -32,6 +32,7 @@ type WorkOrderHeaderSectionProps = {
   onRenameTitle?: (nextTitle: string) => void;
   locked?: boolean;
   managerLocked?: boolean;
+  dueDateLocked?: boolean;
 };
 
 export default function WorkOrderHeaderSection({
@@ -56,6 +57,7 @@ export default function WorkOrderHeaderSection({
   onRenameTitle,
   locked = false,
   managerLocked = locked,
+  dueDateLocked = locked,
 }: WorkOrderHeaderSectionProps) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.header;
@@ -195,7 +197,7 @@ export default function WorkOrderHeaderSection({
           onChange={onChangeDueDate}
           minDateValue={getTodayPbpLocalDateValue()}
           popoverMode="fixed"
-          disabled={locked}
+          disabled={dueDateLocked}
           triggerVariant="subtle"
           triggerClassName="!min-h-0 !justify-center !border-0 !bg-transparent !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)] shadow-none"
           className="mx-auto w-full max-w-[190px]"

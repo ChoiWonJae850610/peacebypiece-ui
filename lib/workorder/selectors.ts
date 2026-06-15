@@ -59,7 +59,6 @@ export function canEditWorkOrderMemo(workflowState: WorkOrder["workflowState"]) 
 }
 
 export function canRenameWorkOrderTitle(currentUser: UserProfile, workflowState: WorkOrder["workflowState"]) {
-  if (isAdminRole(currentUser)) return true;
   return hasMemberPermission(currentUser, "workorder.update") && canEditBeforeOrder(workflowState);
 }
 

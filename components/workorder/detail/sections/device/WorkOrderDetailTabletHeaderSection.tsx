@@ -71,6 +71,7 @@ export default function WorkOrderDetailTabletHeaderSection({
   onRenameTitle,
   locked = false,
   managerLocked = locked,
+  dueDateLocked = locked,
 }: HeaderProps) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.header;
@@ -180,7 +181,7 @@ export default function WorkOrderDetailTabletHeaderSection({
         label={copy.summaryLabel}
         value={summaryValue}
         onClick={onOpenBasicInfoModal}
-        disabled={locked}
+        disabled={dueDateLocked}
       />
       <TabletSummaryValue
         label={copy.managerLabel}
