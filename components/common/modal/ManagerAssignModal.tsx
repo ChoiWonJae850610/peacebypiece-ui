@@ -35,7 +35,7 @@ export default function ManagerAssignModal({
   );
   const managerCandidates = useMemo(
     () =>
-      users.filter((user) => Boolean(user.id) && Boolean(user.companyMemberId)),
+      users.filter((user) => Boolean(user.id)),
     [users],
   );
 

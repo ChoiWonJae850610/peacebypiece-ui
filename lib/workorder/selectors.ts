@@ -59,7 +59,10 @@ export function canEditWorkOrderMemo(workflowState: WorkOrder["workflowState"]) 
 }
 
 export function canRenameWorkOrderTitle(currentUser: UserProfile, workflowState: WorkOrder["workflowState"]) {
-  return hasMemberPermission(currentUser, "workorder.update") && canEditBeforeOrder(workflowState);
+  return (
+    hasMemberPermission(currentUser, "workorder.update") &&
+    canEditBeforeOrder(workflowState, isAdminRole(currentUser))
+  );
 }
 
 export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowStateById: Record<string, string>, searchQuery: string) {

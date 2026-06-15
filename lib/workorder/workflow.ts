@@ -61,8 +61,8 @@ export function deriveWorkflowStateFromOrderEntries(baseState: WorkflowState, or
   return baseState;
 }
 
-export function canManageWorkOrderManager(currentRoles: RoleType[], _currentWorkflowState: WorkflowState) {
-  return isAdminRole(currentRoles);
+export function canManageWorkOrderManager(currentRoles: RoleType[], currentWorkflowState: WorkflowState) {
+  return isAdminRole(currentRoles) && currentWorkflowState !== WORKFLOW_STATE.materialOrderPending && currentWorkflowState !== WORKFLOW_STATE.inspection && currentWorkflowState !== WORKFLOW_STATE.completed;
 }
 
 export function canRequestReview(payload: Pick<WorkflowContext, "currentRoles" | "currentUser" | "currentUserId" | "workOrder">) {

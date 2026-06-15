@@ -3,6 +3,7 @@
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
+import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import {
   WaflButton,
@@ -181,7 +182,7 @@ export default function WorkOrderDetailTabletHeaderSection({
         label={copy.summaryLabel}
         value={summaryValue}
         onClick={onOpenBasicInfoModal}
-        disabled={dueDateLocked}
+        disabled={locked}
       />
       <TabletSummaryValue
         label={copy.managerLabel}
@@ -203,8 +204,9 @@ export default function WorkOrderDetailTabletHeaderSection({
           locale="ko"
           displayFormat="iso"
           onChange={onChangeDueDate}
+          minDateValue={getTodayPbpLocalDateValue()}
           popoverMode="fixed"
-          disabled={locked}
+          disabled={dueDateLocked}
           triggerVariant="subtle"
           triggerClassName="!min-h-0 !justify-center !border-0 !bg-transparent !px-1 !py-1 !text-center !text-sm !font-semibold !text-[var(--pbp-text-primary)] shadow-none"
           className="mx-auto w-full max-w-[190px]"

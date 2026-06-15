@@ -137,7 +137,10 @@ export function isWorkflowStateOneOf(state: WorkflowStateValue, targets: readonl
   return targets.some((target) => isWorkflowState(state, target));
 }
 
-export function canEditBeforeOrder(state: WorkflowStateValue, _isAdmin = false) {
+export function canEditBeforeOrder(state: WorkflowStateValue, isAdmin = false) {
+  if (isAdmin) {
+    return isWorkflowStateBefore(state, WORKFLOW_STATE.materialOrderPending);
+  }
   return isWorkflowState(state, WORKFLOW_STATE.draft) || isWorkflowState(state, WORKFLOW_STATE.rejected);
 }
 
@@ -145,8 +148,8 @@ export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin =
   return !canEditBeforeOrder(state, isAdmin);
 }
 
-export function canChangeWorkOrderAssigneeInWorkflow(_state: WorkflowStateValue) {
-  return true;
+export function canChangeWorkOrderAssigneeInWorkflow(state: WorkflowStateValue) {
+  return isWorkflowStateBefore(state, WORKFLOW_STATE.materialOrderPending);
 }
 
 export function canEditManagerInWorkflow(state: WorkflowStateValue, _isReviewRequestLocked?: boolean) {

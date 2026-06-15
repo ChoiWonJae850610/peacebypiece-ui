@@ -4,6 +4,7 @@ import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconBu
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { WaflButton, WaflInput, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
+import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
@@ -180,6 +181,7 @@ export default function WorkOrderDetailMobileHeaderSection({
           locale="ko"
           displayFormat="iso"
           onChange={onChangeDueDate}
+          minDateValue={getTodayPbpLocalDateValue()}
           popoverMode="fixed"
           disabled={dueDateLocked}
         />

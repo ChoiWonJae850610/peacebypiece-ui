@@ -22,7 +22,6 @@ import {
 } from "@/lib/workorder/selectors";
 import { getSharedInventorySnapshot } from "@/lib/workorder/reorder/inventory";
 import {
-  canEditInventoryForWorkflow,
   canManageWorkOrderManager,
   deriveWorkflowStateFromOrderEntries,
   getAvailableWorkflowActions,
@@ -67,8 +66,8 @@ export function buildWorkOrderDerivedState({
   const hasActiveSelection = scopedWorkOrders.some((item) => item.id === selectedWorkOrder.id);
   const canSeeProductionSections = currentUser.permissions.canSeeProductionSections;
   const canSeeCostSections = currentUser.permissions.canSeeCostSections;
-  const canEditInventory = currentUser.permissions.canEditInventory;
-  const canOpenInventoryEditor = canEditInventoryForWorkflow(currentRoles, currentWorkflowState);
+  const canEditInventory = workOrderCapabilities.canInspectWorkOrder;
+  const canOpenInventoryEditor = canEditInventory;
   const canSeeInventoryHistorySection = currentUser.permissions.canSeeInventoryHistorySection;
   const currentInventoryQuantity = getSharedInventorySnapshot(workOrders, selectedWorkOrder).inventoryQuantity;
   const designAttachments = getDesignAttachments(selectedWorkOrder.attachments ?? []);

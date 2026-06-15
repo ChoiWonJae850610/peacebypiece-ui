@@ -156,7 +156,7 @@ export function buildHeaderSectionProps({
     managerLocked:
       Boolean(isWorkspaceWriteLocked) ||
       !canEditManagerInWorkflow(currentWorkflowState, isReviewRequestLocked),
-    dueDateLocked: Boolean(isWorkspaceWriteLocked),
+    dueDateLocked: isReviewRequestLocked || Boolean(isWorkspaceWriteLocked),
   };
 }
 
