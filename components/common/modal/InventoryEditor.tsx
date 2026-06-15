@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
@@ -20,7 +15,13 @@ import {
   renderModalFooterActions,
 } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
-import { WaflEmptyCard, WaflInfoBox, WaflInput, WaflTextarea } from "@/components/common/ui";
+import {
+  AppNumberInput,
+  WAFL_FIELD_INPUT_CLASS,
+  WaflEmptyCard,
+  WaflInfoBox,
+  WaflTextarea,
+} from "@/components/common/ui";
 
 type InventoryMode = InventoryChangeTypeValue;
 
@@ -61,29 +62,24 @@ export default function InventoryEditor({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.inventoryEditor;
-  const [inboundQuantity, setInboundQuantity] = useState<string>("");
-  const [adjustmentQuantity, setAdjustmentQuantity] = useState<string>("");
-  const [deductionQuantity, setDeductionQuantity] = useState<string>("");
+  const [inboundQuantity, setInboundQuantity] = useState(0);
+  const [adjustmentQuantity, setAdjustmentQuantity] = useState(0);
+  const [deductionQuantity, setDeductionQuantity] = useState(0);
   const [memo, setMemo] = useState("");
 
   useEffect(() => {
     if (!open) {
-      setInboundQuantity("");
-      setAdjustmentQuantity("");
-      setDeductionQuantity("");
+      setInboundQuantity(0);
+      setAdjustmentQuantity(0);
+      setDeductionQuantity(0);
       setMemo("");
     }
   }, [open]);
 
-  const handleNumericFieldKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Enter") return;
-    event.preventDefault();
-    event.currentTarget.blur();
-  };
 
-  const parsedInboundQuantity = Number(inboundQuantity || 0);
-  const parsedAdjustmentQuantity = Number(adjustmentQuantity || 0);
-  const parsedDeductionQuantity = Number(deductionQuantity || 0);
+  const parsedInboundQuantity = inboundQuantity;
+  const parsedAdjustmentQuantity = adjustmentQuantity;
+  const parsedDeductionQuantity = deductionQuantity;
   const hasAnyChange =
     parsedInboundQuantity > 0 ||
     parsedAdjustmentQuantity > 0 ||
@@ -165,45 +161,39 @@ export default function InventoryEditor({
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
               {copy.inboundQuantityLabel}
             </label>
-            <WaflInput
-              type="number"
+            <AppNumberInput
               inputMode="numeric"
-              enterKeyHint="done"
               min={0}
               value={inboundQuantity}
-              onChange={(event) => setInboundQuantity(event.target.value)}
-              onKeyDown={handleNumericFieldKeyDown}
-              placeholder={copy.inboundQuantityPlaceholder}
+              onValueChange={setInboundQuantity}
+              ariaLabel={copy.inboundQuantityPlaceholder}
+              className={WAFL_FIELD_INPUT_CLASS}
             />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
               {copy.adjustmentQuantityLabel}
             </label>
-            <WaflInput
-              type="number"
+            <AppNumberInput
               inputMode="numeric"
-              enterKeyHint="done"
               min={0}
               value={adjustmentQuantity}
-              onChange={(event) => setAdjustmentQuantity(event.target.value)}
-              onKeyDown={handleNumericFieldKeyDown}
-              placeholder={copy.adjustmentQuantityPlaceholder}
+              onValueChange={setAdjustmentQuantity}
+              ariaLabel={copy.adjustmentQuantityPlaceholder}
+              className={WAFL_FIELD_INPUT_CLASS}
             />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
               {copy.deductionQuantityLabel}
             </label>
-            <WaflInput
-              type="number"
+            <AppNumberInput
               inputMode="numeric"
-              enterKeyHint="done"
               min={0}
               value={deductionQuantity}
-              onChange={(event) => setDeductionQuantity(event.target.value)}
-              onKeyDown={handleNumericFieldKeyDown}
-              placeholder={copy.deductionQuantityPlaceholder}
+              onValueChange={setDeductionQuantity}
+              ariaLabel={copy.deductionQuantityPlaceholder}
+              className={WAFL_FIELD_INPUT_CLASS}
             />
           </div>
         </div>

@@ -40,23 +40,23 @@ export default function WorkOrderMobileWorkspaceShell({
 }: WorkOrderMobileWorkspaceShellProps) {
   const { i18n } = useI18n();
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
-  const [activeRelatedSection, setActiveRelatedSection] = useState<MobileRelatedSectionKey>("attachment");
+  const [activeRelatedSection, setActiveRelatedSection] = useState<MobileRelatedSectionKey>("design");
   const mobileCopy = i18n.workorder.ui.layout.mobileDrawer;
   const relatedCopy = mobileCopy.relatedSections;
   const relatedTabs = useMemo<Array<AppSegmentedTabItem<MobileRelatedSectionKey>>>(() => [
-    { key: "attachment", label: relatedCopy.attachment },
     { key: "design", label: relatedCopy.design },
+    { key: "attachment", label: relatedCopy.attachment },
     { key: "memo", label: relatedCopy.memo },
   ], [relatedCopy.attachment, relatedCopy.design, relatedCopy.memo]);
   const relatedTitle = relatedCopy.titles[activeRelatedSection];
   const openRelatedSection = () => {
-    setActiveRelatedSection("attachment");
+    setActiveRelatedSection("design");
     setSidePanelOpen(true);
   };
   const handleRelatedSheetOpenChange = (nextOpen: boolean) => {
     setSidePanelOpen(nextOpen);
     if (!nextOpen) {
-      setActiveRelatedSection("attachment");
+      setActiveRelatedSection("design");
     }
   };
   const showDetailActionBar = hasSelection;
