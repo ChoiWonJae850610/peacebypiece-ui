@@ -27,7 +27,7 @@ export default function WaflWorkspaceEmptyPanel({
   return (
     <WaflPanelContentShell
       data-wafl-component="workspace-empty-panel"
-      className={cn("flex min-h-full flex-col", className)}
+      className={cn("box-border flex min-h-full flex-col !p-4", className)}
     >
       <WaflEmptyWorkspaceState
         title={title}
