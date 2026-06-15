@@ -135,6 +135,7 @@ export type MaterialOrderHeaderUpdateInput = {
   companyId: string;
   visibility?: MaterialOrderVisibilityScope;
   materialOrderId: string;
+  isAdmin?: boolean;
   materialType?: MaterialOrderLineItemType | null;
   supplierPartnerId?: string | null;
   dueDate?: string | null;
@@ -144,6 +145,7 @@ export type MaterialOrderUpdateInput = {
   companyId: string;
   visibility?: MaterialOrderVisibilityScope;
   materialOrderId: string;
+  isAdmin?: boolean;
   supplierPartnerId?: string | null;
   note?: string | null;
   dueDate?: string | null;

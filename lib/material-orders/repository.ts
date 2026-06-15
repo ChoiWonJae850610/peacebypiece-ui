@@ -1,6 +1,7 @@
 import "server-only";
 
 import { queryDb, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
+import { canEditMaterialOrderOnServer } from "@/lib/material-orders/serverPolicy";
 import type {
   MaterialOrder,
   MaterialOrderAllocation,
@@ -562,14 +563,17 @@ export async function updateMaterialOrderHeaderForCompany(
     const current = currentResult.rows[0];
     if (!current) throw new Error("MATERIAL_ORDER_NOT_FOUND_OR_FORBIDDEN");
 
-    const changesCoreHeader =
+    const changesHeader =
       Object.prototype.hasOwnProperty.call(input, "materialType") ||
-      Object.prototype.hasOwnProperty.call(input, "supplierPartnerId");
-    const coreHeaderEditable =
-      current.status === "draft" || current.status === "rejected";
+      Object.prototype.hasOwnProperty.call(input, "supplierPartnerId") ||
+      Object.prototype.hasOwnProperty.call(input, "dueDate");
+    const headerEditable = canEditMaterialOrderOnServer({
+      status: current.status,
+      isAdmin: Boolean(input.isAdmin),
+    });
 
-    if (changesCoreHeader && !coreHeaderEditable) {
-      throw new Error("MATERIAL_ORDER_HEADER_LOCKED_AFTER_REVIEW");
+    if (changesHeader && !headerEditable) {
+      throw new Error("MATERIAL_ORDER_HEADER_LOCKED_BY_STATUS");
     }
 
     const nextMaterialType = Object.prototype.hasOwnProperty.call(input, "materialType")
@@ -644,6 +648,25 @@ export async function updateMaterialOrderHeaderForCompany(
 
 export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUpdateInput): Promise<MaterialOrder | null> {
   const materialOrderId = await withDbTransaction(async (client) => {
+    const currentResult = await client.query<{ status: MaterialOrderStatus }>(
+      `SELECT status
+       FROM material_orders
+       WHERE company_id = $1
+         AND id = $2
+       FOR UPDATE`,
+      [input.companyId, input.materialOrderId],
+    );
+    const current = currentResult.rows[0];
+    if (
+      !current ||
+      !canEditMaterialOrderOnServer({
+        status: current.status,
+        isAdmin: Boolean(input.isAdmin),
+      })
+    ) {
+      throw new Error("MATERIAL_ORDER_DETAIL_LOCKED_BY_STATUS");
+    }
+
     const updateValues: unknown[] = [
       input.companyId,
       input.materialOrderId,
@@ -667,14 +690,13 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
            updated_at = now()
        WHERE company_id = $1
          AND id = $2
-         AND status = 'draft'
          ${visibilityPredicate}
        RETURNING id`,
       updateValues,
     );
 
     const orderId = orderResult.rows[0]?.id;
-    if (!orderId) throw new Error("MATERIAL_ORDER_DRAFT_NOT_FOUND_OR_LOCKED");
+    if (!orderId) throw new Error("MATERIAL_ORDER_DETAIL_NOT_FOUND_OR_FORBIDDEN");
 
     await client.query(
       `DELETE FROM material_order_allocations

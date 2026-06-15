@@ -49,6 +49,10 @@ import {
 } from "@/lib/workorder/list/workOrderListControls";
 
 import {
+  validateWorkOrderInventoryPatchPolicy,
+  validateWorkOrderSavePolicy,
+} from "@/lib/workorder/serverEditPolicy";
+import {
   getWorkflowMutationPermissionCode,
   hasFactoryOrderRequestChanged,
 } from "@/lib/workorder/workflowPermissionPolicy";
@@ -659,9 +663,6 @@ export async function handlePatchWorkOrders(request: Request) {
 
       const scopeResult = await requireWorkOrderRequestCompanyScope();
       if (!scopeResult.ok) return scopeResult.response;
-      const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
-      if (updatePermissionResponse) return updatePermissionResponse;
-
       const previousWorkOrders = await listExistingWorkOrdersByCompany(
         requestedWorkOrderIds,
         scopeResult.scope,
@@ -680,6 +681,13 @@ export async function handlePatchWorkOrders(request: Request) {
         if (!previousWorkOrder) {
           return createWorkOrderNotFoundResponse(workOrder.id);
         }
+
+        const editPolicyResponse = await validateWorkOrderSavePolicy({
+          session,
+          previous: previousWorkOrder,
+          next: workOrder,
+        });
+        if (editPolicyResponse) return editPolicyResponse;
 
         const workflowPermissionResponse =
           await requireWorkOrderWorkflowMutationPermission({
@@ -733,9 +741,6 @@ export async function handlePatchWorkOrders(request: Request) {
 
     const scopeResult = await requireWorkOrderRequestCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;
-    const updatePermissionResponse = await requireCurrentWorkOrderPermission("workorder.update");
-    if (updatePermissionResponse) return updatePermissionResponse;
-
     const previousWorkOrder = await getWorkOrderDetailByCompany(
       body.workOrder.id,
       scopeResult.scope,
@@ -743,6 +748,13 @@ export async function handlePatchWorkOrders(request: Request) {
     if (!previousWorkOrder) {
       return createWorkOrderNotFoundResponse(body.workOrder.id);
     }
+
+    const editPolicyResponse = await validateWorkOrderSavePolicy({
+      session,
+      previous: previousWorkOrder,
+      next: body.workOrder,
+    });
+    if (editPolicyResponse) return editPolicyResponse;
 
     const workflowPermissionResponse =
       await requireWorkOrderWorkflowMutationPermission({
@@ -861,6 +873,15 @@ export async function handlePatchWorkOrderState(
     }
     const session = await getCurrentWaflSession();
     if (!session) return createCompanySessionRequiredResponse();
+
+    const inventoryPermissionResponse =
+      await validateWorkOrderInventoryPatchPolicy({
+        session,
+        inventoryTouched:
+          Object.prototype.hasOwnProperty.call(guardedPatch, "inventoryQuantity") ||
+          Object.prototype.hasOwnProperty.call(guardedPatch, "inventoryStatus"),
+      });
+    if (inventoryPermissionResponse) return inventoryPermissionResponse;
 
     const workflowPermissionResponse =
       await requireWorkOrderStatePatchWorkflowPermission({

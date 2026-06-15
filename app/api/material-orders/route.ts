@@ -7,6 +7,9 @@ import {
 } from "@/lib/auth/apiRouteGuards";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
+import { isCompanyAdminSessionRole } from "@/lib/constants/sessionRoles";
+import { getMaterialOrderById } from "@/lib/material-orders/repository";
+import { isAllowedMaterialOrderTransition } from "@/lib/material-orders/serverPolicy";
 import {
   createWorkspaceMaterialOrder,
   listWorkspaceMaterialOrders,
@@ -246,6 +249,7 @@ export async function PUT(request: NextRequest) {
         companyId: guard.scope.companyId,
         visibility: guard.scope.visibility,
         materialOrderId,
+        isAdmin: isCompanyAdminSessionRole(guard.session.role),
       };
 
       if (Object.prototype.hasOwnProperty.call(body, "materialType")) {
@@ -268,6 +272,7 @@ export async function PUT(request: NextRequest) {
         companyId: guard.scope.companyId,
         visibility: guard.scope.visibility,
         materialOrderId,
+        isAdmin: isCompanyAdminSessionRole(guard.session.role),
         supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
         note: normalizeOptionalText(body.note),
         dueDate: normalizeOptionalText(body.dueDate),
@@ -297,6 +302,29 @@ export async function PATCH(request: NextRequest) {
         "Material order id and status are required.",
         "MATERIAL_ORDER_STATUS_PAYLOAD_REQUIRED",
         400,
+      );
+    }
+
+    const currentOrder = await getMaterialOrderById({
+      companyId: guard.scope.companyId,
+      materialOrderId,
+    });
+    if (!currentOrder) {
+      return createMaterialOrderApiErrorResponse(
+        "Material order was not found.",
+        "MATERIAL_ORDER_NOT_FOUND",
+        404,
+      );
+    }
+
+    if (!isAllowedMaterialOrderTransition({
+      previous: currentOrder.status,
+      next: status,
+    })) {
+      return createMaterialOrderApiErrorResponse(
+        "This material order status transition is not allowed.",
+        "MATERIAL_ORDER_STATUS_TRANSITION_NOT_ALLOWED",
+        409,
       );
     }
 

@@ -21,12 +21,6 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: MEMBER_PERMISSION_CODE.workorderUpdate,
-    routeLabel: "workorders.update",
-  });
-  if (permissionDenied) return permissionDenied;
-
   return handlePatchWorkOrders(request);
 }
 
