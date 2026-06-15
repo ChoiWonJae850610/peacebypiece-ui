@@ -4,6 +4,7 @@ import {
   WaflIconButton,
   type AppInlineSelectEditorOption,
   WaflCardButton,
+  WaflInput,
 } from "@/components/common/ui";
 import {
   PbpSingleDatePicker,
@@ -374,8 +375,9 @@ export function EditableValue({
     }
 
     return (
-      <input
+      <WaflInput
         autoFocus
+        fieldSize="xs"
         type={inputType}
         inputMode={inputType === "date" ? undefined : inputMode}
         value={editingValue}
@@ -411,8 +413,7 @@ export function EditableValue({
   }
 
   return (
-    <button
-      type="button"
+    <WaflCardButton
       onClick={() =>
         onStartEdit(section, rowId, field, getEditingInitialValue(field, value))
       }
@@ -426,7 +427,7 @@ export function EditableValue({
       >
         {(displayValue ?? getDisplayValue(field, value)) || "-"}
       </span>
-    </button>
+    </WaflCardButton>
   );
 }
 
