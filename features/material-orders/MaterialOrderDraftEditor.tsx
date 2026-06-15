@@ -132,6 +132,74 @@ export default function MaterialOrderDraftEditor({
     }
   }, [materialOrderLineAddDrawer.open, materialOrderLineAddModal.open]);
 
+
+  useEffect(() => {
+    const shouldLockWorkspaceScroll =
+      materialOrderLineAddModal.open ||
+      materialOrderLineAddDrawer.open ||
+      fixedPanelOpen ||
+      cleanModalOpen;
+
+    if (!shouldLockWorkspaceScroll || typeof document === "undefined") {
+      return;
+    }
+
+    const workspaceRoot = document.querySelector<HTMLElement>(
+      '[data-material-order-workspace-root="true"]',
+    );
+
+    if (!workspaceRoot) {
+      return;
+    }
+
+    const candidates = [
+      workspaceRoot,
+      ...Array.from(workspaceRoot.querySelectorAll<HTMLElement>("*")),
+    ];
+
+    const scrollContainers = candidates.filter((element) => {
+      const style = window.getComputedStyle(element);
+      const canScrollY =
+        /(auto|scroll|overlay)/.test(style.overflowY) &&
+        element.scrollHeight > element.clientHeight;
+      const canScrollX =
+        /(auto|scroll|overlay)/.test(style.overflowX) &&
+        element.scrollWidth > element.clientWidth;
+
+      return canScrollY || canScrollX;
+    });
+
+    const snapshots = scrollContainers.map((element) => ({
+      element,
+      overflow: element.style.overflow,
+      overflowX: element.style.overflowX,
+      overflowY: element.style.overflowY,
+      scrollLeft: element.scrollLeft,
+      scrollTop: element.scrollTop,
+    }));
+
+    for (const snapshot of snapshots) {
+      snapshot.element.style.overflow = "hidden";
+      snapshot.element.scrollLeft = snapshot.scrollLeft;
+      snapshot.element.scrollTop = snapshot.scrollTop;
+    }
+
+    return () => {
+      for (const snapshot of snapshots) {
+        snapshot.element.style.overflow = snapshot.overflow;
+        snapshot.element.style.overflowX = snapshot.overflowX;
+        snapshot.element.style.overflowY = snapshot.overflowY;
+        snapshot.element.scrollLeft = snapshot.scrollLeft;
+        snapshot.element.scrollTop = snapshot.scrollTop;
+      }
+    };
+  }, [
+    cleanModalOpen,
+    fixedPanelOpen,
+    materialOrderLineAddDrawer.open,
+    materialOrderLineAddModal.open,
+  ]);
+
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId((currentOrderId) =>
       currentOrderId === orderId ? "" : orderId,
@@ -543,7 +611,7 @@ export default function MaterialOrderDraftEditor({
 
   if (useTabletTwoPanel) {
     return (
-      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
+      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS} data-material-order-workspace-root="true">
         {topbar}
         {focusEnvironmentDiagnostic}
         {validationModal}
@@ -674,7 +742,7 @@ export default function MaterialOrderDraftEditor({
 
   if (useThreePanel) {
     return (
-      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
+      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS} data-material-order-workspace-root="true">
         {topbar}
         {focusEnvironmentDiagnostic}
         {validationModal}

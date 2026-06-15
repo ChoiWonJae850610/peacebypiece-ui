@@ -123,7 +123,6 @@ export default function MaterialOrderLineAddModal({
       useNativeTouchInteractions
       centerWithoutTransform
       useSimpleInteractionLayer
-      syncVisualViewport
       footer={
         <WaflButton
           type="button"
