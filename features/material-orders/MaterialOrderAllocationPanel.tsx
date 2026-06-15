@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { WaflSideWorkspacePanel } from "@/components/common/ui";
+import { WaflSideWorkspacePanel, WaflWorkspaceEmptyPanel } from "@/components/common/ui";
 import { MaterialOrderAllocationCard } from "@/features/material-orders/components/MaterialOrderAllocationCards";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
@@ -80,9 +80,10 @@ export default function MaterialOrderAllocationPanel({
   const content = (
     <>
       {!hasSelectedOrder ? (
-        <MaterialOrderPanelMessage
+        <WaflWorkspaceEmptyPanel
           title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.title}
           description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.description}
+          variant="side-panel"
         />
       ) : !selectedMaterialType ? (
         <MaterialOrderPanelMessage
