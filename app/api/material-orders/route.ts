@@ -242,6 +242,7 @@ export async function PUT(request: NextRequest) {
         companyId: string;
         visibility: typeof guard.scope.visibility;
         materialOrderId: string;
+        isAdmin: boolean;
         materialType?: MaterialOrderLineInput["itemType"] | null;
         supplierPartnerId?: string | null;
         dueDate?: string | null;
