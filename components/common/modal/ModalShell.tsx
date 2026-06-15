@@ -22,13 +22,7 @@ export default function ModalShell({
   closeOnBackdrop,
   lockBodyPosition,
   lockDocumentScroll,
-  useNativeTouchInteractions,
   rootClassName,
-  centerWithoutTransform,
-  isolateBackground,
-  blockBackdropScroll,
-  useSimpleInteractionLayer,
-  syncVisualViewport,
 }: {
   open: boolean;
   title: string;
@@ -44,20 +38,14 @@ export default function ModalShell({
   closeOnBackdrop?: boolean;
   lockBodyPosition?: boolean;
   lockDocumentScroll?: boolean;
-  useNativeTouchInteractions?: boolean;
   rootClassName?: string;
-  centerWithoutTransform?: boolean;
-  isolateBackground?: boolean;
-  blockBackdropScroll?: boolean;
-  useSimpleInteractionLayer?: boolean;
-  syncVisualViewport?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
   const descriptionId = useId();
   const resolvedDescriptionId = description ? descriptionId : undefined;
 
-  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition, lockDocumentScroll, isolateBackground });
+  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition, lockDocumentScroll });
 
   return (
     <BaseModal
@@ -70,12 +58,7 @@ export default function ModalShell({
       panelClassName={panelClassName}
       overlayClassName={overlayClassName}
       closeOnBackdrop={closeOnBackdrop}
-      useNativeTouchInteractions={useNativeTouchInteractions}
       rootClassName={rootClassName}
-      centerWithoutTransform={centerWithoutTransform}
-      blockBackdropScroll={blockBackdropScroll}
-      useSimpleInteractionLayer={useSimpleInteractionLayer}
-      syncVisualViewport={syncVisualViewport}
     >
       <ModalHeader titleId={titleId} title={title} description={description} descriptionId={resolvedDescriptionId} onClose={onClose} />
       <ModalBody className={bodyClassName}>{children}</ModalBody>

@@ -28,7 +28,7 @@ type MaterialOrderAllocationCardProps = {
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
-  onOpenCleanModal: () => void;
+  onOpenCleanModal?: () => void;
   mobile?: boolean;
 };
 
@@ -188,7 +188,7 @@ function MaterialOrderAllocationRow({
         >
           <span aria-hidden="true">{selectionButtonLabel}</span>
         </MaterialOrderActionButton>
-        {!mobile ? (
+        {!mobile && onOpenCleanModal ? (
           <MaterialOrderActionButton
             label={`${material.itemName} 새 최소 모달 테스트`}
             size="sm"

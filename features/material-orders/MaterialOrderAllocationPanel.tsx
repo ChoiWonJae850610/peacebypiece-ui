@@ -29,7 +29,7 @@ type MaterialOrderAllocationPanelProps = {
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
-  onOpenCleanModal: () => void;
+  onOpenCleanModal?: () => void;
   onRetry: () => void;
   mobile?: boolean;
 };

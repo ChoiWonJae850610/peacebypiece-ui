@@ -19,6 +19,7 @@ export const RUNTIME_VISIBILITY = {
 export const DEV_DEBUG_FLAGS = {
   orderInfoHubPanel: false,
   orderRequestDocumentDebug: false,
+  materialOrderCleanRoomModal: false,
 } as const;
 
 export type DevDebugFlagKey = keyof typeof DEV_DEBUG_FLAGS;

@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-
 import ToastMessage from "@/components/common/ToastMessage";
 import WorkflowValidationModal from "@/components/common/modal/WorkflowValidationModal";
 import {
@@ -22,9 +20,11 @@ import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrd
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
 import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
+import MaterialOrderCleanRoomModal from "@/features/material-orders/dev/MaterialOrderCleanRoomModal";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
+import { isDebugFeatureEnabled } from "@/lib/runtime/runtimeMode";
 
 const MATERIAL_ORDER_WORKSPACE_STACK_CLASS =
   "flex h-full min-h-0 flex-col gap-3 sm:gap-4 md:gap-5";
@@ -172,81 +172,14 @@ export default function MaterialOrderDraftEditor({
     />
   );
 
-  const cleanRoomModal =
-    cleanModalOpen && typeof document !== "undefined"
-      ? createPortal(
-          <div
-            role="presentation"
-            className="fixed inset-0 z-[400] grid place-items-center bg-slate-950/45 p-4"
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) {
-                setCleanModalOpen(false);
-              }
-            }}
-          >
-            <section
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="clean-room-modal-title"
-              className="grid w-full max-w-lg gap-4 rounded-md border border-slate-300 bg-white p-5 text-slate-950"
-            >
-              <header className="flex items-start justify-between gap-3">
-                <div>
-                  <p id="clean-room-modal-title" className="text-base font-bold">
-                    새 최소 모달 테스트
-                  </p>
-                  <p className="mt-1 text-xs text-slate-600">
-                    공통 모달, AppSheet, focus trap, viewport 보정을 사용하지 않습니다.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="min-h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold"
-                  onClick={() => setCleanModalOpen(false)}
-                >
-                  닫기
-                </button>
-              </header>
+  const showCleanRoomModal = isDebugFeatureEnabled("materialOrderCleanRoomModal");
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="grid gap-1 text-xs font-semibold">
-                  주문수량
-                  <input
-                    inputMode="decimal"
-                    aria-label="새 최소 모달 주문수량"
-                    className="min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-base"
-                    defaultValue=""
-                  />
-                </label>
-                <label className="grid gap-1 text-xs font-semibold">
-                  단가
-                  <input
-                    inputMode="numeric"
-                    aria-label="새 최소 모달 단가"
-                    className="min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-base"
-                    defaultValue=""
-                  />
-                </label>
-              </div>
-
-              <div className="min-h-28 rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-600">
-                빈 영역입니다. 입력 전환, 키보드 닫기, 다시 입력, 닫기를 반복합니다.
-              </div>
-
-              <footer className="flex justify-end">
-                <button
-                  type="button"
-                  className="min-h-10 rounded-md border border-slate-900 bg-slate-900 px-4 text-sm font-semibold text-white"
-                  onClick={() => setCleanModalOpen(false)}
-                >
-                  닫기 테스트
-                </button>
-              </footer>
-            </section>
-          </div>,
-          document.body,
-        )
-      : null;
+  const cleanRoomModal = showCleanRoomModal ? (
+    <MaterialOrderCleanRoomModal
+      open={cleanModalOpen}
+      onClose={() => setCleanModalOpen(false)}
+    />
+  ) : null;
 
   const validationModal = (
     <>
@@ -311,7 +244,7 @@ export default function MaterialOrderDraftEditor({
       loading={workOrdersLoading}
       errorMessage={workOrdersError}
       onAddMaterialToOrder={handleAddMaterialToOrder}
-      onOpenCleanModal={() => setCleanModalOpen(true)}
+      onOpenCleanModal={showCleanRoomModal ? () => setCleanModalOpen(true) : undefined}
       onRetry={() => void refreshWorkOrderCandidates()}
       mobile={deviceType === "mobile"}
     />

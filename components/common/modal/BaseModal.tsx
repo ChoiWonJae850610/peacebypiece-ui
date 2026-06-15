@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from "react";
+import { type MouseEvent, type ReactNode, type RefObject } from "react";
 
 import { WAFL_MODAL_OVERLAY_CLASS } from "@/components/common/ui";
 import { getWaflModalPortalRoot } from "@/components/common/modal/modalUtils";
@@ -18,11 +18,6 @@ type BaseModalProps = {
   overlayClassName?: string;
   closeOnBackdrop?: boolean;
   rootClassName?: string;
-  useNativeTouchInteractions?: boolean;
-  centerWithoutTransform?: boolean;
-  blockBackdropScroll?: boolean;
-  useSimpleInteractionLayer?: boolean;
-  syncVisualViewport?: boolean;
 };
 
 export default function BaseModal({
@@ -37,81 +32,7 @@ export default function BaseModal({
   overlayClassName = WAFL_MODAL_OVERLAY_CLASS,
   closeOnBackdrop = false,
   rootClassName = "",
-  useNativeTouchInteractions = false,
-  centerWithoutTransform = false,
-  blockBackdropScroll = false,
-  useSimpleInteractionLayer = false,
-  syncVisualViewport = false,
 }: BaseModalProps) {
-  const [viewportStyle, setViewportStyle] = useState<CSSProperties | undefined>(undefined);
-  const [visualKeyboardOpen, setVisualKeyboardOpen] = useState(false);
-  const stableViewportSizeRef = useRef<{ width: number; height: number } | null>(null);
-
-  useEffect(() => {
-    if (!open || !syncVisualViewport || typeof window === "undefined") {
-      setViewportStyle(undefined);
-      setVisualKeyboardOpen(false);
-      return;
-    }
-
-    let frame = 0;
-    const initialViewport = window.visualViewport;
-    stableViewportSizeRef.current = initialViewport
-      ? { width: initialViewport.width, height: initialViewport.height }
-      : { width: window.innerWidth, height: window.innerHeight };
-
-    const updateViewport = () => {
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        const viewport = window.visualViewport;
-        const stableSize = stableViewportSizeRef.current;
-        if (!viewport || !stableSize) {
-          setViewportStyle(undefined);
-          return;
-        }
-
-        const keyboardOpen = viewport.height < stableSize.height * 0.78;
-        setVisualKeyboardOpen(keyboardOpen);
-        setViewportStyle({
-          top: `${viewport.offsetTop}px`,
-          left: `${viewport.offsetLeft}px`,
-          width: `${viewport.width}px`,
-          height: `${viewport.height}px`,
-          right: "auto",
-          bottom: "auto",
-          "--wafl-modal-stable-height": `${stableSize.height}px`,
-          "--wafl-modal-viewport-height": `${viewport.height}px`,
-        } as CSSProperties);
-      });
-    };
-
-    const refreshAfterFocusChange = () => {
-      updateViewport();
-      window.setTimeout(updateViewport, 60);
-      window.setTimeout(updateViewport, 180);
-      window.setTimeout(updateViewport, 360);
-    };
-
-    updateViewport();
-    window.addEventListener("resize", updateViewport);
-    window.addEventListener("orientationchange", refreshAfterFocusChange);
-    document.addEventListener("focusin", refreshAfterFocusChange, true);
-    document.addEventListener("focusout", refreshAfterFocusChange, true);
-    window.visualViewport?.addEventListener("resize", updateViewport);
-    window.visualViewport?.addEventListener("scroll", updateViewport);
-
-    return () => {
-      stableViewportSizeRef.current = null;
-      setVisualKeyboardOpen(false);
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("resize", updateViewport);
-      window.removeEventListener("orientationchange", refreshAfterFocusChange);
-      document.removeEventListener("focusin", refreshAfterFocusChange, true);
-      document.removeEventListener("focusout", refreshAfterFocusChange, true);
-      window.visualViewport?.removeEventListener("resize", updateViewport);
-      window.visualViewport?.removeEventListener("scroll", updateViewport);
-    };
-  }, [open, syncVisualViewport]);
 
   if (!open) return null;
 
@@ -126,45 +47,28 @@ export default function BaseModal({
   const modalContent = (
     <div
       className={`pbp-mobile-no-zoom fixed inset-0 z-[3000] pointer-events-auto ${rootClassName}`.trim()}
-      style={viewportStyle}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      data-wafl-keyboard-open={visualKeyboardOpen ? "true" : "false"}
     >
       <div
-        className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${blockBackdropScroll ? "touch-none" : ""} ${overlayClassName}`.trim()}
+        className={`absolute inset-0 pointer-events-auto pbp-overlay-enter ${overlayClassName}`.trim()}
         aria-hidden="true"
         onClick={handleBackdropClick}
       />
       <div
-        className={[
-          "absolute inset-0 md:p-6",
-          useSimpleInteractionLayer ? "pointer-events-auto touch-auto" : "pointer-events-none",
-          centerWithoutTransform
-            ? visualKeyboardOpen
-              ? "sm:flex sm:items-start sm:justify-center sm:p-2"
-              : "sm:flex sm:items-center sm:justify-center"
-            : "",
-        ].join(" ").trim()}
-        onClick={useSimpleInteractionLayer ? handleBackdropClick : undefined}
+        className="pointer-events-none absolute inset-0 md:p-6"
       >
         <div
           ref={dialogRef}
           tabIndex={-1}
-          onPointerDown={useNativeTouchInteractions ? undefined : (event) => event.stopPropagation()}
-          onTouchStart={useNativeTouchInteractions ? undefined : (event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           data-wafl-component="modal-panel"
           className={[
-            `absolute inset-x-0 bottom-0 flex ${syncVisualViewport ? "h-[var(--wafl-modal-viewport-height)] max-h-[var(--wafl-modal-viewport-height)]" : "h-[100dvh] max-h-[100dvh]"} flex-col overflow-hidden outline-none overscroll-contain pointer-events-auto select-text pbp-mobile-sheet-enter pbp-modal-panel ${useNativeTouchInteractions ? "touch-auto" : "touch-pan-y"}`,
-            centerWithoutTransform
-              ? "border-0 sm:relative sm:inset-auto sm:w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0 sm:rounded-3xl sm:border"
-              : "border-0 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
-            syncVisualViewport
-              ? "sm:h-auto sm:max-h-[calc(var(--wafl-modal-viewport-height)-1rem)]"
-              : "sm:h-auto sm:max-h-[min(92dvh,960px)]",
+            "pointer-events-auto absolute inset-x-0 bottom-0 flex h-[100dvh] max-h-[100dvh] touch-pan-y select-text flex-col overflow-hidden border-0 outline-none overscroll-contain pbp-mobile-sheet-enter pbp-modal-panel sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:h-auto sm:max-h-[min(92dvh,960px)] sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border",
             maxWidthClassName,
             panelClassName,
           ].join(" ").trim()}
