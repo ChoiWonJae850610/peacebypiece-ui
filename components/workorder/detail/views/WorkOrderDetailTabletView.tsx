@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { AppResponsiveSurface, AppSegmentedTabs, type AppSegmentedTabItem } from "@/components/common/ui";
-import TabletSplitLayout from "@/components/workorder/detail/layout/TabletSplitLayout";
+import WorkOrderDetailSectionStack from "@/components/workorder/detail/shared/WorkOrderDetailSectionStack";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailTabletCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletCostSummarySection";
 import WorkOrderDetailTabletActionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection";
@@ -51,24 +51,24 @@ export default function WorkOrderDetailTabletView({
       />
 
       {resolvedPanel === "summary" ? (
-        <TabletSplitLayout>
+        <WorkOrderDetailSectionStack device="tablet">
           <WorkOrderDetailTabletHeaderSection {...viewModel.headerProps} />
           {viewModel.rejectionReasonNoticeProps ? <RejectionReasonNotice {...viewModel.rejectionReasonNoticeProps} /> : null}
           <WorkOrderDetailTabletActionSection {...viewModel.actionProps} />
           <WorkOrderDetailTabletCostSummarySection {...viewModel.costSummaryProps} />
-        </TabletSplitLayout>
+        </WorkOrderDetailSectionStack>
       ) : null}
 
       {resolvedPanel === "order" ? (
-        <TabletSplitLayout>
+        <WorkOrderDetailSectionStack device="tablet">
           <WorkOrderDetailTabletOrderInfoSection {...viewModel.orderInfoProps} />
-        </TabletSplitLayout>
+        </WorkOrderDetailSectionStack>
       ) : null}
 
       {resolvedPanel === "production" && viewModel.showProductionComposition ? (
-        <TabletSplitLayout>
+        <WorkOrderDetailSectionStack device="tablet">
           <WorkOrderDetailTabletProductionCompositionSection {...viewModel.productionCompositionProps} />
-        </TabletSplitLayout>
+        </WorkOrderDetailSectionStack>
       ) : null}
 
       <WorkOrderDetailSharedModals editor={editor} currentInventoryQuantity={currentInventoryQuantity} />
