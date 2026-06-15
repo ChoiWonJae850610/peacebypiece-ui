@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { AppSelect, WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
+import { AppSelect, WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -134,7 +134,7 @@ export default function WorkOrderHeaderSection({
             <span className="text-[11px] text-stone-500">{copy.titleEditHint}</span>
           </div>
           {recommendedCategory ? (
-            <div data-wafl-component="card" className="pbp-detail-summary-readonly mt-2 rounded-[var(--pbp-radius-wafl)] border px-3 py-2 text-[11px] leading-5">
+            <div data-wafl-component="card" className={`${WAFL_WORKSPACE_SECTION_CARD_CLASS} pbp-detail-summary-readonly mt-2 px-3 py-2 text-[11px] leading-5`}>
               {i18n.workorder.ui.modals.createWorkOrder.recommendedCategory}: {recommendedCategory.category1} / {recommendedCategory.category2} / {recommendedCategory.category3}
             </div>
           ) : null}
