@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { WaflLoadingState } from "@/components/common/ui";
+import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflLoadingState } from "@/components/common/ui";
 
 export type WorkOrderLoadingStateVariant = "detail" | "side";
 
@@ -15,13 +15,13 @@ function SkeletonLine({ className = "" }: { className?: string }) {
 }
 
 function SkeletonCard({ children }: { children: ReactNode }) {
-  return <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5">{children}</div>;
+  return <div className={`${WAFL_WORKSPACE_SECTION_CARD_CLASS} p-5`}>{children}</div>;
 }
 
 export default function WorkOrderLoadingState({ variant = "detail", title, description }: WorkOrderLoadingStateProps) {
   if (variant === "side") {
     return (
-      <div className="flex h-full min-h-0 flex-col gap-4 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+      <div className={`${WAFL_WORKSPACE_SECTION_CARD_CLASS} flex h-full min-h-0 flex-col gap-4 bg-[var(--pbp-surface-soft)] p-4`}>
         <WaflLoadingState
           title={title}
           description={description}
@@ -47,7 +47,7 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-5">
+    <div className={`${WAFL_WORKSPACE_SECTION_CARD_CLASS} flex h-full min-h-0 flex-col bg-[var(--pbp-surface-soft)] p-5`}>
       <WaflLoadingState
         title={title}
         description={description}

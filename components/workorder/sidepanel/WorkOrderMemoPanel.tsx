@@ -7,6 +7,7 @@ import {
   WaflEmptyCard,
   WaflSurface,
   WaflTextarea,
+  WAFL_WORKSPACE_EMPTY_CARD_CLASS,
 } from "@/components/common/ui";
 import { WorkOrderPanelCard } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
@@ -595,7 +596,7 @@ export default function WorkOrderMemoPanel({
             />
           ))
         ) : (
-          <WaflEmptyCard shape="control" className="pbp-empty-state px-3 py-5">
+          <WaflEmptyCard shape="control" className={`${WAFL_WORKSPACE_EMPTY_CARD_CLASS} px-3 py-5`}>
             {ui.memo.empty}
           </WaflEmptyCard>
         )}

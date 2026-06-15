@@ -17,6 +17,7 @@ import {
   WaflFileCard,
   WaflMenuItemButton,
   WaflSurface,
+  WAFL_WORKSPACE_EMPTY_CARD_CLASS,
 } from "@/components/common/ui";
 import {
   WorkOrderAddIconButton,
@@ -688,7 +689,7 @@ export default function WorkOrderAttachmentPanel({
               <WaflEmptyCard
                 shape="control"
                 density={isFlatDevice ? "compact" : "default"}
-                className={`pbp-empty-state whitespace-pre-line leading-5 ${isFlatDevice ? "" : "mt-3"}`}
+                className={`${WAFL_WORKSPACE_EMPTY_CARD_CLASS} whitespace-pre-line leading-5 ${isFlatDevice ? "" : "mt-3"}`}
               >
                 {emptyText}
               </WaflEmptyCard>

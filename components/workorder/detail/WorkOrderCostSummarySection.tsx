@@ -4,6 +4,7 @@ import {
   WaflEmptyCard,
   WaflInfoRow,
   WaflSurface,
+  WAFL_WORKSPACE_EMPTY_CARD_CLASS,
 } from "@/components/common/ui";
 import DesktopCostSummaryLayout from "@/components/workorder/detail/layout/DesktopCostSummaryLayout";
 import { buildWorkOrderCostSummaryPresentation } from "@/lib/workorder/presentation/workOrderCostSummaryPresentation";
@@ -139,7 +140,7 @@ export default function WorkOrderCostSummarySection({
             ) : (
               <WaflEmptyCard
                 shape="control"
-                className="pbp-empty-state px-4 py-6"
+                className={`${WAFL_WORKSPACE_EMPTY_CARD_CLASS} px-4 py-6`}
               >
                 {copy.empty}
               </WaflEmptyCard>

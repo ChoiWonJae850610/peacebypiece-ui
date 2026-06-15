@@ -1,4 +1,6 @@
-import { SummaryCard, WaflEmptyCard, WaflInfoRow, WaflSurface } from "@/components/common/ui";
+import { SummaryCard, WaflEmptyCard, WaflInfoRow, WaflSurface,
+  WAFL_WORKSPACE_EMPTY_CARD_CLASS,
+} from "@/components/common/ui";
 import type { WorkOrderCostSummarySectionProps } from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import { buildWorkOrderCostSummaryPresentation } from "@/lib/workorder/presentation/workOrderCostSummaryPresentation";
 import { useI18n } from "@/lib/i18n";
@@ -59,7 +61,7 @@ export default function WorkOrderDetailMobileCostSummarySection({
                 {copy.unitPriceLabel} {formatCurrency(item.unitAmount, common.currencySuffix)} · {copy.lossPriceLabel} {formatCurrency(item.lossAmount, common.currencySuffix)} · {copy.lineTotalLabel} {formatCurrency(item.totalAmount, common.currencySuffix)}
               </div>
             </WaflSurface>
-          )) : <WaflEmptyCard density="default" className="pbp-empty-state">{copy.empty}</WaflEmptyCard>}
+          )) : <WaflEmptyCard density="default" className={WAFL_WORKSPACE_EMPTY_CARD_CLASS}>{copy.empty}</WaflEmptyCard>}
         </div>
       </SummaryCard>
     </section>
