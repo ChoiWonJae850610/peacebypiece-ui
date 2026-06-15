@@ -33,8 +33,8 @@ type PartnerMasterText = {
 };
 
 export function usePartnerMasterController(partnerText: PartnerMasterText, capabilities: PartnerMasterCapabilities = {}) {
-  const canCreatePartner = capabilities.canCreate ?? true;
-  const canUpdatePartner = capabilities.canUpdate ?? true;
+  const canCreatePartner = capabilities.canCreate ?? false;
+  const canUpdatePartner = capabilities.canUpdate ?? false;
 
   const [partners, setPartners] = useState<Partner[]>([]);
   const [selectedTypes, setSelectedTypes] = useState(DEFAULT_PARTNER_FILTER_STATE.selectedTypes);

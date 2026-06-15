@@ -11,6 +11,10 @@ import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
 import PartnerMasterSummaryCards from "@/components/admin/partnerMaster/PartnerMasterSummaryCards";
 import { usePartnerMasterController } from "@/components/admin/partnerMaster/usePartnerMasterController";
+import { useWorkspaceSessionUser } from "@/lib/hooks/useWorkspaceSessionUser";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
+import { isCompanyAdminSessionRole, isWaflSessionRole } from "@/lib/constants/sessionRoles";
+import { normalizeSessionPermissionCodes } from "@/lib/workorder/sessionUserProfile";
 
 export type PartnerMasterCapabilities = {
   canCreate?: boolean;
@@ -19,12 +23,27 @@ export type PartnerMasterCapabilities = {
 
 type PartnerMasterSectionProps = {
   capabilities?: PartnerMasterCapabilities;
+  isAdmin?: boolean;
 };
 
-export default function PartnerMasterSection({ capabilities }: PartnerMasterSectionProps = {}) {
+export default function PartnerMasterSection({ capabilities, isAdmin: initialIsAdmin = false }: PartnerMasterSectionProps = {}) {
   const { i18n } = useI18n();
   const partnerText = i18n.admin.partnerMaster;
-  const controller = usePartnerMasterController(partnerText, capabilities);
+  const sessionState = useWorkspaceSessionUser();
+  const permissionCodes = normalizeSessionPermissionCodes(sessionState.user?.permissionCodes);
+  const isAdmin = sessionState.isLoaded
+    ? isWaflSessionRole(sessionState.user?.role) && isCompanyAdminSessionRole(sessionState.user.role)
+    : initialIsAdmin;
+  const liveCapabilities: PartnerMasterCapabilities = sessionState.isLoaded
+    ? {
+        canCreate: isAdmin || permissionCodes.includes(MEMBER_PERMISSION_CODE.partnerCreate),
+        canUpdate: isAdmin || permissionCodes.includes(MEMBER_PERMISSION_CODE.partnerUpdate),
+      }
+    : {
+        canCreate: capabilities?.canCreate ?? false,
+        canUpdate: capabilities?.canUpdate ?? false,
+      };
+  const controller = usePartnerMasterController(partnerText, liveCapabilities);
 
   return (
     <section className="flex min-h-fit w-full touch-pan-y flex-col gap-4 overflow-visible overscroll-auto">
