@@ -12,9 +12,9 @@ import {
   WaflMobileListDrawer,
   WaflMobileShell,
   WaflMobileTabbedActionSheet,
-  WaflThreePanelWorkspace,
   WaflTwoPanelWorkspace,
   WaflButton,
+  WaflDesktopWorkspaceFrame,
   WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS,
   type AppSegmentedTabItem,
 } from "@/components/common/ui";
@@ -224,6 +224,7 @@ export default function MaterialOrderDraftEditor({
       onRetry={() => void refreshOrders()}
       selectedDraftMaterialType={materialType}
       selectedDraftSupplierName={selectedDraftSupplierName}
+      panel={!useThreePanel}
     />
   );
 
@@ -253,6 +254,7 @@ export default function MaterialOrderDraftEditor({
       workOrderCandidates={workOrderCandidates}
       mobile={deviceType === "mobile"}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
+      panel={!useThreePanel}
     />
   );
 
@@ -270,6 +272,7 @@ export default function MaterialOrderDraftEditor({
       onAddMaterialToOrder={handleAddMaterialToOrder}
       onRetry={() => void refreshWorkOrderCandidates()}
       mobile={deviceType === "mobile"}
+      panel={!useThreePanel}
     />
   );
 
@@ -404,18 +407,17 @@ export default function MaterialOrderDraftEditor({
 
   if (useThreePanel) {
     return (
-      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
-        {topbar}
+      <>
         {validationModal}
-        <AppResponsiveWorkspace device="desktop">
-          {statusToast}
-          <WaflThreePanelWorkspace
-            list={listPanel}
-            detail={detailPanel}
-            side={allocationPanel}
-          />
-        </AppResponsiveWorkspace>
-      </div>
+        <WaflDesktopWorkspaceFrame
+          topbar={topbar}
+          list={listPanel}
+          detail={detailPanel}
+          side={allocationPanel}
+          scrollResetKey={selectedOrderId}
+          workspaceOverlay={statusToast}
+        />
+      </>
     );
   }
 

@@ -52,6 +52,7 @@ type MaterialOrderDetailPanelProps = {
   workOrderCandidates: MaterialOrderWorkspaceWorkOrderCandidate[];
   mobile?: boolean;
   progressLayout?: WorkflowProgressPanelLayout;
+  panel?: boolean;
 };
 
 export default function MaterialOrderDetailPanel({
@@ -79,6 +80,7 @@ export default function MaterialOrderDetailPanel({
   workOrderCandidates,
   mobile = false,
   progressLayout = "horizontal",
+  panel = true,
 }: MaterialOrderDetailPanelProps) {
   const isCoreEditable = Boolean(
     selectedOrder &&
@@ -86,9 +88,7 @@ export default function MaterialOrderDetailPanel({
   );
   const dueDateEditable = isCoreEditable && !headerSaving;
 
-  return (
-    <WaflDetailWorkspacePanel>
-      {selectedOrder ? (
+  const content = selectedOrder ? (
         <WaflPanelContentShell>
           <div className={`${WAFL_PANEL_CONTENT_STACK_CLASS} flex-1`}>
           <WaflSummaryHeaderCard
@@ -223,9 +223,11 @@ export default function MaterialOrderDetailPanel({
           description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.description}
           variant="center-panel"
         />
-      )}
-    </WaflDetailWorkspacePanel>
-  );
+      );
+
+  if (!panel) return content;
+
+  return <WaflDetailWorkspacePanel>{content}</WaflDetailWorkspacePanel>;
 }
 
 const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [

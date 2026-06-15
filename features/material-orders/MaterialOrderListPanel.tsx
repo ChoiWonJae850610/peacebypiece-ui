@@ -51,6 +51,7 @@ type MaterialOrderListPanelProps = {
   onRetry: () => void;
   selectedDraftMaterialType: MaterialOrderDraftSelectionType;
   selectedDraftSupplierName: string | null;
+  panel?: boolean;
 };
 
 const MATERIAL_ORDER_STATUS_OPTIONS: Array<
@@ -102,6 +103,7 @@ export default function MaterialOrderListPanel({
   onRetry,
   selectedDraftMaterialType,
   selectedDraftSupplierName,
+  panel = true,
 }: MaterialOrderListPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -215,7 +217,7 @@ export default function MaterialOrderListPanel({
       {listItems}
     </WaflListPanelShell>
   );
-  if (variant === "drawer") return listContent;
+  if (variant === "drawer" || !panel) return listContent;
 
   return (
     <WaflListWorkspacePanel>

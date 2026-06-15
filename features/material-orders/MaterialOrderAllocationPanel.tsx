@@ -31,6 +31,7 @@ type MaterialOrderAllocationPanelProps = {
   ) => void;
   onRetry: () => void;
   mobile?: boolean;
+  panel?: boolean;
 };
 
 export default function MaterialOrderAllocationPanel({
@@ -46,6 +47,7 @@ export default function MaterialOrderAllocationPanel({
   onAddMaterialToOrder,
   onRetry,
   mobile = false,
+  panel = true,
 }: MaterialOrderAllocationPanelProps) {
   const visibleCandidates = useMemo(
     () => {
@@ -75,8 +77,8 @@ export default function MaterialOrderAllocationPanel({
     ],
   );
 
-  return (
-    <WaflSideWorkspacePanel>
+  const content = (
+    <>
       {!hasSelectedOrder ? (
         <MaterialOrderPanelMessage
           title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.title}
@@ -124,8 +126,12 @@ export default function MaterialOrderAllocationPanel({
           )}
         </div>
       )}
-    </WaflSideWorkspacePanel>
+    </>
   );
+
+  if (!panel) return content;
+
+  return <WaflSideWorkspacePanel>{content}</WaflSideWorkspacePanel>;
 }
 
 type AllocationCandidateMaterialItem =
