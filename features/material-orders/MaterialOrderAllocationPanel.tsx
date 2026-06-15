@@ -84,6 +84,7 @@ export default function MaterialOrderAllocationPanel({
           title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.title}
           description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.description}
           variant="side-panel"
+          withContentShell={false}
         />
       ) : !selectedMaterialType ? (
         <MaterialOrderPanelMessage

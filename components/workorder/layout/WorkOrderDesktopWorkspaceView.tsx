@@ -53,7 +53,7 @@ export default function WorkOrderDesktopWorkspaceView({
           title={loadingState?.sideTitle ?? ""}
           description={loadingState?.sideDescription}
         />
-      ) : hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : <WorkOrderEmptyState variant="side" />}
+      ) : hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : <WorkOrderEmptyState variant="side" panel />}
     />
   );
 }

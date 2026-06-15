@@ -22,6 +22,7 @@ export default function WorkOrderEmptyState({ variant = "workspace", panel = fal
         title={title}
         description={description}
         variant={stateVariant}
+        withContentShell={variant !== "side"}
       />
     );
   }
