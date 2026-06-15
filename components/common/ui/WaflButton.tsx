@@ -108,6 +108,25 @@ export function WaflButton({
   );
 }
 
+export function WaflCardButton({
+  className,
+  type = "button",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type={type}
+      data-wafl-component="card-button"
+      data-wafl-foundation="control"
+      className={cn(
+        "pbp-touch-target pbp-press-subtle block w-full min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-selected-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   variant?: WaflButtonVariant;
   size?: WaflButtonSize;

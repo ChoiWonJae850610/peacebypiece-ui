@@ -3,14 +3,13 @@
 import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_CONTENT_EMPTY_STATE_CLASS, MODAL_CONTENT_FIELD_PANEL_CLASS, MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_READONLY_PANEL_CLASS, MODAL_CONTENT_VALUE_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
-import { AppSelect } from "@/components/common/ui";
+import { AppSelect, WaflInput, WaflTextarea } from "@/components/common/ui";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 
 export default function OrderInspectionModal({
@@ -144,14 +143,14 @@ export default function OrderInspectionModal({
             </div>
             <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
               <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.appliedQuantityLabel}</div>
-              <input
+              <WaflInput
                 type="number"
                 min={0}
                 step={1}
                 inputMode="numeric"
                 value={appliedQuantityInput}
                 onChange={(event) => setAppliedQuantityInput(event.target.value)}
-                className={`mt-2 ${MODAL_INPUT_CLASS}`}
+                className="mt-2"
               />
             </label>
             <div className={MODAL_CONTENT_READONLY_PANEL_CLASS}>
@@ -162,12 +161,12 @@ export default function OrderInspectionModal({
 
           <label className={`block ${MODAL_CONTENT_FIELD_PANEL_CLASS}`}>
             <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.memoLabel}</div>
-            <textarea
+            <WaflTextarea
               value={inspectionMemo}
               onChange={(event) => setInspectionMemo(event.target.value)}
               rows={4}
               placeholder={copy.memoPlaceholder}
-              className={`mt-2 ${MODAL_TEXTAREA_CLASS}`}
+              className="mt-2"
             />
           </label>
         </div>

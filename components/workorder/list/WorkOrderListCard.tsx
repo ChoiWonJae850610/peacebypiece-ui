@@ -2,7 +2,7 @@
 
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
-import { AppBadge, WaflSelectableCard } from "@/components/common/ui";
+import { AppBadge, WaflCardButton, WaflSelectableCard } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -52,7 +52,7 @@ export default function WorkOrderListCard({
       className={`group relative px-3 py-3 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
     >
       <div className="min-w-0 pr-11">
-        <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle block w-full min-w-0 text-left">
+        <WaflCardButton onClick={() => onClick(workOrder.id)}>
           <div className="min-w-0 truncate text-[15px] font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <AppBadge
@@ -69,7 +69,7 @@ export default function WorkOrderListCard({
             {workOrder.vendor ? <div className="truncate">{copy.vendorLabel}: {workOrder.vendor}</div> : null}
             {workOrder.dueDate ? <div>{copy.dueDateLabel}: {workOrder.dueDate}</div> : null}
           </div>
-        </button>
+        </WaflCardButton>
         {canOpenMenu ? (
           <div className="absolute right-3 top-3">
           <WorkOrderCardActionMenu

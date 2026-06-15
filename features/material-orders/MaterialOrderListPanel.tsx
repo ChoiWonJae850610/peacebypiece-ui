@@ -4,6 +4,7 @@ import {
   AppBadge,
   AppSelect,
   WaflButton,
+  WaflCardButton,
   WaflInput,
   WaflSelectableCard,
   WaflListPanelShell,
@@ -264,11 +265,7 @@ function MaterialOrderListButton({
       className="relative p-3"
     >
       <div className="min-w-0 pr-11">
-        <button
-          type="button"
-          className="pbp-touch-target pbp-press-subtle block w-full min-w-0 text-left"
-          onClick={() => onSelectOrder(order.id)}
-        >
+        <WaflCardButton onClick={() => onSelectOrder(order.id)}>
           <div className="flex min-w-0 items-start justify-between gap-3">
             <p className="min-w-0 truncate text-sm font-semibold pbp-text-primary">
               {typeLabel}
@@ -298,7 +295,7 @@ function MaterialOrderListButton({
               납기일: {order.dueDate}
             </p>
           ) : null}
-        </button>
+        </WaflCardButton>
         {canCancelOrder ? (
           <div className="absolute right-3 top-3">
             <WorkOrderCardActionMenu

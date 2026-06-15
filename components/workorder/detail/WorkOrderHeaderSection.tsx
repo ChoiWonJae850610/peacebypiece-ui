@@ -257,13 +257,15 @@ function WorkOrderHeaderInfoCell({
 
   return (
     <WaflSummaryInfoCell label={label}>
-      <button
-        type="button"
+      <WaflButton
         onClick={onClick}
-        className="pbp-interactive-button w-full min-w-0 rounded-[var(--pbp-radius-wafl)] px-1.5 py-1 text-center transition hover:bg-[var(--pbp-surface-muted)] focus-visible:bg-[var(--pbp-surface-muted)]"
+        variant="ghost"
+        size="sm"
+        width="full"
+        className="min-w-0 px-1.5 py-1 text-center"
       >
         {valueNode}
-      </button>
+      </WaflButton>
     </WaflSummaryInfoCell>
   );
 }

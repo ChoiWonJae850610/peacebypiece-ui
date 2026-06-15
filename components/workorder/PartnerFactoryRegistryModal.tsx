@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
-import { AppSelect } from "@/components/common/ui";
+import { AppSelect, WaflInput } from "@/components/common/ui";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { DEFAULT_REGISTRY_TYPE, REGISTRY_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
@@ -79,7 +78,7 @@ export default function PartnerFactoryRegistryModal({
 
         <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>
           <label htmlFor="registry-name" className={MODAL_CONTENT_LABEL_CLASS}>{copy.nameLabel}</label>
-          <input
+          <WaflInput
             id="registry-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -90,7 +89,7 @@ export default function PartnerFactoryRegistryModal({
               }
             }}
             placeholder={`${typeOptionLabels[type]}${copy.namePlaceholderPrefix}`}
-            className={`mt-2 ${MODAL_SELECT_CLASS}`}
+            className="mt-2"
           />
           <p className={`mt-2 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{copy.savedNotice}</p>
         </div>
