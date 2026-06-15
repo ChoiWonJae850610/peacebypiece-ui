@@ -51,7 +51,7 @@ export default function WorkOrderDetailVisualSummary({
   return (
     <div className="mt-4 grid gap-2 md:grid-cols-3">
       {cards.map((card) => (
-        <AppCard key={card.label} variant="subtle" padding="sm" className="rounded-2xl">
+        <AppCard key={card.label} variant="subtle" padding="sm">
           <AppBadge tone="strong" size="sm">{card.label}</AppBadge>
           <div className="mt-2 text-sm font-semibold pbp-text-primary">{card.value}</div>
           <div className="mt-0.5 truncate text-[11px] pbp-text-subtle">{card.description}</div>

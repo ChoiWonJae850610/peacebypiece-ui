@@ -21,13 +21,12 @@ function SkeletonCard({ children }: { children: ReactNode }) {
 export default function WorkOrderLoadingState({ variant = "detail", title, description }: WorkOrderLoadingStateProps) {
   if (variant === "side") {
     return (
-      <div className="flex h-full min-h-0 flex-col gap-4 rounded-[2rem] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
+      <div className="flex h-full min-h-0 flex-col gap-4 rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4">
         <WaflLoadingState
           title={title}
           description={description}
           size="sm"
           minHeightClassName="min-h-[96px]"
-          className="shadow-sm"
         />
         <SkeletonCard>
           <SkeletonLine className="h-4 w-20" />
@@ -39,8 +38,8 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
         <SkeletonCard>
           <SkeletonLine className="h-4 w-24" />
           <div className="mt-5 space-y-3">
-            <SkeletonLine className="h-12 w-full rounded-xl" />
-            <SkeletonLine className="h-12 w-4/5 rounded-xl" />
+            <SkeletonLine className="h-12 w-full rounded-[var(--pbp-radius-wafl)]" />
+            <SkeletonLine className="h-12 w-4/5 rounded-[var(--pbp-radius-wafl)]" />
           </div>
         </SkeletonCard>
       </div>
@@ -48,7 +47,7 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[2rem] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-5">
+    <div className="flex h-full min-h-0 flex-col rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-5">
       <WaflLoadingState
         title={title}
         description={description}
@@ -64,9 +63,9 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
         <SkeletonCard>
           <SkeletonLine className="h-5 w-28" />
           <div className="mt-5 space-y-3">
-            <SkeletonLine className="h-10 w-full rounded-xl" />
-            <SkeletonLine className="h-10 w-11/12 rounded-xl" />
-            <SkeletonLine className="h-10 w-2/3 rounded-xl" />
+            <SkeletonLine className="h-10 w-full rounded-[var(--pbp-radius-wafl)]" />
+            <SkeletonLine className="h-10 w-11/12 rounded-[var(--pbp-radius-wafl)]" />
+            <SkeletonLine className="h-10 w-2/3 rounded-[var(--pbp-radius-wafl)]" />
           </div>
         </SkeletonCard>
       </div>
@@ -74,9 +73,9 @@ export default function WorkOrderLoadingState({ variant = "detail", title, descr
         <SkeletonCard>
           <SkeletonLine className="h-5 w-24" />
           <div className="mt-5 space-y-3">
-            <SkeletonLine className="h-8 w-full rounded-xl" />
-            <SkeletonLine className="h-8 w-5/6 rounded-xl" />
-            <SkeletonLine className="h-8 w-3/4 rounded-xl" />
+            <SkeletonLine className="h-8 w-full rounded-[var(--pbp-radius-wafl)]" />
+            <SkeletonLine className="h-8 w-5/6 rounded-[var(--pbp-radius-wafl)]" />
+            <SkeletonLine className="h-8 w-3/4 rounded-[var(--pbp-radius-wafl)]" />
           </div>
         </SkeletonCard>
         <SkeletonCard>

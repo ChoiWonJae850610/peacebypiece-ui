@@ -13,7 +13,9 @@ import {
   WaflAddIconBubble,
   WaflButton,
   WaflEmptyCard,
+  WaflCardButton,
   WaflFileCard,
+  WaflMenuItemButton,
   WaflSurface,
 } from "@/components/common/ui";
 import {
@@ -134,30 +136,26 @@ function AttachmentActionMenu({
               : "pbp-card absolute right-0 top-9 z-30 mt-2 min-w-[160px] overflow-hidden wafl-shape-surface p-1.5 text-sm"
           }
         >
-          <button
-            type="button"
+          <WaflMenuItemButton
             onClick={() => {
               setOpen(false);
               if (!disabled) onOpenAttachmentPicker();
             }}
-            className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
           >
             <WorkOrderPlusIcon className="h-3.5 w-3.5" />
             <span>{addButtonLabel}</span>
-          </button>
+          </WaflMenuItemButton>
           {canShowDrawingAction ? (
-            <button
-              type="button"
+            <WaflMenuItemButton
               onClick={() => {
                 setOpen(false);
                 onOpenDrawingPlaceholder();
               }}
-              className="pbp-interactive-button flex w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
               title={ui.attachmentPanel.drawingActionPending}
             >
               <span aria-hidden="true">✎</span>
               <span>{ui.attachmentPanel.drawingAction}</span>
-            </button>
+            </WaflMenuItemButton>
           ) : null}
         </div>
       ) : null}
@@ -602,8 +600,7 @@ export default function WorkOrderAttachmentPanel({
                       />
                     </div>
                   ) : null}
-                  <button
-                    type="button"
+                  <WaflCardButton
                     onClick={() => onPreviewAttachment(attachment.id)}
                     disabled={!attachment.canPreview}
                     title={
@@ -612,7 +609,7 @@ export default function WorkOrderAttachmentPanel({
                         : ui.attachmentPanel.previewUnavailableTitle
                     }
                     aria-label={`${attachment.name} ${attachment.canPreview ? ui.attachmentPanel.previewAriaSuffix : ui.attachmentPanel.previewUnavailableAriaSuffix}`}
-                    className="flex w-full min-w-0 items-center gap-2 wafl-shape-control text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
+                    className="flex min-h-0 items-center gap-2 wafl-shape-control disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
                   >
                     <div
                       className={
@@ -655,7 +652,7 @@ export default function WorkOrderAttachmentPanel({
                         <span>{attachment.previewLabel}</span>
                       </div>
                     </div>
-                  </button>
+                  </WaflCardButton>
                 </WaflFileCard>
               ))}
               {isFlatDevice ? (

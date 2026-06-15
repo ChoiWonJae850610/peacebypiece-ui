@@ -127,6 +127,25 @@ export function WaflCardButton({
   );
 }
 
+export function WaflMenuItemButton({
+  className,
+  type = "button",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type={type}
+      data-wafl-component="menu-item-button"
+      data-wafl-foundation="control"
+      className={cn(
+        "pbp-interactive-button flex min-h-9 w-full items-center gap-2 wafl-shape-control px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] outline-none hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)] focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--pbp-surface)] disabled:cursor-not-allowed disabled:opacity-50",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 type WaflLinkButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   variant?: WaflButtonVariant;
   size?: WaflButtonSize;
