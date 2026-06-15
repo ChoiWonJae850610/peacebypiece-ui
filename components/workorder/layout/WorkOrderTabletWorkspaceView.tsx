@@ -9,6 +9,7 @@ import {
   WaflMobileListDrawer,
   WaflSidePanelShell,
   WaflTwoPanelWorkspace,
+  WaflWorkspacePanel,
 } from "@/components/common/ui";
 import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
@@ -19,7 +20,7 @@ import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
-export default function WorkOrderDetailTabletView({
+export default function WorkOrderTabletWorkspaceView({
   appShellRef,
   selectedId,
   hasSelection,
@@ -118,14 +119,20 @@ export default function WorkOrderDetailTabletView({
         <AppResponsiveWorkspace device="tablet">
           <WaflTwoPanelWorkspace
             detail={
-              <section className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] [scrollbar-gutter:stable]">
+              <WaflWorkspacePanel
+                panelRole="detail"
+                className="h-full min-h-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
+              >
                 {detail}
-              </section>
+              </WaflWorkspacePanel>
             }
             side={
-              <section className="h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] [scrollbar-gutter:stable]">
+              <WaflWorkspacePanel
+                panelRole="side"
+                className="h-full min-h-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
+              >
                 <WaflSidePanelShell>{sidePanel}</WaflSidePanelShell>
-              </section>
+              </WaflWorkspacePanel>
             }
           />
         </AppResponsiveWorkspace>

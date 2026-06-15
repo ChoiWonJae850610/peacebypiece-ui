@@ -7,7 +7,7 @@ import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/typ
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
 
-export default function WorkOrderDetailDesktopView({
+export default function WorkOrderDesktopWorkspaceView({
   appShellRef,
   selectedId,
   hasSelection,

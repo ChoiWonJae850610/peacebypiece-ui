@@ -1,8 +1,8 @@
 "use client";
 
-import WorkOrderDetailDesktopView from "@/components/workorder/layout/WorkOrderDetailDesktopView";
-import WorkOrderDetailMobileView from "@/components/workorder/layout/WorkOrderDetailMobileView";
-import WorkOrderDetailTabletView from "@/components/workorder/layout/WorkOrderDetailTabletView";
+import WorkOrderDesktopWorkspaceView from "@/components/workorder/layout/WorkOrderDesktopWorkspaceView";
+import WorkOrderMobileWorkspaceView from "@/components/workorder/layout/WorkOrderMobileWorkspaceView";
+import WorkOrderTabletWorkspaceView from "@/components/workorder/layout/WorkOrderTabletWorkspaceView";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
@@ -10,12 +10,12 @@ export default function WorkOrderLayout(props: WorkOrderLayoutViewProps) {
   const { deviceType, layoutMode } = useWorkspaceLayoutMode();
 
   if (layoutMode === "drawer") {
-    return <WorkOrderDetailMobileView {...props} />;
+    return <WorkOrderMobileWorkspaceView {...props} />;
   }
 
   if (deviceType === "tablet") {
-    return <WorkOrderDetailTabletView {...props} />;
+    return <WorkOrderTabletWorkspaceView {...props} />;
   }
 
-  return <WorkOrderDetailDesktopView {...props} />;
+  return <WorkOrderDesktopWorkspaceView {...props} />;
 }

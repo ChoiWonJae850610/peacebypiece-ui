@@ -10,7 +10,7 @@ import MobileDrawer from "@/components/layout/MobileDrawer";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
-export default function WorkOrderDetailMobileView({
+export default function WorkOrderMobileWorkspaceView({
   appShellRef,
   selectedId,
   hasSelection,
