@@ -28,10 +28,7 @@ type MaterialOrderAllocationCardProps = {
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
     material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
   ) => void;
-  onAddMaterialToOrderDrawer: (
-    workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
-    material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
-  ) => void;
+  onOpenCleanModal: () => void;
   mobile?: boolean;
 };
 
@@ -42,7 +39,7 @@ export function MaterialOrderAllocationCard({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
-  onAddMaterialToOrderDrawer,
+  onOpenCleanModal,
   mobile = false,
 }: MaterialOrderAllocationCardProps) {
   const materialTypeLabel = workOrder.materialItems[0]
@@ -85,7 +82,7 @@ export function MaterialOrderAllocationCard({
             materialRequestCompletionMap={materialRequestCompletionMap}
             editable={editable}
             onAddMaterialToOrder={onAddMaterialToOrder}
-            onAddMaterialToOrderDrawer={onAddMaterialToOrderDrawer}
+            onOpenCleanModal={onOpenCleanModal}
             mobile={mobile}
           />
         ))}
@@ -102,7 +99,7 @@ function MaterialOrderAllocationRow({
   materialRequestCompletionMap,
   editable,
   onAddMaterialToOrder,
-  onAddMaterialToOrderDrawer,
+  onOpenCleanModal,
   mobile = false,
 }: MaterialOrderAllocationCardProps & {
   material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number];
@@ -173,7 +170,7 @@ function MaterialOrderAllocationRow({
           </p>
         ) : null}
       </div>
-      <div className={mobile ? "grid grid-cols-2 gap-1.5" : "flex shrink-0 items-center gap-1.5"}>
+      <div className={mobile ? "grid" : "flex shrink-0 items-center gap-1.5"}>
         <MaterialOrderActionButton
           label={`${material.itemName} ${selectionButtonLabel}`}
           size="sm"
@@ -191,24 +188,20 @@ function MaterialOrderAllocationRow({
         >
           <span aria-hidden="true">{selectionButtonLabel}</span>
         </MaterialOrderActionButton>
-        <MaterialOrderActionButton
-          label={`${material.itemName} C AppSheet 드로어 테스트`}
-          size="sm"
-          compact
-          showSrLabel={false}
-          tone="neutral"
-          className={mobile ? "w-full" : ""}
-          disabled={
-            !editable ||
-            isAdded ||
-            isCompletionFulfilled ||
-            isAllocationCovered
-          }
-          title="C 테스트: AppSheet와 portal을 사용하는 오른쪽 드로어를 엽니다."
-          onClick={() => onAddMaterialToOrderDrawer(workOrder, material)}
-        >
-          <span aria-hidden="true">C 드로어</span>
-        </MaterialOrderActionButton>
+        {!mobile ? (
+          <MaterialOrderActionButton
+            label={`${material.itemName} 새 최소 모달 테스트`}
+            size="sm"
+            compact
+            showSrLabel={false}
+            tone="neutral"
+            disabled={!editable}
+            title="0.22.09 기존 모달과 비교할 clean-room 최소 모달을 엽니다."
+            onClick={onOpenCleanModal}
+          >
+            <span aria-hidden="true">새 모달</span>
+          </MaterialOrderActionButton>
+        ) : null}
       </div>
     </WaflSurface>
   );
