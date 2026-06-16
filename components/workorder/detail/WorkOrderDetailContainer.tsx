@@ -76,6 +76,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     workOrder,
     basicInfo: editor.basicInfo,
     currentInventoryQuantity,
+    saveStatus: persistenceModel.saveStatus,
     lastSavedAt: persistenceModel.lastSavedAt,
     currentUserRole: identityModel.currentUserRole,
     currentWorkflowState: workflowModel.currentWorkflowState,

@@ -32,6 +32,7 @@ export type BuildWorkOrderDetailViewModelArgs = {
     year: string;
   };
   currentInventoryQuantity: number;
+  saveStatus: HeaderProps["saveStatus"];
   lastSavedAt: string | null;
   currentUserRole: HeaderProps["currentUserRole"];
   currentWorkflowState: WorkOrder["workflowState"];
@@ -117,6 +118,7 @@ export function buildHeaderSectionProps({
   workOrder,
   basicInfo,
   currentInventoryQuantity,
+  saveStatus,
   lastSavedAt,
   currentUserRole,
   currentWorkflowState,
@@ -138,6 +140,7 @@ export function buildHeaderSectionProps({
     summaryText: formatBasicSummary(basicInfo),
     managerName: workOrder.manager || "-",
     currentInventoryQuantity,
+    saveStatus,
     lastSavedAt,
     dueDate: workOrder.dueDate || "",
     workOrderKind: workOrder.workOrderKind,

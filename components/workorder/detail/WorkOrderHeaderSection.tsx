@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
+import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSaveStatus, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -16,6 +16,7 @@ type WorkOrderHeaderSectionProps = {
   summaryText: string;
   managerName: string;
   currentInventoryQuantity: number;
+  saveStatus: "saved" | "dirty" | "saving";
   lastSavedAt: string | null;
   dueDate: string;
   workOrderKind: WorkOrder["workOrderKind"];
@@ -41,6 +42,7 @@ export default function WorkOrderHeaderSection({
   summaryText,
   managerName,
   currentInventoryQuantity,
+  saveStatus,
   lastSavedAt,
   dueDate,
   workOrderKind,
@@ -64,7 +66,6 @@ export default function WorkOrderHeaderSection({
   const common = i18n.workorder.ui.common;
   void onSave;
   void currentUserRole;
-  void lastSavedAt;
   void workOrderKind;
   void onChangeWorkOrderKind;
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -165,6 +166,7 @@ export default function WorkOrderHeaderSection({
   );
 
   return (
+    <div className="grid gap-1.5">
     <WaflSummaryHeaderCard
       component="workorder-header-summary"
       title={titleEditor}
@@ -210,6 +212,8 @@ export default function WorkOrderHeaderSection({
         valueClassName="tabular-nums"
       />
     </WaflSummaryHeaderCard>
+    <WaflSaveStatus status={saveStatus} savedAt={lastSavedAt} />
+    </div>
   );
 }
 

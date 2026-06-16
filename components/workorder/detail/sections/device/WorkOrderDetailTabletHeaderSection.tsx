@@ -8,6 +8,7 @@ import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicke
 import {
   WaflButton,
   WaflInput,
+  WaflSaveStatus,
   WaflSummaryHeaderCard,
   WaflSummaryInfoCell,
 } from "@/components/common/ui";
@@ -60,6 +61,7 @@ export default function WorkOrderDetailTabletHeaderSection({
   summaryText,
   managerName,
   currentInventoryQuantity,
+  saveStatus,
   lastSavedAt,
   dueDate,
   onChangeDueDate,
@@ -80,7 +82,6 @@ export default function WorkOrderDetailTabletHeaderSection({
   const managerValue = managerName || "-";
   const summaryValue = summaryText || "-";
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
-  void lastSavedAt;
   const canEditTitle =
     !locked && canRenameTitle && typeof onRenameTitle === "function";
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -172,6 +173,7 @@ export default function WorkOrderDetailTabletHeaderSection({
   );
 
   return (
+    <div className="grid gap-1.5">
     <WaflSummaryHeaderCard
       component="tablet-detail-summary-card"
       title={titleEditor}
@@ -220,5 +222,7 @@ export default function WorkOrderDetailTabletHeaderSection({
         valueClassName="tabular-nums"
       />
     </WaflSummaryHeaderCard>
+    <WaflSaveStatus status={saveStatus} savedAt={lastSavedAt} />
+    </div>
   );
 }

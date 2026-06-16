@@ -65,6 +65,7 @@ export * from "./WaflPrimitive";
 export * from "./WaflButton";
 export * from "./WaflCostSummary";
 export * from "./WaflToast";
+export { default as WaflSaveStatus, type WaflSaveStatusValue } from "./WaflSaveStatus";
 
 export * from "./WaflState";
 export * from "./WaflSelectableCard";

@@ -1,5 +1,6 @@
 import type { DisplayStage } from "@/types/workflow";
 import type { RoleType, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { WaflSaveStatusValue } from "@/components/common/ui";
 
 export type WorkOrderDetailPresentation = "desktop" | "tablet" | "mobile";
 
@@ -11,7 +12,7 @@ export type WorkOrderDetailBaseModel = {
 };
 
 export type WorkOrderDetailPersistenceModel = {
-  saveStatus: "saved" | "dirty" | "saving";
+  saveStatus: Extract<WaflSaveStatusValue, "saved" | "dirty" | "saving">;
   lastSavedAt: string | null;
 };
 

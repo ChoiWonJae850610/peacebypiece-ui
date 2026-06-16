@@ -32,6 +32,7 @@ import {
   shouldPersistMaterialOrderDetailBeforeStatusChange,
 } from "@/lib/material-orders/statusFlow";
 import type { WorkflowValidationIssue } from "@/lib/workorder/workflowValidationIssues";
+import type { WaflSaveStatusValue } from "@/components/common/ui";
 
 type MaterialOrderStatusToastTone =
   | "info"
@@ -185,6 +186,8 @@ export function useMaterialOrderDraftEditor({
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [statusChanging, setStatusChanging] = useState(false);
   const [headerSaving, setHeaderSaving] = useState(false);
+  const [headerSaveStatus, setHeaderSaveStatus] = useState<WaflSaveStatusValue>("idle");
+  const [headerSaveMessage, setHeaderSaveMessage] = useState<string | null>(null);
   const [statusToastMessage, setStatusToastMessage] = useState<string | null>(
     null,
   );
@@ -364,6 +367,8 @@ export function useMaterialOrderDraftEditor({
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
     setStatusToastMessage(null);
     setDueDate(normalizePbpLocalDateValue(selectedOrder.dueDate));
+    setHeaderSaveStatus("idle");
+    setHeaderSaveMessage(null);
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
   }, [selectedOrder]);
 
@@ -410,6 +415,8 @@ export function useMaterialOrderDraftEditor({
       const previousLines = lines;
 
       setHeaderSaving(true);
+      setHeaderSaveStatus("saving");
+      setHeaderSaveMessage("자재 종류를 저장하는 중입니다...");
       setMaterialType(nextMaterialType);
       setSupplierPartnerId(null);
       setLines([]);
@@ -425,11 +432,15 @@ export function useMaterialOrderDraftEditor({
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         await refreshWorkOrderCandidates();
+        setHeaderSaveStatus("saved");
+        setHeaderSaveMessage("자재 종류가 저장되었습니다.");
         showStatusToast("자재 종류가 변경되었습니다.", "success");
       } catch (error) {
         setMaterialType(previousMaterialType);
         setSupplierPartnerId(previousSupplierPartnerId);
         setLines(previousLines);
+        setHeaderSaveStatus("error");
+        setHeaderSaveMessage("자재 종류를 저장하지 못했습니다.");
         showStatusToast(
           toMaterialOrderWorkspaceError(error, "자재 종류를 변경하지 못했습니다."),
           "danger",
@@ -486,6 +497,8 @@ export function useMaterialOrderDraftEditor({
       const previousSupplierPartnerId = supplierPartnerId;
       setSupplierPartnerId(nextSupplierPartnerId);
       setHeaderSaving(true);
+      setHeaderSaveStatus("saving");
+      setHeaderSaveMessage("공급처를 저장하는 중입니다...");
       showStatusToast("공급처를 저장하는 중입니다.", "loading");
 
       try {
@@ -495,9 +508,13 @@ export function useMaterialOrderDraftEditor({
         });
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+        setHeaderSaveStatus("saved");
+        setHeaderSaveMessage("공급처가 저장되었습니다.");
         showStatusToast("공급처가 저장되었습니다.", "success");
       } catch (error) {
         setSupplierPartnerId(previousSupplierPartnerId);
+        setHeaderSaveStatus("error");
+        setHeaderSaveMessage("공급처를 저장하지 못했습니다.");
         showStatusToast(
           toMaterialOrderWorkspaceError(error, "공급처를 저장하지 못했습니다."),
           "danger",
@@ -549,6 +566,8 @@ export function useMaterialOrderDraftEditor({
       const previousDueDate = dueDate;
       setDueDate(normalizedDueDate);
       setHeaderSaving(true);
+      setHeaderSaveStatus("saving");
+      setHeaderSaveMessage("납기일을 저장하는 중입니다...");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -558,9 +577,13 @@ export function useMaterialOrderDraftEditor({
 
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+        setHeaderSaveStatus("saved");
+        setHeaderSaveMessage("납기일이 저장되었습니다.");
         showStatusToast("납기일이 저장되었습니다.", "success");
       } catch (error) {
         setDueDate(previousDueDate);
+        setHeaderSaveStatus("error");
+        setHeaderSaveMessage("납기일을 저장하지 못했습니다.");
         showStatusToast(
           toMaterialOrderWorkspaceError(error, "납기일을 저장하지 못했습니다."),
           "danger",
@@ -809,6 +832,8 @@ export function useMaterialOrderDraftEditor({
     creatingOrder,
     statusChanging,
     headerSaving,
+    headerSaveStatus,
+    headerSaveMessage,
     statusToastMessage,
     statusToastTone,
     statusToastEventKey,
