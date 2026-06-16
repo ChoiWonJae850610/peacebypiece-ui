@@ -18,7 +18,6 @@ type WaflDocumentFieldProps = {
   lockMessage?: string;
   saveStatus: WaflSaveStatusValue;
   saveErrorMessage?: string | null;
-  savedAt?: string | null;
   onChange: (value: string) => void;
   onSave: () => void;
   onClear?: () => void;
@@ -35,7 +34,6 @@ export default function WaflDocumentField({
   lockMessage,
   saveStatus,
   saveErrorMessage,
-  savedAt,
   onChange,
   onSave,
   onClear,
@@ -62,7 +60,7 @@ export default function WaflDocumentField({
             readOnly={!editable}
             disabled={disabled}
             placeholder={placeholder}
-            className="min-h-40"
+            className="min-h-40 text-xs leading-5 placeholder:text-xs placeholder:font-normal"
             onChange={(event: ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value)}
           />
           <div className="flex min-w-0 items-start justify-between gap-3">
@@ -92,7 +90,6 @@ export default function WaflDocumentField({
           <WaflSaveStatus
             status={saveStatus}
             message={statusMessage}
-            savedAt={savedAt}
             align="left"
           />
         </>

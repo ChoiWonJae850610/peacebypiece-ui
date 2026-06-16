@@ -96,7 +96,6 @@ export default function WorkOrderFactoryInstructionPanel({
   return (
     <WaflDocumentField
       title="공장 전달사항"
-      description="봉제, 원단 방향, 부자재 위치, 포장 등 공장에 전달할 최종 내용을 입력합니다."
       value={draft}
       placeholder="예: 앞판 원단 방향을 맞춰 재단하고, 완성 후 개별 포장해 주세요."
       maxLength={FACTORY_INSTRUCTION_MAX_LENGTH}
@@ -105,7 +104,6 @@ export default function WorkOrderFactoryInstructionPanel({
       lockMessage={lockMessage}
       saveStatus={displayStatus}
       saveErrorMessage={errorMessage}
-      savedAt={instruction.updatedAt}
       onChange={handleChange}
       onSave={() => void handleSave()}
       onClear={() => handleChange("")}

@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
-import type { InventoryLog } from "@/types/workorder";
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
   MODAL_CONTENT_LABEL_CLASS,
-  MODAL_CONTENT_SUBTEXT_CLASS,
   MODAL_CONTENT_VALUE_CLASS,
 } from "@/components/common/modal/modalContentClassNames";
 import {
@@ -19,28 +16,18 @@ import { useI18n } from "@/lib/i18n";
 import {
   WaflNumberInput,
   WAFL_FIELD_INPUT_CLASS,
-  WaflEmptyCard,
   WaflInfoBox,
-  WaflTextarea,
 } from "@/components/common/ui";
-
-type InventoryMode = InventoryChangeTypeValue;
 
 export default function InventoryEditor({
   open,
   onClose,
   currentStock,
-  currentUserName,
-  logs,
-  showRecentLogs,
   onApply,
 }: {
   open: boolean;
   onClose: () => void;
   currentStock: number;
-  currentUserName: string;
-  logs: InventoryLog[];
-  showRecentLogs: boolean;
   onApply: (payload: {
     inboundQuantity: number;
     adjustmentQuantity: number;
@@ -53,14 +40,12 @@ export default function InventoryEditor({
   const [inboundQuantity, setInboundQuantity] = useState(0);
   const [adjustmentQuantity, setAdjustmentQuantity] = useState(0);
   const [deductionQuantity, setDeductionQuantity] = useState(0);
-  const [memo, setMemo] = useState("");
 
   useEffect(() => {
     if (!open) {
       setInboundQuantity(0);
       setAdjustmentQuantity(0);
       setDeductionQuantity(0);
-      setMemo("");
     }
   }, [open]);
 
@@ -95,7 +80,7 @@ export default function InventoryEditor({
         inboundQuantity: parsedInboundQuantity,
         adjustmentQuantity: parsedAdjustmentQuantity,
         deductionQuantity: parsedDeductionQuantity,
-        memo: memo.trim(),
+        memo: "",
       });
     },
     onClose,
@@ -185,81 +170,7 @@ export default function InventoryEditor({
             />
           </div>
         </div>
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
-            {copy.memoLabel}
-          </label>
-          <WaflTextarea
-            value={memo}
-            onChange={(event) => setMemo(event.target.value)}
-            placeholder={copy.memoPlaceholder}
-            rows={3}
-          />
-        </div>
-        <WaflInfoBox
-          tone="muted"
-          shape="control"
-          className="text-sm text-[var(--pbp-text-secondary)]"
-        >
-          <div>
-            {copy.editorLabel}:{" "}
-            <span className="font-medium text-[var(--pbp-text-primary)]">
-              {currentUserName}
-            </span>
-          </div>
-          <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>
-            {copy.localTestNotice}
-          </div>
-        </WaflInfoBox>
       </div>
-
-      {showRecentLogs ? (
-        <div className="mt-5 border-t border-[var(--pbp-border)] pt-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">
-              {copy.recentLogsTitle}
-            </div>
-            <span className={MODAL_CONTENT_LABEL_CLASS}>
-              {copy.recentLogsCountFormat.replace(
-                "{count}",
-                String(Math.min(logs.length, 3)),
-              )}
-            </span>
-          </div>
-          <div className="mt-3 space-y-2">
-            {logs.length > 0 ? (
-              logs.slice(0, 3).map((item) => (
-                <WaflInfoBox
-                  key={item.id}
-                  component="log-card"
-                  tone="neutral"
-                  shape="control"
-                  className="text-sm"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-medium text-[var(--pbp-text-primary)]">
-                      {item.summary}
-                    </span>
-                    <span className={MODAL_CONTENT_LABEL_CLASS}>
-                      {item.time}
-                    </span>
-                  </div>
-                  <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>
-                    {item.user}
-                  </div>
-                  <div className="mt-1 text-sm text-[var(--pbp-text-secondary)]">
-                    {item.memo || copy.noMemo}
-                  </div>
-                </WaflInfoBox>
-              ))
-            ) : (
-              <WaflEmptyCard shape="control" className="px-4 py-6">
-                {copy.emptyLogs}
-              </WaflEmptyCard>
-            )}
-          </div>
-        </div>
-      ) : null}
     </ModalShell>
   );
 }

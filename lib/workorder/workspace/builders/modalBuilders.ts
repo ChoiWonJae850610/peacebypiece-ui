@@ -19,7 +19,6 @@ export function buildModalProps({
   selectedWorkOrder,
   currentInventoryQuantity,
   filteredHistoryLogs,
-  inventoryLogs,
   selectedAttachment,
   pendingAttachmentDelete,
   getAttachmentPermissions,
@@ -92,9 +91,6 @@ export function buildModalProps({
       open: inventoryEditorOpen,
       onClose: () => onSetInventoryEditorOpen(false),
       currentStock: currentInventoryQuantity,
-      currentUserName: users.find((user) => user.id === currentUserId)?.name ?? "-",
-      logs: inventoryLogs,
-      showRecentLogs: isAdmin,
       onApply: onInventoryApply,
     },
     createWorkOrder: {
