@@ -1684,10 +1684,6 @@ export const adminKo = {
         label: "재고 변경",
         description: "입고, 차감, 보정 같은 재고 수량 변경 알림입니다.",
       },
-      comment_added: {
-        label: "메모 작성",
-        description: "작업메모와 댓글이 등록되었을 때 알림합니다.",
-      },
     },
     title: "알림 이벤트 설정",
     description:

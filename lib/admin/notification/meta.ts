@@ -12,7 +12,6 @@ export const NOTIFICATION_SETTINGS_META: readonly NotificationSettingMeta[] = [
   { key: "materials_changed", defaultEnabled: false },
   { key: "outsourcing_changed", defaultEnabled: false },
   { key: "stock_changed", defaultEnabled: true },
-  { key: "comment_added", defaultEnabled: true },
 ] as const;
 
 export const NOTIFICATION_SETTING_KEY_SET = new Set<NotificationSettingKey>(NOTIFICATION_SETTING_KEYS);

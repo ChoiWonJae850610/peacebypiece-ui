@@ -1739,9 +1739,6 @@ export const adminEn = {
         description:
           "Notify when inventory quantities change through inbound, deduction, or adjustment.",
       },
-      comment_added: {
-        label: "Memo added",
-      },
     },
     title: "Notification Event Settings",
     description:
