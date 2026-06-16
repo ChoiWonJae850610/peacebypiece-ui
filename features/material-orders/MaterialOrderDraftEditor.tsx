@@ -20,6 +20,8 @@ import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderList
 import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
+import { useWorkspaceSelectionController } from "@/lib/hooks/workspace/useWorkspaceSelectionController";
+import { useWorkspaceToolState } from "@/lib/hooks/workspace/useWorkspaceToolState";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
 type MaterialOrderMobileToolKey = "workorders" | "schedule";
@@ -62,9 +64,6 @@ export default function MaterialOrderDraftEditor({
   } = useWorkspaceLayoutMode();
   const [mobileOrderListDrawerOpen, setMobileOrderListDrawerOpen] =
     useState(false);
-  const [mobileToolSheetOpen, setMobileToolSheetOpen] = useState(false);
-  const [mobileActiveTool, setMobileActiveTool] =
-    useState<MaterialOrderMobileToolKey>("workorders");
 
   const {
     orders,
@@ -110,25 +109,26 @@ export default function MaterialOrderDraftEditor({
     removeLine,
   } = useMaterialOrderDraftEditor({ isAdmin });
 
-  useEffect(() => {
-    if (!selectedOrderId) {
-      setMobileOrderListDrawerOpen(false);
-      setMobileToolSheetOpen(false);
-    }
-  }, [selectedOrderId]);
+  const {
+    open: mobileToolSheetOpen,
+    setOpen: setMobileToolSheetOpen,
+    activeTool: mobileActiveTool,
+    setActiveTool: setMobileActiveTool,
+  } = useWorkspaceToolState<MaterialOrderMobileToolKey>({
+    resetKey: selectedOrderId,
+    defaultTool: "workorders",
+  });
+  const handleSelectOrder = useWorkspaceSelectionController({
+    selectedId: selectedOrderId,
+    onSelect: setSelectedOrderId,
+    onSelectionChange: () => setMobileOrderListDrawerOpen(false),
+  });
 
   useEffect(() => {
     if (materialOrderLineAddModal.open) {
       setMobileToolSheetOpen(false);
     }
-  }, [materialOrderLineAddModal.open]);
-
-  const handleSelectOrder = (orderId: string) => {
-    setSelectedOrderId((currentOrderId) =>
-      currentOrderId === orderId ? "" : orderId,
-    );
-    setMobileOrderListDrawerOpen(false);
-  };
+  }, [materialOrderLineAddModal.open, setMobileToolSheetOpen]);
 
   const handleAddMaterialToOrder = (
     ...args: Parameters<typeof addWorkOrderMaterialLine>

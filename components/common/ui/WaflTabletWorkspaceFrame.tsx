@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode, type RefObject } from "react";
+import { useRef, type ReactNode, type RefObject } from "react";
 
+import { useWorkspaceScrollReset } from "@/lib/hooks/workspace/useWorkspaceScrollReset";
 import { cn } from "@/lib/utils";
 import { AppResponsiveWorkspace } from "./AppResponsiveFrame";
 import WaflDetailWorkspacePanel from "./WaflDetailWorkspacePanel";
@@ -44,10 +45,7 @@ export default function WaflTabletWorkspaceFrame({
   const detailScrollRef = useRef<HTMLElement | null>(null);
   const sideScrollRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
-    detailScrollRef.current?.scrollTo({ top: 0, left: 0 });
-    sideScrollRef.current?.scrollTo({ top: 0, left: 0 });
-  }, [scrollResetKey]);
+  useWorkspaceScrollReset(scrollResetKey, [detailScrollRef, sideScrollRef]);
 
   return (
     <div

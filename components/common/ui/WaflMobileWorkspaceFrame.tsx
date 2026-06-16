@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode, type Ref } from "react";
+import { useMemo, type ReactNode, type Ref } from "react";
 
+import { useWorkspaceToolState } from "@/lib/hooks/workspace/useWorkspaceToolState";
 import type { AppSheetPresentation } from "./AppSheet";
 import type { AppSegmentedTabItem } from "./AppSegmentedTabs";
 import {
@@ -64,36 +65,32 @@ export function WaflMobileWorkspaceFrame<Key extends string>({
   activeTool,
   onActiveToolChange,
 }: WaflMobileWorkspaceFrameProps<Key>) {
-  const [internalOpen, setInternalOpen] = useState(false);
-  const [internalActiveTool, setInternalActiveTool] = useState<Key>(defaultTool);
+  const internalToolState = useWorkspaceToolState({
+    resetKey: scrollResetKey,
+    defaultTool,
+  });
 
-  const resolvedOpen = toolOpen ?? internalOpen;
-  const resolvedActiveTool = activeTool ?? internalActiveTool;
+  const resolvedOpen = toolOpen ?? internalToolState.open;
+  const resolvedActiveTool = activeTool ?? internalToolState.activeTool;
   const resolvedTitle = useMemo(
     () => (typeof toolTitle === "function" ? toolTitle(resolvedActiveTool) : toolTitle),
     [resolvedActiveTool, toolTitle],
   );
 
   const setOpen = (nextOpen: boolean) => {
-    if (toolOpen === undefined) setInternalOpen(nextOpen);
+    if (toolOpen === undefined) internalToolState.setOpen(nextOpen);
     onToolOpenChange?.(nextOpen);
     if (!nextOpen) {
-      if (activeTool === undefined) setInternalActiveTool(defaultTool);
+      if (activeTool === undefined) internalToolState.setActiveTool(defaultTool);
       onActiveToolChange?.(defaultTool);
     }
   };
 
   const setActive = (nextKey: Key) => {
-    if (activeTool === undefined) setInternalActiveTool(nextKey);
+    if (activeTool === undefined) internalToolState.setActiveTool(nextKey);
     onActiveToolChange?.(nextKey);
   };
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0 });
-    setOpen(false);
-    // defaultTool/on callbacks are intentionally omitted so selection changes are the reset boundary.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scrollResetKey]);
 
   const showAction = hasSelection;
 

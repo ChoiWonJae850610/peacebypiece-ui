@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ChangeEvent } from "react";
 
+import { useWorkspaceSelectionController } from "@/lib/hooks/workspace/useWorkspaceSelectionController";
 import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStatus";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { useI18n } from "@/lib/i18n";
@@ -231,16 +232,6 @@ export function useWorkOrderWorkspaceController({
     window.history.replaceState(null, "", nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname);
   };
 
-  const replaceSelectedWorkOrderQuery = (workOrderId: string) => {
-    if (typeof window === "undefined") return;
-
-    const url = new URL(window.location.href);
-    if (workOrderId) url.searchParams.set("workOrderId", workOrderId);
-    else url.searchParams.delete("workOrderId");
-    const nextQuery = url.searchParams.toString();
-    window.history.replaceState(null, "", nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname);
-  };
-
   const handleChangeWorkOrderSearchQuery = (nextSearchQuery: string) => {
     traceWaflFlow("action", "workorder.list.search", { hasQuery: Boolean(nextSearchQuery.trim()) });
     replaceWorkOrderListQuery({ searchQuery: nextSearchQuery });
@@ -275,13 +266,16 @@ export function useWorkOrderWorkspaceController({
     selection.setListSort(DEFAULT_WORK_ORDER_LIST_SORT);
   };
 
-  const handleSelectWorkOrder = (workOrderId: string) => {
-    if (isWorkspaceWriteLocked) return;
+  const selectWorkOrder = useWorkspaceSelectionController({
+    selectedId: selection.selectedId,
+    onSelect: actions.handleSelectWorkOrder,
+    queryParamName: "workOrderId",
+    disabled: isWorkspaceWriteLocked,
+  });
 
-    const nextWorkOrderId = workOrderId === selection.selectedId ? "" : workOrderId;
+  const handleSelectWorkOrder = (workOrderId: string) => {
+    const nextWorkOrderId = selectWorkOrder(workOrderId);
     traceWaflFlow("action", "workorder.select", { workOrderId: nextWorkOrderId });
-    replaceSelectedWorkOrderQuery(nextWorkOrderId);
-    actions.handleSelectWorkOrder(workOrderId);
   };
 
   const viewModel = buildWorkspaceViewModel({
