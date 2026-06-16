@@ -6,7 +6,7 @@ import { WaflMobileWorkspaceFrame, type WaflSegmentedTabItem } from "@/component
 import type { WaflSheetPresentation } from "@/components/common/ui/WaflSheet";
 import { useI18n } from "@/lib/i18n";
 
-type MobileRelatedSectionKey = "attachment" | "design";
+type MobileRelatedSectionKey = "attachment" | "design" | "instruction";
 
 function AttachmentIcon() {
   return (
@@ -43,6 +43,7 @@ export default function WorkOrderMobileWorkspaceShell({
   const relatedTabs = useMemo<Array<WaflSegmentedTabItem<MobileRelatedSectionKey>>>(() => [
     { key: "design", label: relatedCopy.design },
     { key: "attachment", label: relatedCopy.attachment },
+    { key: "instruction", label: "공장 전달사항" },
   ], [relatedCopy.attachment, relatedCopy.design]);
 
   return (
@@ -57,7 +58,7 @@ export default function WorkOrderMobileWorkspaceShell({
       actionTitle={relatedCopy.openTitle}
       actionLabel={relatedCopy.openLabel}
       actionIcon={<AttachmentIcon />}
-      toolTitle={(activeSection: MobileRelatedSectionKey) => relatedCopy.titles[activeSection]}
+      toolTitle={(activeSection: MobileRelatedSectionKey) => activeSection === "instruction" ? "공장 전달사항" : relatedCopy.titles[activeSection]}
       toolTabs={relatedTabs}
       defaultTool="design"
       toolAriaLabel={relatedCopy.tabsAria}

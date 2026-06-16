@@ -1,3 +1,4 @@
+import WorkOrderFactoryInstructionPanel from "@/components/workorder/factoryInstruction/WorkOrderFactoryInstructionPanel";
 import WorkOrderSidePanelAttachmentSections from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections";
 import type { WorkOrderSidePanelProps, WorkOrderSidePanelVariant } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 
@@ -20,9 +21,13 @@ export default function WorkOrderSidePanelSections({
   canGenerateOrderRequestPdf,
   onGenerateOrderRequestPdf,
   variant,
+  factoryInstructionWorkOrderId,
+  canEditFactoryInstruction,
+  factoryInstructionLockMessage,
 }: WorkOrderSidePanelSectionsProps) {
   return (
-    <WorkOrderSidePanelAttachmentSections
+    <div className="space-y-3">
+      <WorkOrderSidePanelAttachmentSections
       attachmentSections={attachmentSections}
       canSeeAttachments={canSeeAttachments}
       canManageAttachments={canManageAttachments}
@@ -37,6 +42,12 @@ export default function WorkOrderSidePanelSections({
       writeLocked={writeLocked}
       writeLockMessage={writeLockMessage}
       variant={variant}
-    />
+      />
+      <WorkOrderFactoryInstructionPanel
+        workOrderId={factoryInstructionWorkOrderId}
+        editable={canEditFactoryInstruction}
+        lockMessage={factoryInstructionLockMessage}
+      />
+    </div>
   );
 }

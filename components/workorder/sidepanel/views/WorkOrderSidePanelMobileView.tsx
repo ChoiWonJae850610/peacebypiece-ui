@@ -1,3 +1,4 @@
+import WorkOrderFactoryInstructionPanel from "@/components/workorder/factoryInstruction/WorkOrderFactoryInstructionPanel";
 import WorkOrderSidePanelMobileAttachmentSections from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAttachmentSections";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 import { useI18n } from "@/lib/i18n";
@@ -24,6 +25,11 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
           writeLocked={props.writeLocked}
           writeLockMessage={props.writeLockMessage}
           collapseLabel={collapseLabel}
+        />
+        <WorkOrderFactoryInstructionPanel
+          workOrderId={props.factoryInstructionWorkOrderId}
+          editable={props.canEditFactoryInstruction}
+          lockMessage={props.factoryInstructionLockMessage}
         />
       </div>
     </div>

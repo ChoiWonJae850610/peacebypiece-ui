@@ -160,6 +160,9 @@ export function buildSidePanelProps({
     canManageAttachments: canUploadOfficialAttachments,
     writeLocked: Boolean(isWorkspaceWriteLocked),
     writeLockMessage: workspaceWriteLockMessage,
+    factoryInstructionWorkOrderId: selectedWorkOrder.id,
+    canEditFactoryInstruction: canEditSideDraftContent && !isWorkspaceWriteLocked,
+    factoryInstructionLockMessage: workspaceWriteLockMessage ?? (canEditSideDraftContent ? undefined : "현재 단계 또는 권한에서는 공장 전달사항을 수정할 수 없습니다."),
     attachmentSections: buildAttachmentPanelSections({
       designTitle: i18n.workorder.ui.attachmentPanel.designTitle,
       designEmptyText: i18n.workorder.ui.attachmentPanel.designEmpty,

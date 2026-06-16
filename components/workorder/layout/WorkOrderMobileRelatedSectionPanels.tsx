@@ -6,11 +6,12 @@ import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawi
 import {
   writeDesignDrawingModalOpenState,
 } from "@/components/workorder/drawing/workOrderDrawingModalSession";
+import WorkOrderFactoryInstructionPanel from "@/components/workorder/factoryInstruction/WorkOrderFactoryInstructionPanel";
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 
-export type WorkOrderMobileRelatedSectionKey = "attachment" | "design";
+export type WorkOrderMobileRelatedSectionKey = "attachment" | "design" | "instruction";
 
 type WorkOrderMobileRelatedSectionPanelsProps = WorkOrderSidePanelProps & {
   activeSection: WorkOrderMobileRelatedSectionKey;
@@ -40,6 +41,16 @@ export default function WorkOrderMobileRelatedSectionPanels({
     writeDesignDrawingModalOpenState(false);
     setDrawingModalOpen(false);
   };
+  if (activeSection === "instruction") {
+    return (
+      <WorkOrderFactoryInstructionPanel
+        workOrderId={props.factoryInstructionWorkOrderId}
+        editable={props.canEditFactoryInstruction}
+        lockMessage={props.factoryInstructionLockMessage}
+      />
+    );
+  }
+
   const targetScope = activeSection === "design" ? ATTACHMENT_SCOPE.design : ATTACHMENT_SCOPE.attachment;
   const section = props.attachmentSections.find((item) => item.uploadScope === targetScope);
 

@@ -7,6 +7,9 @@ export type WorkOrderSidePanelProps = {
   canManageAttachments: boolean;
   writeLocked?: boolean;
   writeLockMessage?: string;
+  factoryInstructionWorkOrderId: string;
+  canEditFactoryInstruction: boolean;
+  factoryInstructionLockMessage?: string;
   attachmentSections: AttachmentPanelSection[];
   onOpenAttachmentPicker: (scope?: UploadableAttachmentScopeValue) => void;
   onOpenDesignDrawingModal?: () => void;
