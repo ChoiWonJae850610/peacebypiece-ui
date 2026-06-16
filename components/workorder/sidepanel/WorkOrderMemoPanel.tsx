@@ -4,10 +4,9 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
   SectionCountBadge,
   WaflButton,
-  WaflEmptyCard,
+  WaflInlineEmptyState,
   WaflSurface,
   WaflTextarea,
-  WAFL_WORKSPACE_EMPTY_CARD_CLASS,
 } from "@/components/common/ui";
 import { WorkOrderPanelCard } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
@@ -642,9 +641,7 @@ export default function WorkOrderMemoPanel({
             />
           ))
         ) : (
-          <WaflEmptyCard shape="control" className={`${WAFL_WORKSPACE_EMPTY_CARD_CLASS} px-3 py-5 text-sm leading-5`}>
-            {ui.memo.empty}
-          </WaflEmptyCard>
+          <WaflInlineEmptyState>{ui.memo.empty}</WaflInlineEmptyState>
         )}
       </div>
     </>

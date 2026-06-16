@@ -12,12 +12,11 @@ import {
   WaflAddCardButton,
   WaflAddIconBubble,
   WaflButton,
-  WaflEmptyCard,
+  WaflInlineEmptyState,
   WaflCardButton,
   WaflFileCard,
   WaflMenuItemButton,
   WaflSurface,
-  WAFL_WORKSPACE_EMPTY_CARD_CLASS,
 } from "@/components/common/ui";
 import {
   WorkOrderAddIconButton,
@@ -686,13 +685,9 @@ export default function WorkOrderAttachmentPanel({
             </div>
           ) : (
             <div className={isFlatDevice ? "space-y-2.5" : undefined}>
-              <WaflEmptyCard
-                shape="control"
-                density={isFlatDevice ? "compact" : "default"}
-                className={`${WAFL_WORKSPACE_EMPTY_CARD_CLASS} whitespace-pre-line leading-5 ${isFlatDevice ? "" : "mt-3"}`}
-              >
+              <WaflInlineEmptyState className={isFlatDevice ? undefined : "mt-3"}>
                 {emptyText}
-              </WaflEmptyCard>
+              </WaflInlineEmptyState>
               {isFlatDevice ? (
                 <AttachmentFlatAddHint
                   scope={uploadScope}

@@ -128,6 +128,10 @@ export {
 export * from "./WaflEmptyWorkspaceState";
 export { default as WaflWorkspaceEmptyPanel } from "./WaflWorkspaceEmptyPanel";
 export {
+  default as WaflInlineEmptyState,
+  type WaflInlineEmptyStateProps,
+} from "./WaflInlineEmptyState";
+export {
   default as WaflWorkspaceStatePanel,
   type WaflWorkspaceStateLayout,
   type WaflWorkspaceStatePanelProps,
