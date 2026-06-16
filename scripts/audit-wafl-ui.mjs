@@ -8,6 +8,14 @@ const FORBIDDEN_PATTERNS = [
   { label: "legacy App UI component", pattern: /\bApp(?:Badge|Button|Card|InlineSelectEditor|ListRow|NumberInput|ResponsiveSurface|ResponsiveWorkspace|Section|SegmentedTabs|Select|Separator|Sheet|Toaster|Tooltip)\b/ },
   { label: "legacy workorder device hook", pattern: /useWorkOrderDeviceType/ },
 ];
+
+const WORKSPACE_HEADER_FILES = new Set([
+  "components/workorder/detail/WorkOrderHeaderSection.tsx",
+  "components/workorder/detail/sections/device/WorkOrderDetailMobileHeaderSection.tsx",
+  "components/workorder/detail/sections/device/WorkOrderDetailTabletHeaderSection.tsx",
+  "features/material-orders/MaterialOrderDetailPanel.tsx",
+]);
+
 const NATIVE_CONTROL_ALLOWLIST = new Set([
   "components/workorder/WorkOrderOverlay.tsx",
   "components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx",
@@ -39,6 +47,12 @@ for (const file of files) {
   if (/components\/workorder|features\/material-orders/.test(file) && /<(?:button|input|select|textarea)\b/.test(content)) {
     nativeControls.push(file);
     if (!NATIVE_CONTROL_ALLOWLIST.has(file)) failures.push(`unclassified native control: ${file}`);
+  }
+  if (WORKSPACE_HEADER_FILES.has(file) && /\.toLocaleString\s*\(/.test(content)) {
+    failures.push(`direct number formatting in workspace header: ${file}`);
+  }
+  if (WORKSPACE_HEADER_FILES.has(file) && /(?:저장하는 중입니다|저장되었습니다|저장하지 못했습니다)/.test(content)) {
+    failures.push(`direct save-feedback copy in workspace header: ${file}`);
   }
 }
 

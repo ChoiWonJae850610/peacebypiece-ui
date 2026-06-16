@@ -120,6 +120,7 @@ export {
   default as WaflSummaryHeaderCard,
   WaflSummaryInfoCell,
 } from "./WaflSummaryHeaderCard";
+export { default as WaflResponsiveSummaryGrid, type WaflResponsiveSummaryGridProps } from "./WaflResponsiveSummaryGrid";
 export * from "./WaflEmptyWorkspaceState";
 export { default as WaflWorkspaceEmptyPanel } from "./WaflWorkspaceEmptyPanel";
 export {

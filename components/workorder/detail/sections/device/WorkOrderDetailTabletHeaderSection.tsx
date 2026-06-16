@@ -1,7 +1,7 @@
 "use client";
 
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useI18n } from "@/lib/i18n";
 import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -14,48 +14,11 @@ import {
   WaflSummaryHeaderCard,
   WaflSummaryInfoCell,
 } from "@/components/common/ui";
+import WorkOrderSummaryInfoCell from "@/components/workorder/detail/WorkOrderSummaryInfoCell";
+import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type HeaderProps = WorkOrderDetailViewModel["headerProps"];
-
-function TabletSummaryValue({
-  label,
-  value,
-  disabled,
-  onClick,
-  valueClassName = "",
-}: {
-  label: string;
-  value: ReactNode;
-  disabled?: boolean;
-  onClick: () => void;
-  valueClassName?: string;
-}) {
-  const valueNode = (
-    <span className={`block truncate text-sm font-semibold text-[var(--pbp-text-primary)] ${valueClassName}`}>
-      {value}
-    </span>
-  );
-
-  if (disabled) {
-    return <WaflSummaryInfoCell label={label}>{valueNode}</WaflSummaryInfoCell>;
-  }
-
-  return (
-    <WaflSummaryInfoCell label={label}>
-      <WaflButton
-        type="button"
-        variant="ghost"
-        size="sm"
-        width="full"
-        onClick={onClick}
-        className="min-w-0 px-1.5 py-1 text-center"
-      >
-        {valueNode}
-      </WaflButton>
-    </WaflSummaryInfoCell>
-  );
-}
 
 export default function WorkOrderDetailTabletHeaderSection({
   title,
@@ -64,7 +27,6 @@ export default function WorkOrderDetailTabletHeaderSection({
   managerName,
   currentInventoryQuantity,
   saveStatus,
-  lastSavedAt,
   dueDate,
   onChangeDueDate,
   canChangeManager,
@@ -83,7 +45,7 @@ export default function WorkOrderDetailTabletHeaderSection({
   const common = i18n.workorder.ui.common;
   const managerValue = managerName || "-";
   const summaryValue = summaryText || "-";
-  const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
+  const inventoryValue = formatPbpNumberWithUnit(currentInventoryQuantity, common.quantitySuffix);
   const canEditTitle =
     !locked && canRenameTitle && typeof onRenameTitle === "function";
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -182,13 +144,13 @@ export default function WorkOrderDetailTabletHeaderSection({
       columns={2}
       className="shadow-none"
     >
-      <TabletSummaryValue
+      <WorkOrderSummaryInfoCell
         label={copy.summaryLabel}
         value={summaryValue}
         onClick={onOpenBasicInfoModal}
         disabled={locked}
       />
-      <TabletSummaryValue
+      <WorkOrderSummaryInfoCell
         label={copy.managerLabel}
         value={managerValue}
         onClick={onOpenManagerAssignModal}
@@ -216,7 +178,7 @@ export default function WorkOrderDetailTabletHeaderSection({
           className="mx-auto w-full max-w-[190px]"
         />
       </WaflSummaryInfoCell>
-      <TabletSummaryValue
+      <WorkOrderSummaryInfoCell
         label={copy.currentInventoryLabel}
         value={inventoryValue}
         onClick={onOpenInventoryEditor}

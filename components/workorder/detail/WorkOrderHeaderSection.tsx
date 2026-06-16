@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSaveStatus, WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
+import WorkOrderSummaryInfoCell from "@/components/workorder/detail/WorkOrderSummaryInfoCell";
+import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -43,7 +45,6 @@ export default function WorkOrderHeaderSection({
   managerName,
   currentInventoryQuantity,
   saveStatus,
-  lastSavedAt,
   dueDate,
   workOrderKind,
   onChangeDueDate,
@@ -72,7 +73,7 @@ export default function WorkOrderHeaderSection({
   const [titleDraft, setTitleDraft] = useState(editableTitle ?? title);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const managerValue = managerName || "-";
-  const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
+  const inventoryValue = formatPbpNumberWithUnit(currentInventoryQuantity, common.quantitySuffix);
   const summaryValue = summaryText || "-";
   const canEditSummary = !locked && canRenameTitle && typeof onOpenBasicInfoModal === "function";
   const recommendedCategory = WORKORDER_CATEGORY_RECOMMENDATION_ENABLED ? getRecommendedWorkOrderCategory(titleDraft.trim()) : null;
@@ -173,12 +174,12 @@ export default function WorkOrderHeaderSection({
       columns={2}
       className="shadow-none"
     >
-      <WorkOrderHeaderInfoCell
+      <WorkOrderSummaryInfoCell
         label={copy.summaryLabel}
         value={summaryValue}
         onClick={canEditSummary ? onOpenBasicInfoModal : undefined}
       />
-      <WorkOrderHeaderInfoCell
+      <WorkOrderSummaryInfoCell
         label={copy.managerLabel}
         value={managerValue}
         onClick={canEditManager ? onOpenManagerAssignModal : undefined}
@@ -205,7 +206,7 @@ export default function WorkOrderHeaderSection({
           className="mx-auto w-full max-w-[190px]"
         />
       </WaflSummaryInfoCell>
-      <WorkOrderHeaderInfoCell
+      <WorkOrderSummaryInfoCell
         label={copy.currentInventoryLabel}
         value={inventoryValue}
         onClick={canEditInventory ? onOpenInventoryEditor : undefined}
@@ -221,38 +222,3 @@ export default function WorkOrderHeaderSection({
   );
 }
 
-function WorkOrderHeaderInfoCell({
-  label,
-  value,
-  onClick,
-  valueClassName = "",
-}: {
-  label: string;
-  value: ReactNode;
-  onClick?: () => void;
-  valueClassName?: string;
-}) {
-  const valueNode = (
-    <span className={`block truncate text-sm font-semibold pbp-text-primary ${valueClassName}`}>
-      {value}
-    </span>
-  );
-
-  if (!onClick) {
-    return <WaflSummaryInfoCell label={label}>{valueNode}</WaflSummaryInfoCell>;
-  }
-
-  return (
-    <WaflSummaryInfoCell label={label}>
-      <WaflButton
-        onClick={onClick}
-        variant="ghost"
-        size="sm"
-        width="full"
-        className="min-w-0 px-1.5 py-1 text-center"
-      >
-        {valueNode}
-      </WaflButton>
-    </WaflSummaryInfoCell>
-  );
-}

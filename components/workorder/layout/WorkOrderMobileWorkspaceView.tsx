@@ -70,7 +70,7 @@ export default function WorkOrderMobileWorkspaceView({
           companyName={mobileTopBarProps.companyName}
           appVersion={mobileTopBarProps.version}
           title="작업지시서"
-          description="작업지시서를 선택하고 진행 상태, 비용, 첨부와 메모를 확인합니다."
+          description="작업지시서를 선택하고 진행 상태, 비용, 디자인, 첨부파일과 공장 전달사항을 확인합니다."
           onOpenMenu={mobileTopBarProps.onOpen}
           menuLabel="작업지시서"
           menuAriaLabel="작업지시서 목록 열기"

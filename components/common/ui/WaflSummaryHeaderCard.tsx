@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { WaflSurface } from "./WaflSurface";
+import WaflResponsiveSummaryGrid from "./WaflResponsiveSummaryGrid";
 
 type WaflSummaryHeaderCardProps = {
   title: ReactNode;
@@ -9,7 +10,8 @@ type WaflSummaryHeaderCardProps = {
   footerLeft?: ReactNode;
   footerCenter?: ReactNode;
   footerRight?: ReactNode;
-  columns?: 2 | 3;
+  columns?: 1 | 2 | 3;
+  responsiveColumns?: boolean;
   footerColumns?: 2 | 3;
   component?: string;
   className?: string;
@@ -22,6 +24,7 @@ export default function WaflSummaryHeaderCard({
   footerCenter,
   footerRight,
   columns = 3,
+  responsiveColumns = false,
   footerColumns = 3,
   component = "summary-header-card",
   className,
@@ -33,14 +36,13 @@ export default function WaflSummaryHeaderCard({
       className={cn("shrink-0 p-3.5 sm:p-4", className)}
     >
       <div className="min-w-0 text-center">{title}</div>
-      <div
-        className={cn(
-          "mt-3 grid min-w-0 gap-3 border-t border-[var(--pbp-border)] pt-3 text-center",
-          columns === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3",
-        )}
+      <WaflResponsiveSummaryGrid
+        columns={columns}
+        responsive={responsiveColumns}
+        className="mt-3 border-t border-[var(--pbp-border)] pt-3 text-center"
       >
         {children}
-      </div>
+      </WaflResponsiveSummaryGrid>
       {footerLeft || footerCenter || footerRight ? (
         <div
           className={cn(

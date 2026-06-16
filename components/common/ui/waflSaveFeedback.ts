@@ -10,7 +10,7 @@ export type WaflSaveTarget = (typeof WAFL_SAVE_TARGET)[keyof typeof WAFL_SAVE_TA
 export type WaflSaveFeedbackStatus = "saving" | "saved" | "error";
 
 const TARGET_LABEL: Record<WaflSaveTarget, string> = {
-  workOrder: "작업지시서 변경사항",
+  workOrder: "작업지시서",
   dueDate: "납기일",
   materialType: "자재 종류",
   supplier: "공급처",
