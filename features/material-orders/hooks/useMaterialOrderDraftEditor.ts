@@ -32,7 +32,7 @@ import {
   shouldPersistMaterialOrderDetailBeforeStatusChange,
 } from "@/lib/material-orders/statusFlow";
 import type { WorkflowValidationIssue } from "@/lib/workorder/workflowValidationIssues";
-import type { WaflSaveStatusValue } from "@/components/common/ui";
+import { WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, type WaflSaveStatusValue } from "@/components/common/ui";
 
 type MaterialOrderStatusToastTone =
   | "info"
@@ -367,10 +367,13 @@ export function useMaterialOrderDraftEditor({
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
     setStatusToastMessage(null);
     setDueDate(normalizePbpLocalDateValue(selectedOrder.dueDate));
-    setHeaderSaveStatus("idle");
-    setHeaderSaveMessage(null);
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
   }, [selectedOrder]);
+
+  useEffect(() => {
+    setHeaderSaveStatus("idle");
+    setHeaderSaveMessage(null);
+  }, [selectedOrderId]);
 
   const showStatusToast = useCallback(
     (message: string, tone: MaterialOrderStatusToastTone) => {
@@ -416,12 +419,12 @@ export function useMaterialOrderDraftEditor({
 
       setHeaderSaving(true);
       setHeaderSaveStatus("saving");
-      setHeaderSaveMessage("자재 종류를 저장하는 중입니다...");
+      setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "saving"));
       setMaterialType(nextMaterialType);
       setSupplierPartnerId(null);
       setLines([]);
       setPendingLineAddition(null);
-      showStatusToast("자재 종류를 저장하는 중입니다.", "loading");
+      showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "saving"), "loading");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -433,14 +436,14 @@ export function useMaterialOrderDraftEditor({
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         await refreshWorkOrderCandidates();
         setHeaderSaveStatus("saved");
-        setHeaderSaveMessage("자재 종류가 저장되었습니다.");
+        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "saved"));
         showStatusToast("자재 종류가 변경되었습니다.", "success");
       } catch (error) {
         setMaterialType(previousMaterialType);
         setSupplierPartnerId(previousSupplierPartnerId);
         setLines(previousLines);
         setHeaderSaveStatus("error");
-        setHeaderSaveMessage("자재 종류를 저장하지 못했습니다.");
+        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "error"));
         showStatusToast(
           toMaterialOrderWorkspaceError(error, "자재 종류를 변경하지 못했습니다."),
           "danger",
@@ -498,8 +501,8 @@ export function useMaterialOrderDraftEditor({
       setSupplierPartnerId(nextSupplierPartnerId);
       setHeaderSaving(true);
       setHeaderSaveStatus("saving");
-      setHeaderSaveMessage("공급처를 저장하는 중입니다...");
-      showStatusToast("공급처를 저장하는 중입니다.", "loading");
+      setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saving"));
+      showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saving"), "loading");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -509,14 +512,14 @@ export function useMaterialOrderDraftEditor({
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         setHeaderSaveStatus("saved");
-        setHeaderSaveMessage("공급처가 저장되었습니다.");
-        showStatusToast("공급처가 저장되었습니다.", "success");
+        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saved"));
+        showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saved"), "success");
       } catch (error) {
         setSupplierPartnerId(previousSupplierPartnerId);
         setHeaderSaveStatus("error");
-        setHeaderSaveMessage("공급처를 저장하지 못했습니다.");
+        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "error"));
         showStatusToast(
-          toMaterialOrderWorkspaceError(error, "공급처를 저장하지 못했습니다."),
+          toMaterialOrderWorkspaceError(error, getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "error")),
           "danger",
         );
       } finally {
@@ -567,7 +570,7 @@ export function useMaterialOrderDraftEditor({
       setDueDate(normalizedDueDate);
       setHeaderSaving(true);
       setHeaderSaveStatus("saving");
-      setHeaderSaveMessage("납기일을 저장하는 중입니다...");
+      setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "saving"));
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -578,14 +581,14 @@ export function useMaterialOrderDraftEditor({
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         setHeaderSaveStatus("saved");
-        setHeaderSaveMessage("납기일이 저장되었습니다.");
-        showStatusToast("납기일이 저장되었습니다.", "success");
+        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "saved"));
+        showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "saved"), "success");
       } catch (error) {
         setDueDate(previousDueDate);
         setHeaderSaveStatus("error");
-        setHeaderSaveMessage("납기일을 저장하지 못했습니다.");
+        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "error"));
         showStatusToast(
-          toMaterialOrderWorkspaceError(error, "납기일을 저장하지 못했습니다."),
+          toMaterialOrderWorkspaceError(error, getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "error")),
           "danger",
         );
       } finally {

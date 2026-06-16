@@ -13,6 +13,7 @@ import {
   renderModalFooterActions,
 } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
+import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import {
   WaflNumberInput,
   WAFL_FIELD_INPUT_CLASS,
@@ -114,16 +115,16 @@ export default function InventoryEditor({
           <div className={MODAL_CONTENT_LABEL_CLASS}>
             {copy.currentStockLabel}
           </div>
-          <div className={`mt-1 tabular-nums ${MODAL_CONTENT_VALUE_CLASS}`}>
-            {copy.quantityFormat.replace("{count}", String(currentStock))}
+          <div className={`mt-1 break-words tabular-nums ${MODAL_CONTENT_VALUE_CLASS}`}>
+            {formatPbpNumberWithUnit(currentStock, copy.quantityFormat.replace("{count}", ""))}
           </div>
         </WaflInfoBox>
         <WaflInfoBox tone="selected" shape="control" component="readonly-card" state="selected">
           <div className="text-xs text-[var(--pbp-selected-text)]">
             {copy.nextStockLabel}
           </div>
-          <div className="mt-1 text-lg font-semibold tabular-nums text-[var(--pbp-selected-text)]">
-            {copy.quantityFormat.replace("{count}", String(nextStock))}
+          <div className="mt-1 break-words text-lg font-semibold tabular-nums text-[var(--pbp-selected-text)]">
+            {formatPbpNumberWithUnit(nextStock, copy.quantityFormat.replace("{count}", ""))}
           </div>
         </WaflInfoBox>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSaveStatus, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
+import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSaveStatus, WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -212,7 +212,11 @@ export default function WorkOrderHeaderSection({
         valueClassName="tabular-nums"
       />
     </WaflSummaryHeaderCard>
-    <WaflSaveStatus status={saveStatus} savedAt={lastSavedAt} />
+    <WaflSaveStatus
+          status={saveStatus}
+          showDirty={false}
+          message={saveStatus === "saving" || saveStatus === "saved" ? getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.workOrder, saveStatus) : undefined}
+        />
     </div>
   );
 }

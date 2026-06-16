@@ -2,7 +2,7 @@
 
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { WaflButton, WaflInput, WaflSaveStatus, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
+import { WaflButton, WaflInput, WaflSaveStatus, WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -186,7 +186,11 @@ export default function WorkOrderDetailMobileHeaderSection({
           popoverMode="fixed"
           disabled={dueDateLocked}
         />
-        <WaflSaveStatus status={saveStatus} savedAt={lastSavedAt} />
+        <WaflSaveStatus
+          status={saveStatus}
+          showDirty={false}
+          message={saveStatus === "saving" || saveStatus === "saved" ? getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.workOrder, saveStatus) : undefined}
+        />
       </div>
     </WaflSurface>
   );

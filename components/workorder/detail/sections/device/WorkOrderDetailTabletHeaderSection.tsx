@@ -9,6 +9,8 @@ import {
   WaflButton,
   WaflInput,
   WaflSaveStatus,
+  WAFL_SAVE_TARGET,
+  getWaflSaveFeedbackMessage,
   WaflSummaryHeaderCard,
   WaflSummaryInfoCell,
 } from "@/components/common/ui";
@@ -222,7 +224,11 @@ export default function WorkOrderDetailTabletHeaderSection({
         valueClassName="tabular-nums"
       />
     </WaflSummaryHeaderCard>
-    <WaflSaveStatus status={saveStatus} savedAt={lastSavedAt} />
+    <WaflSaveStatus
+          status={saveStatus}
+          showDirty={false}
+          message={saveStatus === "saving" || saveStatus === "saved" ? getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.workOrder, saveStatus) : undefined}
+        />
     </div>
   );
 }

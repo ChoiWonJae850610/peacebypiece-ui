@@ -8,6 +8,7 @@ type WaflSaveStatusProps = {
   savedAt?: string | null;
   className?: string;
   align?: "left" | "center" | "right";
+  showDirty?: boolean;
 };
 
 const DEFAULT_MESSAGE: Record<Exclude<WaflSaveStatusValue, "idle">, string> = {
@@ -23,8 +24,9 @@ export default function WaflSaveStatus({
   savedAt,
   className = "",
   align = "right",
+  showDirty = true,
 }: WaflSaveStatusProps) {
-  if (status === "idle") return null;
+  if (status === "idle" || (status === "dirty" && !showDirty)) return null;
 
   const toneClass = status === "error"
     ? "text-[var(--pbp-danger-text)]"
@@ -33,7 +35,7 @@ export default function WaflSaveStatus({
       : "text-[var(--pbp-text-subtle)]";
   const alignClass = align === "left" ? "text-left" : align === "center" ? "text-center" : "text-right";
   const label = message ?? DEFAULT_MESSAGE[status];
-  const savedAtLabel = status === "saved" && savedAt ? ` · ${savedAt}` : "";
+  void savedAt;
 
   return (
     <p
@@ -43,7 +45,7 @@ export default function WaflSaveStatus({
       role={status === "error" ? "alert" : "status"}
       aria-live="polite"
     >
-      {label}{savedAtLabel}
+      {label}
     </p>
   );
 }
