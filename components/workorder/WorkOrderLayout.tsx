@@ -7,13 +7,13 @@ import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/typ
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
 export default function WorkOrderLayout(props: WorkOrderLayoutViewProps) {
-  const { deviceType, layoutMode } = useWorkspaceLayoutMode();
+  const { layoutMode } = useWorkspaceLayoutMode();
 
   if (layoutMode === "drawer") {
     return <WorkOrderMobileWorkspaceView {...props} />;
   }
 
-  if (deviceType === "tablet") {
+  if (layoutMode === "tabletTwoPanel") {
     return <WorkOrderTabletWorkspaceView {...props} />;
   }
 

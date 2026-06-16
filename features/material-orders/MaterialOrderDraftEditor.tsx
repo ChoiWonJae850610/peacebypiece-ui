@@ -56,7 +56,7 @@ export default function MaterialOrderDraftEditor({
   isAdmin: boolean;
 }) {
   const {
-    deviceType,
+    drawerOverlayPresentation,
     useDrawerNavigation,
     useStackedProgress,
     useTabletTwoPanel,
@@ -268,7 +268,7 @@ export default function MaterialOrderDraftEditor({
       errorMessage={workOrdersError}
       onAddMaterialToOrder={handleAddMaterialToOrder}
       onRetry={() => void refreshWorkOrderCandidates()}
-      mobile={deviceType === "mobile"}
+      mobile={useDrawerNavigation}
     />
   );
 
@@ -363,13 +363,13 @@ export default function MaterialOrderDraftEditor({
           onToolOpenChange={setMobileToolSheetOpen}
           activeTool={mobileActiveTool}
           onActiveToolChange={setMobileActiveTool}
-          presentation={deviceType === "tablet" ? "modal" : "sheet"}
-          sheetContentClassName={deviceType === "tablet" ? "px-5 py-5" : undefined}
+          presentation={drawerOverlayPresentation}
+          sheetContentClassName={drawerOverlayPresentation === "modal" ? "px-5 py-5" : undefined}
           contentClassName="gap-3"
           renderTool={(activeTool: MaterialOrderMobileToolKey) => (
             <>
               {activeTool === "workorders" ? (
-                <div className={deviceType === "tablet" ? "min-h-0 min-w-0" : "min-h-[58dvh] min-w-0"}>{allocationPanel}</div>
+                <div className={drawerOverlayPresentation === "modal" ? "min-h-0 min-w-0" : "min-h-[58dvh] min-w-0"}>{allocationPanel}</div>
               ) : null}
               {activeTool === "schedule" ? (
                 <WaflEmptyCard

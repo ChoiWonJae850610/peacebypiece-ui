@@ -21,7 +21,7 @@ export default function WorkOrderMobileWorkspaceView({
   mobileDrawerProps,
   loadingState,
 }: WorkOrderLayoutViewProps) {
-  const { deviceType } = useWorkspaceLayoutMode();
+  const { drawerOverlayPresentation } = useWorkspaceLayoutMode();
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
   const detailScrollResetKey = selectedId;
 
@@ -80,7 +80,7 @@ export default function WorkOrderMobileWorkspaceView({
       detail={detailContent}
       sidePanel={renderRelatedSection}
       hasSelection={hasSelection}
-      relatedPresentation={deviceType === "tablet" ? "modal" : "sheet"}
+      relatedPresentation={drawerOverlayPresentation}
     />
   );
 }

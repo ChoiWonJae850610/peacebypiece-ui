@@ -6,10 +6,9 @@ import {
   RESPONSIVE_BREAKPOINTS,
   type ResponsiveDeviceType,
 } from "@/lib/responsive/responsiveLayoutPolicy";
-import { useResponsiveDeviceType } from "@/lib/responsive/useResponsiveDeviceType";
-import { useResponsiveOrientation } from "@/lib/responsive/useResponsiveOrientation";
 
 export type WorkspaceLayoutMode = "drawer" | "tabletTwoPanel" | "threePanel";
+export type WorkspaceOverlayPresentation = "sheet" | "modal";
 
 export type WorkspaceLayoutState = {
   deviceType: ResponsiveDeviceType;
@@ -18,6 +17,7 @@ export type WorkspaceLayoutState = {
   viewportHeight: number;
   isLandscape: boolean;
   layoutMode: WorkspaceLayoutMode;
+  drawerOverlayPresentation: WorkspaceOverlayPresentation;
   useDrawerNavigation: boolean;
   useTabletTwoPanel: boolean;
   useThreePanel: boolean;
@@ -32,9 +32,58 @@ function getViewportSize() {
   return { width: window.innerWidth, height: window.innerHeight };
 }
 
+export function resolveWorkspaceLayout(
+  viewportWidth: number,
+  viewportHeight: number,
+): WorkspaceLayoutState {
+  const width = Math.max(0, viewportWidth);
+  const height = Math.max(0, viewportHeight);
+  const shortSide = Math.min(width, height);
+  const isLandscape = width > height;
+  const orientation = isLandscape ? "landscape" : "portrait";
+  const hasTabletCanvas = shortSide >= RESPONSIVE_BREAKPOINTS.compactTabletMin;
+
+  const useDesktopThreePanel = width >= RESPONSIVE_BREAKPOINTS.desktopMin;
+  const useTabletThreePanel =
+    hasTabletCanvas &&
+    isLandscape &&
+    width >= RESPONSIVE_BREAKPOINTS.tabletThreePanelMin;
+  const useThreePanel = useDesktopThreePanel || useTabletThreePanel;
+  const useTabletTwoPanel =
+    !useThreePanel &&
+    hasTabletCanvas &&
+    isLandscape &&
+    width >= RESPONSIVE_BREAKPOINTS.tabletNarrowTwoPanelMin;
+
+  const layoutMode: WorkspaceLayoutMode = useThreePanel
+    ? "threePanel"
+    : useTabletTwoPanel
+      ? "tabletTwoPanel"
+      : "drawer";
+
+  const deviceType: ResponsiveDeviceType =
+    width >= RESPONSIVE_BREAKPOINTS.desktopMin
+      ? "desktop"
+      : hasTabletCanvas
+        ? "tablet"
+        : "mobile";
+
+  return {
+    deviceType,
+    orientation,
+    viewportWidth: width,
+    viewportHeight: height,
+    isLandscape,
+    layoutMode,
+    drawerOverlayPresentation: hasTabletCanvas ? "modal" : "sheet",
+    useDrawerNavigation: layoutMode === "drawer",
+    useTabletTwoPanel,
+    useThreePanel,
+    useStackedProgress: layoutMode === "drawer",
+  };
+}
+
 export function useWorkspaceLayoutMode(): WorkspaceLayoutState {
-  const deviceType = useResponsiveDeviceType();
-  const orientation = useResponsiveOrientation();
   const [viewportSize, setViewportSize] = useState(getViewportSize);
 
   useEffect(() => {
@@ -48,36 +97,8 @@ export function useWorkspaceLayoutMode(): WorkspaceLayoutState {
     };
   }, []);
 
-  return useMemo(() => {
-    const isLandscape =
-      orientation === "landscape" || viewportSize.width > viewportSize.height;
-    const tabletCanUseThreePanel =
-      deviceType === "tablet" &&
-      isLandscape &&
-      viewportSize.width >= RESPONSIVE_BREAKPOINTS.tabletThreePanelMin;
-    const tabletCanUseTwoPanel =
-      deviceType === "tablet" &&
-      isLandscape &&
-      viewportSize.width >= RESPONSIVE_BREAKPOINTS.tabletNarrowTwoPanelMin &&
-      !tabletCanUseThreePanel;
-    const useThreePanel = deviceType === "desktop" || tabletCanUseThreePanel;
-    const layoutMode: WorkspaceLayoutMode = useThreePanel
-      ? "threePanel"
-      : tabletCanUseTwoPanel
-        ? "tabletTwoPanel"
-        : "drawer";
-
-    return {
-      deviceType,
-      orientation,
-      viewportWidth: viewportSize.width,
-      viewportHeight: viewportSize.height,
-      isLandscape,
-      layoutMode,
-      useDrawerNavigation: layoutMode !== "threePanel",
-      useTabletTwoPanel: layoutMode === "tabletTwoPanel",
-      useThreePanel,
-      useStackedProgress: deviceType === "mobile",
-    };
-  }, [deviceType, orientation, viewportSize.height, viewportSize.width]);
+  return useMemo(
+    () => resolveWorkspaceLayout(viewportSize.width, viewportSize.height),
+    [viewportSize.height, viewportSize.width],
+  );
 }
