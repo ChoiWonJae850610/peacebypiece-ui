@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
+import type { InventoryLog } from "@/types/workorder";
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
   MODAL_CONTENT_LABEL_CLASS,
@@ -24,19 +25,6 @@ import {
 } from "@/components/common/ui";
 
 type InventoryMode = InventoryChangeTypeValue;
-
-type InventoryLog = {
-  id: string;
-  summary: string;
-  delta: number;
-  memo: string;
-  user: string;
-  time: string;
-  changes: Array<{
-    type: InventoryMode;
-    quantity: number;
-  }>;
-};
 
 export default function InventoryEditor({
   open,

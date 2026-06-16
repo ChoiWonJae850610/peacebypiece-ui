@@ -246,6 +246,7 @@ export type InventoryLog = {
   id: string;
   summary: string;
   delta: number;
+  memo: string;
   user: string;
   time: string;
   changes: InventoryChange[];
