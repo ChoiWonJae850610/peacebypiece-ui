@@ -133,6 +133,7 @@ export function buildSidePanelProps({
   i18n,
   isWorkspaceWriteLocked,
   workspaceWriteLockMessage,
+  canEditSideDraftContent,
   getAttachmentPermissions,
   onOpenAttachmentPicker,
   onUploadAttachmentFiles,
