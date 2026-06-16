@@ -154,7 +154,7 @@ export default function WorkOrderDetailMobileHeaderSection({
               calendarAria: "납기일 선택",
             }}
             locale="ko"
-            displayFormat="iso"
+            displayFormat="locale"
             onChange={onChangeDueDate}
             minDateValue={getTodayPbpLocalDateValue()}
             popoverMode="fixed"

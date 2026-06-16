@@ -1,3 +1,4 @@
+import { formatPbpDateDisplay, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { readWaflLegacyApiResponse, waflApiRequest } from "@/lib/api/waflApiClient";
 import type { WorkOrderSummary } from "@/types/workorder";
 import {
@@ -81,10 +82,8 @@ export function formatMaterialOrderRequesterLabel(order: Pick<MaterialOrder, "re
 }
 
 export function formatMaterialOrderDateLabel(value: string | null | undefined): string {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("ko-KR", { month: "2-digit", day: "2-digit" }).format(date);
+  const normalized = normalizePbpLocalDateValue(value);
+  return normalized ? formatPbpDateDisplay(normalized, "ko") : "-";
 }
 
 export function formatMaterialOrderCreatedAtLabel(value: string | null | undefined): string {
@@ -97,6 +96,7 @@ export function formatMaterialOrderCreatedAtLabel(value: string | null | undefin
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
     hour12: false,
   }).format(date);
 }
