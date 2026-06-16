@@ -3,7 +3,7 @@ import MobileDrawer from "@/components/layout/MobileDrawer";
 import MobileTopBar from "@/components/layout/MobileTopBar";
 import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
-import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
+import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 
 export type WorkOrderWorkspaceLoadingState = {
@@ -16,7 +16,7 @@ export type WorkOrderWorkspaceLoadingState = {
 
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
-export type SidePanelProps = ComponentProps<typeof WorkOrderSidePanel>;
+export type SidePanelProps = WorkOrderSidePanelProps;
 export type MobileTopBarProps = Omit<ComponentProps<typeof MobileTopBar>, "homeNavigation">;
 export type MobileDrawerProps = Omit<ComponentProps<typeof MobileDrawer>, "open" | "onClose"> & {
   open: boolean;
