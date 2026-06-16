@@ -434,19 +434,7 @@ VALUES
   ('test-a-attachment-design', 'test-company-a', 'TEST A 고객사', 'test-a-wo-draft-designer', 'design', 'companies/test-company-a/workorders/test-a-wo-draft-designer/design/test-a-attachment-design.png', 'test-design.png', 'image/png', 102400, 'test-a-designer', true, 'user'),
   ('test-a-attachment-file', 'test-company-a', 'TEST A 고객사', 'test-a-wo-review-completed', 'file', 'companies/test-company-a/workorders/test-a-wo-review-completed/attachments/test-a-attachment-file.pdf', 'test-spec.pdf', 'application/pdf', 204800, 'test-a-admin', true, 'user');
 
-INSERT INTO memos (
-  id,
-  company_id,
-  company_name,
-  order_id,
-  body,
-  author_id,
-  is_active,
-  delete_status
-)
-VALUES
-  ('test-a-memo-draft', 'test-company-a', 'TEST A 고객사', 'test-a-wo-draft-designer', 'TEST A 작성중 메모', 'test-a-designer', true, 'active'),
-  ('test-a-memo-inspection', 'test-company-a', 'TEST A 고객사', 'test-a-wo-inspection', 'TEST A 검수중 메모', 'test-a-inspector', true, 'active');
+
 
 INSERT INTO history_logs (
   id,

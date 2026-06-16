@@ -1,12 +1,12 @@
 import "server-only";
 import { randomUUID } from "crypto";
-import { ATTACHMENT_SCOPE, isDesignAttachmentScope, isMemoAttachmentScope } from "@/lib/constants/workorderIdentity";
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import type { AttachmentScope } from "@/types/workorder";
 
 const SAFE_EXTENSION_PATTERN = /^[a-z0-9]{1,12}$/i;
-const WORK_ORDER_ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
+const WORK_ORDER_ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments)\/[^/]+$/i;
 const WORK_ORDER_GENERATED_DOCUMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/generated\/order-request\/[^/]+\.pdf$/i;
-const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
+const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
 
 function getFileExtension(filename: string): string {
   const [, extension = ""] = filename.match(/\.([a-z0-9]+)$/i) ?? [];
@@ -27,13 +27,11 @@ function normalizeStorageKey(value: string): string {
 }
 
 export function normalizeAttachmentScopeForStorage(value: AttachmentScope | null | undefined): AttachmentScope {
-  return isDesignAttachmentScope(value) ? ATTACHMENT_SCOPE.design : isMemoAttachmentScope(value) ? ATTACHMENT_SCOPE.memo : ATTACHMENT_SCOPE.attachment;
+  return isDesignAttachmentScope(value) ? ATTACHMENT_SCOPE.design : ATTACHMENT_SCOPE.attachment;
 }
 
-export function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" | "memos" {
-  if (isDesignAttachmentScope(scope)) return "design";
-  if (isMemoAttachmentScope(scope)) return "memos";
-  return "attachments";
+export function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" {
+  return isDesignAttachmentScope(scope) ? "design" : "attachments";
 }
 
 export function createWorkOrderAttachmentStorageKey(input: {
@@ -92,7 +90,7 @@ export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
 export type ParsedWorkOrderAttachmentStorageKey = {
   companyId: string;
   workOrderId: string;
-  directory: "design" | "attachments" | "memos" | "generated/order-request";
+  directory: "design" | "attachments" | "generated/order-request";
   fileName: string;
   isThumbnail: boolean;
 };
@@ -125,7 +123,7 @@ export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrder
 
   if (segments.length === 6) {
     const [root, companyId, workorders, workOrderId, directory, fileName] = segments;
-    const isSupportedDirectory = directory === "design" || directory === "attachments" || directory === "memos";
+    const isSupportedDirectory = directory === "design" || directory === "attachments";
     if (root !== "companies" || workorders !== "workorders" || !companyId || !workOrderId || !isSupportedDirectory || !fileName) {
       return null;
     }
@@ -141,7 +139,7 @@ export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrder
 
   if (segments.length === 7) {
     const [root, companyId, workorders, workOrderId, thumbnails, directory, fileName] = segments;
-    const isSupportedDirectory = directory === "design" || directory === "attachments" || directory === "memos";
+    const isSupportedDirectory = directory === "design" || directory === "attachments";
     if (
       root !== "companies" ||
       workorders !== "workorders" ||

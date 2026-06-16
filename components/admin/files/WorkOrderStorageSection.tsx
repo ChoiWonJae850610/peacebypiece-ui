@@ -45,7 +45,6 @@ export default function WorkOrderStorageSection({
     items,
     (item) => item.trashAttachmentCount,
   );
-  const trashMemoCount = getTotalCount(items, (item) => item.trashMemoCount);
 
   return (
     <WaflSurface as="section" component="storage-workorder-panel" tone="surface" className="flex h-full min-h-[420px] flex-col p-2.5 md:p-4">
@@ -53,7 +52,7 @@ export default function WorkOrderStorageSection({
         title={t("filesWorkOrders.title", "작업지시서 저장소")}
         description={t(
           "filesWorkOrders.description",
-          "삭제한 작업지시서와 함께 휴지통으로 이동한 문서·디자인·메모를 확인합니다.",
+          "삭제한 작업지시서와 함께 휴지통으로 이동한 문서·디자인를 확인합니다.",
         )}
         actionsClassName="w-full [&>button]:w-full sm:w-auto sm:[&>button]:w-auto"
       >
@@ -78,12 +77,12 @@ export default function WorkOrderStorageSection({
         <p className="mt-1 leading-5">
           {t(
             "filesWorkOrders.restorePolicyNotice",
-            "작업지시서가 삭제 상태이면 문서·디자인·메모는 개별 복원하거나 개별 삭제하지 않고 작업지시서 묶음 복원/삭제에서 함께 처리합니다. 삭제 완료 파일은 복원 대상에서 제외됩니다.",
+            "작업지시서가 삭제 상태이면 문서·디자인는 개별 복원하거나 개별 삭제하지 않고 작업지시서 묶음 복원/삭제에서 함께 처리합니다. 삭제 완료 파일은 복원 대상에서 제외됩니다.",
           )}
         </p>
       </WaflInfoBox>
 
-      <div className="mt-3 grid gap-2.5 md:grid-cols-3">
+      <div className="mt-3 grid gap-2.5 md:grid-cols-2">
         <WaflSurface component="storage-workorder-summary-card" shape="control" tone="muted" className="px-3 py-3">
           <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
             {t(
@@ -103,14 +102,6 @@ export default function WorkOrderStorageSection({
             {formatCount(trashAttachmentCount, t)}
           </p>
         </WaflSurface>
-        <WaflSurface component="storage-workorder-summary-card" shape="control" tone="muted" className="px-3 py-3">
-          <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
-            {t("filesWorkOrders.summary.trashMemos", "묶음 휴지통 메모")}
-          </p>
-          <p className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1.5 text-lg font-semibold`}>
-            {formatCount(trashMemoCount, t)}
-          </p>
-        </WaflSurface>
       </div>
 
       <AdminTable
@@ -123,7 +114,7 @@ export default function WorkOrderStorageSection({
         )}
         emptyDescription={t(
           "filesWorkOrders.emptyDescription",
-          "작업지시서를 삭제하면 함께 이동한 문서, 디자인, 메모 묶음이 이 목록에 표시됩니다.",
+          "작업지시서를 삭제하면 함께 이동한 문서와 디자인 묶음이 이 목록에 표시됩니다.",
         )}
         gridTemplateColumns={WORKORDER_STORAGE_TABLE_GRID}
         columns={[
@@ -178,15 +169,6 @@ export default function WorkOrderStorageSection({
                   "documentsDesigns",
                   t,
                 )}
-              </p>
-            ),
-          },
-          {
-            key: "memos",
-            label: t("filesWorkOrders.columns.memos", "메모"),
-            render: (item) => (
-              <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px] leading-4`}>
-                {formatTrashDetailCountLabel(item.memoSummaryLabel, "memos", t)}
               </p>
             ),
           },

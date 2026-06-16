@@ -7,13 +7,13 @@ import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
 import { isImageContentType, isWorkOrderAttachmentThumbnailKeyForScope } from "@/lib/storage/r2/r2ThumbnailKeys";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { queryDb } from "@/lib/db/client";
 import { normalizeAttachmentUploadScope, validateAttachmentFile, validateAttachmentFileCount } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
-import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
-import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
+import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
+import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentTypes";
 import type { Attachment, AttachmentScope } from "@/types/workorder";
 
 export const runtime = "nodejs";
@@ -35,7 +35,7 @@ type CompleteUploadRequest = {
   serviceCode?: unknown;
 };
 
-function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
+function isWritableRepository(repository: AttachmentRepository): repository is AttachmentWritableRepository {
   return "createAttachment" in repository;
 }
 
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachments: [], error: "WORK_ORDER_NOT_FOUND" }, { status: 404 });
     }
 
-    const repository = await createAttachmentMemoRepository();
+    const repository = await createAttachmentRepository();
     if (!isWritableRepository(repository)) {
       return NextResponse.json({ attachments: [], error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
     }

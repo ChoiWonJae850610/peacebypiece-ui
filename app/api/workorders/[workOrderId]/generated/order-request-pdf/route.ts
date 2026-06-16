@@ -16,8 +16,8 @@ import {
   createOrderRequestPdfStorageKey,
   getGeneratedOrderRequestAttachmentScope,
 } from "@/lib/workorder/generatedDocuments";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
-import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
+import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
+import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
 import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 import { buildOrderRequestServerPdf, buildOrderRequestServerPdfHtml } from "@/lib/workorder/serverOrderRequestPdf";
 import type { Attachment } from "@/types/workorder";
@@ -59,7 +59,7 @@ function createOrderRequestPdfErrorResponse(stage: string, error: unknown, statu
   );
 }
 
-function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
+function isWritableRepository(repository: AttachmentRepository): repository is AttachmentWritableRepository {
   return "createAttachment" in repository;
 }
 
@@ -181,7 +181,7 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ ok: false, attachment: null, error: "WORK_ORDER_NOT_FOUND" }, { status: 404 });
   }
 
-  const repository = await createAttachmentMemoRepository();
+  const repository = await createAttachmentRepository();
   if (!isWritableRepository(repository)) {
     return NextResponse.json({ ok: false, attachment: null, error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
   }
@@ -200,7 +200,6 @@ export async function POST(request: Request, context: RouteContext) {
     const documentWorkOrder = {
       ...workOrder,
       attachments: snapshot.attachments,
-      memoThreads: snapshot.memoThreads,
     };
     const representativeImageDataUrl = await resolveOrderRequestRepresentativeImageDataUrl(documentWorkOrder);
     const html = buildOrderRequestServerPdfHtml({ workOrder: documentWorkOrder, requestNote, representativeImageDataUrl });

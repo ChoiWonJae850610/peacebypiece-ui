@@ -61,7 +61,6 @@ export function buildSystemStoragePurgeCopy(t: SystemStoragePurgeTranslator = fa
       currentSort: t("storageUsage.list.currentSort", "현재 정렬"),
       workOrderBundleMeta: t("storageUsage.list.workOrderBundleMeta", "작업지시서 묶음"),
       attachmentCount: t("storageUsage.list.attachmentCount", "첨부"),
-      memoCount: t("storageUsage.list.memoCount", "메모"),
       sourceKeyTitle: t("storageUsage.list.sourceKeyTitle", "원본"),
       thumbnailKeyTitle: t("storageUsage.list.thumbnailKeyTitle", "썸네일"),
       keyHeader: t("storageUsage.list.keyHeader", "R2 key"),
@@ -110,7 +109,6 @@ export function buildSystemStoragePurgeSortLabels(t: SystemStoragePurgeTranslato
     purgeDueAt: t("storageUsage.sort.purgeDueAt", "예정일"),
     size: t("storageUsage.sort.size", "용량"),
     attachmentCount: t("storageUsage.sort.attachmentCount", "첨부"),
-    memoCount: t("storageUsage.sort.memoCount", "메모"),
     status: t("storageUsage.sort.status", "상태"),
   } as const;
 }
@@ -151,10 +149,10 @@ export function getSystemStorageSortDirectionLabel(direction: "asc" | "desc", t:
 }
 
 export function buildSystemStorageWorkOrderBundleMetaLabel(
-  input: { documentCount: number; designCount: number; memoCount: number },
+  input: { documentCount: number; designCount: number },
   copy: SystemStoragePurgeCopy = SYSTEM_STORAGE_PURGE_COPY,
 ): string {
-  return `${copy.list.workOrderBundleMeta} · 문서 ${input.documentCount}개 · 디자인 ${input.designCount}개 · ${copy.list.memoCount} ${input.memoCount}개`;
+  return `${copy.list.workOrderBundleMeta} · 문서 ${input.documentCount}개 · 디자인 ${input.designCount}개`;
 }
 
 export function getSystemStorageCandidateKindLabel(kind: SystemStoragePurgeCandidateKind, copy: SystemStoragePurgeCopy = SYSTEM_STORAGE_PURGE_COPY): string {

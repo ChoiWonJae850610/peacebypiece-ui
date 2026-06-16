@@ -50,7 +50,6 @@ export const DUE_DATE_COLUMN_CANDIDATES = ["due_date"] as const;
 export const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
 export const INVENTORY_QUANTITY_COLUMN_CANDIDATES = ["inventory_quantity"] as const;
 export const INVENTORY_STATUS_COLUMN_CANDIDATES = ["inventory_status"] as const;
-export const MEMO_COLUMN_CANDIDATES = ["memo"] as const;
 export const REJECTION_REASON_COLUMN_CANDIDATES = ["rejection_reason"] as const;
 export const REJECTED_AT_COLUMN_CANDIDATES = ["rejected_at"] as const;
 export const REJECTED_BY_USER_ID_COLUMN_CANDIDATES = ["rejected_by_user_id"] as const;

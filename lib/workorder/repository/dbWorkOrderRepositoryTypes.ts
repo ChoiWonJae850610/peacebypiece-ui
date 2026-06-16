@@ -32,7 +32,6 @@ export type DbSpecSheetRow = {
   quantity?: number | null;
   inventory_quantity?: number | null;
   inventory_status?: WorkOrder["inventoryStatus"] | null;
-  memo?: string | null;
   rejection_reason?: string | null;
   rejected_at?: string | Date | null;
   rejected_by_user_id?: string | null;
@@ -46,7 +45,6 @@ export type DbSpecSheetRow = {
   material_items?: unknown | null;
   outsourcing_count?: number | null;
   attachment_count?: number | null;
-  memo_thread_count?: number | null;
   is_active?: boolean | null;
   deleted_at?: string | Date | null;
   created_at?: string | Date | null;
@@ -104,7 +102,6 @@ export type DbSpecSheetSchema = {
   quantityColumn: string | null;
   inventoryQuantityColumn: string | null;
   inventoryStatusColumn: string | null;
-  memoColumn: string | null;
   rejectionReasonColumn: string | null;
   rejectedAtColumn: string | null;
   rejectedByUserIdColumn: string | null;

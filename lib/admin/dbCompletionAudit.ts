@@ -1,4 +1,4 @@
-import { ATTACHMENT_MEMO_REPOSITORY_MODE, PARTNER_REPOSITORY_MODE, WORKORDER_REPOSITORY_MODE } from "@/lib/constants/app";
+import { ATTACHMENT_REPOSITORY_MODE, PARTNER_REPOSITORY_MODE, WORKORDER_REPOSITORY_MODE } from "@/lib/constants/app";
 
 const SUPPORTED_DATABASE_ENV_KEYS = [
   "DATABASE_URL",
@@ -10,7 +10,7 @@ const SUPPORTED_DATABASE_ENV_KEYS = [
 
 export type AdminDbScreenAuditStatus = "db-connected" | "db-prepared" | "empty-state-guarded" | "seed-only" | "not-applicable";
 export type AdminDbScreenAuditSourceType = "actual-db" | "db-with-empty-state" | "db-prepared-empty-state" | "seed-only" | "not-applicable";
-export type AdminRepositoryMode = typeof WORKORDER_REPOSITORY_MODE | typeof PARTNER_REPOSITORY_MODE | typeof ATTACHMENT_MEMO_REPOSITORY_MODE;
+export type AdminRepositoryMode = typeof WORKORDER_REPOSITORY_MODE | typeof PARTNER_REPOSITORY_MODE | typeof ATTACHMENT_REPOSITORY_MODE;
 export type AdminStatusTone = "success" | "warning" | "info" | "muted";
 
 export type AdminStatusPresentation = {
@@ -35,7 +35,7 @@ export type AdminDbCompletionSummary = {
   repositoryModes: {
     workorder: typeof WORKORDER_REPOSITORY_MODE;
     partner: typeof PARTNER_REPOSITORY_MODE;
-    attachmentMemo: typeof ATTACHMENT_MEMO_REPOSITORY_MODE;
+    attachment: typeof ATTACHMENT_REPOSITORY_MODE;
   };
   supportedEnvKeys: readonly string[];
   items: readonly AdminDbScreenAuditItem[];
@@ -131,7 +131,7 @@ export function getAdminDbCompletionSummary(): AdminDbCompletionSummary {
     repositoryModes: {
       workorder: WORKORDER_REPOSITORY_MODE,
       partner: PARTNER_REPOSITORY_MODE,
-      attachmentMemo: ATTACHMENT_MEMO_REPOSITORY_MODE,
+      attachment: ATTACHMENT_REPOSITORY_MODE,
     },
     supportedEnvKeys: SUPPORTED_DATABASE_ENV_KEYS,
     items: ADMIN_DB_SCREEN_AUDIT_ITEMS,

@@ -36,7 +36,7 @@ type SystemStoragePurgeCandidatesClientProps = {
 };
 
 type SortDirection = "asc" | "desc";
-type SortKey = "kind" | "company" | "target" | "deletedAt" | "purgeDueAt" | "size" | "attachmentCount" | "memoCount" | "status";
+type SortKey = "kind" | "company" | "target" | "deletedAt" | "purgeDueAt" | "size" | "attachmentCount" | "status";
 
 type SortState = {
   key: SortKey;
@@ -70,7 +70,6 @@ function compareText(left: string, right: string): number {
 function compareCandidates(left: SystemStoragePurgeCandidate, right: SystemStoragePurgeCandidate, key: SortKey): number {
   if (key === "size") return left.originalSizeBytes - right.originalSizeBytes;
   if (key === "attachmentCount") return left.attachmentCount - right.attachmentCount;
-  if (key === "memoCount") return left.memoCount - right.memoCount;
   if (key === "deletedAt") return toSortTime(left.deletedAt) - toSortTime(right.deletedAt);
   if (key === "purgeDueAt") return toSortTime(left.purgeDueAt) - toSortTime(right.purgeDueAt);
   if (key === "kind") return compareText(left.fileTypeLabel, right.fileTypeLabel);
@@ -214,7 +213,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{candidate.fileName}</p>
           <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">
             {candidate.candidateKind === "workorder"
-              ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount, memoCount: candidate.memoCount }, purgeCopy)
+              ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount }, purgeCopy)
               : `${candidate.fileTypeLabel} · ${candidate.thumbnailCountLabel}`}
           </p>
         </div>
@@ -259,7 +258,6 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           <span>{purgeCopy.list.keyHeader}</span>
           <span className="flex gap-3">
             {renderSortButton("attachmentCount")}
-            {renderSortButton("memoCount")}
           </span>
         </span>
       ),

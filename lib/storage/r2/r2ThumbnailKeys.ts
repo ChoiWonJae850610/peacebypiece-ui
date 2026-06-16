@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import type { AttachmentScope } from "@/types/workorder";
 import { getAttachmentStorageDirectory, normalizeAttachmentScopeForStorage } from "@/lib/storage/r2/r2Keys";
 
-const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
+const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
 
 function sanitizeSegment(value: string): string {
   return value

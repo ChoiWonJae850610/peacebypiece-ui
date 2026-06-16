@@ -1,5 +1,5 @@
 import { WORK_ORDER_KIND, type WorkOrderKindValue } from "@/lib/constants/workorderIdentity";
-import { HISTORY_CATEGORY, HISTORY_TONE, MEMO_HISTORY_ACTION, type MemoHistoryActionValue } from "@/lib/constants/workorderHistory";
+import { HISTORY_CATEGORY, HISTORY_TONE } from "@/lib/constants/workorderHistory";
 import { createHistoryLog, defaultHistoryText, type DetailLine, type HistoryText } from "@/lib/workorder/history/builders/shared";
 import type { HistoryLog } from "@/types/workorder";
 
@@ -70,31 +70,6 @@ export function createStatusHistoryLog(
     tone: HISTORY_TONE.violet,
     transition: { from, to },
     detailLines: [{ label: text.detailLabels.changed, value: `${from}${text.transitionArrow}${to}` }],
-    text,
-  });
-}
-
-export function createMemoHistoryLog(
-  user: string,
-  workOrderId: string,
-  payload: { action: MemoHistoryActionValue; content: string },
-  text: HistoryText = defaultHistoryText,
-) {
-  const action = payload.action === MEMO_HISTORY_ACTION.thread ? text.actions.memoThreadCreated : text.actions.memoReplyCreated;
-  const trimmedContent = payload.content.trim();
-  const summary = ``;
-
-  return createHistoryLog({
-    action,
-    message: payload.action === MEMO_HISTORY_ACTION.thread ? text.messages.memoThreadCreated : text.messages.memoReplyCreated,
-    user,
-    workOrderId,
-    category: HISTORY_CATEGORY.work,
-    tone: HISTORY_TONE.blue,
-    summary,
-    detailLines: [
-      { label: text.detailLabels.content, value: trimmedContent },
-    ],
     text,
   });
 }

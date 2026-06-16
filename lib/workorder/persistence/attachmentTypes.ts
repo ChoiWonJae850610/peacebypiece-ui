@@ -1,10 +1,7 @@
 import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
-import type { Attachment, AttachmentScope, AttachmentType, MemoReply, MemoThread, RoleType } from "@/types/workorder";
+import type { Attachment, AttachmentScope, AttachmentType } from "@/types/workorder";
 
-export const ATTACHMENT_MEMO_DB_TABLE_SEQUENCE = [
-  "attachments",
-  "memos",
-] as const;
+export const ATTACHMENT_DB_TABLE_SEQUENCE = ["attachments"] as const;
 
 export const ATTACHMENT_STORAGE_PROVIDER_VALUES = ["r2", "external", "local_mock"] as const;
 
@@ -36,27 +33,8 @@ export type WorkOrderAttachmentDbRecord = {
   generated_document_type?: GeneratedDocumentType | string | null;
 };
 
-export type WorkOrderMemoDbRecord = {
-  id: string;
-  order_id: string;
-  parent_id: string | null;
-  body: string;
-  author_id: string | null;
-  is_active: boolean;
-  deleted_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type WorkOrderMemoThreadDbRecord = WorkOrderMemoDbRecord;
-
-export type WorkOrderMemoReplyDbRecord = WorkOrderMemoDbRecord & {
-  thread_id: string;
-};
-
-export type AttachmentMemoSnapshot = {
+export type AttachmentSnapshot = {
   attachments: Attachment[];
-  memoThreads: MemoThread[];
 };
 
 export type CreateAttachmentRecordInput = {
@@ -69,23 +47,6 @@ export type CreateAttachmentRecordInput = {
   is_primary?: boolean | null;
   source_type?: AttachmentSourceType | string | null;
   generated_document_type?: GeneratedDocumentType | string | null;
-};
-
-export type CreateMemoThreadRecordInput = {
-  order_id: string;
-  thread: MemoThread;
-};
-
-export type CreateMemoReplyRecordInput = {
-  order_id: string;
-  thread_id: string;
-  reply: MemoReply;
-};
-
-export type AttachmentMemoAuthorSnapshot = {
-  author_id: string;
-  author_name: string;
-  author_role: RoleType;
 };
 
 export function inferAttachmentTypeFromMime(mimeType: string | null, fallbackName = ""): AttachmentType {

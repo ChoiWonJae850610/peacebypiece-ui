@@ -20,9 +20,6 @@ export const WORKORDER_SERVICE_CODE = {
   cancelOrder: "WO-B002",
   revertWorkflow: "WO-B003",
 
-  memoCreate: "WO-M001",
-  memoUpdate: "WO-M002",
-  memoDelete: "WO-M003",
 
   designAttachmentPrepare: "WO-A001",
   fileAttachmentPrepare: "WO-A002",
@@ -32,7 +29,7 @@ export const WORKORDER_SERVICE_CODE = {
 
   workOrderDelete: "WO-S001",
   workOrderRestore: "WO-S002",
-  attachmentMemoRestore: "WO-S003",
+  attachmentRestore: "WO-S003",
   trashPurge: "WO-S004",
 
   reorderCreate: "WO-R001",
@@ -57,9 +54,6 @@ export const WORKORDER_SERVICE_CODES = [
   WORKORDER_SERVICE_CODE.rejectReview,
   WORKORDER_SERVICE_CODE.cancelOrder,
   WORKORDER_SERVICE_CODE.revertWorkflow,
-  WORKORDER_SERVICE_CODE.memoCreate,
-  WORKORDER_SERVICE_CODE.memoUpdate,
-  WORKORDER_SERVICE_CODE.memoDelete,
   WORKORDER_SERVICE_CODE.designAttachmentPrepare,
   WORKORDER_SERVICE_CODE.fileAttachmentPrepare,
   WORKORDER_SERVICE_CODE.attachmentUploadComplete,
@@ -67,7 +61,7 @@ export const WORKORDER_SERVICE_CODES = [
   WORKORDER_SERVICE_CODE.primaryDesignSet,
   WORKORDER_SERVICE_CODE.workOrderDelete,
   WORKORDER_SERVICE_CODE.workOrderRestore,
-  WORKORDER_SERVICE_CODE.attachmentMemoRestore,
+  WORKORDER_SERVICE_CODE.attachmentRestore,
   WORKORDER_SERVICE_CODE.trashPurge,
   WORKORDER_SERVICE_CODE.reorderCreate,
   WORKORDER_SERVICE_CODE.listQuery,

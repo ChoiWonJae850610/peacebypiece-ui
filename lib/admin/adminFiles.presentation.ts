@@ -80,7 +80,6 @@ export function createEmptyAdminTrashActionSummary(): AdminTrashActionResultSumm
     workOrderCount: 0,
     documentCount: 0,
     designCount: 0,
-    memoCount: 0,
     skippedCount: 0,
   };
 }
@@ -93,7 +92,6 @@ export function mergeAdminTrashActionSummaries(
       workOrderCount: merged.workOrderCount + summary.workOrderCount,
       documentCount: merged.documentCount + summary.documentCount,
       designCount: merged.designCount + summary.designCount,
-      memoCount: merged.memoCount + summary.memoCount,
       skippedCount: (merged.skippedCount ?? 0) + (summary.skippedCount ?? 0),
     }),
     createEmptyAdminTrashActionSummary(),
@@ -111,7 +109,6 @@ export function createAdminTrashActionMessage(
         formatTrashActionCount("작업지시서", summary.workOrderCount, "건"),
         formatTrashActionCount("문서", summary.documentCount, "개"),
         formatTrashActionCount("디자인", summary.designCount, "개"),
-        formatTrashActionCount("메모", summary.memoCount, "개"),
       ]
     : [
         summary.documentCount > 0
@@ -119,9 +116,6 @@ export function createAdminTrashActionMessage(
           : null,
         summary.designCount > 0
           ? formatTrashActionCount("디자인", summary.designCount, "개")
-          : null,
-        summary.memoCount > 0
-          ? formatTrashActionCount("메모", summary.memoCount, "개")
           : null,
       ].filter((part): part is string => Boolean(part));
 
@@ -143,13 +137,11 @@ export function createAdminWorkOrderTrashActionMessage(input: {
   action: AdminTrashActionType;
   documentCount: number;
   designCount: number;
-  memoCount: number;
 }): string {
   return createAdminTrashActionMessage(input.action, {
     workOrderCount: 1,
     documentCount: input.documentCount,
     designCount: input.designCount,
-    memoCount: input.memoCount,
     skippedCount: 0,
   });
 }
@@ -160,7 +152,7 @@ export function createAdminWorkOrderTrashIdRequiredMessage(): string {
 
 export function createAdminWorkOrderTrashNotConnectedMessage(action: AdminTrashActionType): string {
   return action === "restore"
-    ? "작업지시서 복원 처리는 아직 운영 처리 기준을 확정하는 단계입니다. 작업지시서와 문서/디자인/메모를 함께 복원해야 합니다."
+    ? "작업지시서 복원 처리는 아직 운영 처리 기준을 확정하는 단계입니다. 작업지시서와 문서/디자인을 함께 복원해야 합니다."
     : "작업지시서 선택 삭제 처리는 아직 운영 처리 기준을 확정하는 단계입니다. 시스템관리자 실제 삭제 흐름에서 최종 처리해야 합니다.";
 }
 

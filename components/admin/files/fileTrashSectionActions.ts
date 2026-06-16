@@ -99,7 +99,6 @@ export type TrashSelectionConfirmSummary = {
   workOrderCount: number;
   documentCount: number;
   designCount: number;
-  memoCount: number;
   skippedCount: number;
   totalActionCount: number;
   summaryLabel: string;
@@ -142,14 +141,7 @@ function formatTrashSelectionSummaryLabel(input: {
       ).replace("{count}", String(summary.designCount)),
     );
   }
-  if (summary.memoCount > 0) {
-    parts.push(
-      t("filesList.selectionConfirm.counts.memos", "메모 {count}개").replace(
-        "{count}",
-        String(summary.memoCount),
-      ),
-    );
-  }
+
   if (parts.length === 0)
     return t(
       "filesList.selectionConfirm.emptyScope",
@@ -199,18 +191,13 @@ export function createTrashSelectionConfirmSummary(input: {
   const designCount =
     countTrashFileKind(eligibleStandaloneItems, "design") +
     countTrashFileKind(selectedWorkOrderBundleItems, "design");
-  const memoCount = selectedWorkOrders.reduce(
-    (sum, workOrder) => sum + Math.max(0, workOrder.trashMemoCount),
-    0,
-  );
   const summaryBase = {
     workOrderCount: selectedWorkOrders.length,
     documentCount,
     designCount,
-    memoCount,
     skippedCount: skippedStandaloneCount,
     totalActionCount:
-      selectedWorkOrders.length + documentCount + designCount + memoCount,
+      selectedWorkOrders.length + documentCount + designCount,
   };
 
   return {

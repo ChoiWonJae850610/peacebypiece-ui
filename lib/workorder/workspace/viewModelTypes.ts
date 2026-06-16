@@ -53,7 +53,6 @@ export type BuildWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
-  canEditMemo: boolean;
   canRenameTitle: boolean;
   isReviewRequestLocked: boolean;
   canEditSideDraftContent: boolean;
@@ -127,12 +126,6 @@ export type BuildWorkspaceViewModelArgs = {
   onGenerateOrderRequestPdf: (workOrderId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
   onAttachmentDeleteConfirm: () => void;
-  onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
-  onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
-  onUpdateMemoThread: SidePanelProps["onUpdateMemoThread"];
-  onDeleteMemoThread: SidePanelProps["onDeleteMemoThread"];
-  onUpdateMemoReply: SidePanelProps["onUpdateMemoReply"];
-  onDeleteMemoReply: SidePanelProps["onDeleteMemoReply"];
 };
 
 export type WorkspaceViewModel = {
@@ -155,7 +148,6 @@ export type BaseWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
-  canEditMemo: boolean;
   canRenameTitle: boolean;
   isAdmin: boolean;
   isReviewRequestLocked: boolean;
@@ -193,12 +185,6 @@ export type BaseWorkspaceViewModelArgs = {
   onUploadAttachmentFiles: (scope: UploadableAttachmentScopeValue, files: File[]) => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment: (attachmentId: string) => void;
-  onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
-  onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
-  onUpdateMemoThread: SidePanelProps["onUpdateMemoThread"];
-  onDeleteMemoThread: SidePanelProps["onDeleteMemoThread"];
-  onUpdateMemoReply: SidePanelProps["onUpdateMemoReply"];
-  onDeleteMemoReply: SidePanelProps["onDeleteMemoReply"];
 };
 
 export type SidebarViewModelArgs = {

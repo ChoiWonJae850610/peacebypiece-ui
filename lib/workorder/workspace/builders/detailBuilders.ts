@@ -68,14 +68,11 @@ export function buildDetailProps({
   onSetInventoryEditorOpen,
 }: DetailViewModelArgs): DetailProps {
   return {
-    workOrder: applyLatestManagerDisplayName(selectedWorkOrder, users),
     isEmpty: !hasVisibleWorkOrders,
     currentWorkflowState,
     saveStatus,
     lastSavedAt: formatRecentKstDateTime(lastSavedAt),
     currentInventoryQuantity,
-    currentUserName: currentUser.name,
-    currentUserId: currentUser.id,
     currentUserCompanyMemberId: currentUser.companyMemberId ?? null,
     currentUserRole: currentRole,
     canRenameTitle,
@@ -123,7 +120,6 @@ export function buildSidePanelProps({
   hasVisibleWorkOrders,
   canSeeAttachments,
   canUploadOfficialAttachments,
-  canEditMemo,
   designAttachments,
   officialAttachments,
   currentRole,
@@ -140,12 +136,6 @@ export function buildSidePanelProps({
   onRequestDeleteAttachment,
   onSetPrimaryDesignAttachment,
   onGenerateOrderRequestPdf,
-  onCreateMemoThread,
-  onCreateMemoReply,
-  onUpdateMemoThread,
-  onDeleteMemoThread,
-  onUpdateMemoReply,
-  onDeleteMemoReply,
 }: SidePanelViewModelArgs): SidePanelProps {
   const hasGeneratedOrderRequestPdf = officialAttachments.some((attachment) => isGeneratedOrderRequestPdfAttachment(attachment));
   const canGenerateOrderRequestPdf =
@@ -165,7 +155,6 @@ export function buildSidePanelProps({
     isEmpty: !hasVisibleWorkOrders,
     canSeeAttachments,
     canManageAttachments: canUploadOfficialAttachments,
-    canEditMemo,
     writeLocked: Boolean(isWorkspaceWriteLocked),
     writeLockMessage: workspaceWriteLockMessage,
     attachmentSections: buildAttachmentPanelSections({
@@ -186,17 +175,6 @@ export function buildSidePanelProps({
     onSetPrimaryDesignAttachment,
     canGenerateOrderRequestPdf,
     onGenerateOrderRequestPdf: () => onGenerateOrderRequestPdf(selectedWorkOrder.id),
-    currentRole,
-    users: users ?? [],
-    workOrder: applyLatestManagerDisplayName(selectedWorkOrder, users),
-    currentUserName: currentUser.name,
-    currentUserId: currentUser.id,
-    onCreateMemoThread,
-    onCreateMemoReply,
-    onUpdateMemoThread,
-    onDeleteMemoThread,
-    onUpdateMemoReply,
-    onDeleteMemoReply,
   };
 }
 

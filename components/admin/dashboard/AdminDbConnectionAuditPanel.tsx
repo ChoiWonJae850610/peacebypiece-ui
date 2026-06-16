@@ -50,7 +50,7 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
         <div className="flex flex-wrap gap-2">
           <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.workorder", "작업지시서")} {translateRepositoryMode(summary.repositoryModes.workorder, t)}</AdminStatusBadge>
           <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.partner", "협력업체")} {translateRepositoryMode(summary.repositoryModes.partner, t)}</AdminStatusBadge>
-          <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.attachmentMemo", "메모/첨부")} {translateRepositoryMode(summary.repositoryModes.attachmentMemo, t)}</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.attachment", "첨부")} {translateRepositoryMode(summary.repositoryModes.attachment, t)}</AdminStatusBadge>
         </div>
       </div>
 

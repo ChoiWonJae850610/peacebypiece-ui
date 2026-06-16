@@ -2,29 +2,23 @@ import "server-only";
 
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
-import type { Attachment, MemoReply, MemoThread } from "@/types/workorder";
+import type { Attachment } from "@/types/workorder";
 import type {
   CreateAttachmentRecordInput,
-  CreateMemoReplyRecordInput,
-  CreateMemoThreadRecordInput,
   WorkOrderAttachmentDbRecord,
-  WorkOrderMemoDbRecord,
-  WorkOrderMemoReplyDbRecord,
-  WorkOrderMemoThreadDbRecord,
-} from "@/lib/workorder/persistence/attachmentMemoTypes";
+} from "@/lib/workorder/persistence/attachmentTypes";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import {
   inferAttachmentTypeFromMime,
   normalizeAttachmentKindForDb,
   normalizeAttachmentScope,
-} from "@/lib/workorder/persistence/attachmentMemoTypes";
+} from "@/lib/workorder/persistence/attachmentTypes";
 import type {
-  AttachmentMemoRepositoryInfo,
-  AttachmentMemoWritableRepository,
-} from "@/lib/workorder/persistence/attachmentMemoRepository";
+  AttachmentRepositoryInfo,
+  AttachmentWritableRepository,
+} from "@/lib/workorder/persistence/attachmentRepository";
 
 type AttachmentRow = WorkOrderAttachmentDbRecord & DbQueryResultRow;
-type MemoRow = WorkOrderMemoDbRecord & DbQueryResultRow;
 type WorkOrderCompanyRow = DbQueryResultRow & { company_id: string; company_name: string | null };
 
 function toNumberOrNull(value: unknown): number | null {
@@ -99,69 +93,6 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
   };
 }
 
-function isActiveMemoRow(
-  row: Pick<MemoRow, "is_active" | "deleted_at">,
-): boolean {
-  return row.is_active !== false && !row.deleted_at;
-}
-
-function mapMemoThreadRow(row: MemoRow, replies: MemoReply[]): MemoThread {
-  const authorName = row.author_id ?? "시스템";
-  const hasVisibleReplies = replies.some((reply) => reply.isVisible !== false);
-  const isDeletedThread = Boolean(row.deleted_at);
-
-  return {
-    id: row.id,
-    authorId: row.author_id ?? "system",
-    authorName,
-    authorRole: "admin",
-    content:
-      isDeletedThread && hasVisibleReplies ? "삭제된 메모입니다." : row.body,
-    createdAt: toIsoString(row.created_at),
-    deletedAt: row.deleted_at,
-    isVisible: isActiveMemoRow(row) || hasVisibleReplies,
-    replies,
-  };
-}
-
-function mapMemoReplyRow(row: MemoRow): MemoReply {
-  const authorName = row.author_id ?? "시스템";
-
-  return {
-    id: row.id,
-    authorId: row.author_id ?? "system",
-    authorName,
-    authorRole: "admin",
-    content: row.body,
-    createdAt: toIsoString(row.created_at),
-    deletedAt: row.deleted_at,
-    isVisible: isActiveMemoRow(row),
-  };
-}
-
-function mapMemoRows(rows: MemoRow[]): MemoThread[] {
-  const replyRowsByParentId = new Map<string, MemoRow[]>();
-  const threadRows: MemoRow[] = [];
-
-  for (const row of rows) {
-    if (row.parent_id) {
-      const replies = replyRowsByParentId.get(row.parent_id) ?? [];
-      replies.push(row);
-      replyRowsByParentId.set(row.parent_id, replies);
-    } else {
-      threadRows.push(row);
-    }
-  }
-
-  return threadRows
-    .map((thread) => {
-      const replies = (replyRowsByParentId.get(thread.id) ?? [])
-        .map(mapMemoReplyRow)
-        .filter((reply) => reply.isVisible !== false);
-      return mapMemoThreadRow(thread, replies);
-    })
-    .filter((thread) => thread.isVisible !== false);
-}
 function mapAttachmentInput(input: CreateAttachmentRecordInput) {
   return {
     order_id: input.order_id,
@@ -178,88 +109,7 @@ function mapAttachmentInput(input: CreateAttachmentRecordInput) {
   };
 }
 
-async function insertMemoThreadRecord(
-  workOrderId: string,
-  thread: MemoThread,
-): Promise<string> {
-  const keepId = isUuid(thread.id);
-  const company = await getWorkOrderCompanyContext(workOrderId);
-  const columns = keepId
-    ? "id, company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at"
-    : "company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at";
-  const valuesSql = keepId
-    ? "$1, $2, $3, $4, NULL, $5, $6, $7, $8"
-    : "$1, $2, $3, NULL, $4, $5, $6, $7";
-  const values = keepId
-    ? [
-        thread.id,
-        company.companyId,
-        company.companyName,
-        workOrderId,
-        thread.content,
-        thread.authorId || thread.authorName || null,
-        thread.isVisible !== false,
-        thread.deletedAt ?? null,
-      ]
-    : [
-        company.companyId,
-        company.companyName,
-        workOrderId,
-        thread.content,
-        thread.authorId || thread.authorName || null,
-        thread.isVisible !== false,
-        thread.deletedAt ?? null,
-      ];
-
-  const result = await queryDb<{ id: string }>(
-    `INSERT INTO memos (${columns}) VALUES (${valuesSql}) RETURNING id`,
-    values,
-  );
-  const id = result.rows[0]?.id;
-  if (!id) throw new Error("Memo thread replacement failed");
-  return id;
-}
-
-async function insertMemoReplyRecord(
-  workOrderId: string,
-  parentId: string,
-  reply: MemoReply,
-): Promise<void> {
-  const keepId = isUuid(reply.id);
-  const company = await getWorkOrderCompanyContext(workOrderId);
-  const columns = keepId
-    ? "id, company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at"
-    : "company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at";
-  const valuesSql = keepId
-    ? "$1, $2, $3, $4, $5, $6, $7, $8, $9"
-    : "$1, $2, $3, $4, $5, $6, $7, $8";
-  const values = keepId
-    ? [
-        reply.id,
-        company.companyId,
-        company.companyName,
-        workOrderId,
-        parentId,
-        reply.content,
-        reply.authorId || reply.authorName || null,
-        reply.isVisible !== false,
-        reply.deletedAt ?? null,
-      ]
-    : [
-        company.companyId,
-        company.companyName,
-        workOrderId,
-        parentId,
-        reply.content,
-        reply.authorId || reply.authorName || null,
-        reply.isVisible !== false,
-        reply.deletedAt ?? null,
-      ];
-
-  await queryDb(`INSERT INTO memos (${columns}) VALUES (${valuesSql})`, values);
-}
-
-function getDbAttachmentMemoRepositoryInfo(): AttachmentMemoRepositoryInfo {
+function getDbAttachmentRepositoryInfo(): AttachmentRepositoryInfo {
   return {
     mode: "db",
     adapterConfigured: isDatabaseConfigured(),
@@ -267,66 +117,36 @@ function getDbAttachmentMemoRepositoryInfo(): AttachmentMemoRepositoryInfo {
   };
 }
 
-export function createDbAttachmentMemoRepository(): AttachmentMemoWritableRepository {
+export function createDbAttachmentRepository(): AttachmentWritableRepository {
   return {
-    getRepositoryInfo: getDbAttachmentMemoRepositoryInfo,
+    getRepositoryInfo: getDbAttachmentRepositoryInfo,
     listSnapshotByWorkOrderId: async (workOrderId) => {
-      const [attachments, memos] = await Promise.all([
-        queryDb<AttachmentRow>(
-          `SELECT id,
-                  order_id,
-                  type,
-                  storage_key,
-                  thumbnail_key,
-                  original_name,
-                  mime_type,
-                  size_bytes,
-                  author_id,
-                  is_primary,
-                  source_type,
-                  generated_document_type,
-                  is_active,
-                  deleted_at,
-                  created_at
-             FROM attachments
-            WHERE order_id = $1
-              AND is_active = true
-              AND deleted_at IS NULL
-            ORDER BY created_at ASC`,
-          [workOrderId],
-        ),
-        queryDb<MemoRow>(
-          `SELECT id,
-                  order_id,
-                  parent_id,
-                  body,
-                  author_id,
-                  is_active,
-                  deleted_at,
-                  created_at,
-                  updated_at
-             FROM memos
-            WHERE order_id = $1
-              AND (
-                (parent_id IS NULL AND is_active = true AND deleted_at IS NULL)
-                OR (parent_id IS NULL AND deleted_at IS NOT NULL AND EXISTS (
-                  SELECT 1
-                    FROM memos child
-                   WHERE child.parent_id = memos.id
-                     AND child.order_id = $1
-                     AND child.is_active = true
-                     AND child.deleted_at IS NULL
-                ))
-                OR (parent_id IS NOT NULL AND is_active = true AND deleted_at IS NULL)
-              )
-            ORDER BY created_at ASC`,
-          [workOrderId],
-        ),
-      ]);
+      const attachments = await queryDb<AttachmentRow>(
+        `SELECT id,
+                order_id,
+                type,
+                storage_key,
+                thumbnail_key,
+                original_name,
+                mime_type,
+                size_bytes,
+                author_id,
+                is_primary,
+                source_type,
+                generated_document_type,
+                is_active,
+                deleted_at,
+                created_at
+           FROM attachments
+          WHERE order_id = $1
+            AND is_active = true
+            AND deleted_at IS NULL
+          ORDER BY created_at ASC`,
+        [workOrderId],
+      );
 
       return {
         attachments: attachments.rows.map(mapAttachmentRow),
-        memoThreads: mapMemoRows(memos.rows),
       };
     },
     createAttachment: async (input) => {
@@ -388,70 +208,6 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
       if (!created) throw new Error("Attachment creation failed");
       return created;
     },
-    createMemoThread: async (
-      input: CreateMemoThreadRecordInput,
-    ): Promise<WorkOrderMemoThreadDbRecord> => {
-      const company = await getWorkOrderCompanyContext(input.order_id);
-      const result = await queryDb<MemoRow>(
-        `INSERT INTO memos (company_id, company_name, order_id, parent_id, body, author_id)
-         VALUES ($1, $2, $3, NULL, $4, $5)
-         RETURNING id,
-                   order_id,
-                   parent_id,
-                   body,
-                   author_id,
-                   is_active,
-                   deleted_at,
-                   created_at,
-                   updated_at`,
-        [
-          company.companyId,
-          company.companyName,
-          input.order_id,
-          input.thread.content,
-          input.thread.authorId || input.thread.authorName || null,
-        ],
-      );
-
-      const [created] = result.rows;
-      if (!created) throw new Error("Memo creation failed");
-      return created;
-    },
-    createMemoReply: async (
-      input: CreateMemoReplyRecordInput,
-    ): Promise<WorkOrderMemoReplyDbRecord> => {
-      const company = await getWorkOrderCompanyContext(input.order_id);
-      const result = await queryDb<MemoRow>(
-        `INSERT INTO memos (company_id, company_name, order_id, parent_id, body, author_id)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id,
-                   order_id,
-                   parent_id,
-                   body,
-                   author_id,
-                   is_active,
-                   deleted_at,
-                   created_at,
-                   updated_at`,
-        [
-          company.companyId,
-          company.companyName,
-          input.order_id,
-          input.thread_id,
-          input.reply.content,
-          input.reply.authorId || input.reply.authorName || null,
-        ],
-      );
-
-      const [created] = result.rows;
-      if (!created) throw new Error("Memo reply creation failed");
-
-      return {
-        ...created,
-        thread_id: input.thread_id,
-      };
-    },
-
     getAttachmentById: async (attachmentId) => {
       const result = await queryDb<AttachmentRow>(
         `SELECT id,
@@ -549,16 +305,6 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
       );
 
       return result.rows[0] ?? null;
-    },
-    replaceMemoThreads: async (workOrderId, memoThreads) => {
-      await queryDb("DELETE FROM memos WHERE order_id = $1", [workOrderId]);
-
-      for (const thread of memoThreads) {
-        const threadId = await insertMemoThreadRecord(workOrderId, thread);
-        for (const reply of thread.replies ?? []) {
-          await insertMemoReplyRecord(workOrderId, threadId, reply);
-        }
-      }
     },
     softDeleteAttachment: async (input) => {
       const deletedBy = input.deletedBy ?? null;
@@ -671,89 +417,5 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
       return result.rows[0] ?? null;
     },
 
-    updateMemo: async (memoId, body) => {
-      const result = await queryDb<MemoRow>(
-        `UPDATE memos
-            SET body = $2,
-                updated_at = now()
-          WHERE id = $1
-            AND is_active = true
-            AND deleted_at IS NULL
-          RETURNING id,
-                    order_id,
-                    parent_id,
-                    body,
-                    author_id,
-                    is_active,
-                    deleted_at,
-                    created_at,
-                    updated_at`,
-        [memoId, body],
-      );
-
-      return result.rows[0] ?? null;
-    },
-    softDeleteMemoThread: async (threadId) => {
-      await queryDb(
-        `UPDATE memos
-            SET is_active = CASE
-                  WHEN EXISTS (
-                    SELECT 1
-                      FROM memos child
-                     WHERE child.parent_id = memos.id
-                       AND child.is_active = true
-                       AND child.deleted_at IS NULL
-                  ) THEN true
-                  ELSE false
-                END,
-                body = CASE
-                  WHEN EXISTS (
-                    SELECT 1
-                      FROM memos child
-                     WHERE child.parent_id = memos.id
-                       AND child.is_active = true
-                       AND child.deleted_at IS NULL
-                  ) THEN '삭제된 메모입니다.'
-                  ELSE body
-                END,
-                deleted_at = COALESCE(deleted_at, now()),
-                updated_at = now()
-          WHERE id = $1
-            AND parent_id IS NULL`,
-        [threadId],
-      );
-    },
-    softDeleteMemoReply: async (replyId) => {
-      await queryDb(
-        `WITH deleted_reply AS (
-           UPDATE memos
-              SET is_active = false,
-                  deleted_at = COALESCE(deleted_at, now()),
-                  updated_at = now()
-            WHERE id = $1
-              AND parent_id IS NOT NULL
-            RETURNING parent_id
-         )
-         UPDATE memos parent
-            SET is_active = CASE
-                  WHEN parent.deleted_at IS NOT NULL
-                   AND NOT EXISTS (
-                    SELECT 1
-                      FROM memos child
-                     WHERE child.parent_id = parent.id
-                       AND child.is_active = true
-                       AND child.deleted_at IS NULL
-                  ) THEN false
-                  ELSE parent.is_active
-                END,
-                updated_at = CASE
-                  WHEN parent.deleted_at IS NOT NULL THEN now()
-                  ELSE parent.updated_at
-                END
-           FROM deleted_reply
-          WHERE parent.id = deleted_reply.parent_id`,
-        [replyId],
-      );
-    },
   };
 }

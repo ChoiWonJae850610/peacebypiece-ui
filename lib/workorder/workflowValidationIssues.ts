@@ -1,4 +1,4 @@
-import { ATTACHMENT_SCOPE, isDesignAttachmentScope, isMemoAttachmentScope } from "@/lib/constants/workorderIdentity";
+import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 import { MATERIAL_TYPE } from "@/lib/constants/material";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import type { WorkOrder } from "@/types/workorder";
@@ -29,7 +29,7 @@ function hasPrimaryDesignAttachment(workOrder: WorkOrder): boolean {
 function hasOfficialAttachment(workOrder: WorkOrder): boolean {
   return (workOrder.attachments ?? []).some((attachment) => {
     const scope = attachment.scope ?? ATTACHMENT_SCOPE.attachment;
-    return !isDesignAttachmentScope(scope) && !isMemoAttachmentScope(scope);
+    return !isDesignAttachmentScope(scope);
   });
 }
 

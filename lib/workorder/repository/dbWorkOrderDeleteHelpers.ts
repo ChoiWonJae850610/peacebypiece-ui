@@ -77,7 +77,7 @@ export function buildSoftDeleteSpecSheetAssignments(
   return assignments;
 }
 
-export async function softDeleteAttachmentMemoBundleForWorkOrder(
+export async function softDeleteAttachmentBundleForWorkOrder(
   workOrderId: string,
 ): Promise<void> {
   const trashRetentionDays = COMPANY_FILE_TRASH_RETENTION_DAYS;
@@ -161,25 +161,5 @@ export async function softDeleteAttachmentMemoBundleForWorkOrder(
     ],
   );
 
-  await queryDb(
-    `UPDATE memos
-        SET is_active = false,
-            delete_status = 'trashed',
-            purge_status = 'pending',
-            purge_requested_at = NULL,
-            purge_requested_by = NULL,
-            delete_source = 'workorder_bundle',
-            delete_scope = 'bundle',
-            delete_parent_type = 'workorder',
-            delete_parent_id = $1,
-            delete_batch_id = COALESCE(delete_batch_id, $1),
-            purged_at = NULL,
-            purged_by = NULL,
-            deleted_at = COALESCE(deleted_at, now()),
-            updated_at = now()
-      WHERE order_id = $1
-        AND is_active = true
-        AND deleted_at IS NULL`,
-    [workOrderId],
-  );
+
 }

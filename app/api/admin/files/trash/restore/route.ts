@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     assertServiceCanUseSideEffect({
-      serviceCode: WORKORDER_SERVICE_CODE.attachmentMemoRestore,
+      serviceCode: WORKORDER_SERVICE_CODE.attachmentRestore,
       resource: WORKORDER_SERVICE_RESOURCE.attachments,
       operation: WORKORDER_SERVICE_OPERATION.restore,
     });
@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
           workOrderCount: 0,
           documentCount: result.documentCount,
           designCount: result.designCount,
-          memoCount: 0,
         }),
       },
       { status: ok ? 200 : 409 },

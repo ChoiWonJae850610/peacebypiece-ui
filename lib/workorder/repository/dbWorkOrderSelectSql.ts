@@ -177,7 +177,6 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.quantityColumn, "quantity", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryStatusColumn, "inventory_status", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.memoColumn, "memo", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.rejectionReasonColumn, "rejection_reason", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.rejectedAtColumn, "rejected_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL")},
@@ -230,7 +229,6 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildSourceAliasSelection(sourceAlias, schema.quantityColumn, "quantity", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.inventoryStatusColumn, "inventory_status", "NULL")},
-        ${buildSourceAliasSelection(sourceAlias, schema.memoColumn, "memo", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.rejectionReasonColumn, "rejection_reason", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.rejectedAtColumn, "rejected_at", "NULL")},
         ${buildSourceAliasSelection(sourceAlias, schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL")},
@@ -409,8 +407,7 @@ export function buildSpecSheetSummarySelectQuery(
         COALESCE(material_counts.material_summary, '')::text AS material_summary,
         COALESCE(material_counts.material_items, '[]'::jsonb) AS material_items,
         COALESCE(outsourcing_counts.outsourcing_count, 0)::integer AS outsourcing_count,
-        COALESCE(attachment_counts.attachment_count, 0)::integer AS attachment_count,
-        COALESCE(memo_counts.memo_thread_count, 0)::integer AS memo_thread_count
+        COALESCE(attachment_counts.attachment_count, 0)::integer AS attachment_count
       FROM spec_sheet_summaries s
       LEFT JOIN LATERAL (
         SELECT COUNT(*)::integer AS order_entry_count,
@@ -487,14 +484,6 @@ export function buildSpecSheetSummarySelectQuery(
           AND COALESCE(a.is_active, true) = true
           AND a.deleted_at IS NULL
       ) attachment_counts ON true
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*)::integer AS memo_thread_count
-        FROM memos memo
-        WHERE memo.order_id = s.id
-          AND memo.parent_id IS NULL
-          AND COALESCE(memo.is_active, true) = true
-          AND memo.deleted_at IS NULL
-      ) memo_counts ON true
       ${buildSpecSheetSummaryOrderBySql(schema, sort)}
     `,
     values,

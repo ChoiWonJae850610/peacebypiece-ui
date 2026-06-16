@@ -294,7 +294,7 @@ export function WorkOrderActionPreviewModal({
             <PreviewStatCard
               label={t(
                 "filesList.selectedScope.bundleAttachments",
-                "문서/디자인/메모",
+                "문서/디자인",
               )}
               value={`${bundleCount}${t("filesList.countSuffix", "개")}`}
             />
@@ -328,7 +328,7 @@ export function WorkOrderActionPreviewModal({
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreConnectedNotice",
-                    "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+                    "작업지시서를 복원하면 함께 삭제된 문서와 디자인도 같이 복원됩니다.",
                   )
                 : t(
                     "filesList.workorderActionSkeletonNotice",
@@ -339,7 +339,7 @@ export function WorkOrderActionPreviewModal({
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreGuardDescription",
-                    "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+                    "작업지시서를 복원하면 함께 삭제된 문서와 디자인도 같이 복원됩니다.",
                   )
                 : t(
                     "filesList.workorderPurgeGuardDescription",
@@ -553,7 +553,7 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
           {row.kind === "workorder"
             ? t(
                 "filesList.detail.workorderActionHint",
-                "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+                "작업지시서를 복원하면 함께 삭제된 문서와 디자인도 같이 복원됩니다.",
               )
             : row.restoreDisabledReason ||
               row.purgeDisabledReason ||
@@ -579,14 +579,6 @@ function getTrashDetailFields(
         formatTrashDetailCountLabel(
           row.sourceItem.attachmentSummaryLabel,
           "documentsDesigns",
-          t,
-        ),
-      ],
-      [
-        t("filesList.detail.memos", "메모"),
-        formatTrashDetailCountLabel(
-          row.sourceItem.memoSummaryLabel,
-          "memos",
           t,
         ),
       ],

@@ -4,7 +4,7 @@ import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { buildOrderRequestHtmlDocument } from "@/lib/generated-documents/order-request/orderRequestHtmlDocument";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
 import { resolveOrderRequestRepresentativeImageDataUrl } from "@/lib/generated-documents/order-request/orderRequestRepresentativeImage";
 import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 
@@ -75,12 +75,11 @@ export async function GET(request: Request, context: RouteContext) {
 
   const url = new URL(request.url);
   const requestNote = readText(url.searchParams.get("requestNote"));
-  const repository = await createAttachmentMemoRepository();
+  const repository = await createAttachmentRepository();
   const snapshot = await repository.listSnapshotByWorkOrderId(workOrderId);
   const documentWorkOrder = {
     ...workOrder,
     attachments: snapshot.attachments,
-    memoThreads: snapshot.memoThreads,
   };
   const representativeImageDataUrl = await resolveOrderRequestRepresentativeImageDataUrl(documentWorkOrder);
   const html = buildOrderRequestHtmlDocument({ workOrder: documentWorkOrder, requestNote, representativeImageDataUrl });

@@ -1,5 +1,5 @@
 import type { Material } from "@/types/material";
-import type { Attachment, MemoReply, MemoThread, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
+import type { Attachment, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
 import { ORDER_ENTRY_TARGET_TYPE, toOrderEntryTargetType } from "@/lib/constants/workorderDomain";
 import { normalizeProductionMaterialRows, normalizeProductionOutsourcingRows } from "@/lib/workorder/productionCompositionSnapshot";
 
@@ -45,33 +45,6 @@ export function normalizeAttachmentsForStorage(workOrderId: string, attachments:
   }));
 }
 
-export function normalizeMemoRepliesForStorage(
-  workOrderId: string,
-  threadId: string,
-  replies: MemoReply[] | undefined,
-): MemoReply[] {
-  return (replies ?? []).map((reply, index) => ({
-    ...reply,
-    id: String(reply.id ?? "").trim() || buildChildEntityId(`${workOrderId}-${threadId}`, "reply", index),
-    attachmentIds: [],
-  }));
-}
-
-export function normalizeMemoThreadsForStorage(
-  workOrderId: string,
-  memoThreads: MemoThread[] | undefined,
-): MemoThread[] {
-  return (memoThreads ?? []).map((thread, index) => {
-    const threadId = String(thread.id ?? "").trim() || buildChildEntityId(workOrderId, "memo", index);
-    return {
-      ...thread,
-      id: threadId,
-      attachmentIds: [],
-      replies: normalizeMemoRepliesForStorage(workOrderId, threadId, thread.replies),
-    };
-  });
-}
-
 export function normalizeWorkOrderCollectionsForStorage(workOrder: WorkOrder): WorkOrder {
   const attachments = normalizeAttachmentsForStorage(workOrder.id, workOrder.attachments);
 
@@ -81,7 +54,6 @@ export function normalizeWorkOrderCollectionsForStorage(workOrder: WorkOrder): W
     materials: normalizeMaterialsForStorage(workOrder.id, workOrder.materials),
     outsourcing: normalizeOutsourcingForStorage(workOrder.id, workOrder.outsourcing),
     attachments,
-    memoThreads: normalizeMemoThreadsForStorage(workOrder.id, workOrder.memoThreads),
   };
 }
 

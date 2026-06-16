@@ -26,7 +26,7 @@ import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import { getRepresentativeOrderEntry, syncWorkOrderOrderSnapshot } from "@/lib/workorder/orderSubmission";
 import { resolveOrderRequestWorkflowState } from "@/lib/workorder/materialOrderReadiness";
-import type { Attachment, FactoryOrderRequest, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { Attachment, FactoryOrderRequest, InventoryChange, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
   managerName: string;
@@ -70,11 +70,9 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     quantity: 0,
     inventoryQuantity: 0,
     inventoryStatus: INVENTORY_STATUS.unchecked,
-    memo: "새 작업지시서가 생성되었습니다.",
     materials: [],
     outsourcing: [],
     attachments: [],
-    memoThreads: [],
     workflowState: WORKFLOW_STATE.draft,
     lastSavedAt: payload.createdAt,
   });
@@ -189,24 +187,6 @@ export function removeAttachment(workOrders: WorkOrder[], workOrderId: string, a
   return workOrders.map((item) => item.id === workOrderId
     ? { ...item, attachments: item.attachments.filter((attachment) => attachment.id !== attachmentId) }
     : item);
-}
-
-export function addMemoThread(workOrders: WorkOrder[], workOrderId: string, thread: MemoThread) {
-  return workOrders.map((item) => item.id === workOrderId
-    ? { ...item, memoThreads: [thread, ...(item.memoThreads ?? [])] }
-    : item);
-}
-
-export function addMemoReply(workOrders: WorkOrder[], workOrderId: string, threadId: string, reply: MemoReply) {
-  return workOrders.map((item) => {
-    if (item.id !== workOrderId) return item;
-    return {
-      ...item,
-      memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
-        ? { ...thread, replies: [...(thread.replies ?? []), reply] }
-        : thread),
-    };
-  });
 }
 
 export function completeInspectionForWorkOrder(
@@ -411,7 +391,6 @@ export function cloneWorkOrderForReorder(
     materials: cloneMaterials(sourceWorkOrder.materials),
     outsourcing: cloneOutsourcingRows(sourceWorkOrder.outsourcing),
     attachments: cloneAttachments(sourceWorkOrder.attachments),
-    memoThreads: [],
     lastSavedAt: payload.createdAt,
     reorderedFromId: sourceWorkOrder.id,
     reorderedFromTitle: resolveDisplayedSourceTitle(sourceWorkOrder),

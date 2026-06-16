@@ -103,7 +103,6 @@ export type BuildWorkOrderDeletedAuditLogInput = {
   actorId?: string | null;
   companyId?: string | null;
   attachmentCount?: number;
-  memoThreadCount?: number;
   requestId?: string | null;
   ipAddress?: string | null;
 };
@@ -129,7 +128,6 @@ export type BuildWorkOrderRestoredAuditLogInput = {
   affectedCount: number;
   documentCount: number;
   designCount: number;
-  memoCount: number;
   requestId?: string | null;
   ipAddress?: string | null;
 };
@@ -189,7 +187,6 @@ export function buildWorkOrderDeletedAuditLog(
 ): CreateSystemAuditLogInput {
   const title = input.title?.trim() || "작업지시서";
   const attachmentCount = normalizeCount(input.attachmentCount);
-  const memoThreadCount = normalizeCount(input.memoThreadCount);
 
   return {
     actorUserId: input.actorId ?? null,
@@ -205,7 +202,6 @@ export function buildWorkOrderDeletedAuditLog(
       title,
       workflowState: input.workflowState ?? null,
       attachmentCount,
-      memoThreadCount,
       deleteMode: "soft-delete",
       bundleTrash: true,
     },
@@ -254,13 +250,12 @@ export function buildWorkOrderRestoredAuditLog(
     targetId: input.workOrderId,
     eventType: "work_order.restored",
     severity: "medium",
-    summary: `작업지시서 복원: 문서 ${input.documentCount}개, 디자인 ${input.designCount}개, 메모 ${input.memoCount}개`,
+    summary: `작업지시서 복원: 문서 ${input.documentCount}개, 디자인 ${input.designCount}개`,
     metadata: {
       workOrderId: input.workOrderId,
       affectedCount: normalizeCount(input.affectedCount),
       documentCount: normalizeCount(input.documentCount),
       designCount: normalizeCount(input.designCount),
-      memoCount: normalizeCount(input.memoCount),
     },
     requestId: input.requestId ?? null,
     ipAddress: input.ipAddress ?? null,

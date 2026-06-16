@@ -4,7 +4,6 @@ import {
   type DbConnectionStateCode,
 } from "@/lib/repositories/dbConnectionStatusStore";
 import type {
-  MemoThread,
   UserProfile,
   WorkOrder,
   WorkOrderStatePatch,
@@ -52,12 +51,6 @@ type WorkOrderStatePatchResponse = {
   message?: string;
 };
 
-type MemoLoadResponse = {
-  memoThreads?: MemoThread[];
-  error?: string;
-  message?: string;
-};
-
 type UserAccessResponse = {
   ok?: boolean;
   users?: UserProfile[];
@@ -92,23 +85,6 @@ async function loadCurrentUserFromSession(): Promise<CurrentUserResponse["user"]
   }
 }
 
-function mergeMemoThreads(
-  payloadThreads: MemoThread[] | undefined,
-  dbThreads: MemoThread[] | undefined,
-): MemoThread[] {
-  const merged = new Map<string, MemoThread>();
-
-  for (const thread of payloadThreads ?? []) {
-    merged.set(thread.id, thread);
-  }
-
-  for (const thread of dbThreads ?? []) {
-    merged.set(thread.id, thread);
-  }
-
-  return Array.from(merged.values());
-}
-
 function createSummaryWorkOrder(summary: WorkOrderSummary): WorkOrder {
   return {
     id: summary.id,
@@ -140,17 +116,14 @@ function createSummaryWorkOrder(summary: WorkOrderSummary): WorkOrder {
     orderEntries: [],
     inventoryQuantity: summary.inventoryQuantity,
     inventoryStatus: summary.inventoryStatus,
-    memo: "",
     materials: [],
     outsourcing: [],
     attachments: [],
-    memoThreads: [],
     workflowState: summary.workflowState,
     lastSavedAt: summary.lastSavedAt,
     factoryOrderRequest: null,
     hasDetailSnapshot: false,
     summaryAttachmentCount: summary.attachmentCount,
-    summaryMemoThreadCount: summary.memoThreadCount,
   };
 }
 
@@ -256,134 +229,49 @@ async function saveWorkOrderStatePatchToApi(
   throw emptyBodyError;
 }
 
-async function loadMemoThreadsForWorkOrder(
-  workOrderId: string,
-): Promise<MemoThread[] | null> {
-  const response = await fetch(
-    `/api/workorders/memos?orderId=${encodeURIComponent(workOrderId)}`,
-    {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    },
-  );
-
-  const result = await parseResponse<MemoLoadResponse>(response);
-  return result.memoThreads ?? [];
-}
-
-async function hydrateWorkOrdersWithMemoThreads(
-  workOrders: WorkOrder[],
-): Promise<WorkOrder[]> {
-  if (workOrders.length === 0) return workOrders;
-
-  const memoSnapshots = await Promise.all(
-    workOrders.map(async (workOrder) => {
-      try {
-        return await loadMemoThreadsForWorkOrder(workOrder.id);
-      } catch (error) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn(
-            "[memo hydration]",
-            workOrder.id,
-            error instanceof Error ? error.message : error,
-          );
-        }
-        return null;
-      }
-    }),
-  );
-
-  return workOrders.map((workOrder, index) => {
-    const memoThreads = memoSnapshots[index];
-    if (!memoThreads) return workOrder;
-    return {
-      ...workOrder,
-      memoThreads: mergeMemoThreads(workOrder.memoThreads, memoThreads),
-    };
-  });
-}
-
 async function parseResponse<T>(response: Response): Promise<T> {
   let body: (T & DbApiErrorBody) | null = null;
-
   try {
     body = (await response.json()) as T & DbApiErrorBody;
   } catch (error) {
-    const parseError = new Error("Failed to parse DB response.") as Error & {
-      code?: string;
-      status?: number;
-      cause?: unknown;
-    };
+    const parseError = new Error("Failed to parse DB response.") as Error & { code?: string; status?: number; cause?: unknown };
     parseError.code = "DB_RESPONSE_PARSE_FAILED";
     parseError.status = response.status;
     parseError.cause = error;
     throw parseError;
   }
-
   if (!response.ok) {
-    const error = new Error(body?.message ?? "DB request failed.") as Error & {
-      code?: string;
-      status?: number;
-    };
+    const error = new Error(body?.message ?? "DB request failed.") as Error & { code?: string; status?: number };
     error.code = body?.code;
     error.status = response.status;
     throw error;
   }
-
   if (!body) {
-    const emptyBodyError = new Error("DB response body is empty.") as Error & {
-      code?: string;
-      status?: number;
-    };
+    const emptyBodyError = new Error("DB response body is empty.") as Error & { code?: string; status?: number };
     emptyBodyError.code = "DB_EMPTY_RESPONSE";
     emptyBodyError.status = response.status;
     throw emptyBodyError;
   }
-
   return body;
 }
 
 function isNetworkErrorMessage(message: string): boolean {
-  return /fetch failed|networkerror|network error|load failed|failed to fetch/i.test(
-    message,
-  );
+  return /fetch failed|networkerror|network error|load failed|failed to fetch/i.test(message);
 }
 
 function toStatusCode(error: unknown): DbConnectionStateCode {
   if (!(error instanceof Error)) return "UNKNOWN";
-
   const errorWithMeta = error as Error & { code?: string };
-  if (typeof errorWithMeta.code === "string") {
-    return errorWithMeta.code as DbConnectionStateCode;
-  }
-
-  if (
-    /DATABASE_URL is not configured|No supported database env var is configured/i.test(
-      error.message,
-    )
-  )
-    return "DB_NOT_CONFIGURED";
-  if (/The 'pg' package is required/i.test(error.message))
-    return "DB_DRIVER_MISSING";
-  if (/relation .*spec_sheets.* does not exist/i.test(error.message))
-    return "DB_TABLE_MISSING";
-  if (
-    /column .* does not exist/i.test(error.message) ||
-    /invalid input syntax/i.test(error.message) ||
-    /cannot cast/i.test(error.message)
-  )
-    return "DB_SCHEMA_INVALID";
+  if (typeof errorWithMeta.code === "string") return errorWithMeta.code as DbConnectionStateCode;
+  if (/DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message)) return "DB_NOT_CONFIGURED";
+  if (/The 'pg' package is required/i.test(error.message)) return "DB_DRIVER_MISSING";
+  if (/relation .*spec_sheets.* does not exist/i.test(error.message)) return "DB_TABLE_MISSING";
+  if (/column .* does not exist/i.test(error.message) || /invalid input syntax/i.test(error.message) || /cannot cast/i.test(error.message)) return "DB_SCHEMA_INVALID";
   if (isNetworkErrorMessage(error.message)) return "DB_CONNECTION_FAILED";
   return "DB_REQUEST_FAILED";
 }
 
-function reportDbStatus(params: {
-  source: "workspace-load" | "create" | "save" | "delete";
-  connected: boolean;
-  code: DbConnectionStateCode;
-  message?: string | null;
-}) {
+function reportDbStatus(params: { source: "workspace-load" | "create" | "save" | "delete"; connected: boolean; code: DbConnectionStateCode; message?: string | null }) {
   setDbConnectionStatus({
     mode: "db",
     configured: params.code !== "DB_NOT_CONFIGURED",
@@ -398,12 +286,7 @@ function reportDbStatus(params: {
 }
 
 function reportDbError(source: "workspace-load" | "create" | "save" | "delete", error: unknown) {
-  reportDbStatus({
-    source,
-    connected: false,
-    code: toStatusCode(error),
-    message: error instanceof Error ? error.message : null,
-  });
+  reportDbStatus({ source, connected: false, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
 }
 
 export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {

@@ -5,7 +5,7 @@ import type { WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrd
 import {
   buildSpecSheetCompanyScopePredicate,
   buildSoftDeleteSpecSheetAssignments,
-  softDeleteAttachmentMemoBundleForWorkOrder,
+  softDeleteAttachmentBundleForWorkOrder,
 } from "@/lib/workorder/repository/dbWorkOrderDeleteHelpers";
 import {
   assertMinimumSpecSheetSchema,
@@ -89,6 +89,6 @@ export async function deleteDbWorkOrderRecord(
   scope?: WorkOrderCompanyScope | null,
 ): Promise<string> {
   const deletedId = await softDeleteSpecSheetRow(workOrderId, scope);
-  await softDeleteAttachmentMemoBundleForWorkOrder(deletedId);
+  await softDeleteAttachmentBundleForWorkOrder(deletedId);
   return deletedId;
 }

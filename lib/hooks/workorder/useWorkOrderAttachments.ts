@@ -5,8 +5,6 @@ import { useI18n } from "@/lib/i18n";
 import { ATTACHMENT_SCOPE, isDesignAttachmentScope, normalizeUploadableAttachmentScopeValue, type UploadableAttachmentScopeValue } from "@/lib/constants/workorderIdentity";
 import {
   buildAttachmentDeleteResult,
-  buildMemoReplyResult,
-  buildMemoThreadResult,
   buildPersistedAttachmentUploadResult,
 } from "@/lib/workorder/actionFlow";
 import {
@@ -20,7 +18,6 @@ import { deleteWorkOrderAttachmentInDb } from "@/lib/workorder/attachments/attac
 import { setPrimaryDesignAttachmentInDb } from "@/lib/workorder/attachments/attachmentPrimaryApiClient";
 import { uploadWorkOrderAttachmentFiles } from "@/lib/workorder/attachments/attachmentUploadApiClient";
 import { getAttachmentInputAccept, WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
-import { createMemoReplyInDb, createMemoThreadInDb, deleteMemoInDb, updateMemoInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 type UploadableAttachmentScope = UploadableAttachmentScopeValue;
@@ -212,226 +209,6 @@ export function useWorkOrderAttachments({
       setToastMessage(message);
     }
   };
-  const handleCreateMemoThread = async (content: string) => {
-    if (!canEditSideDraftContent) return;
-    setSaveStatus("saving");
-
-    try {
-      const createdThread = await createMemoThreadInDb({
-        workOrder: selectedWorkOrder,
-        currentUser,
-        content,
-      });
-      const result = buildMemoThreadResult({
-        workOrder: selectedWorkOrder,
-        currentUser,
-        content: createdThread.content,
-        text: actionFlowText,
-        historyText,
-      });
-      if (!result) {
-        setSaveStatus("saved");
-        return;
-      }
-
-      const nextWorkOrder = {
-        ...selectedWorkOrder,
-        memoThreads: [
-          { ...createdThread, replies: createdThread.replies ?? [] },
-          ...(selectedWorkOrder.memoThreads ?? []).filter((thread) => thread.id !== createdThread.id),
-        ],
-      };
-
-      setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? nextWorkOrder : item)));
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      setSaveStatus("saved");
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "메모 저장에 실패했습니다.";
-      setSaveStatus("dirty");
-      setToastMessage(message);
-    }
-  };
-
-  const handleCreateMemoReply = async (threadId: string, content: string) => {
-    if (!canEditSideDraftContent) return;
-    setSaveStatus("saving");
-
-    try {
-      const createdReply = await createMemoReplyInDb({
-        workOrder: selectedWorkOrder,
-        currentUser,
-        threadId,
-        content,
-      });
-      const result = buildMemoReplyResult({
-        workOrder: selectedWorkOrder,
-        currentUser,
-        threadId,
-        content: createdReply.content,
-        text: actionFlowText,
-        historyText,
-      });
-      if (!result) {
-        setSaveStatus("saved");
-        return;
-      }
-
-      const nextWorkOrder = {
-        ...selectedWorkOrder,
-        memoThreads: (selectedWorkOrder.memoThreads ?? []).map((thread) =>
-          thread.id === threadId
-            ? {
-                ...thread,
-                replies: [
-                  ...(thread.replies ?? []).filter((reply) => reply.id !== createdReply.id),
-                  createdReply,
-                ],
-              }
-            : thread,
-        ),
-      };
-
-      setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? nextWorkOrder : item)));
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      setSaveStatus("saved");
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "댓글 저장에 실패했습니다.";
-      setSaveStatus("dirty");
-      setToastMessage(message);
-    }
-  };
-
-  const canMutateMemoItem = (authorId: string) => {
-    const isAdmin = currentUser.role === "admin" || currentUser.roles?.includes("admin");
-    return canEditSideDraftContent && (isAdmin || authorId === currentUser.id);
-  };
-
-  const handleUpdateMemoThread = async (threadId: string, content: string) => {
-    const nextContent = content.trim();
-    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
-    if (!targetThread || targetThread.deletedAt || !nextContent || !canMutateMemoItem(targetThread.authorId)) return;
-
-    setSaveStatus("saving");
-    try {
-      await updateMemoInDb({ memoId: threadId, content: nextContent });
-      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-        ? { ...item, memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId ? { ...thread, content: nextContent } : thread) }
-        : item));
-      setSaveStatus("saved");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "메모 수정에 실패했습니다.";
-      setSaveStatus("dirty");
-      setToastMessage(message);
-    }
-  };
-
-  const handleDeleteMemoThread = async (threadId: string) => {
-    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
-    if (!targetThread || targetThread.deletedAt || !canMutateMemoItem(targetThread.authorId)) return;
-
-    setSaveStatus("saving");
-    try {
-      await deleteMemoInDb({ memoId: threadId, target: "thread" });
-      const deletedAt = new Date().toISOString();
-      const hasVisibleReplies = (targetThread.replies ?? []).some((reply) => reply.isVisible !== false && !reply.deletedAt);
-      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-        ? {
-            ...item,
-            memoThreads: (item.memoThreads ?? []).map((thread) => {
-              if (thread.id !== threadId) return thread;
-              return {
-                ...thread,
-                content: hasVisibleReplies ? "삭제된 메모입니다." : thread.content,
-                attachmentIds: [],
-                deletedAt,
-                isVisible: hasVisibleReplies,
-              };
-            }),
-          }
-        : item));
-      setSaveStatus("saved");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "메모 삭제에 실패했습니다.";
-      setSaveStatus("dirty");
-      setToastMessage(message);
-    }
-  };
-
-  const handleUpdateMemoReply = async (threadId: string, replyId: string, content: string) => {
-    const nextContent = content.trim();
-    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
-    const targetReply = targetThread?.replies?.find((reply) => reply.id === replyId);
-    if (!targetReply || !nextContent || !canMutateMemoItem(targetReply.authorId)) return;
-
-    setSaveStatus("saving");
-    try {
-      await updateMemoInDb({ memoId: replyId, content: nextContent });
-      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-        ? {
-            ...item,
-            memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
-              ? { ...thread, replies: (thread.replies ?? []).map((reply) => reply.id === replyId ? { ...reply, content: nextContent } : reply) }
-              : thread),
-          }
-        : item));
-      setSaveStatus("saved");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "댓글 수정에 실패했습니다.";
-      setSaveStatus("dirty");
-      setToastMessage(message);
-    }
-  };
-
-  const handleDeleteMemoReply = async (threadId: string, replyId: string) => {
-    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
-    const targetReply = targetThread?.replies?.find((reply) => reply.id === replyId);
-    if (!targetReply || targetReply.deletedAt || !canMutateMemoItem(targetReply.authorId)) return;
-
-    setSaveStatus("saving");
-    try {
-      await deleteMemoInDb({ memoId: replyId, target: "reply" });
-      const deletedAt = new Date().toISOString();
-      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-        ? {
-            ...item,
-            memoThreads: (item.memoThreads ?? []).map((thread) => {
-              if (thread.id !== threadId) return thread;
-
-              const nextReplies = (thread.replies ?? [])
-                .map((reply) => reply.id === replyId
-                  ? { ...reply, attachmentIds: [], deletedAt, isVisible: false }
-                  : reply)
-                .filter((reply) => reply.isVisible !== false && !reply.deletedAt);
-              const hasVisibleReplies = nextReplies.length > 0;
-              const shouldHideDeletedThread = Boolean(thread.deletedAt) && !hasVisibleReplies;
-
-              return {
-                ...thread,
-                isVisible: shouldHideDeletedThread ? false : thread.isVisible,
-                replies: nextReplies,
-              };
-            }),
-          }
-        : item));
-      setSaveStatus("saved");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "댓글 삭제에 실패했습니다.";
-      setSaveStatus("dirty");
-      setToastMessage(message);
-    }
-  };
-
-
   const handleSetPrimaryDesignAttachment = async (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
     if (!targetAttachment || !isDesignAttachmentScope(targetAttachment.scope) || targetAttachment.type !== "image") return;
@@ -482,12 +259,6 @@ export function useWorkOrderAttachments({
     handleAttachmentFileDrop,
     handleDeleteAttachment,
     handleSetPrimaryDesignAttachment,
-    handleCreateMemoThread,
-    handleCreateMemoReply,
-    handleUpdateMemoThread,
-    handleDeleteMemoThread,
-    handleUpdateMemoReply,
-    handleDeleteMemoReply,
     canDeleteAttachment,
     getAttachmentPermissions,
   };

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { resolveWorkOrderServiceCodeForRequest } from "@/lib/workorder/serviceCodeRequest";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
-import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
+import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,7 @@ type PrimaryAttachmentRequest = {
   serviceCode?: unknown;
 };
 
-function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
+function isWritableRepository(repository: AttachmentRepository): repository is AttachmentWritableRepository {
   return "setPrimaryDesignAttachment" in repository;
 }
 
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       operation: WORKORDER_SERVICE_OPERATION.update,
     });
 
-    const repository = await createAttachmentMemoRepository();
+    const repository = await createAttachmentRepository();
     if (!isWritableRepository(repository)) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
     }

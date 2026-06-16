@@ -31,31 +31,6 @@ export type Attachment = {
   generatedDocumentType?: string | null;
 };
 
-export type MemoReply = {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorRole: RoleType;
-  content: string;
-  createdAt: string;
-  attachmentIds?: string[];
-  deletedAt?: string | null;
-  isVisible?: boolean | null;
-};
-
-export type MemoThread = {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorRole: RoleType;
-  content: string;
-  createdAt: string;
-  attachmentIds?: string[];
-  deletedAt?: string | null;
-  isVisible?: boolean | null;
-  replies: MemoReply[];
-};
-
 export type Outsourcing = {
   id: string;
   process: string;
@@ -130,18 +105,15 @@ export type WorkOrder = {
   orderEntries?: OrderEntry[];
   inventoryQuantity: number;
   inventoryStatus: InventoryStatusValue;
-  memo: string;
   materials: Material[];
   outsourcing: Outsourcing[];
   attachments: Attachment[];
-  memoThreads: MemoThread[];
   workflowState: WorkflowState;
   workflowPath?: WorkflowPathValue;
   lastSavedAt: string;
   factoryOrderRequest?: FactoryOrderRequest | null;
   hasDetailSnapshot?: boolean;
   summaryAttachmentCount?: number;
-  summaryMemoThreadCount?: number;
   rejectionReason?: string | null;
   rejectedAt?: string | null;
   rejectedByUserId?: string | null;
@@ -219,7 +191,6 @@ export type WorkOrderSummary = Pick<
   materialItems?: WorkOrderMaterialSummaryItem[];
   outsourcingCount: number;
   attachmentCount: number;
-  memoThreadCount: number;
   hasDetailSnapshot: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -275,7 +246,6 @@ export type InventoryLog = {
   id: string;
   summary: string;
   delta: number;
-  memo: string;
   user: string;
   time: string;
   changes: InventoryChange[];

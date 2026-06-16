@@ -1,7 +1,7 @@
 import "server-only";
 
 import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
 import {
   createWorkOrderRecordForCompany,
   deleteWorkOrderRecordForCompany,
@@ -13,63 +13,22 @@ import {
   updateWorkOrderStateRecordForCompany,
   type WorkOrderCompanyScope,
 } from "@/lib/workorder/repository/workOrderRepository";
-import type {
-  MemoThread,
-  WorkOrder,
-  WorkOrderStatePatch,
-  WorkOrderSummary,
-} from "@/types/workorder";
+import type { WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
 import type {
   WorkOrderListSort,
   WorkOrderListStatusFilter,
 } from "@/lib/workorder/list/workOrderListControls";
 
-type ReplaceMemoThreadsRepository = {
-  replaceMemoThreads: (
-    workOrderId: string,
-    memoThreads: MemoThread[],
-  ) => Promise<void>;
-};
-
 export type { WorkOrderCompanyScope };
 
-function canReplaceMemoThreads(
-  repository: unknown,
-): repository is ReplaceMemoThreadsRepository {
-  return (
-    typeof repository === "object" &&
-    repository !== null &&
-    "replaceMemoThreads" in repository &&
-    typeof (repository as { replaceMemoThreads?: unknown })
-      .replaceMemoThreads === "function"
-  );
-}
-
-function mergeMemoThreads(
-  payloadThreads: MemoThread[] | undefined,
-  dbThreads: MemoThread[],
-): MemoThread[] {
-  const merged = new Map<string, MemoThread>();
-
-  for (const thread of payloadThreads ?? []) {
-    merged.set(thread.id, thread);
-  }
-
-  for (const thread of dbThreads) {
-    merged.set(thread.id, thread);
-  }
-
-  return Array.from(merged.values());
-}
-
-async function hydrateWorkOrdersWithAttachmentMemoSnapshots(
+async function hydrateWorkOrdersWithAttachmentSnapshots(
   workOrders: WorkOrder[],
 ): Promise<WorkOrder[]> {
   if (workOrders.length === 0) return workOrders;
   traceWaflFlow("service", "workorders.attachments.hydrate", { rows: workOrders.length });
 
   try {
-    const repository = await createAttachmentMemoRepository();
+    const repository = await createAttachmentRepository();
     const info = repository.getRepositoryInfo();
 
     if (info.mode === "db" && !info.adapterConfigured) {
@@ -91,10 +50,6 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(
       return {
         ...workOrder,
         attachments: snapshot.attachments,
-        memoThreads: mergeMemoThreads(
-          workOrder.memoThreads,
-          snapshot.memoThreads,
-        ),
       };
     });
   } catch (error) {
@@ -113,40 +68,20 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(
   }
 }
 
-async function hydrateWorkOrderWithAttachmentMemoSnapshot(
+async function hydrateWorkOrderWithAttachmentSnapshot(
   workOrder: WorkOrder,
 ): Promise<WorkOrder> {
-  const [hydrated] = await hydrateWorkOrdersWithAttachmentMemoSnapshots([
+  const [hydrated] = await hydrateWorkOrdersWithAttachmentSnapshots([
     workOrder,
   ]);
   return hydrated ?? workOrder;
-}
-
-async function replaceWorkOrderMemoThreads(
-  workOrder: WorkOrder,
-): Promise<void> {
-  const repository = await createAttachmentMemoRepository();
-  const info = repository.getRepositoryInfo();
-
-  if (
-    info.mode !== "db" ||
-    !info.adapterConfigured ||
-    !canReplaceMemoThreads(repository)
-  ) {
-    return;
-  }
-
-  await repository.replaceMemoThreads(
-    workOrder.id,
-    workOrder.memoThreads ?? [],
-  );
 }
 
 export async function listWorkOrdersByCompany(
   scope: WorkOrderCompanyScope,
 ): Promise<WorkOrder[]> {
   traceWaflFlow("service", "workorders.list", { companyId: scope.companyId });
-  const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(
+  const workOrders = await hydrateWorkOrdersWithAttachmentSnapshots(
     await listWorkOrderRecordsByCompany(scope),
   );
   traceWaflResult("workorders.list", "success", { rows: workOrders.length });
@@ -163,7 +98,7 @@ export async function getWorkOrderDetailByCompany(
     traceWaflResult("workorders.detail", "skip", { workOrderId });
     return null;
   }
-  const hydrated = await hydrateWorkOrderWithAttachmentMemoSnapshot(workOrder);
+  const hydrated = await hydrateWorkOrderWithAttachmentSnapshot(workOrder);
   traceWaflResult("workorders.detail", "success", { workOrderId });
   return hydrated;
 }
@@ -191,8 +126,7 @@ export async function createWorkOrderForCompany(
 ): Promise<WorkOrder> {
   traceWaflFlow("service", "workorders.create", { workOrderId: workOrder.id, companyId: scope.companyId });
   const createdWorkOrder = await createWorkOrderRecordForCompany(workOrder, scope);
-  await replaceWorkOrderMemoThreads(workOrder);
-  const hydrated = await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder);
+  const hydrated = await hydrateWorkOrderWithAttachmentSnapshot(createdWorkOrder);
   traceWaflResult("workorders.create", "success", { workOrderId: hydrated.id });
   return hydrated;
 }
@@ -218,7 +152,7 @@ export async function saveWorkOrdersForCompany(
   scope: WorkOrderCompanyScope,
 ): Promise<WorkOrder[]> {
   traceWaflFlow("service", "workorders.bulkSave", { rows: workOrders.length, companyId: scope.companyId });
-  const savedWorkOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(
+  const savedWorkOrders = await hydrateWorkOrdersWithAttachmentSnapshots(
     await saveWorkOrderRecordsForCompany(workOrders, scope),
   );
   traceWaflResult("workorders.bulkSave", "success", { rows: savedWorkOrders.length });
@@ -230,7 +164,7 @@ export async function saveWorkOrderForCompany(
   scope: WorkOrderCompanyScope,
 ): Promise<WorkOrder> {
   traceWaflFlow("service", "workorders.save", { workOrderId: workOrder.id, companyId: scope.companyId });
-  const savedWorkOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(
+  const savedWorkOrder = await hydrateWorkOrderWithAttachmentSnapshot(
     await saveWorkOrderRecordForCompany(workOrder, scope),
   );
   traceWaflResult("workorders.save", "success", { workOrderId: savedWorkOrder.id });

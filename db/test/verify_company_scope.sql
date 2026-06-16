@@ -33,7 +33,7 @@ JOIN materials m ON m.id = wml.material_id
 WHERE (wml.company_id <> s.company_id OR wml.company_id <> m.company_id)
   AND wml.id LIKE 'test-%';
 
--- Attachments and memos must match their parent workorder company.
+-- Attachments must match their parent workorder company.
 SELECT
   'attachments_company_scope' AS check_name,
   count(*)::integer AS cross_company_rows,
@@ -43,14 +43,7 @@ JOIN spec_sheets s ON s.id = a.order_id
 WHERE a.company_id <> s.company_id
   AND a.id LIKE 'test-%';
 
-SELECT
-  'memos_company_scope' AS check_name,
-  count(*)::integer AS cross_company_rows,
-  CASE WHEN count(*) = 0 THEN 'PASS' ELSE 'FAIL' END AS result
-FROM memos m
-JOIN spec_sheets s ON s.id = m.order_id
-WHERE m.company_id <> s.company_id
-  AND m.id LIKE 'test-%';
+
 
 -- Company B data should exist, but must remain isolated from Company A queries.
 SELECT

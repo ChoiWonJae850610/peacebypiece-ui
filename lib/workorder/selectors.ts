@@ -54,10 +54,6 @@ export function canEditWorkOrderAttachments(workflowState: WorkOrder["workflowSt
   return canSeeAttachments && canManageAttachments && isWorkOrderSideDraftEditable(workflowState);
 }
 
-export function canEditWorkOrderMemo(workflowState: WorkOrder["workflowState"]) {
-  return isWorkOrderSideDraftEditable(workflowState);
-}
-
 export function canRenameWorkOrderTitle(currentUser: UserProfile, workflowState: WorkOrder["workflowState"]) {
   return (
     hasMemberPermission(currentUser, "workorder.update") &&

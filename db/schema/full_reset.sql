@@ -71,7 +71,6 @@ DROP TABLE IF EXISTS company_users CASCADE;
 
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS history_logs CASCADE;
-DROP TABLE IF EXISTS memos CASCADE;
 DROP TABLE IF EXISTS attachment_trash_items CASCADE;
 DROP TABLE IF EXISTS attachments CASCADE;
 DROP TABLE IF EXISTS spec_sheet_outsourcing_lines CASCADE;
@@ -666,7 +665,6 @@ CREATE TABLE spec_sheets (
   quantity integer NOT NULL DEFAULT 0,
   inventory_quantity integer NOT NULL DEFAULT 0,
   inventory_status text NOT NULL DEFAULT 'unchecked',
-  memo text,
   rejection_reason text,
   rejected_at timestamptz,
   rejected_by_user_id text,
@@ -866,46 +864,6 @@ CREATE TABLE attachment_trash_items (
   ),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE memos (
-  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  company_name text,
-  order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
-  parent_id text REFERENCES memos(id) ON DELETE CASCADE,
-  body text NOT NULL,
-  author_id text,
-  is_active boolean NOT NULL DEFAULT true,
-  delete_status text NOT NULL DEFAULT 'active',
-  purge_status text NOT NULL DEFAULT 'none',
-  purge_requested_at timestamptz,
-  purge_requested_by text,
-  delete_source text,
-  delete_scope text,
-  delete_parent_type text,
-  delete_parent_id text,
-  delete_batch_id text,
-  purged_at timestamptz,
-  purged_by text,
-  deleted_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT memos_delete_status_check CHECK (
-    delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
-  ),
-  CONSTRAINT memos_purge_status_check CHECK (
-    purge_status IN ('none', 'pending', 'purge_requested', 'processing', 'purged', 'failed', 'restored')
-  ),
-  CONSTRAINT memos_delete_source_check CHECK (
-    delete_source IS NULL OR delete_source IN ('manual', 'workorder_bundle', 'system')
-  ),
-  CONSTRAINT memos_delete_scope_check CHECK (
-    delete_scope IS NULL OR delete_scope IN ('single', 'bundle')
-  ),
-  CONSTRAINT memos_delete_parent_type_check CHECK (
-    delete_parent_type IS NULL OR delete_parent_type IN ('none', 'workorder')
-  )
 );
 
 CREATE TABLE audit_logs (
@@ -1210,7 +1168,6 @@ CREATE TABLE company_workorder_daily_stats (
   order_quantity_total numeric(14, 2) NOT NULL DEFAULT 0,
   labor_cost_total numeric(14, 2) NOT NULL DEFAULT 0,
   loss_cost_total numeric(14, 2) NOT NULL DEFAULT 0,
-  memo_count integer NOT NULL DEFAULT 0,
   attachment_count integer NOT NULL DEFAULT 0,
   calculated_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -1226,7 +1183,6 @@ CREATE TABLE company_workorder_daily_stats (
     AND order_quantity_total >= 0
     AND labor_cost_total >= 0
     AND loss_cost_total >= 0
-    AND memo_count >= 0
     AND attachment_count >= 0
   )
 );
@@ -1244,7 +1200,6 @@ CREATE TABLE company_workorder_monthly_stats (
   order_quantity_total numeric(14, 2) NOT NULL DEFAULT 0,
   labor_cost_total numeric(14, 2) NOT NULL DEFAULT 0,
   loss_cost_total numeric(14, 2) NOT NULL DEFAULT 0,
-  memo_count integer NOT NULL DEFAULT 0,
   attachment_count integer NOT NULL DEFAULT 0,
   calculated_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -1261,7 +1216,6 @@ CREATE TABLE company_workorder_monthly_stats (
     AND order_quantity_total >= 0
     AND labor_cost_total >= 0
     AND loss_cost_total >= 0
-    AND memo_count >= 0
     AND attachment_count >= 0
   )
 );
@@ -2146,13 +2100,6 @@ CREATE INDEX attachment_trash_items_purge_retry_idx ON attachment_trash_items (p
 CREATE INDEX attachment_trash_items_company_status_deleted_idx ON attachment_trash_items (company_id, purge_status, deleted_at DESC) WHERE restored_at IS NULL AND purged_at IS NULL;
 CREATE INDEX attachment_trash_items_delete_metadata_idx ON attachment_trash_items (delete_source, delete_scope, delete_parent_type, delete_parent_id);
 
-CREATE INDEX memos_order_idx ON memos (order_id);
-CREATE INDEX memos_company_order_idx ON memos (company_id, order_id);
-CREATE INDEX memos_parent_idx ON memos (parent_id);
-CREATE INDEX memos_order_active_idx ON memos (order_id, is_active, created_at ASC);
-CREATE INDEX memos_delete_status_idx ON memos (delete_status, deleted_at DESC);
-CREATE INDEX memos_purge_status_idx ON memos (purge_status, purge_requested_at DESC, purged_at DESC);
-CREATE INDEX memos_delete_metadata_idx ON memos (delete_source, delete_scope, delete_parent_type, delete_parent_id);
 
 CREATE INDEX audit_logs_created_idx ON audit_logs (created_at DESC);
 CREATE INDEX audit_logs_company_created_idx ON audit_logs (company_id, created_at DESC);
@@ -2251,7 +2198,7 @@ COMMENT ON COLUMN invitations.token_hash IS '초대 raw token의 hash. raw token
 COMMENT ON TABLE plans IS '요금제 원본 정의. 결제 자동화가 아니라 운영자가 적용할 plan 정책 기준이다.';
 COMMENT ON TABLE company_plan_assignments IS '고객사별 적용 요금제. storage/member/price override를 허용한다.';
 COMMENT ON TABLE storage_usage_snapshots IS '고객사별 저장공간 사용량 snapshot. 1차는 DB attachment metadata 기준 집계를 권장한다.';
-COMMENT ON TABLE company_workorder_daily_stats IS '고객사별 일 단위 작업지시서/발주/메모/첨부 통계 summary table. 초기 통계 API의 선택적 캐시/집계 저장소로 사용한다.';
+COMMENT ON TABLE company_workorder_daily_stats IS '고객사별 일 단위 작업지시서/발주/첨부 통계 summary table. 초기 통계 API의 선택적 캐시/집계 저장소로 사용한다.';
 COMMENT ON TABLE company_workorder_monthly_stats IS '고객사별 월 단위 작업지시서 통계 summary table. stats_month는 해당 월 1일로 저장한다.';
 COMMENT ON TABLE company_storage_daily_stats IS '고객사별 일 단위 저장소/휴지통/purge 통계 summary table. 실제 R2 list 조회가 아니라 DB metadata 기준 집계를 저장한다.';
 

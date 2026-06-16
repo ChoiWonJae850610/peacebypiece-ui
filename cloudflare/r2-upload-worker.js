@@ -7,8 +7,8 @@ const CORS_HEADERS = {
 
 const TEXT_ENCODER = new TextEncoder();
 const WORKER_VERSION = "0.13.69";
-const ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
-const SCOPED_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
+const ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments)\/[^/]+$/i;
+const SCOPED_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
 const COMPANY_ONBOARDING_KEY_PATTERN = /^companies\/[^/]+\/onboarding\/(logo|business-license)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 const COMPANY_FILE_KEY_PATTERN = /^companies\/[^/]+\/company-files\/(representative_image|business_registration)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 
@@ -17,7 +17,6 @@ const ATTACHMENT_POLICY = {
   allowedMimeTypes: {
     design: ["image/jpeg", "image/png", "image/webp"],
     attachment: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
-    memos: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
   },
 };
 
@@ -50,7 +49,6 @@ function normalizeStorageKey(value) {
 function getScopeFromKey(key) {
   const normalized = normalizeStorageKey(key);
   if (normalized.includes("/design/") || normalized.includes("/thumbnails/design/")) return "design";
-  if (normalized.includes("/memos/") || normalized.includes("/thumbnails/memos/")) return "memos";
   return "attachment";
 }
 

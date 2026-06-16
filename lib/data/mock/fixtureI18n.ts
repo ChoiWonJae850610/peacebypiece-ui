@@ -17,7 +17,6 @@ export const FIXTURE_I18N = {
         category3: "반팔",
         priority: "높음",
         vendor: "A공장",
-        memo: "메인 컬러와 배색 확인 후 생산 요청. 목 시보리 톤은 첨부 이미지를 우선 기준으로 확인합니다.",
         orderType: "메인 생산",
         materials: {
           fabricMain: "30수 코튼",
@@ -49,10 +48,6 @@ export const FIXTURE_I18N = {
           swatch: "원단 스와치.jpg",
           sizeSpec: "사이즈 표.pdf",
         },
-        memoThread: {
-          content: "메인 컬러와 배색 확인 후 생산 요청합니다. 목 시보리 톤은 첨부 이미지를 먼저 봐주세요.",
-          reply: "사이즈 표 같이 확인해서 발주 전에 최종 체크하겠습니다.",
-        },
       },
       wo2: {
         title: "워싱 데님 팬츠",
@@ -61,7 +56,6 @@ export const FIXTURE_I18N = {
         category3: "데님",
         priority: "중간",
         vendor: "B공장",
-        memo: "워싱 견뢰도 테스트 후 본생산 진행 예정.",
         orderTypeMain: "메인 생산",
         orderTypeExtra: "메인 생산",
         materials: {
@@ -79,10 +73,6 @@ export const FIXTURE_I18N = {
           unitPerPiece: "장당",
           statusInProgress: "진행중",
         },
-        memoThread: {
-          content: "워싱 테스트 완료 후 본생산 일정 다시 공유 예정입니다.",
-          reply: "검수 기준표는 입고 시점에 맞춰 다시 체크하겠습니다.",
-        },
       },
       wo3: {
         title: "미니 숄더백",
@@ -91,7 +81,6 @@ export const FIXTURE_I18N = {
         category3: "미니백",
         priority: "낮음",
         vendor: "C업체",
-        memo: "완료 후 샘플 보관용 1개 별도 관리.",
         orderType: "메인 생산",
         materials: {
           leather: "합성피혁",
@@ -107,9 +96,6 @@ export const FIXTURE_I18N = {
           completedImage: "완료 이미지.jpg",
           checklist: "출고 체크리스트.pdf",
           materialSpec: "부자재 명세.pdf",
-        },
-        memoThread: {
-          content: "완료 후 샘플 보관용 1개 별도 관리 예정입니다.",
         },
       },
     },
@@ -194,7 +180,6 @@ export const FIXTURE_I18N = {
         category3: "T-shirt",
         priority: "High",
         vendor: "Factory A",
-        memo: "Request production after confirming the main color and contrast. Please use the attached image first for the rib tone.",
         orderType: "Main production",
         materials: {
           fabricMain: "30s cotton",
@@ -226,10 +211,6 @@ export const FIXTURE_I18N = {
           swatch: "fabric-swatch.jpg",
           sizeSpec: "size-spec.pdf",
         },
-        memoThread: {
-          content: "Requesting production after reviewing the main color and contrast. Please check the attached image for the rib tone first.",
-          reply: "I will review the size chart together and do a final check before placing the order.",
-        },
       },
       wo2: {
         title: "Washed Denim Pants",
@@ -238,7 +219,6 @@ export const FIXTURE_I18N = {
         category3: "Denim",
         priority: "Medium",
         vendor: "Factory B",
-        memo: "Proceed with bulk production after the washing fastness test.",
         orderTypeMain: "Main production",
         orderTypeExtra: "Main production",
         materials: {
@@ -256,10 +236,6 @@ export const FIXTURE_I18N = {
           unitPerPiece: "per piece",
           statusInProgress: "In progress",
         },
-        memoThread: {
-          content: "We will share the bulk production schedule again after the washing test is complete.",
-          reply: "We will check the inspection guideline again when the inbound timing is confirmed.",
-        },
       },
       wo3: {
         title: "Mini Shoulder Bag",
@@ -268,7 +244,6 @@ export const FIXTURE_I18N = {
         category3: "Mini bag",
         priority: "Low",
         vendor: "Vendor C",
-        memo: "Keep one piece separately for sample storage after completion.",
         orderType: "Main production",
         materials: {
           leather: "Synthetic leather",
@@ -284,9 +259,6 @@ export const FIXTURE_I18N = {
           completedImage: "completed-image.jpg",
           checklist: "shipment-checklist.pdf",
           materialSpec: "trim-spec.pdf",
-        },
-        memoThread: {
-          content: "One completed piece will be kept separately for sample storage.",
         },
       },
     },

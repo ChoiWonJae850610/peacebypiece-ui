@@ -694,7 +694,7 @@ export function useWorkOrderWorkflowActions({
 
   const handleUpdateSelectedWorkOrder = useCallback(
     async ({ workOrderId, patch, isReviewRequestLocked }: UpdateSelectedWorkOrderInput) => {
-      const hasLockedChanges = Object.keys(patch).some((key) => key !== "memoThreads" && key !== "lastSavedAt");
+      const hasLockedChanges = Object.keys(patch).some((key) => key !== "lastSavedAt");
       if (isReviewRequestLocked && hasLockedChanges) {
         return;
       }

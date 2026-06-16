@@ -224,7 +224,7 @@ export const adminEn = {
     repository: {
       workorder: "Work orders",
       partner: "Partners",
-      attachmentMemo: "Memos/attachments",
+      attachment: "Attachments",
     },
     repositoryModes: { db: "Live data", mock: "Initial data" },
     statuses: {
@@ -1741,7 +1741,6 @@ export const adminEn = {
       },
       comment_added: {
         label: "Memo added",
-        description: "Notify when work memos or replies are added.",
       },
     },
     title: "Notification Event Settings",

@@ -55,13 +55,11 @@ export function getOrderTypeFromWorkOrderKindValue(kind: WorkOrderKindValue | nu
 export const ATTACHMENT_SCOPE = {
   design: "design",
   attachment: "attachment",
-  memo: "memo",
 } as const;
 
 export const ATTACHMENT_SCOPES = [
   ATTACHMENT_SCOPE.design,
   ATTACHMENT_SCOPE.attachment,
-  ATTACHMENT_SCOPE.memo,
 ] as const;
 
 export const UPLOADABLE_ATTACHMENT_SCOPES = [
@@ -100,6 +98,3 @@ export function isDesignAttachmentScope(value: string | null | undefined): boole
   return normalizeAttachmentScopeValue(value) === ATTACHMENT_SCOPE.design;
 }
 
-export function isMemoAttachmentScope(value: string | null | undefined): boolean {
-  return normalizeAttachmentScopeValue(value) === ATTACHMENT_SCOPE.memo;
-}

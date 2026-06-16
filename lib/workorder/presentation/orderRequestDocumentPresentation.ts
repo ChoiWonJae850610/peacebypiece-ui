@@ -166,6 +166,6 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
     currentFactoryCostAmount,
     currentDocumentAmount,
     representativeImage: getRepresentativeImage(attachmentItems),
-    requestNote: String(workOrder.memo ?? "").trim(),
+    requestNote: "",
   };
 }

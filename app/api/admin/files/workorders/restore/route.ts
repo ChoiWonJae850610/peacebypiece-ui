@@ -71,7 +71,6 @@ export async function POST(request: NextRequest) {
           affectedCount: result.affectedCount,
           documentCount: result.documentCount ?? result.attachmentCount ?? 0,
           designCount: result.designCount ?? 0,
-          memoCount: result.memoCount ?? 0,
           requestId: getAuditRequestId(request),
           ipAddress: getAuditIpAddress(request),
         }),
@@ -88,14 +87,12 @@ export async function POST(request: NextRequest) {
         attachmentCount: result.attachmentCount ?? 0,
         documentCount: result.documentCount ?? result.attachmentCount ?? 0,
         designCount: result.designCount ?? 0,
-        memoCount: result.memoCount ?? 0,
         reason: result.reason,
         message: result.ok
           ? createAdminTrashActionMessage("restore", {
               workOrderCount: result.affectedCount,
               documentCount: result.documentCount ?? result.attachmentCount ?? 0,
               designCount: result.designCount ?? 0,
-              memoCount: result.memoCount ?? 0,
             })
           : result.message,
       },

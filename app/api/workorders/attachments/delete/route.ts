@@ -11,8 +11,8 @@ import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyD
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildAttachmentDeletedAuditLog } from "@/lib/system/audit/writeActions";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
-import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
+import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
+import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
 
 export const runtime = "nodejs";
 
@@ -22,7 +22,7 @@ type AttachmentDeleteRequest = {
   serviceCode?: unknown;
 };
 
-function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
+function isWritableRepository(repository: AttachmentRepository): repository is AttachmentWritableRepository {
   return "softDeleteAttachment" in repository && "getAttachmentById" in repository;
 }
 
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
-    const repository = await createAttachmentMemoRepository();
+    const repository = await createAttachmentRepository();
     if (!isWritableRepository(repository)) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
     }

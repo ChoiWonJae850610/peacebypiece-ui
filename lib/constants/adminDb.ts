@@ -20,7 +20,6 @@ export const ADMIN_DB_TABLES = [
   "material_order_lines",
   "material_stocks",
   "material_allocations",
-  "memos",
 ] as const;
 
 export type AdminDbTableName = (typeof ADMIN_DB_TABLES)[number];
@@ -44,7 +43,6 @@ export const ADMIN_DB_COMPANY_SCOPED_TABLES = [
   "material_order_lines",
   "material_stocks",
   "material_allocations",
-  "memos",
 ] as const;
 
 export type AdminDbCompanyScopedTableName = (typeof ADMIN_DB_COMPANY_SCOPED_TABLES)[number];

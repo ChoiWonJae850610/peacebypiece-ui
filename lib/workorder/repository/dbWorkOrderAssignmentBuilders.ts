@@ -249,13 +249,6 @@ export function appendNormalizedWorkOrderInsertColumns(
     schema.inventoryStatusColumn,
     workOrder.inventoryStatus || "unchecked",
   );
-  pushInsertColumn(
-    columns,
-    values,
-    placeholders,
-    schema.memoColumn,
-    workOrder.memo || null,
-  );
 }
 
 export function appendNormalizedWorkOrderUpdateAssignments(
@@ -359,12 +352,6 @@ export function appendNormalizedWorkOrderUpdateAssignments(
     values,
     schema.inventoryStatusColumn,
     workOrder.inventoryStatus || "unchecked",
-  );
-  pushUpdateAssignment(
-    assignments,
-    values,
-    schema.memoColumn,
-    workOrder.memo || null,
   );
   pushUpdateAssignment(
     assignments,

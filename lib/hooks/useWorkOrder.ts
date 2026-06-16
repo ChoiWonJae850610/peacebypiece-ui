@@ -294,7 +294,6 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     canCreateWorkOrder: derivedState.canCreateWorkOrder,
     canEditSideDraftContent: derivedState.canEditSideDraftContent,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
-    canEditMemo: derivedState.canEditMemo,
     canRenameTitle: derivedState.canRenameTitle,
     canSeeAttachments: derivedState.canSeeAttachments,
     isReviewRequestLocked: derivedState.isReviewRequestLocked,
@@ -318,15 +317,6 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     handleAttachmentFileDrop: attachmentState.handleAttachmentFileDrop,
     handleDeleteAttachment: attachmentState.handleDeleteAttachment,
     handleSetPrimaryDesignAttachment: attachmentState.handleSetPrimaryDesignAttachment,
-  };
-
-  const memo = {
-    handleCreateMemoThread: attachmentState.handleCreateMemoThread,
-    handleCreateMemoReply: attachmentState.handleCreateMemoReply,
-    handleUpdateMemoThread: attachmentState.handleUpdateMemoThread,
-    handleDeleteMemoThread: attachmentState.handleDeleteMemoThread,
-    handleUpdateMemoReply: attachmentState.handleUpdateMemoReply,
-    handleDeleteMemoReply: attachmentState.handleDeleteMemoReply,
   };
 
   const production = {
@@ -440,7 +430,6 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     selection,
     permissions,
     attachments,
-    memo,
     production,
     cost,
     persistence,
@@ -507,7 +496,6 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     canCreateWorkOrder: permissions.canCreateWorkOrder,
     canEditSideDraftContent: permissions.canEditSideDraftContent,
     canUploadOfficialAttachments: permissions.canUploadOfficialAttachments,
-    canEditMemo: permissions.canEditMemo,
     canRenameTitle: permissions.canRenameTitle,
     canSeeAttachments: permissions.canSeeAttachments,
     isReviewRequestLocked: permissions.isReviewRequestLocked,
@@ -562,11 +550,5 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     handleAttachmentFiles: attachments.handleAttachmentFiles,
     handleDeleteAttachment: attachments.handleDeleteAttachment,
     handleSetPrimaryDesignAttachment: attachments.handleSetPrimaryDesignAttachment,
-    handleCreateMemoThread: memo.handleCreateMemoThread,
-    handleCreateMemoReply: memo.handleCreateMemoReply,
-    handleUpdateMemoThread: memo.handleUpdateMemoThread,
-    handleDeleteMemoThread: memo.handleDeleteMemoThread,
-    handleUpdateMemoReply: memo.handleUpdateMemoReply,
-    handleDeleteMemoReply: memo.handleDeleteMemoReply,
   };
 }

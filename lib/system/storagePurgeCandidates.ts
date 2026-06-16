@@ -59,7 +59,6 @@ export type SystemStoragePurgeCandidate = {
   attachmentCount: number;
   documentCount: number;
   designCount: number;
-  memoCount: number;
 };
 
 export type SystemStoragePurgeCandidateSummary = {
@@ -113,7 +112,6 @@ type WorkOrderPurgeCandidateRow = DbQueryResultRow & {
   attachment_count: string | number | null;
   document_count: string | number | null;
   design_count: string | number | null;
-  memo_count: string | number | null;
   total_size_bytes: string | number | null;
   thumbnail_count: string | number | null;
 };
@@ -299,7 +297,6 @@ function mapFileCandidateRow(
     attachmentCount: 1,
     documentCount,
     designCount,
-    memoCount: 0,
   };
 }
 
@@ -311,12 +308,11 @@ function mapWorkOrderCandidateRow(
   const attachmentCount = toNumber(row.attachment_count);
   const documentCount = toNumber(row.document_count);
   const designCount = toNumber(row.design_count);
-  const memoCount = toNumber(row.memo_count);
   const thumbnailCount = toNumber(row.thumbnail_count);
   const previewModeLabel =
-    attachmentCount > 0 || memoCount > 0
-      ? `문서 ${documentCount}개 · 디자인 ${designCount}개 · 메모 ${memoCount}개`
-      : "문서/디자인/메모 없음";
+    attachmentCount > 0
+      ? `문서 ${documentCount}개 · 디자인 ${designCount}개`
+      : "문서/디자인 없음";
 
   return {
     trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${row.id}`,
@@ -348,7 +344,6 @@ function mapWorkOrderCandidateRow(
     attachmentCount,
     documentCount,
     designCount,
-    memoCount,
   };
 }
 
@@ -433,7 +428,6 @@ async function listWorkOrderPurgeCandidateRows(input: {
             COALESCE(bundle_files.attachment_count, 0)::text AS attachment_count,
             COALESCE(bundle_files.document_count, 0)::text AS document_count,
             COALESCE(bundle_files.design_count, 0)::text AS design_count,
-            COALESCE(memo_summary.memo_count, 0)::text AS memo_count,
             COALESCE(bundle_files.total_size_bytes, 0)::text AS total_size_bytes,
             COALESCE(bundle_files.thumbnail_count, 0)::text AS thumbnail_count
        FROM spec_sheets s
@@ -451,20 +445,6 @@ async function listWorkOrderPurgeCandidateRows(input: {
             AND t.purged_at IS NULL
             AND (t.purge_status IN (${ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST}) OR t.last_purge_error IS NOT NULL)
        ) bundle_files ON true
-       LEFT JOIN LATERAL (
-         SELECT COUNT(DISTINCT m.id)::integer AS memo_count
-           FROM memos m
-          WHERE m.order_id = s.id
-            AND (m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)
-            AND (
-              (
-                COALESCE(m.delete_source, '') = 'workorder_bundle'
-                OR (COALESCE(m.delete_scope, '') = 'bundle' AND COALESCE(m.delete_parent_type, '') = 'workorder')
-              )
-              AND (m.delete_parent_id = s.id OR m.delete_batch_id = s.id)
-            )
-            AND COALESCE(m.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-       ) memo_summary ON true
       WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
         AND COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
         AND s.purged_at IS NULL
@@ -836,8 +816,6 @@ async function markSystemWorkOrderBundlePurged(input: {
   actorId: string | null | undefined;
 }): Promise<number> {
   const actorId = input.actorId ?? ADMIN_FILE_TRASH_ACTOR_IDS.systemStoragePurge;
-  const memoBundlePredicate = getWorkOrderBundleFilePredicate("m");
-
   const result = await queryDb<{ affected_count: string | number }>(
     `WITH target_workorder AS (
        SELECT id
@@ -857,20 +835,6 @@ async function markSystemWorkOrderBundlePurged(input: {
           AND restored_at IS NULL
           AND purged_at IS NULL
           AND purge_status IN (${ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST})
-        RETURNING id
-     ), marked_memos AS (
-       UPDATE memos m
-          SET is_active = false,
-              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged},
-              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purged},
-              purge_requested_at = COALESCE(purge_requested_at, now()),
-              purged_at = now(),
-              purged_by = $2,
-              updated_at = now()
-        WHERE m.order_id = $1
-          AND ${memoBundlePredicate}
-          AND (m.delete_parent_id = $1 OR m.delete_batch_id = $1)
-          AND COALESCE(m.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
         RETURNING id
      ), marked_workorder AS (
        UPDATE spec_sheets

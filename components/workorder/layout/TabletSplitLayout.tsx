@@ -25,7 +25,7 @@ export default function TabletSplitLayout({
   const { i18n } = useI18n();
   const contentScrollRef = useRef<HTMLElement | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
-  const sidePanelTitle = `${i18n.workorder.ui.attachmentPanel.title} · ${i18n.workorder.ui.memo.panelTitle}`;
+  const sidePanelTitle = i18n.workorder.ui.attachmentPanel.title;
 
   useEffect(() => {
     contentScrollRef.current?.scrollTo({ top: 0, left: 0 });

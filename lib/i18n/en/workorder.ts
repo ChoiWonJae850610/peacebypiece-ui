@@ -106,7 +106,6 @@ export const workorderEn = {
     reorderProcessingLabel: "Creating reorder...",
     deleteProcessingLabel: "Deleting work order...",
     workflowProcessingLabel: "Updating work order status...",
-    memoProcessingLabel: "Saving memo...",
     attachmentProcessingLabel: "Processing file...",
     editProcessingLabel: "Saving changes...",
     orderRequestProcessingLabel: "Processing order request...",
@@ -122,8 +121,6 @@ export const workorderEn = {
       "This change is blocked by the order info transition policy.",
     inspectionCompletedToast: "Inspection completion has been applied.",
     officialAttachmentUploadedToast: "Attachment file has been uploaded.",
-    memoThreadCreatedToast: "Work memo has been registered.",
-    memoReplyCreatedToast: "Memo reply has been registered.",
     managerChangedToast: "Manager has been changed.",
     workflowChangedToastFormat: '"{label}" has been applied.',
     inventoryAppliedToast: "Inventory update has been applied.",
@@ -183,8 +180,6 @@ export const workorderEn = {
       officialAttachmentUploaded: "Attachment file uploaded",
       designAttachmentUploaded: "Design uploaded",
       attachmentDeleted: "Attachment deleted",
-      memoThreadCreated: "Memo added",
-      memoReplyCreated: "Memo reply added",
       reorderCreated: "Reorder created",
       kindChanged: "Type changed",
       reworkConverted: "Converted to rework",
@@ -205,8 +200,6 @@ export const workorderEn = {
       officialAttachmentUploaded: "Attachment file has been uploaded.",
       designAttachmentUploaded: "Design file has been uploaded.",
       attachmentDeleted: "Attachment has been deleted.",
-      memoThreadCreated: "Work memo has been registered.",
-      memoReplyCreated: "Work memo reply has been registered.",
       reorderCreated: "A new work order was created by copying a previous one.",
       kindChanged: "The work order type has been changed.",
       reworkConverted: "The work order has been converted to rework.",
@@ -224,7 +217,6 @@ export const workorderEn = {
       author: "Author",
       title: "Title",
       changed: "Changed",
-      memo: "Memo",
       finalInventory: "Final inventory",
       file: "File",
       scope: "Scope",
@@ -276,7 +268,7 @@ export const workorderEn = {
       sideTitle:
         "Select a work order to view attachments, design files, and memos",
       sideDescription:
-        "After selection, attachments, design files, and work memos appear in the right panel.",
+        "After selection, attachments and design files appear in the right panel.",
     },
     visualSummary: {
       productionLabel: "Production",
@@ -296,26 +288,6 @@ export const workorderEn = {
       costHiddenDescription: "Hidden by permission",
     },
 
-    memo: {
-      panelTitle: "Work memo",
-      authorPrefix: "Author",
-      countSuffix: "",
-      toggleReplyOpen: "Reply",
-      toggleReplyClose: "Close replies",
-      replyPlaceholder: "Enter reply",
-      threadPlaceholder: "Enter work memo",
-      submit: "Register",
-      deleted: "Deleted memo.",
-      edit: "Edit",
-      save: "Save",
-      cancel: "Cancel",
-      deleteAria: "Delete memo",
-      empty:
-        "No work memos yet. You can leave required checks or progress notes here.",
-      adminAuthorFallback: "Admin",
-      unknownAuthorFallback: "Unnamed",
-      replyMarker: "↳",
-    },
     attachmentPanel: {
       title: "Attachment files",
       designTitle: "Design",
@@ -715,9 +687,9 @@ export const workorderEn = {
         loadingDetailTitle: "Loading work order.",
         loadingDetailDescription:
           "Loading work order details and related data.",
-        loadingSideTitle: "Loading attachments, design files, and memos.",
+        loadingSideTitle: "Loading attachments and design files.",
         loadingSideDescription:
-          "Checking files and work memos for the right panel.",
+          "Checking attachments and design files for the right panel.",
       },
       mobileTopBar: {
         title: "WAFL",
@@ -752,9 +724,9 @@ export const workorderEn = {
         loadingDetailTitle: "Loading work order.",
         loadingDetailDescription:
           "Loading work order details and related data.",
-        loadingSideTitle: "Loading attachments, design files, and memos.",
+        loadingSideTitle: "Loading attachments and design files.",
         loadingSideDescription:
-          "Checking files and work memos for the right panel.",
+          "Checking attachments and design files for the right panel.",
         detailTabs: {
           basic: "Summary",
           order: "Process",
@@ -763,19 +735,17 @@ export const workorderEn = {
         },
         relatedSections: {
           openLabel: "More info",
-          openAria: "Open files, design, and memos",
+          openAria: "Open attachments and design",
           openTitle:
-            "Open the additional information panel for files, design, and memos.",
+            "Open the additional information panel for attachments and design.",
           attachment: "Files",
           design: "Design",
-          memo: "Memo",
           tabsAria: "Work order related information sections",
           description:
-            "Attachments, design files, and memos are separated on mobile.",
+            "Attachments and design files are separated on mobile.",
           titles: {
             attachment: "Attached files",
             design: "Design files",
-            memo: "Work memos",
           },
         },
       },

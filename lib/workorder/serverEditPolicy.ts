@@ -21,7 +21,6 @@ const META_FIELDS = new Set<keyof WorkOrder>([
   "lastSavedAt",
   "hasDetailSnapshot",
   "summaryAttachmentCount",
-  "summaryMemoThreadCount",
 ]);
 
 const INVENTORY_FIELDS = new Set<keyof WorkOrder>([

@@ -47,7 +47,7 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     domain: "files",
     label: "관리자 파일/저장소",
     state: "db-ready",
-    tables: ["attachments", "attachment_trash_items", "spec_sheets", "memos", "company_settings"],
+    tables: ["attachments", "attachment_trash_items", "spec_sheets", "company_settings"],
     repositoryPath: "lib/admin/files/serverActions.ts",
     adapterPath: "lib/admin/files/adapter.ts",
     apiRoutes: ["app/api/admin/files/snapshot/route.ts"],

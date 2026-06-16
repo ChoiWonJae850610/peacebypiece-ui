@@ -27,11 +27,9 @@ export const WORKORDER_DRAFT_ONLY_DB_FIELDS = [
   "laborCost",
   "lossCost",
   "orderEntries",
-  "memo",
   "materials",
   "outsourcing",
   "attachments",
-  "memoThreads",
 ] as const satisfies readonly (keyof WorkOrder)[];
 
 const immediateFieldSet = new Set<keyof WorkOrder>(WORKORDER_IMMEDIATE_DB_FIELDS);

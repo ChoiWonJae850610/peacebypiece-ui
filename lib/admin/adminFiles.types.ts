@@ -78,7 +78,6 @@ export type AdminTrashActionResultSummary = {
   workOrderCount: number;
   documentCount: number;
   designCount: number;
-  memoCount: number;
   skippedCount?: number;
 };
 
@@ -91,11 +90,8 @@ export type AdminStorageWorkOrderItem = {
   deletedAt: string | null;
   attachmentCount: number;
   trashAttachmentCount: number;
-  memoCount: number;
-  trashMemoCount: number;
   restorePolicyLabel: string;
   attachmentSummaryLabel: string;
-  memoSummaryLabel: string;
 };
 
 export type AdminManagedFileItem = {

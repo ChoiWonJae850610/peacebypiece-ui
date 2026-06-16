@@ -60,7 +60,6 @@ BEGIN
       ('spec_sheets', to_regclass('public.spec_sheets')),
       ('orders', to_regclass('public.orders')),
       ('attachments', to_regclass('public.attachments')),
-      ('memos', to_regclass('public.memos')),
       ('audit_logs', to_regclass('public.audit_logs')),
       ('history_logs', to_regclass('public.history_logs')),
       ('partners', to_regclass('public.partners')),
@@ -150,17 +149,6 @@ BEGIN
       ('company_storage_daily_stats', 'stats_date'),
       ('company_storage_daily_stats', 'active_attachment_bytes'),
       ('company_storage_daily_stats', 'purge_requested_count'),
-      ('memos', 'delete_status'),
-      ('memos', 'purge_status'),
-      ('memos', 'purge_requested_at'),
-      ('memos', 'purged_at'),
-      ('memos', 'purged_by'),
-      ('memos', 'purge_requested_by'),
-      ('memos', 'delete_source'),
-      ('memos', 'delete_scope'),
-      ('memos', 'delete_parent_type'),
-      ('memos', 'delete_parent_id'),
-      ('memos', 'delete_batch_id'),
       ('attachments', 'delete_source'),
       ('attachments', 'delete_scope'),
       ('attachments', 'delete_parent_type'),
@@ -328,7 +316,6 @@ BEGIN
     VALUES
       ('attachments', 'delete_reason'),
       ('attachment_trash_items', 'delete_reason'),
-      ('memos', 'delete_reason'),
       ('spec_sheets', 'delete_reason')
   ) AS blocked_columns(table_name, column_name)
   WHERE EXISTS (

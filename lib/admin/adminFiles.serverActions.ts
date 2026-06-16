@@ -85,22 +85,6 @@ function createNotWorkOrderBundleTrashPredicate(
   return `(NOT ${createWorkOrderBundleMetadataPredicate(alias, workOrderParamIndex)})`;
 }
 
-function createWorkOrderBundleMemoMetadataPredicate(
-  alias: string,
-  workOrderParamIndex: number,
-): string {
-  return `(
-    (
-      COALESCE(${alias}.delete_source, '') = 'workorder_bundle'
-      OR (COALESCE(${alias}.delete_scope, '') = 'bundle' AND COALESCE(${alias}.delete_parent_type, '') = 'workorder')
-    )
-    AND (
-      ${alias}.delete_parent_id = $${workOrderParamIndex}
-      OR ${alias}.delete_batch_id = $${workOrderParamIndex}
-    )
-  )`;
-}
-
 function isAttachmentDeletedWithWorkOrder(input: {
   parentWorkOrderDeleted: boolean;
   orderId?: string | null;
@@ -326,8 +310,6 @@ type AdminStorageWorkOrderRow = DbQueryResultRow & {
   deleted_at: string | Date | null;
   attachment_count: string | number | null;
   trash_attachment_count: string | number | null;
-  memo_count: string | number | null;
-  trash_memo_count: string | number | null;
 };
 
 function toNumber(value: string | number | null | undefined): number {
@@ -582,21 +564,9 @@ export async function listAdminFileManagementRows(input: {
               s.purge_status,
               s.purged_at,
               COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NULL AND COALESCE(a.is_active, true) = true)::text AS attachment_count,
-              COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false)::text AS trash_attachment_count,
-              COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NULL AND COALESCE(m.is_active, true) = true)::text AS memo_count,
-              COUNT(DISTINCT m.id) FILTER (
-                WHERE (m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)
-                  AND (
-                    (
-                      COALESCE(m.delete_source, '') = 'workorder_bundle'
-                      OR (COALESCE(m.delete_scope, '') = 'bundle' AND COALESCE(m.delete_parent_type, '') = 'workorder')
-                    )
-                    AND (m.delete_parent_id = s.id OR m.delete_batch_id = s.id)
-                  )
-              )::text AS trash_memo_count
+              COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false)::text AS trash_attachment_count
          FROM spec_sheets s
          LEFT JOIN attachments a ON a.order_id = s.id
-         LEFT JOIN memos m ON m.order_id = s.id
         WHERE s.company_id = $1
           AND (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
           AND COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.deleted}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST})
@@ -722,8 +692,6 @@ export async function listAdminFileManagementRows(input: {
     (row) => {
       const attachmentCount = toNumber(row.attachment_count);
       const trashAttachmentCount = toNumber(row.trash_attachment_count);
-      const memoCount = toNumber(row.memo_count);
-      const trashMemoCount = toNumber(row.trash_memo_count);
 
       return {
         id: row.id,
@@ -740,11 +708,8 @@ export async function listAdminFileManagementRows(input: {
         deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
         attachmentCount,
         trashAttachmentCount,
-        memoCount,
-        trashMemoCount,
         restorePolicyLabel: "묶음 복원 준비중",
         attachmentSummaryLabel: `첨부 ${attachmentCount + trashAttachmentCount}개`,
-        memoSummaryLabel: `메모 ${memoCount + trashMemoCount}개`,
       };
     },
   );
@@ -983,7 +948,6 @@ export type AdminWorkOrderTrashActionResult = {
   attachmentCount?: number;
   documentCount?: number;
   designCount?: number;
-  memoCount?: number;
   reason:
     | "WORKORDER_ACTION_NOT_CONNECTED"
     | "WORKORDER_ID_REQUIRED"
@@ -1043,7 +1007,6 @@ export async function restoreWorkOrderTrashBundle(
       document_count: string | number;
       design_count: string | number;
       trash_count: string | number;
-      memo_count: string | number;
     }
   >(
     `WITH target_workorder AS (
@@ -1100,33 +1063,12 @@ export async function restoreWorkOrderTrashBundle(
               updated_at = now()
         WHERE id IN (SELECT id FROM bundle_trash)
         RETURNING id
-     ), restored_memos AS (
-       UPDATE memos
-          SET is_active = true,
-              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active},
-              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none},
-              purge_requested_at = NULL,
-              delete_source = NULL,
-              delete_scope = NULL,
-              delete_parent_type = NULL,
-              delete_parent_id = NULL,
-              delete_batch_id = NULL,
-              purged_at = NULL,
-              purged_by = NULL,
-              deleted_at = NULL,
-              updated_at = now()
-        WHERE order_id = $1
-          AND company_id = $3
-          AND deleted_at IS NOT NULL
-          AND ${createWorkOrderBundleMemoMetadataPredicate("memos", 1)}
-        RETURNING id
      )
      SELECT COUNT(*)::text AS affected_count,
             (SELECT COUNT(*) FROM restored_attachments)::text AS attachment_count,
             (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'document') FROM bundle_trash)::text AS document_count,
             (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'design') FROM bundle_trash)::text AS design_count,
-            (SELECT COUNT(*) FROM restored_trash)::text AS trash_count,
-            (SELECT COUNT(*) FROM restored_memos)::text AS memo_count
+            (SELECT COUNT(*) FROM restored_trash)::text AS trash_count
        FROM restored_workorder`,
     [workOrderId, input.actorId ?? null, input.companyId],
   );
@@ -1148,7 +1090,6 @@ export async function restoreWorkOrderTrashBundle(
   const attachmentCount = Number(row?.attachment_count ?? 0);
   const documentCount = Number(row?.document_count ?? 0);
   const designCount = Number(row?.design_count ?? 0);
-  const memoCount = Number(row?.memo_count ?? 0);
   return {
     ok: true,
     action: "restore",
@@ -1158,14 +1099,12 @@ export async function restoreWorkOrderTrashBundle(
     attachmentCount,
     documentCount,
     designCount,
-    memoCount,
     reason: "OK",
     message: createAdminWorkOrderTrashActionMessage({
       action: "restore",
       documentCount,
       designCount,
-      memoCount,
-    }),
+      }),
   };
 }
 
@@ -1191,7 +1130,6 @@ export async function purgeWorkOrderTrashBundle(
       document_count: string | number;
       design_count: string | number;
       trash_count: string | number;
-      memo_count: string | number;
     }
   >(
     `WITH target_workorder AS (
@@ -1253,33 +1191,11 @@ export async function purgeWorkOrderTrashBundle(
               updated_at = now()
         WHERE id IN (SELECT id FROM bundle_trash)
         RETURNING id
-     ), marked_memos AS (
-       UPDATE memos
-          SET is_active = false,
-              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purgeRequested},
-              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested},
-              purge_requested_at = COALESCE(purge_requested_at, now()),
-              purge_requested_by = $2,
-              delete_source = 'workorder_bundle',
-              delete_scope = 'bundle',
-              delete_parent_type = 'workorder',
-              delete_parent_id = $1,
-              delete_batch_id = COALESCE(delete_batch_id, $1),
-              purged_at = NULL,
-              purged_by = NULL,
-              updated_at = now()
-        WHERE order_id = $1
-          AND company_id = $3
-          AND deleted_at IS NOT NULL
-          AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-          AND ${createWorkOrderBundleMemoMetadataPredicate("memos", 1)}
-        RETURNING id
      )
      SELECT COUNT(*)::text AS affected_count,
             (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'document') FROM bundle_trash)::text AS document_count,
             (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'design') FROM bundle_trash)::text AS design_count,
-            (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
-            (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
+            (SELECT COUNT(*) FROM marked_trash)::text AS trash_count
        FROM marked_workorder`,
     [workOrderId, input.actorId ?? null, input.companyId],
   );
@@ -1301,7 +1217,6 @@ export async function purgeWorkOrderTrashBundle(
   const trashCount = Number(row?.trash_count ?? 0);
   const documentCount = Number(row?.document_count ?? 0);
   const designCount = Number(row?.design_count ?? 0);
-  const memoCount = Number(row?.memo_count ?? 0);
   return {
     ok: true,
     action: "purge",
@@ -1311,14 +1226,12 @@ export async function purgeWorkOrderTrashBundle(
     attachmentCount: trashCount,
     documentCount,
     designCount,
-    memoCount,
     reason: "OK",
     message: createAdminWorkOrderTrashActionMessage({
       action: "purge",
       documentCount,
       designCount,
-      memoCount,
-    }),
+      }),
   };
 }
 

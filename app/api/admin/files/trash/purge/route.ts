@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
           workOrderCount: 0,
           documentCount: result.documentCount,
           designCount: result.designCount,
-          memoCount: 0,
         }),
       },
       { status: ok ? 200 : 409 },

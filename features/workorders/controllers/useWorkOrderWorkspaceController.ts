@@ -55,7 +55,6 @@ export function useWorkOrderWorkspaceController({
     selection,
     permissions,
     attachments,
-    memo,
     cost,
     persistence,
     workflow,
@@ -312,7 +311,6 @@ export function useWorkOrderWorkspaceController({
     canSeeAttachments: permissions.canSeeAttachments,
     canEditSideDraftContent: permissions.canEditSideDraftContent,
     canUploadOfficialAttachments: permissions.canUploadOfficialAttachments,
-    canEditMemo: permissions.canEditMemo,
     canRenameTitle: permissions.canRenameTitle,
     isReviewRequestLocked: permissions.isReviewRequestLocked,
     canChangeManager: permissions.canChangeManager,
@@ -441,36 +439,7 @@ export function useWorkOrderWorkspaceController({
     },
     onAttachmentDeleteConfirmClose: handleCloseAttachmentDeleteConfirm,
     onAttachmentDeleteConfirm: handleConfirmAttachmentDelete,
-    onCreateMemoThread: (content) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
-        memo.handleCreateMemoThread(content),
-      );
-    },
-    onCreateMemoReply: (threadId, content) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
-        memo.handleCreateMemoReply(threadId, content),
-      );
-    },
-    onUpdateMemoThread: (threadId, content) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
-        memo.handleUpdateMemoThread(threadId, content),
-      );
-    },
-    onDeleteMemoThread: (threadId) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
-        memo.handleDeleteMemoThread(threadId),
-      );
-    },
-    onUpdateMemoReply: (threadId, replyId, content) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
-        memo.handleUpdateMemoReply(threadId, replyId, content),
-      );
-    },
-    onDeleteMemoReply: (threadId, replyId) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
-        memo.handleDeleteMemoReply(threadId, replyId),
-      );
-    },
+
   });
 
   return {

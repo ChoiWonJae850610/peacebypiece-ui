@@ -7,10 +7,10 @@ import { isR2Configured } from "@/lib/storage/r2/r2Config";
 import { createWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createWorkOrderAttachmentThumbnailKey, isImageContentType } from "@/lib/storage/r2/r2ThumbnailKeys";
 import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
-import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { queryDb } from "@/lib/db/client";
-import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
+import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
 import { validateAttachmentFile, validateAttachmentFileCount, normalizeAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentScope } from "@/types/workorder";
 
@@ -19,7 +19,7 @@ export const runtime = "nodejs";
 type PrepareUploadFileInput = { name?: unknown; type?: unknown; size?: unknown };
 type PrepareUploadRequest = { workOrderId?: unknown; scope?: unknown; files?: unknown; serviceCode?: unknown };
 
-function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
+function isWritableRepository(repository: AttachmentRepository): repository is AttachmentWritableRepository {
   return "countActiveAttachmentsByWorkOrderId" in repository;
 }
 
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ uploadTargets: [], error: "WORK_ORDER_NOT_FOUND" }, { status: 404 });
     }
 
-    const repository = await createAttachmentMemoRepository();
+    const repository = await createAttachmentRepository();
     if (isWritableRepository(repository)) {
       const currentCount = await repository.countActiveAttachmentsByWorkOrderId(workOrderId);
       const countValidation = validateAttachmentFileCount({ currentCount, incomingCount: files.length });

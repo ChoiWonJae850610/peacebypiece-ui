@@ -48,18 +48,6 @@ export const HISTORY_TONES = [
 
 export type HistoryToneValue = (typeof HISTORY_TONES)[number];
 
-export const MEMO_HISTORY_ACTION = {
-  thread: "thread",
-  reply: "reply",
-} as const;
-
-export const MEMO_HISTORY_ACTIONS = [
-  MEMO_HISTORY_ACTION.thread,
-  MEMO_HISTORY_ACTION.reply,
-] as const;
-
-export type MemoHistoryActionValue = (typeof MEMO_HISTORY_ACTIONS)[number];
-
 export function isHistoryCategory(value: string | null | undefined): value is HistoryCategoryValue {
   return Boolean(value) && (HISTORY_CATEGORIES as readonly string[]).includes(value as string);
 }

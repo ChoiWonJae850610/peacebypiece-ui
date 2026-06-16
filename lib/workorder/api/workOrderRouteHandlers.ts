@@ -1047,10 +1047,6 @@ export async function handleDeleteWorkOrders(request: Request) {
           previousSnapshot?.attachments?.length ??
           previousWorkOrder?.attachments?.length ??
           0,
-        memoThreadCount:
-          previousSnapshot?.memoThreads?.length ??
-          previousWorkOrder?.memoThreads?.length ??
-          0,
         requestId: getAuditRequestId(request),
         ipAddress: getAuditIpAddress(request),
       }),

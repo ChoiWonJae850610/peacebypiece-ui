@@ -248,7 +248,7 @@ export const adminKo = {
     repository: {
       workorder: "작업지시서",
       partner: "협력업체",
-      attachmentMemo: "메모/첨부",
+      attachment: "첨부",
     },
     repositoryModes: { db: "실제 데이터", mock: "초기자료" },
     statuses: {

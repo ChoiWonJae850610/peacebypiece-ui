@@ -71,7 +71,6 @@ type WorkOrderTrashApiResponse = {
   attachmentCount?: number;
   documentCount?: number;
   designCount?: number;
-  memoCount?: number;
   message?: string;
 };
 
@@ -148,7 +147,6 @@ function createSummaryFromWorkOrderResponse(
     workOrderCount: response.affectedCount,
     documentCount: response.documentCount ?? response.attachmentCount ?? 0,
     designCount: response.designCount ?? 0,
-    memoCount: response.memoCount ?? 0,
   };
 }
 

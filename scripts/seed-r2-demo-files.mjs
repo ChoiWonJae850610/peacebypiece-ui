@@ -236,7 +236,7 @@ function parseWorkerErrorCode(text) {
 }
 
 function getTargetSize(row) {
-  const fallback = row.type === "design" ? 128 * 1024 : row.type === "memo" ? 64 * 1024 : 512 * 1024;
+  const fallback = row.type === "design" ? 128 * 1024 : 512 * 1024;
   return Math.max(Number(row.size_bytes || 0), fallback);
 }
 
@@ -437,7 +437,7 @@ async function uploadFiles(items) {
 
   console.log(`[INFO] upload result: uploaded=${result.uploaded}, skippedUnsupported=${result.skippedUnsupported}, skippedMissing=${result.skippedMissing}, skippedWorkerPolicy=${result.skippedWorkerPolicy}, failed=${result.failed}`);
   if (result.skippedWorkerPolicy > 0) {
-    console.log(`[INFO] skippedWorkerPolicy means the Cloudflare Worker rejected those files by upload policy. Regenerate metadata with db/seed/realistic_workorders_seed.sql if old .txt memo rows remain.`);
+    console.log(`[INFO] skippedWorkerPolicy means the Cloudflare Worker rejected those files by upload policy. Regenerate metadata with db/seed/realistic_workorders_seed.sql.`);
   }
   if (result.failed > 0) {
     fail(`Upload completed with ${result.failed} non-skippable failures. See log above.`);

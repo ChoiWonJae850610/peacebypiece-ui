@@ -6,7 +6,7 @@ import { WaflMobileWorkspaceFrame, type WaflSegmentedTabItem } from "@/component
 import type { WaflSheetPresentation } from "@/components/common/ui/WaflSheet";
 import { useI18n } from "@/lib/i18n";
 
-type MobileRelatedSectionKey = "attachment" | "design" | "memo";
+type MobileRelatedSectionKey = "attachment" | "design";
 
 function AttachmentIcon() {
   return (
@@ -43,8 +43,7 @@ export default function WorkOrderMobileWorkspaceShell({
   const relatedTabs = useMemo<Array<WaflSegmentedTabItem<MobileRelatedSectionKey>>>(() => [
     { key: "design", label: relatedCopy.design },
     { key: "attachment", label: relatedCopy.attachment },
-    { key: "memo", label: relatedCopy.memo },
-  ], [relatedCopy.attachment, relatedCopy.design, relatedCopy.memo]);
+  ], [relatedCopy.attachment, relatedCopy.design]);
 
   return (
     <WaflMobileWorkspaceFrame

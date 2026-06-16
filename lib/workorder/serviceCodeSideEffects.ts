@@ -5,7 +5,6 @@ export const WORKORDER_SERVICE_DIRECTION = {
   explicitSave: "explicit_save",
   forwardWorkflow: "forward_workflow",
   backwardWorkflow: "backward_workflow",
-  memo: "memo",
   attachment: "attachment",
   storage: "storage",
   reorder: "reorder",
@@ -20,7 +19,6 @@ export const WORKORDER_SERVICE_RESOURCE = {
   factoryOrders: "orders",
   materials: "spec_sheet_materials",
   outsourcing: "spec_sheet_outsourcing_lines",
-  memos: "memos",
   attachments: "attachments",
   history: "workorder_history",
   r2Objects: "r2_objects",
@@ -212,30 +210,9 @@ export const WORKORDER_SERVICE_SIDE_EFFECTS = {
     allowsProductionCompositionReplace: false,
     allowsR2Delete: false,
   }),
-  [WORKORDER_SERVICE_CODE.memoCreate]: createSideEffect({
-    code: WORKORDER_SERVICE_CODE.memoCreate,
-    direction: WORKORDER_SERVICE_DIRECTION.memo,
-    resources: [WORKORDER_SERVICE_RESOURCE.memos, WORKORDER_SERVICE_RESOURCE.history],
-    operations: [WORKORDER_SERVICE_OPERATION.insert],
-    allowsProductionCompositionReplace: false,
-    allowsR2Delete: false,
-  }),
-  [WORKORDER_SERVICE_CODE.memoUpdate]: createSideEffect({
-    code: WORKORDER_SERVICE_CODE.memoUpdate,
-    direction: WORKORDER_SERVICE_DIRECTION.memo,
-    resources: [WORKORDER_SERVICE_RESOURCE.memos, WORKORDER_SERVICE_RESOURCE.history],
-    operations: [WORKORDER_SERVICE_OPERATION.update, WORKORDER_SERVICE_OPERATION.insert],
-    allowsProductionCompositionReplace: false,
-    allowsR2Delete: false,
-  }),
-  [WORKORDER_SERVICE_CODE.memoDelete]: createSideEffect({
-    code: WORKORDER_SERVICE_CODE.memoDelete,
-    direction: WORKORDER_SERVICE_DIRECTION.memo,
-    resources: [WORKORDER_SERVICE_RESOURCE.memos, WORKORDER_SERVICE_RESOURCE.history],
-    operations: [WORKORDER_SERVICE_OPERATION.softDelete, WORKORDER_SERVICE_OPERATION.insert],
-    allowsProductionCompositionReplace: false,
-    allowsR2Delete: false,
-  }),
+
+
+
   [WORKORDER_SERVICE_CODE.designAttachmentPrepare]: createSideEffect({
     code: WORKORDER_SERVICE_CODE.designAttachmentPrepare,
     direction: WORKORDER_SERVICE_DIRECTION.attachment,
@@ -279,7 +256,7 @@ export const WORKORDER_SERVICE_SIDE_EFFECTS = {
   [WORKORDER_SERVICE_CODE.workOrderDelete]: createSideEffect({
     code: WORKORDER_SERVICE_CODE.workOrderDelete,
     direction: WORKORDER_SERVICE_DIRECTION.storage,
-    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.memos, WORKORDER_SERVICE_RESOURCE.history],
+    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.history],
     operations: [WORKORDER_SERVICE_OPERATION.softDelete, WORKORDER_SERVICE_OPERATION.insert],
     allowsProductionCompositionReplace: false,
     allowsR2Delete: false,
@@ -287,15 +264,15 @@ export const WORKORDER_SERVICE_SIDE_EFFECTS = {
   [WORKORDER_SERVICE_CODE.workOrderRestore]: createSideEffect({
     code: WORKORDER_SERVICE_CODE.workOrderRestore,
     direction: WORKORDER_SERVICE_DIRECTION.storage,
-    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.memos, WORKORDER_SERVICE_RESOURCE.history],
+    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.history],
     operations: [WORKORDER_SERVICE_OPERATION.restore, WORKORDER_SERVICE_OPERATION.insert],
     allowsProductionCompositionReplace: false,
     allowsR2Delete: false,
   }),
-  [WORKORDER_SERVICE_CODE.attachmentMemoRestore]: createSideEffect({
-    code: WORKORDER_SERVICE_CODE.attachmentMemoRestore,
+  [WORKORDER_SERVICE_CODE.attachmentRestore]: createSideEffect({
+    code: WORKORDER_SERVICE_CODE.attachmentRestore,
     direction: WORKORDER_SERVICE_DIRECTION.storage,
-    resources: [WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.memos, WORKORDER_SERVICE_RESOURCE.history],
+    resources: [WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.history],
     operations: [WORKORDER_SERVICE_OPERATION.restore, WORKORDER_SERVICE_OPERATION.insert],
     allowsProductionCompositionReplace: false,
     allowsR2Delete: false,
@@ -303,7 +280,7 @@ export const WORKORDER_SERVICE_SIDE_EFFECTS = {
   [WORKORDER_SERVICE_CODE.trashPurge]: createSideEffect({
     code: WORKORDER_SERVICE_CODE.trashPurge,
     direction: WORKORDER_SERVICE_DIRECTION.storage,
-    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.memos, WORKORDER_SERVICE_RESOURCE.r2Objects],
+    resources: [WORKORDER_SERVICE_RESOURCE.workOrders, WORKORDER_SERVICE_RESOURCE.attachments, WORKORDER_SERVICE_RESOURCE.r2Objects],
     operations: [WORKORDER_SERVICE_OPERATION.delete, WORKORDER_SERVICE_OPERATION.r2Purge],
     allowsProductionCompositionReplace: false,
     allowsR2Delete: true,
@@ -333,7 +310,6 @@ export const WORKORDER_SERVICE_SIDE_EFFECTS = {
       WORKORDER_SERVICE_RESOURCE.materials,
       WORKORDER_SERVICE_RESOURCE.outsourcing,
       WORKORDER_SERVICE_RESOURCE.attachments,
-      WORKORDER_SERVICE_RESOURCE.memos,
       WORKORDER_SERVICE_RESOURCE.history,
     ],
     operations: [WORKORDER_SERVICE_OPERATION.select],

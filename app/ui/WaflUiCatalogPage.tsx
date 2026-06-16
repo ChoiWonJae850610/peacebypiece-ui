@@ -832,7 +832,7 @@ const componentGroupGuides: ComponentGroupGuide[] = [
     meaning: "업무 도메인 전용 조합",
     rule: "작업지시서/발주/저장소의 데이터와 로직이 붙어 있으면 남기되 내부는 primitive/pattern을 쓰게 한다.",
     examples:
-      "WorkOrderListCard, WorkOrderMemoPanel, StorageFileRow, MaterialOrderRow",
+      "WorkOrderListCard, StorageFileRow, MaterialOrderRow",
   },
   {
     group: "Legacy",
@@ -972,7 +972,7 @@ const componentInventoryItems: ComponentInventoryItem[] = [
     note: "모달 내부 버튼/입력/InfoBox는 primitive를 쓰게 유지한다.",
   },
   {
-    name: "WorkOrderListCard / WorkOrderMemoPanel",
+    name: "WorkOrderListCard / StorageFileRow",
     group: "Domain",
     role: "작업지시서 전용 카드와 메모 패널",
     keepDecision: "유지",

@@ -49,7 +49,6 @@ export function buildSpecSheetReturningColumns(
     buildAliasSelection(schema.quantityColumn, "quantity", "NULL"),
     buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
     buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
-    buildAliasSelection(schema.memoColumn, "memo", "NULL"),
     buildAliasSelection(schema.rejectionReasonColumn, "rejection_reason", "NULL"),
     buildAliasSelection(schema.rejectedAtColumn, "rejected_at", "NULL"),
     buildAliasSelection(schema.rejectedByUserIdColumn, "rejected_by_user_id", "NULL"),

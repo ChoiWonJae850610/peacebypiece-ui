@@ -48,12 +48,12 @@ export function getLocalizedWorkOrderStageLabel(
 
 export function formatTrashDetailCountLabel(
   rawLabel: string,
-  kind: "documentsDesigns" | "memos",
+  kind: "documentsDesigns",
   t: AdminT,
 ): string {
   const count = Number(rawLabel.match(/\d+/)?.[0] ?? 0);
-  const key = kind === "memos" ? "filesList.detail.memoCount" : "filesList.detail.documentDesignCount";
-  const fallback = formatAdminTermCount(t, count, kind === "memos" ? "memo" : "documentDesign");
+  const key = "filesList.detail.documentDesignCount";
+  const fallback = formatAdminTermCount(t, count, "documentDesign");
   return t(key, fallback, { count });
 }
 
