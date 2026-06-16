@@ -2,7 +2,19 @@ import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicke
 import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppSelect, AppSection, WaflButton, WaflPanelContentShell, WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
+import {
+  AppSelect,
+  AppSection,
+  WaflButton,
+  WaflMobileDetailContent,
+  WaflPanelContentShell,
+  WaflWorkspaceEmptyPanel,
+  WaflWorkspaceLoadingPanel,
+  WAFL_PANEL_CONTENT_STACK_CLASS,
+  WaflSummaryHeaderCard,
+  WaflSummaryInfoCell,
+  type AppSelectOption,
+} from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryCards } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
@@ -53,6 +65,7 @@ type MaterialOrderDetailPanelProps = {
   mobile?: boolean;
   progressLayout?: WorkflowProgressPanelLayout;
   loading?: boolean;
+  mobileSurface?: boolean;
 };
 
 export default function MaterialOrderDetailPanel({
@@ -81,6 +94,7 @@ export default function MaterialOrderDetailPanel({
   mobile = false,
   progressLayout = "horizontal",
   loading = false,
+  mobileSurface = false,
 }: MaterialOrderDetailPanelProps) {
   const isCoreEditable = Boolean(
     selectedOrder &&
@@ -88,15 +102,8 @@ export default function MaterialOrderDetailPanel({
   );
   const dueDateEditable = isCoreEditable && !headerSaving;
 
-  const content = loading ? (
-        <WaflWorkspaceLoadingPanel
-          title="발주서를 불러오는 중입니다."
-          description="발주서 기본 정보와 품목을 조회하고 있습니다."
-          variant="detail"
-        />
-      ) : selectedOrder ? (
-        <WaflPanelContentShell>
-          <div className={`${WAFL_PANEL_CONTENT_STACK_CLASS} flex-1`}>
+  const selectedContent = selectedOrder ? (
+    <div className={`${WAFL_PANEL_CONTENT_STACK_CLASS} flex-1`}>
           <WaflSummaryHeaderCard
             component="material-order-header-summary"
             columns={2}
@@ -221,17 +228,28 @@ export default function MaterialOrderDetailPanel({
             ) : null}
           </AppSection>
 
-          </div>
-        </WaflPanelContentShell>
-      ) : (
-        <WaflWorkspaceEmptyPanel
-          title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.title}
-          description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.description}
-          variant="center-panel"
-        />
-      );
+    </div>
+  ) : null;
 
-  return content;
+  const content = loading ? (
+    <WaflWorkspaceLoadingPanel
+      title="발주서를 불러오는 중입니다."
+      description="발주서 기본 정보와 품목을 조회하고 있습니다."
+      variant="detail"
+      withContentShell={!mobileSurface}
+    />
+  ) : selectedOrder ? (
+    mobileSurface ? selectedContent : <WaflPanelContentShell>{selectedContent}</WaflPanelContentShell>
+  ) : (
+    <WaflWorkspaceEmptyPanel
+      title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.title}
+      description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectOrder.description}
+      variant="center-panel"
+      withContentShell={!mobileSurface}
+    />
+  );
+
+  return mobileSurface ? <WaflMobileDetailContent>{content}</WaflMobileDetailContent> : content;
 }
 
 const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [

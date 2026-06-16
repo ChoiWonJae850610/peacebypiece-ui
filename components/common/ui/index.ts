@@ -143,3 +143,7 @@ export {
 } from "./WaflWorkspaceLoadingPanel";
 
 export * from "./WaflMobileWorkspaceFrame";
+export {
+  default as WaflMobileDetailContent,
+  type WaflMobileDetailContentProps,
+} from "./WaflMobileDetailContent";

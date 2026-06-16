@@ -243,7 +243,8 @@ export default function MaterialOrderDraftEditor({
       canPlaceMaterialOrder={canPlaceMaterialOrder}
       isAdmin={isAdmin}
       workOrderCandidates={workOrderCandidates}
-      mobile={deviceType === "mobile"}
+      mobile={useDrawerNavigation}
+      mobileSurface={useDrawerNavigation}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
       loading={ordersLoading}
     />

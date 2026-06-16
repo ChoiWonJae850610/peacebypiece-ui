@@ -12,6 +12,7 @@ type WaflWorkspaceLoadingPanelProps = {
   title: string;
   description?: string;
   className?: string;
+  withContentShell?: boolean;
 };
 
 function SkeletonLine({ className = "" }: { className?: string }) {
@@ -102,10 +103,11 @@ export default function WaflWorkspaceLoadingPanel({
   title,
   description,
   className,
+  withContentShell = true,
 }: WaflWorkspaceLoadingPanelProps) {
   const content = <LoadingContent variant={variant} title={title} description={description} />;
 
-  if (variant === "side") {
+  if (variant === "side" || !withContentShell) {
     return (
       <div
         data-wafl-component="workspace-loading-panel"

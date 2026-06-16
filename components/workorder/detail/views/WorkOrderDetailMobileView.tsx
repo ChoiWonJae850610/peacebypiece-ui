@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { AppResponsiveSurface, AppSegmentedTabs, type AppSegmentedTabItem } from "@/components/common/ui";
+import { AppSegmentedTabs, WaflMobileDetailContent, type AppSegmentedTabItem } from "@/components/common/ui";
 import WorkOrderDetailSectionStack from "@/components/workorder/detail/shared/WorkOrderDetailSectionStack";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailMobileCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileCostSummarySection";
@@ -40,7 +40,7 @@ export default function WorkOrderDetailMobileView({
   const resolvedPanel = activePanel === "production" && !viewModel.showProductionComposition ? "summary" : activePanel;
 
   return (
-    <AppResponsiveSurface device="mobile">
+    <WaflMobileDetailContent>
       <AppSegmentedTabs
         items={tabs}
         value={resolvedPanel}
@@ -72,6 +72,6 @@ export default function WorkOrderDetailMobileView({
       ) : null}
 
       <WorkOrderDetailSharedModals editor={editor} currentInventoryQuantity={currentInventoryQuantity} />
-    </AppResponsiveSurface>
+    </WaflMobileDetailContent>
   );
 }
