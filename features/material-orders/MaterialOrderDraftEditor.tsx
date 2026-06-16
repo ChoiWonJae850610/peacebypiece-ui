@@ -5,17 +5,15 @@ import ToastMessage from "@/components/common/ToastMessage";
 import WorkflowValidationModal from "@/components/common/modal/WorkflowValidationModal";
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
-  AppResponsiveWorkspace,
   WaflEmptyCard,
   WaflMobileContentSection,
   WaflMobileFloatingActionButton,
   WaflMobileListDrawer,
   WaflMobileShell,
   WaflMobileTabbedActionSheet,
-  WaflTwoPanelWorkspace,
   WaflButton,
   WaflDesktopWorkspaceFrame,
-  WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS,
+  WaflTabletWorkspaceFrame,
   type AppSegmentedTabItem,
 } from "@/components/common/ui";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
@@ -26,9 +24,6 @@ import MaterialOrderLineAddModal from "@/features/material-orders/components/Mat
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
-
-const MATERIAL_ORDER_WORKSPACE_STACK_CLASS =
-  `flex h-full min-h-0 flex-col ${WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS}`;
 
 type MaterialOrderMobileToolKey = "workorders" | "schedule";
 
@@ -224,7 +219,7 @@ export default function MaterialOrderDraftEditor({
       onRetry={() => void refreshOrders()}
       selectedDraftMaterialType={materialType}
       selectedDraftSupplierName={selectedDraftSupplierName}
-      panel={!useThreePanel}
+      panel={useDrawerNavigation && !useTabletTwoPanel}
     />
   );
 
@@ -254,7 +249,7 @@ export default function MaterialOrderDraftEditor({
       workOrderCandidates={workOrderCandidates}
       mobile={deviceType === "mobile"}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
-      panel={!useThreePanel}
+      panel={useDrawerNavigation && !useTabletTwoPanel}
       loading={ordersLoading}
     />
   );
@@ -274,25 +269,22 @@ export default function MaterialOrderDraftEditor({
       onAddMaterialToOrder={handleAddMaterialToOrder}
       onRetry={() => void refreshWorkOrderCandidates()}
       mobile={deviceType === "mobile"}
-      panel={!useThreePanel}
+      panel={useDrawerNavigation && !useTabletTwoPanel}
     />
   );
 
   if (useTabletTwoPanel) {
     return (
-      <div className={MATERIAL_ORDER_WORKSPACE_STACK_CLASS}>
-        {topbar}
+      <>
         {validationModal}
-        <WaflMobileListDrawer
-          open={mobileOrderListDrawerOpen}
-          onClose={() => setMobileOrderListDrawerOpen(false)}
-          title="발주서 목록"
-          closeLabel="닫기"
-          closeOverlayAria="발주서 목록 드로어 닫기"
-          titleId="material-order-tablet-drawer-title"
-          showHeader={false}
-        >
-          <div className="min-h-[72dvh] min-w-0">
+        <WaflTabletWorkspaceFrame
+          topbar={topbar}
+          listDrawerOpen={mobileOrderListDrawerOpen}
+          onCloseListDrawer={() => setMobileOrderListDrawerOpen(false)}
+          listDrawerTitle="발주서 목록"
+          listDrawerTitleId="material-order-tablet-drawer-title"
+          listDrawerCloseAria="발주서 목록 드로어 닫기"
+          list={(
             <MaterialOrderListPanel
               variant="drawer"
               orders={orders}
@@ -307,13 +299,13 @@ export default function MaterialOrderDraftEditor({
               selectedDraftMaterialType={materialType}
               selectedDraftSupplierName={selectedDraftSupplierName}
             />
-          </div>
-        </WaflMobileListDrawer>
-        <AppResponsiveWorkspace device="tablet">
-          {statusToast}
-          <WaflTwoPanelWorkspace detail={detailPanel} side={allocationPanel} />
-        </AppResponsiveWorkspace>
-      </div>
+          )}
+          detail={detailPanel}
+          side={allocationPanel}
+          scrollResetKey={selectedOrderId}
+          workspaceOverlay={statusToast}
+        />
+      </>
     );
   }
 

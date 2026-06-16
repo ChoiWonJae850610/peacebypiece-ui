@@ -120,6 +120,7 @@ export { default as WaflListWorkspacePanel } from "./WaflListWorkspacePanel";
 export { default as WaflDetailWorkspacePanel } from "./WaflDetailWorkspacePanel";
 export { default as WaflSideWorkspacePanel } from "./WaflSideWorkspacePanel";
 export { default as WaflDesktopWorkspaceFrame } from "./WaflDesktopWorkspaceFrame";
+export { default as WaflTabletWorkspaceFrame } from "./WaflTabletWorkspaceFrame";
 
 export {
   default as WaflSummaryHeaderCard,

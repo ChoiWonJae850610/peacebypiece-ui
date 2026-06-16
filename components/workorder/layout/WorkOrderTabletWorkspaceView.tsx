@@ -4,12 +4,7 @@ import { useState } from "react";
 
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import {
-  AppResponsiveWorkspace,
-  WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS,
-  WaflMobileListDrawer,
-  WaflSidePanelShell,
-  WaflTwoPanelWorkspace,
-  WaflWorkspacePanel,
+  WaflTabletWorkspaceFrame,
 } from "@/components/common/ui";
 import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
@@ -90,11 +85,9 @@ export default function WorkOrderTabletWorkspaceView({
   }
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[var(--pbp-bg-app)] p-3 text-[var(--pbp-text-primary)] sm:p-4 md:p-6 lg:p-8">
-      <div
-        ref={appShellRef}
-        className={`mx-auto flex h-full w-full max-w-[1480px] flex-col overflow-hidden ${WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS}`}
-      >
+    <WaflTabletWorkspaceFrame
+      appShellRef={appShellRef}
+      topbar={(
         <AdminTopbar
           companyName={sidebarListProps.companyName}
           appVersion={sidebarListProps.version}
@@ -104,39 +97,16 @@ export default function WorkOrderTabletWorkspaceView({
           menuLabel="작업지시서"
           menuAriaLabel="작업지시서 목록 열기"
         />
-        <WaflMobileListDrawer
-          open={listDrawerOpen}
-          onClose={() => setListDrawerOpen(false)}
-          title="작업지시서 목록"
-          closeLabel="닫기"
-          closeOverlayAria="작업지시서 목록 드로어 닫기"
-          titleId="workorder-tablet-list-drawer-title"
-          showHeader={false}
-          bodyClassName="!px-0 !py-0"
-        >
-          <div className="min-h-[72dvh] min-w-0">{sidebar}</div>
-        </WaflMobileListDrawer>
-        <AppResponsiveWorkspace device="tablet">
-          <WaflTwoPanelWorkspace
-            detail={
-              <WaflWorkspacePanel
-                panelRole="detail"
-                className="h-full min-h-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
-              >
-                {detail}
-              </WaflWorkspacePanel>
-            }
-            side={
-              <WaflWorkspacePanel
-                panelRole="side"
-                className="h-full min-h-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
-              >
-                <WaflSidePanelShell>{sidePanel}</WaflSidePanelShell>
-              </WaflWorkspacePanel>
-            }
-          />
-        </AppResponsiveWorkspace>
-      </div>
-    </main>
+      )}
+      listDrawerOpen={listDrawerOpen}
+      onCloseListDrawer={() => setListDrawerOpen(false)}
+      listDrawerTitle="작업지시서 목록"
+      listDrawerTitleId="workorder-tablet-list-drawer-title"
+      listDrawerCloseAria="작업지시서 목록 드로어 닫기"
+      list={sidebar}
+      detail={detail}
+      side={sidePanel}
+      scrollResetKey={selectedId}
+    />
   );
 }
