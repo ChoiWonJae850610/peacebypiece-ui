@@ -58,6 +58,7 @@ BEGIN
       ('expired_pending_invitations', to_regclass('public.expired_pending_invitations')),
       ('latest_storage_usage_snapshots', to_regclass('public.latest_storage_usage_snapshots')),
       ('spec_sheets', to_regclass('public.spec_sheets')),
+      ('workorder_factory_instructions', to_regclass('public.workorder_factory_instructions')),
       ('orders', to_regclass('public.orders')),
       ('attachments', to_regclass('public.attachments')),
       ('audit_logs', to_regclass('public.audit_logs')),
@@ -262,6 +263,12 @@ BEGIN
       ('join_requests', 'applicant_email'),
       ('join_requests', 'business_name'),
       ('join_requests', 'request_memo'),
+      ('workorder_factory_instructions', 'work_order_id'),
+      ('workorder_factory_instructions', 'company_id'),
+      ('workorder_factory_instructions', 'content'),
+      ('workorder_factory_instructions', 'include_in_factory_pdf'),
+      ('workorder_factory_instructions', 'updated_by_user_id'),
+      ('workorder_factory_instructions', 'updated_at'),
       ('join_requests', 'created_company_id')
   ) AS required_columns(table_name, column_name)
   WHERE NOT EXISTS (
@@ -529,6 +536,7 @@ BEGIN
   FROM (
     VALUES
       ('spec_sheets_company_created_idx'),
+      ('workorder_factory_instructions_company_idx'),
       ('spec_sheets_company_status_created_idx'),
       ('spec_sheets_company_reorder_created_idx'),
       ('orders_company_factory_idx'),

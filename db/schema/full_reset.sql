@@ -73,6 +73,7 @@ DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS history_logs CASCADE;
 DROP TABLE IF EXISTS attachment_trash_items CASCADE;
 DROP TABLE IF EXISTS attachments CASCADE;
+DROP TABLE IF EXISTS workorder_factory_instructions CASCADE;
 DROP TABLE IF EXISTS spec_sheet_outsourcing_lines CASCADE;
 DROP TABLE IF EXISTS material_stocks CASCADE;
 DROP TABLE IF EXISTS spec_sheet_materials CASCADE;
@@ -702,6 +703,17 @@ CREATE TABLE spec_sheets (
   CONSTRAINT spec_sheets_delete_parent_type_check CHECK (
     delete_parent_type IS NULL OR delete_parent_type IN ('none', 'workorder')
   )
+);
+
+CREATE TABLE workorder_factory_instructions (
+  work_order_id text PRIMARY KEY REFERENCES spec_sheets(id) ON DELETE CASCADE,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  content text NOT NULL DEFAULT '',
+  include_in_factory_pdf boolean NOT NULL DEFAULT true,
+  updated_by_user_id text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT workorder_factory_instructions_content_length_check CHECK (char_length(content) <= 5000)
 );
 
 CREATE TABLE orders (
@@ -2033,6 +2045,7 @@ CREATE INDEX workorder_material_lines_company_material_idx ON workorder_material
 CREATE INDEX workorder_material_lines_company_order_status_idx ON workorder_material_lines (company_id, order_status);
 
 CREATE INDEX spec_sheets_updated_at_idx ON spec_sheets (updated_at DESC, created_at DESC);
+CREATE INDEX workorder_factory_instructions_company_idx ON workorder_factory_instructions (company_id, updated_at DESC);
 CREATE INDEX spec_sheets_reorder_group_idx ON spec_sheets (reorder_group_id, reorder_round);
 CREATE INDEX spec_sheets_active_idx ON spec_sheets (is_active, updated_at DESC);
 CREATE INDEX spec_sheets_parent_idx ON spec_sheets (parent_spec_sheet_id);
