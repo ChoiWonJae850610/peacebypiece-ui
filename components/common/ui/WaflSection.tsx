@@ -7,7 +7,7 @@ import WaflCard, { type WaflCardPadding, type WaflCardVariant } from "./WaflCard
 export type WaflSectionVariant = WaflCardVariant;
 export type WaflSectionPadding = WaflCardPadding;
 
-type WaflSectionProps = HTMLAttributes<HTMLElement> & {
+type WaflSectionProps = Omit<HTMLAttributes<HTMLElement>, "title"> & {
   title?: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
