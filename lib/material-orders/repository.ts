@@ -1,5 +1,7 @@
 import "server-only";
 
+import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
+
 import { queryDb, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
 import { canEditMaterialOrderOnServer } from "@/lib/material-orders/serverPolicy";
 import type {
@@ -173,7 +175,7 @@ function mapOrderRow(
     requestedByDisplayName: row.requested_by_display_name,
     approvedByUserId: row.approved_by_user_id,
     orderedAt: toIsoStringOrNull(row.ordered_at),
-    dueDate: row.due_date ? String(row.due_date).slice(0, 10) : null,
+    dueDate: normalizePbpLocalDateValue(row.due_date) || null,
     totalAmount: toNumber(row.total_amount),
     note: row.note,
     lines: linesByOrderId.get(row.id) ?? [],

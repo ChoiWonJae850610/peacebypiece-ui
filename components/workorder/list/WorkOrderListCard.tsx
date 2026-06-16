@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
 import { AppBadge, WaflCardButton, WaflSelectableCard } from "@/components/common/ui";
@@ -38,6 +39,7 @@ export default function WorkOrderListCard({
 }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.workOrderListCard;
+  const dueDateLabel = normalizePbpLocalDateValue(workOrder.dueDate);
   const state = getWorkOrderState(workflowStateById, workOrder.id);
   const stateLabel = translateWorkflowStateLabel(state, i18n);
   const categoryPath = getCategoryPath(workOrder) || copy.uncategorized;
@@ -67,7 +69,7 @@ export default function WorkOrderListCard({
           <div className="pbp-workorder-list-muted mt-2 min-w-0 space-y-0.5 text-[11px] leading-4">
             <div className="truncate" title={categoryPath}>{categoryPath}</div>
             {workOrder.vendor ? <div className="truncate">{copy.vendorLabel}: {workOrder.vendor}</div> : null}
-            {workOrder.dueDate ? <div>{copy.dueDateLabel}: {workOrder.dueDate}</div> : null}
+            {dueDateLabel ? <div>{copy.dueDateLabel}: {dueDateLabel}</div> : null}
           </div>
         </WaflCardButton>
         {canOpenMenu ? (

@@ -4,7 +4,7 @@ import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconBu
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { WaflButton, WaflInput, WaflSurface, WaflSurfaceButton } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
-import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
+import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
@@ -176,7 +176,7 @@ export default function WorkOrderDetailMobileHeaderSection({
 
       <div className="mt-3 grid gap-2">
         <PbpSingleDatePicker
-          value={dueDate}
+          value={normalizePbpLocalDateValue(dueDate)}
           labels={{ label: "납기일", placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "납기일 선택" }}
           locale="ko"
           displayFormat="iso"

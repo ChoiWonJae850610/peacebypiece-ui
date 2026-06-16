@@ -22,6 +22,22 @@ export function getTodayPbpLocalDateValue() {
   return toPbpLocalDateValue(new Date());
 }
 
+export function normalizePbpLocalDateValue(value: unknown): string {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? "" : toPbpLocalDateValue(value);
+  }
+
+  if (typeof value !== "string") return "";
+  const normalized = value.trim();
+  if (!normalized) return "";
+
+  const isoMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(normalized);
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? "" : toPbpLocalDateValue(parsed);
+}
+
 export function formatPbpDateDisplay(value: string | null | undefined, locale: PbpDateLocale) {
   const date = parsePbpLocalDateValue(value);
   if (!date) return "—";

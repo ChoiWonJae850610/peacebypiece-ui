@@ -28,7 +28,7 @@ export type DbSpecSheetRow = {
   manager_id?: string | null;
   created_by_id?: string | null;
   created_by_role?: WorkOrder["createdByRole"] | null;
-  due_date?: string | null;
+  due_date?: string | Date | null;
   quantity?: number | null;
   inventory_quantity?: number | null;
   inventory_status?: WorkOrder["inventoryStatus"] | null;

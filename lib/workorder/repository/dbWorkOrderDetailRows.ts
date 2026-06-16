@@ -1,5 +1,6 @@
 import "server-only";
 
+import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import { queryDb } from "@/lib/db/client";
@@ -14,7 +15,7 @@ type DbOrderEntryRow = {
   source_order_entry_id: string | null;
   factory_name: string | null;
   quantity: number | null;
-  due_date: string | null;
+  due_date: string | Date | null;
   labor_cost: number | null;
   loss_cost: number | null;
   status: string | null;
@@ -149,7 +150,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       type: "생산발주",
       targetType: ORDER_ENTRY_TARGET_TYPE.factory,
       factory: row.factory_name || "",
-      dueDate: row.due_date || "",
+      dueDate: normalizePbpLocalDateValue(row.due_date),
       quantity: readNumberRowValue(row.quantity),
       laborCost: readNumberRowValue(row.labor_cost),
       lossCost: readNumberRowValue(row.loss_cost),

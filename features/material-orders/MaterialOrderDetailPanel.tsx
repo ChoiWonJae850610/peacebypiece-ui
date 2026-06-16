@@ -1,5 +1,5 @@
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
-import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
+import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
 import { AppSelect, AppSection, WaflButton, WaflPanelContentShell, WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
@@ -109,7 +109,7 @@ export default function MaterialOrderDetailPanel({
             footerLeft={(
               <WaflSummaryInfoCell label="납기일">
                 <PbpSingleDatePicker
-                value={dueDate}
+                value={normalizePbpLocalDateValue(dueDate)}
                 labels={{ label: undefined, placeholder: "날짜 선택", clear: "지우기", done: "완료", selected: "선택일 {date}", calendarAria: "발주서 납기일 선택" }}
                 locale="ko"
               displayFormat="iso"

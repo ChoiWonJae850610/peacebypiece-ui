@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 
+import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
+
 import {
   AppBadge,
   AppSelect,
@@ -250,6 +252,8 @@ function MaterialOrderListButton({
     onCancelOrder(order.id);
   };
 
+  const dueDateLabel = normalizePbpLocalDateValue(order.dueDate);
+
   return (
     <WaflSelectableCard
       selected={selected}
@@ -281,9 +285,9 @@ function MaterialOrderListButton({
           <p className="mt-1.5 truncate text-[11px] font-medium pbp-text-muted">
             업체: {supplierLabel}
           </p>
-          {order.dueDate ? (
+          {dueDateLabel ? (
             <p className="mt-1 truncate text-[11px] font-medium pbp-text-muted">
-              납기일: {order.dueDate}
+              납기일: {dueDateLabel}
             </p>
           ) : null}
         </WaflCardButton>

@@ -3,7 +3,7 @@
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
-import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
+import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import {
   WaflButton,
@@ -192,7 +192,7 @@ export default function WorkOrderDetailTabletHeaderSection({
       />
       <WaflSummaryInfoCell label="납기일">
         <PbpSingleDatePicker
-          value={dueDate}
+          value={normalizePbpLocalDateValue(dueDate)}
           labels={{
             label: undefined,
             placeholder: "날짜 선택",

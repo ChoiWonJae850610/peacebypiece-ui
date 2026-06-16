@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
@@ -362,7 +363,7 @@ export function useMaterialOrderDraftEditor({
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "");
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
     setStatusToastMessage(null);
-    setDueDate(selectedOrder.dueDate ?? "");
+    setDueDate(normalizePbpLocalDateValue(selectedOrder.dueDate));
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
   }, [selectedOrder]);
 
@@ -537,6 +538,7 @@ export function useMaterialOrderDraftEditor({
 
   const changeDueDate = useCallback(
     async (nextDueDate: string) => {
+      const normalizedDueDate = normalizePbpLocalDateValue(nextDueDate);
       if (
         !selectedOrder ||
         !canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin)
@@ -545,13 +547,13 @@ export function useMaterialOrderDraftEditor({
       }
 
       const previousDueDate = dueDate;
-      setDueDate(nextDueDate);
+      setDueDate(normalizedDueDate);
       setHeaderSaving(true);
 
       try {
         const result = await updateMaterialOrderHeader({
           materialOrderId: selectedOrder.id,
-          dueDate: nextDueDate || null,
+          dueDate: normalizedDueDate || null,
         });
 
         setOrders(result.materialOrders);

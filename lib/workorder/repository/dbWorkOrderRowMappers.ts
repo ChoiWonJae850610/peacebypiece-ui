@@ -1,3 +1,4 @@
+import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import {
   DEFAULT_WORKFLOW_STATE,
   LEGACY_WORKFLOW_STATE_MAP,
@@ -115,7 +116,7 @@ export function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     managerId: row.manager_id ?? null,
     createdById: readStringRowValue(row.created_by_id, "system"),
     createdByRole: readRoleValue(row.created_by_role),
-    dueDate: readStringRowValue(row.due_date),
+    dueDate: normalizePbpLocalDateValue(row.due_date),
     quantity: readNumberRowValue(row.quantity),
     inventoryQuantity: readNumberRowValue(row.inventory_quantity),
     inventoryStatus: readInventoryStatusValue(row.inventory_status),
@@ -210,7 +211,7 @@ export function mapSpecSheetRowToWorkOrderSummary(
     managerId: row.manager_id ?? null,
     createdById: readStringRowValue(row.created_by_id, "system"),
     createdByRole: readRoleValue(row.created_by_role),
-    dueDate: readStringRowValue(row.due_date),
+    dueDate: normalizePbpLocalDateValue(row.due_date),
     quantity: readNumberRowValue(row.quantity),
     inventoryQuantity: readNumberRowValue(row.inventory_quantity),
     inventoryStatus: readInventoryStatusValue(row.inventory_status),
