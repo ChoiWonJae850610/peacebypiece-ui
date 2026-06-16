@@ -40,7 +40,7 @@ export default function WorkOrderDesktopWorkspaceView({
             />
           ) : hasSelection ? (
             <div key={selectedId}>
-              <WorkOrderDetail {...detailProps} />
+              <WorkOrderDetail {...detailProps} presentation="desktop" />
             </div>
           ) : (
             <WorkOrderEmptyState variant="detail" panel />

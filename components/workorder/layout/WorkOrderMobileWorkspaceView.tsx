@@ -31,7 +31,7 @@ export default function WorkOrderMobileWorkspaceView({
     />
   ) : hasSelection ? (
     <div key={selectedId} className="pbp-mobile-content-switch">
-      <WorkOrderDetail {...detailProps} />
+      <WorkOrderDetail {...detailProps} presentation="mobile" />
     </div>
   ) : <WorkOrderEmptyState variant="detail" />;
 

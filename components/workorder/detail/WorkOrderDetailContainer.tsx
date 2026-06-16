@@ -4,7 +4,6 @@ import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
 import type { WorkOrderDetailProps } from "@/components/workorder/detail/WorkOrderDetail.types";
 import WorkOrderDetailViewSwitch from "@/components/workorder/detail/views/WorkOrderDetailViewSwitch";
 import { buildWorkOrderDetailContainerModels } from "@/components/workorder/detail/workOrderDetailContainerModels";
-import { useWorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
 import { useWorkOrderDetailEditor } from "@/lib/hooks/workorder/useWorkOrderDetailEditor";
 import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
@@ -16,7 +15,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     currentInventoryQuantity,
     isEmpty = false,
   } = props;
-  const deviceType = useWorkOrderDeviceType();
+  const presentation = props.presentation ?? "desktop";
   const { i18n } = useI18n();
   const isWorkspaceWriteLocked = Boolean(props.isWorkspaceWriteLocked || props.workflowProcessingLabel);
   const currentUserOwnerIds = [props.currentUserId, props.currentUserCompanyMemberId].map((value) => value?.trim()).filter(Boolean);
@@ -148,5 +147,5 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     currentInventoryQuantity,
   };
 
-  return <WorkOrderDetailViewSwitch {...detailViewProps} deviceType={deviceType} />;
+  return <WorkOrderDetailViewSwitch {...detailViewProps} presentation={presentation} />;
 }

@@ -1,10 +1,13 @@
 import type { DisplayStage } from "@/types/workflow";
 import type { RoleType, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
+export type WorkOrderDetailPresentation = "desktop" | "tablet" | "mobile";
+
 export type WorkOrderDetailBaseModel = {
   workOrder: WorkOrder;
   currentInventoryQuantity: number;
   isEmpty?: boolean;
+  presentation?: WorkOrderDetailPresentation;
 };
 
 export type WorkOrderDetailPersistenceModel = {

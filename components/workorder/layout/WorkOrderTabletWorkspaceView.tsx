@@ -45,7 +45,7 @@ export default function WorkOrderTabletWorkspaceView({
         />
       ) : hasSelection ? (
         <div key={selectedId}>
-          <WorkOrderDetail {...detailProps} />
+          <WorkOrderDetail {...detailProps} presentation={useThreePanel ? "desktop" : "tablet"} />
         </div>
       ) : (
         <WorkOrderEmptyState variant="detail" panel />

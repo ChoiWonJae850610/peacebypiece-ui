@@ -1,19 +1,19 @@
-import type { WorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
+import type { WorkOrderDetailPresentation } from "@/components/workorder/detail/WorkOrderDetail.types";
 import WorkOrderDetailDesktopView from "@/components/workorder/detail/views/WorkOrderDetailDesktopView";
 import WorkOrderDetailMobileView from "@/components/workorder/detail/views/WorkOrderDetailMobileView";
 import WorkOrderDetailTabletView from "@/components/workorder/detail/views/WorkOrderDetailTabletView";
 import type { WorkOrderDetailViewProps } from "@/components/workorder/detail/views/detailViewTypes";
 
 type WorkOrderDetailViewSwitchProps = WorkOrderDetailViewProps & {
-  deviceType: WorkOrderDeviceType;
+  presentation: WorkOrderDetailPresentation;
 };
 
-export default function WorkOrderDetailViewSwitch({ deviceType, ...viewProps }: WorkOrderDetailViewSwitchProps) {
-  if (deviceType === "mobile") {
+export default function WorkOrderDetailViewSwitch({ presentation, ...viewProps }: WorkOrderDetailViewSwitchProps) {
+  if (presentation === "mobile") {
     return <WorkOrderDetailMobileView {...viewProps} />;
   }
 
-  if (deviceType === "tablet") {
+  if (presentation === "tablet") {
     return <WorkOrderDetailTabletView {...viewProps} />;
   }
 
