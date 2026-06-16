@@ -6,11 +6,8 @@ import WorkflowValidationModal from "@/components/common/modal/WorkflowValidatio
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
   WaflEmptyCard,
-  WaflMobileContentSection,
-  WaflMobileFloatingActionButton,
   WaflMobileListDrawer,
-  WaflMobileShell,
-  WaflMobileTabbedActionSheet,
+  WaflMobileWorkspaceFrame,
   WaflButton,
   WaflDesktopWorkspaceFrame,
   WaflTabletWorkspaceFrame,
@@ -317,25 +314,12 @@ export default function MaterialOrderDraftEditor({
       { key: "schedule", label: "PDF·납기" },
     ];
 
-    const actionBar = (
-      <WaflMobileFloatingActionButton
-        ariaLabel="발주 대상 선택 열기"
-        title="발주 대상 작업지시서와 자재 선택 도구를 엽니다."
-        disabled={!selectedOrderId}
-        onClick={() => setMobileToolSheetOpen(true)}
-      >
-        <SearchIcon />
-        <span>발주 대상</span>
-      </WaflMobileFloatingActionButton>
-    );
-
     return (
       <>
         {validationModal}
-        <WaflMobileShell
-          topBar={topbar}
-          actionBar={actionBar}
-          drawer={
+        <WaflMobileWorkspaceFrame
+          topbar={topbar}
+          drawer={(
             <WaflMobileListDrawer
               open={mobileOrderListDrawerOpen}
               onClose={() => setMobileOrderListDrawerOpen(false)}
@@ -362,39 +346,46 @@ export default function MaterialOrderDraftEditor({
                 />
               </div>
             </WaflMobileListDrawer>
-          }
+          )}
+          detail={detailPanel}
+          workspaceOverlay={statusToast}
+          scrollResetKey={selectedOrderId}
+          hasSelection={Boolean(selectedOrderId)}
+          actionAriaLabel="발주 대상 선택 열기"
+          actionTitle="발주 대상 작업지시서와 자재 선택 도구를 엽니다."
+          actionLabel="발주 대상"
+          actionIcon={<SearchIcon />}
+          toolTitle="발주 대상"
+          toolTabs={mobileToolTabs}
+          defaultTool="workorders"
+          toolAriaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
+          toolOpen={mobileToolSheetOpen}
+          onToolOpenChange={setMobileToolSheetOpen}
+          activeTool={mobileActiveTool}
+          onActiveToolChange={setMobileActiveTool}
+          presentation={deviceType === "tablet" ? "modal" : "sheet"}
+          sheetContentClassName={deviceType === "tablet" ? "px-5 py-5" : undefined}
           contentClassName="gap-3"
-        >
-          {statusToast}
-          <WaflMobileContentSection>{detailPanel}</WaflMobileContentSection>
-          <WaflMobileTabbedActionSheet
-            open={mobileToolSheetOpen}
-            onOpenChange={setMobileToolSheetOpen}
-            title="발주 대상"
-            items={mobileToolTabs}
-            value={mobileActiveTool}
-            onChange={setMobileActiveTool}
-            ariaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
-            presentation={deviceType === "tablet" ? "modal" : "sheet"}
-            contentClassName={deviceType === "tablet" ? "px-5 py-5" : undefined}
-          >
-            {mobileActiveTool === "workorders" ? (
-              <div className={deviceType === "tablet" ? "min-h-0 min-w-0" : "min-h-[58dvh] min-w-0"}>{allocationPanel}</div>
-            ) : null}
-            {mobileActiveTool === "schedule" ? (
-              <WaflEmptyCard
-                component="material-order-schedule-empty"
-                className="min-h-[42dvh] p-4 text-left"
-              >
-                <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
-                <p className="mt-2 text-xs leading-5 pbp-text-muted">
-                  PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에
-                  배치합니다.
-                </p>
-              </WaflEmptyCard>
-            ) : null}
-          </WaflMobileTabbedActionSheet>
-        </WaflMobileShell>
+          renderTool={(activeTool: MaterialOrderMobileToolKey) => (
+            <>
+              {activeTool === "workorders" ? (
+                <div className={deviceType === "tablet" ? "min-h-0 min-w-0" : "min-h-[58dvh] min-w-0"}>{allocationPanel}</div>
+              ) : null}
+              {activeTool === "schedule" ? (
+                <WaflEmptyCard
+                  component="material-order-schedule-empty"
+                  className="min-h-[42dvh] p-4 text-left"
+                >
+                  <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
+                  <p className="mt-2 text-xs leading-5 pbp-text-muted">
+                    PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에
+                    배치합니다.
+                  </p>
+                </WaflEmptyCard>
+              ) : null}
+            </>
+          )}
+        />
       </>
     );
   }

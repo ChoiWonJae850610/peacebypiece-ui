@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode, type RefObject } from "react";
+import { useMemo, type ReactNode, type RefObject } from "react";
 
-import { WaflMobileContentSection, WaflMobileFloatingActionButton, WaflMobileShell, WaflMobileTabbedActionSheet, type AppSegmentedTabItem } from "@/components/common/ui";
+import { WaflMobileWorkspaceFrame, type AppSegmentedTabItem } from "@/components/common/ui";
 import type { AppSheetPresentation } from "@/components/common/ui/AppSheet";
 import { useI18n } from "@/lib/i18n";
 
@@ -15,7 +15,6 @@ function AttachmentIcon() {
     </svg>
   );
 }
-
 
 type WorkOrderMobileWorkspaceShellProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
@@ -39,8 +38,6 @@ export default function WorkOrderMobileWorkspaceShell({
   relatedPresentation = "sheet",
 }: WorkOrderMobileWorkspaceShellProps) {
   const { i18n } = useI18n();
-  const [sidePanelOpen, setSidePanelOpen] = useState(false);
-  const [activeRelatedSection, setActiveRelatedSection] = useState<MobileRelatedSectionKey>("design");
   const mobileCopy = i18n.workorder.ui.layout.mobileDrawer;
   const relatedCopy = mobileCopy.relatedSections;
   const relatedTabs = useMemo<Array<AppSegmentedTabItem<MobileRelatedSectionKey>>>(() => [
@@ -48,56 +45,26 @@ export default function WorkOrderMobileWorkspaceShell({
     { key: "attachment", label: relatedCopy.attachment },
     { key: "memo", label: relatedCopy.memo },
   ], [relatedCopy.attachment, relatedCopy.design, relatedCopy.memo]);
-  const relatedTitle = relatedCopy.titles[activeRelatedSection];
-  const openRelatedSection = () => {
-    setActiveRelatedSection("design");
-    setSidePanelOpen(true);
-  };
-  const handleRelatedSheetOpenChange = (nextOpen: boolean) => {
-    setSidePanelOpen(nextOpen);
-    if (!nextOpen) {
-      setActiveRelatedSection("design");
-    }
-  };
-  const showDetailActionBar = hasSelection;
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0 });
-    setSidePanelOpen(false);
-  }, [scrollResetKey]);
 
   return (
-    <WaflMobileShell
+    <WaflMobileWorkspaceFrame
       shellRef={appShellRef}
-      topBar={topBar}
+      topbar={topBar}
       drawer={drawer}
-      actionBar={showDetailActionBar ? (
-        <WaflMobileFloatingActionButton
-          ariaLabel={relatedCopy.openAria}
-          title={relatedCopy.openTitle}
-          onClick={openRelatedSection}
-        >
-          <AttachmentIcon />
-          <span>{relatedCopy.openLabel}</span>
-        </WaflMobileFloatingActionButton>
-      ) : undefined}
-      contentClassName={showDetailActionBar ? undefined : "pb-[calc(1rem+env(safe-area-inset-bottom))]"}
-    >
-      <WaflMobileContentSection>{detail}</WaflMobileContentSection>
-
-      <WaflMobileTabbedActionSheet
-        open={sidePanelOpen}
-        onOpenChange={handleRelatedSheetOpenChange}
-        title={relatedTitle}
-        items={relatedTabs}
-        value={activeRelatedSection}
-        onChange={setActiveRelatedSection}
-        ariaLabel={relatedCopy.tabsAria}
-        presentation={relatedPresentation}
-        contentClassName={relatedPresentation === "modal" ? "px-5 py-5" : undefined}
-      >
-        {sidePanel(activeRelatedSection)}
-      </WaflMobileTabbedActionSheet>
-    </WaflMobileShell>
+      detail={detail}
+      scrollResetKey={scrollResetKey}
+      hasSelection={hasSelection}
+      actionAriaLabel={relatedCopy.openAria}
+      actionTitle={relatedCopy.openTitle}
+      actionLabel={relatedCopy.openLabel}
+      actionIcon={<AttachmentIcon />}
+      toolTitle={(activeSection: MobileRelatedSectionKey) => relatedCopy.titles[activeSection]}
+      toolTabs={relatedTabs}
+      defaultTool="design"
+      toolAriaLabel={relatedCopy.tabsAria}
+      renderTool={sidePanel}
+      presentation={relatedPresentation}
+      sheetContentClassName={relatedPresentation === "modal" ? "px-5 py-5" : undefined}
+    />
   );
 }

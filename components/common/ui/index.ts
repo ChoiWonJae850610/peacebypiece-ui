@@ -141,3 +141,5 @@ export {
   default as WaflWorkspaceLoadingPanel,
   type WaflWorkspaceLoadingPanelVariant,
 } from "./WaflWorkspaceLoadingPanel";
+
+export * from "./WaflMobileWorkspaceFrame";
