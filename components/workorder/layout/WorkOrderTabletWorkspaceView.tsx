@@ -56,7 +56,7 @@ export default function WorkOrderTabletWorkspaceView({
       description={loadingState?.sideDescription}
     />
   ) : hasSelection ? (
-    <WorkOrderSidePanel {...sidePanelProps} />
+    <WorkOrderSidePanel {...sidePanelProps} presentation="tablet" />
   ) : (
     <WorkOrderEmptyState variant="side" panel />
   );

@@ -7,14 +7,17 @@ import {
   readDesignDrawingModalOpenState,
   writeDesignDrawingModalOpenState,
 } from "@/components/workorder/drawing/workOrderDrawingModalSession";
-import { useWorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
-import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
+import type { WorkOrderSidePanelProps, WorkOrderSidePanelVariant } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 import WorkOrderSidePanelDesktopView from "@/components/workorder/sidepanel/views/WorkOrderSidePanelDesktopView";
 import WorkOrderSidePanelMobileView from "@/components/workorder/sidepanel/views/WorkOrderSidePanelMobileView";
 import WorkOrderSidePanelTabletView from "@/components/workorder/sidepanel/views/WorkOrderSidePanelTabletView";
 
-export default function WorkOrderSidePanelContainer(props: WorkOrderSidePanelProps) {
-  const deviceType = useWorkOrderDeviceType();
+type WorkOrderSidePanelContainerProps = WorkOrderSidePanelProps & {
+  presentation: WorkOrderSidePanelVariant;
+};
+
+export default function WorkOrderSidePanelContainer(props: WorkOrderSidePanelContainerProps) {
+  const deviceType = props.presentation;
   const [drawingModalOpen, setDrawingModalOpen] = useState(readDesignDrawingModalOpenState);
   const hasDesignAttachmentSection = props.attachmentSections.some((section) => isDesignAttachmentScope(section.uploadScope));
   const canRenderDesignDrawingModal = !props.isEmpty && props.canSeeAttachments && hasDesignAttachmentSection;
@@ -29,8 +32,9 @@ export default function WorkOrderSidePanelContainer(props: WorkOrderSidePanelPro
     setDrawingModalOpen(false);
   };
 
+  const { presentation: _presentation, ...workOrderSidePanelProps } = props;
   const sidePanelProps: WorkOrderSidePanelProps = {
-    ...props,
+    ...workOrderSidePanelProps,
     onOpenDesignDrawingModal: openDesignDrawingModal,
   };
 
