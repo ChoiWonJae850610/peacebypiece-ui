@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSaveStatus, WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
+import { WAFL_WORKSPACE_SECTION_CARD_CLASS, WaflButton, WaflInput, WaflSummaryHeaderCard, WaflSummaryInfoCell } from "@/components/common/ui";
 import WorkOrderSummaryInfoCell from "@/components/workorder/detail/WorkOrderSummaryInfoCell";
 import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import { WorkOrderEditIcon } from "@/components/workorder/common/WorkOrderIconButtons";
@@ -44,7 +44,6 @@ export default function WorkOrderHeaderSection({
   summaryText,
   managerName,
   currentInventoryQuantity,
-  saveStatus,
   dueDate,
   workOrderKind,
   onChangeDueDate,
@@ -213,11 +212,6 @@ export default function WorkOrderHeaderSection({
         valueClassName="tabular-nums"
       />
     </WaflSummaryHeaderCard>
-    <WaflSaveStatus
-          status={saveStatus}
-          showDirty={false}
-          message={saveStatus === "saving" || saveStatus === "saved" ? getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.workOrder, saveStatus) : undefined}
-        />
     </div>
   );
 }

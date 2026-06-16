@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { WaflButton, type WaflButtonVariant } from "@/components/common/ui";
+import { blurActiveModalElement } from "@/components/common/modal/modalUtils";
 
 import { getI18n } from "@/lib/i18n";
 
@@ -46,6 +47,35 @@ const LAYOUT_CLASS_MAP: Record<ModalFooterLayout, string> = {
 
 export function getModalActionDisabledState(...conditions: boolean[]) {
   return conditions.some(Boolean);
+}
+
+
+export function createModalCommitHandler({
+  shouldProceed = true,
+  action,
+  onClose,
+}: {
+  shouldProceed?: boolean;
+  action: () => void | Promise<void>;
+  onClose: () => void;
+}) {
+  return () => {
+    if (!shouldProceed) return;
+
+    blurActiveModalElement();
+    onClose();
+
+    const runAction = () => {
+      void Promise.resolve(action());
+    };
+
+    if (typeof window === "undefined") {
+      runAction();
+      return;
+    }
+
+    window.requestAnimationFrame(runAction);
+  };
 }
 
 export function createModalActionHandler({

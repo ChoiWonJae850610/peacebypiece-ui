@@ -8,7 +8,7 @@ import {
 } from "@/components/common/modal/modalContentClassNames";
 import {
   MODAL_ACTION_LABELS,
-  createModalActionHandler,
+  createModalCommitHandler,
   getModalActionDisabledState,
   renderModalFooterActions,
 } from "@/components/common/modal/modalActions";
@@ -74,7 +74,7 @@ export default function InventoryEditor({
     parsedDeductionQuantity,
   ]);
 
-  const handleApply = createModalActionHandler({
+  const handleApply = createModalCommitHandler({
     shouldProceed: !applyDisabled,
     action: () => {
       onApply({
@@ -85,7 +85,6 @@ export default function InventoryEditor({
       });
     },
     onClose,
-    closeAfterAction: true,
   });
 
   return (
@@ -94,6 +93,7 @@ export default function InventoryEditor({
       onClose={onClose}
       title={copy.title}
       maxWidthClass="md:max-w-lg"
+      lockBodyPosition={false}
       footer={renderModalFooterActions({
         layout: "end",
         primary: {

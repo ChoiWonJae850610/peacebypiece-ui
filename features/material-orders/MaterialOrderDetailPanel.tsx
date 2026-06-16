@@ -8,7 +8,6 @@ import {
   WaflButton,
   WaflMobileDetailContent,
   WaflPanelContentShell,
-  WaflSaveStatus,
   WaflWorkspaceEmptyPanel,
   WaflWorkspaceLoadingPanel,
   WAFL_PANEL_CONTENT_STACK_CLASS,
@@ -88,8 +87,6 @@ export default function MaterialOrderDetailPanel({
   onRetrySuppliers,
   statusChanging,
   headerSaving,
-  headerSaveStatus,
-  headerSaveMessage,
   onChangeLine,
   onRemoveLine,
   onChangeStatus,
@@ -188,8 +185,6 @@ export default function MaterialOrderDetailPanel({
               ) : null}
             </WaflSummaryInfoCell>
           </WaflSummaryHeaderCard>
-          <WaflSaveStatus status={headerSaveStatus} message={headerSaveMessage} />
-
           <MaterialOrderStatusFlow
             status={selectedOrder.status}
             workflowPath={selectedOrder.workflowPath}

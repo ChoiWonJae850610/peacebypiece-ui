@@ -8,9 +8,6 @@ import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicke
 import {
   WaflButton,
   WaflInput,
-  WaflSaveStatus,
-  WAFL_SAVE_TARGET,
-  getWaflSaveFeedbackMessage,
   WaflSummaryHeaderCard,
   WaflSummaryInfoCell,
 } from "@/components/common/ui";
@@ -26,7 +23,6 @@ export default function WorkOrderDetailTabletHeaderSection({
   summaryText,
   managerName,
   currentInventoryQuantity,
-  saveStatus,
   dueDate,
   onChangeDueDate,
   canChangeManager,
@@ -186,11 +182,6 @@ export default function WorkOrderDetailTabletHeaderSection({
         valueClassName="tabular-nums"
       />
     </WaflSummaryHeaderCard>
-    <WaflSaveStatus
-          status={saveStatus}
-          showDirty={false}
-          message={saveStatus === "saving" || saveStatus === "saved" ? getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.workOrder, saveStatus) : undefined}
-        />
     </div>
   );
 }
