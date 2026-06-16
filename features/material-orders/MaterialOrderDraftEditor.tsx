@@ -244,7 +244,7 @@ export default function MaterialOrderDraftEditor({
       isAdmin={isAdmin}
       workOrderCandidates={workOrderCandidates}
       mobile={useDrawerNavigation}
-      mobileSurface={useDrawerNavigation}
+      mobileSurface={useDrawerNavigation && !useTabletTwoPanel}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
       loading={ordersLoading}
     />

@@ -8,6 +8,7 @@ import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/typ
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
+import { WaflMobileDetailContent } from "@/components/common/ui";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
 export default function WorkOrderMobileWorkspaceView({
@@ -25,15 +26,22 @@ export default function WorkOrderMobileWorkspaceView({
   const detailScrollResetKey = selectedId;
 
   const detailContent = isLoading ? (
-    <WorkOrderLoadingState
-      title={loadingState?.detailTitle ?? ""}
-      description={loadingState?.detailDescription}
-    />
+    <WaflMobileDetailContent>
+      <WorkOrderLoadingState
+        title={loadingState?.detailTitle ?? ""}
+        description={loadingState?.detailDescription}
+        withContentShell={false}
+      />
+    </WaflMobileDetailContent>
   ) : hasSelection ? (
     <div key={selectedId} className="pbp-mobile-content-switch">
       <WorkOrderDetail {...detailProps} presentation="mobile" />
     </div>
-  ) : <WorkOrderEmptyState variant="detail" />;
+  ) : (
+    <WaflMobileDetailContent>
+      <WorkOrderEmptyState variant="detail" />
+    </WaflMobileDetailContent>
+  );
 
   const renderRelatedSection = (activeSection: WorkOrderMobileRelatedSectionKey) => {
     if (isLoading) {

@@ -9,7 +9,7 @@ export const WAFL_LIST_SEARCH_FILTER_GAP_CLASS = "mt-2";
 export const WAFL_LIST_FILTER_ACTION_GAP_CLASS = "mt-3";
 export const WAFL_LIST_ACTION_DIVIDER_GAP_CLASS = "mt-3";
 export const WAFL_LIST_PANEL_LIST_CLASS =
-  "min-h-0 flex-1 overflow-y-scroll overscroll-contain py-3 [scrollbar-gutter:stable]";
+  "min-h-0 flex-1 touch-pan-y overflow-y-scroll overscroll-contain py-3 [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable]";
 
 export default function WaflListPanelShell({
   title,

@@ -12,7 +12,7 @@ const WaflDetailWorkspacePanel = forwardRef<HTMLElement, HTMLAttributes<HTMLElem
         panelRole="detail"
         data-wafl-component="detail-workspace-panel"
         className={cn(
-          "h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]",
+          "flex h-full min-h-0 min-w-0 touch-pan-y flex-col overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable]",
           className,
         )}
         {...props}

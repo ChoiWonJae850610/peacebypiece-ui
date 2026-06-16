@@ -13,7 +13,7 @@ const WaflSideWorkspacePanel = forwardRef<HTMLElement, HTMLAttributes<HTMLElemen
         panelRole="side"
         data-wafl-component="side-workspace-panel"
         className={cn(
-          "h-full min-h-0 min-w-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]",
+          "flex h-full min-h-0 min-w-0 touch-pan-y flex-col overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable]",
           className,
         )}
         {...props}
