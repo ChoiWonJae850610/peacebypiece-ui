@@ -77,6 +77,7 @@ export const workorderKo = {
     saveHistoryLabel: "저장",
     saveHistoryTimeFormat: "저장 시각 {time}",
     workOrderLabel: "작업지시서",
+    saveProcessingToast: "작업지시서를 저장하는 중입니다.",
     saveCompletedToast: "저장이 완료되었습니다.",
     orderInfoLockedToast: "발주정보 전환 규칙상 변경할 수 없습니다.",
     saveFailedToast: "작업지시서 저장에 실패했습니다.",

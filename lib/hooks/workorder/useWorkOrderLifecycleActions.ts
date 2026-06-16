@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
+import { showWaflToast } from "@/components/common/ui";
 import {
   WORKORDER_EXPLICIT_SAVE_SCOPE,
   WORKORDER_SERVICE_CODE,
@@ -98,40 +99,60 @@ export function useWorkOrderLifecycleActions({
 
   const handleSave = useCallback(
     async (workOrder: WorkOrder, workOrders: WorkOrder[]) => {
-      await executeWorkOrderAsyncAction({
-        actionKey: "save",
-        setActionStatus,
-        setActionError,
-        setActionFailure,
-        getFailure: (error) => createWorkOrderActionFailure({
-          actionKey: "save",
-          error,
-          kind: "repository",
-          retryable: true,
-          message: lifecycleText.saveFailedToast ?? "Failed to save work order.",
-        }),
-        task: async () => {
-          setSaveStatus("saving");
-          const serviceCode = getWorkOrderExplicitSaveServiceCode(WORKORDER_EXPLICIT_SAVE_SCOPE.productionComposition);
-          const workOrdersWithDraft = replaceWorkOrderById(workOrders, workOrder.id, workOrder);
-          const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
-            workOrder,
-            auditActor: currentUser,
-            serviceCode,
-          });
-          const persistedWorkOrders = replaceWorkOrderById(workOrdersWithDraft, workOrder.id, persistedWorkOrder);
-
-          setWorkOrders(persistedWorkOrders);
-          setPersistedWorkOrders(persistedWorkOrders);
-          setLastSavedAt(persistedWorkOrder.lastSavedAt ?? null);
-          setSaveStatus("saved");
-          setToastMessage(lifecycleText.saveCompletedToast);
-          setActionFailure?.("save", null);
-          setActionError("save", null);
-        },
+      const toastId = `workorder-save:${workOrder.id}`;
+      showWaflToast({
+        id: toastId,
+        message: lifecycleText.saveProcessingToast,
+        tone: "loading",
+        duration: 60_000,
       });
+
+      try {
+        await executeWorkOrderAsyncAction({
+          actionKey: "save",
+          setActionStatus,
+          setActionError,
+          setActionFailure,
+          getFailure: (error) => createWorkOrderActionFailure({
+            actionKey: "save",
+            error,
+            kind: "repository",
+            retryable: true,
+            message: lifecycleText.saveFailedToast ?? "Failed to save work order.",
+          }),
+          task: async () => {
+            setSaveStatus("saving");
+            const serviceCode = getWorkOrderExplicitSaveServiceCode(WORKORDER_EXPLICIT_SAVE_SCOPE.productionComposition);
+            const workOrdersWithDraft = replaceWorkOrderById(workOrders, workOrder.id, workOrder);
+            const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
+              workOrder,
+              auditActor: currentUser,
+              serviceCode,
+            });
+            const persistedWorkOrders = replaceWorkOrderById(workOrdersWithDraft, workOrder.id, persistedWorkOrder);
+
+            setWorkOrders(persistedWorkOrders);
+            setPersistedWorkOrders(persistedWorkOrders);
+            setLastSavedAt(persistedWorkOrder.lastSavedAt ?? null);
+            setSaveStatus("saved");
+            setActionFailure?.("save", null);
+            setActionError("save", null);
+          },
+        });
+
+        showWaflToast({ id: toastId, message: lifecycleText.saveCompletedToast, tone: "success" });
+      } catch (error) {
+        setSaveStatus("dirty");
+        showWaflToast({
+          id: toastId,
+          message: error instanceof Error && error.message.trim()
+            ? error.message
+            : lifecycleText.saveFailedToast,
+          tone: "danger",
+        });
+      }
     },
-    [currentUser, lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser, lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, lifecycleText.saveProcessingToast, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(

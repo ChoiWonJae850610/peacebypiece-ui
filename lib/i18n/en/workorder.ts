@@ -79,6 +79,7 @@ export const workorderEn = {
     saveHistoryLabel: "Save",
     saveHistoryTimeFormat: "Saved at {time}",
     workOrderLabel: "Work order",
+    saveProcessingToast: "Saving the work order.",
     saveCompletedToast: "Saved successfully.",
     orderInfoLockedToast:
       "This change is blocked by the order info transition policy.",

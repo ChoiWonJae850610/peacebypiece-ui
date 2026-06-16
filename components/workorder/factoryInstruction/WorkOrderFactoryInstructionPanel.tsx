@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { WaflDocumentField } from "@/components/common/ui";
+import { WaflDocumentField, useWaflToastOperation } from "@/components/common/ui";
+import ToastMessage from "@/components/common/ToastMessage";
 import {
   fetchWorkOrderFactoryInstruction,
   patchWorkOrderFactoryInstruction,
@@ -32,12 +33,16 @@ export default function WorkOrderFactoryInstructionPanel({
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<WaflSaveStatusValue>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { operation, showOperationToast, clearOperationToast } = useWaflToastOperation(
+    `workorder-factory-instruction:${workOrderId}`,
+  );
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setSaveStatus("idle");
     setErrorMessage(null);
+    clearOperationToast();
     setInstruction(createEmptyWorkOrderFactoryInstruction(workOrderId));
     setDraft("");
 
@@ -59,7 +64,7 @@ export default function WorkOrderFactoryInstructionPanel({
     return () => {
       active = false;
     };
-  }, [workOrderId]);
+  }, [clearOperationToast, workOrderId]);
 
   const isDirty = draft !== instruction.content;
   const displayStatus = useMemo<WaflSaveStatusValue>(() => {
@@ -79,6 +84,7 @@ export default function WorkOrderFactoryInstructionPanel({
     if (!editable || !isDirty || saveStatus === "saving") return;
     setSaveStatus("saving");
     setErrorMessage(null);
+    showOperationToast("공장 전달사항을 저장하는 중입니다.", "loading");
     try {
       const saved = await patchWorkOrderFactoryInstruction(workOrderId, {
         content: draft,
@@ -87,26 +93,37 @@ export default function WorkOrderFactoryInstructionPanel({
       setInstruction(saved);
       setDraft(saved.content);
       setSaveStatus("saved");
+      showOperationToast("공장 전달사항을 저장했습니다.", "success");
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "공장 전달사항을 저장하지 못했습니다.");
+      const message = error instanceof Error ? error.message : "공장 전달사항을 저장하지 못했습니다.";
+      setErrorMessage(message);
       setSaveStatus("error");
+      showOperationToast(message, "danger");
     }
-  }, [draft, editable, instruction.includeInFactoryPdf, isDirty, saveStatus, workOrderId]);
+  }, [draft, editable, instruction.includeInFactoryPdf, isDirty, saveStatus, showOperationToast, workOrderId]);
 
   return (
-    <WaflDocumentField
-      title="공장 전달사항"
-      value={draft}
-      placeholder="예: 앞판 원단 방향을 맞춰 재단하고, 완성 후 개별 포장해 주세요."
-      maxLength={FACTORY_INSTRUCTION_MAX_LENGTH}
-      editable={editable}
-      loading={loading}
-      lockMessage={lockMessage}
-      saveStatus={displayStatus}
-      saveErrorMessage={errorMessage}
-      onChange={handleChange}
-      onSave={() => void handleSave()}
-      onClear={() => handleChange("")}
-    />
+    <>
+      <ToastMessage
+        message={operation?.message ?? null}
+        tone={operation?.tone}
+        eventKey={operation?.revision ?? null}
+        toastId={operation?.id ?? null}
+      />
+      <WaflDocumentField
+        title="공장 전달사항"
+        value={draft}
+        placeholder="예: 앞판 원단 방향을 맞춰 재단하고, 완성 후 개별 포장해 주세요."
+        maxLength={FACTORY_INSTRUCTION_MAX_LENGTH}
+        editable={editable}
+        loading={loading}
+        lockMessage={lockMessage}
+        saveStatus={displayStatus}
+        saveErrorMessage={errorMessage}
+        onChange={handleChange}
+        onSave={() => void handleSave()}
+        onClear={() => handleChange("")}
+      />
+    </>
   );
 }
