@@ -1,6 +1,7 @@
 import {
   WorkflowProgressPanel,
   type WorkflowProgressPanelAction,
+  type WorkflowProgressPanelLayout,
   type WorkflowProgressPanelStep,
 } from "@/components/common/workflow/WorkflowProgressPanel";
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
@@ -42,8 +43,8 @@ export default function WorkOrderActionSection({
   onAction,
   workflowProcessingLabel = null,
   isWorkspaceWriteLocked = false,
-  workspaceWriteLockMessage,
   canOpenInspectionModal = false,
+  layout = "horizontal",
   onOpenInspectionModal,
 }: {
   stages: DisplayStage[];
@@ -54,8 +55,8 @@ export default function WorkOrderActionSection({
   onAction: (action: WorkflowAction) => void;
   workflowProcessingLabel?: string | null;
   isWorkspaceWriteLocked?: boolean;
-  workspaceWriteLockMessage?: string;
   canOpenInspectionModal?: boolean;
+  layout?: WorkflowProgressPanelLayout;
   onOpenInspectionModal?: () => void;
 }) {
   const { i18n, locale } = useI18n();
@@ -65,11 +66,6 @@ export default function WorkOrderActionSection({
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked =
     isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
-  const lockedReason = isWorkflowProcessing
-    ? copy.processingLockedReason
-    : isWorkspaceWriteLocked
-      ? workspaceWriteLockMessage || copy.workspaceLockedReason
-      : null;
   const showInspectionAction =
     canOpenInspectionModal && Boolean(onOpenInspectionModal);
   const primaryActionIndex = actions.findIndex(
@@ -125,7 +121,6 @@ export default function WorkOrderActionSection({
           : translatedLabel,
         onClick: () => onAction(action),
         disabled: isActionLocked,
-        disabledReason: isActionLocked ? lockedReason : undefined,
         title: isActionLocked
           ? formatActionCopy(copy.disabledActionTitleFormat, translatedLabel)
           : formatActionCopy(copy.actionTitleFormat, translatedLabel),
@@ -142,7 +137,6 @@ export default function WorkOrderActionSection({
       label: copy.inspectionAction,
       onClick: () => onOpenInspectionModal?.(),
       disabled: isActionLocked,
-      disabledReason: isActionLocked ? lockedReason : undefined,
       title: isActionLocked
         ? formatActionCopy(copy.disabledActionTitleFormat, copy.inspectionAction)
         : formatActionCopy(copy.actionTitleFormat, copy.inspectionAction),
@@ -165,6 +159,7 @@ export default function WorkOrderActionSection({
     <WorkflowProgressPanel
       title={copy.title}
       steps={progressSteps}
+      layout={layout}
       actions={progressActions}
       className="mt-0"
       pathMode={workflowPath === WORKFLOW_PATH.directOrder ? "directOrder" : "standard"}
