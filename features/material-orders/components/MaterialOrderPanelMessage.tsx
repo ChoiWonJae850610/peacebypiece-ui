@@ -1,4 +1,4 @@
-import { WaflButton, WaflEmptyWorkspaceState, WaflErrorState, WaflLoadingState } from "@/components/common/ui";
+import { WaflButton, WaflWorkspaceStatePanel } from "@/components/common/ui";
 
 export type MaterialOrderPanelMessageKind = "empty" | "loading" | "error" | "search";
 
@@ -25,40 +25,13 @@ export default function MaterialOrderPanelMessage({
     </WaflButton>
   ) : null;
 
-  if (kind === "loading") {
-    return (
-      <WaflLoadingState
-        title={title}
-        description={description}
-        action={action}
-        size="sm"
-        minHeightClassName={variant === "inline-section" ? "min-h-[96px]" : "min-h-[132px]"}
-        className="wafl-shape-control bg-[var(--pbp-empty-state-surface)]"
-      />
-    );
-  }
-
-  if (kind === "error") {
-    return (
-      <WaflErrorState
-        title={title}
-        description={description}
-        action={action}
-        size="sm"
-        minHeightClassName={variant === "inline-section" ? "min-h-[96px]" : "min-h-[132px]"}
-        className="wafl-shape-control"
-      />
-    );
-  }
-
   return (
-    <WaflEmptyWorkspaceState
-      kind={kind}
+    <WaflWorkspaceStatePanel
       title={title}
       description={description}
       action={action}
-      variant={variant}
-      className="wafl-shape-control"
+      kind={kind}
+      layout={variant === "inline-section" ? "inline" : "panel"}
     />
   );
 }

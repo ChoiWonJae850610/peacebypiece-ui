@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { WAFL_WORKSPACE_SECTION_CARD_CLASS } from "./waflWorkspaceSpacing";
 import WaflPanelContentShell from "./WaflPanelContentShell";
-import { WaflLoadingState } from "./WaflState";
+import WaflWorkspaceStatePanel from "./WaflWorkspaceStatePanel";
 
 export type WaflWorkspaceLoadingPanelVariant = "detail" | "side";
 
@@ -31,11 +31,11 @@ function LoadingContent({
   if (variant === "side") {
     return (
       <div className={`${WAFL_WORKSPACE_SECTION_CARD_CLASS} flex h-full min-h-0 flex-col gap-4 bg-[var(--pbp-surface-soft)] p-4`}>
-        <WaflLoadingState
+        <WaflWorkspaceStatePanel
           title={title}
           description={description}
-          size="sm"
-          minHeightClassName="min-h-[96px]"
+          kind="loading"
+          layout="inline"
         />
         <SkeletonCard>
           <SkeletonLine className="h-4 w-20" />
@@ -57,10 +57,11 @@ function LoadingContent({
 
   return (
     <div className={`${WAFL_WORKSPACE_SECTION_CARD_CLASS} flex h-full min-h-0 flex-col bg-[var(--pbp-surface-soft)] p-5`}>
-      <WaflLoadingState
+      <WaflWorkspaceStatePanel
         title={title}
         description={description}
-        minHeightClassName="min-h-[120px]"
+        kind="loading"
+        layout="panel"
         className="mb-5"
       />
       <div className="grid gap-4 md:grid-cols-2">

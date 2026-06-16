@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
-import { WaflEmptyWorkspaceState, type WaflEmptyWorkspaceStateVariant } from "./WaflEmptyWorkspaceState";
-import WaflPanelContentShell from "./WaflPanelContentShell";
+import type { WaflEmptyWorkspaceStateVariant } from "./WaflEmptyWorkspaceState";
 import type { WaflStateKind } from "./WaflState";
+import WaflWorkspaceStatePanel, { type WaflWorkspaceStateLayout } from "./WaflWorkspaceStatePanel";
 
 type WaflWorkspaceEmptyPanelProps = {
   title: ReactNode;
@@ -16,6 +15,10 @@ type WaflWorkspaceEmptyPanelProps = {
   withContentShell?: boolean;
 };
 
+function resolveLayout(variant: WaflEmptyWorkspaceStateVariant): WaflWorkspaceStateLayout {
+  return variant === "inline-section" ? "inline" : "workspace";
+}
+
 export default function WaflWorkspaceEmptyPanel({
   title,
   description,
@@ -26,34 +29,16 @@ export default function WaflWorkspaceEmptyPanel({
   stateClassName,
   withContentShell = true,
 }: WaflWorkspaceEmptyPanelProps) {
-  const state = (
-    <WaflEmptyWorkspaceState
+  return (
+    <WaflWorkspaceStatePanel
       title={title}
       description={description}
       action={action}
-      variant={variant}
       kind={kind}
-      className={cn("min-h-full flex-1", stateClassName)}
+      layout={resolveLayout(variant)}
+      withContentShell={withContentShell}
+      className={className}
+      stateClassName={stateClassName}
     />
-  );
-
-  if (!withContentShell) {
-    return (
-      <div
-        data-wafl-component="workspace-empty-panel"
-        className={cn("flex min-h-full w-full flex-1 flex-col", className)}
-      >
-        {state}
-      </div>
-    );
-  }
-
-  return (
-    <WaflPanelContentShell
-      data-wafl-component="workspace-empty-panel"
-      className={cn("box-border flex min-h-full flex-col !p-4", className)}
-    >
-      {state}
-    </WaflPanelContentShell>
   );
 }

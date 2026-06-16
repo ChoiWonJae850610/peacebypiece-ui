@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
-import { WaflStateBlock, type WaflStateKind } from "./WaflState";
+import type { WaflStateKind } from "./WaflState";
+import WaflWorkspaceStatePanel, { type WaflWorkspaceStateLayout } from "./WaflWorkspaceStatePanel";
 
 export type WaflEmptyWorkspaceStateVariant = "center-panel" | "side-panel" | "inline-section";
 
@@ -14,17 +14,10 @@ export type WaflEmptyWorkspaceStateProps = {
   className?: string;
 };
 
-const variantClassMap: Record<WaflEmptyWorkspaceStateVariant, string> = {
-  "center-panel": "border-dashed bg-[var(--pbp-empty-state-surface)]",
-  "side-panel": "border-dashed bg-[var(--pbp-empty-state-surface)]",
-  "inline-section": "border-dashed bg-[var(--pbp-empty-state-surface)]",
-};
-
-const variantMinHeightClassMap: Record<WaflEmptyWorkspaceStateVariant, string> = {
-  "center-panel": "min-h-[360px] md:min-h-[520px]",
-  "side-panel": "min-h-[220px] md:min-h-[260px]",
-  "inline-section": "min-h-[96px]",
-};
+function resolveLayout(variant: WaflEmptyWorkspaceStateVariant): WaflWorkspaceStateLayout {
+  if (variant === "inline-section") return "inline";
+  return "panel";
+}
 
 export function WaflEmptyWorkspaceState({
   title,
@@ -35,14 +28,13 @@ export function WaflEmptyWorkspaceState({
   className,
 }: WaflEmptyWorkspaceStateProps) {
   return (
-    <WaflStateBlock
-      kind={kind}
+    <WaflWorkspaceStatePanel
       title={title}
       description={description}
       action={action}
-      size={variant === "center-panel" ? "lg" : "sm"}
-      minHeightClassName={variantMinHeightClassMap[variant]}
-      className={cn(variantClassMap[variant], className)}
+      kind={kind}
+      layout={resolveLayout(variant)}
+      stateClassName={className}
     />
   );
 }
