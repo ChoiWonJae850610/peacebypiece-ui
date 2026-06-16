@@ -35,16 +35,14 @@ async function hydrateWorkOrdersWithAttachmentSnapshots(
       return workOrders;
     }
 
-    const snapshots = await Promise.all(
-      workOrders.map((workOrder) =>
-        repository.listSnapshotByWorkOrderId(workOrder.id),
-      ),
+    const snapshotsByWorkOrderId = await repository.listSnapshotsByWorkOrderIds(
+      workOrders.map((workOrder) => workOrder.id),
     );
 
     traceWaflResult("workorders.attachments.hydrate", "success", { rows: workOrders.length });
 
-    return workOrders.map((workOrder, index) => {
-      const snapshot = snapshots[index];
+    return workOrders.map((workOrder) => {
+      const snapshot = snapshotsByWorkOrderId[workOrder.id];
       if (!snapshot) return workOrder;
 
       return {

@@ -121,6 +121,13 @@ export function createDbAttachmentRepository(): AttachmentWritableRepository {
   return {
     getRepositoryInfo: getDbAttachmentRepositoryInfo,
     listSnapshotByWorkOrderId: async (workOrderId) => {
+      const snapshots = await createDbAttachmentRepository().listSnapshotsByWorkOrderIds([workOrderId]);
+      return snapshots[workOrderId] ?? { attachments: [] };
+    },
+    listSnapshotsByWorkOrderIds: async (workOrderIds) => {
+      const uniqueIds = Array.from(new Set(workOrderIds.map((id) => id.trim()).filter(Boolean)));
+      if (uniqueIds.length === 0) return {};
+
       const attachments = await queryDb<AttachmentRow>(
         `SELECT id,
                 order_id,
@@ -138,16 +145,23 @@ export function createDbAttachmentRepository(): AttachmentWritableRepository {
                 deleted_at,
                 created_at
            FROM attachments
-          WHERE order_id = $1
+          WHERE order_id = ANY($1::uuid[])
             AND is_active = true
             AND deleted_at IS NULL
-          ORDER BY created_at ASC`,
-        [workOrderId],
+          ORDER BY order_id ASC, created_at ASC`,
+        [uniqueIds],
       );
 
-      return {
-        attachments: attachments.rows.map(mapAttachmentRow),
-      };
+      const snapshots = Object.fromEntries(
+        uniqueIds.map((workOrderId) => [workOrderId, { attachments: [] }]),
+      ) as Record<string, { attachments: Attachment[] }>;
+
+      for (const row of attachments.rows) {
+        const snapshot = snapshots[row.order_id] ?? (snapshots[row.order_id] = { attachments: [] });
+        snapshot.attachments.push(mapAttachmentRow(row));
+      }
+
+      return snapshots;
     },
     createAttachment: async (input) => {
       const company = await getWorkOrderCompanyContext(input.order_id);

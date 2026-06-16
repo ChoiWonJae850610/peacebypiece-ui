@@ -13,6 +13,7 @@ export type AttachmentRepositoryInfo = {
 export type AttachmentRepository = {
   getRepositoryInfo: () => AttachmentRepositoryInfo;
   listSnapshotByWorkOrderId: (workOrderId: string) => Promise<AttachmentSnapshot>;
+  listSnapshotsByWorkOrderIds: (workOrderIds: string[]) => Promise<Record<string, AttachmentSnapshot>>;
 };
 
 export type AttachmentWritableRepository = AttachmentRepository & {

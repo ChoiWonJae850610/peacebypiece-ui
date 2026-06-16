@@ -28,6 +28,10 @@ const MATERIAL_ORDER_STATUS_LITERAL_FILES = new Set([
 
 const MATERIAL_ORDER_STATUS_LITERAL_PATTERN = /["'](?:draft|review_requested|approved|order_placed|rejected|cancelled)["']/;
 
+
+const WORK_ORDER_ATTACHMENT_HYDRATION_FILE = "lib/workorder/service/workOrderService.ts";
+const WORKSPACE_VIEW_MODEL_FILE = "lib/workorder/workspace/buildWorkspaceViewModel.ts";
+
 const NATIVE_CONTROL_ALLOWLIST = new Set([
   "components/workorder/WorkOrderOverlay.tsx",
   "components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx",
@@ -68,6 +72,12 @@ for (const file of files) {
   }
   if (MATERIAL_ORDER_STATUS_LITERAL_FILES.has(file) && MATERIAL_ORDER_STATUS_LITERAL_PATTERN.test(content)) {
     failures.push(`direct material-order status literal: ${file}`);
+  }
+  if (file === WORK_ORDER_ATTACHMENT_HYDRATION_FILE && /Promise\.all\([\s\S]*listSnapshotByWorkOrderId/.test(content)) {
+    failures.push(`N+1 attachment snapshot hydration: ${file}`);
+  }
+  if (file === WORKSPACE_VIEW_MODEL_FILE && !/buildBaseWorkspaceContext\(/.test(content)) {
+    failures.push(`workspace base context bypassed: ${file}`);
   }
 }
 
