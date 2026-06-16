@@ -38,14 +38,7 @@ import {
   type PendingMaterialOrderStatusValidation,
   type SelectedOrderDetailPayload,
 } from "@/features/material-orders/hooks/materialOrderDraftEditorUtils";
-import { WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, type WaflSaveStatusValue } from "@/components/common/ui";
-
-type MaterialOrderStatusToastTone =
-  | "info"
-  | "success"
-  | "warning"
-  | "danger"
-  | "loading";
+import { WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, useWaflToastOperation, type WaflSaveStatusValue } from "@/components/common/ui";
 
 export function useMaterialOrderDraftEditor({
   isAdmin,
@@ -61,12 +54,11 @@ export function useMaterialOrderDraftEditor({
   const [headerSaving, setHeaderSaving] = useState(false);
   const [headerSaveStatus, setHeaderSaveStatus] = useState<WaflSaveStatusValue>("idle");
   const [headerSaveMessage, setHeaderSaveMessage] = useState<string | null>(null);
-  const [statusToastMessage, setStatusToastMessage] = useState<string | null>(
-    null,
-  );
-  const [statusToastTone, setStatusToastTone] =
-    useState<MaterialOrderStatusToastTone>("info");
-  const [statusToastEventKey, setStatusToastEventKey] = useState(0);
+  const {
+    operation: statusToastOperation,
+    showOperationToast: showStatusToast,
+    clearOperationToast: clearStatusToast,
+  } = useWaflToastOperation("material-order-operation");
   const [workOrderCandidates, setWorkOrderCandidates] = useState<
     MaterialOrderWorkspaceWorkOrderCandidate[]
   >([]);
@@ -235,24 +227,15 @@ export function useMaterialOrderDraftEditor({
 
     setMaterialType(resolveMaterialOrderType(selectedOrder) ?? "");
     setSupplierPartnerId(selectedOrder.supplierPartnerId ?? null);
-    setStatusToastMessage(null);
+    clearStatusToast();
     setDueDate(normalizePbpLocalDateValue(selectedOrder.dueDate));
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
-  }, [selectedOrder]);
+  }, [clearStatusToast, selectedOrder]);
 
   useEffect(() => {
     setHeaderSaveStatus("idle");
     setHeaderSaveMessage(null);
   }, [selectedOrderId]);
-
-  const showStatusToast = useCallback(
-    (message: string, tone: MaterialOrderStatusToastTone) => {
-      setStatusToastMessage(message);
-      setStatusToastTone(tone);
-      setStatusToastEventKey((currentKey) => currentKey + 1);
-    },
-    [],
-  );
 
   const createOrder = useCallback(async () => {
     setCreatingOrder(true);
@@ -707,9 +690,7 @@ export function useMaterialOrderDraftEditor({
     headerSaving,
     headerSaveStatus,
     headerSaveMessage,
-    statusToastMessage,
-    statusToastTone,
-    statusToastEventKey,
+    statusToastOperation,
     workOrderCandidates,
     suppliers,
     suppliersLoading,

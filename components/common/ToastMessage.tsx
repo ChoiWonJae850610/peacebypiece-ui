@@ -15,12 +15,13 @@ export type ToastMessageProps = {
   message: string | null;
   tone?: ToastTone;
   eventKey?: string | number | null;
+  toastId?: string | number | null;
 };
 
 export type { WaflToastOptions };
 export { showWaflLoadingToast, showWaflToast };
 
-export default function ToastMessage({ message, tone = "info", eventKey = null }: ToastMessageProps) {
+export default function ToastMessage({ message, tone = "info", eventKey = null, toastId = null }: ToastMessageProps) {
   const lastShownMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -32,8 +33,8 @@ export default function ToastMessage({ message, tone = "info", eventKey = null }
     const toastKey = `${eventKey ?? "static"}:${tone}:${message}`;
     if (lastShownMessageRef.current === toastKey) return;
     lastShownMessageRef.current = toastKey;
-    showWaflToast({ message, tone });
-  }, [eventKey, message, tone]);
+    showWaflToast({ message, tone, id: toastId ?? undefined });
+  }, [eventKey, message, toastId, tone]);
 
   return null;
 }

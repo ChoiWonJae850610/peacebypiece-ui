@@ -77,9 +77,7 @@ export default function MaterialOrderDraftEditor({
     headerSaving,
     headerSaveStatus,
     headerSaveMessage,
-    statusToastMessage,
-    statusToastTone,
-    statusToastEventKey,
+    statusToastOperation,
     workOrderCandidates,
     suppliers,
     suppliersLoading,
@@ -165,9 +163,10 @@ export default function MaterialOrderDraftEditor({
 
   const statusToast = (
     <ToastMessage
-      message={statusToastMessage}
-      tone={statusToastTone}
-      eventKey={statusToastEventKey}
+      message={statusToastOperation?.message ?? null}
+      tone={statusToastOperation?.tone}
+      eventKey={statusToastOperation?.revision ?? null}
+      toastId={statusToastOperation?.id ?? null}
     />
   );
 
