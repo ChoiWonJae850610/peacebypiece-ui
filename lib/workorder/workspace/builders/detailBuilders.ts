@@ -68,11 +68,14 @@ export function buildDetailProps({
   onSetInventoryEditorOpen,
 }: DetailViewModelArgs): DetailProps {
   return {
+    workOrder: applyLatestManagerDisplayName(selectedWorkOrder, users),
     isEmpty: !hasVisibleWorkOrders,
     currentWorkflowState,
     saveStatus,
     lastSavedAt: formatRecentKstDateTime(lastSavedAt),
     currentInventoryQuantity,
+    currentUserName: currentUser.name,
+    currentUserId: currentUser.id,
     currentUserCompanyMemberId: currentUser.companyMemberId ?? null,
     currentUserRole: currentRole,
     canRenameTitle,
