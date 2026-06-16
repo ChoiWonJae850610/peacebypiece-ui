@@ -1,3 +1,4 @@
+import { readWaflLegacyApiResponse, waflApiRequest } from "@/lib/api/waflApiClient";
 import type { WorkOrderSummary } from "@/types/workorder";
 import {
   getMaterialOrderReadinessSummary,
@@ -20,12 +21,6 @@ export type MaterialOrderWorkspaceListResult = {
 
 export type MaterialOrderWorkspaceMutationResult = MaterialOrderWorkspaceListResult & {
   materialOrder: MaterialOrder | null;
-};
-
-export type MaterialOrderWorkspaceApiError = {
-  message?: string;
-  code?: string;
-  error?: string;
 };
 
 export type MaterialOrderWorkspaceWorkOrderCandidate = {
@@ -150,24 +145,18 @@ export function toMaterialOrderWorkspaceError(error: unknown, fallbackMessage: s
   return fallbackMessage;
 }
 
-async function readJsonResponse<T>(response: Response): Promise<T> {
-  const payload = (await response.json().catch(() => null)) as T | MaterialOrderWorkspaceApiError | null;
 
-  if (!response.ok) {
-    const errorPayload = payload as MaterialOrderWorkspaceApiError | null;
-    throw new Error(errorPayload?.message || errorPayload?.error || errorPayload?.code || "요청을 처리하지 못했습니다.");
-  }
-
-  return payload as T;
-}
 
 export async function fetchMaterialOrders(): Promise<MaterialOrder[]> {
-  const response = await fetch("/api/material-orders", {
-    method: "GET",
-    headers: { "Accept": "application/json" },
-    cache: "no-store",
-  });
-  const payload = await readJsonResponse<MaterialOrderWorkspaceListResult>(response);
+  const payload = await waflApiRequest<MaterialOrderWorkspaceListResult>(
+    "/api/material-orders",
+    {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+      cache: "no-store",
+    },
+    "발주서 목록을 불러오지 못했습니다.",
+  );
   return Array.isArray(payload.materialOrders) ? payload.materialOrders : [];
 }
 
@@ -179,7 +168,7 @@ export async function fetchMaterialOrderSuppliers(type: MaterialOrderLineItemTyp
     headers: { "Accept": "application/json" },
     cache: "no-store",
   });
-  const payload = await readJsonResponse<MaterialOrderSupplierListResult>(response);
+  const payload = await readWaflLegacyApiResponse<MaterialOrderSupplierListResult>(response, "공급처를 불러오지 못했습니다.");
   return Array.isArray(payload.suppliers) ? payload.suppliers : [];
 }
 
@@ -189,16 +178,18 @@ export async function createEmptyMaterialOrder(): Promise<MaterialOrderWorkspace
     lines: [],
   };
 
-  const response = await fetch("/api/material-orders", {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
+  return waflApiRequest<MaterialOrderWorkspaceMutationResult>(
+    "/api/material-orders",
+    {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     },
-    body: JSON.stringify(body),
-  });
-
-  return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
+    "새 발주서를 만들지 못했습니다.",
+  );
 }
 
 export async function updateMaterialOrderHeader(input: {
@@ -207,16 +198,18 @@ export async function updateMaterialOrderHeader(input: {
   supplierPartnerId?: string | null;
   dueDate?: string | null;
 }): Promise<MaterialOrderWorkspaceMutationResult> {
-  const response = await fetch("/api/material-orders", {
-    method: "PUT",
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
+  return waflApiRequest<MaterialOrderWorkspaceMutationResult>(
+    "/api/material-orders",
+    {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ...input, updateMode: "header" }),
     },
-    body: JSON.stringify({ ...input, updateMode: "header" }),
-  });
-
-  return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
+    "발주서 기본정보를 저장하지 못했습니다.",
+  );
 }
 
 export async function updateMaterialOrderDetail(input: {
@@ -226,32 +219,36 @@ export async function updateMaterialOrderDetail(input: {
   dueDate?: string | null;
   lines: MaterialOrderLineInput[];
 }): Promise<MaterialOrderWorkspaceMutationResult> {
-  const response = await fetch("/api/material-orders", {
-    method: "PUT",
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
+  return waflApiRequest<MaterialOrderWorkspaceMutationResult>(
+    "/api/material-orders",
+    {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
     },
-    body: JSON.stringify(input),
-  });
-
-  return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
+    "발주서 상세를 저장하지 못했습니다.",
+  );
 }
 
 export async function updateMaterialOrderStatus(input: {
   materialOrderId: string;
   status: MaterialOrder["status"];
 }): Promise<MaterialOrderWorkspaceMutationResult> {
-  const response = await fetch("/api/material-orders", {
-    method: "PATCH",
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
+  return waflApiRequest<MaterialOrderWorkspaceMutationResult>(
+    "/api/material-orders",
+    {
+      method: "PATCH",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
     },
-    body: JSON.stringify(input),
-  });
-
-  return readJsonResponse<MaterialOrderWorkspaceMutationResult>(response);
+    "발주서 상태를 변경하지 못했습니다.",
+  );
 }
 
 export async function cancelMaterialOrder(input: {
@@ -269,7 +266,7 @@ export async function fetchAllocationCandidateWorkOrders(): Promise<MaterialOrde
     headers: { "Accept": "application/json" },
     cache: "no-store",
   });
-  const payload = await readJsonResponse<MaterialOrderWorkspaceWorkOrdersResult>(response);
+  const payload = await readWaflLegacyApiResponse<MaterialOrderWorkspaceWorkOrdersResult>(response, "작업지시서를 불러오지 못했습니다.");
   const workOrders = Array.isArray(payload.workOrders) ? payload.workOrders : [];
 
   return workOrders

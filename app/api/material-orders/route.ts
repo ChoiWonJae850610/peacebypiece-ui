@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 import {
   createWorkspacePermissionRequiredResponse,
@@ -6,7 +6,12 @@ import {
   requireWorkspaceApiGuard,
 } from "@/lib/auth/apiRouteGuards";
 import type { WaflSessionPayload } from "@/lib/auth/session";
-import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
+import {
+  createWaflApiError,
+  createWaflApiSuccess,
+  createWaflUnhandledApiError,
+  readWaflJsonBody,
+} from "@/lib/api/waflApiServer";
 import { isCompanyAdminSessionRole } from "@/lib/constants/sessionRoles";
 import { getMaterialOrderById } from "@/lib/material-orders/repository";
 import { isAllowedMaterialOrderTransition } from "@/lib/material-orders/serverPolicy";
@@ -22,6 +27,7 @@ import {
   type MaterialOrderLineInput,
   type MaterialOrderStatus,
 } from "@/lib/material-orders/types";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 
 type MaterialOrderRequestBody = {
   materialOrderId?: unknown;
@@ -52,11 +58,6 @@ function isMaterialOrderStatus(value: unknown): value is MaterialOrderStatus {
 function readSearchStatus(request: NextRequest): MaterialOrderStatus | null {
   const status = request.nextUrl.searchParams.get("status");
   return isMaterialOrderStatus(status) ? status : null;
-}
-
-async function readMaterialOrderRequestBody(request: NextRequest): Promise<MaterialOrderRequestBody> {
-  const payload = (await request.json()) as unknown;
-  return typeof payload === "object" && payload !== null ? (payload as MaterialOrderRequestBody) : {};
 }
 
 function normalizeLineItemType(value: unknown): MaterialOrderLineInput["itemType"] | null {
@@ -116,43 +117,6 @@ function resolveStatusPermission(status: MaterialOrderStatus) {
   return MEMBER_PERMISSION_CODE.materialOrderPlace;
 }
 
-
-
-function createMaterialOrderUnhandledErrorResponse(
-  error: unknown,
-  fallbackMessage: string,
-  code: string,
-): NextResponse {
-  const message = error instanceof Error && error.message.trim()
-    ? error.message
-    : fallbackMessage;
-
-  return NextResponse.json(
-    {
-      ok: false,
-      message,
-      code,
-      error: code,
-    },
-    { status: 500 },
-  );
-}
-
-function createMaterialOrderApiErrorResponse(
-  message: string,
-  code: string,
-  status: number,
-): NextResponse {
-  return NextResponse.json(
-    {
-      ok: false,
-      message,
-      code,
-    },
-    { status },
-  );
-}
-
 async function requireMaterialOrderStatusPermission(
   session: WaflSessionPayload,
   status: MaterialOrderStatus,
@@ -170,15 +134,14 @@ export async function GET(request: NextRequest) {
   if (!guard.ok) return guard.response;
 
   try {
-    return NextResponse.json(
-      await listWorkspaceMaterialOrders({
-        companyId: guard.scope.companyId,
-        status: readSearchStatus(request),
-        visibility: guard.scope.visibility,
-      }),
-    );
+    const result = await listWorkspaceMaterialOrders({
+      companyId: guard.scope.companyId,
+      status: readSearchStatus(request),
+      visibility: guard.scope.visibility,
+    });
+    return createWaflApiSuccess(result);
   } catch (error) {
-    return createMaterialOrderUnhandledErrorResponse(
+    return createWaflUnhandledApiError(
       error,
       "발주서 목록을 불러오지 못했습니다.",
       "MATERIAL_ORDER_LIST_UNAVAILABLE",
@@ -190,27 +153,29 @@ export async function POST(request: NextRequest) {
   const guard = await requireWorkspaceApiGuard();
   if (!guard.ok) return guard.response;
 
+  const bodyResult = await readWaflJsonBody<MaterialOrderRequestBody>(request);
+  if (!bodyResult.ok) return bodyResult.response;
+
   try {
-    const body = await readMaterialOrderRequestBody(request);
+    const body = bodyResult.data;
     const status = isMaterialOrderStatus(body.status) ? body.status : "draft";
 
     const permissionDenied = await requireMaterialOrderStatusPermission(guard.session, status);
     if (permissionDenied) return permissionDenied;
 
-    return NextResponse.json(
-      await createWorkspaceMaterialOrder({
-        companyId: guard.scope.companyId,
-        visibility: guard.scope.visibility,
-        supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
-        requestedByUserId: guard.session.userId,
-        status,
-        note: normalizeOptionalText(body.note),
-        dueDate: normalizeOptionalText(body.dueDate),
-        lines: normalizeMaterialOrderLines(body.lines),
-      }),
-    );
+    const result = await createWorkspaceMaterialOrder({
+      companyId: guard.scope.companyId,
+      visibility: guard.scope.visibility,
+      supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
+      requestedByUserId: guard.session.userId,
+      status,
+      note: normalizeOptionalText(body.note),
+      dueDate: normalizeOptionalText(body.dueDate),
+      lines: normalizeMaterialOrderLines(body.lines),
+    });
+    return createWaflApiSuccess(result);
   } catch (error) {
-    return createMaterialOrderUnhandledErrorResponse(
+    return createWaflUnhandledApiError(
       error,
       "새 발주서를 만들지 못했습니다.",
       "MATERIAL_ORDER_CREATE_FAILED",
@@ -222,20 +187,28 @@ export async function PUT(request: NextRequest) {
   const guard = await requireWorkspaceApiGuard();
   if (!guard.ok) return guard.response;
 
+  const bodyResult = await readWaflJsonBody<MaterialOrderRequestBody>(request);
+  if (!bodyResult.ok) return bodyResult.response;
+
   try {
-    const body = await readMaterialOrderRequestBody(request);
+    const body = bodyResult.data;
     const materialOrderId = normalizeOptionalText(body.materialOrderId);
 
     if (!materialOrderId) {
-      return createMaterialOrderApiErrorResponse(
-        "Material order id is required.",
+      return createWaflApiError(
+        "발주서 식별값을 확인해주세요.",
         "MATERIAL_ORDER_DETAIL_PAYLOAD_REQUIRED",
         400,
       );
     }
 
-    const permitted = await hasWorkspaceApiPermission(guard.session, MEMBER_PERMISSION_CODE.materialOrderRequest);
-    if (!permitted) return createWorkspacePermissionRequiredResponse(MEMBER_PERMISSION_CODE.materialOrderRequest);
+    const permitted = await hasWorkspaceApiPermission(
+      guard.session,
+      MEMBER_PERMISSION_CODE.materialOrderRequest,
+    );
+    if (!permitted) {
+      return createWorkspacePermissionRequiredResponse(MEMBER_PERMISSION_CODE.materialOrderRequest);
+    }
 
     if (body.updateMode === "header") {
       const headerInput: {
@@ -263,25 +236,23 @@ export async function PUT(request: NextRequest) {
         headerInput.dueDate = normalizeOptionalText(body.dueDate);
       }
 
-      return NextResponse.json(
-        await updateWorkspaceMaterialOrderHeader(headerInput),
-      );
+      const result = await updateWorkspaceMaterialOrderHeader(headerInput);
+      return createWaflApiSuccess(result);
     }
 
-    return NextResponse.json(
-      await updateWorkspaceMaterialOrderDetail({
-        companyId: guard.scope.companyId,
-        visibility: guard.scope.visibility,
-        materialOrderId,
-        isAdmin: isCompanyAdminSessionRole(guard.session.role),
-        supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
-        note: normalizeOptionalText(body.note),
-        dueDate: normalizeOptionalText(body.dueDate),
-        lines: normalizeMaterialOrderLines(body.lines),
-      }),
-    );
+    const result = await updateWorkspaceMaterialOrderDetail({
+      companyId: guard.scope.companyId,
+      visibility: guard.scope.visibility,
+      materialOrderId,
+      isAdmin: isCompanyAdminSessionRole(guard.session.role),
+      supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
+      note: normalizeOptionalText(body.note),
+      dueDate: normalizeOptionalText(body.dueDate),
+      lines: normalizeMaterialOrderLines(body.lines),
+    });
+    return createWaflApiSuccess(result);
   } catch (error) {
-    return createMaterialOrderUnhandledErrorResponse(
+    return createWaflUnhandledApiError(
       error,
       "발주서 상세를 저장하지 못했습니다.",
       "MATERIAL_ORDER_DETAIL_UPDATE_FAILED",
@@ -293,14 +264,17 @@ export async function PATCH(request: NextRequest) {
   const guard = await requireWorkspaceApiGuard();
   if (!guard.ok) return guard.response;
 
+  const bodyResult = await readWaflJsonBody<MaterialOrderRequestBody>(request);
+  if (!bodyResult.ok) return bodyResult.response;
+
   try {
-    const body = await readMaterialOrderRequestBody(request);
+    const body = bodyResult.data;
     const materialOrderId = normalizeOptionalText(body.materialOrderId);
     const status = isMaterialOrderStatus(body.status) ? body.status : null;
 
     if (!materialOrderId || !status) {
-      return createMaterialOrderApiErrorResponse(
-        "Material order id and status are required.",
+      return createWaflApiError(
+        "발주서와 변경할 상태를 확인해주세요.",
         "MATERIAL_ORDER_STATUS_PAYLOAD_REQUIRED",
         400,
       );
@@ -311,8 +285,8 @@ export async function PATCH(request: NextRequest) {
       materialOrderId,
     });
     if (!currentOrder) {
-      return createMaterialOrderApiErrorResponse(
-        "Material order was not found.",
+      return createWaflApiError(
+        "발주서를 찾을 수 없습니다.",
         "MATERIAL_ORDER_NOT_FOUND",
         404,
       );
@@ -322,8 +296,8 @@ export async function PATCH(request: NextRequest) {
       previous: currentOrder.status,
       next: status,
     })) {
-      return createMaterialOrderApiErrorResponse(
-        "This material order status transition is not allowed.",
+      return createWaflApiError(
+        "현재 단계에서는 요청한 상태로 변경할 수 없습니다.",
         "MATERIAL_ORDER_STATUS_TRANSITION_NOT_ALLOWED",
         409,
       );
@@ -332,17 +306,16 @@ export async function PATCH(request: NextRequest) {
     const permissionDenied = await requireMaterialOrderStatusPermission(guard.session, status);
     if (permissionDenied) return permissionDenied;
 
-    return NextResponse.json(
-      await updateWorkspaceMaterialOrderStatus({
-        companyId: guard.scope.companyId,
-        visibility: guard.scope.visibility,
-        materialOrderId,
-        status,
-        actorUserId: guard.session.userId,
-      }),
-    );
+    const result = await updateWorkspaceMaterialOrderStatus({
+      companyId: guard.scope.companyId,
+      visibility: guard.scope.visibility,
+      materialOrderId,
+      status,
+      actorUserId: guard.session.userId,
+    });
+    return createWaflApiSuccess(result);
   } catch (error) {
-    return createMaterialOrderUnhandledErrorResponse(
+    return createWaflUnhandledApiError(
       error,
       "발주서 상태를 변경하지 못했습니다.",
       "MATERIAL_ORDER_STATUS_UPDATE_FAILED",

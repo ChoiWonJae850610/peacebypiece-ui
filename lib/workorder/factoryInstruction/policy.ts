@@ -1,7 +1,6 @@
 import "server-only";
 
-import { NextResponse } from "next/server";
-
+import { createWaflApiError } from "@/lib/api/waflApiServer";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import { isCompanyAdminSessionRole } from "@/lib/constants/sessionRoles";
 import { canEditBeforeOrder } from "@/lib/constants/workorderStates";
@@ -35,13 +34,10 @@ export function getWorkOrderFactoryInstructionEditPolicy(input: {
 
 export function createWorkOrderFactoryInstructionLockedResponse(
   policy: WorkOrderFactoryInstructionEditPolicy,
-): NextResponse {
-  return NextResponse.json(
-    {
-      ok: false,
-      code: policy.code ?? "WORKORDER_FACTORY_INSTRUCTION_LOCKED",
-      message: policy.message ?? "공장 전달사항을 변경할 수 없습니다.",
-    },
-    { status: 409 },
+) {
+  return createWaflApiError(
+    policy.message ?? "공장 전달사항을 변경할 수 없습니다.",
+    policy.code ?? "WORKORDER_FACTORY_INSTRUCTION_LOCKED",
+    409,
   );
 }
