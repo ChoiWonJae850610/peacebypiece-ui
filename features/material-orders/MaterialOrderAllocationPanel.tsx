@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { WaflSideWorkspacePanel, WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel } from "@/components/common/ui";
+import { WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel } from "@/components/common/ui";
 import { MaterialOrderAllocationCard } from "@/features/material-orders/components/MaterialOrderAllocationCards";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
@@ -32,7 +32,6 @@ type MaterialOrderAllocationPanelProps = {
   ) => void;
   onRetry: () => void;
   mobile?: boolean;
-  panel?: boolean;
 };
 
 export default function MaterialOrderAllocationPanel({
@@ -49,7 +48,6 @@ export default function MaterialOrderAllocationPanel({
   onAddMaterialToOrder,
   onRetry,
   mobile = false,
-  panel = true,
 }: MaterialOrderAllocationPanelProps) {
   const visibleCandidates = useMemo(
     () => {
@@ -139,9 +137,7 @@ export default function MaterialOrderAllocationPanel({
     </>
   );
 
-  if (!panel) return content;
-
-  return <WaflSideWorkspacePanel>{content}</WaflSideWorkspacePanel>;
+  return content;
 }
 
 type AllocationCandidateMaterialItem =

@@ -2,7 +2,7 @@ import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicke
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflPanelContentShell, WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
+import { AppSelect, AppSection, WaflButton, WaflPanelContentShell, WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryCards } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
@@ -52,7 +52,6 @@ type MaterialOrderDetailPanelProps = {
   workOrderCandidates: MaterialOrderWorkspaceWorkOrderCandidate[];
   mobile?: boolean;
   progressLayout?: WorkflowProgressPanelLayout;
-  panel?: boolean;
   loading?: boolean;
 };
 
@@ -81,7 +80,6 @@ export default function MaterialOrderDetailPanel({
   workOrderCandidates,
   mobile = false,
   progressLayout = "horizontal",
-  panel = true,
   loading = false,
 }: MaterialOrderDetailPanelProps) {
   const isCoreEditable = Boolean(
@@ -233,9 +231,7 @@ export default function MaterialOrderDetailPanel({
         />
       );
 
-  if (!panel) return content;
-
-  return <WaflDetailWorkspacePanel>{content}</WaflDetailWorkspacePanel>;
+  return content;
 }
 
 const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [

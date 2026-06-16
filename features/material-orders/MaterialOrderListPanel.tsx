@@ -8,7 +8,6 @@ import {
   WaflInput,
   WaflSelectableCard,
   WaflListPanelShell,
-  WaflListWorkspacePanel,
   type AppSelectOption,
 } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
@@ -39,7 +38,6 @@ import type {
 import type { MaterialOrderDraftSelectionType } from "@/lib/material-orders/materialOrderDraftCalculator";
 
 type MaterialOrderListPanelProps = {
-  variant?: "panel" | "drawer";
   orders: MaterialOrder[];
   selectedOrderId: string;
   loading: boolean;
@@ -51,7 +49,6 @@ type MaterialOrderListPanelProps = {
   onRetry: () => void;
   selectedDraftMaterialType: MaterialOrderDraftSelectionType;
   selectedDraftSupplierName: string | null;
-  panel?: boolean;
 };
 
 const MATERIAL_ORDER_STATUS_OPTIONS: Array<
@@ -91,7 +88,6 @@ function getMaterialOrderStatusSemanticClass(status: MaterialOrderStatus) {
 }
 
 export default function MaterialOrderListPanel({
-  variant = "panel",
   orders,
   selectedOrderId,
   loading,
@@ -103,7 +99,6 @@ export default function MaterialOrderListPanel({
   onRetry,
   selectedDraftMaterialType,
   selectedDraftSupplierName,
-  panel = true,
 }: MaterialOrderListPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -217,13 +212,7 @@ export default function MaterialOrderListPanel({
       {listItems}
     </WaflListPanelShell>
   );
-  if (variant === "drawer" || !panel) return listContent;
-
-  return (
-    <WaflListWorkspacePanel>
-      {listContent}
-    </WaflListWorkspacePanel>
-  );
+  return listContent;
 }
 
 function MaterialOrderListButton({

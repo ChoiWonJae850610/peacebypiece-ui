@@ -216,7 +216,6 @@ export default function MaterialOrderDraftEditor({
       onRetry={() => void refreshOrders()}
       selectedDraftMaterialType={materialType}
       selectedDraftSupplierName={selectedDraftSupplierName}
-      panel={useDrawerNavigation && !useTabletTwoPanel}
     />
   );
 
@@ -246,7 +245,6 @@ export default function MaterialOrderDraftEditor({
       workOrderCandidates={workOrderCandidates}
       mobile={deviceType === "mobile"}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
-      panel={useDrawerNavigation && !useTabletTwoPanel}
       loading={ordersLoading}
     />
   );
@@ -266,7 +264,6 @@ export default function MaterialOrderDraftEditor({
       onAddMaterialToOrder={handleAddMaterialToOrder}
       onRetry={() => void refreshWorkOrderCandidates()}
       mobile={deviceType === "mobile"}
-      panel={useDrawerNavigation && !useTabletTwoPanel}
     />
   );
 
@@ -283,7 +280,6 @@ export default function MaterialOrderDraftEditor({
           listDrawerCloseAria="발주서 목록 드로어 닫기"
           list={(
             <MaterialOrderListPanel
-              variant="drawer"
               orders={orders}
               selectedOrderId={selectedOrderId}
               loading={ordersLoading}
@@ -331,8 +327,7 @@ export default function MaterialOrderDraftEditor({
             >
               <div className="min-h-[72dvh] min-w-0">
                 <MaterialOrderListPanel
-                  variant="drawer"
-                  orders={orders}
+                      orders={orders}
                   selectedOrderId={selectedOrderId}
                   loading={ordersLoading}
                   errorMessage={ordersError}
