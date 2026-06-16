@@ -2,7 +2,7 @@ import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicke
 import { getTodayPbpLocalDateValue } from "@/lib/date/localDate";
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
-import { AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflPanelContentShell, WaflWorkspaceEmptyPanel, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
+import { AppSelect, AppSection, WaflButton, WaflDetailWorkspacePanel, WaflPanelContentShell, WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel, WAFL_PANEL_CONTENT_STACK_CLASS, WaflSummaryHeaderCard, WaflSummaryInfoCell, type AppSelectOption } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
 import { MaterialOrderSummaryCards } from "@/features/material-orders/components/MaterialOrderSummaryFooter";
@@ -53,6 +53,7 @@ type MaterialOrderDetailPanelProps = {
   mobile?: boolean;
   progressLayout?: WorkflowProgressPanelLayout;
   panel?: boolean;
+  loading?: boolean;
 };
 
 export default function MaterialOrderDetailPanel({
@@ -81,6 +82,7 @@ export default function MaterialOrderDetailPanel({
   mobile = false,
   progressLayout = "horizontal",
   panel = true,
+  loading = false,
 }: MaterialOrderDetailPanelProps) {
   const isCoreEditable = Boolean(
     selectedOrder &&
@@ -88,7 +90,13 @@ export default function MaterialOrderDetailPanel({
   );
   const dueDateEditable = isCoreEditable && !headerSaving;
 
-  const content = selectedOrder ? (
+  const content = loading ? (
+        <WaflWorkspaceLoadingPanel
+          title="발주서를 불러오는 중입니다."
+          description="발주서 기본 정보와 품목을 조회하고 있습니다."
+          variant="detail"
+        />
+      ) : selectedOrder ? (
         <WaflPanelContentShell>
           <div className={`${WAFL_PANEL_CONTENT_STACK_CLASS} flex-1`}>
           <WaflSummaryHeaderCard

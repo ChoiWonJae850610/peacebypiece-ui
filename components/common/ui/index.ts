@@ -127,3 +127,7 @@ export {
 } from "./WaflSummaryHeaderCard";
 export * from "./WaflEmptyWorkspaceState";
 export { default as WaflWorkspaceEmptyPanel } from "./WaflWorkspaceEmptyPanel";
+export {
+  default as WaflWorkspaceLoadingPanel,
+  type WaflWorkspaceLoadingPanelVariant,
+} from "./WaflWorkspaceLoadingPanel";

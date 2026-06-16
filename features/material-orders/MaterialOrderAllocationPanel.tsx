@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { WaflSideWorkspacePanel, WaflWorkspaceEmptyPanel } from "@/components/common/ui";
+import { WaflSideWorkspacePanel, WaflWorkspaceEmptyPanel, WaflWorkspaceLoadingPanel } from "@/components/common/ui";
 import { MaterialOrderAllocationCard } from "@/features/material-orders/components/MaterialOrderAllocationCards";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
@@ -24,6 +24,7 @@ type MaterialOrderAllocationPanelProps = {
   hasSelectedOrder: boolean;
   editable: boolean;
   loading: boolean;
+  workspaceLoading?: boolean;
   errorMessage: string | null;
   onAddMaterialToOrder: (
     workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
@@ -43,6 +44,7 @@ export default function MaterialOrderAllocationPanel({
   hasSelectedOrder,
   editable,
   loading,
+  workspaceLoading = false,
   errorMessage,
   onAddMaterialToOrder,
   onRetry,
@@ -79,7 +81,13 @@ export default function MaterialOrderAllocationPanel({
 
   const content = (
     <>
-      {!hasSelectedOrder ? (
+      {workspaceLoading ? (
+        <WaflWorkspaceLoadingPanel
+          variant="side"
+          title="발주서를 불러오는 중입니다."
+          description="발주 대상 작업지시서와 자재 정보를 준비하고 있습니다."
+        />
+      ) : !hasSelectedOrder ? (
         <WaflWorkspaceEmptyPanel
           title={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.title}
           description={MATERIAL_ORDER_EMPTY_STATE_COPY.selectTarget.description}

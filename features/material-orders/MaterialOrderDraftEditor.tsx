@@ -255,6 +255,7 @@ export default function MaterialOrderDraftEditor({
       mobile={deviceType === "mobile"}
       progressLayout={useStackedProgress ? "vertical" : "horizontal"}
       panel={!useThreePanel}
+      loading={ordersLoading}
     />
   );
 
@@ -268,6 +269,7 @@ export default function MaterialOrderDraftEditor({
       hasSelectedOrder={Boolean(selectedOrderId)}
       editable={selectedOrder?.status === "draft" || selectedOrder?.status === "rejected"}
       loading={workOrdersLoading}
+      workspaceLoading={ordersLoading}
       errorMessage={workOrdersError}
       onAddMaterialToOrder={handleAddMaterialToOrder}
       onRetry={() => void refreshWorkOrderCandidates()}
