@@ -2,24 +2,24 @@ import type { HTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-import AppCard, { type AppCardPadding, type AppCardVariant } from "./AppCard";
+import WaflCard, { type WaflCardPadding, type WaflCardVariant } from "./WaflCard";
 
-export type AppSectionVariant = AppCardVariant;
-export type AppSectionPadding = AppCardPadding;
+export type WaflSectionVariant = WaflCardVariant;
+export type WaflSectionPadding = WaflCardPadding;
 
-type AppSectionProps = HTMLAttributes<HTMLElement> & {
+type WaflSectionProps = HTMLAttributes<HTMLElement> & {
   title?: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
   children: ReactNode;
-  variant?: AppSectionVariant;
-  padding?: AppSectionPadding;
+  variant?: WaflSectionVariant;
+  padding?: WaflSectionPadding;
   cardClassName?: string;
   headerClassName?: string;
   bodyClassName?: string;
 };
 
-export default function AppSection({
+export default function WaflSection({
   title,
   description,
   action,
@@ -31,10 +31,10 @@ export default function AppSection({
   headerClassName,
   bodyClassName,
   ...props
-}: AppSectionProps) {
+}: WaflSectionProps) {
   return (
     <section data-wafl-component="section" className={cn("min-w-0", className)} {...props}>
-      <AppCard className={cardClassName} variant={variant} padding={padding}>
+      <WaflCard className={cardClassName} variant={variant} padding={padding}>
         {title || description || action ? (
           <div className={cn("mb-4 flex min-w-0 items-start justify-between gap-3", headerClassName)}>
             <div className="min-w-0">
@@ -45,7 +45,7 @@ export default function AppSection({
           </div>
         ) : null}
         <div className={cn("min-w-0", bodyClassName)}>{children}</div>
-      </AppCard>
+      </WaflCard>
     </section>
   );
 }

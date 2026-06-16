@@ -1,5 +1,5 @@
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
@@ -271,7 +271,7 @@ export function buildMemberDirectoryColumns({
             className="flex flex-wrap items-center justify-center gap-1.5"
             onClick={(event) => event.stopPropagation()}
           >
-            <AppSelect
+            <WaflSelect
               value={getJoinRequestReviewRoleId(row.joinRequest)}
               onValueChange={(value) =>
                 onRoleDraftChange(

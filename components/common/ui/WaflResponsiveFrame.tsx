@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 type ResponsiveDevice = "mobile" | "tablet" | "desktop";
 
-type AppResponsiveWorkspaceProps = HTMLAttributes<HTMLDivElement> & {
+type WaflResponsiveWorkspaceProps = HTMLAttributes<HTMLDivElement> & {
   device: ResponsiveDevice;
 };
 
@@ -14,11 +14,11 @@ const workspaceClassMap: Record<ResponsiveDevice, string> = {
   desktop: "min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-1",
 };
 
-export function AppResponsiveWorkspace({ device, className, ...props }: AppResponsiveWorkspaceProps) {
+export function WaflResponsiveWorkspace({ device, className, ...props }: WaflResponsiveWorkspaceProps) {
   return <div className={cn(workspaceClassMap[device], className)} {...props} />;
 }
 
-type AppResponsiveSurfaceProps = HTMLAttributes<HTMLDivElement> & {
+type WaflResponsiveSurfaceProps = HTMLAttributes<HTMLDivElement> & {
   device: Exclude<ResponsiveDevice, "desktop">;
   children: ReactNode;
 };
@@ -28,6 +28,6 @@ const surfaceClassMap: Record<Exclude<ResponsiveDevice, "desktop">, string> = {
   tablet: "min-w-0 overflow-x-hidden wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-none",
 };
 
-export function AppResponsiveSurface({ device, className, ...props }: AppResponsiveSurfaceProps) {
+export function WaflResponsiveSurface({ device, className, ...props }: WaflResponsiveSurfaceProps) {
   return <div className={cn(surfaceClassMap[device], className)} {...props} />;
 }

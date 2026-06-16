@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import { WaflButton } from "@/components/common/ui/WaflButton";
 import {
   WaflInfoBox,
@@ -142,7 +142,7 @@ export default function AdminMemberPermissionDetailBody({
             <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
               {t("memberManagement.detailModal.fields.status", "상태")}
             </span>
-            <AppSelect
+            <WaflSelect
               value={draft.status}
               onValueChange={(value) =>
                 onStatusChange(value as AdminCompanyMemberRecord["status"])
@@ -211,7 +211,7 @@ export default function AdminMemberPermissionDetailBody({
             <span className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted">
               {t("memberManagement.detailModal.fields.role", "역할")}
             </span>
-            <AppSelect
+            <WaflSelect
               value={draft.roleTemplateCode}
               onValueChange={(value) =>
                 onRoleTemplateChange(value as MemberPermissionRoleTemplateCode)

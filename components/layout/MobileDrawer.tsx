@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSelect, SectionCountBadge, WaflMobileListDrawer } from "@/components/common/ui";
+import { WaflSelect, SectionCountBadge, WaflMobileListDrawer } from "@/components/common/ui";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
@@ -94,7 +94,7 @@ export default function MobileDrawer({
         ) : null}
       </div>
       <div className="mt-2 grid grid-cols-2 gap-1.5">
-        <AppSelect
+        <WaflSelect
           value={statusFilter}
           onValueChange={(value) => onStatusFilterChange(value as WorkOrderListStatusFilter)}
           options={statusOptions}
@@ -102,7 +102,7 @@ export default function MobileDrawer({
           size="sm"
           ariaLabel={controlsCopy.statusFilterAria}
         />
-        <AppSelect
+        <WaflSelect
           value={sort}
           onValueChange={(value) => onSortChange(value as WorkOrderListSort)}
           options={sortOptions}

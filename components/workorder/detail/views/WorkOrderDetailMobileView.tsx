@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { AppSegmentedTabs, WaflMobileDetailContent, type AppSegmentedTabItem } from "@/components/common/ui";
+import { WaflSegmentedTabs, WaflMobileDetailContent, type WaflSegmentedTabItem } from "@/components/common/ui";
 import WorkOrderDetailSectionStack from "@/components/workorder/detail/shared/WorkOrderDetailSectionStack";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailMobileCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileCostSummarySection";
@@ -24,8 +24,8 @@ export default function WorkOrderDetailMobileView({
   const { i18n } = useI18n();
   const [activePanel, setActivePanel] = useState<WorkOrderMobilePanelKey>("summary");
   const detailTabs = i18n.workorder.ui.layout.mobileDrawer.detailTabs;
-  const tabs = useMemo<Array<AppSegmentedTabItem<WorkOrderMobilePanelKey>>>(() => {
-    const items: Array<AppSegmentedTabItem<WorkOrderMobilePanelKey>> = [
+  const tabs = useMemo<Array<WaflSegmentedTabItem<WorkOrderMobilePanelKey>>>(() => {
+    const items: Array<WaflSegmentedTabItem<WorkOrderMobilePanelKey>> = [
       { key: "summary", label: detailTabs.basic },
       { key: "order", label: detailTabs.order },
     ];
@@ -41,7 +41,7 @@ export default function WorkOrderDetailMobileView({
 
   return (
     <WaflMobileDetailContent>
-      <AppSegmentedTabs
+      <WaflSegmentedTabs
         items={tabs}
         value={resolvedPanel}
         onChange={setActivePanel}

@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 import {
-  AppBadge,
-  AppCard,
+  WaflBadge,
+  WaflCard,
   SectionCountBadge,
   WaflAddCardButton,
   WaflAddIconBubble,
@@ -33,11 +33,11 @@ function MaterialTypeBadge({ item }: { item: Material }) {
   const { locale } = useI18n();
 
   return (
-    <AppBadge tone="neutral" size="sm">
+    <WaflBadge tone="neutral" size="sm">
       {getTranslatedWorkOrderSelectDisplayValue(item.type, (value) =>
         translateWorkOrderDisplayText(value, locale),
       )}
-    </AppBadge>
+    </WaflBadge>
   );
 }
 
@@ -102,7 +102,7 @@ export default function MaterialSection({
           <SectionCountBadge>{materials.length}건</SectionCountBadge>
         </div>
       </div>
-      <AppCard
+      <WaflCard
         className="space-y-2 xl:max-h-[320px] xl:overflow-auto xl:p-4"
         padding="sm"
       >
@@ -170,7 +170,7 @@ export default function MaterialSection({
             <WaflAddIconBubble />
           </WaflAddCardButton>
         ) : null}
-      </AppCard>
+      </WaflCard>
       {!locked ? (
         <WorkOrderMaterialEditSheet
           open={sheetOpen}

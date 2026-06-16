@@ -5,40 +5,40 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-import AppButton from "./AppButton";
+import { WaflButton } from "./WaflButton";
 
-export type AppSheetSide = "right" | "left" | "bottom";
-export type AppSheetSize = "sm" | "md" | "lg" | "full";
-export type AppSheetPresentation = "sheet" | "modal";
+export type WaflSheetSide = "right" | "left" | "bottom";
+export type WaflSheetSize = "sm" | "md" | "lg" | "full";
+export type WaflSheetPresentation = "sheet" | "modal";
 
-const sideClassMap: Record<AppSheetSide, string> = {
+const sideClassMap: Record<WaflSheetSide, string> = {
   right: "inset-y-0 right-0 h-full border-l",
   left: "inset-y-0 left-0 h-full border-r",
   bottom: "inset-x-0 bottom-0 max-h-[min(88dvh,calc(100dvh-env(safe-area-inset-top)-0.75rem))] rounded-t-[var(--pbp-radius-wafl)] border-t",
 };
 
-const sizeClassMap: Record<AppSheetSize, string> = {
+const sizeClassMap: Record<WaflSheetSize, string> = {
   sm: "w-full sm:max-w-sm",
   md: "w-full sm:max-w-md",
   lg: "w-full sm:max-w-2xl",
   full: "w-full",
 };
 
-type AppSheetProps = {
+type WaflSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: ReactNode;
   description?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  side?: AppSheetSide;
-  size?: AppSheetSize;
+  side?: WaflSheetSide;
+  size?: WaflSheetSize;
   className?: string;
   contentClassName?: string;
-  presentation?: AppSheetPresentation;
+  presentation?: WaflSheetPresentation;
 };
 
-export default function AppSheet({
+export default function WaflSheet({
   open,
   onOpenChange,
   title,
@@ -50,7 +50,7 @@ export default function AppSheet({
   className,
   contentClassName,
   presentation = "sheet",
-}: AppSheetProps) {
+}: WaflSheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -82,9 +82,9 @@ export default function AppSheet({
               ) : null}
             </div>
             <Dialog.Close asChild>
-              <AppButton variant="ghost" size="sm" className="shrink-0 wafl-shape-control px-3" aria-label="닫기">
+              <WaflButton variant="ghost" size="sm" className="shrink-0 wafl-shape-control px-3" aria-label="닫기">
                 닫기
-              </AppButton>
+              </WaflButton>
             </Dialog.Close>
           </div>
           <div className={cn("min-h-0 flex-1 overscroll-contain overflow-y-auto px-5 py-4", contentClassName)}>{children}</div>

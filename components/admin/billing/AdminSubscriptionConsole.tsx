@@ -2,7 +2,7 @@ import {
   AdminButton,
   AdminLinkButton,
 } from "@/components/admin/common/AdminButton";
-import AppBadge from "@/components/common/ui/AppBadge";
+import WaflBadge from "@/components/common/ui/WaflBadge";
 import { WaflInfoBox } from "@/components/common/ui/WaflForm";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import type { AdminSubscriptionViewModel } from "@/lib/admin/billing/adminSubscription.presentation";
@@ -33,9 +33,9 @@ export default function AdminSubscriptionConsole({
               {viewModel.description}
             </p>
           </div>
-          <AppBadge size="sm" tone="brand">
+          <WaflBadge size="sm" tone="brand">
             {viewModel.statusLabel}
-          </AppBadge>
+          </WaflBadge>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -94,9 +94,9 @@ export default function AdminSubscriptionConsole({
                 <h3 className="text-base font-bold pbp-text-primary">
                   {plan.name}
                 </h3>
-                <AppBadge size="xs" tone="brand">
+                <WaflBadge size="xs" tone="brand">
                   {plan.statusLabel}
-                </AppBadge>
+                </WaflBadge>
               </div>
               <p className="mt-3 text-xl font-bold pbp-text-primary">
                 {plan.priceLabel}

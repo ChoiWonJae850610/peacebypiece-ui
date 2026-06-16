@@ -4,7 +4,7 @@ import {
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
   ADMIN_STORAGE_VALUE_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
-import AppBadge from "@/components/common/ui/AppBadge";
+import WaflBadge from "@/components/common/ui/WaflBadge";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import type { AdminFileTypeDistributionItem } from "@/lib/admin/files/types";
 import { formatCountWithUnit } from "@/lib/admin/files/storageSummaryPresentation";
@@ -49,9 +49,9 @@ export function FileTypeChartCard({
             {t("filesSummary.fileType", "파일 유형")}
           </h3>
         </div>
-        <AppBadge tone="neutral" size="sm">
+        <WaflBadge tone="neutral" size="sm">
           {formatCountWithUnit(total, t)}
-        </AppBadge>
+        </WaflBadge>
       </div>
       <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 sm:flex-row sm:gap-7">
         <div

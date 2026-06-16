@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AppBadge, type AppBadgeSize, type AppBadgeTone } from "@/components/common/ui";
+import { WaflBadge, type WaflBadgeSize, type WaflBadgeTone } from "@/components/common/ui";
 
 export type AdminStatusBadgeTone =
   | "neutral"
@@ -27,7 +27,7 @@ type AdminStatusBadgeProps = {
   title?: string;
 };
 
-const toneMap: Record<AdminStatusBadgeTone, AppBadgeTone> = {
+const toneMap: Record<AdminStatusBadgeTone, WaflBadgeTone> = {
   neutral: "neutral",
   brand: "brand",
   primary: "brand",
@@ -44,7 +44,7 @@ const toneMap: Record<AdminStatusBadgeTone, AppBadgeTone> = {
   inverse: "inverse",
 };
 
-const sizeMap: Record<AdminStatusBadgeSize, AppBadgeSize> = {
+const sizeMap: Record<AdminStatusBadgeSize, WaflBadgeSize> = {
   xs: "xs",
   sm: "sm",
 };
@@ -57,8 +57,8 @@ export function AdminStatusBadge({
   title,
 }: AdminStatusBadgeProps) {
   return (
-    <AppBadge title={title} tone={toneMap[tone]} size={sizeMap[size]} className={className}>
+    <WaflBadge title={title} tone={toneMap[tone]} size={sizeMap[size]} className={className}>
       {children}
-    </AppBadge>
+    </WaflBadge>
   );
 }

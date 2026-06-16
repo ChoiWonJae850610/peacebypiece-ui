@@ -9,7 +9,7 @@ import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/work
 import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
-import { AppSelect, WaflInput, WaflTextarea } from "@/components/common/ui";
+import { WaflSelect, WaflInput, WaflTextarea } from "@/components/common/ui";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 
 export default function OrderInspectionModal({
@@ -108,7 +108,7 @@ export default function OrderInspectionModal({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
               <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.factoryLabel}</div>
-              <AppSelect
+              <WaflSelect
                 value={resolvedFactory}
                 onValueChange={handleFactoryChange}
                 options={factoryOptions.map((option) => ({
@@ -121,7 +121,7 @@ export default function OrderInspectionModal({
             </label>
             <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
               <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.orderTypeLabel}</div>
-              <AppSelect
+              <WaflSelect
                 value={selectedEntry.id}
                 onValueChange={setSelectedOrderId}
                 options={filteredEntries.map((item) => ({

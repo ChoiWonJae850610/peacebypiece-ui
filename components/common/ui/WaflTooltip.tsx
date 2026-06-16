@@ -5,25 +5,25 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type AppTooltipSide = "top" | "right" | "bottom" | "left";
+type WaflTooltipSide = "top" | "right" | "bottom" | "left";
 
-type AppTooltipProps = {
+type WaflTooltipProps = {
   content: ReactNode;
   children: ReactNode;
-  side?: AppTooltipSide;
+  side?: WaflTooltipSide;
   delayDuration?: number;
   disabled?: boolean;
   className?: string;
 };
 
-export default function AppTooltip({
+export default function WaflTooltip({
   content,
   children,
   side = "top",
   delayDuration = 250,
   disabled = false,
   className,
-}: AppTooltipProps) {
+}: WaflTooltipProps) {
   if (disabled || !content) return <>{children}</>;
 
   return (

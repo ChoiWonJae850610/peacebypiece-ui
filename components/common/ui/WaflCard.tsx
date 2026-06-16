@@ -2,7 +2,7 @@ import { createElement, type HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-export type AppCardVariant =
+export type WaflCardVariant =
   | "surface"
   | "elevated"
   | "flat"
@@ -10,10 +10,10 @@ export type AppCardVariant =
   | "compact"
   | "default"
   | "subtle";
-export type AppCardPadding = "none" | "sm" | "md" | "lg";
-type AppCardElement = "div" | "section" | "article" | "header";
+export type WaflCardPadding = "none" | "sm" | "md" | "lg";
+type WaflCardElement = "div" | "section" | "article" | "header";
 
-const variantClassMap: Record<AppCardVariant, string> = {
+const variantClassMap: Record<WaflCardVariant, string> = {
   surface: "wafl-shape-surface",
   elevated: "wafl-shape-surface shadow-none",
   flat: "wafl-shape-surface shadow-none",
@@ -24,20 +24,20 @@ const variantClassMap: Record<AppCardVariant, string> = {
   subtle: "wafl-shape-surface pbp-card-muted",
 };
 
-const paddingClassMap: Record<AppCardPadding, string> = {
+const paddingClassMap: Record<WaflCardPadding, string> = {
   none: "p-0",
   sm: "p-3",
   md: "p-4",
   lg: "p-5",
 };
 
-type AppCardProps = HTMLAttributes<HTMLElement> & {
-  as?: AppCardElement;
-  variant?: AppCardVariant;
-  padding?: AppCardPadding;
+type WaflCardProps = HTMLAttributes<HTMLElement> & {
+  as?: WaflCardElement;
+  variant?: WaflCardVariant;
+  padding?: WaflCardPadding;
 };
 
-export default function AppCard({ as: Component = "div", className, variant = "surface", padding = "md", ...props }: AppCardProps) {
+export default function WaflCard({ as: Component = "div", className, variant = "surface", padding = "md", ...props }: WaflCardProps) {
   return createElement(Component, {
     "data-wafl-component": "card",
     className: cn("pbp-card min-w-0", variantClassMap[variant], paddingClassMap[padding], className),

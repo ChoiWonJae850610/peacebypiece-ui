@@ -11,7 +11,7 @@ import {
   WaflButton,
   WaflDesktopWorkspaceFrame,
   WaflTabletWorkspaceFrame,
-  type AppSegmentedTabItem,
+  type WaflSegmentedTabItem,
 } from "@/components/common/ui";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
@@ -309,7 +309,7 @@ export default function MaterialOrderDraftEditor({
 
   if (useDrawerNavigation) {
     const mobileToolTabs: Array<
-      AppSegmentedTabItem<MaterialOrderMobileToolKey>
+      WaflSegmentedTabItem<MaterialOrderMobileToolKey>
     > = [
       { key: "workorders", label: "작업지시서" },
       { key: "schedule", label: "PDF·납기" },

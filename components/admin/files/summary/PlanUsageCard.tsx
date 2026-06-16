@@ -1,5 +1,5 @@
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import AppBadge from "@/components/common/ui/AppBadge";
+import WaflBadge from "@/components/common/ui/WaflBadge";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import {
   ADMIN_STORAGE_LABEL_CLASS,
@@ -48,15 +48,15 @@ export function PlanUsageCard({
             {t("filesSummary.storagePlanLabel", "요금제 용량")}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            <AppBadge tone="neutral" size="sm">
+            <WaflBadge tone="neutral" size="sm">
               {planName}
-            </AppBadge>
-            <AppBadge
+            </WaflBadge>
+            <WaflBadge
               tone={isDanger ? "danger" : isCaution ? "warning" : "success"}
               size="sm"
             >
               {statusLabel}
-            </AppBadge>
+            </WaflBadge>
           </div>
         </div>
         <AdminButton

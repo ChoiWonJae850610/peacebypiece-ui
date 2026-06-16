@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 
-import { AppSheet, WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS, WaflButton, WaflSidePanelShell, WaflWorkspacePanel } from "@/components/common/ui";
+import { WaflSheet, WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS, WaflButton, WaflSidePanelShell, WaflWorkspacePanel } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 type TabletSplitLayoutProps = {
@@ -59,7 +59,7 @@ export default function TabletSplitLayout({
           </WaflButton>
         </WaflWorkspacePanel>
 
-        <AppSheet
+        <WaflSheet
           open={sidePanelOpen}
           onOpenChange={setSidePanelOpen}
           title={sidePanelTitle}
@@ -69,7 +69,7 @@ export default function TabletSplitLayout({
           contentClassName="p-0 pb-[calc(1rem+env(safe-area-inset-bottom))]"
         >
           <WaflSidePanelShell>{sidePanel}</WaflSidePanelShell>
-        </AppSheet>
+        </WaflSheet>
       </div>
     </main>
   );

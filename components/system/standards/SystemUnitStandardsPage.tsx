@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
@@ -250,7 +250,7 @@ export default function SystemUnitStandardsPage() {
                   placeholder="시스템 코드 예: piece"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <AppSelect
+                <WaflSelect
                   value={form.category}
                   onValueChange={(value) => setForm((current) => ({ ...current, category: value }))}
                   options={Object.entries(SYSTEM_UNIT_STANDARD_CATEGORY_LABELS).map(([value, label]) => ({ value, label }))}
@@ -321,7 +321,7 @@ export default function SystemUnitStandardsPage() {
                             onChange={(event) => setEditingForm((current) => current ? { ...current, englishCode: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <AppSelect
+                          <WaflSelect
                             value={editingForm.category}
                             onValueChange={(value) => setEditingForm((current) => current ? { ...current, category: value } : current)}
                             options={Object.entries(SYSTEM_UNIT_STANDARD_CATEGORY_LABELS).map(([value, label]) => ({ value, label }))}

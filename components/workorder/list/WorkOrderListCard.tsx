@@ -3,7 +3,7 @@
 import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
-import { AppBadge, WaflCardButton, WaflSelectableCard } from "@/components/common/ui";
+import { WaflBadge, WaflCardButton, WaflSelectableCard } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { useI18n } from "@/lib/i18n";
 import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -57,14 +57,14 @@ export default function WorkOrderListCard({
         <WaflCardButton onClick={() => onClick(workOrder.id)}>
           <div className="min-w-0 truncate text-[15px] font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <AppBadge
+            <WaflBadge
               tone="neutral"
               size="sm"
               className={`pbp-workorder-status-badge h-6 gap-2 transition-colors duration-150 ease-out ${active ? "pbp-workorder-status-active" : getWorkOrderStatusBadgeSemanticClass(state)}`}
             >
               <span className="pbp-workorder-status-dot h-2 w-2 rounded-full" aria-hidden="true" />
               {stateLabel}
-            </AppBadge>
+            </WaflBadge>
           </div>
           <div className="pbp-workorder-list-muted mt-2 min-w-0 space-y-0.5 text-[11px] leading-4">
             <div className="truncate" title={categoryPath}>{categoryPath}</div>

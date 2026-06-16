@@ -1,5 +1,5 @@
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -182,7 +182,7 @@ export default function SystemAuditLogsDesignPage({
               placeholder="요약, 이벤트 코드, 대상 ID 검색"
               className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
             />
-            <AppSelect
+            <WaflSelect
               name="targetType"
               defaultValue={activeTargetType}
               options={SYSTEM_AUDIT_TARGET_OPTIONS.map((option) => ({
@@ -191,7 +191,7 @@ export default function SystemAuditLogsDesignPage({
               }))}
               ariaLabel="감사 로그 대상 유형"
             />
-            <AppSelect
+            <WaflSelect
               name="severity"
               defaultValue={activeSeverity}
               options={SYSTEM_AUDIT_SEVERITY_OPTIONS.map((option) => ({

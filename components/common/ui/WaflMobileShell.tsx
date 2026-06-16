@@ -3,8 +3,8 @@
 import { useRef, type ReactNode, type Ref } from "react";
 
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import AppSegmentedTabs, { type AppSegmentedTabItem } from "./AppSegmentedTabs";
-import AppSheet, { type AppSheetPresentation, type AppSheetSize } from "./AppSheet";
+import WaflSegmentedTabs, { type WaflSegmentedTabItem } from "./WaflSegmentedTabs";
+import WaflSheet, { type WaflSheetPresentation, type WaflSheetSize } from "./WaflSheet";
 
 import { cn } from "@/lib/utils";
 
@@ -232,16 +232,16 @@ export type WaflMobileTabbedActionSheetProps<Key extends string> = {
   onOpenChange: (open: boolean) => void;
   title: ReactNode;
   description?: ReactNode;
-  items: Array<AppSegmentedTabItem<Key>>;
+  items: Array<WaflSegmentedTabItem<Key>>;
   value: Key;
   onChange: (value: Key) => void;
   ariaLabel: string;
   children: ReactNode;
-  size?: AppSheetSize;
+  size?: WaflSheetSize;
   contentClassName?: string;
   bodyClassName?: string;
   itemClassName?: string;
-  presentation?: AppSheetPresentation;
+  presentation?: WaflSheetPresentation;
 };
 
 export function WaflMobileTabbedActionSheet<Key extends string>({
@@ -261,7 +261,7 @@ export function WaflMobileTabbedActionSheet<Key extends string>({
   presentation = "sheet",
 }: WaflMobileTabbedActionSheetProps<Key>) {
   return (
-    <AppSheet
+    <WaflSheet
       open={open}
       onOpenChange={onOpenChange}
       title={title}
@@ -272,7 +272,7 @@ export function WaflMobileTabbedActionSheet<Key extends string>({
       presentation={presentation}
     >
       <div className={cn("space-y-3", bodyClassName)}>
-        <AppSegmentedTabs
+        <WaflSegmentedTabs
           items={items}
           value={value}
           onChange={onChange}
@@ -281,6 +281,6 @@ export function WaflMobileTabbedActionSheet<Key extends string>({
         />
         <div className="min-w-0 overflow-x-hidden">{children}</div>
       </div>
-    </AppSheet>
+    </WaflSheet>
   );
 }

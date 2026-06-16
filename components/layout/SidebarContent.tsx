@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
-import { AppSelect, WaflButton, WaflInput, WaflListPanelShell, WaflStateBlock, getWaflButtonClassName } from "@/components/common/ui";
+import { WaflSelect, WaflButton, WaflInput, WaflListPanelShell, WaflStateBlock, getWaflButtonClassName } from "@/components/common/ui";
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 import {
   WAFL_LIST_CLEAR_BUTTON_CLASS,
@@ -310,7 +310,7 @@ export default function SidebarContent({
           )}
           filters={(
               <div className="grid grid-cols-2 gap-2">
-                <AppSelect
+                <WaflSelect
                   value={statusFilter}
                   onValueChange={(value) => onStatusFilterChange(value as WorkOrderListStatusFilter)}
                   options={statusOptions}
@@ -319,7 +319,7 @@ export default function SidebarContent({
                   ariaLabel={controlsUi.statusFilterAria}
                   triggerClassName={WAFL_LIST_SELECT_TRIGGER_CLASS}
                 />
-                <AppSelect
+                <WaflSelect
                   value={sort}
                   onValueChange={(value) => onSortChange(value as WorkOrderListSort)}
                   options={sortOptions}

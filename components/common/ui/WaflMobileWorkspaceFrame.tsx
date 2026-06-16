@@ -3,8 +3,8 @@
 import { useMemo, type ReactNode, type Ref } from "react";
 
 import { useWorkspaceToolState } from "@/lib/hooks/workspace/useWorkspaceToolState";
-import type { AppSheetPresentation } from "./AppSheet";
-import type { AppSegmentedTabItem } from "./AppSegmentedTabs";
+import type { WaflSheetPresentation } from "./WaflSheet";
+import type { WaflSegmentedTabItem } from "./WaflSegmentedTabs";
 import {
   WaflMobileContentSection,
   WaflMobileFloatingActionButton,
@@ -26,11 +26,11 @@ type WaflMobileWorkspaceFrameProps<Key extends string> = {
   actionIcon?: ReactNode;
   actionDisabled?: boolean;
   toolTitle: ReactNode | ((activeKey: Key) => ReactNode);
-  toolTabs: Array<AppSegmentedTabItem<Key>>;
+  toolTabs: Array<WaflSegmentedTabItem<Key>>;
   defaultTool: Key;
   toolAriaLabel: string;
   renderTool: (activeKey: Key) => ReactNode;
-  presentation?: AppSheetPresentation;
+  presentation?: WaflSheetPresentation;
   sheetContentClassName?: string;
   contentClassName?: string;
   toolOpen?: boolean;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import {
-  AppBadge,
+  WaflBadge,
   WaflAddCardButton,
   WaflAddIconBubble,
   WaflButton,
@@ -100,11 +100,11 @@ function MaterialListCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <AppBadge tone="neutral" size="sm">
+          <WaflBadge tone="neutral" size="sm">
             {getTranslatedWorkOrderSelectDisplayValue(item.type, (value) =>
               translateWorkOrderDisplayText(value, locale),
             )}
-          </AppBadge>
+          </WaflBadge>
           <div className="mt-2 truncate text-sm font-semibold pbp-text-primary">
             {title}
           </div>

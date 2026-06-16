@@ -4,7 +4,7 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 
 import { cn } from "@/lib/utils";
 
-type AppNumberInputProps = {
+type WaflNumberInputProps = {
   value: number;
   onValueChange: (value: number) => void;
   id?: string;
@@ -47,7 +47,7 @@ function numberToDisplay(value: number) {
   return normalized.toLocaleString();
 }
 
-export default function AppNumberInput({
+export default function WaflNumberInput({
   value,
   onValueChange,
   id,
@@ -58,7 +58,7 @@ export default function AppNumberInput({
   onBeforeInteract: _onBeforeInteract,
   component = "number-input",
   disabled = false,
-}: AppNumberInputProps) {
+}: WaflNumberInputProps) {
   const [focused, setFocused] = useState(false);
   const [displayValue, setDisplayValue] = useState(() => numberToDisplay(value));
 

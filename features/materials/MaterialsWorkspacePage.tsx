@@ -6,7 +6,7 @@ import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import {
   MATERIAL_KIND_DESCRIPTIONS,
   MATERIAL_KIND_LABELS,
@@ -157,7 +157,7 @@ function MaterialEditor({
       <div className="grid gap-3 lg:grid-cols-[0.8fr_1fr_1.2fr_0.8fr_0.8fr]">
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           구분
-          <AppSelect
+          <WaflSelect
             value={draft.kind}
             onValueChange={(value) => onChange({ ...draft, kind: value as MaterialKind })}
             options={[
@@ -179,7 +179,7 @@ function MaterialEditor({
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           단위
-          <AppSelect
+          <WaflSelect
             value={draft.unit}
             onValueChange={(value) => onChange({ ...draft, unit: value as MaterialUnit })}
             options={Object.entries(MATERIAL_UNIT_LABELS).map(([value, label]) => ({ value, label }))}
@@ -190,7 +190,7 @@ function MaterialEditor({
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold pbp-text-subtle">
           상태
-          <AppSelect
+          <WaflSelect
             value={draft.lifecycleStatus}
             onValueChange={(value) => onChange({ ...draft, lifecycleStatus: value as MaterialLifecycleStatus })}
             options={Object.entries(MATERIAL_LIFECYCLE_STATUS_LABELS).map(([value, label]) => ({ value, label }))}

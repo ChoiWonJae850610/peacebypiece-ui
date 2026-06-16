@@ -33,7 +33,7 @@ export default function MaterialOrderCleanRoomModal({
               새 최소 모달 테스트
             </p>
             <p className="mt-1 text-xs text-slate-600">
-              공통 모달, AppSheet, focus trap, viewport 보정을 사용하지 않습니다.
+              공통 모달, WaflSheet, focus trap, viewport 보정을 사용하지 않습니다.
             </p>
           </div>
           <button

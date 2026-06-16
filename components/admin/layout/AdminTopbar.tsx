@@ -6,7 +6,7 @@ import LogoutConfirmModal from "@/components/common/navigation/LogoutConfirmModa
 import { showWaflLoadingToast } from "@/components/common/ToastMessage";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
-import { AppBadge, WaflButton, WaflLinkButton, WaflWorkspacePanel } from "@/components/common/ui";
+import { WaflBadge, WaflButton, WaflLinkButton, WaflWorkspacePanel } from "@/components/common/ui";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminTopbarProps = {
@@ -113,8 +113,8 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">{displayCompanyName}</AppBadge>
-            <AppBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">v{appVersion}</AppBadge>
+            <WaflBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">{displayCompanyName}</WaflBadge>
+            <WaflBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">v{appVersion}</WaflBadge>
           </div>
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--pbp-text-primary)] sm:text-2xl">{localizedTitle}</h1>
         </div>

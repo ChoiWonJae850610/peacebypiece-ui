@@ -1,4 +1,4 @@
-import { AppBadge, AppCard } from "@/components/common/ui";
+import { WaflBadge, WaflCard } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 
 export type WorkOrderDetailVisualSummaryProps = {
@@ -51,11 +51,11 @@ export default function WorkOrderDetailVisualSummary({
   return (
     <div className="mt-4 grid gap-2 md:grid-cols-3">
       {cards.map((card) => (
-        <AppCard key={card.label} variant="subtle" padding="sm">
-          <AppBadge tone="strong" size="sm">{card.label}</AppBadge>
+        <WaflCard key={card.label} variant="subtle" padding="sm">
+          <WaflBadge tone="strong" size="sm">{card.label}</WaflBadge>
           <div className="mt-2 text-sm font-semibold pbp-text-primary">{card.value}</div>
           <div className="mt-0.5 truncate text-[11px] pbp-text-subtle">{card.description}</div>
-        </AppCard>
+        </WaflCard>
       ))}
     </div>
   );

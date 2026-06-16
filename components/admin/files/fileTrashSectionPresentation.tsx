@@ -8,7 +8,7 @@ import {
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
   ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
-import { AppBadge, WaflSurface, getWaflActionButtonClassName, type WaflActionButtonTone } from "@/components/common/ui";
+import { WaflBadge, WaflSurface, getWaflActionButtonClassName, type WaflActionButtonTone } from "@/components/common/ui";
 
 type TrashActionTone = "neutral" | "danger" | "dangerSolid";
 
@@ -77,9 +77,9 @@ export function WorkOrderStageInline({
             {getLocalizedWorkOrderStageLabel(statusLabel, t)}
           </p>
         </div>
-        <AppBadge tone="neutral" size="xs">
+        <WaflBadge tone="neutral" size="xs">
           {t("filesList.workorderStage.deletedAtStage", "삭제 당시")}
-        </AppBadge>
+        </WaflBadge>
       </div>
       <div className="mt-4 grid grid-cols-5 items-start gap-1.5">
         {WORKORDER_STAGE_STEPS.map((step, index) => {

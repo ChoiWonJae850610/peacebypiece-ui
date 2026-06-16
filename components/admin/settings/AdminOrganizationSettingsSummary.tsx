@@ -1,5 +1,5 @@
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import AppBadge, { type AppBadgeTone } from "@/components/common/ui/AppBadge";
+import WaflBadge, { type WaflBadgeTone } from "@/components/common/ui/WaflBadge";
 import { WaflInfoBox } from "@/components/common/ui/WaflForm";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import {
@@ -23,7 +23,7 @@ function formatSummaryValue(
   return `${value}${units[unit]}`;
 }
 
-function getStatusTone(status: "active" | "fixed" | "planned"): AppBadgeTone {
+function getStatusTone(status: "active" | "fixed" | "planned"): WaflBadgeTone {
   if (status === "active") return "success";
   if (status === "fixed") return "neutral";
   return "warning";
@@ -42,12 +42,12 @@ export default function AdminOrganizationSettingsSummary({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <AppBadge size="sm" tone="inverse">
+              <WaflBadge size="sm" tone="inverse">
                 {text.organization.badge}
-              </AppBadge>
-              <AppBadge size="sm" tone="inverse">
+              </WaflBadge>
+              <WaflBadge size="sm" tone="inverse">
                 {companyName}
-              </AppBadge>
+              </WaflBadge>
             </div>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight">
               {text.organization.title}
@@ -106,9 +106,9 @@ export default function AdminOrganizationSettingsSummary({
                     <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">
                       {copy.title}
                     </p>
-                    <AppBadge size="xs" tone={getStatusTone(card.status)}>
+                    <WaflBadge size="xs" tone={getStatusTone(card.status)}>
                       {text.organization.statusLabels[card.status]}
-                    </AppBadge>
+                    </WaflBadge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
                     {copy.description}

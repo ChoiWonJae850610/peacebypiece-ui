@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import SystemShell from "@/components/system/layout/SystemShell";
@@ -602,7 +602,7 @@ export default function SystemProductTemplateStandardsPage() {
             <article className={SYSTEM_PANEL_CLASS}>
               <h2 className={SYSTEM_SECTION_TITLE_CLASS}>분류 추가</h2>
               <div className="mt-4 grid gap-2">
-                <AppSelect
+                <WaflSelect
                   value={selectedTemplateId}
                   onValueChange={setSelectedTemplateId}
                   options={records.map((template) => ({ value: template.id, label: template.name }))}
@@ -610,7 +610,7 @@ export default function SystemProductTemplateStandardsPage() {
                   ariaLabel="제품 템플릿 선택"
                   size="sm"
                 />
-                <AppSelect
+                <WaflSelect
                   value={categoryForm.level}
                   onValueChange={(value) => setCategoryForm({ ...EMPTY_CATEGORY_FORM, level: value as CategoryFormState["level"] })}
                   options={[
@@ -622,7 +622,7 @@ export default function SystemProductTemplateStandardsPage() {
                   size="sm"
                 />
                 {categoryForm.level !== "1" ? (
-                  <AppSelect
+                  <WaflSelect
                     value={categoryForm.parentId}
                     onValueChange={(value) => setCategoryForm((current) => ({ ...current, parentId: value }))}
                     options={[{ value: "", label: "상위 분류 선택" }, ...categoryOptions.map((option) => ({ value: option.id, label: option.label }))]}

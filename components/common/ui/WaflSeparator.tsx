@@ -2,11 +2,11 @@ import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-type AppSeparatorProps = HTMLAttributes<HTMLDivElement> & {
+type WaflSeparatorProps = HTMLAttributes<HTMLDivElement> & {
   orientation?: "horizontal" | "vertical";
 };
 
-export default function AppSeparator({ orientation = "horizontal", className, ...props }: AppSeparatorProps) {
+export default function WaflSeparator({ orientation = "horizontal", className, ...props }: WaflSeparatorProps) {
   return (
     <div
       data-wafl-component="separator"

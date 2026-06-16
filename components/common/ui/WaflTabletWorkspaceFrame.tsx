@@ -4,7 +4,7 @@ import { useRef, type ReactNode, type RefObject } from "react";
 
 import { useWorkspaceScrollReset } from "@/lib/hooks/workspace/useWorkspaceScrollReset";
 import { cn } from "@/lib/utils";
-import { AppResponsiveWorkspace } from "./AppResponsiveFrame";
+import { WaflResponsiveWorkspace } from "./WaflResponsiveFrame";
 import WaflDetailWorkspacePanel from "./WaflDetailWorkspacePanel";
 import { WaflMobileListDrawer } from "./WaflMobileShell";
 import WaflSideWorkspacePanel from "./WaflSideWorkspacePanel";
@@ -70,7 +70,7 @@ export default function WaflTabletWorkspaceFrame({
       >
         <div className="min-h-[72dvh] min-w-0">{list}</div>
       </WaflMobileListDrawer>
-      <AppResponsiveWorkspace device="tablet">
+      <WaflResponsiveWorkspace device="tablet">
         {workspaceOverlay}
         <WaflTwoPanelWorkspace
           detail={(
@@ -84,7 +84,7 @@ export default function WaflTabletWorkspaceFrame({
             </WaflSideWorkspacePanel>
           )}
         />
-      </AppResponsiveWorkspace>
+      </WaflResponsiveWorkspace>
     </div>
   );
 }

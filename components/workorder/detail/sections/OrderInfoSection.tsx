@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import {
-  AppCard,
+  WaflCard,
   SectionCountBadge,
   WaflAddCardButton,
   WaflAddIconBubble,
@@ -242,9 +242,9 @@ export default function OrderInfoSection({
       {isFlatDevice ? (
         rows
       ) : (
-        <AppCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">
+        <WaflCard className="space-y-3 overflow-hidden xl:p-4" padding="sm">
           {rows}
-        </AppCard>
+        </WaflCard>
       )}
 
       <WorkOrderProcessEditSheet

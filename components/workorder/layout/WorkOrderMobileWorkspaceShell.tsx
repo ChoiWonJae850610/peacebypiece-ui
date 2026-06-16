@@ -2,8 +2,8 @@
 
 import { useMemo, type ReactNode, type RefObject } from "react";
 
-import { WaflMobileWorkspaceFrame, type AppSegmentedTabItem } from "@/components/common/ui";
-import type { AppSheetPresentation } from "@/components/common/ui/AppSheet";
+import { WaflMobileWorkspaceFrame, type WaflSegmentedTabItem } from "@/components/common/ui";
+import type { WaflSheetPresentation } from "@/components/common/ui/WaflSheet";
 import { useI18n } from "@/lib/i18n";
 
 type MobileRelatedSectionKey = "attachment" | "design" | "memo";
@@ -24,7 +24,7 @@ type WorkOrderMobileWorkspaceShellProps = {
   sidePanel: (activeSection: MobileRelatedSectionKey) => ReactNode;
   hasSelection: boolean;
   scrollResetKey: string;
-  relatedPresentation?: AppSheetPresentation;
+  relatedPresentation?: WaflSheetPresentation;
 };
 
 export default function WorkOrderMobileWorkspaceShell({
@@ -40,7 +40,7 @@ export default function WorkOrderMobileWorkspaceShell({
   const { i18n } = useI18n();
   const mobileCopy = i18n.workorder.ui.layout.mobileDrawer;
   const relatedCopy = mobileCopy.relatedSections;
-  const relatedTabs = useMemo<Array<AppSegmentedTabItem<MobileRelatedSectionKey>>>(() => [
+  const relatedTabs = useMemo<Array<WaflSegmentedTabItem<MobileRelatedSectionKey>>>(() => [
     { key: "design", label: relatedCopy.design },
     { key: "attachment", label: relatedCopy.attachment },
     { key: "memo", label: relatedCopy.memo },

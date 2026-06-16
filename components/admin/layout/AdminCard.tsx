@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { adminSurfaceVariantClassNames, joinAdminClassNames, type AdminSurfaceVariant } from "@/components/admin/common/adminComponentVariants";
-import { AppBadge, AppCard, type AppCardVariant } from "@/components/common/ui";
+import { WaflBadge, WaflCard, type WaflCardVariant } from "@/components/common/ui";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminCardProps = {
@@ -12,7 +12,7 @@ type AdminCardProps = {
   variant?: AdminSurfaceVariant;
 };
 
-const adminCardAppVariantMap: Record<AdminSurfaceVariant, AppCardVariant> = {
+const adminCardAppVariantMap: Record<AdminSurfaceVariant, WaflCardVariant> = {
   base: "surface",
   soft: "subtle",
   selected: "surface",
@@ -24,14 +24,14 @@ export function AdminCard({ children, className = "", variant = "base" }: AdminC
   const variantClassName = variant === "base" ? "pbp-admin-card" : adminSurfaceVariantClassNames[variant];
 
   return (
-    <AppCard
+    <WaflCard
       as="section"
       variant={adminCardAppVariantMap[variant]}
       padding="lg"
       className={joinAdminClassNames(variantClassName, className)}
     >
       {children}
-    </AppCard>
+    </WaflCard>
   );
 }
 
@@ -54,7 +54,7 @@ export function AdminStatCard({ label, value, description, href, accent = "pbp-a
           <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">{label}</p>
           <p className="mt-3 text-2xl font-semibold tracking-tight pbp-text-primary">{value}</p>
         </div>
-        <AppBadge size="sm" className={accent}>{t("common.summary", "요약")}</AppBadge>
+        <WaflBadge size="sm" className={accent}>{t("common.summary", "요약")}</WaflBadge>
       </div>
       {description ? <p className="mt-4 text-xs leading-5 pbp-text-muted">{description}</p> : null}
     </AdminCard>
@@ -88,7 +88,7 @@ export function AdminActionTile({ label, description, icon, href, statusLabel }:
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-sm font-semibold pbp-text-primary">{label}</h3>
-          <AppBadge size="xs" className="pbp-admin-soft-badge">{href ? resolvedStatusLabel : t("common.preparing", "준비중")}</AppBadge>
+          <WaflBadge size="xs" className="pbp-admin-soft-badge">{href ? resolvedStatusLabel : t("common.preparing", "준비중")}</WaflBadge>
         </div>
         <p className="mt-2 text-xs leading-5 pbp-text-muted">{description}</p>
       </div>

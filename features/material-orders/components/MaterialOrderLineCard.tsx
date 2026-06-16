@@ -4,14 +4,14 @@ import type { ReactNode } from "react";
 
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
-  AppNumberInput,
-  AppSelect,
+  WaflNumberInput,
+  WaflSelect,
   WaflButton,
   WaflInput,
   WaflModalSection,
   WaflSurface,
   WAFL_FIELD_INPUT_CLASS,
-  type AppSelectOption,
+  type WaflSelectOption,
 } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import { MaterialOrderQuantityText } from "@/features/material-orders/components/MaterialOrderQuantityDisplay";
@@ -32,7 +32,7 @@ export const MATERIAL_ORDER_UNIT_OPTIONS = [
   "박스",
 ] as const;
 
-export const MATERIAL_ORDER_UNIT_SELECT_OPTIONS: AppSelectOption[] = [
+export const MATERIAL_ORDER_UNIT_SELECT_OPTIONS: WaflSelectOption[] = [
   { value: "", label: "단위" },
   ...MATERIAL_ORDER_UNIT_OPTIONS.map((unit) => ({ value: unit, label: unit })),
 ];
@@ -160,7 +160,7 @@ export function MaterialOrderLineEditModal({
         </FieldLabel>
         <div className="grid gap-3 sm:grid-cols-2">
           <FieldLabel label="단위">
-            <AppSelect
+            <WaflSelect
               value={draft.unit}
               onValueChange={(value) => onChangeDraft({ ...draft, unit: value })}
               options={MATERIAL_ORDER_UNIT_SELECT_OPTIONS}
@@ -170,7 +170,7 @@ export function MaterialOrderLineEditModal({
             />
           </FieldLabel>
           <FieldLabel label="수량">
-            <AppNumberInput
+            <WaflNumberInput
               inputMode="decimal"
               min={0}
               value={draft.orderQuantity}
@@ -182,7 +182,7 @@ export function MaterialOrderLineEditModal({
             />
           </FieldLabel>
           <FieldLabel label="단가">
-            <AppNumberInput
+            <WaflNumberInput
               inputMode="numeric"
               min={0}
               value={draft.unitPrice}

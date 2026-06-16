@@ -1,5 +1,5 @@
-import AppBadge from "@/components/common/ui/AppBadge";
-import AppSelect from "@/components/common/ui/AppSelect";
+import WaflBadge from "@/components/common/ui/WaflBadge";
+import WaflSelect from "@/components/common/ui/WaflSelect";
 import { WaflButton, WaflLinkButton } from "@/components/common/ui/WaflButton";
 import {
   WaflInfoBox,
@@ -247,7 +247,7 @@ const quickDecisions: QuickDecision[] = [
   },
   {
     label: "짧은 상태나 유형을 붙인다",
-    component: "AppBadge",
+    component: "WaflBadge",
     rule: "문장 설명이 아니라 상태값, 개수, 유형 같은 짧은 라벨이다.",
     example: "작성중 / 승인 / 파일 3 / 디자인",
   },
@@ -329,8 +329,8 @@ const componentSpecs: ComponentSpec[] = [
     screens: "멤버 권한 모달, 설정 옵션, 작업 분류 선택",
   },
   {
-    name: "AppBadge",
-    path: "@/components/common/ui/AppBadge",
+    name: "WaflBadge",
+    path: "@/components/common/ui/WaflBadge",
     plainRule: "짧은 상태 라벨이다.",
     purpose: "상태, 개수, 파일 유형, 업무 단계 등 짧은 라벨 표시.",
     props: "tone, variant, size, children",
@@ -374,7 +374,7 @@ const containerRules = [
 ];
 
 const statusRules = [
-  "AppBadge는 작성중·승인·파일 수처럼 짧은 상태값에만 쓴다.",
+  "WaflBadge는 작성중·승인·파일 수처럼 짧은 상태값에만 쓴다.",
   "긴 안내문이나 설명 문장은 WaflInfoBox 또는 WaflNoticeBox로 보낸다.",
   "개수·유형·상태는 badge로 작게 붙이고, 본문 정보처럼 크게 쓰지 않는다.",
   "상태 색상은 tone으로만 고르고 화면별 text/bg class를 직접 조합하지 않는다.",
@@ -402,7 +402,7 @@ const shapeGrammarRows = [
   },
   {
     label: "짧은 상태",
-    component: "AppBadge",
+    component: "WaflBadge",
     sample: "작성중/승인/파일",
     tone: "info" as const,
   },
@@ -495,7 +495,7 @@ const directClassReplacementRows = [
   {
     direct: "rounded-* 직접 지정",
     replacement:
-      "WaflSurface / WaflButton / WaflInput / AppBadge의 shape token",
+      "WaflSurface / WaflButton / WaflInput / WaflBadge의 shape token",
     reason: "화면별 모서리 차이를 막는다.",
   },
   {
@@ -510,7 +510,7 @@ const directClassReplacementRows = [
   },
   {
     direct: "text 색상 직접 분기",
-    replacement: "AppBadge tone 또는 WAFL text token",
+    replacement: "WaflBadge tone 또는 WAFL text token",
     reason: "상태/유형 색상을 컴포넌트 기준으로 묶는다.",
   },
   {
@@ -639,7 +639,7 @@ const newScreenChecklist = [
   "WaflButton / WaflSurface / WaflForm / WaflDataTable / WaflFilterBar 중 대체 가능한 컴포넌트를 확인했다.",
   "rounded, shadow, border, bg를 직접 조합하지 않았다.",
   "모바일에서 row가 카드처럼 읽히는지 확인했다.",
-  "상태값은 AppBadge, 안내문은 WaflInfoBox로 분리했다.",
+  "상태값은 WaflBadge, 안내문은 WaflInfoBox로 분리했다.",
   "data-wafl-component 이름을 부여했다.",
 ];
 
@@ -653,13 +653,13 @@ const screenChecklists: ScreenChecklist[] = [
       "WaflSurfaceButton",
       "WaflAddCardButton",
       "WaflInfoBox",
-      "AppBadge",
+      "WaflBadge",
       "WaflButton",
     ],
     checkItems: [
       "빈 첨부/디자인/메모 슬롯은 WaflAddCardButton으로 보인다.",
       "선택 가능한 공정/자재 카드는 WaflSurfaceButton 또는 WaflSelectableCard 역할로 분리된다.",
-      "단계 상태는 AppBadge로 짧게 표시되고, 긴 설명은 InfoBox로 내려간다.",
+      "단계 상태는 WaflBadge로 짧게 표시되고, 긴 설명은 InfoBox로 내려간다.",
     ],
     missingRisk:
       "카드 안 카드 depth가 과해지고, 추가 버튼과 실행 버튼이 같은 의미로 보일 수 있다.",
@@ -673,12 +673,12 @@ const screenChecklists: ScreenChecklist[] = [
       "WaflFilterBar",
       "WaflSurface",
       "WaflInfoRow",
-      "AppBadge",
+      "WaflBadge",
       "WaflButton",
     ],
     checkItems: [
       "발주 목록은 row 기준으로 읽히고 모바일에서는 카드처럼 접힌다.",
-      "발주 대기/완료/검수 가능 상태는 AppBadge로 구분된다.",
+      "발주 대기/완료/검수 가능 상태는 WaflBadge로 구분된다.",
       "검색, 구분, 상태 필터는 WaflFilterBar 안에 묶인다.",
     ],
     missingRisk:
@@ -693,7 +693,7 @@ const screenChecklists: ScreenChecklist[] = [
       "WaflSectionPanel",
       "WaflSurface",
       "WaflLinkButton",
-      "AppBadge",
+      "WaflBadge",
       "WaflNoticeBox",
     ],
     checkItems: [
@@ -734,7 +734,7 @@ const screenChecklists: ScreenChecklist[] = [
       "WaflSurface",
       "WaflInfoRow",
       "WaflEmptyCard",
-      "AppBadge",
+      "WaflBadge",
     ],
     checkItems: [
       "파일/휴지통 목록은 같은 row 문법을 쓴다.",
@@ -753,7 +753,7 @@ const screenChecklists: ScreenChecklist[] = [
       "WaflSurface",
       "WaflSectionPanel",
       "WaflInfoRow",
-      "AppBadge",
+      "WaflBadge",
     ],
     checkItems: [
       "기간 선택과 분석 조건은 WaflFilterBar 기준으로 묶인다.",
@@ -772,13 +772,13 @@ const screenChecklists: ScreenChecklist[] = [
       "WaflDataTable",
       "WaflSelectableCard",
       "WaflInfoBox",
-      "AppBadge",
+      "WaflBadge",
       "WaflButton",
     ],
     checkItems: [
       "검색 필드는 WaflFilterBar 안에서 다른 관리 화면과 같은 높이를 유지한다.",
       "권한 선택은 WaflSelectableCard로 보이고 선택 상태가 명확하다.",
-      "초대/승인/비활성 상태는 AppBadge로 짧게 표시된다.",
+      "초대/승인/비활성 상태는 WaflBadge로 짧게 표시된다.",
     ],
     missingRisk:
       "권한 모달 내부 선택지가 일반 카드처럼 보여 실제 선택 상태가 흐려질 수 있다.",
@@ -793,7 +793,7 @@ const screenChecklists: ScreenChecklist[] = [
       "WaflInfoRow",
       "WaflInfoBox",
       "WaflButton",
-      "AppBadge",
+      "WaflBadge",
     ],
     checkItems: [
       "프로필 정보는 InfoRow로 정렬하고, 설명은 InfoBox로 낮춘다.",
@@ -818,7 +818,7 @@ const componentGroupGuides: ComponentGroupGuide[] = [
     meaning: "가장 작은 공통 부품",
     rule: "역할이 명확하고 여러 화면에서 반복되면 유지한다. 모양 차이는 props와 shape token으로 처리한다.",
     examples:
-      "WaflButton, WaflIconButton, WaflInput, WaflTextarea, AppBadge, WaflSurface",
+      "WaflButton, WaflIconButton, WaflInput, WaflTextarea, WaflBadge, WaflSurface",
   },
   {
     group: "Pattern",
@@ -872,7 +872,7 @@ const componentInventoryItems: ComponentInventoryItem[] = [
     note: "제작 공정 카드의 ... 버튼과 작업지시서 목록 ... 버튼을 같은 more action primitive로 맞춘다.",
   },
   {
-    name: "AppBadge",
+    name: "WaflBadge",
     group: "Primitive",
     role: "짧은 상태, 유형, 개수 표시",
     keepDecision: "유지",
@@ -985,7 +985,7 @@ const componentInventoryItems: ComponentInventoryItem[] = [
     group: "Legacy",
     role: "관리 화면 이전 버튼/아이콘/상태 컴포넌트",
     keepDecision: "전환 대상",
-    target: "WaflButton / WaflIconButton / AppBadge",
+    target: "WaflButton / WaflIconButton / WaflBadge",
     priority: "중간",
     note: "바로 삭제하지 않고 사용 위치를 줄이면서 WAFL 컴포넌트로 전환한다.",
   },
@@ -1024,7 +1024,7 @@ function SectionAnchorList() {
         >
           <span className="flex items-center justify-between gap-3">
             {section.title}
-            <AppBadge
+            <WaflBadge
               size="xs"
               tone={
                 section.status === "guide"
@@ -1035,7 +1035,7 @@ function SectionAnchorList() {
               }
             >
               {section.status}
-            </AppBadge>
+            </WaflBadge>
           </span>
           <span className="mt-1 block text-xs font-bold text-[var(--pbp-text-primary)]">
             {section.plainTitle}
@@ -1133,9 +1133,9 @@ function ComparisonCard({
       </p>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <div className="wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
-          <AppBadge size="xs" tone="neutral">
+          <WaflBadge size="xs" tone="neutral">
             비슷해 보이는 것
-          </AppBadge>
+          </WaflBadge>
           <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">
             {leftTitle}
           </p>
@@ -1144,9 +1144,9 @@ function ComparisonCard({
           </p>
         </div>
         <div className="wafl-shape-surface border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] p-3">
-          <AppBadge size="xs" tone="brand">
+          <WaflBadge size="xs" tone="brand">
             판단 기준
-          </AppBadge>
+          </WaflBadge>
           <p className="mt-2 text-sm font-bold text-[var(--pbp-text-primary)]">
             {rightTitle}
           </p>
@@ -1204,9 +1204,9 @@ function FoundationPrimitiveSamples() {
               PC·태블릿·모바일은 shape를 공유하고 density만 낮춘다
             </h3>
           </div>
-          <AppBadge tone="brand" size="xs">
+          <WaflBadge tone="brand" size="xs">
             0.21.43 기준 고정
-          </AppBadge>
+          </WaflBadge>
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-2">
           {waflDeviceBaselineRows.map((row) => (
@@ -1271,14 +1271,14 @@ function FoundationPrimitiveSamples() {
                 같은 계열은 같은 foundation을 쓴다
               </h3>
               <p className="mt-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                WaflSurface, WaflButton, WaflInput, AppSelect, AppBadge,
+                WaflSurface, WaflButton, WaflInput, WaflSelect, WaflBadge,
                 InfoRow, EmptyCard, AddCard, AddCardButton은 서로 다른
                 컴포넌트지만 shape/density/tone 값은 한 곳에서 공유한다.
               </p>
             </div>
-            <AppBadge tone="brand" size="xs">
+            <WaflBadge tone="brand" size="xs">
               foundation
-            </AppBadge>
+            </WaflBadge>
           </div>
           <div className="mt-4 grid gap-2">
             {primitiveRows.map((row) => (
@@ -1331,7 +1331,7 @@ function FoundationPrimitiveSamples() {
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <WaflInput fieldSize="sm" placeholder="검색필드 · control sm" />
-              <AppSelect
+              <WaflSelect
                 size="sm"
                 value="active"
                 options={[
@@ -1346,7 +1346,7 @@ function FoundationPrimitiveSamples() {
                 fieldSize="xs"
                 placeholder="발주 table input · micro"
               />
-              <AppSelect
+              <WaflSelect
                 size="xs"
                 value="unit"
                 options={[
@@ -1366,9 +1366,9 @@ function FoundationPrimitiveSamples() {
                 <span className="min-w-0 text-xs font-bold text-[var(--pbp-text-primary)]">
                   파일 row · control
                 </span>
-                <AppBadge tone="file" size="xs">
+                <WaflBadge tone="file" size="xs">
                   file
-                </AppBadge>
+                </WaflBadge>
               </WaflSurface>
               <WaflEmptyCard
                 component="catalog-storage-empty"
@@ -1383,9 +1383,9 @@ function FoundationPrimitiveSamples() {
               component="catalog-foundation-selectable"
             >
               <span className="text-sm font-bold">control row</span>
-              <AppBadge tone="brand" size="xs">
+              <WaflBadge tone="brand" size="xs">
                 selected
-              </AppBadge>
+              </WaflBadge>
             </WaflSelectableCard>
             <WaflInfoRow component="catalog-foundation-info-row" tone="muted">
               <span className="text-xs font-bold text-[var(--pbp-text-primary)]">
@@ -1483,9 +1483,9 @@ function ShapeGrammarSamples() {
                 token을 써서 눈에 보이는 곡률을 맞춘다.
               </p>
             </div>
-            <AppBadge tone="brand" size="xs">
+            <WaflBadge tone="brand" size="xs">
               shape token
-            </AppBadge>
+            </WaflBadge>
           </div>
           <div className="mt-4 grid gap-2">
             {shapeGrammarRows.map((row) => (
@@ -1503,9 +1503,9 @@ function ShapeGrammarSamples() {
                     {row.component} · {row.sample}
                   </span>
                 </span>
-                <AppBadge tone={row.tone} size="xs">
+                <WaflBadge tone={row.tone} size="xs">
                   token
-                </AppBadge>
+                </WaflBadge>
               </WaflInfoRow>
             ))}
           </div>
@@ -1539,10 +1539,10 @@ function ShapeGrammarSamples() {
               </WaflButton>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <AppBadge tone="brand">작성중</AppBadge>
-              <AppBadge tone="success">승인</AppBadge>
-              <AppBadge tone="file">파일</AppBadge>
-              <AppBadge tone="danger">삭제 예정</AppBadge>
+              <WaflBadge tone="brand">작성중</WaflBadge>
+              <WaflBadge tone="success">승인</WaflBadge>
+              <WaflBadge tone="file">파일</WaflBadge>
+              <WaflBadge tone="danger">삭제 예정</WaflBadge>
             </div>
             <WaflInput placeholder="검색 입력도 같은 모양 계열" />
             <WaflInfoBox tone="muted" component="catalog-shape-info-sample">
@@ -1584,9 +1584,9 @@ function VisualStylingSamples() {
                 명령의 강도는 variant로 고르고, 상태는 disabled prop으로 둔다.
               </p>
             </div>
-            <AppBadge tone="brand" size="xs">
+            <WaflBadge tone="brand" size="xs">
               control
-            </AppBadge>
+            </WaflBadge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <WaflButton variant="primary" size="sm">
@@ -1621,15 +1621,15 @@ function VisualStylingSamples() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
-                AppBadge tone
+                WaflBadge tone
               </p>
               <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
                 짧은 상태·유형·개수만 badge로 표시한다.
               </p>
             </div>
-            <AppBadge tone="memo" size="xs">
+            <WaflBadge tone="memo" size="xs">
               compact
-            </AppBadge>
+            </WaflBadge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {(
@@ -1645,9 +1645,9 @@ function VisualStylingSamples() {
                 "file",
               ] as const
             ).map((tone) => (
-              <AppBadge key={tone} tone={tone}>
+              <WaflBadge key={tone} tone={tone}>
                 {tone}
-              </AppBadge>
+              </WaflBadge>
             ))}
           </div>
         </WaflSurface>
@@ -1668,9 +1668,9 @@ function VisualStylingSamples() {
               tone="default"
               className="p-3"
             >
-              <AppBadge tone="neutral" size="xs">
+              <WaflBadge tone="neutral" size="xs">
                 default
-              </AppBadge>
+              </WaflBadge>
               <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
                 기본 카드와 패널.
               </p>
@@ -1680,9 +1680,9 @@ function VisualStylingSamples() {
               tone="selected"
               className="p-3"
             >
-              <AppBadge tone="brand" size="xs">
+              <WaflBadge tone="brand" size="xs">
                 selected
-              </AppBadge>
+              </WaflBadge>
               <p className="mt-2 text-xs leading-5">
                 선택 목록 카드, current row.
               </p>
@@ -1692,9 +1692,9 @@ function VisualStylingSamples() {
               tone="muted"
               className="p-3"
             >
-              <AppBadge tone="neutral" size="xs">
+              <WaflBadge tone="neutral" size="xs">
                 muted
-              </AppBadge>
+              </WaflBadge>
               <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
                 카드 안 보조 row.
               </p>
@@ -1704,9 +1704,9 @@ function VisualStylingSamples() {
               tone="warning"
               className="p-3"
             >
-              <AppBadge tone="warning" size="xs">
+              <WaflBadge tone="warning" size="xs">
                 warning
-              </AppBadge>
+              </WaflBadge>
               <p className="mt-2 text-xs leading-5">주의 안내나 대기 상태.</p>
             </WaflSurface>
           </div>
@@ -1732,9 +1732,9 @@ function VisualStylingSamples() {
                 {row.rule}
               </p>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge tone={row.tone} size="xs">
+                <WaflBadge tone={row.tone} size="xs">
                   {row.tone}
-                </AppBadge>
+                </WaflBadge>
               </div>
             </WaflDataTableRow>
           ))}
@@ -1782,9 +1782,9 @@ function TouchActionSamples() {
               카드처럼 보이는 클릭 항목
             </span>
           </span>
-          <AppBadge size="xs" tone="brand">
+          <WaflBadge size="xs" tone="brand">
             selected
-          </AppBadge>
+          </WaflBadge>
         </WaflSurfaceButton>
         <WaflAddCardButton
           density="spacious"
@@ -1818,9 +1818,9 @@ function ContainerSamples() {
           tone="surface"
           className="p-4"
         >
-          <AppBadge size="xs" tone="neutral">
+          <WaflBadge size="xs" tone="neutral">
             정보 카드
-          </AppBadge>
+          </WaflBadge>
           <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">
             WaflSurface
           </p>
@@ -1829,9 +1829,9 @@ function ContainerSamples() {
           </p>
         </WaflSurface>
         <WaflInfoBox tone="muted" component="catalog-info-box-sample">
-          <AppBadge size="xs" tone="info">
+          <WaflBadge size="xs" tone="info">
             안내문
-          </AppBadge>
+          </WaflBadge>
           <p className="mt-3 text-sm font-bold text-[var(--pbp-text-primary)]">
             WaflInfoBox
           </p>
@@ -1850,9 +1850,9 @@ function ContainerSamples() {
               폼 안 선택지
             </span>
           </span>
-          <AppBadge size="xs" tone="brand">
+          <WaflBadge size="xs" tone="brand">
             선택
-          </AppBadge>
+          </WaflBadge>
         </WaflSelectableCard>
       </div>
 
@@ -1874,9 +1874,9 @@ function ContainerSamples() {
               <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
                 상태
               </span>
-              <AppBadge size="xs" tone="success">
+              <WaflBadge size="xs" tone="success">
                 정상
-              </AppBadge>
+              </WaflBadge>
             </WaflInfoRow>
             <WaflInfoRow component="catalog-info-row-two" tone="muted">
               <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
@@ -1937,9 +1937,9 @@ function InputSamples() {
               권한/역할/옵션을 고른다.
             </span>
           </span>
-          <AppBadge size="xs" tone="brand">
+          <WaflBadge size="xs" tone="brand">
             선택됨
-          </AppBadge>
+          </WaflBadge>
         </WaflSelectableCard>
       </div>
       <WaflNoticeBox tone="info">
@@ -1973,24 +1973,24 @@ function StatusSamples() {
           className="p-4"
         >
           <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
-            AppBadge
+            WaflBadge
           </p>
           <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
             짧은 상태·개수·유형만 표시한다.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {tones.map((tone) => (
-              <AppBadge key={tone} tone={tone}>
+              <WaflBadge key={tone} tone={tone}>
                 {tone}
-              </AppBadge>
+              </WaflBadge>
             ))}
-            <AppBadge variant="count">12</AppBadge>
-            <AppBadge size="xs" tone="brand">
+            <WaflBadge variant="count">12</WaflBadge>
+            <WaflBadge size="xs" tone="brand">
               xs
-            </AppBadge>
-            <AppBadge size="md" tone="brand">
+            </WaflBadge>
+            <WaflBadge size="md" tone="brand">
               md
-            </AppBadge>
+            </WaflBadge>
           </div>
         </WaflSurface>
         <RuleList title="보여주는 요소 선택 규칙" rules={statusRules} />
@@ -2047,7 +2047,7 @@ function WrongRightSamples() {
         rightBody="의미를 분리해야 loading, 접근성, 라우팅 기준을 나중에 정리하기 쉽다."
       />
       <ComparisonCard
-        title="AppBadge vs 안내 문장"
+        title="WaflBadge vs 안내 문장"
         leftTitle="색 있는 라벨처럼 보인다"
         leftBody="Badge는 짧은 상태값 전용이다. 긴 설명을 넣으면 모바일에서 의미가 흐려진다."
         rightTitle="짧으면 Badge, 길면 InfoBox"
@@ -2084,7 +2084,7 @@ function PracticePatternSamples() {
                 기준이다.
               </p>
             </div>
-            <AppBadge tone="document">작업지시서</AppBadge>
+            <WaflBadge tone="document">작업지시서</WaflBadge>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -2105,9 +2105,9 @@ function PracticePatternSamples() {
                   단가 3,500원 · 수량 12장
                 </span>
               </span>
-              <AppBadge tone="brand" size="xs">
+              <WaflBadge tone="brand" size="xs">
                 선택
-              </AppBadge>
+              </WaflBadge>
             </WaflSurfaceButton>
 
             <WaflSurface
@@ -2124,9 +2124,9 @@ function PracticePatternSamples() {
                     2.5 yd · 메인 원단
                   </p>
                 </div>
-                <AppBadge tone="file" size="xs">
+                <WaflBadge tone="file" size="xs">
                   원단
-                </AppBadge>
+                </WaflBadge>
               </div>
             </WaflSurface>
 
@@ -2159,7 +2159,7 @@ function PracticePatternSamples() {
                 묶는다.
               </p>
             </div>
-            <AppBadge tone="info">발주</AppBadge>
+            <WaflBadge tone="info">발주</WaflBadge>
           </div>
 
           <div className="mt-4 grid gap-2">
@@ -2188,9 +2188,9 @@ function PracticePatternSamples() {
                     {item.meta}
                   </span>
                 </span>
-                <AppBadge tone={item.tone} size="xs">
+                <WaflBadge tone={item.tone} size="xs">
                   {item.status}
-                </AppBadge>
+                </WaflBadge>
               </WaflSurfaceButton>
             ))}
           </div>
@@ -2256,7 +2256,7 @@ function PracticePatternSamples() {
                 기준으로 한다.
               </p>
             </div>
-            <AppBadge tone="file">저장소</AppBadge>
+            <WaflBadge tone="file">저장소</WaflBadge>
           </div>
 
           <div className="mt-4 grid gap-2">
@@ -2272,9 +2272,9 @@ function PracticePatternSamples() {
                   PDF · 2.4MB · 2026-06-10
                 </span>
               </span>
-              <AppBadge tone="document" size="xs">
+              <WaflBadge tone="document" size="xs">
                 문서
-              </AppBadge>
+              </WaflBadge>
             </WaflSurfaceButton>
             <WaflSurfaceButton
               component="catalog-trash-row-sample"
@@ -2288,9 +2288,9 @@ function PracticePatternSamples() {
                   30일 후 영구삭제 · 복원 가능
                 </span>
               </span>
-              <AppBadge tone="danger" size="xs">
+              <WaflBadge tone="danger" size="xs">
                 휴지통
-              </AppBadge>
+              </WaflBadge>
             </WaflSurfaceButton>
           </div>
         </WaflSurface>
@@ -2327,9 +2327,9 @@ function PracticePatternSamples() {
               <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">
                 상태
               </span>
-              <AppBadge tone="success" size="xs">
+              <WaflBadge tone="success" size="xs">
                 복원 가능
-              </AppBadge>
+              </WaflBadge>
             </WaflInfoRow>
             <WaflInfoBox tone="muted" component="catalog-modal-info-box">
               <p className="text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
@@ -2375,9 +2375,9 @@ function UsageRulesSamples() {
               <p className="text-sm font-bold text-[var(--pbp-text-primary)]">
                 {card.title}
               </p>
-              <AppBadge tone={card.tone} size="xs">
+              <WaflBadge tone={card.tone} size="xs">
                 {card.badge}
-              </AppBadge>
+              </WaflBadge>
             </div>
             <ul className="mt-3 grid gap-2 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
               {card.body.map((item) => (
@@ -2411,9 +2411,9 @@ function UsageRulesSamples() {
               색/테두리/그림자/모서리는 컴포넌트 prop으로 대체한다.
             </p>
           </div>
-          <AppBadge tone="danger" size="xs">
+          <WaflBadge tone="danger" size="xs">
             no ad-hoc style
-          </AppBadge>
+          </WaflBadge>
         </div>
         <div className="mt-4 grid gap-2">
           {directClassReplacementRows.map((row) => (
@@ -2453,9 +2453,9 @@ function UsageRulesSamples() {
               0.21.43 기준으로 PC/태블릿/모바일 WAFL UI 1차 기준을 고정했다. Add/Empty/Upload dashed box, 모달 내부 InfoBox/summary/row, 작업지시서·멤버관리·저장소·설정 device density는 control foundation 기준으로 묶고, login/date picker/calendar range/progress bar처럼 의미가 있는 UI만 예외 후보로 유지한다.
             </p>
           </div>
-          <AppBadge tone="brand" size="xs">
+          <WaflBadge tone="brand" size="xs">
             0.21.43 baseline
-          </AppBadge>
+          </WaflBadge>
         </div>
         <div className="mt-4 grid gap-2">
           {directStyleAuditRows.map((row) => (
@@ -2470,9 +2470,9 @@ function UsageRulesSamples() {
                   <span className="text-xs font-bold text-[var(--pbp-text-primary)]">
                     {row.area}
                   </span>
-                  <AppBadge tone={row.tone} size="xs">
+                  <WaflBadge tone={row.tone} size="xs">
                     {row.status}
-                  </AppBadge>
+                  </WaflBadge>
                 </span>
                 <span className="mt-1 block text-[11px] font-semibold text-[var(--pbp-text-subtle)]">
                   {row.scope}
@@ -2620,9 +2620,9 @@ function ScreenChecklistSamples() {
                   {screen.purpose}
                 </p>
               </div>
-              <AppBadge tone="brand" size="xs">
+              <WaflBadge tone="brand" size="xs">
                 check
-              </AppBadge>
+              </WaflBadge>
             </div>
 
             <div className="mt-4">
@@ -2631,9 +2631,9 @@ function ScreenChecklistSamples() {
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {screen.requiredComponents.map((component) => (
-                  <AppBadge key={component} tone="neutral" size="xs">
+                  <WaflBadge key={component} tone="neutral" size="xs">
                     {component}
-                  </AppBadge>
+                  </WaflBadge>
                 ))}
               </div>
             </div>
@@ -2715,9 +2715,9 @@ function ComponentInventorySamples() {
                   {guide.meaning}
                 </p>
               </div>
-              <AppBadge tone="neutral" size="xs">
+              <WaflBadge tone="neutral" size="xs">
                 group
-              </AppBadge>
+              </WaflBadge>
             </div>
             <p className="mt-3 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
               {guide.rule}
@@ -2755,7 +2755,7 @@ function ComponentInventorySamples() {
                 </p>
               </div>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge
+                <WaflBadge
                   tone={
                     item.group === "Legacy"
                       ? "danger"
@@ -2768,23 +2768,23 @@ function ComponentInventorySamples() {
                   size="xs"
                 >
                   {item.group}
-                </AppBadge>
+                </WaflBadge>
               </div>
               <p className="text-[12px] font-semibold leading-5 text-[var(--pbp-text-muted)]">
                 {item.role}
               </p>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge tone={decisionTone[item.keepDecision]} size="xs">
+                <WaflBadge tone={decisionTone[item.keepDecision]} size="xs">
                   {item.keepDecision}
-                </AppBadge>
+                </WaflBadge>
               </div>
               <p className="text-[11px] font-medium leading-5 text-[var(--pbp-text-subtle)]">
                 {item.target}
               </p>
               <div className={WAFL_DATA_TABLE_CELL_CLASS}>
-                <AppBadge tone={priorityTone[item.priority]} size="xs">
+                <WaflBadge tone={priorityTone[item.priority]} size="xs">
                   {item.priority}
-                </AppBadge>
+                </WaflBadge>
               </div>
             </WaflDataTableRow>
           ))}
@@ -2856,9 +2856,9 @@ export default function WaflUiCatalogPage({
           description="비슷해 보이는 WAFL 컴포넌트를 모양이 아니라 역할로 구분하기 위한 내부 확인 페이지다. 모바일에서는 먼저 '상황 → 컴포넌트' 기준으로 보면 된다."
           badges={
             <>
-              <AppBadge tone="brand">v{appVersion}</AppBadge>
-              <AppBadge tone="info">runtime: {runtimeMode}</AppBadge>
-              <AppBadge tone="warning">/ui gate off</AppBadge>
+              <WaflBadge tone="brand">v{appVersion}</WaflBadge>
+              <WaflBadge tone="info">runtime: {runtimeMode}</WaflBadge>
+              <WaflBadge tone="warning">/ui gate off</WaflBadge>
             </>
           }
         >

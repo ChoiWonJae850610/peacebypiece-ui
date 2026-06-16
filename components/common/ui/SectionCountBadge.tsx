@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AppBadge } from "@/components/common/ui";
+import { WaflBadge } from "@/components/common/ui";
 
 type SectionCountBadgeProps = {
   children: ReactNode;
@@ -9,8 +9,8 @@ type SectionCountBadgeProps = {
 
 export default function SectionCountBadge({ children, className = "" }: SectionCountBadgeProps) {
   return (
-    <AppBadge variant="count" size="sm" className={["pbp-sidepanel-count-badge font-medium", className].filter(Boolean).join(" ")}>
+    <WaflBadge variant="count" size="sm" className={["pbp-sidepanel-count-badge font-medium", className].filter(Boolean).join(" ")}>
       {children}
-    </AppBadge>
+    </WaflBadge>
   );
 }

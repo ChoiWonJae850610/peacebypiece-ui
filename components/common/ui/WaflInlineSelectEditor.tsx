@@ -4,15 +4,15 @@ import { useCallback, useRef, type KeyboardEvent } from "react";
 
 import { cn } from "@/lib/utils";
 
-export type AppInlineSelectEditorOption = {
+export type WaflInlineSelectEditorOption = {
   value: string;
   label?: string;
   disabled?: boolean;
 };
 
-type AppInlineSelectEditorProps = {
+type WaflInlineSelectEditorProps = {
   value: string;
-  options: AppInlineSelectEditorOption[];
+  options: WaflInlineSelectEditorOption[];
   onCommit: (value: string) => void;
   onCancel: () => void;
   autoFocus?: boolean;
@@ -20,7 +20,7 @@ type AppInlineSelectEditorProps = {
   ariaLabel?: string;
 };
 
-export default function AppInlineSelectEditor({
+export default function WaflInlineSelectEditor({
   value,
   options,
   onCommit,
@@ -28,7 +28,7 @@ export default function AppInlineSelectEditor({
   autoFocus = true,
   className,
   ariaLabel = "선택값 편집",
-}: AppInlineSelectEditorProps) {
+}: WaflInlineSelectEditorProps) {
   const committedRef = useRef(false);
 
   const commit = useCallback(

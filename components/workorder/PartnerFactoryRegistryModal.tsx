@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { AppSelect, WaflInput } from "@/components/common/ui";
+import { WaflSelect, WaflInput } from "@/components/common/ui";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { DEFAULT_REGISTRY_TYPE, REGISTRY_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
@@ -64,7 +64,7 @@ export default function PartnerFactoryRegistryModal({
       <div className="space-y-4">
         <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>
           <label className={MODAL_CONTENT_LABEL_CLASS}>{copy.typeLabel}</label>
-          <AppSelect
+          <WaflSelect
             value={type}
             onValueChange={(nextType) => setType(nextType as RegistryType)}
             options={REGISTRY_TYPE_OPTIONS.map((option) => ({

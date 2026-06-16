@@ -2,16 +2,16 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-import AppButton from "./AppButton";
+import { WaflButton } from "./WaflButton";
 
-export type AppSegmentedTabItem<TKey extends string> = {
+export type WaflSegmentedTabItem<TKey extends string> = {
   key: TKey;
   label: ReactNode;
   disabled?: boolean;
 };
 
-type AppSegmentedTabsProps<TKey extends string> = {
-  items: Array<AppSegmentedTabItem<TKey>>;
+type WaflSegmentedTabsProps<TKey extends string> = {
+  items: Array<WaflSegmentedTabItem<TKey>>;
   value: TKey;
   onChange: (value: TKey) => void;
   className?: string;
@@ -20,7 +20,7 @@ type AppSegmentedTabsProps<TKey extends string> = {
   ariaLabel?: string;
 };
 
-export default function AppSegmentedTabs<TKey extends string>({
+export default function WaflSegmentedTabs<TKey extends string>({
   items,
   value,
   onChange,
@@ -28,7 +28,7 @@ export default function AppSegmentedTabs<TKey extends string>({
   itemClassName,
   sticky = false,
   ariaLabel,
-}: AppSegmentedTabsProps<TKey>) {
+}: WaflSegmentedTabsProps<TKey>) {
   return (
     <div
       role="tablist"
@@ -44,7 +44,7 @@ export default function AppSegmentedTabs<TKey extends string>({
         const selected = value === item.key;
 
         return (
-          <AppButton
+          <WaflButton
             key={item.key}
             role="tab"
             aria-selected={selected}
@@ -60,7 +60,7 @@ export default function AppSegmentedTabs<TKey extends string>({
             onClick={() => onChange(item.key)}
           >
             {item.label}
-          </AppButton>
+          </WaflButton>
         );
       })}
     </div>

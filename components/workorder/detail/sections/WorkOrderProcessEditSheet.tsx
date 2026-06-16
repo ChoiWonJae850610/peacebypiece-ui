@@ -7,10 +7,10 @@ import {
   renderModalFooterActions,
 } from "@/components/common/modal/modalActions";
 import {
-  AppNumberInput,
-  AppSelect,
+  WaflNumberInput,
+  WaflSelect,
   WAFL_FIELD_INPUT_CLASS,
-  type AppSelectOption,
+  type WaflSelectOption,
 } from "@/components/common/ui";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { DEFAULT_ORDER_TYPE } from "@/lib/constants/workorderOptions";
@@ -95,7 +95,7 @@ function isSelectNoneValue(value: string, locale: Locale) {
 function buildOptions(
   values: readonly string[],
   locale: Locale,
-): AppSelectOption[] {
+): WaflSelectOption[] {
   return values
     .filter((value) => !isSelectNoneValue(value, locale))
     .map((value) => ({
@@ -108,7 +108,7 @@ function buildOptionsWithCurrent(
   values: readonly string[],
   currentValue: string,
   locale: Locale,
-): AppSelectOption[] {
+): WaflSelectOption[] {
   const current = currentValue.trim();
   const resolvedValues = Array.from(
     new Set([...values, ...(current && !isSelectNoneValue(current, locale) ? [current] : [])]),
@@ -120,7 +120,7 @@ function buildFactorySelectOptions(
   values: readonly string[],
   currentValue: string,
   locale: Locale,
-): AppSelectOption[] {
+): WaflSelectOption[] {
   const options = buildOptionsWithCurrent(values, currentValue, locale);
   if (options.length === 0) {
     return [{ value: "", label: "선택 가능한 업체 없음", disabled: true }];
@@ -132,7 +132,7 @@ function buildOutsourcingProcessSelectOptions(
   values: readonly string[],
   currentValue: string,
   locale: Locale,
-): AppSelectOption[] {
+): WaflSelectOption[] {
   return [
     { value: "", label: "선택 안함" },
     ...buildOptionsWithCurrent(values, currentValue, locale),
@@ -144,7 +144,7 @@ function buildOutsourcingVendorSelectOptions(
   currentValue: string,
   process: string,
   locale: Locale,
-): AppSelectOption[] {
+): WaflSelectOption[] {
   if (!process.trim()) {
     return [{ value: "", label: "항목을 먼저 선택", disabled: true }];
   }
@@ -322,7 +322,7 @@ export default function WorkOrderProcessEditSheet({
         <div className="grid gap-4">
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.vendor}</label>
-            <AppSelect
+            <WaflSelect
               value={orderDraft.factory}
               options={factorySelectOptions}
               onValueChange={(value) => {
@@ -336,7 +336,7 @@ export default function WorkOrderProcessEditSheet({
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <AppNumberInput
+              <WaflNumberInput
                 inputMode="numeric"
                 value={orderDraft.quantity}
                 disabled={isOrderNumericInputDisabled}
@@ -349,7 +349,7 @@ export default function WorkOrderProcessEditSheet({
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <AppNumberInput
+              <WaflNumberInput
                 inputMode="numeric"
                 value={orderDraft.laborCost}
                 disabled={isOrderNumericInputDisabled}
@@ -362,7 +362,7 @@ export default function WorkOrderProcessEditSheet({
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <AppNumberInput
+              <WaflNumberInput
                 inputMode="numeric"
                 value={orderDraft.lossCost}
                 disabled={isOrderNumericInputDisabled}
@@ -379,7 +379,7 @@ export default function WorkOrderProcessEditSheet({
         <div className="grid gap-4">
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.item}</label>
-            <AppSelect
+            <WaflSelect
               value={outsourcingDraft.process}
               options={outsourcingProcessSelectOptions}
               onValueChange={(value) => {
@@ -395,7 +395,7 @@ export default function WorkOrderProcessEditSheet({
           </div>
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.vendor}</label>
-            <AppSelect
+            <WaflSelect
               value={outsourcingDraft.vendor}
               options={outsourcingVendorSelectOptions}
               onValueChange={(value) => {
@@ -412,7 +412,7 @@ export default function WorkOrderProcessEditSheet({
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.quantity}</span>
-              <AppNumberInput
+              <WaflNumberInput
                 inputMode="numeric"
                 value={outsourcingDraft.quantity}
                 disabled={isOutsourcingNumericInputDisabled}
@@ -428,7 +428,7 @@ export default function WorkOrderProcessEditSheet({
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.laborCost}</span>
-              <AppNumberInput
+              <WaflNumberInput
                 inputMode="numeric"
                 value={outsourcingDraft.unitCost}
                 disabled={isOutsourcingNumericInputDisabled}
@@ -444,7 +444,7 @@ export default function WorkOrderProcessEditSheet({
             </label>
             <label className={fieldPanelClass}>
               <span className={labelClass}>{copy.fields.lossCost}</span>
-              <AppNumberInput
+              <WaflNumberInput
                 inputMode="numeric"
                 value={outsourcingDraft.lossCost}
                 disabled={isOutsourcingNumericInputDisabled}

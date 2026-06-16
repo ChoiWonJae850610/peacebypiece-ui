@@ -6,7 +6,7 @@ import WaflFilterBar, {
   WAFL_FILTER_LABEL_CLASS,
   WAFL_FILTER_SELECT_TRIGGER_CLASS,
 } from "@/components/admin/common/WaflFilterBar";
-import { AppSelect, WaflInput } from "@/components/common/ui";
+import { WaflSelect, WaflInput } from "@/components/common/ui";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 import type { MemberDirectoryStatusFilter } from "@/components/admin/members/AdminMemberDirectoryTableColumns";
@@ -72,7 +72,7 @@ export default function AdminMemberDirectoryControls({
         <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.status", "상태")}
         </span>
-        <AppSelect
+        <WaflSelect
           value={statusFilter}
           onValueChange={(value) =>
             onStatusFilterChange(value as MemberDirectoryStatusFilter)
@@ -99,7 +99,7 @@ export default function AdminMemberDirectoryControls({
         <span className={WAFL_FILTER_LABEL_CLASS}>
           {t("memberManagement.memberDirectory.filters.role", "권한")}
         </span>
-        <AppSelect
+        <WaflSelect
           value={roleFilter}
           onValueChange={onRoleFilterChange}
           options={[

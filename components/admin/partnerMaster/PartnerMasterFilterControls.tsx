@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import {
   WAFL_FILTER_FIELD_CLASS,
   WAFL_FILTER_INPUT_CLASS,
@@ -62,7 +62,7 @@ export function PartnerMasterSelectField<TValue extends string>({
   return (
     <label data-wafl-component="filter-field" className={WAFL_FILTER_FIELD_CLASS}>
       <span className={WAFL_FILTER_LABEL_CLASS}>{label}</span>
-      <AppSelect
+      <WaflSelect
         value={value}
         onValueChange={(nextValue) => onChange(nextValue as TValue)}
         options={options.map((item) => ({ value: item.value, label: item.label }))}

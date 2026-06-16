@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { AppNumberInput, AppSelect, WAFL_FIELD_INPUT_CLASS, WaflInput, type AppSelectOption } from "@/components/common/ui";
+import { WaflNumberInput, WaflSelect, WAFL_FIELD_INPUT_CLASS, WaflInput, type WaflSelectOption } from "@/components/common/ui";
 import { MATERIAL_TYPE, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT } from "@/lib/constants/material";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useI18n } from "@/lib/i18n";
@@ -49,13 +49,13 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
     }
   }, [material, open]);
 
-  const typeOptions = useMemo<AppSelectOption[]>(() => MATERIAL_TYPE_OPTIONS.map((value) => ({
+  const typeOptions = useMemo<WaflSelectOption[]>(() => MATERIAL_TYPE_OPTIONS.map((value) => ({
     value,
     label: translateWorkOrderDisplayText(value, locale),
   })), [locale]);
 
   const resolvedUnitOptions = unitOptions.length > 0 ? unitOptions : Object.values(MATERIAL_UNIT);
-  const unitSelectOptions = useMemo<AppSelectOption[]>(() => resolvedUnitOptions.map((value) => ({
+  const unitSelectOptions = useMemo<WaflSelectOption[]>(() => resolvedUnitOptions.map((value) => ({
     value,
     label: translateWorkOrderDisplayText(value, locale),
   })), [locale, resolvedUnitOptions]);
@@ -94,7 +94,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
       <div className="grid gap-4">
         <div className={fieldPanelClass}>
           <label className={labelClass}>{copy.fields.type}</label>
-          <AppSelect
+          <WaflSelect
             value={draft.type}
             options={typeOptions}
             onValueChange={(nextValue) => { setDraft((current) => ({ ...current, type: nextValue as Material["type"] })); }}
@@ -116,7 +116,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
         <div className="grid gap-4 sm:grid-cols-2">
           <div className={fieldPanelClass}>
             <label className={labelClass} htmlFor="workorder-material-sheet-quantity">{copy.fields.quantity}</label>
-            <AppNumberInput
+            <WaflNumberInput
               id="workorder-material-sheet-quantity"
               inputMode="decimal"
               value={draft.quantity}
@@ -128,7 +128,7 @@ export default function WorkOrderMaterialEditSheet({ open, material, unitOptions
           </div>
           <div className={fieldPanelClass}>
             <label className={labelClass}>{copy.fields.unit}</label>
-            <AppSelect
+            <WaflSelect
               value={draft.unit}
               options={unitSelectOptions}
               onValueChange={(nextValue) => { setDraft((current) => ({ ...current, unit: nextValue as Material["unit"] })); }}

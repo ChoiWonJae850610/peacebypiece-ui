@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
 import {
-  AppBadge,
+  WaflBadge,
   WaflButton,
   WaflInfoBox,
   WaflInput,
@@ -303,9 +303,9 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
           <h3 className="text-sm font-semibold text-[var(--pbp-text-primary)]">
             {copy.profile.title}
           </h3>
-          <AppBadge tone={profileComplete ? "success" : "warning"} size="sm">
+          <WaflBadge tone={profileComplete ? "success" : "warning"} size="sm">
             {profileComplete ? copy.profile.complete : copy.profile.incomplete}
-          </AppBadge>
+          </WaflBadge>
         </div>
         <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
           {copy.profile.description}

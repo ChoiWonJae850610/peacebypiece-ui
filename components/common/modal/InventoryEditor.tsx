@@ -16,7 +16,7 @@ import {
 } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
 import {
-  AppNumberInput,
+  WaflNumberInput,
   WAFL_FIELD_INPUT_CLASS,
   WaflEmptyCard,
   WaflInfoBox,
@@ -161,7 +161,7 @@ export default function InventoryEditor({
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
               {copy.inboundQuantityLabel}
             </label>
-            <AppNumberInput
+            <WaflNumberInput
               inputMode="numeric"
               min={0}
               value={inboundQuantity}
@@ -174,7 +174,7 @@ export default function InventoryEditor({
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
               {copy.adjustmentQuantityLabel}
             </label>
-            <AppNumberInput
+            <WaflNumberInput
               inputMode="numeric"
               min={0}
               value={adjustmentQuantity}
@@ -187,7 +187,7 @@ export default function InventoryEditor({
             <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">
               {copy.deductionQuantityLabel}
             </label>
-            <AppNumberInput
+            <WaflNumberInput
               inputMode="numeric"
               min={0}
               value={deductionQuantity}

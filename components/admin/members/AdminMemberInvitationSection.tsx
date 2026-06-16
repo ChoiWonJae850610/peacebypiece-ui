@@ -8,7 +8,7 @@ import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminTable from "@/components/admin/common/AdminTable";
 import WaflNoticeBox from "@/components/admin/common/WaflNoticeBox";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import {
   ADMIN_FIELD_CONTAINER_CLASS,
   ADMIN_INPUT_CLASS,
@@ -85,7 +85,7 @@ export default function AdminMemberInvitationSection({
             <span className="text-xs font-semibold pbp-text-muted">
               {t("memberManagement.inviteBuilder.fields.expires", "초대 만료")}
             </span>
-            <AppSelect
+            <WaflSelect
               value={expiresInDays}
               onValueChange={onExpiresInDaysChange}
               options={[

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import SystemCompanyFileReviewPanel from "@/components/system/companies/SystemCompanyFileReviewPanel";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
@@ -676,7 +676,7 @@ export default function SystemCompanyApprovalConsole() {
                 <div className="grid gap-3 xl:grid-cols-[0.36fr_1fr_auto]">
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">전달 방식</span>
-                    <AppSelect
+                    <WaflSelect
                       value={deliveryMethod}
                       onValueChange={(value) => {
                         const nextMethod = value === "phone" ? "phone" : "email";
@@ -718,7 +718,7 @@ export default function SystemCompanyApprovalConsole() {
                 <div className="grid gap-3 border-t border-[var(--pbp-border)] pt-3 xl:grid-cols-[1fr_auto]">
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 만료</span>
-                    <AppSelect
+                    <WaflSelect
                       value={String(systemInviteExpiresInDays)}
                       onValueChange={(value) => setSystemInviteExpiresInDays(Number(value))}
                       options={[

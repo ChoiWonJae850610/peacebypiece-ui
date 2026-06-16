@@ -11,7 +11,7 @@ import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
 } from "@/components/admin/common/AdminStatusBadge";
-import AppBadge from "@/components/common/ui/AppBadge";
+import WaflBadge from "@/components/common/ui/WaflBadge";
 import { WaflInfoBox } from "@/components/common/ui/WaflForm";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
@@ -757,9 +757,9 @@ export default function AdminCompanyFilesPanel() {
                       )}
                       <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
                         {denseMetaItems.map((item) => (
-                          <AppBadge key={item} tone="neutral" size="xs">
+                          <WaflBadge key={item} tone="neutral" size="xs">
                             {item}
-                          </AppBadge>
+                          </WaflBadge>
                         ))}
                       </div>
                       <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">

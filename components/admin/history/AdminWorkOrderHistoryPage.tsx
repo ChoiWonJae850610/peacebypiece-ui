@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import AdminHistoryList from "@/components/admin/history/AdminHistoryList";
 import { buildAdminHistorySectionViewModel } from "@/lib/admin/history/presentation";
 import {
@@ -89,7 +89,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
               </label>
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold text-[var(--pbp-text-secondary)]">{pageText.dateLabel}</span>
-                <AppSelect
+                <WaflSelect
                   value={dateFilter}
                   onValueChange={(value) => setDateFilter(value as AdminHistoryDateFilter)}
                   options={dateOptions.map((option) => ({
@@ -102,7 +102,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
               </label>
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold text-[var(--pbp-text-secondary)]">{pageText.userLabel}</span>
-                <AppSelect
+                <WaflSelect
                   value={userFilter}
                   onValueChange={setUserFilter}
                   options={userOptions.map((option) => ({

@@ -3,8 +3,8 @@ import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/dat
 import type { WorkflowProgressPanelLayout } from "@/components/common/workflow/WorkflowProgressPanel";
 
 import {
-  AppSelect,
-  AppSection,
+  WaflSelect,
+  WaflSection,
   WaflButton,
   WaflMobileDetailContent,
   WaflPanelContentShell,
@@ -14,7 +14,7 @@ import {
   WAFL_PANEL_CONTENT_STACK_CLASS,
   WaflSummaryHeaderCard,
   WaflSummaryInfoCell,
-  type AppSelectOption,
+  type WaflSelectOption,
   type WaflSaveStatusValue,
 } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
@@ -145,7 +145,7 @@ export default function MaterialOrderDetailPanel({
             )}
           >
             <WaflSummaryInfoCell label="자재 종류">
-              <AppSelect
+              <WaflSelect
                 value={materialType}
                 disabled={!isCoreEditable || headerSaving}
                 size="sm"
@@ -158,7 +158,7 @@ export default function MaterialOrderDetailPanel({
               />
             </WaflSummaryInfoCell>
             <WaflSummaryInfoCell label="공급처">
-              <AppSelect
+              <WaflSelect
                 value={supplierPartnerId ?? ""}
                 disabled={isSupplierSelectDisabled(
                   isCoreEditable && !headerSaving,
@@ -201,11 +201,11 @@ export default function MaterialOrderDetailPanel({
             layout={progressLayout}
           />
 
-          <AppSection title="비용 요약" className="shrink-0" cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}>
+          <WaflSection title="비용 요약" className="shrink-0" cardClassName={MATERIAL_ORDER_SECTION_CARD_CLASS}>
             <MaterialOrderSummaryCards totals={totals} lines={lines} materialType={materialType} workOrderCandidates={workOrderCandidates} />
-          </AppSection>
+          </WaflSection>
 
-          <AppSection
+          <WaflSection
             title="발주 품목"
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
             cardClassName={`${MATERIAL_ORDER_SECTION_CARD_CLASS} flex min-h-0 flex-1 flex-col overflow-hidden`}
@@ -233,7 +233,7 @@ export default function MaterialOrderDetailPanel({
                 일반 사용자는 작성중·반려 상태에서, 관리자는 발주요청 전까지만 수정할 수 있습니다.
               </p>
             ) : null}
-          </AppSection>
+          </WaflSection>
 
     </div>
   ) : null;
@@ -259,7 +259,7 @@ export default function MaterialOrderDetailPanel({
   return mobileSurface ? <WaflMobileDetailContent>{content}</WaflMobileDetailContent> : content;
 }
 
-const MATERIAL_TYPE_SELECT_OPTIONS: AppSelectOption[] = [
+const MATERIAL_TYPE_SELECT_OPTIONS: WaflSelectOption[] = [
   { value: "", label: "자재 종류 선택", disabled: true },
   { value: "fabric", label: "원단" },
   { value: "submaterial", label: "부자재" },
@@ -269,7 +269,7 @@ function buildSupplierSelectOptions(
   materialType: MaterialOrderDraftSelectionType,
   loading: boolean,
   suppliers: MaterialOrderSupplier[],
-): AppSelectOption[] {
+): WaflSelectOption[] {
   if (!materialType || loading || suppliers.length === 0) {
     return [
       {

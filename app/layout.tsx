@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { DEFAULT_LOCALE, getI18n } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { CurrentUserProvider } from "@/components/auth/CurrentUserProvider";
-import AppToaster from "@/components/common/AppToaster";
+import WaflToaster from "@/components/common/WaflToaster";
 import { WorkorderRepositoryProvider } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { PbpThemeProvider } from "@/lib/theme/PbpThemeProvider";
 import { buildPbpThemeRootAttributes } from "@/lib/theme/themeDocument";
@@ -40,7 +40,7 @@ export default function RootLayout({
           <I18nProvider initialLocale={DEFAULT_LOCALE}>
             <CurrentUserProvider>
               <WorkorderRepositoryProvider>{children}</WorkorderRepositoryProvider>
-              <AppToaster />
+              <WaflToaster />
               <div id="wafl-modal-portal-root" data-wafl-modal-portal-root="true" />
             </CurrentUserProvider>
           </I18nProvider>

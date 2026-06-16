@@ -23,7 +23,7 @@ import {
   getStorageSummaryLayoutMode,
 } from "./summary/storageSummaryLayout";
 import WaflPageHero from "@/components/admin/common/WaflPageHero";
-import AppBadge from "@/components/common/ui/AppBadge";
+import WaflBadge from "@/components/common/ui/WaflBadge";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
@@ -65,9 +65,9 @@ export default function FileStorageSummary({
         "파일 사용량, 파일 유형, 휴지통 상태를 확인하고 필요한 정리 작업을 처리합니다.",
       )}
       badges={
-        <AppBadge tone="neutral" size="md">
+        <WaflBadge tone="neutral" size="md">
           {statusLabel}
-        </AppBadge>
+        </WaflBadge>
       }
       bodyClassName="mt-4"
     >

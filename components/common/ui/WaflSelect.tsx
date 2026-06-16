@@ -17,37 +17,37 @@ import {
   waflInteractiveClass,
 } from "./WaflPrimitive";
 
-export type AppSelectOption = {
+export type WaflSelectOption = {
   value: string;
   label: ReactNode;
   disabled?: boolean;
 };
 
-type AppSelectSize = "xs" | "sm" | "md";
-type AppSelectWidth = "auto" | "full";
+type WaflSelectSize = "xs" | "sm" | "md";
+type WaflSelectWidth = "auto" | "full";
 
-const sizeClassMap: Record<AppSelectSize, string> = {
+const sizeClassMap: Record<WaflSelectSize, string> = {
   xs: cn("wafl-shape-control", waflFieldDensityClassMap.micro),
   sm: cn("wafl-shape-control", waflFieldDensityClassMap.compact),
   md: cn("wafl-shape-control", waflFieldDensityClassMap.default, "px-4"),
 };
 
-const widthClassMap: Record<AppSelectWidth, string> = {
+const widthClassMap: Record<WaflSelectWidth, string> = {
   auto: "min-w-36",
   full: "w-full",
 };
 
 const EMPTY_SELECT_VALUE = "__app_select_empty_value__";
 
-type AppSelectProps = {
+type WaflSelectProps = {
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
-  options: AppSelectOption[];
+  options: WaflSelectOption[];
   placeholder?: string;
   disabled?: boolean;
-  size?: AppSelectSize;
-  width?: AppSelectWidth;
+  size?: WaflSelectSize;
+  width?: WaflSelectWidth;
   className?: string;
   triggerClassName?: string;
   contentClassName?: string;
@@ -55,7 +55,7 @@ type AppSelectProps = {
   name?: string;
 };
 
-export default function AppSelect({
+export default function WaflSelect({
   value,
   defaultValue,
   onValueChange,
@@ -69,7 +69,7 @@ export default function AppSelect({
   contentClassName,
   ariaLabel,
   name,
-}: AppSelectProps) {
+}: WaflSelectProps) {
   const [open, setOpen] = useState(false);
   const suppressOpenUntilRef = useRef(0);
   const triggerRef = useRef<HTMLButtonElement | null>(null);

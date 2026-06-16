@@ -4,7 +4,7 @@ import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/
 import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 import { PolicyAgreementStatusPanel, PolicyReagreementStatusPanel } from "@/components/policies/PolicyAgreementStatusPanel";
 import { CUSTOMER_POLICY_DOCUMENTS, getRequiredPolicyDocumentCount, type CustomerPolicyDocumentCategory } from "@/lib/policies/customerPolicyDocuments";
-import { AppBadge, WaflSurface } from "@/components/common/ui";
+import { WaflBadge, WaflSurface } from "@/components/common/ui";
 
 const categoryTone: Record<CustomerPolicyDocumentCategory, AdminStatusBadgeTone> = {
   service: "brand",
@@ -74,9 +74,9 @@ export default async function WorkspaceLegalPage() {
                   <p className="mt-1 text-sm font-semibold pbp-text-muted">{document.subtitle}</p>
                   <p className="mt-3 text-sm leading-6 pbp-text-muted">{document.summary}</p>
                 </div>
-                <AppBadge tone="neutral" size="sm" className="shrink-0">
+                <WaflBadge tone="neutral" size="sm" className="shrink-0">
                   {document.effectiveDateLabel}
-                </AppBadge>
+                </WaflBadge>
               </div>
 
               <div className="mt-4 grid gap-3">

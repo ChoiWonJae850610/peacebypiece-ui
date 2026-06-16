@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSelect, WaflButton, WaflEmptyCard, WaflInput, WaflSurface } from "@/components/common/ui";
+import { WaflSelect, WaflButton, WaflEmptyCard, WaflInput, WaflSurface } from "@/components/common/ui";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import type { SidebarListProps } from "@/components/workorder/layout/types";
 import { useI18n } from "@/lib/i18n";
@@ -102,7 +102,7 @@ export default function WorkOrderMobileListPanel({
         </div>
 
         <div className="mt-2 grid grid-cols-2 gap-1.5">
-          <AppSelect
+          <WaflSelect
             value={statusFilter}
             onValueChange={(value) => onStatusFilterChange(value as WorkOrderListStatusFilter)}
             options={statusOptions}
@@ -111,7 +111,7 @@ export default function WorkOrderMobileListPanel({
             ariaLabel={controlsCopy.statusFilterAria}
             triggerClassName="text-sm"
           />
-          <AppSelect
+          <WaflSelect
             value={sort}
             onValueChange={(value) => onSortChange(value as WorkOrderListSort)}
             options={sortOptions}

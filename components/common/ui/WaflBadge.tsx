@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import { waflCompactDensityClassMap } from "./WaflPrimitive";
 
-export type AppBadgeTone =
+export type WaflBadgeTone =
   | "neutral"
   | "strong"
   | "info"
@@ -18,7 +18,7 @@ export type AppBadgeTone =
   | "file"
   | "inverse";
 
-export type AppBadgeVariant =
+export type WaflBadgeVariant =
   | "status"
   | "count"
   | "info"
@@ -28,9 +28,9 @@ export type AppBadgeVariant =
   | "brand"
   | "neutral";
 
-export type AppBadgeSize = "xs" | "sm" | "md";
+export type WaflBadgeSize = "xs" | "sm" | "md";
 
-const toneClassMap: Record<AppBadgeTone, string> = {
+const toneClassMap: Record<WaflBadgeTone, string> = {
   neutral:
     "border-[var(--pbp-status-neutral-bg)] bg-[var(--pbp-status-neutral-bg)] text-[var(--pbp-status-neutral-fg)]",
   strong:
@@ -55,7 +55,7 @@ const toneClassMap: Record<AppBadgeTone, string> = {
   inverse: "border-white/20 bg-white/10 text-[var(--pbp-text-inverse)]",
 };
 
-const variantToneMap: Record<AppBadgeVariant, AppBadgeTone> = {
+const variantToneMap: Record<WaflBadgeVariant, WaflBadgeTone> = {
   status: "neutral",
   count: "strong",
   info: "info",
@@ -66,25 +66,25 @@ const variantToneMap: Record<AppBadgeVariant, AppBadgeTone> = {
   neutral: "neutral",
 };
 
-const sizeClassMap: Record<AppBadgeSize, string> = {
+const sizeClassMap: Record<WaflBadgeSize, string> = {
   xs: waflCompactDensityClassMap.compact,
   sm: waflCompactDensityClassMap.default,
   md: waflCompactDensityClassMap.spacious,
 };
 
-type AppBadgeProps = HTMLAttributes<HTMLSpanElement> & {
-  tone?: AppBadgeTone;
-  variant?: AppBadgeVariant;
-  size?: AppBadgeSize;
+type WaflBadgeProps = HTMLAttributes<HTMLSpanElement> & {
+  tone?: WaflBadgeTone;
+  variant?: WaflBadgeVariant;
+  size?: WaflBadgeSize;
 };
 
-export default function AppBadge({
+export default function WaflBadge({
   className,
   tone,
   variant = "status",
   size = "md",
   ...props
-}: AppBadgeProps) {
+}: WaflBadgeProps) {
   const resolvedTone = tone ?? variantToneMap[variant];
 
   return (

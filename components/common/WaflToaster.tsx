@@ -2,7 +2,7 @@
 
 import { Toaster } from "sonner";
 
-export default function AppToaster() {
+export default function WaflToaster() {
   return (
     <Toaster
       position="bottom-center"

@@ -4,7 +4,7 @@ import { useRef, type ReactNode, type RefObject } from "react";
 
 import { useWorkspaceScrollReset } from "@/lib/hooks/workspace/useWorkspaceScrollReset";
 import { cn } from "@/lib/utils";
-import { AppResponsiveWorkspace } from "./AppResponsiveFrame";
+import { WaflResponsiveWorkspace } from "./WaflResponsiveFrame";
 import WaflDetailWorkspacePanel from "./WaflDetailWorkspacePanel";
 import WaflListWorkspacePanel from "./WaflListWorkspacePanel";
 import WaflSideWorkspacePanel from "./WaflSideWorkspacePanel";
@@ -51,7 +51,7 @@ export default function WaflDesktopWorkspaceFrame({
     >
       <div className="shrink-0">{topbar}</div>
       {beforeWorkspace}
-      <AppResponsiveWorkspace device="desktop">
+      <WaflResponsiveWorkspace device="desktop">
         {workspaceOverlay}
         <WaflThreePanelWorkspace
           list={<WaflListWorkspacePanel>{list}</WaflListWorkspacePanel>}
@@ -66,7 +66,7 @@ export default function WaflDesktopWorkspaceFrame({
             </WaflSideWorkspacePanel>
           )}
         />
-      </AppResponsiveWorkspace>
+      </WaflResponsiveWorkspace>
     </div>
   );
 }

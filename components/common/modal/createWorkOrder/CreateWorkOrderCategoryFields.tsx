@@ -1,4 +1,4 @@
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import type { CategoryOption } from "@/components/common/modal/createWorkOrder/createWorkOrderCategorySource";
 
 type Props = {
@@ -37,7 +37,7 @@ export default function CreateWorkOrderCategoryFields({ disabled = false, labels
     <div className="grid gap-4 md:grid-cols-3">
       <label className="grid gap-1.5">
         <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category1}</span>
-        <AppSelect
+        <WaflSelect
           value={values.category1}
           onValueChange={onChange.category1}
           options={toCategorySelectOptions(options.category1Options)}
@@ -48,7 +48,7 @@ export default function CreateWorkOrderCategoryFields({ disabled = false, labels
       </label>
       <label className="grid gap-1.5">
         <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category2}</span>
-        <AppSelect
+        <WaflSelect
           value={values.category2}
           onValueChange={onChange.category2}
           options={toCategorySelectOptions(options.category2Options)}
@@ -59,7 +59,7 @@ export default function CreateWorkOrderCategoryFields({ disabled = false, labels
       </label>
       <label className="grid gap-1.5">
         <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category3}</span>
-        <AppSelect
+        <WaflSelect
           value={values.category3}
           onValueChange={onChange.category3}
           options={toCategorySelectOptions(options.category3Options)}

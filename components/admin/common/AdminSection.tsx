@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AppCard, type AppCardVariant } from "@/components/common/ui";
+import { WaflCard, type WaflCardVariant } from "@/components/common/ui";
 
 export type AdminSectionDensity = "default" | "compact";
 
@@ -8,14 +8,14 @@ type AdminCardProps = {
   children: ReactNode;
   className?: string;
   as?: "section" | "article" | "div" | "header";
-  variant?: AppCardVariant;
+  variant?: WaflCardVariant;
 };
 
 export function AdminCard({ children, className = "", as: Component = "section", variant = "surface" }: AdminCardProps) {
   return (
-    <AppCard as={Component} variant={variant} padding="none" className={className}>
+    <WaflCard as={Component} variant={variant} padding="none" className={className}>
       {children}
-    </AppCard>
+    </WaflCard>
   );
 }
 

@@ -2,29 +2,29 @@ import { createElement, type HTMLAttributes, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-export type AppListRowAs = "div" | "article" | "button";
-export type AppListRowDensity = "regular" | "compact";
-export type AppListRowVariant = "surface" | "soft" | "plain";
+export type WaflListRowAs = "div" | "article" | "button";
+export type WaflListRowDensity = "regular" | "compact";
+export type WaflListRowVariant = "surface" | "soft" | "plain";
 
-type AppListRowProps = HTMLAttributes<HTMLElement> & {
-  as?: AppListRowAs;
+type WaflListRowProps = HTMLAttributes<HTMLElement> & {
+  as?: WaflListRowAs;
   title: ReactNode;
   description?: ReactNode;
   meta?: ReactNode;
   leading?: ReactNode;
   trailing?: ReactNode;
   selected?: boolean;
-  density?: AppListRowDensity;
-  variant?: AppListRowVariant;
+  density?: WaflListRowDensity;
+  variant?: WaflListRowVariant;
   type?: "button" | "submit" | "reset";
 };
 
-const densityClassMap: Record<AppListRowDensity, string> = {
+const densityClassMap: Record<WaflListRowDensity, string> = {
   regular: "p-3",
   compact: "p-2.5",
 };
 
-const variantClassMap: Record<AppListRowVariant, string> = {
+const variantClassMap: Record<WaflListRowVariant, string> = {
   surface: "border-[var(--pbp-border)] bg-[var(--pbp-surface)] hover:bg-[var(--pbp-surface-muted)]",
   soft: "border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] hover:bg-[var(--pbp-surface-muted)]",
   plain: "border-transparent bg-transparent hover:bg-[var(--pbp-surface-muted)]",
@@ -33,7 +33,7 @@ const variantClassMap: Record<AppListRowVariant, string> = {
 const selectedClassName =
   "border-[var(--pbp-accent)] bg-[color-mix(in_srgb,var(--pbp-accent)_12%,var(--pbp-surface))]";
 
-export default function AppListRow({
+export default function WaflListRow({
   as: Component = "div",
   title,
   description,
@@ -45,7 +45,7 @@ export default function AppListRow({
   variant = "surface",
   className,
   ...props
-}: AppListRowProps) {
+}: WaflListRowProps) {
   return createElement(
     Component,
     {

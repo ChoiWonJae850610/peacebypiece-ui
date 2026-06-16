@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { AppSegmentedTabs, WaflPanelContentShell, type AppSegmentedTabItem } from "@/components/common/ui";
+import { WaflSegmentedTabs, WaflPanelContentShell, type WaflSegmentedTabItem } from "@/components/common/ui";
 import WorkOrderDetailSectionStack from "@/components/workorder/detail/shared/WorkOrderDetailSectionStack";
 import RejectionReasonNotice from "@/components/workorder/detail/RejectionReasonNotice";
 import WorkOrderDetailTabletCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletCostSummarySection";
@@ -24,8 +24,8 @@ export default function WorkOrderDetailTabletView({
   const { i18n } = useI18n();
   const [activePanel, setActivePanel] = useState<WorkOrderTabletPanelKey>("summary");
   const detailTabs = i18n.workorder.ui.layout.mobileDrawer.detailTabs;
-  const tabs = useMemo<Array<AppSegmentedTabItem<WorkOrderTabletPanelKey>>>(() => {
-    const items: Array<AppSegmentedTabItem<WorkOrderTabletPanelKey>> = [
+  const tabs = useMemo<Array<WaflSegmentedTabItem<WorkOrderTabletPanelKey>>>(() => {
+    const items: Array<WaflSegmentedTabItem<WorkOrderTabletPanelKey>> = [
       { key: "summary", label: detailTabs.basic },
       { key: "order", label: detailTabs.order },
     ];
@@ -41,7 +41,7 @@ export default function WorkOrderDetailTabletView({
 
   return (
     <WaflPanelContentShell>
-      <AppSegmentedTabs
+      <WaflSegmentedTabs
         items={tabs}
         value={resolvedPanel}
         onChange={setActivePanel}

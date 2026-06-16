@@ -22,7 +22,7 @@ import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
 } from "@/components/admin/common/AdminStatusBadge";
-import AppSelect from "@/components/common/ui/AppSelect";
+import WaflSelect from "@/components/common/ui/WaflSelect";
 import { WaflInput, WaflTextarea } from "@/components/common/ui/WaflForm";
 import {
   WaflSurface,
@@ -1526,7 +1526,7 @@ function FeedbackPanel() {
               >
                 {t("settings.feedback.typeLabel", "문의 유형")}
               </label>
-              <AppSelect
+              <WaflSelect
                 value={feedbackType}
                 onValueChange={(value) =>
                   setFeedbackType(value as CompanyFeedbackType)

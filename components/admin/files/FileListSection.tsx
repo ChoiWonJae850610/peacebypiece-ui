@@ -2,7 +2,7 @@
 
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AppSelect, WaflSurface } from "@/components/common/ui";
+import { WaflSelect, WaflSurface } from "@/components/common/ui";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_STORAGE_CHECKBOX_CLASS,
@@ -44,7 +44,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         title={t("filesList.title", `${t("terms.files.documentDesignGroup", "문서/디자인")} 목록`)}
         actionsClassName="w-full [&>button]:flex-1 sm:w-auto sm:[&>button]:flex-none"
       >
-        <AppSelect
+        <WaflSelect
           value={sortKey}
           onValueChange={(value) => onChangeSort(value as AdminFileSortKey)}
           options={ADMIN_FILE_SORT_OPTIONS.map((option) => ({

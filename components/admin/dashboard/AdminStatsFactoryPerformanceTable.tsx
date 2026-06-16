@@ -10,7 +10,7 @@ import {
   ADMIN_RESPONSIVE_TABLE_ROW_CLASS,
   ADMIN_RESPONSIVE_TABLE_SECONDARY_TEXT_CLASS,
 } from "@/components/admin/common/responsiveTable/adminResponsiveTableStyles";
-import { AppTooltip } from "@/components/common/ui";
+import { WaflTooltip } from "@/components/common/ui";
 import type { AdminStatsFactoryPerformance } from "@/lib/admin/stats/types";
 import {
   formatAdminStatsCount,
@@ -61,7 +61,7 @@ export function FactoryPerformanceTable({
               className={ADMIN_RESPONSIVE_TABLE_ROW_CLASS}
               style={{ gridTemplateColumns: FACTORY_PERFORMANCE_GRID_TEMPLATE_COLUMNS }}
             >
-              <AppTooltip content={getTooltip(item)} side="top">
+              <WaflTooltip content={getTooltip(item)} side="top">
                 <span className="block min-w-0 cursor-help">
                   <span className={`block ${ADMIN_RESPONSIVE_TABLE_PRIMARY_TEXT_CLASS}`}>
                     {item.label}
@@ -70,8 +70,8 @@ export function FactoryPerformanceTable({
                     {formatAdminStatsCount(item.productionCount, countSuffix)}
                   </span>
                 </span>
-              </AppTooltip>
-              <AppTooltip content={getTooltip(item)} side="top">
+              </WaflTooltip>
+              <WaflTooltip content={getTooltip(item)} side="top">
                 <span className="inline-flex min-w-0 cursor-help justify-start">
                   <AdminStatusBadge
                     tone={item.dueDelayRate && item.dueDelayRate > 0 ? "warning" : "success"}
@@ -80,8 +80,8 @@ export function FactoryPerformanceTable({
                     {formatAdminStatsPercent(item.dueDelayRate, zeroPercentLabel)}
                   </AdminStatusBadge>
                 </span>
-              </AppTooltip>
-              <AppTooltip content={getTooltip(item)} side="top">
+              </WaflTooltip>
+              <WaflTooltip content={getTooltip(item)} side="top">
                 <span className="inline-flex min-w-0 cursor-help justify-start">
                   <AdminStatusBadge
                     tone={item.qualityIssueRate && item.qualityIssueRate > 0 ? "warning" : "success"}
@@ -90,7 +90,7 @@ export function FactoryPerformanceTable({
                     {formatAdminStatsPercent(item.qualityIssueRate, zeroPercentLabel)}
                   </AdminStatusBadge>
                 </span>
-              </AppTooltip>
+              </WaflTooltip>
             </div>
           ))
         ) : (

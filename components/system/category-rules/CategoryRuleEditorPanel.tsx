@@ -2,7 +2,7 @@
 
 import { type RefObject } from "react";
 import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
-import { AppSelect } from "@/components/common/ui";
+import { WaflSelect } from "@/components/common/ui";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
@@ -102,7 +102,7 @@ export function CategoryRuleEditorPanel({
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2">
               <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category1Label}</span>
-              <AppSelect
+              <WaflSelect
                 value={currentCategory1}
                 onValueChange={onChangeCategory1}
                 options={category1Options.map((option) => ({ value: option, label: option }))}
@@ -111,7 +111,7 @@ export function CategoryRuleEditorPanel({
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category2Label}</span>
-              <AppSelect
+              <WaflSelect
                 value={currentCategory2}
                 onValueChange={onChangeCategory2}
                 options={category2Options.map((option) => ({ value: option, label: option }))}
@@ -120,7 +120,7 @@ export function CategoryRuleEditorPanel({
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category3Label}</span>
-              <AppSelect
+              <WaflSelect
                 value={currentCategory3}
                 onValueChange={onChangeCategory3}
                 options={category3Options.map((option) => ({ value: option, label: option }))}

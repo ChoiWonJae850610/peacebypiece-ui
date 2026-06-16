@@ -1,6 +1,6 @@
 import { WORKFLOW_ACTION_TYPE } from "@/lib/constants/workflowActions";
 import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
-import { AppBadge, WaflButton, WaflSurface } from "@/components/common/ui";
+import { WaflBadge, WaflButton, WaflSurface } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateDisplayStageLabel, translateWorkflowActionLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
@@ -72,9 +72,9 @@ export default function WorkOrderDetailMobileActionSection({
         })}
       </ol>
       {showMaterialOrderPendingBadge ? (
-        <AppBadge tone="warning" size="sm" className="mt-3">
+        <WaflBadge tone="warning" size="sm" className="mt-3">
           {copy.materialOrderPendingBadge}
-        </AppBadge>
+        </WaflBadge>
       ) : null}
       {actions.length > 0 ? (
         <div className="mt-4 grid gap-2">

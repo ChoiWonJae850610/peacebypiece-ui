@@ -1,8 +1,8 @@
 import { type KeyboardEvent, type ReactNode } from "react";
 import {
-  AppInlineSelectEditor,
+  WaflInlineSelectEditor,
   WaflIconButton,
-  type AppInlineSelectEditorOption,
+  type WaflInlineSelectEditorOption,
   WaflCardButton,
   WaflInput,
 } from "@/components/common/ui";
@@ -332,7 +332,7 @@ export function EditableValue({
       onCommit(nextValue);
     };
 
-    const selectOptions: AppInlineSelectEditorOption[] = options.map(
+    const selectOptions: WaflInlineSelectEditorOption[] = options.map(
       (option) => ({
         value: option,
         disabled: isUnavailableWorkOrderSelectOption(option),
@@ -340,7 +340,7 @@ export function EditableValue({
     );
 
     return (
-      <AppInlineSelectEditor
+      <WaflInlineSelectEditor
         value={selectValue}
         options={selectOptions}
         onCommit={commitSelectValue}

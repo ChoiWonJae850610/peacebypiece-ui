@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import AppBadge, { type AppBadgeTone } from "@/components/common/ui/AppBadge";
+import WaflBadge, { type WaflBadgeTone } from "@/components/common/ui/WaflBadge";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
@@ -14,7 +14,7 @@ type AdminPolicyOverviewProps = {
   settings: CompanySettings;
 };
 
-function getStatusTone(status: AdminPolicyStatus): AppBadgeTone {
+function getStatusTone(status: AdminPolicyStatus): WaflBadgeTone {
   if (status === "active") return "success";
   if (status === "fixed") return "info";
   return "neutral";
@@ -38,9 +38,9 @@ function PolicyCard({
             {item.value}
           </p>
         </div>
-        <AppBadge tone={getStatusTone(item.status)} size="xs">
+        <WaflBadge tone={getStatusTone(item.status)} size="xs">
           {item.statusLabel}
-        </AppBadge>
+        </WaflBadge>
       </div>
       <p className="mt-3 text-xs leading-5 text-[var(--pbp-text-muted)]">
         {item.description}
@@ -115,9 +115,9 @@ export default function AdminPolicyOverview({
                       {item.value}
                     </p>
                   </div>
-                  <AppBadge tone={getStatusTone(item.status)} size="xs">
+                  <WaflBadge tone={getStatusTone(item.status)} size="xs">
                     {item.statusLabel}
-                  </AppBadge>
+                  </WaflBadge>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">
                   {item.description}

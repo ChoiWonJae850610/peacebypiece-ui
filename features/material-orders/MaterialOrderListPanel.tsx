@@ -3,14 +3,14 @@ import { useMemo, useState } from "react";
 import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
 
 import {
-  AppBadge,
-  AppSelect,
+  WaflBadge,
+  WaflSelect,
   WaflButton,
   WaflCardButton,
   WaflInput,
   WaflSelectableCard,
   WaflListPanelShell,
-  type AppSelectOption,
+  type WaflSelectOption,
 } from "@/components/common/ui";
 import { WorkOrderCardActionMenu } from "@/components/workorder/common/WorkOrderIconButtons";
 import {
@@ -54,7 +54,7 @@ type MaterialOrderListPanelProps = {
 };
 
 const MATERIAL_ORDER_STATUS_OPTIONS: Array<
-  AppSelectOption & { value: "all" | MaterialOrderStatus }
+  WaflSelectOption & { value: "all" | MaterialOrderStatus }
 > = [
   { value: "all", label: "상태 전체" },
   { value: "draft", label: "작성중" },
@@ -66,7 +66,7 @@ const MATERIAL_ORDER_STATUS_OPTIONS: Array<
 ];
 
 const MATERIAL_ORDER_TYPE_OPTIONS: Array<
-  AppSelectOption & { value: "all" | MaterialOrderLineItemType }
+  WaflSelectOption & { value: "all" | MaterialOrderLineItemType }
 > = [
   { value: "all", label: "전체" },
   { value: "fabric", label: "원단" },
@@ -146,7 +146,7 @@ export default function MaterialOrderListPanel({
 
   const filterControls = (
       <div className="grid grid-cols-2 gap-2">
-        <AppSelect
+        <WaflSelect
           value={typeFilter}
           onValueChange={(value) => setTypeFilter(value as MaterialOrderFilterType)}
           options={MATERIAL_ORDER_TYPE_OPTIONS}
@@ -154,7 +154,7 @@ export default function MaterialOrderListPanel({
           ariaLabel="자재 종류 필터"
           triggerClassName={MATERIAL_ORDER_LIST_SELECT_TRIGGER_CLASS}
         />
-        <AppSelect
+        <WaflSelect
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as MaterialOrderFilterStatus)}
           options={MATERIAL_ORDER_STATUS_OPTIONS}
@@ -270,7 +270,7 @@ function MaterialOrderListButton({
             </p>
           </div>
           <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
-            <AppBadge
+            <WaflBadge
               tone="neutral"
               size="sm"
               className={`pbp-workorder-status-badge h-6 gap-2 transition-colors duration-150 ease-out ${selected ? "pbp-workorder-status-active" : getMaterialOrderStatusSemanticClass(order.status)}`}
@@ -280,7 +280,7 @@ function MaterialOrderListButton({
                 aria-hidden="true"
               />
               {formatMaterialOrderStatusLabel(order.status)}
-            </AppBadge>
+            </WaflBadge>
           </div>
           <p className="mt-1.5 truncate text-[11px] font-medium pbp-text-muted">
             업체: {supplierLabel}
