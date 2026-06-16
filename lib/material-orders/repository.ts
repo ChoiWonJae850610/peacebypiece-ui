@@ -1,14 +1,12 @@
 import "server-only";
 
-import { normalizePbpLocalDateValue } from "@/lib/date/localDate";
-
-import { queryDb, withDbTransaction, type DbTransactionClient } from "@/lib/db/client";
+import { queryDb, withDbTransaction } from "@/lib/db/client";
 import { canEditMaterialOrderOnServer } from "@/lib/material-orders/serverPolicy";
 import type {
   MaterialOrder,
   MaterialOrderAllocation,
-  MaterialOrderCreateInput,
   MaterialOrderLine,
+  MaterialOrderCreateInput,
   MaterialOrderHeaderUpdateInput,
   MaterialOrderLineInput,
   MaterialOrderListParams,
@@ -18,239 +16,18 @@ import type {
   MaterialOrderSupplierListParams,
   MaterialOrderUpdateInput,
 } from "@/lib/material-orders/types";
-import { WORKFLOW_PATH, normalizeWorkflowPath } from "@/lib/constants/workflowPaths";
+import { WORKFLOW_PATH } from "@/lib/constants/workflowPaths";
 import { isMaterialOrderStatusTransitionAllowed } from "@/lib/material-orders/statusFlow";
 
-type MaterialOrderRow = {
-  id: string;
-  company_id: string;
-  supplier_partner_id: string | null;
-  supplier_partner_name: string | null;
-  material_type: "fabric" | "submaterial" | null;
-  status: MaterialOrderStatus;
-  workflow_path: string | null;
-  requested_by_user_id: string | null;
-  requested_by_display_name: string | null;
-  approved_by_user_id: string | null;
-  ordered_at: Date | string | null;
-  due_date: Date | string | null;
-  total_amount: string | number;
-  note: string | null;
-  created_at: Date | string;
-  updated_at: Date | string;
-};
-
-type MaterialOrderLineRow = {
-  id: string;
-  company_id: string;
-  material_order_id: string;
-  partner_item_id: string | null;
-  item_name: string;
-  item_type: "fabric" | "submaterial";
-  color: string | null;
-  spec: string | null;
-  unit: string;
-  order_quantity: string | number;
-  unit_price: string | number;
-  amount: string | number;
-  note: string | null;
-  created_at: Date | string;
-  updated_at: Date | string;
-};
-
-
-
-type MaterialOrderSupplierRow = {
-  id: string;
-  name: string;
-  supplier_type: "fabric" | "submaterial";
-  is_active: boolean;
-};
-
-type MaterialOrderAllocationRow = {
-  id: string;
-  company_id: string;
-  material_order_line_id: string;
-  work_order_id: string;
-  source_material_key: string | null;
-  allocated_quantity: string | number;
-  allocation_note: string | null;
-  created_at: Date | string;
-  updated_at: Date | string;
-};
-
-function toIsoString(value: Date | string): string {
-  if (value instanceof Date) return value.toISOString();
-  return value;
-}
-
-function toIsoStringOrNull(value: Date | string | null): string | null {
-  if (value === null) return null;
-  return toIsoString(value);
-}
-
-function toNumber(value: string | number): number {
-  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function normalizeText(value: string | null | undefined): string | null {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : null;
-}
-
-function normalizeQuantity(value: number | null | undefined): number {
-  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
-}
-
-function normalizeMoney(value: number | null | undefined): number {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
-}
-
-function resolveLineAmount(line: MaterialOrderLineInput): number {
-  const explicitAmount = normalizeMoney(line.amount);
-  if (explicitAmount > 0) return explicitAmount;
-
-  const orderQuantity = normalizeQuantity(line.orderQuantity);
-  const unitPrice = normalizeMoney(line.unitPrice);
-  return Number((orderQuantity * unitPrice).toFixed(2));
-}
-
-function calculateTotalAmount(lines: readonly MaterialOrderLineInput[] = []): number {
-  return Number(lines.reduce((sum, line) => sum + resolveLineAmount(line), 0).toFixed(2));
-}
-
-function mapAllocationRow(row: MaterialOrderAllocationRow): MaterialOrderAllocation {
-  return {
-    id: row.id,
-    companyId: row.company_id,
-    materialOrderLineId: row.material_order_line_id,
-    workOrderId: row.work_order_id,
-    sourceMaterialKey: row.source_material_key,
-    allocatedQuantity: toNumber(row.allocated_quantity),
-    allocationNote: row.allocation_note,
-    createdAt: toIsoString(row.created_at),
-    updatedAt: toIsoString(row.updated_at),
-  };
-}
-
-function mapLineRow(
-  row: MaterialOrderLineRow,
-  allocationsByLineId: ReadonlyMap<string, MaterialOrderAllocation[]>,
-): MaterialOrderLine {
-  return {
-    id: row.id,
-    companyId: row.company_id,
-    materialOrderId: row.material_order_id,
-    partnerItemId: row.partner_item_id,
-    itemName: row.item_name,
-    itemType: row.item_type,
-    color: row.color,
-    spec: row.spec,
-    unit: row.unit,
-    orderQuantity: toNumber(row.order_quantity),
-    unitPrice: toNumber(row.unit_price),
-    amount: toNumber(row.amount),
-    note: row.note,
-    allocations: allocationsByLineId.get(row.id) ?? [],
-    createdAt: toIsoString(row.created_at),
-    updatedAt: toIsoString(row.updated_at),
-  };
-}
-
-function mapOrderRow(
-  row: MaterialOrderRow,
-  linesByOrderId: ReadonlyMap<string, MaterialOrderLine[]>,
-): MaterialOrder {
-  return {
-    id: row.id,
-    companyId: row.company_id,
-    supplierPartnerId: row.supplier_partner_id,
-    supplierPartnerName: row.supplier_partner_name,
-    materialType: row.material_type,
-    status: row.status,
-    workflowPath: normalizeWorkflowPath(row.workflow_path),
-    requestedByUserId: row.requested_by_user_id,
-    requestedByDisplayName: row.requested_by_display_name,
-    approvedByUserId: row.approved_by_user_id,
-    orderedAt: toIsoStringOrNull(row.ordered_at),
-    dueDate: normalizePbpLocalDateValue(row.due_date) || null,
-    totalAmount: toNumber(row.total_amount),
-    note: row.note,
-    lines: linesByOrderId.get(row.id) ?? [],
-    createdAt: toIsoString(row.created_at),
-    updatedAt: toIsoString(row.updated_at),
-  };
-}
-
-function buildRequestedByVisibilityPredicate(
-  visibility: MaterialOrderListParams["visibility"],
-  values: unknown[],
-  columnSql = "orders.requested_by_user_id",
-): string {
-  if (visibility?.mode !== "assigned") return "";
-
-  const accessibleOwnerIds = Array.from(new Set([visibility.userId, visibility.companyMemberId]
-    .map((value) => value?.trim())
-    .filter((value): value is string => Boolean(value))));
-
-  if (accessibleOwnerIds.length === 0) return "AND FALSE";
-
-  values.push(accessibleOwnerIds);
-  return `AND ${columnSql} = ANY($${values.length}::text[])`;
-}
-
-function buildOrderWhere(params: MaterialOrderListParams): { sql: string; values: unknown[] } {
-  const clauses = ["orders.company_id = $1"];
-  const values: unknown[] = [params.companyId];
-
-  const visibilityPredicate = buildRequestedByVisibilityPredicate(params.visibility, values);
-  if (visibilityPredicate) clauses.push(visibilityPredicate.replace(/^AND\s+/, ""));
-
-  if (params.status) {
-    values.push(params.status);
-    clauses.push(`orders.status = $${values.length}`);
-  }
-
-  return { sql: clauses.join(" AND "), values };
-}
-
-const MATERIAL_ORDER_SELECT_SQL = `
-  SELECT
-    orders.id,
-    orders.company_id,
-    orders.supplier_partner_id,
-    supplier.name AS supplier_partner_name,
-    orders.material_type,
-    orders.status,
-    orders.workflow_path,
-    orders.requested_by_user_id,
-    COALESCE(
-      NULLIF(requested_member.display_name, ''),
-      NULLIF(requested_user.name, ''),
-      NULLIF(requested_user.email, '')
-    ) AS requested_by_display_name,
-    orders.approved_by_user_id,
-    orders.ordered_at,
-    orders.due_date,
-    orders.total_amount,
-    orders.note,
-    orders.created_at,
-    orders.updated_at
-  FROM material_orders orders
-  LEFT JOIN partners supplier
-    ON supplier.id = orders.supplier_partner_id
-    AND supplier.company_id = orders.company_id
-  LEFT JOIN users requested_user
-    ON requested_user.id = orders.requested_by_user_id
-  LEFT JOIN company_members requested_member
-    ON requested_member.user_id = requested_user.id
-    AND requested_member.company_id = orders.company_id
-`;
+import type { MaterialOrderAllocationRow, MaterialOrderLineRow, MaterialOrderRow, MaterialOrderSupplierRow } from "@/lib/material-orders/repository/rows";
+import { mapMaterialOrderAllocationRow, mapMaterialOrderLineRow, mapMaterialOrderRow, mapMaterialOrderSupplierRow } from "@/lib/material-orders/repository/mappers";
+import { buildMaterialOrderVisibilityPredicate, buildMaterialOrderWhere, MATERIAL_ORDER_SELECT_SQL } from "@/lib/material-orders/repository/queryHelpers";
+import { calculateMaterialOrderTotalAmount, normalizeMaterialOrderText } from "@/lib/material-orders/repository/normalizers";
+import { insertMaterialOrderAllocations, insertMaterialOrderLine } from "@/lib/material-orders/repository/lineWriter";
+import { MATERIAL_ORDER_STATUS } from "@/lib/material-orders/types";
 
 async function listOrderRows(params: MaterialOrderListParams): Promise<MaterialOrderRow[]> {
-  const where = buildOrderWhere(params);
+  const where = buildMaterialOrderWhere(params);
   const result = await queryDb<MaterialOrderRow>(
     `${MATERIAL_ORDER_SELECT_SQL}
      WHERE ${where.sql}
@@ -324,34 +101,24 @@ function groupMaterialOrders(
 
   for (const row of allocationRows) {
     const allocations = allocationsByLineId.get(row.material_order_line_id) ?? [];
-    allocations.push(mapAllocationRow(row));
+    allocations.push(mapMaterialOrderAllocationRow(row));
     allocationsByLineId.set(row.material_order_line_id, allocations);
   }
 
   const linesByOrderId = new Map<string, MaterialOrderLine[]>();
   for (const row of lineRows) {
     const lines = linesByOrderId.get(row.material_order_id) ?? [];
-    lines.push(mapLineRow(row, allocationsByLineId));
+    lines.push(mapMaterialOrderLineRow(row, allocationsByLineId));
     linesByOrderId.set(row.material_order_id, lines);
   }
 
-  return orderRows.map((row) => mapOrderRow(row, linesByOrderId));
+  return orderRows.map((row) => mapMaterialOrderRow(row, linesByOrderId));
 }
-
 
 function mapSupplierItemType(type: MaterialOrderSupplierListParams["type"]): "fabric" | "subsidiary" | null {
   if (type === "fabric") return "fabric";
   if (type === "submaterial") return "subsidiary";
   return null;
-}
-
-function mapSupplierRow(row: MaterialOrderSupplierRow): MaterialOrderSupplier {
-  return {
-    id: row.id,
-    name: row.name,
-    type: row.supplier_type,
-    isActive: row.is_active,
-  };
 }
 
 export async function listMaterialOrderSuppliersByCompany(
@@ -383,7 +150,7 @@ export async function listMaterialOrderSuppliersByCompany(
     values,
   );
 
-  return result.rows.map(mapSupplierRow);
+  return result.rows.map(mapMaterialOrderSupplierRow);
 }
 
 export async function listMaterialOrdersByCompany(params: MaterialOrderListParams): Promise<MaterialOrder[]> {
@@ -416,80 +183,6 @@ export async function getMaterialOrderById(input: {
   return groupMaterialOrders(orderRows, lineRows, allocationRows)[0] ?? null;
 }
 
-async function insertMaterialOrderLine(
-  client: DbTransactionClient,
-  companyId: string,
-  materialOrderId: string,
-  line: MaterialOrderLineInput,
-): Promise<string> {
-  const result = await client.query<{ id: string }>(
-    `INSERT INTO material_order_lines (
-       company_id,
-       material_order_id,
-       partner_item_id,
-       item_name,
-       item_type,
-       color,
-       spec,
-       unit,
-       order_quantity,
-       unit_price,
-       amount,
-       note
-     )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-     RETURNING id`,
-    [
-      companyId,
-      materialOrderId,
-      normalizeText(line.partnerItemId),
-      line.itemName.trim(),
-      line.itemType,
-      normalizeText(line.color),
-      normalizeText(line.spec),
-      line.unit.trim(),
-      normalizeQuantity(line.orderQuantity),
-      normalizeMoney(line.unitPrice),
-      resolveLineAmount(line),
-      normalizeText(line.note),
-    ],
-  );
-
-  return result.rows[0]?.id ?? "";
-}
-
-async function insertMaterialOrderAllocations(
-  client: DbTransactionClient,
-  companyId: string,
-  materialOrderLineId: string,
-  line: MaterialOrderLineInput,
-): Promise<void> {
-  for (const allocation of line.allocations ?? []) {
-    const workOrderId = allocation.workOrderId.trim();
-    if (!workOrderId) continue;
-
-    await client.query(
-      `INSERT INTO material_order_allocations (
-         company_id,
-         material_order_line_id,
-         work_order_id,
-         source_material_key,
-         allocated_quantity,
-         allocation_note
-       )
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        companyId,
-        materialOrderLineId,
-        workOrderId,
-        normalizeText(allocation.sourceMaterialKey),
-        normalizeQuantity(allocation.allocatedQuantity),
-        normalizeText(allocation.allocationNote),
-      ],
-    );
-  }
-}
-
 export async function createMaterialOrderForCompany(input: MaterialOrderCreateInput): Promise<MaterialOrder | null> {
   const materialOrderId = await withDbTransaction(async (client) => {
     const orderResult = await client.query<{ id: string }>(
@@ -508,14 +201,14 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
        RETURNING id`,
       [
         input.companyId,
-        normalizeText(input.supplierPartnerId),
+        normalizeMaterialOrderText(input.supplierPartnerId),
         input.lines?.[0]?.itemType ?? null,
-        input.status ?? "draft",
+        input.status ?? MATERIAL_ORDER_STATUS.draft,
         WORKFLOW_PATH.standardReview,
         input.requestedByUserId,
-        calculateTotalAmount(input.lines),
-        normalizeText(input.note),
-        normalizeText(input.dueDate),
+        calculateMaterialOrderTotalAmount(input.lines),
+        normalizeMaterialOrderText(input.note),
+        normalizeMaterialOrderText(input.dueDate),
       ],
     );
 
@@ -537,13 +230,12 @@ export async function createMaterialOrderForCompany(input: MaterialOrderCreateIn
   });
 }
 
-
 export async function updateMaterialOrderHeaderForCompany(
   input: MaterialOrderHeaderUpdateInput,
 ): Promise<MaterialOrder | null> {
   const materialOrderId = await withDbTransaction(async (client) => {
     const currentValues: unknown[] = [input.companyId, input.materialOrderId];
-    const visibilityPredicate = buildRequestedByVisibilityPredicate(
+    const visibilityPredicate = buildMaterialOrderVisibilityPredicate(
       input.visibility,
       currentValues,
       "requested_by_user_id",
@@ -595,9 +287,9 @@ export async function updateMaterialOrderHeaderForCompany(
       input.materialOrderId,
       nextMaterialType,
       hasSupplierPartnerId,
-      normalizeText(input.supplierPartnerId),
+      normalizeMaterialOrderText(input.supplierPartnerId),
       hasDueDate,
-      normalizeText(input.dueDate),
+      normalizeMaterialOrderText(input.dueDate),
     ];
 
     await client.query(
@@ -672,12 +364,12 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
     const updateValues: unknown[] = [
       input.companyId,
       input.materialOrderId,
-      normalizeText(input.supplierPartnerId),
-      calculateTotalAmount(input.lines),
-      normalizeText(input.note),
-      normalizeText(input.dueDate),
+      normalizeMaterialOrderText(input.supplierPartnerId),
+      calculateMaterialOrderTotalAmount(input.lines),
+      normalizeMaterialOrderText(input.note),
+      normalizeMaterialOrderText(input.dueDate),
     ];
-    const visibilityPredicate = buildRequestedByVisibilityPredicate(
+    const visibilityPredicate = buildMaterialOrderVisibilityPredicate(
       input.visibility,
       updateValues,
       "requested_by_user_id",
@@ -737,8 +429,8 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
 export async function updateMaterialOrderStatusForCompany(
   input: MaterialOrderStatusUpdateInput,
 ): Promise<MaterialOrder | null> {
-  const approvedByUserId = input.status === "approved" ? input.actorUserId : null;
-  const orderedAtSql = input.status === "order_placed" ? "now()" : "ordered_at";
+  const approvedByUserId = input.status === MATERIAL_ORDER_STATUS.approved ? input.actorUserId : null;
+  const orderedAtSql = input.status === MATERIAL_ORDER_STATUS.orderPlaced ? "now()" : "ordered_at";
   const currentOrder = await getMaterialOrderById({
     companyId: input.companyId,
     materialOrderId: input.materialOrderId,
@@ -750,8 +442,8 @@ export async function updateMaterialOrderStatusForCompany(
   }
 
   const workflowPath =
-    input.status === "approved"
-      ? currentOrder?.status === "draft"
+    input.status === MATERIAL_ORDER_STATUS.approved
+      ? currentOrder?.status === MATERIAL_ORDER_STATUS.draft
         ? WORKFLOW_PATH.directOrder
         : WORKFLOW_PATH.standardReview
       : currentOrder?.workflowPath ?? WORKFLOW_PATH.standardReview;
@@ -762,7 +454,7 @@ export async function updateMaterialOrderStatusForCompany(
     approvedByUserId,
     workflowPath,
   ];
-  const visibilityPredicate = buildRequestedByVisibilityPredicate(
+  const visibilityPredicate = buildMaterialOrderVisibilityPredicate(
     input.visibility,
     updateValues,
     "requested_by_user_id",

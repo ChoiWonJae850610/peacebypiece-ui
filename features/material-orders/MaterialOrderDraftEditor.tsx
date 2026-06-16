@@ -20,6 +20,7 @@ import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderList
 import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
+import { MATERIAL_ORDER_STATUS } from "@/lib/material-orders/types";
 import { useWorkspaceSelectionController } from "@/lib/hooks/workspace/useWorkspaceSelectionController";
 import { useWorkspaceToolState } from "@/lib/hooks/workspace/useWorkspaceToolState";
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
@@ -262,7 +263,7 @@ export default function MaterialOrderDraftEditor({
       materialRequestCompletionMap={materialRequestCompletionMap}
       selectedMaterialType={materialType}
       hasSelectedOrder={Boolean(selectedOrderId)}
-      editable={selectedOrder?.status === "draft" || selectedOrder?.status === "rejected"}
+      editable={selectedOrder?.status === MATERIAL_ORDER_STATUS.draft || selectedOrder?.status === MATERIAL_ORDER_STATUS.rejected}
       loading={workOrdersLoading}
       workspaceLoading={ordersLoading}
       errorMessage={workOrdersError}

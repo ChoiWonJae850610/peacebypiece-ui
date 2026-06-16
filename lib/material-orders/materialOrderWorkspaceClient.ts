@@ -6,14 +6,25 @@ import {
   resolveMaterialOrderReadinessStatus,
   type MaterialOrderReadinessStatus,
 } from "@/lib/material-orders/materialOrderReadiness";
-import type {
-  MaterialOrder,
-  MaterialOrderCreateInput,
-  MaterialOrderLineInput,
-  MaterialOrderLineItemType,
-  MaterialOrderSupplier,
-  MaterialOrderSupplierListResult,
+import {
+  MATERIAL_ORDER_STATUS,
+  type MaterialOrder,
+  type MaterialOrderCreateInput,
+  type MaterialOrderLineInput,
+  type MaterialOrderLineItemType,
+  type MaterialOrderSupplier,
+  type MaterialOrderSupplierListResult,
 } from "@/lib/material-orders/types";
+import {
+  formatMaterialOrderStatusLabel,
+  formatMaterialOrderTypeLabel,
+  resolveMaterialOrderStatusBadgeTone,
+} from "@/lib/material-orders/presentation";
+export {
+  formatMaterialOrderStatusLabel,
+  formatMaterialOrderTypeLabel,
+  resolveMaterialOrderStatusBadgeTone,
+} from "@/lib/material-orders/presentation";
 
 export type MaterialOrderWorkspaceListResult = {
   materialOrders: MaterialOrder[];
@@ -67,49 +78,6 @@ export function formatMaterialOrderDisplayTitle(order: MaterialOrder): string {
 
 export function formatMaterialOrderRequesterLabel(order: Pick<MaterialOrder, "requestedByDisplayName">): string {
   return order.requestedByDisplayName?.trim() || "담당자 미확인";
-}
-
-export function formatMaterialOrderStatusLabel(status: MaterialOrder["status"]): string {
-  switch (status) {
-    case "draft":
-      return "작성중";
-    case "review_requested":
-      return "검토요청";
-    case "approved":
-      return "발주요청";
-    case "order_placed":
-      return "발주완료";
-    case "rejected":
-      return "반려";
-    case "cancelled":
-      return "취소";
-    default:
-      return status;
-  }
-}
-
-export function resolveMaterialOrderStatusBadgeTone(status: MaterialOrder["status"]): "neutral" | "info" | "success" | "warning" | "danger" {
-  switch (status) {
-    case "draft":
-      return "neutral";
-    case "review_requested":
-      return "warning";
-    case "approved":
-      return "info";
-    case "order_placed":
-      return "success";
-    case "rejected":
-    case "cancelled":
-      return "danger";
-    default:
-      return "neutral";
-  }
-}
-
-export function formatMaterialOrderTypeLabel(type: MaterialOrderLineItemType | null | ""): string {
-  if (type === "fabric") return "원단";
-  if (type === "submaterial") return "부자재";
-  return "미지정";
 }
 
 export function formatMaterialOrderDateLabel(value: string | null | undefined): string {
@@ -174,7 +142,7 @@ export async function fetchMaterialOrderSuppliers(type: MaterialOrderLineItemTyp
 
 export async function createEmptyMaterialOrder(): Promise<MaterialOrderWorkspaceMutationResult> {
   const body: Partial<MaterialOrderCreateInput> = {
-    status: "draft",
+    status: MATERIAL_ORDER_STATUS.draft,
     lines: [],
   };
 
@@ -256,7 +224,7 @@ export async function cancelMaterialOrder(input: {
 }): Promise<MaterialOrderWorkspaceMutationResult> {
   return updateMaterialOrderStatus({
     materialOrderId: input.materialOrderId,
-    status: "cancelled",
+    status: MATERIAL_ORDER_STATUS.cancelled,
   });
 }
 

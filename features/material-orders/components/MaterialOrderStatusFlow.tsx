@@ -1,6 +1,6 @@
+import { formatMaterialOrderStatusLabel } from "@/lib/material-orders/presentation";
 import { WorkflowProgressPanel, type WorkflowProgressPanelAction, type WorkflowProgressPanelLayout, type WorkflowProgressPanelStep } from "@/components/common/workflow/WorkflowProgressPanel";
 import { WORKFLOW_PATH } from "@/lib/constants/workflowPaths";
-import { formatMaterialOrderStatusLabel } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import {
   MATERIAL_ORDER_STATUS_STEPS,
   resolveMaterialOrderStatusActions,

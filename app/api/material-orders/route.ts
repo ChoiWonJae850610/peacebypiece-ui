@@ -16,6 +16,13 @@ import { isCompanyAdminSessionRole } from "@/lib/constants/sessionRoles";
 import { getMaterialOrderById } from "@/lib/material-orders/repository";
 import { isAllowedMaterialOrderTransition } from "@/lib/material-orders/serverPolicy";
 import {
+  isMaterialOrderStatus,
+  normalizeMaterialOrderLineItemType,
+  normalizeMaterialOrderLines,
+  normalizeMaterialOrderOptionalText,
+  type MaterialOrderRequestBody,
+} from "@/lib/material-orders/requestNormalization";
+import {
   createWorkspaceMaterialOrder,
   listWorkspaceMaterialOrders,
   updateWorkspaceMaterialOrderDetail,
@@ -23,94 +30,19 @@ import {
   updateWorkspaceMaterialOrderStatus,
 } from "@/lib/material-orders/service";
 import {
-  MATERIAL_ORDER_STATUSES,
+  MATERIAL_ORDER_STATUS,
   type MaterialOrderLineInput,
   type MaterialOrderStatus,
 } from "@/lib/material-orders/types";
 import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
-
-type MaterialOrderRequestBody = {
-  materialOrderId?: unknown;
-  supplierPartnerId?: unknown;
-  status?: unknown;
-  note?: unknown;
-  dueDate?: unknown;
-  materialType?: unknown;
-  updateMode?: unknown;
-  lines?: unknown;
-};
-
-function normalizeOptionalText(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function normalizeNumber(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) return 0;
-  return value;
-}
-
-function isMaterialOrderStatus(value: unknown): value is MaterialOrderStatus {
-  return typeof value === "string" && MATERIAL_ORDER_STATUSES.includes(value as MaterialOrderStatus);
-}
 
 function readSearchStatus(request: NextRequest): MaterialOrderStatus | null {
   const status = request.nextUrl.searchParams.get("status");
   return isMaterialOrderStatus(status) ? status : null;
 }
 
-function normalizeLineItemType(value: unknown): MaterialOrderLineInput["itemType"] | null {
-  return value === "fabric" || value === "submaterial" ? value : null;
-}
-
-function normalizeMaterialOrderLines(value: unknown): MaterialOrderLineInput[] {
-  if (!Array.isArray(value)) return [];
-
-  return value.flatMap((item) => {
-    if (typeof item !== "object" || item === null) return [];
-
-    const record = item as Record<string, unknown>;
-    const itemName = normalizeOptionalText(record.itemName);
-    const itemType = normalizeLineItemType(record.itemType);
-    const unit = normalizeOptionalText(record.unit);
-    if (!itemName || !itemType || !unit) return [];
-
-    const allocations = Array.isArray(record.allocations)
-      ? record.allocations.flatMap((allocation) => {
-          if (typeof allocation !== "object" || allocation === null) return [];
-
-          const allocationRecord = allocation as Record<string, unknown>;
-          const workOrderId = normalizeOptionalText(allocationRecord.workOrderId);
-          if (!workOrderId) return [];
-
-          return [{
-            workOrderId,
-            sourceMaterialKey: normalizeOptionalText(allocationRecord.sourceMaterialKey),
-            allocatedQuantity: normalizeNumber(allocationRecord.allocatedQuantity),
-            allocationNote: normalizeOptionalText(allocationRecord.allocationNote),
-          }];
-        })
-      : [];
-
-    return [{
-      partnerItemId: normalizeOptionalText(record.partnerItemId),
-      itemName,
-      itemType,
-      color: normalizeOptionalText(record.color),
-      spec: normalizeOptionalText(record.spec),
-      unit,
-      orderQuantity: normalizeNumber(record.orderQuantity),
-      unitPrice: normalizeNumber(record.unitPrice),
-      amount: normalizeNumber(record.amount),
-      note: normalizeOptionalText(record.note),
-      allocations,
-    }];
-  });
-}
-
 function resolveStatusPermission(status: MaterialOrderStatus) {
-  if (status === "review_requested" || status === "draft" || status === "cancelled") {
+  if (status === MATERIAL_ORDER_STATUS.reviewRequested || status === MATERIAL_ORDER_STATUS.draft || status === MATERIAL_ORDER_STATUS.cancelled) {
     return MEMBER_PERMISSION_CODE.materialOrderRequest;
   }
 
@@ -158,7 +90,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = bodyResult.data;
-    const status = isMaterialOrderStatus(body.status) ? body.status : "draft";
+    const status = isMaterialOrderStatus(body.status) ? body.status : MATERIAL_ORDER_STATUS.draft;
 
     const permissionDenied = await requireMaterialOrderStatusPermission(guard.session, status);
     if (permissionDenied) return permissionDenied;
@@ -166,11 +98,11 @@ export async function POST(request: NextRequest) {
     const result = await createWorkspaceMaterialOrder({
       companyId: guard.scope.companyId,
       visibility: guard.scope.visibility,
-      supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
+      supplierPartnerId: normalizeMaterialOrderOptionalText(body.supplierPartnerId),
       requestedByUserId: guard.session.userId,
       status,
-      note: normalizeOptionalText(body.note),
-      dueDate: normalizeOptionalText(body.dueDate),
+      note: normalizeMaterialOrderOptionalText(body.note),
+      dueDate: normalizeMaterialOrderOptionalText(body.dueDate),
       lines: normalizeMaterialOrderLines(body.lines),
     });
     return createWaflApiSuccess(result);
@@ -192,7 +124,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = bodyResult.data;
-    const materialOrderId = normalizeOptionalText(body.materialOrderId);
+    const materialOrderId = normalizeMaterialOrderOptionalText(body.materialOrderId);
 
     if (!materialOrderId) {
       return createWaflApiError(
@@ -227,13 +159,13 @@ export async function PUT(request: NextRequest) {
       };
 
       if (Object.prototype.hasOwnProperty.call(body, "materialType")) {
-        headerInput.materialType = normalizeLineItemType(body.materialType);
+        headerInput.materialType = normalizeMaterialOrderLineItemType(body.materialType);
       }
       if (Object.prototype.hasOwnProperty.call(body, "supplierPartnerId")) {
-        headerInput.supplierPartnerId = normalizeOptionalText(body.supplierPartnerId);
+        headerInput.supplierPartnerId = normalizeMaterialOrderOptionalText(body.supplierPartnerId);
       }
       if (Object.prototype.hasOwnProperty.call(body, "dueDate")) {
-        headerInput.dueDate = normalizeOptionalText(body.dueDate);
+        headerInput.dueDate = normalizeMaterialOrderOptionalText(body.dueDate);
       }
 
       const result = await updateWorkspaceMaterialOrderHeader(headerInput);
@@ -245,9 +177,9 @@ export async function PUT(request: NextRequest) {
       visibility: guard.scope.visibility,
       materialOrderId,
       isAdmin: isCompanyAdminSessionRole(guard.session.role),
-      supplierPartnerId: normalizeOptionalText(body.supplierPartnerId),
-      note: normalizeOptionalText(body.note),
-      dueDate: normalizeOptionalText(body.dueDate),
+      supplierPartnerId: normalizeMaterialOrderOptionalText(body.supplierPartnerId),
+      note: normalizeMaterialOrderOptionalText(body.note),
+      dueDate: normalizeMaterialOrderOptionalText(body.dueDate),
       lines: normalizeMaterialOrderLines(body.lines),
     });
     return createWaflApiSuccess(result);
@@ -269,7 +201,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = bodyResult.data;
-    const materialOrderId = normalizeOptionalText(body.materialOrderId);
+    const materialOrderId = normalizeMaterialOrderOptionalText(body.materialOrderId);
     const status = isMaterialOrderStatus(body.status) ? body.status : null;
 
     if (!materialOrderId || !status) {

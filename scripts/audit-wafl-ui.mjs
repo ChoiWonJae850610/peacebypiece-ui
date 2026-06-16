@@ -16,6 +16,18 @@ const WORKSPACE_HEADER_FILES = new Set([
   "features/material-orders/MaterialOrderDetailPanel.tsx",
 ]);
 
+
+const MATERIAL_ORDER_STATUS_LITERAL_FILES = new Set([
+  "app/api/material-orders/route.ts",
+  "features/material-orders/MaterialOrderDraftEditor.tsx",
+  "features/material-orders/MaterialOrderListPanel.tsx",
+  "features/material-orders/hooks/useMaterialOrderDraftEditor.ts",
+  "lib/material-orders/materialOrderWorkspaceClient.ts",
+  "lib/material-orders/repository.ts",
+]);
+
+const MATERIAL_ORDER_STATUS_LITERAL_PATTERN = /["'](?:draft|review_requested|approved|order_placed|rejected|cancelled)["']/;
+
 const NATIVE_CONTROL_ALLOWLIST = new Set([
   "components/workorder/WorkOrderOverlay.tsx",
   "components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx",
@@ -53,6 +65,9 @@ for (const file of files) {
   }
   if (WORKSPACE_HEADER_FILES.has(file) && /(?:저장하는 중입니다|저장되었습니다|저장하지 못했습니다)/.test(content)) {
     failures.push(`direct save-feedback copy in workspace header: ${file}`);
+  }
+  if (MATERIAL_ORDER_STATUS_LITERAL_FILES.has(file) && MATERIAL_ORDER_STATUS_LITERAL_PATTERN.test(content)) {
+    failures.push(`direct material-order status literal: ${file}`);
   }
 }
 

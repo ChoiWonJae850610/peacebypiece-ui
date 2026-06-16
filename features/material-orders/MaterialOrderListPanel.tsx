@@ -21,10 +21,15 @@ import {
 } from "@/features/material-orders/materialOrderWorkspaceStyles";
 import {
   formatMaterialOrderCreatedAtLabel,
-  formatMaterialOrderStatusLabel,
-  formatMaterialOrderTypeLabel,
   resolveMaterialOrderType,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
+import {
+  formatMaterialOrderStatusLabel,
+  formatMaterialOrderTypeLabel,
+  getMaterialOrderStatusSemanticClass,
+  MATERIAL_ORDER_STATUS_FILTER_OPTIONS,
+} from "@/lib/material-orders/presentation";
+import { MATERIAL_ORDER_STATUS } from "@/lib/material-orders/types";
 import MaterialOrderPanelMessage from "@/features/material-orders/components/MaterialOrderPanelMessage";
 import { MATERIAL_ORDER_EMPTY_STATE_COPY } from "@/features/material-orders/materialOrderEmptyStates";
 import {
@@ -57,12 +62,7 @@ const MATERIAL_ORDER_STATUS_OPTIONS: Array<
   WaflSelectOption & { value: "all" | MaterialOrderStatus }
 > = [
   { value: "all", label: "상태 전체" },
-  { value: "draft", label: "작성중" },
-  { value: "review_requested", label: "검토요청" },
-  { value: "approved", label: "발주요청" },
-  { value: "order_placed", label: "발주완료" },
-  { value: "rejected", label: "반려" },
-  { value: "cancelled", label: "취소" },
+  ...MATERIAL_ORDER_STATUS_FILTER_OPTIONS,
 ];
 
 const MATERIAL_ORDER_TYPE_OPTIONS: Array<
@@ -73,21 +73,7 @@ const MATERIAL_ORDER_TYPE_OPTIONS: Array<
   { value: "submaterial", label: "부자재" },
 ];
 
-const MATERIAL_ORDER_STATUS_SEMANTIC_CLASS: Record<
-  MaterialOrderStatus,
-  string
-> = {
-  draft: "pbp-workorder-status-draft",
-  review_requested: "pbp-workorder-status-review-requested",
-  approved: "pbp-workorder-status-request-order",
-  order_placed: "pbp-workorder-status-completed",
-  rejected: "pbp-workorder-status-rejected",
-  cancelled: "pbp-workorder-status-rejected",
-};
 
-function getMaterialOrderStatusSemanticClass(status: MaterialOrderStatus) {
-  return MATERIAL_ORDER_STATUS_SEMANTIC_CLASS[status];
-}
 
 export default function MaterialOrderListPanel({
   orders,
@@ -104,7 +90,7 @@ export default function MaterialOrderListPanel({
 }: MaterialOrderListPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] =
-    useState<MaterialOrderFilterStatus>("draft");
+    useState<MaterialOrderFilterStatus>(MATERIAL_ORDER_STATUS.draft);
   const [typeFilter, setTypeFilter] = useState<MaterialOrderFilterType>("all");
 
   const filteredOrders = useMemo(
@@ -241,7 +227,7 @@ function MaterialOrderListButton({
     order.supplierPartnerName?.trim() ||
     "공급처 선택 전";
   const createdAtLabel = formatMaterialOrderCreatedAtLabel(order.createdAt);
-  const canCancelOrder = order.status === "draft";
+  const canCancelOrder = order.status === MATERIAL_ORDER_STATUS.draft;
 
 
   const handleCancelOrder = () => {

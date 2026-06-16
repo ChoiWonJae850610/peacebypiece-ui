@@ -1,9 +1,9 @@
+import { formatMaterialOrderStatusLabel } from "@/lib/material-orders/presentation";
 import {
-  formatMaterialOrderStatusLabel,
   formatMaterialOrderTypeLabel,
   resolveMaterialOrderType,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import type { MaterialOrder, MaterialOrderLineItemType, MaterialOrderStatus } from "@/lib/material-orders/types";
+import { MATERIAL_ORDER_STATUS, type MaterialOrder, type MaterialOrderLineItemType, type MaterialOrderStatus } from "@/lib/material-orders/types";
 import type { MaterialOrderDraftLine } from "@/lib/material-orders/materialOrderDraftCalculator";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
 
@@ -138,14 +138,14 @@ export type MaterialRequestAllocationSummary = {
 export type MaterialRequestQuantityMap = ReadonlyMap<string, MaterialRequestAllocationSummary>;
 
 const ACTIVE_MATERIAL_ORDER_STATUSES = new Set<MaterialOrder["status"]>([
-  "draft",
-  "review_requested",
-  "approved",
-  "order_placed",
+  MATERIAL_ORDER_STATUS.draft,
+  MATERIAL_ORDER_STATUS.reviewRequested,
+  MATERIAL_ORDER_STATUS.approved,
+  MATERIAL_ORDER_STATUS.orderPlaced,
 ]);
 
 const COMPLETED_MATERIAL_ORDER_STATUSES = new Set<MaterialOrder["status"]>([
-  "order_placed",
+  MATERIAL_ORDER_STATUS.orderPlaced,
 ]);
 
 export type MaterialRequestQuantityScope = "active" | "completed";
