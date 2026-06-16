@@ -75,8 +75,6 @@ export default function MaterialOrderDraftEditor({
     creatingOrder,
     statusChanging,
     headerSaving,
-    headerSaveStatus,
-    headerSaveMessage,
     statusToastOperation,
     workOrderCandidates,
     suppliers,
@@ -238,8 +236,6 @@ export default function MaterialOrderDraftEditor({
       onRetrySuppliers={() => void refreshSuppliers(materialType)}
       statusChanging={statusChanging}
       headerSaving={headerSaving}
-      headerSaveStatus={headerSaveStatus}
-      headerSaveMessage={headerSaveMessage}
       onChangeLine={updateLine}
       onRemoveLine={removeLine}
       onChangeStatus={(status) => void changeSelectedOrderStatus(status)}

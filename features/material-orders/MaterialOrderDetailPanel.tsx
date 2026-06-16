@@ -14,7 +14,6 @@ import {
   WaflSummaryHeaderCard,
   WaflSummaryInfoCell,
   type WaflSelectOption,
-  type WaflSaveStatusValue,
 } from "@/components/common/ui";
 import { MaterialOrderLineMobileCards, MaterialOrderLineTable } from "@/features/material-orders/components/MaterialOrderLineTable";
 import { MaterialOrderStatusFlow } from "@/features/material-orders/components/MaterialOrderStatusFlow";
@@ -53,8 +52,6 @@ type MaterialOrderDetailPanelProps = {
   onRetrySuppliers: () => void;
   statusChanging: boolean;
   headerSaving: boolean;
-  headerSaveStatus: WaflSaveStatusValue;
-  headerSaveMessage: string | null;
   onChangeLine: (
     lineId: string,
     patch: Partial<MaterialOrderDraftLine>,

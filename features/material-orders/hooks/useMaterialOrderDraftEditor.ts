@@ -38,7 +38,7 @@ import {
   type PendingMaterialOrderStatusValidation,
   type SelectedOrderDetailPayload,
 } from "@/features/material-orders/hooks/materialOrderDraftEditorUtils";
-import { WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, useWaflToastOperation, type WaflSaveStatusValue } from "@/components/common/ui";
+import { WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, useWaflToastOperation, type WaflSaveFeedbackStatus, type WaflSaveTarget } from "@/components/common/ui";
 
 export function useMaterialOrderDraftEditor({
   isAdmin,
@@ -52,13 +52,23 @@ export function useMaterialOrderDraftEditor({
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [statusChanging, setStatusChanging] = useState(false);
   const [headerSaving, setHeaderSaving] = useState(false);
-  const [headerSaveStatus, setHeaderSaveStatus] = useState<WaflSaveStatusValue>("idle");
-  const [headerSaveMessage, setHeaderSaveMessage] = useState<string | null>(null);
   const {
     operation: statusToastOperation,
     showOperationToast: showStatusToast,
     clearOperationToast: clearStatusToast,
   } = useWaflToastOperation("material-order-operation");
+  const showHeaderSaveFeedback = useCallback(
+    (
+      target: WaflSaveTarget,
+      status: WaflSaveFeedbackStatus,
+      message?: string,
+    ) => {
+      const tone = status === "saving" ? "loading" : status === "saved" ? "success" : "danger";
+      showStatusToast(message ?? getWaflSaveFeedbackMessage(target, status), tone);
+    },
+    [showStatusToast],
+  );
+
   const [workOrderCandidates, setWorkOrderCandidates] = useState<
     MaterialOrderWorkspaceWorkOrderCandidate[]
   >([]);
@@ -232,11 +242,6 @@ export function useMaterialOrderDraftEditor({
     setLines(mapSelectedOrderToDraftLines(selectedOrder));
   }, [clearStatusToast, selectedOrder]);
 
-  useEffect(() => {
-    setHeaderSaveStatus("idle");
-    setHeaderSaveMessage(null);
-  }, [selectedOrderId]);
-
   const createOrder = useCallback(async () => {
     setCreatingOrder(true);
     setOrdersError(null);
@@ -271,13 +276,11 @@ export function useMaterialOrderDraftEditor({
       const previousLines = lines;
 
       setHeaderSaving(true);
-      setHeaderSaveStatus("saving");
-      setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "saving"));
       setMaterialType(nextMaterialType);
       setSupplierPartnerId(null);
       setLines([]);
       setPendingLineAddition(null);
-      showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "saving"), "loading");
+      showHeaderSaveFeedback(WAFL_SAVE_TARGET.materialType, "saving");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -288,18 +291,18 @@ export function useMaterialOrderDraftEditor({
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         await refreshWorkOrderCandidates();
-        setHeaderSaveStatus("saved");
-        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "saved"));
-        showStatusToast("자재 종류가 변경되었습니다.", "success");
+        showHeaderSaveFeedback(WAFL_SAVE_TARGET.materialType, "saved");
       } catch (error) {
         setMaterialType(previousMaterialType);
         setSupplierPartnerId(previousSupplierPartnerId);
         setLines(previousLines);
-        setHeaderSaveStatus("error");
-        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "error"));
-        showStatusToast(
-          toMaterialOrderWorkspaceError(error, "자재 종류를 변경하지 못했습니다."),
-          "danger",
+        showHeaderSaveFeedback(
+          WAFL_SAVE_TARGET.materialType,
+          "error",
+          toMaterialOrderWorkspaceError(
+            error,
+            getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "error"),
+          ),
         );
       } finally {
         setHeaderSaving(false);
@@ -310,7 +313,7 @@ export function useMaterialOrderDraftEditor({
       materialType,
       refreshWorkOrderCandidates,
       selectedOrder,
-      showStatusToast,
+      showHeaderSaveFeedback,
       supplierPartnerId,
       isAdmin,
     ],
@@ -353,9 +356,7 @@ export function useMaterialOrderDraftEditor({
       const previousSupplierPartnerId = supplierPartnerId;
       setSupplierPartnerId(nextSupplierPartnerId);
       setHeaderSaving(true);
-      setHeaderSaveStatus("saving");
-      setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saving"));
-      showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saving"), "loading");
+      showHeaderSaveFeedback(WAFL_SAVE_TARGET.supplier, "saving");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -364,22 +365,22 @@ export function useMaterialOrderDraftEditor({
         });
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-        setHeaderSaveStatus("saved");
-        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saved"));
-        showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "saved"), "success");
+        showHeaderSaveFeedback(WAFL_SAVE_TARGET.supplier, "saved");
       } catch (error) {
         setSupplierPartnerId(previousSupplierPartnerId);
-        setHeaderSaveStatus("error");
-        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "error"));
-        showStatusToast(
-          toMaterialOrderWorkspaceError(error, getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "error")),
-          "danger",
+        showHeaderSaveFeedback(
+          WAFL_SAVE_TARGET.supplier,
+          "error",
+          toMaterialOrderWorkspaceError(
+            error,
+            getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "error"),
+          ),
         );
       } finally {
         setHeaderSaving(false);
       }
     },
-    [isAdmin, selectedOrder, showStatusToast, supplierPartnerId],
+    [isAdmin, selectedOrder, showHeaderSaveFeedback, supplierPartnerId],
   );
 
   const buildSelectedOrderDetailPayload =
@@ -422,8 +423,7 @@ export function useMaterialOrderDraftEditor({
       const previousDueDate = dueDate;
       setDueDate(normalizedDueDate);
       setHeaderSaving(true);
-      setHeaderSaveStatus("saving");
-      setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "saving"));
+      showHeaderSaveFeedback(WAFL_SAVE_TARGET.dueDate, "saving");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -433,22 +433,22 @@ export function useMaterialOrderDraftEditor({
 
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-        setHeaderSaveStatus("saved");
-        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "saved"));
-        showStatusToast(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "saved"), "success");
+        showHeaderSaveFeedback(WAFL_SAVE_TARGET.dueDate, "saved");
       } catch (error) {
         setDueDate(previousDueDate);
-        setHeaderSaveStatus("error");
-        setHeaderSaveMessage(getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "error"));
-        showStatusToast(
-          toMaterialOrderWorkspaceError(error, getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "error")),
-          "danger",
+        showHeaderSaveFeedback(
+          WAFL_SAVE_TARGET.dueDate,
+          "error",
+          toMaterialOrderWorkspaceError(
+            error,
+            getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "error"),
+          ),
         );
       } finally {
         setHeaderSaving(false);
       }
     },
-    [dueDate, isAdmin, selectedOrder, showStatusToast],
+    [dueDate, isAdmin, selectedOrder, showHeaderSaveFeedback],
   );
 
   const applySelectedOrderStatusChange = useCallback(
@@ -688,8 +688,6 @@ export function useMaterialOrderDraftEditor({
     creatingOrder,
     statusChanging,
     headerSaving,
-    headerSaveStatus,
-    headerSaveMessage,
     statusToastOperation,
     workOrderCandidates,
     suppliers,
