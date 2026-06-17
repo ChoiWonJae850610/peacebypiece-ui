@@ -27,3 +27,12 @@
 - API 오류의 message/code/status 정규화 확인
 - rollback/onError 실패가 최초 mutation 오류를 대체하지 않는지 확인
 - 작업지시서 feedback wrapper의 rollback/getErrorMessage 옵션 확인
+
+## 0.23.52 WAFL 전 화면 적용 감사
+
+- 자동 감사의 영역별 native control/direct fetch 수치가 실제 파일 변경 후 감소하는지 확인
+- `/worker` 화면 PC/태블릿/모바일 밀도 비교
+- 시스템관리자 기준정보 화면의 WAFL 입력·버튼·모달 전환 확인
+- 시스템관리자 승인/반려/재입력 저장 lifecycle 확인
+- 관리자 통계 API 실패 시 mock 수치 대신 오류/빈 상태 표시 확인
+- 개인설정 탈퇴 확인을 WAFL ConfirmModal로 전환한 뒤 동작 확인

@@ -32,6 +32,45 @@ const MATERIAL_ORDER_STATUS_LITERAL_PATTERN = /["'](?:draft|review_requested|app
 const WORK_ORDER_ATTACHMENT_HYDRATION_FILE = "lib/workorder/service/workOrderService.ts";
 const WORKSPACE_VIEW_MODEL_FILE = "lib/workorder/workspace/buildWorkspaceViewModel.ts";
 
+
+const INVENTORY_AREAS = [
+  {
+    key: "system",
+    prefixes: ["app/(system)/", "components/system/", "lib/system/"],
+  },
+  {
+    key: "admin",
+    prefixes: ["app/(admin)/", "components/admin/", "lib/admin/"],
+  },
+  {
+    key: "worker-workorder",
+    prefixes: ["app/(workspace)/worker/", "components/workorder/", "features/workorders/", "lib/workorder/", "lib/hooks/workorder/"],
+  },
+  {
+    key: "material-orders",
+    prefixes: ["app/(workspace)/workspace/material-orders/", "features/material-orders/", "lib/material-orders/"],
+  },
+  {
+    key: "user",
+    prefixes: ["app/me/", "components/me/", "components/policy/", "app/(public)/", "components/public/"],
+  },
+];
+
+const INVENTORY_PATTERNS = {
+  nativeControls: /<(?:button|input|select|textarea|table|dialog)\b/g,
+  directFetch: /\bfetch\s*\(/g,
+  nativeConfirm: /\bwindow\.(?:confirm|alert|prompt)\s*\(/g,
+  waflImports: /from\s+["'][^"']*(?:Wafl|common\/ui)/g,
+};
+
+function countMatches(content, pattern) {
+  return content.match(pattern)?.length ?? 0;
+}
+
+function resolveInventoryArea(file) {
+  return INVENTORY_AREAS.find((area) => area.prefixes.some((prefix) => file.startsWith(prefix))) ?? null;
+}
+
 const NATIVE_CONTROL_ALLOWLIST = new Set([
   "components/workorder/WorkOrderOverlay.tsx",
   "components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx",
@@ -55,8 +94,18 @@ const files = (await Promise.all(SOURCE_ROOTS.map(async (root) => {
 
 const failures = [];
 const nativeControls = [];
+const inventory = new Map(INVENTORY_AREAS.map((area) => [area.key, { files: 0, nativeControls: 0, directFetch: 0, nativeConfirm: 0, waflImports: 0 }]));
 for (const file of files) {
   const content = await readFile(path.join(ROOT, file), "utf8");
+  const inventoryArea = resolveInventoryArea(file);
+  if (inventoryArea) {
+    const summary = inventory.get(inventoryArea.key);
+    summary.files += 1;
+    summary.nativeControls += countMatches(content, INVENTORY_PATTERNS.nativeControls);
+    summary.directFetch += countMatches(content, INVENTORY_PATTERNS.directFetch);
+    summary.nativeConfirm += countMatches(content, INVENTORY_PATTERNS.nativeConfirm);
+    summary.waflImports += countMatches(content, INVENTORY_PATTERNS.waflImports);
+  }
   for (const rule of FORBIDDEN_PATTERNS) {
     if (rule.pattern.test(content)) failures.push(`${rule.label}: ${file}`);
   }
@@ -89,3 +138,10 @@ if (failures.length > 0) {
 console.log(`WAFL UI audit passed (${files.length} source files).`);
 console.log(`Classified native-control files: ${nativeControls.length}`);
 for (const file of nativeControls) console.log(`- ${file}`);
+console.log("WAFL adoption inventory (informational):");
+for (const area of INVENTORY_AREAS) {
+  const summary = inventory.get(area.key);
+  console.log(
+    `- ${area.key}: files=${summary.files}, native-controls=${summary.nativeControls}, direct-fetch=${summary.directFetch}, native-confirm=${summary.nativeConfirm}, wafl-imports=${summary.waflImports}`,
+  );
+}
