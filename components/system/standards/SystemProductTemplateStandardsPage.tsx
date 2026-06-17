@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { WaflSelect } from "@/components/common/ui";
+import { WaflInput, WaflSelect, useWaflMutation } from "@/components/common/ui";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import SystemShell from "@/components/system/layout/SystemShell";
@@ -17,6 +17,7 @@ import {
   SYSTEM_SUBTITLE_CLASS,
   SYSTEM_TITLE_CLASS,
 } from "@/components/system/systemSemanticClassNames";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PRODUCT_TEMPLATE_POLICY,
@@ -118,13 +119,13 @@ function CategoryEditForm({
 }) {
   return (
     <div className="grid gap-2 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 sm:grid-cols-[1fr_72px_auto]">
-      <input
+      <WaflInput
         value={value.name}
         onChange={(event) => onChange({ ...value, name: event.target.value })}
         className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-xs font-semibold text-[var(--pbp-text-primary)] outline-none focus:border-[var(--pbp-accent)]"
         placeholder="분류명"
       />
-      <input
+      <WaflInput
         value={value.sortOrder}
         onChange={(event) => onChange({ ...value, sortOrder: event.target.value })}
         className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-right text-xs text-[var(--pbp-text-muted)] outline-none focus:border-[var(--pbp-accent)]"
@@ -282,6 +283,16 @@ function TemplateTreePreview({
   );
 }
 
+async function requestProductTemplateMutation(body: Record<string, unknown>, method: "POST" | "PATCH", fallbackMessage: string): Promise<SystemProductTemplateRow> {
+  const payload = await waflLegacyApiRequest<{ ok?: boolean; record?: SystemProductTemplateRow; message?: string }>(
+    "/api/system/standards/product-templates",
+    { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+    fallbackMessage,
+  );
+  if (!payload.ok || !payload.record) throw new Error(payload.message || fallbackMessage);
+  return payload.record;
+}
+
 export default function SystemProductTemplateStandardsPage() {
   const [records, setRecords] = useState<SystemProductTemplateRow[]>([]);
   const [form, setForm] = useState<TemplateFormState>(EMPTY_TEMPLATE_FORM);
@@ -291,7 +302,8 @@ export default function SystemProductTemplateStandardsPage() {
   const [editingForm, setEditingForm] = useState<TemplateFormState | null>(null);
   const [editingCategory, setEditingCategory] = useState<CategoryEditState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const mutation = useWaflMutation("system-product-template-standards");
+  const isSaving = mutation.isLocked;
   const [message, setMessage] = useState("DB 기준 시스템 생산품 유형 기본 템플릿을 조회합니다.");
   const loadSeqRef = useRef(0);
 
@@ -305,9 +317,12 @@ export default function SystemProductTemplateStandardsPage() {
     setIsLoading(true);
     setMessage("생산품 유형 템플릿을 불러오는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/product-templates", { cache: "no-store" });
-      const payload = (await response.json()) as { ok?: boolean; records?: SystemProductTemplateRow[]; message?: string };
-      if (!response.ok || !payload.ok || !Array.isArray(payload.records)) {
+      const payload = await waflLegacyApiRequest<{ ok?: boolean; records?: SystemProductTemplateRow[]; message?: string }>(
+        "/api/system/standards/product-templates",
+        { cache: "no-store" },
+        "생산품 유형 템플릿을 불러오지 못했습니다.",
+      );
+      if (!payload.ok || !Array.isArray(payload.records)) {
         throw new Error(payload.message || "생산품 유형 템플릿을 불러오지 못했습니다.");
       }
       if (loadSeqRef.current !== requestId) return;
@@ -327,144 +342,78 @@ export default function SystemProductTemplateStandardsPage() {
   }, []);
 
   async function createTemplate() {
-    setIsSaving(true);
     setMessage("생산품 유형 템플릿을 추가하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/product-templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: form.code,
-          name: form.name,
-          description: form.description,
-          sortOrder: toSortOrder(form.sortOrder),
-          isActive: true,
-        }),
+      await mutation.runMutation({
+        lockKey: "system-product-template:create",
+        operationId: "system-product-template-create",
+        messages: { loading: "생산품 유형 템플릿을 추가하는 중입니다.", success: "생산품 유형 템플릿을 추가했습니다.", error: "생산품 유형 템플릿을 추가하지 못했습니다." },
+        mutation: () => requestProductTemplateMutation({ code: form.code, name: form.name, description: form.description, sortOrder: toSortOrder(form.sortOrder), isActive: true }, "POST", "생산품 유형 템플릿을 추가하지 못했습니다."),
+        onSuccess: (record) => { setRecords((current) => [...current, record].sort((a, b) => a.sortOrder - b.sortOrder)); setSelectedTemplateId(record.id); setForm(EMPTY_TEMPLATE_FORM); setMessage("생산품 유형 템플릿을 추가했습니다."); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProductTemplateRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "생산품 유형 템플릿을 추가하지 못했습니다.");
-      }
-      setRecords((current) => [...current, payload.record as SystemProductTemplateRow].sort((a, b) => a.sortOrder - b.sortOrder));
-      setSelectedTemplateId(payload.record.id);
-      setForm(EMPTY_TEMPLATE_FORM);
-      setMessage("생산품 유형 템플릿을 추가했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 추가 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 추가 중 오류가 발생했습니다."); }
   }
 
   async function saveTemplate(row: SystemProductTemplateRow) {
     if (!editingForm) return;
-    setIsSaving(true);
+    const nextForm = editingForm;
     setMessage("생산품 유형 템플릿을 수정하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/product-templates", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: row.id,
-          code: editingForm.code,
-          name: editingForm.name,
-          description: editingForm.description,
-          sortOrder: toSortOrder(editingForm.sortOrder),
-          isActive: isSystemProductTemplateActive(row.status),
-        }),
+      await mutation.runMutation({
+        lockKey: `system-product-template:${row.id}`,
+        operationId: "system-product-template-update",
+        messages: { loading: "생산품 유형 템플릿을 수정하는 중입니다.", success: "생산품 유형 템플릿을 수정했습니다.", error: "생산품 유형 템플릿을 수정하지 못했습니다." },
+        mutation: () => requestProductTemplateMutation({ id: row.id, code: nextForm.code, name: nextForm.name, description: nextForm.description, sortOrder: toSortOrder(nextForm.sortOrder), isActive: isSystemProductTemplateActive(row.status) }, "PATCH", "생산품 유형 템플릿을 수정하지 못했습니다."),
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === row.id ? record : item)); setEditingId(null); setEditingForm(null); setMessage("생산품 유형 템플릿을 수정했습니다."); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProductTemplateRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "생산품 유형 템플릿을 수정하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === row.id ? (payload.record as SystemProductTemplateRow) : item)));
-      setEditingId(null);
-      setEditingForm(null);
-      setMessage("생산품 유형 템플릿을 수정했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 수정 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 수정 중 오류가 발생했습니다."); }
   }
 
   async function toggleTemplate(row: SystemProductTemplateRow) {
-    setIsSaving(true);
     setMessage("생산품 유형 템플릿 사용 상태를 변경하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/product-templates", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: row.id, isActive: !isSystemProductTemplateActive(row.status) }),
+      await mutation.runMutation({
+        lockKey: `system-product-template:${row.id}`,
+        operationId: "system-product-template-toggle",
+        messages: { loading: "생산품 유형 템플릿 사용 상태를 변경하는 중입니다.", success: "생산품 유형 템플릿 사용 상태를 변경했습니다.", error: "생산품 유형 템플릿 상태를 변경하지 못했습니다." },
+        mutation: () => requestProductTemplateMutation({ id: row.id, isActive: !isSystemProductTemplateActive(row.status) }, "PATCH", "생산품 유형 템플릿 상태를 변경하지 못했습니다."),
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === row.id ? record : item)); setMessage("생산품 유형 템플릿 사용 상태를 변경했습니다."); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProductTemplateRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "생산품 유형 템플릿 상태를 변경하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === row.id ? (payload.record as SystemProductTemplateRow) : item)));
-      setMessage("생산품 유형 템플릿 사용 상태를 변경했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 상태 변경 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 상태 변경 중 오류가 발생했습니다."); }
   }
 
   async function createCategory() {
     if (!selectedTemplate) return;
     const level = Number(categoryForm.level) as 1 | 2 | 3;
-    setIsSaving(true);
     setMessage("생산품 유형 템플릿 분류를 추가하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/product-templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "create_category",
-          templateId: selectedTemplate.id,
-          parentId: level === 1 ? null : categoryForm.parentId,
-          level,
-          name: categoryForm.name,
-          sortOrder: toSortOrder(categoryForm.sortOrder),
-          isActive: true,
-        }),
+      await mutation.runMutation({
+        lockKey: `system-product-template-category:create:${selectedTemplate.id}`,
+        operationId: "system-product-template-category-create",
+        messages: { loading: "생산품 유형 템플릿 분류를 추가하는 중입니다.", success: "생산품 유형 템플릿 분류를 추가했습니다.", error: "생산품 유형 템플릿 분류를 추가하지 못했습니다." },
+        mutation: () => requestProductTemplateMutation({ action: "create_category", templateId: selectedTemplate.id, parentId: level === 1 ? null : categoryForm.parentId, level, name: categoryForm.name, sortOrder: toSortOrder(categoryForm.sortOrder), isActive: true }, "POST", "생산품 유형 템플릿 분류를 추가하지 못했습니다."),
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === record.id ? record : item)); setCategoryForm(EMPTY_CATEGORY_FORM); setMessage("생산품 유형 템플릿 분류를 추가했습니다."); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProductTemplateRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "생산품 유형 템플릿 분류를 추가하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === payload.record?.id ? (payload.record as SystemProductTemplateRow) : item)));
-      setCategoryForm(EMPTY_CATEGORY_FORM);
-      setMessage("생산품 유형 템플릿 분류를 추가했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 분류 추가 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 분류 추가 중 오류가 발생했습니다."); }
   }
 
   async function toggleCategory(categoryId: string, name: string, nextActive: boolean) {
-    setIsSaving(true);
     setMessage("생산품 유형 템플릿 분류 상태를 변경하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/product-templates", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update_category", id: categoryId, isActive: nextActive }),
+      await mutation.runMutation({
+        lockKey: `system-product-template-category:${categoryId}`,
+        operationId: "system-product-template-category-toggle",
+        messages: { loading: "생산품 유형 템플릿 분류 상태를 변경하는 중입니다.", success: "생산품 유형 템플릿 분류 상태를 변경했습니다.", error: "생산품 유형 템플릿 분류 상태를 변경하지 못했습니다." },
+        mutation: () => requestProductTemplateMutation({ action: "update_category", id: categoryId, isActive: nextActive }, "PATCH", "생산품 유형 템플릿 분류 상태를 변경하지 못했습니다."),
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === record.id ? record : item)); setMessage(`분류 상태를 변경했습니다: ${name}`); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProductTemplateRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "생산품 유형 템플릿 분류 상태를 변경하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === payload.record?.id ? (payload.record as SystemProductTemplateRow) : item)));
-      setMessage(`분류 상태를 변경했습니다: ${name}`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 분류 상태 변경 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 분류 상태 변경 중 오류가 발생했습니다."); }
   }
-
 
   function startEditCategory(category: { id: string; name: string; sortOrder?: number }) {
     setEditingCategory({
@@ -476,31 +425,18 @@ export default function SystemProductTemplateStandardsPage() {
 
   async function saveCategory() {
     if (!editingCategory) return;
-    setIsSaving(true);
+    const nextCategory = editingCategory;
     setMessage("생산품 유형 템플릿 분류명을 수정하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/product-templates", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_category",
-          id: editingCategory.id,
-          name: editingCategory.name,
-          sortOrder: toSortOrder(editingCategory.sortOrder),
-        }),
+      await mutation.runMutation({
+        lockKey: `system-product-template-category:${nextCategory.id}`,
+        operationId: "system-product-template-category-update",
+        messages: { loading: "생산품 유형 템플릿 분류명을 수정하는 중입니다.", success: "생산품 유형 템플릿 분류명을 수정했습니다.", error: "생산품 유형 템플릿 분류명을 수정하지 못했습니다." },
+        mutation: () => requestProductTemplateMutation({ action: "update_category", id: nextCategory.id, name: nextCategory.name, sortOrder: toSortOrder(nextCategory.sortOrder) }, "PATCH", "생산품 유형 템플릿 분류명을 수정하지 못했습니다."),
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === record.id ? record : item)); setEditingCategory(null); setMessage(`분류명을 수정했습니다: ${nextCategory.name}`); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProductTemplateRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "생산품 유형 템플릿 분류명을 수정하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === payload.record?.id ? (payload.record as SystemProductTemplateRow) : item)));
-      setEditingCategory(null);
-      setMessage(`분류명을 수정했습니다: ${editingCategory.name}`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 분류명 수정 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 분류명 수정 중 오류가 발생했습니다."); }
   }
 
   return (
@@ -538,10 +474,10 @@ export default function SystemProductTemplateStandardsPage() {
 
             <div className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
               <div className="grid gap-2 md:grid-cols-[0.8fr_0.85fr_1fr_120px_120px]">
-                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} placeholder="템플릿명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
-                <input value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))} placeholder="코드 예: apparel-basic" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
-                <input value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="설명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
-                <input value={form.sortOrder} onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <WaflInput value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} placeholder="템플릿명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <WaflInput value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))} placeholder="코드 예: apparel-basic" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <WaflInput value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="설명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <WaflInput value={form.sortOrder} onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
                 <AdminButton type="button" variant="primary" onClick={createTemplate} disabled={isSaving || !form.code.trim() || !form.name.trim()} className="rounded-xl">
                   템플릿 추가
                 </AdminButton>
@@ -563,10 +499,10 @@ export default function SystemProductTemplateStandardsPage() {
                   <div key={template.id} className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
                     {isEditing ? (
                       <div className="grid gap-2 md:grid-cols-[0.8fr_0.8fr_1fr_90px_120px]">
-                        <input value={editingForm.name} onChange={(event) => setEditingForm((current) => current ? { ...current, name: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
-                        <input value={editingForm.code} onChange={(event) => setEditingForm((current) => current ? { ...current, code: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
-                        <input value={editingForm.description} onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
-                        <input value={editingForm.sortOrder} onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-right text-sm" />
+                        <WaflInput value={editingForm.name} onChange={(event) => setEditingForm((current) => current ? { ...current, name: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
+                        <WaflInput value={editingForm.code} onChange={(event) => setEditingForm((current) => current ? { ...current, code: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
+                        <WaflInput value={editingForm.description} onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-sm" />
+                        <WaflInput value={editingForm.sortOrder} onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)} className="rounded-lg border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1 text-right text-sm" />
                         <div className="flex justify-end gap-1">
                           <AdminButton type="button" variant="primary" size="sm" onClick={() => saveTemplate(template)} disabled={isSaving} className="min-h-7 px-3 py-1 text-xs">저장</AdminButton>
                           <AdminButton type="button" variant="secondary" size="sm" onClick={() => { setEditingId(null); setEditingForm(null); }} className="min-h-7 px-3 py-1 text-xs">취소</AdminButton>
@@ -631,8 +567,8 @@ export default function SystemProductTemplateStandardsPage() {
                     size="sm"
                   />
                 ) : null}
-                <input value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} placeholder="분류명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
-                <input value={categoryForm.sortOrder} onChange={(event) => setCategoryForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <WaflInput value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} placeholder="분류명" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
+                <WaflInput value={categoryForm.sortOrder} onChange={(event) => setCategoryForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]" />
                 <AdminButton type="button" variant="primary" onClick={createCategory} disabled={isSaving || !selectedTemplate || !categoryForm.name.trim() || (categoryForm.level !== "1" && !categoryForm.parentId)} className="rounded-xl">
                   분류 추가
                 </AdminButton>

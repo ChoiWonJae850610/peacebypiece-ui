@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { WaflSelect } from "@/components/common/ui";
+import { WaflInput, WaflSelect, useWaflMutation } from "@/components/common/ui";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
@@ -16,6 +16,7 @@ import {
   SYSTEM_SUBTITLE_CLASS,
   SYSTEM_TITLE_CLASS,
 } from "@/components/system/systemSemanticClassNames";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS,
@@ -72,7 +73,8 @@ export default function SystemProcessStandardsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<ProcessFormState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const mutation = useWaflMutation("system-process-standards");
+  const isSaving = mutation.isLocked;
   const [message, setMessage] = useState("DB 기준 시스템 외주공정 유형 원장을 조회합니다.");
   const loadSeqRef = useRef(0);
 
@@ -84,9 +86,12 @@ export default function SystemProcessStandardsPage() {
     setIsLoading(true);
     setMessage("외주공정 유형을 불러오는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/processes", { cache: "no-store" });
-      const payload = (await response.json()) as { ok?: boolean; records?: SystemProcessStandardRow[]; message?: string };
-      if (!response.ok || !payload.ok || !Array.isArray(payload.records)) {
+      const payload = await waflLegacyApiRequest<{ ok?: boolean; records?: SystemProcessStandardRow[]; message?: string }>(
+        "/api/system/standards/processes",
+        { cache: "no-store" },
+        "외주공정 유형을 불러오지 못했습니다.",
+      );
+      if (!payload.ok || !Array.isArray(payload.records)) {
         throw new Error(payload.message || "외주공정 유형을 불러오지 못했습니다.");
       }
       if (loadSeqRef.current !== requestId) return;
@@ -104,90 +109,96 @@ export default function SystemProcessStandardsPage() {
   }, []);
 
   async function createRecord() {
-    setIsSaving(true);
     setMessage("외주공정 유형을 추가하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/processes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: form.code,
-          name: form.name,
-          category: form.category,
-          description: form.description,
-          example: form.example,
-          sortOrder: toSortOrder(form.sortOrder),
-          isActive: true,
-        }),
+      await mutation.runMutation({
+        lockKey: "system-process-standard:create",
+        operationId: "system-process-standard-create",
+        messages: {
+          loading: "외주공정 유형을 추가하는 중입니다.",
+          success: "외주공정 유형을 추가했습니다.",
+          error: "외주공정 유형을 추가하지 못했습니다.",
+        },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<{ ok?: boolean; record?: SystemProcessStandardRow; message?: string }>(
+            "/api/system/standards/processes",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                code: form.code,
+                name: form.name,
+                category: form.category,
+                description: form.description,
+                example: form.example,
+                sortOrder: toSortOrder(form.sortOrder),
+                isActive: true,
+              }),
+            },
+            "외주공정 유형을 추가하지 못했습니다.",
+          );
+          if (!payload.ok || !payload.record) throw new Error(payload.message || "외주공정 유형을 추가하지 못했습니다.");
+          return payload.record;
+        },
+        onSuccess: (record) => {
+          setRecords((current) => [...current, record].sort((a, b) => a.sortOrder - b.sortOrder));
+          setForm(EMPTY_FORM);
+          setMessage("외주공정 유형을 추가했습니다.");
+        },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProcessStandardRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "외주공정 유형을 추가하지 못했습니다.");
-      }
-      setRecords((current) => [...current, payload.record as SystemProcessStandardRow].sort((a, b) => a.sortOrder - b.sortOrder));
-      setForm(EMPTY_FORM);
-      setMessage("외주공정 유형을 추가했습니다.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "외주공정 유형 추가 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
     }
   }
 
   async function saveRecord(row: SystemProcessStandardRow) {
     if (!editingForm) return;
-    setIsSaving(true);
+    const nextForm = editingForm;
     setMessage("외주공정 유형을 수정하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/processes", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: row.id,
-          code: editingForm.code,
-          name: editingForm.name,
-          category: editingForm.category,
-          description: editingForm.description,
-          example: editingForm.example,
-          sortOrder: toSortOrder(editingForm.sortOrder),
-          isActive: row.status === "active",
-        }),
+      await mutation.runMutation({
+        lockKey: `system-process-standard:${row.id}`,
+        operationId: "system-process-standard-update",
+        messages: { loading: "외주공정 유형을 수정하는 중입니다.", success: "외주공정 유형을 수정했습니다.", error: "외주공정 유형을 수정하지 못했습니다." },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<{ ok?: boolean; record?: SystemProcessStandardRow; message?: string }>(
+            "/api/system/standards/processes",
+            { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: row.id, code: nextForm.code, name: nextForm.name, category: nextForm.category, description: nextForm.description, example: nextForm.example, sortOrder: toSortOrder(nextForm.sortOrder), isActive: row.status === "active" }) },
+            "외주공정 유형을 수정하지 못했습니다.",
+          );
+          if (!payload.ok || !payload.record) throw new Error(payload.message || "외주공정 유형을 수정하지 못했습니다.");
+          return payload.record;
+        },
+        onSuccess: (record) => {
+          setRecords((current) => current.map((item) => item.id === row.id ? record : item));
+          setEditingId(null); setEditingForm(null); setMessage("외주공정 유형을 수정했습니다.");
+        },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProcessStandardRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "외주공정 유형을 수정하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === row.id ? (payload.record as SystemProcessStandardRow) : item)));
-      setEditingId(null);
-      setEditingForm(null);
-      setMessage("외주공정 유형을 수정했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "외주공정 유형 수정 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "외주공정 유형 수정 중 오류가 발생했습니다."); }
   }
 
   async function toggleActive(row: SystemProcessStandardRow) {
-    setIsSaving(true);
     setMessage("외주공정 유형 사용 상태를 변경하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/processes", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: row.id, isActive: row.status !== "active" }),
+      await mutation.runMutation({
+        lockKey: `system-process-standard:${row.id}`,
+        operationId: "system-process-standard-toggle",
+        messages: { loading: "외주공정 유형 사용 상태를 변경하는 중입니다.", success: "외주공정 유형 사용 상태를 변경했습니다.", error: "외주공정 유형 사용 상태를 변경하지 못했습니다." },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<{ ok?: boolean; record?: SystemProcessStandardRow; message?: string }>(
+            "/api/system/standards/processes",
+            { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: row.id, isActive: row.status !== "active" }) },
+            "외주공정 유형 사용 상태를 변경하지 못했습니다.",
+          );
+          if (!payload.ok || !payload.record) throw new Error(payload.message || "외주공정 유형 사용 상태를 변경하지 못했습니다.");
+          return payload.record;
+        },
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === row.id ? record : item)); setMessage("외주공정 유형 사용 상태를 변경했습니다."); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemProcessStandardRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "외주공정 유형 사용 상태를 변경하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === row.id ? (payload.record as SystemProcessStandardRow) : item)));
-      setMessage("외주공정 유형 사용 상태를 변경했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "외주공정 유형 사용 상태 변경 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "외주공정 유형 사용 상태 변경 중 오류가 발생했습니다."); }
   }
 
   return (
@@ -227,13 +238,13 @@ export default function SystemProcessStandardsPage() {
 
             <div className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
               <div className="grid gap-2 md:grid-cols-[0.8fr_0.8fr_0.8fr_120px]">
-                <input
+                <WaflInput
                   value={form.name}
                   onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                   placeholder="공정명"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <input
+                <WaflInput
                   value={form.code}
                   onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))}
                   placeholder="시스템 코드 예: printing"
@@ -246,7 +257,7 @@ export default function SystemProcessStandardsPage() {
                   ariaLabel="공정 분류"
                   size="sm"
                 />
-                <input
+                <WaflInput
                   value={form.sortOrder}
                   onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))}
                   placeholder="정렬"
@@ -254,13 +265,13 @@ export default function SystemProcessStandardsPage() {
                 />
               </div>
               <div className="mt-2 grid gap-2 md:grid-cols-[1fr_1fr_120px]">
-                <input
+                <WaflInput
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
                   placeholder="설명"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <input
+                <WaflInput
                   value={form.example}
                   onChange={(event) => setForm((current) => ({ ...current, example: event.target.value }))}
                   placeholder="사용 예시"
@@ -300,12 +311,12 @@ export default function SystemProcessStandardsPage() {
                     >
                       {isEditing ? (
                         <>
-                          <input
+                          <WaflInput
                             value={editingForm.name}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, name: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.code}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, code: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
@@ -317,17 +328,17 @@ export default function SystemProcessStandardsPage() {
                             ariaLabel="공정 분류 수정"
                             size="sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.description}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.example}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, example: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.sortOrder}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-right text-sm"
@@ -361,8 +372,10 @@ export default function SystemProcessStandardsPage() {
                           <span className="text-xs text-[var(--pbp-text-subtle)]">{row.example}</span>
                           <span className="text-right text-xs text-[var(--pbp-text-subtle)]">{row.sortOrder}</span>
                           <div className="flex items-center justify-end gap-1">
-                            <button
+                            <AdminButton
                               type="button"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => toggleActive(row)}
                               disabled={isSaving}
                               className="rounded-full disabled:cursor-not-allowed disabled:opacity-50"
@@ -370,7 +383,7 @@ export default function SystemProcessStandardsPage() {
                               <AdminStatusBadge tone={statusBadgeTones[row.status]} size="xs">
                                 {SYSTEM_PROCESS_STANDARD_STATUS_LABELS[row.status]}
                               </AdminStatusBadge>
-                            </button>
+                            </AdminButton>
                             <AdminButton
                               onClick={() => {
                                 setEditingId(row.id);

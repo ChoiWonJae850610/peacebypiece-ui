@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { WaflSelect } from "@/components/common/ui";
+import { WaflInput, WaflSelect, useWaflMutation } from "@/components/common/ui";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
@@ -16,6 +16,7 @@ import {
   SYSTEM_SUBTITLE_CLASS,
   SYSTEM_TITLE_CLASS,
 } from "@/components/system/systemSemanticClassNames";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_UNIT_STANDARD_CATEGORY_LABELS,
@@ -75,7 +76,8 @@ export default function SystemUnitStandardsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<UnitFormState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const mutation = useWaflMutation("system-unit-standards");
+  const isSaving = mutation.isLocked;
   const [message, setMessage] = useState("DB 기준 시스템 단위 표준 원장을 조회합니다.");
   const loadSeqRef = useRef(0);
 
@@ -87,9 +89,12 @@ export default function SystemUnitStandardsPage() {
     setIsLoading(true);
     setMessage("단위 표준을 불러오는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/units", { cache: "no-store" });
-      const payload = (await response.json()) as { ok?: boolean; records?: SystemUnitStandardRow[]; message?: string };
-      if (!response.ok || !payload.ok || !Array.isArray(payload.records)) {
+      const payload = await waflLegacyApiRequest<{ ok?: boolean; records?: SystemUnitStandardRow[]; message?: string }>(
+        "/api/system/standards/units",
+        { cache: "no-store" },
+        "단위 원장을 불러오지 못했습니다.",
+      );
+      if (!payload.ok || !Array.isArray(payload.records)) {
         throw new Error(payload.message || "단위 표준을 불러오지 못했습니다.");
       }
       if (loadSeqRef.current !== requestId) return;
@@ -107,92 +112,37 @@ export default function SystemUnitStandardsPage() {
   }, []);
 
   async function createRecord() {
-    setIsSaving(true);
-    setMessage("단위 표준을 추가하는 중입니다.");
+    setMessage("단위를 추가하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/units", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: form.code,
-          koreanName: form.koreanName,
-          englishCode: form.englishCode,
-          category: form.category,
-          description: form.description,
-          example: form.example,
-          sortOrder: toSortOrder(form.sortOrder),
-          isActive: true,
-        }),
+      await mutation.runMutation({
+        lockKey: "system-unit-standard:create", operationId: "system-unit-standard-create",
+        messages: { loading: "단위를 추가하는 중입니다.", success: "단위를 추가했습니다.", error: "단위를 추가하지 못했습니다." },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<{ ok?: boolean; record?: SystemUnitStandardRow; message?: string }>("/api/system/standards/units", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: form.code, koreanName: form.koreanName, englishCode: form.englishCode, category: form.category, description: form.description, example: form.example, sortOrder: toSortOrder(form.sortOrder), isActive: true }) }, "단위를 추가하지 못했습니다.");
+          if (!payload.ok || !payload.record) throw new Error(payload.message || "단위를 추가하지 못했습니다."); return payload.record;
+        },
+        onSuccess: (record) => { setRecords((current) => [...current, record].sort((a,b) => a.sortOrder-b.sortOrder)); setForm(EMPTY_FORM); setMessage("단위를 추가했습니다."); },
+        onError: (error) => setMessage(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemUnitStandardRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "단위 표준을 추가하지 못했습니다.");
-      }
-      setRecords((current) => [...current, payload.record as SystemUnitStandardRow].sort((a, b) => a.sortOrder - b.sortOrder));
-      setForm(EMPTY_FORM);
-      setMessage("단위 표준을 추가했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "단위 표준 추가 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "단위 추가 중 오류가 발생했습니다."); }
   }
 
   async function saveRecord(row: SystemUnitStandardRow) {
-    if (!editingForm) return;
-    setIsSaving(true);
-    setMessage("단위 표준을 수정하는 중입니다.");
+    if (!editingForm) return; const nextForm = editingForm; setMessage("단위를 수정하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/units", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: row.id,
-          code: editingForm.code,
-          koreanName: editingForm.koreanName,
-          englishCode: editingForm.englishCode,
-          category: editingForm.category,
-          description: editingForm.description,
-          example: editingForm.example,
-          sortOrder: toSortOrder(editingForm.sortOrder),
-          isActive: row.status === "active",
-        }),
-      });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemUnitStandardRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "단위 표준을 수정하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === row.id ? (payload.record as SystemUnitStandardRow) : item)));
-      setEditingId(null);
-      setEditingForm(null);
-      setMessage("단위 표준을 수정했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "단위 표준 수정 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+      await mutation.runMutation({ lockKey: `system-unit-standard:${row.id}`, operationId: "system-unit-standard-update", messages: { loading: "단위를 수정하는 중입니다.", success: "단위를 수정했습니다.", error: "단위를 수정하지 못했습니다." },
+        mutation: async () => { const payload = await waflLegacyApiRequest<{ ok?: boolean; record?: SystemUnitStandardRow; message?: string }>("/api/system/standards/units", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: row.id, code: nextForm.code, koreanName: nextForm.koreanName, englishCode: nextForm.englishCode, category: nextForm.category, description: nextForm.description, example: nextForm.example, sortOrder: toSortOrder(nextForm.sortOrder), isActive: row.status === "active" }) }, "단위를 수정하지 못했습니다."); if (!payload.ok || !payload.record) throw new Error(payload.message || "단위를 수정하지 못했습니다."); return payload.record; },
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === row.id ? record : item)); setEditingId(null); setEditingForm(null); setMessage("단위를 수정했습니다."); }, onError: (error) => setMessage(error.message) });
+    } catch (error) { setMessage(error instanceof Error ? error.message : "단위 수정 중 오류가 발생했습니다."); }
   }
 
   async function toggleActive(row: SystemUnitStandardRow) {
-    setIsSaving(true);
-    setMessage("단위 표준 사용 상태를 변경하는 중입니다.");
+    setMessage("단위 사용 상태를 변경하는 중입니다.");
     try {
-      const response = await fetch("/api/system/standards/units", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: row.id, isActive: row.status !== "active" }),
-      });
-      const payload = (await response.json()) as { ok?: boolean; record?: SystemUnitStandardRow; message?: string };
-      if (!response.ok || !payload.ok || !payload.record) {
-        throw new Error(payload.message || "단위 표준 사용 상태를 변경하지 못했습니다.");
-      }
-      setRecords((current) => current.map((item) => (item.id === row.id ? (payload.record as SystemUnitStandardRow) : item)));
-      setMessage("단위 표준 사용 상태를 변경했습니다.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "단위 표준 사용 상태 변경 중 오류가 발생했습니다.");
-    } finally {
-      setIsSaving(false);
-    }
+      await mutation.runMutation({ lockKey: `system-unit-standard:${row.id}`, operationId: "system-unit-standard-toggle", messages: { loading: "단위 사용 상태를 변경하는 중입니다.", success: "단위 사용 상태를 변경했습니다.", error: "단위 사용 상태를 변경하지 못했습니다." },
+        mutation: async () => { const payload = await waflLegacyApiRequest<{ ok?: boolean; record?: SystemUnitStandardRow; message?: string }>("/api/system/standards/units", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: row.id, isActive: row.status !== "active" }) }, "단위 사용 상태를 변경하지 못했습니다."); if (!payload.ok || !payload.record) throw new Error(payload.message || "단위 사용 상태를 변경하지 못했습니다."); return payload.record; },
+        onSuccess: (record) => { setRecords((current) => current.map((item) => item.id === row.id ? record : item)); setMessage("단위 사용 상태를 변경했습니다."); }, onError: (error) => setMessage(error.message) });
+    } catch (error) { setMessage(error instanceof Error ? error.message : "단위 사용 상태 변경 중 오류가 발생했습니다."); }
   }
 
   return (
@@ -232,19 +182,19 @@ export default function SystemUnitStandardsPage() {
 
             <div className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3">
               <div className="grid gap-2 md:grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr]">
-                <input
+                <WaflInput
                   value={form.koreanName}
                   onChange={(event) => setForm((current) => ({ ...current, koreanName: event.target.value }))}
                   placeholder="한글명"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <input
+                <WaflInput
                   value={form.englishCode}
                   onChange={(event) => setForm((current) => ({ ...current, englishCode: event.target.value }))}
                   placeholder="영문 코드/약어"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <input
+                <WaflInput
                   value={form.code}
                   onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))}
                   placeholder="시스템 코드 예: piece"
@@ -259,19 +209,19 @@ export default function SystemUnitStandardsPage() {
                 />
               </div>
               <div className="mt-2 grid gap-2 md:grid-cols-[1fr_1fr_120px_120px]">
-                <input
+                <WaflInput
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
                   placeholder="설명"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <input
+                <WaflInput
                   value={form.example}
                   onChange={(event) => setForm((current) => ({ ...current, example: event.target.value }))}
                   placeholder="사용 예시"
                   className="rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--pbp-accent)]"
                 />
-                <input
+                <WaflInput
                   value={form.sortOrder}
                   onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))}
                   placeholder="정렬"
@@ -311,12 +261,12 @@ export default function SystemUnitStandardsPage() {
                     >
                       {isEditing ? (
                         <>
-                          <input
+                          <WaflInput
                             value={editingForm.koreanName}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, koreanName: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.englishCode}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, englishCode: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
@@ -328,17 +278,17 @@ export default function SystemUnitStandardsPage() {
                             ariaLabel="단위 분류 수정"
                             size="sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.description}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.example}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, example: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-sm"
                           />
-                          <input
+                          <WaflInput
                             value={editingForm.sortOrder}
                             onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)}
                             className="rounded-lg border border-[var(--pbp-border)] px-2 py-1 text-right text-sm"
@@ -372,8 +322,10 @@ export default function SystemUnitStandardsPage() {
                           <span className="text-xs text-[var(--pbp-text-subtle)]">{row.example}</span>
                           <span className="text-right text-xs text-[var(--pbp-text-subtle)]">{row.sortOrder}</span>
                           <div className="flex items-center justify-end gap-1">
-                            <button
+                            <AdminButton
                               type="button"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => toggleActive(row)}
                               disabled={isSaving}
                               className="rounded-full disabled:cursor-not-allowed disabled:opacity-50"
@@ -381,7 +333,7 @@ export default function SystemUnitStandardsPage() {
                               <AdminStatusBadge tone={statusBadgeTones[row.status]} size="xs">
                                 {SYSTEM_UNIT_STANDARD_STATUS_LABELS[row.status]}
                               </AdminStatusBadge>
-                            </button>
+                            </AdminButton>
                             <AdminButton
                               onClick={() => {
                                 setEditingId(row.id);
