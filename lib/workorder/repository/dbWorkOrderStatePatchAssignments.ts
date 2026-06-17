@@ -1,4 +1,5 @@
 import type { WorkOrderStatePatch } from "@/types/workorder";
+import { hasDefinedWaflPatchProperty } from "@/lib/mutations/waflPatchResult";
 import type { DbSpecSheetSchema } from "@/lib/workorder/repository/dbWorkOrderRepositoryTypes";
 import { normalizeDbWorkflowState } from "@/lib/workorder/repository/dbWorkOrderRowMappers";
 
@@ -15,7 +16,7 @@ function hasPatchProperty(
   patch: WorkOrderStatePatch,
   propertyName: keyof WorkOrderStatePatch,
 ): boolean {
-  return Object.prototype.hasOwnProperty.call(patch, propertyName);
+  return hasDefinedWaflPatchProperty(patch, propertyName);
 }
 
 function pushStatePatchAssignment(

@@ -27,3 +27,13 @@ export function applyWaflPatchResult<TResource extends object>(
       : {}),
   } as TResource;
 }
+
+export function hasDefinedWaflPatchProperty<TPatch extends object>(
+  patch: TPatch,
+  propertyName: keyof TPatch,
+): boolean {
+  return (
+    Object.prototype.hasOwnProperty.call(patch, propertyName) &&
+    patch[propertyName] !== undefined
+  );
+}

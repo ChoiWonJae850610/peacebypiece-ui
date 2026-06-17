@@ -15,6 +15,7 @@ import {
 import { isWorkOrderServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
+import { hasDefinedWaflPatchProperty } from "@/lib/mutations/waflPatchResult";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
 import type { MemberPermissionCode } from "@/lib/permissions";
 import { getSessionDefaultWorkOrderRole, isWorkOrderActorRole } from "@/lib/constants/roles";
@@ -903,66 +904,69 @@ export async function handlePatchWorkOrderState(
       });
     if (workflowPermissionResponse) return workflowPermissionResponse;
 
+    const hasDefinedPatchProperty = (propertyName: keyof WorkOrderStatePatch) =>
+      hasDefinedWaflPatchProperty(guardedPatch, propertyName);
+
+    const statePatch: WorkOrderStatePatch = {
+      id: workOrderId,
+      lastSavedAt:
+        typeof guardedPatch.lastSavedAt === "string" &&
+        guardedPatch.lastSavedAt.trim()
+          ? guardedPatch.lastSavedAt
+          : new Date().toISOString(),
+      ...(hasDefinedPatchProperty("workflowState")
+        ? { workflowState: guardedPatch.workflowState as WorkOrder["workflowState"] }
+        : {}),
+      ...(hasDefinedPatchProperty("title") ? { title: guardedPatch.title } : {}),
+      ...(hasDefinedPatchProperty("displayTitle") ? { displayTitle: guardedPatch.displayTitle } : {}),
+      ...(hasDefinedPatchProperty("baseTitle") ? { baseTitle: guardedPatch.baseTitle } : {}),
+      ...(hasDefinedPatchProperty("workOrderKind") ? { workOrderKind: guardedPatch.workOrderKind } : {}),
+      ...(hasDefinedPatchProperty("category1") ? { category1: guardedPatch.category1 } : {}),
+      ...(hasDefinedPatchProperty("category2") ? { category2: guardedPatch.category2 } : {}),
+      ...(hasDefinedPatchProperty("category3") ? { category3: guardedPatch.category3 } : {}),
+      ...(hasDefinedPatchProperty("category1Id") ? { category1Id: guardedPatch.category1Id } : {}),
+      ...(hasDefinedPatchProperty("category2Id") ? { category2Id: guardedPatch.category2Id } : {}),
+      ...(hasDefinedPatchProperty("category3Id") ? { category3Id: guardedPatch.category3Id } : {}),
+      ...(hasDefinedPatchProperty("season") ? { season: guardedPatch.season } : {}),
+      ...(hasDefinedPatchProperty("manager") ? { manager: guardedPatch.manager } : {}),
+      ...(hasDefinedPatchProperty("managerId") ? { managerId: guardedPatch.managerId } : {}),
+      ...(hasDefinedPatchProperty("dueDate") ? { dueDate: guardedPatch.dueDate } : {}),
+      ...(hasDefinedPatchProperty("quantity") ? { quantity: guardedPatch.quantity } : {}),
+      ...(hasDefinedPatchProperty("inventoryQuantity")
+        ? { inventoryQuantity: guardedPatch.inventoryQuantity }
+        : {}),
+      ...(hasDefinedPatchProperty("inventoryStatus")
+        ? { inventoryStatus: guardedPatch.inventoryStatus }
+        : {}),
+      ...(hasDefinedPatchProperty("factoryOrderRequest")
+        ? { factoryOrderRequest: guardedPatch.factoryOrderRequest ?? null }
+        : {}),
+      ...(hasDefinedPatchProperty("orderEntries")
+        ? { orderEntries: guardedPatch.orderEntries }
+        : {}),
+      ...(hasDefinedPatchProperty("materials")
+        ? { materials: guardedPatch.materials }
+        : {}),
+      ...(hasDefinedPatchProperty("outsourcing")
+        ? { outsourcing: guardedPatch.outsourcing }
+        : {}),
+      ...(hasDefinedPatchProperty("rejectionReason")
+        ? { rejectionReason: guardedPatch.rejectionReason ?? null }
+        : {}),
+      ...(hasDefinedPatchProperty("rejectedAt")
+        ? { rejectedAt: guardedPatch.rejectedAt ?? null }
+        : {}),
+      ...(hasDefinedPatchProperty("rejectedByUserId")
+        ? { rejectedByUserId: guardedPatch.rejectedByUserId ?? null }
+        : {}),
+      ...(hasDefinedPatchProperty("rejectedByName")
+        ? { rejectedByName: guardedPatch.rejectedByName ?? null }
+        : {}),
+      serviceCode,
+    };
+
     const savedWorkOrder = await updateWorkOrderStateForCompany(
-      {
-        id: workOrderId,
-        ...(Object.prototype.hasOwnProperty.call(guardedPatch, "workflowState")
-          ? { workflowState: guardedPatch.workflowState as WorkOrder["workflowState"] }
-          : {}),
-        lastSavedAt:
-          typeof guardedPatch.lastSavedAt === "string" &&
-          guardedPatch.lastSavedAt.trim()
-            ? guardedPatch.lastSavedAt
-            : new Date().toISOString(),
-        title: Object.prototype.hasOwnProperty.call(guardedPatch, "title") ? guardedPatch.title : undefined,
-        displayTitle: Object.prototype.hasOwnProperty.call(guardedPatch, "displayTitle") ? guardedPatch.displayTitle : undefined,
-        baseTitle: Object.prototype.hasOwnProperty.call(guardedPatch, "baseTitle") ? guardedPatch.baseTitle : undefined,
-        workOrderKind: Object.prototype.hasOwnProperty.call(guardedPatch, "workOrderKind") ? guardedPatch.workOrderKind : undefined,
-        category1: Object.prototype.hasOwnProperty.call(guardedPatch, "category1") ? guardedPatch.category1 : undefined,
-        category2: Object.prototype.hasOwnProperty.call(guardedPatch, "category2") ? guardedPatch.category2 : undefined,
-        category3: Object.prototype.hasOwnProperty.call(guardedPatch, "category3") ? guardedPatch.category3 : undefined,
-        category1Id: Object.prototype.hasOwnProperty.call(guardedPatch, "category1Id") ? guardedPatch.category1Id : undefined,
-        category2Id: Object.prototype.hasOwnProperty.call(guardedPatch, "category2Id") ? guardedPatch.category2Id : undefined,
-        category3Id: Object.prototype.hasOwnProperty.call(guardedPatch, "category3Id") ? guardedPatch.category3Id : undefined,
-        season: Object.prototype.hasOwnProperty.call(guardedPatch, "season") ? guardedPatch.season : undefined,
-        manager: Object.prototype.hasOwnProperty.call(guardedPatch, "manager") ? guardedPatch.manager : undefined,
-        managerId: Object.prototype.hasOwnProperty.call(guardedPatch, "managerId") ? guardedPatch.managerId : undefined,
-        dueDate: Object.prototype.hasOwnProperty.call(guardedPatch, "dueDate") ? guardedPatch.dueDate : undefined,
-        quantity: Object.prototype.hasOwnProperty.call(guardedPatch, "quantity") ? guardedPatch.quantity : undefined,
-        inventoryQuantity:
-          typeof guardedPatch.inventoryQuantity === "number"
-            ? guardedPatch.inventoryQuantity
-            : undefined,
-        inventoryStatus: guardedPatch.inventoryStatus,
-        factoryOrderRequest: Object.prototype.hasOwnProperty.call(
-          guardedPatch,
-          "factoryOrderRequest",
-        )
-          ? (guardedPatch.factoryOrderRequest ?? null)
-          : undefined,
-        orderEntries: Array.isArray(guardedPatch.orderEntries)
-          ? guardedPatch.orderEntries
-          : undefined,
-        materials: Array.isArray(guardedPatch.materials)
-          ? guardedPatch.materials
-          : undefined,
-        outsourcing: Array.isArray(guardedPatch.outsourcing)
-          ? guardedPatch.outsourcing
-          : undefined,
-        rejectionReason: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectionReason")
-          ? (guardedPatch.rejectionReason ?? null)
-          : undefined,
-        rejectedAt: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedAt")
-          ? (guardedPatch.rejectedAt ?? null)
-          : undefined,
-        rejectedByUserId: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedByUserId")
-          ? (guardedPatch.rejectedByUserId ?? null)
-          : undefined,
-        rejectedByName: Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedByName")
-          ? (guardedPatch.rejectedByName ?? null)
-          : undefined,
-        serviceCode,
-      },
+      statePatch,
       scopeResult.scope,
     );
 
