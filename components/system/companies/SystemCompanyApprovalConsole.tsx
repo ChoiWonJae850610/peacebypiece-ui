@@ -5,7 +5,19 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
-import { WaflSelect } from "@/components/common/ui";
+import {
+  WaflButton,
+  WaflInput,
+  WaflModalCloseButton,
+  WaflModalSection,
+  WaflSelect,
+  getWaflModalBodyClassName,
+  getWaflModalFooterClassName,
+  getWaflModalHeaderClassName,
+  getWaflModalMaxWidthClassName,
+  getWaflModalPanelClassName,
+  useWaflMutation,
+} from "@/components/common/ui";
 import SystemCompanyFileReviewPanel from "@/components/system/companies/SystemCompanyFileReviewPanel";
 import SystemShell from "@/components/system/layout/SystemShell";
 import {
@@ -25,6 +37,7 @@ import {
 import { APP_VERSION } from "@/lib/constants/app";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { CompanyOnboardingFileMetadata } from "@/lib/admin/settings/companyTypes";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import type { InvitationRecord } from "@/lib/invitations/invitationTypes";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import type { CompanyJoinRequestRow, CompanyManagementFilter, DeliveryMethod, SystemInvitationRow } from "@/lib/system/systemCompanyApprovalPresentation";
@@ -169,20 +182,19 @@ export default function SystemCompanyApprovalConsole() {
   const [joinRequestLoadError, setJoinRequestLoadError] = useState<string | null>(null);
   const [reviewActionError, setReviewActionError] = useState<string | null>(null);
   const [reviewActionMessage, setReviewActionMessage] = useState<string | null>(null);
-  const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
-  const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
-  const [reopeningRequestId, setReopeningRequestId] = useState<string | null>(null);
   const [systemInviteExpiresInDays, setSystemInviteExpiresInDays] = useState(7);
   const [systemInvitations, setSystemInvitations] = useState<InvitationRecord[]>([]);
   const [systemInvitationLoadStatus, setSystemInvitationLoadStatus] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const [systemInviteError, setSystemInviteError] = useState<string | null>(null);
   const [systemInviteMessage, setSystemInviteMessage] = useState<string | null>(null);
-  const [isCreatingSystemInvite, setIsCreatingSystemInvite] = useState(false);
-  const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("email");
   const [deliveryTarget, setDeliveryTarget] = useState("");
   const [activeCompanyFilter, setActiveCompanyFilter] = useState<CompanyManagementFilter>("all");
   const [selectedJoinRequestId, setSelectedJoinRequestId] = useState<string | null>(null);
+  const invitationMutation = useWaflMutation("system-company-invitation");
+  const companyReviewMutation = useWaflMutation("system-company-review");
+  const isCreatingSystemInvite = invitationMutation.isLockActive("system-company-invitation:create");
+  const isReviewMutationActive = companyReviewMutation.isLocked;
 
   const joinRequests = useMemo(
     () => joinRequestRecords.map(toCompanyJoinRequestRow),
@@ -254,16 +266,16 @@ export default function SystemCompanyApprovalConsole() {
             </AdminButton>
             <AdminButton
               onClick={() => void revokeSystemInvitation(invitation.id)}
-              disabled={!invitation.canRevoke || revokingInvitationId !== null}
+              disabled={!invitation.canRevoke || invitationMutation.isLocked}
               variant="danger"
             >
-              {revokingInvitationId === invitation.id ? "취소 중" : "취소"}
+              {invitationMutation.isLockActive(`system-company-invitation:${invitation.id}`) ? "취소 중" : "취소"}
             </AdminButton>
           </div>
         ),
       },
     ],
-    [revokingInvitationId],
+    [invitationMutation],
   );
 
   const joinRequestTableColumns = useMemo<AdminTableColumn<CompanyJoinRequestRow>[]>(
@@ -338,7 +350,7 @@ export default function SystemCompanyApprovalConsole() {
           <div className="grid min-w-0 gap-2 sm:flex sm:flex-wrap sm:justify-center" onClick={(event) => event.stopPropagation()}>
             <AdminButton
               onClick={() => setSelectedJoinRequestId(request.id)}
-              disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+              disabled={isReviewMutationActive}
               variant="secondary"
             >
               상세
@@ -347,44 +359,48 @@ export default function SystemCompanyApprovalConsole() {
               <>
                 <AdminButton
                   onClick={() => void approveCompanyJoinRequest(request.id)}
-                  disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                  disabled={isReviewMutationActive}
                   variant="primary"
                 >
-                  {approvingRequestId === request.id ? "승인 중" : "승인"}
+                  {companyReviewMutation.isLockActive(`system-company-review:${request.id}`) ? "승인 중" : "승인"}
                 </AdminButton>
                 <AdminButton
                   onClick={() => void rejectCompanyJoinRequest(request.id)}
-                  disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                  disabled={isReviewMutationActive}
                   variant="danger"
                 >
-                  {rejectingRequestId === request.id ? "거절 중" : "거절"}
+                  {companyReviewMutation.isLockActive(`system-company-review:${request.id}`) ? "거절 중" : "거절"}
                 </AdminButton>
               </>
             ) : null}
             {request.canRequestReinput ? (
               <AdminButton
                 onClick={() => void requestCompanyReinput(request.id)}
-                disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                disabled={isReviewMutationActive}
                 variant="secondary"
               >
-                {reopeningRequestId === request.id ? "요청 중" : "재입력 요청"}
+                {companyReviewMutation.isLockActive(`system-company-review:${request.id}`) ? "요청 중" : "재입력 요청"}
               </AdminButton>
             ) : null}
           </div>
         ),
       },
     ],
-    [approvingRequestId, rejectingRequestId, reopeningRequestId],
+    [companyReviewMutation, isReviewMutationActive],
   );
 
   async function loadSystemInvitations() {
     setSystemInvitationLoadStatus("loading");
+    setSystemInviteError(null);
 
     try {
-      const response = await fetch("/api/invitations?scope=system_to_company_admin", { cache: "no-store" });
-      const payload = (await response.json()) as InvitationListResponse;
+      const payload = await waflLegacyApiRequest<InvitationListResponse>(
+        "/api/invitations?scope=system_to_company_admin",
+        { cache: "no-store" },
+        "초대 링크 목록을 불러오지 못했습니다.",
+      );
 
-      if (!response.ok || !payload.ok) {
+      if (!payload.ok) {
         throw new Error(payload.error ?? "SYSTEM_COMPANY_ADMIN_INVITATIONS_LOAD_FAILED");
       }
 
@@ -405,42 +421,51 @@ export default function SystemCompanyApprovalConsole() {
   async function createSystemCompanyAdminInvite() {
     if (!canCreateSystemInvite) return;
 
-    setIsCreatingSystemInvite(true);
     setSystemInviteError(null);
     setSystemInviteMessage(null);
 
     try {
-      const response = await fetch("/api/invitations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scope: "system_to_company_admin",
-          recipientRole: "admin",
-          permissionPreset: "company_admin",
-          expiresAt: getDefaultInvitationExpiresAt(systemInviteExpiresInDays),
-        }),
+      await invitationMutation.runMutation({
+        lockKey: "system-company-invitation:create",
+        sequenceKey: "system-company-invitations",
+        operationId: "system-company-invitation-create",
+        messages: {
+          loading: "초대 링크를 생성하는 중입니다.",
+          success: "초대 링크를 생성했습니다.",
+          error: "초대 링크 생성에 실패했습니다.",
+        },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<CreatedSystemInvitationResult & {
+            ok?: boolean;
+            error?: string;
+            message?: string;
+          }>(
+            "/api/invitations",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                scope: "system_to_company_admin",
+                recipientRole: "admin",
+                permissionPreset: "company_admin",
+                expiresAt: getDefaultInvitationExpiresAt(systemInviteExpiresInDays),
+              }),
+            },
+            "초대 링크 생성에 실패했습니다.",
+          );
+          if (!payload.ok) {
+            throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED");
+          }
+          return payload;
+        },
+        onSuccess: async () => {
+          setSystemInviteMessage("초대 링크를 생성했습니다. 우측 목록에서 복사할 수 있습니다.");
+          await loadSystemInvitations();
+        },
+        onError: (error) => setSystemInviteError(error.message),
       });
-      const payload = (await response.json()) as CreatedSystemInvitationResult & {
-        ok?: boolean;
-        error?: string;
-        message?: string;
-      };
-
-      if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.message ?? payload?.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED");
-      }
-
-      setSystemInviteMessage("초대 링크를 생성했습니다. 우측 목록에서 복사할 수 있습니다.");
-      await loadSystemInvitations();
-    } catch (error) {
-      setSystemInviteError(
-        resolveSystemCompanyErrorMessage(
-          error instanceof Error ? error.message : null,
-          "초대 링크 생성에 실패했습니다.",
-        ),
-      );
-    } finally {
-      setIsCreatingSystemInvite(false);
+    } catch {
+      // The shared mutation lifecycle already exposes the normalized error.
     }
   }
 
@@ -452,31 +477,38 @@ export default function SystemCompanyApprovalConsole() {
   }
 
   async function revokeSystemInvitation(invitationId: string) {
-    setRevokingInvitationId(invitationId);
     setSystemInviteError(null);
     setSystemInviteMessage(null);
 
     try {
-      const response = await fetch(`/api/invitations/${encodeURIComponent(invitationId)}/revoke`, {
-        method: "POST",
+      await invitationMutation.runMutation({
+        lockKey: `system-company-invitation:${invitationId}`,
+        sequenceKey: "system-company-invitations",
+        operationId: `system-company-invitation-revoke:${invitationId}`,
+        messages: {
+          loading: "초대 링크를 취소하는 중입니다.",
+          success: "초대 링크를 취소했습니다.",
+          error: "초대 링크 취소에 실패했습니다.",
+        },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<{ ok?: boolean; error?: string; message?: string }>(
+            `/api/invitations/${encodeURIComponent(invitationId)}/revoke`,
+            { method: "POST" },
+            "초대 링크 취소에 실패했습니다.",
+          );
+          if (!payload.ok) {
+            throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_REVOKE_FAILED");
+          }
+          return payload;
+        },
+        onSuccess: async () => {
+          setSystemInviteMessage("초대 링크를 취소했습니다.");
+          await loadSystemInvitations();
+        },
+        onError: (error) => setSystemInviteError(error.message),
       });
-      const payload = (await response.json()) as { ok?: boolean; error?: string; message?: string };
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_REVOKE_FAILED");
-      }
-
-      setSystemInviteMessage("초대 링크를 취소했습니다.");
-      await loadSystemInvitations();
-    } catch (error) {
-      setSystemInviteError(
-        resolveSystemCompanyErrorMessage(
-          error instanceof Error ? error.message : null,
-          "초대 링크 취소에 실패했습니다.",
-        ),
-      );
-    } finally {
-      setRevokingInvitationId(null);
+    } catch {
+      // The shared mutation lifecycle already exposes the normalized error.
     }
   }
 
@@ -507,13 +539,13 @@ export default function SystemCompanyApprovalConsole() {
     setJoinRequestLoadError(null);
 
     try {
-      const response = await fetch(
+      const payload = await waflLegacyApiRequest<JoinRequestListResponse>(
         "/api/invitations/join-requests?requestType=company&invitationScope=system_to_company_admin&limit=50",
         { cache: "no-store" },
+        "고객사 가입 신청 목록을 불러오지 못했습니다.",
       );
-      const payload = (await response.json()) as JoinRequestListResponse;
 
-      if (!response.ok || !payload.ok) {
+      if (!payload.ok) {
         throw new Error(payload.error ?? "COMPANY_JOIN_REQUESTS_LOAD_FAILED");
       }
 
@@ -531,104 +563,87 @@ export default function SystemCompanyApprovalConsole() {
     }
   }
 
-  async function approveCompanyJoinRequest(requestId: string) {
-    setApprovingRequestId(requestId);
+  async function runCompanyReviewMutation({
+    requestId,
+    action,
+    requestBody,
+    successMessage,
+    errorMessage,
+  }: {
+    requestId: string;
+    action: "approve" | "reject" | "reopen";
+    requestBody: Record<string, unknown>;
+    successMessage: string;
+    errorMessage: string;
+  }) {
     setReviewActionError(null);
     setReviewActionMessage(null);
 
     try {
-      const response = await fetch(`/api/system/companies/join-requests/${encodeURIComponent(requestId)}/approve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+      await companyReviewMutation.runMutation({
+        lockKey: `system-company-review:${requestId}`,
+        sequenceKey: `system-company-review:${requestId}`,
+        operationId: `system-company-review:${action}:${requestId}`,
+        messages: {
+          loading: "고객사 요청을 처리하는 중입니다.",
+          success: successMessage,
+          error: errorMessage,
+        },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<CompanyJoinRequestReviewResponse>(
+            `/api/system/companies/join-requests/${encodeURIComponent(requestId)}/${action}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(requestBody),
+            },
+            errorMessage,
+          );
+          if (!payload.ok) {
+            throw new Error(buildSystemCompanyReviewErrorMessage(payload, errorMessage));
+          }
+          return payload;
+        },
+        onSuccess: async () => {
+          setReviewActionMessage(successMessage);
+          setSelectedJoinRequestId(null);
+          await Promise.all([loadCompanyJoinRequests(), loadSystemInvitations()]);
+        },
+        onError: (error) => setReviewActionError(error.message),
       });
-      const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(buildSystemCompanyReviewErrorMessage(payload, "고객사 가입 신청 승인에 실패했습니다."));
-      }
-
-      setReviewActionMessage("고객사 가입 신청을 승인했습니다.");
-      setSelectedJoinRequestId(null);
-      await loadCompanyJoinRequests();
-      await loadSystemInvitations();
-    } catch (error) {
-      setReviewActionError(
-        resolveSystemCompanyErrorMessage(
-          error instanceof Error ? error.message : null,
-          "고객사 가입 신청 승인에 실패했습니다.",
-        ),
-      );
-    } finally {
-      setApprovingRequestId(null);
+    } catch {
+      // The shared mutation lifecycle already exposes the normalized error.
     }
+  }
+
+  async function approveCompanyJoinRequest(requestId: string) {
+    await runCompanyReviewMutation({
+      requestId,
+      action: "approve",
+      requestBody: {},
+      successMessage: "고객사 가입 신청을 승인했습니다.",
+      errorMessage: "고객사 가입 신청 승인에 실패했습니다.",
+    });
   }
 
   async function rejectCompanyJoinRequest(requestId: string) {
-    setRejectingRequestId(requestId);
-    setReviewActionError(null);
-    setReviewActionMessage(null);
-
-    try {
-      const response = await fetch(`/api/system/companies/join-requests/${encodeURIComponent(requestId)}/reject`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reasonCode: "system_admin_rejected" }),
-      });
-      const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(buildSystemCompanyReviewErrorMessage(payload, "고객사 가입 신청 거절에 실패했습니다."));
-      }
-
-      setReviewActionMessage("고객사 가입 신청을 거절했습니다.");
-      setSelectedJoinRequestId(null);
-      await loadCompanyJoinRequests();
-      await loadSystemInvitations();
-    } catch (error) {
-      setReviewActionError(
-        resolveSystemCompanyErrorMessage(
-          error instanceof Error ? error.message : null,
-          "고객사 가입 신청 거절에 실패했습니다.",
-        ),
-      );
-    } finally {
-      setRejectingRequestId(null);
-    }
+    await runCompanyReviewMutation({
+      requestId,
+      action: "reject",
+      requestBody: { reasonCode: "system_admin_rejected" },
+      successMessage: "고객사 가입 신청을 거절했습니다.",
+      errorMessage: "고객사 가입 신청 거절에 실패했습니다.",
+    });
   }
 
-
   async function requestCompanyReinput(requestId: string) {
-    setReopeningRequestId(requestId);
-    setReviewActionError(null);
-    setReviewActionMessage(null);
-
-    try {
-      const response = await fetch(`/api/system/companies/join-requests/${encodeURIComponent(requestId)}/reopen`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reasonCode: "system_admin_reinput_requested" }),
-      });
-      const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(buildSystemCompanyReviewErrorMessage(payload, "고객사 재입력 요청 처리에 실패했습니다."));
-      }
-
-      setReviewActionMessage("거절된 고객사를 재입력 요청 상태로 전환했습니다.");
-      setSelectedJoinRequestId(null);
-      await loadCompanyJoinRequests();
-      await loadSystemInvitations();
-    } catch (error) {
-      setReviewActionError(
-        resolveSystemCompanyErrorMessage(
-          error instanceof Error ? error.message : null,
-          "고객사 재입력 요청 처리에 실패했습니다.",
-        ),
-      );
-    } finally {
-      setReopeningRequestId(null);
-    }
+    await runCompanyReviewMutation({
+      requestId,
+      action: "reopen",
+      requestBody: { reasonCode: "system_admin_reinput_requested" },
+      successMessage: "거절된 고객사를 재입력 요청 상태로 전환했습니다.",
+      errorMessage: "고객사 재입력 요청 처리에 실패했습니다.",
+    });
   }
 
   useEffect(() => {
@@ -692,7 +707,7 @@ export default function SystemCompanyApprovalConsole() {
                   </label>
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">전달 대상</span>
-                    <input
+                    <WaflInput
                       value={deliveryTarget}
                       onChange={(event) => setDeliveryTarget(
                         deliveryMethod === "phone"
@@ -701,7 +716,7 @@ export default function SystemCompanyApprovalConsole() {
                       )}
                       placeholder={deliveryPlaceholder}
                       inputMode={deliveryMethod === "phone" ? "tel" : "email"}
-                      className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)] placeholder:text-[var(--pbp-text-faint)]"
+                      fieldSize="md"
                     />
                   </label>
                   <div className="flex items-end">
@@ -819,19 +834,14 @@ export default function SystemCompanyApprovalConsole() {
                   const count = countCompanyManagementFilterItems(joinRequests, filter);
 
                   return (
-                    <button
+                    <WaflButton
                       key={filter}
-                      type="button"
+                      size="sm"
+                      variant={isActive ? "primary" : "secondary"}
                       onClick={() => setActiveCompanyFilter(filter)}
-                      className={[
-                        "rounded-full border px-3 py-2 text-xs font-semibold transition",
-                        isActive
-                          ? "border-[var(--pbp-accent)] bg-[var(--pbp-accent-soft)] text-[var(--pbp-accent)]"
-                          : "border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-[var(--pbp-text-muted)] hover:border-[var(--pbp-accent)]",
-                      ].join(" ")}
                     >
                       {getCompanyManagementFilterLabel(filter)} {count}
-                    </button>
+                    </WaflButton>
                   );
                 })}
               </div>
@@ -852,20 +862,22 @@ export default function SystemCompanyApprovalConsole() {
         </section>
 
       {selectedJoinRequest ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/55 px-4 py-6">
-          <section className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-2xl">
-            <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="pbp-modal-overlay fixed inset-0 z-50 grid place-items-center px-4 py-6">
+          <section className={[
+            getWaflModalPanelClassName({ className: "flex max-h-[90vh] w-full flex-col" }),
+            getWaflModalMaxWidthClassName("xl"),
+          ].join(" ")}>
+            <div className={getWaflModalHeaderClassName("flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between")}>
               <div>
                 <p className={SYSTEM_EYEBROW_CLASS}>COMPANY REVIEW</p>
                 <h3 className={`mt-2 text-xl font-bold ${SYSTEM_VALUE_TEXT_CLASS}`}>{selectedJoinRequest.companyName}</h3>
                 <p className="mt-1 text-sm text-[var(--pbp-text-muted)]">회사 상태, 요금제, 제출 첨부와 처리 이력을 확인합니다.</p>
               </div>
-              <AdminButton onClick={() => setSelectedJoinRequestId(null)} variant="secondary">닫기</AdminButton>
+              <WaflModalCloseButton label="닫기" onClose={() => setSelectedJoinRequestId(null)} />
             </div>
 
-            <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
-              <article className={SYSTEM_MUTED_CARD_CLASS}>
-                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>회사 정보</h4>
+            <div className={getWaflModalBodyClassName("grid gap-4 lg:grid-cols-2")}>
+              <WaflModalSection title="회사 정보">
                 <dl className="mt-3 grid gap-2 text-sm">
                   <ReviewField label="회사명" value={selectedJoinRequest.companyName} />
                   <ReviewField label="회사 영문명" value={selectedJoinRequest.companyEnglishName} />
@@ -875,10 +887,9 @@ export default function SystemCompanyApprovalConsole() {
                   <ReviewField label="신청 요금제" value={selectedJoinRequest.requestedPlanCode} />
                   <ReviewField label="현재 요금제" value={selectedJoinRequest.currentPlanLabel} />
                 </dl>
-              </article>
+              </WaflModalSection>
 
-              <article className={SYSTEM_MUTED_CARD_CLASS}>
-                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>관리자 정보</h4>
+              <WaflModalSection title="관리자 정보">
                 <dl className="mt-3 grid gap-2 text-sm">
                   <ReviewField label="관리자 이름" value={selectedJoinRequest.applicantName} />
                   <ReviewField label="관리자 연락처" value={selectedJoinRequest.applicantPhone} />
@@ -886,10 +897,9 @@ export default function SystemCompanyApprovalConsole() {
                   <ReviewField label="신청일" value={selectedJoinRequest.requestedAtLabel} />
                   <ReviewField label="처리일" value={selectedJoinRequest.reviewedAtLabel} />
                 </dl>
-              </article>
+              </WaflModalSection>
 
-              <article className={SYSTEM_MUTED_CARD_CLASS}>
-                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>주소</h4>
+              <WaflModalSection title="주소">
                 <dl className="mt-3 grid gap-2 text-sm">
                   <ReviewField label="우편번호" value={selectedJoinRequest.postalCode} />
                   <ReviewField label="도로명주소" value={selectedJoinRequest.roadAddress} />
@@ -897,10 +907,9 @@ export default function SystemCompanyApprovalConsole() {
                   <ReviewField label="상세주소" value={selectedJoinRequest.addressDetail} />
                   <ReviewField label="참고항목" value={selectedJoinRequest.addressExtra} />
                 </dl>
-              </article>
+              </WaflModalSection>
 
-              <article className={SYSTEM_MUTED_CARD_CLASS}>
-                <h4 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>첨부 파일</h4>
+              <WaflModalSection title="첨부 파일">
                 <div className="mt-3 grid gap-3">
                   <ReviewFileCard
                     label="회사 로고"
@@ -911,35 +920,35 @@ export default function SystemCompanyApprovalConsole() {
                     file={getCompanyOnboardingFile(selectedJoinRequest.onboardingFiles, "business_license")}
                   />
                 </div>
-              </article>
+              </WaflModalSection>
             </div>
 
-            <div className="mt-5 flex flex-col gap-2 border-t border-[var(--pbp-border)] pt-4 sm:flex-row sm:justify-end">
+            <div className={getWaflModalFooterClassName("flex flex-col gap-2 sm:flex-row sm:justify-end")}>
               {selectedJoinRequest.canReview ? (
                 <>
                   <AdminButton
                     onClick={() => void approveCompanyJoinRequest(selectedJoinRequest.id)}
-                    disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                    disabled={isReviewMutationActive}
                     variant="primary"
                   >
-                    {approvingRequestId === selectedJoinRequest.id ? "승인 중" : "승인"}
+                    {companyReviewMutation.isLockActive(`system-company-review:${selectedJoinRequest.id}`) ? "승인 중" : "승인"}
                   </AdminButton>
                   <AdminButton
                     onClick={() => void rejectCompanyJoinRequest(selectedJoinRequest.id)}
-                    disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                    disabled={isReviewMutationActive}
                     variant="danger"
                   >
-                    {rejectingRequestId === selectedJoinRequest.id ? "거절 중" : "거절"}
+                    {companyReviewMutation.isLockActive(`system-company-review:${selectedJoinRequest.id}`) ? "거절 중" : "거절"}
                   </AdminButton>
                 </>
               ) : null}
               {selectedJoinRequest.canRequestReinput ? (
                 <AdminButton
                   onClick={() => void requestCompanyReinput(selectedJoinRequest.id)}
-                  disabled={approvingRequestId !== null || rejectingRequestId !== null || reopeningRequestId !== null}
+                  disabled={isReviewMutationActive}
                   variant="secondary"
                 >
-                  {reopeningRequestId === selectedJoinRequest.id ? "요청 중" : "재입력 요청"}
+                  {companyReviewMutation.isLockActive(`system-company-review:${selectedJoinRequest.id}`) ? "요청 중" : "재입력 요청"}
                 </AdminButton>
               ) : null}
             </div>
