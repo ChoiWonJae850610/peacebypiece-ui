@@ -22,7 +22,12 @@ import {
   updateMaterialOrderStatus,
   type MaterialOrderWorkspaceWorkOrderCandidate,
 } from "@/lib/material-orders/materialOrderWorkspaceClient";
-import { MATERIAL_ORDER_STATUS, type MaterialOrder, type MaterialOrderStatus, type MaterialOrderSupplier } from "@/lib/material-orders/types";
+import {
+  MATERIAL_ORDER_STATUS,
+  type MaterialOrder,
+  type MaterialOrderStatus,
+  type MaterialOrderSupplier,
+} from "@/lib/material-orders/types";
 import {
   buildMaterialRequestQuantityMap,
   calculateMaterialRequestRemainingQuantity,
@@ -39,14 +44,13 @@ import {
   type PendingMaterialOrderStatusValidation,
   type SelectedOrderDetailPayload,
 } from "@/features/material-orders/hooks/materialOrderDraftEditorUtils";
-import { WAFL_CHANGE_TARGET, getWaflChangeFeedbackMessage } from "@/components/common/ui";
+import {
+  WAFL_CHANGE_TARGET,
+  getWaflChangeFeedbackMessage,
+} from "@/components/common/ui";
 import { useMaterialOrderFeedback } from "@/features/material-orders/hooks/useMaterialOrderFeedback";
 
-export function useMaterialOrderDraftEditor({
-  isAdmin,
-}: {
-  isAdmin: boolean;
-}) {
+export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   const [orders, setOrders] = useState<MaterialOrder[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -56,9 +60,11 @@ export function useMaterialOrderDraftEditor({
   const [headerSaving, setHeaderSaving] = useState(false);
   const {
     operation: statusToastOperation,
-    showOperationToast: showStatusToast,
+    isLocked: materialOrderMutationLocked,
+    isLockActive: isMaterialOrderLockActive,
     clearOperationToast: clearStatusToast,
-    showChangeFeedback,
+    runChangeOperation,
+    runMutation: runMaterialOrderMutation,
   } = useMaterialOrderFeedback();
 
   const [workOrderCandidates, setWorkOrderCandidates] = useState<
@@ -85,7 +91,8 @@ export function useMaterialOrderDraftEditor({
   } | null>(null);
   const [pendingMaterialTypeChange, setPendingMaterialTypeChange] =
     useState<MaterialOrderDraftSelectionType | null>(null);
-  const [pendingStatusValidation, setPendingStatusValidation] = useState<PendingMaterialOrderStatusValidation | null>(null);
+  const [pendingStatusValidation, setPendingStatusValidation] =
+    useState<PendingMaterialOrderStatusValidation | null>(null);
 
   const selectedOrder = useMemo(
     () => orders.find((order) => order.id === selectedOrderId) ?? null,
@@ -266,35 +273,48 @@ export function useMaterialOrderDraftEditor({
       const previousMaterialType = materialType;
       const previousSupplierPartnerId = supplierPartnerId;
       const previousLines = lines;
+      const lockKey = `material-order:${selectedOrder.id}`;
+      if (isMaterialOrderLockActive(lockKey)) return;
 
       setHeaderSaving(true);
       setMaterialType(nextMaterialType);
       setSupplierPartnerId(null);
       setLines([]);
       setPendingLineAddition(null);
-      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderMaterialType, "changing");
 
       try {
-        const result = await updateMaterialOrderHeader({
-          materialOrderId: selectedOrder.id,
-          materialType: nextMaterialType,
-          supplierPartnerId: null,
-        });
-        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
-        setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-        await refreshWorkOrderCandidates();
-        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderMaterialType, "changed");
-      } catch (error) {
-        setMaterialType(previousMaterialType);
-        setSupplierPartnerId(previousSupplierPartnerId);
-        setLines(previousLines);
-        showChangeFeedback(
+        await runChangeOperation(
           WAFL_CHANGE_TARGET.materialOrderMaterialType,
-          "error",
-          toMaterialOrderWorkspaceError(
-            error,
-            getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.materialOrderMaterialType, "error"),
-          ),
+          `${lockKey}:material-type`,
+          async () => {
+            const result = await updateMaterialOrderHeader({
+              materialOrderId: selectedOrder.id,
+              materialType: nextMaterialType,
+              supplierPartnerId: null,
+            });
+            setOrders((current) =>
+              replaceMaterialOrderInList(current, result.materialOrder),
+            );
+            setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+            await refreshWorkOrderCandidates();
+            return result;
+          },
+          lockKey,
+          {
+            rollback: () => {
+              setMaterialType(previousMaterialType);
+              setSupplierPartnerId(previousSupplierPartnerId);
+              setLines(previousLines);
+            },
+            getErrorMessage: (error) =>
+              toMaterialOrderWorkspaceError(
+                error,
+                getWaflChangeFeedbackMessage(
+                  WAFL_CHANGE_TARGET.materialOrderMaterialType,
+                  "error",
+                ),
+              ),
+          },
         );
       } finally {
         setHeaderSaving(false);
@@ -304,8 +324,9 @@ export function useMaterialOrderDraftEditor({
       lines,
       materialType,
       refreshWorkOrderCandidates,
+      isMaterialOrderLockActive,
+      runChangeOperation,
       selectedOrder,
-      showChangeFeedback,
       supplierPartnerId,
       isAdmin,
     ],
@@ -313,6 +334,7 @@ export function useMaterialOrderDraftEditor({
 
   const changeMaterialType = useCallback(
     (nextMaterialType: MaterialOrderDraftSelectionType) => {
+      if (materialOrderMutationLocked) return;
       if (!nextMaterialType || nextMaterialType === materialType) return;
 
       if (lines.length > 0 || supplierPartnerId) {
@@ -322,7 +344,13 @@ export function useMaterialOrderDraftEditor({
 
       void persistMaterialTypeChange(nextMaterialType);
     },
-    [lines.length, materialType, persistMaterialTypeChange, supplierPartnerId],
+    [
+      lines.length,
+      materialOrderMutationLocked,
+      materialType,
+      persistMaterialTypeChange,
+      supplierPartnerId,
+    ],
   );
 
   const closeMaterialTypeChangeConfirmation = useCallback(() => {
@@ -330,11 +358,16 @@ export function useMaterialOrderDraftEditor({
   }, []);
 
   const confirmMaterialTypeChange = useCallback(() => {
+    if (materialOrderMutationLocked) return;
     const nextMaterialType = pendingMaterialTypeChange;
     if (!nextMaterialType) return;
     setPendingMaterialTypeChange(null);
     void persistMaterialTypeChange(nextMaterialType);
-  }, [pendingMaterialTypeChange, persistMaterialTypeChange]);
+  }, [
+    materialOrderMutationLocked,
+    pendingMaterialTypeChange,
+    persistMaterialTypeChange,
+  ]);
 
   const changeSupplierPartnerId = useCallback(
     async (nextSupplierPartnerId: string | null) => {
@@ -346,33 +379,50 @@ export function useMaterialOrderDraftEditor({
       }
 
       const previousSupplierPartnerId = supplierPartnerId;
+      const lockKey = `material-order:${selectedOrder.id}`;
+      if (isMaterialOrderLockActive(lockKey)) return;
       setSupplierPartnerId(nextSupplierPartnerId);
       setHeaderSaving(true);
-      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderSupplier, "changing");
 
       try {
-        const result = await updateMaterialOrderHeader({
-          materialOrderId: selectedOrder.id,
-          supplierPartnerId: nextSupplierPartnerId,
-        });
-        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
-        setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderSupplier, "changed");
-      } catch (error) {
-        setSupplierPartnerId(previousSupplierPartnerId);
-        showChangeFeedback(
+        await runChangeOperation(
           WAFL_CHANGE_TARGET.materialOrderSupplier,
-          "error",
-          toMaterialOrderWorkspaceError(
-            error,
-            getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.materialOrderSupplier, "error"),
-          ),
+          `${lockKey}:supplier`,
+          async () => {
+            const result = await updateMaterialOrderHeader({
+              materialOrderId: selectedOrder.id,
+              supplierPartnerId: nextSupplierPartnerId,
+            });
+            setOrders((current) =>
+              replaceMaterialOrderInList(current, result.materialOrder),
+            );
+            setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+            return result;
+          },
+          lockKey,
+          {
+            rollback: () => setSupplierPartnerId(previousSupplierPartnerId),
+            getErrorMessage: (error) =>
+              toMaterialOrderWorkspaceError(
+                error,
+                getWaflChangeFeedbackMessage(
+                  WAFL_CHANGE_TARGET.materialOrderSupplier,
+                  "error",
+                ),
+              ),
+          },
         );
       } finally {
         setHeaderSaving(false);
       }
     },
-    [isAdmin, selectedOrder, showChangeFeedback, supplierPartnerId],
+    [
+      isAdmin,
+      isMaterialOrderLockActive,
+      runChangeOperation,
+      selectedOrder,
+      supplierPartnerId,
+    ],
   );
 
   const buildSelectedOrderDetailPayload =
@@ -413,80 +463,105 @@ export function useMaterialOrderDraftEditor({
       }
 
       const previousDueDate = dueDate;
+      const lockKey = `material-order:${selectedOrder.id}`;
+      if (isMaterialOrderLockActive(lockKey)) return;
       setDueDate(normalizedDueDate);
       setHeaderSaving(true);
-      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderDueDate, "changing");
 
       try {
-        const result = await updateMaterialOrderHeader({
-          materialOrderId: selectedOrder.id,
-          dueDate: normalizedDueDate || null,
-        });
-
-        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
-        setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderDueDate, "changed");
-      } catch (error) {
-        setDueDate(previousDueDate);
-        showChangeFeedback(
+        await runChangeOperation(
           WAFL_CHANGE_TARGET.materialOrderDueDate,
-          "error",
-          toMaterialOrderWorkspaceError(
-            error,
-            getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.materialOrderDueDate, "error"),
-          ),
+          `${lockKey}:due-date`,
+          async () => {
+            const result = await updateMaterialOrderHeader({
+              materialOrderId: selectedOrder.id,
+              dueDate: normalizedDueDate || null,
+            });
+            setOrders((current) =>
+              replaceMaterialOrderInList(current, result.materialOrder),
+            );
+            setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+            return result;
+          },
+          lockKey,
+          {
+            rollback: () => setDueDate(previousDueDate),
+            getErrorMessage: (error) =>
+              toMaterialOrderWorkspaceError(
+                error,
+                getWaflChangeFeedbackMessage(
+                  WAFL_CHANGE_TARGET.materialOrderDueDate,
+                  "error",
+                ),
+              ),
+          },
         );
       } finally {
         setHeaderSaving(false);
       }
     },
-    [dueDate, isAdmin, selectedOrder, showChangeFeedback],
+    [
+      dueDate,
+      isAdmin,
+      isMaterialOrderLockActive,
+      runChangeOperation,
+      selectedOrder,
+    ],
   );
 
   const applySelectedOrderStatusChange = useCallback(
     async (status: MaterialOrderStatus) => {
       if (!selectedOrder) return;
 
+      const lockKey = `material-order:${selectedOrder.id}`;
+      if (isMaterialOrderLockActive(lockKey)) return;
       setStatusChanging(true);
-      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderStatus, "changing");
 
       try {
-        let nextSelectedOrderId = selectedOrder.id;
-
-        if (
-          shouldPersistMaterialOrderDetailBeforeStatusChange(
-            selectedOrder.status,
-          )
-        ) {
-          const detailPayload = buildSelectedOrderDetailPayload();
-          if (detailPayload) {
-            const detailResult = await updateMaterialOrderDetail(detailPayload);
-            nextSelectedOrderId =
-              detailResult.materialOrder?.id ?? selectedOrder.id;
-            setOrders(detailResult.materialOrders);
-          }
-        }
-
-        const result = await updateMaterialOrderStatus({
-          materialOrderId: nextSelectedOrderId,
-          status,
-        });
-
-        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
-        setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
-        await refreshWorkOrderCandidates();
-        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderStatus, "changed");
-      } catch (error) {
-        showChangeFeedback(
+        await runChangeOperation(
           WAFL_CHANGE_TARGET.materialOrderStatus,
-          "error",
-          toMaterialOrderWorkspaceError(
-            error,
-            getWaflChangeFeedbackMessage(
-              WAFL_CHANGE_TARGET.materialOrderStatus,
-              "error",
-            ),
-          ),
+          `${lockKey}:status`,
+          async () => {
+            let nextSelectedOrderId = selectedOrder.id;
+
+            if (
+              shouldPersistMaterialOrderDetailBeforeStatusChange(
+                selectedOrder.status,
+              )
+            ) {
+              const detailPayload = buildSelectedOrderDetailPayload();
+              if (detailPayload) {
+                const detailResult =
+                  await updateMaterialOrderDetail(detailPayload);
+                nextSelectedOrderId =
+                  detailResult.materialOrder?.id ?? selectedOrder.id;
+                setOrders(detailResult.materialOrders);
+              }
+            }
+
+            const result = await updateMaterialOrderStatus({
+              materialOrderId: nextSelectedOrderId,
+              status,
+            });
+
+            setOrders((current) =>
+              replaceMaterialOrderInList(current, result.materialOrder),
+            );
+            setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
+            await refreshWorkOrderCandidates();
+            return result;
+          },
+          lockKey,
+          {
+            getErrorMessage: (error) =>
+              toMaterialOrderWorkspaceError(
+                error,
+                getWaflChangeFeedbackMessage(
+                  WAFL_CHANGE_TARGET.materialOrderStatus,
+                  "error",
+                ),
+              ),
+          },
         );
       } finally {
         setStatusChanging(false);
@@ -495,14 +570,15 @@ export function useMaterialOrderDraftEditor({
     [
       buildSelectedOrderDetailPayload,
       refreshWorkOrderCandidates,
+      isMaterialOrderLockActive,
+      runChangeOperation,
       selectedOrder,
-      showChangeFeedback,
     ],
   );
 
   const changeSelectedOrderStatus = useCallback(
     (status: MaterialOrderStatus) => {
-      if (!selectedOrder) return;
+      if (materialOrderMutationLocked || !selectedOrder) return;
 
       if (selectedOrder.status === MATERIAL_ORDER_STATUS.draft) {
         const issues = getMaterialOrderStatusValidationIssues({
@@ -522,6 +598,7 @@ export function useMaterialOrderDraftEditor({
     [
       applySelectedOrderStatusChange,
       lines,
+      materialOrderMutationLocked,
       materialType,
       selectedOrder,
       supplierPartnerId,
@@ -533,66 +610,114 @@ export function useMaterialOrderDraftEditor({
   }, []);
 
   const confirmMaterialOrderValidation = useCallback(() => {
+    if (materialOrderMutationLocked) return;
     const pending = pendingStatusValidation;
     if (!pending) return;
     setPendingStatusValidation(null);
     void applySelectedOrderStatusChange(pending.nextStatus);
-  }, [applySelectedOrderStatusChange, pendingStatusValidation]);
+  }, [
+    applySelectedOrderStatusChange,
+    materialOrderMutationLocked,
+    pendingStatusValidation,
+  ]);
 
   const cancelOrder = useCallback(
     async (materialOrderId: string) => {
       const targetOrder = orders.find((order) => order.id === materialOrderId);
-      if (!targetOrder || targetOrder.status !== MATERIAL_ORDER_STATUS.draft) return;
+      if (!targetOrder || targetOrder.status !== MATERIAL_ORDER_STATUS.draft)
+        return;
 
+      const lockKey = `material-order:${materialOrderId}`;
+      if (isMaterialOrderLockActive(lockKey)) return;
+      const previousOrders = orders;
+      const previousSelectedOrderId = selectedOrderId;
       setStatusChanging(true);
-      showStatusToast("발주서를 삭제하는 중입니다.", "loading");
 
       try {
-        await cancelMaterialOrder({ materialOrderId });
-        setOrders((current) => current.filter((order) => order.id !== materialOrderId));
-        setSelectedOrderId((currentSelectedOrderId) =>
-          currentSelectedOrderId === materialOrderId ? "" : currentSelectedOrderId,
-        );
-        await refreshWorkOrderCandidates();
-        showStatusToast("발주서를 삭제했습니다.", "success");
-      } catch (error) {
-        showStatusToast(
-          toMaterialOrderWorkspaceError(error, "발주서를 삭제하지 못했습니다."),
-          "danger",
-        );
+        await runMaterialOrderMutation({
+          lockKey,
+          operationId: `${lockKey}:delete`,
+          messages: {
+            loading: "발주서를 삭제하는 중입니다.",
+            success: "발주서를 삭제했습니다.",
+            error: "발주서를 삭제하지 못했습니다.",
+          },
+          mutation: async () => {
+            await cancelMaterialOrder({ materialOrderId });
+            setOrders((current) =>
+              current.filter((order) => order.id !== materialOrderId),
+            );
+            setSelectedOrderId((currentSelectedOrderId) =>
+              currentSelectedOrderId === materialOrderId
+                ? ""
+                : currentSelectedOrderId,
+            );
+            await refreshWorkOrderCandidates();
+          },
+          rollback: () => {
+            setOrders(previousOrders);
+            setSelectedOrderId(previousSelectedOrderId);
+          },
+          getErrorMessage: (error) =>
+            toMaterialOrderWorkspaceError(
+              error,
+              "발주서를 삭제하지 못했습니다.",
+            ),
+        });
       } finally {
         setStatusChanging(false);
       }
     },
-    [orders, refreshWorkOrderCandidates, showStatusToast],
+    [
+      isMaterialOrderLockActive,
+      orders,
+      refreshWorkOrderCandidates,
+      runMaterialOrderMutation,
+      selectedOrderId,
+    ],
   );
 
   const updateLine = useCallback(
     (lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
+      if (materialOrderMutationLocked) return;
       setLines((current) =>
         current.map((line) => {
           if (line.id !== lineId) return line;
           const nextLine = { ...line, ...patch };
-          if (patch.orderQuantity == null || line.allocations.length === 0) return nextLine;
+          if (patch.orderQuantity == null || line.allocations.length === 0)
+            return nextLine;
 
-          const candidate = workOrderCandidates.find((item) => item.id === line.sourceWorkOrderId);
-          const material = candidate?.materialItems.find((item) => item.key === line.sourceMaterialKey);
+          const candidate = workOrderCandidates.find(
+            (item) => item.id === line.sourceWorkOrderId,
+          );
+          const material = candidate?.materialItems.find(
+            (item) => item.key === line.sourceMaterialKey,
+          );
           const requiredQuantity = Number(material?.quantity ?? 0);
           if (!(requiredQuantity > 0)) return nextLine;
 
-          let remainingAllocation = Math.min(Math.max(0, patch.orderQuantity), requiredQuantity);
+          let remainingAllocation = Math.min(
+            Math.max(0, patch.orderQuantity),
+            requiredQuantity,
+          );
           return {
             ...nextLine,
             allocations: line.allocations.map((allocation) => {
-              const allocatedQuantity = Math.min(remainingAllocation, requiredQuantity);
-              remainingAllocation = Math.max(0, remainingAllocation - allocatedQuantity);
+              const allocatedQuantity = Math.min(
+                remainingAllocation,
+                requiredQuantity,
+              );
+              remainingAllocation = Math.max(
+                0,
+                remainingAllocation - allocatedQuantity,
+              );
               return { ...allocation, allocatedQuantity };
             }),
           };
         }),
       );
     },
-    [workOrderCandidates],
+    [materialOrderMutationLocked, workOrderCandidates],
   );
 
   const addWorkOrderMaterialLine = useCallback(
@@ -601,6 +726,7 @@ export function useMaterialOrderDraftEditor({
       material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
     ) => {
       if (
+        materialOrderMutationLocked ||
         !selectedOrder ||
         !canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin)
       ) {
@@ -632,48 +758,73 @@ export function useMaterialOrderDraftEditor({
           material,
           requiredQuantity: remainingQuantity,
           orderQuantity: remainingQuantity,
-          unitPrice: Number.isFinite(material.unitCost ?? 0) ? (material.unitCost ?? 0) : 0,
+          unitPrice: Number.isFinite(material.unitCost ?? 0)
+            ? (material.unitCost ?? 0)
+            : 0,
         });
         return current;
       });
     },
-    [isAdmin, materialRequestQuantityMap, selectedOrder],
+    [
+      isAdmin,
+      materialOrderMutationLocked,
+      materialRequestQuantityMap,
+      selectedOrder,
+    ],
   );
 
-  const closePendingLineAddition = useCallback(() => setPendingLineAddition(null), []);
+  const closePendingLineAddition = useCallback(
+    () => setPendingLineAddition(null),
+    [],
+  );
 
-  const confirmPendingLineAddition = useCallback((override?: { orderQuantity: number; unitPrice: number }) => {
-    const pending = pendingLineAddition;
-    if (!pending) return;
+  const confirmPendingLineAddition = useCallback(
+    (override?: { orderQuantity: number; unitPrice: number }) => {
+      const pending = pendingLineAddition;
+      if (!pending) return;
 
-    const rawOrderQuantity = override?.orderQuantity ?? pending.orderQuantity;
-    const rawUnitPrice = override?.unitPrice ?? pending.unitPrice;
-    const orderQuantity = Number.isFinite(rawOrderQuantity)
-      ? Math.max(0, rawOrderQuantity)
-      : 0;
-    const unitPrice = Number.isFinite(rawUnitPrice)
-      ? Math.max(0, rawUnitPrice)
-      : 0;
+      const rawOrderQuantity = override?.orderQuantity ?? pending.orderQuantity;
+      const rawUnitPrice = override?.unitPrice ?? pending.unitPrice;
+      const orderQuantity = Number.isFinite(rawOrderQuantity)
+        ? Math.max(0, rawOrderQuantity)
+        : 0;
+      const unitPrice = Number.isFinite(rawUnitPrice)
+        ? Math.max(0, rawUnitPrice)
+        : 0;
 
-    if (orderQuantity < 1) return;
+      if (orderQuantity < 1) return;
 
-    setLines((current) => [
-      ...current,
-      createDraftLineFromMaterial(
-        current.length,
-        pending.workOrder,
-        pending.material,
-        orderQuantity,
-        Math.min(orderQuantity, pending.requiredQuantity),
-        unitPrice,
-      ),
-    ]);
-    setPendingLineAddition(null);
-  }, [pendingLineAddition]);
+      setLines((current) => [
+        ...current,
+        createDraftLineFromMaterial(
+          current.length,
+          pending.workOrder,
+          pending.material,
+          orderQuantity,
+          Math.min(orderQuantity, pending.requiredQuantity),
+          unitPrice,
+        ),
+      ]);
+      setPendingLineAddition(null);
+    },
+    [pendingLineAddition],
+  );
 
-  const removeLine = useCallback((lineId: string) => {
-    setLines((current) => current.filter((line) => line.id !== lineId));
-  }, []);
+  const removeLine = useCallback(
+    (lineId: string) => {
+      if (materialOrderMutationLocked) return;
+      setLines((current) => current.filter((line) => line.id !== lineId));
+    },
+    [materialOrderMutationLocked],
+  );
+
+  const selectOrder = useCallback(
+    (nextOrderId: string) => {
+      if (materialOrderMutationLocked || headerSaving || statusChanging) return;
+      setSelectedOrderId(nextOrderId);
+    },
+    [headerSaving, materialOrderMutationLocked, statusChanging],
+  );
 
   return {
     orders,
@@ -683,7 +834,8 @@ export function useMaterialOrderDraftEditor({
     ordersError,
     creatingOrder,
     statusChanging,
-    headerSaving,
+    headerSaving: headerSaving || materialOrderMutationLocked,
+    materialOrderMutationLocked,
     statusToastOperation,
     workOrderCandidates,
     suppliers,
@@ -723,7 +875,9 @@ export function useMaterialOrderDraftEditor({
       open: pendingStatusValidation !== null,
       issues: pendingStatusValidation?.issues ?? [],
       title: "진행 전 확인이 필요합니다",
-      description: pendingStatusValidation?.issues.some((issue) => issue.level === "blocking")
+      description: pendingStatusValidation?.issues.some(
+        (issue) => issue.level === "blocking",
+      )
         ? "아래 항목은 먼저 수정해야 다음 단계로 진행할 수 있습니다."
         : "확인이 필요한 항목이 있습니다. 그대로 진행할 수 있지만 먼저 확인하는 것이 좋습니다.",
       blockingLabel: "진행 차단 항목",
@@ -733,7 +887,7 @@ export function useMaterialOrderDraftEditor({
       onClose: closeMaterialOrderValidation,
       onConfirm: confirmMaterialOrderValidation,
     },
-    setSelectedOrderId,
+    setSelectedOrderId: selectOrder,
     changeSupplierPartnerId,
     changeDueDate,
     refreshOrders,

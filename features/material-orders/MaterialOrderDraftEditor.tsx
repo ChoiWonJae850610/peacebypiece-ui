@@ -53,6 +53,7 @@ export default function MaterialOrderDraftEditor({
     creatingOrder,
     statusChanging,
     headerSaving,
+    materialOrderMutationLocked,
     statusToastOperation,
     workOrderCandidates,
     suppliers,
@@ -134,9 +135,7 @@ export default function MaterialOrderDraftEditor({
       title="원단·부자재"
       description="작업지시서의 자재 발주 대기 항목을 공급처별 발주서로 묶고, 발주 상태와 잔여 자재를 확인합니다."
       onOpenMenu={
-        showListTrigger
-          ? () => setMobileOrderListDrawerOpen(true)
-          : undefined
+        showListTrigger ? () => setMobileOrderListDrawerOpen(true) : undefined
       }
       menuLabel="발주서"
       menuAriaLabel="발주서 목록 열기"
@@ -152,7 +151,6 @@ export default function MaterialOrderDraftEditor({
     />
   );
 
-
   const validationModal = (
     <>
       <MaterialOrderLineAddModal {...materialOrderLineAddModal} />
@@ -163,7 +161,7 @@ export default function MaterialOrderDraftEditor({
         description={materialTypeChangeConfirmationModal.description}
         onClose={materialTypeChangeConfirmationModal.onClose}
         maxWidthClass="sm:max-w-md"
-        footer={(
+        footer={
           <>
             <WaflButton
               variant="secondary"
@@ -178,7 +176,7 @@ export default function MaterialOrderDraftEditor({
               {materialTypeChangeConfirmationModal.confirmLabel}
             </WaflButton>
           </>
-        )}
+        }
       >
         <p className="text-sm leading-6 pbp-text-muted">
           변경 후에는 새 자재 종류에 맞춰 공급처와 품목을 다시 선택해야 합니다.
@@ -242,7 +240,11 @@ export default function MaterialOrderDraftEditor({
       materialRequestCompletionMap={materialRequestCompletionMap}
       selectedMaterialType={materialType}
       hasSelectedOrder={Boolean(selectedOrderId)}
-      editable={selectedOrder?.status === MATERIAL_ORDER_STATUS.draft || selectedOrder?.status === MATERIAL_ORDER_STATUS.rejected}
+      editable={
+        !materialOrderMutationLocked &&
+        (selectedOrder?.status === MATERIAL_ORDER_STATUS.draft ||
+          selectedOrder?.status === MATERIAL_ORDER_STATUS.rejected)
+      }
       loading={workOrdersLoading}
       workspaceLoading={ordersLoading}
       errorMessage={workOrdersError}

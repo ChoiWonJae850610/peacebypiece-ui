@@ -9,6 +9,11 @@ import {
   type WaflChangeTarget,
 } from "@/components/common/ui";
 
+type MaterialOrderChangeOperationOptions = {
+  rollback?: () => void | Promise<void>;
+  getErrorMessage?: (error: unknown) => string | undefined;
+};
+
 export function useMaterialOrderFeedback() {
   const {
     operation,
@@ -40,11 +45,12 @@ export function useMaterialOrderFeedback() {
   );
 
   const runChangeOperation = useCallback(
-    async <T,>(
+    async <T>(
       target: WaflChangeTarget,
       operationId: string,
       task: () => T | Promise<T>,
       lockKey = operationId,
+      options: MaterialOrderChangeOperationOptions = {},
     ): Promise<T | undefined> =>
       runMutation({
         lockKey,
@@ -55,6 +61,8 @@ export function useMaterialOrderFeedback() {
           error: getWaflChangeFeedbackMessage(target, "error"),
         },
         mutation: task,
+        rollback: options.rollback,
+        getErrorMessage: options.getErrorMessage,
       }),
     [runMutation],
   );
@@ -67,5 +75,6 @@ export function useMaterialOrderFeedback() {
     clearOperationToast,
     showChangeFeedback,
     runChangeOperation,
+    runMutation,
   };
 }
