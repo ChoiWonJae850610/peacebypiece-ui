@@ -1,11 +1,8 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { HistoryLog, WorkOrder } from "@/types/workorder";
-import {
-  mergeSavedWorkOrders,
-  mergeSavedWorkOrdersPreservingDraftOnlyFields,
-  replaceWorkOrderById,
-} from "./workorderRepositoryMutations";
+import { mergeSavedWorkOrders } from "./workorderRepositoryMutations";
 import type { SaveStatus } from "./useWorkOrderActionTypes";
+import { applyWaflResourcePatch } from "@/lib/mutations/waflResourceState";
 
 export type WorkflowActionSideEffectPayload = {
   historyLogs?: HistoryLog[] | null;
@@ -68,6 +65,7 @@ export type ImmediatePatchPersistSuccessInput = {
   baseWorkOrders: WorkOrder[];
   workOrderId: string;
   persistedWorkOrder: WorkOrder;
+  requestedPatch: Partial<WorkOrder>;
 };
 
 export type ImmediatePatchPersistSuccessResult = {
@@ -79,10 +77,17 @@ export function buildImmediatePatchPersistSuccessState({
   baseWorkOrders,
   workOrderId,
   persistedWorkOrder,
+  requestedPatch,
 }: ImmediatePatchPersistSuccessInput): ImmediatePatchPersistSuccessResult {
+  const savedPatch: Partial<WorkOrder> = {
+    ...requestedPatch,
+    lastSavedAt: persistedWorkOrder.lastSavedAt,
+  };
+  const patchedWorkOrders = applyWaflResourcePatch(baseWorkOrders, workOrderId, savedPatch);
+
   return {
-    localWorkOrders: mergeSavedWorkOrdersPreservingDraftOnlyFields(baseWorkOrders, [persistedWorkOrder]),
-    persistedWorkOrders: replaceWorkOrderById(baseWorkOrders, workOrderId, persistedWorkOrder),
+    localWorkOrders: patchedWorkOrders,
+    persistedWorkOrders: patchedWorkOrders,
   };
 }
 

@@ -760,6 +760,7 @@ export function useWorkOrderWorkflowActions({
           baseWorkOrders: nextWorkOrders,
           workOrderId,
           persistedWorkOrder,
+          requestedPatch: patch,
         });
         workOrdersRef.current = localWorkOrders;
         setWorkOrders(localWorkOrders);

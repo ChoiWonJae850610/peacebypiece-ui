@@ -7,11 +7,12 @@ import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { canEditManagerInWorkflow, DEFAULT_WORKFLOW_STATE, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistImmediateWorkOrderPatchWithHistory, persistUsersWithPermissions, replaceWorkOrderById } from "./workorderRepositoryMutations";
+import { persistImmediateWorkOrderPatchWithHistory, persistUsersWithPermissions } from "./workorderRepositoryMutations";
 import { mergeImmediateDbFields } from "@/lib/workorder/storagePolicy";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
+import { applyWaflResourcePatch } from "@/lib/mutations/waflResourceState";
 
 export function useWorkOrderAdminActions({
   currentUser,
@@ -96,18 +97,14 @@ export function useWorkOrderAdminActions({
           serviceCode: WORKORDER_SERVICE_CODE.assigneeImmediateSave,
         });
 
-        setPersistedWorkOrders((prev) => replaceWorkOrderById(prev, workOrder.id, persistedWorkOrder));
-        setWorkOrders((prev) => prev.map((item) => (
-          item.id === workOrder.id
-            ? {
-                ...item,
-                managerId: persistedWorkOrder.managerId,
-                manager: persistedWorkOrder.manager,
-                workflowState: persistedWorkOrder.workflowState,
-                lastSavedAt: persistedWorkOrder.lastSavedAt,
-              }
-            : item
-        )));
+        const managerPatch: Partial<typeof persistedWorkOrder> = {
+          managerId: persistedWorkOrder.managerId,
+          manager: persistedWorkOrder.manager,
+          workflowState: persistedWorkOrder.workflowState,
+          lastSavedAt: persistedWorkOrder.lastSavedAt,
+        };
+        setPersistedWorkOrders((prev) => applyWaflResourcePatch(prev, workOrder.id, managerPatch));
+        setWorkOrders((prev) => applyWaflResourcePatch(prev, workOrder.id, managerPatch));
         if (result.historyLogs?.length) {
           setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
         }
