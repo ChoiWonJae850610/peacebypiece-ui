@@ -232,13 +232,7 @@ export async function persistWorkOrderWithHistory(
   },
 ) {
   const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
-  const workOrderWithAuditActor = payload.auditActor
-    ? ({
-        ...stampedWorkOrder,
-        auditActor: { id: payload.auditActor.id, name: payload.auditActor.name, role: payload.auditActor.role },
-      } as WorkOrder)
-    : stampedWorkOrder;
-  const nextWorkOrder = await repository.saveWorkOrderAsync(workOrderWithAuditActor, {
+  const nextWorkOrder = await repository.saveWorkOrderAsync(stampedWorkOrder, {
     serviceCode: payload.serviceCode ?? null,
     auditActor: payload.auditActor ?? null,
   });
@@ -258,13 +252,7 @@ export async function persistWorkOrdersWithHistory(
   },
 ) {
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
-  const workOrdersWithAuditActor = payload.auditActor
-    ? stampedWorkOrders.map((workOrder) => ({
-        ...workOrder,
-        auditActor: { id: payload.auditActor!.id, name: payload.auditActor!.name, role: payload.auditActor!.role },
-      } as WorkOrder))
-    : stampedWorkOrders;
-  const nextWorkOrders = await repository.saveWorkOrdersAsync(workOrdersWithAuditActor, {
+  const nextWorkOrders = await repository.saveWorkOrdersAsync(stampedWorkOrders, {
     serviceCode: payload.serviceCode ?? null,
     auditActor: payload.auditActor ?? null,
   });

@@ -231,9 +231,11 @@ function readAuditActor(value: unknown): WorkOrderAuditActorContext | null {
 function getAuditActorFromWorkOrder(
   workOrder: WorkOrder,
 ): WorkOrderAuditActorContext | null {
-  return readAuditActor(
-    (workOrder as WorkOrder & { auditActor?: unknown }).auditActor,
-  );
+  const source: unknown = workOrder;
+  if (!source || typeof source !== "object" || !("auditActor" in source)) {
+    return null;
+  }
+  return readAuditActor(source.auditActor);
 }
 
 function toSystemAuditActorRole(role: WorkOrderAuditActorContext["role"]) {
@@ -893,13 +895,13 @@ export async function handlePatchWorkOrderState(
     const session = await getCurrentWaflSession();
     if (!session) return createCompanySessionRequiredResponse();
 
-    const nextWorkOrderForPolicy = {
+    const nextWorkOrderForPolicy: WorkOrder = {
       ...previousWorkOrder,
       ...guardedPatch,
       id: previousWorkOrder.id,
       workflowState: guardedPatch.workflowState ?? previousWorkOrder.workflowState,
       lastSavedAt: guardedPatch.lastSavedAt ?? previousWorkOrder.lastSavedAt,
-    } as WorkOrder;
+    };
     const inventoryOnlyPatch = isInventoryOnlyStatePatch(guardedPatch);
     if (!inventoryOnlyPatch) {
       const editPolicyResponse = await validateWorkOrderSavePolicy({

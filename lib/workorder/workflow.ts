@@ -13,10 +13,10 @@ import {
   hasRole,
   isAdminRole,
 } from "@/lib/constants/roles";
+import { hasMemberPermission } from "@/lib/permissions";
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
 import {
-  canDirectRequestFactoryOrderByPolicy,
   canRequestFactoryOrderByPolicy,
   canRequestReviewByPolicy,
   getAvailableWorkflowActionsByPolicy,
@@ -70,12 +70,9 @@ export function canRequestReview(payload: Pick<WorkflowContext, "currentRoles" |
 }
 
 export function canRequestOrder(currentRoles: RoleType[], currentUser?: UserProfile | null) {
-  return isAdminRole(currentRoles) || Boolean(currentUser && canDirectRequestFactoryOrderByPolicy({
-    currentRoles,
-    currentUser,
-    currentUserId: currentUser.id,
-    workOrder: { createdById: currentUser.id, managerId: currentUser.id } as WorkOrder,
-  }));
+  return isAdminRole(currentRoles) || Boolean(
+    currentUser && hasMemberPermission(currentUser, "workorder.status.order"),
+  );
 }
 
 export function canRequestFactoryOrder(payload: {

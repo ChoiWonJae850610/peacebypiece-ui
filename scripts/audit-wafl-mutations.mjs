@@ -39,8 +39,8 @@ const categories = [
     key: "full_entity_cast",
     label: "부분 응답의 전체 엔터티 캐스팅 후보",
     severity: "high",
-    pattern: /\bas\s+(?:WorkOrder|MaterialOrder)(?:\[\])?\b/g,
-    note: "부분 PATCH 응답을 전체 엔터티로 취급하면 데이터 소실 위험이 있습니다.",
+    pattern: /\bas\s+(?:WorkOrder|MaterialOrder)(?:\[\])?(?!\s*\[)\b/g,
+    note: "부분 PATCH 응답을 전체 엔터티로 취급하면 데이터 소실 위험이 있습니다. 인덱스 접근 타입은 제외합니다.",
   },
 ];
 
