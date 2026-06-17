@@ -13,6 +13,7 @@ import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import {
   getSelectedWorkOrderForSaveState,
+  persistImmediateWorkOrderPatchWithHistory,
   persistWorkOrderWithHistory,
   persistWorkOrderStatePatchWithHistory,
   persistWorkOrderStatePatchesWithHistory,
@@ -740,8 +741,9 @@ export function useWorkOrderWorkflowActions({
       markWorkflowPersistStarted(setSaveStatus);
 
       try {
-        const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+        const persistedWorkOrder = await persistImmediateWorkOrderPatchWithHistory(repository, {
           workOrder: normalizedNextWorkOrder,
+          patch,
           historyLogs: nextHistoryLogs,
           auditActor: currentUser,
           serviceCode,

@@ -7,7 +7,7 @@ import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { canEditManagerInWorkflow, DEFAULT_WORKFLOW_STATE, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistUsersWithPermissions, persistWorkOrderWithHistory, replaceWorkOrderById } from "./workorderRepositoryMutations";
+import { persistImmediateWorkOrderPatchWithHistory, persistUsersWithPermissions, replaceWorkOrderById } from "./workorderRepositoryMutations";
 import { mergeImmediateDbFields } from "@/lib/workorder/storagePolicy";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
@@ -85,8 +85,13 @@ export function useWorkOrderAdminActions({
         "workflowState",
       ]);
       setSaveStatus("saving");
-      void persistWorkOrderWithHistory(repository, {
+      void persistImmediateWorkOrderPatchWithHistory(repository, {
         workOrder: nextPersistableWorkOrder,
+        patch: {
+          managerId: nextPersistableWorkOrder.managerId,
+          manager: nextPersistableWorkOrder.manager,
+          workflowState: nextPersistableWorkOrder.workflowState,
+        },
         historyLogs: result.historyLogs,
         auditActor: currentUser,
         serviceCode: WORKORDER_SERVICE_CODE.assigneeImmediateSave,

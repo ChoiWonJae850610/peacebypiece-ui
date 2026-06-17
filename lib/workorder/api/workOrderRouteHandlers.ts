@@ -132,7 +132,7 @@ async function requireWorkOrderWorkflowMutationPermission(input: {
 async function requireWorkOrderStatePatchWorkflowPermission(input: {
   session: WaflSessionPayload;
   previousWorkOrder: WorkOrder;
-  patch: Pick<WorkOrderStatePatch, "workflowState"> &
+  patch: { workflowState: WorkOrder["workflowState"] } &
     Partial<Pick<WorkOrderStatePatch, "factoryOrderRequest">>;
 }): Promise<NextResponse | null> {
   const factoryOrderRequestTouched = hasOwnFactoryOrderRequest(input.patch);
@@ -836,13 +836,6 @@ export async function handlePatchWorkOrderState(
       );
     }
 
-    if (
-      typeof body.patch.workflowState !== "string" ||
-      !body.patch.workflowState.trim()
-    ) {
-      return createInvalidPayloadResponse("workflowState is required.");
-    }
-
     const rawServiceCode =
       typeof body.serviceCode === "string"
         ? body.serviceCode
@@ -874,6 +867,20 @@ export async function handlePatchWorkOrderState(
     const session = await getCurrentWaflSession();
     if (!session) return createCompanySessionRequiredResponse();
 
+    const nextWorkOrderForPolicy = {
+      ...previousWorkOrder,
+      ...guardedPatch,
+      id: previousWorkOrder.id,
+      workflowState: guardedPatch.workflowState ?? previousWorkOrder.workflowState,
+      lastSavedAt: guardedPatch.lastSavedAt ?? previousWorkOrder.lastSavedAt,
+    } as WorkOrder;
+    const editPolicyResponse = await validateWorkOrderSavePolicy({
+      session,
+      previous: previousWorkOrder,
+      next: nextWorkOrderForPolicy,
+    });
+    if (editPolicyResponse) return editPolicyResponse;
+
     const inventoryPermissionResponse =
       await validateWorkOrderInventoryPatchPolicy({
         session,
@@ -887,20 +894,41 @@ export async function handlePatchWorkOrderState(
       await requireWorkOrderStatePatchWorkflowPermission({
         session,
         previousWorkOrder,
-        patch: guardedPatch as Pick<WorkOrderStatePatch, "workflowState"> &
-          Partial<Pick<WorkOrderStatePatch, "factoryOrderRequest">>,
+        patch: {
+          workflowState: guardedPatch.workflowState ?? previousWorkOrder.workflowState,
+          ...(Object.prototype.hasOwnProperty.call(guardedPatch, "factoryOrderRequest")
+            ? { factoryOrderRequest: guardedPatch.factoryOrderRequest }
+            : {}),
+        },
       });
     if (workflowPermissionResponse) return workflowPermissionResponse;
 
     const savedWorkOrder = await updateWorkOrderStateForCompany(
       {
         id: workOrderId,
-        workflowState: guardedPatch.workflowState as WorkOrder["workflowState"],
+        ...(Object.prototype.hasOwnProperty.call(guardedPatch, "workflowState")
+          ? { workflowState: guardedPatch.workflowState as WorkOrder["workflowState"] }
+          : {}),
         lastSavedAt:
           typeof guardedPatch.lastSavedAt === "string" &&
           guardedPatch.lastSavedAt.trim()
             ? guardedPatch.lastSavedAt
             : new Date().toISOString(),
+        title: Object.prototype.hasOwnProperty.call(guardedPatch, "title") ? guardedPatch.title : undefined,
+        displayTitle: Object.prototype.hasOwnProperty.call(guardedPatch, "displayTitle") ? guardedPatch.displayTitle : undefined,
+        baseTitle: Object.prototype.hasOwnProperty.call(guardedPatch, "baseTitle") ? guardedPatch.baseTitle : undefined,
+        workOrderKind: Object.prototype.hasOwnProperty.call(guardedPatch, "workOrderKind") ? guardedPatch.workOrderKind : undefined,
+        category1: Object.prototype.hasOwnProperty.call(guardedPatch, "category1") ? guardedPatch.category1 : undefined,
+        category2: Object.prototype.hasOwnProperty.call(guardedPatch, "category2") ? guardedPatch.category2 : undefined,
+        category3: Object.prototype.hasOwnProperty.call(guardedPatch, "category3") ? guardedPatch.category3 : undefined,
+        category1Id: Object.prototype.hasOwnProperty.call(guardedPatch, "category1Id") ? guardedPatch.category1Id : undefined,
+        category2Id: Object.prototype.hasOwnProperty.call(guardedPatch, "category2Id") ? guardedPatch.category2Id : undefined,
+        category3Id: Object.prototype.hasOwnProperty.call(guardedPatch, "category3Id") ? guardedPatch.category3Id : undefined,
+        season: Object.prototype.hasOwnProperty.call(guardedPatch, "season") ? guardedPatch.season : undefined,
+        manager: Object.prototype.hasOwnProperty.call(guardedPatch, "manager") ? guardedPatch.manager : undefined,
+        managerId: Object.prototype.hasOwnProperty.call(guardedPatch, "managerId") ? guardedPatch.managerId : undefined,
+        dueDate: Object.prototype.hasOwnProperty.call(guardedPatch, "dueDate") ? guardedPatch.dueDate : undefined,
+        quantity: Object.prototype.hasOwnProperty.call(guardedPatch, "quantity") ? guardedPatch.quantity : undefined,
         inventoryQuantity:
           typeof guardedPatch.inventoryQuantity === "number"
             ? guardedPatch.inventoryQuantity
@@ -954,6 +982,21 @@ export async function handlePatchWorkOrderState(
       id: savedWorkOrder.id,
       workflowState: savedWorkOrder.workflowState,
       lastSavedAt: savedWorkOrder.lastSavedAt,
+      title: savedWorkOrder.title,
+      displayTitle: savedWorkOrder.displayTitle,
+      baseTitle: savedWorkOrder.baseTitle,
+      workOrderKind: savedWorkOrder.workOrderKind,
+      category1: savedWorkOrder.category1,
+      category2: savedWorkOrder.category2,
+      category3: savedWorkOrder.category3,
+      category1Id: savedWorkOrder.category1Id,
+      category2Id: savedWorkOrder.category2Id,
+      category3Id: savedWorkOrder.category3Id,
+      season: savedWorkOrder.season,
+      manager: savedWorkOrder.manager,
+      managerId: savedWorkOrder.managerId,
+      dueDate: savedWorkOrder.dueDate,
+      quantity: savedWorkOrder.quantity,
       inventoryQuantity: savedWorkOrder.inventoryQuantity,
       inventoryStatus: savedWorkOrder.inventoryStatus,
       factoryOrderRequest: savedWorkOrder.factoryOrderRequest ?? null,

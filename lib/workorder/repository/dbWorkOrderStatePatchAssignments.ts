@@ -36,12 +36,14 @@ export function buildWorkOrderStatePatchAssignments(
   const assignments: string[] = [];
   const values: unknown[] = [patch.id];
 
-  pushStatePatchAssignment(
-    assignments,
-    values,
-    schema.workflowStateColumn,
-    normalizeDbWorkflowState(patch.workflowState),
-  );
+  if (hasPatchProperty(patch, "workflowState")) {
+    pushStatePatchAssignment(
+      assignments,
+      values,
+      schema.workflowStateColumn,
+      normalizeDbWorkflowState(patch.workflowState),
+    );
+  }
 
   if (hasPatchProperty(patch, "workflowPath")) {
     pushStatePatchAssignment(
@@ -58,6 +60,53 @@ export function buildWorkOrderStatePatchAssignments(
     schema.lastSavedAtColumn,
     patch.lastSavedAt || new Date().toISOString(),
   );
+
+
+  if (hasPatchProperty(patch, "title")) {
+    pushStatePatchAssignment(assignments, values, "title", patch.title ?? "");
+  }
+  if (hasPatchProperty(patch, "displayTitle")) {
+    pushStatePatchAssignment(assignments, values, schema.displayTitleColumn, patch.displayTitle ?? null);
+  }
+  if (hasPatchProperty(patch, "baseTitle")) {
+    pushStatePatchAssignment(assignments, values, schema.baseTitleColumn, patch.baseTitle ?? null);
+  }
+  if (hasPatchProperty(patch, "workOrderKind")) {
+    pushStatePatchAssignment(assignments, values, schema.workOrderKindColumn, patch.workOrderKind ?? null);
+  }
+  if (hasPatchProperty(patch, "category1")) {
+    pushStatePatchAssignment(assignments, values, schema.category1Column, patch.category1 ?? "");
+  }
+  if (hasPatchProperty(patch, "category2")) {
+    pushStatePatchAssignment(assignments, values, schema.category2Column, patch.category2 ?? "");
+  }
+  if (hasPatchProperty(patch, "category3")) {
+    pushStatePatchAssignment(assignments, values, schema.category3Column, patch.category3 ?? "");
+  }
+  if (hasPatchProperty(patch, "category1Id")) {
+    pushStatePatchAssignment(assignments, values, schema.category1IdColumn, patch.category1Id ?? null);
+  }
+  if (hasPatchProperty(patch, "category2Id")) {
+    pushStatePatchAssignment(assignments, values, schema.category2IdColumn, patch.category2Id ?? null);
+  }
+  if (hasPatchProperty(patch, "category3Id")) {
+    pushStatePatchAssignment(assignments, values, schema.category3IdColumn, patch.category3Id ?? null);
+  }
+  if (hasPatchProperty(patch, "season")) {
+    pushStatePatchAssignment(assignments, values, schema.seasonColumn, patch.season ?? "");
+  }
+  if (hasPatchProperty(patch, "manager")) {
+    pushStatePatchAssignment(assignments, values, schema.managerColumn, patch.manager ?? "");
+  }
+  if (hasPatchProperty(patch, "managerId")) {
+    pushStatePatchAssignment(assignments, values, schema.managerIdColumn, patch.managerId ?? null);
+  }
+  if (hasPatchProperty(patch, "dueDate")) {
+    pushStatePatchAssignment(assignments, values, schema.dueDateColumn, patch.dueDate || null);
+  }
+  if (hasPatchProperty(patch, "quantity")) {
+    pushStatePatchAssignment(assignments, values, schema.quantityColumn, patch.quantity ?? 0);
+  }
 
   if (hasPatchProperty(patch, "inventoryQuantity")) {
     pushStatePatchAssignment(

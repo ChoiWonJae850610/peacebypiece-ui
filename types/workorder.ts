@@ -203,9 +203,36 @@ export type WorkOrderAuditActor = {
   role: RoleType;
 };
 
-export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "workflowState" | "lastSavedAt"> &
-  Partial<Pick<WorkOrder, "workflowPath">> &
-  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries" | "materials" | "outsourcing" | "rejectionReason" | "rejectedAt" | "rejectedByUserId" | "rejectedByName">> & {
+export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "lastSavedAt"> &
+  Partial<Pick<WorkOrder,
+    | "workflowState"
+    | "workflowPath"
+    | "title"
+    | "displayTitle"
+    | "baseTitle"
+    | "workOrderKind"
+    | "category1"
+    | "category2"
+    | "category3"
+    | "category1Id"
+    | "category2Id"
+    | "category3Id"
+    | "season"
+    | "manager"
+    | "managerId"
+    | "dueDate"
+    | "quantity"
+    | "inventoryQuantity"
+    | "inventoryStatus"
+    | "factoryOrderRequest"
+    | "orderEntries"
+    | "materials"
+    | "outsourcing"
+    | "rejectionReason"
+    | "rejectedAt"
+    | "rejectedByUserId"
+    | "rejectedByName"
+  >> & {
     auditActor?: WorkOrderAuditActor | null;
     serviceCode?: WorkOrderServiceCodeValue | null;
   };

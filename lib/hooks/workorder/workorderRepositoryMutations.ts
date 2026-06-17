@@ -74,6 +74,21 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
     ...currentWorkOrder,
     workflowState: savedPatch.workflowState ?? currentWorkOrder.workflowState,
     lastSavedAt: savedPatch.lastSavedAt ?? currentWorkOrder.lastSavedAt,
+    title: Object.prototype.hasOwnProperty.call(savedPatch, "title") ? savedPatch.title : currentWorkOrder.title,
+    displayTitle: Object.prototype.hasOwnProperty.call(savedPatch, "displayTitle") ? savedPatch.displayTitle : currentWorkOrder.displayTitle,
+    baseTitle: Object.prototype.hasOwnProperty.call(savedPatch, "baseTitle") ? savedPatch.baseTitle : currentWorkOrder.baseTitle,
+    workOrderKind: Object.prototype.hasOwnProperty.call(savedPatch, "workOrderKind") ? savedPatch.workOrderKind : currentWorkOrder.workOrderKind,
+    category1: Object.prototype.hasOwnProperty.call(savedPatch, "category1") ? savedPatch.category1 : currentWorkOrder.category1,
+    category2: Object.prototype.hasOwnProperty.call(savedPatch, "category2") ? savedPatch.category2 : currentWorkOrder.category2,
+    category3: Object.prototype.hasOwnProperty.call(savedPatch, "category3") ? savedPatch.category3 : currentWorkOrder.category3,
+    category1Id: Object.prototype.hasOwnProperty.call(savedPatch, "category1Id") ? savedPatch.category1Id : currentWorkOrder.category1Id,
+    category2Id: Object.prototype.hasOwnProperty.call(savedPatch, "category2Id") ? savedPatch.category2Id : currentWorkOrder.category2Id,
+    category3Id: Object.prototype.hasOwnProperty.call(savedPatch, "category3Id") ? savedPatch.category3Id : currentWorkOrder.category3Id,
+    season: Object.prototype.hasOwnProperty.call(savedPatch, "season") ? savedPatch.season : currentWorkOrder.season,
+    manager: Object.prototype.hasOwnProperty.call(savedPatch, "manager") ? savedPatch.manager : currentWorkOrder.manager,
+    managerId: Object.prototype.hasOwnProperty.call(savedPatch, "managerId") ? savedPatch.managerId : currentWorkOrder.managerId,
+    dueDate: Object.prototype.hasOwnProperty.call(savedPatch, "dueDate") ? savedPatch.dueDate : currentWorkOrder.dueDate,
+    quantity: Object.prototype.hasOwnProperty.call(savedPatch, "quantity") ? savedPatch.quantity : currentWorkOrder.quantity,
     inventoryQuantity: Object.prototype.hasOwnProperty.call(savedPatch, "inventoryQuantity")
       ? savedPatch.inventoryQuantity
       : currentWorkOrder.inventoryQuantity,
@@ -141,6 +156,33 @@ function buildWorkOrderStatePatch(
   };
 
   return guardProductionCompositionPatchByServiceCode(statePatch, serviceCode);
+}
+
+export async function persistImmediateWorkOrderPatchWithHistory(
+  repository: WorkorderRepository,
+  payload: {
+    workOrder: WorkOrder;
+    patch: Partial<WorkOrder>;
+    historyLogs?: HistoryLog[];
+    auditActor?: UserProfile | null;
+    serviceCode?: WorkOrderServiceCodeValue | null;
+  },
+) {
+  const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
+  const immediatePatch: WorkOrderStatePatch = {
+    id: stampedWorkOrder.id,
+    lastSavedAt: stampedWorkOrder.lastSavedAt,
+    ...payload.patch,
+    auditActor: payload.auditActor
+      ? { id: payload.auditActor.id, name: payload.auditActor.name, role: payload.auditActor.role }
+      : null,
+    serviceCode: payload.serviceCode ?? null,
+  };
+  const savedPatch = await repository.saveWorkOrderStatePatchAsync(immediatePatch);
+  if (payload.historyLogs?.length) {
+    await repository.appendHistoryLogsAsync(payload.historyLogs);
+  }
+  return mergeStatePatchResultIntoWorkOrder(stampedWorkOrder, savedPatch, immediatePatch);
 }
 
 export async function persistWorkOrderStatePatchWithHistory(

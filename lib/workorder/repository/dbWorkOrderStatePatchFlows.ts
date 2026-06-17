@@ -79,6 +79,16 @@ export async function updateDbWorkOrderStatePatchRecord({
     return patchedProductionWorkOrder;
   }
 
+  const hasProductionCompositionPatch =
+    Object.prototype.hasOwnProperty.call(patch, "factoryOrderRequest") ||
+    Object.prototype.hasOwnProperty.call(patch, "orderEntries") ||
+    Object.prototype.hasOwnProperty.call(patch, "materials") ||
+    Object.prototype.hasOwnProperty.call(patch, "outsourcing");
+
+  if (!hasProductionCompositionPatch) {
+    return mapped;
+  }
+
   const existingWithDetails = await findWorkOrderById(patch.id, scope);
   return mergeWorkOrderWithExistingProductionDetails(
     mapped,
