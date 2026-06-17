@@ -51,22 +51,22 @@ export default function WorkOrderListCard({
   return (
     <WaflSelectableCard
       selected={active}
-      className={`group relative px-3 py-3 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
+      className={`group relative px-3 py-2.5 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
     >
       <div className="min-w-0 pr-11">
         <WaflCardButton onClick={() => onClick(workOrder.id)}>
-          <div className="min-w-0 truncate text-[15px] font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <div className="min-w-0 truncate text-sm font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <WaflBadge
               tone="neutral"
               size="sm"
-              className={`pbp-workorder-status-badge h-6 gap-2 transition-colors duration-150 ease-out ${active ? "pbp-workorder-status-active" : getWorkOrderStatusBadgeSemanticClass(state)}`}
+              className={`pbp-workorder-status-badge h-5 gap-1.5 transition-colors duration-150 ease-out ${active ? "pbp-workorder-status-active" : getWorkOrderStatusBadgeSemanticClass(state)}`}
             >
-              <span className="pbp-workorder-status-dot h-2 w-2 rounded-full" aria-hidden="true" />
+              <span className="pbp-workorder-status-dot h-1.5 w-1.5 rounded-full" aria-hidden="true" />
               {stateLabel}
             </WaflBadge>
           </div>
-          <div className="pbp-workorder-list-muted mt-2 min-w-0 space-y-0.5 text-[11px] leading-4">
+          <div className="pbp-workorder-list-muted mt-1.5 min-w-0 space-y-0.5 text-[11px] leading-4">
             <div className="truncate" title={categoryPath}>{categoryPath}</div>
             {workOrder.vendor ? <div className="truncate">{copy.vendorLabel}: {workOrder.vendor}</div> : null}
             {dueDateLabel ? <div>{copy.dueDateLabel}: {dueDateLabel}</div> : null}

@@ -343,9 +343,9 @@ export default function SidebarContent({
               {controlsUi.create}
             </WaflButton>
           ) : null}
-          listClassName="pb-24"
+          listClassName="pb-16"
         >
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {workOrders.map((workOrder) => (
               <WorkOrderListCard
                 key={workOrder.id}

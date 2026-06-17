@@ -1503,3 +1503,32 @@ body[data-pbp-drawing-modal-open="true"] .pbp-drawing-modal-top-layer canvas {
 :where(.pbp-sidepanel-item, .pbp-sidepanel-preview-surface, .pbp-sidepanel-upload-zone, .pbp-empty-state) {
   border-color: color-mix(in srgb, var(--pbp-border) 76%, transparent);
 }
+
+
+/* /worker desktop density policy: keep the WAFL three-panel grammar while reducing oversized spacing. */
+.pbp-worker-compact-workspace {
+  gap: 0.75rem;
+}
+
+.pbp-worker-compact-workspace [data-wafl-component="three-panel-workspace"] {
+  gap: 0.5rem;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(480px, 1.45fr) minmax(280px, 0.72fr) !important;
+}
+
+.pbp-worker-compact-workspace [data-wafl-component="list-panel-shell"] {
+  padding: 0.75rem;
+}
+
+.pbp-worker-compact-workspace [data-wafl-component="list-panel-shell"] > div:nth-child(2) {
+  margin-top: 0.625rem;
+}
+
+.pbp-worker-compact-workspace [data-wafl-component="list-panel-shell"] > div:nth-child(3) {
+  margin-top: 0.625rem;
+}
+
+@media (min-width: 640px) {
+  .pbp-worker-compact-workspace [data-wafl-component="list-panel-shell"] {
+    padding: 0.75rem;
+  }
+}

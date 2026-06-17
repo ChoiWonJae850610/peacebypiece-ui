@@ -22,6 +22,7 @@ export default function WorkOrderDesktopWorkspaceView({
     <DesktopWorkspaceLayout
       appShellRef={appShellRef}
       scrollResetKey={selectedId}
+      className="pbp-worker-compact-workspace"
       topbar={(
         <AdminTopbar
           companyName={sidebarListProps.companyName}

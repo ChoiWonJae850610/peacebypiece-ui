@@ -9,6 +9,7 @@ type DesktopWorkspaceLayoutProps = {
   sidePanel: ReactNode;
   topbar?: ReactNode;
   scrollResetKey: string;
+  className?: string;
 };
 
 export default function DesktopWorkspaceLayout({
@@ -18,6 +19,7 @@ export default function DesktopWorkspaceLayout({
   sidePanel,
   topbar,
   scrollResetKey,
+  className,
 }: DesktopWorkspaceLayoutProps) {
   return (
     <WaflDesktopWorkspaceFrame
@@ -27,6 +29,7 @@ export default function DesktopWorkspaceLayout({
       detail={detail}
       side={sidePanel}
       scrollResetKey={scrollResetKey}
+      className={className}
     />
   );
 }
