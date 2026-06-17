@@ -52,20 +52,22 @@ export default function WorkOrderFactoryInstructionPanel({
     setInstruction(createEmptyWorkOrderFactoryInstruction(workOrderId));
     setDraft("");
 
-    void fetchWorkOrderFactoryInstruction(workOrderId)
-      .then((next) => {
+    const loadFactoryInstruction = async () => {
+      try {
+        const next = await fetchWorkOrderFactoryInstruction(workOrderId);
         if (!active) return;
         setInstruction(next);
         setDraft(next.content);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!active) return;
         setErrorMessage(error instanceof Error ? error.message : "공장 전달사항을 불러오지 못했습니다.");
         setSaveStatus("error");
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    };
+
+    void loadFactoryInstruction();
 
     return () => {
       active = false;
@@ -138,7 +140,7 @@ export default function WorkOrderFactoryInstructionPanel({
         saveStatus={displayStatus}
         saveErrorMessage={errorMessage}
         onChange={handleChange}
-        onSave={() => void handleSave()}
+        onSave={handleSave}
         onClear={() => handleChange("")}
       />
     </>

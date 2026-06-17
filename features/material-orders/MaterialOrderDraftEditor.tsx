@@ -114,18 +114,19 @@ export default function MaterialOrderDraftEditor({
     }
   }, [showListTrigger]);
 
-  const handleAddMaterialToOrder = (
+  const handleAddMaterialToOrder = async (
     ...args: Parameters<typeof addWorkOrderMaterialLine>
   ) => {
     if (!mobileToolSheetOpen) {
-      addWorkOrderMaterialLine(...args);
+      await addWorkOrderMaterialLine(...args);
       return;
     }
 
     setMobileToolSheetOpen(false);
-    window.requestAnimationFrame(() => {
-      addWorkOrderMaterialLine(...args);
+    await new Promise<void>((resolve) => {
+      window.requestAnimationFrame(() => resolve());
     });
+    await addWorkOrderMaterialLine(...args);
   };
 
   const topbar = (
@@ -195,7 +196,7 @@ export default function MaterialOrderDraftEditor({
       onSelectOrder={handleSelectOrder}
       onCreateOrder={createOrder}
       onCancelOrder={cancelOrder}
-      onRetry={() => void refreshOrders()}
+      onRetry={refreshOrders}
       selectedDraftMaterialType={materialType}
       selectedDraftSupplierName={selectedDraftSupplierName}
     />
@@ -215,12 +216,12 @@ export default function MaterialOrderDraftEditor({
       onChangeDueDate={changeDueDate}
       onChangeMaterialType={changeMaterialType}
       onChangeSupplierPartnerId={changeSupplierPartnerId}
-      onRetrySuppliers={() => void refreshSuppliers(materialType)}
+      onRetrySuppliers={() => refreshSuppliers(materialType)}
       statusChanging={statusChanging}
       headerSaving={headerSaving}
       onChangeLine={updateLine}
       onRemoveLine={removeLine}
-      onChangeStatus={(status) => void changeSelectedOrderStatus(status)}
+      onChangeStatus={changeSelectedOrderStatus}
       canRequestMaterialOrder={canRequestMaterialOrder}
       canPlaceMaterialOrder={canPlaceMaterialOrder}
       isAdmin={isAdmin}
@@ -249,7 +250,7 @@ export default function MaterialOrderDraftEditor({
       workspaceLoading={ordersLoading}
       errorMessage={workOrdersError}
       onAddMaterialToOrder={handleAddMaterialToOrder}
-      onRetry={() => void refreshWorkOrderCandidates()}
+      onRetry={refreshWorkOrderCandidates}
       mobile={useDrawerNavigation}
     />
   );

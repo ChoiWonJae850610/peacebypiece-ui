@@ -333,7 +333,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   );
 
   const changeMaterialType = useCallback(
-    (nextMaterialType: MaterialOrderDraftSelectionType) => {
+    async (nextMaterialType: MaterialOrderDraftSelectionType) => {
       if (materialOrderMutationLocked) return;
       if (!nextMaterialType || nextMaterialType === materialType) return;
 
@@ -342,7 +342,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
         return;
       }
 
-      void persistMaterialTypeChange(nextMaterialType);
+      await persistMaterialTypeChange(nextMaterialType);
     },
     [
       lines.length,
@@ -357,12 +357,12 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
     setPendingMaterialTypeChange(null);
   }, []);
 
-  const confirmMaterialTypeChange = useCallback(() => {
+  const confirmMaterialTypeChange = useCallback(async () => {
     if (materialOrderMutationLocked) return;
     const nextMaterialType = pendingMaterialTypeChange;
     if (!nextMaterialType) return;
     setPendingMaterialTypeChange(null);
-    void persistMaterialTypeChange(nextMaterialType);
+    await persistMaterialTypeChange(nextMaterialType);
   }, [
     materialOrderMutationLocked,
     pendingMaterialTypeChange,
@@ -665,7 +665,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   );
 
   const changeSelectedOrderStatus = useCallback(
-    (status: MaterialOrderStatus) => {
+    async (status: MaterialOrderStatus) => {
       if (materialOrderMutationLocked || !selectedOrder) return;
 
       if (selectedOrder.status === MATERIAL_ORDER_STATUS.draft) {
@@ -681,7 +681,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
         }
       }
 
-      void applySelectedOrderStatusChange(status);
+      await applySelectedOrderStatusChange(status);
     },
     [
       applySelectedOrderStatusChange,
@@ -697,12 +697,12 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
     setPendingStatusValidation(null);
   }, []);
 
-  const confirmMaterialOrderValidation = useCallback(() => {
+  const confirmMaterialOrderValidation = useCallback(async () => {
     if (materialOrderMutationLocked) return;
     const pending = pendingStatusValidation;
     if (!pending) return;
     setPendingStatusValidation(null);
-    void applySelectedOrderStatusChange(pending.nextStatus);
+    await applySelectedOrderStatusChange(pending.nextStatus);
   }, [
     applySelectedOrderStatusChange,
     materialOrderMutationLocked,
@@ -766,7 +766,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   );
 
   const updateLine = useCallback(
-    (lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
+    async (lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
       if (materialOrderMutationLocked) return;
       const previousLines = lines;
       const nextLines = previousLines.map((line) => {
@@ -804,7 +804,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
         };
       });
 
-      void persistSelectedOrderLines({
+      await persistSelectedOrderLines({
         nextLines,
         previousLines,
         operationSuffix: `line-${lineId}`,
@@ -819,7 +819,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   );
 
   const addWorkOrderMaterialLine = useCallback(
-    (
+    async (
       workOrder: MaterialOrderWorkspaceWorkOrderCandidate,
       material: MaterialOrderWorkspaceWorkOrderCandidate["materialItems"][number],
     ) => {
@@ -839,7 +839,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
 
       if (existingLine) {
         const nextLines = lines.filter((line) => line.id !== existingLine.id);
-        void persistSelectedOrderLines({
+        await persistSelectedOrderLines({
           nextLines,
           previousLines: lines,
           operationSuffix: `remove-${existingLine.id}`,
@@ -882,7 +882,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   );
 
   const confirmPendingLineAddition = useCallback(
-    (override?: { orderQuantity: number; unitPrice: number }) => {
+    async (override?: { orderQuantity: number; unitPrice: number }) => {
       const pending = pendingLineAddition;
       if (!pending || materialOrderMutationLocked) return;
 
@@ -909,7 +909,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
         ),
       ];
       setPendingLineAddition(null);
-      void persistSelectedOrderLines({
+      await persistSelectedOrderLines({
         nextLines,
         previousLines: lines,
         operationSuffix: `add-${pending.workOrder.id}-${pending.material.key}`,
@@ -924,10 +924,10 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   );
 
   const removeLine = useCallback(
-    (lineId: string) => {
+    async (lineId: string) => {
       if (materialOrderMutationLocked) return;
       const nextLines = lines.filter((line) => line.id !== lineId);
-      void persistSelectedOrderLines({
+      await persistSelectedOrderLines({
         nextLines,
         previousLines: lines,
         operationSuffix: `remove-${lineId}`,
