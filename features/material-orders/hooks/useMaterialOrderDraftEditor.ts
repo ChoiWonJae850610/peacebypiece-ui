@@ -452,6 +452,93 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
       };
     }, [dueDate, lines, materialType, selectedOrder, supplierPartnerId]);
 
+  const persistSelectedOrderLines = useCallback(
+    async ({
+      nextLines,
+      previousLines,
+      operationSuffix,
+    }: {
+      nextLines: MaterialOrderDraftLine[];
+      previousLines: MaterialOrderDraftLine[];
+      operationSuffix: string;
+    }) => {
+      if (
+        !selectedOrder ||
+        !materialType ||
+        !canEditMaterialOrderCoreFields(selectedOrder.status, isAdmin)
+      ) {
+        return;
+      }
+
+      const lockKey = `material-order:${selectedOrder.id}`;
+      if (isMaterialOrderLockActive(lockKey)) return;
+
+      setLines(nextLines);
+      await runMaterialOrderMutation({
+        lockKey,
+        operationId: `${lockKey}:collection:${operationSuffix}`,
+        messages: {
+          loading: "발주 품목을 저장하는 중입니다.",
+          success: "발주 품목을 저장했습니다.",
+          error: "발주 품목을 저장하지 못했습니다.",
+        },
+        mutation: async () => {
+          const result = await updateMaterialOrderDetail({
+            materialOrderId: selectedOrder.id,
+            supplierPartnerId,
+            note: selectedOrder.note ?? "",
+            dueDate: dueDate || null,
+            lines: nextLines.map((line) => ({
+              itemName: line.itemName,
+              itemType: materialType as MaterialOrderDraftType,
+              unit: line.unit,
+              orderQuantity: line.orderQuantity,
+              unitPrice: line.unitPrice,
+              allocations: line.allocations.map((allocation) => ({
+                workOrderId: allocation.workOrderId,
+                sourceMaterialKey:
+                  allocation.sourceMaterialKey ??
+                  line.sourceMaterialKey ??
+                  null,
+                allocatedQuantity: allocation.allocatedQuantity,
+                allocationNote: allocation.allocationNote,
+              })),
+            })),
+          });
+
+          setOrders((current) =>
+            applyMaterialOrderPatchResult(current, result.result),
+          );
+          const mergedOrder = {
+            ...selectedOrder,
+            ...result.result.patch,
+            updatedAt: result.result.updatedAt,
+          };
+          setLines(mapSelectedOrderToDraftLines(mergedOrder));
+          setSelectedOrderId(result.result.resourceId);
+          await refreshWorkOrderCandidates();
+          return result;
+        },
+        rollback: () => setLines(previousLines),
+        getErrorMessage: (error) =>
+          toMaterialOrderWorkspaceError(
+            error,
+            "발주 품목을 저장하지 못했습니다.",
+          ),
+      });
+    },
+    [
+      dueDate,
+      isAdmin,
+      isMaterialOrderLockActive,
+      materialType,
+      refreshWorkOrderCandidates,
+      runMaterialOrderMutation,
+      selectedOrder,
+      supplierPartnerId,
+    ],
+  );
+
   const changeDueDate = useCallback(
     async (nextDueDate: string) => {
       const normalizedDueDate = normalizePbpLocalDateValue(nextDueDate);
@@ -681,44 +768,54 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   const updateLine = useCallback(
     (lineId: string, patch: Partial<MaterialOrderDraftLine>) => {
       if (materialOrderMutationLocked) return;
-      setLines((current) =>
-        current.map((line) => {
-          if (line.id !== lineId) return line;
-          const nextLine = { ...line, ...patch };
-          if (patch.orderQuantity == null || line.allocations.length === 0)
-            return nextLine;
+      const previousLines = lines;
+      const nextLines = previousLines.map((line) => {
+        if (line.id !== lineId) return line;
+        const nextLine = { ...line, ...patch };
+        if (patch.orderQuantity == null || line.allocations.length === 0)
+          return nextLine;
 
-          const candidate = workOrderCandidates.find(
-            (item) => item.id === line.sourceWorkOrderId,
-          );
-          const material = candidate?.materialItems.find(
-            (item) => item.key === line.sourceMaterialKey,
-          );
-          const requiredQuantity = Number(material?.quantity ?? 0);
-          if (!(requiredQuantity > 0)) return nextLine;
+        const candidate = workOrderCandidates.find(
+          (item) => item.id === line.sourceWorkOrderId,
+        );
+        const material = candidate?.materialItems.find(
+          (item) => item.key === line.sourceMaterialKey,
+        );
+        const requiredQuantity = Number(material?.quantity ?? 0);
+        if (!(requiredQuantity > 0)) return nextLine;
 
-          let remainingAllocation = Math.min(
-            Math.max(0, patch.orderQuantity),
-            requiredQuantity,
-          );
-          return {
-            ...nextLine,
-            allocations: line.allocations.map((allocation) => {
-              const allocatedQuantity = Math.min(
-                remainingAllocation,
-                requiredQuantity,
-              );
-              remainingAllocation = Math.max(
-                0,
-                remainingAllocation - allocatedQuantity,
-              );
-              return { ...allocation, allocatedQuantity };
-            }),
-          };
-        }),
-      );
+        let remainingAllocation = Math.min(
+          Math.max(0, patch.orderQuantity),
+          requiredQuantity,
+        );
+        return {
+          ...nextLine,
+          allocations: line.allocations.map((allocation) => {
+            const allocatedQuantity = Math.min(
+              remainingAllocation,
+              requiredQuantity,
+            );
+            remainingAllocation = Math.max(
+              0,
+              remainingAllocation - allocatedQuantity,
+            );
+            return { ...allocation, allocatedQuantity };
+          }),
+        };
+      });
+
+      void persistSelectedOrderLines({
+        nextLines,
+        previousLines,
+        operationSuffix: `line-${lineId}`,
+      });
     },
-    [materialOrderMutationLocked, workOrderCandidates],
+    [
+      lines,
+      materialOrderMutationLocked,
+      persistSelectedOrderLines,
+      workOrderCandidates,
+    ],
   );
 
   const addWorkOrderMaterialLine = useCallback(
@@ -734,42 +831,47 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
         return;
       }
 
-      setLines((current) => {
-        const existingLine = current.find(
-          (line) =>
-            line.sourceWorkOrderId === workOrder.id &&
-            line.sourceMaterialKey === material.key,
-        );
+      const existingLine = lines.find(
+        (line) =>
+          line.sourceWorkOrderId === workOrder.id &&
+          line.sourceMaterialKey === material.key,
+      );
 
-        if (existingLine) {
-          return current.filter((line) => line.id !== existingLine.id);
-        }
-
-        const remainingQuantity = calculateMaterialRequestRemainingQuantity({
-          quantityMap: materialRequestQuantityMap,
-          workOrderId: workOrder.id,
-          materialKey: material.key,
-          requiredQuantity: material.quantity,
+      if (existingLine) {
+        const nextLines = lines.filter((line) => line.id !== existingLine.id);
+        void persistSelectedOrderLines({
+          nextLines,
+          previousLines: lines,
+          operationSuffix: `remove-${existingLine.id}`,
         });
+        return;
+      }
 
-        if (remainingQuantity <= 0) return current;
+      const remainingQuantity = calculateMaterialRequestRemainingQuantity({
+        quantityMap: materialRequestQuantityMap,
+        workOrderId: workOrder.id,
+        materialKey: material.key,
+        requiredQuantity: material.quantity,
+      });
 
-        setPendingLineAddition({
-          workOrder,
-          material,
-          requiredQuantity: remainingQuantity,
-          orderQuantity: remainingQuantity,
-          unitPrice: Number.isFinite(material.unitCost ?? 0)
-            ? (material.unitCost ?? 0)
-            : 0,
-        });
-        return current;
+      if (remainingQuantity <= 0) return;
+
+      setPendingLineAddition({
+        workOrder,
+        material,
+        requiredQuantity: remainingQuantity,
+        orderQuantity: remainingQuantity,
+        unitPrice: Number.isFinite(material.unitCost ?? 0)
+          ? (material.unitCost ?? 0)
+          : 0,
       });
     },
     [
       isAdmin,
+      lines,
       materialOrderMutationLocked,
       materialRequestQuantityMap,
+      persistSelectedOrderLines,
       selectedOrder,
     ],
   );
@@ -782,7 +884,7 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
   const confirmPendingLineAddition = useCallback(
     (override?: { orderQuantity: number; unitPrice: number }) => {
       const pending = pendingLineAddition;
-      if (!pending) return;
+      if (!pending || materialOrderMutationLocked) return;
 
       const rawOrderQuantity = override?.orderQuantity ?? pending.orderQuantity;
       const rawUnitPrice = override?.unitPrice ?? pending.unitPrice;
@@ -795,28 +897,43 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
 
       if (orderQuantity < 1) return;
 
-      setLines((current) => [
-        ...current,
+      const nextLines = [
+        ...lines,
         createDraftLineFromMaterial(
-          current.length,
+          lines.length,
           pending.workOrder,
           pending.material,
           orderQuantity,
           Math.min(orderQuantity, pending.requiredQuantity),
           unitPrice,
         ),
-      ]);
+      ];
       setPendingLineAddition(null);
+      void persistSelectedOrderLines({
+        nextLines,
+        previousLines: lines,
+        operationSuffix: `add-${pending.workOrder.id}-${pending.material.key}`,
+      });
     },
-    [pendingLineAddition],
+    [
+      lines,
+      materialOrderMutationLocked,
+      pendingLineAddition,
+      persistSelectedOrderLines,
+    ],
   );
 
   const removeLine = useCallback(
     (lineId: string) => {
       if (materialOrderMutationLocked) return;
-      setLines((current) => current.filter((line) => line.id !== lineId));
+      const nextLines = lines.filter((line) => line.id !== lineId);
+      void persistSelectedOrderLines({
+        nextLines,
+        previousLines: lines,
+        operationSuffix: `remove-${lineId}`,
+      });
     },
-    [materialOrderMutationLocked],
+    [lines, materialOrderMutationLocked, persistSelectedOrderLines],
   );
 
   const selectOrder = useCallback(
