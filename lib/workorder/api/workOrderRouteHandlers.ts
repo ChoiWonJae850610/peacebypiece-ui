@@ -109,6 +109,28 @@ function hasOwnFactoryOrderRequest(value: object): boolean {
   return Object.prototype.hasOwnProperty.call(value, "factoryOrderRequest");
 }
 
+const WORK_ORDER_STATE_PATCH_METADATA_KEYS = new Set<keyof WorkOrderStatePatch>([
+  "id",
+  "lastSavedAt",
+  "auditActor",
+  "serviceCode",
+]);
+
+function isInventoryOnlyStatePatch(patch: WorkOrderStatePatch): boolean {
+  const definedKeys = (Object.keys(patch) as (keyof WorkOrderStatePatch)[]).filter(
+    (key) => hasDefinedWaflPatchProperty(patch, key),
+  );
+  const mutationKeys = definedKeys.filter(
+    (key) => !WORK_ORDER_STATE_PATCH_METADATA_KEYS.has(key),
+  );
+  return (
+    mutationKeys.length > 0 &&
+    mutationKeys.every(
+      (key) => key === "inventoryQuantity" || key === "inventoryStatus",
+    )
+  );
+}
+
 async function requireWorkOrderWorkflowMutationPermission(input: {
   session: WaflSessionPayload;
   previousWorkOrder: WorkOrder;
@@ -875,12 +897,15 @@ export async function handlePatchWorkOrderState(
       workflowState: guardedPatch.workflowState ?? previousWorkOrder.workflowState,
       lastSavedAt: guardedPatch.lastSavedAt ?? previousWorkOrder.lastSavedAt,
     } as WorkOrder;
-    const editPolicyResponse = await validateWorkOrderSavePolicy({
-      session,
-      previous: previousWorkOrder,
-      next: nextWorkOrderForPolicy,
-    });
-    if (editPolicyResponse) return editPolicyResponse;
+    const inventoryOnlyPatch = isInventoryOnlyStatePatch(guardedPatch);
+    if (!inventoryOnlyPatch) {
+      const editPolicyResponse = await validateWorkOrderSavePolicy({
+        session,
+        previous: previousWorkOrder,
+        next: nextWorkOrderForPolicy,
+      });
+      if (editPolicyResponse) return editPolicyResponse;
+    }
 
     const inventoryPermissionResponse =
       await validateWorkOrderInventoryPatchPolicy({

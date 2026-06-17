@@ -136,7 +136,9 @@ export function useWorkOrderWorkspaceController({
       traceWaflResult("workorder.workspace.writeLock", "error", {
         message: error instanceof Error ? error.message : "unknown",
       });
-      throw error;
+      // useWaflMutation already surfaces the failure through the shared danger toast.
+      // Event handlers must consume the rejection so Next.js does not open the runtime overlay.
+      return undefined;
     } finally {
       workspaceWriteLockRef.current = false;
       setManualWriteLockMessage(null);

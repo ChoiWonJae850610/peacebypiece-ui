@@ -1,5 +1,5 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
-import type { WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
+import { WORKORDER_SERVICE_CODE, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import { shouldCommitProductionComposition } from "@/lib/workorder/productionCompositionPolicy";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
@@ -98,6 +98,22 @@ function buildProductionCompositionStatePatch(
   };
 }
 
+function buildInventoryStatePatch(
+  workOrder: WorkOrder,
+  auditActor?: UserProfile | null,
+): WorkOrderStatePatch {
+  return {
+    id: workOrder.id,
+    lastSavedAt: workOrder.lastSavedAt,
+    inventoryQuantity: workOrder.inventoryQuantity,
+    inventoryStatus: workOrder.inventoryStatus,
+    auditActor: auditActor
+      ? { id: auditActor.id, name: auditActor.name, role: auditActor.role }
+      : null,
+    serviceCode: WORKORDER_SERVICE_CODE.inventoryImmediateSave,
+  };
+}
+
 function buildWorkOrderStatePatch(
   workOrder: WorkOrder,
   auditActor?: UserProfile | null,
@@ -163,7 +179,10 @@ export async function persistWorkOrderStatePatchWithHistory(
   },
 ) {
   const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
-  const statePatch = buildWorkOrderStatePatch(stampedWorkOrder, payload.auditActor, payload.serviceCode);
+  const statePatch =
+    payload.serviceCode === WORKORDER_SERVICE_CODE.inventoryImmediateSave
+      ? buildInventoryStatePatch(stampedWorkOrder, payload.auditActor)
+      : buildWorkOrderStatePatch(stampedWorkOrder, payload.auditActor, payload.serviceCode);
   const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
@@ -183,7 +202,10 @@ export async function persistWorkOrderStatePatchesWithHistory(
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
   const patchResults: WorkOrderStatePatchResult[] = [];
   for (const workOrder of stampedWorkOrders) {
-    const statePatch = buildWorkOrderStatePatch(workOrder, payload.auditActor, payload.serviceCode);
+    const statePatch =
+      payload.serviceCode === WORKORDER_SERVICE_CODE.inventoryImmediateSave
+        ? buildInventoryStatePatch(workOrder, payload.auditActor)
+        : buildWorkOrderStatePatch(workOrder, payload.auditActor, payload.serviceCode);
     const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
     patchResults.push(savedPatch);
   }
