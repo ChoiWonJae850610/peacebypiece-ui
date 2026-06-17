@@ -35,7 +35,7 @@ export default function MaterialOrderTabletWorkspaceView({
         list={list}
         detail={detail}
         side={side}
-        scrollResetKey={scrollResetKey}
+        scrollResetKey={scrollResetKey ?? ""}
         workspaceOverlay={workspaceOverlay}
       />
     </>

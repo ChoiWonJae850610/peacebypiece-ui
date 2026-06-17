@@ -26,7 +26,7 @@ export default function MaterialOrderDesktopWorkspaceView({
         list={list}
         detail={detail}
         side={side}
-        scrollResetKey={scrollResetKey}
+        scrollResetKey={scrollResetKey ?? ""}
         workspaceOverlay={workspaceOverlay}
       />
     </>

@@ -86,7 +86,7 @@ export default function MaterialOrderMobileWorkspaceView({
         )}
         detail={detail}
         workspaceOverlay={workspaceOverlay}
-        scrollResetKey={scrollResetKey}
+        scrollResetKey={scrollResetKey ?? ""}
         hasSelection={hasSelection}
         actionAriaLabel="발주 대상 선택 열기"
         actionTitle="발주 대상 작업지시서와 자재 선택 도구를 엽니다."
