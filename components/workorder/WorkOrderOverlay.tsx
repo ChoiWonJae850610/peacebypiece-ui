@@ -1,6 +1,6 @@
 import type { ChangeEventHandler, ComponentProps, RefObject } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
-import { WaflProcessingToast } from "@/components/common/ui";
+import type { WaflToastOperationState } from "@/components/common/ui";
 import AttachmentDeleteConfirmModal from "@/components/common/modal/AttachmentDeleteConfirmModal";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import CreateWorkOrderModal from "@/components/common/modal/CreateWorkOrderModal";
@@ -19,6 +19,7 @@ type WorkOrderOverlayProps = {
   writeLocked?: boolean;
   writeLockMessage?: string;
   toastMessage: ComponentProps<typeof ToastMessage>["message"];
+  feedbackOperation?: WaflToastOperationState | null;
   modalProps: {
     orderRequestConfirm: ComponentProps<typeof OrderRequestConfirmModal>;
     attachmentPreview: ComponentProps<typeof AttachmentPreviewModal>;
@@ -38,6 +39,7 @@ export default function WorkOrderOverlay({
   attachmentInputAccept,
   onAttachmentFilesChange,
   toastMessage,
+  feedbackOperation,
   modalProps,
   writeLocked = false,
   writeLockMessage,
@@ -64,12 +66,12 @@ export default function WorkOrderOverlay({
         onChange={onAttachmentFilesChange}
         disabled={writeLocked}
       />
-      {writeLocked && writeLockMessage ? (
-        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1.75rem+env(safe-area-inset-bottom))] z-[70] flex justify-center px-4 md:bottom-7 md:justify-center md:px-8">
-          <WaflProcessingToast message={writeLockMessage} />
-        </div>
-      ) : null}
-      <ToastMessage message={toastMessage} />
+      <ToastMessage
+        message={feedbackOperation?.message ?? toastMessage}
+        tone={feedbackOperation?.tone ?? "info"}
+        eventKey={feedbackOperation?.revision ?? null}
+        toastId={feedbackOperation?.id ?? null}
+      />
     </>
   );
 }

@@ -6,6 +6,8 @@ import { useWorkspaceSelectionController } from "@/lib/hooks/workspace/useWorksp
 import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStatus";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { useI18n } from "@/lib/i18n";
+import { WAFL_CHANGE_TARGET, type WaflChangeTarget } from "@/components/common/ui";
+import { useWorkOrderFeedback } from "@/features/workorders/hooks/useWorkOrderFeedback";
 import { buildWorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
 import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
@@ -45,6 +47,7 @@ export function useWorkOrderWorkspaceController({
     initialSearchQuery,
   });
   const dbConnectionStatus = useDbConnectionStatus();
+  const workOrderFeedback = useWorkOrderFeedback();
   const showRepositoryBadges = RUNTIME_VISIBILITY.showRepositoryBadges;
   const showUserSwitchingTools = RUNTIME_VISIBILITY.showUserSwitchingTools;
 
@@ -102,7 +105,11 @@ export function useWorkOrderWorkspaceController({
       selectedDetailLoadingMessage,
   );
 
-  const runWithWorkspaceWriteLock = async <T,>(message: string, task: () => T | Promise<T>) => {
+  const runWithWorkspaceWriteLock = async <T,>(
+    message: string,
+    task: () => T | Promise<T>,
+    changeFeedback?: { target: WaflChangeTarget; operationId: string },
+  ) => {
     if (workspaceWriteLockRef.current || isWorkspaceWriteLocked) {
       traceWaflResult("workorder.workspace.writeLock", "skip", { reason: "locked" });
       return undefined;
@@ -110,9 +117,15 @@ export function useWorkOrderWorkspaceController({
 
     workspaceWriteLockRef.current = true;
     traceWaflFlow("action", "workorder.workspace.writeLock.start");
-    setManualWriteLockMessage(message);
+    if (!changeFeedback) setManualWriteLockMessage(message);
     try {
-      const result = await Promise.resolve(task());
+      const result = changeFeedback
+        ? await workOrderFeedback.runChangeOperation(
+            changeFeedback.target,
+            changeFeedback.operationId,
+            task,
+          )
+        : await Promise.resolve(task());
       traceWaflResult("workorder.workspace.writeLock", "success");
       return result;
     } catch (error) {
@@ -141,6 +154,24 @@ export function useWorkOrderWorkspaceController({
     targetLabels: homeNavigationCopy.targetLabels,
     targetAriaLabels: homeNavigationCopy.targetAriaLabels,
   });
+
+  const getSaveChangeTarget = (nextWorkOrder?: WorkOrder): WaflChangeTarget => {
+    if (!nextWorkOrder) return WAFL_CHANGE_TARGET.workOrder;
+    const current = selection.selectedWorkOrder;
+    if (nextWorkOrder.dueDate !== current.dueDate) return WAFL_CHANGE_TARGET.workOrderDueDate;
+    if (nextWorkOrder.quantity !== current.quantity) return WAFL_CHANGE_TARGET.workOrderQuantity;
+    if (
+      nextWorkOrder.category1 !== current.category1 ||
+      nextWorkOrder.category2 !== current.category2 ||
+      nextWorkOrder.category3 !== current.category3 ||
+      nextWorkOrder.category1Id !== current.category1Id ||
+      nextWorkOrder.category2Id !== current.category2Id ||
+      nextWorkOrder.category3Id !== current.category3Id
+    ) {
+      return WAFL_CHANGE_TARGET.workOrderKind;
+    }
+    return WAFL_CHANGE_TARGET.workOrder;
+  };
 
   const pendingAttachmentDelete = useMemo(
     () =>
@@ -363,8 +394,11 @@ export function useWorkOrderWorkspaceController({
     showUserSwitchingTools,
     onSetHistoryFilter: history.setHistoryFilter,
     onSave: (workOrderOverride) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
-        actions.handleSave(workOrderOverride),
+      const target = getSaveChangeTarget(workOrderOverride);
+      void runWithWorkspaceWriteLock(
+        lifecycleCopy.editProcessingLabel,
+        () => actions.handleSave(workOrderOverride),
+        { target, operationId: `workorder:${selection.selectedId}:save:${target}` },
       );
     },
     onSelectWorkOrder: handleSelectWorkOrder,
@@ -389,8 +423,13 @@ export function useWorkOrderWorkspaceController({
       void actions.handleUpdateSelectedWorkOrder(patch);
     },
     onRenameWorkOrderTitle: (nextTitle) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.titleChangeProcessingLabel, () =>
-        actions.handleRenameWorkOrderTitle(nextTitle),
+      void runWithWorkspaceWriteLock(
+        lifecycleCopy.titleChangeProcessingLabel,
+        () => actions.handleRenameWorkOrderTitle(nextTitle),
+        {
+          target: WAFL_CHANGE_TARGET.workOrderTitle,
+          operationId: `workorder:${selection.selectedId}:title`,
+        },
       );
     },
     onConfirmOrderRequest: (payload) => {
@@ -400,8 +439,13 @@ export function useWorkOrderWorkspaceController({
     },
     onCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
     onInventoryApply: (payload) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.inventoryChangeProcessingLabel, () =>
-        actions.handleInventoryApply(payload),
+      void runWithWorkspaceWriteLock(
+        lifecycleCopy.inventoryChangeProcessingLabel,
+        () => actions.handleInventoryApply(payload),
+        {
+          target: WAFL_CHANGE_TARGET.workOrderInventory,
+          operationId: `workorder:${selection.selectedId}:inventory`,
+        },
       );
     },
     onCompleteInspection: (payload) => {
@@ -417,8 +461,13 @@ export function useWorkOrderWorkspaceController({
     onOpenManagerAssignModal: actions.handleOpenManagerAssignModal,
     onCloseManagerAssignModal: actions.handleCloseManagerAssignModal,
     onChangeManager: (managerId) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.managerChangeProcessingLabel, () =>
-        actions.handleChangeManager(managerId),
+      void runWithWorkspaceWriteLock(
+        lifecycleCopy.managerChangeProcessingLabel,
+        () => actions.handleChangeManager(managerId),
+        {
+          target: WAFL_CHANGE_TARGET.workOrderManager,
+          operationId: `workorder:${selection.selectedId}:manager`,
+        },
       );
     },
     onOpenAttachmentPicker: (scope) => {
@@ -469,6 +518,7 @@ export function useWorkOrderWorkspaceController({
       writeLocked: isWorkspaceWriteLocked,
       writeLockMessage: workspaceWriteLockMessage,
       toastMessage: ui.toastMessage,
+      feedbackOperation: workOrderFeedback.operation,
       modalProps: {
         ...viewModel.modalProps,
         createWorkOrder: {

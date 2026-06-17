@@ -3,11 +3,6 @@
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
-  WAFL_CHANGE_TARGET,
-  getWaflChangeFeedbackMessage,
-  showWaflToast,
-} from "@/components/common/ui";
-import {
   WORKORDER_EXPLICIT_SAVE_SCOPE,
   WORKORDER_SERVICE_CODE,
   getWorkOrderExplicitSaveServiceCode,
@@ -103,14 +98,6 @@ export function useWorkOrderLifecycleActions({
 
   const handleSave = useCallback(
     async (workOrder: WorkOrder, workOrders: WorkOrder[]) => {
-      const toastId = `workorder-save:${workOrder.id}`;
-      showWaflToast({
-        id: toastId,
-        message: getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "changing"),
-        tone: "loading",
-        duration: 60_000,
-      });
-
       try {
         await executeWorkOrderAsyncAction({
           actionKey: "save",
@@ -122,7 +109,9 @@ export function useWorkOrderLifecycleActions({
             error,
             kind: "repository",
             retryable: true,
-            message: getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "error"),
+            message: error instanceof Error && error.message.trim()
+              ? error.message
+              : "정보를 변경하지 못했습니다.",
           }),
           task: async () => {
             setSaveStatus("saving");
@@ -143,21 +132,9 @@ export function useWorkOrderLifecycleActions({
             setActionError("save", null);
           },
         });
-
-        showWaflToast({
-          id: toastId,
-          message: getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "changed"),
-          tone: "success",
-        });
       } catch (error) {
         setSaveStatus("dirty");
-        showWaflToast({
-          id: toastId,
-          message: error instanceof Error && error.message.trim()
-            ? error.message
-            : getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "error"),
-          tone: "danger",
-        });
+        throw error;
       }
     },
     [currentUser, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setWorkOrders],
