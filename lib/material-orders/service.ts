@@ -15,6 +15,7 @@ import type {
   MaterialOrderListResult,
   MaterialOrderMutationResult,
   MaterialOrderPatchMutationResult,
+  MaterialOrderCollectionMutationResult,
   MaterialOrderStatusUpdateInput,
   MaterialOrderSupplierListParams,
   MaterialOrderSupplierListResult,
@@ -82,12 +83,23 @@ export async function updateWorkspaceMaterialOrderHeader(
 
 export async function updateWorkspaceMaterialOrderDetail(
   input: MaterialOrderUpdateInput,
-): Promise<MaterialOrderMutationResult> {
+): Promise<MaterialOrderCollectionMutationResult> {
   const materialOrder = await updateMaterialOrderDetailForCompany(input);
+  if (!materialOrder) throw new Error("MATERIAL_ORDER_DETAIL_NOT_FOUND_OR_FORBIDDEN");
 
   return {
-    materialOrder,
-    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId, visibility: input.visibility }),
+    result: {
+      resourceId: materialOrder.id,
+      patch: {
+        supplierPartnerId: materialOrder.supplierPartnerId,
+        supplierPartnerName: materialOrder.supplierPartnerName,
+        note: materialOrder.note,
+        dueDate: materialOrder.dueDate,
+        totalAmount: materialOrder.totalAmount,
+        lines: materialOrder.lines,
+      },
+      updatedAt: materialOrder.updatedAt,
+    },
   };
 }
 

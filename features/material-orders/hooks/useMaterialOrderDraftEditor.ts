@@ -533,9 +533,10 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
               if (detailPayload) {
                 const detailResult =
                   await updateMaterialOrderDetail(detailPayload);
-                nextSelectedOrderId =
-                  detailResult.materialOrder?.id ?? selectedOrder.id;
-                setOrders(detailResult.materialOrders);
+                nextSelectedOrderId = detailResult.result.resourceId;
+                setOrders((current) =>
+                  applyMaterialOrderPatchResult(current, detailResult.result),
+                );
               }
             }
 

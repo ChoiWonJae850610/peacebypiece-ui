@@ -1,5 +1,5 @@
 import type { WorkflowPathValue } from "@/lib/constants/workflowPaths";
-import type { WaflPatchResult } from "@/types/waflMutation";
+import type { WaflCollectionPatchResult, WaflPatchResult } from "@/types/waflMutation";
 
 export const MATERIAL_ORDER_STATUS = {
   draft: "draft",
@@ -175,4 +175,21 @@ export type MaterialOrderSingleMutationResult = {
 
 export type MaterialOrderPatchMutationResult = {
   result: WaflPatchResult<Partial<MaterialOrder>>;
+};
+
+export type MaterialOrderDetailPatch = Pick<
+  MaterialOrder,
+  | "supplierPartnerId"
+  | "supplierPartnerName"
+  | "note"
+  | "dueDate"
+  | "totalAmount"
+  | "lines"
+>;
+
+export type MaterialOrderCollectionMutationResult = {
+  result: WaflCollectionPatchResult<
+    Omit<MaterialOrderDetailPatch, "lines">,
+    Pick<MaterialOrderDetailPatch, "lines">
+  >;
 };

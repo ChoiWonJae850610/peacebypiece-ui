@@ -17,6 +17,7 @@ import {
   type MaterialOrderSupplier,
   type MaterialOrderSupplierListResult,
   type MaterialOrderPatchMutationResult,
+  type MaterialOrderCollectionMutationResult,
 } from "@/lib/material-orders/types";
 import {
   formatMaterialOrderStatusLabel,
@@ -190,8 +191,8 @@ export async function updateMaterialOrderDetail(input: {
   note?: string | null;
   dueDate?: string | null;
   lines: MaterialOrderLineInput[];
-}): Promise<MaterialOrderWorkspaceMutationResult> {
-  return waflApiRequest<MaterialOrderWorkspaceMutationResult>(
+}): Promise<MaterialOrderCollectionMutationResult> {
+  return waflApiRequest<MaterialOrderCollectionMutationResult>(
     "/api/material-orders",
     {
       method: "PUT",

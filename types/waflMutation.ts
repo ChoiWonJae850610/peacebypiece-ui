@@ -4,3 +4,8 @@ export type WaflPatchResult<TPatch extends object> = {
   updatedAt: string;
   revision?: number;
 };
+
+export type WaflCollectionPatchResult<
+  TPatch extends object,
+  TCollectionPatch extends object,
+> = WaflPatchResult<TPatch & TCollectionPatch>;
