@@ -1,6 +1,5 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import type { HistoryLog, WorkOrder } from "@/types/workorder";
-import { mergeSavedWorkOrders } from "./workorderRepositoryMutations";
+import type { HistoryLog, WorkOrder, WorkOrderStatePatchResult } from "@/types/workorder";
 import type { SaveStatus } from "./useWorkOrderActionTypes";
 import { applyWaflResourcePatch } from "@/lib/mutations/waflResourceState";
 
@@ -94,7 +93,7 @@ export function buildImmediatePatchPersistSuccessState({
 
 export type SharedProductionPersistSuccessInput = {
   optimisticWorkOrders: WorkOrder[];
-  persistedWorkOrders: WorkOrder[];
+  patchResults: WorkOrderStatePatchResult[];
 };
 
 export type SharedProductionPersistSuccessResult = {
@@ -104,9 +103,14 @@ export type SharedProductionPersistSuccessResult = {
 
 export function buildSharedProductionPersistSuccessState({
   optimisticWorkOrders,
-  persistedWorkOrders,
+  patchResults,
 }: SharedProductionPersistSuccessInput): SharedProductionPersistSuccessResult {
-  const mergedWorkOrders = mergeSavedWorkOrders(optimisticWorkOrders, persistedWorkOrders);
+  const mergedWorkOrders = patchResults.reduce((workOrders, result) => (
+    applyWaflResourcePatch(workOrders, result.resourceId, {
+      ...result.patch,
+      lastSavedAt: result.updatedAt,
+    })
+  ), optimisticWorkOrders);
 
   return {
     localWorkOrders: mergedWorkOrders,
@@ -121,12 +125,12 @@ export type ApplySharedProductionPersistSuccessInput = SharedProductionPersistSu
 
 export function applySharedProductionPersistSuccess({
   optimisticWorkOrders,
-  persistedWorkOrders,
+  patchResults,
   state,
 }: ApplySharedProductionPersistSuccessInput): SharedProductionPersistSuccessResult {
   const result = buildSharedProductionPersistSuccessState({
     optimisticWorkOrders,
-    persistedWorkOrders,
+    patchResults,
   });
 
   state.workOrdersRef.current = result.localWorkOrders;

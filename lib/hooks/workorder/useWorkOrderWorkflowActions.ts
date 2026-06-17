@@ -312,7 +312,7 @@ export function useWorkOrderWorkflowActions({
       setWorkOrders(nextWorkOrders);
 
       try {
-        const persistedCandidates = await persistWorkOrderStatePatchesWithHistory(repository, {
+        const patchResults = await persistWorkOrderStatePatchesWithHistory(repository, {
           workOrders: persistCandidates,
           historyLogs,
           auditActor: currentUser,
@@ -320,7 +320,7 @@ export function useWorkOrderWorkflowActions({
         });
         applySharedProductionPersistSuccess({
           optimisticWorkOrders: nextWorkOrders,
-          persistedWorkOrders: persistedCandidates,
+          patchResults,
           state: {
             workOrdersRef,
             setWorkOrders,
@@ -328,7 +328,7 @@ export function useWorkOrderWorkflowActions({
             syncSelectedWorkOrderSaveState,
           },
         });
-        return persistedCandidates;
+        return patchResults;
       } catch (error) {
         workOrdersRef.current = previousWorkOrders;
         setWorkOrders(previousWorkOrders);

@@ -181,16 +181,16 @@ export async function persistWorkOrderStatePatchesWithHistory(
   },
 ) {
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
-  const nextWorkOrders: WorkOrder[] = [];
+  const patchResults: WorkOrderStatePatchResult[] = [];
   for (const workOrder of stampedWorkOrders) {
     const statePatch = buildWorkOrderStatePatch(workOrder, payload.auditActor, payload.serviceCode);
     const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
-    nextWorkOrders.push(mergeStatePatchResultIntoWorkOrder(workOrder, savedPatch, statePatch));
+    patchResults.push(savedPatch);
   }
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
-  return nextWorkOrders;
+  return patchResults;
 }
 
 export async function persistWorkOrderWithHistory(
