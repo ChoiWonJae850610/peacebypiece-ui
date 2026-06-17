@@ -108,13 +108,15 @@ export const workorderEn = {
     deleteProcessingLabel: "Deleting work order...",
     workflowProcessingLabel: "Updating work order status...",
     attachmentProcessingLabel: "Processing file...",
-    editProcessingLabel: "Saving changes...",
+    editProcessingLabel: "Updating work order information...",
+    titleChangeProcessingLabel: "Updating work order basic information (title)...",
+    managerChangeProcessingLabel: "Updating work order basic information (manager)...",
+    inventoryChangeProcessingLabel: "Updating work order basic information (inventory)...",
     orderRequestProcessingLabel: "Processing order request...",
     orderRequestPdfProcessingLabel: "Generating order PDF...",
     genericProcessingLabel: "Processing.",
-    renameAppliedToSeriesToast:
-      "The work order title has been applied to the entire reorder series.",
-    renameAppliedToast: "The work order title has been changed.",
+    renameAppliedToSeriesToast: "Information has been updated.",
+    renameAppliedToast: "Information has been updated.",
     renameFailedToast: "Failed to rename work order.",
   },
   actionFlow: {
@@ -124,7 +126,7 @@ export const workorderEn = {
     officialAttachmentUploadedToast: "Attachment file has been uploaded.",
     managerChangedToast: "Information has been updated.",
     workflowChangedToastFormat: '"{label}" has been applied.',
-    inventoryAppliedToast: "Inventory update has been applied.",
+    inventoryAppliedToast: "Information has been updated.",
     factoryOrderRequestedToast: "Factory order request has been recorded.",
     factoryOrderPdfSavedToast:
       "Factory order request completed. The order PDF has been saved to attachments.",

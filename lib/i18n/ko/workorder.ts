@@ -104,13 +104,15 @@ export const workorderKo = {
     deleteProcessingLabel: "작업지시서 삭제 중입니다...",
     workflowProcessingLabel: "상태 변경 처리 중입니다...",
     attachmentProcessingLabel: "파일 처리 중입니다...",
-    editProcessingLabel: "변경사항 저장 중입니다...",
+    editProcessingLabel: "작업지시서 정보 변경 중입니다...",
+    titleChangeProcessingLabel: "작업지시서 기본정보(작업지시서명) 변경 중입니다...",
+    managerChangeProcessingLabel: "작업지시서 기본정보(담당자) 변경 중입니다...",
+    inventoryChangeProcessingLabel: "작업지시서 기본정보(재고) 변경 중입니다...",
     orderRequestProcessingLabel: "발주요청 처리 중입니다...",
     orderRequestPdfProcessingLabel: "발주서 PDF를 생성하고 있습니다...",
     genericProcessingLabel: "처리 중입니다.",
-    renameAppliedToSeriesToast:
-      "작업지시서명이 리오더 계열 전체에 반영되었습니다.",
-    renameAppliedToast: "작업지시서명이 변경되었습니다.",
+    renameAppliedToSeriesToast: "정보가 변경되었습니다.",
+    renameAppliedToast: "정보가 변경되었습니다.",
     renameFailedToast: "작업지시서명 변경에 실패했습니다.",
   },
   actionFlow: {
@@ -119,7 +121,7 @@ export const workorderKo = {
     officialAttachmentUploadedToast: "첨부 파일이 등록되었습니다.",
     managerChangedToast: "정보가 변경되었습니다.",
     workflowChangedToastFormat: '"{label}" 처리되었습니다.',
-    inventoryAppliedToast: "재고 수정이 반영되었습니다.",
+    inventoryAppliedToast: "정보가 변경되었습니다.",
     factoryOrderRequestedToast: "공장 발주 요청이 반영되었습니다.",
     factoryOrderPdfSavedToast:
       "발주요청이 완료되었습니다. 발주서 PDF가 첨부파일에 저장되었습니다.",

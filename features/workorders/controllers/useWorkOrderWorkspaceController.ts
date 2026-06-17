@@ -389,7 +389,7 @@ export function useWorkOrderWorkspaceController({
       void actions.handleUpdateSelectedWorkOrder(patch);
     },
     onRenameWorkOrderTitle: (nextTitle) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.titleChangeProcessingLabel, () =>
         actions.handleRenameWorkOrderTitle(nextTitle),
       );
     },
@@ -400,7 +400,7 @@ export function useWorkOrderWorkspaceController({
     },
     onCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
     onInventoryApply: (payload) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.inventoryChangeProcessingLabel, () =>
         actions.handleInventoryApply(payload),
       );
     },
@@ -417,7 +417,7 @@ export function useWorkOrderWorkspaceController({
     onOpenManagerAssignModal: actions.handleOpenManagerAssignModal,
     onCloseManagerAssignModal: actions.handleCloseManagerAssignModal,
     onChangeManager: (managerId) => {
-      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.managerChangeProcessingLabel, () =>
         actions.handleChangeManager(managerId),
       );
     },
