@@ -1,4 +1,5 @@
 import { formatPbpDateDisplay, normalizePbpLocalDateValue } from "@/lib/date/localDate";
+import { EMPTY_DISPLAY } from "@/lib/constants/display";
 import { readWaflLegacyApiResponse, waflApiRequest } from "@/lib/api/waflApiClient";
 import type { WorkOrderSummary } from "@/types/workorder";
 import {
@@ -83,7 +84,7 @@ export function formatMaterialOrderRequesterLabel(order: Pick<MaterialOrder, "re
 
 export function formatMaterialOrderDateLabel(value: string | null | undefined): string {
   const normalized = normalizePbpLocalDateValue(value);
-  return normalized ? formatPbpDateDisplay(normalized, "ko") : "-";
+  return normalized ? formatPbpDateDisplay(normalized, "ko") : EMPTY_DISPLAY;
 }
 
 export function formatMaterialOrderCreatedAtLabel(value: string | null | undefined): string {

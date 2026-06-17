@@ -13,11 +13,12 @@ import {
 } from "@/components/common/modal/createWorkOrder/createWorkOrderCategorySource";
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import type { BasicInfoState } from "@/components/workorder/detail/shared/detailEditorShared";
+import { EMPTY_WORKORDER_SELECT_DISPLAY } from "@/lib/workorder/detail/selectDisplayPresentation";
 
 function buildCategorySourceFromValue(value: BasicInfoState): CategorySource {
-  const category1: CategoryOption = { id: value.category1Id ?? null, name: value.category1 || "-" };
-  const category2: CategoryOption = { id: value.category2Id ?? null, name: value.category2 || "-" };
-  const category3: CategoryOption = { id: value.category3Id ?? null, name: value.category3 || "-" };
+  const category1: CategoryOption = { id: value.category1Id ?? null, name: value.category1 || EMPTY_WORKORDER_SELECT_DISPLAY };
+  const category2: CategoryOption = { id: value.category2Id ?? null, name: value.category2 || EMPTY_WORKORDER_SELECT_DISPLAY };
+  const category3: CategoryOption = { id: value.category3Id ?? null, name: value.category3 || EMPTY_WORKORDER_SELECT_DISPLAY };
 
   return {
     category1Options: [category1],

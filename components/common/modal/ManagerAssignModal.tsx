@@ -10,7 +10,7 @@ import {
 import { formatRoles } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
 import { useI18n } from "@/lib/i18n";
-import { SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
+import { EMPTY_DISPLAY, SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
 import { WaflInfoRow, WaflSelectableCard } from "@/components/common/ui";
 
 export default function ManagerAssignModal({
@@ -77,7 +77,7 @@ export default function ManagerAssignModal({
           {copy.currentManagerLabel}
         </span>
         <span className="font-medium text-[var(--pbp-text-primary)]">
-          {currentManagerName || "-"}
+          {currentManagerName || EMPTY_DISPLAY}
         </span>
       </WaflInfoRow>
 

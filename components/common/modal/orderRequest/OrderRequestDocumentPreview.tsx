@@ -3,6 +3,7 @@
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import type { Material, Outsourcing } from "@/types/workorder";
 import type { OrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
+import { EMPTY_DISPLAY } from "@/lib/constants/display";
 
 type OrderRequestConfirmCopy = {
   documentTitle: string;
@@ -66,7 +67,7 @@ const TABLE_EMPTY_CLASS = "px-3 py-7 text-center text-sm text-stone-500";
 function formatCurrency(value: number, suffix: string) {
   const numeric = Number(value ?? 0);
   if (!Number.isFinite(numeric) || numeric <= 0) {
-    return "-";
+    return EMPTY_DISPLAY;
   }
   return `${numeric.toLocaleString()}${suffix}`;
 }
@@ -74,14 +75,14 @@ function formatCurrency(value: number, suffix: string) {
 function formatQuantity(value: number, suffix?: string) {
   const numeric = Number(value ?? 0);
   if (!Number.isFinite(numeric) || numeric <= 0) {
-    return "-";
+    return EMPTY_DISPLAY;
   }
   return suffix ? `${numeric.toLocaleString()} ${suffix}` : numeric.toLocaleString();
 }
 
 function formatDateLabel(value?: string | null) {
   const text = value?.trim();
-  if (!text) return "-";
+  if (!text) return EMPTY_DISPLAY;
   return text;
 }
 
@@ -181,10 +182,10 @@ function MaterialTableRows({
     <>
       {materials.map((material) => (
         <tr key={material.id} className="border-b border-stone-200 last:border-b-0">
-          <td className={TABLE_CELL_CLASS}>{material.vendor || "-"}</td>
-          <td className={`${TABLE_CELL_CLASS} break-words`}>{material.name || "-"}</td>
+          <td className={TABLE_CELL_CLASS}>{material.vendor || EMPTY_DISPLAY}</td>
+          <td className={`${TABLE_CELL_CLASS} break-words`}>{material.name || EMPTY_DISPLAY}</td>
           <td className={TABLE_CELL_CLASS}>{formatQuantity(material.quantity)}</td>
-          <td className={TABLE_CELL_CLASS}>{material.unit || "-"}</td>
+          <td className={TABLE_CELL_CLASS}>{material.unit || EMPTY_DISPLAY}</td>
           <td className={TABLE_CELL_CLASS}>{formatCurrency(material.unitCost, currencySuffix)}</td>
           <td className={TABLE_CELL_CLASS}>
             {formatCurrency(material.totalCost || material.quantity * material.unitCost, currencySuffix)}
@@ -218,8 +219,8 @@ function OutsourcingTableRows({
     <>
       {outsourcingItems.map((item) => (
         <tr key={item.id} className="border-b border-stone-200 last:border-b-0">
-          <td className={TABLE_CELL_CLASS}>{item.vendor || "-"}</td>
-          <td className={`${TABLE_CELL_CLASS} break-words`}>{item.process || "-"}</td>
+          <td className={TABLE_CELL_CLASS}>{item.vendor || EMPTY_DISPLAY}</td>
+          <td className={`${TABLE_CELL_CLASS} break-words`}>{item.process || EMPTY_DISPLAY}</td>
           <td className={TABLE_CELL_CLASS}>{formatQuantity(item.quantity)}</td>
           <td className={TABLE_CELL_CLASS}>{formatCurrency(item.unitCost, currencySuffix)}</td>
           <td className={TABLE_CELL_CLASS}>{formatCurrency(item.totalCost, currencySuffix)}</td>
