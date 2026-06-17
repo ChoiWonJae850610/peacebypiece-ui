@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useMemo, useRef, useState, type ChangeEvent } from "react";
 
 import { useWorkspaceSelectionController } from "@/lib/hooks/workspace/useWorkspaceSelectionController";
 import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStatus";
@@ -67,6 +67,7 @@ export function useWorkOrderWorkspaceController({
   const [pendingWorkOrderDeleteId, setPendingWorkOrderDeleteId] = useState<string | null>(null);
   const [workflowProcessingLabel, setWorkflowProcessingLabel] = useState<string | null>(null);
   const [manualWriteLockMessage, setManualWriteLockMessage] = useState<string | null>(null);
+  const workspaceWriteLockRef = useRef(false);
 
   const renderHasSelection = selection.hasActiveSelection;
   const isRepositoryLoading = repository.repositoryStatus === "loading";
@@ -102,11 +103,12 @@ export function useWorkOrderWorkspaceController({
   );
 
   const runWithWorkspaceWriteLock = async <T,>(message: string, task: () => T | Promise<T>) => {
-    if (isWorkspaceWriteLocked) {
+    if (workspaceWriteLockRef.current || isWorkspaceWriteLocked) {
       traceWaflResult("workorder.workspace.writeLock", "skip", { reason: "locked" });
       return undefined;
     }
 
+    workspaceWriteLockRef.current = true;
     traceWaflFlow("action", "workorder.workspace.writeLock.start");
     setManualWriteLockMessage(message);
     try {
@@ -119,6 +121,7 @@ export function useWorkOrderWorkspaceController({
       });
       throw error;
     } finally {
+      workspaceWriteLockRef.current = false;
       setManualWriteLockMessage(null);
     }
   };

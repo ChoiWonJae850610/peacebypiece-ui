@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { WaflDocumentField, useWaflToastOperation } from "@/components/common/ui";
 import ToastMessage from "@/components/common/ToastMessage";
@@ -33,6 +33,7 @@ export default function WorkOrderFactoryInstructionPanel({
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<WaflSaveStatusValue>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const saveInFlightRef = useRef(false);
   const { operation, showOperationToast, clearOperationToast } = useWaflToastOperation(
     `workorder-factory-instruction:${workOrderId}`,
   );
@@ -81,7 +82,8 @@ export default function WorkOrderFactoryInstructionPanel({
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!editable || !isDirty || saveStatus === "saving") return;
+    if (!editable || !isDirty || saveInFlightRef.current || saveStatus === "saving") return;
+    saveInFlightRef.current = true;
     setSaveStatus("saving");
     setErrorMessage(null);
     showOperationToast("공장 전달사항을 저장하는 중입니다.", "loading");
@@ -99,6 +101,8 @@ export default function WorkOrderFactoryInstructionPanel({
       setErrorMessage(message);
       setSaveStatus("error");
       showOperationToast(message, "danger");
+    } finally {
+      saveInFlightRef.current = false;
     }
   }, [draft, editable, instruction.includeInFactoryPdf, isDirty, saveStatus, showOperationToast, workOrderId]);
 
