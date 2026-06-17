@@ -40,7 +40,7 @@ import {
   createDraftLineFromMaterial,
   getMaterialOrderStatusValidationIssues,
   mapSelectedOrderToDraftLines,
-  replaceMaterialOrderInList,
+  applyMaterialOrderPatchResult,
   type PendingMaterialOrderStatusValidation,
   type SelectedOrderDetailPayload,
 } from "@/features/material-orders/hooks/materialOrderDraftEditorUtils";
@@ -293,9 +293,9 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
               supplierPartnerId: null,
             });
             setOrders((current) =>
-              replaceMaterialOrderInList(current, result.materialOrder),
+              applyMaterialOrderPatchResult(current, result.result),
             );
-            setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+            setSelectedOrderId(result.result.resourceId);
             await refreshWorkOrderCandidates();
             return result;
           },
@@ -394,9 +394,9 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
               supplierPartnerId: nextSupplierPartnerId,
             });
             setOrders((current) =>
-              replaceMaterialOrderInList(current, result.materialOrder),
+              applyMaterialOrderPatchResult(current, result.result),
             );
-            setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+            setSelectedOrderId(result.result.resourceId);
             return result;
           },
           lockKey,
@@ -478,9 +478,9 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
               dueDate: normalizedDueDate || null,
             });
             setOrders((current) =>
-              replaceMaterialOrderInList(current, result.materialOrder),
+              applyMaterialOrderPatchResult(current, result.result),
             );
-            setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
+            setSelectedOrderId(result.result.resourceId);
             return result;
           },
           lockKey,
@@ -545,9 +545,9 @@ export function useMaterialOrderDraftEditor({ isAdmin }: { isAdmin: boolean }) {
             });
 
             setOrders((current) =>
-              replaceMaterialOrderInList(current, result.materialOrder),
+              applyMaterialOrderPatchResult(current, result.result),
             );
-            setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
+            setSelectedOrderId(result.result.resourceId);
             await refreshWorkOrderCandidates();
             return result;
           },

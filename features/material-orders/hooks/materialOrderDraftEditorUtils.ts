@@ -1,5 +1,7 @@
 import type { WorkflowValidationIssue } from "@/lib/workorder/workflowValidationIssues";
 import type { MaterialOrder, MaterialOrderStatus } from "@/lib/material-orders/types";
+import { applyWaflResourcePatch } from "@/lib/mutations/waflResourceState";
+import type { WaflPatchResult } from "@/types/waflMutation";
 import type { MaterialOrderWorkspaceWorkOrderCandidate } from "@/lib/material-orders/materialOrderWorkspaceClient";
 import type { MaterialOrderDraftLine, MaterialOrderDraftSelectionType, MaterialOrderDraftType } from "@/lib/material-orders/materialOrderDraftCalculator";
 
@@ -22,6 +24,17 @@ export type SelectedOrderDetailPayload = {
     }>;
   }>;
 };
+
+
+export function applyMaterialOrderPatchResult(
+  orders: MaterialOrder[],
+  result: WaflPatchResult<Partial<MaterialOrder>>,
+): MaterialOrder[] {
+  return applyWaflResourcePatch(orders, result.resourceId, {
+    ...result.patch,
+    updatedAt: result.updatedAt,
+  });
+}
 
 export function replaceMaterialOrderInList(
   orders: MaterialOrder[],

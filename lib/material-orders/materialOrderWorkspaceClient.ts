@@ -16,6 +16,7 @@ import {
   type MaterialOrderLineItemType,
   type MaterialOrderSupplier,
   type MaterialOrderSupplierListResult,
+  type MaterialOrderPatchMutationResult,
 } from "@/lib/material-orders/types";
 import {
   formatMaterialOrderStatusLabel,
@@ -36,9 +37,7 @@ export type MaterialOrderWorkspaceMutationResult = MaterialOrderWorkspaceListRes
   materialOrder: MaterialOrder | null;
 };
 
-export type MaterialOrderWorkspaceSingleMutationResult = {
-  materialOrder: MaterialOrder | null;
-};
+export type MaterialOrderWorkspaceSingleMutationResult = MaterialOrderPatchMutationResult;
 
 export type MaterialOrderWorkspaceWorkOrderCandidate = {
   id: string;

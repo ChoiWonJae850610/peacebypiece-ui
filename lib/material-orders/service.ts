@@ -14,7 +14,7 @@ import type {
   MaterialOrderHeaderUpdateInput,
   MaterialOrderListResult,
   MaterialOrderMutationResult,
-  MaterialOrderSingleMutationResult,
+  MaterialOrderPatchMutationResult,
   MaterialOrderStatusUpdateInput,
   MaterialOrderSupplierListParams,
   MaterialOrderSupplierListResult,
@@ -51,9 +51,32 @@ export async function createWorkspaceMaterialOrder(
 
 export async function updateWorkspaceMaterialOrderHeader(
   input: MaterialOrderHeaderUpdateInput,
-): Promise<MaterialOrderSingleMutationResult> {
+): Promise<MaterialOrderPatchMutationResult> {
+  const materialOrder = await updateMaterialOrderHeaderForCompany(input);
+  if (!materialOrder) throw new Error("MATERIAL_ORDER_NOT_FOUND_OR_FORBIDDEN");
+
+  const patch: Partial<typeof materialOrder> = {};
+  if (Object.prototype.hasOwnProperty.call(input, "materialType")) {
+    patch.materialType = materialOrder.materialType;
+    patch.supplierPartnerId = materialOrder.supplierPartnerId;
+    patch.supplierPartnerName = materialOrder.supplierPartnerName;
+    patch.totalAmount = materialOrder.totalAmount;
+    patch.lines = materialOrder.lines;
+  }
+  if (Object.prototype.hasOwnProperty.call(input, "supplierPartnerId")) {
+    patch.supplierPartnerId = materialOrder.supplierPartnerId;
+    patch.supplierPartnerName = materialOrder.supplierPartnerName;
+  }
+  if (Object.prototype.hasOwnProperty.call(input, "dueDate")) {
+    patch.dueDate = materialOrder.dueDate;
+  }
+
   return {
-    materialOrder: await updateMaterialOrderHeaderForCompany(input),
+    result: {
+      resourceId: materialOrder.id,
+      patch,
+      updatedAt: materialOrder.updatedAt,
+    },
   };
 }
 
@@ -70,8 +93,20 @@ export async function updateWorkspaceMaterialOrderDetail(
 
 export async function updateWorkspaceMaterialOrderStatus(
   input: MaterialOrderStatusUpdateInput,
-): Promise<MaterialOrderSingleMutationResult> {
+): Promise<MaterialOrderPatchMutationResult> {
+  const materialOrder = await updateMaterialOrderStatusForCompany(input);
+  if (!materialOrder) throw new Error("MATERIAL_ORDER_STATUS_NOT_FOUND_OR_FORBIDDEN");
+
   return {
-    materialOrder: await updateMaterialOrderStatusForCompany(input),
+    result: {
+      resourceId: materialOrder.id,
+      patch: {
+        status: materialOrder.status,
+        workflowPath: materialOrder.workflowPath,
+        approvedByUserId: materialOrder.approvedByUserId,
+        orderedAt: materialOrder.orderedAt,
+      },
+      updatedAt: materialOrder.updatedAt,
+    },
   };
 }
