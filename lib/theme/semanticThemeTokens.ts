@@ -476,7 +476,7 @@ export const PBP_RESPONSIVE_THEME_REGRESSION_CHECKS = {
   ],
   breakpoints: [
     { label: "mobile", width: "360px~430px", checks: ["topbar action overflow", "theme option card tap target", "modal close button fixed visibility"] },
-    { label: "tablet", width: "768px~1024px", checks: ["workorder table horizontal scroll", "summary card wrapping", "modal width and internal scroll"] },
+    { label: "tablet", width: "600px~1279px (방향·짧은 변 기준 workspace mode 적용)", checks: ["workorder table horizontal scroll", "summary card wrapping", "modal width and internal scroll"] },
     { label: "pc", width: "1280px 이상", checks: ["sidebar/list/detail density", "admin card grid balance", "chart/card contrast"] },
   ],
   themes: ["default-light", "beige-atelier", "cold-winter", "black-and-white", "soft-emerald"],

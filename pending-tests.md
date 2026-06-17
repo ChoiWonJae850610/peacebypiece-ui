@@ -188,3 +188,12 @@
 - [ ] iPad Pro 11인치 및 iPad mini 가로에서 2패널과 목록 드로어가 정상 동작하는지 확인
 - [ ] Galaxy Tab 가로 및 분할 화면에서 detail/side 패널이 겹치지 않는지 확인
 - [ ] 브라우저 확대 110%~125%에서 3패널이 좁아질 경우 가로 스크롤로 안전하게 보존되는지 확인
+
+## 0.23.24 반응형 breakpoint 역할 분리 감사
+
+- [ ] 600px 전후에서 요약 카드만 1열/2열로 전환되고 workspace layout mode는 의도치 않게 바뀌지 않는지 확인
+- [ ] 640px 이하에서 토스트가 화면 폭에 맞게 표시되고 641px 이상에서 기존 최대 폭을 유지하는지 확인
+- [ ] 768px 전후에서 모바일 콘텐츠 전환 애니메이션만 변경되고 작업지시서·발주서 패널 모드는 공통 resolver 결과를 따르는지 확인
+- [ ] 1024px 미만 또는 coarse pointer 환경에서 모달 포커스 정책이 기존과 동일한지 확인
+- [ ] 1536px 전후에서 멤버 초대 테이블 액션 표시만 변경되고 workspace 패널 폭에는 영향이 없는지 확인
+- [ ] iPad mini, iPad Pro, Galaxy Tab 회전·분할 화면에서 CSS 내부 breakpoint와 workspace layout breakpoint가 충돌하지 않는지 확인

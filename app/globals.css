@@ -700,6 +700,7 @@ body[data-wafl-component-debug="true"] :where(
   background: color-mix(in srgb, var(--pbp-toast-background) 96%, transparent);
 }
 
+/* Component-only breakpoint: compact toast width. Not a workspace layout boundary. */
 @media (max-width: 640px) {
   [data-sonner-toaster][data-x-position="center"] {
     left: 1rem;
@@ -840,12 +841,14 @@ body[data-wafl-component-debug="true"] :where(
   animation: pbpContentSwitch 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Component-only breakpoint: disable mobile transition at standard tablet content width. */
 @media (min-width: 768px) {
   .pbp-mobile-content-switch {
     animation: none;
   }
 }
 
+/* Component-only breakpoint: compact-tablet modal animation. Workspace mode is resolved in TypeScript. */
 @media (min-width: 600px) {
   .pbp-mobile-sheet-enter {
     animation: pbpFadeIn 160ms ease-out both;
@@ -1394,6 +1397,7 @@ textarea.pbp-field-interaction.pbp-field-selectable {
   }
 }
 
+/* Component-only breakpoint: wide member-table action density. */
 @media (min-width: 1536px) {
   .wafl-member-invite-action-share,
   .wafl-member-invite-action-copy-touch {

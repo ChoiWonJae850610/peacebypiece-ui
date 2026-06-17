@@ -19,6 +19,19 @@ export const RESPONSIVE_BREAKPOINTS = {
   workspacePanelGap: 12,
 } as const;
 
+export const RESPONSIVE_COMPONENT_BREAKPOINTS = {
+  summaryGridSplitMin: 600,
+  toastCompactMax: 640,
+  contentTabletMin: 768,
+  touchModalMaxExclusive: 1024,
+  memberInviteWideMin: 1536,
+} as const;
+
+export const RESPONSIVE_STYLE_CLASSES = {
+  summaryGridTwoColumns: "grid-cols-1 min-[600px]:grid-cols-2",
+  summaryGridThreeColumns: "grid-cols-1 min-[600px]:grid-cols-2 lg:grid-cols-3",
+} as const;
+
 export const RESPONSIVE_MEDIA_QUERIES = {
   mobile: `(max-width: ${RESPONSIVE_BREAKPOINTS.mobileMax}px)`,
   tablet: `(min-width: ${RESPONSIVE_BREAKPOINTS.tabletMin}px) and (max-width: ${RESPONSIVE_BREAKPOINTS.tabletMax}px)`,

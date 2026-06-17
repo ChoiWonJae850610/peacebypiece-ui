@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 
+import { RESPONSIVE_COMPONENT_BREAKPOINTS } from "@/lib/responsive/responsiveLayoutPolicy";
+
 const WAFL_MODAL_PORTAL_ROOT_ID = "wafl-modal-portal-root";
 
 type LockState = {
@@ -65,7 +67,10 @@ export function getWaflModalPortalRoot() {
 
 export function shouldUseTouchModalFocusPolicy() {
   if (typeof window === "undefined") return false;
-  return window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 1024;
+  return (
+    window.matchMedia("(pointer: coarse)").matches ||
+    window.innerWidth < RESPONSIVE_COMPONENT_BREAKPOINTS.touchModalMaxExclusive
+  );
 }
 
 export function blurActiveModalElement() {

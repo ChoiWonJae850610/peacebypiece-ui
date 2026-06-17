@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { RESPONSIVE_STYLE_CLASSES } from "@/lib/responsive/responsiveLayoutPolicy";
 import { cn } from "@/lib/utils";
 
 export type WaflResponsiveSummaryGridProps = {
@@ -17,9 +18,9 @@ export default function WaflResponsiveSummaryGrid({
 }: WaflResponsiveSummaryGridProps) {
   const gridClass = responsive
     ? columns === 3
-      ? "grid-cols-1 min-[600px]:grid-cols-2 lg:grid-cols-3"
+      ? RESPONSIVE_STYLE_CLASSES.summaryGridThreeColumns
       : columns === 2
-        ? "grid-cols-1 min-[600px]:grid-cols-2"
+        ? RESPONSIVE_STYLE_CLASSES.summaryGridTwoColumns
         : "grid-cols-1"
     : columns === 3
       ? "grid-cols-2 sm:grid-cols-3"
