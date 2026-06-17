@@ -257,10 +257,10 @@ export async function updateMaterialOrderHeaderForCompany(
     const current = currentResult.rows[0];
     if (!current) throw new Error("MATERIAL_ORDER_NOT_FOUND_OR_FORBIDDEN");
 
-    const changesHeader =
-      Object.prototype.hasOwnProperty.call(input, "materialType") ||
-      Object.prototype.hasOwnProperty.call(input, "supplierPartnerId") ||
-      Object.prototype.hasOwnProperty.call(input, "dueDate");
+    const hasMaterialType = Object.prototype.hasOwnProperty.call(input, "materialType");
+    const hasSupplierPartnerId = Object.prototype.hasOwnProperty.call(input, "supplierPartnerId");
+    const hasDueDate = Object.prototype.hasOwnProperty.call(input, "dueDate");
+    const changesHeader = hasMaterialType || hasSupplierPartnerId || hasDueDate;
     const headerEditable = canEditMaterialOrderOnServer({
       status: current.status,
       isAdmin: Boolean(input.isAdmin),
@@ -270,46 +270,40 @@ export async function updateMaterialOrderHeaderForCompany(
       throw new Error("MATERIAL_ORDER_HEADER_LOCKED_BY_STATUS");
     }
 
-    const nextMaterialType = Object.prototype.hasOwnProperty.call(input, "materialType")
-      ? input.materialType ?? null
-      : current.material_type;
-    const materialTypeChanged =
-      Object.prototype.hasOwnProperty.call(input, "materialType") &&
-      nextMaterialType !== current.material_type;
+    const nextMaterialType = hasMaterialType ? input.materialType ?? null : current.material_type;
+    const materialTypeChanged = hasMaterialType && nextMaterialType !== current.material_type;
+    const setClauses: string[] = [];
+    const updateValues: unknown[] = [input.companyId, input.materialOrderId];
 
-    const hasSupplierPartnerId = Object.prototype.hasOwnProperty.call(
-      input,
-      "supplierPartnerId",
-    );
-    const hasDueDate = Object.prototype.hasOwnProperty.call(input, "dueDate");
-    const values: unknown[] = [
-      input.companyId,
-      input.materialOrderId,
-      nextMaterialType,
-      hasSupplierPartnerId,
-      normalizeMaterialOrderText(input.supplierPartnerId),
-      hasDueDate,
-      normalizeMaterialOrderText(input.dueDate),
-    ];
+    const pushValue = (value: unknown): string => {
+      updateValues.push(value);
+      return `$${updateValues.length}`;
+    };
 
-    await client.query(
-      `UPDATE material_orders
-       SET material_type = $3,
-           supplier_partner_id = CASE
-             WHEN $4::boolean THEN $5::text
-             WHEN ${materialTypeChanged ? "TRUE" : "FALSE"} THEN NULL
-             ELSE supplier_partner_id
-           END,
-           due_date = CASE
-             WHEN $6::boolean THEN $7::text::date
-             ELSE due_date
-           END,
-           total_amount = CASE WHEN ${materialTypeChanged ? "TRUE" : "FALSE"} THEN 0 ELSE total_amount END,
-           updated_at = now()
-       WHERE company_id = $1
-         AND id = $2`,
-      values,
-    );
+    if (hasMaterialType) {
+      setClauses.push(`material_type = ${pushValue(nextMaterialType)}`);
+      if (materialTypeChanged) {
+        setClauses.push("supplier_partner_id = NULL");
+        setClauses.push("total_amount = 0");
+      }
+    }
+    if (hasSupplierPartnerId) {
+      setClauses.push(`supplier_partner_id = ${pushValue(normalizeMaterialOrderText(input.supplierPartnerId))}`);
+    }
+    if (hasDueDate) {
+      setClauses.push(`due_date = ${pushValue(normalizeMaterialOrderText(input.dueDate))}::text::date`);
+    }
+
+    if (setClauses.length > 0) {
+      setClauses.push("updated_at = now()");
+      await client.query(
+        `UPDATE material_orders
+         SET ${setClauses.join(",\n             ")}
+         WHERE company_id = $1
+           AND id = $2`,
+        updateValues,
+      );
+    }
 
     if (materialTypeChanged) {
       await client.query(
@@ -429,24 +423,39 @@ export async function updateMaterialOrderDetailForCompany(input: MaterialOrderUp
 export async function updateMaterialOrderStatusForCompany(
   input: MaterialOrderStatusUpdateInput,
 ): Promise<MaterialOrder | null> {
-  const approvedByUserId = input.status === MATERIAL_ORDER_STATUS.approved ? input.actorUserId : null;
-  const orderedAtSql = input.status === MATERIAL_ORDER_STATUS.orderPlaced ? "now()" : "ordered_at";
-  const currentOrder = await getMaterialOrderById({
-    companyId: input.companyId,
-    materialOrderId: input.materialOrderId,
-  });
+  const currentValues: unknown[] = [input.companyId, input.materialOrderId];
+  const visibilityPredicate = buildMaterialOrderVisibilityPredicate(
+    input.visibility,
+    currentValues,
+    "requested_by_user_id",
+  );
+  const currentResult = await queryDb<{
+    status: MaterialOrderStatus;
+    workflow_path: MaterialOrder["workflowPath"];
+  }>(
+    `SELECT status, workflow_path
+     FROM material_orders
+     WHERE company_id = $1
+       AND id = $2
+       ${visibilityPredicate}
+     LIMIT 1`,
+    currentValues,
+  );
+  const currentOrder = currentResult.rows[0];
 
   if (!currentOrder) throw new Error("MATERIAL_ORDER_STATUS_NOT_FOUND_OR_FORBIDDEN");
   if (!isMaterialOrderStatusTransitionAllowed(currentOrder.status, input.status)) {
     throw new Error("MATERIAL_ORDER_STATUS_TRANSITION_NOT_ALLOWED");
   }
 
+  const approvedByUserId = input.status === MATERIAL_ORDER_STATUS.approved ? input.actorUserId : null;
+  const orderedAtSql = input.status === MATERIAL_ORDER_STATUS.orderPlaced ? "now()" : "ordered_at";
   const workflowPath =
     input.status === MATERIAL_ORDER_STATUS.approved
-      ? currentOrder?.status === MATERIAL_ORDER_STATUS.draft
+      ? currentOrder.status === MATERIAL_ORDER_STATUS.draft
         ? WORKFLOW_PATH.directOrder
         : WORKFLOW_PATH.standardReview
-      : currentOrder?.workflowPath ?? WORKFLOW_PATH.standardReview;
+      : currentOrder.workflow_path ?? WORKFLOW_PATH.standardReview;
   const updateValues: unknown[] = [
     input.companyId,
     input.materialOrderId,
@@ -454,7 +463,7 @@ export async function updateMaterialOrderStatusForCompany(
     approvedByUserId,
     workflowPath,
   ];
-  const visibilityPredicate = buildMaterialOrderVisibilityPredicate(
+  const updateVisibilityPredicate = buildMaterialOrderVisibilityPredicate(
     input.visibility,
     updateValues,
     "requested_by_user_id",
@@ -469,7 +478,7 @@ export async function updateMaterialOrderStatusForCompany(
          updated_at = now()
      WHERE company_id = $1
        AND id = $2
-       ${visibilityPredicate}
+       ${updateVisibilityPredicate}
      RETURNING id`,
     updateValues,
   );
@@ -481,3 +490,4 @@ export async function updateMaterialOrderStatusForCompany(
     materialOrderId: input.materialOrderId,
   });
 }
+

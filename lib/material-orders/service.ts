@@ -14,6 +14,7 @@ import type {
   MaterialOrderHeaderUpdateInput,
   MaterialOrderListResult,
   MaterialOrderMutationResult,
+  MaterialOrderSingleMutationResult,
   MaterialOrderStatusUpdateInput,
   MaterialOrderSupplierListParams,
   MaterialOrderSupplierListResult,
@@ -50,15 +51,9 @@ export async function createWorkspaceMaterialOrder(
 
 export async function updateWorkspaceMaterialOrderHeader(
   input: MaterialOrderHeaderUpdateInput,
-): Promise<MaterialOrderMutationResult> {
-  const materialOrder = await updateMaterialOrderHeaderForCompany(input);
-
+): Promise<MaterialOrderSingleMutationResult> {
   return {
-    materialOrder,
-    materialOrders: await listMaterialOrdersByCompany({
-      companyId: input.companyId,
-      visibility: input.visibility,
-    }),
+    materialOrder: await updateMaterialOrderHeaderForCompany(input),
   };
 }
 
@@ -75,11 +70,8 @@ export async function updateWorkspaceMaterialOrderDetail(
 
 export async function updateWorkspaceMaterialOrderStatus(
   input: MaterialOrderStatusUpdateInput,
-): Promise<MaterialOrderMutationResult> {
-  const materialOrder = await updateMaterialOrderStatusForCompany(input);
-
+): Promise<MaterialOrderSingleMutationResult> {
   return {
-    materialOrder,
-    materialOrders: await listMaterialOrdersByCompany({ companyId: input.companyId, visibility: input.visibility }),
+    materialOrder: await updateMaterialOrderStatusForCompany(input),
   };
 }

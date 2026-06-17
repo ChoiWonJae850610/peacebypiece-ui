@@ -13,8 +13,6 @@ import {
   readWaflJsonBody,
 } from "@/lib/api/waflApiServer";
 import { isCompanyAdminSessionRole } from "@/lib/constants/sessionRoles";
-import { getMaterialOrderById } from "@/lib/material-orders/repository";
-import { isAllowedMaterialOrderTransition } from "@/lib/material-orders/serverPolicy";
 import {
   isMaterialOrderStatus,
   normalizeMaterialOrderLineItemType,
@@ -209,29 +207,6 @@ export async function PATCH(request: NextRequest) {
         "발주서와 변경할 상태를 확인해주세요.",
         "MATERIAL_ORDER_STATUS_PAYLOAD_REQUIRED",
         400,
-      );
-    }
-
-    const currentOrder = await getMaterialOrderById({
-      companyId: guard.scope.companyId,
-      materialOrderId,
-    });
-    if (!currentOrder) {
-      return createWaflApiError(
-        "발주서를 찾을 수 없습니다.",
-        "MATERIAL_ORDER_NOT_FOUND",
-        404,
-      );
-    }
-
-    if (!isAllowedMaterialOrderTransition({
-      previous: currentOrder.status,
-      next: status,
-    })) {
-      return createWaflApiError(
-        "현재 단계에서는 요청한 상태로 변경할 수 없습니다.",
-        "MATERIAL_ORDER_STATUS_TRANSITION_NOT_ALLOWED",
-        409,
       );
     }
 

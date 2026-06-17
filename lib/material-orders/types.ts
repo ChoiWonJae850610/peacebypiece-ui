@@ -167,3 +167,7 @@ export type MaterialOrderListResult = {
 export type MaterialOrderMutationResult = MaterialOrderListResult & {
   materialOrder: MaterialOrder | null;
 };
+
+export type MaterialOrderSingleMutationResult = {
+  materialOrder: MaterialOrder | null;
+};

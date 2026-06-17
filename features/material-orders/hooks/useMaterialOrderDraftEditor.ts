@@ -35,6 +35,7 @@ import {
   createDraftLineFromMaterial,
   getMaterialOrderStatusValidationIssues,
   mapSelectedOrderToDraftLines,
+  replaceMaterialOrderInList,
   type PendingMaterialOrderStatusValidation,
   type SelectedOrderDetailPayload,
 } from "@/features/material-orders/hooks/materialOrderDraftEditorUtils";
@@ -279,7 +280,7 @@ export function useMaterialOrderDraftEditor({
           materialType: nextMaterialType,
           supplierPartnerId: null,
         });
-        setOrders(result.materialOrders);
+        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         await refreshWorkOrderCandidates();
         showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderMaterialType, "changed");
@@ -354,7 +355,7 @@ export function useMaterialOrderDraftEditor({
           materialOrderId: selectedOrder.id,
           supplierPartnerId: nextSupplierPartnerId,
         });
-        setOrders(result.materialOrders);
+        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderSupplier, "changed");
       } catch (error) {
@@ -422,7 +423,7 @@ export function useMaterialOrderDraftEditor({
           dueDate: normalizedDueDate || null,
         });
 
-        setOrders(result.materialOrders);
+        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderDueDate, "changed");
       } catch (error) {
@@ -471,7 +472,7 @@ export function useMaterialOrderDraftEditor({
           status,
         });
 
-        setOrders(result.materialOrders);
+        setOrders((current) => replaceMaterialOrderInList(current, result.materialOrder));
         setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
         await refreshWorkOrderCandidates();
         showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderStatus, "changed");
@@ -547,8 +548,8 @@ export function useMaterialOrderDraftEditor({
       showStatusToast("발주서를 삭제하는 중입니다.", "loading");
 
       try {
-        const result = await cancelMaterialOrder({ materialOrderId });
-        setOrders(result.materialOrders);
+        await cancelMaterialOrder({ materialOrderId });
+        setOrders((current) => current.filter((order) => order.id !== materialOrderId));
         setSelectedOrderId((currentSelectedOrderId) =>
           currentSelectedOrderId === materialOrderId ? "" : currentSelectedOrderId,
         );

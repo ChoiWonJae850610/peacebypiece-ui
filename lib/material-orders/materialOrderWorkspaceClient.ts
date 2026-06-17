@@ -36,6 +36,10 @@ export type MaterialOrderWorkspaceMutationResult = MaterialOrderWorkspaceListRes
   materialOrder: MaterialOrder | null;
 };
 
+export type MaterialOrderWorkspaceSingleMutationResult = {
+  materialOrder: MaterialOrder | null;
+};
+
 export type MaterialOrderWorkspaceWorkOrderCandidate = {
   id: string;
   code: string;
@@ -166,8 +170,8 @@ export async function updateMaterialOrderHeader(input: {
   materialType?: MaterialOrderLineItemType | null;
   supplierPartnerId?: string | null;
   dueDate?: string | null;
-}): Promise<MaterialOrderWorkspaceMutationResult> {
-  return waflApiRequest<MaterialOrderWorkspaceMutationResult>(
+}): Promise<MaterialOrderWorkspaceSingleMutationResult> {
+  return waflApiRequest<MaterialOrderWorkspaceSingleMutationResult>(
     "/api/material-orders",
     {
       method: "PUT",
@@ -205,8 +209,8 @@ export async function updateMaterialOrderDetail(input: {
 export async function updateMaterialOrderStatus(input: {
   materialOrderId: string;
   status: MaterialOrder["status"];
-}): Promise<MaterialOrderWorkspaceMutationResult> {
-  return waflApiRequest<MaterialOrderWorkspaceMutationResult>(
+}): Promise<MaterialOrderWorkspaceSingleMutationResult> {
+  return waflApiRequest<MaterialOrderWorkspaceSingleMutationResult>(
     "/api/material-orders",
     {
       method: "PATCH",

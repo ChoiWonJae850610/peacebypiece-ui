@@ -23,6 +23,20 @@ export type SelectedOrderDetailPayload = {
   }>;
 };
 
+export function replaceMaterialOrderInList(
+  orders: MaterialOrder[],
+  updatedOrder: MaterialOrder | null,
+): MaterialOrder[] {
+  if (!updatedOrder) return orders;
+  let replaced = false;
+  const nextOrders = orders.map((order) => {
+    if (order.id !== updatedOrder.id) return order;
+    replaced = true;
+    return updatedOrder;
+  });
+  return replaced ? nextOrders : [updatedOrder, ...nextOrders];
+}
+
 export function getMaterialOrderStatusValidationIssues({
   materialType,
   supplierPartnerId,
