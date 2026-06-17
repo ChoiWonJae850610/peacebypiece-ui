@@ -19,6 +19,7 @@ export type WorkspaceLayoutState = {
   layoutMode: WorkspaceLayoutMode;
   drawerOverlayPresentation: WorkspaceOverlayPresentation;
   useDrawerNavigation: boolean;
+  showListTrigger: boolean;
   useTabletTwoPanel: boolean;
   useThreePanel: boolean;
   useStackedProgress: boolean;
@@ -77,6 +78,7 @@ export function resolveWorkspaceLayout(
     layoutMode,
     drawerOverlayPresentation: hasTabletCanvas ? "modal" : "sheet",
     useDrawerNavigation: layoutMode === "drawer",
+    showListTrigger: layoutMode !== "threePanel",
     useTabletTwoPanel,
     useThreePanel,
     useStackedProgress: layoutMode === "drawer",

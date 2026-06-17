@@ -36,6 +36,7 @@ export default function MaterialOrderDraftEditor({
   const {
     drawerOverlayPresentation,
     useDrawerNavigation,
+    showListTrigger,
     useStackedProgress,
     useTabletTwoPanel,
     useThreePanel,
@@ -106,6 +107,12 @@ export default function MaterialOrderDraftEditor({
     }
   }, [materialOrderLineAddModal.open, setMobileToolSheetOpen]);
 
+  useEffect(() => {
+    if (!showListTrigger) {
+      setMobileOrderListDrawerOpen(false);
+    }
+  }, [showListTrigger]);
+
   const handleAddMaterialToOrder = (
     ...args: Parameters<typeof addWorkOrderMaterialLine>
   ) => {
@@ -120,8 +127,6 @@ export default function MaterialOrderDraftEditor({
     });
   };
 
-  const canOpenOrderListDrawer = useDrawerNavigation || useTabletTwoPanel;
-
   const topbar = (
     <AdminTopbar
       companyName={companyName || "WAFL"}
@@ -129,7 +134,7 @@ export default function MaterialOrderDraftEditor({
       title="원단·부자재"
       description="작업지시서의 자재 발주 대기 항목을 공급처별 발주서로 묶고, 발주 상태와 잔여 자재를 확인합니다."
       onOpenMenu={
-        canOpenOrderListDrawer
+        showListTrigger
           ? () => setMobileOrderListDrawerOpen(true)
           : undefined
       }
