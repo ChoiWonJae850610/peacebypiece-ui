@@ -237,8 +237,38 @@ export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "lastSavedAt"> &
     serviceCode?: WorkOrderServiceCodeValue | null;
   };
 
-export type WorkOrderStatePatchResult = WorkOrderStatePatch &
-  Partial<Pick<WorkOrder, "hasDetailSnapshot">>;
+export type WorkOrderStatePatchPayload = Partial<Pick<WorkOrder,
+    | "lastSavedAt"
+    | "workflowState"
+    | "workflowPath"
+    | "title"
+    | "displayTitle"
+    | "baseTitle"
+    | "workOrderKind"
+    | "category1"
+    | "category2"
+    | "category3"
+    | "category1Id"
+    | "category2Id"
+    | "category3Id"
+    | "season"
+    | "manager"
+    | "managerId"
+    | "dueDate"
+    | "quantity"
+    | "inventoryQuantity"
+    | "inventoryStatus"
+    | "factoryOrderRequest"
+    | "orderEntries"
+    | "materials"
+    | "outsourcing"
+    | "rejectionReason"
+    | "rejectedAt"
+    | "rejectedByUserId"
+    | "rejectedByName"
+  >> & Partial<Pick<WorkOrder, "hasDetailSnapshot">>;
+
+export type WorkOrderStatePatchResult = import("@/types/waflMutation").WaflPatchResult<WorkOrderStatePatchPayload>;
 
 export type HistoryDetailLine = {
   label?: string;

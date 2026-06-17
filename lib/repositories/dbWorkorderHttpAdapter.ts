@@ -45,7 +45,8 @@ type WorkOrderDetailLoadResponse = {
 };
 
 type WorkOrderStatePatchResponse = {
-  patch?: WorkOrderStatePatchResult;
+  result?: WorkOrderStatePatchResult;
+  patch?: WorkOrderStatePatchResult["patch"];
   workOrder?: WorkOrder;
   error?: string;
   message?: string;
@@ -196,7 +197,7 @@ async function loadWorkOrderDetailFromApi(
 
 async function saveWorkOrderStatePatchToApi(
   patch: WorkOrderStatePatch,
-): Promise<WorkOrder> {
+): Promise<WorkOrderStatePatchResult> {
   const response = await fetch(
     `/api/workorders/${encodeURIComponent(patch.id)}`,
     {
@@ -211,15 +212,24 @@ async function saveWorkOrderStatePatchToApi(
 
   const result = await parseResponse<WorkOrderStatePatchResponse>(response);
 
+  if (result.result) {
+    return result.result;
+  }
+
   if (result.patch) {
     return {
-      ...patch,
-      ...result.patch,
-    } as WorkOrder;
+      resourceId: patch.id,
+      patch: result.patch,
+      updatedAt: result.patch.lastSavedAt ?? patch.lastSavedAt,
+    };
   }
 
   if (result.workOrder) {
-    return result.workOrder;
+    return {
+      resourceId: result.workOrder.id,
+      patch: result.workOrder,
+      updatedAt: result.workOrder.lastSavedAt,
+    };
   }
 
   const emptyBodyError = new Error(

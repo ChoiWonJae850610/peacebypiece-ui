@@ -5,7 +5,8 @@ import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/se
 import { normalizeProductionCompositionForWorkflowSnapshot } from "@/lib/workorder/productionCompositionSnapshot";
 import { mergePersistedWorkOrderPreservingLocalDraft } from "@/lib/workorder/workOrderDraftMerge";
 import { markWorkOrderDetailSnapshot } from "@/lib/workorder/workOrderHydration";
-import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
+import { applyWaflPatchResult } from "@/lib/mutations/waflPatchResult";
+import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch, WorkOrderStatePatchResult } from "@/types/workorder";
 
 function stampPersistedWorkOrder(workOrder: WorkOrder): WorkOrder {
   return { ...workOrder, lastSavedAt: new Date().toISOString() };
@@ -66,67 +67,20 @@ export async function persistCreatedWorkOrderWithHistory(
 
 function mergeStatePatchResultIntoWorkOrder(
   currentWorkOrder: WorkOrder,
-  savedPatch: WorkOrder,
+  savedResult: WorkOrderStatePatchResult,
   requestedPatch: WorkOrderStatePatch,
 ): WorkOrder {
-  const hasRequestedField = (field: keyof WorkOrderStatePatch): boolean =>
-    Object.prototype.hasOwnProperty.call(requestedPatch, field);
-  const hasFactoryOrderRequestPatch = hasRequestedField("factoryOrderRequest");
-  const hasOrderEntriesPatch = hasRequestedField("orderEntries");
-  const hasMaterialsPatch = hasRequestedField("materials");
-  const hasOutsourcingPatch = hasRequestedField("outsourcing");
+  const allowedKeys = Object.keys(requestedPatch).filter(
+    (key) => key !== "id" && key !== "auditActor" && key !== "serviceCode",
+  ) as (keyof WorkOrder)[];
+  const merged = applyWaflPatchResult(
+    currentWorkOrder,
+    savedResult as WorkOrderStatePatchResult & { patch: Partial<WorkOrder> },
+    { allowedKeys, updatedAtKey: "lastSavedAt" },
+  );
 
   return {
-    ...currentWorkOrder,
-    workflowState: hasRequestedField("workflowState")
-      ? (savedPatch.workflowState ?? currentWorkOrder.workflowState)
-      : currentWorkOrder.workflowState,
-    lastSavedAt: savedPatch.lastSavedAt ?? currentWorkOrder.lastSavedAt,
-    title: hasRequestedField("title") ? savedPatch.title : currentWorkOrder.title,
-    displayTitle: hasRequestedField("displayTitle") ? savedPatch.displayTitle : currentWorkOrder.displayTitle,
-    baseTitle: hasRequestedField("baseTitle") ? savedPatch.baseTitle : currentWorkOrder.baseTitle,
-    workOrderKind: hasRequestedField("workOrderKind") ? savedPatch.workOrderKind : currentWorkOrder.workOrderKind,
-    category1: hasRequestedField("category1") ? savedPatch.category1 : currentWorkOrder.category1,
-    category2: hasRequestedField("category2") ? savedPatch.category2 : currentWorkOrder.category2,
-    category3: hasRequestedField("category3") ? savedPatch.category3 : currentWorkOrder.category3,
-    category1Id: hasRequestedField("category1Id") ? savedPatch.category1Id : currentWorkOrder.category1Id,
-    category2Id: hasRequestedField("category2Id") ? savedPatch.category2Id : currentWorkOrder.category2Id,
-    category3Id: hasRequestedField("category3Id") ? savedPatch.category3Id : currentWorkOrder.category3Id,
-    season: hasRequestedField("season") ? savedPatch.season : currentWorkOrder.season,
-    manager: hasRequestedField("manager") ? savedPatch.manager : currentWorkOrder.manager,
-    managerId: hasRequestedField("managerId") ? savedPatch.managerId : currentWorkOrder.managerId,
-    dueDate: hasRequestedField("dueDate") ? savedPatch.dueDate : currentWorkOrder.dueDate,
-    quantity: hasRequestedField("quantity") ? savedPatch.quantity : currentWorkOrder.quantity,
-    inventoryQuantity: hasRequestedField("inventoryQuantity")
-      ? savedPatch.inventoryQuantity
-      : currentWorkOrder.inventoryQuantity,
-    inventoryStatus: hasRequestedField("inventoryStatus")
-      ? savedPatch.inventoryStatus
-      : currentWorkOrder.inventoryStatus,
-    factoryOrderRequest: hasFactoryOrderRequestPatch
-      ? (savedPatch.factoryOrderRequest ?? null)
-      : currentWorkOrder.factoryOrderRequest,
-    orderEntries: hasOrderEntriesPatch && Array.isArray(savedPatch.orderEntries)
-      ? savedPatch.orderEntries
-      : currentWorkOrder.orderEntries,
-    materials: hasMaterialsPatch && Array.isArray(savedPatch.materials)
-      ? savedPatch.materials
-      : currentWorkOrder.materials,
-    outsourcing: hasOutsourcingPatch && Array.isArray(savedPatch.outsourcing)
-      ? savedPatch.outsourcing
-      : currentWorkOrder.outsourcing,
-    rejectionReason: hasRequestedField("rejectionReason")
-      ? (savedPatch.rejectionReason ?? null)
-      : currentWorkOrder.rejectionReason,
-    rejectedAt: hasRequestedField("rejectedAt")
-      ? (savedPatch.rejectedAt ?? null)
-      : currentWorkOrder.rejectedAt,
-    rejectedByUserId: hasRequestedField("rejectedByUserId")
-      ? (savedPatch.rejectedByUserId ?? null)
-      : currentWorkOrder.rejectedByUserId,
-    rejectedByName: hasRequestedField("rejectedByName")
-      ? (savedPatch.rejectedByName ?? null)
-      : currentWorkOrder.rejectedByName,
+    ...merged,
     hasDetailSnapshot: currentWorkOrder.hasDetailSnapshot,
   };
 }

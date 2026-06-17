@@ -978,35 +978,61 @@ export async function handlePatchWorkOrderState(
       },
     );
 
-    const patchResult: WorkOrderStatePatchResult = {
-      id: savedWorkOrder.id,
-      workflowState: savedWorkOrder.workflowState,
+    const patchPayload: WorkOrderStatePatchResult["patch"] = {
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "workflowState")
+        ? { workflowState: savedWorkOrder.workflowState }
+        : {}),
       lastSavedAt: savedWorkOrder.lastSavedAt,
-      title: savedWorkOrder.title,
-      displayTitle: savedWorkOrder.displayTitle,
-      baseTitle: savedWorkOrder.baseTitle,
-      workOrderKind: savedWorkOrder.workOrderKind,
-      category1: savedWorkOrder.category1,
-      category2: savedWorkOrder.category2,
-      category3: savedWorkOrder.category3,
-      category1Id: savedWorkOrder.category1Id,
-      category2Id: savedWorkOrder.category2Id,
-      category3Id: savedWorkOrder.category3Id,
-      season: savedWorkOrder.season,
-      manager: savedWorkOrder.manager,
-      managerId: savedWorkOrder.managerId,
-      dueDate: savedWorkOrder.dueDate,
-      quantity: savedWorkOrder.quantity,
-      inventoryQuantity: savedWorkOrder.inventoryQuantity,
-      inventoryStatus: savedWorkOrder.inventoryStatus,
-      factoryOrderRequest: savedWorkOrder.factoryOrderRequest ?? null,
-      orderEntries: savedWorkOrder.orderEntries ?? [],
-      materials: savedWorkOrder.materials ?? [],
-      outsourcing: savedWorkOrder.outsourcing ?? [],
-      rejectionReason: savedWorkOrder.rejectionReason ?? null,
-      rejectedAt: savedWorkOrder.rejectedAt ?? null,
-      rejectedByUserId: savedWorkOrder.rejectedByUserId ?? null,
-      rejectedByName: savedWorkOrder.rejectedByName ?? null,
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "title") ? { title: savedWorkOrder.title } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "displayTitle") ? { displayTitle: savedWorkOrder.displayTitle } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "baseTitle") ? { baseTitle: savedWorkOrder.baseTitle } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "workOrderKind") ? { workOrderKind: savedWorkOrder.workOrderKind } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "category1") ? { category1: savedWorkOrder.category1 } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "category2") ? { category2: savedWorkOrder.category2 } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "category3") ? { category3: savedWorkOrder.category3 } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "category1Id") ? { category1Id: savedWorkOrder.category1Id } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "category2Id") ? { category2Id: savedWorkOrder.category2Id } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "category3Id") ? { category3Id: savedWorkOrder.category3Id } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "season") ? { season: savedWorkOrder.season } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "manager") ? { manager: savedWorkOrder.manager } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "managerId") ? { managerId: savedWorkOrder.managerId } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "dueDate") ? { dueDate: savedWorkOrder.dueDate } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "quantity") ? { quantity: savedWorkOrder.quantity } : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "inventoryQuantity")
+        ? { inventoryQuantity: savedWorkOrder.inventoryQuantity }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "inventoryStatus")
+        ? { inventoryStatus: savedWorkOrder.inventoryStatus }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "factoryOrderRequest")
+        ? { factoryOrderRequest: savedWorkOrder.factoryOrderRequest ?? null }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "orderEntries")
+        ? { orderEntries: savedWorkOrder.orderEntries ?? [] }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "materials")
+        ? { materials: savedWorkOrder.materials ?? [] }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "outsourcing")
+        ? { outsourcing: savedWorkOrder.outsourcing ?? [] }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "rejectionReason")
+        ? { rejectionReason: savedWorkOrder.rejectionReason ?? null }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedAt")
+        ? { rejectedAt: savedWorkOrder.rejectedAt ?? null }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedByUserId")
+        ? { rejectedByUserId: savedWorkOrder.rejectedByUserId ?? null }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(guardedPatch, "rejectedByName")
+        ? { rejectedByName: savedWorkOrder.rejectedByName ?? null }
+        : {}),
+    };
+    const patchResult: WorkOrderStatePatchResult = {
+      resourceId: savedWorkOrder.id,
+      patch: patchPayload,
+      updatedAt: savedWorkOrder.lastSavedAt,
     };
 
     logDbRequestOutcome(
@@ -1019,7 +1045,7 @@ export async function handlePatchWorkOrderState(
     traceWaflResult("workorders.statePatch", "success", { workOrderId: savedWorkOrder.id });
 
     return NextResponse.json({
-      patch: patchResult,
+      result: patchResult,
       meta: { mode: "state-patch", hydrated: false, serviceCode },
     });
   } catch (error) {
