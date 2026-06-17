@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { WaflDocumentField, useWaflToastOperation } from "@/components/common/ui";
+import {
+  WAFL_SAVE_TARGET,
+  WaflDocumentField,
+  getWaflSaveFeedbackMessage,
+  useWaflToastOperation,
+} from "@/components/common/ui";
 import ToastMessage from "@/components/common/ToastMessage";
 import {
   fetchWorkOrderFactoryInstruction,
@@ -86,7 +91,10 @@ export default function WorkOrderFactoryInstructionPanel({
     saveInFlightRef.current = true;
     setSaveStatus("saving");
     setErrorMessage(null);
-    showOperationToast("공장 전달사항을 저장하는 중입니다.", "loading");
+    showOperationToast(
+      getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.factoryInstruction, "saving"),
+      "loading",
+    );
     try {
       const saved = await patchWorkOrderFactoryInstruction(workOrderId, {
         content: draft,
@@ -95,9 +103,14 @@ export default function WorkOrderFactoryInstructionPanel({
       setInstruction(saved);
       setDraft(saved.content);
       setSaveStatus("saved");
-      showOperationToast("공장 전달사항을 저장했습니다.", "success");
+      showOperationToast(
+        getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.factoryInstruction, "saved"),
+        "success",
+      );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "공장 전달사항을 저장하지 못했습니다.";
+      const message = error instanceof Error
+        ? error.message
+        : getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.factoryInstruction, "error");
       setErrorMessage(message);
       setSaveStatus("error");
       showOperationToast(message, "danger");
