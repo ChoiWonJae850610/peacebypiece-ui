@@ -13,9 +13,9 @@ type WaflSaveStatusProps = {
 
 const DEFAULT_MESSAGE: Record<Exclude<WaflSaveStatusValue, "idle">, string> = {
   dirty: "저장되지 않은 변경사항이 있습니다.",
-  saving: "저장 중입니다...",
-  saved: "저장되었습니다.",
-  error: "저장하지 못했습니다.",
+  saving: "변경 중입니다...",
+  saved: "정보가 변경되었습니다.",
+  error: "정보를 변경하지 못했습니다.",
 };
 
 export default function WaflSaveStatus({

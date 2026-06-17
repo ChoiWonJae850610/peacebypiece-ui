@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  WAFL_SAVE_TARGET,
+  WAFL_CHANGE_TARGET,
   WaflDocumentField,
-  getWaflSaveFeedbackMessage,
+  getWaflChangeFeedbackMessage,
   useWaflToastOperation,
 } from "@/components/common/ui";
 import ToastMessage from "@/components/common/ToastMessage";
@@ -92,7 +92,7 @@ export default function WorkOrderFactoryInstructionPanel({
     setSaveStatus("saving");
     setErrorMessage(null);
     showOperationToast(
-      getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.factoryInstruction, "saving"),
+      getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.factoryInstruction, "changing"),
       "loading",
     );
     try {
@@ -104,13 +104,13 @@ export default function WorkOrderFactoryInstructionPanel({
       setDraft(saved.content);
       setSaveStatus("saved");
       showOperationToast(
-        getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.factoryInstruction, "saved"),
+        getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.factoryInstruction, "changed"),
         "success",
       );
     } catch (error) {
       const message = error instanceof Error
         ? error.message
-        : getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.factoryInstruction, "error");
+        : getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.factoryInstruction, "error");
       setErrorMessage(message);
       setSaveStatus("error");
       showOperationToast(message, "danger");

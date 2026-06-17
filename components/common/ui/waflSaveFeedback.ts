@@ -40,26 +40,3 @@ export function getWaflChangeFeedbackMessage(
   if (status === "changed") return "정보가 변경되었습니다.";
   return "정보를 변경하지 못했습니다.";
 }
-
-// 기존 호출부가 단계적으로 이관될 때까지 호환성을 유지한다.
-export const WAFL_SAVE_TARGET = {
-  workOrder: WAFL_CHANGE_TARGET.workOrder,
-  dueDate: WAFL_CHANGE_TARGET.materialOrderDueDate,
-  materialType: WAFL_CHANGE_TARGET.materialOrderMaterialType,
-  supplier: WAFL_CHANGE_TARGET.materialOrderSupplier,
-  factoryInstruction: WAFL_CHANGE_TARGET.factoryInstruction,
-} as const;
-
-export type WaflSaveTarget =
-  (typeof WAFL_SAVE_TARGET)[keyof typeof WAFL_SAVE_TARGET];
-export type WaflSaveFeedbackStatus = "saving" | "saved" | "error";
-
-export function getWaflSaveFeedbackMessage(
-  target: WaflSaveTarget,
-  status: WaflSaveFeedbackStatus,
-): string {
-  return getWaflChangeFeedbackMessage(
-    target,
-    status === "saving" ? "changing" : status === "saved" ? "changed" : "error",
-  );
-}

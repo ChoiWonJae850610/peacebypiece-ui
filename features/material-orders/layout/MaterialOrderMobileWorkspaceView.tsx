@@ -81,7 +81,7 @@ export default function MaterialOrderMobileWorkspaceView({
             titleId="material-order-mobile-drawer-title"
             showHeader={false}
           >
-            <div className="min-h-[72dvh] min-w-0">{list}</div>
+            <div className="h-full min-h-0 min-w-0">{list}</div>
           </WaflMobileListDrawer>
         )}
         detail={detail}
