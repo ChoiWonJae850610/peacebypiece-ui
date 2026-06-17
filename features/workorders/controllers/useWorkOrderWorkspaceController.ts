@@ -111,7 +111,7 @@ export function useWorkOrderWorkspaceController({
   const runWithWorkspaceWriteLock = async <T,>(
     message: string,
     task: () => T | Promise<T>,
-    changeFeedback?: { target: WaflChangeTarget; operationId: string },
+    changeFeedback?: { target: WaflChangeTarget; operationId: string; lockKey?: string },
   ) => {
     if (workspaceWriteLockRef.current || isWorkspaceWriteLocked) {
       traceWaflResult("workorder.workspace.writeLock", "skip", { reason: "locked" });
@@ -127,6 +127,7 @@ export function useWorkOrderWorkspaceController({
             changeFeedback.target,
             changeFeedback.operationId,
             task,
+            changeFeedback.lockKey,
           )
         : await Promise.resolve(task());
       traceWaflResult("workorder.workspace.writeLock", "success");
@@ -459,6 +460,7 @@ export function useWorkOrderWorkspaceController({
         {
           target,
           operationId: `workorder:${selection.selectedId}:immediate:${target}`,
+          lockKey: `workorder:${selection.selectedId}`,
         },
       );
     },
@@ -469,6 +471,7 @@ export function useWorkOrderWorkspaceController({
         {
           target: WAFL_CHANGE_TARGET.workOrderTitle,
           operationId: `workorder:${selection.selectedId}:title`,
+          lockKey: `workorder:${selection.selectedId}`,
         },
       );
     },
@@ -485,6 +488,7 @@ export function useWorkOrderWorkspaceController({
         {
           target: WAFL_CHANGE_TARGET.workOrderInventory,
           operationId: `workorder:${selection.selectedId}:inventory`,
+          lockKey: `workorder:${selection.selectedId}`,
         },
       );
     },
@@ -507,6 +511,7 @@ export function useWorkOrderWorkspaceController({
         {
           target: WAFL_CHANGE_TARGET.workOrderManager,
           operationId: `workorder:${selection.selectedId}:manager`,
+          lockKey: `workorder:${selection.selectedId}`,
         },
       );
     },

@@ -15,6 +15,7 @@ export const WORKORDER_IMMEDIATE_DB_FIELDS = [
   "inventoryQuantity",
   "inventoryStatus",
   "dueDate",
+  "quantity",
   "lastSavedAt",
 ] as const satisfies readonly (keyof WorkOrder)[];
 
@@ -23,7 +24,6 @@ export const WORKORDER_DRAFT_ONLY_DB_FIELDS = [
   "workOrderKind",
   "priority",
   "vendor",
-  "quantity",
   "laborCost",
   "lossCost",
   "orderEntries",
@@ -63,6 +63,7 @@ export function getDraftComparableWorkOrder(workOrder: WorkOrder | null | undefi
     inventoryQuantity: _inventoryQuantity,
     inventoryStatus: _inventoryStatus,
     dueDate: _dueDate,
+    quantity: _quantity,
     lastSavedAt: _lastSavedAt,
     ...draftComparable
   } = workOrder;

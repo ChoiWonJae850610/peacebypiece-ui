@@ -17,11 +17,9 @@ export function useWorkOrderAdminActions({
   currentUser,
   setUsers,
   setWorkOrders,
-  persistedWorkOrders,
   setPersistedWorkOrders,
   setHistoryLogs,
   setSaveStatus,
-  setToastMessage,
   setManagerAssignModalOpen,
 }: AdminActionBaseParams) {
   const { i18n } = useI18n();
@@ -56,7 +54,7 @@ export function useWorkOrderAdminActions({
   }, [setManagerAssignModalOpen]);
 
   const handleChangeManager = useCallback(
-    ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked, currentWorkflowState }: ChangeManagerInput) => {
+    async ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked, currentWorkflowState }: ChangeManagerInput) => {
       const reviewLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, true);
       const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? DEFAULT_WORKFLOW_STATE, reviewLocked);
       if (!canChangeManager || !canEditManager) return;
@@ -78,41 +76,50 @@ export function useWorkOrderAdminActions({
         return;
       }
 
-      const persistedBaseWorkOrder = persistedWorkOrders.find((item) => item.id === workOrder.id) ?? workOrder;
-      const nextPersistableWorkOrder = mergeImmediateDbFields(persistedBaseWorkOrder, result.nextWorkOrder, [
+      const nextPersistableWorkOrder = mergeImmediateDbFields(workOrder, result.nextWorkOrder, [
         "managerId",
         "manager",
         "workflowState",
       ]);
       setSaveStatus("saving");
-      void persistImmediateWorkOrderPatchWithHistory(repository, {
-        workOrder: nextPersistableWorkOrder,
-        patch: {
-          managerId: nextPersistableWorkOrder.managerId,
-          manager: nextPersistableWorkOrder.manager,
-          workflowState: nextPersistableWorkOrder.workflowState,
-        },
-        historyLogs: result.historyLogs,
-        auditActor: currentUser,
-        serviceCode: WORKORDER_SERVICE_CODE.assigneeImmediateSave,
-      }).then((persistedWorkOrder) => {
+
+      try {
+        const persistedWorkOrder = await persistImmediateWorkOrderPatchWithHistory(repository, {
+          workOrder: nextPersistableWorkOrder,
+          patch: {
+            managerId: nextPersistableWorkOrder.managerId,
+            manager: nextPersistableWorkOrder.manager,
+            workflowState: nextPersistableWorkOrder.workflowState,
+          },
+          historyLogs: result.historyLogs,
+          auditActor: currentUser,
+          serviceCode: WORKORDER_SERVICE_CODE.assigneeImmediateSave,
+        });
+
         setPersistedWorkOrders((prev) => replaceWorkOrderById(prev, workOrder.id, persistedWorkOrder));
         setWorkOrders((prev) => prev.map((item) => (
           item.id === workOrder.id
-            ? { ...item, managerId: persistedWorkOrder.managerId, manager: persistedWorkOrder.manager, workflowState: persistedWorkOrder.workflowState, lastSavedAt: persistedWorkOrder.lastSavedAt }
+            ? {
+                ...item,
+                managerId: persistedWorkOrder.managerId,
+                manager: persistedWorkOrder.manager,
+                workflowState: persistedWorkOrder.workflowState,
+                lastSavedAt: persistedWorkOrder.lastSavedAt,
+              }
             : item
         )));
+        if (result.historyLogs?.length) {
+          setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+        }
         setSaveStatus("saved");
-      });
-      if (result.historyLogs?.length) {
-        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+        setManagerAssignModalOpen(false);
+        return persistedWorkOrder;
+      } catch (error) {
+        setSaveStatus("dirty");
+        throw error;
       }
-      if (result.toastMessage) {
-        setToastMessage(result.toastMessage);
-      }
-      setManagerAssignModalOpen(false);
     },
-    [actionFlowText, currentUser, currentUser.name, historyText, persistedWorkOrders, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
+    [actionFlowText, currentUser, currentUser.name, historyText, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setWorkOrders, workflowStateLabels],
   );
 
   return {
