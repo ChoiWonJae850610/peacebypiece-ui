@@ -38,7 +38,8 @@ import {
   type PendingMaterialOrderStatusValidation,
   type SelectedOrderDetailPayload,
 } from "@/features/material-orders/hooks/materialOrderDraftEditorUtils";
-import { WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, useWaflToastOperation, type WaflSaveFeedbackStatus, type WaflSaveTarget } from "@/components/common/ui";
+import { WAFL_CHANGE_TARGET, getWaflChangeFeedbackMessage } from "@/components/common/ui";
+import { useMaterialOrderFeedback } from "@/features/material-orders/hooks/useMaterialOrderFeedback";
 
 export function useMaterialOrderDraftEditor({
   isAdmin,
@@ -56,18 +57,8 @@ export function useMaterialOrderDraftEditor({
     operation: statusToastOperation,
     showOperationToast: showStatusToast,
     clearOperationToast: clearStatusToast,
-  } = useWaflToastOperation("material-order-operation");
-  const showHeaderSaveFeedback = useCallback(
-    (
-      target: WaflSaveTarget,
-      status: WaflSaveFeedbackStatus,
-      message?: string,
-    ) => {
-      const tone = status === "saving" ? "loading" : status === "saved" ? "success" : "danger";
-      showStatusToast(message ?? getWaflSaveFeedbackMessage(target, status), tone);
-    },
-    [showStatusToast],
-  );
+    showChangeFeedback,
+  } = useMaterialOrderFeedback();
 
   const [workOrderCandidates, setWorkOrderCandidates] = useState<
     MaterialOrderWorkspaceWorkOrderCandidate[]
@@ -280,7 +271,7 @@ export function useMaterialOrderDraftEditor({
       setSupplierPartnerId(null);
       setLines([]);
       setPendingLineAddition(null);
-      showHeaderSaveFeedback(WAFL_SAVE_TARGET.materialType, "saving");
+      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderMaterialType, "changing");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -291,17 +282,17 @@ export function useMaterialOrderDraftEditor({
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
         await refreshWorkOrderCandidates();
-        showHeaderSaveFeedback(WAFL_SAVE_TARGET.materialType, "saved");
+        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderMaterialType, "changed");
       } catch (error) {
         setMaterialType(previousMaterialType);
         setSupplierPartnerId(previousSupplierPartnerId);
         setLines(previousLines);
-        showHeaderSaveFeedback(
-          WAFL_SAVE_TARGET.materialType,
+        showChangeFeedback(
+          WAFL_CHANGE_TARGET.materialOrderMaterialType,
           "error",
           toMaterialOrderWorkspaceError(
             error,
-            getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.materialType, "error"),
+            getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.materialOrderMaterialType, "error"),
           ),
         );
       } finally {
@@ -313,7 +304,7 @@ export function useMaterialOrderDraftEditor({
       materialType,
       refreshWorkOrderCandidates,
       selectedOrder,
-      showHeaderSaveFeedback,
+      showChangeFeedback,
       supplierPartnerId,
       isAdmin,
     ],
@@ -356,7 +347,7 @@ export function useMaterialOrderDraftEditor({
       const previousSupplierPartnerId = supplierPartnerId;
       setSupplierPartnerId(nextSupplierPartnerId);
       setHeaderSaving(true);
-      showHeaderSaveFeedback(WAFL_SAVE_TARGET.supplier, "saving");
+      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderSupplier, "changing");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -365,22 +356,22 @@ export function useMaterialOrderDraftEditor({
         });
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-        showHeaderSaveFeedback(WAFL_SAVE_TARGET.supplier, "saved");
+        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderSupplier, "changed");
       } catch (error) {
         setSupplierPartnerId(previousSupplierPartnerId);
-        showHeaderSaveFeedback(
-          WAFL_SAVE_TARGET.supplier,
+        showChangeFeedback(
+          WAFL_CHANGE_TARGET.materialOrderSupplier,
           "error",
           toMaterialOrderWorkspaceError(
             error,
-            getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.supplier, "error"),
+            getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.materialOrderSupplier, "error"),
           ),
         );
       } finally {
         setHeaderSaving(false);
       }
     },
-    [isAdmin, selectedOrder, showHeaderSaveFeedback, supplierPartnerId],
+    [isAdmin, selectedOrder, showChangeFeedback, supplierPartnerId],
   );
 
   const buildSelectedOrderDetailPayload =
@@ -423,7 +414,7 @@ export function useMaterialOrderDraftEditor({
       const previousDueDate = dueDate;
       setDueDate(normalizedDueDate);
       setHeaderSaving(true);
-      showHeaderSaveFeedback(WAFL_SAVE_TARGET.dueDate, "saving");
+      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderDueDate, "changing");
 
       try {
         const result = await updateMaterialOrderHeader({
@@ -433,22 +424,22 @@ export function useMaterialOrderDraftEditor({
 
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? selectedOrder.id);
-        showHeaderSaveFeedback(WAFL_SAVE_TARGET.dueDate, "saved");
+        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderDueDate, "changed");
       } catch (error) {
         setDueDate(previousDueDate);
-        showHeaderSaveFeedback(
-          WAFL_SAVE_TARGET.dueDate,
+        showChangeFeedback(
+          WAFL_CHANGE_TARGET.materialOrderDueDate,
           "error",
           toMaterialOrderWorkspaceError(
             error,
-            getWaflSaveFeedbackMessage(WAFL_SAVE_TARGET.dueDate, "error"),
+            getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.materialOrderDueDate, "error"),
           ),
         );
       } finally {
         setHeaderSaving(false);
       }
     },
-    [dueDate, isAdmin, selectedOrder, showHeaderSaveFeedback],
+    [dueDate, isAdmin, selectedOrder, showChangeFeedback],
   );
 
   const applySelectedOrderStatusChange = useCallback(
@@ -456,7 +447,7 @@ export function useMaterialOrderDraftEditor({
       if (!selectedOrder) return;
 
       setStatusChanging(true);
-      showStatusToast("상태를 변경하는 중입니다.", "loading");
+      showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderStatus, "changing");
 
       try {
         let nextSelectedOrderId = selectedOrder.id;
@@ -483,14 +474,18 @@ export function useMaterialOrderDraftEditor({
         setOrders(result.materialOrders);
         setSelectedOrderId(result.materialOrder?.id ?? nextSelectedOrderId);
         await refreshWorkOrderCandidates();
-        showStatusToast("상태가 변경되었습니다.", "success");
+        showChangeFeedback(WAFL_CHANGE_TARGET.materialOrderStatus, "changed");
       } catch (error) {
-        showStatusToast(
+        showChangeFeedback(
+          WAFL_CHANGE_TARGET.materialOrderStatus,
+          "error",
           toMaterialOrderWorkspaceError(
             error,
-            "발주서 상태를 변경하지 못했습니다.",
+            getWaflChangeFeedbackMessage(
+              WAFL_CHANGE_TARGET.materialOrderStatus,
+              "error",
+            ),
           ),
-          "danger",
         );
       } finally {
         setStatusChanging(false);
@@ -500,7 +495,7 @@ export function useMaterialOrderDraftEditor({
       buildSelectedOrderDetailPayload,
       refreshWorkOrderCandidates,
       selectedOrder,
-      showStatusToast,
+      showChangeFeedback,
     ],
   );
 
