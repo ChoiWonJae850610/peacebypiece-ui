@@ -1,16 +1,12 @@
-# Pending Tests — 0.23.47
+# Pending Tests — 0.23.48
 
+- npm run audit:wafl-mutations
+- node scripts/audit-wafl-mutations.mjs --strict 실행 시 전체 엔터티 캐스팅 후보 때문에 의도대로 실패하는지
+- npm run audit:wafl-ui
 - npm run build
-- 작업지시서 자재 선택 확정 직후 저장 토스트가 표시되는지
-- 자재 선택 후 새로고침해도 발주품목과 할당이 유지되는지
-- 자재 선택 후 공급처 변경 시 품목이 유지되는지
-- 자재 선택 후 납기일 변경 시 품목이 유지되는지
-- 다른 발주서 선택 후 돌아와도 품목이 유지되는지
-- 선택된 작업지시서 자재를 다시 선택하면 즉시 삭제되고 새로고침 후에도 삭제 상태인지
-- 발주품목 삭제 메뉴 사용 시 즉시 DB에서 삭제되는지
-- 품목 편집 모달에서 품명·단위·수량·단가 변경 후 새로고침해도 유지되는지
-- 품목 저장 실패 시 직전 화면 상태로 rollback되고 오류 토스트만 표시되는지
-- 품목 저장 중 공급처·납기일·상태 변경 및 발주서 선택이 중복 실행되지 않는지
-- 품목 저장 후 서버 발급 line ID가 반영되어 연속 수정·삭제가 정상 동작하는지
-- 기존 자재 종류 변경 시 품목 초기화 정책 회귀 없음
-- 기존 발주서 상태 변경 전 상세 저장 회귀 없음
+- 감사 스크립트가 app/components/features/lib만 검사하는지
+- 초기 조회 void 호출과 이벤트 경계 void 호출이 별도 분류되는지
+- 직접 POST/PUT/PATCH/DELETE fetch 후보가 출력되는지
+- WorkOrder/MaterialOrder 전체 엔터티 캐스팅 후보가 high-risk로 출력되는지
+- 감사 스크립트 추가가 런타임 번들 및 화면 동작에 영향을 주지 않는지
+- package.json과 package-lock.json이 동기화되어 있는지

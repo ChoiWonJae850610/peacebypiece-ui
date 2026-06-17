@@ -12,7 +12,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:install": "playwright install chromium",
     "test:permissions": "node scripts/test-workflow-permissions.mjs",
-    "audit:wafl-ui": "node scripts/audit-wafl-ui.mjs"
+    "audit:wafl-ui": "node scripts/audit-wafl-ui.mjs",
+    "audit:wafl-mutations": "node scripts/audit-wafl-mutations.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1036.0",
