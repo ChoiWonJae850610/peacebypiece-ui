@@ -1,9 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
 
+import { RESPONSIVE_BREAKPOINTS } from "@/lib/responsive/responsiveLayoutPolicy";
 import { cn } from "@/lib/utils";
 
 export const WAFL_TWO_PANEL_GRID_STYLE = {
-  gridTemplateColumns: "minmax(0, 1fr) minmax(300px, 0.46fr)",
+  gridTemplateColumns: `minmax(0, 1fr) minmax(${RESPONSIVE_BREAKPOINTS.workspaceTwoPanelSideMin}px, 0.46fr)`,
 } satisfies CSSProperties;
 
 type WaflTwoPanelWorkspaceProps = {

@@ -10,8 +10,13 @@ export const RESPONSIVE_BREAKPOINTS = {
   tabletMin: 768,
   tabletMax: 1279,
   desktopMin: 1280,
-  tabletThreePanelMin: 1240,
+  tabletThreePanelMin: 1280,
   tabletNarrowTwoPanelMin: 820,
+  workspaceTwoPanelSideMin: 300,
+  workspaceThreePanelListMin: 300,
+  workspaceThreePanelDetailMin: 420,
+  workspaceThreePanelSideMin: 286,
+  workspacePanelGap: 12,
 } as const;
 
 export const RESPONSIVE_MEDIA_QUERIES = {
