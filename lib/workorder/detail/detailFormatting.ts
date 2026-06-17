@@ -1,4 +1,5 @@
 import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
+import { formatPbpKrw, formatPbpNumber, formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import { getI18n } from "@/lib/i18n";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
@@ -18,7 +19,7 @@ export function formatNumericDisplay(value: string) {
   if (!normalized) return "0";
   const parsed = Number(normalized);
   if (!Number.isFinite(parsed)) return value;
-  return parsed.toLocaleString();
+  return formatPbpNumber(parsed);
 }
 
 export function getEditingInitialValue(field: string, value: string) {
@@ -31,13 +32,11 @@ export function getDisplayValue(field: string, value: string) {
 
 export function formatCurrencySummary(total: number, i18n: ReturnType<typeof getI18n> = getI18n()) {
   const copy = i18n.workorder.ui.formatting;
-  const common = i18n.workorder.ui.common;
-  return copy.orderSummaryTotalFormat.replace("{total}", `${Math.max(0, Number(total) || 0).toLocaleString()}${common.currencySuffix}`);
+  return copy.orderSummaryTotalFormat.replace("{total}", formatPbpKrw(total));
 }
 
 export function formatCurrencySummaryParts(total: number, i18n: ReturnType<typeof getI18n> = getI18n()) {
-  const common = i18n.workorder.ui.common;
-  const value = `${Math.max(0, Number(total) || 0).toLocaleString()}${common.currencySuffix}`;
+  const value = formatPbpKrw(total);
   const summary = formatCurrencySummary(total, i18n);
   return {
     label: summary.replace(value, "").trim() || summary,
@@ -66,7 +65,7 @@ export function formatOrderSummary(orderEntries: OrderEntry[], i18n: ReturnType<
   const completedCount = orderEntries.filter((item) => isOrderInspectionCompleted(item.inspectionStatus)).length;
   return [
     `${orderEntries.length}${common.countSuffix}`,
-    `${totals.quantity.toLocaleString()}${common.quantitySuffix}`,
+    formatPbpNumberWithUnit(totals.quantity, common.quantitySuffix),
     copy.inspectionCompletedFormat.replace("{completed}", String(completedCount)).replace("{total}", String(orderEntries.length)),
     formatCurrencySummary(totals.totalCost, i18n),
   ]

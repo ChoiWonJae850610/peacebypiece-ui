@@ -15,8 +15,18 @@ export function normalizeFiniteNumber(value: PbpFormatNumberInput, fallback = 0)
   return Number.isFinite(next) ? next : fallback;
 }
 
+export function formatPbpNumber(
+  value: PbpFormatNumberInput,
+  options?: { locale?: string; maximumFractionDigits?: number },
+): string {
+  const normalized = Math.max(0, normalizeFiniteNumber(value));
+  return normalized.toLocaleString(options?.locale ?? PBP_DEFAULT_NUMBER_LOCALE, {
+    maximumFractionDigits: options?.maximumFractionDigits ?? 20,
+  });
+}
+
 export function formatPbpInteger(value: PbpFormatNumberInput, locale = PBP_DEFAULT_NUMBER_LOCALE): string {
-  return Math.max(0, Math.round(normalizeFiniteNumber(value))).toLocaleString(locale);
+  return Math.round(Math.max(0, normalizeFiniteNumber(value))).toLocaleString(locale);
 }
 
 export function formatPbpNumberWithUnit(

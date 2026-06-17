@@ -1,4 +1,5 @@
 import { EMPTY_DISPLAY } from "@/lib/constants/display";
+import { formatPbpKrw } from "@/lib/utils/formatters";
 
 export function hasDisplayText(value: string | null | undefined) {
   return Boolean(value && value.trim());
@@ -21,7 +22,7 @@ export function toNumber(value: unknown) {
 }
 
 export function toCurrency(value: unknown) {
-  return `${toNumber(value).toLocaleString()}원`;
+  return formatPbpKrw(toNumber(value));
 }
 
 export function toDate(value: string | null | undefined) {

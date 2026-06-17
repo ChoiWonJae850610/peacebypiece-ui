@@ -3,6 +3,7 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 
 import { cn } from "@/lib/utils";
+import { formatPbpNumber } from "@/lib/utils/formatters";
 
 type WaflNumberInputProps = {
   value: number;
@@ -33,7 +34,7 @@ function normalizeNumericText(value: string) {
 function formatNumberText(value: string) {
   if (value === "") return "";
   const [integerPart = "0", fractionPart] = value.split(".");
-  const formattedInteger = Number(integerPart || 0).toLocaleString();
+  const formattedInteger = formatPbpNumber(Number(integerPart || 0), { maximumFractionDigits: 0 });
 
   if (fractionPart !== undefined) {
     return `${formattedInteger}.${fractionPart}`;
@@ -43,8 +44,7 @@ function formatNumberText(value: string) {
 }
 
 function numberToDisplay(value: number) {
-  const normalized = Number.isFinite(value) ? Math.max(0, value) : 0;
-  return normalized.toLocaleString();
+  return formatPbpNumber(value);
 }
 
 export default function WaflNumberInput({
