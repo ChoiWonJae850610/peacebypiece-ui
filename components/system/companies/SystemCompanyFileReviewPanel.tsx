@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { useWaflMutation } from "@/components/common/ui";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import {
   SYSTEM_DANGER_BOX_CLASS,
@@ -14,6 +15,7 @@ import {
   SYSTEM_VALUE_TEXT_CLASS,
 } from "@/components/system/systemSemanticClassNames";
 import type { CompanyFileReviewStatus } from "@/lib/admin/settings/companyFileTypes";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import { formatPbpBinaryBytes } from "@/lib/utils/formatters";
 
 type SystemCompanyFileReviewRecord = {
@@ -81,7 +83,7 @@ export default function SystemCompanyFileReviewPanel() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const [reviewingFileId, setReviewingFileId] = useState<string | null>(null);
+  const reviewMutation = useWaflMutation("system-company-file-review");
   const [rejectionReasons, setRejectionReasons] = useState<Record<string, string>>({});
 
   const pendingCount = useMemo(() => files.filter((file) => file.reviewStatus === "pending_review").length, [files]);
@@ -93,9 +95,12 @@ export default function SystemCompanyFileReviewPanel() {
     setLoadError(null);
 
     try {
-      const response = await fetch("/api/system/company-files?limit=50", { cache: "no-store" });
-      const payload = (await response.json().catch(() => null)) as SystemCompanyFileReviewPayload | null;
-      if (!response.ok || !payload?.ok || !Array.isArray(payload.files)) {
+      const payload = await waflLegacyApiRequest<SystemCompanyFileReviewPayload>(
+        "/api/system/company-files?limit=50",
+        { cache: "no-store" },
+        "회사 파일 검토 목록을 불러오지 못했습니다.",
+      );
+      if (!payload.ok || !Array.isArray(payload.files)) {
         throw new Error(payload?.message || payload?.error || "SYSTEM_COMPANY_FILE_REVIEW_LIST_FAILED");
       }
       setFiles(payload.files);
@@ -119,27 +124,44 @@ export default function SystemCompanyFileReviewPanel() {
       return;
     }
 
-    setReviewingFileId(fileId);
+    if (reviewMutation.isLockActive(`system-company-file:${fileId}`)) return;
+
     setActionError(null);
     setActionMessage(null);
 
     try {
-      const response = await fetch("/api/system/company-files", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileId, action, reviewReason }),
+      await reviewMutation.runMutation({
+        lockKey: `system-company-file:${fileId}`,
+        sequenceKey: `system-company-file:${fileId}`,
+        operationId: `system-company-file-review:${fileId}`,
+        messages: {
+          loading: "회사 파일 검토를 처리하는 중입니다.",
+          success: action === "approved" ? "사업자등록증을 승인했습니다." : "사업자등록증을 반려했습니다.",
+          error: "회사 파일 검토 처리에 실패했습니다.",
+        },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<SystemCompanyFileReviewPayload>(
+            "/api/system/company-files",
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ fileId, action, reviewReason }),
+            },
+            "회사 파일 검토 처리에 실패했습니다.",
+          );
+          if (!payload.ok || !payload.file) {
+            throw new Error(payload.message || payload.error || "SYSTEM_COMPANY_FILE_REVIEW_UPDATE_FAILED");
+          }
+          return payload.file;
+        },
+        onSuccess: (updatedFile) => {
+          setFiles((currentFiles) => currentFiles.map((file) => (file.id === updatedFile.id ? updatedFile : file)));
+          setActionMessage(action === "approved" ? "사업자등록증을 승인했습니다." : "사업자등록증을 반려했습니다.");
+        },
+        onError: (error) => setActionError(error.message),
       });
-      const payload = (await response.json().catch(() => null)) as SystemCompanyFileReviewPayload | null;
-      if (!response.ok || !payload?.ok || !payload.file) {
-        throw new Error(payload?.message || payload?.error || "SYSTEM_COMPANY_FILE_REVIEW_UPDATE_FAILED");
-      }
-
-      setFiles((currentFiles) => currentFiles.map((file) => (file.id === payload.file?.id ? payload.file : file)));
-      setActionMessage(action === "approved" ? "사업자등록증을 승인했습니다." : "사업자등록증을 반려했습니다.");
-    } catch (error) {
-      setActionError(getErrorMessage(error, "회사 파일 검토 처리에 실패했습니다."));
-    } finally {
-      setReviewingFileId(null);
+    } catch {
+      // The shared mutation lifecycle already records the normalized error.
     }
   }
 
@@ -182,7 +204,7 @@ export default function SystemCompanyFileReviewPanel() {
         {files.map((file) => {
           const status = reviewStatusCopy[file.reviewStatus] || reviewStatusCopy.pending_review;
           const canReview = file.reviewStatus === "pending_review";
-          const isReviewing = reviewingFileId === file.id;
+          const isReviewing = reviewMutation.isLockActive(`system-company-file:${file.id}`);
 
           return (
             <article key={file.id} className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4">

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { useWaflMutation } from "@/components/common/ui";
+
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
@@ -18,6 +20,7 @@ import {
   SYSTEM_VALUE_TEXT_CLASS,
 } from "@/components/system/systemSemanticClassNames";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import {
   formatSystemCompanyAccountRequestDate,
   getSystemCompanyAccountRequestFilterLabel,
@@ -70,8 +73,8 @@ export default function SystemCompanyAccountRequestConsole() {
   const [activeFilter, setActiveFilter] = useState<SystemCompanyAccountRequestFilter>("all");
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [reviewMessage, setReviewMessage] = useState("");
-  const [reviewStatus, setReviewStatus] = useState<"idle" | "submitting">("idle");
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const reviewMutation = useWaflMutation("system-company-account-request-review");
 
   const filteredRequests = useMemo(
     () => requests.filter((request) => matchesSystemCompanyAccountRequestFilter(request, activeFilter)),
@@ -79,6 +82,9 @@ export default function SystemCompanyAccountRequestConsole() {
   );
   const selectedRequest = requests.find((request) => request.id === selectedRequestId) ?? filteredRequests[0] ?? null;
   const canReviewSelectedRequest = selectedRequest ? selectedRequest.requestStatus === "pending" || selectedRequest.requestStatus === "reviewing" : false;
+  const isSelectedRequestReviewing = selectedRequest
+    ? reviewMutation.isLockActive(`system-account-request:${selectedRequest.id}`)
+    : false;
 
   const summaryCounts = useMemo(() => {
     return {
@@ -161,7 +167,7 @@ export default function SystemCompanyAccountRequestConsole() {
   }
 
   async function submitReview(action: SystemCompanyAccountRequestReviewAction) {
-    if (!selectedRequest || reviewStatus === "submitting") return;
+    if (!selectedRequest || reviewMutation.isLockActive(`system-account-request:${selectedRequest.id}`)) return;
 
     if (action === "rejected" && reviewMessage.trim().length < 5) {
       setReviewError("반려 처리 시 검토 메모를 5자 이상 입력해 주세요.");
@@ -171,30 +177,39 @@ export default function SystemCompanyAccountRequestConsole() {
     if (action === "approved" && !window.confirm("선택한 요청을 승인 상태로 처리할까요?")) return;
     if (action === "rejected" && !window.confirm("선택한 요청을 반려 상태로 처리할까요?")) return;
 
-    setReviewStatus("submitting");
     setReviewError(null);
+    const requestId = selectedRequest.id;
 
     try {
-      const response = await fetch("/api/system/company-account-requests", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          requestId: selectedRequest.id,
-          action,
-          reviewMessage,
-        }),
+      await reviewMutation.runMutation({
+        lockKey: `system-account-request:${requestId}`,
+        sequenceKey: `system-account-request:${requestId}`,
+        operationId: `system-company-account-request-review:${requestId}`,
+        messages: {
+          loading: "회사 계정 요청을 처리하는 중입니다.",
+          success: action === "approved" ? "회사 계정 요청을 승인했습니다." : "회사 계정 요청을 반려했습니다.",
+          error: "요청 상태를 처리하지 못했습니다.",
+        },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<SystemCompanyAccountRequestReviewResponse>(
+            "/api/system/company-account-requests",
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ requestId, action, reviewMessage }),
+            },
+            "요청 상태를 처리하지 못했습니다.",
+          );
+          if (!payload.ok || !payload.request) {
+            throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ACCOUNT_REQUEST_REVIEW_FAILED");
+          }
+          return payload.request;
+        },
+        onSuccess: (updatedRequest) => replaceRequest(updatedRequest),
+        onError: (error) => setReviewError(error.message),
       });
-      const payload = (await response.json()) as SystemCompanyAccountRequestReviewResponse;
-
-      if (!response.ok || !payload.ok || !payload.request) {
-        throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ACCOUNT_REQUEST_REVIEW_FAILED");
-      }
-
-      replaceRequest(payload.request);
-    } catch (error) {
-      setReviewError(error instanceof Error ? error.message : "요청 상태를 처리하지 못했습니다.");
-    } finally {
-      setReviewStatus("idle");
+    } catch {
+      // The shared mutation lifecycle already records the normalized error.
     }
   }
 
@@ -203,10 +218,13 @@ export default function SystemCompanyAccountRequestConsole() {
     setLoadError(null);
 
     try {
-      const response = await fetch("/api/system/company-account-requests?limit=80", { cache: "no-store" });
-      const payload = (await response.json()) as SystemCompanyAccountRequestListResponse;
+      const payload = await waflLegacyApiRequest<SystemCompanyAccountRequestListResponse>(
+        "/api/system/company-account-requests?limit=80",
+        { cache: "no-store" },
+        "회사 계정 요청 목록을 불러오지 못했습니다.",
+      );
 
-      if (!response.ok || !payload.ok) {
+      if (!payload.ok) {
         throw new Error(payload.message ?? payload.error ?? "SYSTEM_COMPANY_ACCOUNT_REQUESTS_LOAD_FAILED");
       }
 
@@ -375,7 +393,7 @@ export default function SystemCompanyAccountRequestConsole() {
                   id="system-account-request-review-message"
                   value={reviewMessage}
                   onChange={(event) => setReviewMessage(event.target.value)}
-                  disabled={!canReviewSelectedRequest || reviewStatus === "submitting"}
+                  disabled={!canReviewSelectedRequest || isSelectedRequestReviewing}
                   rows={4}
                   maxLength={1200}
                   className="mt-2 min-h-28 w-full resize-y rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm leading-6 text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-brand-primary)] focus:ring-2 focus:ring-[var(--pbp-brand-primary-soft)] disabled:cursor-not-allowed disabled:bg-[var(--pbp-surface-muted)] disabled:text-[var(--pbp-text-muted)]"
@@ -386,13 +404,13 @@ export default function SystemCompanyAccountRequestConsole() {
                     {canReviewSelectedRequest ? "승인/반려는 요청 상태만 변경하며 실제 회사 정보나 계정 상태는 별도 단계에서 반영합니다." : "이미 처리된 요청은 상태를 다시 변경하지 않습니다."}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <AdminButton onClick={() => void submitReview("reviewing")} disabled={!canReviewSelectedRequest || reviewStatus === "submitting"} variant="secondary">
-                      {reviewStatus === "submitting" ? "처리 중" : "검토 중"}
+                    <AdminButton onClick={() => void submitReview("reviewing")} disabled={!canReviewSelectedRequest || isSelectedRequestReviewing} variant="secondary">
+                      {isSelectedRequestReviewing ? "처리 중" : "검토 중"}
                     </AdminButton>
-                    <AdminButton onClick={() => void submitReview("approved")} disabled={!canReviewSelectedRequest || reviewStatus === "submitting"} variant="primary">
+                    <AdminButton onClick={() => void submitReview("approved")} disabled={!canReviewSelectedRequest || isSelectedRequestReviewing} variant="primary">
                       승인
                     </AdminButton>
-                    <AdminButton onClick={() => void submitReview("rejected")} disabled={!canReviewSelectedRequest || reviewStatus === "submitting"} variant="danger">
+                    <AdminButton onClick={() => void submitReview("rejected")} disabled={!canReviewSelectedRequest || isSelectedRequestReviewing} variant="danger">
                       반려
                     </AdminButton>
                   </div>

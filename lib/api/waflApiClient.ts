@@ -119,3 +119,23 @@ export async function waflApiRequest<T>(
 
   return readWaflApiResponse<T>(response, fallbackMessage);
 }
+
+export async function waflLegacyApiRequest<T>(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  fallbackMessage?: string,
+): Promise<T> {
+  let response: Response;
+
+  try {
+    response = await fetch(input, init);
+  } catch {
+    throw new WaflApiError({
+      message: fallbackMessage || "네트워크 연결을 확인해 주세요.",
+      code: "NETWORK_ERROR",
+      status: 0,
+    });
+  }
+
+  return readWaflLegacyApiResponse<T>(response, fallbackMessage);
+}
