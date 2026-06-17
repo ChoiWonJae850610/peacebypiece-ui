@@ -9,6 +9,7 @@ import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/dat
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
 import { useI18n } from "@/lib/i18n";
 import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
+import { EMPTY_DISPLAY } from "@/lib/constants/display";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 import type { RoleType, WorkOrder } from "@/types/workorder";
 
@@ -71,9 +72,9 @@ export default function WorkOrderHeaderSection({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(editableTitle ?? title);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const managerValue = managerName || "-";
+  const managerValue = managerName || EMPTY_DISPLAY;
   const inventoryValue = formatPbpNumberWithUnit(currentInventoryQuantity, common.quantitySuffix);
-  const summaryValue = summaryText || "-";
+  const summaryValue = summaryText || EMPTY_DISPLAY;
   const canEditSummary = !locked && canRenameTitle && typeof onOpenBasicInfoModal === "function";
   const recommendedCategory = WORKORDER_CATEGORY_RECOMMENDATION_ENABLED ? getRecommendedWorkOrderCategory(titleDraft.trim()) : null;
   const canEditManager = !managerLocked && canChangeManager;

@@ -9,6 +9,7 @@ import {
   WaflSummaryInfoCell,
 } from "@/components/common/ui";
 import { useI18n } from "@/lib/i18n";
+import { EMPTY_DISPLAY } from "@/lib/constants/display";
 import { getTodayPbpLocalDateValue, normalizePbpLocalDateValue } from "@/lib/date/localDate";
 import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import { PbpSingleDatePicker } from "@/components/common/date/PbpSingleDatePicker";
@@ -39,8 +40,8 @@ export default function WorkOrderDetailMobileHeaderSection({
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.header;
   const common = i18n.workorder.ui.common;
-  const managerValue = managerName || "-";
-  const summaryValue = summaryText || "-";
+  const managerValue = managerName || EMPTY_DISPLAY;
+  const summaryValue = summaryText || EMPTY_DISPLAY;
   const inventoryValue = formatPbpNumberWithUnit(currentInventoryQuantity, common.quantitySuffix);
   const canEditTitle = !locked && canRenameTitle && typeof onRenameTitle === "function";
   const [isEditingTitle, setIsEditingTitle] = useState(false);

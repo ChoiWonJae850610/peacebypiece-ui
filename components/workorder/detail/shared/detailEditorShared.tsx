@@ -15,6 +15,7 @@ import {
   getEditingInitialValue,
 } from "@/lib/workorder/detail/detailFormatting";
 import { isUnavailableWorkOrderSelectOption } from "@/lib/constants/workorderDomain";
+import { EMPTY_DISPLAY } from "@/lib/constants/display";
 import { normalizeEditingValue } from "@/lib/workorder/detail/detailSanitizers";
 import {
   clampPastDateInputValue,
@@ -425,7 +426,7 @@ export function EditableValue({
           wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS
         }
       >
-        {(displayValue ?? getDisplayValue(field, value)) || "-"}
+        {(displayValue ?? getDisplayValue(field, value)) || EMPTY_DISPLAY}
       </span>
     </WaflCardButton>
   );

@@ -12,6 +12,7 @@ import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import type { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getWorkOrderBaseTitle } from "@/lib/workorder/reorder/helpers";
+import { EMPTY_DISPLAY } from "@/lib/constants/display";
 import type { WorkOrder } from "@/types/workorder";
 
 type HeaderProps = ComponentProps<typeof WorkOrderHeaderSection>;
@@ -138,7 +139,7 @@ export function buildHeaderSectionProps({
     title: getWorkOrderDisplayTitle(workOrder),
     editableTitle: getWorkOrderBaseTitle(workOrder),
     summaryText: formatBasicSummary(basicInfo),
-    managerName: workOrder.manager || "-",
+    managerName: workOrder.manager || EMPTY_DISPLAY,
     currentInventoryQuantity,
     saveStatus,
     lastSavedAt,
