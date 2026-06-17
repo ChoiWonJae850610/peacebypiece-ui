@@ -58,7 +58,9 @@ import {
 import AdminMemberInvitationSection from "@/components/admin/members/AdminMemberInvitationSection";
 import AdminMemberDirectorySection from "@/components/admin/members/AdminMemberDirectorySection";
 
-import ToastMessage, { showWaflLoadingToast, type ToastTone } from "@/components/common/ToastMessage";
+import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
+import { useWaflMutation } from "@/components/common/ui";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 
 type JoinRequestListResponse = {
@@ -300,6 +302,7 @@ function resolveExpiresAt(expiresInDays: string): string {
 
 export default function AdminMemberManagementDashboard() {
   const t = useAdminTranslation();
+  const memberMutation = useWaflMutation("admin-member-management");
   const baseSummaryCards = getMemberManagementSummaryCards();
   const manageableRoles = getAssignableMemberRolePreviews();
   const currentPermissionCodes = getMemberRoleTemplatePermissions(
@@ -506,12 +509,12 @@ export default function AdminMemberManagementDashboard() {
 
   async function loadMemberInvitations() {
     try {
-      const response = await fetch("/api/invitations?scope=company_to_member", {
-        cache: "no-store",
-      });
-      const payload = (await response.json()) as MemberInvitationListResponse;
-
-      if (!response.ok || !payload.ok) {
+      const payload = await waflLegacyApiRequest<MemberInvitationListResponse>(
+        "/api/invitations?scope=company_to_member",
+        { cache: "no-store" },
+        "초대 링크 목록을 불러오지 못했습니다.",
+      );
+      if (!payload.ok) {
         throw new Error(payload.message ?? payload.error ?? "INVITATIONS_LOAD_FAILED");
       }
 
@@ -538,7 +541,7 @@ export default function AdminMemberManagementDashboard() {
     setMemberListLoadError(null);
 
     try {
-      const response = await fetch(
+      const payload = await waflLegacyApiRequest<MemberListResponse>(
         "/api/admin/members?status=all&limit=50",
         {
           cache: "no-store",
@@ -547,10 +550,9 @@ export default function AdminMemberManagementDashboard() {
               "member.read,member.permission.update",
           },
         },
+        "멤버 목록을 불러오지 못했습니다.",
       );
-      const payload = (await response.json()) as MemberListResponse;
-
-      if (!response.ok || !payload.ok) {
+      if (!payload.ok) {
         throw new Error(payload.error ?? "MEMBERS_LOAD_FAILED");
       }
 
@@ -571,13 +573,12 @@ export default function AdminMemberManagementDashboard() {
     setJoinRequestLoadError(null);
 
     try {
-      const response = await fetch(
+      const payload = await waflLegacyApiRequest<JoinRequestListResponse>(
         "/api/invitations/join-requests?requestType=member&status=pending&invitationScope=company_to_member&limit=50",
         { cache: "no-store" },
+        "가입 신청 목록을 불러오지 못했습니다.",
       );
-      const payload = (await response.json()) as JoinRequestListResponse;
-
-      if (!response.ok || !payload.ok) {
+      if (!payload.ok) {
         throw new Error(payload.error ?? "JOIN_REQUESTS_LOAD_FAILED");
       }
 
@@ -697,29 +698,40 @@ export default function AdminMemberManagementDashboard() {
     );
 
     try {
-      const response = await fetch(
-        `/api/admin/members/${encodeURIComponent(member.id)}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "x-peacebypiece-permissions":
-              "member.read,member.permission.update,member.suspend",
-          },
-          body: JSON.stringify({
-            displayName: member.displayName?.trim() || member.name,
-            phone: member.phone ?? "",
-            status,
-            roleTemplateCode: member.roleTemplateCode,
-            permissionCodes: normalizeSimplePermissionCodes(member.permissionCodes),
-          }),
+      const payload = await memberMutation.runMutation({
+        lockKey: `admin-member-status:${member.id}`,
+        sequenceKey: `admin-member:${member.id}`,
+        operationId: `admin-member-status-${member.id}`,
+        messages: {
+          loading: t("memberManagement.memberDirectory.feedback.updatingStatus", "멤버 상태를 변경하는 중입니다."),
+          success: t("memberManagement.memberDirectory.feedback.statusUpdated", "멤버 상태를 변경했습니다."),
+          error: t("memberManagement.memberDirectory.feedback.statusUpdateFailed", "멤버 상태를 변경하지 못했습니다."),
         },
-      );
-      const payload = (await response.json()) as MemberUpdateResponse;
-
-      if (!response.ok || !payload.ok || !payload.member) {
-        throw new Error(payload.error ?? "MEMBER_UPDATE_FAILED");
-      }
+        mutation: async () => {
+          const result = await waflLegacyApiRequest<MemberUpdateResponse>(
+            `/api/admin/members/${encodeURIComponent(member.id)}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "x-peacebypiece-permissions":
+                  "member.read,member.permission.update,member.suspend",
+              },
+              body: JSON.stringify({
+                displayName: member.displayName?.trim() || member.name,
+                phone: member.phone ?? "",
+                status,
+                roleTemplateCode: member.roleTemplateCode,
+                permissionCodes: normalizeSimplePermissionCodes(member.permissionCodes),
+              }),
+            },
+            "멤버 상태를 변경하지 못했습니다.",
+          );
+          if (!result.ok || !result.member) throw new Error(result.error ?? "MEMBER_UPDATE_FAILED");
+          return result;
+        },
+      });
+      if (!payload?.member) return;
 
       setMemberRecords((previous) =>
         previous.map((record) =>
@@ -776,28 +788,37 @@ export default function AdminMemberManagementDashboard() {
     setMemberDetailError(null);
 
     try {
-      const response = await fetch(
-        `/api/admin/members/${encodeURIComponent(selectedMemberId)}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "x-peacebypiece-permissions":
-              "member.read,member.permission.update,member.suspend",
-          },
-          body: JSON.stringify({
-            ...memberDetailDraft,
-            permissionCodes: normalizeSimplePermissionCodes(
-              memberDetailDraft.permissionCodes,
-            ),
-          }),
+      const payload = await memberMutation.runMutation({
+        lockKey: `admin-member-detail:${selectedMemberId}`,
+        sequenceKey: `admin-member:${selectedMemberId}`,
+        operationId: `admin-member-detail-${selectedMemberId}`,
+        messages: {
+          loading: "멤버 정보를 저장하는 중입니다.",
+          success: t("memberManagement.detailModal.feedback.saved", "멤버 정보를 저장했습니다."),
+          error: t("memberManagement.detailModal.errors.updateFailed", "멤버 정보를 저장하지 못했습니다."),
         },
-      );
-      const payload = (await response.json()) as MemberUpdateResponse;
-
-      if (!response.ok || !payload.ok || !payload.member) {
-        throw new Error(payload.error ?? "MEMBER_UPDATE_FAILED");
-      }
+        mutation: async () => {
+          const result = await waflLegacyApiRequest<MemberUpdateResponse>(
+            `/api/admin/members/${encodeURIComponent(selectedMemberId)}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "x-peacebypiece-permissions":
+                  "member.read,member.permission.update,member.suspend",
+              },
+              body: JSON.stringify({
+                ...memberDetailDraft,
+                permissionCodes: normalizeSimplePermissionCodes(memberDetailDraft.permissionCodes),
+              }),
+            },
+            "멤버 정보를 저장하지 못했습니다.",
+          );
+          if (!result.ok || !result.member) throw new Error(result.error ?? "MEMBER_UPDATE_FAILED");
+          return result;
+        },
+      });
+      if (!payload?.member) return;
 
       setMemberRecords((previous) =>
         previous.map((member) =>
@@ -862,26 +883,34 @@ export default function AdminMemberManagementDashboard() {
     setReviewingJoinRequestId(request.id);
 
     try {
-      const response = await fetch(
-        `/api/invitations/join-requests/${encodeURIComponent(request.id)}/${action}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            roleTemplateCode: getJoinRequestReviewRoleId(request),
-            permissionCodes: getMemberRoleTemplatePermissions(
-              getJoinRequestReviewRoleId(request),
-            ),
-            reasonCode:
-              action === "reject" ? "customer_admin_rejected" : undefined,
-          }),
+      const payload = await memberMutation.runMutation({
+        lockKey: `admin-member-join-request:${request.id}`,
+        sequenceKey: `admin-member-join-request:${request.id}`,
+        operationId: `admin-member-join-request-${request.id}`,
+        messages: {
+          loading: action === "approve" ? "가입 신청을 승인하는 중입니다." : "가입 신청을 거절하는 중입니다.",
+          success: action === "approve" ? t("memberManagement.reviewActions.approveSuccess", "가입 신청을 승인했습니다.") : t("memberManagement.reviewActions.rejectSuccess", "가입 신청을 거절했습니다."),
+          error: action === "approve" ? t("memberManagement.reviewActions.approveError", "승인 처리에 실패했습니다.") : t("memberManagement.reviewActions.rejectError", "거절 처리에 실패했습니다."),
         },
-      );
-      const payload = (await response.json()) as JoinRequestReviewResponse;
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "JOIN_REQUEST_REVIEW_FAILED");
-      }
+        mutation: async () => {
+          const result = await waflLegacyApiRequest<JoinRequestReviewResponse>(
+            `/api/invitations/join-requests/${encodeURIComponent(request.id)}/${action}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                roleTemplateCode: getJoinRequestReviewRoleId(request),
+                permissionCodes: getMemberRoleTemplatePermissions(getJoinRequestReviewRoleId(request)),
+                reasonCode: action === "reject" ? "customer_admin_rejected" : undefined,
+              }),
+            },
+            "가입 신청을 처리하지 못했습니다.",
+          );
+          if (!result.ok) throw new Error(result.error ?? "JOIN_REQUEST_REVIEW_FAILED");
+          return result;
+        },
+      });
+      if (!payload) return;
 
       setFeedbackMessage(
         action === "approve"
@@ -924,22 +953,36 @@ export default function AdminMemberManagementDashboard() {
     setInviteError(null);
 
     try {
-      const response = await fetch("/api/invitations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scope: "company_to_member",
-          recipientRole: getDefaultAssignableMemberRoleTemplateCode(),
-          permissionPreset: getDefaultAssignableMemberRoleTemplateCode(),
-          expiresAt,
-          createdByUserId: undefined,
-        }),
+      const payload = await memberMutation.runMutation({
+        lockKey: "admin-member-invite:create",
+        sequenceKey: "admin-member-invitations",
+        operationId: "admin-member-invite-create",
+        messages: {
+          loading: "초대 링크를 생성하는 중입니다.",
+          success: t("memberManagement.inviteBuilder.feedback.created", "초대 링크가 생성되었습니다."),
+          error: t("memberManagement.inviteBuilder.errors.create", "초대 링크를 생성하지 못했습니다."),
+        },
+        mutation: async () => {
+          const result = await waflLegacyApiRequest<MemberInvitationListResponse & { invitation?: InvitationRecord; inviteUrl?: string; rawToken?: string }>(
+            "/api/invitations",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                scope: "company_to_member",
+                recipientRole: getDefaultAssignableMemberRoleTemplateCode(),
+                permissionPreset: getDefaultAssignableMemberRoleTemplateCode(),
+                expiresAt,
+                createdByUserId: undefined,
+              }),
+            },
+            "초대 링크를 생성하지 못했습니다.",
+          );
+          if (!result.ok) throw new Error(result.error ?? "INVITATION_CREATE_FAILED");
+          return result;
+        },
       });
-      const payload = await response.json();
-
-      if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error ?? "INVITATION_CREATE_FAILED");
-      }
+      if (!payload) return;
 
       setPendingInvitations((previous) => [
         {
@@ -992,27 +1035,27 @@ export default function AdminMemberManagementDashboard() {
 
     setRevokingInviteId(invitation.id);
     setInviteError(null);
-    showWaflLoadingToast(
-      t(
-        "memberManagement.inviteBuilder.feedback.cancelling",
-        "초대를 취소하는 중입니다.",
-      ),
-    );
-
     try {
-      const response = await fetch(
-        `/api/invitations/${encodeURIComponent(invitation.id)}/revoke`,
-        { method: "POST" },
-      );
-      const payload = (await response.json()) as {
-        ok?: boolean;
-        error?: string;
-        message?: string;
-      };
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.message ?? payload.error ?? "INVITATION_REVOKE_FAILED");
-      }
+      const payload = await memberMutation.runMutation({
+        lockKey: `admin-member-invite:revoke:${invitation.id}`,
+        sequenceKey: "admin-member-invitations",
+        operationId: `admin-member-invite-revoke-${invitation.id}`,
+        messages: {
+          loading: t("memberManagement.inviteBuilder.feedback.cancelling", "초대를 취소하는 중입니다."),
+          success: t("memberManagement.inviteBuilder.feedback.cancelled", "초대를 취소했습니다."),
+          error: t("memberManagement.inviteBuilder.errors.revoke", "초대 링크를 취소하지 못했습니다."),
+        },
+        mutation: async () => {
+          const result = await waflLegacyApiRequest<{ ok?: boolean; error?: string; message?: string }>(
+            `/api/invitations/${encodeURIComponent(invitation.id)}/revoke`,
+            { method: "POST" },
+            "초대 링크를 취소하지 못했습니다.",
+          );
+          if (!result.ok) throw new Error(result.message ?? result.error ?? "INVITATION_REVOKE_FAILED");
+          return result;
+        },
+      });
+      if (!payload) return;
 
       setFeedbackTone("success");
       setFeedbackMessage(
