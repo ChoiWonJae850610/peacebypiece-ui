@@ -17,6 +17,8 @@ import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { hasDefinedWaflPatchProperty } from "@/lib/mutations/waflPatchResult";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
+import { updateDbWorkOrderInventoryGroup } from "@/lib/workorder/repository/dbWorkOrderInventoryGroupRepository";
+import { getWorkOrderReorderGroupId } from "@/lib/workorder/reorder/helpers";
 import type { MemberPermissionCode } from "@/lib/permissions";
 import { getSessionDefaultWorkOrderRole, isWorkOrderActorRole } from "@/lib/constants/roles";
 import type { WaflSessionPayload } from "@/lib/auth/session";
@@ -43,6 +45,7 @@ import type {
   WorkOrderAuditActor,
   WorkOrderStatePatch,
   WorkOrderStatePatchResult,
+  WorkOrderInventoryGroupPatchRequest,
 } from "@/types/workorder";
 import {
   normalizeWorkOrderListSort,
@@ -1157,6 +1160,65 @@ export async function handleDeleteWorkOrders(request: Request) {
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to delete work order.");
     traceWaflResult("workorders.delete", "error", { message: resolved.payload.message });
+    return NextResponse.json(resolved.payload, { status: resolved.status });
+  }
+}
+
+
+export async function handlePatchWorkOrderInventoryGroup(request: Request) {
+  traceWaflFlow("api", "workorders.inventoryGroupPatch.request");
+
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
+  }
+
+  try {
+    const body = await readJsonBody<WorkOrderInventoryGroupPatchRequest>(request);
+    if (!body) return createInvalidPayloadResponse("Invalid JSON payload.");
+
+    const workOrderIds = Array.isArray(body.workOrderIds)
+      ? Array.from(new Set(body.workOrderIds.map((id) => String(id ?? "").trim()).filter(Boolean)))
+      : [];
+    if (workOrderIds.length === 0) return createInvalidPayloadResponse("workOrderIds is required.");
+    if (!Number.isFinite(body.inventoryQuantity) || body.inventoryQuantity < 0) {
+      return createInvalidPayloadResponse("inventoryQuantity must be a non-negative number.");
+    }
+    if (typeof body.inventoryStatus !== "string" || !body.inventoryStatus.trim()) {
+      return createInvalidPayloadResponse("inventoryStatus is required.");
+    }
+
+    const scopeResult = await requireWorkOrderRequestCompanyScope();
+    if (!scopeResult.ok) return scopeResult.response;
+    const session = await getCurrentWaflSession();
+    if (!session) return createCompanySessionRequiredResponse();
+
+    const inventoryPermissionResponse = await validateWorkOrderInventoryPatchPolicy({
+      session,
+      inventoryTouched: true,
+    });
+    if (inventoryPermissionResponse) return inventoryPermissionResponse;
+
+    const workOrders = await listExistingWorkOrdersByCompany(workOrderIds, scopeResult.scope);
+    if (workOrders.length !== workOrderIds.length) {
+      return createInvalidPayloadResponse("One or more work orders do not exist.");
+    }
+    const reorderGroupIds = new Set(workOrders.map((item) => getWorkOrderReorderGroupId(item)));
+    if (reorderGroupIds.size !== 1) {
+      return createInvalidPayloadResponse("All work orders must belong to the same reorder group.");
+    }
+
+    const results = await updateDbWorkOrderInventoryGroup({
+      workOrderIds,
+      inventoryQuantity: body.inventoryQuantity,
+      inventoryStatus: body.inventoryStatus,
+      lastSavedAt: body.lastSavedAt ?? new Date().toISOString(),
+    }, scopeResult.scope);
+
+    traceWaflResult("workorders.inventoryGroupPatch", "success", { rows: results.length });
+    return NextResponse.json({ results, meta: { mode: "inventory-group-patch", transaction: true } });
+  } catch (error) {
+    const resolved = resolveDbErrorPayload(error, "Failed to save reorder inventory group.");
+    traceWaflResult("workorders.inventoryGroupPatch", "error", { message: resolved.payload.message });
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }
 }

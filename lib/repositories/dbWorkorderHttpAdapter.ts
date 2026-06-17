@@ -8,6 +8,8 @@ import type {
   WorkOrder,
   WorkOrderStatePatch,
   WorkOrderStatePatchResult,
+  WorkOrderInventoryGroupPatchRequest,
+  WorkOrderInventoryGroupPatchResult,
   WorkOrderSummary,
 } from "@/types/workorder";
 import {
@@ -239,6 +241,23 @@ async function saveWorkOrderStatePatchToApi(
   throw emptyBodyError;
 }
 
+
+async function saveWorkOrderInventoryGroupPatchToApi(
+  payload: WorkOrderInventoryGroupPatchRequest,
+): Promise<WorkOrderInventoryGroupPatchResult> {
+  const response = await fetch("/api/workorders/inventory-group", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await parseResponse<{ results: WorkOrderInventoryGroupPatchResult }>(response);
+  return result.results;
+}
+
 async function parseResponse<T>(response: Response): Promise<T> {
   let body: (T & DbApiErrorBody) | null = null;
   try {
@@ -403,6 +422,16 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           code: "READY",
         });
         return savedWorkOrder;
+      } catch (error) {
+        reportDbError("save", error);
+        throw error;
+      }
+    },
+    saveWorkOrderInventoryGroupPatch: async (payload) => {
+      try {
+        const results = await saveWorkOrderInventoryGroupPatchToApi(payload);
+        reportDbStatus({ source: "save", connected: true, code: "READY" });
+        return results;
       } catch (error) {
         reportDbError("save", error);
         throw error;

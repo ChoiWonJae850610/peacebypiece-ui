@@ -200,14 +200,21 @@ export async function persistWorkOrderStatePatchesWithHistory(
   },
 ) {
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
-  const patchResults: WorkOrderStatePatchResult[] = [];
-  for (const workOrder of stampedWorkOrders) {
-    const statePatch =
-      payload.serviceCode === WORKORDER_SERVICE_CODE.inventoryImmediateSave
-        ? buildInventoryStatePatch(workOrder, payload.auditActor)
-        : buildWorkOrderStatePatch(workOrder, payload.auditActor, payload.serviceCode);
-    const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
-    patchResults.push(savedPatch);
+  let patchResults: WorkOrderStatePatchResult[] = [];
+  if (payload.serviceCode === WORKORDER_SERVICE_CODE.inventoryImmediateSave && stampedWorkOrders.length > 0) {
+    const first = stampedWorkOrders[0];
+    patchResults = await repository.saveWorkOrderInventoryGroupPatchAsync({
+      workOrderIds: stampedWorkOrders.map((item) => item.id),
+      inventoryQuantity: first.inventoryQuantity,
+      inventoryStatus: first.inventoryStatus,
+      lastSavedAt: first.lastSavedAt,
+    });
+  } else {
+    for (const workOrder of stampedWorkOrders) {
+      const statePatch = buildWorkOrderStatePatch(workOrder, payload.auditActor, payload.serviceCode);
+      const savedPatch = await repository.saveWorkOrderStatePatchAsync(statePatch);
+      patchResults.push(savedPatch);
+    }
   }
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);

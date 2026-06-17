@@ -270,6 +270,15 @@ export type WorkOrderStatePatchPayload = Partial<Pick<WorkOrder,
 
 export type WorkOrderStatePatchResult = import("@/types/waflMutation").WaflPatchResult<WorkOrderStatePatchPayload>;
 
+export type WorkOrderInventoryGroupPatchRequest = {
+  workOrderIds: string[];
+  inventoryQuantity: number;
+  inventoryStatus: WorkOrder["inventoryStatus"];
+  lastSavedAt?: string | null;
+};
+
+export type WorkOrderInventoryGroupPatchResult = WorkOrderStatePatchResult[];
+
 export type HistoryDetailLine = {
   label?: string;
   value: string;

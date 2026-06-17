@@ -1,9 +1,11 @@
-# Pending Tests — 0.23.43
+# Pending Tests — 0.23.44
 
 - npm run build
-- 작성중·검토·발주요청 이후·검수·완료 단계에서 재고 수정
-- 발주요청 이후 재고 수정 시 WORKORDER_CORE_FIELDS_LOCKED 미발생
-- 재고 권한 검사 유지
+- 리오더 그룹 재고 0 → 12 변경 시 그룹 구성원 전체 반영
+- 발주요청 이후 작업지시서가 그룹에 포함돼도 재고 수정 성공
+- 그룹 구성원 일부 업데이트 실패 시 전체 rollback
+- 서로 다른 리오더 그룹 ID를 한 요청에 보내면 차단
 - 재고 변경 후 분류·납기일·담당자·수량 유지
-- 저장 실패 시 danger 토스트만 표시되고 Runtime Error overlay 미표시
-- 실패 시 재고 rollback
+- 재고 저장 성공 후 WaflPatchResult 배열의 재고 필드만 병합
+- 실패 시 Runtime Error overlay 없이 danger 토스트 표시
+- 새로고침 후 그룹 구성원 재고 동일성 확인
