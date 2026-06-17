@@ -287,7 +287,7 @@ export async function updateMaterialOrderHeaderForCompany(
         setClauses.push("total_amount = 0");
       }
     }
-    if (hasSupplierPartnerId) {
+    if (hasSupplierPartnerId && !materialTypeChanged) {
       setClauses.push(`supplier_partner_id = ${pushValue(normalizeMaterialOrderText(input.supplierPartnerId))}`);
     }
     if (hasDueDate) {

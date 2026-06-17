@@ -88,7 +88,10 @@ export function useWorkOrderWorkspaceController({
   const workflowWriteLockMessage = workflowProcessingLabel
     ? processingFormat.replace("{label}", workflowProcessingLabel.replace(/\s+/g, ""))
     : null;
-  const persistenceProcessingLabel = persistence.saveStatus === "saving" ? lifecycleCopy.editProcessingLabel : null;
+  const persistenceProcessingLabel =
+    persistence.saveStatus === "saving" && !workOrderFeedback.operation
+      ? lifecycleCopy.editProcessingLabel
+      : null;
   const selectedDetailLoadingMessage = isSelectedDetailLoading ? loadingCopy.loadingDetailTitle : null;
   const workspaceWriteLockMessage =
     manualWriteLockMessage ??
@@ -169,6 +172,35 @@ export function useWorkOrderWorkspaceController({
       nextWorkOrder.category3Id !== current.category3Id
     ) {
       return WAFL_CHANGE_TARGET.workOrderKind;
+    }
+    return WAFL_CHANGE_TARGET.workOrder;
+  };
+
+  const getImmediatePatchChangeTarget = (patch: Partial<WorkOrder>): WaflChangeTarget => {
+    const hasPatchField = (field: keyof WorkOrder): boolean =>
+      Object.prototype.hasOwnProperty.call(patch, field);
+    if (hasPatchField("dueDate")) return WAFL_CHANGE_TARGET.workOrderDueDate;
+    if (hasPatchField("quantity")) return WAFL_CHANGE_TARGET.workOrderQuantity;
+    if (
+      hasPatchField("category1") ||
+      hasPatchField("category2") ||
+      hasPatchField("category3") ||
+      hasPatchField("category1Id") ||
+      hasPatchField("category2Id") ||
+      hasPatchField("category3Id") ||
+      hasPatchField("workOrderKind") ||
+      hasPatchField("season")
+    ) {
+      return WAFL_CHANGE_TARGET.workOrderKind;
+    }
+    if (hasPatchField("manager") || hasPatchField("managerId")) {
+      return WAFL_CHANGE_TARGET.workOrderManager;
+    }
+    if (hasPatchField("inventoryQuantity") || hasPatchField("inventoryStatus")) {
+      return WAFL_CHANGE_TARGET.workOrderInventory;
+    }
+    if (hasPatchField("title") || hasPatchField("displayTitle") || hasPatchField("baseTitle")) {
+      return WAFL_CHANGE_TARGET.workOrderTitle;
     }
     return WAFL_CHANGE_TARGET.workOrder;
   };
@@ -420,7 +452,15 @@ export function useWorkOrderWorkspaceController({
     },
     onWorkflowAction: handleSubmitWorkflowActionWithProcessing,
     onUpdateSelectedWorkOrder: (patch) => {
-      void actions.handleUpdateSelectedWorkOrder(patch);
+      const target = getImmediatePatchChangeTarget(patch);
+      void runWithWorkspaceWriteLock(
+        lifecycleCopy.editProcessingLabel,
+        () => actions.handleUpdateSelectedWorkOrder(patch),
+        {
+          target,
+          operationId: `workorder:${selection.selectedId}:immediate:${target}`,
+        },
+      );
     },
     onRenameWorkOrderTitle: (nextTitle) => {
       void runWithWorkspaceWriteLock(

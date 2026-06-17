@@ -64,53 +64,67 @@ export async function persistCreatedWorkOrderWithHistory(
 }
 
 
-function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPatch: WorkOrder, requestedPatch: WorkOrderStatePatch): WorkOrder {
-  const hasFactoryOrderRequestPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "factoryOrderRequest");
-  const hasOrderEntriesPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "orderEntries");
-  const hasMaterialsPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "materials");
-  const hasOutsourcingPatch = Object.prototype.hasOwnProperty.call(requestedPatch, "outsourcing");
+function mergeStatePatchResultIntoWorkOrder(
+  currentWorkOrder: WorkOrder,
+  savedPatch: WorkOrder,
+  requestedPatch: WorkOrderStatePatch,
+): WorkOrder {
+  const hasRequestedField = (field: keyof WorkOrderStatePatch): boolean =>
+    Object.prototype.hasOwnProperty.call(requestedPatch, field);
+  const hasFactoryOrderRequestPatch = hasRequestedField("factoryOrderRequest");
+  const hasOrderEntriesPatch = hasRequestedField("orderEntries");
+  const hasMaterialsPatch = hasRequestedField("materials");
+  const hasOutsourcingPatch = hasRequestedField("outsourcing");
 
   return {
     ...currentWorkOrder,
-    workflowState: savedPatch.workflowState ?? currentWorkOrder.workflowState,
+    workflowState: hasRequestedField("workflowState")
+      ? (savedPatch.workflowState ?? currentWorkOrder.workflowState)
+      : currentWorkOrder.workflowState,
     lastSavedAt: savedPatch.lastSavedAt ?? currentWorkOrder.lastSavedAt,
-    title: Object.prototype.hasOwnProperty.call(savedPatch, "title") ? savedPatch.title : currentWorkOrder.title,
-    displayTitle: Object.prototype.hasOwnProperty.call(savedPatch, "displayTitle") ? savedPatch.displayTitle : currentWorkOrder.displayTitle,
-    baseTitle: Object.prototype.hasOwnProperty.call(savedPatch, "baseTitle") ? savedPatch.baseTitle : currentWorkOrder.baseTitle,
-    workOrderKind: Object.prototype.hasOwnProperty.call(savedPatch, "workOrderKind") ? savedPatch.workOrderKind : currentWorkOrder.workOrderKind,
-    category1: Object.prototype.hasOwnProperty.call(savedPatch, "category1") ? savedPatch.category1 : currentWorkOrder.category1,
-    category2: Object.prototype.hasOwnProperty.call(savedPatch, "category2") ? savedPatch.category2 : currentWorkOrder.category2,
-    category3: Object.prototype.hasOwnProperty.call(savedPatch, "category3") ? savedPatch.category3 : currentWorkOrder.category3,
-    category1Id: Object.prototype.hasOwnProperty.call(savedPatch, "category1Id") ? savedPatch.category1Id : currentWorkOrder.category1Id,
-    category2Id: Object.prototype.hasOwnProperty.call(savedPatch, "category2Id") ? savedPatch.category2Id : currentWorkOrder.category2Id,
-    category3Id: Object.prototype.hasOwnProperty.call(savedPatch, "category3Id") ? savedPatch.category3Id : currentWorkOrder.category3Id,
-    season: Object.prototype.hasOwnProperty.call(savedPatch, "season") ? savedPatch.season : currentWorkOrder.season,
-    manager: Object.prototype.hasOwnProperty.call(savedPatch, "manager") ? savedPatch.manager : currentWorkOrder.manager,
-    managerId: Object.prototype.hasOwnProperty.call(savedPatch, "managerId") ? savedPatch.managerId : currentWorkOrder.managerId,
-    dueDate: Object.prototype.hasOwnProperty.call(savedPatch, "dueDate") ? savedPatch.dueDate : currentWorkOrder.dueDate,
-    quantity: Object.prototype.hasOwnProperty.call(savedPatch, "quantity") ? savedPatch.quantity : currentWorkOrder.quantity,
-    inventoryQuantity: Object.prototype.hasOwnProperty.call(savedPatch, "inventoryQuantity")
+    title: hasRequestedField("title") ? savedPatch.title : currentWorkOrder.title,
+    displayTitle: hasRequestedField("displayTitle") ? savedPatch.displayTitle : currentWorkOrder.displayTitle,
+    baseTitle: hasRequestedField("baseTitle") ? savedPatch.baseTitle : currentWorkOrder.baseTitle,
+    workOrderKind: hasRequestedField("workOrderKind") ? savedPatch.workOrderKind : currentWorkOrder.workOrderKind,
+    category1: hasRequestedField("category1") ? savedPatch.category1 : currentWorkOrder.category1,
+    category2: hasRequestedField("category2") ? savedPatch.category2 : currentWorkOrder.category2,
+    category3: hasRequestedField("category3") ? savedPatch.category3 : currentWorkOrder.category3,
+    category1Id: hasRequestedField("category1Id") ? savedPatch.category1Id : currentWorkOrder.category1Id,
+    category2Id: hasRequestedField("category2Id") ? savedPatch.category2Id : currentWorkOrder.category2Id,
+    category3Id: hasRequestedField("category3Id") ? savedPatch.category3Id : currentWorkOrder.category3Id,
+    season: hasRequestedField("season") ? savedPatch.season : currentWorkOrder.season,
+    manager: hasRequestedField("manager") ? savedPatch.manager : currentWorkOrder.manager,
+    managerId: hasRequestedField("managerId") ? savedPatch.managerId : currentWorkOrder.managerId,
+    dueDate: hasRequestedField("dueDate") ? savedPatch.dueDate : currentWorkOrder.dueDate,
+    quantity: hasRequestedField("quantity") ? savedPatch.quantity : currentWorkOrder.quantity,
+    inventoryQuantity: hasRequestedField("inventoryQuantity")
       ? savedPatch.inventoryQuantity
       : currentWorkOrder.inventoryQuantity,
-    inventoryStatus: Object.prototype.hasOwnProperty.call(savedPatch, "inventoryStatus")
+    inventoryStatus: hasRequestedField("inventoryStatus")
       ? savedPatch.inventoryStatus
       : currentWorkOrder.inventoryStatus,
     factoryOrderRequest: hasFactoryOrderRequestPatch
       ? (savedPatch.factoryOrderRequest ?? null)
       : currentWorkOrder.factoryOrderRequest,
-    orderEntries: hasOrderEntriesPatch && Array.isArray(savedPatch.orderEntries) ? savedPatch.orderEntries : currentWorkOrder.orderEntries,
-    materials: hasMaterialsPatch && Array.isArray(savedPatch.materials) ? savedPatch.materials : currentWorkOrder.materials,
-    outsourcing: hasOutsourcingPatch && Array.isArray(savedPatch.outsourcing) ? savedPatch.outsourcing : currentWorkOrder.outsourcing,
-    rejectionReason: Object.prototype.hasOwnProperty.call(savedPatch, "rejectionReason")
+    orderEntries: hasOrderEntriesPatch && Array.isArray(savedPatch.orderEntries)
+      ? savedPatch.orderEntries
+      : currentWorkOrder.orderEntries,
+    materials: hasMaterialsPatch && Array.isArray(savedPatch.materials)
+      ? savedPatch.materials
+      : currentWorkOrder.materials,
+    outsourcing: hasOutsourcingPatch && Array.isArray(savedPatch.outsourcing)
+      ? savedPatch.outsourcing
+      : currentWorkOrder.outsourcing,
+    rejectionReason: hasRequestedField("rejectionReason")
       ? (savedPatch.rejectionReason ?? null)
       : currentWorkOrder.rejectionReason,
-    rejectedAt: Object.prototype.hasOwnProperty.call(savedPatch, "rejectedAt")
+    rejectedAt: hasRequestedField("rejectedAt")
       ? (savedPatch.rejectedAt ?? null)
       : currentWorkOrder.rejectedAt,
-    rejectedByUserId: Object.prototype.hasOwnProperty.call(savedPatch, "rejectedByUserId")
+    rejectedByUserId: hasRequestedField("rejectedByUserId")
       ? (savedPatch.rejectedByUserId ?? null)
       : currentWorkOrder.rejectedByUserId,
-    rejectedByName: Object.prototype.hasOwnProperty.call(savedPatch, "rejectedByName")
+    rejectedByName: hasRequestedField("rejectedByName")
       ? (savedPatch.rejectedByName ?? null)
       : currentWorkOrder.rejectedByName,
     hasDetailSnapshot: currentWorkOrder.hasDetailSnapshot,
