@@ -226,7 +226,7 @@ export async function updateMaterialOrderStatus(input: {
 
 export async function cancelMaterialOrder(input: {
   materialOrderId: string;
-}): Promise<MaterialOrderWorkspaceMutationResult> {
+}): Promise<MaterialOrderWorkspaceSingleMutationResult> {
   return updateMaterialOrderStatus({
     materialOrderId: input.materialOrderId,
     status: MATERIAL_ORDER_STATUS.cancelled,
