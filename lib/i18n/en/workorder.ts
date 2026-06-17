@@ -79,11 +79,8 @@ export const workorderEn = {
     saveHistoryLabel: "Save",
     saveHistoryTimeFormat: "Saved at {time}",
     workOrderLabel: "Work order",
-    saveProcessingToast: "Updating work order information.",
-    saveCompletedToast: "Changes saved.",
     orderInfoLockedToast:
       "This change is blocked by the order info transition policy.",
-    saveFailedToast: "Information could not be updated.",
     reorderCreatedToastFormat: 'Reorder work order "{title}" has been created.',
     reorderFailedToast: "Failed to create reordered work order.",
     reworkConfirmFormat: 'Convert work order "{title}" to rework?',

@@ -2,7 +2,11 @@
 
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
-import { showWaflToast } from "@/components/common/ui";
+import {
+  WAFL_CHANGE_TARGET,
+  getWaflChangeFeedbackMessage,
+  showWaflToast,
+} from "@/components/common/ui";
 import {
   WORKORDER_EXPLICIT_SAVE_SCOPE,
   WORKORDER_SERVICE_CODE,
@@ -102,7 +106,7 @@ export function useWorkOrderLifecycleActions({
       const toastId = `workorder-save:${workOrder.id}`;
       showWaflToast({
         id: toastId,
-        message: lifecycleText.saveProcessingToast,
+        message: getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "changing"),
         tone: "loading",
         duration: 60_000,
       });
@@ -118,7 +122,7 @@ export function useWorkOrderLifecycleActions({
             error,
             kind: "repository",
             retryable: true,
-            message: lifecycleText.saveFailedToast ?? "Failed to save work order.",
+            message: getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "error"),
           }),
           task: async () => {
             setSaveStatus("saving");
@@ -140,19 +144,23 @@ export function useWorkOrderLifecycleActions({
           },
         });
 
-        showWaflToast({ id: toastId, message: lifecycleText.saveCompletedToast, tone: "success" });
+        showWaflToast({
+          id: toastId,
+          message: getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "changed"),
+          tone: "success",
+        });
       } catch (error) {
         setSaveStatus("dirty");
         showWaflToast({
           id: toastId,
           message: error instanceof Error && error.message.trim()
             ? error.message
-            : lifecycleText.saveFailedToast,
+            : getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.workOrder, "error"),
           tone: "danger",
         });
       }
     },
-    [currentUser, lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, lifecycleText.saveProcessingToast, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setWorkOrders],
+    [currentUser, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(
