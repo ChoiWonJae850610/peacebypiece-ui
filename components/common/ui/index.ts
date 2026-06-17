@@ -57,8 +57,10 @@ export * from "./WaflButton";
 export * from "./WaflCostSummary";
 export * from "./WaflToast";
 export { useWaflToastOperation, type WaflToastOperationState } from "./useWaflToastOperation";
+export type { WaflMutationError } from "@/lib/mutations/waflMutationError";
 export {
   useWaflMutation,
+  type WaflMutationContext,
   type WaflMutationMessages,
   type WaflMutationOptions,
   type WaflMutationRunner,

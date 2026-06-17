@@ -17,3 +17,13 @@
 - 모바일 하단 도구에서 자재 추가
 - 작업지시서 공장 전달사항 조회와 저장
 
+
+## 0.23.51 WAFL mutation runtime contract
+
+- 동일 resource/document lockKey의 중복 저장이 차단되는지 확인
+- 같은 sequenceKey에서 이전 응답이 최신 상태를 덮지 않는지 확인
+- onSuccess는 최신 revision에서만 실행되는지 확인
+- mutation 실패 시 변경 범위 rollback 확인
+- API 오류의 message/code/status 정규화 확인
+- rollback/onError 실패가 최초 mutation 오류를 대체하지 않는지 확인
+- 작업지시서 feedback wrapper의 rollback/getErrorMessage 옵션 확인
