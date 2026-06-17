@@ -58,7 +58,16 @@ export * from "./WaflCostSummary";
 export * from "./WaflToast";
 export { useWaflToastOperation, type WaflToastOperationState } from "./useWaflToastOperation";
 export { default as WaflSaveStatus, type WaflSaveStatusValue } from "./WaflSaveStatus";
-export { WAFL_SAVE_TARGET, getWaflSaveFeedbackMessage, type WaflSaveTarget, type WaflSaveFeedbackStatus } from "./waflSaveFeedback";
+export {
+  WAFL_CHANGE_TARGET,
+  WAFL_SAVE_TARGET,
+  getWaflChangeFeedbackMessage,
+  getWaflSaveFeedbackMessage,
+  type WaflChangeTarget,
+  type WaflChangeFeedbackStatus,
+  type WaflSaveTarget,
+  type WaflSaveFeedbackStatus,
+} from "./waflSaveFeedback";
 export { default as WaflDocumentField } from "./WaflDocumentField";
 
 export * from "./WaflState";

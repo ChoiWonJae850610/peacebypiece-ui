@@ -1,28 +1,59 @@
-export const WAFL_SAVE_TARGET = {
+export const WAFL_CHANGE_TARGET = {
   workOrder: "workOrder",
-  dueDate: "dueDate",
-  materialType: "materialType",
-  supplier: "supplier",
+  workOrderManager: "workOrderManager",
+  workOrderInventory: "workOrderInventory",
+  workOrderKind: "workOrderKind",
   factoryInstruction: "factoryInstruction",
+  materialOrderDueDate: "materialOrderDueDate",
+  materialOrderMaterialType: "materialOrderMaterialType",
+  materialOrderSupplier: "materialOrderSupplier",
 } as const;
 
-export type WaflSaveTarget = (typeof WAFL_SAVE_TARGET)[keyof typeof WAFL_SAVE_TARGET];
-export type WaflSaveFeedbackStatus = "saving" | "saved" | "error";
+export type WaflChangeTarget =
+  (typeof WAFL_CHANGE_TARGET)[keyof typeof WAFL_CHANGE_TARGET];
+export type WaflChangeFeedbackStatus = "changing" | "changed" | "error";
 
-const TARGET_LABEL: Record<WaflSaveTarget, string> = {
-  workOrder: "변경사항",
-  dueDate: "납기일",
-  materialType: "자재 종류",
-  supplier: "공급처",
-  factoryInstruction: "공장 전달사항",
+const TARGET_PROGRESS_LABEL: Record<WaflChangeTarget, string> = {
+  workOrder: "작업지시서 정보",
+  workOrderManager: "작업지시서 기본정보(담당자)",
+  workOrderInventory: "작업지시서 기본정보(재고)",
+  workOrderKind: "작업지시서 기본정보(분류)",
+  factoryInstruction: "작업지시서 공장 전달사항",
+  materialOrderDueDate: "발주서 기본정보(납기일)",
+  materialOrderMaterialType: "발주서 기본정보(자재 종류)",
+  materialOrderSupplier: "발주서 기본정보(공급처)",
 };
+
+export function getWaflChangeFeedbackMessage(
+  target: WaflChangeTarget,
+  status: WaflChangeFeedbackStatus,
+): string {
+  if (status === "changing") {
+    return `${TARGET_PROGRESS_LABEL[target]} 변경 중입니다.`;
+  }
+  if (status === "changed") return "정보가 변경되었습니다.";
+  return "정보를 변경하지 못했습니다.";
+}
+
+// 기존 호출부가 단계적으로 이관될 때까지 호환성을 유지한다.
+export const WAFL_SAVE_TARGET = {
+  workOrder: WAFL_CHANGE_TARGET.workOrder,
+  dueDate: WAFL_CHANGE_TARGET.materialOrderDueDate,
+  materialType: WAFL_CHANGE_TARGET.materialOrderMaterialType,
+  supplier: WAFL_CHANGE_TARGET.materialOrderSupplier,
+  factoryInstruction: WAFL_CHANGE_TARGET.factoryInstruction,
+} as const;
+
+export type WaflSaveTarget =
+  (typeof WAFL_SAVE_TARGET)[keyof typeof WAFL_SAVE_TARGET];
+export type WaflSaveFeedbackStatus = "saving" | "saved" | "error";
 
 export function getWaflSaveFeedbackMessage(
   target: WaflSaveTarget,
   status: WaflSaveFeedbackStatus,
 ): string {
-  const label = TARGET_LABEL[target];
-  if (status === "saving") return `${label} 저장 중입니다.`;
-  if (status === "saved") return `${label}이 저장되었습니다.`;
-  return `${label}을 저장하지 못했습니다.`;
+  return getWaflChangeFeedbackMessage(
+    target,
+    status === "saving" ? "changing" : status === "saved" ? "changed" : "error",
+  );
 }
