@@ -10,6 +10,12 @@ import { WaflMobileListDrawer } from "./WaflMobileShell";
 import WaflSideWorkspacePanel from "./WaflSideWorkspacePanel";
 import WaflTwoPanelWorkspace from "./WaflTwoPanelWorkspace";
 import { WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS } from "./waflWorkspaceSpacing";
+import {
+  WAFL_WORKSPACE_TOPBAR_SLOT_CLASS,
+  WAFL_TABLET_LIST_DRAWER_CLASS,
+  WAFL_WORKSPACE_LIST_DRAWER_BODY_CLASS,
+  WAFL_WORKSPACE_LIST_DRAWER_CONTENT_CLASS,
+} from "./waflWorkspaceChrome";
 
 type WaflTabletWorkspaceFrameProps = {
   appShellRef?: RefObject<HTMLDivElement | null>;
@@ -57,7 +63,7 @@ export default function WaflTabletWorkspaceFrame({
         className,
       )}
     >
-      <div className="shrink-0">{topbar}</div>
+      <div className={WAFL_WORKSPACE_TOPBAR_SLOT_CLASS}>{topbar}</div>
       <WaflMobileListDrawer
         open={listDrawerOpen}
         onClose={onCloseListDrawer}
@@ -66,9 +72,10 @@ export default function WaflTabletWorkspaceFrame({
         closeOverlayAria={listDrawerCloseAria}
         titleId={listDrawerTitleId}
         showHeader={false}
-        bodyClassName="!px-0 !py-0"
+        className={WAFL_TABLET_LIST_DRAWER_CLASS}
+        bodyClassName={WAFL_WORKSPACE_LIST_DRAWER_BODY_CLASS}
       >
-        <div className="min-h-[72dvh] min-w-0">{list}</div>
+        <div className={WAFL_WORKSPACE_LIST_DRAWER_CONTENT_CLASS}>{list}</div>
       </WaflMobileListDrawer>
       <WaflResponsiveWorkspace device="tablet">
         {workspaceOverlay}

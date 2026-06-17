@@ -10,6 +10,7 @@ import WaflListWorkspacePanel from "./WaflListWorkspacePanel";
 import WaflSideWorkspacePanel from "./WaflSideWorkspacePanel";
 import WaflThreePanelWorkspace from "./WaflThreePanelWorkspace";
 import { WAFL_WORKSPACE_PAGE_STACK_GAP_CLASS } from "./waflWorkspaceSpacing";
+import { WAFL_WORKSPACE_TOPBAR_SLOT_CLASS } from "./waflWorkspaceChrome";
 
 type WaflDesktopWorkspaceFrameProps = {
   appShellRef?: RefObject<HTMLDivElement | null>;
@@ -49,7 +50,7 @@ export default function WaflDesktopWorkspaceFrame({
         className,
       )}
     >
-      <div className="shrink-0">{topbar}</div>
+      <div className={WAFL_WORKSPACE_TOPBAR_SLOT_CLASS}>{topbar}</div>
       {beforeWorkspace}
       <WaflResponsiveWorkspace device="desktop">
         {workspaceOverlay}

@@ -8,6 +8,10 @@ import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
 import { WaflBadge, WaflButton, WaflLinkButton, WaflWorkspacePanel } from "@/components/common/ui";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import {
+  WAFL_WORKSPACE_TOPBAR_ACTIONS_CLASS,
+  WAFL_WORKSPACE_TOPBAR_LAYOUT_CLASS,
+} from "@/components/common/ui/waflWorkspaceChrome";
 
 type AdminTopbarProps = {
   companyName: string;
@@ -110,7 +114,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
 
   return (
     <WaflWorkspacePanel as="header" panelRole="toolbar" className="pbp-topbar-shell relative z-20 px-4 py-3 backdrop-blur sm:px-5 sm:py-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className={WAFL_WORKSPACE_TOPBAR_LAYOUT_CLASS}>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <WaflBadge tone="strong" size="md" className="pbp-topbar-chip-muted px-3 py-1.5 text-xs">{displayCompanyName}</WaflBadge>
@@ -119,7 +123,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--pbp-text-primary)] sm:text-2xl">{localizedTitle}</h1>
         </div>
 
-        <div key={reviveKey} className="relative z-30 flex shrink-0 flex-wrap gap-2">
+        <div key={reviveKey} className={WAFL_WORKSPACE_TOPBAR_ACTIONS_CLASS}>
           {onOpenMenu ? (
             <WaflButton
               variant="icon"
