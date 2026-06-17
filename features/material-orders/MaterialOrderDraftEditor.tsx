@@ -4,20 +4,15 @@ import { useEffect, useState } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
 import WorkflowValidationModal from "@/components/common/modal/WorkflowValidationModal";
 import ModalShell from "@/components/common/modal/ModalShell";
-import {
-  WaflEmptyCard,
-  WaflMobileListDrawer,
-  WaflMobileWorkspaceFrame,
-  WaflButton,
-  WaflDesktopWorkspaceFrame,
-  WaflTabletWorkspaceFrame,
-  type WaflSegmentedTabItem,
-} from "@/components/common/ui";
+import { WaflButton } from "@/components/common/ui";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import MaterialOrderAllocationPanel from "@/features/material-orders/MaterialOrderAllocationPanel";
 import MaterialOrderDetailPanel from "@/features/material-orders/MaterialOrderDetailPanel";
 import MaterialOrderListPanel from "@/features/material-orders/MaterialOrderListPanel";
 import MaterialOrderLineAddModal from "@/features/material-orders/components/MaterialOrderLineAddModal";
+import MaterialOrderDesktopWorkspaceView from "@/features/material-orders/layout/MaterialOrderDesktopWorkspaceView";
+import MaterialOrderMobileWorkspaceView from "@/features/material-orders/layout/MaterialOrderMobileWorkspaceView";
+import MaterialOrderTabletWorkspaceView from "@/features/material-orders/layout/MaterialOrderTabletWorkspaceView";
 import { useMaterialOrderDraftEditor } from "@/features/material-orders/hooks/useMaterialOrderDraftEditor";
 import { APP_VERSION } from "@/lib/constants/version";
 import { MATERIAL_ORDER_STATUS } from "@/lib/material-orders/types";
@@ -26,24 +21,6 @@ import { useWorkspaceToolState } from "@/lib/hooks/workspace/useWorkspaceToolSta
 import { useWorkspaceLayoutMode } from "@/lib/responsive/useWorkspaceLayoutMode";
 
 type MaterialOrderMobileToolKey = "workorders" | "schedule";
-
-function SearchIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m20.2 20.2-4.4-4.4" />
-      <circle cx="10.8" cy="10.8" r="6.1" />
-    </svg>
-  );
-}
 
 export default function MaterialOrderDraftEditor({
   companyName,
@@ -272,135 +249,53 @@ export default function MaterialOrderDraftEditor({
 
   if (useTabletTwoPanel) {
     return (
-      <>
-        {validationModal}
-        <WaflTabletWorkspaceFrame
-          topbar={topbar}
-          listDrawerOpen={mobileOrderListDrawerOpen}
-          onCloseListDrawer={() => setMobileOrderListDrawerOpen(false)}
-          listDrawerTitle="발주서 목록"
-          listDrawerTitleId="material-order-tablet-drawer-title"
-          listDrawerCloseAria="발주서 목록 드로어 닫기"
-          list={(
-            <MaterialOrderListPanel
-              orders={orders}
-              selectedOrderId={selectedOrderId}
-              loading={ordersLoading}
-              errorMessage={ordersError}
-              creating={creatingOrder}
-              onSelectOrder={handleSelectOrder}
-              onCreateOrder={createOrder}
-              onCancelOrder={cancelOrder}
-              onRetry={() => void refreshOrders()}
-              selectedDraftMaterialType={materialType}
-              selectedDraftSupplierName={selectedDraftSupplierName}
-            />
-          )}
-          detail={detailPanel}
-          side={allocationPanel}
-          scrollResetKey={selectedOrderId}
-          workspaceOverlay={statusToast}
-        />
-      </>
+      <MaterialOrderTabletWorkspaceView
+        topbar={topbar}
+        list={listPanel}
+        detail={detailPanel}
+        side={allocationPanel}
+        validationModal={validationModal}
+        workspaceOverlay={statusToast}
+        listDrawerOpen={mobileOrderListDrawerOpen}
+        onCloseListDrawer={() => setMobileOrderListDrawerOpen(false)}
+        scrollResetKey={selectedOrderId}
+      />
     );
   }
 
   if (useDrawerNavigation) {
-    const mobileToolTabs: Array<
-      WaflSegmentedTabItem<MaterialOrderMobileToolKey>
-    > = [
-      { key: "workorders", label: "작업지시서" },
-      { key: "schedule", label: "PDF·납기" },
-    ];
-
     return (
-      <>
-        {validationModal}
-        <WaflMobileWorkspaceFrame
-          topbar={topbar}
-          drawer={(
-            <WaflMobileListDrawer
-              open={mobileOrderListDrawerOpen}
-              onClose={() => setMobileOrderListDrawerOpen(false)}
-              title="발주서 목록"
-              closeLabel="닫기"
-              closeOverlayAria="발주서 목록 드로어 닫기"
-              titleId="material-order-mobile-drawer-title"
-              showHeader={false}
-            >
-              <div className="min-h-[72dvh] min-w-0">
-                <MaterialOrderListPanel
-                      orders={orders}
-                  selectedOrderId={selectedOrderId}
-                  loading={ordersLoading}
-                  errorMessage={ordersError}
-                  creating={creatingOrder}
-                  onSelectOrder={handleSelectOrder}
-                  onCreateOrder={createOrder}
-                  onCancelOrder={cancelOrder}
-                  onRetry={() => void refreshOrders()}
-                  selectedDraftMaterialType={materialType}
-                  selectedDraftSupplierName={selectedDraftSupplierName}
-                />
-              </div>
-            </WaflMobileListDrawer>
-          )}
-          detail={detailPanel}
-          workspaceOverlay={statusToast}
-          scrollResetKey={selectedOrderId}
-          hasSelection={Boolean(selectedOrderId)}
-          actionAriaLabel="발주 대상 선택 열기"
-          actionTitle="발주 대상 작업지시서와 자재 선택 도구를 엽니다."
-          actionLabel="발주 대상"
-          actionIcon={<SearchIcon />}
-          toolTitle="발주 대상"
-          toolTabs={mobileToolTabs}
-          defaultTool="workorders"
-          toolAriaLabel="원단·부자재 작업지시서 및 자재 선택 도구"
-          toolOpen={mobileToolSheetOpen}
-          onToolOpenChange={setMobileToolSheetOpen}
-          activeTool={mobileActiveTool}
-          onActiveToolChange={setMobileActiveTool}
-          presentation={drawerOverlayPresentation}
-          sheetContentClassName={drawerOverlayPresentation === "modal" ? "px-5 py-5" : undefined}
-          contentClassName="gap-3"
-          renderTool={(activeTool: MaterialOrderMobileToolKey) => (
-            <>
-              {activeTool === "workorders" ? (
-                <div className={drawerOverlayPresentation === "modal" ? "min-h-0 min-w-0" : "min-h-[58dvh] min-w-0"}>{allocationPanel}</div>
-              ) : null}
-              {activeTool === "schedule" ? (
-                <WaflEmptyCard
-                  component="material-order-schedule-empty"
-                  className="min-h-[42dvh] p-4 text-left"
-                >
-                  <p className="text-sm font-bold pbp-text-primary">PDF·납기</p>
-                  <p className="mt-2 text-xs leading-5 pbp-text-muted">
-                    PDF 생성과 납기 입력 액션은 후속 기능 연결 시 이 탭에
-                    배치합니다.
-                  </p>
-                </WaflEmptyCard>
-              ) : null}
-            </>
-          )}
-        />
-      </>
+      <MaterialOrderMobileWorkspaceView
+        topbar={topbar}
+        list={listPanel}
+        detail={detailPanel}
+        allocationPanel={allocationPanel}
+        validationModal={validationModal}
+        workspaceOverlay={statusToast}
+        listDrawerOpen={mobileOrderListDrawerOpen}
+        onCloseListDrawer={() => setMobileOrderListDrawerOpen(false)}
+        scrollResetKey={selectedOrderId}
+        hasSelection={Boolean(selectedOrderId)}
+        toolOpen={mobileToolSheetOpen}
+        onToolOpenChange={setMobileToolSheetOpen}
+        activeTool={mobileActiveTool}
+        onActiveToolChange={setMobileActiveTool}
+        presentation={drawerOverlayPresentation}
+      />
     );
   }
 
   if (useThreePanel) {
     return (
-      <>
-        {validationModal}
-        <WaflDesktopWorkspaceFrame
-          topbar={topbar}
-          list={listPanel}
-          detail={detailPanel}
-          side={allocationPanel}
-          scrollResetKey={selectedOrderId}
-          workspaceOverlay={statusToast}
-        />
-      </>
+      <MaterialOrderDesktopWorkspaceView
+        topbar={topbar}
+        list={listPanel}
+        detail={detailPanel}
+        side={allocationPanel}
+        validationModal={validationModal}
+        workspaceOverlay={statusToast}
+        scrollResetKey={selectedOrderId}
+      />
     );
   }
 
