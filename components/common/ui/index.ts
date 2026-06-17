@@ -57,6 +57,12 @@ export * from "./WaflButton";
 export * from "./WaflCostSummary";
 export * from "./WaflToast";
 export { useWaflToastOperation, type WaflToastOperationState } from "./useWaflToastOperation";
+export {
+  useWaflMutation,
+  type WaflMutationMessages,
+  type WaflMutationOptions,
+  type WaflMutationRunner,
+} from "./useWaflMutation";
 export { default as WaflSaveStatus, type WaflSaveStatusValue } from "./WaflSaveStatus";
 export {
   WAFL_CHANGE_TARGET,

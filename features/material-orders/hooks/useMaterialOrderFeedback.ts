@@ -4,7 +4,7 @@ import { useCallback } from "react";
 
 import {
   getWaflChangeFeedbackMessage,
-  useWaflToastOperation,
+  useWaflMutation,
   type WaflChangeFeedbackStatus,
   type WaflChangeTarget,
 } from "@/components/common/ui";
@@ -12,9 +12,12 @@ import {
 export function useMaterialOrderFeedback() {
   const {
     operation,
+    isLocked,
+    isLockActive,
     showOperationToast,
     clearOperationToast,
-  } = useWaflToastOperation("material-order-operation");
+    runMutation,
+  } = useWaflMutation("material-order-operation");
 
   const showChangeFeedback = useCallback(
     (
@@ -36,10 +39,33 @@ export function useMaterialOrderFeedback() {
     [showOperationToast],
   );
 
+  const runChangeOperation = useCallback(
+    async <T,>(
+      target: WaflChangeTarget,
+      operationId: string,
+      task: () => T | Promise<T>,
+      lockKey = operationId,
+    ): Promise<T | undefined> =>
+      runMutation({
+        lockKey,
+        operationId,
+        messages: {
+          loading: getWaflChangeFeedbackMessage(target, "changing"),
+          success: getWaflChangeFeedbackMessage(target, "changed"),
+          error: getWaflChangeFeedbackMessage(target, "error"),
+        },
+        mutation: task,
+      }),
+    [runMutation],
+  );
+
   return {
     operation,
+    isLocked,
+    isLockActive,
     showOperationToast,
     clearOperationToast,
     showChangeFeedback,
+    runChangeOperation,
   };
 }

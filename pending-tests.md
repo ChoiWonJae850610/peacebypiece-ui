@@ -340,3 +340,11 @@
 - [ ] 자재 종류 변경 시 공급처·품목·할당만 초기화되는지 확인
 - [ ] 공급처·납기일만 변경할 때 다른 발주서 정보가 유지되는지 확인
 - [ ] 수동 Build, DB/API Smoke, Permissions Test, E2E 확인
+
+## 0.23.36 이후 추가 확인
+- 동일 작업지시서 lock key로 mutation을 연속 실행했을 때 두 번째 요청이 실행되지 않는지 확인
+- 동일 발주서 lock key로 mutation을 연속 실행했을 때 두 번째 요청이 실행되지 않는지 확인
+- loading 토스트가 mutation Promise 완료 전 success로 바뀌지 않는지 확인
+- mutation 성공 시 동일 operation ID의 토스트가 녹색 success로 교체되는지 확인
+- mutation 실패 시 rollback callback 실행 후 빨간 danger 토스트가 표시되는지 확인
+- mutation 완료 후 lock이 정상 해제되는지 확인
