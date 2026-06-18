@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "runtime": ["development", "dev", "local", "test", "demo"],
+  "productionAllowed": false,
+  "idPrefix": "wafl-fn",
+  "companies": [
+    {"id":"wafl-fn-company-a","code":"A","name":"기본 운영사","plan":"basic","status":"active","billing":"trial","memberLimit":10,"members":3,"scale":"small","workorders":10,"materialOrders":8,"partners":12,"files":8,"notifications":20,"purpose":["기본 정상 흐름","작업지시서 수정"]},
+    {"id":"wafl-fn-company-b","code":"B","name":"협업 운영사","plan":"pro","status":"active","billing":"active","memberLimit":30,"members":20,"scale":"medium","workorders":100,"materialOrders":60,"partners":50,"files":80,"notifications":300,"purpose":["권한 조합","다중 사용자 협업"]},
+    {"id":"wafl-fn-company-c","code":"C","name":"승인 대기사","plan":"trial","status":"pending","billing":"trial","memberLimit":5,"members":2,"scale":"empty","workorders":0,"materialOrders":0,"partners":0,"files":2,"notifications":0,"purpose":["회사 가입 승인","시스템관리자 검토"]},
+    {"id":"wafl-fn-company-d","code":"D","name":"파일 반려사","plan":"basic","status":"file-rejected","billing":"trial","memberLimit":10,"members":5,"scale":"small","workorders":12,"materialOrders":5,"partners":8,"files":6,"notifications":15,"purpose":["회사 파일 반려","재입력"]},
+    {"id":"wafl-fn-company-e","code":"E","name":"이용 중지사","plan":"pro","status":"suspended","billing":"past-due","memberLimit":30,"members":10,"scale":"medium","workorders":80,"materialOrders":40,"partners":30,"files":40,"notifications":150,"purpose":["접근 차단","재활성화"]},
+    {"id":"wafl-fn-company-f","code":"F","name":"탈퇴 요청사","plan":"basic","status":"withdrawal-requested","billing":"active","memberLimit":10,"members":4,"scale":"small","workorders":20,"materialOrders":10,"partners":10,"files":12,"notifications":30,"purpose":["회사 탈퇴 요청","데이터 보존"]},
+    {"id":"wafl-fn-company-g","code":"G","name":"인원 한도사","plan":"basic","status":"active","billing":"active","memberLimit":10,"members":10,"scale":"medium","workorders":70,"materialOrders":25,"partners":25,"files":25,"notifications":100,"purpose":["멤버 한도","요금제 제한"]},
+    {"id":"wafl-fn-company-h","code":"H","name":"대량 운영사","plan":"enterprise-assumed","status":"active","billing":"active","memberLimit":200,"members":100,"scale":"large","workorders":1000,"materialOrders":500,"partners":200,"files":500,"notifications":5000,"purpose":["성능 기준선","대량 목록"]},
+    {"id":"wafl-fn-company-i","code":"I","name":"과거 데이터사","plan":"pro","status":"active","billing":"active","memberLimit":30,"members":15,"scale":"medium","workorders":120,"materialOrders":70,"partners":35,"files":60,"notifications":220,"purpose":["납기 누락","legacy null 처리"]},
+    {"id":"wafl-fn-company-j","code":"J","name":"경계값 전용사","plan":"test","status":"active","billing":"test","memberLimit":999,"members":24,"scale":"edge","workorders":160,"materialOrders":90,"partners":45,"files":100,"notifications":400,"purpose":["예외 입력","동시성","rollback","tenant 격리"]}
+  ],
+  "roles": ["system-admin","company-admin","designer","inventory-manager","inspector","viewer","pending-member","suspended-member"],
+  "commands": {
+    "seed":"node scripts/functions-test-data.mjs seed --dry-run",
+    "reset":"node scripts/functions-test-data.mjs reset --dry-run",
+    "cleanup":"node scripts/functions-test-data.mjs cleanup --dry-run",
+    "summary":"node scripts/functions-test-data.mjs summary"
+  }
+}

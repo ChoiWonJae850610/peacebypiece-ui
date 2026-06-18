@@ -159,3 +159,10 @@
 - 자동화 유형·파일 경로·테스트 데이터 세트·최근 결과 표시
 - 기존 검색·영역·분류·자동화 상태 필터 동작 유지
 - production 접근 차단과 기존 업무 route 무영향 확인
+
+## 0.23.64 `/functions` 테스트 데이터 기반
+- `/functions`에서 회사 10개 및 총 데이터 규모 요약 표시
+- `npm run test:data:functions` 요약 출력
+- seed/reset/cleanup 명령이 실제 DB를 변경하지 않고 dry-run 계획만 출력
+- production 또는 runtime 미설정 상태에서 execute 요청 차단
+- fixture 고정 ID와 회사 A~J 시나리오 중복 없음

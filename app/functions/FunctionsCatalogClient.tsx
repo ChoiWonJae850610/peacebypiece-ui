@@ -9,6 +9,7 @@ import {
   WaflInput,
   WaflSurface,
 } from "@/components/common/ui";
+import { WAFL_TEST_DATA_CATALOG, WAFL_TEST_DATA_TOTALS } from "@/lib/functions/testDataCatalog";
 import {
   WAFL_AUTOMATION_STATUS_LABELS,
   WAFL_FUNCTION_CATEGORY_LABELS,
@@ -96,6 +97,38 @@ export default function FunctionsCatalogClient({
         </WaflSurface>
 
         <WaflSurface className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-bold">테스트 데이터 기반</h2>
+              <p className="mt-1 text-sm text-[var(--pbp-text-secondary)]">고정 ID 회사 10개와 역할·요금제·상태·데이터 규모 조합을 dev/test 전용 fixture로 관리합니다.</p>
+            </div>
+            <WaflBadge tone="warning" size="sm">실제 DB 실행 보류 · dry-run only</WaflBadge>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            {[
+              ["회사", WAFL_TEST_DATA_TOTALS.companies],
+              ["멤버", WAFL_TEST_DATA_TOTALS.members],
+              ["작업지시서", WAFL_TEST_DATA_TOTALS.workorders],
+              ["발주서", WAFL_TEST_DATA_TOTALS.materialOrders],
+              ["거래처", WAFL_TEST_DATA_TOTALS.partners],
+              ["파일", WAFL_TEST_DATA_TOTALS.files],
+              ["알림", WAFL_TEST_DATA_TOTALS.notifications],
+            ].map(([label, value]) => (
+              <WaflSurface key={String(label)} tone="muted" shape="control" className="px-3 py-2">
+                <div className="text-xs text-[var(--pbp-text-secondary)]">{label}</div>
+                <div className="mt-1 font-bold">{value}</div>
+              </WaflSurface>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--pbp-text-muted)]">
+            <span>fixture v{WAFL_TEST_DATA_CATALOG.schemaVersion}</span>
+            <span>· 역할 {WAFL_TEST_DATA_CATALOG.roles.length}종</span>
+            <span>· production 실행 차단</span>
+            <span>· seed/reset/cleanup 계획만 제공</span>
+          </div>
+        </WaflSurface>
+
+        <WaflSurface className="p-4">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
             <WaflInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="기능 ID, 화면, 제목 검색" className="xl:col-span-2" />
             <select className="w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm" value={area} onChange={(event) => setArea(event.target.value)}>
@@ -170,7 +203,7 @@ export default function FunctionsCatalogClient({
                 <WaflSurface tone="muted" shape="control" className="px-4 py-3 text-sm">
                   <div>자동화 상태: <strong>{WAFL_AUTOMATION_STATUS_LABELS[selected.automationStatus]}</strong></div>
                   <div className="mt-1 text-[var(--pbp-text-secondary)]">파일: {selected.automation.filePath ?? "미연결"} · 데이터 세트: {selected.automation.testDataSet ?? "미연결"}</div>
-                  <div className="mt-1 text-[var(--pbp-text-secondary)]">0.23.63에서는 실행 기능 없이 시나리오 데이터 계약과 연결 상태만 제공합니다.</div>
+                  <div className="mt-1 text-[var(--pbp-text-secondary)]">0.23.64에서는 fixture와 dry-run 계획만 제공하며 실제 DB seed 실행은 보류합니다.</div>
                 </WaflSurface>
               </div>
             ) : <div className="flex min-h-[400px] items-center justify-center text-sm text-[var(--pbp-text-muted)]">기능을 선택하세요.</div>}
