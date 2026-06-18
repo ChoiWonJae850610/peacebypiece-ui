@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import type { CompanyThemeColor } from "@/lib/admin/settings/companyTypes";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import {
   ADMIN_THEME_CHANGE_EVENT,
   ADMIN_THEME_STORAGE_KEY,
@@ -19,9 +20,12 @@ type ThemeEvent = CustomEvent<{ theme?: unknown }>;
 
 async function fetchCurrentTheme(): Promise<CompanyThemeColor | null> {
   try {
-    const response = await fetch("/api/admin/companies/current", { cache: "no-store" });
-    const payload = (await response.json().catch(() => null)) as { settings?: { ui?: { themeColor?: unknown } } } | null;
-    const theme = payload?.settings?.ui?.themeColor;
+    const payload = await waflLegacyApiRequest<{ settings?: { ui?: { themeColor?: unknown } } }>(
+      "/api/admin/companies/current",
+      { method: "GET", cache: "no-store" },
+      "회사 테마를 불러오지 못했습니다.",
+    );
+    const theme = payload.settings?.ui?.themeColor;
     return isCompanyThemeColor(theme) ? theme : null;
   } catch {
     return null;
@@ -37,11 +41,13 @@ export default function AdminThemeScope({ children, initialTheme = DEFAULT_ADMIN
     if (hasStoredTheme) {
       setTheme(storedTheme);
     } else {
-      void fetchCurrentTheme().then((currentTheme) => {
+      const loadCurrentTheme = async () => {
+        const currentTheme = await fetchCurrentTheme();
         if (!currentTheme) return;
         setTheme(currentTheme);
         window.localStorage.setItem(ADMIN_THEME_STORAGE_KEY, currentTheme);
-      });
+      };
+      void loadCurrentTheme();
     }
 
     const handleThemeChange = (event: Event) => {

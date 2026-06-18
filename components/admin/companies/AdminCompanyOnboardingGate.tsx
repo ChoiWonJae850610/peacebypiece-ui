@@ -5,6 +5,8 @@ import { type ChangeEvent, type InputHTMLAttributes, type KeyboardEvent, type Re
 import { useI18n } from "@/lib/i18n";
 import { formatBusinessRegistrationNumber } from "@/lib/utils/businessRegistrationFormat";
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
+import { WaflApiError } from "@/lib/api/waflApiTypes";
 
 type CompanyOnboardingFileType = "logo" | "business_license";
 
@@ -457,20 +459,21 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
       setLoadState("loading");
       setErrorMessage(null);
       try {
-        const response = await fetch("/api/admin/companies/onboarding", {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-
-        if (response.status === 401 || response.status === 404) {
-          setLoadState("loaded");
-          return;
+        let payload: CompanyOnboardingResponse;
+        try {
+          payload = await waflLegacyApiRequest<CompanyOnboardingResponse>(
+            "/api/admin/companies/onboarding",
+            { method: "GET", cache: "no-store", signal: controller.signal },
+            "회사 온보딩 정보를 불러오지 못했습니다.",
+          );
+        } catch (error) {
+          if (error instanceof WaflApiError && (error.status === 401 || error.status === 404)) {
+            setLoadState("loaded");
+            return;
+          }
+          throw error;
         }
-
-        const payload = (await response.json()) as CompanyOnboardingResponse;
-        if (!response.ok || !payload.profile) {
-          throw new Error(payload.error ?? "COMPANY_ONBOARDING_LOAD_FAILED");
-        }
+        if (!payload.profile) throw new Error(payload.error ?? "COMPANY_ONBOARDING_LOAD_FAILED");
 
         setProfile(payload.profile);
         setDraft(buildDraft(payload.profile));
@@ -524,14 +527,12 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
     setAddressSearchError(null);
 
     try {
-      const response = await fetch(`/api/address/search?keyword=${encodeURIComponent(keyword)}`, {
-        cache: "no-store",
-      });
-      const payload = (await response.json()) as AddressSearchResponse;
-
-      if (!response.ok || payload.error) {
-        throw new Error(payload.error ?? "ADDRESS_SEARCH_FAILED");
-      }
+      const payload = await waflLegacyApiRequest<AddressSearchResponse>(
+        `/api/address/search?keyword=${encodeURIComponent(keyword)}`,
+        { method: "GET", cache: "no-store" },
+        copy.addressSearch.errors.failed,
+      );
+      if (payload.error) throw new Error(payload.error);
 
       setAddressSearchResults(payload.items ?? []);
       setAddressSearchState("loaded");
@@ -672,15 +673,12 @@ export default function AdminCompanyOnboardingGate({ children, initialAccessStat
       if (selectedFiles.logo) formData.append("logo", selectedFiles.logo);
       if (selectedFiles.business_license) formData.append("business_license", selectedFiles.business_license);
 
-      const response = await fetch("/api/admin/companies/onboarding", {
-        method: "PATCH",
-        body: formData,
-      });
-      const payload = (await response.json()) as CompanyOnboardingResponse;
-
-      if (!response.ok || !payload.profile) {
-        throw new Error(payload.error ?? "COMPANY_ONBOARDING_SAVE_FAILED");
-      }
+      const payload = await waflLegacyApiRequest<CompanyOnboardingResponse>(
+        "/api/admin/companies/onboarding",
+        { method: "PATCH", body: formData },
+        copy.errors.save,
+      );
+      if (!payload.profile) throw new Error(payload.error ?? "COMPANY_ONBOARDING_SAVE_FAILED");
 
       setProfile(payload.profile);
       setDraft(buildDraft(payload.profile));

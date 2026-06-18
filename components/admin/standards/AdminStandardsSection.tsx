@@ -14,6 +14,7 @@ import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/adm
 import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 type StandardAction = {
   key: "logs" | "filePolicy" | "notifications";
@@ -142,19 +143,21 @@ async function submitStandardAdditionRequest(target: StandardRequestTarget, name
     ? `${targetLabel} 추가 요청\n\n요청 항목: ${name}\n요청 사유: ${normalizedReason}`
     : `${targetLabel} 추가 요청\n\n요청 항목: ${name}\n요청 사유: 기준정보 화면에서 추가 요청했습니다.`;
 
-  const response = await fetch("/api/admin/settings/feedback", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      feedbackType: "improvement",
-      title: `${targetLabel} 추가 요청: ${name}`,
-      message,
-      source: `admin_settings_standards_${target}`,
-    }),
-  });
-
-  const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
-  if (!response.ok || !payload?.ok) throw new Error(payload?.error ?? "STANDARD_REQUEST_CREATE_FAILED");
+  const payload = await waflLegacyApiRequest<{ ok?: boolean; error?: string }>(
+    "/api/admin/settings/feedback",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        feedbackType: "improvement",
+        title: `${targetLabel} 추가 요청: ${name}`,
+        message,
+        source: `admin_settings_standards_${target}`,
+      }),
+    },
+    "기준정보 추가 요청을 접수하지 못했습니다.",
+  );
+  if (!payload.ok) throw new Error(payload.error ?? "STANDARD_REQUEST_CREATE_FAILED");
 }
 
 export default function AdminStandardsSection({ mode = "full", capabilities }: AdminStandardsSectionProps) {
@@ -187,29 +190,30 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     const requestId = standardsLoadSeqRef.current + 1;
     standardsLoadSeqRef.current = requestId;
 
-    fetchAdminStandardProcessesFromApi()
-      .then((payload) => {
+    const loadStandards = async () => {
+      try {
+        const processPayload = await fetchAdminStandardProcessesFromApi();
         if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
-        setProcessDefinitions(payload.processDefinitions ?? []);
-      })
-      .catch(() => {
+        setProcessDefinitions(processPayload.processDefinitions ?? []);
+      } catch {
         if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         setProcessDefinitions([]);
-      });
+      }
 
-    fetchAdminStandardsFromApi()
-      .then((payload) => {
+      try {
+        const payload = await fetchAdminStandardsFromApi();
         if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         setUnitDefinitions(Array.isArray(payload.units) ? payload.units : []);
         setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : []);
         setDefaultItemCategoryDefinitions(Array.isArray(payload.defaultItemCategories) ? payload.defaultItemCategories : []);
-      })
-      .catch(() => {
+      } catch {
         if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         setUnitDefinitions([]);
         setItemCategoryDefinitions([]);
         setDefaultItemCategoryDefinitions([]);
-      });
+      }
+    };
+    void loadStandards();
 
     return () => {
       isMounted = false;
@@ -281,12 +285,17 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
       if (!canManageStandards) return;
       setItemSavingId(savingId);
       setItemInlineError("");
-      saveAdminItemCategoriesToApi(nextCategories)
-        .then((payload) => {
+      const save = async () => {
+        try {
+          const payload = await saveAdminItemCategoriesToApi(nextCategories);
           setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : nextCategories);
-        })
-        .catch(() => setItemInlineError(t("standards.section.saveItemFailed", "생산품 유형 저장에 실패했습니다. 연결 상태를 확인하세요.")))
-        .finally(() => setItemSavingId(null));
+        } catch {
+          setItemInlineError(t("standards.section.saveItemFailed", "생산품 유형 저장에 실패했습니다. 연결 상태를 확인하세요."));
+        } finally {
+          setItemSavingId(null);
+        }
+      };
+      void save();
     },
     [canManageStandards, t],
   );
@@ -360,7 +369,7 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
     setRequestSubmitState("idle");
   }, [requestSubmitState]);
 
-  const submitRequest = useCallback(() => {
+  const submitRequest = useCallback(async () => {
     if (!requestTarget || requestSubmitState === "submitting") return;
     const name = requestName.trim().replace(/\s+/g, " ");
     if (name.length < 2) {
@@ -371,17 +380,16 @@ export default function AdminStandardsSection({ mode = "full", capabilities }: A
 
     setRequestSubmitState("submitting");
     setRequestNotice("");
-    submitStandardAdditionRequest(requestTarget, name, requestReason)
-      .then(() => {
-        setRequestSubmitState("success");
-        setRequestName("");
-        setRequestReason("");
-        setRequestNotice(t("standards.request.success", "추가 요청을 접수했습니다. 처리 결과는 문의 이력에서 확인할 수 있습니다."));
-      })
-      .catch(() => {
-        setRequestSubmitState("failed");
-        setRequestNotice(t("standards.request.failed", "추가 요청을 접수하지 못했습니다. 잠시 후 다시 시도하세요."));
-      });
+    try {
+      await submitStandardAdditionRequest(requestTarget, name, requestReason);
+      setRequestSubmitState("success");
+      setRequestName("");
+      setRequestReason("");
+      setRequestNotice(t("standards.request.success", "추가 요청을 접수했습니다. 처리 결과는 문의 이력에서 확인할 수 있습니다."));
+    } catch {
+      setRequestSubmitState("failed");
+      setRequestNotice(t("standards.request.failed", "추가 요청을 접수하지 못했습니다. 잠시 후 다시 시도하세요."));
+    }
   }, [requestName, requestReason, requestSubmitState, requestTarget, t]);
 
   const policyActions: StandardAction[] = [

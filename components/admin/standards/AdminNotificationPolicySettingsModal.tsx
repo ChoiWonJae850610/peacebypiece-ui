@@ -7,6 +7,7 @@ import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
 import { DEFAULT_COMPANY_SETTINGS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 type AdminNotificationPolicySettingsModalProps = {
   open: boolean;
@@ -38,20 +39,24 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
     setLoading(true);
     setErrorMessage(null);
 
-    fetch("/api/admin/companies/current", { method: "GET", cache: "no-store" })
-      .then((response) => response.json())
-      .then((payload: { settings?: CompanySettings; message?: string }) => {
+    const loadSettings = async () => {
+      try {
+        const payload = await waflLegacyApiRequest<{ settings?: CompanySettings; message?: string }>(
+          "/api/admin/companies/current",
+          { method: "GET", cache: "no-store" },
+          t("standards.notificationPolicy.loadFailed", "알림 정책을 불러오지 못했습니다."),
+        );
         if (!isMounted) return;
         if (payload.settings) setDraft(payload.settings);
         else if (payload.message) setErrorMessage(payload.message);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!isMounted) return;
         setErrorMessage(error instanceof Error ? error.message : t("standards.notificationPolicy.loadFailed", "알림 정책을 불러오지 못했습니다."));
-      })
-      .finally(() => {
+      } finally {
         if (isMounted) setLoading(false);
-      });
+      }
+    };
+    void loadSettings();
 
     return () => {
       isMounted = false;

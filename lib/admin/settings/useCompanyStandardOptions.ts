@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { AdminStandardsPayload } from "@/lib/admin/settings/standardsTypes";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 function normalizeUniqueOptions(values: string[]): string[] {
   const seen = new Set<string>();
@@ -31,24 +32,28 @@ export function useCompanyStandardOptions() {
   useEffect(() => {
     let isMounted = true;
 
-    fetch("/api/admin/standards", { method: "GET", cache: "no-store" })
-      .then(async (response) => (await response.json()) as AdminStandardsPayload)
-      .then((payload) => {
+    const loadOptions = async () => {
+      try {
+        const payload = await waflLegacyApiRequest<AdminStandardsPayload>(
+          "/api/admin/standards",
+          { method: "GET", cache: "no-store" },
+          "회사 기준정보를 불러오지 못했습니다.",
+        );
         if (!isMounted) return;
         const activeUnitLabels = normalizeUniqueOptions(
           (Array.isArray(payload.units) ? payload.units : [])
             .filter((unit) => unit.is_active !== false)
             .map((unit) => unit.name || unit.code),
         );
-
         setMaterialUnitOptions(activeUnitLabels);
         setPriceBasisOptions(normalizeUniqueOptions(activeUnitLabels.map(buildPriceBasisLabel)));
-      })
-      .catch(() => {
+      } catch {
         if (!isMounted) return;
         setMaterialUnitOptions([]);
         setPriceBasisOptions([]);
-      });
+      }
+    };
+    void loadOptions();
 
     return () => {
       isMounted = false;

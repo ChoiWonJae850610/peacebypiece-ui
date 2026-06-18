@@ -12,6 +12,7 @@ import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS, DEFAULT_COMPANY_SETTINGS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 type AdminFilePolicySettingsModalProps = {
   open: boolean;
@@ -32,20 +33,24 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
     setLoading(true);
     setErrorMessage(null);
 
-    fetch("/api/admin/companies/current", { method: "GET", cache: "no-store" })
-      .then((response) => response.json())
-      .then((payload: { settings?: CompanySettings; message?: string }) => {
+    const loadSettings = async () => {
+      try {
+        const payload = await waflLegacyApiRequest<{ settings?: CompanySettings; message?: string }>(
+          "/api/admin/companies/current",
+          { method: "GET", cache: "no-store" },
+          t("standards.filePolicy.loadFailed", "파일 정책을 불러오지 못했습니다."),
+        );
         if (!isMounted) return;
         if (payload.settings) setDraft({ ...payload.settings, filePolicy: normalizeAdminFilePolicyDraft(payload.settings.filePolicy) });
         else if (payload.message) setErrorMessage(payload.message);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!isMounted) return;
         setErrorMessage(error instanceof Error ? error.message : t("standards.filePolicy.loadFailed", "파일 정책을 불러오지 못했습니다."));
-      })
-      .finally(() => {
+      } finally {
         if (isMounted) setLoading(false);
-      });
+      }
+    };
+    void loadSettings();
 
     return () => {
       isMounted = false;

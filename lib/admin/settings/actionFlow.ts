@@ -1,5 +1,6 @@
 import { buildCompanySettingsUpdateInput } from "@/lib/admin/settings/presentation";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 export type AdminSettingsSaveFlowResult = {
   ok: boolean;
@@ -9,26 +10,21 @@ export type AdminSettingsSaveFlowResult = {
 
 export async function runSaveCompanySettingsFlow(draft: CompanySettings): Promise<AdminSettingsSaveFlowResult> {
   try {
-    const response = await fetch("/api/admin/companies/current", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildCompanySettingsUpdateInput(draft)),
-    });
-    const payload = (await response.json().catch(() => null)) as { ok?: boolean; settings?: CompanySettings; message?: string } | null;
+    const payload = await waflLegacyApiRequest<{ ok?: boolean; settings?: CompanySettings; message?: string }>(
+      "/api/admin/companies/current",
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildCompanySettingsUpdateInput(draft)),
+      },
+      "환경설정을 저장하지 못했습니다.",
+    );
 
-    if (!response.ok || payload?.ok === false || !payload?.settings) {
-      return {
-        ok: false,
-        settings: null,
-        message: payload?.message || "환경설정을 저장하지 못했습니다.",
-      };
+    if (payload.ok === false || !payload.settings) {
+      return { ok: false, settings: null, message: payload.message || "환경설정을 저장하지 못했습니다." };
     }
 
-    return {
-      ok: true,
-      settings: payload.settings,
-      message: null,
-    };
+    return { ok: true, settings: payload.settings, message: null };
   } catch (error) {
     return {
       ok: false,
