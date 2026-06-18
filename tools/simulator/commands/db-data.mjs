@@ -76,6 +76,7 @@ function buildPlan() {
       subscriptions: 1,
       users: company.members,
       companyUsers: company.members,
+      companyMembers: company.members,
       partners: company.partners,
       workorders: company.workorders,
       materialOrders: company.materialOrders,
@@ -139,6 +140,12 @@ async function seed(client, plan) {
          VALUES ($1,$2,$3,$4,$5,$6,now())
          ON CONFLICT (company_id,user_id,role) DO UPDATE SET is_active=EXCLUDED.is_active,display_name=EXCLUDED.display_name,updated_at=now()`,
         [`${row.companyId}-membership-${index}`, row.companyId, userId, role, source.status !== "suspended", `[SIM] ${source.code} 사용자 ${index}`],
+      );
+      await client.query(
+        `INSERT INTO company_members (id,company_id,user_id,status,role_template_code,display_name,approved_by,approved_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,now())
+         ON CONFLICT (company_id,user_id) DO UPDATE SET status=EXCLUDED.status,role_template_code=EXCLUDED.role_template_code,display_name=EXCLUDED.display_name,approved_by=EXCLUDED.approved_by,approved_at=EXCLUDED.approved_at,updated_at=now()`,
+        [`${row.companyId}-member-${index}`, row.companyId, userId, source.status !== "suspended" ? "approved" : "suspended", role === "admin" ? "company_admin" : role, `[SIM] ${source.code} 사용자 ${index}`, ownerId],
       );
     }
 

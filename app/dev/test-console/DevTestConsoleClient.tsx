@@ -64,6 +64,13 @@ export default function DevTestConsoleClient() {
     });
   }, [options?.targets]);
 
+  const selectedTarget = useMemo(
+    () => options?.targets.find((target) => target.targetKey === selectedTargetKey) ?? null,
+    [options?.targets, selectedTargetKey],
+  );
+  const companyTargetCount = groupedTargets.filter((group) => group.companyName !== "시스템관리자").length;
+  const roleTargetCount = options?.targets.filter((target) => target.targetType === "company").length ?? 0;
+
   async function loadOptions() {
     const response = await fetch("/api/dev/test-context/options", { cache: "no-store" });
     if (!response.ok) {
@@ -155,6 +162,24 @@ export default function DevTestConsoleClient() {
           </WaflSurface>
         </section>
 
+        <section className="grid gap-4 sm:grid-cols-3">
+          <WaflSurface shape="control" className="p-5 shadow-sm">
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">Seed 회사</p>
+            <p className="mt-2 text-2xl font-semibold">{companyTargetCount}</p>
+            <p className="mt-1 text-xs text-[var(--pbp-text-subtle)]">wafl-fn 회사 기준</p>
+          </WaflSurface>
+          <WaflSurface shape="control" className="p-5 shadow-sm">
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">전환 가능 역할</p>
+            <p className="mt-2 text-2xl font-semibold">{roleTargetCount}</p>
+            <p className="mt-1 text-xs text-[var(--pbp-text-subtle)]">승인된 company_members 기준</p>
+          </WaflSurface>
+          <WaflSurface shape="control" className="p-5 shadow-sm">
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">현재 상태</p>
+            <p className="mt-2 text-base font-semibold">{isOverlayActive ? "역할 전환 중" : "시스템관리자 원본"}</p>
+            <p className="mt-1 text-xs text-[var(--pbp-text-subtle)]">Google 로그인 세션은 유지됩니다.</p>
+          </WaflSurface>
+        </section>
+
         <WaflSurface as="section" shape="control" className="p-5 shadow-sm">
           <h2 className="text-base font-semibold">테스트 사용자 선택</h2>
           <label className="mt-4 block text-sm font-medium text-[var(--pbp-text-muted)]" htmlFor="dev-test-target">전환 대상</label>
@@ -175,6 +200,17 @@ export default function DevTestConsoleClient() {
             ))}
           </select>
 
+          {selectedTarget ? (
+            <WaflInfoBox shape="control" tone="muted" className="mt-4 p-4 text-sm">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <p><span className="text-[var(--pbp-text-muted)]">회사</span><br /><strong>{selectedTarget.companyName ?? "시스템관리자"}</strong></p>
+                <p><span className="text-[var(--pbp-text-muted)]">역할</span><br /><strong>{formatRole(selectedTarget.role, selectedTarget.roleTemplateCode)}</strong></p>
+                <p><span className="text-[var(--pbp-text-muted)]">사용자</span><br />{selectedTarget.name}</p>
+                <p><span className="text-[var(--pbp-text-muted)]">대상 키</span><br /><code className="text-xs">{selectedTarget.targetKey}</code></p>
+              </div>
+            </WaflInfoBox>
+          ) : null}
+
           <div className="mt-5 flex flex-wrap gap-3">
             <WaflButton onClick={switchContext} disabled={isBusy || !selectedTargetKey} variant="primary" size="sm">
               이 사용자로 보기
@@ -184,6 +220,12 @@ export default function DevTestConsoleClient() {
             </WaflButton>
             <WaflLinkButton href="/workspace" variant="secondary" size="sm">
               workspace로 이동
+            </WaflLinkButton>
+            <WaflLinkButton href="/worker" variant="secondary" size="sm">
+              worker로 이동
+            </WaflLinkButton>
+            <WaflLinkButton href="/workspace/material-orders" variant="secondary" size="sm">
+              발주서로 이동
             </WaflLinkButton>
             <WaflLinkButton href="/system" variant="secondary" size="sm">
               시스템관리자로 이동

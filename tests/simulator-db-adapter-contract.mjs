@@ -18,4 +18,6 @@ assert.match(source, /DELETE FROM companies WHERE id = ANY/);
 assert.match(source, /id LIKE \$2/);
 assert.match(source, /ON CONFLICT/);
 assert.match(source, /source='manual'/);
+assert.match(source, /INSERT INTO company_members/);
+assert.match(source, /role === "admin" \? "company_admin" : role/);
 console.log("simulator db adapter contract passed: transaction, prefix cleanup, idempotent seed, production block");

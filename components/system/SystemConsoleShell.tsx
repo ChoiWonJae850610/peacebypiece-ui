@@ -18,6 +18,7 @@ import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 import {
   SYSTEM_CONSOLE_HERO_OPERATION_CARDS,
+  SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION,
   SYSTEM_CONSOLE_NAVIGATION_SECTIONS,
   type SystemConsoleNavigationCard,
   type SystemConsoleNavigationTone,
@@ -91,6 +92,8 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
 }
 
 export default function SystemConsoleShell() {
+  const internalToolsVisible = process.env.NODE_ENV !== "production";
+
   return (
     <SystemShell contentClassName="mx-auto flex max-w-7xl flex-col gap-5 sm:gap-6">
       <section className="relative overflow-hidden rounded-[38px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-elevated)]">
@@ -164,6 +167,20 @@ export default function SystemConsoleShell() {
       </section>
 
       <SystemStatsOverview />
+
+      {internalToolsVisible ? (
+        <AdminSection
+          title="내부 개발 도구"
+          description={`현재 runtime: ${process.env.NEXT_PUBLIC_APP_RUNTIME_MODE ?? process.env.NODE_ENV ?? "unknown"} · 활성 시스템관리자 전용 · production 차단`}
+          className="p-5 sm:p-6"
+          bodyClassName="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          headerClassName={SYSTEM_SECTION_HEADER_CLASS}
+        >
+          {SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION.map((card) => (
+            <SystemNavigationCard key={card.id} card={card} />
+          ))}
+        </AdminSection>
+      ) : null}
 
       {SYSTEM_CONSOLE_NAVIGATION_SECTIONS.map((section) => (
         <AdminSection

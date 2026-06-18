@@ -14,3 +14,11 @@
 - `full_reset.sql`, `scenario_seed.sql`, `scenario_google_login_seed.sql`, `system_admin_bootstrap_kty872.sql` 4개 모두 OK 확인
 - Reset 후 수정한 시스템관리자 Google 이메일로 로그인 확인
 - npm run build 미실행 — 사용자가 로컬에서 확인.
+
+## 0.23.82
+- [ ] PowerShell 21번 Simulator DB Seed Execute 재실행 후 `companyMembers: 193` 집계 확인
+- [ ] `/dev/test-console`에서 wafl-fn 회사 A~J와 역할 표시 확인
+- [ ] 시스템관리자 → 회사 역할 전환 후 `/worker`, `/workspace`, 발주서 데이터 확인
+- [ ] 원래 시스템관리자 복구 및 내부 route 재접근 확인
+- [ ] `/system` 하단 내부 도구 카드 3개 및 runtime 표시 확인
+- [ ] production에서 내부 도구 카드와 세 route 차단 확인

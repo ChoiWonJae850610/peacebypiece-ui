@@ -200,3 +200,31 @@ export const SYSTEM_CONSOLE_NAVIGATION_SECTIONS: SystemConsoleNavigationSection[
     cards: SYSTEM_CONSOLE_PLATFORM_OPERATIONS_NAVIGATION,
   },
 ];
+
+
+export const SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION: SystemConsoleNavigationCard[] = [
+  {
+    id: "dev-test-console",
+    label: "테스트 콘솔",
+    description: "테스트 회사·역할·시스템관리자 컨텍스트를 전환하고 원래 세션으로 복구합니다.",
+    href: "/dev/test-console",
+    statusLabel: "DEV·TEST",
+    tone: "warning",
+  },
+  {
+    id: "wafl-ui",
+    label: "WAFL UI",
+    description: "WAFL 공통 컴포넌트와 디자인 시스템의 실제 표시 상태를 확인합니다.",
+    href: "/ui",
+    statusLabel: "내부 도구",
+    tone: "maintenance",
+  },
+  {
+    id: "functions",
+    label: "Functions",
+    description: "테스트·시뮬레이터·자동화 기능과 실행 가능 상태를 확인합니다.",
+    href: "/functions",
+    statusLabel: "내부 도구",
+    tone: "neutral",
+  },
+];
