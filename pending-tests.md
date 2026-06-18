@@ -38,3 +38,8 @@
 - functions 리포트가 `artifacts/test-reports/functions/` 아래에 생성되는지 확인
 - PowerShell v19.1의 23~25번 메뉴가 정상 실행되는지 확인
 - 기존 `playwright-report/`, `test-results/`, `reports/`가 다시 생성되지 않는지 확인
+
+## 0.23.73 Simulator R2 로컬 분리 확인
+- PowerShell 24번 Simulator R2 Plan이 DB 없이 성공하고 파일을 생성하지 않는지 확인
+- PowerShell 25번 Simulator R2 Local Generate가 `.tmp/simulator/r2/files`와 manifest만 생성하는지 확인
+- 실제 R2 객체 및 DB row가 변경되지 않는지 확인

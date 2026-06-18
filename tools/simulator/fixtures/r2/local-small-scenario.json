@@ -1,0 +1,10 @@
+{
+  "scenarioId": "wafl-fn-r2-local-small",
+  "description": "DB와 R2에 접속하지 않고 Plan·Local Generate를 검증하는 고정 Simulator fixture",
+  "items": [
+    {"attachmentId":"wafl-fn-r2-001","orderId":"wafl-fn-workorder-a","orderTitle":"테스트 작업지시서 A","orderStatus":"material_order_pending","type":"design","storageKey":"workorders/wafl-fn-workorder-a/design/main.png","thumbnailKey":"workorders/wafl-fn-workorder-a/design/main-thumb.png","originalName":"design-a.png","mimeType":"image/png","sizeBytes":131072},
+    {"attachmentId":"wafl-fn-r2-002","orderId":"wafl-fn-workorder-a","orderTitle":"테스트 작업지시서 A","orderStatus":"material_order_pending","type":"document","storageKey":"workorders/wafl-fn-workorder-a/documents/instruction.pdf","thumbnailKey":null,"originalName":"instruction-a.pdf","mimeType":"application/pdf","sizeBytes":262144},
+    {"attachmentId":"wafl-fn-r2-003","orderId":"wafl-fn-workorder-b","orderTitle":"테스트 작업지시서 B","orderStatus":"draft","type":"design","storageKey":"workorders/wafl-fn-workorder-b/design/main.jpg","thumbnailKey":"workorders/wafl-fn-workorder-b/design/main-thumb.png","originalName":"design-b.jpg","mimeType":"image/jpeg","sizeBytes":196608},
+    {"attachmentId":"wafl-fn-r2-004","orderId":"wafl-fn-workorder-b","orderTitle":"테스트 작업지시서 B","orderStatus":"draft","type":"document","storageKey":"workorders/wafl-fn-workorder-b/documents/reference.pdf","thumbnailKey":null,"originalName":"reference-b.pdf","mimeType":"application/pdf","sizeBytes":393216}
+  ]
+}

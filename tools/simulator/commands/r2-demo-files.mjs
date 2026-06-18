@@ -22,15 +22,13 @@ import path from "node:path";
 import process from "node:process";
 import { createHmac } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import pg from "pg";
-
-const { Client } = pg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, "../../..");
 const DEFAULT_OUT_DIR = path.join(PROJECT_ROOT, ".tmp", "simulator", "r2", "files");
 const DEFAULT_MANIFEST_DIR = path.join(PROJECT_ROOT, ".tmp", "simulator", "r2", "manifests");
+const DEFAULT_LOCAL_SCENARIO_PATH = path.join(PROJECT_ROOT, "tools", "simulator", "fixtures", "r2", "local-small-scenario.json");
 
 const PRESETS = {
   small: { label: "small", maxFiles: 50, maxTotalBytes: 50 * 1024 * 1024 },
@@ -140,6 +138,8 @@ function buildWorkerUrl({ method, key, contentType }) {
 }
 
 async function withDb(callback) {
+  const { default: pg } = await import("pg");
+  const { Client } = pg;
   const client = new Client({ connectionString: readEnv("DATABASE_URL") });
   await client.connect();
   try {
@@ -147,6 +147,30 @@ async function withDb(callback) {
   } finally {
     await client.end();
   }
+}
+
+async function readLocalScenarioRows() {
+  const raw = await fs.readFile(DEFAULT_LOCAL_SCENARIO_PATH, "utf8");
+  const scenario = JSON.parse(raw);
+  if (!scenario || !Array.isArray(scenario.items) || scenario.items.length === 0) {
+    fail(`Local R2 simulator scenario is empty: ${path.relative(PROJECT_ROOT, DEFAULT_LOCAL_SCENARIO_PATH)}`);
+  }
+  return scenario.items.map((item) => ({
+    id: item.attachmentId,
+    order_id: item.orderId,
+    order_title: item.orderTitle || null,
+    order_status: item.orderStatus || null,
+    reorder_round: 0,
+    type: item.type || "document",
+    storage_key: item.storageKey,
+    thumbnail_key: item.thumbnailKey || null,
+    original_name: item.originalName,
+    mime_type: item.mimeType || "application/octet-stream",
+    size_bytes: Number(item.sizeBytes || 0),
+    is_active: true,
+    deleted_at: null,
+    created_at: null,
+  }));
 }
 
 async function readAttachmentRows() {
@@ -486,10 +510,14 @@ async function main() {
   console.log(`[INFO] workorderId=${workorderIdFilter || "(all)"}, onlyStatsFixtures=${onlyStatsFixtures}`);
   console.log(`[INFO] outDir=${outDir}`);
 
-  const rows = await readAttachmentRows();
+  const usesLocalScenario = mode === "plan" || mode === "generate";
+  const rows = usesLocalScenario ? await readLocalScenarioRows() : await readAttachmentRows();
   if (rows.length === 0) {
-    fail("No realistic attachment metadata found. Run db/seed/realistic_workorders_seed.sql first after full_reset/system seed/smoke test.");
+    fail(usesLocalScenario
+      ? "Local R2 simulator scenario has no items."
+      : "No realistic attachment metadata found. Run db/seed/realistic_workorders_seed.sql only when preparing an explicit dev/test R2 integration run.");
   }
+  console.log(`[INFO] source=${usesLocalScenario ? "local-simulator-fixture" : "database-metadata"}`);
 
   const candidates = createCandidateItems(rows);
   const unsupportedCandidates = candidates.filter((item) => getSkipReasonForItem(item));
@@ -500,10 +528,10 @@ async function main() {
     console.log(`[INFO] unsupported examples=${unsupportedCandidates.slice(0, 5).map((item) => `${item.key} (${getUploadContentType(item)})`).join(", ")}`);
   }
   console.log(`[INFO] selected=${items.length} files, total=${(totalBytes / 1024 / 1024).toFixed(2)}MB`);
-  const manifestPath = await writeManifest(items, "plan");
-  console.log(`[INFO] manifest=${path.relative(PROJECT_ROOT, manifestPath)}`);
-
-  if (mode === "plan") return;
+  if (mode === "plan") {
+    console.log("[INFO] plan mode does not create files or manifests.");
+    return;
+  }
   if (mode === "generate" || mode === "all") {
     await generateFiles(items);
     const generatedManifest = await writeManifest(items, "generated");
