@@ -18,6 +18,7 @@ export type WaflTestCompanyScenario = {
   files: number;
   notifications: number;
   purpose: string[];
+  storage: { quotaBytes: number; usedBytes: number; expectedPercent: number; expectedClampedPercent: number; objectPrefix: string; source: string };
 };
 
 export type WaflTestDataCatalog = {
@@ -27,7 +28,8 @@ export type WaflTestDataCatalog = {
   idPrefix: string;
   companies: WaflTestCompanyScenario[];
   roles: string[];
-  commands: Record<"seed" | "reset" | "cleanup" | "summary", string>;
+  commands: Record<string, string>;
+  performanceProfiles: Record<WaflTestDataScale, { rows: number; expectedDomRows: number }>;
 };
 
 export const WAFL_TEST_DATA_CATALOG = fixture as WaflTestDataCatalog;

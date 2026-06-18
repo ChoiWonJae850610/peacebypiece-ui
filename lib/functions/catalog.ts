@@ -6,6 +6,7 @@ export type WaflFunctionCategory =
   | "tenant"
   | "responsive"
   | "performance"
+  | "storage"
   | "pdf";
 
 export type WaflAutomationStatus = "planned" | "partial" | "automated" | "manual" | "decision-required";
@@ -91,6 +92,7 @@ export const WAFL_FUNCTION_CATEGORY_LABELS: Record<WaflFunctionCategory, string>
   tenant: "회사 격리",
   responsive: "반응형",
   performance: "성능",
+  storage: "저장용량/R2",
   pdf: "PDF",
 };
 
@@ -137,6 +139,7 @@ function defaultAutomationType(category: WaflFunctionCategory): WaflAutomationTy
   if (category === "database" || category === "tenant") return "playwright-db";
   if (category === "responsive") return "visual";
   if (category === "performance") return "performance";
+  if (category === "storage") return "api-db";
   if (category === "pdf") return "playwright";
   if (category === "permission") return "api-db";
   return "playwright";
@@ -303,6 +306,21 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
     description: "대량 fixture에서 초기 표시·검색·필터·스크롤 측정 형식을 검증한다.", category: "performance", roles: ["admin"], automationStatus: "planned", releaseBlocking: false,
     preconditions: ["test runtime", "대량 fixture"], expectedUi: ["화면 멈춤 없음", "측정 결과 표시"], expectedApi: ["목록 API 측정"], expectedDbChanges: [], expectedDbUnchanged: ["전체 DB"],
   }),
+  item({
+    id: "STO-001-S01", order: "9-1", area: "저장용량/R2", route: "/system/storage-usage", title: "회사별 저장용량 비율 계약",
+    description: "회사별 0%~100%·초과 경계값 fixture와 원통형 그래프 표시 비율을 검증한다.", category: "storage", roles: ["system-admin"], automationStatus: "partial", releaseBlocking: true,
+    preconditions: ["dev/test runtime", "회사 A~J 저장용량 fixture"], expectedUi: ["0%·부분·100%·초과 clamp 표시", "모바일·태블릿·PC 그래프 표시"], expectedApi: ["회사별 quotaBytes·usedBytes 조회"], expectedDbChanges: [], expectedDbUnchanged: ["다른 회사 사용량", "production R2 객체"],
+    exceptionCases: ["조회 실패", "quota 0", "usedBytes 초과", "단위 변환·반올림"],
+    automation: { type: "api-db", filePath: "tests/functions-storage-contract.mjs", testDataSet: "company-a-j/storage-percentages", lastResult: "not-run" },
+  }),
+  item({
+    id: "STO-002-S01", order: "9-2", area: "저장용량/R2", route: "/workspace/storage", title: "R2 객체 합계와 DB 집계 reconciliation",
+    description: "test prefix의 R2 객체 합계와 DB 사용량 집계 차이를 탐지하고 회사 격리를 확인한다.", category: "storage", roles: ["system-admin"], automationStatus: "partial", releaseBlocking: true,
+    preconditions: ["dev/test runtime", "test bucket 또는 test prefix"], expectedUi: ["회사별 차이와 상태 표시"], expectedApi: ["reconcile dry-run 결과"], expectedDbChanges: [], expectedDbUnchanged: ["실제 고객 데이터", "다른 회사 사용량", "production bucket"],
+    tenantContract: { actorCompany: "회사 A", targetCompany: "회사 B", assertions: ["A 변경 시 B 불변", "prefix별 합계 분리", "cleanup은 test prefix만"] },
+    automation: { type: "api-db", filePath: "scripts/functions-storage-reconcile.mjs", testDataSet: "company-a-j/storage-prefixes", lastResult: "not-run" },
+  }),
+
 ];
 
 export const WAFL_FUNCTION_AREAS = Array.from(new Set(WAFL_FUNCTION_CATALOG.map((entry) => entry.area)));
