@@ -177,3 +177,14 @@
 - 회사 A mutation 중 회사 B row가 불변인지 확인
 - 향후 실제 test DB adapter 연결 후 동일 계약 재검증
 - PowerShell 자동화 메뉴에 `Functions DB Contract Test` 추가 검토
+
+## 0.23.66 Functions Core Playwright
+
+- `WAFL_FUNCTIONS_E2E_ENABLED=1`인 dev/test 환경에서 핵심 E2E 5개 실행
+- 작업지시서 `/worker` 진입과 가로 overflow 확인
+- 자재 발주 `/workspace/material-orders` 진입과 가로 overflow 확인
+- 고객사 관리자 `/workspace/settings` 진입 확인
+- 시스템관리자 `/system/companies` 진입 확인
+- 개인 설정 `/me/settings` 진입 확인
+- 로그인 secret 또는 fixture 미준비 시 skip 사유가 명확히 표시되는지 확인
+- production에서 실행하지 않는지 확인

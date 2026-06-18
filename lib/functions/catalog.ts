@@ -188,8 +188,10 @@ const item = (value: WaflFunctionDefinition): WaflFunctionItem => ({
 export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
   item({
     id: "WKR-001-N01", order: "1-1", area: "작업지시서", route: "/worker", title: "작업지시서 목록 정상 조회",
-    description: "현재 회사의 작업지시서 목록을 조회하고 첫 화면 상태를 표시한다.", category: "normal", roles: ["admin", "member"], automationStatus: "planned", releaseBlocking: true,
+    description: "현재 회사의 작업지시서 목록을 조회하고 첫 화면 상태를 표시한다.", category: "normal", roles: ["admin", "member"], automationStatus: "partial", releaseBlocking: true,
     preconditions: ["현재 회사에 작업지시서가 존재함"], expectedUi: ["목록 카드 표시", "선택 문서 상세 표시"], expectedApi: ["목록 API 200"], expectedDbChanges: [], expectedDbUnchanged: ["전체 작업지시서 데이터"],
+
+    automation: { type: "playwright", filePath: "tests/e2e/functions-core.spec.mjs", testDataSet: "company-a/workorders", lastResult: "not-run" },
   }),
   item({
     id: "WKR-002-D01", order: "1-2", area: "작업지시서", route: "/worker", title: "납기일만 변경",
@@ -217,36 +219,42 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
     },
   }),
   item({
-    id: "MAT-001-N01", order: "2-1", area: "자재 발주", route: "/material-orders", title: "발주서 생성 및 품목 할당",
-    description: "발주서를 생성하고 원단·부자재 품목을 할당한다.", category: "normal", roles: ["admin", "member"], automationStatus: "planned", releaseBlocking: true,
+    id: "MAT-001-N01", order: "2-1", area: "자재 발주", route: "/workspace/material-orders", title: "발주서 생성 및 품목 할당",
+    description: "발주서를 생성하고 원단·부자재 품목을 할당한다.", category: "normal", roles: ["admin", "member"], automationStatus: "partial", releaseBlocking: true,
     preconditions: ["할당 가능한 자재 존재"], expectedUi: ["발주서 목록 추가", "할당 진행률 갱신"], expectedApi: ["생성 및 collection mutation 성공"], expectedDbChanges: ["material_orders", "material_order_items"], expectedDbUnchanged: ["다른 회사 발주 데이터"],
+
+    automation: { type: "playwright", filePath: "tests/e2e/functions-core.spec.mjs", testDataSet: "company-a/material-orders", lastResult: "not-run" },
   }),
   item({
-    id: "MAT-002-D01", order: "2-2", area: "자재 발주", route: "/material-orders", title: "품목 수량·단가 부분 저장",
+    id: "MAT-002-D01", order: "2-2", area: "자재 발주", route: "/workspace/material-orders", title: "품목 수량·단가 부분 저장",
     description: "수량 또는 단가 변경 시 해당 필드와 감사 필드만 변경한다.", category: "database", roles: ["admin", "member"], automationStatus: "planned", releaseBlocking: true,
     preconditions: ["발주 품목 존재"], expectedUi: ["금액 요약 갱신"], expectedApi: ["PATCH 200"], expectedDbChanges: ["quantity 또는 unit_price", "updated_at"], expectedDbUnchanged: ["supplier_id", "company_id", "다른 품목"],
   }),
   item({
-    id: "ADM-001-N01", order: "3-1", area: "고객사 관리자", route: "/admin/members", title: "멤버 초대",
-    description: "고객사 관리자가 새 멤버 초대 링크를 생성한다.", category: "normal", roles: ["admin"], automationStatus: "planned", releaseBlocking: true,
+    id: "ADM-001-N01", order: "3-1", area: "고객사 관리자", route: "/workspace/settings", title: "멤버 초대",
+    description: "고객사 관리자가 새 멤버 초대 링크를 생성한다.", category: "normal", roles: ["admin"], automationStatus: "partial", releaseBlocking: true,
     preconditions: ["관리자 로그인", "초대 가능한 이메일"], expectedUi: ["초대 링크 표시", "초대 목록 갱신"], expectedApi: ["invite API 200"], expectedDbChanges: ["company_invites"], expectedDbUnchanged: ["기존 멤버 권한"],
+
+    automation: { type: "playwright", filePath: "tests/e2e/functions-core.spec.mjs", testDataSet: "company-a/admin-members", lastResult: "not-run" },
   }),
   item({
-    id: "ADM-002-P01", order: "3-2", area: "고객사 관리자", route: "/admin/members", title: "일반 멤버 관리자 기능 차단",
+    id: "ADM-002-P01", order: "3-2", area: "고객사 관리자", route: "/workspace/settings", title: "일반 멤버 관리자 기능 차단",
     description: "일반 멤버가 관리자 전용 기능에 접근하지 못하는지 확인한다.", category: "permission", roles: ["member"], automationStatus: "planned", releaseBlocking: true,
     preconditions: ["일반 멤버 로그인"], expectedUi: ["관리자 메뉴 미노출 또는 접근 제한"], expectedApi: ["직접 요청 403 또는 404"], expectedDbChanges: [], expectedDbUnchanged: ["멤버·초대 데이터"],
     permissionRules: ["member 역할은 관리자 메뉴를 볼 수 없음", "URL 직접 접근도 차단", "관리자 API 직접 호출도 403 또는 404"],
     automation: { type: "api-db", filePath: null, testDataSet: "company-a/member-basic", lastResult: "not-run" },
   }),
   item({
-    id: "ADM-003-E01", order: "3-3", area: "고객사 관리자", route: "/admin/members", title: "마지막 관리자 탈퇴 보호",
+    id: "ADM-003-E01", order: "3-3", area: "고객사 관리자", route: "/workspace/settings", title: "마지막 관리자 탈퇴 보호",
     description: "회사에 관리자 한 명만 남은 경우 탈퇴·권한 제거 정책을 검증한다.", category: "exception", roles: ["admin"], automationStatus: "decision-required", releaseBlocking: true,
     preconditions: ["관리자 1명만 존재"], expectedUi: ["차단 안내"], expectedApi: ["정책에 따른 409 또는 422"], expectedDbChanges: [], expectedDbUnchanged: ["관리자 역할", "회사 상태"],
   }),
   item({
-    id: "SYS-001-N01", order: "4-1", area: "시스템관리자", route: "/system", title: "고객사 가입 승인",
-    description: "가입 대기 고객사를 승인하고 관리자 계정 흐름을 진행한다.", category: "normal", roles: ["system-admin"], automationStatus: "planned", releaseBlocking: true,
+    id: "SYS-001-N01", order: "4-1", area: "시스템관리자", route: "/system/companies", title: "고객사 가입 승인",
+    description: "가입 대기 고객사를 승인하고 관리자 계정 흐름을 진행한다.", category: "normal", roles: ["system-admin"], automationStatus: "partial", releaseBlocking: true,
     preconditions: ["가입 대기 고객사 존재"], expectedUi: ["승인 상태 반영", "목록 재조회"], expectedApi: ["approval API 200"], expectedDbChanges: ["companies.status", "approval audit"], expectedDbUnchanged: ["다른 회사 상태"],
+
+    automation: { type: "playwright", filePath: "tests/e2e/functions-core.spec.mjs", testDataSet: "company-c/company-approval", lastResult: "not-run" },
   }),
   item({
     id: "SYS-002-P01", order: "4-2", area: "시스템관리자", route: "/system", title: "비시스템관리자 접근 차단",
@@ -266,9 +274,11 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
     preconditions: ["A·B 회사에 유사 데이터 존재"], expectedUi: ["A 회사 변경만 반영"], expectedApi: ["A 회사 PATCH 200"], expectedDbChanges: ["A 회사 대상 row"], expectedDbUnchanged: ["B 회사 모든 row"],
   }),
   item({
-    id: "USR-001-N01", order: "6-1", area: "개인 설정", route: "/settings", title: "프로필 저장",
-    description: "개인 프로필 저장 후 사용자 정보와 헤더가 갱신되는지 확인한다.", category: "normal", roles: ["admin", "member"], automationStatus: "planned", releaseBlocking: false,
+    id: "USR-001-N01", order: "6-1", area: "개인 설정", route: "/me/settings", title: "프로필 저장",
+    description: "개인 프로필 저장 후 사용자 정보와 헤더가 갱신되는지 확인한다.", category: "normal", roles: ["admin", "member"], automationStatus: "partial", releaseBlocking: false,
     preconditions: ["로그인 상태"], expectedUi: ["저장 완료", "헤더 정보 갱신"], expectedApi: ["profile PATCH 200"], expectedDbChanges: ["user profile fields"], expectedDbUnchanged: ["역할", "회사 소속"],
+
+    automation: { type: "playwright", filePath: "tests/e2e/functions-core.spec.mjs", testDataSet: "company-a/personal-settings", lastResult: "not-run" },
   }),
   item({
     id: "PDF-WO-001", order: "7-1", area: "PDF", route: "/worker", title: "작업지시서 PDF 생성 조건",
