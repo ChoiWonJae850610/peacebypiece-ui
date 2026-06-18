@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { WaflInput, useWaflMutation } from "@/components/common/ui";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
 import { APP_VERSION } from "@/lib/constants/app";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import { SYSTEM_CUSTOMER_INVITE_QR_PREVIEW } from "@/lib/invitations/invitationQrPreview";
 import {
   SYSTEM_CUSTOMER_INVITE_APPROVAL_RULES,
@@ -43,42 +45,55 @@ export default function SystemCustomerInviteSkeleton() {
   const [adminEmail, setAdminEmail] = useState("customer-admin@example.com");
   const [createdInvitation, setCreatedInvitation] = useState<CreatedSystemInvitationResult | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
-  const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const inviteMutation = useWaflMutation("system-customer-invite-create");
+  const inviteLockKey = "system-customer-invite:create";
+  const isCreatingInvite = inviteMutation.isLockActive(inviteLockKey);
   const canCreateInvite = adminEmail.trim().length > 0 && !isCreatingInvite;
 
   async function handleCreateInvite() {
     if (!canCreateInvite) return;
 
-    setIsCreatingInvite(true);
     setInviteError(null);
 
     try {
-      const response = await fetch("/api/invitations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scope: "system_to_company_admin",
-          recipientEmail: adminEmail.trim(),
-          recipientRole: "admin",
-          permissionPreset: "company_admin",
-          createdBySystemUserId: "system-user-sample-admin",
-        }),
-      });
-      const payload = await response.json();
-
-      if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error ?? "INVITATION_CREATE_FAILED");
-      }
-
-      setCreatedInvitation({
-        inviteUrl: payload.inviteUrl,
-        rawToken: payload.rawToken,
-        invitation: payload.invitation,
+      await inviteMutation.runMutation({
+        lockKey: inviteLockKey,
+        sequenceKey: inviteLockKey,
+        operationId: "system-customer-invite-create",
+        messages: {
+          loading: "초대 링크를 생성하고 있습니다.",
+          success: "초대 링크를 생성했습니다.",
+          error: "초대 링크를 생성하지 못했습니다.",
+        },
+        mutation: () =>
+          waflLegacyApiRequest<CreatedSystemInvitationResult & { ok?: boolean; error?: string }>(
+            "/api/invitations",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                scope: "system_to_company_admin",
+                recipientEmail: adminEmail.trim(),
+                recipientRole: "admin",
+                permissionPreset: "company_admin",
+                createdBySystemUserId: "system-user-sample-admin",
+              }),
+            },
+            "초대 링크를 생성하지 못했습니다.",
+          ),
+        onSuccess: (payload) => {
+          if (!payload.inviteUrl || !payload.rawToken) {
+            throw new Error(payload.error || "INVITATION_CREATE_INVALID_RESPONSE");
+          }
+          setCreatedInvitation({
+            inviteUrl: payload.inviteUrl,
+            rawToken: payload.rawToken,
+            invitation: payload.invitation,
+          });
+        },
       });
     } catch (error) {
       setInviteError(error instanceof Error ? error.message : "INVITATION_CREATE_FAILED");
-    } finally {
-      setIsCreatingInvite(false);
     }
   }
 
@@ -140,14 +155,15 @@ export default function SystemCustomerInviteSkeleton() {
             {SYSTEM_CUSTOMER_INVITE_FORM_FIELDS.map((field) => (
               <label key={field.id} className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
                 <span className="text-xs font-semibold text-stone-500">{field.label}</span>
-                <input
+                <WaflInput
                   readOnly={field.id !== "admin-email"}
                   type={field.inputType === "email" ? "email" : "text"}
                   value={field.id === "admin-email" ? adminEmail : field.value}
                   onChange={(event) => {
                     if (field.id === "admin-email") setAdminEmail(event.target.value);
                   }}
-                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 outline-none focus:border-stone-400"
+                  fieldSize="sm"
+                  className="mt-2 bg-white text-sm font-medium text-stone-700"
                 />
                 <span className="mt-2 block text-xs leading-5 text-stone-500">{field.helper}</span>
               </label>

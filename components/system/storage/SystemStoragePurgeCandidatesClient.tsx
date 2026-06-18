@@ -16,6 +16,7 @@ import {
 } from "@/components/system/systemSemanticClassNames";
 import { useSystemTranslation } from "@/lib/i18n/useSystemTranslation";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import type { SystemStoragePurgeCandidate } from "@/lib/system/storagePurgeCandidates";
 import {
   buildSystemStoragePurgeCopy,
@@ -79,16 +80,15 @@ function compareCandidates(left: SystemStoragePurgeCandidate, right: SystemStora
 }
 
 async function postPurgeRequest(body: { mode: "selected" | "all-due"; trashItemIds?: string[]; limit?: number }): Promise<PurgeResponse> {
-  const response = await fetch("/api/system/storage-usage/purge", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const payload = (await response.json().catch(() => null)) as PurgeResponse | null;
-  if (!response.ok || !payload) {
-    throw new Error(payload?.message || payload?.error || `SYSTEM_STORAGE_PURGE_FAILED_${response.status}`);
-  }
-  return payload;
+  return waflLegacyApiRequest<PurgeResponse>(
+    "/api/system/storage-usage/purge",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+    "저장소 정리 요청을 처리하지 못했습니다.",
+  );
 }
 
 export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStoragePurgeCandidatesClientProps) {

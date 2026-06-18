@@ -17,6 +17,7 @@ import type {
 import type { WorkspaceNavigationItem } from "@/lib/navigation/workspaceNavigation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 type AdminFilesWorkspaceClientProps = {
   navigationItems: WorkspaceNavigationItem[];
@@ -60,29 +61,17 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
     }
     setIsLoadingSnapshot(true);
     try {
-      const response = await fetch(
-        `/api/admin/files/snapshot?period=30&t=${Date.now()}`,
-        { method: "GET", cache: "no-store" },
-      );
-      const payload = (await response.json().catch(() => null)) as {
+      const payload = await waflLegacyApiRequest<{
         snapshot?: AdminFileManagementSnapshot;
         message?: string;
-      } | null;
+      }>(
+        `/api/admin/files/snapshot?period=30&t=${Date.now()}`,
+        { method: "GET", cache: "no-store" },
+        t("filesPage.snapshotLoadFailed", "파일 목록 DB 조회 실패"),
+      );
 
-      if (payload?.snapshot) {
+      if (payload.snapshot) {
         setSnapshot(payload.snapshot);
-      }
-
-      if (!response.ok && payload?.message) {
-        showActionToast(
-          t(
-            "filesPage.snapshotLoadFailedWithMessage",
-            "파일 목록 DB 조회 실패: {message}",
-            { message: payload.message },
-          ),
-          "danger",
-        );
-        return;
       }
 
     } catch (error) {
