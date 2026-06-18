@@ -166,3 +166,14 @@
 - seed/reset/cleanup 명령이 실제 DB를 변경하지 않고 dry-run 계획만 출력
 - production 또는 runtime 미설정 상태에서 execute 요청 차단
 - fixture 고정 ID와 회사 A~J 시나리오 중복 없음
+
+## 0.23.65 DB 불변조건·회사 격리 테스트 기반
+
+- `npm run test:functions:db-contract` 실행
+- 납기일 단독 변경 시 허용 필드만 변경되는지 확인
+- undefined PATCH 필드가 기존 값을 보존하는지 확인
+- null PATCH 필드가 명시적으로 초기화되는지 확인
+- 저장 실패 rollback 후 원본 row가 복원되는지 확인
+- 회사 A mutation 중 회사 B row가 불변인지 확인
+- 향후 실제 test DB adapter 연결 후 동일 계약 재검증
+- PowerShell 자동화 메뉴에 `Functions DB Contract Test` 추가 검토

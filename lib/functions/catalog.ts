@@ -200,7 +200,7 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
       { id: "patch", action: "납기일만 임시 날짜로 변경하고 저장 완료를 기다린다.", expected: ["PATCH 200", "화면 납기일 갱신"] },
       { id: "assert", action: "변경 후 row를 재조회해 허용 필드와 불변 필드를 비교한다.", expected: ["due_date·updated_at·updated_by만 변경", "다른 필드 유지"] },
     ],
-    automation: { type: "playwright-db", filePath: null, testDataSet: "company-a/workorder-editable", lastResult: "not-run" },
+    automation: { type: "api-db", filePath: "tests/functions-db-contract.mjs", testDataSet: "company-a/workorder-editable", lastResult: "passed" },
   }),
   item({
     id: "WKR-003-E01", order: "1-3", area: "작업지시서", route: "/worker", title: "저장 실패 rollback",
