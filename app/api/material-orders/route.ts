@@ -222,6 +222,14 @@ export async function PATCH(request: NextRequest) {
     });
     return createWaflApiSuccess(result);
   } catch (error) {
+    if (error instanceof Error && error.message === "MATERIAL_ORDER_STATUS_TRANSITION_NOT_ALLOWED") {
+      return createWaflApiError(
+        "현재 발주서 상태에서는 요청한 상태로 변경할 수 없습니다.",
+        "MATERIAL_ORDER_STATUS_TRANSITION_NOT_ALLOWED",
+        409,
+      );
+    }
+
     return createWaflUnhandledApiError(
       error,
       "발주서 상태를 변경하지 못했습니다.",
