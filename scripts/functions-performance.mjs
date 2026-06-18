@@ -24,7 +24,7 @@ for (const company of fixture.companies) {
   report.push({companyId:company.id,scale:company.scale,rows:company.workorders,p50Ms:+percentile(timings,.5).toFixed(3),p95Ms:+percentile(timings,.95).toFixed(3),samples});
 }
 const output={schemaVersion:"1.0",measuredAt:new Date().toISOString(),kind:"fixture-processing-baseline",note:"브라우저/API 실측이 아닌 fixture 생성·검색·정렬 로컬 기준선",report};
-const outPath=path.join(root,"reports/functions-performance-latest.json");
+const outPath=path.join(root,"artifacts/test-reports/functions/performance-latest.json");
 fs.mkdirSync(path.dirname(outPath),{recursive:true});
 fs.writeFileSync(outPath,JSON.stringify(output,null,2)+"\n");
 console.log(JSON.stringify(output,null,2));

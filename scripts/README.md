@@ -1,18 +1,13 @@
 # scripts 폴더 안내
 
-- 기준 앱 버전: `0.18.92`
+- 기준 앱 버전: `0.23.72`
 - 용도: 개발·시드·검증 보조 스크립트 보관
 - 운영 런타임 화면 코드와 분리된 영역으로 본다.
 
 ## 현재 포함 파일
 
-- `seed-r2-demo-files.mjs`
-  - 개발 DB의 첨부 metadata를 읽어 R2 더미 파일을 계획/생성/업로드/검증하는 보조 스크립트다.
-  - `DATABASE_URL`이 필요하며, 업로드/검증 모드에서는 `R2_WORKER_UPLOAD_URL`, `R2_WORKER_UPLOAD_SECRET`이 필요하다.
-  - 운영 DB/R2에서 실행하지 않는다.
-
-- `seed-r2-demo-files-usage.md`
-  - 위 스크립트의 실행 방법과 주의사항을 정리한 문서다.
+- DB/R2 테스트 환경을 구성하는 simulator 명령은 `tools/simulator/`로 이동했다.
+- `scripts/`에는 감사·계약·테스트 실행 진입점만 둔다.
 
 ## 테스트 불가 기간 기준
 

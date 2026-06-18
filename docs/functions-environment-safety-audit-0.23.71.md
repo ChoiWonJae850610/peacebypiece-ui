@@ -28,7 +28,7 @@ npm run test:functions:environment-contract
 - DB와 R2에 실제 접속하지 않는다.
 - 데이터 생성·수정·삭제를 수행하지 않는다.
 - DB 비밀번호와 URL query를 출력하지 않는다.
-- 환경 상태는 `reports/functions-environment-audit-latest.json`에 저장한다.
+- 환경 상태는 `artifacts/test-reports/functions/environment-audit-latest.json`에 저장한다.
 - 설정 누락은 감사 명령 실패가 아니라 `executionReady=false`로 보고한다.
 - 실제 seed/cleanup adapter 연결 시에는 `executionReady=true`를 필수조건으로 사용한다.
 

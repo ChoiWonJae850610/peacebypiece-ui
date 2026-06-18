@@ -1,6 +1,6 @@
 # R2 더미 파일 생성 스크립트 사용법 — 0.18.92
 
-이 문서는 `scripts/seed-r2-demo-files.mjs`를 PowerShell에서 실행하는 방법을 정리한다.
+이 문서는 `tools/simulator/commands/r2-demo-files.mjs`를 PowerShell에서 실행하는 방법을 정리한다.
 
 > 현재 이 스크립트는 개발·시드·검증 보조용이다. 테스트 불가 기간에는 실행 동작을 변경하지 않고 문서 기준만 보강한다. 운영 DB/R2에서 실행하지 않는다.
 
@@ -79,56 +79,56 @@ $env:R2_WORKER_UPLOAD_SECRET="YOUR_WORKER_SECRET"
 ## 4. 업로드 대상 계획만 확인
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=plan
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=plan
 ```
 
 통계 검증용 9xx 작업지시서 첨부만 확인하려면 다음처럼 실행한다.
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=plan --only-stats-fixtures
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=plan --only-stats-fixtures
 ```
 
 특정 작업지시서 첨부만 확인하려면 다음처럼 실행한다.
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=plan --workorder-id=realistic-spec-906
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=plan --workorder-id=realistic-spec-906
 ```
 
 ## 5. 로컬 더미 파일 생성
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=generate
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=generate
 ```
 
 통계 검증용 9xx 작업지시서 첨부만 생성하려면 다음처럼 실행한다.
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=generate --only-stats-fixtures
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=generate --only-stats-fixtures
 ```
 
-생성물은 `.tmp/r2-demo-files` 아래에 만들어진다. `.tmp/`는 Git 추적 대상이 아니다.
+생성물은 `.tmp/simulator/r2/files` 아래에 만들어진다. `.tmp/`는 Git 추적 대상이 아니다.
 
 ## 6. R2 업로드
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=upload --confirm-upload
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=upload --confirm-upload
 ```
 
 계획/생성/업로드를 한 번에 처리하려면 다음처럼 실행한다.
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=all --confirm-upload
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=all --confirm-upload
 ```
 
 ## 7. R2 파일 검증
 
 ```powershell
-node scripts/seed-r2-demo-files.mjs --preset=small --mode=verify
+node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=verify
 ```
 
 ## 8. manifest 확인
 
-스크립트는 `.tmp/r2-demo-manifests` 아래에 manifest JSON을 만든다.
+스크립트는 `.tmp/simulator/r2/manifests` 아래에 manifest JSON을 만든다.
 
 manifest에는 아래 정보가 들어간다.
 

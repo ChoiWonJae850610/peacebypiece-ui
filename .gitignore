@@ -78,3 +78,7 @@ credentials*.json
 # local Playwright outputs
 /playwright-report/
 /test-results/
+
+# generated test and simulator artifacts
+/artifacts/
+/reports/

@@ -30,3 +30,11 @@
 - DB host/database가 운영용인지 테스트용인지 최종 확인
 - 실제 seed/cleanup adapter 연결 전 환경 감사 결과 재검증
 - PowerShell 개발·테스트 메뉴에 Functions Environment Safety Audit 추가 필요
+
+## 0.23.72 프로젝트 구조 정리
+- `npm run simulator:r2:plan`이 dev/test DB 설정에서 계획만 출력하는지 확인
+- `npm run simulator:r2:generate`가 `.tmp/simulator/r2/` 아래에만 파일을 생성하는지 확인
+- Playwright 실행 후 결과가 `artifacts/playwright/` 아래에 생성되는지 확인
+- functions 리포트가 `artifacts/test-reports/functions/` 아래에 생성되는지 확인
+- PowerShell v19.1의 23~25번 메뉴가 정상 실행되는지 확인
+- 기존 `playwright-report/`, `test-results/`, `reports/`가 다시 생성되지 않는지 확인

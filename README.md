@@ -177,7 +177,7 @@ ChatGPT/container에서는 `npm run build`를 실행하지 않는다. 빌드 확
 - 0.19.94.2: Playwright 생성 산출물과 미사용 public 기본 SVG 정리를 반영했다.
 - 0.19.94.3: 남은 문서/SQL/스크립트 정리 후보를 재분류하고, 테스트 불가 기간에는 삭제보다 현행/보관/보류 분류를 우선하기로 했다.
 - 폴더 단위 삭제는 패치 스크립트에서 위험할 수 있으므로 commit-meta 삭제 목록에는 원칙적으로 실제 파일만 넣는다.
-- `playwright-report/`, `test-results/`, `.next/`, `.tmp/` 같은 생성 산출물은 `.gitignore`와 별도 clean 단계로 관리한다.
+- Playwright와 테스트 리포트는 `artifacts/`, simulator 임시 파일은 `.tmp/simulator/`에 생성하며 둘 다 Git 추적 대상이 아니다.
 
 ## 0.19.94.6 docs 루트 보관 후보 목록
 

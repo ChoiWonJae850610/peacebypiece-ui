@@ -33,7 +33,7 @@
 
 ## 성능 결과 해석
 
-`reports/functions-performance-latest.json`은 브라우저와 API 실측이 아니라 fixture 생성·검색·정렬의 로컬 기준선이다. 실제 화면 진입 시간, API 응답 시간, DOM row 수, 스크롤 응답은 dev/test 환경에서 별도 측정해야 한다.
+`artifacts/test-reports/functions/performance-latest.json`은 브라우저와 API 실측이 아니라 fixture 생성·검색·정렬의 로컬 기준선이다. 실제 화면 진입 시간, API 응답 시간, DOM row 수, 스크롤 응답은 dev/test 환경에서 별도 측정해야 한다.
 
 ## 저장용량 검증
 

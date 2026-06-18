@@ -15,7 +15,7 @@ const result = {
     validatorStatus: "contract-ready",
   })),
 };
-const reportsDir = path.resolve("reports");
+const reportsDir = path.resolve("artifacts/test-reports/functions");
 await mkdir(reportsDir, { recursive: true });
 const output = path.join(reportsDir, "functions-pdf-contract-latest.json");
 await writeFile(output, `${JSON.stringify(result, null, 2)}\n`, "utf8");

@@ -14,7 +14,7 @@ const sessionConfigured = Boolean(String(process.env.WAFL_SESSION_SECRET ?? proc
 const testPrefix = String(process.env.WAFL_FUNCTIONS_TEST_PREFIX ?? fixture.idPrefix).trim();
 const r2Prefix = String(process.env.WAFL_FUNCTIONS_TEST_R2_PREFIX ?? "").trim();
 const playwrightBaseUrl = String(process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000").trim();
-const reportPath = path.join(root, "reports/functions-environment-audit-latest.json");
+const reportPath = path.join(root, "artifacts/test-reports/functions/environment-audit-latest.json");
 
 function safeUrlIdentity(rawValue) {
   if (!rawValue) return null;
