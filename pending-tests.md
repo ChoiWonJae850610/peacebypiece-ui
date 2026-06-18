@@ -22,3 +22,11 @@
 - 회사 로고·직인·서명란·납기일·A4 방향·이미지 배치·누락값 처리 확정
 - 정책 확정 후 현재 작업지시서 PDF 금액 출력과 목표 정책 차이 보정
 - 최종 mapper·validator·Playwright PDF 생성 및 내용 검증 연결
+
+## 0.23.71
+- PowerShell 또는 터미널에서 `npm run test:functions:environment` 실행
+- 결과의 `executionReady`와 review/missing 항목 확인
+- `WAFL_FUNCTIONS_TEST_R2_PREFIX`를 테스트 전용 prefix로 설정
+- DB host/database가 운영용인지 테스트용인지 최종 확인
+- 실제 seed/cleanup adapter 연결 전 환경 감사 결과 재검증
+- PowerShell 개발·테스트 메뉴에 Functions Environment Safety Audit 추가 필요

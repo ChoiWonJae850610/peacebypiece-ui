@@ -102,7 +102,7 @@ export default function FunctionsCatalogClient({
               <h2 className="font-bold">테스트 데이터 기반</h2>
               <p className="mt-1 text-sm text-[var(--pbp-text-secondary)]">고정 ID 회사 10개와 역할·요금제·상태·데이터 규모 조합을 dev/test 전용 fixture로 관리합니다.</p>
             </div>
-            <WaflBadge tone="warning" size="sm">실제 DB 실행 보류 · dry-run only</WaflBadge>
+            <WaflBadge tone="warning" size="sm">실제 DB 실행 전 안전 감사 필요</WaflBadge>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
             {[
@@ -124,7 +124,7 @@ export default function FunctionsCatalogClient({
             <span>fixture v{WAFL_TEST_DATA_CATALOG.schemaVersion}</span>
             <span>· 역할 {WAFL_TEST_DATA_CATALOG.roles.length}종</span>
             <span>· production 실행 차단</span>
-            <span>· seed/reset/cleanup 계획만 제공</span>
+            <span>· seed/cleanup adapter 미연결</span>
           </div>
         </WaflSurface>
 
@@ -203,7 +203,7 @@ export default function FunctionsCatalogClient({
                 <WaflSurface tone="muted" shape="control" className="px-4 py-3 text-sm">
                   <div>자동화 상태: <strong>{WAFL_AUTOMATION_STATUS_LABELS[selected.automationStatus]}</strong></div>
                   <div className="mt-1 text-[var(--pbp-text-secondary)]">파일: {selected.automation.filePath ?? "미연결"} · 데이터 세트: {selected.automation.testDataSet ?? "미연결"}</div>
-                  <div className="mt-1 text-[var(--pbp-text-secondary)]">0.23.64에서는 fixture와 dry-run 계획만 제공하며 실제 DB seed 실행은 보류합니다.</div>
+                  <div className="mt-1 text-[var(--pbp-text-secondary)]">0.23.71 기준 실제 seed·cleanup adapter는 미연결이며, 환경 안전 감사 통과 후 후속 버전에서 연결합니다.</div>
                 </WaflSurface>
               </div>
             ) : <div className="flex min-h-[400px] items-center justify-center text-sm text-[var(--pbp-text-muted)]">기능을 선택하세요.</div>}
