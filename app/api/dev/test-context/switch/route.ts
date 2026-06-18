@@ -4,11 +4,12 @@ import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
 import { getDevTestContextDisabledReason, isDevTestContextEnabled } from "@/lib/dev/testContext/config";
 import { createDevTestContextOverlayPayload } from "@/lib/dev/testContext/service";
 import { createDevTestContextCookieValue, WAFL_DEV_TEST_CONTEXT_COOKIE } from "@/lib/dev/testContext/session";
+import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 
 export const dynamic = "force-dynamic";
 
 type SwitchRequestBody = {
-  companyMemberId?: unknown;
+  targetKey?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -20,20 +21,28 @@ export async function POST(request: Request) {
   if (!actualSession) {
     return NextResponse.json({ error: "SESSION_REQUIRED" }, { status: 401 });
   }
-  if (actualSession.role === "system_admin") {
-    return NextResponse.json({ error: "SYSTEM_ADMIN_NOT_ALLOWED" }, { status: 403 });
-  }
-
   const body = (await request.json().catch(() => null)) as SwitchRequestBody | null;
-  const companyMemberId = typeof body?.companyMemberId === "string" ? body.companyMemberId.trim() : "";
-  if (!companyMemberId) {
-    return NextResponse.json({ error: "COMPANY_MEMBER_ID_REQUIRED" }, { status: 400 });
+  const targetKey = typeof body?.targetKey === "string" ? body.targetKey.trim() : "";
+  if (!targetKey) {
+    return NextResponse.json({ error: "TARGET_KEY_REQUIRED" }, { status: 400 });
   }
 
-  const result = await createDevTestContextOverlayPayload(actualSession, companyMemberId);
+  const result = await createDevTestContextOverlayPayload(actualSession, targetKey);
   if (!result) {
     return NextResponse.json({ error: "INVALID_TEST_CONTEXT_TARGET" }, { status: 400 });
   }
+
+  await createSystemAuditLogSafe({
+    actorUserId: actualSession.userId,
+    actorRole: actualSession.role === "system_admin" ? "system_admin" : "customer_admin",
+    companyId: actualSession.companyId,
+    targetType: "user",
+    targetId: result.target.userId,
+    eventType: "dev_test.context_switched",
+    severity: "medium",
+    summary: `개발 테스트 컨텍스트 전환: ${actualSession.email} → ${result.target.role}`,
+    metadata: { targetKey: result.target.targetKey, targetRole: result.target.role, targetCompanyId: result.target.companyId, targetEmail: result.target.email },
+  });
 
   const response = NextResponse.json({ ok: true, target: result.target }, { headers: { "Cache-Control": "no-store" } });
   response.cookies.set(WAFL_DEV_TEST_CONTEXT_COOKIE, createDevTestContextCookieValue(result.payload), {

@@ -2,7 +2,7 @@ import "server-only";
 
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import { isDevTestContextEnabled } from "./config";
-import { getDevTestContextTargetByMemberId, listDevTestContextTargets, type DevTestContextTarget } from "./repository";
+import { getDevTestContextTargetByKey, listDevTestContextTargets, type DevTestContextTarget } from "./repository";
 import { verifyDevTestContextCookieValue, type DevTestContextOverlayPayload } from "./session";
 
 export type DevTestContextOptions = {
@@ -12,83 +12,35 @@ export type DevTestContextOptions = {
   targets: DevTestContextTarget[];
 };
 
-export async function applyDevTestContextOverlay(
-  baseSession: WaflSessionPayload,
-  overlayCookieValue: string | null | undefined,
-): Promise<WaflSessionPayload> {
+export async function applyDevTestContextOverlay(baseSession: WaflSessionPayload, value: string | null | undefined): Promise<WaflSessionPayload> {
   if (!isDevTestContextEnabled()) return baseSession;
-  if (baseSession.role === "system_admin") return baseSession;
-
-  const overlay = verifyDevTestContextCookieValue(overlayCookieValue);
-  if (!overlay) return baseSession;
-  if (overlay.originalUserId !== baseSession.userId) return baseSession;
-
-  const target = await getDevTestContextTargetByMemberId(overlay.targetCompanyMemberId);
+  const overlay = verifyDevTestContextCookieValue(value);
+  if (!overlay || overlay.originalUserId !== baseSession.userId) return baseSession;
+  const target = await getDevTestContextTargetByKey(overlay.targetKey);
   if (!target) return baseSession;
-  if (target.userId !== overlay.targetUserId || target.companyId !== overlay.targetCompanyId || target.role !== overlay.targetRole) {
-    return baseSession;
-  }
-
-  return {
-    ...baseSession,
-    userId: target.userId,
-    companyId: target.companyId,
-    companyMemberId: target.companyMemberId,
-    companyName: target.companyName,
-    role: target.role,
-    email: target.email || baseSession.email,
-    name: target.name || baseSession.name,
-    companyInvitationToken: null,
-    googleSub: baseSession.googleSub,
-    googlePictureUrl: baseSession.googlePictureUrl,
-  };
+  if (target.userId !== overlay.targetUserId || target.companyId !== overlay.targetCompanyId || target.companyMemberId !== overlay.targetCompanyMemberId || target.role !== overlay.targetRole) return baseSession;
+  return { ...baseSession, userId: target.userId, companyId: target.companyId, companyMemberId: target.companyMemberId,
+    companyName: target.companyName, role: target.role, email: target.email || baseSession.email, name: target.name || baseSession.name,
+    companyInvitationToken: null, googleSub: baseSession.googleSub, googlePictureUrl: baseSession.googlePictureUrl };
 }
 
-export async function createDevTestContextOverlayPayload(
-  actualSession: WaflSessionPayload,
-  targetCompanyMemberId: string,
-): Promise<{ payload: DevTestContextOverlayPayload; target: DevTestContextTarget } | null> {
+export async function createDevTestContextOverlayPayload(actualSession: WaflSessionPayload, targetKey: string): Promise<{ payload: DevTestContextOverlayPayload; target: DevTestContextTarget } | null> {
   if (!isDevTestContextEnabled()) return null;
-  if (actualSession.role === "system_admin") return null;
-
-  const target = await getDevTestContextTargetByMemberId(targetCompanyMemberId);
+  const target = await getDevTestContextTargetByKey(targetKey);
   if (!target) return null;
-  return {
-    target,
-    payload: {
-      originalUserId: actualSession.userId,
-      targetUserId: target.userId,
-      targetCompanyId: target.companyId,
-      targetCompanyMemberId: target.companyMemberId,
-      targetRole: target.role,
-      issuedAt: new Date().toISOString(),
-    },
-  };
+  if (target.role === "system_admin" && actualSession.role !== "system_admin" && actualSession.email.trim().toLowerCase() !== target.email.trim().toLowerCase()) return null;
+  return { target, payload: { originalUserId: actualSession.userId, targetKey: target.targetKey, targetUserId: target.userId,
+    targetCompanyId: target.companyId, targetCompanyMemberId: target.companyMemberId, targetRole: target.role, issuedAt: new Date().toISOString() } };
 }
 
-export async function buildDevTestContextOptions(
-  actualSession: WaflSessionPayload,
-  effectiveSession: WaflSessionPayload,
-): Promise<DevTestContextOptions> {
-  const targets = await listDevTestContextTargets();
-  const activeTarget = targets.find((target) => target.companyMemberId === effectiveSession.companyMemberId) ?? null;
-
-  return {
-    actualSession: pickSession(actualSession),
-    effectiveSession: pickSession(effectiveSession),
-    activeTarget,
-    targets,
-  };
+export async function buildDevTestContextOptions(actualSession: WaflSessionPayload, effectiveSession: WaflSessionPayload): Promise<DevTestContextOptions> {
+  const allTargets = await listDevTestContextTargets();
+  const normalizedActualEmail = actualSession.email.trim().toLowerCase();
+  const targets = allTargets.filter((target) => target.role !== "system_admin" || actualSession.role === "system_admin" || target.email.trim().toLowerCase() === normalizedActualEmail);
+  const activeTarget = targets.find((target) => target.userId === effectiveSession.userId && target.role === effectiveSession.role && target.companyId === effectiveSession.companyId) ?? null;
+  return { actualSession: pickSession(actualSession), effectiveSession: pickSession(effectiveSession), activeTarget, targets };
 }
-
 function pickSession(session: WaflSessionPayload): DevTestContextOptions["actualSession"] {
-  return {
-    userId: session.userId,
-    email: session.email,
-    name: session.name,
-    role: session.role,
-    companyId: session.companyId,
-    companyMemberId: session.companyMemberId,
-    companyName: session.companyName,
-  };
+  return { userId: session.userId, email: session.email, name: session.name, role: session.role, companyId: session.companyId,
+    companyMemberId: session.companyMemberId, companyName: session.companyName };
 }

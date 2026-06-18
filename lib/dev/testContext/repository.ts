@@ -4,108 +4,86 @@ import { queryDb } from "@/lib/db/client";
 import type { DevTestContextOverlayRole } from "./session";
 
 export type DevTestContextTarget = {
+  targetKey: string;
+  targetType: "company" | "system";
   userId: string;
-  companyId: string;
-  companyName: string;
-  companyMemberId: string;
+  companyId: string | null;
+  companyName: string | null;
+  companyMemberId: string | null;
   role: DevTestContextOverlayRole;
   email: string;
   name: string;
   roleTemplateCode: string | null;
 };
 
-type DevTestContextTargetRow = {
-  user_id: string;
-  company_id: string;
-  company_name: string;
-  company_member_id: string;
-  email: string | null;
-  name: string;
-  display_name: string | null;
-  role_template_code: string | null;
+type CompanyTargetRow = {
+  user_id: string; company_id: string; company_name: string; company_member_id: string;
+  email: string | null; name: string; display_name: string | null; role_template_code: string | null;
 };
+type SystemTargetRow = { id: string; email: string; name: string };
 
-function toSessionRole(roleTemplateCode: string | null): DevTestContextOverlayRole {
-  return roleTemplateCode === "company_admin" ? "company_admin" : "member";
+function toSessionRole(code: string | null): DevTestContextOverlayRole {
+  return code === "company_admin" ? "company_admin" : "member";
 }
-
-function mapTargetRow(row: DevTestContextTargetRow): DevTestContextTarget {
-  return {
-    userId: row.user_id,
-    companyId: row.company_id,
-    companyName: row.company_name,
-    companyMemberId: row.company_member_id,
-    role: toSessionRole(row.role_template_code),
-    email: row.email ?? "",
-    name: row.display_name ?? row.name,
-    roleTemplateCode: row.role_template_code,
-  };
+function mapCompany(row: CompanyTargetRow): DevTestContextTarget {
+  return { targetKey: `company:${row.company_member_id}`, targetType: "company", userId: row.user_id,
+    companyId: row.company_id, companyName: row.company_name, companyMemberId: row.company_member_id,
+    role: toSessionRole(row.role_template_code), email: row.email ?? "", name: row.display_name ?? row.name,
+    roleTemplateCode: row.role_template_code };
+}
+function mapSystem(row: SystemTargetRow): DevTestContextTarget {
+  return { targetKey: `system:${row.id}`, targetType: "system", userId: row.id, companyId: null,
+    companyName: null, companyMemberId: null, role: "system_admin", email: row.email, name: row.name,
+    roleTemplateCode: "system_admin" };
 }
 
 const TEST_TARGET_WHERE = `
-  c.id IN ('test-company-a', 'test-company-b')
+  (c.id IN ('test-company-a', 'test-company-b') OR c.id LIKE 'wafl-fn-company-%')
   AND c.is_active = true
-  AND u.id LIKE 'test-%'
   AND u.is_active = true
-  AND cm.id LIKE 'test-cm-%'
   AND cm.status = 'approved'
   AND COALESCE(cm.role_template_code, '') <> 'system_admin'
 `;
 
-export async function listDevTestContextTargets(): Promise<DevTestContextTarget[]> {
-  const result = await queryDb<DevTestContextTargetRow>(
-    `
-      SELECT
-        u.id AS user_id,
-        c.id AS company_id,
-        c.name AS company_name,
-        cm.id AS company_member_id,
-        u.email,
-        u.name,
-        cm.display_name,
-        cm.role_template_code
+async function listCompanyTargets(): Promise<DevTestContextTarget[]> {
+  const result = await queryDb<CompanyTargetRow>(`
+    SELECT u.id AS user_id, c.id AS company_id, c.name AS company_name, cm.id AS company_member_id,
+           u.email, u.name, cm.display_name, cm.role_template_code
       FROM company_members cm
       JOIN users u ON u.id = cm.user_id
       JOIN companies c ON c.id = cm.company_id
-      WHERE ${TEST_TARGET_WHERE}
-      ORDER BY c.id, CASE cm.role_template_code
-        WHEN 'company_admin' THEN 10
-        WHEN 'designer' THEN 20
-        WHEN 'inspector' THEN 30
-        WHEN 'inventory_manager' THEN 40
-        WHEN 'viewer' THEN 50
-        ELSE 90
-      END, cm.display_name, u.name
-    `,
-  );
-
-  return result.rows.map(mapTargetRow);
+     WHERE ${TEST_TARGET_WHERE}
+     ORDER BY c.id, cm.display_name, u.name`);
+  return result.rows.map(mapCompany);
 }
 
-export async function getDevTestContextTargetByMemberId(companyMemberId: string): Promise<DevTestContextTarget | null> {
-  const trimmed = companyMemberId.trim();
-  if (!trimmed) return null;
+async function listSystemTargets(): Promise<DevTestContextTarget[]> {
+  const result = await queryDb<SystemTargetRow>(`
+    SELECT id, email, name FROM system_users
+     WHERE is_active = true AND role = 'system_admin'
+     ORDER BY name, email`);
+  return result.rows.map(mapSystem);
+}
 
-  const result = await queryDb<DevTestContextTargetRow>(
-    `
-      SELECT
-        u.id AS user_id,
-        c.id AS company_id,
-        c.name AS company_name,
-        cm.id AS company_member_id,
-        u.email,
-        u.name,
-        cm.display_name,
-        cm.role_template_code
-      FROM company_members cm
-      JOIN users u ON u.id = cm.user_id
-      JOIN companies c ON c.id = cm.company_id
-      WHERE ${TEST_TARGET_WHERE}
-        AND cm.id = $1
-      LIMIT 1
-    `,
-    [trimmed],
-  );
+export async function listDevTestContextTargets(): Promise<DevTestContextTarget[]> {
+  const [systemTargets, companyTargets] = await Promise.all([listSystemTargets(), listCompanyTargets()]);
+  return [...systemTargets, ...companyTargets];
+}
 
-  return result.rows[0] ? mapTargetRow(result.rows[0]) : null;
+export async function getDevTestContextTargetByKey(targetKey: string): Promise<DevTestContextTarget | null> {
+  const trimmed = targetKey.trim();
+  if (trimmed.startsWith("system:")) {
+    const id = trimmed.slice(7);
+    const result = await queryDb<SystemTargetRow>(
+      `SELECT id, email, name FROM system_users WHERE id = $1 AND is_active = true AND role = 'system_admin' LIMIT 1`, [id]);
+    return result.rows[0] ? mapSystem(result.rows[0]) : null;
+  }
+  if (!trimmed.startsWith("company:")) return null;
+  const id = trimmed.slice(8);
+  const result = await queryDb<CompanyTargetRow>(`
+    SELECT u.id AS user_id, c.id AS company_id, c.name AS company_name, cm.id AS company_member_id,
+           u.email, u.name, cm.display_name, cm.role_template_code
+      FROM company_members cm JOIN users u ON u.id = cm.user_id JOIN companies c ON c.id = cm.company_id
+     WHERE ${TEST_TARGET_WHERE} AND cm.id = $1 LIMIT 1`, [id]);
+  return result.rows[0] ? mapCompany(result.rows[0]) : null;
 }

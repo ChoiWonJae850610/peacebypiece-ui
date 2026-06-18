@@ -15,10 +15,6 @@ export async function GET() {
   if (!actualSession) {
     return NextResponse.json({ error: "SESSION_REQUIRED" }, { status: 401 });
   }
-  if (actualSession.role === "system_admin") {
-    return NextResponse.json({ error: "SYSTEM_ADMIN_NOT_ALLOWED" }, { status: 403 });
-  }
-
   const effectiveSession = (await getCurrentWaflSession()) ?? actualSession;
   const options = await buildDevTestContextOptions(actualSession, effectiveSession);
 

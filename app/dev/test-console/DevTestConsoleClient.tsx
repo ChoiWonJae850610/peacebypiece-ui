@@ -17,9 +17,11 @@ type SessionSummary = {
 
 type DevTestContextTarget = {
   userId: string;
-  companyId: string;
-  companyName: string;
-  companyMemberId: string;
+  targetKey: string;
+  targetType: "company" | "system";
+  companyId: string | null;
+  companyName: string | null;
+  companyMemberId: string | null;
   role: "company_admin" | "member" | "system_admin";
   email: string;
   name: string;
@@ -34,6 +36,7 @@ type DevTestContextOptions = {
 };
 
 function formatRole(role: string, roleTemplateCode?: string | null) {
+  if (role === "system_admin" || roleTemplateCode === "system_admin") return "시스템관리자";
   if (role === "company_admin" || roleTemplateCode === "company_admin") return "고객사 관리자";
   if (roleTemplateCode === "designer") return "디자이너";
   if (roleTemplateCode === "inspector") return "검수 담당";
@@ -44,7 +47,7 @@ function formatRole(role: string, roleTemplateCode?: string | null) {
 
 export default function DevTestConsoleClient() {
   const [options, setOptions] = useState<DevTestContextOptions | null>(null);
-  const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [selectedTargetKey, setSelectedTargetKey] = useState("");
   const [message, setMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [cleanRoomModalOpen, setCleanRoomModalOpen] = useState(false);
@@ -52,7 +55,7 @@ export default function DevTestConsoleClient() {
   const groupedTargets = useMemo(() => {
     const groups = new Map<string, DevTestContextTarget[]>();
     for (const target of options?.targets ?? []) {
-      const key = `${target.companyId}__${target.companyName}`;
+      const key = target.targetType === "system" ? "system__시스템관리자" : `${target.companyId}__${target.companyName ?? "회사 미지정"}`;
       groups.set(key, [...(groups.get(key) ?? []), target]);
     }
     return Array.from(groups.entries()).map(([key, targets]) => {
@@ -70,7 +73,7 @@ export default function DevTestConsoleClient() {
 
     const nextOptions = (await response.json()) as DevTestContextOptions;
     setOptions(nextOptions);
-    setSelectedMemberId(nextOptions.activeTarget?.companyMemberId ?? nextOptions.targets[0]?.companyMemberId ?? "");
+    setSelectedTargetKey(nextOptions.activeTarget?.targetKey ?? nextOptions.targets[0]?.targetKey ?? "");
   }
 
   useEffect(() => {
@@ -78,14 +81,14 @@ export default function DevTestConsoleClient() {
   }, []);
 
   async function switchContext() {
-    if (!selectedMemberId) return;
+    if (!selectedTargetKey) return;
     setIsBusy(true);
     setMessage("");
     try {
       const response = await fetch("/api/dev/test-context/switch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companyMemberId: selectedMemberId }),
+        body: JSON.stringify({ targetKey: selectedTargetKey }),
       });
       if (!response.ok) {
         setMessage(`전환 실패: ${response.status}`);
@@ -118,7 +121,7 @@ export default function DevTestConsoleClient() {
     return <WaflInfoBox shape="control" tone="muted" className="p-6 text-sm">테스트 콘솔 정보를 불러오는 중입니다.</WaflInfoBox>;
   }
 
-  const isOverlayActive = options.actualSession.userId !== options.effectiveSession.userId;
+  const isOverlayActive = Boolean(options.activeTarget) && (options.actualSession.userId !== options.effectiveSession.userId || options.actualSession.role !== options.effectiveSession.role || options.actualSession.companyId !== options.effectiveSession.companyId);
 
   return (
     <main className="min-h-screen bg-[var(--pbp-surface-soft)] px-6 py-8 text-[var(--pbp-text-primary)]">
@@ -127,7 +130,7 @@ export default function DevTestConsoleClient() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pbp-status-warning-fg)]">DEV ONLY</p>
           <h1 className="mt-2 text-2xl font-semibold">개발 전용 테스트 사용자 전환</h1>
           <p className="mt-2 text-sm text-[var(--pbp-status-warning-fg)]">
-            실제 Google 로그인은 유지하고, 앱 내부 업무 컨텍스트만 테스트 fixture 사용자로 전환합니다. production에서는 사용할 수 없습니다.
+            실제 Google 로그인은 유지하고, 앱 내부 업무 컨텍스트만 시스템관리자 또는 테스트 fixture 사용자로 전환합니다. production에서는 사용할 수 없습니다.
           </p>
         </WaflSurface>
 
@@ -158,13 +161,13 @@ export default function DevTestConsoleClient() {
           <select
             id="dev-test-target"
             className="mt-2 h-10 w-full wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 text-sm text-[var(--pbp-text-primary)] outline-none focus:border-[var(--pbp-selected-border)]"
-            value={selectedMemberId}
-            onChange={(event) => setSelectedMemberId(event.target.value)}
+            value={selectedTargetKey}
+            onChange={(event) => setSelectedTargetKey(event.target.value)}
           >
             {groupedTargets.map((group) => (
               <optgroup key={group.companyName} label={group.companyName}>
                 {group.targets.map((target) => (
-                  <option key={target.companyMemberId} value={target.companyMemberId}>
+                  <option key={target.targetKey} value={target.targetKey}>
                     {target.name} · {formatRole(target.role, target.roleTemplateCode)} · {target.email || target.userId}
                   </option>
                 ))}
@@ -173,7 +176,7 @@ export default function DevTestConsoleClient() {
           </select>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <WaflButton onClick={switchContext} disabled={isBusy || !selectedMemberId} variant="primary" size="sm">
+            <WaflButton onClick={switchContext} disabled={isBusy || !selectedTargetKey} variant="primary" size="sm">
               이 사용자로 보기
             </WaflButton>
             <WaflButton onClick={clearContext} disabled={isBusy} variant="secondary" size="sm">
@@ -181,6 +184,9 @@ export default function DevTestConsoleClient() {
             </WaflButton>
             <WaflLinkButton href="/workspace" variant="secondary" size="sm">
               workspace로 이동
+            </WaflLinkButton>
+            <WaflLinkButton href="/system" variant="secondary" size="sm">
+              시스템관리자로 이동
             </WaflLinkButton>
           </div>
 

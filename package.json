@@ -43,7 +43,8 @@
     "simulator:db:seed:dry-run": "node tools/simulator/commands/db-data.mjs seed",
     "simulator:db:cleanup:dry-run": "node tools/simulator/commands/db-data.mjs cleanup",
     "simulator:db:seed:execute": "node tools/simulator/commands/db-data.mjs seed --execute",
-    "simulator:db:cleanup:execute": "node tools/simulator/commands/db-data.mjs cleanup --execute"
+    "simulator:db:cleanup:execute": "node tools/simulator/commands/db-data.mjs cleanup --execute",
+    "test:dev-context:system-admin": "node tests/dev-test-context-system-admin-contract.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1036.0",

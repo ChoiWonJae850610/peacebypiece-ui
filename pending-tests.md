@@ -1,9 +1,11 @@
-# Pending tests — 0.23.77
+# Pending tests — 0.23.78
 
-- Windows PowerShell에서 `tools/pipeline/peacebypiece-auto-pipeline.ps1` 실행 확인
-- config 자동 프로젝트 루트 탐색 확인
-- 21번 Seed Execute가 승인 fingerprint에서만 통과하는지 확인
-- 승인 fingerprint 불일치 시 차단 확인
-- 22번 Cleanup Execute도 동일 승인값을 사용하는지 확인
-- 실제 dev/test DB seed 결과와 중복 재실행 결과 확인
+- development/dev/local/test/demo에서 `/dev/test-console` 접근 확인
+- production에서 `/dev/test-console` 및 `/api/dev/test-context/*` 차단 확인
+- 등록된 시스템관리자 Google 계정으로 콘솔 접속 시 시스템관리자 대상 표시 확인
+- 시스템관리자 → 테스트 회사 역할 전환 → 원래 시스템관리자 복귀 확인
+- 시스템관리자 전환 후 `/system`, `/system/companies`, `/system/storage-usage` 접근 확인
+- 일반 회사 계정이 다른 시스템관리자 계정으로 전환하지 못하는지 확인
+- 전환 상태에서 현재 역할·회사 표시 확인
+- 전환/복구 audit log 생성 확인
 - npm run build 미실행 — 사용자가 로컬에서 확인.

@@ -15,9 +15,5 @@ export default async function DevTestConsolePage() {
   if (!session) {
     redirect("/?error=SESSION_REQUIRED");
   }
-  if (session.role === "system_admin") {
-    notFound();
-  }
-
   return <DevTestConsoleClient />;
 }
