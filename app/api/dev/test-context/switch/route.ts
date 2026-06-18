@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
+import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { getDevTestContextDisabledReason, isDevTestContextEnabled } from "@/lib/dev/testContext/config";
 import { createDevTestContextOverlayPayload } from "@/lib/dev/testContext/service";
 import { createDevTestContextCookieValue, WAFL_DEV_TEST_CONTEXT_COOKIE } from "@/lib/dev/testContext/session";
@@ -20,6 +21,9 @@ export async function POST(request: Request) {
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) {
     return NextResponse.json({ error: "SESSION_REQUIRED" }, { status: 401 });
+  }
+  if (!(await isActiveSystemAdminSession(actualSession))) {
+    return NextResponse.json({ error: "SYSTEM_ADMIN_REQUIRED" }, { status: 403 });
   }
   const body = (await request.json().catch(() => null)) as SwitchRequestBody | null;
   const targetKey = typeof body?.targetKey === "string" ? body.targetKey.trim() : "";

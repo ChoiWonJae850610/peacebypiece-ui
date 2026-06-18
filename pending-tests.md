@@ -1,16 +1,13 @@
-# Pending tests — 0.23.78
+# Pending tests — 0.23.80
 
-- development/dev/local/test/demo에서 `/dev/test-console` 접근 확인
-- production에서 `/dev/test-console` 및 `/api/dev/test-context/*` 차단 확인
-- 등록된 시스템관리자 Google 계정으로 콘솔 접속 시 시스템관리자 대상 표시 확인
-- 시스템관리자 → 테스트 회사 역할 전환 → 원래 시스템관리자 복귀 확인
-- 시스템관리자 전환 후 `/system`, `/system/companies`, `/system/storage-usage` 접근 확인
-- 일반 회사 계정이 다른 시스템관리자 계정으로 전환하지 못하는지 확인
-- 전환 상태에서 현재 역할·회사 표시 확인
-- 전환/복구 audit log 생성 확인
+- 활성 `system_users.system_admin` Google 이메일로 로그인 후 `/dev/test-console` 접근 확인
+- 같은 계정으로 `/ui`, `/functions` 접근 확인
+- 고객사 관리자 및 일반 멤버 Google 계정에서 세 route가 차단되는지 확인
+- production 또는 runtime 미허용 상태에서 `/ui`, `/functions`, `/dev/test-console` 차단 확인
+- 시스템관리자 → 테스트 회사 관리자/멤버 전환 후 `/dev/test-console`, `/ui`, `/functions` 재접근 확인
+- 원래 사용자 복구 후 `/system` 접근 확인
+- 다른 활성 시스템관리자 계정이 전환 목록에 노출되거나 전환되지 않는지 확인
+- `/api/dev/test-context/options`, `/switch`, `/clear`의 403 `SYSTEM_ADMIN_REQUIRED` 확인
+- 전환/복귀 audit log 확인
+- Seed 회사 역할이 `company_members` 기반 콘솔 대상 목록에 실제 표시되는지 후속 확인
 - npm run build 미실행 — 사용자가 로컬에서 확인.
-
-## 0.23.79 적용 후 확인
-
-- `npm run build` 재실행: dev/test context switch·clear route의 `SystemAuditTargetType` 오류가 없어야 한다.
-- `/dev/test-console`에서 시스템관리자/회사 역할 전환 후 audit log의 target type이 `auth`로 기록되는지 확인한다.

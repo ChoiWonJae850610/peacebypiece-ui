@@ -2858,7 +2858,7 @@ export default function WaflUiCatalogPage({
             <>
               <WaflBadge tone="brand">v{appVersion}</WaflBadge>
               <WaflBadge tone="info">runtime: {runtimeMode}</WaflBadge>
-              <WaflBadge tone="warning">/ui gate off</WaflBadge>
+              <WaflBadge tone="success">system admin only</WaflBadge>
             </>
           }
         >
@@ -2875,8 +2875,7 @@ export default function WaflUiCatalogPage({
                 현재 접근 상태
               </p>
               <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
-                모바일 확인을 위해 /ui 접근 제한은 임시 해제 상태다. 원래 허용
-                모드는 {allowedRuntimeModes.join(" / ")} 이다.
+                활성 시스템관리자 Google 계정과 허용 runtime이 모두 확인된 경우에만 접근한다. 허용 모드는 {allowedRuntimeModes.join(" / ")} 이다.
               </p>
             </WaflInfoBox>
           </div>

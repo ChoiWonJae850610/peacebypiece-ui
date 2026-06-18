@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
+import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { getDevTestContextDisabledReason, isDevTestContextEnabled } from "@/lib/dev/testContext/config";
 import { WAFL_DEV_TEST_CONTEXT_COOKIE } from "@/lib/dev/testContext/session";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
@@ -15,6 +16,9 @@ export async function POST(request: Request) {
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) {
     return NextResponse.json({ error: "SESSION_REQUIRED" }, { status: 401 });
+  }
+  if (!(await isActiveSystemAdminSession(actualSession))) {
+    return NextResponse.json({ error: "SYSTEM_ADMIN_REQUIRED" }, { status: 403 });
   }
 
   await createSystemAuditLogSafe({
