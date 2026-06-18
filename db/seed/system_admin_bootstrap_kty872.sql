@@ -6,21 +6,21 @@
 
 WITH updated_system_user AS (
   UPDATE system_users
-     SET name = 'KTY',
+     SET name = 'CWJ',
          role = 'system_admin',
          is_active = true,
          updated_at = now()
-   WHERE lower(email) = lower('kty872@gmail.com')
+   WHERE lower(email) = lower('wjchoi850610@gmail.com')
    RETURNING id
 ),
 inserted_system_user AS (
   INSERT INTO system_users (email, name, role, is_active)
-  SELECT 'kty872@gmail.com', 'KTY', 'system_admin', true
+  SELECT 'wjchoi850610@gmail.com', 'CWJ', 'system_admin', true
    WHERE NOT EXISTS (SELECT 1 FROM updated_system_user)
      AND NOT EXISTS (
        SELECT 1
          FROM system_users
-        WHERE lower(email) = lower('kty872@gmail.com')
+        WHERE lower(email) = lower('wjchoi850610@gmail.com')
      )
   RETURNING id
 ),
@@ -31,7 +31,7 @@ target_system_user AS (
   UNION ALL
   SELECT id
     FROM system_users
-   WHERE lower(email) = lower('kty872@gmail.com')
+   WHERE lower(email) = lower('wjchoi850610@gmail.com')
    ORDER BY id
    LIMIT 1
 )
@@ -56,5 +56,5 @@ FROM system_users
 LEFT JOIN system_user_permissions
   ON system_user_permissions.system_user_id = system_users.id
  AND system_user_permissions.is_enabled = true
-WHERE lower(system_users.email) = lower('kty872@gmail.com')
+WHERE lower(system_users.email) = lower('wjchoi850610@gmail.com')
 GROUP BY system_users.id, system_users.email, system_users.name, system_users.role, system_users.is_active;
