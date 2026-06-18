@@ -12,6 +12,7 @@ import {
 import {
   WAFL_AUTOMATION_STATUS_LABELS,
   WAFL_FUNCTION_CATEGORY_LABELS,
+  WAFL_SCENARIO_DECISION_LABELS,
   type WaflAutomationStatus,
   type WaflFunctionCategory,
   type WaflFunctionItem,
@@ -137,12 +138,39 @@ export default function FunctionsCatalogClient({
                   <p className="mt-2 text-sm text-[var(--pbp-text-secondary)]">{selected.description}</p>
                   <div className="mt-3 text-xs text-[var(--pbp-text-muted)]">경로 {selected.route} · 역할 {selected.roles.join(", ")}</div>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <WaflBadge tone={selected.decisionState === "pending" ? "warning" : "neutral"} size="sm">
+                    {WAFL_SCENARIO_DECISION_LABELS[selected.decisionState]}
+                  </WaflBadge>
+                  <WaflBadge tone="neutral" size="sm">자동화 {selected.automation.type}</WaflBadge>
+                  <WaflBadge tone="neutral" size="sm">최근 결과 {selected.automation.lastResult}</WaflBadge>
+                </div>
                 <Detail title="전제 조건" values={selected.preconditions} />
+                <ScenarioSteps steps={selected.steps} />
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <Detail title="예외 입력·실패 조건" values={selected.exceptionCases} />
+                  <Detail title="권한 조건" values={selected.permissionRules} />
+                </div>
                 <Detail title="예상 UI 결과" values={selected.expectedUi} />
                 <Detail title="예상 API 결과" values={selected.expectedApi} />
-                <div className="grid gap-4 xl:grid-cols-2"><Detail title="변경되어야 하는 DB" values={selected.expectedDbChanges} empty="DB 변경 없음" /><Detail title="변경되면 안 되는 DB" values={selected.expectedDbUnchanged} /></div>
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <Detail title="변경 허용 DB 필드" values={selected.dbContract.allowedChanges} empty="DB 변경 없음" />
+                  <Detail title="DB 불변 필드" values={selected.dbContract.unchanged} />
+                </div>
+                <WaflSurface tone="muted" shape="control" className="px-4 py-3 text-sm text-[var(--pbp-text-secondary)]">
+                  DB snapshot: before {selected.dbContract.snapshotBefore ? "사용" : "미사용"} / after {selected.dbContract.snapshotAfter ? "사용" : "미사용"}
+                </WaflSurface>
+                {selected.tenantContract ? <ContractSection title="회사 격리 계약" rows={[
+                  ["행위 회사", selected.tenantContract.actorCompany],
+                  ["대상 회사", selected.tenantContract.targetCompany],
+                ]} values={selected.tenantContract.assertions} /> : null}
+                {selected.responsiveContract ? <ContractSection title="반응형 계약" rows={[["기기", selected.responsiveContract.viewports.join(", ")]]} values={selected.responsiveContract.assertions} /> : null}
+                {selected.performanceContract ? <ContractSection title="성능 계약" rows={[["데이터 세트", selected.performanceContract.dataSet], ["측정 항목", selected.performanceContract.metrics.join(", ")]]} values={selected.performanceContract.thresholds} /> : null}
+                {selected.pdfContract ? <ContractSection title="PDF 계약" rows={[["생성 조건", selected.pdfContract.generationRule]]} values={[...selected.pdfContract.assertions, ...selected.pdfContract.decisionItems.map((value) => `결정 필요: ${value}`)]} /> : null}
                 <WaflSurface tone="muted" shape="control" className="px-4 py-3 text-sm">
-                  자동화 상태: <strong>{WAFL_AUTOMATION_STATUS_LABELS[selected.automationStatus]}</strong>. 0.23.62에서는 실행 기능 없이 명세와 연결 상태만 제공합니다.
+                  <div>자동화 상태: <strong>{WAFL_AUTOMATION_STATUS_LABELS[selected.automationStatus]}</strong></div>
+                  <div className="mt-1 text-[var(--pbp-text-secondary)]">파일: {selected.automation.filePath ?? "미연결"} · 데이터 세트: {selected.automation.testDataSet ?? "미연결"}</div>
+                  <div className="mt-1 text-[var(--pbp-text-secondary)]">0.23.63에서는 실행 기능 없이 시나리오 데이터 계약과 연결 상태만 제공합니다.</div>
                 </WaflSurface>
               </div>
             ) : <div className="flex min-h-[400px] items-center justify-center text-sm text-[var(--pbp-text-muted)]">기능을 선택하세요.</div>}
@@ -150,6 +178,40 @@ export default function FunctionsCatalogClient({
         </div>
       </div>
     </main>
+  );
+}
+
+function ScenarioSteps({ steps }: { steps: WaflFunctionItem["steps"] }) {
+  return (
+    <section>
+      <h3 className="text-sm font-bold">실행 단계와 기대 결과</h3>
+      <div className="mt-2 space-y-2">
+        {steps.map((step, index) => (
+          <WaflSurface key={`${step.id}-${index}`} tone="muted" shape="control" className="px-4 py-3">
+            <div className="text-sm font-semibold">{index + 1}. {step.action}</div>
+            <ul className="mt-2 space-y-1 text-sm text-[var(--pbp-text-secondary)]">
+              {step.expected.length ? step.expected.map((value) => <li key={value}>• {value}</li>) : <li>• 별도 기대 결과 없음</li>}
+            </ul>
+          </WaflSurface>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ContractSection({ title, rows, values }: { title: string; rows: Array<[string, string]>; values: string[] }) {
+  return (
+    <section>
+      <h3 className="text-sm font-bold">{title}</h3>
+      <WaflSurface tone="muted" shape="control" className="mt-2 px-4 py-3 text-sm">
+        <dl className="space-y-2">
+          {rows.map(([label, value]) => <div key={label}><dt className="font-semibold">{label}</dt><dd className="mt-0.5 text-[var(--pbp-text-secondary)]">{value}</dd></div>)}
+        </dl>
+        <ul className="mt-3 space-y-1.5 text-[var(--pbp-text-secondary)]">
+          {values.length ? values.map((value) => <li key={value}>• {value}</li>) : <li>등록된 검증 항목 없음</li>}
+        </ul>
+      </WaflSurface>
+    </section>
   );
 }
 
