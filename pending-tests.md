@@ -22,3 +22,11 @@
 - [ ] 원래 시스템관리자 복구 및 내부 route 재접근 확인
 - [ ] `/system` 하단 내부 도구 카드 3개 및 runtime 표시 확인
 - [ ] production에서 내부 도구 카드와 세 route 차단 확인
+
+
+## 0.23.83
+- [ ] PowerShell 21번 Simulator DB Seed Execute 재실행 후 ExitCode 0 확인
+- [ ] totals에서 `companyUsers: 193`, `companyMembers: 193` 확인
+- [ ] suspended 회사 멤버의 `status`, `suspended_by`, `suspended_at` 정합성 확인
+- [ ] `/dev/test-console`에서 wafl-fn 회사 A~J와 역할 표시 확인
+- [ ] npm run build 미실행 — 사용자가 로컬에서 확인.

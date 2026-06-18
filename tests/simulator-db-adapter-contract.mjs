@@ -20,4 +20,6 @@ assert.match(source, /ON CONFLICT/);
 assert.match(source, /source='manual'/);
 assert.match(source, /INSERT INTO company_members/);
 assert.match(source, /role === "admin" \? "company_admin" : role/);
+assert.match(source, /suspended_by,suspended_at/);
+assert.match(source, /CASE WHEN \$4::text = 'suspended' THEN now\(\) ELSE NULL END/);
 console.log("simulator db adapter contract passed: transaction, prefix cleanup, idempotent seed, production block");
