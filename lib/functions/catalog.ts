@@ -312,6 +312,17 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
     automation: { type: "unit", filePath: "scripts/functions-environment-audit.mjs", testDataSet: "environment-only/no-mutation", lastResult: "passed" },
   }),
   item({
+    id: "ENV-002-D01", order: "7-2", area: "테스트 환경", route: "/functions", title: "Simulator DB·R2 adapter 실행 전 계획",
+    description: "실제 접속 없이 schema table/column, 테스트 회사 prefix, cleanup 순서와 R2 test prefix를 검증한다.", category: "database", roles: ["developer"], automationStatus: "automated", releaseBlocking: true,
+    preconditions: ["0.23.74 Simulator 구조", "DB full_reset schema", "회사 A~J fixture"],
+    expectedUi: ["/functions에서 adapter 계획과 실행 차단 상태 확인"],
+    expectedApi: ["DB·R2 접속 없음", "계획 JSON 보고서 생성"],
+    expectedDbChanges: [],
+    expectedDbUnchanged: ["전체 DB", "전체 R2 객체", "운영 고객 데이터"],
+    exceptionCases: ["필수 table 또는 column 누락", "R2 prefix 범위 이탈", "회사별 prefix 중복"],
+    automation: { type: "unit", filePath: "tools/simulator/commands/adapter-plan.mjs", testDataSet: "company-a-j/adapter-plan-only", lastResult: "passed" },
+  }),
+  item({
     id: "PDF-WO-001", order: "8-1", area: "PDF", route: "/worker", title: "작업지시서 PDF 데이터·출력 정책 계약",
     description: "현재 구현 관찰값과 최종 출력 정책 결정 대기 항목을 분리해 검증한다.", category: "pdf", roles: ["admin", "member"], automationStatus: "decision-required", releaseBlocking: true,
     preconditions: ["사용자 PDF 정책 확정 필요"], expectedUi: ["정책 미확정 상태 표시", "현재 구현과 목표 정책 구분"], expectedApi: ["현재 생성 API와 최종 정책 validator 분리"], expectedDbChanges: [], expectedDbUnchanged: ["업무 원본 데이터", "production PDF 계약"],

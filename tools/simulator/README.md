@@ -16,3 +16,9 @@
 - `npm run simulator:r2:generate`: 기존 로컬 simulator 출력물을 먼저 정리한 뒤 `.tmp/simulator/r2`에 새 파일과 manifest를 생성한다.
 - `npm run simulator:r2:cleanup-local`: `.tmp/simulator/r2/files`와 `.tmp/simulator/r2/manifests`만 삭제한다. DB와 실제 R2에는 접근하지 않는다.
 
+
+## Adapter planning commands
+
+- `npm run simulator:adapter:plan`: DB schema와 fixture의 매핑, cleanup 순서, R2 prefix를 파일 기준으로 점검한다. DB/R2 접속과 변경은 없다.
+- `npm run simulator:adapter:contract`: adapter manifest의 production 차단·mutation 비활성 정책을 검사한다.
+- 실제 seed/upload/cleanup adapter는 아직 비활성 상태이며 `executionReady=false`를 유지한다.

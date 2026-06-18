@@ -51,3 +51,10 @@
 - 26번을 빈 상태에서 다시 실행해 성공 처리되는지 확인
 - 실제 DB row와 R2 객체가 변경되지 않는지 확인
 
+
+## 0.23.75 Simulator adapter 계획
+
+- [ ] PowerShell 27번 Simulator Adapter Contract 실행
+- [ ] PowerShell 28번 Simulator Adapter Plan 실행
+- [ ] 결과 JSON에서 schemaReady=true, executionReady=false 확인
+- [ ] 실제 DB/R2 변경이 없음을 확인
