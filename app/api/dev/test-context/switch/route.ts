@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     actorUserId: actualSession.userId,
     actorRole: actualSession.role === "system_admin" ? "system_admin" : "customer_admin",
     companyId: actualSession.companyId,
-    targetType: "user",
+    targetType: "auth",
     targetId: result.target.userId,
     eventType: "dev_test.context_switched",
     severity: "medium",

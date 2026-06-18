@@ -9,3 +9,8 @@
 - 전환 상태에서 현재 역할·회사 표시 확인
 - 전환/복구 audit log 생성 확인
 - npm run build 미실행 — 사용자가 로컬에서 확인.
+
+## 0.23.79 적용 후 확인
+
+- `npm run build` 재실행: dev/test context switch·clear route의 `SystemAuditTargetType` 오류가 없어야 한다.
+- `/dev/test-console`에서 시스템관리자/회사 역할 전환 후 audit log의 target type이 `auth`로 기록되는지 확인한다.
