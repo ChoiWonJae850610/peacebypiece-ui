@@ -83,8 +83,8 @@ addCheck(
   looksLocalOrTest(playwrightBaseUrl) ? "pass" : "review",
   `baseURL=${playwrightBaseUrl}`,
 );
-addCheck(checks, "seed-adapter", "실제 seed adapter", "blocked", "현재 functions-test-data.mjs는 안전 검증 후에도 DB mutation 직전에 의도적으로 중단됩니다.");
-addCheck(checks, "cleanup-adapter", "실제 cleanup adapter", "blocked", "현재 cleanup도 실제 DB/R2 삭제 adapter가 연결되지 않았습니다.");
+addCheck(checks, "seed-adapter", "실제 seed adapter", "pass", "Simulator DB seed adapter가 구현되어 있으며 dev/test runtime·테스트 DB 식별·명시적 확인을 모두 요구합니다.");
+addCheck(checks, "cleanup-adapter", "실제 cleanup adapter", "pass", "cleanup은 fixture에 등록된 wafl-fn 회사 ID만 transaction으로 삭제합니다. R2 객체는 변경하지 않습니다.");
 
 const summary = {
   pass: checks.filter((check) => check.status === "pass").length,

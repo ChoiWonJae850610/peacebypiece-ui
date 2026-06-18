@@ -4,7 +4,8 @@ import { SIMULATOR_DB_MANIFEST } from "../tools/simulator/adapters/db/manifest.m
 import { SIMULATOR_R2_MANIFEST } from "../tools/simulator/adapters/r2/manifest.mjs";
 
 assert.equal(SIMULATOR_DB_MANIFEST.prefix, "wafl-fn");
-assert.equal(SIMULATOR_DB_MANIFEST.mutationPolicy.executeEnabled, false);
+assert.equal(SIMULATOR_DB_MANIFEST.mutationPolicy.executeEnabled, true);
+assert.equal(SIMULATOR_DB_MANIFEST.mutationPolicy.cleanupEnabled, true);
 assert.equal(SIMULATOR_DB_MANIFEST.mutationPolicy.productionAllowed, false);
 assert.equal(SIMULATOR_DB_MANIFEST.mutationPolicy.transactionRequired, true);
 assert.ok(SIMULATOR_DB_MANIFEST.tables.some((table) => table.name === "companies"));

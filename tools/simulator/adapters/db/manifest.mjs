@@ -17,7 +17,8 @@ export const SIMULATOR_DB_MANIFEST = {
     { name: "storage_usage_snapshots", key: "company_id", requiredColumns: ["company_id", "used_bytes", "attachment_count", "source"], cleanupOrder: 30 }
   ],
   mutationPolicy: {
-    executeEnabled: false,
+    executeEnabled: true,
+    cleanupEnabled: true,
     transactionRequired: true,
     idempotentUpsertRequired: true,
     cleanupCompanyPrefixOnly: true,

@@ -22,3 +22,20 @@
 - `npm run simulator:adapter:plan`: DB schema와 fixture의 매핑, cleanup 순서, R2 prefix를 파일 기준으로 점검한다. DB/R2 접속과 변경은 없다.
 - `npm run simulator:adapter:contract`: adapter manifest의 production 차단·mutation 비활성 정책을 검사한다.
 - 실제 seed/upload/cleanup adapter는 아직 비활성 상태이며 `executionReady=false`를 유지한다.
+
+
+## DB Simulator commands (0.23.76)
+
+```bash
+npm run simulator:db:contract
+npm run simulator:db:seed:dry-run
+npm run simulator:db:cleanup:dry-run
+npm run simulator:db:seed:execute
+npm run simulator:db:cleanup:execute
+```
+
+- Dry-run commands never connect to the database.
+- Execute commands require a non-production runtime, a DB target whose host/database is identifiable as local/dev/test/demo/staging/sandbox, `WAFL_SIMULATOR_ENABLE_DB_MUTATION=1`, and an exact confirmation value.
+- Seed uses one transaction, an advisory lock, deterministic `wafl-fn` IDs, and idempotent upserts.
+- Cleanup deletes only fixture company IDs beginning with `wafl-fn`; database cascades remove their dependent rows.
+- R2 upload/delete remains disabled. Storage usage rows are manual simulator snapshots until R2 reconciliation is implemented.

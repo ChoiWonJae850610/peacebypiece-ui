@@ -57,10 +57,9 @@ const report = {
   fixture: { companies: companies.length, companies },
   executionReady: false,
   blockers: [
-    "실제 DB seed adapter 미구현",
-    "실제 DB cleanup adapter 미구현",
     "실제 R2 upload/delete adapter 미구현",
-    "운영 환경 차단 검증 후에만 execute 활성화 가능"
+    "실제 DB seed/cleanup은 dev/test 식별·명시적 확인을 통과한 경우에만 실행 가능",
+    "DB seed 후 검증 결과 확인 전 R2 execute는 활성화하지 않음"
   ],
   note: "이 명령은 schema와 fixture 파일만 읽으며 DB/R2에 접속하거나 변경하지 않습니다."
 };
