@@ -25,7 +25,9 @@
     "test:data:functions:cleanup:execute": "node scripts/functions-test-data.mjs cleanup --execute",
     "test:functions:performance": "node scripts/functions-performance.mjs",
     "test:functions:storage": "node tests/functions-storage-contract.mjs",
-    "test:functions:storage:reconcile": "node scripts/functions-storage-reconcile.mjs --dry-run"
+    "test:functions:storage:reconcile": "node scripts/functions-storage-reconcile.mjs --dry-run",
+    "test:functions:pdf-contract": "node tests/functions-pdf-contract.mjs",
+    "test:functions:pdf-mock": "node scripts/functions-pdf-mock.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1036.0",

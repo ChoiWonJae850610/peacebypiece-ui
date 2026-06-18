@@ -1,0 +1,15 @@
+{
+  "version": "0.23.69",
+  "documents": [
+    {
+      "id": "workorder",
+      "pendingDecisionIds": ["generation-stage", "amount-visibility", "due-date", "branding", "signature", "orientation", "image-layout", "missing-values"],
+      "currentFacts": ["existing-generation-route", "a4-portrait-call", "amount-fields-currently-rendered", "r2-attachment-persistence"]
+    },
+    {
+      "id": "supplier-order",
+      "pendingDecisionIds": ["vendor-split", "material-split", "price-fields", "delivery-date", "branding", "orientation", "missing-values"],
+      "currentFacts": ["final-generation-contract-not-confirmed"]
+    }
+  ]
+}

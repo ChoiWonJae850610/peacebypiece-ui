@@ -199,7 +199,7 @@ export default function FunctionsCatalogClient({
                 ]} values={selected.tenantContract.assertions} /> : null}
                 {selected.responsiveContract ? <ContractSection title="반응형 계약" rows={[["기기", selected.responsiveContract.viewports.join(", ")]]} values={selected.responsiveContract.assertions} /> : null}
                 {selected.performanceContract ? <ContractSection title="성능 계약" rows={[["데이터 세트", selected.performanceContract.dataSet], ["측정 항목", selected.performanceContract.metrics.join(", ")]]} values={selected.performanceContract.thresholds} /> : null}
-                {selected.pdfContract ? <ContractSection title="PDF 계약" rows={[["생성 조건", selected.pdfContract.generationRule]]} values={[...selected.pdfContract.assertions, ...selected.pdfContract.decisionItems.map((value) => `결정 필요: ${value}`)]} /> : null}
+                {selected.pdfContract ? <ContractSection title="PDF 계약" rows={[["생성 조건", selected.pdfContract.generationRule]]} values={[...selected.pdfContract.currentImplementation.map((value) => `현재 구현: ${value}`), ...selected.pdfContract.assertions, ...selected.pdfContract.immutableAssertions.map((value) => `불변조건: ${value}`), ...selected.pdfContract.decisionItems.map((value) => `결정 필요: ${value}`)]} /> : null}
                 <WaflSurface tone="muted" shape="control" className="px-4 py-3 text-sm">
                   <div>자동화 상태: <strong>{WAFL_AUTOMATION_STATUS_LABELS[selected.automationStatus]}</strong></div>
                   <div className="mt-1 text-[var(--pbp-text-secondary)]">파일: {selected.automation.filePath ?? "미연결"} · 데이터 세트: {selected.automation.testDataSet ?? "미연결"}</div>

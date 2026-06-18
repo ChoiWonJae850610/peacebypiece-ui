@@ -1,3 +1,5 @@
+import { getWaflPdfPolicyContract } from "@/lib/functions/pdfPolicyCatalog";
+
 export type WaflFunctionCategory =
   | "normal"
   | "exception"
@@ -47,6 +49,8 @@ export type WaflPdfScenarioContract = {
   generationRule: string;
   assertions: string[];
   decisionItems: string[];
+  currentImplementation: string[];
+  immutableAssertions: string[];
 };
 
 export type WaflAutomationLink = {
@@ -179,6 +183,8 @@ const item = (value: WaflFunctionDefinition): WaflFunctionItem => ({
     generationRule: value.preconditions.join(" / ") || "정책 확정 필요",
     assertions: [...value.expectedUi, ...value.expectedApi],
     decisionItems: value.automationStatus === "decision-required" ? ["생성 가능 단계", "금액 노출", "문서 분리", "로고·서명"] : [],
+    currentImplementation: [],
+    immutableAssertions: value.expectedDbUnchanged,
   } : null),
   automation: {
     type: value.automation?.type ?? defaultAutomationType(value.category),
@@ -295,11 +301,38 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
     automation: { type: "playwright", filePath: "tests/e2e/functions-core.spec.mjs", testDataSet: "company-a/personal-settings", lastResult: "not-run" },
   }),
   item({
-    id: "PDF-WO-001", order: "7-1", area: "PDF", route: "/worker", title: "작업지시서 PDF 생성 조건",
-    description: "필수 자재·외주·납기 조건에 따른 생성 허용 시점을 검증한다.", category: "pdf", roles: ["admin", "member"], automationStatus: "decision-required", releaseBlocking: false,
-    preconditions: ["정책 확정 필요"], expectedUi: ["조건 충족 시 생성 가능", "누락 시 차단 안내"], expectedApi: ["PDF 생성 API 정책 검증"], expectedDbChanges: ["PDF 생성 이력(정책에 따라)"], expectedDbUnchanged: ["업무 원본 데이터"],
+    id: "PDF-WO-001", order: "7-1", area: "PDF", route: "/worker", title: "작업지시서 PDF 데이터·출력 정책 계약",
+    description: "현재 구현 관찰값과 최종 출력 정책 결정 대기 항목을 분리해 검증한다.", category: "pdf", roles: ["admin", "member"], automationStatus: "decision-required", releaseBlocking: true,
+    preconditions: ["사용자 PDF 정책 확정 필요"], expectedUi: ["정책 미확정 상태 표시", "현재 구현과 목표 정책 구분"], expectedApi: ["현재 생성 API와 최종 정책 validator 분리"], expectedDbChanges: [], expectedDbUnchanged: ["업무 원본 데이터", "production PDF 계약"],
     decisionState: "pending",
-    pdfContract: { generationRule: "필수 자재·외주·납기 조건은 사용자 확정 대기", assertions: ["누락값 생성 차단", "회사 로고·데이터 격리", "최신 데이터 재생성"], decisionItems: ["생성 가능 단계", "금액 노출", "공급처별 문서 분리", "회사 로고", "직인·서명란"] },
+    pdfContract: (() => {
+      const policy = getWaflPdfPolicyContract("workorder");
+      return {
+        generationRule: "생성 가능 단계·누락값·금액 정책은 사용자 확정 대기",
+        assertions: ["회사 데이터 격리", "최신 snapshot", "생성 실패 시 원본 불변"],
+        decisionItems: policy.decisions.map((decision) => `${decision.label}: ${decision.currentObservation}`),
+        currentImplementation: policy.currentImplementation,
+        immutableAssertions: policy.immutableAssertions,
+      };
+    })(),
+    automation: { type: "unit", filePath: "tests/functions-pdf-contract.mjs", testDataSet: "pdf-policy-scenarios", lastResult: "passed" },
+  }),
+  item({
+    id: "PDF-MAT-001", order: "7-2", area: "PDF", route: "/workspace/material-orders", title: "공급처 발주 PDF 데이터·출력 정책 계약",
+    description: "공급처별 분리·원단/부자재 구분·단가/금액/부가세·납기·브랜딩 결정을 관리한다.", category: "pdf", roles: ["admin", "member"], automationStatus: "decision-required", releaseBlocking: true,
+    preconditions: ["사용자 PDF 정책 확정 필요"], expectedUi: ["정책 결정 대기 표시", "mock contract만 제공"], expectedApi: ["정책 확정 전 production 생성 route 추가 금지"], expectedDbChanges: [], expectedDbUnchanged: ["발주 원본 데이터", "production PDF·R2 객체"],
+    decisionState: "pending",
+    pdfContract: (() => {
+      const policy = getWaflPdfPolicyContract("supplier-order");
+      return {
+        generationRule: "공급처별 문서 구성과 금액·납기·브랜딩 정책은 사용자 확정 대기",
+        assertions: ["공급처 품목 격리", "회사 데이터 격리", "정책 확정 전 production 출력 금지"],
+        decisionItems: policy.decisions.map((decision) => `${decision.label}: ${decision.currentObservation}`),
+        currentImplementation: policy.currentImplementation,
+        immutableAssertions: policy.immutableAssertions,
+      };
+    })(),
+    automation: { type: "unit", filePath: "tests/functions-pdf-contract.mjs", testDataSet: "pdf-policy-scenarios", lastResult: "passed" },
   }),
   item({
     id: "PERF-001-F01", order: "8-1", area: "성능", route: "/worker", title: "작업지시서 1,000건 목록 기준선",
