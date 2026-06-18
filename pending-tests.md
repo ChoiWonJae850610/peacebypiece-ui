@@ -188,3 +188,11 @@
 - 개인 설정 `/me/settings` 진입 확인
 - 로그인 secret 또는 fixture 미준비 시 skip 사유가 명확히 표시되는지 확인
 - production에서 실행하지 않는지 확인
+
+## 0.23.67 반응형·기기 Playwright
+
+- [ ] dev/test에서 `WAFL_FUNCTIONS_RESPONSIVE_E2E_ENABLED=1`과 로그인 session secret을 설정한다.
+- [ ] `npm run test:e2e:functions-responsive`를 실행해 작업지시서·자재 발주 8개 viewport 계약을 확인한다.
+- [ ] iPad Mini 가로 2패널, Galaxy Tab 가로·Desktop 3패널, 모바일 단일 패널을 확인한다.
+- [ ] 목록 drawer 열기·닫기, document overflow, 독립 panel scroll, 버튼 viewport 이탈 결과를 확인한다.
+- [ ] PowerShell에 `Functions Responsive E2E Test` 비파괴 dev/test 전용 메뉴를 추가한다.

@@ -211,12 +211,13 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
   }),
   item({
     id: "WKR-004-R01", order: "1-4", area: "작업지시서", route: "/worker", title: "기기별 workspace 구조",
-    description: "PC·태블릿·모바일에서 고정된 패널 및 드로어 정책을 확인한다.", category: "responsive", roles: ["admin", "member"], automationStatus: "planned", releaseBlocking: true,
+    description: "PC·태블릿·모바일에서 고정된 패널 및 드로어 정책을 확인한다.", category: "responsive", roles: ["admin", "member"], automationStatus: "partial", releaseBlocking: true,
     preconditions: ["작업지시서 존재"], expectedUi: ["PC 3패널", "태블릿 세로 목록 드로어", "모바일 단일 패널", "가로 overflow 없음"], expectedApi: [], expectedDbChanges: [], expectedDbUnchanged: ["전체 DB"],
     responsiveContract: {
       viewports: ["Desktop 1440×900", "Desktop 1280×800", "iPad Mini landscape", "iPad Mini portrait", "Galaxy Tab landscape", "Galaxy Tab portrait", "iPhone portrait", "Galaxy S portrait"],
-      assertions: ["기기 정책에 맞는 패널 개수", "목록 드로어 열림·닫힘", "본문과 독립 패널 스크롤", "가로 overflow 없음", "모달 footer 접근 가능"],
+      assertions: ["기기 정책에 맞는 패널 개수", "목록 드로어 열림·닫힘", "본문과 독립 패널 스크롤", "가로 overflow 없음", "주요 버튼 viewport 이탈 없음", "모달 footer 접근 가능"],
     },
+    automation: { type: "playwright", filePath: "tests/e2e/functions-responsive.spec.mjs", testDataSet: "company-a/responsive-workspace", lastResult: "not-run" },
   }),
   item({
     id: "MAT-001-N01", order: "2-1", area: "자재 발주", route: "/workspace/material-orders", title: "발주서 생성 및 품목 할당",
@@ -224,6 +225,16 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
     preconditions: ["할당 가능한 자재 존재"], expectedUi: ["발주서 목록 추가", "할당 진행률 갱신"], expectedApi: ["생성 및 collection mutation 성공"], expectedDbChanges: ["material_orders", "material_order_items"], expectedDbUnchanged: ["다른 회사 발주 데이터"],
 
     automation: { type: "playwright", filePath: "tests/e2e/functions-core.spec.mjs", testDataSet: "company-a/material-orders", lastResult: "not-run" },
+  }),
+  item({
+    id: "MAT-003-R01", order: "2-3", area: "자재 발주", route: "/workspace/material-orders", title: "기기별 발주 workspace 구조",
+    description: "PC·태블릿·모바일에서 발주 목록·상세·할당 패널과 드로어 정책을 확인한다.", category: "responsive", roles: ["admin", "member"], automationStatus: "partial", releaseBlocking: true,
+    preconditions: ["발주서와 할당 가능한 자재 존재"], expectedUi: ["PC 3패널", "iPad Mini 가로 2패널", "태블릿 세로 목록 드로어", "모바일 단일 패널", "가로 overflow 없음"], expectedApi: [], expectedDbChanges: [], expectedDbUnchanged: ["전체 DB"],
+    responsiveContract: {
+      viewports: ["Desktop 1440×900", "Desktop 1280×800", "iPad Mini landscape", "iPad Mini portrait", "Galaxy Tab landscape", "Galaxy Tab portrait", "iPhone portrait", "Galaxy S portrait"],
+      assertions: ["기기 정책에 맞는 패널 개수", "목록 드로어 열림·닫힘", "독립 패널 스크롤", "가로 overflow 없음", "주요 버튼 viewport 이탈 없음"],
+    },
+    automation: { type: "playwright", filePath: "tests/e2e/functions-responsive.spec.mjs", testDataSet: "company-a/responsive-material-orders", lastResult: "not-run" },
   }),
   item({
     id: "MAT-002-D01", order: "2-2", area: "자재 발주", route: "/workspace/material-orders", title: "품목 수량·단가 부분 저장",

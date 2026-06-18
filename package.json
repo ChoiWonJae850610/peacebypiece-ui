@@ -19,7 +19,8 @@
     "test:data:functions:reset": "node scripts/functions-test-data.mjs reset --dry-run",
     "test:data:functions:cleanup": "node scripts/functions-test-data.mjs cleanup --dry-run",
     "test:functions:db-contract": "node tests/functions-db-contract.mjs",
-    "test:e2e:functions-core": "playwright test tests/e2e/functions-core.spec.mjs --project=chromium-desktop"
+    "test:e2e:functions-core": "playwright test tests/e2e/functions-core.spec.mjs --project=chromium-desktop",
+    "test:e2e:functions-responsive": "playwright test tests/e2e/functions-responsive.spec.mjs --project=chromium-desktop"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1036.0",
