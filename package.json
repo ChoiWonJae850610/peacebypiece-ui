@@ -35,7 +35,8 @@
     "simulator:seed:dry-run": "node scripts/functions-test-data.mjs seed --dry-run",
     "simulator:cleanup:dry-run": "node scripts/functions-test-data.mjs cleanup --dry-run",
     "simulator:r2:plan": "node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=plan",
-    "simulator:r2:generate": "node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=generate"
+    "simulator:r2:generate": "node tools/simulator/commands/r2-demo-files.mjs --preset=small --mode=generate",
+    "simulator:r2:cleanup-local": "node tools/simulator/commands/r2-demo-files.mjs --mode=cleanup-local"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1036.0",

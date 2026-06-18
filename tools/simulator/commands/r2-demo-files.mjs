@@ -90,8 +90,8 @@ const preset = PRESETS[presetName];
 if (!preset) {
   fail(`Unknown preset: ${presetName}. Use one of ${Object.keys(PRESETS).join(", ")}.`);
 }
-if (!["generate", "upload", "verify", "all", "plan"].includes(mode)) {
-  fail("Unknown mode. Use --mode=plan|generate|upload|verify|all.");
+if (!["generate", "cleanup-local", "upload", "verify", "all", "plan"].includes(mode)) {
+  fail("Unknown mode. Use --mode=plan|generate|cleanup-local|upload|verify|all.");
 }
 
 function fail(message) {
@@ -337,6 +337,48 @@ function selectPresetItems(items) {
   return selected;
 }
 
+
+function assertSafeLocalPath(targetPath, expectedPath, label) {
+  const resolvedTarget = path.resolve(targetPath);
+  const resolvedExpected = path.resolve(expectedPath);
+  if (resolvedTarget !== resolvedExpected) {
+    fail(`Unsafe ${label} path: ${resolvedTarget}`);
+  }
+  const simulatorRoot = path.resolve(PROJECT_ROOT, ".tmp", "simulator", "r2");
+  if (!resolvedTarget.startsWith(`${simulatorRoot}${path.sep}`)) {
+    fail(`Refusing to remove path outside .tmp/simulator/r2: ${resolvedTarget}`);
+  }
+  return resolvedTarget;
+}
+
+async function removeDirectoryIfExists(targetPath, label) {
+  try {
+    const stat = await fs.lstat(targetPath);
+    if (!stat.isDirectory()) {
+      fail(`${label} target is not a directory: ${targetPath}`);
+    }
+    await fs.rm(targetPath, { recursive: true, force: false });
+    console.log(`[CLEANUP] removed ${path.relative(PROJECT_ROOT, targetPath)}`);
+    return true;
+  } catch (error) {
+    if (error && error.code === "ENOENT") {
+      console.log(`[CLEANUP] already clean ${path.relative(PROJECT_ROOT, targetPath)}`);
+      return false;
+    }
+    throw error;
+  }
+}
+
+async function cleanupLocalSimulatorOutput() {
+  const safeOutDir = assertSafeLocalPath(outDir, DEFAULT_OUT_DIR, "local files");
+  const safeManifestDir = assertSafeLocalPath(manifestDir, DEFAULT_MANIFEST_DIR, "manifest");
+  console.log(`[INFO] cleanup target=${path.relative(PROJECT_ROOT, safeOutDir)}`);
+  console.log(`[INFO] cleanup target=${path.relative(PROJECT_ROOT, safeManifestDir)}`);
+  const removedFiles = await removeDirectoryIfExists(safeOutDir, "local files");
+  const removedManifests = await removeDirectoryIfExists(safeManifestDir, "manifest");
+  console.log(`[INFO] local cleanup completed: files=${removedFiles ? "removed" : "already-clean"}, manifests=${removedManifests ? "removed" : "already-clean"}`);
+}
+
 async function ensureDirForFile(filePath) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
 }
@@ -396,6 +438,7 @@ async function generateFiles(items) {
     console.log(`[DRY-RUN] Would generate ${items.length} files into ${outDir}`);
     return;
   }
+  await cleanupLocalSimulatorOutput();
   for (const [index, item] of items.entries()) {
     await writeDemoFile(item);
     if ((index + 1) % 10 === 0 || index + 1 === items.length) {
@@ -509,6 +552,11 @@ async function main() {
   console.log(`[INFO] preset=${preset.label}, mode=${mode}, dryRun=${dryRun}`);
   console.log(`[INFO] workorderId=${workorderIdFilter || "(all)"}, onlyStatsFixtures=${onlyStatsFixtures}`);
   console.log(`[INFO] outDir=${outDir}`);
+
+  if (mode === "cleanup-local") {
+    await cleanupLocalSimulatorOutput();
+    return;
+  }
 
   const usesLocalScenario = mode === "plan" || mode === "generate";
   const rows = usesLocalScenario ? await readLocalScenarioRows() : await readAttachmentRows();

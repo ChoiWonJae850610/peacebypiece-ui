@@ -43,3 +43,11 @@
 - PowerShell 24번 Simulator R2 Plan이 DB 없이 성공하고 파일을 생성하지 않는지 확인
 - PowerShell 25번 Simulator R2 Local Generate가 `.tmp/simulator/r2/files`와 manifest만 생성하는지 확인
 - 실제 R2 객체 및 DB row가 변경되지 않는지 확인
+
+## 0.23.74 Simulator R2 로컬 정리
+- PowerShell 25번을 연속 두 번 실행해 파일과 manifest가 누적되지 않는지 확인
+- PowerShell 26번 실행 전 삭제 대상 두 경로가 정확히 표시되는지 확인
+- 26번 실행 후 `.tmp/simulator/r2/files`와 `.tmp/simulator/r2/manifests`만 삭제되는지 확인
+- 26번을 빈 상태에서 다시 실행해 성공 처리되는지 확인
+- 실제 DB row와 R2 객체가 변경되지 않는지 확인
+
