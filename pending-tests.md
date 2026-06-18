@@ -137,3 +137,12 @@
 - 시스템 저장소 선택 삭제·기한 경과 전체 삭제의 API 오류 정규화
 - 관리자 파일 관리 스냅샷 조회 성공·실패와 기존 목록 유지
 - 시스템 초대 이메일 입력이 WAFL Input 크기·포커스 정책을 따르는지 확인
+
+## 0.23.62 /functions 기능 카탈로그 기반
+
+- development/dev/local/test/demo runtime에서 `/functions` 접근 가능
+- production, 미설정, 알 수 없는 runtime에서 `/functions` 404 처리
+- 검색과 영역·분류·자동화 상태 필터 조합
+- 기능 선택 시 전제 조건·UI/API·DB 변경·불변 필드 표시
+- 모바일·태블릿·PC에서 목록과 상세 스크롤 및 overflow 확인
+- 기존 업무 route와 API 동작에 영향이 없는지 확인
