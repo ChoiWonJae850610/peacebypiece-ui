@@ -11,7 +11,9 @@ import {
   WaflLinkButton,
   WaflSelectableCard,
   WaflSurface,
+  useWaflMutation,
 } from "@/components/common/ui";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 import { useI18n } from "@/lib/i18n";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { usePbpTheme } from "@/lib/theme/PbpThemeProvider";
@@ -174,6 +176,7 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
   const [requestingWithdrawal, setRequestingWithdrawal] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const profileMutation = useWaflMutation("personal-profile");
 
   const profileComplete = Boolean(profile?.profileComplete);
   const isCompanyAdminProfile = profile?.roleTemplateCode === "company_admin";
@@ -199,15 +202,13 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch("/api/me/profile", {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (!response.ok) throw new Error("PROFILE_LOAD_FAILED");
-        const payload = (await response.json()) as {
+        const payload = await waflLegacyApiRequest<{
           profile: PersonalProfile | null;
-        };
+        }>(
+          "/api/me/profile",
+          { method: "GET", credentials: "include", cache: "no-store" },
+          copy.profile.errors.load,
+        );
         if (!alive) return;
         setProfile(payload.profile);
         setDraft(buildProfileDraft(payload.profile));
@@ -234,22 +235,30 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
     setMessage(null);
 
     try {
-      const response = await fetch("/api/me/profile/withdrawal", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
+      await profileMutation.runMutation({
+        lockKey: `personal-profile-withdrawal:${profile?.companyMemberId ?? "self"}`,
+        operationId: "personal-profile-withdrawal",
+        messages: {
+          loading: copy.profile.withdrawal.requesting,
+          success: copy.profile.withdrawal.requested,
+          error: copy.profile.withdrawal.error,
+        },
+        mutation: () =>
+          waflLegacyApiRequest<{ profile: PersonalProfile | null }>(
+            "/api/me/profile/withdrawal",
+            { method: "POST", credentials: "include", cache: "no-store" },
+            copy.profile.withdrawal.error,
+          ),
+        onSuccess: async (payload) => {
+          setProfile(payload.profile);
+          setDraft(buildProfileDraft(payload.profile));
+          setMessage(copy.profile.withdrawal.requested);
+          await refreshCurrentUser();
+        },
+        onError: (mutationError) => setError(mutationError.message),
       });
-
-      if (!response.ok) throw new Error("PROFILE_WITHDRAWAL_REQUEST_FAILED");
-      const payload = (await response.json()) as {
-        profile: PersonalProfile | null;
-      };
-      setProfile(payload.profile);
-      setDraft(buildProfileDraft(payload.profile));
-      setMessage(copy.profile.withdrawal.requested);
-      await refreshCurrentUser();
     } catch {
-      setError(copy.profile.withdrawal.error);
+      // The shared mutation lifecycle already exposes the normalized error.
     } finally {
       setRequestingWithdrawal(false);
     }
@@ -262,29 +271,41 @@ function ProfileSection({ copy }: { copy: PersonalSettingsCopy }) {
     setMessage(null);
 
     try {
-      const response = await fetch("/api/me/profile", {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: draft.name.trim(),
-          phone: normalizePhoneNumber(draft.phone),
-          birthday: draft.birthday,
-        }),
+      await profileMutation.runMutation({
+        lockKey: `personal-profile-save:${profile?.userId ?? "self"}`,
+        operationId: "personal-profile-save",
+        messages: {
+          loading: copy.profile.saving,
+          success: copy.profile.saved,
+          error: copy.profile.errors.save,
+        },
+        mutation: () =>
+          waflLegacyApiRequest<{ profile: PersonalProfile | null }>(
+            "/api/me/profile",
+            {
+              method: "PATCH",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: draft.name.trim(),
+                phone: normalizePhoneNumber(draft.phone),
+                birthday: draft.birthday,
+              }),
+            },
+            copy.profile.errors.save,
+          ),
+        onSuccess: async (payload) => {
+          setProfile(payload.profile);
+          setDraft(buildProfileDraft(payload.profile));
+          if (typeof window !== "undefined")
+            window.dispatchEvent(new Event("wafl-profile-updated"));
+          setMessage(copy.profile.saved);
+          await refreshCurrentUser();
+        },
+        onError: (mutationError) => setError(mutationError.message),
       });
-
-      if (!response.ok) throw new Error("PROFILE_SAVE_FAILED");
-      const payload = (await response.json()) as {
-        profile: PersonalProfile | null;
-      };
-      setProfile(payload.profile);
-      setDraft(buildProfileDraft(payload.profile));
-      if (typeof window !== "undefined")
-        window.dispatchEvent(new Event("wafl-profile-updated"));
-      setMessage(copy.profile.saved);
-      await refreshCurrentUser();
     } catch {
-      setError(copy.profile.errors.save);
+      // The shared mutation lifecycle already exposes the normalized error.
     } finally {
       setSaving(false);
     }

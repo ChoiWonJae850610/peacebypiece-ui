@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 const POLICY_REAGREEMENT_ALLOWED_PATHS = new Set(["/workspace/legal"]);
 
@@ -94,9 +95,12 @@ export default function PolicyReagreementAccessGate({ children }: { children: Re
 
     async function loadReagreementStatus() {
       try {
-        const response = await fetch("/api/policies/reagreement", { cache: "no-store" });
-        const payload = (await response.json()) as PolicyReagreementResponse;
-        if (!cancelled && response.ok && payload.ok && payload.status) {
+        const payload = await waflLegacyApiRequest<PolicyReagreementResponse>(
+          "/api/policies/reagreement",
+          { cache: "no-store" },
+          "정책 재동의 상태를 확인하지 못했습니다.",
+        );
+        if (!cancelled && payload.ok && payload.status) {
           setStatus(payload.status);
         }
       } catch {

@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
+import { useWaflMutation } from "@/components/common/ui";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
 
 type PolicyAgreementDocument = {
   documentKey: string;
@@ -92,15 +94,19 @@ export function PolicyReagreementStatusPanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const mutation = useWaflMutation("policy-reagreement");
 
   async function loadStatus() {
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      const response = await fetch("/api/policies/reagreement", { cache: "no-store" });
-      const payload = (await response.json()) as PolicyReagreementResponse;
-      if (!response.ok || !payload.ok || !payload.status) {
+      const payload = await waflLegacyApiRequest<PolicyReagreementResponse>(
+        "/api/policies/reagreement",
+        { cache: "no-store" },
+        "정책 재동의 필요 상태를 불러오지 못했습니다.",
+      );
+      if (!payload.ok || !payload.status) {
         throw new Error(payload.message || "정책 재동의 필요 상태를 불러오지 못했습니다.");
       }
       setStatus(payload.status);
@@ -118,19 +124,30 @@ export function PolicyReagreementStatusPanel() {
 
     setIsSubmitting(true);
     setErrorMessage(null);
-
     try {
-      const response = await fetch("/api/policies/reagreement", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await mutation.runMutation({
+        lockKey: "policy-reagreement-submit",
+        operationId: "policy-reagreement-submit",
+        messages: {
+          loading: "정책 재동의를 저장하는 중입니다.",
+          success: "정책 재동의를 저장했습니다.",
+          error: "정책 재동의 저장에 실패했습니다.",
+        },
+        mutation: () =>
+          waflLegacyApiRequest<PolicyReagreementResponse>(
+            "/api/policies/reagreement",
+            { method: "POST", headers: { "Content-Type": "application/json" } },
+            "정책 재동의 저장에 실패했습니다.",
+          ),
+        onSuccess: (payload) => {
+          if (!payload.ok || !payload.status)
+            throw new Error(payload.message || "정책 재동의 저장에 실패했습니다.");
+          setStatus(payload.status);
+        },
+        onError: (mutationError) => setErrorMessage(mutationError.message),
       });
-      const payload = (await response.json()) as PolicyReagreementResponse;
-      if (!response.ok || !payload.ok || !payload.status) {
-        throw new Error(payload.message || "정책 재동의 저장에 실패했습니다.");
-      }
-      setStatus(payload.status);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "정책 재동의 저장에 실패했습니다.");
+    } catch {
+      // The shared mutation lifecycle already exposes the normalized error.
     } finally {
       setIsSubmitting(false);
     }
@@ -240,6 +257,7 @@ export function PolicyAgreementStatusPanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const mutation = useWaflMutation("policy-agreement");
 
   const remainingRequiredCount = useMemo(() => {
     if (!status) return 0;
@@ -251,9 +269,12 @@ export function PolicyAgreementStatusPanel() {
     setErrorMessage(null);
 
     try {
-      const response = await fetch("/api/policies/current", { cache: "no-store" });
-      const payload = (await response.json()) as PolicyAgreementResponse;
-      if (!response.ok || !payload.ok || !payload.status) {
+      const payload = await waflLegacyApiRequest<PolicyAgreementResponse>(
+        "/api/policies/current",
+        { cache: "no-store" },
+        "정책 동의 상태를 불러오지 못했습니다.",
+      );
+      if (!payload.ok || !payload.status) {
         throw new Error(payload.message || "정책 동의 상태를 불러오지 못했습니다.");
       }
       setStatus(payload.status);
@@ -271,19 +292,30 @@ export function PolicyAgreementStatusPanel() {
 
     setIsSubmitting(true);
     setErrorMessage(null);
-
     try {
-      const response = await fetch("/api/policies/agreements", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await mutation.runMutation({
+        lockKey: "policy-agreement-submit",
+        operationId: "policy-agreement-submit",
+        messages: {
+          loading: "필수 약관·정책 동의를 저장하는 중입니다.",
+          success: "필수 약관·정책 동의를 저장했습니다.",
+          error: "필수 약관·정책 동의 저장에 실패했습니다.",
+        },
+        mutation: () =>
+          waflLegacyApiRequest<PolicyAgreementResponse>(
+            "/api/policies/agreements",
+            { method: "POST", headers: { "Content-Type": "application/json" } },
+            "필수 약관·정책 동의 저장에 실패했습니다.",
+          ),
+        onSuccess: (payload) => {
+          if (!payload.ok || !payload.status)
+            throw new Error(payload.message || "필수 약관·정책 동의 저장에 실패했습니다.");
+          setStatus(payload.status);
+        },
+        onError: (mutationError) => setErrorMessage(mutationError.message),
       });
-      const payload = (await response.json()) as PolicyAgreementResponse;
-      if (!response.ok || !payload.ok || !payload.status) {
-        throw new Error(payload.message || "필수 약관·정책 동의 저장에 실패했습니다.");
-      }
-      setStatus(payload.status);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "필수 약관·정책 동의 저장에 실패했습니다.");
+    } catch {
+      // The shared mutation lifecycle already exposes the normalized error.
     } finally {
       setIsSubmitting(false);
     }
