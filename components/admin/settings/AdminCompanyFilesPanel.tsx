@@ -29,6 +29,8 @@ import {
   isAllowedCompanyFileType,
 } from "@/lib/admin/settings/companyFileUploadPolicy";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
+import { useWaflMutation } from "@/components/common/ui/useWaflMutation";
 
 type CompanyFilesPayload = {
   ok?: boolean;
@@ -406,6 +408,7 @@ function CompanyFilePreviewModal({
 
 export default function AdminCompanyFilesPanel() {
   const t = useAdminTranslation();
+  const fileMutation = useWaflMutation("admin-company-files");
   const [files, setFiles] = useState<CompanyFileMetadata[]>([]);
   const [loadState, setLoadState] = useState<
     "idle" | "loading" | "loaded" | "failed"
@@ -432,28 +435,28 @@ export default function AdminCompanyFilesPanel() {
     setToastMessage(message);
   }, []);
 
-  const loadFiles = useCallback(() => {
+  const loadFiles = useCallback(async () => {
     setLoadState("loading");
 
-    fetch("/api/admin/company-files", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = (await response
-          .json()
-          .catch(() => null)) as CompanyFilesPayload | null;
-        if (!response.ok || !payload?.ok || !Array.isArray(payload.files)) {
-          throw new Error(payload?.error || "ADMIN_COMPANY_FILES_LIST_FAILED");
-        }
-        setFiles(payload.files);
-        setLoadState("loaded");
-      })
-      .catch(() => {
-        setFiles([]);
-        setLoadState("failed");
-      });
+    try {
+      const payload = await waflLegacyApiRequest<CompanyFilesPayload>(
+        "/api/admin/company-files",
+        { cache: "no-store" },
+        "회사 파일 목록을 불러오지 못했습니다.",
+      );
+      if (!payload?.ok || !Array.isArray(payload.files)) {
+        throw new Error(payload?.error || "ADMIN_COMPANY_FILES_LIST_FAILED");
+      }
+      setFiles(payload.files);
+      setLoadState("loaded");
+    } catch {
+      setFiles([]);
+      setLoadState("failed");
+    }
   }, []);
 
   useEffect(() => {
-    loadFiles();
+    void loadFiles();
   }, [loadFiles]);
 
   const slots = useMemo<CompanyFileSlotViewModel[]>(() => {
@@ -473,33 +476,42 @@ export default function AdminCompanyFilesPanel() {
     fileType: CompanyFileType,
     selectedFile: File,
   ) => {
+    const lockKey = `admin-company-file:${fileType}`;
+    if (fileMutation.isLockActive(lockKey)) return;
+
     setUploadingType(fileType);
     try {
-      const prepareResponse = await fetch("/api/admin/company-files/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileType,
-          originalName: selectedFile.name,
-          mimeType: selectedFile.type || "application/octet-stream",
-          sizeBytes: selectedFile.size,
-        }),
-      });
-      const preparePayload = (await prepareResponse
-        .json()
-        .catch(() => null)) as CompanyFileUploadPayload | null;
-      if (
-        !prepareResponse.ok ||
-        !preparePayload?.ok ||
-        !preparePayload.file ||
-        !preparePayload.upload
-      ) {
+      await fileMutation.runMutation({
+        lockKey,
+        sequenceKey: lockKey,
+        operationId: `admin-company-file-${fileType}`,
+        messages: {
+          loading: "회사 파일을 업로드하고 있습니다.",
+          success: "회사 파일 업로드가 완료되었습니다.",
+          error: "회사 파일을 업로드하지 못했습니다.",
+        },
+        mutation: async () => {
+      const preparePayload = await waflLegacyApiRequest<CompanyFileUploadPayload>(
+        "/api/admin/company-files/upload",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileType,
+            originalName: selectedFile.name,
+            mimeType: selectedFile.type || "application/octet-stream",
+            sizeBytes: selectedFile.size,
+          }),
+        },
+        "회사 파일 업로드를 준비하지 못했습니다.",
+      );
+      if (!preparePayload?.ok || !preparePayload.file || !preparePayload.upload) {
         const code =
           preparePayload?.error || "COMPANY_FILE_UPLOAD_PREPARE_FAILED";
         const diagnostics = {
           step: "prepare",
-          status: prepareResponse.status,
-          statusText: prepareResponse.statusText,
+          status: null,
+          statusText: null,
           fileType,
           originalName: selectedFile.name,
           mimeType: selectedFile.type || "application/octet-stream",
@@ -543,20 +555,21 @@ export default function AdminCompanyFilesPanel() {
         );
       }
 
-      const saveResponse = await fetch("/api/admin/company-files", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(preparePayload.file),
-      });
-      const savePayload = (await saveResponse
-        .json()
-        .catch(() => null)) as CompanyFileSavePayload | null;
-      if (!saveResponse.ok || !savePayload?.ok || !savePayload.file) {
+      const savePayload = await waflLegacyApiRequest<CompanyFileSavePayload>(
+        "/api/admin/company-files",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(preparePayload.file),
+        },
+        "회사 파일 정보를 저장하지 못했습니다.",
+      );
+      if (!savePayload?.ok || !savePayload.file) {
         const code = savePayload?.error || "COMPANY_FILE_METADATA_SAVE_FAILED";
         const diagnostics = {
           step: "metadata-save",
-          status: saveResponse.status,
-          statusText: saveResponse.statusText,
+          status: null,
+          statusText: null,
           fileType,
           originalName: selectedFile.name,
           mimeType: selectedFile.type || "application/octet-stream",
@@ -586,7 +599,9 @@ export default function AdminCompanyFilesPanel() {
             ),
         quotaWarning ? "warning" : "success",
       );
-      loadFiles();
+      await loadFiles();
+        },
+      });
     } catch (error) {
       if (!(error instanceof CompanyFileUploadError)) {
         console.warn("[ADMIN_COMPANY_FILE_UPLOAD_UNEXPECTED_FAILED]", {

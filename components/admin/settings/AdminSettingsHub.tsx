@@ -40,6 +40,8 @@ import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
 import { type AdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
 import AdminCompanyFilesPanel from "@/components/admin/settings/AdminCompanyFilesPanel";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
+import { useWaflMutation } from "@/components/common/ui/useWaflMutation";
 import {
   CUSTOMER_POLICY_DOCUMENTS,
   getRequiredPolicyDocumentCount,
@@ -534,6 +536,7 @@ function AccountSettingsPanel({
   onRequestSubmitted: () => void;
 }) {
   const t = useAdminTranslation();
+  const accountRequestMutation = useWaflMutation("admin-account-request");
   const [activeRequestType, setActiveRequestType] = useState<
     "company_info_change" | "account_deactivation" | null
   >(null);
@@ -609,32 +612,43 @@ function AccountSettingsPanel({
         : requestMessage.trim();
 
     try {
-      const response = await fetch(
-        "/api/admin/settings/company-account-requests",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            requestType: activeRequestType,
-            message,
-            source:
-              activeRequestType === "company_info_change"
-                ? "admin_settings_account_field"
-                : "admin_settings_account_panel",
-          }),
+      await accountRequestMutation.runMutation({
+        lockKey: `admin-account-request:${activeRequestType}`,
+        sequenceKey: "admin-account-request",
+        operationId: "admin-account-request-create",
+        messages: {
+          loading: "회사 계정 요청을 접수하고 있습니다.",
+          success: "회사 계정 요청이 접수되었습니다.",
+          error: "회사 계정 요청을 접수하지 못했습니다.",
         },
-      );
-
-      const payload = (await response.json().catch(() => null)) as {
-        ok?: boolean;
-        error?: string;
-      } | null;
-
-      if (!response.ok || !payload?.ok) {
-        throw new Error(
-          payload?.error || "COMPANY_ACCOUNT_REQUEST_CREATE_FAILED",
-        );
-      }
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<{
+            ok?: boolean;
+            error?: string;
+          }>(
+            "/api/admin/settings/company-account-requests",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                requestType: activeRequestType,
+                message,
+                source:
+                  activeRequestType === "company_info_change"
+                    ? "admin_settings_account_field"
+                    : "admin_settings_account_panel",
+              }),
+            },
+            "회사 계정 요청을 접수하지 못했습니다.",
+          );
+          if (!payload?.ok) {
+            throw new Error(
+              payload?.error || "COMPANY_ACCOUNT_REQUEST_CREATE_FAILED",
+            );
+          }
+          return payload;
+        },
+      });
 
       setRequestState("submitted");
       setRequestFeedbackTone("success");
@@ -1351,6 +1365,7 @@ function SettingsNoticePanel({ noticeId }: { noticeId: "legal" }) {
 
 function FeedbackPanel() {
   const t = useAdminTranslation();
+  const feedbackMutation = useWaflMutation("admin-settings-feedback");
   const feedback = ADMIN_SETTINGS_NOTICE_BY_ID.feedback;
   const [feedbackType, setFeedbackType] =
     useState<CompanyFeedbackType>("feature");
@@ -1415,27 +1430,27 @@ function FeedbackPanel() {
     normalizedMessage.length >= 10 &&
     feedbackSubmitState !== "submitting";
 
-  const refreshFeedbackRequests = useCallback(() => {
+  const refreshFeedbackRequests = useCallback(async () => {
     setFeedbackLoadState("loading");
-    fetch("/api/admin/settings/feedback", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = (await response
-          .json()
-          .catch(() => null)) as CompanyFeedbackPayload | null;
-        if (!response.ok || !payload?.ok || !Array.isArray(payload.requests)) {
-          throw new Error("COMPANY_FEEDBACK_LIST_FAILED");
-        }
-        setFeedbackRequests(payload.requests);
-        setFeedbackLoadState("loaded");
-      })
-      .catch(() => {
-        setFeedbackRequests([]);
-        setFeedbackLoadState("failed");
-      });
+    try {
+      const payload = await waflLegacyApiRequest<CompanyFeedbackPayload>(
+        "/api/admin/settings/feedback",
+        { cache: "no-store" },
+        "문의 내역을 불러오지 못했습니다.",
+      );
+      if (!payload?.ok || !Array.isArray(payload.requests)) {
+        throw new Error("COMPANY_FEEDBACK_LIST_FAILED");
+      }
+      setFeedbackRequests(payload.requests);
+      setFeedbackLoadState("loaded");
+    } catch {
+      setFeedbackRequests([]);
+      setFeedbackLoadState("failed");
+    }
   }, []);
 
   useEffect(() => {
-    refreshFeedbackRequests();
+    void refreshFeedbackRequests();
   }, [refreshFeedbackRequests]);
 
   const submitFeedback = useCallback(async () => {
@@ -1444,22 +1459,36 @@ function FeedbackPanel() {
     setFeedbackNotice("");
 
     try {
-      const response = await fetch("/api/admin/settings/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          feedbackType,
-          title: normalizedTitle,
-          message: normalizedMessage,
-          source: "admin_settings",
-        }),
+      await feedbackMutation.runMutation({
+        lockKey: "admin-settings-feedback:create",
+        sequenceKey: "admin-settings-feedback:create",
+        operationId: "admin-settings-feedback-create",
+        messages: {
+          loading: "문의를 접수하고 있습니다.",
+          success: "문의가 접수되었습니다.",
+          error: "문의를 접수하지 못했습니다.",
+        },
+        mutation: async () => {
+          const payload = await waflLegacyApiRequest<CompanyFeedbackPayload>(
+            "/api/admin/settings/feedback",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                feedbackType,
+                title: normalizedTitle,
+                message: normalizedMessage,
+                source: "admin_settings",
+              }),
+            },
+            "문의를 접수하지 못했습니다.",
+          );
+          if (!payload?.ok || !payload.feedback) {
+            throw new Error("COMPANY_FEEDBACK_CREATE_FAILED");
+          }
+          return payload.feedback;
+        },
       });
-      const payload = (await response
-        .json()
-        .catch(() => null)) as CompanyFeedbackPayload | null;
-      if (!response.ok || !payload?.ok || !payload.feedback) {
-        throw new Error("COMPANY_FEEDBACK_CREATE_FAILED");
-      }
 
       setFeedbackTitle("");
       setFeedbackMessage("");
@@ -1470,7 +1499,7 @@ function FeedbackPanel() {
         t("settings.feedback.submitSuccess", "문의가 접수되었습니다."),
       );
       setFeedbackNoticeEventKey((key) => key + 1);
-      refreshFeedbackRequests();
+      await refreshFeedbackRequests();
     } catch {
       setFeedbackSubmitState("failed");
       setFeedbackNoticeTone("danger");
@@ -1484,6 +1513,7 @@ function FeedbackPanel() {
     }
   }, [
     canSubmitFeedback,
+    feedbackMutation,
     feedbackType,
     normalizedMessage,
     normalizedTitle,
@@ -1747,39 +1777,40 @@ export default function AdminSettingsHub() {
     "idle" | "loading" | "loaded" | "failed"
   >("idle");
 
-  const refreshAccountRequests = useCallback(() => {
+  const refreshAccountRequests = useCallback(async () => {
     setAccountRequestsLoadState("loading");
 
-    fetch("/api/admin/settings/company-account-requests", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = (await response
-          .json()
-          .catch(() => null)) as CompanyAccountRequestsPayload | null;
-
-        if (!response.ok || !payload?.ok || !Array.isArray(payload.requests)) {
-          throw new Error("COMPANY_ACCOUNT_REQUEST_LIST_FAILED");
-        }
-
-        setAccountRequests(payload.requests);
-        setAccountRequestsLoadState("loaded");
-      })
-      .catch(() => {
-        setAccountRequests([]);
-        setAccountRequestsLoadState("failed");
-      });
+    try {
+      const payload = await waflLegacyApiRequest<CompanyAccountRequestsPayload>(
+        "/api/admin/settings/company-account-requests",
+        { cache: "no-store" },
+        "회사 계정 요청을 불러오지 못했습니다.",
+      );
+      if (!payload?.ok || !Array.isArray(payload.requests)) {
+        throw new Error("COMPANY_ACCOUNT_REQUEST_LIST_FAILED");
+      }
+      setAccountRequests(payload.requests);
+      setAccountRequestsLoadState("loaded");
+    } catch {
+      setAccountRequests([]);
+      setAccountRequestsLoadState("failed");
+    }
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-    setBillingPlanLoadState("loading");
-    setSubscriptionLoadState("loading");
-    setAccountLoadState("loading");
 
-    fetch("/api/admin/companies/current", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = (await response
-          .json()
-          .catch(() => null)) as AdminCurrentCompanyPayload | null;
+    const loadAccountOverview = async () => {
+      setBillingPlanLoadState("loading");
+      setSubscriptionLoadState("loading");
+      setAccountLoadState("loading");
+
+      try {
+        const payload = await waflLegacyApiRequest<AdminCurrentCompanyPayload>(
+          "/api/admin/companies/current",
+          { cache: "no-store" },
+          "회사 정보를 불러오지 못했습니다.",
+        );
         if (cancelled) return;
 
         if (payload?.billing) {
@@ -1795,36 +1826,36 @@ export default function AdminSettingsHub() {
         } else {
           setAccountLoadState("failed");
         }
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) {
           setBillingPlanLoadState("failed");
           setAccountLoadState("failed");
         }
-      });
+      }
 
-    fetch("/api/admin/subscription", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = (await response
-          .json()
-          .catch(() => null)) as CompanySubscriptionPayload | null;
+      try {
+        const payload = await waflLegacyApiRequest<CompanySubscriptionPayload>(
+          "/api/admin/subscription",
+          { cache: "no-store" },
+          "구독 정보를 불러오지 못했습니다.",
+        );
         if (cancelled) return;
-
-        if (!response.ok || !payload?.ok || !payload.subscription) {
+        if (!payload?.ok || !payload.subscription) {
           throw new Error("ADMIN_COMPANY_SUBSCRIPTION_LOAD_FAILED");
         }
-
         setCompanySubscription(payload.subscription);
         setSubscriptionLoadState("loaded");
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) {
           setCompanySubscription(null);
           setSubscriptionLoadState("failed");
         }
-      });
+      }
 
-    refreshAccountRequests();
+      await refreshAccountRequests();
+    };
+
+    void loadAccountOverview();
 
     return () => {
       cancelled = true;
