@@ -146,3 +146,10 @@
 - [ ] C 회사는 승인 대기 시나리오로 표시
 - [ ] D 회사는 보완 필요 시나리오로 표시
 - [ ] 회사 프로필 값이 실제 고객 데이터가 아닌 `[SIM]` dev/test fixture인지 확인
+
+
+## 0.23.96 Simulator user phone source constraint fix
+- [ ] 개발 / 테스트 도구 21번 `Simulator DB Seed Execute` 재실행 후 ExitCode 0 확인
+- [ ] `users_phone_source_check` 오류가 재발하지 않는지 확인
+- [ ] `[SIM] B 협업 운영사` (`wafl-fn-company-b`) 고객사 관리자로 전환 시 회사정보 입력 게이트 없이 `/workspace` 표시
+- [ ] C는 승인 대기, D는 보완/거절 시나리오로 표시되는지 확인

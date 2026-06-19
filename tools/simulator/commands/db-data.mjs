@@ -155,7 +155,7 @@ async function seed(client, plan) {
       const role = roleFor(i);
       await client.query(
         `INSERT INTO users (id,company_id,email,name,phone,phone_source,role,is_active)
-         VALUES ($1,$2,$3,$4,$5,'simulator_seed',$6,$7)
+         VALUES ($1,$2,$3,$4,$5,'user',$6,$7)
          ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email,name=EXCLUDED.name,phone=EXCLUDED.phone,phone_source=EXCLUDED.phone_source,role=EXCLUDED.role,is_active=EXCLUDED.is_active,updated_at=now()`,
         [
           userId, row.companyId, `${row.companyId}.${index}@example.test`, `[SIM] ${source.code} 사용자 ${index}`,
