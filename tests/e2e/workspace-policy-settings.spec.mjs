@@ -467,7 +467,10 @@ async function expectAnyTextIfAvailable(body, candidates, timeout = 5_000) {
 
 test.describe("workspace policy and settings smoke", () => {
   test("workspace legal page renders policy documents and optionally saves required agreement", async ({ context, page }) => {
-    const session = await addWaflSessionCookie(context, buildWorkspaceMemberSession());
+    // Policy rendering is the subject of this scenario. Use a valid company-admin
+    // session so the test does not depend on a non-existent member fixture after
+    // workspace member-session validation was hardened in 0.23.92.
+    const session = await addWaflSessionCookie(context, buildCompanyAdminSession());
     test.skip(!session.ok, session.reason);
 
     await mockPolicyAgreementApis(page);

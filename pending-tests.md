@@ -129,3 +129,11 @@
 - 뒤로가기·앞으로가기와 query string 필터 유지
 - 세션 만료 후 재로그인 흐름
 - production 내부 route 차단 회귀
+
+
+## 0.23.94 E2E legal-page fixture correction
+- [ ] 개발 / 테스트 도구 3번 `DB/API E2E Test` 재실행 후 ExitCode 0 확인
+- [ ] `workspace legal page renders policy documents and optionally saves required agreement` 통과 확인
+- [ ] 기존 21개 skip은 테스트 세션/환경 조건에 따른 의도된 skip인지 별도 확인
+- [ ] `/workspace/legal` 실제 고객사 관리자 접근 및 약관 문서 표시 수동 확인
+- [ ] 일반 멤버 약관 접근은 실제 승인 멤버 fixture 또는 역할 전환으로 후속 확인
