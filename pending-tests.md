@@ -160,3 +160,14 @@
 - [ ] `[SIM] C 승인 대기사`는 승인 대기 화면 유지
 - [ ] `[SIM] D 파일 반려사`는 승인 거절 화면 유지
 - [ ] 정상 회사 직접 `/service-paused` 접근 시 unknown 상태를 표시하지 않음
+
+## 0.23.98 Simulator operational fixture / filter / stats alignment
+- [ ] 개발 / 테스트 도구 21번 `Simulator DB Seed Execute` 재실행 후 ExitCode 0 확인
+- [ ] `[SIM] B 협업 운영사`에 공장·원단·부자재·나염·자수·워싱·검수 업체가 표시되는지 확인
+- [ ] 작업지시서 업체 선택과 외주 공정 업체 선택 목록이 비어 있지 않은지 확인
+- [ ] 작업지시서 상태 필터(진행 중·완료·검토·발주·검수)가 선택 즉시 API 결과에 반영되는지 확인
+- [ ] 작업지시서 정렬(최근 수정·생성·납기·이름·업체명)이 선택 즉시 반영되는지 확인
+- [ ] 통계의 생산품 유형·업체 성과·기간별 상위 품목·저장용량이 Simulator fixture와 일치하는지 확인
+- [ ] 첨부 업로드 오류는 브라우저 Network/API 오류 코드와 서버 로그를 별도 수집; R2 prefix는 사전 폴더 생성 대상이 아님
+- [ ] 실제 R2 객체 fixture와 DB metadata reconciliation은 후속 dev/test R2 adapter 단계에서 확인
+- [ ] npm run build 미실행 — 사용자가 로컬에서 확인.

@@ -207,6 +207,43 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   }, [options.initialWorkOrderId, repository]);
 
   useEffect(() => {
+    if (repositoryStatus !== "ready" || typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("status", listStatusFilter);
+    params.set("sort", listSort);
+    const nextUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(window.history.state, "", nextUrl);
+
+    let cancelled = false;
+    setRepositoryStatus("loading");
+    setRepositoryError(null);
+    repository
+      .loadWorkspaceStateAsync()
+      .then((loadedState) => {
+        if (cancelled || !loadedState) return;
+        const normalizedLoadedWorkOrders = stabilizeWorkOrders(normalizeWorkOrderDataList(loadedState.workOrders));
+        setWorkOrdersState(normalizedLoadedWorkOrders);
+        setPersistedWorkOrders(normalizedLoadedWorkOrders);
+        const nextSelectedId = normalizedLoadedWorkOrders.some((item) => item.id === selectedId)
+          ? selectedId
+          : normalizedLoadedWorkOrders[0]?.id ?? "";
+        setSelectedId(nextSelectedId);
+        setLastSavedAt(normalizedLoadedWorkOrders.find((item) => item.id === nextSelectedId)?.lastSavedAt ?? null);
+        setRepositoryStatus("ready");
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setRepositoryError(createRepositoryError("initialize", error, "Failed to reload filtered workorders."));
+        setRepositoryStatus("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [listSort, listStatusFilter]);
+
+  useEffect(() => {
     if (repositoryStatus !== "ready") return;
 
     repository

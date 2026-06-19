@@ -238,11 +238,22 @@ export async function getAdminStatsSnapshot(companyScope: AdminStatsCompanyScope
         [companyId],
       ),
       queryDb<FileUsageRow>(
-        `SELECT COALESCE(SUM(COALESCE(size_bytes, 0)), 0)::text AS total_size_bytes,
-                COUNT(*) FILTER (WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true)::text AS active_count,
-                COUNT(*) FILTER (WHERE deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)::text AS trash_count
-           FROM attachments
-          WHERE company_id = $1`,
+        `WITH attachment_usage AS (
+           SELECT COALESCE(SUM(COALESCE(size_bytes, 0)), 0) AS attachment_bytes,
+                  COUNT(*) FILTER (WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true) AS active_count,
+                  COUNT(*) FILTER (WHERE deleted_at IS NOT NULL OR COALESCE(is_active, true) = false) AS trash_count
+             FROM attachments
+            WHERE company_id = $1
+         ), latest_snapshot AS (
+           SELECT used_bytes, attachment_count
+             FROM storage_usage_snapshots
+            WHERE company_id = $1
+            ORDER BY measured_at DESC NULLS LAST, created_at DESC NULLS LAST
+            LIMIT 1
+         )
+         SELECT GREATEST(COALESCE((SELECT attachment_bytes FROM attachment_usage), 0), COALESCE((SELECT used_bytes FROM latest_snapshot), 0))::text AS total_size_bytes,
+                GREATEST(COALESCE((SELECT active_count FROM attachment_usage), 0), COALESCE((SELECT attachment_count FROM latest_snapshot), 0))::text AS active_count,
+                COALESCE((SELECT trash_count FROM attachment_usage), 0)::text AS trash_count`,
         [companyId],
       ),
       queryDb<CountRow>(

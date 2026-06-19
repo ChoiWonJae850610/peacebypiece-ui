@@ -64,6 +64,27 @@ function workorderStatus(index) {
 function materialOrderStatus(index) {
   return ["draft", "review_requested", "approved", "order_placed", "cancelled"][index % 5];
 }
+
+const PARTNER_FIXTURE_TYPES = [
+  { itemType: "factory", label: "봉제 공장", process: null, unit: "ea" },
+  { itemType: "fabric", label: "원단 업체", process: null, unit: "yd" },
+  { itemType: "subsidiary", label: "부자재 업체", process: null, unit: "ea" },
+  { itemType: "outsourcing", label: "나염 업체", process: "나염", unit: "ea" },
+  { itemType: "outsourcing", label: "자수 업체", process: "자수", unit: "ea" },
+  { itemType: "outsourcing", label: "워싱 업체", process: "워싱", unit: "ea" },
+  { itemType: "outsourcing", label: "검수 업체", process: "검수", unit: "ea" },
+];
+
+const PRODUCT_CATEGORY_FIXTURES = [
+  ["상의", "티셔츠", "반팔 티셔츠"],
+  ["상의", "셔츠", "캐주얼 셔츠"],
+  ["상의", "맨투맨", "기본 맨투맨"],
+  ["하의", "팬츠", "와이드 팬츠"],
+  ["하의", "스커트", "플레어 스커트"],
+  ["아우터", "재킷", "캐주얼 재킷"],
+  ["아우터", "코트", "롱 코트"],
+  ["원피스", "데일리 원피스", "A라인 원피스"],
+];
 function buildPlan() {
   return fixture.companies.map((company) => ({
     companyId: company.id,
@@ -78,7 +99,11 @@ function buildPlan() {
       companyUsers: company.members,
       companyMembers: company.members,
       partners: company.partners,
+      partnerItems: company.partners,
+      itemCategories: PRODUCT_CATEGORY_FIXTURES.length * 3,
+      outsourcingProcesses: 5,
       workorders: company.workorders,
+      orders: company.partners > 0 ? company.workorders : 0,
       materialOrders: company.materialOrders,
       materialOrderLines: company.materialOrders,
       allocations: company.workorders > 0 ? company.materialOrders : 0,
@@ -177,24 +202,78 @@ async function seed(client, plan) {
       );
     }
 
+    const processIds = new Map();
+    for (const [processIndex, processName] of ["나염", "자수", "워싱", "검수", "포장"].entries()) {
+      const processId = `${row.companyId}-process-${String(processIndex + 1).padStart(2, "0")}`;
+      processIds.set(processName, processId);
+      await client.query(
+        `INSERT INTO outsourcing_processes (id,company_id,company_name,name,memo,sort_order,is_active)
+         VALUES ($1,$2,$3,$4,'[SIM] dev/test 기본 공정',$5,true)
+         ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,memo=EXCLUDED.memo,sort_order=EXCLUDED.sort_order,is_active=true,updated_at=now()`,
+        [processId, row.companyId, row.companyName, processName, processIndex + 1],
+      );
+    }
+
+    const categoryIds = [];
+    for (const [categoryIndex, categoryPath] of PRODUCT_CATEGORY_FIXTURES.entries()) {
+      let parentId = null;
+      const ids = [];
+      for (const [levelIndex, categoryName] of categoryPath.entries()) {
+        const categoryId = `${row.companyId}-category-${categoryIndex + 1}-${levelIndex + 1}`;
+        await client.query(
+          `INSERT INTO item_categories (id,company_id,parent_id,level,name,is_active,sort_order)
+           VALUES ($1,$2,$3,$4,$5,true,$6)
+           ON CONFLICT (id) DO UPDATE SET parent_id=EXCLUDED.parent_id,level=EXCLUDED.level,name=EXCLUDED.name,is_active=true,sort_order=EXCLUDED.sort_order,updated_at=now()`,
+          [categoryId, row.companyId, parentId, levelIndex + 1, categoryName, categoryIndex + 1],
+        );
+        ids.push(categoryId);
+        parentId = categoryId;
+      }
+      categoryIds.push(ids);
+    }
+
     for (let i = 0; i < source.partners; i += 1) {
       const index = String(i + 1).padStart(4, "0");
+      const partnerFixture = PARTNER_FIXTURE_TYPES[i % PARTNER_FIXTURE_TYPES.length];
+      const partnerId = `${row.companyId}-partner-${index}`;
+      const partnerName = `[SIM] ${partnerFixture.label} ${index}`;
       await client.query(
-        `INSERT INTO partners (id,company_id,company_name,name,contact_person,contact,email,is_active)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,true)
-         ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,contact_person=EXCLUDED.contact_person,contact=EXCLUDED.contact,email=EXCLUDED.email,is_active=true,updated_at=now()`,
-        [`${row.companyId}-partner-${index}`, row.companyId, row.companyName, `[SIM] 거래처 ${index}`, `담당 ${index}`, `010-0000-${String(i + 1).padStart(4, "0")}`, `${row.companyId}.partner.${index}@example.test`],
+        `INSERT INTO partners (id,company_id,company_name,name,contact_person,contact,email,memo,is_active)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,true)
+         ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,contact_person=EXCLUDED.contact_person,contact=EXCLUDED.contact,email=EXCLUDED.email,memo=EXCLUDED.memo,is_active=true,updated_at=now()`,
+        [partnerId, row.companyId, row.companyName, partnerName, `담당 ${index}`, `010-0000-${String(i + 1).padStart(4, "0")}`, `${row.companyId}.partner.${index}@example.test`, `[SIM] ${partnerFixture.itemType} fixture`],
+      );
+      await client.query(
+        `INSERT INTO partner_items (id,company_id,company_name,partner_id,item_type,item_name,outsourcing_process_id,unit,unit_cost,memo,is_active)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'[SIM] 업체 유형 연결',true)
+         ON CONFLICT (id) DO UPDATE SET item_type=EXCLUDED.item_type,item_name=EXCLUDED.item_name,outsourcing_process_id=EXCLUDED.outsourcing_process_id,unit=EXCLUDED.unit,unit_cost=EXCLUDED.unit_cost,memo=EXCLUDED.memo,is_active=true,updated_at=now()`,
+        [`${partnerId}-item`, row.companyId, row.companyName, partnerId, partnerFixture.itemType, partnerFixture.label, partnerFixture.process ? processIds.get(partnerFixture.process) : null, partnerFixture.unit, 1000 + (i * 100)],
       );
     }
 
     for (let i = 0; i < source.workorders; i += 1) {
       const index = String(i + 1).padStart(5, "0");
+      const categoryPath = PRODUCT_CATEGORY_FIXTURES[i % PRODUCT_CATEGORY_FIXTURES.length];
+      const categoryPathIds = categoryIds[i % categoryIds.length];
+      const factoryPartnerCount = Math.max(1, Math.ceil(source.partners / PARTNER_FIXTURE_TYPES.length));
+      const factoryPartnerIndex = source.partners > 0 ? ((i % factoryPartnerCount) * PARTNER_FIXTURE_TYPES.length) + 1 : null;
+      const factoryName = factoryPartnerIndex ? `[SIM] ${PARTNER_FIXTURE_TYPES[(factoryPartnerIndex - 1) % PARTNER_FIXTURE_TYPES.length].label} ${String(factoryPartnerIndex).padStart(4, "0")}` : "";
+      const createdDaysAgo = i % 40;
       await client.query(
-        `INSERT INTO spec_sheets (id,company_id,company_name,title,status,workflow_path,display_title,manager,manager_id,created_by_id,created_by_role,due_date,quantity)
-         VALUES ($1,$2,$3,$4,$5,'standard_review',$4,$6,$7,$7,'admin',$8,$9)
-         ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title,status=EXCLUDED.status,display_title=EXCLUDED.display_title,manager=EXCLUDED.manager,manager_id=EXCLUDED.manager_id,due_date=EXCLUDED.due_date,quantity=EXCLUDED.quantity,updated_at=now()`,
-        [`${row.companyId}-workorder-${index}`, row.companyId, row.companyName, `[SIM] 작업지시서 ${index}`, workorderStatus(i), `[SIM] ${source.code} 관리자`, ownerId, i % 4 === 0 ? null : `2026-12-${String((i % 28) + 1).padStart(2, "0")}`, (i % 100) + 1],
+        `INSERT INTO spec_sheets (id,company_id,company_name,title,status,workflow_path,display_title,category1_id,category2_id,category3_id,category1,category2,category3,season,priority,vendor,manager,manager_id,created_by_id,created_by_role,due_date,quantity,created_at,updated_at)
+         VALUES ($1,$2,$3,$4,$5,'standard_review',$4,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$16,'admin',$17,$18,now()-($19::text||' days')::interval,now()-($20::text||' days')::interval)
+         ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title,status=EXCLUDED.status,display_title=EXCLUDED.display_title,category1_id=EXCLUDED.category1_id,category2_id=EXCLUDED.category2_id,category3_id=EXCLUDED.category3_id,category1=EXCLUDED.category1,category2=EXCLUDED.category2,category3=EXCLUDED.category3,season=EXCLUDED.season,priority=EXCLUDED.priority,vendor=EXCLUDED.vendor,manager=EXCLUDED.manager,manager_id=EXCLUDED.manager_id,due_date=EXCLUDED.due_date,quantity=EXCLUDED.quantity,created_at=EXCLUDED.created_at,updated_at=EXCLUDED.updated_at`,
+        [`${row.companyId}-workorder-${index}`, row.companyId, row.companyName, `[SIM] ${categoryPath[2]} ${index}`, workorderStatus(i), categoryPathIds[0], categoryPathIds[1], categoryPathIds[2], categoryPath[0], categoryPath[1], categoryPath[2], i % 2 === 0 ? "2026 SS" : "2026 FW", i % 7 === 0 ? "high" : "normal", factoryName, `[SIM] ${source.code} 관리자`, ownerId, i % 4 === 0 ? null : `2026-${String(((i % 7) + 6)).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`, (i % 100) + 1, createdDaysAgo, Math.max(0, createdDaysAgo - (i % 3))],
       );
+      if (factoryPartnerIndex) {
+        const factoryPartnerId = `${row.companyId}-partner-${String(factoryPartnerIndex).padStart(4, "0")}`;
+        await client.query(
+          `INSERT INTO orders (id,company_id,spec_sheet_id,source_order_entry_id,factory_partner_id,factory_name,quantity,due_date,labor_cost,loss_cost,status)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+           ON CONFLICT (id) DO UPDATE SET factory_partner_id=EXCLUDED.factory_partner_id,factory_name=EXCLUDED.factory_name,quantity=EXCLUDED.quantity,due_date=EXCLUDED.due_date,labor_cost=EXCLUDED.labor_cost,loss_cost=EXCLUDED.loss_cost,status=EXCLUDED.status`,
+          [`${row.companyId}-order-${index}`, row.companyId, `${row.companyId}-workorder-${index}`, `${row.companyId}-order-entry-${index}`, factoryPartnerId, factoryName, (i % 100) + 1, `2026-${String(((i % 7) + 6)).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`, 5000 + (i % 10) * 500, i % 9 === 0 ? 1000 : 0, workorderStatus(i) === "completed" ? "completed" : "draft"],
+        );
+      }
     }
 
     for (let i = 0; i < source.materialOrders; i += 1) {
