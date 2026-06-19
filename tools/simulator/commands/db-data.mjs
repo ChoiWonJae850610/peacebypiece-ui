@@ -86,6 +86,17 @@ const PRODUCT_CATEGORY_FIXTURES = [
 ];
 
 const CATEGORY_WEIGHT_PATTERN = [0,0,0,0,0,0,0,0,1,1,1,1,1,2,2,2,3,3,3,4,4,5,5,6,7,7,8,9,10,11,12,13,14,15,16,17,18];
+const PRODUCT_CATEGORY_NODE_COUNT = (() => {
+  const level1 = new Set();
+  const level2 = new Set();
+  const level3 = new Set();
+  for (const [category1, category2, category3] of PRODUCT_CATEGORY_FIXTURES) {
+    level1.add(category1);
+    level2.add(`${category1}::${category2}`);
+    level3.add(`${category1}::${category2}::${category3}`);
+  }
+  return level1.size + level2.size + level3.size;
+})();
 const MEMBER_PERMISSION_SCENARIOS = [
   { label: "고객사 관리자", permissions: "all" },
   { label: "디자이너 - 발주 가능", role: "designer", permissions: ["workorder.read","workorder.create","workorder.update","workorder.status.review","workorder.status.order","material.order.request","partner.read","standards.read","storage.read","stats.read","personal_settings.manage"] },
@@ -112,7 +123,7 @@ function buildPlan() {
       companyMembers: company.members,
       partners: company.partners,
       partnerItems: company.partners,
-      itemCategories: PRODUCT_CATEGORY_FIXTURES.length * 3,
+      itemCategories: PRODUCT_CATEGORY_NODE_COUNT,
       outsourcingProcesses: 5,
       workorders: company.workorders,
       orders: company.partners > 0 ? company.workorders : 0,
@@ -269,18 +280,42 @@ async function seed(client, plan) {
       );
     }
 
+    // Simulator 분류는 경로마다 부모를 복제하지 않고 동일 부모 노드를 공유한다.
+    // 이전 버전에서 생성된 중복 계층을 먼저 제거한 뒤 정규화된 트리를 재생성한다.
+    await client.query(`DELETE FROM item_categories WHERE company_id=$1`, [row.companyId]);
+
     const categoryIds = [];
-    for (const [categoryIndex, categoryPath] of PRODUCT_CATEGORY_FIXTURES.entries()) {
+    const categoryNodeIds = new Map();
+    const levelSortOrders = [new Map(), new Map(), new Map()];
+    const nextSortOrder = (levelIndex, key) => {
+      const sortMap = levelSortOrders[levelIndex];
+      if (!sortMap.has(key)) sortMap.set(key, sortMap.size + 1);
+      return sortMap.get(key);
+    };
+    const stableCategoryId = (level, pathKey) => {
+      const encoded = Buffer.from(pathKey, "utf8").toString("hex").slice(0, 48);
+      return `${row.companyId}-category-l${level}-${encoded}`;
+    };
+
+    for (const categoryPath of PRODUCT_CATEGORY_FIXTURES) {
       let parentId = null;
       const ids = [];
+      const pathParts = [];
       for (const [levelIndex, categoryName] of categoryPath.entries()) {
-        const categoryId = `${row.companyId}-category-${categoryIndex + 1}-${levelIndex + 1}`;
-        await client.query(
-          `INSERT INTO item_categories (id,company_id,parent_id,level,name,is_active,sort_order)
-           VALUES ($1,$2,$3,$4,$5,true,$6)
-           ON CONFLICT (id) DO UPDATE SET parent_id=EXCLUDED.parent_id,level=EXCLUDED.level,name=EXCLUDED.name,is_active=true,sort_order=EXCLUDED.sort_order,updated_at=now()`,
-          [categoryId, row.companyId, parentId, levelIndex + 1, categoryName, categoryIndex + 1],
-        );
+        pathParts.push(categoryName);
+        const pathKey = pathParts.join("::");
+        let categoryId = categoryNodeIds.get(pathKey);
+        if (!categoryId) {
+          categoryId = stableCategoryId(levelIndex + 1, pathKey);
+          categoryNodeIds.set(pathKey, categoryId);
+          const siblingKey = `${parentId ?? "root"}::${categoryName}`;
+          await client.query(
+            `INSERT INTO item_categories (id,company_id,parent_id,level,name,is_active,sort_order)
+             VALUES ($1,$2,$3,$4,$5,true,$6)
+             ON CONFLICT (id) DO UPDATE SET parent_id=EXCLUDED.parent_id,level=EXCLUDED.level,name=EXCLUDED.name,is_active=true,sort_order=EXCLUDED.sort_order,updated_at=now()`,
+            [categoryId, row.companyId, parentId, levelIndex + 1, categoryName, nextSortOrder(levelIndex, siblingKey)],
+          );
+        }
         ids.push(categoryId);
         parentId = categoryId;
       }
