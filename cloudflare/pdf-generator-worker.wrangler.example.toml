@@ -4,6 +4,6 @@
 # The PDF generator requires @cloudflare/puppeteer and Browser Rendering binding.
 # Deploy with:
 #   cd cloudflare/pdf-generator-worker
-#   npm install
+#   npm ci
 #   npx wrangler secret put WAFLOW_PDF_GENERATOR_TOKEN
 #   npx wrangler deploy

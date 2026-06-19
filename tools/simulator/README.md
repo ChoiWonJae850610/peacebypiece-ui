@@ -1,30 +1,32 @@
 # WAFL Simulator
 
-테스트용 DB·R2·작업지시서·발주서 데이터를 준비하는 전용 도구 영역이다.
+Dev/test-only tools for preparing deterministic `/functions` DB and local R2 simulator data.
 
-- `commands/`: PowerShell과 npm이 호출하는 실행 진입점
-- `fixtures/`: 반복 사용 가능한 고정 테스트 자료
-- `adapters/`: 실제 dev/test DB·R2 연결 코드(운영 연결 금지)
-- 실행 산출물: `.tmp/simulator/`
-- 테스트 결과: `artifacts/test-reports/`
+- `commands/`: command entry points used by npm scripts and the PowerShell menu.
+- `fixtures/`: deterministic simulator source data. The active fixture prefix is `wafl-fn`.
+- `adapters/`: guarded DB/R2 adapter manifests and implementation details.
+- Generated local output: `.tmp/simulator/`
+- Test reports: `artifacts/test-reports/`
 
-`tests/`는 기능 검증 코드이고, `tools/simulator/`는 검증에 필요한 시험 환경을 만드는 도구다.
+The simulator is for non-production validation only. Production DB/R2 targets must remain blocked.
 
-## Local R2 simulator commands
+## Local R2 Commands
 
-- `npm run simulator:r2:plan`: 생성 계획만 확인한다.
-- `npm run simulator:r2:generate`: 기존 로컬 simulator 출력물을 먼저 정리한 뒤 `.tmp/simulator/r2`에 새 파일과 manifest를 생성한다.
-- `npm run simulator:r2:cleanup-local`: `.tmp/simulator/r2/files`와 `.tmp/simulator/r2/manifests`만 삭제한다. DB와 실제 R2에는 접근하지 않는다.
+- `npm run simulator:r2:plan`: print the local fixture generation plan only.
+- `npm run simulator:r2:generate`: clear prior local simulator output and generate files/manifests under `.tmp/simulator/r2`.
+- `npm run simulator:r2:cleanup-local`: remove only `.tmp/simulator/r2/files` and `.tmp/simulator/r2/manifests`.
 
+These local R2 commands do not touch the real DB or real R2. R2 upload/delete adapter mutation remains disabled.
 
-## Adapter planning commands
+## Adapter Planning Commands
 
-- `npm run simulator:adapter:plan`: DB schema와 fixture의 매핑, cleanup 순서, R2 prefix를 파일 기준으로 점검한다. DB/R2 접속과 변경은 없다.
-- `npm run simulator:adapter:contract`: adapter manifest의 production 차단·mutation 비활성 정책을 검사한다.
-- 실제 seed/upload/cleanup adapter는 아직 비활성 상태이며 `executionReady=false`를 유지한다.
+- `npm run simulator:adapter:plan`: evaluate DB schema, fixture mapping, cleanup order, and R2 prefixes from source files only.
+- `npm run simulator:adapter:contract`: verify adapter manifest safety contracts.
+- `npm run simulator:db:contract`: verify DB adapter guard, transaction, prefix cleanup, and idempotent seed contracts.
 
+Planning and contract commands do not connect to DB/R2 and do not mutate data.
 
-## DB Simulator commands (0.23.76)
+## DB Simulator Commands
 
 ```bash
 npm run simulator:db:contract
@@ -35,7 +37,24 @@ npm run simulator:db:cleanup:execute
 ```
 
 - Dry-run commands never connect to the database.
-- Execute commands require a non-production runtime, a DB target whose host/database is identifiable as local/dev/test/demo/staging/sandbox, `WAFL_SIMULATOR_ENABLE_DB_MUTATION=1`, and an exact confirmation value.
+- Execute commands require a non-production runtime, PostgreSQL URL shape, approved DB fingerprint, `WAFL_SIMULATOR_ENABLE_DB_MUTATION=1`, `wafl-fn` fixture prefix, and an exact confirmation value.
 - Seed uses one transaction, an advisory lock, deterministic `wafl-fn` IDs, and idempotent upserts.
-- Cleanup deletes only fixture company IDs beginning with `wafl-fn`; database cascades remove their dependent rows.
-- R2 upload/delete remains disabled. Storage usage rows are manual simulator snapshots until R2 reconciliation is implemented.
+- Cleanup deletes only fixture company IDs beginning with `wafl-fn`; database cascades remove dependent rows.
+- Console/report output must not print DB URL, host, database name, password, token, secret, bucket, or actual fingerprint values.
+
+## PowerShell Menu Mapping
+
+The canonical PowerShell entry point is `tools/pipeline/peacebypiece-auto-pipeline.ps1`.
+
+- Menu 14: Functions Seed Dry-run, safe/no mutation.
+- Menu 15: Functions Cleanup Dry-run, safe/no mutation.
+- Menu 21: Simulator DB Seed Execute, guarded DEV/TEST mutation.
+- Menu 22: Simulator DB Cleanup Execute, guarded DEV/TEST destructive cleanup.
+- Menu 24: Simulator R2 Plan, safe/no mutation.
+- Menu 25: Simulator R2 Local Generate, local `.tmp` files only.
+- Menu 26: Simulator R2 Local Cleanup, local `.tmp` deletion with `CLEAN LOCAL R2` confirmation.
+- Menu 27: Simulator Adapter Contract, safe/no mutation.
+- Menu 28: Simulator Adapter Plan, safe/no mutation.
+- Menu 29: Simulator DB Adapter Contract, safe/no mutation.
+
+Menu 9 `Reset Database Schema` belongs to the PowerShell pipeline destructive path, not the simulator command set. It must keep the `RESET WAF-FN SCHEMA` confirmation and runtime/fingerprint/prefix guards before any SQL runner call.

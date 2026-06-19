@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules/
+cloudflare/pdf-generator-worker/node_modules/
 .pnp
 .pnp.*
 .yarn/*
@@ -27,6 +28,9 @@ next-env.d.ts
 
 # local Vercel
 .vercel/
+
+# local Cloudflare worker state
+cloudflare/pdf-generator-worker/.wrangler/
 
 # misc
 .DS_Store
