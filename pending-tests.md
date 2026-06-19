@@ -178,3 +178,11 @@
 - Run menu 5 DB/API Permissions Test; expect 4/4.
 - Verify category/statistics distribution is non-uniform.
 - Verify permission ON/OFF button visibility and API 403 behavior manually.
+
+
+## 0.24.00 Simulator company_users idempotent upsert fix
+- [ ] 개발 / 테스트 도구 21번 `Simulator DB Seed Execute` 재실행 후 ExitCode 0 확인
+- [ ] `company_users_pkey` 중복 오류가 재발하지 않는지 확인
+- [ ] B 회사 권한 시나리오 계정 20명과 실제 `member_permissions` 생성 확인
+- [ ] 개발 / 테스트 도구 5번 `DB/API Permissions Test` 4/4 확인
+- [ ] npm run build 미실행 — 사용자가 로컬에서 확인.

@@ -203,9 +203,21 @@ async function seed(client, plan) {
         ],
       );
       await client.query(
-        `INSERT INTO company_users (id,company_id,user_id,role,is_active,display_name,joined_at)
+        `WITH removed_stale_memberships AS (
+           DELETE FROM company_users
+            WHERE company_id = $2
+              AND user_id = $3
+              AND id <> $1
+         )
+         INSERT INTO company_users (id,company_id,user_id,role,is_active,display_name,joined_at)
          VALUES ($1,$2,$3,$4,$5,$6,now())
-         ON CONFLICT (company_id,user_id,role) DO UPDATE SET is_active=EXCLUDED.is_active,display_name=EXCLUDED.display_name,updated_at=now()`,
+         ON CONFLICT (id) DO UPDATE SET
+           company_id=EXCLUDED.company_id,
+           user_id=EXCLUDED.user_id,
+           role=EXCLUDED.role,
+           is_active=EXCLUDED.is_active,
+           display_name=EXCLUDED.display_name,
+           updated_at=now()`,
         [`${row.companyId}-membership-${index}`, row.companyId, userId, role, source.status !== "suspended", displayName],
       );
       await client.query(
