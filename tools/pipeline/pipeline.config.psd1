@@ -1,5 +1,5 @@
-@{
-    ScriptVersion = "v19.5"
+﻿@{
+    ScriptVersion = "v19.6"
 
     Paths = @{
         # 빈 값이면 tools/pipeline 기준으로 Git 프로젝트 루트를 자동 탐색합니다.

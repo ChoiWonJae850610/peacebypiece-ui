@@ -30,3 +30,14 @@
 - [ ] suspended 회사 멤버의 `status`, `suspended_by`, `suspended_at` 정합성 확인
 - [ ] `/dev/test-console`에서 wafl-fn 회사 A~J와 역할 표시 확인
 - [ ] npm run build 미실행 — 사용자가 로컬에서 확인.
+
+## 0.23.84
+- [ ] 메인 메뉴 1번 실행 시 `download-watcher.ps1` 감시 화면 진입 확인
+- [ ] 감시 중 M 키로 메인 메뉴 복귀 확인
+- [ ] `.crdownload`, `.tmp`, `.download`, `.partial` 파일 제외 동작 확인
+- [ ] flat patch ZIP 다운로드 후 압축 해제, commit-meta 파싱, 패치 처리 정상 확인
+- [ ] 개별 flat 파일 패치 처리 정상 확인
+- [ ] 실패 패치의 failed archive 이동 확인
+- [ ] 기존 npm dev 토글, 자동 build 토글, 개발·테스트 메뉴 회귀 확인
+- [ ] 다음 단계에서 watcher 백그라운드 PID ON/OFF 및 메인 메뉴 1~5 재배치 적용
+- [ ] npm run build 미실행 — 사용자가 로컬에서 확인.

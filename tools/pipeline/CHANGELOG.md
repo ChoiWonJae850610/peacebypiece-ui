@@ -6,3 +6,11 @@
 - 파일명을 `peacebypiece-auto-pipeline.ps1`로 고정
 - 버전, 경로, 실행 옵션을 `pipeline.config.psd1`로 분리
 - Neon 기본 DB명에서도 명시적으로 승인한 fingerprint만 Simulator seed/cleanup 허용
+
+## v19.6
+
+- 다운로드 감시 실행 파일을 `download-watcher.ps1`로 분리
+- 공통 환경·경로·로그 유틸을 `pipeline-common.ps1`로 분리
+- commit-meta 파싱, 임시 확장자 검사, ZIP 안정화, 안전 경로 검사, 패치 적용·Git·빌드·archive 흐름을 `pipeline-patch-processing.ps1`로 이동
+- 메인 스크립트와 watcher가 동일한 처리 엔진을 dot-source하여 중복 구현하지 않도록 정리
+- 이번 단계에서는 기존 동작을 유지하기 위해 watcher를 foreground로 실행하며, 백그라운드 PID 토글은 후속 단계로 분리
