@@ -54,6 +54,10 @@ $BuildZipDir = [string]$PipelineConfig.Paths.BuildZipDir
 $LogDir = [string]$PipelineConfig.Paths.LogDir
 $RepoStatusDir = [string]$PipelineConfig.Paths.RepoStatusDir
 $DevServerPidFile = [string]$PipelineConfig.Paths.DevServerPidFile
+$WatcherPidFile = [string]$PipelineConfig.Paths.WatcherPidFile
+$WatcherStateFile = [string]$PipelineConfig.Paths.WatcherStateFile
+$WatcherLogFile = [string]$PipelineConfig.Paths.WatcherLogFile
+$RuntimeOptionsFile = [string]$PipelineConfig.Paths.RuntimeOptionsFile
 $NewestResultDIr = [string]$PipelineConfig.Paths.NewestResultDir
 
 $NPMBuild = [bool]$PipelineConfig.Options.NPMBuild
@@ -77,6 +81,70 @@ $script:LatestBackupZipPath = ""
 # ==========================================
 # 1. 공통 유틸 함수
 # ==========================================
+
+function GetRuntimeOptions {
+    $defaults = [ordered]@{ NPMBuild = [bool]$PipelineConfig.Options.NPMBuild }
+
+    if (-not (Test-Path -LiteralPath $RuntimeOptionsFile)) {
+        return [pscustomobject]$defaults
+    }
+
+    try {
+        $loaded = Get-Content -LiteralPath $RuntimeOptionsFile -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($null -ne $loaded.NPMBuild) {
+            $defaults.NPMBuild = [bool]$loaded.NPMBuild
+        }
+    }
+    catch {
+        LogWarn "runtime 옵션 파일을 읽지 못해 기본값을 사용합니다: $($_.Exception.Message)"
+    }
+
+    return [pscustomobject]$defaults
+}
+
+function SaveRuntimeOptions {
+    param([bool]$NPMBuildValue)
+
+    EnsureDirectory -Path (Split-Path -Parent $RuntimeOptionsFile)
+    [ordered]@{
+        NPMBuild = $NPMBuildValue
+        UpdatedAt = (Get-Date).ToString('o')
+    } | ConvertTo-Json | Set-Content -LiteralPath $RuntimeOptionsFile -Encoding UTF8
+}
+
+function RefreshRuntimeOptions {
+    $runtimeOptions = GetRuntimeOptions
+    $script:NPMBuild = [bool]$runtimeOptions.NPMBuild
+}
+
+function WriteWatcherLog {
+    param([string]$Message)
+
+    EnsureDirectory -Path (Split-Path -Parent $WatcherLogFile)
+    $line = "{0} {1}" -f (Get-Date).ToString('yyyy-MM-dd HH:mm:ss'), $Message
+    Add-Content -LiteralPath $WatcherLogFile -Value $line -Encoding UTF8
+}
+
+function WriteWatcherState {
+    param(
+        [int]$ProcessId,
+        [string]$Status,
+        [string]$StartedAt,
+        [string]$LastMessage
+    )
+
+    EnsureDirectory -Path (Split-Path -Parent $WatcherStateFile)
+    [ordered]@{
+        pid = $ProcessId
+        status = $Status
+        startedAt = $StartedAt
+        heartbeatAt = (Get-Date).ToString('o')
+        scriptPath = (Join-Path $PSScriptRoot 'download-watcher.ps1')
+        watchPath = $PatchDownloadDir
+        lastMessage = $LastMessage
+    } | ConvertTo-Json | Set-Content -LiteralPath $WatcherStateFile -Encoding UTF8
+}
+
 
 function EnsureDirectory {
     param([string]$Path)

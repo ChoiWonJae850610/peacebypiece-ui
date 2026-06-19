@@ -12,10 +12,10 @@ const processing = read('pipeline-patch-processing.ps1');
 const watcher = read('download-watcher.ps1');
 const config = read('pipeline.config.psd1');
 
-assert.match(config, /ScriptVersion\s*=\s*"v19\.6"/);
+assert.match(config, /ScriptVersion\s*=\s*"v19\.7"/);
 assert.match(main, /\. \$PipelineCommonPath/);
 assert.match(main, /\. \$PipelinePatchProcessingPath/);
-assert.match(main, /& \$DownloadWatcherScriptPath/);
+assert.match(main, /StartDownloadWatcherBackground/);
 assert.doesNotMatch(main, /function\s+GetMetaValue\s*\{/);
 assert.doesNotMatch(main, /function\s+ProcessOnePatchIfReady\s*\{/);
 
@@ -31,7 +31,7 @@ assert.match(processing, /peacebypiece-patch-\*\.zip/);
 assert.match(watcher, /\. \$PipelineCommonPath/);
 assert.match(watcher, /\. \$PipelinePatchProcessingPath/);
 assert.match(watcher, /ProcessOnePatchIfReady/);
-assert.match(watcher, /WaitWatchIntervalOrMenuKey/);
+assert.match(watcher, /StartDownloadWatcherLoop/);
 assert.doesNotMatch(watcher, /function\s+GetMetaValue\s*\{/);
 assert.doesNotMatch(watcher, /function\s+AssertMetaFormat\s*\{/);
 

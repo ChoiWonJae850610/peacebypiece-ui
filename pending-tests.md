@@ -1,4 +1,4 @@
-# Pending tests — 0.23.81
+﻿# Pending tests — 0.23.81
 
 - 활성 `system_users.system_admin` Google 이메일로 로그인 후 `/dev/test-console` 접근 확인
 - 같은 계정으로 `/ui`, `/functions` 접근 확인
@@ -40,4 +40,18 @@
 - [ ] 실패 패치의 failed archive 이동 확인
 - [ ] 기존 npm dev 토글, 자동 build 토글, 개발·테스트 메뉴 회귀 확인
 - [ ] 다음 단계에서 watcher 백그라운드 PID ON/OFF 및 메인 메뉴 1~5 재배치 적용
+- [ ] npm run build 미실행 — 사용자가 로컬에서 확인.
+
+
+## 0.23.85
+- [ ] 메인 메뉴 1번으로 다운로드 watcher ON 후 메뉴가 즉시 복귀하고 상태가 ON으로 표시되는지 확인
+- [ ] 메인 PowerShell 종료 후 watcher 프로세스가 계속 실행되는지 확인
+- [ ] 메인 재실행 후 기존 watcher PID를 찾아 ON으로 표시하는지 확인
+- [ ] 메뉴 1번 OFF로 해당 watcher 프로세스만 종료되는지 확인
+- [ ] watcher 중복 실행이 차단되는지 확인
+- [ ] 죽은 PID 및 watcher가 아닌 재사용 PID가 자동 정리되는지 확인
+- [ ] download-watcher-state.json heartbeat 갱신 및 download-watcher.log 기록 확인
+- [ ] 메뉴 3 자동 Build 토글 변경이 실행 중 watcher에 반영되는지 확인
+- [ ] 메뉴 순서 1 watcher / 2 npm dev / 3 자동 Build / 4 Flush / 5 개발·테스트 확인
+- [ ] 0번 종료 시 watcher와 npm dev가 유지된다는 안내 확인
 - [ ] npm run build 미실행 — 사용자가 로컬에서 확인.

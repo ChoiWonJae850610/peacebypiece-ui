@@ -1,9 +1,12 @@
 ﻿# ==========================================
 # PeaceByPiece Download Watcher
 # Encoding: UTF-8 with BOM
-# 다운로드 폴더 감시 및 패치 처리 전용 실행 파일
-# 현재 단계에서는 foreground 실행이며, M 키로 메인 메뉴에 복귀한다.
+# 백그라운드 다운로드 감시 및 패치 처리 전용 실행 파일
 # ==========================================
+
+param(
+    [switch]$Background
+)
 
 $PipelineCommonPath = Join-Path $PSScriptRoot "pipeline-common.ps1"
 $PipelinePatchProcessingPath = Join-Path $PSScriptRoot "pipeline-patch-processing.ps1"
@@ -25,68 +28,45 @@ function InitializeDownloadWatcher {
         $BuildZipDir,
         $LogDir,
         $RepoStatusDir,
-        $NewestResultDIr
+        $NewestResultDIr,
+        (Split-Path -Parent $WatcherPidFile),
+        (Split-Path -Parent $WatcherStateFile),
+        (Split-Path -Parent $WatcherLogFile),
+        (Split-Path -Parent $RuntimeOptionsFile)
     )) {
         EnsureDirectory -Path $path
     }
 }
 
-function WaitWatchIntervalOrMenuKey {
-    param([int]$Seconds)
-
-    $endAt = (Get-Date).AddSeconds($Seconds)
-
-    while ((Get-Date) -lt $endAt) {
-        if ([Console]::KeyAvailable) {
-            $key = [Console]::ReadKey($true)
-
-            if ($key.KeyChar -eq 'm' -or $key.KeyChar -eq 'M') {
-                return $true
-            }
-        }
-
-        Start-Sleep -Milliseconds 200
-    }
-
-    return $false
-}
-
-function StartDownloadWatcher {
-    $previousTreatControlCAsInput = [Console]::TreatControlCAsInput
-    [Console]::TreatControlCAsInput = $true
+function StartDownloadWatcherLoop {
+    $startedAt = (Get-Date).ToString('o')
+    $PID | Set-Content -LiteralPath $WatcherPidFile -Encoding UTF8
+    WriteWatcherState -ProcessId $PID -Status 'running' -StartedAt $startedAt -LastMessage 'watcher started'
+    WriteWatcherLog "[START] pid=$PID watchPath=$PatchDownloadDir"
 
     try {
         while ($true) {
-            cls
-            Write-Host "========================================================="
-            LogInfo "PeaceByPiece Download Watcher $Script_Version has been started."
-            LogInfo "패치 데이터 경로   : $PatchDownloadDir"
-            LogInfo "프로젝트 루트 경로 : $ProjectDir"
-            LogInfo "현재 프로젝트 버전 : $(GetProjectAppVersion)"
-            LogInfo "NPM 빌드 여부      : $NPMBuild"
-            LogInfo "Git Push 여부      : $GitPushYN"
-            LogInfo "Timeout             : $PatchWaitTimeoutSeconds seconds"
-            LogInfo "감시 중 m 또는 M을 누르면 메인 메뉴로 돌아갑니다."
-            Write-Host "========================================================="
+            RefreshRuntimeOptions
+            WriteWatcherState -ProcessId $PID -Status 'running' -StartedAt $startedAt -LastMessage 'watching'
 
             try {
                 ProcessOnePatchIfReady
             }
             catch {
-                LogError $_.Exception.Message
-                LogWarn "패치 처리 중 오류가 발생했습니다."
-                LogWarn "환경 오류 가능성이 있으므로 입력 파일은 남겨 둡니다."
+                $message = $_.Exception.Message
+                WriteWatcherLog "[ERROR] $message"
+                WriteWatcherState -ProcessId $PID -Status 'error' -StartedAt $startedAt -LastMessage $message
             }
 
-            if (WaitWatchIntervalOrMenuKey -Seconds $WatchIntervalSeconds) {
-                return
-            }
+            Start-Sleep -Seconds $WatchIntervalSeconds
         }
     }
     finally {
-        [Console]::TreatControlCAsInput = $previousTreatControlCAsInput
+        WriteWatcherLog "[STOP] pid=$PID"
+        WriteWatcherState -ProcessId $PID -Status 'stopped' -StartedAt $startedAt -LastMessage 'watcher stopped'
+        Remove-Item -LiteralPath $WatcherPidFile -Force -ErrorAction SilentlyContinue
     }
 }
 
 InitializeDownloadWatcher
-StartDownloadWatcher
+StartDownloadWatcherLoop

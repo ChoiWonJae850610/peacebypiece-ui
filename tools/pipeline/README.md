@@ -1,4 +1,4 @@
-# PeaceByPiece Auto Pipeline
+﻿# PeaceByPiece Auto Pipeline
 
 ## 실행
 
@@ -24,4 +24,12 @@ powershell -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiece-auto-pipe
 - `pipeline-patch-processing.ps1`: commit-meta 파싱, 다운로드 완료 판별, ZIP/경로 검증, 패치 적용, Git/build/archive 처리
 - `pipeline.config.psd1`: 사용자 환경 경로와 실행 옵션
 
-현재 `1. Download 폴더 감시 시작`은 별도 watcher 스크립트를 같은 콘솔에서 foreground로 실행합니다. 감시 중 `M`을 누르면 메인 메뉴로 돌아갑니다. 백그라운드 PID 기반 ON/OFF 토글은 다음 단계에서 적용합니다.
+메인 메뉴 1번은 `download-watcher.ps1`을 숨김 백그라운드 PowerShell 프로세스로 시작·종료합니다. watcher PID, 상태 JSON, heartbeat, 로그는 설정된 Logs 경로에 저장되며 메인 메뉴를 종료해도 watcher는 계속 실행됩니다.
+
+메인 메뉴 구성:
+
+1. Download 폴더 감시 시작/종료 토글
+2. npm run dev 시작/종료 토글
+3. 패치 적용 후 자동 Build 토글
+4. Flush folders - 산출물 폴더 비우기
+5. 개발 / 테스트 도구

@@ -1,5 +1,5 @@
 ﻿@{
-    ScriptVersion = "v19.6"
+    ScriptVersion = "v19.7"
 
     Paths = @{
         # 빈 값이면 tools/pipeline 기준으로 Git 프로젝트 루트를 자동 탐색합니다.
@@ -11,6 +11,10 @@
         LogDir = "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\NPM_Build"
         RepoStatusDir = "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\Repo_Status"
         DevServerPidFile = "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\dev-server.pid"
+        WatcherPidFile = "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\download-watcher.pid"
+        WatcherStateFile = "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\download-watcher-state.json"
+        WatcherLogFile = "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\download-watcher.log"
+        RuntimeOptionsFile = "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\pipeline-runtime-options.json"
         NewestResultDir = "C:\CWJ_Project\Patch\PeacebyPiece\4. Newest"
     }
 
