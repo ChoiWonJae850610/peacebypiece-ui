@@ -153,3 +153,10 @@
 - [ ] `users_phone_source_check` 오류가 재발하지 않는지 확인
 - [ ] `[SIM] B 협업 운영사` (`wafl-fn-company-b`) 고객사 관리자로 전환 시 회사정보 입력 게이트 없이 `/workspace` 표시
 - [ ] C는 승인 대기, D는 보완/거절 시나리오로 표시되는지 확인
+
+## 0.23.97 service-paused 정상 회사 복귀
+
+- [ ] `[SIM] B 협업 운영사`(`wafl-fn-company-b`) 전환 후 `/service-paused`에 남아 있으면 `/workspace`로 자동 복귀
+- [ ] `[SIM] C 승인 대기사`는 승인 대기 화면 유지
+- [ ] `[SIM] D 파일 반려사`는 승인 거절 화면 유지
+- [ ] 정상 회사 직접 `/service-paused` 접근 시 unknown 상태를 표시하지 않음

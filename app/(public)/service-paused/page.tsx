@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import {
   ATypePublicCard,
   ATypePublicFrame,
@@ -15,6 +16,10 @@ export default async function ServicePausedPage() {
   const session = await getCurrentWaflSession();
   const accessState = session?.companyId ? await getCompanyAccessState(session.companyId) : null;
   const i18n = getI18n();
+  if (session?.companyId && accessState && accessState.workspaceBlockedReason === null) {
+    redirect("/workspace");
+  }
+
   const viewModel = buildServicePausedViewModel({
     session,
     accessState,
