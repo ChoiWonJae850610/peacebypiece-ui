@@ -149,7 +149,7 @@ function assertExecutionSafety(identity) {
   if (!allowedRuntime.has(runtime) || runtime === "production") throw new Error(`실행 차단: runtime=${runtime || "unset"}`);
   if (!databaseEntry || !identity) throw new Error("실행 차단: PostgreSQL DB 환경변수가 없습니다.");
   if (!['postgres:', 'postgresql:'].includes(identity.protocol)) throw new Error("실행 차단: PostgreSQL URL이 아닙니다.");
-  if (!approvedDatabaseFingerprint(identity)) throw new Error(`실행 차단: 승인된 Simulator DB fingerprint와 일치하지 않습니다. current=${identity.fingerprint}`);
+  if (!approvedDatabaseFingerprint(identity)) throw new Error("실행 차단: 승인된 Simulator DB fingerprint와 일치하지 않습니다.");
   if (String(process.env.WAFL_FUNCTIONS_TEST_PREFIX ?? TEST_PREFIX) !== TEST_PREFIX) throw new Error("실행 차단: 테스트 prefix가 wafl-fn과 다릅니다.");
   if (String(process.env.WAFL_SIMULATOR_ENABLE_DB_MUTATION ?? "") !== "1") throw new Error("실행 차단: WAFL_SIMULATOR_ENABLE_DB_MUTATION=1 설정이 필요합니다.");
   const expected = command === "seed" ? "SEED WAF-FN" : "CLEANUP WAF-FN";
@@ -419,7 +419,7 @@ const report = {
   mode: execute ? "execute" : "dry-run",
   runtime: runtime || "unset",
   prefix: TEST_PREFIX,
-  database: identity ? { envKey: databaseEntry[0], host: identity.host, database: identity.database, fingerprint: identity.fingerprint, approvedTarget: approvedDatabaseFingerprint(identity) } : null,
+  database: identity ? { envKey: databaseEntry[0], identityPresent: Boolean(identity.host && identity.database), protocol: identity.protocol, approvedTarget: approvedDatabaseFingerprint(identity) } : null,
   totals: totals(plan),
   companies: plan,
   executed: false,
@@ -428,7 +428,7 @@ const report = {
 
 console.log(`Simulator DB ${command} ${execute ? "EXECUTE" : "DRY-RUN"}`);
 console.log(`runtime=${runtime || "unset"} prefix=${TEST_PREFIX}`);
-console.log(`database=${identity ? `${identity.host}/${identity.database} fingerprint=${identity.fingerprint} approvedTarget=${approvedDatabaseFingerprint(identity)}` : "unset"}`);
+console.log(`database=${identity ? `identityPresent=${Boolean(identity.host && identity.database)} approvedTarget=${approvedDatabaseFingerprint(identity)}` : "unset"}`);
 console.log(`companies=${plan.length} totals=${JSON.stringify(report.totals)}`);
 for (const row of plan) console.log(JSON.stringify({ companyId: row.companyId, rows: row.rows, storagePercent: row.storage.expectedPercent }));
 

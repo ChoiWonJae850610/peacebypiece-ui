@@ -6,6 +6,8 @@
 powershell -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiece-auto-pipeline.ps1
 ```
 
+`tools/pipeline/peacebypiece-auto-pipeline.ps1` is the canonical PowerShell menu entry point and is tracked in Git. Patch, old-version, backup, temporary, and copied PowerShell variants remain ignored by `.gitignore`.
+
 설정은 `pipeline.config.psd1`에서 관리합니다. DB URL, 비밀번호, R2 key, token 같은 비밀값은 이 파일에 넣지 않습니다.
 
 ## 프로젝트 루트
@@ -15,6 +17,10 @@ powershell -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiece-auto-pipe
 ## Simulator DB 승인
 
 `Simulator.ApprovedDbFingerprint`는 DB URL의 host/database 조합을 해시한 식별값입니다. Seed와 cleanup은 현재 연결 대상의 fingerprint가 이 값과 정확히 일치할 때만 실행됩니다.
+
+## Reset Database Schema Guard
+
+Development/test menu 9 requires the exact confirmation phrase `RESET WAF-FN SCHEMA`. Before the SQL runner can be prepared, the menu calls the shared reset guard in `pipeline-common.ps1` and blocks production runtime, missing/unknown runtime, non-PostgreSQL URLs, approved fingerprint mismatch, non-`wafl-fn` prefix, and confirmation mismatch. Logs must report only PASS/BLOCKED style status and must not print the DB URL, host, database name, credential, token, secret, or actual fingerprint.
 
 ## 스크립트 구성
 
@@ -33,3 +39,5 @@ powershell -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiece-auto-pipe
 3. 패치 적용 후 자동 Build 토글
 4. Flush folders - 산출물 폴더 비우기
 5. 개발 / 테스트 도구
+
+Separate PowerShell uploads are not needed when Git already carries the current canonical script. Use an external PowerShell upload only when a newer script-only copy exists outside the repository or when a task explicitly asks for script-only handoff.

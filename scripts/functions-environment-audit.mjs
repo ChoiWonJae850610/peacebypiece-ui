@@ -56,7 +56,7 @@ if (!databaseEntry) {
     "database",
     "DB 설정",
     looksLocalOrTest(identityText) ? "pass" : "review",
-    `${databaseEntry[0]} host=${databaseIdentity.host ?? "unknown"} database=${databaseIdentity.database ?? "unknown"}; 비밀번호와 query는 출력하지 않습니다.`,
+    `${databaseEntry[0]} identityPresent=${Boolean(databaseIdentity.host && databaseIdentity.database)}; host, database, password, and query are not printed.`,
   );
 }
 
@@ -65,7 +65,7 @@ const r2WorkerConfigured = ["R2_WORKER_UPLOAD_URL", "R2_WORKER_UPLOAD_SECRET"].e
 if (!r2S3Configured && !r2WorkerConfigured) {
   addCheck(checks, "r2-config", "R2 설정", "missing", "R2 S3 설정 또는 Worker 설정이 없습니다.");
 } else {
-  addCheck(checks, "r2-config", "R2 설정", "pass", r2S3Configured ? `S3 bucket=${process.env.R2_BUCKET_NAME}` : "Worker upload 설정 존재; secret은 출력하지 않습니다.");
+  addCheck(checks, "r2-config", "R2 설정", "pass", r2S3Configured ? "S3 configuration present; bucket and secrets are not printed." : "Worker upload configuration present; secrets are not printed.");
 }
 addCheck(
   checks,

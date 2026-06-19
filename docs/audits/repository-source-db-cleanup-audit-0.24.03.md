@@ -7,6 +7,7 @@ This audit inspected the PeaceByPiece / WAFL repository at commit `7ab4c4fc5b326
 The main findings are:
 
 - Generated outputs are mostly ignored correctly: `.next`, `artifacts`, `test-results`, `.tmp`, and Playwright output should remain uncommitted.
+- The canonical PowerShell menu entry point is tracked as of 0.24.04; only old-version, patch, backup, temporary, and copied PowerShell variants should remain ignored.
 - `cloudflare/pdf-generator-worker/node_modules` is tracked and large, about 3,992 files. This is the highest repository hygiene finding, but it is a `DELETE-REVIEW` item until Cloudflare worker deploy expectations are confirmed.
 - DB metadata on the approved dev/test target shows 60 public tables, 60 primary keys, 120 foreign keys, 17 unique constraints, and 270 indexes.
 - Simulator Seed is safe-guarded and idempotent, but remains slow at about 600 seconds for full seed. The likely cause is row-by-row upsert/delete work inside a single transaction.
@@ -83,7 +84,7 @@ Inventory notes:
 | `README.md` | Root overview | Root docs entry | Still useful for project overview | Medium | UPDATE | Refresh with current Codex/Simulator entry points after audit series | 0.24.06 |
 | `docs/codex-current-state.md` | Current state | Updated in this audit | Used as handoff state | Low | PROTECTED | Keep concise and current | every version |
 | `pending-tests.md` | Pending test ledger | Explicitly referenced by current state | Tracks manual/env tests | Low | PROTECTED | Keep, do not merge into historical docs | ongoing |
-| `tools/pipeline/README.md` | PowerShell docs | Documents fingerprint and pipeline config | Still active | Medium | UPDATE | Update after menu 9 guard hardening | 0.24.04 |
+| `tools/pipeline/README.md` | PowerShell docs | Documents fingerprint, canonical entry point, and pipeline config | Still active | Low | KEEP | Keep aligned with menu 9 guard hardening | ongoing |
 | `tools/simulator/README.md` | Simulator docs | Documents DB/R2 simulator commands | Still active | Medium | UPDATE | Align DB identity logging and timeout guidance | 0.24.04 |
 | `tools/simulator/README-r2-demo-files.md` | R2 simulator guide | Contains old full reset references | R2 local fixture path still active | Medium | MERGE | Merge current safe R2 plan into main simulator README, then archive | 0.24.06 |
 | `docs/현재기준/*` | Current baseline docs | Current baseline folder | Many files are policy/reference docs | Medium | KEEP | Keep but add an index that points to 0.24.x current docs | 0.24.06 |
@@ -246,6 +247,15 @@ Do not optimize by weakening guards or skipping integrity checks.
 - Sanitize Simulator DB command logging so raw host/database/fingerprint details are not printed to ordinary console output.
 - Update `tools/pipeline/README.md` and `tools/simulator/README.md` with the hardened destructive-command policy.
 - Decide whether `commit-meta.md` should remain ignored or become tracked release metadata.
+
+0.24.04 follow-up status:
+
+- Applied: menu 9 now verifies non-production runtime, PostgreSQL URL shape, host/database identity presence, approved fingerprint match, `wafl-fn` prefix, and exact `RESET WAF-FN SCHEMA` confirmation before invoking the SQL runner.
+- Applied: Reset guard output and Simulator DB seed output avoid printing actual host, database, URL, or fingerprint values.
+- Applied: `tests/functions-environment-audit-contract.mjs` now reflects the implemented seed/cleanup adapter state.
+- Applied: `tools/pipeline/peacebypiece-auto-pipeline.ps1` is the tracked canonical PowerShell entry point, while old-version/patch/temp variants remain ignored.
+- Applied: PowerShell README documents the canonical entry point and menu 9 guard policy.
+- Deferred: `commit-meta.md` remains ignored pending a release metadata policy decision.
 
 ## 14. 0.24.05 Proposed Changes
 

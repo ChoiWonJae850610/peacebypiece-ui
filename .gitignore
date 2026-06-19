@@ -47,7 +47,12 @@ failed_patch/
 backup/
 backups/
 commit-meta.md
-peacebypiece-auto-pipeline*.ps1
+tools/pipeline/peacebypiece-auto-pipeline-patch-*.ps1
+tools/pipeline/peacebypiece-auto-pipeline-v*.ps1
+tools/pipeline/peacebypiece-auto-pipeline*.bak.ps1
+tools/pipeline/peacebypiece-auto-pipeline*.tmp.ps1
+tools/pipeline/peacebypiece-auto-pipeline*-copy*.ps1
+!tools/pipeline/peacebypiece-auto-pipeline.ps1
 
 # generated scan files
 git-status.txt

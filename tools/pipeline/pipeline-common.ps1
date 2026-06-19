@@ -169,6 +169,112 @@ function LogError {
     Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
 
+function GetSha256HexPrefix {
+    param(
+        [string]$Value,
+        [int]$Length = 12
+    )
+
+    if ($null -eq $Value) {
+        return ""
+    }
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($Value)
+        $hash = $sha256.ComputeHash($bytes)
+        $hex = -join ($hash | ForEach-Object { $_.ToString("x2") })
+        if ($hex.Length -le $Length) {
+            return $hex
+        }
+        return $hex.Substring(0, $Length)
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
+function TestResetDatabaseSchemaGuard {
+    param(
+        [string]$Runtime,
+        [string]$DatabaseUrl,
+        [string]$ApprovedDbFingerprint,
+        [string]$TestPrefix,
+        [string]$Confirmation,
+        [string[]]$AllowedRuntimes = @("development", "dev", "local", "test", "demo"),
+        [string]$ExpectedPrefix = "wafl-fn",
+        [string]$ExpectedConfirmation = "RESET WAF-FN SCHEMA"
+    )
+
+    $checks = New-Object System.Collections.Generic.List[object]
+    $normalizedRuntime = ([string]$Runtime).Trim().ToLowerInvariant()
+    $normalizedPrefix = ([string]$TestPrefix).Trim()
+    $approvedFingerprint = ([string]$ApprovedDbFingerprint).Trim().ToLowerInvariant()
+    $fingerprintMatch = $false
+    $postgresProtocol = $false
+    $hasDbIdentity = $false
+    $databaseUrlPresent = -not [string]::IsNullOrWhiteSpace($DatabaseUrl)
+
+    if ([string]::IsNullOrWhiteSpace($normalizedRuntime)) {
+        $checks.Add([pscustomobject]@{ Name = "runtime"; Passed = $false; Reason = "missing" })
+    }
+    elseif ($normalizedRuntime -eq "production") {
+        $checks.Add([pscustomobject]@{ Name = "runtime"; Passed = $false; Reason = "production" })
+    }
+    elseif ($AllowedRuntimes -notcontains $normalizedRuntime) {
+        $checks.Add([pscustomobject]@{ Name = "runtime"; Passed = $false; Reason = "unknown" })
+    }
+    else {
+        $checks.Add([pscustomobject]@{ Name = "runtime"; Passed = $true; Reason = "allowed" })
+    }
+
+    if (-not $databaseUrlPresent) {
+        $checks.Add([pscustomobject]@{ Name = "databaseUrl"; Passed = $false; Reason = "missing" })
+    }
+    else {
+        try {
+            $uri = [System.Uri]$DatabaseUrl
+            $postgresProtocol = @("postgres", "postgresql") -contains $uri.Scheme.ToLowerInvariant()
+            $databaseName = $uri.AbsolutePath.Trim("/")
+            $hasDbIdentity = (-not [string]::IsNullOrWhiteSpace($uri.Host)) -and (-not [string]::IsNullOrWhiteSpace($databaseName))
+
+            if ($postgresProtocol -and $hasDbIdentity) {
+                $currentFingerprint = GetSha256HexPrefix -Value ("{0}/{1}" -f $uri.Host, $databaseName)
+                $fingerprintMatch = (-not [string]::IsNullOrWhiteSpace($approvedFingerprint)) -and ($currentFingerprint -eq $approvedFingerprint)
+            }
+        }
+        catch {
+            $postgresProtocol = $false
+            $hasDbIdentity = $false
+        }
+
+        $checks.Add([pscustomobject]@{ Name = "postgresProtocol"; Passed = $postgresProtocol; Reason = $(if ($postgresProtocol) { "postgresql" } else { "invalid" }) })
+        $checks.Add([pscustomobject]@{ Name = "dbIdentity"; Passed = $hasDbIdentity; Reason = $(if ($hasDbIdentity) { "present" } else { "missing" }) })
+        $checks.Add([pscustomobject]@{ Name = "approvedFingerprint"; Passed = $fingerprintMatch; Reason = $(if ($fingerprintMatch) { "match" } elseif ([string]::IsNullOrWhiteSpace($approvedFingerprint)) { "missing" } else { "mismatch" }) })
+    }
+
+    $prefixOk = $normalizedPrefix -eq $ExpectedPrefix
+    $checks.Add([pscustomobject]@{ Name = "testPrefix"; Passed = $prefixOk; Reason = $(if ($prefixOk) { "match" } else { "mismatch" }) })
+
+    $confirmationPresent = -not [string]::IsNullOrWhiteSpace($Confirmation)
+    $confirmationOk = $Confirmation -eq $ExpectedConfirmation
+    $checks.Add([pscustomobject]@{ Name = "confirmation"; Passed = $confirmationOk; Reason = $(if ($confirmationOk) { "match" } elseif ($confirmationPresent) { "mismatch" } else { "missing" }) })
+
+    $passed = ($checks | Where-Object { -not $_.Passed }).Count -eq 0
+
+    return [pscustomobject]@{
+        Passed = $passed
+        ExitCode = $(if ($passed) { 0 } else { 2 })
+        Runtime = $(if ($AllowedRuntimes -contains $normalizedRuntime) { $normalizedRuntime } else { "blocked" })
+        TargetVerification = $(if ($passed) { "PASS" } else { "BLOCKED" })
+        ApprovedFingerprintMatch = $(if ($fingerprintMatch) { "YES" } else { "NO" })
+        Prefix = $(if ([string]::IsNullOrWhiteSpace($normalizedPrefix)) { "unset" } else { $normalizedPrefix })
+        Destructive = "YES"
+        Production = $(if ($normalizedRuntime -eq "production") { "BLOCKED" } else { "NO" })
+        Checks = $checks.ToArray()
+    }
+}
+
 function WritePipelineTitle {
     Write-Host "PeaceByPiece Patch Auto Pipeline $Script_Version  $(GetProjectAppVersion)" -ForegroundColor Cyan
 }
@@ -224,5 +330,4 @@ function GetProjectAppVersion {
         return "APP_VERSION 확인 오류: $($_.Exception.Message)"
     }
 }
-
 

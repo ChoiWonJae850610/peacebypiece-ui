@@ -30,6 +30,7 @@
 
     Simulator = @{
         TestPrefix = "wafl-fn"
+        AllowedRuntimes = @("development", "dev", "local", "test", "demo")
         # host/database 문자열의 SHA-256 앞 12자리. 비밀번호나 URL이 아닙니다.
         ApprovedDbFingerprint = "01e5dcc7fea3"
     }
