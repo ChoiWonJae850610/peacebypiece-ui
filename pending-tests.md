@@ -55,3 +55,10 @@
 - [ ] 메뉴 순서 1 watcher / 2 npm dev / 3 자동 Build / 4 Flush / 5 개발·테스트 확인
 - [ ] 0번 종료 시 watcher와 npm dev가 유지된다는 안내 확인
 - [ ] npm run build 미실행 — 사용자가 로컬에서 확인.
+
+
+## 0.23.86 repo-state publication
+- [ ] 백그라운드 watcher 패치 적용 후 Repo_Status에 repo-state가 생성되는지 확인
+- [ ] 4. Newest 폴더에 동일 repo-state가 복사되는지 확인
+- [ ] Build ON/OFF 양쪽에서 repo-state가 생성되는지 확인
+- [ ] Git 변경 없음 경로에서도 repo-state 누락이 없는지 확인

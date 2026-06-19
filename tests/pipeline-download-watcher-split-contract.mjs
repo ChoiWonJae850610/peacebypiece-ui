@@ -12,7 +12,7 @@ const processing = read('pipeline-patch-processing.ps1');
 const watcher = read('download-watcher.ps1');
 const config = read('pipeline.config.psd1');
 
-assert.match(config, /ScriptVersion\s*=\s*"v19\.7"/);
+assert.match(config, /ScriptVersion\s*=\s*"v19\.8"/);
 assert.match(main, /\. \$PipelineCommonPath/);
 assert.match(main, /\. \$PipelinePatchProcessingPath/);
 assert.match(main, /StartDownloadWatcherBackground/);

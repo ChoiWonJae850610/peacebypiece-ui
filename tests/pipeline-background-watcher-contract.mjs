@@ -19,7 +19,7 @@ const required = [
   [watcher, "RefreshRuntimeOptions"],
   [common, "RuntimeOptionsFile"],
   [common, "WatcherStateFile"],
-  [config, 'ScriptVersion = "v19.7"'],
+  [config, 'ScriptVersion = "v19.8"'],
 ];
 for (const [content, needle] of required) {
   if (!content.includes(needle)) throw new Error(`missing contract: ${needle}`);

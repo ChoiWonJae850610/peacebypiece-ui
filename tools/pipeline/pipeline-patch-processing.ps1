@@ -745,6 +745,7 @@ function SaveRepoStateSnapshot {
     [System.IO.File]::WriteAllLines($stateFilePath, $lines, [System.Text.Encoding]::UTF8)
     $script:LatestRepoStatePath = $stateFilePath
     LogInfo "Repo state snapshot saved: $stateFilePath"
+    return $stateFilePath
 }
 
 function CommitAndPush {
@@ -799,7 +800,6 @@ function CommitAndPush {
             throw "Git Push 실패"
         }
 
-        SaveRepoStateSnapshot -Version $Version
     }
 
     LogInfo "Git Commit / Push 완료"
@@ -982,6 +982,27 @@ function CopyFileToNewestResultDir {
     LogInfo "Newest copied: $destinationPath"
 }
 
+function ResolveLatestRepoStatePath {
+    if (-not [string]::IsNullOrWhiteSpace($script:LatestRepoStatePath) -and (Test-Path -LiteralPath $script:LatestRepoStatePath)) {
+        return $script:LatestRepoStatePath
+    }
+
+    if (-not (Test-Path -LiteralPath $RepoStatusDir)) {
+        return $null
+    }
+
+    $latest = Get-ChildItem -LiteralPath $RepoStatusDir -File -Filter "repo-state-*.txt" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if ($null -eq $latest) {
+        return $null
+    }
+
+    $script:LatestRepoStatePath = $latest.FullName
+    return $latest.FullName
+}
+
 function PublishNewestResultFiles {
     EnsureDirectory -Path $NewestResultDIr
 
@@ -994,7 +1015,8 @@ function PublishNewestResultFiles {
         CopyFileToNewestResultDir -SourcePath $script:LatestBackupZipPath
     }
 
-    CopyFileToNewestResultDir -SourcePath $script:LatestRepoStatePath
+    $repoStatePath = ResolveLatestRepoStatePath
+    CopyFileToNewestResultDir -SourcePath $repoStatePath
 
     if ($script:NPMBuild) {
         CopyFileToNewestResultDir -SourcePath $script:LatestBuildLogPath
@@ -1263,6 +1285,10 @@ function ProcessOnePatchIfReady {
     # 1) git commit/push 먼저
     # 2) build는 검증용
     # 3) 백업 zip은 보조 산출물
+    $script:LatestRepoStatePath = ""
+    $script:LatestBuildLogPath = ""
+    $script:LatestBackupZipPath = ""
+
     CommitAndPush -Summary $summary -Description $description -Version $version
 
     try {
@@ -1272,6 +1298,10 @@ function ProcessOnePatchIfReady {
         LogWarn $_.Exception.Message
         LogWarn "build 실패는 commit/push를 되돌리지 않습니다. 다음 패치에서 수정하세요."
     }
+
+    # Git 조건 분기나 백그라운드 프로세스의 script scope 상태와 무관하게
+    # 패치 처리의 최종 repo-state를 반드시 한 번 생성한다.
+    SaveRepoStateSnapshot -Version $version | Out-Null
 
     BackupProjectToZip -Version $version
 
