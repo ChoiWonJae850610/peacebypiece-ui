@@ -5,6 +5,6 @@ import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 export const dynamic = "force-dynamic";
 
 export default async function WorkerLayout({ children }: { children: ReactNode }) {
-  await requireWaflSessionForArea("worker");
+  await requireWaflSessionForArea("worker", { returnTo: "/worker" });
   return children;
 }

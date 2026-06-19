@@ -7,12 +7,14 @@ import { getCompanyAccessState, resolveCompanyAccessBlockReason, type CompanyAcc
 import type { WaflSessionPayload, WaflSessionRole } from "@/lib/auth/session";
 import { isCompanyAdminSessionRole, isSystemAdminSessionRole, isWorkspaceSessionRole, SESSION_ROLE } from "@/lib/constants/sessionRoles";
 import { hasWorkspaceApiPermission } from "@/lib/auth/apiRouteGuards";
+import { buildLoginPath } from "@/lib/auth/returnPath";
 import type { MemberPermissionCode } from "@/lib/permissions";
 
 type ProtectedArea = "workspace" | "system" | "worker" | "me";
 
 type CompanyAccessGuardOptions = {
   allowBlockedCompanyAccess?: boolean;
+  returnTo?: string;
 };
 
 function getRoleHomePath(role: WaflSessionRole): string {
@@ -47,7 +49,7 @@ export async function requireWaflSessionForArea(
 ): Promise<WaflSessionPayload> {
   const session = await getCurrentWaflSession();
   if (!session) {
-    redirect("/?error=SESSION_REQUIRED");
+    redirect(buildLoginPath(options.returnTo, "SESSION_REQUIRED"));
   }
 
   if (!canAccessProtectedArea(session.role, area)) {

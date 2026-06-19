@@ -119,3 +119,13 @@
 - [ ] 권한 제거 직후 재요청이 즉시 403으로 반영
 - [ ] company admin 기존 API 접근 회귀 확인
 - [ ] npm run build 미실행 — 사용자가 로컬에서 확인.
+
+## 0.23.93 URL·라우팅·세션 통합 테스트 대기
+- 보호 route 직접 주소 접근 후 로그인 및 기본 영역 복귀
+- `/workspace`, `/worker`, `/system`, `/me/settings` 새로고침
+- 외부 `returnTo`와 `//host` open redirect 차단
+- 존재하지 않는 route 전역 404
+- 렌더링 오류 발생 시 전역 재시도 화면
+- 뒤로가기·앞으로가기와 query string 필터 유지
+- 세션 만료 후 재로그인 흐름
+- production 내부 route 차단 회귀

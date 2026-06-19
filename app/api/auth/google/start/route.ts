@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { normalizeSafeReturnPath } from "@/lib/auth/returnPath";
+
 import {
   GOOGLE_OAUTH_STATE_COOKIE,
   createGoogleOAuthAuthorizationUrl,
@@ -33,6 +35,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const requestType = readRequestType(url);
   const token = url.searchParams.get("token")?.trim() || null;
+  const returnTo = requestType === "login" ? normalizeSafeReturnPath(url.searchParams.get("returnTo")) : null;
 
   try {
     if ((requestType === "member" || requestType === "company") && !token) {
@@ -44,6 +47,7 @@ export async function GET(request: Request) {
       nonce,
       token,
       requestType,
+      returnTo,
     });
     const response = NextResponse.redirect(createGoogleOAuthAuthorizationUrl({ request, state }));
     response.cookies.set(GOOGLE_OAUTH_STATE_COOKIE, nonce, {

@@ -7,6 +7,7 @@ import {
 
 type WaflLoginPageProps = {
   error?: string | null;
+  returnTo?: string | null;
 };
 
 function readLoginError(error?: string | null): string | null {
@@ -21,8 +22,9 @@ function readLoginError(error?: string | null): string | null {
   return "로그인 중 문제가 발생했습니다. 다시 시도해 주세요.";
 }
 
-export default function WaflLoginPage({ error }: WaflLoginPageProps) {
+export default function WaflLoginPage({ error, returnTo }: WaflLoginPageProps) {
   const errorMessage = readLoginError(error);
+  const googleLoginHref = `/api/auth/google/start?requestType=login${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`;
 
   return (
     <ATypePublicFrame
@@ -46,7 +48,7 @@ export default function WaflLoginPage({ error }: WaflLoginPageProps) {
         {errorMessage ? <ATypePublicNotice tone="danger">{errorMessage}</ATypePublicNotice> : null}
 
         <a
-          href="/api/auth/google/start?requestType=login"
+          href={googleLoginHref}
           className="flex w-full items-center justify-center gap-3 rounded-[var(--pbp-radius-xl)] bg-[var(--pbp-action-primary-surface)] px-5 py-4 text-sm font-black text-[var(--pbp-action-primary-text)] shadow-[var(--pbp-shadow-elevated-a-type)] transition hover:-translate-y-0.5 hover:bg-[var(--pbp-action-primary-surface-hover)]"
         >
           <GoogleMark />

@@ -9,7 +9,7 @@ import { getCompanyAccessState } from "@/lib/billing/companyAccessRepository";
 export const dynamic = "force-dynamic";
 
 export default async function WorkspaceLayout({ children }: { children: ReactNode }) {
-  const session = await requireWaflSessionForArea("workspace", { allowBlockedCompanyAccess: true });
+  const session = await requireWaflSessionForArea("workspace", { allowBlockedCompanyAccess: true, returnTo: "/workspace" });
   const accessState = session.companyId ? await getCompanyAccessState(session.companyId) : null;
 
   return (

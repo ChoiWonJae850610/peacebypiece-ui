@@ -12,6 +12,7 @@ export type GoogleOAuthStatePayload = {
   nonce: string;
   token: string | null;
   requestType: GoogleOAuthRequestType;
+  returnTo: string | null;
 };
 
 export type GoogleUserProfile = {
@@ -62,10 +63,11 @@ export function decodeGoogleOAuthState(value: string | null): GoogleOAuthStatePa
     const requestType = parsed.requestType === "member" || parsed.requestType === "company" || parsed.requestType === "login" ? parsed.requestType : null;
     const nonce = typeof parsed.nonce === "string" ? parsed.nonce.trim() : "";
     const token = typeof parsed.token === "string" ? parsed.token.trim() : null;
+    const returnTo = typeof parsed.returnTo === "string" ? parsed.returnTo.trim() : null;
 
     if (!requestType || !nonce) return null;
     if ((requestType === "member" || requestType === "company") && !token) return null;
-    return { requestType, nonce, token };
+    return { requestType, nonce, token, returnTo };
   } catch {
     return null;
   }

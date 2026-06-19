@@ -7,6 +7,7 @@ import {
   fetchGoogleUserProfile,
 } from "@/lib/auth/googleOAuth";
 import { completeGoogleLogin } from "@/lib/auth/loginRepository";
+import { normalizeSafeReturnPath } from "@/lib/auth/returnPath";
 import { createWaflSessionCookieValue, WAFL_AUTH_SESSION_COOKIE } from "@/lib/auth/session";
 import { joinRequestRepository } from "@/lib/invitations/joinRequestRepository";
 import { completeCompanyAdminInvitationLogin } from "@/lib/auth/companyInvitationLoginRepository";
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
     if (state.requestType === "login") {
       const result = await completeGoogleLogin(profile);
       if (result.status === "authenticated") {
-        return createSessionResponse(request, result.redirectPath, result.session);
+        return createSessionResponse(request, normalizeSafeReturnPath(state.returnTo) ?? result.redirectPath, result.session);
       }
 
       const response = NextResponse.redirect(new URL(result.redirectPath, request.url));

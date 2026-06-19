@@ -5,6 +5,6 @@ import { requireWaflSessionForArea } from "@/lib/auth/routeGuard";
 export const dynamic = "force-dynamic";
 
 export default async function SystemLayout({ children }: { children: ReactNode }) {
-  await requireWaflSessionForArea("system");
+  await requireWaflSessionForArea("system", { returnTo: "/system" });
   return children;
 }
