@@ -9,5 +9,7 @@ assert.match(source, /const categoryNodeIds = new Map\(\)/, "category nodes must
 assert.match(source, /pathParts\.join\("::"\)/, "category identity must be based on the full hierarchy path");
 assert.doesNotMatch(source, /category-\$\{categoryIndex \+ 1\}-\$\{levelIndex \+ 1\}/, "path rows must not create duplicate parent nodes");
 assert.match(source, /itemCategories: PRODUCT_CATEGORY_NODE_COUNT/, "seed plan must report unique nodes, not three rows per path");
+assert.match(source, /\["상의", "니트", "기본 니트"\]/, "tops must include knit in the simulator category baseline");
+assert.match(source, /\["상의", "맨투맨", "크롭 맨투맨"\]/, "sweatshirts must include crop sweatshirt in the simulator category baseline");
 
 console.log("PASS simulator normalized category tree contract");
