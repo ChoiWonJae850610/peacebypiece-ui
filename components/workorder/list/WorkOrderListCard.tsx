@@ -51,12 +51,12 @@ export default function WorkOrderListCard({
   return (
     <WaflSelectableCard
       selected={active}
-      className={`group relative px-3 py-2.5 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
+      className={`group relative px-3 py-2 ${active ? "pbp-workorder-list-card-selected" : "pbp-workorder-list-card"}`}
     >
       <div className="min-w-0 pr-11">
         <WaflCardButton onClick={() => onClick(workOrder.id)}>
           <div className="min-w-0 truncate text-sm font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <WaflBadge
               tone="neutral"
               size="sm"
@@ -66,10 +66,10 @@ export default function WorkOrderListCard({
               {stateLabel}
             </WaflBadge>
           </div>
-          <div className="pbp-workorder-list-muted mt-1.5 min-w-0 space-y-0.5 text-[11px] leading-4">
-            <div className="truncate" title={categoryPath}>{categoryPath}</div>
-            {workOrder.vendor ? <div className="truncate">{copy.vendorLabel}: {workOrder.vendor}</div> : null}
-            {dueDateLabel ? <div>{copy.dueDateLabel}: {dueDateLabel}</div> : null}
+          <div className="pbp-workorder-list-muted mt-1 flex min-w-0 flex-wrap gap-x-2 gap-y-0.5 text-[11px] leading-4">
+            <span className="max-w-full truncate" title={categoryPath}>{categoryPath}</span>
+            {workOrder.vendor ? <span className="truncate">{workOrder.vendor}</span> : null}
+            {dueDateLabel ? <span>{dueDateLabel}</span> : null}
           </div>
         </WaflCardButton>
         {canOpenMenu ? (
