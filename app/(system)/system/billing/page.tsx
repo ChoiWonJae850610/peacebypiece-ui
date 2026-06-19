@@ -1,5 +1,5 @@
-import SystemCompanyPlanSkeleton from "@/components/system/billing/SystemCompanyPlanSkeleton";
+import SystemBillingOverview from "@/components/system/billing/SystemBillingOverview";
 
 export default function SystemBillingPage() {
-  return <SystemCompanyPlanSkeleton />;
+  return <SystemBillingOverview />;
 }

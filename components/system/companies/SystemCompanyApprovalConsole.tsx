@@ -773,7 +773,7 @@ export default function SystemCompanyApprovalConsole() {
 
             <article className={SYSTEM_MUTED_CARD_CLASS}>
               <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>초대 링크 목록</h3>
-              <p className={SYSTEM_SMALL_TEXT_CLASS}>사용 가능, 사용됨, 만료됨, 취소됨 상태를 확인하고 링크를 복사하거나 취소합니다.</p>
+              <p className={SYSTEM_SMALL_TEXT_CLASS}>초대 링크의 사용·만료·취소 상태를 확인하고 필요한 작업만 수행합니다.</p>
               <div className="mt-4">
                 <AdminTable
                   items={systemInvitationRows}
