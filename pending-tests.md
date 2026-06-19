@@ -171,3 +171,10 @@
 - [ ] 첨부 업로드 오류는 브라우저 Network/API 오류 코드와 서버 로그를 별도 수집; R2 prefix는 사전 폴더 생성 대상이 아님
 - [ ] 실제 R2 객체 fixture와 DB metadata reconciliation은 후속 dev/test R2 adapter 단계에서 확인
 - [ ] npm run build 미실행 — 사용자가 로컬에서 확인.
+
+
+## 0.23.99 pending
+- Run menu 21 Simulator DB Seed Execute and verify B company permission scenarios.
+- Run menu 5 DB/API Permissions Test; expect 4/4.
+- Verify category/statistics distribution is non-uniform.
+- Verify permission ON/OFF button visibility and API 403 behavior manually.

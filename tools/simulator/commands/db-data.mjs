@@ -76,14 +76,26 @@ const PARTNER_FIXTURE_TYPES = [
 ];
 
 const PRODUCT_CATEGORY_FIXTURES = [
-  ["상의", "티셔츠", "반팔 티셔츠"],
-  ["상의", "셔츠", "캐주얼 셔츠"],
-  ["상의", "맨투맨", "기본 맨투맨"],
-  ["하의", "팬츠", "와이드 팬츠"],
-  ["하의", "스커트", "플레어 스커트"],
-  ["아우터", "재킷", "캐주얼 재킷"],
-  ["아우터", "코트", "롱 코트"],
-  ["원피스", "데일리 원피스", "A라인 원피스"],
+  ["상의", "맨투맨", "기본 맨투맨"], ["상의", "맨투맨", "오버핏 맨투맨"], ["상의", "맨투맨", "기모 맨투맨"],
+  ["상의", "티셔츠", "반팔 티셔츠"], ["상의", "티셔츠", "긴팔 티셔츠"], ["상의", "셔츠", "기본 셔츠"],
+  ["상의", "후드", "후드 집업"], ["하의", "팬츠", "와이드 팬츠"], ["하의", "팬츠", "조거 팬츠"],
+  ["하의", "데님", "스트레이트 데님"], ["하의", "스커트", "플레어 스커트"], ["아우터", "재킷", "테일러드 재킷"],
+  ["아우터", "코트", "롱 코트"], ["아우터", "점퍼", "블루종"], ["원피스", "데일리", "A라인 원피스"],
+  ["원피스", "길이", "롱 원피스"], ["셋업", "캐주얼", "맨투맨 팬츠 셋업"], ["잡화", "가방", "토트백"],
+  ["홈웨어", "세트", "파자마 세트"],
+];
+
+const CATEGORY_WEIGHT_PATTERN = [0,0,0,0,0,0,0,0,1,1,1,1,1,2,2,2,3,3,3,4,4,5,5,6,7,7,8,9,10,11,12,13,14,15,16,17,18];
+const MEMBER_PERMISSION_SCENARIOS = [
+  { label: "고객사 관리자", permissions: "all" },
+  { label: "디자이너 - 발주 가능", role: "designer", permissions: ["workorder.read","workorder.create","workorder.update","workorder.status.review","workorder.status.order","material.order.request","partner.read","standards.read","storage.read","stats.read","personal_settings.manage"] },
+  { label: "디자이너 - 발주 불가", role: "designer", permissions: ["workorder.read","workorder.create","workorder.update","workorder.status.review","partner.read","standards.read","storage.read","stats.read","personal_settings.manage"] },
+  { label: "재고 담당 - 발주 가능", role: "inventory_manager", permissions: ["workorder.read","material.order.request","material.order.place","partner.read","partner.update","standards.read","storage.read","stats.read","personal_settings.manage"] },
+  { label: "재고 담당 - 발주 불가", role: "inventory_manager", permissions: ["workorder.read","partner.read","standards.read","storage.read","stats.read","personal_settings.manage"] },
+  { label: "검수 담당 - 검수 가능", role: "inspector", permissions: ["workorder.read","workorder.status.inspect","workorder.status.complete","partner.read","standards.read","storage.read","stats.read","personal_settings.manage"] },
+  { label: "검수 담당 - 검수 불가", role: "inspector", permissions: ["workorder.read","partner.read","standards.read","storage.read","stats.read","personal_settings.manage"] },
+  { label: "조회 전용", role: "viewer", permissions: ["workorder.read","partner.read","standards.read","storage.read","stats.read","personal_settings.manage"] },
+  { label: "복합 권한 - 발주·검수", role: "designer", permissions: ["workorder.read","workorder.update","workorder.status.order","workorder.status.inspect","material.order.request","material.order.place","partner.read","stats.read","personal_settings.manage"] },
 ];
 function buildPlan() {
   return fixture.companies.map((company) => ({
@@ -177,13 +189,15 @@ async function seed(client, plan) {
     for (let i = 0; i < source.members; i += 1) {
       const index = String(i + 1).padStart(3, "0");
       const userId = `${row.companyId}-user-${index}`;
-      const role = roleFor(i);
+      const scenario = row.companyId === "wafl-fn-company-b" ? MEMBER_PERMISSION_SCENARIOS[i % MEMBER_PERMISSION_SCENARIOS.length] : null;
+      const role = scenario?.role ?? roleFor(i);
+      const displayName = scenario ? `[SIM] ${scenario.label} ${index}` : `[SIM] ${source.code} 사용자 ${index}`;
       await client.query(
         `INSERT INTO users (id,company_id,email,name,phone,phone_source,role,is_active)
          VALUES ($1,$2,$3,$4,$5,'user',$6,$7)
          ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email,name=EXCLUDED.name,phone=EXCLUDED.phone,phone_source=EXCLUDED.phone_source,role=EXCLUDED.role,is_active=EXCLUDED.is_active,updated_at=now()`,
         [
-          userId, row.companyId, `${row.companyId}.${index}@example.test`, `[SIM] ${source.code} 사용자 ${index}`,
+          userId, row.companyId, `${row.companyId}.${index}@example.test`, displayName,
           `010-${String(source.code.charCodeAt(0)).padStart(4, "0")}-${String(i + 1).padStart(4, "0")}`,
           role, source.status !== "suspended",
         ],
@@ -192,14 +206,43 @@ async function seed(client, plan) {
         `INSERT INTO company_users (id,company_id,user_id,role,is_active,display_name,joined_at)
          VALUES ($1,$2,$3,$4,$5,$6,now())
          ON CONFLICT (company_id,user_id,role) DO UPDATE SET is_active=EXCLUDED.is_active,display_name=EXCLUDED.display_name,updated_at=now()`,
-        [`${row.companyId}-membership-${index}`, row.companyId, userId, role, source.status !== "suspended", `[SIM] ${source.code} 사용자 ${index}`],
+        [`${row.companyId}-membership-${index}`, row.companyId, userId, role, source.status !== "suspended", displayName],
       );
       await client.query(
         `INSERT INTO company_members (id,company_id,user_id,status,role_template_code,display_name,approved_by,approved_at,suspended_by,suspended_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,now(),$8,CASE WHEN $4::text = 'suspended' THEN now() ELSE NULL END)
          ON CONFLICT (company_id,user_id) DO UPDATE SET status=EXCLUDED.status,role_template_code=EXCLUDED.role_template_code,display_name=EXCLUDED.display_name,approved_by=EXCLUDED.approved_by,approved_at=EXCLUDED.approved_at,suspended_by=EXCLUDED.suspended_by,suspended_at=EXCLUDED.suspended_at,updated_at=now()`,
-        [`${row.companyId}-member-${index}`, row.companyId, userId, source.status !== "suspended" ? "approved" : "suspended", role === "admin" ? "company_admin" : role, `[SIM] ${source.code} 사용자 ${index}`, ownerId, source.status === "suspended" ? ownerId : null],
+        [`${row.companyId}-member-${index}`, row.companyId, userId, source.status !== "suspended" ? "approved" : "suspended", role === "admin" ? "company_admin" : role, displayName, ownerId, source.status === "suspended" ? ownerId : null],
       );
+      const memberId = `${row.companyId}-member-${index}`;
+      await client.query(`DELETE FROM member_permissions WHERE company_member_id = $1`, [memberId]);
+      if (scenario?.permissions === "all") {
+        await client.query(
+          `INSERT INTO member_permissions (company_member_id,permission_code,is_enabled,granted_by,granted_at)
+           SELECT $1, permission_key, true, $2, now() FROM permission_catalog WHERE is_active = true AND is_system_permission = false
+           ON CONFLICT (company_member_id,permission_code) DO UPDATE SET is_enabled=true,granted_by=EXCLUDED.granted_by,granted_at=now(),updated_at=now()`,
+          [memberId, ownerId],
+        );
+      } else if (scenario) {
+        for (const permissionCode of scenario.permissions) {
+          await client.query(
+            `INSERT INTO member_permissions (company_member_id,permission_code,is_enabled,granted_by,granted_at)
+             VALUES ($1,$2,true,$3,now())
+             ON CONFLICT (company_member_id,permission_code) DO UPDATE SET is_enabled=true,granted_by=EXCLUDED.granted_by,granted_at=now(),updated_at=now()`,
+            [memberId, permissionCode, ownerId],
+          );
+        }
+      } else {
+        await client.query(
+          `INSERT INTO member_permissions (company_member_id,permission_code,is_enabled,granted_by,granted_at)
+           SELECT $1, rtp.permission_code, true, $2, now()
+             FROM role_templates rt
+             JOIN role_template_permissions rtp ON rtp.role_template_id = rt.id AND rtp.is_enabled = true
+            WHERE rt.company_id IS NULL AND rt.role_code = $3 AND rt.is_active = true
+           ON CONFLICT (company_member_id,permission_code) DO UPDATE SET is_enabled=true,granted_by=EXCLUDED.granted_by,granted_at=now(),updated_at=now()`,
+          [memberId, ownerId, role === "admin" ? "company_admin" : role],
+        );
+      }
     }
 
     const processIds = new Map();
@@ -253,17 +296,18 @@ async function seed(client, plan) {
 
     for (let i = 0; i < source.workorders; i += 1) {
       const index = String(i + 1).padStart(5, "0");
-      const categoryPath = PRODUCT_CATEGORY_FIXTURES[i % PRODUCT_CATEGORY_FIXTURES.length];
-      const categoryPathIds = categoryIds[i % categoryIds.length];
+      const weightedCategoryIndex = CATEGORY_WEIGHT_PATTERN[(i + source.code.charCodeAt(0)) % CATEGORY_WEIGHT_PATTERN.length] % PRODUCT_CATEGORY_FIXTURES.length;
+      const categoryPath = PRODUCT_CATEGORY_FIXTURES[weightedCategoryIndex];
+      const categoryPathIds = categoryIds[weightedCategoryIndex];
       const factoryPartnerCount = Math.max(1, Math.ceil(source.partners / PARTNER_FIXTURE_TYPES.length));
       const factoryPartnerIndex = source.partners > 0 ? ((i % factoryPartnerCount) * PARTNER_FIXTURE_TYPES.length) + 1 : null;
       const factoryName = factoryPartnerIndex ? `[SIM] ${PARTNER_FIXTURE_TYPES[(factoryPartnerIndex - 1) % PARTNER_FIXTURE_TYPES.length].label} ${String(factoryPartnerIndex).padStart(4, "0")}` : "";
-      const createdDaysAgo = i % 40;
+      const createdDaysAgo = (i * 7 + source.code.charCodeAt(0) * 3) % 120;
       await client.query(
         `INSERT INTO spec_sheets (id,company_id,company_name,title,status,workflow_path,display_title,category1_id,category2_id,category3_id,category1,category2,category3,season,priority,vendor,manager,manager_id,created_by_id,created_by_role,due_date,quantity,created_at,updated_at)
          VALUES ($1,$2,$3,$4,$5,'standard_review',$4,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$16,'admin',$17,$18,now()-($19::text||' days')::interval,now()-($20::text||' days')::interval)
          ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title,status=EXCLUDED.status,display_title=EXCLUDED.display_title,category1_id=EXCLUDED.category1_id,category2_id=EXCLUDED.category2_id,category3_id=EXCLUDED.category3_id,category1=EXCLUDED.category1,category2=EXCLUDED.category2,category3=EXCLUDED.category3,season=EXCLUDED.season,priority=EXCLUDED.priority,vendor=EXCLUDED.vendor,manager=EXCLUDED.manager,manager_id=EXCLUDED.manager_id,due_date=EXCLUDED.due_date,quantity=EXCLUDED.quantity,created_at=EXCLUDED.created_at,updated_at=EXCLUDED.updated_at`,
-        [`${row.companyId}-workorder-${index}`, row.companyId, row.companyName, `[SIM] ${categoryPath[2]} ${index}`, workorderStatus(i), categoryPathIds[0], categoryPathIds[1], categoryPathIds[2], categoryPath[0], categoryPath[1], categoryPath[2], i % 2 === 0 ? "2026 SS" : "2026 FW", i % 7 === 0 ? "high" : "normal", factoryName, `[SIM] ${source.code} 관리자`, ownerId, i % 4 === 0 ? null : `2026-${String(((i % 7) + 6)).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`, (i % 100) + 1, createdDaysAgo, Math.max(0, createdDaysAgo - (i % 3))],
+        [`${row.companyId}-workorder-${index}`, row.companyId, row.companyName, `[SIM] ${categoryPath[2]} ${index}`, workorderStatus(i), categoryPathIds[0], categoryPathIds[1], categoryPathIds[2], categoryPath[0], categoryPath[1], categoryPath[2], i % 2 === 0 ? "2026 SS" : "2026 FW", i % 7 === 0 ? "high" : "normal", factoryName, `[SIM] ${source.code} 관리자`, ownerId, i % 4 === 0 ? null : `2026-${String(((i % 7) + 6)).padStart(2, "0")}-${String((i % 28) + 1).padStart(2, "0")}`, ([36,72,120,180,240,360,500,800][(i * 5 + source.code.charCodeAt(0)) % 8]), createdDaysAgo, Math.max(0, createdDaysAgo - (i % 3))],
       );
       if (factoryPartnerIndex) {
         const factoryPartnerId = `${row.companyId}-partner-${String(factoryPartnerIndex).padStart(4, "0")}`;

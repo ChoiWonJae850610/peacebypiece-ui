@@ -9,6 +9,7 @@ export const SIMULATOR_DB_MANIFEST = {
     { name: "users", key: "company_id", requiredColumns: ["id", "company_id", "email", "name", "role", "is_active"], cleanupOrder: 80 },
     { name: "company_users", key: "company_id", requiredColumns: ["company_id", "user_id", "role", "is_active"], cleanupOrder: 79 },
     { name: "company_members", key: "company_id", requiredColumns: ["company_id", "user_id", "status", "role_template_code"], cleanupOrder: 78 },
+    { name: "member_permissions", key: "company_member_id", requiredColumns: ["company_member_id", "permission_code", "is_enabled"], cleanupOrder: 77 },
     { name: "partners", key: "company_id", requiredColumns: ["id", "company_id", "name", "is_active"], cleanupOrder: 70 },
     { name: "partner_items", key: "company_id", requiredColumns: ["company_id", "partner_id", "item_type", "is_active"], cleanupOrder: 69 },
     { name: "item_categories", key: "company_id", requiredColumns: ["company_id", "level", "name", "is_active"], cleanupOrder: 68 },

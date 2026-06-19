@@ -16,12 +16,13 @@ export type DevTestContextTarget = {
   roleTemplateCode: string | null;
   onboardingStatus: string | null;
   profileComplete: boolean | null;
+  permissionCodes: string[];
 };
 
 type CompanyTargetRow = {
   user_id: string; company_id: string; company_name: string; company_member_id: string;
   email: string | null; name: string; display_name: string | null; role_template_code: string | null;
-  onboarding_status: string | null; profile_complete: boolean | null;
+  onboarding_status: string | null; profile_complete: boolean | null; permission_codes: string[] | null;
 };
 type SystemTargetRow = { id: string; email: string; name: string };
 
@@ -33,12 +34,12 @@ function mapCompany(row: CompanyTargetRow): DevTestContextTarget {
     companyId: row.company_id, companyName: row.company_name, companyMemberId: row.company_member_id,
     role: toSessionRole(row.role_template_code), email: row.email ?? "", name: row.display_name ?? row.name,
     roleTemplateCode: row.role_template_code, onboardingStatus: row.onboarding_status,
-    profileComplete: row.profile_complete };
+    profileComplete: row.profile_complete, permissionCodes: row.permission_codes ?? [] };
 }
 function mapSystem(row: SystemTargetRow): DevTestContextTarget {
   return { targetKey: `system:${row.id}`, targetType: "system", userId: row.id, companyId: null,
     companyName: null, companyMemberId: null, role: "system_admin", email: row.email, name: row.name,
-    roleTemplateCode: "system_admin", onboardingStatus: null, profileComplete: null };
+    roleTemplateCode: "system_admin", onboardingStatus: null, profileComplete: null, permissionCodes: [] };
 }
 
 const TEST_TARGET_WHERE = `
@@ -53,6 +54,7 @@ async function listCompanyTargets(): Promise<DevTestContextTarget[]> {
   const result = await queryDb<CompanyTargetRow>(`
     SELECT u.id AS user_id, c.id AS company_id, c.name AS company_name, cm.id AS company_member_id,
            u.email, u.name, cm.display_name, cm.role_template_code, c.onboarding_status,
+           COALESCE((SELECT array_agg(mp.permission_code ORDER BY mp.permission_code) FROM member_permissions mp WHERE mp.company_member_id = cm.id AND mp.is_enabled = true), ARRAY[]::text[]) AS permission_codes,
            (
              NULLIF(trim(c.name), '') IS NOT NULL
              AND NULLIF(trim(c.business_name), '') IS NOT NULL
@@ -98,6 +100,7 @@ export async function getDevTestContextTargetByKey(targetKey: string): Promise<D
   const result = await queryDb<CompanyTargetRow>(`
     SELECT u.id AS user_id, c.id AS company_id, c.name AS company_name, cm.id AS company_member_id,
            u.email, u.name, cm.display_name, cm.role_template_code, c.onboarding_status,
+           COALESCE((SELECT array_agg(mp.permission_code ORDER BY mp.permission_code) FROM member_permissions mp WHERE mp.company_member_id = cm.id AND mp.is_enabled = true), ARRAY[]::text[]) AS permission_codes,
            (
              NULLIF(trim(c.name), '') IS NOT NULL
              AND NULLIF(trim(c.business_name), '') IS NOT NULL

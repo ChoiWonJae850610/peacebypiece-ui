@@ -234,10 +234,25 @@ function testServerPermissionWiring() {
   );
 }
 
+
+function testSimulatorPermissionScenarios() {
+  const simulator = readFileSync(resolve(rootDir, "tools/simulator/commands/db-data.mjs"), "utf8");
+  const consoleRepository = readFileSync(resolve(rootDir, "lib/dev/testContext/repository.ts"), "utf8");
+  assert.match(simulator, /디자이너 - 발주 가능/);
+  assert.match(simulator, /디자이너 - 발주 불가/);
+  assert.match(simulator, /검수 담당 - 검수 가능/);
+  assert.match(simulator, /검수 담당 - 검수 불가/);
+  assert.match(simulator, /재고 담당 - 발주 가능/);
+  assert.match(simulator, /조회 전용/);
+  assert.match(simulator, /INSERT INTO member_permissions/);
+  assert.match(consoleRepository, /permission_codes/);
+}
+
 const testCases = [
   ["작업지시서 상태별 편집 정책", testWorkOrderWorkflowRules],
   ["발주서 상태별 편집·전환 정책", testMaterialOrderServerRules],
   ["서버 권한 검증 연결", testServerPermissionWiring],
+  ["Simulator 역할별 권한 시나리오", testSimulatorPermissionScenarios],
 ];
 
 let passed = 0;

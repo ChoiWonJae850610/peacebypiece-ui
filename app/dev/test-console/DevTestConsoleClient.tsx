@@ -28,6 +28,7 @@ type DevTestContextTarget = {
   roleTemplateCode: string | null;
   onboardingStatus: string | null;
   profileComplete: boolean | null;
+  permissionCodes: string[];
 };
 
 type DevTestContextOptions = {
@@ -48,6 +49,16 @@ function formatRole(role: string, roleTemplateCode?: string | null) {
 }
 
 
+function summarizePermissions(codes: string[]) {
+  const labels = [
+    ["발주", codes.includes("material.order.place") || codes.includes("workorder.status.order")],
+    ["검수", codes.includes("workorder.status.inspect")],
+    ["재고/자재", codes.includes("material.order.request")],
+    ["작지 수정", codes.includes("workorder.update")],
+    ["멤버 관리", codes.includes("member.permission.update")],
+  ].filter(([, enabled]) => enabled).map(([label]) => label);
+  return labels.length > 0 ? labels.join(" · ") : "조회 중심 / 추가 권한 없음";
+}
 
 function formatOnboardingStatus(target: DevTestContextTarget) {
   if (target.targetType === "system") return "시스템관리자";
@@ -220,6 +231,8 @@ export default function DevTestConsoleClient() {
                 <p><span className="text-[var(--pbp-text-muted)]">역할</span><br /><strong>{formatRole(selectedTarget.role, selectedTarget.roleTemplateCode)}</strong></p>
                 <p><span className="text-[var(--pbp-text-muted)]">사용자</span><br />{selectedTarget.name}</p>
                 <p><span className="text-[var(--pbp-text-muted)]">회사 상태</span><br /><strong>{formatOnboardingStatus(selectedTarget)}</strong></p>
+                <p><span className="text-[var(--pbp-text-muted)]">권한 요약</span><br /><strong>{summarizePermissions(selectedTarget.permissionCodes)}</strong></p>
+                <p className="sm:col-span-2"><span className="text-[var(--pbp-text-muted)]">권한 코드</span><br /><code className="break-all text-xs">{selectedTarget.permissionCodes.join(", ") || "없음"}</code></p>
                 <p><span className="text-[var(--pbp-text-muted)]">대상 키</span><br /><code className="text-xs">{selectedTarget.targetKey}</code></p>
               </div>
             </WaflInfoBox>
