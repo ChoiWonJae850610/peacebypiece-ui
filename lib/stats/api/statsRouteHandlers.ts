@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireAdminStatsCompanyScope } from "@/lib/admin/stats/sessionScope";
 
 import { statsRepository } from "../statsRepository";
+import { getSystemDashboardStats } from "@/lib/system/systemDashboardStats";
 import type { StatsPeriod } from "../statsTypes";
 
 function toPeriod(request: Request): StatsPeriod | undefined {
@@ -52,13 +53,15 @@ export async function handleGetAdminStats(request: Request) {
 
 export async function handleGetSystemStats(request: Request) {
   try {
-    const summary = await statsRepository.getSystemStats({
-      period: toPeriod(request),
-    });
+    const [summary, dashboard] = await Promise.all([
+      statsRepository.getSystemStats({ period: toPeriod(request) }),
+      getSystemDashboardStats(),
+    ]);
 
     return NextResponse.json({
       ok: true,
       summary,
+      dashboard,
     });
   } catch (error) {
     return toErrorResponse(error);
