@@ -113,10 +113,34 @@ async function seed(client, plan) {
     const source = fixture.companies.find((company) => company.id === row.companyId);
     const ownerId = `${row.companyId}-user-001`;
     await client.query(
-      `INSERT INTO companies (id,name,is_active,onboarding_status,owner_user_id,requested_plan_code,storage_limit_bytes,member_limit,billing_status,subscription_status,trial_started_at,trial_ends_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),now()+interval '30 days')
-       ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,is_active=EXCLUDED.is_active,onboarding_status=EXCLUDED.onboarding_status,owner_user_id=EXCLUDED.owner_user_id,requested_plan_code=EXCLUDED.requested_plan_code,storage_limit_bytes=EXCLUDED.storage_limit_bytes,member_limit=EXCLUDED.member_limit,billing_status=EXCLUDED.billing_status,subscription_status=EXCLUDED.subscription_status,updated_at=now()`,
-      [row.companyId, row.companyName, source.status !== "suspended", row.onboardingStatus, ownerId, row.planCode, source.storage.quotaBytes, source.memberLimit, source.billing, row.subscriptionStatus],
+      `INSERT INTO companies (
+         id,name,is_active,onboarding_status,onboarding_completed_at,owner_user_id,
+         english_name,business_name,business_registration_number,postal_code,road_address,jibun_address,address_detail,address_extra,
+         requested_plan_code,storage_limit_bytes,member_limit,billing_status,subscription_status,trial_started_at,trial_ends_at
+       )
+       VALUES (
+         $1,$2,$3,$4,CASE WHEN $4::text = 'active' THEN now() ELSE NULL END,$5,
+         $6,$7,$8,$9,$10,$11,$12,$13,
+         $14,$15,$16,$17,$18,now(),now()+interval '30 days'
+       )
+       ON CONFLICT (id) DO UPDATE SET
+         name=EXCLUDED.name,is_active=EXCLUDED.is_active,onboarding_status=EXCLUDED.onboarding_status,
+         onboarding_completed_at=EXCLUDED.onboarding_completed_at,owner_user_id=EXCLUDED.owner_user_id,
+         english_name=EXCLUDED.english_name,business_name=EXCLUDED.business_name,
+         business_registration_number=EXCLUDED.business_registration_number,postal_code=EXCLUDED.postal_code,
+         road_address=EXCLUDED.road_address,jibun_address=EXCLUDED.jibun_address,
+         address_detail=EXCLUDED.address_detail,address_extra=EXCLUDED.address_extra,
+         requested_plan_code=EXCLUDED.requested_plan_code,storage_limit_bytes=EXCLUDED.storage_limit_bytes,
+         member_limit=EXCLUDED.member_limit,billing_status=EXCLUDED.billing_status,
+         subscription_status=EXCLUDED.subscription_status,updated_at=now()`,
+      [
+        row.companyId, row.companyName, source.status !== "suspended", row.onboardingStatus, ownerId,
+        `WAFL SIM ${source.code}`, `[SIM] ${source.code} 사업자`,
+        `999-${String(source.code.charCodeAt(0)).padStart(2, "0")}-${String(source.members).padStart(5, "0")}`,
+        "00000", `[SIM] 테스트로 ${source.code}길 1`, `[SIM] 테스트동 ${source.code}-1`,
+        `${source.code}동 ${Math.max(source.members, 1)}호`, "dev/test fixture",
+        row.planCode, source.storage.quotaBytes, source.memberLimit, source.billing, row.subscriptionStatus,
+      ],
     );
     await client.query(
       `INSERT INTO company_subscriptions (id,company_id,plan_code,status,trial_started_at,trial_ends_at,storage_limit_bytes,member_limit)
@@ -130,10 +154,14 @@ async function seed(client, plan) {
       const userId = `${row.companyId}-user-${index}`;
       const role = roleFor(i);
       await client.query(
-        `INSERT INTO users (id,company_id,email,name,role,is_active)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email,name=EXCLUDED.name,role=EXCLUDED.role,is_active=EXCLUDED.is_active,updated_at=now()`,
-        [userId, row.companyId, `${row.companyId}.${index}@example.test`, `[SIM] ${source.code} 사용자 ${index}`, role, source.status !== "suspended"],
+        `INSERT INTO users (id,company_id,email,name,phone,phone_source,role,is_active)
+         VALUES ($1,$2,$3,$4,$5,'simulator_seed',$6,$7)
+         ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email,name=EXCLUDED.name,phone=EXCLUDED.phone,phone_source=EXCLUDED.phone_source,role=EXCLUDED.role,is_active=EXCLUDED.is_active,updated_at=now()`,
+        [
+          userId, row.companyId, `${row.companyId}.${index}@example.test`, `[SIM] ${source.code} 사용자 ${index}`,
+          `010-${String(source.code.charCodeAt(0)).padStart(4, "0")}-${String(i + 1).padStart(4, "0")}`,
+          role, source.status !== "suspended",
+        ],
       );
       await client.query(
         `INSERT INTO company_users (id,company_id,user_id,role,is_active,display_name,joined_at)

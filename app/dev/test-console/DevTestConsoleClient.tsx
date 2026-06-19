@@ -26,6 +26,8 @@ type DevTestContextTarget = {
   email: string;
   name: string;
   roleTemplateCode: string | null;
+  onboardingStatus: string | null;
+  profileComplete: boolean | null;
 };
 
 type DevTestContextOptions = {
@@ -43,6 +45,17 @@ function formatRole(role: string, roleTemplateCode?: string | null) {
   if (roleTemplateCode === "inventory_manager") return "자재 담당";
   if (roleTemplateCode === "viewer") return "조회 전용";
   return role;
+}
+
+
+
+function formatOnboardingStatus(target: DevTestContextTarget) {
+  if (target.targetType === "system") return "시스템관리자";
+  if (!target.profileComplete) return "회사정보 미완료";
+  if (target.onboardingStatus === "approval_pending") return "승인 대기";
+  if (target.onboardingStatus === "rejected") return "보완 필요";
+  if (target.onboardingStatus === "active") return "업무 테스트 가능";
+  return target.onboardingStatus ?? "상태 미확인";
 }
 
 export default function DevTestConsoleClient() {
@@ -193,7 +206,7 @@ export default function DevTestConsoleClient() {
               <optgroup key={group.companyName} label={group.companyName}>
                 {group.targets.map((target) => (
                   <option key={target.targetKey} value={target.targetKey}>
-                    {target.name} · {formatRole(target.role, target.roleTemplateCode)} · {target.email || target.userId}
+                    {target.name} · {formatRole(target.role, target.roleTemplateCode)} · {formatOnboardingStatus(target)} · {target.email || target.userId}
                   </option>
                 ))}
               </optgroup>
@@ -206,6 +219,7 @@ export default function DevTestConsoleClient() {
                 <p><span className="text-[var(--pbp-text-muted)]">회사</span><br /><strong>{selectedTarget.companyName ?? "시스템관리자"}</strong></p>
                 <p><span className="text-[var(--pbp-text-muted)]">역할</span><br /><strong>{formatRole(selectedTarget.role, selectedTarget.roleTemplateCode)}</strong></p>
                 <p><span className="text-[var(--pbp-text-muted)]">사용자</span><br />{selectedTarget.name}</p>
+                <p><span className="text-[var(--pbp-text-muted)]">회사 상태</span><br /><strong>{formatOnboardingStatus(selectedTarget)}</strong></p>
                 <p><span className="text-[var(--pbp-text-muted)]">대상 키</span><br /><code className="text-xs">{selectedTarget.targetKey}</code></p>
               </div>
             </WaflInfoBox>
