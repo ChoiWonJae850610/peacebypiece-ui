@@ -305,6 +305,48 @@ async function selectCompanyMemberById(
   return result.rows[0] ? toAdminCompanyMemberRecord(result.rows[0]) : null;
 }
 
+async function getDbCompanyMember(input: { companyId: string; companyMemberId: string }): Promise<AdminCompanyMemberRecord | null> {
+  const companyId = input.companyId.trim();
+  const companyMemberId = input.companyMemberId.trim();
+  if (!companyId) throw new Error("COMPANY_ID_REQUIRED");
+  if (!companyMemberId) throw new Error("COMPANY_MEMBER_ID_REQUIRED");
+
+  const result = await queryDb<AdminCompanyMemberDbRow>(
+    `
+      SELECT company_members.id,
+             company_members.company_id,
+             company_members.user_id,
+             users.email,
+             users.phone,
+             users.birthday,
+             users.name AS user_name,
+             company_members.display_name,
+             company_members.role_template_code,
+             company_members.status,
+             COALESCE(
+               array_agg(member_permissions.permission_code ORDER BY member_permissions.permission_code)
+                 FILTER (WHERE member_permissions.is_enabled = true),
+               ARRAY[]::text[]
+             ) AS permission_codes,
+             company_members.approved_at,
+             users.last_login_at AS last_active_at,
+             company_members.created_at,
+             company_members.updated_at
+        FROM company_members
+        JOIN users ON users.id = company_members.user_id
+        LEFT JOIN member_permissions ON member_permissions.company_member_id = company_members.id
+       WHERE company_members.id = $1
+         AND company_members.company_id = $2
+         AND COALESCE(company_members.role_template_code, 'viewer') <> 'company_admin'
+       GROUP BY company_members.id, users.id
+       LIMIT 1
+    `,
+    [companyMemberId, companyId],
+  );
+
+  return result.rows[0] ? toAdminCompanyMemberRecord(result.rows[0]) : null;
+}
+
 async function listDbCompanyMembers(input: ListAdminCompanyMembersInput): Promise<ListAdminCompanyMembersResult> {
   const companyId = input.companyId.trim();
   if (!companyId) {
@@ -566,6 +608,11 @@ async function updateDbCompanyMemberPermissions(
 
 export function createAdminMemberRepository(): AdminMemberRepository {
   return {
+    async getCompanyMember(input) {
+      if (!isDatabaseConfigured()) return null;
+      return getDbCompanyMember(input);
+    },
+
     async listCompanyMembers(input) {
       if (!isDatabaseConfigured()) {
         return { members: [] };

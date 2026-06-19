@@ -69,6 +69,7 @@ export interface UpdateAdminCompanyMemberPermissionsResult {
 }
 
 export interface AdminMemberRepository {
+  getCompanyMember(input: { companyId: string; companyMemberId: string }): Promise<AdminCompanyMemberRecord | null>;
   listCompanyMembers(input: ListAdminCompanyMembersInput): Promise<ListAdminCompanyMembersResult>;
   updateCompanyMember(input: UpdateAdminCompanyMemberInput): Promise<UpdateAdminCompanyMemberResult>;
   updateCompanyMemberPermissions(input: UpdateAdminCompanyMemberPermissionsInput): Promise<UpdateAdminCompanyMemberPermissionsResult>;

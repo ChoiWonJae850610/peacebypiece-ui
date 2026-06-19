@@ -83,6 +83,14 @@ export function createWorkspaceCompanyRequiredResponse(): NextResponse {
   );
 }
 
+export function createWorkspaceMemberSessionInvalidResponse(): NextResponse {
+  return createApiErrorResponse(
+    "Current member session is no longer active or does not match the signed-in user.",
+    "WORKSPACE_MEMBER_SESSION_INVALID",
+    403,
+  );
+}
+
 export function createWorkspacePermissionRequiredResponse(
   permissionCode: MemberPermissionCode,
 ): NextResponse {
@@ -120,25 +128,25 @@ function buildWorkspaceApiScope(session: WaflSessionPayload): WorkspaceApiCompan
   };
 }
 
+async function getValidatedWorkspaceMember(session: WaflSessionPayload) {
+  if (!isMemberSessionRole(session.role) || !session.companyId || !session.companyMemberId) return null;
+
+  const member = await adminMemberRepository.getCompanyMember({
+    companyId: session.companyId,
+    companyMemberId: session.companyMemberId,
+  });
+
+  if (!member || member.status !== "approved" || member.userId !== session.userId) return null;
+  return member;
+}
+
 export async function hasWorkspaceApiPermission(
   session: WaflSessionPayload,
   permissionCode: MemberPermissionCode,
 ): Promise<boolean> {
   if (isCompanyAdminSessionRole(session.role)) return true;
-  if (!isMemberSessionRole(session.role) || !session.companyId || !session.companyMemberId) return false;
-
-  const { members } = await adminMemberRepository.listCompanyMembers({
-    companyId: session.companyId,
-    status: "all",
-    limit: 200,
-  });
-  const member = members.find((item) => item.id === session.companyMemberId);
-
-  return Boolean(
-    member &&
-      member.status === "approved" &&
-      hasMemberPermission(member, permissionCode),
-  );
+  const member = await getValidatedWorkspaceMember(session);
+  return Boolean(member && hasMemberPermission(member, permissionCode));
 }
 
 export async function requireWorkspaceApiGuard(
@@ -156,6 +164,13 @@ export async function requireWorkspaceApiGuard(
   const scope = buildWorkspaceApiScope(session);
   if (!scope) {
     return { ok: false, response: createWorkspaceCompanyRequiredResponse() };
+  }
+
+  if (isMemberSessionRole(session.role)) {
+    const member = await getValidatedWorkspaceMember(session);
+    if (!member) {
+      return { ok: false, response: createWorkspaceMemberSessionInvalidResponse() };
+    }
   }
 
   const blockedResponse = await createCompanyApiAccessBlockedResponse(

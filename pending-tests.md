@@ -108,3 +108,14 @@
 - [ ] 기존 초대 취소 후 동일 이메일 재초대 가능
 - [ ] 기존 초대 만료 후 동일 이메일 재초대 가능
 - [ ] 다른 고객사에서는 동일 이메일 초대 가능
+
+## 0.23.92 Workspace member session / mutation hardening
+- [ ] 승인 멤버의 기존 workspace 조회·수정 기능 정상 동작
+- [ ] 정지 멤버의 기존 로그인 세션으로 workspace API 접근 시 403 `WORKSPACE_MEMBER_SESSION_INVALID`
+- [ ] 탈퇴 요청·탈퇴·거절·대기 멤버의 API 접근 차단
+- [ ] 세션 userId와 company_members.user_id 불일치 시 접근 차단
+- [ ] 다른 회사 companyMemberId로 접근할 수 없는지 tenant 격리 확인
+- [ ] 멤버 100명 초과 회사에서도 권한 검사가 목록 limit과 무관하게 동작
+- [ ] 권한 제거 직후 재요청이 즉시 403으로 반영
+- [ ] company admin 기존 API 접근 회귀 확인
+- [ ] npm run build 미실행 — 사용자가 로컬에서 확인.
