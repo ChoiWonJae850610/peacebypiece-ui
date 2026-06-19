@@ -2,16 +2,18 @@
 
 ## Version
 
-- Current result version: `0.24.02`
+- Current result version: `0.24.03`
 - App display version source: `lib/constants/version.ts`
-- `package.json` version is npm package metadata, not the app display version.
+- `package.json` version remains npm package metadata and is not the app display version.
 
 ## Repository
 
 - Repository: `peacebypiece-2.0`
 - Current branch at this checkpoint: `master`
+- Baseline commit before 0.24.03 audit: `7ab4c4fc5b3268f4af9be1e2561197e11da07fcd`
 - PowerShell entry point: `tools/pipeline/peacebypiece-auto-pipeline.ps1`
 - Pipeline config: `tools/pipeline/pipeline.config.psd1`
+- Root operating rules: `AGENTS.md`
 
 ## Simulator Baseline
 
@@ -30,36 +32,33 @@ Simulator DB fixtures use deterministic company IDs:
 | I | `wafl-fn-company-i` | 과거 데이터사 |
 | J | `wafl-fn-company-j` | 경계값 전용사 |
 
-Seed baseline before `0.24.02`:
-
-| Table | Count |
-|---|---:|
-| companies | 10 |
-| company_members | 193 |
-| company_users | 193 |
-| item_categories | 410 |
-| material_orders | 808 |
-| orders | 1572 |
-| spec_sheets | 1572 |
-| storage_usage_snapshots | 10 |
-
-After `0.24.02`, `item_categories` is expected to increase by `30` rows after reseeding because each of the 10 simulator companies receives `크롭 맨투맨`, `니트`, and `기본 니트` nodes through the shared path-based category fixture.
-
-The seed is idempotent under the approved development/test DB guard. The latest observed second seed run completed with ExitCode `0` and took about `591s`.
+The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니트` through the shared path-based category fixture. Two approved dev/test seed executions completed with ExitCode `0`; the second execution kept counts stable and preserved duplicate/reference integrity.
 
 ## Completed
 
-- Simulator DB guard validates non-production runtime, PostgreSQL URL shape, approved DB fingerprint, `wafl-fn` prefix, mutation enable flag, and exact confirmation text.
-- Simulator category seeding clears existing `wafl-fn` company categories and recreates deterministic path-based IDs.
-- Duplicate `company_users`, `company_members`, category duplicate, orphan parent, legacy category, and invalid work-order category reference checks have passed.
+- Root Codex operating rules exist in `AGENTS.md`.
+- Simulator DB seed guard validates non-production runtime, PostgreSQL URL shape, approved DB fingerprint, `wafl-fn` prefix, mutation enable flag, and exact confirmation text.
+- Simulator category seeding uses deterministic path-based IDs and passed idempotency checks.
+- Duplicate `company_users`, `company_members`, category duplicate, orphan parent, legacy category, and invalid work-order category reference checks passed in the 0.24.02 baseline.
 - `/ui` and `/functions` have runtime access guards.
 - `/dev/test-console` is production-blocked and requires an explicit enable flag.
+- 0.24.03 created `docs/audits/repository-source-db-cleanup-audit-0.24.03.md` as a no-delete cleanup audit.
+
+## Current Audit Findings
+
+- The root app has about 1,856 non-generated files when root `node_modules`, `.next`, `.git`, artifacts, and the Cloudflare worker nested `node_modules` are excluded.
+- `cloudflare/pdf-generator-worker/node_modules` is tracked and contains about 3,992 files; it should be reviewed as a dependency hygiene item before any delete/move.
+- Generated folders such as `.next`, `artifacts`, `test-results`, `.tmp`, and Playwright reports are ignored and should remain outside commits.
+- DB metadata read was limited to the approved development/test target; it found 60 public tables, 120 foreign keys, 60 primary keys, 17 unique constraints, and 270 indexes.
+- The DB read emitted the known `pg` SSL mode warning. Treat this as a configuration follow-up, not a test failure.
+- Simulator seed remains slow: the last observed full executions were about 600 seconds, mostly consistent with row-by-row writes inside one transaction.
 
 ## Known Risks
 
-- PowerShell menu 9 `Reset Database Schema` still lacks the same production fingerprint/runtime guard depth as Simulator DB seed.
-- Simulator DB seed is slow enough that external wrappers must wait for the actual process exit instead of using short timeouts.
-- R2 production/test separation depends on simulator manifests and test prefixes for simulator tooling; general app R2 config is environment-driven.
+- PowerShell menu 9 `Reset Database Schema` still needs the same runtime/fingerprint/host/database guard depth as Simulator DB seed.
+- `tools/simulator/commands/db-data.mjs` logs DB identity details on normal execution; reports should keep sanitizing command output.
+- The Cloudflare worker package has its own lock and nested dependency tree under source control; deletion is not safe until deploy/runtime expectations are confirmed.
+- `commit-meta.md` is ignored by Git, so it can record local handoff metadata but is not preserved in commits.
 - Some pending browser/session checks require real Google login and cannot be fully proven by local static checks.
 
 ## Pending Tests
@@ -70,11 +69,11 @@ The seed is idempotent under the approved development/test DB guard. The latest 
 
 - Test reports: `artifacts/test-reports/`
 - Simulator temp files: `.tmp/simulator/`
-- `artifacts/` is ignored by Git, so normal seed reports and logs may be regenerated without source changes.
+- Next build output: `.next/`
+- `artifacts/` and `.next/` are ignored by Git, so normal reports and build outputs may be regenerated without source changes.
 
 ## Near Plan
 
-- `0.24.03`: Repository/Source/DB Cleanup Audit.
-- `0.24.04`: Strengthen Reset Database Schema runtime/fingerprint guard.
-- `0.24.05`: Complete dev/test console impersonation and audit-log verification.
-- `0.24.06`: R2 simulator reconciliation and production bucket safety review.
+- `0.24.04`: Strengthen Reset Database Schema runtime/fingerprint guard and sanitize DB identity logging.
+- `0.24.05`: Review tracked Cloudflare worker dependency tree and document deploy/install policy.
+- `0.24.06`: Simulator seed performance plan: batch writes, unchanged fixture skip, table timing logs, and company H load split.
