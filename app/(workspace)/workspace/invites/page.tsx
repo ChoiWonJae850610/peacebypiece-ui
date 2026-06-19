@@ -1,7 +1,8 @@
-import CompanyMemberInviteSkeleton from "@/components/admin/invitations/CompanyMemberInviteSkeleton";
+import { redirect } from "next/navigation";
+
 import { requireWorkspacePagePermission } from "@/lib/auth/routeGuard";
 
 export default async function AdminInvitesPage() {
   await requireWorkspacePagePermission("member.invite");
-  return <CompanyMemberInviteSkeleton />;
+  redirect("/workspace/members?section=invitations");
 }

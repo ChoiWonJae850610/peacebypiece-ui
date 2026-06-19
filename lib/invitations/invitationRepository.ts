@@ -111,6 +111,29 @@ function toInvitationRecord(row: InvitationDbRow): InvitationRecord {
 }
 
 
+async function assertNoActiveDuplicateDbInvitation(draft: InvitationDraft): Promise<void> {
+  const recipientEmail = normalizeEmail(draft.recipientEmail);
+  if (draft.scope !== "company_to_member" || !draft.companyId || !recipientEmail) return;
+
+  const result = await queryDb<{ id: string }>(
+    `
+      SELECT id
+        FROM invitations
+       WHERE company_id = $1
+         AND scope = 'company_to_member'
+         AND lower(recipient_email) = lower($2)
+         AND status IN ('pending', 'active')
+         AND expires_at > now()
+       LIMIT 1
+    `,
+    [draft.companyId, recipientEmail],
+  );
+
+  if (result.rows[0]) {
+    throw new Error("INVITATION_ACTIVE_DUPLICATE");
+  }
+}
+
 async function createDbInvitation(draft: InvitationDraft, tokenHash: string, inviteUrlPath: string): Promise<InvitationRecord> {
   const result = await queryDb<InvitationDbRow>(
     `
@@ -367,6 +390,22 @@ export function createInvitationRepository(): InvitationRepository {
       const rawToken = createRawInvitationToken();
       const tokenHash = createInvitationTokenHash(rawToken);
       const inviteUrlPath = createInviteUrl(rawToken, draft.scope);
+      if (isDatabaseConfigured()) {
+        await assertNoActiveDuplicateDbInvitation(draft);
+      } else {
+        const recipientEmail = normalizeEmail(draft.recipientEmail);
+        const duplicate = draft.scope === "company_to_member" && recipientEmail
+          ? inMemoryInvitations.some((invitation) =>
+              invitation.companyId === draft.companyId &&
+              invitation.scope === "company_to_member" &&
+              normalizeEmail(invitation.recipientEmail) === recipientEmail &&
+              (invitation.status === "pending" || invitation.status === "active") &&
+              new Date(invitation.expiresAt).getTime() > Date.now(),
+            )
+          : false;
+        if (duplicate) throw new Error("INVITATION_ACTIVE_DUPLICATE");
+      }
+
       const invitation = isDatabaseConfigured()
         ? await createDbInvitation(draft, tokenHash, inviteUrlPath)
         : createInvitationRecord(draft, tokenHash, inviteUrlPath);

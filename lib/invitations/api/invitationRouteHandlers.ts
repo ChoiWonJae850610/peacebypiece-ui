@@ -84,6 +84,19 @@ function toBadRequestResponse(reasons: string[]) {
 }
 
 function toErrorResponse(error: unknown) {
+  const errorCode = error instanceof Error ? error.message : "";
+
+  if (errorCode === "INVITATION_ACTIVE_DUPLICATE") {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: errorCode,
+        message: "같은 이메일로 아직 유효한 초대가 있습니다.",
+      },
+      { status: 409 },
+    );
+  }
+
   const message =
     process.env.NODE_ENV !== "production" && error instanceof Error
       ? error.message

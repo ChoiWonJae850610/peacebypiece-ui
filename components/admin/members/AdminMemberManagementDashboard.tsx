@@ -193,6 +193,13 @@ function resolveMemberInvitationErrorMessage(
     );
   }
 
+  if (normalized === "INVITATION_ACTIVE_DUPLICATE") {
+    return t(
+      "memberManagement.inviteBuilder.errors.duplicate",
+      "같은 이메일로 아직 유효한 초대가 있습니다. 기존 초대를 취소하거나 만료된 뒤 다시 생성해 주세요.",
+    );
+  }
+
   if (normalized === "INVITATION_CREATE_FAILED") {
     return t(
       "memberManagement.inviteBuilder.errors.create",
