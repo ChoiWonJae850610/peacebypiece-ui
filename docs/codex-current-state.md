@@ -2,7 +2,7 @@
 
 ## Version
 
-- Current result version: `0.24.09`
+- Current result version: `0.24.10`
 - App display version source: `lib/constants/version.ts`
 - `package.json` version remains `0.5.637` npm package metadata and is not the app display version.
 
@@ -28,6 +28,7 @@
 - Productization inventory: `docs/audits/productization-inventory-0.24.07.md`
 - Mock/unused cleanup audit: `docs/audits/mock-unused-cleanup-0.24.08.md`
 - Customer admin plan/storage audit: `docs/audits/customer-admin-plan-storage-0.24.09.md`
+- System admin storage usage audit: `docs/audits/system-admin-storage-usage-0.24.10.md`
 - PowerShell pipeline guide: `tools/pipeline/README.md`
 - Simulator guide: `tools/simulator/README.md`
 - Worker deploy guide: `cloudflare/pdf-generator-worker/README.md`
@@ -83,6 +84,9 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - 0.24.09 added a DB-backed customer-admin `/workspace` plan/storage summary panel. It combines company subscription state, company file-policy quota, attachment/trash metadata usage, and member-limit warnings without dependency, lockfile, DB/R2 mutation, Seed, Reset, Cleanup, or Migration changes.
 - 0.24.09 validation passed on the user's local Windows PowerShell: Next.js `16.2.1` Turbopack build compiled successfully, Mutation Audit reported `162 finding(s), 0 high-risk`, and `tests/customer-workspace-compact-dashboard-contract.mjs`, `tests/functions-storage-contract.mjs`, and `tests/simulator-adapter-plan-contract.mjs` passed.
 - 0.24.09 updates productization readiness to `76%`; feature implementation progress remains about `93%`.
+- 0.24.10 replaces the system storage usage repository's process-local skeleton with DB attachment/trash metadata aggregation for summaries and `storage_usage_snapshots` inserts for explicit snapshots.
+- 0.24.10 adds `tests/system-storage-usage-real-data-contract.mjs` to keep `/api/system/storage-usage` system-admin guarded, DB-backed, and connected to dashboard snapshot evidence.
+- 0.24.10 updates productization readiness to `78%`; feature implementation progress remains about `93%`.
 - 0.24.09 and the preceding operating-rule commit were pushed to `origin/master`; HEAD is `b41642c41e6c81f28a2d4cb3846f4b99071b6ee5` after that version.
 - After 0.24.09, `AGENTS.md` was consolidated again to combine automatic development, response style, commit-stop cases, and manual verification guidance into one operating policy without bumping `APP_VERSION` or changing product code.
 
@@ -97,7 +101,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - Simulator seed remains slow: the last observed full executions were about 600 seconds, mostly consistent with row-by-row writes inside one transaction. 0.24.06 identified timing checkpoints and batch/skip candidates but did not run Seed.
 - Route inventory found DB-backed workspace routes for workorders, material orders, materials, partners, files, stats, settings, members, and subscription, with page/API permission guards on most routes.
 - `/worker` still renders the workorder workspace directly from the current session and should be redirected, guarded, or explicitly documented as a legacy/internal route before launch.
-- Customer admin file storage snapshot is DB-backed, but system-wide storage usage still has an in-memory skeleton repository and needs productization.
+- Customer admin file storage snapshot is DB-backed, and system storage usage now has DB metadata summaries plus `storage_usage_snapshots` writes. R2 inventory reconciliation display still needs productization.
 - Customer admin `/workspace` now surfaces a plan/storage summary from DB-backed subscription, settings, attachment, and trash metadata paths; R2 reconciliation is still not shown on the customer admin main page.
 - Workorder PDF generation and R2 attachment registration exist; supplier/material-order PDF remains policy-contract level and needs final route/storage decisions.
 - 0.24.08 removed the stale material fixture and unreferenced sample/mock data chain after dependency-map review found no live imports outside historical docs.
@@ -115,7 +119,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - `docs/productization-roadmap.md` is now the product roadmap source; do not put feature backlog or temporary version plans in `AGENTS.md`.
 - General version work can now auto-stage, auto-commit, and auto-push to `origin master` only when the `AGENTS.md` automatic Git conditions are all true; otherwise Codex must stop before Git index/history/remote changes and report the blocker.
 - 0.24.09 started while `master` was already ahead of `origin/master` by the local operating-rule commit, so automatic push conditions were not met at first. After user approval and validation, the operating-rule commit and 0.24.09 commit were pushed together.
-- 0.24.09 E2E tests remain not run because real browser/session coverage is environment-dependent. DB smoke tests remain not run because they create rollback fixtures and require DB access. No DB/R2/Seed/Reset/Cleanup/Migration was run.
+- 0.24.10 Node-based tests and build could not run in the Codex shell because `node` and `npm` were not available on PATH. DB smoke tests remain not run because they create rollback fixtures and require DB access. No DB/R2/Seed/Reset/Cleanup/Migration was run.
 - Some pending browser/session checks require real Google login and cannot be fully proven by local static checks.
 
 ## Pending Tests
@@ -131,6 +135,6 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 
 ## Near Plan
 
-- 0.24.09 is complete and pushed. For the next explicitly requested version task, use the `AGENTS.md` automatic version workflow only when its safety conditions are met.
-- Next recommended version after 0.24.09: `0.24.10` system admin and account switching, including system dashboard/billing/storage data paths, dev/test account switch restore, and audit logs.
+- 0.24.10 system storage API work is implemented locally. Because Node validation could not run in this shell, stop before commit/push unless the same validation batch is completed where Node is available.
+- Next recommended work after this 0.24.10 checkpoint: finish dev/test account switch restore and audit-log browser evidence, then continue to `0.24.11` workspace screen QA after the 0.24.10 residuals are closed.
 - Run environment-dependent E2E/manual checks only when browser session and dev/test DB/R2 approvals are available.

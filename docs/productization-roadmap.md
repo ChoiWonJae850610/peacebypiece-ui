@@ -2,12 +2,12 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.09`
+- Roadmap checkpoint version: `0.24.10`
 - Source of truth: local Git repository and committed documentation, not prior chat memory.
 - Baseline HEAD: `454dba23a704fe880b78f7e5eb5dcef37f93043d`
-- App display version after this checkpoint: `0.24.09`
+- App display version after this checkpoint: `0.24.10`
 - Feature implementation progress: about `93%` as a prior screen/function skeleton estimate; not remeasured in this checkpoint.
-- Productization readiness: `76%`; this updates the 0.24.08 `74%` estimate after the customer-admin main page gained DB-backed plan/storage quota and warning evidence. Remaining readiness work still includes system storage data paths, R2 reconciliation display, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
+- Productization readiness: `78%`; this updates the 0.24.09 `76%` estimate after the system storage usage API moved from a process-local skeleton to DB attachment metadata aggregation and the existing storage snapshot table. Remaining readiness work still includes R2 reconciliation display, dev/test account-switch browser evidence, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
 
 This roadmap separates product work from Codex operating rules. `AGENTS.md` stays limited to operating, safety, Git, question, and reporting rules. Product scope and remaining release work live here. Future status blocks should keep feature implementation progress and productization readiness separate when both are reported.
 
@@ -46,7 +46,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 - Plan definitions exist in `lib/billing/defaultPlans.ts` and policy helpers in `lib/billing/storageQuotaPolicy.ts`.
 - Customer file usage has a DB-backed snapshot route at `app/api/admin/files/snapshot/route.ts`.
 - Customer admin main now uses `lib/admin/dashboard/adminPlanStorageSummary.ts` to combine subscription state, company file-policy quota, attachment/trash usage, and member-limit warnings.
-- System storage usage API exists at `app/api/system/storage-usage/route.ts`, but `lib/billing/storageUsageRepository.ts` is currently an in-memory skeleton with a production-use note.
+- System storage usage API exists at `app/api/system/storage-usage/route.ts`; `lib/billing/storageUsageRepository.ts` now reads DB attachment/trash metadata for summaries and writes explicit snapshots to `storage_usage_snapshots`.
 - Simulator company A-J fixture covers 0%, 5%, 15%, 30%, 50%, 70%, 90%, 99%, 100%, and 110% clamped storage scenarios in `tests/fixtures/functions/company-scenarios.json`.
 - R2 usage reconciliation exists as dry-run/test tooling, but production and dev/test R2 mutation remain blocked without explicit approval.
 
@@ -82,7 +82,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 | `0.24.07` | Productization roadmap and inventory | Roadmap, audit inventory, current-state, app version, and local commit metadata updated; no product code deletion or mutation. |
 | `0.24.08` | Mock/sample/fixture and unused-code cleanup | Completed. Removed only proven-unreferenced source mock/sample files; static reference/export graph, build, Mutation Audit, and selected Node contract tests passed. Kept simulator/test fixtures, lockfile, Cloudflare review files, and repository overlap items. |
 | `0.24.09` | Customer admin main and plan/storage | Completed. Customer admin dashboard surfaces plan status, file-policy storage quota, attachment/trash usage, and member-limit warnings from DB-backed paths. R2 reconciliation display remains for later productization. |
-| `0.24.10` | System admin and account switching | System dashboard/billing/storage data paths, dev/test account switcher, restore, and audit logs verified. |
+| `0.24.10` | System admin and account switching | Partially completed. System storage usage API is DB-backed and snapshot-table connected. Dev/test account switcher restore, audit-log browser evidence, and broader system QA remain. |
 | `0.24.11` | User workspace screens | Workorders, material orders, materials, partners, `/workspace`, `/worker` policy, responsive layout, save/lock/toast consistency. |
 | `0.24.12` | PDF | Workorder and supplier PDF policies resolved; generation, regeneration, R2 storage, download, print, and failure handling verified. |
 | `0.24.13` | Functions, Simulator, PowerShell, automation | `/functions`, Simulator dry-run/execute policy, test console, PowerShell menu mapping, and dev/test scenarios aligned. |
