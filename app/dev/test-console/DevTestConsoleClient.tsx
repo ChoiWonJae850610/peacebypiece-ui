@@ -257,6 +257,9 @@ export default function DevTestConsoleClient() {
             <WaflLinkButton href="/system" variant="secondary" size="sm">
               시스템관리자로 이동
             </WaflLinkButton>
+            <WaflLinkButton href="/roadmap" variant="secondary" size="sm">
+              제품화 로드맵
+            </WaflLinkButton>
           </div>
 
           {message ? <p className="mt-4 text-sm text-[var(--pbp-text-muted)]">{message}</p> : null}

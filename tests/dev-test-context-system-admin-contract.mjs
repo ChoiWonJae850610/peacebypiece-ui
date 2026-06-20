@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const access = fs.readFileSync("lib/auth/systemAdminAccess.ts", "utf8");
-const consolePage = fs.readFileSync("app/dev/test-console/page.tsx", "utf8");
+const idControlPage = fs.readFileSync("app/id-control/page.tsx", "utf8");
+const consoleRedirectPage = fs.readFileSync("app/dev/test-console/page.tsx", "utf8");
 const functionsPage = fs.readFileSync("app/functions/page.tsx", "utf8");
 const uiPage = fs.readFileSync("app/ui/page.tsx", "utf8");
 const service = fs.readFileSync("lib/dev/testContext/service.ts", "utf8");
@@ -17,11 +18,16 @@ assert.match(access, /role = 'system_admin'/);
 assert.match(access, /is_active = true/);
 assert.match(access, /lower\(email\) = lower\(\$1\)/);
 
-for (const page of [consolePage, functionsPage, uiPage]) {
+for (const page of [idControlPage, consoleRedirectPage, functionsPage, uiPage]) {
   assert.match(page, /getCurrentWaflAuthSession/);
   assert.match(page, /isActiveSystemAdminSession/);
   assert.match(page, /notFound\(\)/);
 }
+assert.match(idControlPage, /isDevTestContextEnabled/);
+assert.match(idControlPage, /DevTestConsoleClient/);
+assert.match(consoleRedirectPage, /isDevTestContextEnabled/);
+assert.match(consoleRedirectPage, /redirect\("\/id-control"\)/);
+assert.doesNotMatch(consoleRedirectPage, /<DevTestConsoleClient/);
 assert.match(functionsPage, /isWaflFunctionsRuntimeAllowed/);
 assert.match(uiPage, /isWaflUiCatalogRuntimeAllowed/);
 assert.doesNotMatch(uiPage, /WAFL_UI_CATALOG_RUNTIME_GATE_ENABLED = false/);

@@ -8,8 +8,9 @@
 - App display version after this checkpoint: `0.24.10`
 - Feature implementation progress: about `93%` as a prior screen/function skeleton estimate; not remeasured in this checkpoint.
 - Productization readiness: `78%`; this updates the 0.24.09 `76%` estimate after the system storage usage API moved from a process-local skeleton to DB attachment metadata aggregation and the existing storage snapshot table. Remaining readiness work still includes R2 reconciliation display, dev/test account-switch browser evidence, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
+- Internal system-admin routes: `/id-control` is the guarded dev/test identity-control console, and `/roadmap` is the guarded read-only productization roadmap view. The former `/dev/test-console` route redirects to `/id-control` only after the same dev/test and active system-admin guard passes.
 
-This roadmap separates product work from Codex operating rules. `AGENTS.md` stays limited to operating, safety, Git, question, and reporting rules. Product scope and remaining release work live here. Future status blocks should keep feature implementation progress and productization readiness separate when both are reported.
+This roadmap separates product work from Codex operating rules. `AGENTS.md` stays limited to operating, safety, Git, question, and reporting rules. Product scope and remaining release work live here. Future status blocks should keep feature implementation progress and productization readiness separate when both are reported. The `/roadmap` screen uses `lib/internal/productizationRoadmap.ts` as its structured display data; future roadmap changes should update both this document and that data file together.
 
 ## Productization Summary
 
@@ -23,7 +24,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 | Customer administrator | `/workspace`, `/workspace/settings`, `/workspace/members`, `/workspace/files`, `/workspace/stats`, `/workspace/subscription`, `/workspace/standards`, `/workspace/workorders`, `/workspace/material-orders`, `/workspace/materials`, `/workspace/partners` | Mostly DB-backed, partial product polish | Permission guards exist on most pages. Admin main uses operational dashboard snapshots plus DB-backed plan/storage summary. Storage/files use DB snapshot API. Remaining work is R2 reconciliation display and final responsive verification. |
 | General user | `/workspace`, `/workspace/workorders`, `/workspace/material-orders`, `/workspace/materials`, `/workspace/partners`, `/workspace/legal`, `/me/settings` | DB-backed with permission gating | Member permissions are checked through page/API guards. Need broader direct-route denial tests and real session/E2E coverage. |
 | External or partner user | Invitation routes and partner data paths | Partial | Invitation join routes exist. Dedicated external supplier portal is not confirmed; partner/factory data is currently managed inside workspace/admin flows. |
-| Dev/test user | `/dev/test-console`, `/functions`, `/ui`, simulator commands | Guarded dev/test-only | Runtime and active system-admin checks exist. Execute DB/R2 paths remain approval-gated or disabled; many checks are dry-run/contract only. |
+| Dev/test user | `/id-control`, `/dev/test-console` redirect, `/functions`, `/ui`, simulator commands | Guarded dev/test-only | Runtime and active system-admin checks exist. Execute DB/R2 paths remain approval-gated or disabled; many checks are dry-run/contract only. |
 
 ## Screen Inventory
 
@@ -39,7 +40,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 | Members/invites | `/workspace/members`, `/workspace/invites` redirect | DB member repository and invitation APIs | `member.read`, `member.invite`, permission update checks | Last-admin policy and lifecycle edge cases need release tests. |
 | Settings/subscription/legal | `/workspace/settings`, `/workspace/subscription`, `/workspace/legal`, `/me/settings` | DB-backed settings/profile/policy flows | Admin-only settings, workspace/session guards | Real browser session, policy re-agreement, blocked-company checks. |
 | System console | `/system` and subroutes | Mixed DB-backed and design/checkpoint pages | System session required at layout/API levels | Finish billing/storage production data paths and system dashboard QA. |
-| Functions/test console/UI catalog | `/functions`, `/dev/test-console`, `/ui` | Catalog/contract/dev-test DB reads, no product data mutation by default | Runtime allowed modes plus active system admin | Keep production blocking, account switch restore, and audit log coverage. |
+| Functions/id-control/UI catalog | `/functions`, `/id-control`, `/dev/test-console` redirect, `/ui`, `/roadmap` | Catalog/contract/dev-test DB reads, roadmap structured read-only data, no product data mutation by default | Runtime allowed modes plus active system admin for dev/test tools; roadmap is active system-admin read-only | Keep production blocking, account switch restore, audit log coverage, and roadmap data/doc sync. |
 
 ## Data, Storage, And Plans
 
@@ -56,6 +57,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 - System admin access is validated against active DB rows in `lib/auth/systemAdminAccess.ts`.
 - Dev/test account switching is guarded by `WAFL_ENABLE_DEV_TEST_CONSOLE`, non-production runtime, active system-admin session, target allowlist, original session matching, and audit logs.
 - Remaining work: direct URL denial coverage for every protected route, `/worker` route policy, last-admin edge cases, and account-switch restore/manual browser checks.
+- `/id-control` preserves the existing dev/test context switch guard and audit behavior. `/roadmap` is system-admin read-only and must not grow edit/save/delete actions without a separate policy decision.
 
 ## PDF Roadmap
 

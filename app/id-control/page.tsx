@@ -3,10 +3,11 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { isDevTestContextEnabled } from "@/lib/dev/testContext/config";
+import DevTestConsoleClient from "../dev/test-console/DevTestConsoleClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function DevTestConsolePage() {
+export default async function IdControlPage() {
   if (!isDevTestContextEnabled()) {
     notFound();
   }
@@ -19,5 +20,5 @@ export default async function DevTestConsolePage() {
     notFound();
   }
 
-  redirect("/id-control");
+  return <DevTestConsoleClient />;
 }
