@@ -11,24 +11,48 @@
 - When the user gives a clear goal and scope, proceed within the safest reversible path instead of stopping to ask broad 1/2/3 option questions.
 - Codex should decide routine implementation details such as helper names, file organization, wording, test order, and minor refactors by following the existing project pattern, minimum change, shared components/utilities, low risk, and maintainability.
 - If several safe implementations are equivalent for product behavior, choose the recommended one and explain the reason in the result report.
-- Stop for user confirmation only when the action needs explicit approval, can affect production data or secrets, changes Git history/index/remotes, changes dependencies/package metadata, moves/deletes/renames files, changes schema or product policy, or is hard to reverse.
+- Stop for user confirmation only when the action needs explicit approval, can affect production data or secrets, changes dependencies/package metadata, moves/deletes/renames files beyond the safe scoped cleanup rules below, changes schema or product policy, or is hard to reverse.
 - If the user explicitly asks for analysis, inspection, review, or reporting only, stop after that and do not modify files.
 - Unless the user asked for analysis only, continue from analysis to scoped edits and safe verification when the request clearly implies a fix.
-- Before `git add`, `git rm`, `git commit`, or `git push`, stop and report the result unless the user has already explicitly approved the exact action and target.
+- For ordinary version work with a clear user-provided goal and scope, follow the automatic version workflow below instead of stopping before every Git index/history/remote step.
+
+## Default Automatic Version Workflow
+- When the user clearly specifies a version goal and scope, treat analysis, implementation, validation, staging, commit, push, and final reporting as one continuous task.
+- The normal flow is: check branch/HEAD/origin/working tree, inspect relevant code and docs, implement within scope, update `APP_VERSION` and versioned docs when the task is a versioned patch, run build and relevant tests, run Mutation Audit and needed contract tests, review the final diff, stage only the approved in-scope paths by explicit path, run `git diff --cached --check`, commit with a version-appropriate message, push with `git push origin master`, verify origin is synchronized and the working tree is clean, then report the result.
+- Do not ask for separate user approval before stage, commit, or `git push origin master` during ordinary version work when all automatic Git conditions below are satisfied.
+- If any automatic Git condition is not satisfied, stop before stage/commit/push and report the reason plus the recommended next action.
+
+## Automatic Git Conditions
+- Automatic stage/commit/push is allowed only when all of these are true:
+  - Starting branch is `master`.
+  - Starting `origin/master...HEAD` is ahead `0`, behind `0`.
+  - Starting working tree is clean.
+  - Changes are inside the user-requested scope.
+  - No unexpected files changed.
+  - No actual secret, production URL, token, account ID, or production binding is included.
+  - No dependency or lockfile change is included.
+  - No DB migration is included.
+  - Required build and tests pass.
+  - `git diff --check` passes.
+  - `git diff --cached --check` passes.
+  - No force push, amend, reset, clean, checkout, rebase, or destructive Git operation is used.
+- If automatic push is allowed, push only with `git push origin master`.
 
 ## Safe Work Without Extra Confirmation
 - Reading repository files, tracing references, checking docs/audits, and inspecting existing tests or scripts is allowed.
 - Read-only Git commands such as `git status`, `git status --short`, `git status --branch --short`, `git diff`, `git diff --check`, `git diff --cached`, `git diff --cached --check`, `git log`, `git show`, `git branch --show-current`, and `git rev-list --left-right --count` are allowed.
 - Scoped code, UI, logic, import, comment, and documentation edits inside the requested files or feature area are allowed when they are safe and reversible.
 - Adding a new file is allowed only when it is clearly required by the requested change and does not replace or delete an existing file.
+- Small unused-file deletion is allowed only when references are checked and build/tests validate the deletion. Bulk deletion, moves, and broad renames still require explicit approval.
 - Safe verification such as build, lint, typecheck, existing contract tests, mutation audits, PowerShell parse checks, dry-run commands, plan-mode commands, and simulator checks without DB/R2 mutation is allowed.
 - If a safe validation fails and the cause is inside the requested scope, fix it and rerun the same validation when reasonable.
+- Under the automatic version workflow, explicit-path staging, ordinary commit, `git push origin master`, and post-push Git state checks are allowed when all automatic Git conditions are satisfied.
 
 ## Actions Requiring Explicit Approval
 - Production DB, production R2, production APIs/bindings, secrets, tokens, account IDs, and production URLs require explicit approval before access or use.
 - Reset, Seed execute mode, Cleanup execute mode, Migration execution or creation, destructive SQL, broad UPDATE/MERGE, and any DB/R2 mutation require explicit approval.
-- `git add`, `git rm`, `git commit`, `git push`, force push, amend, reset, clean, checkout, restore, branch deletion, rebase, merge, and cherry-pick require explicit approval.
-- File deletion, file moves, broad renames, dependency installs, dependency removals, dependency version changes, package manager changes, lockfile creation, and lockfile changes require explicit approval.
+- `git add`, `git rm`, `git commit`, and `git push` require explicit approval unless the automatic version workflow and all automatic Git conditions apply. Force push, amend, reset, clean, checkout, restore, branch deletion, rebase, merge, and cherry-pick always require explicit approval.
+- Bulk file deletion, file moves, broad renames, dependency installs, dependency removals, dependency version changes, package manager changes, lockfile creation, and lockfile changes require explicit approval.
 - DB schema changes, authentication/authorization policy changes, tenant-isolation changes, and user-data-shape changes require explicit approval unless the user directly requested that exact change.
 - Do not use `git add .`, `git add -A`, or `git commit -am`. Stage only approved files by explicit path.
 
@@ -70,12 +94,12 @@
 - Validate permissions in both UI affordances and API/server handlers.
 
 ## Git And Delivery
-- Do not commit without user approval.
-- Do not push without explicit user approval.
+- Do not commit or push unless the user explicitly approved it or the automatic version workflow conditions are fully satisfied.
 - Do not run `git reset`, `git checkout`, `git clean`, or equivalent destructive commands unless explicitly requested.
-- Before staging, report the exact files and command. After staging, report the full staged file list.
-- Before committing, run `git diff --cached --check`, then report the staged file list and diff summary.
-- Before pushing, verify branch, remote, ahead/behind count, and working tree state.
+- For automatic version work, stage only in-scope files by explicit path, run `git diff --cached --check`, commit, push, and report the staged/committed/pushed result in the final report instead of pausing at each step.
+- For non-automatic Git work, before staging, report the exact files and command. After staging, report the full staged file list.
+- For non-automatic Git work, before committing, run `git diff --cached --check`, then report the staged file list and diff summary.
+- Before pushing, verify branch, remote, ahead/behind count, and working tree state. Automatic pushes must target `origin master` only.
 - Force push is always forbidden unless the user explicitly changes this rule for a one-off recovery operation.
 - Do not hide failed or skipped tests. Report what ran, what did not run, and why.
 - Final reports should include: original version, result version, files changed, tests run, failures/skips, DB migration status, git status, and whether commit/push were performed.
@@ -85,11 +109,16 @@
 ## Communication And Reporting
 - Answer in Korean by default for project work unless the user asks otherwise.
 - Explain results in user-facing terms; do not return raw logs without summarizing what they mean.
-- Ask questions only when the answer is truly needed. When asking, state the recommended option first and briefly explain why user judgment is required.
+- Ask questions only when the answer is truly needed. When asking, state the recommended option first and briefly explain why user judgment is required. Prefer yes/no confirmation for genuinely risky actions.
 - Do not repeatedly ask the user to choose already-settled policies or purely technical implementation details.
-- For normal completion reports, include original version, result version, development progress, Git status, what was checked, what changed, changed files, tests run, failures/skips, direct user-confirmation items, next work, DB migration status, PowerShell change status, whether ZIP/repo-state/PowerShell upload is needed, and what approval is needed next.
+- For normal completion reports, include original version, result version, development progress, Git status, what was checked, what changed, changed files, tests run, failures/skips, commit hash/message when committed, push result when pushed, direct user-confirmation items, next work, DB migration status, PowerShell change status, whether ZIP/repo-state/PowerShell upload is needed, and what approval is needed next.
 - For short intermediate updates, keep the report concise and focused on what changed or what was learned.
 - When a version is marked as a checkpoint, report completion and wait. Do not automatically start the next version or follow-up task.
+
+## Test Execution Environment
+- If Node execution fails inside the Codex sandbox because of permissions or environment limitations, first try the existing project PowerShell pipeline or another safe already-available runtime path.
+- Do not install dependencies, change lockfiles, or make permanent system environment changes without explicit approval.
+- If validation still cannot run, distinguish code failure from environment failure, provide the minimal user-run commands in one batch, and continue the same task after the user provides results.
 
 ## Tool And Approval Settings
 - Codex approval settings cannot be changed from this file, but the recommended operating posture is: auto-allow repository file reads, safe scoped edits, read-only Git commands, and safe validation; ask for network writes, Git index/history/remote changes, dependency changes, DB/R2 mutation, production access, and destructive commands.

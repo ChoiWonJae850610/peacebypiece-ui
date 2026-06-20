@@ -55,6 +55,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 ## Completed
 
 - Root Codex operating rules exist in `AGENTS.md`.
+- `AGENTS.md` now defines the default low-friction automatic version workflow: when a user clearly specifies a version goal and scope, Codex may proceed through scoped analysis, edits, validation, explicit-path staging, ordinary commit, `git push origin master`, and final synchronization reporting without separate confirmation at each Git step, but only when all automatic Git safety conditions are satisfied.
 - Simulator DB seed guard validates non-production runtime, PostgreSQL URL shape, approved DB fingerprint, `wafl-fn` prefix, mutation enable flag, and exact confirmation text.
 - Simulator category seeding uses deterministic path-based IDs and passed idempotency checks.
 - Duplicate `company_users`, `company_members`, category duplicate, orphan parent, legacy category, and invalid work-order category reference checks passed in the 0.24.02 baseline.
@@ -77,6 +78,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - 0.24.08 deletion safety verification is complete: static reference/export graph validation passed, user local Windows PowerShell build passed, Mutation Audit passed with `162 finding(s), 0 high-risk`, and the selected Node contract tests passed.
 - Codex sandbox Node execution remained blocked by `Access is denied` for the bundled WindowsApps Node, so the Node-based validation evidence came from the user's local Windows PowerShell on the same repository.
 - 0.24.08 updates productization readiness to `74%`; feature implementation progress remains about `93%`.
+- After 0.24.08, operating-rule documentation was updated for low-friction automatic development flow without bumping `APP_VERSION`, changing product code, touching DB/R2, staging, committing, or pushing as part of that rule update.
 
 ## Current Audit Findings
 
@@ -104,6 +106,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - `commit-meta.md` is ignored by Git, so it can record local handoff metadata but is not preserved in commits.
 - `pnpm-lock.yaml`, deprecated Cloudflare legacy worker/example files, and repository overlap between `lib/repositories/*` and `lib/workorder/repository/*` remain DELETE-REVIEW or UPDATE-MERGE review items, not deletion targets.
 - `docs/productization-roadmap.md` is now the product roadmap source; do not put feature backlog or temporary version plans in `AGENTS.md`.
+- General version work can now auto-stage, auto-commit, and auto-push to `origin master` only when the `AGENTS.md` automatic Git conditions are all true; otherwise Codex must stop before Git index/history/remote changes and report the blocker.
 - Some pending browser/session checks require real Google login and cannot be fully proven by local static checks.
 
 ## Pending Tests
@@ -120,5 +123,6 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 ## Near Plan
 
 - 0.24.08 is a checkpoint. Do not automatically proceed to 0.24.09, stage, commit, or push without a new explicit user request.
+- For the next explicitly requested version task, use the `AGENTS.md` automatic version workflow when its safety conditions are met.
 - Next recommended version: `0.24.09` customer admin main, plan quota, DB/R2 usage, and storage warnings.
 - Run environment-dependent E2E/manual checks only when browser session and dev/test DB/R2 approvals are available.
