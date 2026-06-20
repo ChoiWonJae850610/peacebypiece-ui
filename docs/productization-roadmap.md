@@ -2,25 +2,25 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.08`
+- Roadmap checkpoint version: `0.24.09`
 - Source of truth: local Git repository and committed documentation, not prior chat memory.
 - Baseline HEAD: `454dba23a704fe880b78f7e5eb5dcef37f93043d`
-- App display version after this checkpoint: `0.24.08`
+- App display version after this checkpoint: `0.24.09`
 - Feature implementation progress: about `93%` as a prior screen/function skeleton estimate; not remeasured in this checkpoint.
-- Productization readiness: `74%`; this updates the 0.24.07 `72%` estimate after proven-unreferenced source mock/sample files were removed. Remaining readiness work still includes real data evidence, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
+- Productization readiness: `76%`; this updates the 0.24.08 `74%` estimate after the customer-admin main page gained DB-backed plan/storage quota and warning evidence. Remaining readiness work still includes system storage data paths, R2 reconciliation display, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
 
 This roadmap separates product work from Codex operating rules. `AGENTS.md` stays limited to operating, safety, Git, question, and reporting rules. Product scope and remaining release work live here. Future status blocks should keep feature implementation progress and productization readiness separate when both are reported.
 
 ## Productization Summary
 
-The app has a broad working skeleton with many DB-backed workspace, system, storage, permission, and simulator contracts already in place. That is why the older feature implementation progress can remain high. The `74%` figure in this roadmap is narrower and stricter: it measures productization readiness, including removal or quarantine of residual mock/sample paths, real data evidence, permissions, responsive/manual verification, PDF policy decisions, and dev/test operational safety without touching production DB/R2.
+The app has a broad working skeleton with many DB-backed workspace, system, storage, permission, and simulator contracts already in place. That is why the older feature implementation progress can remain high. The `76%` figure in this roadmap is narrower and stricter: it measures productization readiness, including removal or quarantine of residual mock/sample paths, real data evidence, permissions, responsive/manual verification, PDF policy decisions, and dev/test operational safety without touching production DB/R2.
 
 ## User Types And Screens
 
 | User type | Main routes | Current classification | Productization notes |
 |---|---|---|---|
 | System administrator | `/system`, `/system/companies`, `/system/account-requests`, `/system/audit-logs`, `/system/billing`, `/system/storage-usage`, `/system/standards/*` | Partial to DB-backed | System layout requires system session. Companies, audit logs, standards, and account requests have DB/API paths. Billing/storage still include design or skeleton pieces. |
-| Customer administrator | `/workspace`, `/workspace/settings`, `/workspace/members`, `/workspace/files`, `/workspace/stats`, `/workspace/subscription`, `/workspace/standards`, `/workspace/workorders`, `/workspace/material-orders`, `/workspace/materials`, `/workspace/partners` | Mostly DB-backed, partial product polish | Permission guards exist on most pages. Admin main uses operational dashboard snapshots. Storage/files use DB snapshot API. Remaining work is density, plan/quota accuracy, and final responsive verification. |
+| Customer administrator | `/workspace`, `/workspace/settings`, `/workspace/members`, `/workspace/files`, `/workspace/stats`, `/workspace/subscription`, `/workspace/standards`, `/workspace/workorders`, `/workspace/material-orders`, `/workspace/materials`, `/workspace/partners` | Mostly DB-backed, partial product polish | Permission guards exist on most pages. Admin main uses operational dashboard snapshots plus DB-backed plan/storage summary. Storage/files use DB snapshot API. Remaining work is R2 reconciliation display and final responsive verification. |
 | General user | `/workspace`, `/workspace/workorders`, `/workspace/material-orders`, `/workspace/materials`, `/workspace/partners`, `/workspace/legal`, `/me/settings` | DB-backed with permission gating | Member permissions are checked through page/API guards. Need broader direct-route denial tests and real session/E2E coverage. |
 | External or partner user | Invitation routes and partner data paths | Partial | Invitation join routes exist. Dedicated external supplier portal is not confirmed; partner/factory data is currently managed inside workspace/admin flows. |
 | Dev/test user | `/dev/test-console`, `/functions`, `/ui`, simulator commands | Guarded dev/test-only | Runtime and active system-admin checks exist. Execute DB/R2 paths remain approval-gated or disabled; many checks are dry-run/contract only. |
@@ -30,12 +30,12 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 | Area | Routes | Data state | Permission state | Remaining work |
 |---|---|---|---|---|
 | Public auth/invite | `/`, `/login`, `/invite/company/[token]`, `/invite/member/[token]`, `/pending`, `/service-paused` | Implemented with auth/invitation/company access repositories | Public plus session-aware redirects | Real Google login and pending/service-paused browser checks remain manual. |
-| Customer admin main | `/workspace` | DB operational snapshots for company admins; member permission lookup for member home | `requireWaflSessionForArea("workspace")` plus member permissions | Recalculate dashboard completion, dense layout QA, plan/storage warning surfacing. |
+| Customer admin main | `/workspace` | DB operational snapshots plus DB-backed plan/storage summary for company admins; member permission lookup for member home | `requireWaflSessionForArea("workspace")` plus member permissions | Browser responsive QA and R2 reconciliation surfacing remain. |
 | Workorders | `/workspace/workorders`, legacy `/worker` | DB repository mode only; API routes under `/api/workorders/*` | `/workspace/workorders` requires `workorder.read`; `/worker` uses current session but lacks the same page guard | Consolidate `/worker` with guarded workspace route or document it as dev/internal legacy alias. |
 | Material orders | `/workspace/material-orders` | DB/API-backed feature module | `material.order.request` plus place/request capability checks | Complete refresh-loss regression coverage, PDF handoff, responsive verification. |
 | Materials | `/workspace/materials` | Calls `listWorkspaceMaterials`; stale source fixture removed in 0.24.08 after static, build, mutation-audit, and contract-test verification | `standards.read` plus capability state | Continue DB-backed material workflow QA and permission denial coverage. |
 | Partners | `/workspace/partners` | DB-backed partner master components/API | `partner.read`, create/update capability checks | Final supplier/factory flow QA and permission denial tests. |
-| Files/storage | `/workspace/files`, `/workspace/storage` redirect | DB snapshot from attachments/trash plus company file policy | `storage.read` and storage API guards | Align plan quota display with system storage and R2 reconciliation evidence. |
+| Files/storage | `/workspace/files`, `/workspace/storage` redirect | DB snapshot from attachments/trash plus company file policy; customer admin main reuses the same metadata path for quota warnings | `storage.read` and storage API guards | Align system storage and R2 reconciliation evidence. |
 | Members/invites | `/workspace/members`, `/workspace/invites` redirect | DB member repository and invitation APIs | `member.read`, `member.invite`, permission update checks | Last-admin policy and lifecycle edge cases need release tests. |
 | Settings/subscription/legal | `/workspace/settings`, `/workspace/subscription`, `/workspace/legal`, `/me/settings` | DB-backed settings/profile/policy flows | Admin-only settings, workspace/session guards | Real browser session, policy re-agreement, blocked-company checks. |
 | System console | `/system` and subroutes | Mixed DB-backed and design/checkpoint pages | System session required at layout/API levels | Finish billing/storage production data paths and system dashboard QA. |
@@ -45,6 +45,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 
 - Plan definitions exist in `lib/billing/defaultPlans.ts` and policy helpers in `lib/billing/storageQuotaPolicy.ts`.
 - Customer file usage has a DB-backed snapshot route at `app/api/admin/files/snapshot/route.ts`.
+- Customer admin main now uses `lib/admin/dashboard/adminPlanStorageSummary.ts` to combine subscription state, company file-policy quota, attachment/trash usage, and member-limit warnings.
 - System storage usage API exists at `app/api/system/storage-usage/route.ts`, but `lib/billing/storageUsageRepository.ts` is currently an in-memory skeleton with a production-use note.
 - Simulator company A-J fixture covers 0%, 5%, 15%, 30%, 50%, 70%, 90%, 99%, 100%, and 110% clamped storage scenarios in `tests/fixtures/functions/company-scenarios.json`.
 - R2 usage reconciliation exists as dry-run/test tooling, but production and dev/test R2 mutation remain blocked without explicit approval.
@@ -80,7 +81,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 |---|---|---|
 | `0.24.07` | Productization roadmap and inventory | Roadmap, audit inventory, current-state, app version, and local commit metadata updated; no product code deletion or mutation. |
 | `0.24.08` | Mock/sample/fixture and unused-code cleanup | Completed. Removed only proven-unreferenced source mock/sample files; static reference/export graph, build, Mutation Audit, and selected Node contract tests passed. Kept simulator/test fixtures, lockfile, Cloudflare review files, and repository overlap items. |
-| `0.24.09` | Customer admin main and plan/storage | Admin dashboard, plan quota, DB/R2 usage display, warnings, and company file policy aligned. |
+| `0.24.09` | Customer admin main and plan/storage | In progress. Customer admin dashboard now surfaces plan status, file-policy storage quota, attachment/trash usage, and member-limit warnings from DB-backed paths. R2 reconciliation display remains for later productization. |
 | `0.24.10` | System admin and account switching | System dashboard/billing/storage data paths, dev/test account switcher, restore, and audit logs verified. |
 | `0.24.11` | User workspace screens | Workorders, material orders, materials, partners, `/workspace`, `/worker` policy, responsive layout, save/lock/toast consistency. |
 | `0.24.12` | PDF | Workorder and supplier PDF policies resolved; generation, regeneration, R2 storage, download, print, and failure handling verified. |

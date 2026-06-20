@@ -12,6 +12,7 @@ import type {
   AdminDashboardTodayTask,
   AdminOperationalDashboardSnapshots,
 } from "@/lib/admin/adminOperations.types";
+import type { AdminDashboardPlanStorageSummary } from "@/lib/admin/dashboard/adminPlanStorageSummary.types";
 import {
   ADMIN_DASHBOARD_DEFAULT_QUEUE_ID,
   ADMIN_DASHBOARD_QUEUE_ORDER,
@@ -22,7 +23,10 @@ import {
 } from "@/lib/admin/adminOperations.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
-type Props = { snapshots: AdminOperationalDashboardSnapshots };
+type Props = {
+  snapshots: AdminOperationalDashboardSnapshots;
+  planStorageSummary?: AdminDashboardPlanStorageSummary | null;
+};
 
 function queueTitle(queueId: AdminDashboardQueueId, fallback: string, t: ReturnType<typeof useAdminTranslation>) {
   return t(`operationsDashboard.queues.${queueId}.title`, fallback);
@@ -34,7 +38,23 @@ function taskTone(task: AdminDashboardTodayTask): "danger" | "warning" | "neutra
   return "neutral";
 }
 
-export default function AdminOperationsDashboard({ snapshots }: Props) {
+function storageToneClassName(tone: AdminDashboardPlanStorageSummary["storageStatusTone"]) {
+  if (tone === "danger") return "bg-[var(--pbp-status-danger-fg)]";
+  if (tone === "caution") return "bg-[var(--pbp-status-warning-fg)]";
+  return "bg-[var(--pbp-status-success-fg)]";
+}
+
+function storageBadgeTone(tone: AdminDashboardPlanStorageSummary["storageStatusTone"]): "success" | "warning" | "danger" {
+  if (tone === "danger") return "danger";
+  if (tone === "caution") return "warning";
+  return "success";
+}
+
+function memberBadgeTone(tone: AdminDashboardPlanStorageSummary["memberStatusTone"]): "success" | "warning" {
+  return tone === "caution" ? "warning" : "success";
+}
+
+export default function AdminOperationsDashboard({ snapshots, planStorageSummary }: Props) {
   const t = useAdminTranslation();
   const snapshot = snapshots.today;
   const [selectedQueueId, setSelectedQueueId] = useState<AdminDashboardQueueId>(
@@ -61,6 +81,86 @@ export default function AdminOperationsDashboard({ snapshots }: Props) {
 
   return (
     <WaflSurface as="section" component="admin-operations-dashboard" className="overflow-hidden">
+      {planStorageSummary ? (
+        <div className="border-b border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-4 sm:p-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.44fr)]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs font-semibold uppercase pbp-text-subtle">
+                  {t("operationsDashboard.planStorage.eyebrow", "플랜 및 저장공간")}
+                </p>
+                <AdminStatusBadge tone="neutral" size="xs">{planStorageSummary.sourceLabel}</AdminStatusBadge>
+                <AdminStatusBadge tone={storageBadgeTone(planStorageSummary.storageStatusTone)} size="xs">
+                  {planStorageSummary.storageStatusLabel}
+                </AdminStatusBadge>
+              </div>
+              <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-xl font-semibold pbp-text-primary">
+                    {planStorageSummary.planLabel}
+                    <span className="ml-2 text-sm font-medium pbp-text-muted">{planStorageSummary.statusLabel}</span>
+                  </h2>
+                  <p className="mt-1 text-sm pbp-text-muted">
+                    {t(
+                      "operationsDashboard.planStorage.description",
+                      "파일 정책 기준의 DB 저장공간 사용량과 멤버 한도를 함께 확인합니다.",
+                    )}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link className={getWaflButtonClassName({ size: "sm", variant: "secondary" })} href={planStorageSummary.storageHref}>
+                    {t("operationsDashboard.planStorage.storageLink", "파일 보기")}
+                  </Link>
+                  <Link className={getWaflButtonClassName({ size: "sm", variant: "secondary" })} href={planStorageSummary.subscriptionHref}>
+                    {t("operationsDashboard.planStorage.subscriptionLink", "구독 관리")}
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="font-semibold pbp-text-primary">
+                    {planStorageSummary.storageUsedLabel} / {planStorageSummary.storageLimitLabel}
+                  </span>
+                  <span className="font-semibold pbp-text-muted">{planStorageSummary.storageUsagePercent}%</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--pbp-surface-muted)]">
+                  <div
+                    className={`h-full rounded-full ${storageToneClassName(planStorageSummary.storageStatusTone)}`}
+                    style={{ width: `${Math.min(100, Math.max(0, planStorageSummary.storageUsagePercent))}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] px-3 py-2.5">
+                <p className="text-xs font-semibold pbp-text-subtle">{t("operationsDashboard.planStorage.activeFiles", "사용 중 파일")}</p>
+                <p className="mt-1 text-sm font-semibold pbp-text-primary">{planStorageSummary.activeStorageLabel}</p>
+              </div>
+              <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] px-3 py-2.5">
+                <p className="text-xs font-semibold pbp-text-subtle">{t("operationsDashboard.planStorage.trashFiles", "휴지통")}</p>
+                <p className="mt-1 text-sm font-semibold pbp-text-primary">
+                  {planStorageSummary.trashStorageLabel}
+                  <span className="ml-1 text-xs font-medium pbp-text-muted">
+                    {planStorageSummary.includeTrashInUsage ? t("operationsDashboard.planStorage.included", "포함") : t("operationsDashboard.planStorage.excluded", "제외")}
+                  </span>
+                </p>
+              </div>
+              <div className="rounded-[var(--pbp-radius-wafl)] border border-[var(--pbp-border)] bg-[var(--pbp-surface-base)] px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold pbp-text-subtle">{t("operationsDashboard.planStorage.members", "멤버")}</p>
+                  <AdminStatusBadge tone={memberBadgeTone(planStorageSummary.memberStatusTone)} size="xs">
+                    {planStorageSummary.memberStatusLabel}
+                  </AdminStatusBadge>
+                </div>
+                <p className="mt-1 text-sm font-semibold pbp-text-primary">{planStorageSummary.memberUsageLabel}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="border-b border-[var(--pbp-border)] p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>

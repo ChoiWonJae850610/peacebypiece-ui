@@ -7,6 +7,7 @@ import AdminInvitationOnboardingEntry from "@/components/admin/dashboard/AdminIn
 import AdminConsoleSections from "@/components/admin/dashboard/AdminConsoleSections";
 import AdminOperationsDashboard from "@/components/admin/dashboard/AdminOperationsDashboard";
 import { adminMemberRepository } from "@/lib/admin/members/memberRepository";
+import { buildAdminDashboardPlanStorageSummary } from "@/lib/admin/dashboard/adminPlanStorageSummary";
 import { getWorkspaceNavigationItems } from "@/lib/navigation/workspaceNavigation";
 import { getAdminOperationalDashboardSnapshots } from "@/lib/admin/adminOperations.repository";
 import type { WaflSessionPayload } from "@/lib/auth/session";
@@ -49,7 +50,13 @@ export default async function WorkspacePage() {
   }
 
   if (session.role === "company_admin") {
-    const snapshots = await getAdminOperationalDashboardSnapshots(companyId);
+    const [snapshots, planStorageSummary] = await Promise.all([
+      getAdminOperationalDashboardSnapshots(companyId),
+      buildAdminDashboardPlanStorageSummary(companyId).catch((error) => {
+        console.error("[ADMIN_DASHBOARD_PLAN_STORAGE_SUMMARY_FAILED]", error);
+        return null;
+      }),
+    ]);
 
     return (
       <WorkspaceShell
@@ -58,7 +65,7 @@ export default async function WorkspacePage() {
         navigationItems={getWorkspaceNavigationItems("/workspace", { role: session.role })}
         title="고객관리자 메인"
       >
-        <AdminOperationsDashboard snapshots={snapshots} />
+        <AdminOperationsDashboard snapshots={snapshots} planStorageSummary={planStorageSummary} />
 
         <AdminConsoleSections role={session.role} />
       </WorkspaceShell>
