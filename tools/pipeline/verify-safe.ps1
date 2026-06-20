@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -50,6 +50,66 @@ function GetChangedFiles {
         }
     }
     return @($names | Sort-Object -Unique)
+}
+
+function GetGitSingleLine {
+    param([string[]]$Arguments)
+
+    $output = @(InvokeSafeGit -Arguments $Arguments)
+    if ($LASTEXITCODE -ne 0 -or $output.Count -eq 0) {
+        return ""
+    }
+
+    return [string]($output | Where-Object { -not (TestGitNoiseLine -Line ([string]$_)) } | Select-Object -First 1)
+}
+
+function GetSha256Hex {
+    param([byte[]]$Bytes)
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha256.ComputeHash($Bytes)
+        return -join ($hash | ForEach-Object { $_.ToString("x2") })
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
+function GetTextSha256Hex {
+    param([string]$Text)
+
+    return GetSha256Hex -Bytes ([System.Text.Encoding]::UTF8.GetBytes($Text))
+}
+
+function GetFileSha256Hex {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return "missing"
+    }
+
+    return GetSha256Hex -Bytes ([System.IO.File]::ReadAllBytes($Path))
+}
+
+function GetChangedFingerprint {
+    param([string[]]$ChangedFiles)
+
+    $parts = New-Object System.Collections.Generic.List[string]
+    foreach ($path in ($ChangedFiles | Sort-Object)) {
+        $normalized = $path -replace '\\', '/'
+        $fullPath = Join-Path $ProjectDir $normalized
+        $parts.Add("$normalized=$((GetFileSha256Hex -Path $fullPath))")
+    }
+
+    $diffOutput = @(InvokeSafeGit -Arguments @("diff", "--binary", "--no-ext-diff"))
+    foreach ($line in $diffOutput) {
+        if (-not (TestGitNoiseLine -Line ([string]$line))) {
+            $parts.Add([string]$line)
+        }
+    }
+
+    return GetTextSha256Hex -Text ($parts -join "`n")
 }
 
 function TestTextFile {
@@ -135,29 +195,50 @@ function InvokeCheck {
     )
 
     Write-Host "[RUN] $Name"
+    $commandLine = "$Command $($Arguments -join ' ')"
     if ($CheckOnly) {
-        Write-Host "      $Command $($Arguments -join ' ')"
-        return [pscustomobject]@{ Name = $Name; Passed = $true; Skipped = $true; ExitCode = 0 }
+        Write-Host "      $commandLine"
+        if ($Command -in @("node", "npm")) {
+            $targetFile = if ($Command -eq "node" -and $Arguments.Count -gt 0) { Join-Path $ProjectDir $Arguments[0] } else { "" }
+            if ($targetFile -and -not (Test-Path -LiteralPath $targetFile -PathType Leaf)) {
+                return [pscustomobject]@{ Name = $Name; CommandLine = $commandLine; Passed = $false; Skipped = $true; ExitCode = 2; FindingCount = ""; HighRiskCount = ""; OutputSummary = "missing test file" }
+            }
+        }
+        return [pscustomobject]@{ Name = $Name; CommandLine = $commandLine; Passed = $true; Skipped = $true; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "check-only" }
     }
 
     $resolved = Get-Command $Command -ErrorAction SilentlyContinue
     if ($null -eq $resolved) {
         Write-Host "[FAIL] command not found: $Command" -ForegroundColor Red
-        return [pscustomobject]@{ Name = $Name; Passed = $false; Skipped = $false; ExitCode = 127 }
+        return [pscustomobject]@{ Name = $Name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 127; FindingCount = ""; HighRiskCount = ""; OutputSummary = "command not found" }
     }
 
     Push-Location $ProjectDir
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     try {
-        & $resolved.Source @Arguments
+        $output = @(& $resolved.Source @Arguments 2>&1)
         $exitCode = $LASTEXITCODE
     }
     finally {
+        $ErrorActionPreference = $previousErrorActionPreference
         Pop-Location
     }
 
+    foreach ($line in $output) {
+        Write-Host ([string]$line)
+    }
+
     $passed = ($exitCode -eq 0)
+    $findingCount = ""
+    $highRiskCount = ""
+    $outputText = ($output | ForEach-Object { [string]$_ }) -join "`n"
+    if ($outputText -match 'WAFL mutation audit completed:\s*(\d+)\s+finding\(s\),\s*(\d+)\s+high-risk') {
+        $findingCount = $matches[1]
+        $highRiskCount = $matches[2]
+    }
     Write-Host ("[{0}] {1}" -f $(if ($passed) { "PASS" } else { "FAIL" }), $Name)
-    return [pscustomobject]@{ Name = $Name; Passed = $passed; Skipped = $false; ExitCode = $exitCode }
+    return [pscustomobject]@{ Name = $Name; CommandLine = $commandLine; Passed = $passed; Skipped = $false; ExitCode = $exitCode; FindingCount = $findingCount; HighRiskCount = $highRiskCount; OutputSummary = "" }
 }
 
 function InvokePowerShellParseCheck {
@@ -197,16 +278,27 @@ $profileCommands = @{
         @{ Name = "system billing contract"; Command = "node"; Arguments = @("tests/system-billing-real-data-contract.mjs") },
         @{ Name = "internal system routes contract"; Command = "node"; Arguments = @("tests/internal-system-routes-contract.mjs") },
         @{ Name = "dev/test context system admin contract"; Command = "node"; Arguments = @("tests/dev-test-context-system-admin-contract.mjs") }
+    );
+    "id-control-roadmap" = @(
+        @{ Name = "internal system routes contract"; Command = "node"; Arguments = @("tests/internal-system-routes-contract.mjs") },
+        @{ Name = "dev/test context system admin contract"; Command = "node"; Arguments = @("tests/dev-test-context-system-admin-contract.mjs") },
+        @{ Name = "simulator onboarding fixture contract"; Command = "node"; Arguments = @("tests/simulator-onboarding-fixture-contract.mjs") }
     )
 }
 
 $results = New-Object System.Collections.Generic.List[object]
 $changedFiles = @(GetChangedFiles)
+$branch = GetGitSingleLine -Arguments @("branch", "--show-current")
+$headHash = GetGitSingleLine -Arguments @("rev-parse", "HEAD")
+$changedFingerprint = GetChangedFingerprint -ChangedFiles $changedFiles
 
 Write-Host "PeaceByPiece safe verification"
 Write-Host "Profile: $Profile"
 Write-Host "CheckOnly: $CheckOnly"
 Write-Host "Project: $ProjectDir"
+Write-Host "Branch: $branch"
+Write-Host "HEAD: $headHash"
+Write-Host "ChangedFingerprint: $changedFingerprint"
 Write-Host ""
 
 $diffCheck = InvokeCheck -Name "git diff --check" -Command "git" -Arguments @("-C", $ProjectDir, "diff", "--check")
@@ -252,7 +344,7 @@ foreach ($commandSpec in $profileCommands[$Profile]) {
 }
 
 $failedResults = @($results | Where-Object { -not $_.Passed })
-$status = if ($failedResults.Count -eq 0) { "PASS" } else { "FAIL" }
+$status = if ($CheckOnly) { "CHECK_ONLY" } elseif ($failedResults.Count -eq 0) { "PASS" } else { "FAIL" }
 
 EnsureDirectory -Path $RepoStatusDir
 $resultPath = Join-Path $RepoStatusDir ("verify-safe-{0}-{1}.txt" -f $Profile, (GetTimestamp))
@@ -260,15 +352,19 @@ $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("VERIFY_SAFE_RESULT: $status")
 $lines.Add("GeneratedAt: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
 $lines.Add("ProjectDir: $ProjectDir")
+$lines.Add("Branch: $branch")
+$lines.Add("HeadHash: $headHash")
 $lines.Add("Profile: $Profile")
 $lines.Add("CheckOnly: $CheckOnly")
+$lines.Add("ChangedFingerprint: $changedFingerprint")
+$lines.Add("ExecutedAt: $(Get-Date -Format 'o')")
 $lines.Add("")
 $lines.Add("ChangedFiles:")
 if ($changedFiles.Count -eq 0) { $lines.Add("(none)") } else { foreach ($path in $changedFiles) { $lines.Add($path) } }
 $lines.Add("")
 $lines.Add("Results:")
 foreach ($result in $results) {
-    $lines.Add(("{0}: Passed={1}; Skipped={2}; ExitCode={3}" -f $result.Name, $result.Passed, $result.Skipped, $result.ExitCode))
+    $lines.Add(("{0}: Passed={1}; Skipped={2}; ExitCode={3}; Command={4}; FindingCount={5}; HighRiskCount={6}; Summary={7}" -f $result.Name, $result.Passed, $result.Skipped, $result.ExitCode, $result.CommandLine, $result.FindingCount, $result.HighRiskCount, $result.OutputSummary))
 }
 [System.IO.File]::WriteAllLines($resultPath, $lines, [System.Text.Encoding]::UTF8)
 

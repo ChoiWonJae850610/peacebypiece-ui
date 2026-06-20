@@ -7,6 +7,7 @@ param(
 
     [string]$ExpectedAppVersion = "",
     [string]$VerificationResultPath = "",
+    [string]$VerificationProfile = "",
     [switch]$Execute
 )
 
@@ -72,6 +73,66 @@ function GetChangedFiles {
         }
     }
     return @($names | Sort-Object -Unique)
+}
+
+function GetGitSingleLine {
+    param([string[]]$Arguments)
+
+    $output = @(InvokeFinishGit -Arguments $Arguments)
+    if ($LASTEXITCODE -ne 0 -or $output.Count -eq 0) {
+        return ""
+    }
+
+    return [string]($output | Where-Object { -not (TestGitNoiseLine -Line ([string]$_)) } | Select-Object -First 1)
+}
+
+function GetSha256Hex {
+    param([byte[]]$Bytes)
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha256.ComputeHash($Bytes)
+        return -join ($hash | ForEach-Object { $_.ToString("x2") })
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
+function GetTextSha256Hex {
+    param([string]$Text)
+
+    return GetSha256Hex -Bytes ([System.Text.Encoding]::UTF8.GetBytes($Text))
+}
+
+function GetFileSha256Hex {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return "missing"
+    }
+
+    return GetSha256Hex -Bytes ([System.IO.File]::ReadAllBytes($Path))
+}
+
+function GetChangedFingerprint {
+    param([string[]]$ChangedFiles)
+
+    $parts = New-Object System.Collections.Generic.List[string]
+    foreach ($path in ($ChangedFiles | Sort-Object)) {
+        $normalized = $path -replace '\\', '/'
+        $fullPath = Join-Path $ProjectDir $normalized
+        $parts.Add("$normalized=$((GetFileSha256Hex -Path $fullPath))")
+    }
+
+    $diffOutput = @(InvokeFinishGit -Arguments @("diff", "--binary", "--no-ext-diff"))
+    foreach ($line in $diffOutput) {
+        if (-not (TestGitNoiseLine -Line ([string]$line))) {
+            $parts.Add([string]$line)
+        }
+    }
+
+    return GetTextSha256Hex -Text ($parts -join "`n")
 }
 
 function TestTextFile {
@@ -146,18 +207,91 @@ function FindSensitiveFiles {
     return @($suspicious | Sort-Object -Unique)
 }
 
+function GetVerificationField {
+    param(
+        [string[]]$Lines,
+        [string]$Name
+    )
+
+    $prefix = "$Name`:"
+    $line = $Lines | Where-Object { ([string]$_).StartsWith($prefix) } | Select-Object -First 1
+    if ($null -eq $line) {
+        return ""
+    }
+
+    return ([string]$line).Substring($prefix.Length).Trim()
+}
+
+function GetVerificationChangedFiles {
+    param([string[]]$Lines)
+
+    $files = New-Object System.Collections.Generic.List[string]
+    $inSection = $false
+    foreach ($line in $Lines) {
+        $text = [string]$line
+        if ($text -eq "ChangedFiles:") {
+            $inSection = $true
+            continue
+        }
+        if ($inSection -and [string]::IsNullOrWhiteSpace($text)) {
+            break
+        }
+        if ($inSection -and $text -ne "(none)") {
+            $files.Add((NormalizeRelativePath -Path $text))
+        }
+    }
+
+    return @($files | Sort-Object -Unique)
+}
+
 function AssertVerificationResult {
+    param(
+        [string]$CurrentHeadHash,
+        [string[]]$CurrentChangedFiles,
+        [string]$CurrentChangedFingerprint,
+        [string[]]$AllowedPaths
+    )
+
     if ([string]::IsNullOrWhiteSpace($VerificationResultPath)) {
         throw "-Execute requires -VerificationResultPath from verify-safe.ps1"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($VerificationProfile)) {
+        throw "-Execute requires -VerificationProfile so finish-version can reuse the correct verify-safe result"
     }
 
     if (-not (Test-Path -LiteralPath $VerificationResultPath -PathType Leaf)) {
         throw "Verification result file not found: $VerificationResultPath"
     }
 
-    $content = Get-Content -LiteralPath $VerificationResultPath -Raw -Encoding UTF8
+    $lines = @(Get-Content -LiteralPath $VerificationResultPath -Encoding UTF8)
+    $content = $lines -join "`n"
     if ($content -notmatch 'VERIFY_SAFE_RESULT:\s*PASS') {
         throw "Verification result is not PASS: $VerificationResultPath"
+    }
+    if ((GetVerificationField -Lines $lines -Name "CheckOnly") -ne "False") {
+        throw "CheckOnly verification results cannot be used for commit/push: $VerificationResultPath"
+    }
+    if ((GetVerificationField -Lines $lines -Name "Profile") -ne $VerificationProfile) {
+        throw "Verification profile mismatch. Expected=$VerificationProfile Actual=$((GetVerificationField -Lines $lines -Name "Profile"))"
+    }
+    if ((GetVerificationField -Lines $lines -Name "HeadHash") -ne $CurrentHeadHash) {
+        throw "Verification HEAD mismatch. Re-run verify-safe for the current HEAD."
+    }
+    if ((GetVerificationField -Lines $lines -Name "ChangedFingerprint") -ne $CurrentChangedFingerprint) {
+        throw "Verification changed fingerprint mismatch. Re-run verify-safe for the current working tree."
+    }
+
+    $verifiedFiles = @(GetVerificationChangedFiles -Lines $lines)
+    $unexpectedVerified = @($verifiedFiles | Where-Object { $AllowedPaths -notcontains $_ })
+    $missingVerified = @($AllowedPaths | Where-Object { $verifiedFiles -notcontains $_ })
+    if ($unexpectedVerified.Count -gt 0 -or $missingVerified.Count -gt 0) {
+        throw "Verification explicit path mismatch. Unexpected=$($unexpectedVerified -join ', ') Missing=$($missingVerified -join ', ')"
+    }
+
+    $currentMismatch = @($CurrentChangedFiles | Where-Object { $verifiedFiles -notcontains $_ })
+    if ($currentMismatch.Count -gt 0) {
+        throw "Current changed files were not verified: $($currentMismatch -join ', ')"
     }
 }
 
@@ -194,6 +328,8 @@ if ($allowPaths.Count -eq 0) {
 }
 
 $changedFiles = @(GetChangedFiles)
+$currentHeadHash = GetGitSingleLine -Arguments @("rev-parse", "HEAD")
+$currentChangedFingerprint = GetChangedFingerprint -ChangedFiles $changedFiles
 $unexpectedFiles = @($changedFiles | Where-Object { $allowPaths -notcontains $_ })
 if ($unexpectedFiles.Count -gt 0) {
     throw "Unexpected changed files: $($unexpectedFiles -join ', ')"
@@ -237,7 +373,7 @@ if (-not $Execute) {
     exit 0
 }
 
-AssertVerificationResult
+AssertVerificationResult -CurrentHeadHash $currentHeadHash -CurrentChangedFiles $changedFiles -CurrentChangedFingerprint $currentChangedFingerprint -AllowedPaths $allowPaths
 
 foreach ($path in $allowPaths) {
     $addOutput = @(InvokeFinishGit -Arguments @("add", "--", $path))

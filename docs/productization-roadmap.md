@@ -2,12 +2,12 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.10`
+- Roadmap checkpoint version: `0.24.11`
 - Source of truth: local Git repository and committed documentation, not prior chat memory.
 - Baseline HEAD: `454dba23a704fe880b78f7e5eb5dcef37f93043d`
-- App display version after this checkpoint: `0.24.10`
+- App display version after this checkpoint: `0.24.11`
 - Feature implementation progress: about `93%` as a prior screen/function skeleton estimate; not remeasured in this checkpoint.
-- Productization readiness: `78%`; this updates the 0.24.09 `76%` estimate after the system storage usage API moved from a process-local skeleton to DB attachment metadata aggregation and the existing storage snapshot table. Remaining readiness work still includes R2 reconciliation display, dev/test account-switch browser evidence, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
+- Productization readiness: `77%`; this keeps the productization estimate conservative while `/id-control`, `/roadmap`, and safe verification reuse are being productized. Remaining readiness work still includes R2 reconciliation display, dev/test account-switch browser evidence, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
 - Internal system-admin routes: `/id-control` is the guarded dev/test identity-control console, and `/roadmap` is the guarded read-only productization roadmap view. The former `/dev/test-console` route redirects to `/id-control` only after the same dev/test and active system-admin guard passes.
 
 This roadmap separates product work from Codex operating rules. `AGENTS.md` stays limited to operating, safety, Git, question, and reporting rules. Product scope and remaining release work live here. Future status blocks should keep feature implementation progress and productization readiness separate when both are reported. The `/roadmap` screen uses `lib/internal/productizationRoadmap.ts` as its structured display data; future roadmap changes should update both this document and that data file together.
@@ -84,11 +84,12 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 | `0.24.07` | Productization roadmap and inventory | Roadmap, audit inventory, current-state, app version, and local commit metadata updated; no product code deletion or mutation. |
 | `0.24.08` | Mock/sample/fixture and unused-code cleanup | Completed. Removed only proven-unreferenced source mock/sample files; static reference/export graph, build, Mutation Audit, and selected Node contract tests passed. Kept simulator/test fixtures, lockfile, Cloudflare review files, and repository overlap items. |
 | `0.24.09` | Customer admin main and plan/storage | Completed. Customer admin dashboard surfaces plan status, file-policy storage quota, attachment/trash usage, and member-limit warnings from DB-backed paths. R2 reconciliation display remains for later productization. |
-| `0.24.10` | System admin and account switching | Partially completed. System storage usage API is DB-backed and snapshot-table connected. Dev/test account switcher restore, audit-log browser evidence, and broader system QA remain. |
-| `0.24.11` | User workspace screens | Workorders, material orders, materials, partners, `/workspace`, `/worker` policy, responsive layout, save/lock/toast consistency. |
-| `0.24.12` | PDF | Workorder and supplier PDF policies resolved; generation, regeneration, R2 storage, download, print, and failure handling verified. |
-| `0.24.13` | Functions, Simulator, PowerShell, automation | `/functions`, Simulator dry-run/execute policy, test console, PowerShell menu mapping, and dev/test scenarios aligned. |
-| `0.24.14` | Productization checkpoint | Full build/contracts/E2E/manual matrix run or explicitly deferred; launch residuals frozen. |
+| `0.24.10` | System admin storage and automation foundation | Completed. DB metadata-backed system storage usage, `verify-safe.ps1`, `finish-version.ps1`, ZIP/repo-state handoff automation, and Git finish automation foundation. Completed commits include `a4c1921d86e68de27e282150b4195cff27d76d0c` and `644e8825dafaf38ca0c736eed6c4efcc33fe38d5`. |
+| `0.24.11` | System admin id-control and roadmap | In progress. `/id-control` replaces `/dev/test-console`, `/dev/test-console` redirects after the same guard, `/roadmap` shows Korean read-only version data, and `id-control-roadmap` verification uses fingerprinted results. |
+| `0.24.12` | User workspace screens | General user WAFL common UI, `/worker` sizing/density, responsive layout, save lock, single save queue, workorder/material-order save/toast/permission consistency. |
+| `0.24.13` | PDF | Workorder PDF, material-order PDF, temporary/final PDF policy, Worker/R2 integration, regeneration/deletion policy, automated PDF verification. |
+| `0.24.14` | Functions, Simulator, PowerShell, automation | `/functions`, Simulator, `/id-control`, PowerShell menus, contract/E2E/Smoke/Permissions, Seed/Reset/Cleanup policy, R2 demo create/delete, Playwright reports, function catalog cleanup. |
+| `0.24.15` | Integrated validation checkpoint | Full Build, Mutation Audit, contract tests, E2E, Smoke, Permissions, responsive, PDF, DB/R2 integration, manual integrated QA, and productization readiness recalculation. |
 
 ## Completion Criteria
 

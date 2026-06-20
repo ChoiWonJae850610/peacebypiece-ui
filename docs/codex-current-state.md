@@ -2,7 +2,7 @@
 
 ## Version
 
-- Current result version: `0.24.10`
+- Current result version: `0.24.11`
 - App display version source: `lib/constants/version.ts`
 - `package.json` version remains `0.5.637` npm package metadata and is not the app display version.
 
@@ -89,11 +89,13 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - 0.24.09 updates productization readiness to `76%`; feature implementation progress remains about `93%`.
 - 0.24.10 replaces the system storage usage repository's process-local skeleton with DB attachment/trash metadata aggregation for summaries and `storage_usage_snapshots` inserts for explicit snapshots.
 - 0.24.10 adds `tests/system-storage-usage-real-data-contract.mjs` to keep `/api/system/storage-usage` system-admin guarded, DB-backed, and connected to dashboard snapshot evidence.
-- 0.24.10 updates productization readiness to `78%`; feature implementation progress remains about `93%`.
+- 0.24.10 updated productization readiness to `78%`; feature implementation progress remained about `93%`.
 - 0.24.09 and the preceding operating-rule commit were pushed to `origin/master`; HEAD is `b41642c41e6c81f28a2d4cb3846f4b99071b6ee5` after that version.
 - After 0.24.09, `AGENTS.md` was consolidated again to combine automatic development, response style, commit-stop cases, and manual verification guidance into one operating policy without bumping `APP_VERSION` or changing product code.
 - After 0.24.10, PowerShell automation was supplemented without bumping `APP_VERSION`: menu 7 local repository handoff now uses Git file candidates, nested generated-folder exclusion, content-aware secret screening, and independent ZIP contract validation; `verify-safe.ps1` and `finish-version.ps1` provide guarded validation and version-finish wrappers.
 - `/id-control` is the guarded replacement route for `/dev/test-console`; the old route redirects only after the same dev/test runtime and active system-admin guard passes. `/roadmap` is an active system-admin read-only view backed by `lib/internal/productizationRoadmap.ts` and synchronized with `docs/productization-roadmap.md`.
+- 0.24.11 fills `/roadmap` with Korean version-plan data for 0.24.10 through 0.24.15, updates APP_VERSION to `0.24.11`, keeps feature implementation progress about `93%`, and sets productization readiness to `77%`.
+- `verify-safe.ps1` now has an `id-control-roadmap` profile and writes branch, HEAD, changed files, changed fingerprint, command lines, Mutation Audit finding count, and high-risk count into verification result files. `finish-version.ps1` reuses PASS verification results only when profile, HEAD, explicit paths, and changed fingerprint match.
 
 ## Current Audit Findings
 
@@ -125,7 +127,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - General version work can now auto-stage, auto-commit, and auto-push to `origin master` only when the `AGENTS.md` automatic Git conditions are all true; otherwise Codex must stop before Git index/history/remote changes and report the blocker.
 - Prefer `tools/pipeline/verify-safe.ps1` over ad hoc validation commands when its profile matches the work, and prefer `tools/pipeline/finish-version.ps1` over separate Git add/commit/push. The wrappers reduce approval count but do not bypass Codex app OS approval or DB/R2/Git-write safety policy.
 - 0.24.09 started while `master` was already ahead of `origin/master` by the local operating-rule commit, so automatic push conditions were not met at first. After user approval and validation, the operating-rule commit and 0.24.09 commit were pushed together.
-- 0.24.10 Node-based tests and build could not run in the Codex shell because `node` and `npm` were not available on PATH. DB smoke tests remain not run because they create rollback fixtures and require DB access. No DB/R2/Seed/Reset/Cleanup/Migration was run.
+- DB smoke tests remain not run unless explicitly approved because they create rollback fixtures and require DB access. No DB/R2/Seed/Reset/Cleanup/Migration should run during internal route/roadmap work.
 - Some pending browser/session checks require real Google login and cannot be fully proven by local static checks.
 
 ## Pending Tests
@@ -141,6 +143,5 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 
 ## Near Plan
 
-- 0.24.10 system storage API work is implemented locally. Because Node validation could not run in this shell, stop before commit/push unless the same validation batch is completed where Node is available.
-- Next recommended work after this 0.24.10 checkpoint: finish dev/test account switch restore and audit-log browser evidence, then continue to `0.24.11` workspace screen QA after the 0.24.10 residuals are closed.
+- 0.24.11 internal system-admin route and roadmap work is the current checkpoint. Next recommended work after this checkpoint is `0.24.12` general user workspace/`/worker` responsive and save-flow commonization.
 - Run environment-dependent E2E/manual checks only when browser session and dev/test DB/R2 approvals are available.

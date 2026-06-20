@@ -54,6 +54,8 @@
 - Small unused-file deletion is allowed only when references are checked and build/tests validate the deletion. Bulk deletion, moves, and broad renames still require explicit approval.
 - Safe verification such as build, lint, typecheck, existing contract tests, mutation audits, PowerShell parse checks, dry-run commands, plan-mode commands, and simulator checks without DB/R2 mutation is allowed.
 - Prefer `tools/pipeline/verify-safe.ps1` over ad hoc individual validation commands when an available profile covers the changed area.
+- If a matching `verify-safe.ps1` profile exists, do not repeatedly run individual `node tests/...`, `npm run build`, or `npm run audit:wafl-mutations` outside the wrapper except for a first syntax/contract check immediately after creating a new test.
+- Reuse a PASS verification result for the same working tree when the result profile, HEAD, explicit path set, and changed fingerprint match. Do not rerun Mutation Audit only to get finding/high-risk counts; read them from the verification result.
 - `tools/pipeline/verify-safe.ps1` and `tools/pipeline/peacebypiece-auto-pipeline.ps1 -CreateLocalRepoHandoff` are read/validation-only commands. They may still need Codex app OS approval when writing pipeline output files outside the workspace.
 - If a safe validation fails and the cause is inside the requested scope, fix it and rerun the same validation when reasonable.
 - Under the automatic version workflow, explicit-path staging, ordinary commit, `git push origin master`, and post-push Git state checks are allowed when all automatic Git conditions are satisfied.
@@ -99,7 +101,9 @@
 
 ## Runtime And Access Guards
 - `/ui` and `/functions` must remain blocked outside allowed non-production runtime modes.
-- `/dev/test-console` must remain production-blocked and explicitly enabled.
+- `/id-control` replaces `/dev/test-console` for the internal identity-control console. `/dev/test-console` must remain production-blocked, explicitly enabled, and guarded before redirecting to `/id-control`.
+- `/roadmap` is a system-administrator-only read-only screen. It must not add edit/save/delete actions, DB writes, R2 writes, or URL/query/localStorage mutation paths without a separate explicit policy decision.
+- User-facing text on `/roadmap` should be Korean by default. When roadmap plans change, update both `lib/internal/productizationRoadmap.ts` and `docs/productization-roadmap.md`.
 - Impersonation must use an allowlist, support returning to the original session, and keep audit logs.
 - Maintain tenant isolation in UI, API, repository, DB, and simulator flows.
 - Validate permissions in both UI affordances and API/server handlers.

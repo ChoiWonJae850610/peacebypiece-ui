@@ -76,10 +76,11 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 
 `verify-safe.ps1`은 버전 작업 후 안전 검증을 한 번에 실행하는 wrapper입니다. Git add/commit/push, DB/R2 mutation, Seed/Reset/Cleanup/Migration, dependency 설치, 파일 삭제, production write를 수행하지 않습니다.
 
-현재 프로필:
+현재 주요 프로필:
 
 ```powershell
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage
+.\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap
 ```
 
 이 프로필은 공통 검증인 `git diff --check`, PowerShell parse check, package/lockfile 변경 확인, secret/production 값 검사, DB migration 변경 확인, `npm run build`, `npm run audit:wafl-mutations`와 다음 contract tests를 실행합니다.
@@ -89,13 +90,22 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 - `node tests/system-billing-real-data-contract.mjs`
 - `node tests/dev-test-context-system-admin-contract.mjs`
 
+`id-control-roadmap` 프로필은 `/id-control`, `/roadmap`, redirect, system-admin guard, production block, roadmap read-only, roadmap data rendering, roadmap Korean label contract를 explicit allowlist로 확인합니다.
+
+- `node tests/internal-system-routes-contract.mjs`
+- `node tests/dev-test-context-system-admin-contract.mjs`
+- `node tests/simulator-onboarding-fixture-contract.mjs`
+
 명령 계획과 안전 가드만 확인하려면:
 
 ```powershell
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage -CheckOnly
+.\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap -CheckOnly
 ```
 
-검증 결과 파일은 `Paths.RepoStatusDir` 아래 `verify-safe-{profile}-{yyyyMMdd-HHmmss}.txt`로 생성됩니다. `VERIFY_SAFE_RESULT: PASS`가 있어야 Git 완료 wrapper의 실행 근거로 사용할 수 있습니다.
+검증 결과 파일은 `Paths.RepoStatusDir` 아래 `verify-safe-{profile}-{yyyyMMdd-HHmmss}.txt`로 생성됩니다. `VERIFY_SAFE_RESULT: PASS`가 있어야 Git 완료 wrapper의 실행 근거로 사용할 수 있습니다. `-CheckOnly`는 실제 검증 PASS가 아니며 commit/push 근거로 사용할 수 없습니다.
+
+검증 결과에는 branch, HEAD hash, profile, 변경 파일 목록, 변경 내용 fingerprint, 실행 시각, PASS/FAIL, 실행 명령, Mutation Audit finding 수, high-risk 수가 기록됩니다. 같은 working tree에서는 이 결과를 재사용하며, 최종 보고를 위해 Mutation Audit을 다시 실행하지 않습니다.
 
 ## Git 완료 wrapper
 
@@ -117,11 +127,33 @@ Plan mode:
   -CommitMessage "chore: update pipeline automation" `
   -Paths AGENTS.md,tools/pipeline/README.md,tools/pipeline/peacebypiece-auto-pipeline.ps1,tools/pipeline/verify-safe.ps1,tools/pipeline/finish-version.ps1 `
   -ExpectedAppVersion 0.24.10 `
+  -VerificationProfile system-admin-storage `
   -VerificationResultPath "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\Repo_Status\verify-safe-system-admin-storage-YYYYMMDD-HHMMSS.txt" `
   -Execute
 ```
 
-`finish-version.ps1`은 repository path, `master` branch, `origin/master` 조회와 ahead/behind 0/0, 예상 변경 파일, package/lockfile 변경 없음, secret/production 값 없음, DB migration 변경 없음, `git diff --check`, `git diff --cached --check`, staged file list, ordinary commit, `git push origin master`, push 후 clean 상태를 확인합니다. force push, amend, reset, clean, checkout, rebase, merge, stash drop, 대량 삭제, 예상 밖 stage는 수행하지 않습니다.
+`finish-version.ps1`은 repository path, `master` branch, `origin/master` 조회와 ahead/behind 0/0, 예상 변경 파일, package/lockfile 변경 없음, secret/production 값 없음, DB migration 변경 없음, verification result PASS, profile 일치, HEAD 일치, explicit path 일치, 변경 fingerprint 일치, `git diff --check`, `git diff --cached --check`, staged file list, ordinary commit, `git push origin master`, push 후 clean 상태를 확인합니다. force push, amend, reset, clean, checkout, rebase, merge, stash drop, 대량 삭제, 예상 밖 stage는 수행하지 않습니다.
+
+`id-control-roadmap` 작업의 Git 완료 예:
+
+```powershell
+.\tools\pipeline\finish-version.ps1 `
+  -CommitMessage "feat: add Korean system admin roadmap page" `
+  -Paths AGENTS.md,app/roadmap/page.tsx,docs/codex-current-state.md,docs/productization-roadmap.md,lib/constants/version.ts,lib/internal/productizationRoadmap.ts,tests/internal-system-routes-contract.mjs,tools/pipeline/README.md,tools/pipeline/finish-version.ps1,tools/pipeline/verify-safe.ps1 `
+  -ExpectedAppVersion 0.24.11 `
+  -VerificationProfile id-control-roadmap `
+  -VerificationResultPath "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\Repo_Status\verify-safe-id-control-roadmap-YYYYMMDD-HHMMSS.txt" `
+  -Execute
+```
+
+## Roadmap 운영 규칙
+
+`/roadmap`은 시스템 관리자 전용 조회 화면입니다. 사용자 표시 문구는 한글을 기본으로 하고, 편집/추가/삭제/저장/drag-and-drop/inline edit/localStorage canonical source/URL query mutation을 추가하지 않습니다.
+
+로드맵 계획을 바꿀 때는 다음 두 파일을 함께 갱신합니다.
+
+- `lib/internal/productizationRoadmap.ts`
+- `docs/productization-roadmap.md`
 
 ## 승인 범위
 
@@ -142,6 +174,7 @@ Plan mode:
 - 전체 `powershell`
 - 전체 `node`
 - 전체 `npm`
+- 전체 `npm run`
 - 전체 `git`
 - destructive command를 포함할 수 있는 포괄 prefix
 
