@@ -2,7 +2,7 @@
 
 ## Version
 
-- Current result version: `0.24.06`
+- Current result version: `0.24.07`
 - App display version source: `lib/constants/version.ts`
 - `package.json` version remains `0.5.637` npm package metadata and is not the app display version.
 
@@ -24,6 +24,8 @@
 - Reset guard hardening: `docs/audits/reset-guard-hardening-0.24.04.md`
 - Repository/documentation cleanup result: `docs/audits/repository-documentation-cleanup-0.24.05.md`
 - Repository cleanup/performance checkpoint: `docs/audits/repository-cleanup-performance-checkpoint-0.24.06.md`
+- Productization roadmap: `docs/productization-roadmap.md`
+- Productization inventory: `docs/audits/productization-inventory-0.24.07.md`
 - PowerShell pipeline guide: `tools/pipeline/README.md`
 - Simulator guide: `tools/simulator/README.md`
 - Worker deploy guide: `cloudflare/pdf-generator-worker/README.md`
@@ -66,15 +68,23 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - 0.24.06 pushed the verified 0.24.05 cleanup commit to `origin/master`, then reviewed unused code/SQL/fixture candidates without deleting tracked source.
 - 0.24.06 narrowed the stale R2 simulator companion README to safe local-only guidance and documented blocked upload/all/verify modes.
 - 0.24.06 documented Seed performance bottlenecks and DB query/index candidates without running Seed, DB/R2 mutation, migration, or EXPLAIN.
+- 0.24.07 surveyed productization scope and created `docs/productization-roadmap.md` plus `docs/audits/productization-inventory-0.24.07.md`.
+- 0.24.07 distinguished feature implementation progress from productization readiness. The older about-93% figure refers to major screen/function skeleton implementation; the current `72%` figure is productization readiness including mock removal, real data evidence, permissions, responsive QA, PDF, E2E, and operational safety.
 
 ## Current Audit Findings
 
 - The root app has about 1,856 non-generated files when root `node_modules`, `.next`, `.git`, artifacts, and the Cloudflare worker nested `node_modules` are excluded.
 - `cloudflare/pdf-generator-worker/node_modules` previously had about 3,992 tracked files. Its package manifest, lockfile, Wrangler config, source entry, and README support reinstalling dependencies with `npm ci`, so the dependency tree is now treated as generated local install output.
 - Generated folders such as `.next`, `artifacts`, `test-results`, `.tmp`, Playwright reports, worker `.wrangler`, and dependency folders should remain outside commits.
+- Generated/local folders are classified as `GENERATED-LOCAL` / `GIT-IGNORE`, not product source `DELETE-SAFE`; local cleanup requires an explicit request and is not part of 0.24.07.
 - DB metadata read was limited to the approved development/test target in 0.24.03; it found 60 public tables, 120 foreign keys, 60 primary keys, 17 unique constraints, and 270 indexes.
 - The DB read emitted the known `pg` SSL mode warning. Treat this as a configuration follow-up, not a test failure.
 - Simulator seed remains slow: the last observed full executions were about 600 seconds, mostly consistent with row-by-row writes inside one transaction. 0.24.06 identified timing checkpoints and batch/skip candidates but did not run Seed.
+- Route inventory found DB-backed workspace routes for workorders, material orders, materials, partners, files, stats, settings, members, and subscription, with page/API permission guards on most routes.
+- `/worker` still renders the workorder workspace directly from the current session and should be redirected, guarded, or explicitly documented as a legacy/internal route before launch.
+- Customer admin file storage snapshot is DB-backed, but system-wide storage usage still has an in-memory skeleton repository and needs productization.
+- Workorder PDF generation and R2 attachment registration exist; supplier/material-order PDF remains policy-contract level and needs final route/storage decisions.
+- `features/materials/__fixtures__/materialsMock.ts` has no direct runtime import found, while `lib/data/sample/*` still needs dependency-map review because `lib/data/workorderMockData.ts` re-exports sample attachments.
 
 ## Known Risks
 
@@ -83,7 +93,8 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - DB identity logging is sanitized for reset guard and Simulator DB seed output; logs report match/blocked status instead of host, database, URL, or fingerprint.
 - Worker dependency reproducibility now depends on `cloudflare/pdf-generator-worker/package-lock.json`; do not change `package.json` or lockfiles without explicit approval.
 - `commit-meta.md` is ignored by Git, so it can record local handoff metadata but is not preserved in commits.
-- `pnpm-lock.yaml`, `features/materials/__fixtures__/materialsMock.ts`, `lib/data/sample/*`, and repository overlap between `lib/repositories/*` and `lib/workorder/repository/*` remain DELETE-REVIEW/UPDATE-MERGE review items, not deletion targets.
+- `pnpm-lock.yaml`, `features/materials/__fixtures__/materialsMock.ts`, `lib/data/sample/*`, deprecated Cloudflare legacy worker/example files, and repository overlap between `lib/repositories/*` and `lib/workorder/repository/*` remain DELETE-REVIEW or UPDATE-MERGE review items, not deletion targets.
+- `docs/productization-roadmap.md` is now the product roadmap source; do not put feature backlog or temporary version plans in `AGENTS.md`.
 - Some pending browser/session checks require real Google login and cannot be fully proven by local static checks.
 
 ## Pending Tests
@@ -99,6 +110,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 
 ## Near Plan
 
-- 0.24.06 is a checkpoint. Do not automatically proceed to 0.24.07, stage, commit, or push without a new explicit user request.
-- Next: use the 0.24.06 checkpoint to decide whether to implement Seed timing logs first or continue safe fixture/mock cleanup.
-- Next: run environment-dependent E2E/manual checks only when browser session and dev/test DB/R2 approvals are available.
+- 0.24.07 is a checkpoint. Do not automatically proceed to 0.24.08, stage, commit, or push without a new explicit user request.
+- Next recommended version: `0.24.08` for proven mock/sample/fixture and unused-code cleanup. Delete only after import graph and dynamic-reference risk are documented.
+- Next product track after cleanup: `0.24.09` customer admin main, plan quota, DB/R2 usage, and storage warnings.
+- Run environment-dependent E2E/manual checks only when browser session and dev/test DB/R2 approvals are available.
