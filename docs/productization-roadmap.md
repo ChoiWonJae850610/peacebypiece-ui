@@ -2,18 +2,18 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.07`
+- Roadmap checkpoint version: `0.24.08`
 - Source of truth: local Git repository and committed documentation, not prior chat memory.
-- Baseline HEAD: `1dcccb80b8c2ac94b96c5daa3ea235b5bba4d325`
-- App display version after this checkpoint: `0.24.07`
+- Baseline HEAD: `454dba23a704fe880b78f7e5eb5dcef37f93043d`
+- App display version after this checkpoint: `0.24.08`
 - Feature implementation progress: about `93%` as a prior screen/function skeleton estimate; not remeasured in this checkpoint.
-- Productization readiness: `72%`; this is the official 0.24.07 readiness estimate and includes mock removal, real data connection, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
+- Productization readiness: `74%`; this updates the 0.24.07 `72%` estimate after proven-unreferenced source mock/sample files were removed. Remaining readiness work still includes real data evidence, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
 
 This roadmap separates product work from Codex operating rules. `AGENTS.md` stays limited to operating, safety, Git, question, and reporting rules. Product scope and remaining release work live here. Future status blocks should keep feature implementation progress and productization readiness separate when both are reported.
 
 ## Productization Summary
 
-The app has a broad working skeleton with many DB-backed workspace, system, storage, permission, and simulator contracts already in place. That is why the older feature implementation progress can remain high. The `72%` figure in this roadmap is narrower and stricter: it measures productization readiness, including removal or quarantine of residual mock/sample paths, real data evidence, permissions, responsive/manual verification, PDF policy decisions, and dev/test operational safety without touching production DB/R2.
+The app has a broad working skeleton with many DB-backed workspace, system, storage, permission, and simulator contracts already in place. That is why the older feature implementation progress can remain high. The `74%` figure in this roadmap is narrower and stricter: it measures productization readiness, including removal or quarantine of residual mock/sample paths, real data evidence, permissions, responsive/manual verification, PDF policy decisions, and dev/test operational safety without touching production DB/R2.
 
 ## User Types And Screens
 
@@ -33,7 +33,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 | Customer admin main | `/workspace` | DB operational snapshots for company admins; member permission lookup for member home | `requireWaflSessionForArea("workspace")` plus member permissions | Recalculate dashboard completion, dense layout QA, plan/storage warning surfacing. |
 | Workorders | `/workspace/workorders`, legacy `/worker` | DB repository mode only; API routes under `/api/workorders/*` | `/workspace/workorders` requires `workorder.read`; `/worker` uses current session but lacks the same page guard | Consolidate `/worker` with guarded workspace route or document it as dev/internal legacy alias. |
 | Material orders | `/workspace/material-orders` | DB/API-backed feature module | `material.order.request` plus place/request capability checks | Complete refresh-loss regression coverage, PDF handoff, responsive verification. |
-| Materials | `/workspace/materials` | Calls `listWorkspaceMaterials`; old fixture exists but is unreferenced | `standards.read` plus capability state | Decide/delete unreferenced material fixture after TypeScript/import verification. |
+| Materials | `/workspace/materials` | Calls `listWorkspaceMaterials`; stale source fixture removed in 0.24.08 after static, build, mutation-audit, and contract-test verification | `standards.read` plus capability state | Continue DB-backed material workflow QA and permission denial coverage. |
 | Partners | `/workspace/partners` | DB-backed partner master components/API | `partner.read`, create/update capability checks | Final supplier/factory flow QA and permission denial tests. |
 | Files/storage | `/workspace/files`, `/workspace/storage` redirect | DB snapshot from attachments/trash plus company file policy | `storage.read` and storage API guards | Align plan quota display with system storage and R2 reconciliation evidence. |
 | Members/invites | `/workspace/members`, `/workspace/invites` redirect | DB member repository and invitation APIs | `member.read`, `member.invite`, permission update checks | Last-admin policy and lifecycle edge cases need release tests. |
@@ -68,9 +68,9 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 
 | Class | Current handling |
 |---|---|
-| Production code mock/sample paths | Keep until import graph and replacement path are proven. `lib/data/workorderMockData.ts` still exports `createSampleAttachments`. |
+| Production code mock/sample paths | 0.24.08 removed the proven-unreferenced material fixture and `lib/data/sample` chain. Keep remaining candidates until import graph and replacement path are proven. |
 | Dev/test fixture data | Keep. Simulator and functions contracts depend on `tests/fixtures/functions/*` and `tools/simulator/fixtures/*`. |
-| Unreferenced source fixture | Review before deletion. `features/materials/__fixtures__/materialsMock.ts` has no direct runtime import found. |
+| Unreferenced source fixture | 0.24.08 deleted the stale material fixture after direct import, dynamic string, route/API, test, script, docs, fallback, and replacement-path review. |
 | Generated local folders | Classify as `GENERATED-LOCAL` / `GIT-IGNORE`, not source `DELETE-SAFE`: `.next`, `artifacts`, `.tmp`, `test-results`, `playwright-report`, root `node_modules`, worker `node_modules`, worker `.wrangler`. They may be regenerated locally and are cleaned only on explicit request. |
 | Historical docs | Keep or archive only with index refresh; do not delete by age. |
 
@@ -79,7 +79,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 | Version | Scope | Completion criteria |
 |---|---|---|
 | `0.24.07` | Productization roadmap and inventory | Roadmap, audit inventory, current-state, app version, and local commit metadata updated; no product code deletion or mutation. |
-| `0.24.08` | Mock/sample/fixture and unused-code cleanup | Delete only proven-unreferenced source; keep simulator/test fixtures; document import graph and run build/contracts. |
+| `0.24.08` | Mock/sample/fixture and unused-code cleanup | Completed. Removed only proven-unreferenced source mock/sample files; static reference/export graph, build, Mutation Audit, and selected Node contract tests passed. Kept simulator/test fixtures, lockfile, Cloudflare review files, and repository overlap items. |
 | `0.24.09` | Customer admin main and plan/storage | Admin dashboard, plan quota, DB/R2 usage display, warnings, and company file policy aligned. |
 | `0.24.10` | System admin and account switching | System dashboard/billing/storage data paths, dev/test account switcher, restore, and audit logs verified. |
 | `0.24.11` | User workspace screens | Workorders, material orders, materials, partners, `/workspace`, `/worker` policy, responsive layout, save/lock/toast consistency. |
