@@ -81,7 +81,7 @@ The app has a broad working skeleton with many DB-backed workspace, system, stor
 |---|---|---|
 | `0.24.07` | Productization roadmap and inventory | Roadmap, audit inventory, current-state, app version, and local commit metadata updated; no product code deletion or mutation. |
 | `0.24.08` | Mock/sample/fixture and unused-code cleanup | Completed. Removed only proven-unreferenced source mock/sample files; static reference/export graph, build, Mutation Audit, and selected Node contract tests passed. Kept simulator/test fixtures, lockfile, Cloudflare review files, and repository overlap items. |
-| `0.24.09` | Customer admin main and plan/storage | In progress. Customer admin dashboard now surfaces plan status, file-policy storage quota, attachment/trash usage, and member-limit warnings from DB-backed paths. R2 reconciliation display remains for later productization. |
+| `0.24.09` | Customer admin main and plan/storage | Completed. Customer admin dashboard surfaces plan status, file-policy storage quota, attachment/trash usage, and member-limit warnings from DB-backed paths. R2 reconciliation display remains for later productization. |
 | `0.24.10` | System admin and account switching | System dashboard/billing/storage data paths, dev/test account switcher, restore, and audit logs verified. |
 | `0.24.11` | User workspace screens | Workorders, material orders, materials, partners, `/workspace`, `/worker` policy, responsive layout, save/lock/toast consistency. |
 | `0.24.12` | PDF | Workorder and supplier PDF policies resolved; generation, regeneration, R2 storage, download, print, and failure handling verified. |

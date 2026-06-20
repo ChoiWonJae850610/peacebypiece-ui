@@ -38,6 +38,14 @@
   - No force push, amend, reset, clean, checkout, rebase, or destructive Git operation is used.
 - If automatic push is allowed, push only with `git push origin master`.
 
+## Stop Before Commit Cases
+- In these cases, proceed through scoped edits and safe validation, then stop before stage/commit/push and report the result:
+  - Visual design, layout, PDF output, responsive behavior, or generated document format changes that require direct user judgment.
+  - Broad UI structure changes or product-policy choices where several valid outcomes require user selection.
+  - The user explicitly asks to stop before commit, asks for report-only work, or labels the task as a checkpoint before commit.
+  - Required validation is blocked, fails outside the requested scope, or depends on manual browser/session evidence that has not been supplied.
+- When stopping before commit, keep the working tree intact and report exact next commands or decisions needed.
+
 ## Safe Work Without Extra Confirmation
 - Reading repository files, tracing references, checking docs/audits, and inspecting existing tests or scripts is allowed.
 - Read-only Git commands such as `git status`, `git status --short`, `git status --branch --short`, `git diff`, `git diff --check`, `git diff --cached`, `git diff --cached --check`, `git log`, `git show`, `git branch --show-current`, and `git rev-list --left-right --count` are allowed.
@@ -54,6 +62,7 @@
 - `git add`, `git rm`, `git commit`, and `git push` require explicit approval unless the automatic version workflow and all automatic Git conditions apply. Force push, amend, reset, clean, checkout, restore, branch deletion, rebase, merge, and cherry-pick always require explicit approval.
 - Bulk file deletion, file moves, broad renames, dependency installs, dependency removals, dependency version changes, package manager changes, lockfile creation, and lockfile changes require explicit approval.
 - DB schema changes, authentication/authorization policy changes, tenant-isolation changes, and user-data-shape changes require explicit approval unless the user directly requested that exact change.
+- Production data access, actual Seed/Reset/Cleanup/Migration, DROP/TRUNCATE/DELETE SQL, R2 object creation/deletion, dependency or lockfile changes, force/amend/reset/clean/checkout/rebase, and committing with failed required tests always require a stop-and-ask confirmation.
 - Do not use `git add .`, `git add -A`, or `git commit -am`. Stage only approved files by explicit path.
 
 ## Version Policy
@@ -111,9 +120,19 @@
 - Explain results in user-facing terms; do not return raw logs without summarizing what they mean.
 - Ask questions only when the answer is truly needed. When asking, state the recommended option first and briefly explain why user judgment is required. Prefer yes/no confirmation for genuinely risky actions.
 - Do not repeatedly ask the user to choose already-settled policies or purely technical implementation details.
-- For normal completion reports, include original version, result version, development progress, Git status, what was checked, what changed, changed files, tests run, failures/skips, commit hash/message when committed, push result when pushed, direct user-confirmation items, next work, DB migration status, PowerShell change status, whether ZIP/repo-state/PowerShell upload is needed, and what approval is needed next.
+- For normal completion reports, include original version, result version, development progress, productization progress, Git status, what was checked, what changed, changed files, tests run, failures/skips, commit hash/message when committed, push result when pushed, direct user-confirmation items, next work, DB migration status, PowerShell change status, whether ZIP/repo-state/PowerShell upload is needed, and whether a new Codex/ChatGPT conversation is needed.
 - For short intermediate updates, keep the report concise and focused on what changed or what was learned.
 - When a version is marked as a checkpoint, report completion and wait. Do not automatically start the next version or follow-up task.
+
+## Manual Verification Guidance
+- Final reports must clearly separate automatic validation from user manual verification.
+- If UI behavior changes, include the exact route or menu path, account role/permission, target devices when relevant, actions to perform, expected before/after difference, empty/loading/error/forbidden states, refresh/re-login expectations, and the normal completion criteria.
+- If DB values or persistence behavior changes, explain the table/entity/repository/API path, which values change, which values must remain unchanged, save timing, refresh persistence, whether a real DB mutation was executed, and whether the user needs a read-only SQL check.
+- If a workflow changes, describe the user action sequence, permission check, API/server handling, DB write or read, R2/PDF/Worker involvement, screen result, failure/recovery message, and repeated-click/refresh/network-delay behavior.
+- If permissions change, distinguish system administrator, customer administrator, general user, partner/external user, dev/test account, and no-permission user where relevant. Report accessible routes, visible buttons, allowed read/create/update/delete actions, blocked actions, and whether permission changes apply immediately.
+- If storage or R2 behavior changes, report plan quota, current usage, DB and R2 aggregation method, usage formula, warning/block thresholds, expected test-company usage, UI/database consistency criteria, whether R2 objects were actually created/deleted, and dev/test versus production separation.
+- If PDF behavior changes, report generation state, button location, included data, workorder versus supplier/material-order purpose, temporary versus final PDF behavior, R2 storage, regeneration, download/print method, filename rules, screen/PDF comparison points, and actual Worker/R2 call status.
+- If no user manual verification is needed, state that explicitly and explain why automatic validation is sufficient.
 
 ## Test Execution Environment
 - If Node execution fails inside the Codex sandbox because of permissions or environment limitations, first try the existing project PowerShell pipeline or another safe already-available runtime path.
