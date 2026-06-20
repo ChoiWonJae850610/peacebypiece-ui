@@ -18,7 +18,7 @@
 
 ## Default Automatic Version Workflow
 - When the user clearly specifies a version goal and scope, treat analysis, implementation, validation, staging, commit, push, and final reporting as one continuous task.
-- The normal flow is: check branch/HEAD/origin/working tree, inspect relevant code and docs, implement within scope, update `APP_VERSION` and versioned docs when the task is a versioned patch, run build and relevant tests, run Mutation Audit and needed contract tests, review the final diff, stage only the approved in-scope paths by explicit path, run `git diff --cached --check`, commit with a version-appropriate message, push with `git push origin master`, verify origin is synchronized and the working tree is clean, then report the result.
+- The normal flow is: check branch/HEAD/origin/working tree, inspect relevant code and docs, implement within scope, update `APP_VERSION` and versioned docs when the task is a versioned patch, run `tools/pipeline/verify-safe.ps1` when its profile covers the scope, review the final diff, finish Git with `tools/pipeline/finish-version.ps1` when its allowlist covers the scope, verify origin is synchronized and the working tree is clean, then report the result.
 - Do not ask for separate user approval before stage, commit, or `git push origin master` during ordinary version work when all automatic Git conditions below are satisfied.
 - If any automatic Git condition is not satisfied, stop before stage/commit/push and report the reason plus the recommended next action.
 
@@ -53,6 +53,8 @@
 - Adding a new file is allowed only when it is clearly required by the requested change and does not replace or delete an existing file.
 - Small unused-file deletion is allowed only when references are checked and build/tests validate the deletion. Bulk deletion, moves, and broad renames still require explicit approval.
 - Safe verification such as build, lint, typecheck, existing contract tests, mutation audits, PowerShell parse checks, dry-run commands, plan-mode commands, and simulator checks without DB/R2 mutation is allowed.
+- Prefer `tools/pipeline/verify-safe.ps1` over ad hoc individual validation commands when an available profile covers the changed area.
+- `tools/pipeline/verify-safe.ps1` and `tools/pipeline/peacebypiece-auto-pipeline.ps1 -CreateLocalRepoHandoff` are read/validation-only commands. They may still need Codex app OS approval when writing pipeline output files outside the workspace.
 - If a safe validation fails and the cause is inside the requested scope, fix it and rerun the same validation when reasonable.
 - Under the automatic version workflow, explicit-path staging, ordinary commit, `git push origin master`, and post-push Git state checks are allowed when all automatic Git conditions are satisfied.
 
@@ -105,6 +107,7 @@
 ## Git And Delivery
 - Do not commit or push unless the user explicitly approved it or the automatic version workflow conditions are fully satisfied.
 - Do not run `git reset`, `git checkout`, `git clean`, or equivalent destructive commands unless explicitly requested.
+- For automatic version work, prefer `tools/pipeline/finish-version.ps1` over separate `git add`, `git commit`, and `git push` commands. It still performs Git writes, so one version-scoped execution approval may remain necessary in the Codex app.
 - For automatic version work, stage only in-scope files by explicit path, run `git diff --cached --check`, commit, push, and report the staged/committed/pushed result in the final report instead of pausing at each step.
 - For non-automatic Git work, before staging, report the exact files and command. After staging, report the full staged file list.
 - For non-automatic Git work, before committing, run `git diff --cached --check`, then report the staged file list and diff summary.
@@ -140,4 +143,5 @@
 - If validation still cannot run, distinguish code failure from environment failure, provide the minimal user-run commands in one batch, and continue the same task after the user provides results.
 
 ## Tool And Approval Settings
-- Codex approval settings cannot be changed from this file, but the recommended operating posture is: auto-allow repository file reads, safe scoped edits, read-only Git commands, and safe validation; ask for network writes, Git index/history/remote changes, dependency changes, DB/R2 mutation, production access, and destructive commands.
+- Codex approval settings cannot be changed from this file, and the Codex app OS execution approval UI cannot be bypassed by repository rules. The recommended operating posture is: auto-allow repository file reads, safe scoped edits, read-only Git commands, and safe validation; ask for network writes, Git index/history/remote changes, dependency changes, DB/R2 mutation, production access, and destructive commands.
+- Use wrappers to reduce approval count, not to broaden permission. Do not encourage broad always-approve prefixes such as all `powershell`, all `node`, or all `git`. Prefer exact read/validation commands or version-scoped wrapper commands.

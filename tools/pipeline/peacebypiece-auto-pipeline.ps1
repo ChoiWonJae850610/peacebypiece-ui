@@ -24,6 +24,9 @@
 # - git commit/push를 먼저 수행하고, build는 검증용으로만 실행한다.
 # ==========================================
 
+param(
+    [switch]$CreateLocalRepoHandoff
+)
 
 $PipelineCommonPath = Join-Path $PSScriptRoot "pipeline-common.ps1"
 $PipelinePatchProcessingPath = Join-Path $PSScriptRoot "pipeline-patch-processing.ps1"
@@ -311,6 +314,632 @@ function SanitizeResultFileNamePart {
     }
 
     return $sanitized
+}
+
+function GetUniqueOutputPath {
+    param(
+        [string]$Directory,
+        [string]$FileNameWithoutExtension,
+        [string]$Extension
+    )
+
+    $candidate = Join-Path $Directory "$FileNameWithoutExtension$Extension"
+    if (-not (Test-Path -LiteralPath $candidate)) {
+        return $candidate
+    }
+
+    $timestamp = GetTimestamp
+    $candidate = Join-Path $Directory "$FileNameWithoutExtension-$timestamp$Extension"
+    if (-not (Test-Path -LiteralPath $candidate)) {
+        return $candidate
+    }
+
+    $counter = 2
+    while ($true) {
+        $candidate = Join-Path $Directory "$FileNameWithoutExtension-$timestamp-$counter$Extension"
+        if (-not (Test-Path -LiteralPath $candidate)) {
+            return $candidate
+        }
+        $counter++
+    }
+}
+
+function ConvertToZipEntryName {
+    param([string]$RelativePath)
+
+    return (($RelativePath -replace '\\', '/') -replace '^\./', '')
+}
+
+function GetZipEntrySegments {
+    param([string]$RelativePath)
+
+    $entryName = (ConvertToZipEntryName -RelativePath $RelativePath).Trim('/')
+    if ([string]::IsNullOrWhiteSpace($entryName)) {
+        return @()
+    }
+
+    return @($entryName -split '/')
+}
+
+function GetLocalRepoRelativePath {
+    param([string]$FullPath)
+
+    $basePath = [System.IO.Path]::GetFullPath($ProjectDir).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+    $targetPath = [System.IO.Path]::GetFullPath($FullPath)
+    $baseUri = New-Object System.Uri($basePath)
+    $targetUri = New-Object System.Uri($targetPath)
+    $relativeUri = $baseUri.MakeRelativeUri($targetUri)
+    $relativePath = [System.Uri]::UnescapeDataString($relativeUri.ToString())
+    return ($relativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+}
+
+function TestLocalRepoExportExcludedPath {
+    param([string]$RelativePath)
+
+    $entryName = (ConvertToZipEntryName -RelativePath $RelativePath).TrimStart('/')
+    $segments = @(GetZipEntrySegments -RelativePath $entryName)
+    $lowerSegments = @($segments | ForEach-Object { $_.ToLowerInvariant() })
+    $leaf = [System.IO.Path]::GetFileName($entryName).ToLowerInvariant()
+
+    if ($leaf -eq ".env.example") {
+        return $false
+    }
+
+    $excludedSegments = @(
+        ".git",
+        "node_modules",
+        ".next",
+        ".wrangler",
+        "artifacts",
+        ".tmp",
+        "test-results",
+        "playwright-report"
+    )
+
+    foreach ($segment in $lowerSegments) {
+        if ($excludedSegments -contains $segment) {
+            return $true
+        }
+    }
+
+    if ($leaf -eq ".env" -or $leaf.StartsWith(".env.")) {
+        return $true
+    }
+
+    if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt") {
+        return $true
+    }
+
+    if ($leaf -in @(".ds_store", "thumbs.db", "desktop.ini")) {
+        return $true
+    }
+
+    $backupOrTempPatterns = @(
+        "*.bak",
+        "*.backup",
+        "*.old",
+        "*.orig",
+        "*.tmp",
+        "*.temp",
+        "*~",
+        "* - copy.*",
+        "* copy.*",
+        "*.copy.*"
+    )
+
+    foreach ($pattern in $backupOrTempPatterns) {
+        if ($leaf -like $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function GetLocalRepoExportExcludeSummary {
+    return @(
+        "any path segment named .git",
+        "any path segment named node_modules",
+        "any path segment named .next",
+        "any path segment named .wrangler",
+        "any path segment named artifacts",
+        "any path segment named .tmp",
+        "any path segment named test-results",
+        "any path segment named playwright-report",
+        ".env, .env.* except .env.example",
+        "generated ZIP files",
+        "repo-state-*.txt",
+        "backup/temp/copy files",
+        "OS temporary files"
+    )
+}
+
+function TestSuspiciousSecretExportCandidate {
+    param([string]$RelativePath)
+
+    $entryName = ConvertToZipEntryName -RelativePath $RelativePath
+    $lower = $entryName.ToLowerInvariant()
+    $leaf = [System.IO.Path]::GetFileName($lower)
+
+    if ($lower -match '(^|/)(docs|tests|test|__tests__|fixtures|mocks|examples?)/') {
+        return $false
+    }
+
+    if ($leaf -match '(example|sample|template|mock|dummy)') {
+        return $false
+    }
+
+    if ($leaf -in @("secrets.json", "secret.json", "tokens.json", "token.json", "credentials.json", "credential.json")) {
+        return $true
+    }
+
+    if ($leaf -match '(^|[-_.])(secret|token|credential|credentials)([-_.]|$)' -and $leaf -match '\.(json|txt|ya?ml|psd1|ps1|config)$') {
+        return $true
+    }
+
+    if ($leaf -match '^(id_rsa|id_dsa|id_ecdsa|id_ed25519)(\.pub)?$') {
+        return $true
+    }
+
+    if ($leaf -match '\.(pem|pfx|p12|key)$') {
+        return $true
+    }
+
+    return $false
+}
+
+function TestLikelyTextFile {
+    param([string]$Path)
+
+    $sampleSize = [Math]::Min(4096, (Get-Item -LiteralPath $Path).Length)
+    if ($sampleSize -le 0) {
+        return $true
+    }
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $buffer = New-Object byte[] $sampleSize
+        $read = $stream.Read($buffer, 0, $sampleSize)
+        for ($i = 0; $i -lt $read; $i++) {
+            if ($buffer[$i] -eq 0) {
+                return $false
+            }
+        }
+        return $true
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
+function TestSecretContentScanExemptPath {
+    param([string]$RelativePath)
+
+    $entryName = ConvertToZipEntryName -RelativePath $RelativePath
+    $lower = $entryName.ToLowerInvariant()
+    $leaf = [System.IO.Path]::GetFileName($lower)
+
+    if ($lower -match '(^|/)(docs|tests|test|__tests__|fixtures|mocks|examples?|보관문서|audits)/') {
+        return $true
+    }
+
+    if ($leaf -match '(example|sample|placeholder|dummy|test|mock|fixture|contract)') {
+        return $true
+    }
+
+    return $false
+}
+
+function TestSuspiciousSecretContent {
+    param(
+        [string]$Path,
+        [string]$RelativePath
+    )
+
+    if (TestSecretContentScanExemptPath -RelativePath $RelativePath) {
+        return $false
+    }
+
+    if (-not (TestLikelyTextFile -Path $Path)) {
+        return $false
+    }
+
+    $fileInfo = Get-Item -LiteralPath $Path
+    if ($fileInfo.Length -gt 1048576) {
+        return $false
+    }
+
+    $content = Get-Content -LiteralPath $Path -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if ([string]::IsNullOrWhiteSpace($content)) {
+        return $false
+    }
+
+    $secretPatterns = @(
+        "-----BEGIN (RSA |DSA |EC |OPENSSH |)PRIVATE KEY-----",
+        "(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{32,}",
+        "\bAKIA[0-9A-Z]{16}\b",
+        "(?i)\bcloudflare[_-]?(api[_-]?)?token\b\s*[:=]\s*[`"'][A-Za-z0-9_\-\.]{24,}[`"']",
+        "(?i)(postgres|postgresql|mysql|mongodb)://[^/\s:@]+:[^@\s]+@",
+        "(?i)\b(secret|api[_-]?key|access[_-]?token|auth[_-]?token|password|passwd|pwd|credential)\b\s*[:=]\s*[`"'](?!\s*(example|sample|placeholder|dummy|test|mock|changeme|your-|<))[A-Za-z0-9_\-./+=@$!%*#?&]{16,}[`"']"
+    )
+
+    foreach ($pattern in $secretPatterns) {
+        if ($content -match $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function GetLocalRepoExportCandidateFiles {
+    $gitFiles = @(InvokeLocalRepoGitOutput -Arguments @("ls-files", "-co", "--exclude-standard"))
+    if ($LASTEXITCODE -ne 0) {
+        throw "git ls-files 후보 목록 생성 실패"
+    }
+
+    $seen = @{}
+    $files = New-Object System.Collections.Generic.List[object]
+
+    foreach ($gitFile in $gitFiles) {
+        $entryName = ConvertToZipEntryName -RelativePath ([string]$gitFile)
+        if ([string]::IsNullOrWhiteSpace($entryName)) {
+            continue
+        }
+
+        if ($seen.ContainsKey($entryName.ToLowerInvariant())) {
+            continue
+        }
+
+        if (TestLocalRepoExportExcludedPath -RelativePath $entryName) {
+            continue
+        }
+
+        $fullPath = Join-Path $ProjectDir ($entryName -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+            continue
+        }
+
+        $seen[$entryName.ToLowerInvariant()] = $true
+        $files.Add([pscustomobject]@{
+            FullName = [System.IO.Path]::GetFullPath($fullPath)
+            EntryName = $entryName
+        })
+    }
+
+    return $files.ToArray()
+}
+
+function InvokeLocalRepoGitOutput {
+    param([string[]]$Arguments)
+
+    return @(git `
+        -c color.ui=false `
+        -c core.pager=cat `
+        -c core.quotepath=false `
+        -c i18n.logOutputEncoding=utf-8 `
+        -C $ProjectDir @Arguments 2>&1)
+}
+
+function GetPackageJsonVersionForLocalRepoExport {
+    $packageJsonPath = Join-Path $ProjectDir "package.json"
+    if (-not (Test-Path -LiteralPath $packageJsonPath)) {
+        return "package.json 없음"
+    }
+
+    try {
+        $packageJson = Get-Content -LiteralPath $packageJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        return [string]$packageJson.version
+    }
+    catch {
+        return "package.json version 확인 오류: $($_.Exception.Message)"
+    }
+}
+
+function GetCanonicalPowerShellTrackedState {
+    $relativePath = "tools/pipeline/peacebypiece-auto-pipeline.ps1"
+    InvokeLocalRepoGitOutput -Arguments @("ls-files", "--error-unmatch", $relativePath) | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        return "tracked: $relativePath"
+    }
+
+    return "not tracked: $relativePath"
+}
+
+function AddRepoStateSection {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Title,
+        [string[]]$Values,
+        [string]$EmptyText = "(none)"
+    )
+
+    $Lines.Add($Title)
+    if ($null -eq $Values -or $Values.Count -eq 0) {
+        $Lines.Add($EmptyText)
+    }
+    else {
+        foreach ($value in $Values) {
+            $Lines.Add([string]$value)
+        }
+    }
+    $Lines.Add("")
+}
+
+function NewLocalRepoStateFile {
+    param(
+        [string]$Version,
+        [string]$ZipPath,
+        [long]$ZipSizeBytes,
+        [bool]$WorkingTreeClean
+    )
+
+    EnsureDirectory -Path $RepoStatusDir
+    $safeVersion = SanitizeResultFileNamePart -Value $Version
+    $timestamp = GetTimestamp
+    $repoStatePath = GetUniqueOutputPath -Directory $RepoStatusDir -FileNameWithoutExtension "repo-state-$safeVersion-$timestamp" -Extension ".txt"
+
+    $statusShort = @(InvokeLocalRepoGitOutput -Arguments @("status", "--short"))
+    $staged = @($statusShort | Where-Object {
+        $_.Length -ge 2 -and $_.Substring(0, 2) -ne "??" -and $_.Substring(0, 1) -ne " "
+    })
+    $unstaged = @($statusShort | Where-Object {
+        $_.Length -ge 2 -and $_.Substring(0, 2) -ne "??" -and $_.Substring(1, 1) -ne " "
+    })
+    $untracked = @($statusShort | Where-Object { $_.StartsWith("??") })
+
+    $aheadBehind = @(InvokeLocalRepoGitOutput -Arguments @("rev-list", "--left-right", "--count", "origin/master...HEAD"))
+    $aheadBehindText = if ($aheadBehind.Count -gt 0 -and ([string]$aheadBehind[0]) -match '^\s*(\d+)\s+(\d+)\s*$') {
+        "ahead $($matches[2]), behind $($matches[1])"
+    }
+    else {
+        ($aheadBehind | Out-String).Trim()
+    }
+
+    $lines = New-Object System.Collections.Generic.List[string]
+
+    if (-not $WorkingTreeClean) {
+        $lines.Add("WARNING: WORKING TREE IS NOT CLEAN")
+        $lines.Add("")
+    }
+
+    AddRepoStateSection -Lines $lines -Title "Generated At:" -Values @((Get-Date -Format "yyyy-MM-dd HH:mm:ss"))
+    AddRepoStateSection -Lines $lines -Title "Repository Path:" -Values @($ProjectDir)
+    AddRepoStateSection -Lines $lines -Title "Branch:" -Values @(InvokeLocalRepoGitOutput -Arguments @("branch", "--show-current"))
+    AddRepoStateSection -Lines $lines -Title "HEAD Hash:" -Values @(InvokeLocalRepoGitOutput -Arguments @("rev-parse", "HEAD"))
+    AddRepoStateSection -Lines $lines -Title "HEAD Commit Message:" -Values @(InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--pretty=%s"))
+    AddRepoStateSection -Lines $lines -Title "Origin Master Hash:" -Values @(InvokeLocalRepoGitOutput -Arguments @("rev-parse", "origin/master"))
+    AddRepoStateSection -Lines $lines -Title "Ahead / Behind:" -Values @($aheadBehindText)
+    AddRepoStateSection -Lines $lines -Title "Working Tree Clean:" -Values @($(if ($WorkingTreeClean) { "true" } else { "false" }))
+    AddRepoStateSection -Lines $lines -Title "Git Status --short:" -Values $statusShort -EmptyText "clean"
+    AddRepoStateSection -Lines $lines -Title "Staged:" -Values $staged
+    AddRepoStateSection -Lines $lines -Title "Unstaged:" -Values $unstaged
+    AddRepoStateSection -Lines $lines -Title "Untracked:" -Values $untracked
+    AddRepoStateSection -Lines $lines -Title "Recent Commits (5):" -Values @(InvokeLocalRepoGitOutput -Arguments @("log", "--oneline", "-5"))
+    AddRepoStateSection -Lines $lines -Title "APP_VERSION:" -Values @($Version)
+    AddRepoStateSection -Lines $lines -Title "package.json Version:" -Values @((GetPackageJsonVersionForLocalRepoExport))
+    AddRepoStateSection -Lines $lines -Title "Canonical PowerShell Tracked State:" -Values @((GetCanonicalPowerShellTrackedState))
+    AddRepoStateSection -Lines $lines -Title "Generated ZIP:" -Values @($ZipPath)
+    AddRepoStateSection -Lines $lines -Title "ZIP Size Bytes:" -Values @([string]$ZipSizeBytes)
+    AddRepoStateSection -Lines $lines -Title "Exclude Rule Summary:" -Values (GetLocalRepoExportExcludeSummary)
+
+    [System.IO.File]::WriteAllLines($repoStatePath, $lines, [System.Text.Encoding]::UTF8)
+    return $repoStatePath
+}
+
+function TestLocalRepoExportZip {
+    param(
+        [string]$ZipPath,
+        [string[]]$ExpectedEntries
+    )
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($ZipPath)
+    try {
+        $entryNames = @($archive.Entries | ForEach-Object { $_.FullName })
+        $lowerEntryNames = @($entryNames | ForEach-Object { $_.ToLowerInvariant() })
+
+        foreach ($entryName in $entryNames) {
+            if (TestLocalRepoExportExcludedPath -RelativePath $entryName) {
+                throw "ZIP 내부 제외 경로 발견: $entryName"
+            }
+        }
+
+        foreach ($expectedEntry in $ExpectedEntries) {
+            $normalized = (ConvertToZipEntryName -RelativePath $expectedEntry).ToLowerInvariant()
+            if ($lowerEntryNames -notcontains $normalized) {
+                throw "ZIP 내부 필수 파일 없음: $expectedEntry"
+            }
+        }
+
+        return $true
+    }
+    finally {
+        $archive.Dispose()
+    }
+}
+
+function TestLocalRepoExportZipContract {
+    param(
+        [string]$ZipPath,
+        [string[]]$ExpectedEntries
+    )
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($ZipPath)
+    try {
+        $entryNames = @($archive.Entries | ForEach-Object { $_.FullName })
+        $lowerEntryNames = @($entryNames | ForEach-Object { $_.ToLowerInvariant() })
+        $blockedSegments = @(".git", "node_modules", ".next", ".wrangler", "artifacts", ".tmp", "test-results", "playwright-report")
+
+        foreach ($entryName in $entryNames) {
+            $segments = @($entryName.Trim("/") -split "/" | ForEach-Object { $_.ToLowerInvariant() })
+            foreach ($segment in $segments) {
+                if ($blockedSegments -contains $segment) {
+                    throw "ZIP contract 실패: 중첩 제외 세그먼트 포함($entryName)"
+                }
+            }
+
+            $leaf = [System.IO.Path]::GetFileName($entryName).ToLowerInvariant()
+            if ($leaf -ne ".env.example" -and ($leaf -eq ".env" -or $leaf.StartsWith(".env."))) {
+                throw "ZIP contract 실패: env 파일 포함($entryName)"
+            }
+
+            if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt") {
+                throw "ZIP contract 실패: 생성물 포함($entryName)"
+            }
+        }
+
+        if ($lowerEntryNames -notcontains ".env.example") {
+            throw "ZIP contract 실패: .env.example 누락"
+        }
+
+        foreach ($expectedEntry in $ExpectedEntries) {
+            $normalized = (ConvertToZipEntryName -RelativePath $expectedEntry).ToLowerInvariant()
+            if ($lowerEntryNames -notcontains $normalized) {
+                throw "ZIP contract 실패: 필수 파일 누락($expectedEntry)"
+            }
+        }
+
+        return $true
+    }
+    finally {
+        $archive.Dispose()
+    }
+}
+
+function NewLocalRepositoryHandoff {
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Stop"
+
+    try {
+    Write-Host ""
+    Write-Host "========================================================="
+    Write-Host "현재 저장소 ZIP + repo-state 생성" -ForegroundColor Cyan
+    Write-Host "========================================================="
+    LogInfo "read/export-only 메뉴입니다. Build, 다운로드, Git 변경, DB/R2 접근을 수행하지 않습니다."
+
+    $initialStatusShort = @(InvokeLocalRepoGitOutput -Arguments @("status", "--short"))
+    $workingTreeClean = $initialStatusShort.Count -eq 0
+
+    if (-not $workingTreeClean) {
+        LogWarn "WARNING: WORKING TREE IS NOT CLEAN"
+    }
+
+    $version = SanitizeResultFileNamePart -Value (GetProjectAppVersionForTestResult)
+    EnsureDirectory -Path $BuildZipDir
+    EnsureDirectory -Path $RepoStatusDir
+
+    $zipPath = GetUniqueOutputPath -Directory $BuildZipDir -FileNameWithoutExtension "peacebypiece-ui-$version" -Extension ".zip"
+    $candidateFiles = @(GetLocalRepoExportCandidateFiles)
+    $exportFiles = New-Object System.Collections.Generic.List[object]
+    $suspiciousSecretPaths = New-Object System.Collections.Generic.List[string]
+
+    foreach ($file in $candidateFiles) {
+        $entryName = ConvertToZipEntryName -RelativePath $file.EntryName
+
+        if (TestLocalRepoExportExcludedPath -RelativePath $entryName) {
+            continue
+        }
+
+        if (TestSuspiciousSecretExportCandidate -RelativePath $entryName) {
+            $suspiciousSecretPaths.Add($entryName)
+            continue
+        }
+
+        if (TestSuspiciousSecretContent -Path $file.FullName -RelativePath $entryName) {
+            $suspiciousSecretPaths.Add($entryName)
+            continue
+        }
+
+        $exportFiles.Add([pscustomobject]@{
+            FullName = $file.FullName
+            EntryName = $entryName
+        })
+    }
+
+    if ($suspiciousSecretPaths.Count -gt 0) {
+        LogError "secret/token 의심 파일이 ZIP 후보에서 발견되어 생성을 중단합니다."
+        foreach ($path in $suspiciousSecretPaths) {
+            Write-Host " - $path"
+        }
+        return $null
+    }
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zipStream = [System.IO.File]::Open($zipPath, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+    $archive = New-Object System.IO.Compression.ZipArchive($zipStream, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($file in $exportFiles) {
+            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                $archive,
+                $file.FullName,
+                $file.EntryName,
+                [System.IO.Compression.CompressionLevel]::Optimal
+            ) | Out-Null
+        }
+    }
+    finally {
+        $archive.Dispose()
+        $zipStream.Dispose()
+    }
+
+    $requiredEntries = @(
+        "AGENTS.md",
+        "lib/constants/version.ts",
+        "docs/codex-current-state.md",
+        "tools/pipeline/peacebypiece-auto-pipeline.ps1",
+        "package.json"
+    )
+    TestLocalRepoExportZip -ZipPath $zipPath -ExpectedEntries $requiredEntries | Out-Null
+    TestLocalRepoExportZipContract -ZipPath $zipPath -ExpectedEntries $requiredEntries | Out-Null
+
+    $zipItem = Get-Item -LiteralPath $zipPath
+    $repoStatePath = NewLocalRepoStateFile -Version $version -ZipPath $zipPath -ZipSizeBytes $zipItem.Length -WorkingTreeClean $workingTreeClean
+
+    $repoStateContent = Get-Content -LiteralPath $repoStatePath -Raw -Encoding UTF8
+    foreach ($requiredText in @("Generated At:", "Repository Path:", "Branch:", "HEAD Hash:", "APP_VERSION:", "Generated ZIP:", "Exclude Rule Summary:")) {
+        if ($repoStateContent -notmatch [regex]::Escape($requiredText)) {
+            throw "repo-state 내용 검사 실패: $requiredText"
+        }
+    }
+
+    $finalStatusShort = @(InvokeLocalRepoGitOutput -Arguments @("status", "--short"))
+    $gitStatusUnchanged = (($initialStatusShort -join "`n") -eq ($finalStatusShort -join "`n"))
+    if (-not $gitStatusUnchanged) {
+        LogWarn "생성 후 Git working tree 상태가 시작 시점과 달라졌습니다."
+    }
+
+    Write-Host ""
+    LogInfo "ZIP 전체 경로: $zipPath"
+    LogInfo "repo-state 전체 경로: $repoStatePath"
+    LogInfo "ZIP 크기: $($zipItem.Length) bytes"
+    LogInfo "APP_VERSION: $version"
+    LogInfo "Git clean 여부: $workingTreeClean"
+    LogInfo "ChatGPT 업로드 파일 1: $(Split-Path -Leaf $zipPath)"
+    LogInfo "ChatGPT 업로드 파일 2: $(Split-Path -Leaf $repoStatePath)"
+
+    Write-Host ""
+    Write-Host "Enter를 누르면 개발 / 테스트 도구 메뉴로 돌아갑니다."
+    if (-not $CreateLocalRepoHandoff) {
+        [Console]::ReadLine() | Out-Null
+    }
+
+    return [pscustomobject]@{
+        ZipPath = $zipPath
+        RepoStatePath = $repoStatePath
+        ZipSizeBytes = $zipItem.Length
+        AppVersion = $version
+        GitClean = $workingTreeClean
+        GitStatusUnchanged = $gitStatusUnchanged
+    }
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
 }
 
 function GetProjectAppVersionForTestResult {
@@ -1068,6 +1697,7 @@ function ShowDeveloperToolsMenu {
         Write-Host " 4. DB/API Smoke Test                            [환경 필요]"
         Write-Host " 5. DB/API Permissions Test                      [환경 필요]"
         Write-Host " 6. WAFL Mutation Async Audit                    [안전]"
+        Write-Host " 7. 현재 저장소 ZIP + repo-state 생성            [read/export-only]"
         Write-Host " 8. 전체 검사 (기존 1~6 연속 실행)              [비파괴]"
         Write-Host " 9. Reset Database Schema                        [파괴적/이중 확인]"
         Write-Host ""
@@ -1114,6 +1744,7 @@ function ShowDeveloperToolsMenu {
             4  { RunDbApiSmokeTest | Out-Null }
             5  { RunDbApiPermissionsTest | Out-Null }
             6  { RunWaflMutationAsyncAudit | Out-Null }
+            7  { NewLocalRepositoryHandoff | Out-Null }
             8  { RunAllQualityChecks }
             9  { InvokeResetDatabaseSchema }
             10 { RunFunctionsDbContractTest | Out-Null }
@@ -1359,4 +1990,9 @@ function MainLoop {
 # ==========================================
 
 InitializePipeline
-MainLoop
+if ($CreateLocalRepoHandoff) {
+    NewLocalRepositoryHandoff | Out-Null
+}
+else {
+    MainLoop
+}

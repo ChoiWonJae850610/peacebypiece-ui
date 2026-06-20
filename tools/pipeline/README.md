@@ -40,4 +40,109 @@ Development/test menu 9 requires the exact confirmation phrase `RESET WAF-FN SCH
 4. Flush folders - 산출물 폴더 비우기
 5. 개발 / 테스트 도구
 
+## 현재 저장소 전달본 생성
+
+개발 / 테스트 도구 메뉴 7번 `현재 저장소 ZIP + repo-state 생성`은 현재 로컬 저장소 기준 전달본을 만듭니다. 권장 번호 22번은 기존 `Simulator DB Cleanup Execute`가 사용 중이므로, 같은 2자리 메뉴 체계에서 가장 가까운 빈 번호인 7번을 사용합니다.
+
+이 메뉴는 read/export-only 작업입니다. 원격 다운로드, Build, npm install/npm ci, dependency 변경, Git add/commit/push, checkout/reset/clean, DB/R2 접근, Seed/Reset/Cleanup/Migration, 파일 삭제, production 접근을 수행하지 않습니다. Working tree가 dirty여도 생성할 수 있으며, 이 경우 콘솔과 repo-state 첫 부분에 `WARNING: WORKING TREE IS NOT CLEAN`을 표시합니다.
+
+직접 실행:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiece-auto-pipeline.ps1 -CreateLocalRepoHandoff
+```
+
+출력 위치는 기존 pipeline 정책을 재사용합니다.
+
+- ZIP: `Paths.BuildZipDir` 아래 `peacebypiece-ui-{APP_VERSION}.zip`
+- repo-state: `Paths.RepoStatusDir` 아래 `repo-state-{APP_VERSION}-{yyyyMMdd-HHmmss}.txt`
+
+기존 파일은 덮어쓰지 않고 이름 충돌 시 timestamp/counter를 붙입니다. ZIP은 patch flat 구조가 아니라 원래 디렉터리 구조를 유지한 전체 소스 ZIP입니다. 파일 후보 목록은 `git ls-files -co --exclude-standard` 기준으로 만들며, tracked 수정 파일과 안전한 untracked 파일을 포함합니다.
+
+ZIP 제외 규칙:
+
+- 경로 세그먼트가 `.git`, `node_modules`, `.next`, `.wrangler`, `artifacts`, `.tmp`, `test-results`, `playwright-report`인 모든 중첩 디렉터리
+- `.env`, `.env.*` (`.env.example`은 포함)
+- 생성된 ZIP, 기존 `repo-state-*.txt`
+- backup/temp/copy 파일과 OS 임시 파일
+
+ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockfiles, public assets, Cloudflare Worker source와 공개 example 설정을 포함합니다. ZIP 후보에 실제 secret/token 파일명 또는 내용이 의심되면 ZIP 생성을 중단하고 경로만 보고합니다. secret 값 자체는 출력하지 않습니다.
+
+생성 후에는 ZIP 내부 contract 검증도 실행합니다. 이 검증은 생성 시 제외 함수와 별도로 중첩 `node_modules`, `.next`, `.wrangler`, `.env.local`, `.git`, 생성 ZIP, 기존 repo-state 제외와 `.env.example` 및 필수 파일 포함을 확인합니다.
+
+완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 두 파일명을 출력합니다.
+
+## 안전 검증 wrapper
+
+`verify-safe.ps1`은 버전 작업 후 안전 검증을 한 번에 실행하는 wrapper입니다. Git add/commit/push, DB/R2 mutation, Seed/Reset/Cleanup/Migration, dependency 설치, 파일 삭제, production write를 수행하지 않습니다.
+
+현재 프로필:
+
+```powershell
+.\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage
+```
+
+이 프로필은 공통 검증인 `git diff --check`, PowerShell parse check, package/lockfile 변경 확인, secret/production 값 검사, DB migration 변경 확인, `npm run build`, `npm run audit:wafl-mutations`와 다음 contract tests를 실행합니다.
+
+- `node tests/system-storage-usage-real-data-contract.mjs`
+- `node tests/system-dashboard-real-data-contract.mjs`
+- `node tests/system-billing-real-data-contract.mjs`
+- `node tests/dev-test-context-system-admin-contract.mjs`
+
+명령 계획과 안전 가드만 확인하려면:
+
+```powershell
+.\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage -CheckOnly
+```
+
+검증 결과 파일은 `Paths.RepoStatusDir` 아래 `verify-safe-{profile}-{yyyyMMdd-HHmmss}.txt`로 생성됩니다. `VERIFY_SAFE_RESULT: PASS`가 있어야 Git 완료 wrapper의 실행 근거로 사용할 수 있습니다.
+
+## Git 완료 wrapper
+
+`finish-version.ps1`은 개별 `git add`, `git commit`, `git push` 대신 명시 경로 allowlist로 Git 완료를 묶는 wrapper입니다. 기본은 plan mode라 Git write가 없습니다.
+
+Plan mode:
+
+```powershell
+.\tools\pipeline\finish-version.ps1 `
+  -CommitMessage "chore: update pipeline automation" `
+  -Paths AGENTS.md,tools/pipeline/README.md,tools/pipeline/peacebypiece-auto-pipeline.ps1,tools/pipeline/verify-safe.ps1,tools/pipeline/finish-version.ps1 `
+  -ExpectedAppVersion 0.24.10
+```
+
+실제 Git 완료:
+
+```powershell
+.\tools\pipeline\finish-version.ps1 `
+  -CommitMessage "chore: update pipeline automation" `
+  -Paths AGENTS.md,tools/pipeline/README.md,tools/pipeline/peacebypiece-auto-pipeline.ps1,tools/pipeline/verify-safe.ps1,tools/pipeline/finish-version.ps1 `
+  -ExpectedAppVersion 0.24.10 `
+  -VerificationResultPath "C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\Repo_Status\verify-safe-system-admin-storage-YYYYMMDD-HHMMSS.txt" `
+  -Execute
+```
+
+`finish-version.ps1`은 repository path, `master` branch, `origin/master` 조회와 ahead/behind 0/0, 예상 변경 파일, package/lockfile 변경 없음, secret/production 값 없음, DB migration 변경 없음, `git diff --check`, `git diff --cached --check`, staged file list, ordinary commit, `git push origin master`, push 후 clean 상태를 확인합니다. force push, amend, reset, clean, checkout, rebase, merge, stash drop, 대량 삭제, 예상 밖 stage는 수행하지 않습니다.
+
+## 승인 범위
+
+항상 승인 가능한 후보는 정확한 read/validation-only 명령으로 한정합니다.
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiece-auto-pipeline.ps1 -CreateLocalRepoHandoff`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage -CheckOnly`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\finish-version.ps1 ...` without `-Execute`
+
+개별 승인 또는 버전당 한 번의 명시 승인이 필요한 범위:
+
+- `finish-version.ps1 ... -Execute`는 Git write이므로 실행 전 조건과 경로 allowlist를 확인해야 합니다.
+- Seed/Reset/Cleanup/Migration execute, DB/R2 mutation, production access, dependency install/update, lockfile change, destructive cleanup은 wrapper와 무관하게 별도 명시 승인이 필요합니다.
+
+항상 승인하면 안 되는 broad prefix:
+
+- 전체 `powershell`
+- 전체 `node`
+- 전체 `npm`
+- 전체 `git`
+- destructive command를 포함할 수 있는 포괄 prefix
+
 Separate PowerShell uploads are not needed when Git already carries the current canonical script. Use an external PowerShell upload only when a newer script-only copy exists outside the repository or when a task explicitly asks for script-only handoff.
