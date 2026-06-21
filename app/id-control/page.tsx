@@ -6,6 +6,7 @@ import {
   getDevTestContextDisabledReason,
   isDevTestContextEnabled,
 } from "@/lib/dev/testContext/config";
+import { canAccessIdControl } from "@/lib/runtime/runtimePolicy";
 import DevTestConsoleClient from "../dev/test-console/DevTestConsoleClient";
 
 export const dynamic = "force-dynamic";
@@ -15,16 +16,15 @@ export default async function IdControlPage() {
   if (!actualSession) {
     redirect("/?error=SESSION_REQUIRED");
   }
-  if (!(await isActiveSystemAdminSession(actualSession))) {
+  const isSystemAdmin = await isActiveSystemAdminSession(actualSession);
+  if (!canAccessIdControl({ isSystemAdmin })) {
     notFound();
   }
 
-  const runtimeMode = process.env.NEXT_PUBLIC_APP_RUNTIME_MODE ?? process.env.NODE_ENV ?? "unknown";
   const devTestContextEnabled = isDevTestContextEnabled();
 
   return (
     <DevTestConsoleClient
-      runtimeMode={runtimeMode}
       devTestContextEnabled={devTestContextEnabled}
       devTestContextDisabledReason={getDevTestContextDisabledReason()}
     />

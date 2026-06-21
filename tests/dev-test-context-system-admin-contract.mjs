@@ -12,6 +12,11 @@ const session = fs.readFileSync("lib/dev/testContext/session.ts", "utf8");
 const optionsRoute = fs.readFileSync("app/api/dev/test-context/options/route.ts", "utf8");
 const switchRoute = fs.readFileSync("app/api/dev/test-context/switch/route.ts", "utf8");
 const clearRoute = fs.readFileSync("app/api/dev/test-context/clear/route.ts", "utf8");
+const config = fs.readFileSync("lib/dev/testContext/config.ts", "utf8");
+const runtimeMode = fs.readFileSync("lib/runtime/runtimeMode.ts", "utf8");
+const runtimePolicy = fs.readFileSync("lib/runtime/runtimePolicy.ts", "utf8");
+const functionsRuntime = fs.readFileSync("lib/functions/runtimeAccess.ts", "utf8");
+const uiRuntime = fs.readFileSync("lib/uiCatalog/runtimeAccess.ts", "utf8");
 
 assert.match(access, /FROM system_users/);
 assert.match(access, /role = 'system_admin'/);
@@ -25,12 +30,36 @@ for (const page of [idControlPage, consoleRedirectPage, functionsPage, uiPage]) 
 }
 assert.match(idControlPage, /isDevTestContextEnabled/);
 assert.match(idControlPage, /DevTestConsoleClient/);
-assert.match(consoleRedirectPage, /isDevTestContextEnabled/);
+assert.doesNotMatch(consoleRedirectPage, /isDevTestContextEnabled/);
 assert.match(consoleRedirectPage, /redirect\("\/id-control"\)/);
 assert.doesNotMatch(consoleRedirectPage, /<DevTestConsoleClient/);
 assert.match(functionsPage, /isWaflFunctionsRuntimeAllowed/);
 assert.match(uiPage, /isWaflUiCatalogRuntimeAllowed/);
 assert.doesNotMatch(uiPage, /WAFL_UI_CATALOG_RUNTIME_GATE_ENABLED = false/);
+
+for (const [name, source] of [
+  ["dev test config", config],
+  ["runtime mode", runtimeMode],
+  ["functions runtime", functionsRuntime],
+  ["ui runtime", uiRuntime],
+  ["id-control page", idControlPage],
+  ["dev console redirect", consoleRedirectPage],
+  ["options route", optionsRoute],
+  ["switch route", switchRoute],
+  ["clear route", clearRoute],
+]) {
+  assert.doesNotMatch(source, /NODE_ENV|VERCEL_ENV|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/, `${name} must not feature-gate by environment`);
+}
+
+for (const fnName of [
+  "canAccessIdControl",
+  "canSwitchTestAccount",
+  "canViewFunctionsCatalog",
+  "canViewUICatalog",
+  "canViewDiagnostics",
+]) {
+  assert.match(runtimePolicy, new RegExp(`export function ${fnName}`), `runtime policy missing ${fnName}`);
+}
 
 assert.match(repository, /FROM system_users/);
 assert.match(repository, /role = 'system_admin'/);
@@ -44,6 +73,8 @@ for (const route of [optionsRoute, switchRoute, clearRoute]) {
   assert.match(route, /SYSTEM_ADMIN_REQUIRED/);
   assert.match(route, /isActiveSystemAdminSession/);
 }
+assert.doesNotMatch(switchRoute, /status:\s*404/);
+assert.doesNotMatch(clearRoute, /status:\s*404/);
 assert.match(switchRoute, /dev_test\.context_switched/);
 assert.match(clearRoute, /dev_test\.context_cleared/);
 assert.match(switchRoute, /WAFL_DEV_TEST_CONTEXT_COOKIE/);

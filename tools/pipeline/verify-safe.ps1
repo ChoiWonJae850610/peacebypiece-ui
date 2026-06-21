@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "automation-infrastructure")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "automation-infrastructure", "workspace-commonization")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -551,6 +551,11 @@ $profileCommands = @{
     "automation-infrastructure" = @(
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
         @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") }
+    );
+    "workspace-commonization" = @(
+        @{ Name = "workspace commonization contract"; Command = "node"; Arguments = @("tests/workspace-commonization-contract.mjs") },
+        @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") }
     )
 }
 

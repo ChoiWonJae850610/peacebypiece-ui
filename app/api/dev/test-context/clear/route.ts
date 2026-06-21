@@ -4,21 +4,22 @@ import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { getDevTestContextDisabledReason, isDevTestContextEnabled } from "@/lib/dev/testContext/config";
 import { WAFL_DEV_TEST_CONTEXT_COOKIE } from "@/lib/dev/testContext/session";
+import { canSwitchTestAccount } from "@/lib/runtime/runtimePolicy";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  if (!isDevTestContextEnabled()) {
-    return NextResponse.json({ error: "DEV_TEST_CONTEXT_DISABLED", reason: getDevTestContextDisabledReason() }, { status: 404 });
-  }
-
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) {
     return NextResponse.json({ error: "SESSION_REQUIRED" }, { status: 401 });
   }
-  if (!(await isActiveSystemAdminSession(actualSession))) {
+  const isSystemAdmin = await isActiveSystemAdminSession(actualSession);
+  if (!isSystemAdmin) {
     return NextResponse.json({ error: "SYSTEM_ADMIN_REQUIRED" }, { status: 403 });
+  }
+  if (!canSwitchTestAccount({ isSystemAdmin }) || !isDevTestContextEnabled()) {
+    return NextResponse.json({ error: "DEV_TEST_CONTEXT_DISABLED", reason: getDevTestContextDisabledReason() }, { status: 403 });
   }
 
   await createSystemAuditLogSafe({

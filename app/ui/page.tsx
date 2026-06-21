@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { APP_VERSION } from "@/lib/constants/version";
+import { canViewUICatalog } from "@/lib/runtime/runtimePolicy";
 import {
   getWaflUiCatalogRuntimeMode,
   isWaflUiCatalogRuntimeAllowed,
@@ -17,7 +18,8 @@ export default async function UiCatalogRoutePage() {
 
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) redirect("/?error=SESSION_REQUIRED");
-  if (!(await isActiveSystemAdminSession(actualSession))) notFound();
+  const isSystemAdmin = await isActiveSystemAdminSession(actualSession);
+  if (!canViewUICatalog({ isSystemAdmin })) notFound();
 
   return (
     <WaflUiCatalogPage

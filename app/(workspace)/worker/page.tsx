@@ -1,5 +1,7 @@
 import WorkOrderWorkspace from "@/components/workorder/WorkOrderWorkspace";
+import WorkspaceShell from "@/components/workspace/layout/WorkspaceShell";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { APP_VERSION } from "@/lib/constants/app";
 import { ROLE } from "@/lib/constants/roles";
 import type { RoleType } from "@/types/permission";
 import {
@@ -41,13 +43,22 @@ export default async function WorkerPage({ searchParams }: WorkerPageProps) {
   const initialHomeRole = resolveSessionHomeRole(session?.role);
 
   return (
-    <WorkOrderWorkspace
-      initialHomeRole={initialHomeRole}
-      initialCompanyName={session?.companyName ?? null}
-      initialWorkOrderId={initialWorkOrderId}
-      initialListStatusFilter={initialListStatusFilter}
-      initialListSort={initialListSort}
-      initialSearchQuery={initialSearchQuery}
-    />
+    <WorkspaceShell
+      companyName={session?.companyName ?? ""}
+      appVersion={APP_VERSION}
+      title="작업지시서"
+      description="작업지시서를 선택하고 진행 상태, 비용, 디자인, 첨부파일과 공장 전달사항을 확인합니다."
+      contentMode="fixed-md"
+      hideTopbar
+    >
+      <WorkOrderWorkspace
+        initialHomeRole={initialHomeRole}
+        initialCompanyName={session?.companyName ?? null}
+        initialWorkOrderId={initialWorkOrderId}
+        initialListStatusFilter={initialListStatusFilter}
+        initialListSort={initialListSort}
+        initialSearchQuery={initialSearchQuery}
+      />
+    </WorkspaceShell>
   );
 }

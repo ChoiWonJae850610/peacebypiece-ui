@@ -4,6 +4,7 @@ import { getCurrentWaflAuthSession, getCurrentWaflSession } from "@/lib/auth/cur
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { getDevTestContextDisabledReason, isDevTestContextEnabled } from "@/lib/dev/testContext/config";
 import { buildDevTestContextOptions } from "@/lib/dev/testContext/service";
+import { canSwitchTestAccount } from "@/lib/runtime/runtimePolicy";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +13,13 @@ export async function GET() {
   if (!actualSession) {
     return NextResponse.json({ error: "SESSION_REQUIRED" }, { status: 401 });
   }
-  if (!(await isActiveSystemAdminSession(actualSession))) {
+  const isSystemAdmin = await isActiveSystemAdminSession(actualSession);
+  if (!isSystemAdmin) {
     return NextResponse.json({ error: "SYSTEM_ADMIN_REQUIRED" }, { status: 403 });
   }
   const effectiveSession = (await getCurrentWaflSession()) ?? actualSession;
 
-  if (!isDevTestContextEnabled()) {
+  if (!canSwitchTestAccount({ isSystemAdmin }) || !isDevTestContextEnabled()) {
     return NextResponse.json(
       {
         actualSession,

@@ -5,6 +5,7 @@ import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { APP_VERSION } from "@/lib/constants/version";
 import { WAFL_FUNCTION_CATALOG } from "@/lib/functions/catalog";
 import { getWaflFunctionsRuntimeMode, isWaflFunctionsRuntimeAllowed } from "@/lib/functions/runtimeAccess";
+import { canViewFunctionsCatalog } from "@/lib/runtime/runtimePolicy";
 import FunctionsCatalogClient from "./FunctionsCatalogClient";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,8 @@ export const dynamic = "force-dynamic";
 export default async function FunctionsPage() {
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) redirect("/?error=SESSION_REQUIRED");
-  if (!(await isActiveSystemAdminSession(actualSession))) notFound();
+  const isSystemAdmin = await isActiveSystemAdminSession(actualSession);
+  if (!canViewFunctionsCatalog({ isSystemAdmin })) notFound();
 
   return (
     <FunctionsCatalogClient

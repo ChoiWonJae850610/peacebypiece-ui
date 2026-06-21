@@ -16,6 +16,7 @@ const requiredWorkflowTokens = [
   '"system-admin-internal-access"',
   '"repository-cleanup"',
   '"automation-infrastructure"',
+  '"workspace-commonization"',
   "function SelectMatchingVerificationResult",
   "VERIFY_SAFE_RESULT:\\s*PASS",
   "ChangedFingerprint",
@@ -64,6 +65,7 @@ for (const token of forbiddenWorkflowTokens) {
 
 const requiredVerifyTokens = [
   '"automation-infrastructure"',
+  '"workspace-commonization"',
   '"roadmap-development-contract"',
   '"system-admin-internal-access"',
   "tools/pipeline/approved-workflow.ps1",

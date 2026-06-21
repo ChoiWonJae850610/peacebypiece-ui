@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_12: RoadmapVersionDetail = {
   version: "0.24.12",
   title: "일반 사용자 workspace 및 worker 공통화",
-  status: "planned",
+  status: "user_test_needed",
   userSummary: [
     "/worker 화면의 크기와 정보 밀도를 줄인다.",
     "태블릿 가로에서 workspace 패널 스크롤을 정상화한다.",
@@ -155,12 +155,16 @@ export const ROADMAP_0_24_12: RoadmapVersionDetail = {
     "UI/반응형 사용자 확인이 필요한 항목은 사용자 확인 완료",
   ],
   result: {
-    completedSummary: ["아직 0.24.12 기능 개발을 시작하지 않았다.", "이번 등록은 상세 개발 기준 초안이다."],
+    completedSummary: [
+      "/worker를 workspace fixed shell 경계에 맞춰 작업지시서 workspace와 같은 density/스크롤 기준을 사용하게 했다.",
+      "작업지시서와 발주서의 기존 공통 responsive frame, layout mode, 저장 lock/toast 기준을 0.24.12 계약 테스트로 고정했다.",
+      "Codex Optimization Phase 1로 current-state를 짧은 작업 시작 매니페스트로 정리하고 작업 유형별 읽을 파일, 기본 검색 제외, verify profile 선택 기준을 추가했다.",
+    ],
     commitHash: "",
-    verificationResult: "",
+    verificationResult: "workspace-commonization 실행 대상",
     remainingIssues: [
-      "0.24.12 실제 구현 전 roadmap 상세 명세를 다시 읽어야 한다.",
       "UI/반응형 수동 확인 전에는 완료로 전환할 수 없다.",
+      "PDF/R2 저장 정책과 supplier/material-order PDF는 0.24.13에서 다룬다.",
     ],
     userConfirmationRequired: true,
     userConfirmationResult: "미확인",

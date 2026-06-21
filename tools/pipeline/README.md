@@ -110,6 +110,7 @@ Actions:
 .\tools\pipeline\verify-safe.ps1 -Profile roadmap-development-contract
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-internal-access
 .\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure
+.\tools\pipeline\verify-safe.ps1 -Profile workspace-commonization
 ```
 
 이 프로필은 공통 검증인 `git diff --check`, PowerShell parse check, package/lockfile 변경 확인, secret/production 값 검사, DB migration 변경 확인, `npm run build`, `npm run audit:wafl-mutations`와 다음 contract tests를 실행합니다.
@@ -144,6 +145,12 @@ Actions:
 - `node tests/approved-workflow-contract.mjs`
 - `node tests/pipeline-repo-state-publication-contract.mjs`
 
+`workspace-commonization` 프로필은 0.24.12 workspace/worker shell, responsive layout mode, workorder/material-order 저장 lock/toast 기준, roadmap 상태, approved workflow allowlist를 확인합니다.
+
+- `node tests/workspace-commonization-contract.mjs`
+- `node tests/roadmap-development-contract.mjs`
+- `node tests/approved-workflow-contract.mjs`
+
 명령 계획과 안전 가드만 확인하려면:
 
 ```powershell
@@ -152,6 +159,7 @@ Actions:
 .\tools\pipeline\verify-safe.ps1 -Profile roadmap-development-contract -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-internal-access -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure -CheckOnly
+.\tools\pipeline\verify-safe.ps1 -Profile workspace-commonization -CheckOnly
 ```
 
 검증 결과 파일은 `Paths.RepoStatusDir` 아래 `verify-safe-{profile}-{yyyyMMdd-HHmmss}.txt`로 생성됩니다. `VERIFY_SAFE_RESULT: PASS`가 있어야 Git 완료 wrapper의 실행 근거로 사용할 수 있습니다. `-CheckOnly`는 실제 검증 PASS가 아니며 commit/push 근거로 사용할 수 없습니다.

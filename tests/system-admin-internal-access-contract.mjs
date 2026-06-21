@@ -18,6 +18,11 @@ const uiCatalog = read("app/ui/WaflUiCatalogPage.tsx");
 const functionsClient = read("app/functions/FunctionsCatalogClient.tsx");
 const currentState = read("docs/codex-current-state.md");
 const productizationRoadmap = read("docs/productization-roadmap.md");
+const runtimePolicy = read("lib/runtime/runtimePolicy.ts");
+const devConfig = read("lib/dev/testContext/config.ts");
+const functionsRuntime = read("lib/functions/runtimeAccess.ts");
+const uiRuntime = read("lib/uiCatalog/runtimeAccess.ts");
+const runtimeMode = read("lib/runtime/runtimeMode.ts");
 
 for (const [name, source] of [
   ["/id-control", idControlPage],
@@ -51,7 +56,7 @@ assert.match(functionsPage, /isExecutionRuntimeAllowed=\{isWaflFunctionsRuntimeA
 assert.match(idControlPage, /devTestContextEnabled=\{devTestContextEnabled\}/);
 assert.match(idControlPage, /devTestContextDisabledReason=\{getDevTestContextDisabledReason\(\)\}/);
 
-assert.match(devRedirectPage, /isDevTestContextEnabled/);
+assert.doesNotMatch(devRedirectPage, /isDevTestContextEnabled/);
 assert.match(devRedirectPage, /redirect\("\/id-control"\)/);
 assert.match(switchRoute, /isDevTestContextEnabled/);
 assert.match(switchRoute, /DEV_TEST_CONTEXT_DISABLED/);
@@ -67,6 +72,35 @@ assert.doesNotMatch(optionsRoute, /DEV_TEST_CONTEXT_DISABLED/);
 assert.doesNotMatch(systemShell, /internalToolsVisible/);
 assert.doesNotMatch(systemShell, /NODE_ENV\s*!==\s*"production"/);
 assert.match(systemShell, /SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION\.map/);
+
+for (const [name, source] of [
+  ["runtime policy", runtimePolicy],
+  ["dev config", devConfig],
+  ["functions runtime", functionsRuntime],
+  ["ui runtime", uiRuntime],
+  ["runtime mode", runtimeMode],
+  ["id-control page", idControlPage],
+  ["dev redirect page", devRedirectPage],
+  ["options route", optionsRoute],
+  ["switch route", switchRoute],
+  ["clear route", clearRoute],
+  ["system shell", systemShell],
+]) {
+  assert.doesNotMatch(source, /NODE_ENV|VERCEL_ENV|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/, `${name} must not gate internal tools by environment strings`);
+}
+
+for (const fnName of [
+  "canAccessIdControl",
+  "canSwitchTestAccount",
+  "canViewFunctionsCatalog",
+  "canViewUICatalog",
+  "canViewDiagnostics",
+]) {
+  assert.match(runtimePolicy, new RegExp(`export function ${fnName}`), `runtime policy missing ${fnName}`);
+}
+
+assert.doesNotMatch(switchRoute, /status:\s*404/);
+assert.doesNotMatch(clearRoute, /status:\s*404/);
 
 for (const token of [
   "개발 제어센터",
@@ -116,9 +150,9 @@ for (const [name, source] of [
 }
 
 for (const token of [
-  "system-admin 내부 조회 화면은 환경과 관계없이 접근 가능",
-  "위험 mutation action은 dev/test 환경 제한 유지",
-  "0.24.12 기능 개발 전 기반 보정",
+  "Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`",
+  "`/id-control` test account switching is allowed",
+  "Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged",
   "system-admin-internal-access",
 ]) {
   assert.ok(currentState.includes(token), `current-state missing ${token}`);

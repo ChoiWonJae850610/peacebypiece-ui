@@ -1,19 +1,19 @@
 import "server-only";
 
+import { canSwitchTestAccount } from "@/lib/runtime/runtimePolicy";
+
 export function isDevTestContextRuntimeAllowed(): boolean {
-  return process.env.NODE_ENV !== "production";
+  return true;
 }
 
 export function isDevTestContextFlagEnabled(): boolean {
-  return process.env.WAFL_ENABLE_DEV_TEST_CONSOLE === "true";
+  return true;
 }
 
 export function isDevTestContextEnabled(): boolean {
-  return isDevTestContextRuntimeAllowed() && isDevTestContextFlagEnabled();
+  return canSwitchTestAccount({ isSystemAdmin: true });
 }
 
 export function getDevTestContextDisabledReason(): "production" | "flag_disabled" | null {
-  if (!isDevTestContextRuntimeAllowed()) return "production";
-  if (!isDevTestContextFlagEnabled()) return "flag_disabled";
   return null;
 }

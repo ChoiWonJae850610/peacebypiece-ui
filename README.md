@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.11`
+- 기준 앱 버전: `0.24.12`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: repository/docs cleanup은 `APP_VERSION` 유지 작업이며 `0.24.12` 기능 개발과 분리한다.
+- 현재 작업 상태: `0.24.12`는 일반 사용자 workspace/worker 공통화와 Codex 작업 시작 매니페스트 정리를 포함한다.
 
 ## 개발 실행
 
@@ -14,10 +14,10 @@ npm run dev
 
 ## 검증
 
-일반 패치 검증은 변경 범위에 맞는 `tools/pipeline/approved-workflow.ps1 -Action Verify` profile을 우선 사용한다.
+일반 패치 검증은 변경 범위에 맞는 `tools/pipeline/approved-workflow.ps1 -Action Verify` profile을 우선 사용한다. 작업 유형별 먼저 읽을 파일과 profile 선택 기준은 `docs/codex-current-state.md`를 따른다.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile repository-cleanup
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile workspace-commonization
 ```
 
 버전 작업을 마무리할 때는 `approved-workflow.ps1 -Action Plan` 후 `approved-workflow.ps1 -Action Finish`를 사용한다. wrapper가 matching PASS verification result와 changed fingerprint를 확인한 뒤 explicit path만 stage/commit/push한다. `git add .`, force push, reset, clean, checkout은 사용하지 않는다.
@@ -29,7 +29,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 - 정책 문서: `docs/정책문서/`
 - 보관 문서: `docs/보관문서/`
 - 정리/감사 문서: `docs/audits/`
-- 현재 상태: `docs/codex-current-state.md`
+- Codex 작업 시작 매니페스트: `docs/codex-current-state.md`
 - 제품화 로드맵: `docs/productization-roadmap.md`
 - 누적 테스트 항목: `pending-tests.md`
 
@@ -37,7 +37,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 
 - 앱 표시 버전은 `lib/constants/version.ts`의 `APP_VERSION`을 기준으로 한다. `package.json`의 `version`은 npm package metadata다.
 - `docs/`에는 tracked 문서 656개가 있으며 root 문서는 180개다. 0.24.11 대규모 문서 cleanup은 3차로 종료하고, 남은 문서는 필요 시 개별 정리한다.
-- `docs/현재기준/`과 `docs/productization-roadmap.md`가 현재 개발 판단의 우선 기준이다.
+- `docs/codex-current-state.md`가 작업 유형별 진입 문서를 라우팅하고, 세부 기준은 `lib/internal/roadmap/`과 `docs/현재기준/`을 따른다.
 - `/id-control`은 내부 identity-control console의 현재 경로다. `/dev/test-console`은 production 차단과 명시 enable guard를 유지한다.
 - `/roadmap`은 system administrator 전용 read-only 화면이다. edit/save/delete, DB/R2 write, URL/query/localStorage mutation은 별도 정책 결정 없이 추가하지 않는다.
 

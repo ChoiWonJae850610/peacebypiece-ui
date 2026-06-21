@@ -1,19 +1,14 @@
-export type AppRuntimeMode = "production" | "development";
+import { canViewDiagnostics } from "@/lib/runtime/runtimePolicy";
 
-function resolveAppRuntimeMode(value: string | undefined): AppRuntimeMode {
-  return value === "development" ? "development" : "production";
-}
+export type AppRuntimeMode = "permission-gated";
 
-export const APP_RUNTIME_MODE: AppRuntimeMode = resolveAppRuntimeMode(
-  process.env.NEXT_PUBLIC_APP_RUNTIME_MODE,
-);
+export const APP_RUNTIME_MODE: AppRuntimeMode = "permission-gated";
 
-const isDevelopmentMode = APP_RUNTIME_MODE === "development";
 export const RUNTIME_VISIBILITY = {
-  showDiagnostics: isDevelopmentMode,
-  showRepositoryBadges: isDevelopmentMode,
-  showUserSwitchingTools: isDevelopmentMode,
-  showPersonalLanguageSwitcher: isDevelopmentMode,
+  showDiagnostics: false,
+  showRepositoryBadges: false,
+  showUserSwitchingTools: false,
+  showPersonalLanguageSwitcher: false,
 } as const;
 
 export const DEV_DEBUG_FLAGS = {
@@ -24,7 +19,7 @@ export const DEV_DEBUG_FLAGS = {
 export type DevDebugFlagKey = keyof typeof DEV_DEBUG_FLAGS;
 
 export function isDebugFeatureEnabled(flag: DevDebugFlagKey) {
-  return RUNTIME_VISIBILITY.showDiagnostics && DEV_DEBUG_FLAGS[flag];
+  return canViewDiagnostics({ isSystemAdmin: false }) && DEV_DEBUG_FLAGS[flag];
 }
 
 export const WORKORDER_CATEGORY_RECOMMENDATION_ENABLED = false;

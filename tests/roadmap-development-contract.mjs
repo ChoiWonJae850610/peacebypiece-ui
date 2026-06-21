@@ -85,7 +85,7 @@ assert.match(facade, /ProductizationRoadmapVersion/);
 
 for (const draftToken of [
   'version: "0.24.12"',
-  'status: "planned"',
+  'status: "user_test_needed"',
   "일반 사용자 workspace 및 worker 공통화",
   "/worker 화면의 크기와 정보 밀도를 줄인다.",
   "태블릿 가로에서 workspace 패널 스크롤을 정상화한다.",

@@ -147,7 +147,7 @@ export default function SystemConsoleShell() {
 
       <AdminSection
         title="내부 관리 도구"
-        description={`현재 runtime: ${process.env.NEXT_PUBLIC_APP_RUNTIME_MODE ?? process.env.NODE_ENV ?? "unknown"} · 활성 시스템 관리자 전용 · 조회 화면은 모든 환경에서 접근 가능하며 실행형 작업은 환경별 제한을 따릅니다.`}
+        description="System-admin internal views are permission-gated. Destructive actions keep confirmation, fingerprint, prefix, dry-run, and service-code guards."
         className="p-5 sm:p-6"
         bodyClassName="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
         headerClassName={SYSTEM_SECTION_HEADER_CLASS}

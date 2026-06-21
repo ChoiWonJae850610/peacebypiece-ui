@@ -25,7 +25,8 @@ $AllowedProfiles = @(
     "roadmap-development-contract",
     "system-admin-internal-access",
     "repository-cleanup",
-    "automation-infrastructure"
+    "automation-infrastructure",
+    "workspace-commonization"
 )
 
 function NormalizeWorkflowPath {
