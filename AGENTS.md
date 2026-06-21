@@ -1,5 +1,11 @@
 # Codex Operating Rules
 
+## Canonical Project Context
+- For productization/version work, read these files before implementation: `docs/codex-current-state.md`, `docs/project/01-codex-context.md`, `docs/project/02-project-decisions.md`, `docs/project/03-productization.md`, `docs/project/04-release-checklist.md`, `docs/productization-backlog.md`, and the target `lib/internal/roadmap/roadmap-*.ts`.
+- `AGENTS.md` defines operating rules. `docs/project/*` records the project context, durable decisions, productization process, and release checklist. Do not duplicate large policy blocks in both places.
+- If chat history conflicts with committed project context, prefer local Git state, then `lib/internal/roadmap/*`, then `docs/codex-current-state.md`, then `docs/project/*`.
+
+
 ## Start Of Work
 - Before changing files, check `git status`, the current branch, and `HEAD`.
 - Do not edit files when the user asks for analysis, inspection, or reporting only.

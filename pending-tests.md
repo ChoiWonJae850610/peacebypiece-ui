@@ -1,3 +1,21 @@
+# Pending Tests — 0.24.16
+
+## 자동 검증
+
+- `git diff --check`
+- 문서 링크/버전 표기 확인
+- 필요 시 `tools/pipeline/approved-workflow.ps1 -Action Verify`의 문서/roadmap 관련 profile 확인
+
+## 사용자 수동 테스트
+
+- 수동 UI 테스트 불필요: 0.24.16은 화면/기능 동작 변경이 아닌 Codex/GPT 제품화 운영 문서 체계 구축이다.
+
+## 다음 구현 Sprint 전 확인
+
+- Codex가 `AGENTS.md`, `docs/codex-current-state.md`, `docs/project/*`, `docs/productization-backlog.md`, 대상 `lib/internal/roadmap/roadmap-*.ts`를 읽고 시작하는지 확인한다.
+
+---
+
 # Pending tests — 0.24.14
 
 - [ ] `/functions` 자동화 현황 탭에서 Profile, 안전 등급, 명령, 최근 결과가 표시되는지 확인

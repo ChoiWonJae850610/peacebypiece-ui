@@ -1,9 +1,9 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.15`
+- 기준 앱 버전: `0.24.16`
 - tracked docs 파일 수: `661`
 - docs root 파일 수: `181`
-- 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
+- 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/project/`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
 
 ## 1. 현재 기준 문서
 
@@ -30,6 +30,11 @@
 - 제품화 로드맵: `docs/productization-roadmap.md`
 - 제품화 백로그: `docs/productization-backlog.md`
 - 제품화 감사 보고서: `docs/audits/productization-audit-report-0.24.15.md`
+- Codex/GPT 제품화 운영 문서: `docs/project/`
+- Codex Context: `docs/project/01-codex-context.md`
+- Project Decisions: `docs/project/02-project-decisions.md`
+- Productization Guide: `docs/project/03-productization.md`
+- Release Checklist: `docs/project/04-release-checklist.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
@@ -60,6 +65,7 @@
 | docs/정책문서 | 32 |
 | docs/현재기준 | 34 |
 | docs/audits | 13 |
+| docs/project | 4 |
 
 ## 6. 정리 원칙
 
@@ -76,7 +82,7 @@
 
 현재 구현·정책 판단을 할 때는 `docs/보관문서/**`, `docs/**/legacy/**`, `docs/**/deprecated/**`를 기본 제외한다. 과거 회귀 원인이나 삭제 근거를 확인해야 할 때만 보관 문서를 검색한다.
 
-작업 시작 순서는 `docs/codex-current-state.md` → 해당 `lib/internal/roadmap/roadmap-*.ts` → `docs/현재기준/` 관련 문서 → 필요한 경우 `docs/audits/` 순서다.
+작업 시작 순서는 `AGENTS.md` → `docs/codex-current-state.md` → `docs/project/` → 해당 `lib/internal/roadmap/roadmap-*.ts` → `docs/현재기준/` 관련 문서 → 필요한 경우 `docs/audits/` 순서다.
 
 ## 8. Vercel QA 흐름
 

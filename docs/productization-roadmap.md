@@ -2,10 +2,10 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.15`
-- APP_VERSION: `0.24.15`
+- Roadmap checkpoint version: `0.24.16`
+- APP_VERSION: `0.24.16`
 - Feature implementation progress: about `93%`
-- Productization readiness: `82%`
+- Productization readiness: `84%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -18,6 +18,11 @@
 - detailed development contracts used before starting a version
 
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
+
+
+## 0.24.16 Codex/GPT operating context checkpoint
+
+0.24.16 establishes the project-owned operating context for future Codex and ChatGPT productization sprints. It adds `docs/project/01-codex-context.md`, `02-project-decisions.md`, `03-productization.md`, and `04-release-checklist.md`; links them from README/docs; and records that future PB implementation work should start from committed project documents rather than chat memory. This version does not perform broad UI refactoring, package/lockfile changes, DB/R2/Seed/Reset/Cleanup, or policy changes.
 
 ## 0.24.15 WAFL Productization Audit checkpoint
 
@@ -160,7 +165,7 @@ Required development criteria:
 | `0.24.13` | 문서/폴더 정리 2차 | 검증 대기 | Root/docs/current-state/index/archive and Vercel QA handoff documentation |
 | `0.24.14` | Functions 90% 구현/검증 정리 | 사용자 확인 필요 | `/functions` catalog, PowerShell profile linkage, guarded command visibility |
 | `0.24.15` | WAFL Productization Audit | 검증 대기 | Productization audit report and PB backlog without broad implementation changes |
-| `0.24.16` | WAFL 컴포넌트 적용/공통화 1차 | 예정 | Apply shared page shell, section, button, filter, empty/loading/error states |
+| `0.24.16` | Codex/GPT Productization Operating Context | 구현 완료 | Project context, decision log, productization guide, and release checklist |
 | `0.24.17` | 소스 리팩터링 1차 | 예정 | Reduce duplicate utils, hardcoding, i18n gaps, and selected large files |
 | `0.24.18` | R2/Simulator 테스트 기반 | 예정 | Logical usage vs R2 objects, quota fixtures, cleanup preview, reconciliation dry-run |
 | `0.24.19` | PDF/R2 정책 및 PDF 생성 구조 | 예정 | Temporary/final PDF policy, generation timing, R2 path/delete policy, PDF comparison |
@@ -216,7 +221,7 @@ If artifact generation fails, do not revert the already completed commit or push
 - Dependency and lockfile changes are not part of this checkpoint.
 - PDF/R2 policy and supplier/material-order PDF remain planned work and are now separated into R2/Simulator foundation at 0.24.18 and PDF/R2 policy at 0.24.19.
 - Functions/Simulator/PowerShell work is split into Functions catalog coverage at 0.24.14 and automation expansion at 0.24.20.
-- Source cleanup is split into productization audit-only 0.24.15, WAFL component application 0.24.16, and source refactoring 0.24.17. 0.24.15 output is the Productization Audit Report and PB backlog.
+- Source cleanup is split into productization audit-only 0.24.15, Codex/GPT operating context 0.24.16, WAFL component application after 0.24.16, and source refactoring 0.24.17+. 0.24.15 output is the Productization Audit Report and PB backlog; 0.24.16 output is the committed project operating context for future implementation sprints.
 - Final real-device and pre-customer validation is 0.24.21.
 - UI/responsive/PDF completion requires manual confirmation when the roadmap detail says so.
 

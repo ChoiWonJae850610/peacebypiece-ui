@@ -46,3 +46,10 @@
 ## DB Migration
 
 없음.
+
+
+## 0.24.16 적용 메모
+
+0.24.16은 PB 구현을 바로 시작하기 전에 Codex/GPT 공동 작업 문맥을 프로젝트 문서로 고정한다. 이 작업은 PB-014(Productization audit 전용 contract test/회귀 방지)와 PB-017(PB 완료/보류/이월 상태 추적 규칙)의 기반 작업이다.
+
+다음 실제 구현 Sprint는 `docs/project/` 문서와 이 backlog를 읽은 뒤 PB-001, PB-005, PB-006 등 낮은 blast radius 항목부터 시작한다.

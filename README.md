@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.15`
+- 기준 앱 버전: `0.24.16`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.15`는 WAFL Productization Audit으로 전체 화면/소스 리팩터링 감사를 제품화 감사로 확장하고 Productization Audit Report와 Productization Backlog를 고정한다.
+- 현재 작업 상태: `0.24.16`은 Codex/GPT 공동 제품화 Sprint를 위한 프로젝트 운영 문서 체계를 고정한다.
 
 ## 개발 실행
 
@@ -35,6 +35,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 - 제품화 로드맵: `docs/productization-roadmap.md`
 - 제품화 백로그: `docs/productization-backlog.md`
 - 제품화 감사 보고서: `docs/audits/productization-audit-report-0.24.15.md`
+- Codex/GPT 제품화 운영 문서: `docs/project/`
+  - `docs/project/01-codex-context.md`
+  - `docs/project/02-project-decisions.md`
+  - `docs/project/03-productization.md`
+  - `docs/project/04-release-checklist.md`
 - 누적 테스트 항목: `pending-tests.md`
 
 ## 현재 기준

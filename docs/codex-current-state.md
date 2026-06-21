@@ -2,14 +2,14 @@
 
 ## Start Manifest
 
-- Current result version: `0.24.15`
-- Baseline before this version: `0.24.14`
+- Current result version: `0.24.16`
+- Baseline before this version: `0.24.15`
 - APP_VERSION source: `lib/constants/version.ts`
-- Current work version: `0.24.15`
+- Current work version: `0.24.16`
 - Current work title: `WAFL Productization Audit`
 - Current branch policy: `master`, `origin/master` synchronized before automatic Finish
 - Vercel policy before 1.0: QA deployment, not customer production
-- DB migration: none for 0.24.15
+- DB migration: none for 0.24.16
 - R2/DB execute: not allowed without separate explicit approval
 
 Use this file as the first routing manifest only. For detailed rules, read the target files below instead of re-reading the whole repository.
@@ -107,6 +107,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/push unless the user manually confirms the responsive result.
 
 
+
+## 0.24.16 Codex/GPT Productization Operating Context
+
+- 0.24.16 establishes the committed operating context for future Codex and ChatGPT productization sprints.
+- Canonical project context files are under `docs/project/`.
+- Codex must read `AGENTS.md`, this current-state file, `docs/project/01-codex-context.md`, `docs/project/02-project-decisions.md`, `docs/project/03-productization.md`, `docs/project/04-release-checklist.md`, and the target roadmap detail before implementation.
+- This version does not perform broad UI refactoring, DB/R2/Seed/Reset/Cleanup, package changes, or policy changes.
+- Next implementation sprint should use the PB backlog and target roadmap detail instead of relying on chat memory.
+
 ## 0.24.15 Productization Audit Policy
 
 - 0.24.15 expands the previous screen/source refactoring audit into WAFL Productization Audit.
@@ -114,7 +123,7 @@ Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/pu
 - Canonical outputs are `docs/audits/productization-audit-report-0.24.15.md` and `docs/productization-backlog.md`.
 - PB items are tracked as productization backlog entries and should be resolved by priority, not by ad hoc screen edits.
 - DB/R2/Seed/Reset/Cleanup/Migration execution is not part of 0.24.15.
-- 0.24.16 starts from PB Critical/High items that can be handled without policy or data-shape changes.
+- After 0.24.16, implementation sprints should start from PB Critical/High items that can be handled without policy or data-shape changes.
 
 ## 0.24.14 Functions Automation Policy
 
