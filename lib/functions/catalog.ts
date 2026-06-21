@@ -14,6 +14,7 @@ export type WaflFunctionCategory =
 export type WaflAutomationStatus = "planned" | "partial" | "automated" | "manual" | "decision-required";
 export type WaflScenarioDecisionState = "not-required" | "resolved" | "pending";
 export type WaflAutomationType = "unit" | "api-db" | "playwright" | "playwright-db" | "visual" | "performance" | "manual";
+export type WaflAutomationSafety = "safe" | "dry-run" | "confirmation" | "destructive";
 
 export type WaflScenarioStep = {
   id: string;
@@ -58,6 +59,10 @@ export type WaflAutomationLink = {
   filePath: string | null;
   testDataSet: string | null;
   lastResult: "not-run" | "passed" | "failed" | "blocked";
+  profile: string | null;
+  command: string | null;
+  safety: WaflAutomationSafety;
+  executionNote: string;
 };
 
 export type WaflFunctionItem = {
@@ -136,8 +141,9 @@ type WaflFunctionDefinition = Omit<
   | "responsiveContract"
   | "performanceContract"
   | "pdfContract"
-  | "automation"
->>;
+>> & {
+  automation?: Partial<WaflAutomationLink>;
+};
 
 function defaultAutomationType(category: WaflFunctionCategory): WaflAutomationType {
   if (category === "database" || category === "tenant") return "playwright-db";
@@ -147,6 +153,38 @@ function defaultAutomationType(category: WaflFunctionCategory): WaflAutomationTy
   if (category === "pdf") return "playwright";
   if (category === "permission") return "api-db";
   return "playwright";
+}
+
+function defaultAutomationProfile(category: WaflFunctionCategory, area: string): string | null {
+  if (area === "테스트 환경" || category === "storage") return "functions-automation";
+  if (category === "pdf") return "repository-cleanup";
+  if (category === "responsive") return "workspace-commonization";
+  if (category === "permission" || area === "시스템관리자") return "system-admin-internal-access";
+  if (category === "database" || category === "tenant") return "functions-automation";
+  return "functions-automation";
+}
+
+function defaultAutomationCommand(category: WaflFunctionCategory, automationType: WaflAutomationType): string | null {
+  if (category === "storage") return "node scripts/functions-storage-reconcile.mjs";
+  if (automationType === "api-db" || automationType === "playwright-db") return "node tests/functions-db-contract.mjs";
+  if (automationType === "visual") return "node tests/workspace-commonization-contract.mjs";
+  if (automationType === "performance") return "manual baseline capture";
+  if (automationType === "manual") return null;
+  return "node tests/functions-catalog-structure-contract.mjs";
+}
+
+function defaultAutomationSafety(category: WaflFunctionCategory, automationType: WaflAutomationType): WaflAutomationSafety {
+  if (category === "storage") return "dry-run";
+  if (automationType === "api-db" || automationType === "playwright-db") return "dry-run";
+  if (automationType === "manual") return "confirmation";
+  return "safe";
+}
+
+function defaultExecutionNote(category: WaflFunctionCategory, safety: WaflAutomationSafety): string {
+  if (safety === "safe") return "읽기/정적 검증 또는 브라우저 확인 중심입니다.";
+  if (safety === "dry-run") return "기본값은 dry-run이며 DB/R2 변경은 실행하지 않습니다.";
+  if (category === "storage") return "실제 R2/DB mutation은 confirmation과 테스트 prefix guard가 필요합니다.";
+  return "수동 확인 또는 별도 승인 후 실행합니다.";
 }
 
 const item = (value: WaflFunctionDefinition): WaflFunctionItem => ({
@@ -186,12 +224,20 @@ const item = (value: WaflFunctionDefinition): WaflFunctionItem => ({
     currentImplementation: [],
     immutableAssertions: value.expectedDbUnchanged,
   } : null),
-  automation: {
-    type: value.automation?.type ?? defaultAutomationType(value.category),
-    filePath: value.automation?.filePath ?? null,
-    testDataSet: value.automation?.testDataSet ?? null,
-    lastResult: value.automation?.lastResult ?? "not-run",
-  },
+  automation: (() => {
+    const type = value.automation?.type ?? defaultAutomationType(value.category);
+    const safety = value.automation?.safety ?? defaultAutomationSafety(value.category, type);
+    return {
+      type,
+      filePath: value.automation?.filePath ?? null,
+      testDataSet: value.automation?.testDataSet ?? null,
+      lastResult: value.automation?.lastResult ?? "not-run",
+      profile: value.automation?.profile ?? defaultAutomationProfile(value.category, value.area),
+      command: value.automation?.command ?? defaultAutomationCommand(value.category, type),
+      safety,
+      executionNote: value.automation?.executionNote ?? defaultExecutionNote(value.category, safety),
+    };
+  })(),
 });
 
 export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
@@ -215,7 +261,7 @@ export const WAFL_FUNCTION_CATALOG: WaflFunctionItem[] = [
   }),
   item({
     id: "WKR-003-E01", order: "1-3", area: "작업지시서", route: "/worker", title: "저장 실패 rollback",
-    description: "저장 실패 시 변경 범위만 이전 값으로 복구하고 오류를 표시한다.", category: "exception", roles: ["admin", "member"], automationStatus: "planned", releaseBlocking: true,
+    description: "저장 실패 시 변경 범위만 이전 값으로 복구하고 오류를 표시한다.", category: "exception", roles: ["admin", "member"], automationStatus: "partial", releaseBlocking: true,
     preconditions: ["API 실패 응답 주입"], expectedUi: ["오류 토스트", "입력값 rollback"], expectedApi: ["PATCH 오류"], expectedDbChanges: [], expectedDbUnchanged: ["작업지시서 전체 row"],
   }),
   item({

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "automation-infrastructure", "workspace-commonization")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -555,6 +555,14 @@ $profileCommands = @{
     "workspace-commonization" = @(
         @{ Name = "workspace commonization contract"; Command = "node"; Arguments = @("tests/workspace-commonization-contract.mjs") },
         @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") }
+    );
+    "functions-automation" = @(
+        @{ Name = "functions catalog structure contract"; Command = "node"; Arguments = @("tests/functions-catalog-structure-contract.mjs") },
+        @{ Name = "functions automation coverage contract"; Command = "node"; Arguments = @("tests/functions-automation-coverage-contract.mjs") },
+        @{ Name = "functions storage contract"; Command = "node"; Arguments = @("tests/functions-storage-contract.mjs") },
+        @{ Name = "functions environment audit contract"; Command = "node"; Arguments = @("tests/functions-environment-audit-contract.mjs") },
+        @{ Name = "functions PDF contract"; Command = "node"; Arguments = @("tests/functions-pdf-contract.mjs") },
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") }
     )
 }

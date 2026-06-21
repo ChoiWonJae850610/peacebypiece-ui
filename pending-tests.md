@@ -1,10 +1,10 @@
-# Pending tests — 0.24.13
+# Pending tests — 0.24.14
 
-- [ ] `docs/README.md`에서 현재 기준/보관/감사/정책 문서 역할이 모순 없이 보이는지 확인
-- [ ] `docs/codex-current-state.md`만 읽어도 다음 작업 시작 파일과 기본 제외 경로를 알 수 있는지 확인
-- [ ] `docs/현재기준/document-management.md`의 Vercel QA 흐름이 실제 1.0 전 작업 흐름과 맞는지 확인
-- [ ] `/roadmap`에서 APP_VERSION 0.24.13, 현재 작업 0.24.13, 다음 작업 0.24.14가 보이는지 확인
-- [ ] 0.24.14 Functions 작업을 시작할 때 보관문서 검색 없이 필요한 시작 문서가 충분한지 확인
+- [ ] `/functions` 자동화 현황 탭에서 Profile, 안전 등급, 명령, 최근 결과가 표시되는지 확인
+- [ ] `/functions` 개발 도구 탭에서 dry-run·confirmation guard 문구가 보이는지 확인
+- [ ] `functions-automation` profile로 catalog/storage/environment/pdf/coverage contract가 실행되는지 확인
+- [ ] Seed/Reset/Cleanup/R2 mutation 실제 실행 버튼이나 자동 실행 경로가 생기지 않았는지 확인
+- [ ] `/roadmap`에서 APP_VERSION 0.24.14, 현재 작업 0.24.14, 다음 작업 0.24.15가 보이는지 확인
 
 
 # Pending tests — 0.23.81

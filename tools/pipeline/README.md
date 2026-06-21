@@ -240,3 +240,21 @@ Plan mode:
 - destructive command를 포함할 수 있는 포괄 prefix
 
 Separate PowerShell uploads are not needed when Git already carries the current canonical script. Use an external PowerShell upload only when a newer script-only copy exists outside the repository or when a task explicitly asks for script-only handoff.
+
+
+## functions-automation profile
+
+`functions-automation` is the verify profile for 0.24.14 Functions catalog work.
+
+It checks:
+
+- `tests/functions-catalog-structure-contract.mjs`
+- `tests/functions-automation-coverage-contract.mjs`
+- `tests/functions-storage-contract.mjs`
+- `tests/functions-environment-audit-contract.mjs`
+- `tests/functions-pdf-contract.mjs`
+- `tests/approved-workflow-contract.mjs`
+
+Use it when `/functions`, `lib/functions/catalog.ts`, Functions fixtures, or Functions automation metadata changes.
+
+The profile must remain non-mutating by default. Seed, Reset, Cleanup, DB mutation, and R2 mutation require separate confirmation/fingerprint/prefix/service-code guards and must not be executed by catalog verification.

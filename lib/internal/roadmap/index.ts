@@ -137,8 +137,8 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
   featureProgressPercent: 93,
   productizationProgressPercent: 80,
-  currentWorkVersion: "0.24.13",
-  nextWorkVersion: "0.24.14",
+  currentWorkVersion: "0.24.14",
+  nextWorkVersion: "0.24.15",
   canonicalPolicy:
     "새 버전 기능 작업 전에는 lib/internal/roadmap의 canonical 상세 명세와 docs/codex-current-state.md를 먼저 읽는다. /roadmap은 사용자와 ChatGPT/Codex가 함께 보는 조회 전용 개발 기준판이며, 화면에서 편집·추가·삭제·저장 기능을 제공하지 않는다.",
   statusLabels: ROADMAP_STATUS_LABELS,

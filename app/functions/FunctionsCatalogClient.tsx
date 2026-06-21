@@ -119,8 +119,8 @@ export default function FunctionsCatalogClient({
               </p>
               <p className="mt-2 text-xs text-[var(--pbp-text-muted)]">
                 {isExecutionRuntimeAllowed
-                  ? "현재 환경에서는 개발/테스트 실행형 도구를 사용할 수 있습니다."
-                  : "현재 환경에서는 기능 및 자동화 현황 조회만 가능하며 Seed, Reset, Cleanup, DB/R2 변경 실행은 개발/테스트 환경에서만 사용할 수 있습니다."}
+                  ? "현재 세션에서는 안전한 조회·dry-run 중심의 개발/테스트 도구를 확인할 수 있습니다."
+                  : "실제 Seed, Reset, Cleanup, DB/R2 변경 실행은 confirmation, fingerprint, prefix guard가 있는 별도 경로에서만 허용됩니다."}
               </p>
             </div>
             <div className="grid min-w-[260px] grid-cols-3 gap-2">
@@ -222,6 +222,8 @@ function CatalogDetail({ selected, view }: { selected: WaflFunctionItem; view: C
         ["화면·경로", selected.route],
         ["사용자 역할", selected.roles.join(", ")],
         ["자동화 방식", selected.automation.type],
+        ["검증 profile", selected.automation.profile ?? "미지정"],
+        ["안전 등급", selected.automation.safety],
         ["최근 결과", selected.automation.lastResult],
       ]} />
 
@@ -254,8 +256,11 @@ function CatalogDetail({ selected, view }: { selected: WaflFunctionItem; view: C
 
       <WaflSurface tone="muted" shape="control" className="px-4 py-3 text-sm">
         <div className="font-semibold">자동화 연결</div>
+        <div className="mt-1 text-[var(--pbp-text-secondary)]">Profile: {selected.automation.profile ?? "미지정"}</div>
+        <div className="mt-1 text-[var(--pbp-text-secondary)]">명령: {selected.automation.command ?? "수동 확인"}</div>
         <div className="mt-1 text-[var(--pbp-text-secondary)]">파일: {selected.automation.filePath ?? "미연결"}</div>
         <div className="mt-1 text-[var(--pbp-text-secondary)]">데이터 세트: {selected.automation.testDataSet ?? "미연결"}</div>
+        <div className="mt-1 text-[var(--pbp-text-secondary)]">안전장치: {selected.automation.executionNote}</div>
       </WaflSurface>
     </div>
   );
@@ -282,15 +287,16 @@ function AutomationOverview({ entries }: { entries: WaflFunctionItem[] }) {
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-[var(--pbp-surface-muted)] text-xs text-[var(--pbp-text-secondary)]">
-            <tr><th className="px-4 py-3">ID</th><th className="px-4 py-3">기능</th><th className="px-4 py-3">방식</th><th className="px-4 py-3">파일</th><th className="px-4 py-3">최근 결과</th><th className="px-4 py-3">상태</th></tr>
+            <tr><th className="px-4 py-3">ID</th><th className="px-4 py-3">기능</th><th className="px-4 py-3">Profile</th><th className="px-4 py-3">안전</th><th className="px-4 py-3">명령</th><th className="px-4 py-3">최근 결과</th><th className="px-4 py-3">상태</th></tr>
           </thead>
           <tbody>
             {entries.map((entry) => (
               <tr key={entry.id} className="border-t border-[var(--pbp-border)]">
                 <td className="whitespace-nowrap px-4 py-3 font-mono text-xs">{entry.id}</td>
                 <td className="px-4 py-3"><div className="font-medium">{entry.title}</div><div className="mt-0.5 text-xs text-[var(--pbp-text-muted)]">{entry.route}</div></td>
-                <td className="whitespace-nowrap px-4 py-3">{entry.automation.type}</td>
-                <td className="max-w-[360px] truncate px-4 py-3 text-xs">{entry.automation.filePath ?? "미연결"}</td>
+                <td className="whitespace-nowrap px-4 py-3">{entry.automation.profile ?? "미지정"}</td>
+                <td className="whitespace-nowrap px-4 py-3">{entry.automation.safety}</td>
+                <td className="max-w-[360px] truncate px-4 py-3 text-xs">{entry.automation.command ?? entry.automation.filePath ?? "수동"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{entry.automation.lastResult}</td>
                 <td className="whitespace-nowrap px-4 py-3">{attentionLabel(entry.automationStatus) ?? "연결됨"}</td>
               </tr>
@@ -311,7 +317,7 @@ function ToolSummary() {
           <p className="mt-1 text-sm text-[var(--pbp-text-secondary)]">Seed·Reset·Cleanup·환경 감사는 제품 기능과 분리해 표시합니다.</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-[var(--pbp-text-muted)]">
-          <ShieldCheck className="h-4 w-4" /> production 실행 차단
+          <ShieldCheck className="h-4 w-4" /> dry-run·confirmation guard
         </div>
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-7">

@@ -2,8 +2,8 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.13`
-- APP_VERSION: `0.24.13`
+- Roadmap checkpoint version: `0.24.14`
+- APP_VERSION: `0.24.14`
 - Feature implementation progress: about `93%`
 - Productization readiness: `80%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
@@ -18,6 +18,10 @@
 - detailed development contracts used before starting a version
 
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
+
+## 0.24.14 Functions automation checkpoint
+
+0.24.14 makes `/functions` a more reliable development and verification hub. The catalog now records profile, command, safety grade, and execution notes for automation links. The new `functions-automation` verify profile groups catalog structure, automation coverage, storage, environment, PDF, and approved workflow contracts. This version does not run DB/R2/Seed/Reset/Cleanup and does not relax destructive guards.
 
 ## Canonical Policy
 

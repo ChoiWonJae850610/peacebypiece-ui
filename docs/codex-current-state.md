@@ -2,14 +2,14 @@
 
 ## Start Manifest
 
-- Current result version: `0.24.13`
-- Baseline before this version: `0.24.12`
+- Current result version: `0.24.14`
+- Baseline before this version: `0.24.13`
 - APP_VERSION source: `lib/constants/version.ts`
-- Current work version: `0.24.13`
-- Current work title: `문서/폴더 정리 2차`
+- Current work version: `0.24.14`
+- Current work title: `Functions 90% 구현/검증 정리`
 - Current branch policy: `master`, `origin/master` synchronized before automatic Finish
 - Vercel policy before 1.0: QA deployment, not customer production
-- DB migration: none for 0.24.13
+- DB migration: none for 0.24.14
 - R2/DB execute: not allowed without separate explicit approval
 
 Use this file as the first routing manifest only. For detailed rules, read the target files below instead of re-reading the whole repository.
@@ -19,7 +19,7 @@ Use this file as the first routing manifest only. For detailed rules, read the t
 | Work type | 먼저 읽을 파일 | 기본으로 읽지 않아도 되는 파일 |
 | --- | --- | --- |
 | Docs / folder cleanup | `lib/internal/roadmap/roadmap-0.24.13.ts`, `docs/README.md`, `docs/현재기준/document-management.md`, `docs/audits/document-structure-cleanup-0.24.13.md` | product feature source files unless referenced by changed docs |
-| Functions next work | `lib/internal/roadmap/roadmap-0.24.14.ts`, `lib/functions/catalog.ts`, `tools/pipeline/README.md`, `tools/pipeline/approved-workflow.ps1` | archived completed-feature history unless investigating a regression |
+| Functions next work | `lib/internal/roadmap/roadmap-0.24.14.ts`, `lib/functions/catalog.ts`, `app/functions/FunctionsCatalogClient.tsx`, `tools/pipeline/verify-safe.ps1`, `tools/pipeline/approved-workflow.ps1`, `tests/functions-automation-coverage-contract.mjs` | archived completed-feature history unless investigating a regression |
 | Simulator / Functions / QA | `lib/internal/roadmap/index.ts`, `tools/simulator/README.md`, `tools/pipeline/README.md`, `lib/functions/catalog.ts` | completed feature history and archived QA logs |
 | Pipeline / Git finish | `tools/pipeline/README.md`, `tools/pipeline/approved-workflow.ps1`, `tools/pipeline/verify-safe.ps1`, `tools/pipeline/finish-version.ps1` | UI component docs unless profile touches UI |
 | Docs cleanup / Codex optimization | `docs/README.md`, this file, `docs/productization-roadmap.md`, `tools/pipeline/README.md` | product feature source files unless referenced by changed docs |
@@ -104,3 +104,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 ```
 
 Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/push unless the user manually confirms the responsive result.
+
+
+## 0.24.14 Functions Automation Policy
+
+- `/functions` must show automation profile, command, safety grade, and execution note.
+- `functions-automation` is the canonical verify profile for catalog, storage, environment, PDF, and automation coverage contracts.
+- Seed, Reset, Cleanup, R2 mutation, and DB mutation stay guarded by dry-run/confirmation/fingerprint/prefix/service-code rules.
+- The catalog may describe executable commands, but it must not execute DB/R2/Seed/Reset/Cleanup during documentation or catalog verification.

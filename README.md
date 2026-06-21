@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.13`
+- 기준 앱 버전: `0.24.14`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.13`은 문서/폴더 정리 2차로 Codex 시작 문서, 현재 기준 문서, 보관 문서, Vercel QA 흐름을 정리한다.
+- 현재 작업 상태: `0.24.14`는 Functions 90% 구현/검증 정리로 `/functions` catalog의 자동화 profile, 명령, 안전 등급, dry-run/confirmation 기준을 정리한다.
 
 ## 개발 실행
 
@@ -18,6 +18,7 @@ npm run dev
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile workspace-commonization
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile functions-automation
 ```
 
 버전 작업을 마무리할 때는 `approved-workflow.ps1 -Action Plan` 후 `approved-workflow.ps1 -Action Finish`를 사용한다. wrapper가 matching PASS verification result와 changed fingerprint를 확인한 뒤 explicit path만 stage/commit/push한다. `git add .`, force push, reset, clean, checkout은 사용하지 않는다.
