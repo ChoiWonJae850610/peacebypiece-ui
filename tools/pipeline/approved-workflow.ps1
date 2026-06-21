@@ -6,7 +6,8 @@ param(
     [string]$Profile = "",
     [string]$CommitMessage = "",
     [string]$ExpectedAppVersion = "",
-    [int]$MaxVerificationAgeMinutes = 240
+    [int]$MaxVerificationAgeMinutes = 240,
+    [switch]$SkipHandoff
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,6 +22,7 @@ if (-not (Test-Path -LiteralPath $PipelineCommonPath)) {
 $AllowedProfiles = @(
     "system-admin-storage",
     "id-control-roadmap",
+    "roadmap-development-contract",
     "repository-cleanup",
     "automation-infrastructure"
 )
@@ -312,7 +314,7 @@ switch ($Action) {
         exit $LASTEXITCODE
     }
     "Handoff" {
-        & $pipelineScript -CreateLocalRepoHandoff
+        & $pipelineScript -CreateLocalRepoHandoff -VerificationResultPath "" -VerificationProfile ""
         exit $LASTEXITCODE
     }
     "Plan" {
@@ -354,6 +356,18 @@ switch ($Action) {
         WriteWorkflowState -ProfileName $Profile -ChangedFiles $changedFiles -ChangedFingerprint $changedFingerprint -VerificationResult $verificationResult
         Write-Host ""
         & $finishScript -CommitMessage $CommitMessage -Paths ($changedFiles -join ",") -ExpectedAppVersion $ExpectedAppVersion -VerificationProfile $Profile -VerificationResultPath $verificationResult.Path -Execute
-        exit $LASTEXITCODE
+        $finishExitCode = $LASTEXITCODE
+        if ($finishExitCode -ne 0) {
+            exit $finishExitCode
+        }
+
+        if (-not $SkipHandoff) {
+            Write-Host ""
+            Write-Host "Finish PASS. Creating 4. Newest handoff artifacts."
+            & $pipelineScript -CreateLocalRepoHandoff -VerificationResultPath $verificationResult.Path -VerificationProfile $Profile
+            exit $LASTEXITCODE
+        }
+
+        exit 0
     }
 }

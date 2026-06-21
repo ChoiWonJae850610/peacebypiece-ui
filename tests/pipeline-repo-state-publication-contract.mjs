@@ -2,8 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const file = path.join(root, "tools", "pipeline", "pipeline-patch-processing.ps1");
-const source = fs.readFileSync(file, "utf8");
+const patchProcessingFile = path.join(root, "tools", "pipeline", "pipeline-patch-processing.ps1");
+const localHandoffFile = path.join(root, "tools", "pipeline", "peacebypiece-auto-pipeline.ps1");
+const patchProcessingSource = fs.readFileSync(patchProcessingFile, "utf8");
+const localHandoffSource = fs.readFileSync(localHandoffFile, "utf8");
+const source = `${patchProcessingSource}\n${localHandoffSource}`;
 
 const required = [
   "function SaveRepoStateSnapshot",
@@ -11,6 +14,15 @@ const required = [
   "SaveRepoStateSnapshot -Version $version | Out-Null",
   "$repoStatePath = ResolveLatestRepoStatePath",
   "CopyFileToNewestResultDir -SourcePath $repoStatePath",
+  "function NewLocalRepoBuildResultFile",
+  "function PublishLocalRepoHandoffNewestSet",
+  "build-result-$safeVersion-$timestamp",
+  "Verification Result Path:",
+  "Build Result:",
+  "Mutation Audit Finding Count:",
+  "DB Migration:",
+  "DB/R2 Executed:",
+  "repo-state-$safeVersion-$timestamp",
 ];
 
 for (const token of required) {

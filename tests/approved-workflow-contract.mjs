@@ -12,6 +12,7 @@ const requiredWorkflowTokens = [
   '[ValidateSet("Verify", "Handoff", "Plan", "Finish")]',
   '"system-admin-storage"',
   '"id-control-roadmap"',
+  '"roadmap-development-contract"',
   '"repository-cleanup"',
   '"automation-infrastructure"',
   "function SelectMatchingVerificationResult",
@@ -24,6 +25,8 @@ const requiredWorkflowTokens = [
   "GetWorkflowChangedFingerprint",
   "& $verifyScript -Profile $Profile",
   "& $pipelineScript -CreateLocalRepoHandoff",
+  "SkipHandoff",
+  "Finish PASS. Creating 4. Newest handoff artifacts.",
   "& $finishScript",
   "-Execute",
   "Finish is allowed only on master",
@@ -60,8 +63,10 @@ for (const token of forbiddenWorkflowTokens) {
 
 const requiredVerifyTokens = [
   '"automation-infrastructure"',
+  '"roadmap-development-contract"',
   "tools/pipeline/approved-workflow.ps1",
   "approved workflow contract",
+  "roadmap development contract",
   "tests/approved-workflow-contract.mjs",
 ];
 

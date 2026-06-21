@@ -18,7 +18,7 @@
 
 ## Default Automatic Version Workflow
 - When the user clearly specifies a version goal and scope, treat analysis, implementation, validation, staging, commit, push, and final reporting as one continuous task.
-- The normal flow is: check branch/HEAD/origin/working tree, inspect relevant code and docs, implement within scope, update `APP_VERSION` and versioned docs when the task is a versioned patch, run `tools/pipeline/approved-workflow.ps1 -Action Verify` when its profile covers the scope, review the final diff, use `tools/pipeline/approved-workflow.ps1 -Action Plan`, finish Git with `tools/pipeline/approved-workflow.ps1 -Action Finish`, verify origin is synchronized and the working tree is clean, then report the result.
+- The normal flow is: check branch/HEAD/origin/working tree, read the canonical roadmap detail for the target version, inspect relevant code and docs, implement within scope, update `APP_VERSION` and versioned docs when the task is a versioned patch, update the roadmap result with actual implementation/verification/commit/remaining issues, run `tools/pipeline/approved-workflow.ps1 -Action Verify` when its profile covers the scope, review the final diff, use `tools/pipeline/approved-workflow.ps1 -Action Plan`, finish Git with `tools/pipeline/approved-workflow.ps1 -Action Finish`, verify origin is synchronized and the working tree is clean, verify `4. Newest` handoff artifacts, then report the result.
 - Do not ask for separate user approval before stage, commit, or `git push origin master` during ordinary version work when all automatic Git conditions below are satisfied.
 - If any automatic Git condition is not satisfied, stop before stage/commit/push and report the reason plus the recommended next action.
 
@@ -103,7 +103,12 @@
 - `/ui` and `/functions` must remain blocked outside allowed non-production runtime modes.
 - `/id-control` replaces `/dev/test-console` for the internal identity-control console. `/dev/test-console` must remain production-blocked, explicitly enabled, and guarded before redirecting to `/id-control`.
 - `/roadmap` is a system-administrator-only read-only screen. It must not add edit/save/delete actions, DB writes, R2 writes, or URL/query/localStorage mutation paths without a separate explicit policy decision.
-- User-facing text on `/roadmap` should be Korean by default. When roadmap plans change, update both `lib/internal/productizationRoadmap.ts` and `docs/productization-roadmap.md`.
+- User-facing text on `/roadmap` should be Korean by default. When roadmap plans change, update the canonical data under `lib/internal/roadmap/`, keep `lib/internal/productizationRoadmap.ts` as a compatibility facade if still used, and update `docs/productization-roadmap.md`.
+- Before starting a new version feature task, read the canonical roadmap detail for that version and treat it as the current work contract. If user chat or older docs conflict with the latest canonical roadmap and `docs/codex-current-state.md`, prefer the canonical roadmap and current-state.
+- Do not expand roadmap detail scope on your own. If success conditions cannot be met, do not mark the roadmap item complete.
+- After version work finishes, update the roadmap result with actual applied work, verification result, commit hash, push state, remaining issues, and user confirmation status.
+- UI, responsive, and PDF work that requires human judgment must remain `사용자 확인 필요` until user confirmation is complete, even when automatic tests pass.
+- If the next user instruction is only "next version" or similar, read the next planned roadmap detail before implementing.
 - Impersonation must use an allowlist, support returning to the original session, and keep audit logs.
 - Maintain tenant isolation in UI, API, repository, DB, and simulator flows.
 - Validate permissions in both UI affordances and API/server handlers.
@@ -120,6 +125,7 @@
 - Force push is always forbidden unless the user explicitly changes this rule for a one-off recovery operation.
 - Do not hide failed or skipped tests. Report what ran, what did not run, and why.
 - Final reports should include: original version, result version, files changed, tests run, failures/skips, DB migration status, git status, and whether commit/push were performed.
+- For automatic version work, the normal `approved-workflow.ps1 -Action Finish` creates the latest ChatGPT handoff artifacts in `4. Newest` after commit/push unless `-SkipHandoff` is explicitly used. Report the ZIP, repo-state, and build-result filenames and whether APP_VERSION/HEAD match.
 - The canonical PowerShell entry point is `tools/pipeline/peacebypiece-auto-pipeline.ps1` and should be tracked in Git. Old version, patch, backup, temporary, and copied PowerShell variants remain ignored.
 - When Git is directly connected, full ZIP uploads, repo-state files, and separate PowerShell uploads are unnecessary operating overhead unless the user asks for them. A separate PowerShell upload is only useful when a newer external script copy exists or the task is explicitly script-only.
 

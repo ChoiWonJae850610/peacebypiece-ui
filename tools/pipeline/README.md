@@ -56,6 +56,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiec
 
 - ZIP: `Paths.BuildZipDir` 아래 `peacebypiece-ui-{APP_VERSION}.zip`
 - repo-state: `Paths.RepoStatusDir` 아래 `repo-state-{APP_VERSION}-{yyyyMMdd-HHmmss}.txt`
+- build-result: `Paths.RepoStatusDir` 아래 `build-result-{APP_VERSION}-{yyyyMMdd-HHmmss}.txt`
+- latest handoff set: `Paths.NewestResultDir` (`4. Newest`) 아래 최신 ZIP, repo-state, build-result 3개 파일
 
 기존 파일은 덮어쓰지 않고 이름 충돌 시 timestamp/counter를 붙입니다. ZIP은 patch flat 구조가 아니라 원래 디렉터리 구조를 유지한 전체 소스 ZIP입니다. 파일 후보 목록은 `git ls-files -co --exclude-standard` 기준으로 만들며, tracked 수정 파일과 안전한 untracked 파일을 포함합니다.
 
@@ -63,14 +65,20 @@ ZIP 제외 규칙:
 
 - 경로 세그먼트가 `.git`, `node_modules`, `.next`, `.wrangler`, `artifacts`, `.tmp`, `test-results`, `playwright-report`인 모든 중첩 디렉터리
 - `.env`, `.env.*` (`.env.example`은 포함)
-- 생성된 ZIP, 기존 `repo-state-*.txt`
+- 생성된 ZIP, 기존 `repo-state-*.txt`, `build-result-*.txt`
 - backup/temp/copy 파일과 OS 임시 파일
 
 ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockfiles, public assets, Cloudflare Worker source와 공개 example 설정을 포함합니다. ZIP 후보에 실제 secret/token 파일명 또는 내용이 의심되면 ZIP 생성을 중단하고 경로만 보고합니다. secret 값 자체는 출력하지 않습니다.
 
 생성 후에는 ZIP 내부 contract 검증도 실행합니다. 이 검증은 생성 시 제외 함수와 별도로 중첩 `node_modules`, `.next`, `.wrangler`, `.env.local`, `.git`, 생성 ZIP, 기존 repo-state 제외와 `.env.example` 및 필수 파일 포함을 확인합니다.
 
-완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 두 파일명을 출력합니다.
+완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, build-result 전체 경로, `4. Newest` 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 세 파일명을 출력합니다.
+
+`approved-workflow.ps1 -Action Finish`가 성공하면 기본적으로 이 handoff를 자동 실행합니다. 생성 시점은 Verify PASS, Plan PASS, Finish PASS, commit, `git push origin master`, ahead/behind 0/0, working tree clean 이후입니다. 특별히 생략해야 할 때만 `-SkipHandoff`를 사용합니다.
+
+`build-result`는 build를 다시 실행하지 않습니다. Finish에서 사용한 matching `verify-safe` result의 `npm run build`, Mutation Audit, contract test 요약을 재사용해 기록합니다. repo-state도 verification result path, verification profile, build result, Mutation Audit finding/high-risk, DB Migration 없음, DB/R2 실행 없음, 생성 ZIP 경로와 크기를 포함합니다.
+
+`4. Newest` 갱신은 최신 정상 완료 세트를 쉽게 찾기 위한 정책입니다. 기존 이력 폴더의 과거 산출물은 삭제하지 않고, newest 폴더만 최신 ZIP, matching repo-state, matching build-result 세트로 교체합니다. incomplete 또는 0-byte 파일, APP_VERSION/HEAD 불일치 세트는 실패로 처리합니다.
 
 ## 안전 검증 wrapper
 
@@ -88,7 +96,7 @@ Actions:
 - `Verify`: delegates to `verify-safe.ps1` with an allowlisted profile and writes a verification result path.
 - `Handoff`: delegates to `peacebypiece-auto-pipeline.ps1 -CreateLocalRepoHandoff`; no build or Git write.
 - `Plan`: gathers normalized explicit paths, computes the current working tree fingerprint, selects the newest matching PASS verification result, and reports whether Finish can run.
-- `Finish`: repeats the same checks, selects the matching PASS result, then delegates to `finish-version.ps1 -Execute` with explicit paths.
+- `Finish`: repeats the same checks, selects the matching PASS result, delegates to `finish-version.ps1 -Execute` with explicit paths, then creates the latest `4. Newest` handoff artifacts unless `-SkipHandoff` is passed.
 
 `approved-workflow.ps1` blocks arbitrary actions, arbitrary script paths, non-allowlisted profiles, missing verification results, CheckOnly results, stale or mismatched fingerprints, non-`master` Finish, package/lockfile changes, DB migration changes, secret/production value candidates, and unexpected changed files. It does not run `Invoke-Expression`, `cmd /c`, `git add .`, `git add -A`, force push, amend, reset, clean, checkout, rebase, merge, dependency install, DB/R2 mutation, Seed, Reset, Cleanup, Migration, or production access.
 
@@ -99,6 +107,7 @@ Actions:
 ```powershell
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage
 .\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap
+.\tools\pipeline\verify-safe.ps1 -Profile roadmap-development-contract
 .\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure
 ```
 
@@ -115,6 +124,13 @@ Actions:
 - `node tests/dev-test-context-system-admin-contract.mjs`
 - `node tests/simulator-onboarding-fixture-contract.mjs`
 
+`roadmap-development-contract` 프로필은 roadmap schema, 한글 표시, 사용자 요약 렌더링, 상세보기 렌더링, 조회 전용 보장, system-admin guard, direct hash link, 0.24.12 초안, 완료 상태 조건, handoff ZIP/repo-state/build-result, `4. Newest` 최신 세트 contract를 확인합니다.
+
+- `node tests/roadmap-development-contract.mjs`
+- `node tests/internal-system-routes-contract.mjs`
+- `node tests/approved-workflow-contract.mjs`
+- `node tests/pipeline-repo-state-publication-contract.mjs`
+
 `automation-infrastructure` 프로필은 승인 자동화 wrapper, PowerShell parse, repo-state publication contract, build, mutation audit, package/lockfile 차단, migration 차단, secret/production scan을 확인합니다.
 
 - `node tests/approved-workflow-contract.mjs`
@@ -125,6 +141,7 @@ Actions:
 ```powershell
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap -CheckOnly
+.\tools\pipeline\verify-safe.ps1 -Profile roadmap-development-contract -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure -CheckOnly
 ```
 
@@ -177,7 +194,9 @@ Plan mode:
 
 로드맵 계획을 바꿀 때는 다음 두 파일을 함께 갱신합니다.
 
-- `lib/internal/productizationRoadmap.ts`
+- `lib/internal/roadmap/index.ts`
+- `lib/internal/roadmap/roadmap-{version}.ts`
+- `lib/internal/productizationRoadmap.ts` facade가 필요한 경우 export 호환성 유지
 - `docs/productization-roadmap.md`
 
 ## 승인 범위

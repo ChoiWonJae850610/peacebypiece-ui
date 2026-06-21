@@ -25,7 +25,9 @@
 # ==========================================
 
 param(
-    [switch]$CreateLocalRepoHandoff
+    [switch]$CreateLocalRepoHandoff,
+    [string]$VerificationResultPath = "",
+    [string]$VerificationProfile = ""
 )
 
 $PipelineCommonPath = Join-Path $PSScriptRoot "pipeline-common.ps1"
@@ -406,7 +408,7 @@ function TestLocalRepoExportExcludedPath {
         return $true
     }
 
-    if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt") {
+    if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt" -or $leaf -like "build-result-*.txt") {
         return $true
     }
 
@@ -449,6 +451,7 @@ function GetLocalRepoExportExcludeSummary {
         ".env, .env.* except .env.example",
         "generated ZIP files",
         "repo-state-*.txt",
+        "build-result-*.txt",
         "backup/temp/copy files",
         "OS temporary files"
     )
@@ -666,12 +669,136 @@ function AddRepoStateSection {
     $Lines.Add("")
 }
 
+function GetLocalRepoVerificationField {
+    param(
+        [string[]]$Lines,
+        [string]$Name
+    )
+
+    $prefix = "$Name`:"
+    $line = $Lines | Where-Object { ([string]$_).StartsWith($prefix) } | Select-Object -First 1
+    if ($null -eq $line) {
+        return ""
+    }
+
+    return ([string]$line).Substring($prefix.Length).Trim()
+}
+
+function GetLocalRepoVerificationCommandResult {
+    param(
+        [string[]]$Lines,
+        [string]$ResultName
+    )
+
+    $line = $Lines | Where-Object { ([string]$_).StartsWith("$ResultName`:") } | Select-Object -First 1
+    if ($null -eq $line) {
+        return [pscustomobject]@{
+            Passed = ""
+            Command = ""
+            FindingCount = ""
+            HighRiskCount = ""
+        }
+    }
+
+    $text = [string]$line
+    $passed = if ($text -match 'Passed=([^;]+)') { $matches[1].Trim() } else { "" }
+    $command = if ($text -match 'Command=([^;]+)') { $matches[1].Trim() } else { "" }
+    $findingCount = if ($text -match 'FindingCount=([^;]*)') { $matches[1].Trim() } else { "" }
+    $highRiskCount = if ($text -match 'HighRiskCount=([^;]*)') { $matches[1].Trim() } else { "" }
+
+    return [pscustomobject]@{
+        Passed = $passed
+        Command = $command
+        FindingCount = $findingCount
+        HighRiskCount = $highRiskCount
+    }
+}
+
+function GetLocalRepoVerificationSummary {
+    param(
+        [string]$ResultPath,
+        [string]$ProfileName
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ResultPath) -or -not (Test-Path -LiteralPath $ResultPath -PathType Leaf)) {
+        return [pscustomobject]@{
+            Path = ""
+            Profile = $ProfileName
+            Result = "not provided"
+            HeadHash = ""
+            BuildPassed = ""
+            BuildCommand = ""
+            ExecutedAt = ""
+            MutationFindingCount = ""
+            MutationHighRiskCount = ""
+            ContractSummary = "not provided"
+        }
+    }
+
+    $lines = @(Get-Content -LiteralPath $ResultPath -Encoding UTF8)
+    $build = GetLocalRepoVerificationCommandResult -Lines $lines -ResultName "npm run build"
+    $mutation = GetLocalRepoVerificationCommandResult -Lines $lines -ResultName "npm run audit:wafl-mutations"
+    $contracts = @($lines | Where-Object {
+        $text = [string]$_
+        $text -match 'contract:' -and $text -match 'Passed=True'
+    })
+
+    return [pscustomobject]@{
+        Path = $ResultPath
+        Profile = if ([string]::IsNullOrWhiteSpace($ProfileName)) { GetLocalRepoVerificationField -Lines $lines -Name "Profile" } else { $ProfileName }
+        Result = if (($lines -join "`n") -match 'VERIFY_SAFE_RESULT:\s*(PASS|FAIL|CHECK_ONLY)') { $matches[1] } else { "unknown" }
+        HeadHash = GetLocalRepoVerificationField -Lines $lines -Name "HeadHash"
+        BuildPassed = $build.Passed
+        BuildCommand = $build.Command
+        ExecutedAt = GetLocalRepoVerificationField -Lines $lines -Name "ExecutedAt"
+        MutationFindingCount = $mutation.FindingCount
+        MutationHighRiskCount = $mutation.HighRiskCount
+        ContractSummary = if ($contracts.Count -eq 0) { "none" } else { ($contracts | ForEach-Object { ([string]$_).Split(":")[0] }) -join ", " }
+    }
+}
+
+function NewLocalRepoBuildResultFile {
+    param(
+        [string]$Version,
+        [object]$VerificationSummary
+    )
+
+    EnsureDirectory -Path $RepoStatusDir
+    $safeVersion = SanitizeResultFileNamePart -Value $Version
+    $timestamp = GetTimestamp
+    $buildResultPath = GetUniqueOutputPath -Directory $RepoStatusDir -FileNameWithoutExtension "build-result-$safeVersion-$timestamp" -Extension ".txt"
+    $headHash = InvokeLocalRepoGitOutput -Arguments @("rev-parse", "HEAD") | Select-Object -First 1
+    $statusShort = @(InvokeLocalRepoGitOutput -Arguments @("status", "--short"))
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    AddRepoStateSection -Lines $lines -Title "APP_VERSION:" -Values @($Version)
+    AddRepoStateSection -Lines $lines -Title "Branch:" -Values @(InvokeLocalRepoGitOutput -Arguments @("branch", "--show-current"))
+    AddRepoStateSection -Lines $lines -Title "HEAD Hash:" -Values @([string]$headHash)
+    AddRepoStateSection -Lines $lines -Title "Verification Profile:" -Values @([string]$VerificationSummary.Profile)
+    AddRepoStateSection -Lines $lines -Title "Verification Result Path:" -Values @([string]$VerificationSummary.Path)
+    AddRepoStateSection -Lines $lines -Title "Build Result:" -Values @($(if ($VerificationSummary.BuildPassed -eq "True") { "PASS" } elseif ($VerificationSummary.BuildPassed -eq "False") { "FAIL" } else { "unknown" }))
+    AddRepoStateSection -Lines $lines -Title "Build Command:" -Values @([string]$VerificationSummary.BuildCommand)
+    AddRepoStateSection -Lines $lines -Title "Executed At:" -Values @([string]$VerificationSummary.ExecutedAt)
+    AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
+    AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
+    AddRepoStateSection -Lines $lines -Title "Contract Test Summary:" -Values @([string]$VerificationSummary.ContractSummary)
+    AddRepoStateSection -Lines $lines -Title "Package/Lockfile Changed:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "DB Migration:" -Values @("none")
+    AddRepoStateSection -Lines $lines -Title "DB/R2 Executed:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "Final Git Status --short:" -Values $statusShort -EmptyText "clean"
+
+    [System.IO.File]::WriteAllLines($buildResultPath, $lines, [System.Text.Encoding]::UTF8)
+    return $buildResultPath
+}
+
 function NewLocalRepoStateFile {
     param(
         [string]$Version,
         [string]$ZipPath,
         [long]$ZipSizeBytes,
-        [bool]$WorkingTreeClean
+        [bool]$WorkingTreeClean,
+        [object]$VerificationSummary,
+        [string]$BuildResultPath
     )
 
     EnsureDirectory -Path $RepoStatusDir
@@ -721,6 +848,14 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "Canonical PowerShell Tracked State:" -Values @((GetCanonicalPowerShellTrackedState))
     AddRepoStateSection -Lines $lines -Title "Generated ZIP:" -Values @($ZipPath)
     AddRepoStateSection -Lines $lines -Title "ZIP Size Bytes:" -Values @([string]$ZipSizeBytes)
+    AddRepoStateSection -Lines $lines -Title "Verification Result Path:" -Values @([string]$VerificationSummary.Path)
+    AddRepoStateSection -Lines $lines -Title "Verification Profile:" -Values @([string]$VerificationSummary.Profile)
+    AddRepoStateSection -Lines $lines -Title "Build Result:" -Values @($(if ($VerificationSummary.BuildPassed -eq "True") { "PASS" } elseif ($VerificationSummary.BuildPassed -eq "False") { "FAIL" } else { "unknown" }))
+    AddRepoStateSection -Lines $lines -Title "Build Result Path:" -Values @($BuildResultPath)
+    AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
+    AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
+    AddRepoStateSection -Lines $lines -Title "DB Migration:" -Values @("none")
+    AddRepoStateSection -Lines $lines -Title "DB/R2 Executed:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "Exclude Rule Summary:" -Values (GetLocalRepoExportExcludeSummary)
 
     [System.IO.File]::WriteAllLines($repoStatePath, $lines, [System.Text.Encoding]::UTF8)
@@ -787,7 +922,7 @@ function TestLocalRepoExportZipContract {
                 throw "ZIP contract 실패: env 파일 포함($entryName)"
             }
 
-            if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt") {
+            if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt" -or $leaf -like "build-result-*.txt") {
                 throw "ZIP contract 실패: 생성물 포함($entryName)"
             }
         }
@@ -807,6 +942,50 @@ function TestLocalRepoExportZipContract {
     }
     finally {
         $archive.Dispose()
+    }
+}
+
+function PublishLocalRepoHandoffNewestSet {
+    param(
+        [string]$ZipPath,
+        [string]$RepoStatePath,
+        [string]$BuildResultPath,
+        [string]$Version,
+        [string]$HeadHash
+    )
+
+    EnsureDirectory -Path $NewestResultDIr
+    Get-ChildItem -LiteralPath $NewestResultDIr -Force -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-Item -LiteralPath $_.FullName -Recurse -Force
+    }
+
+    foreach ($sourcePath in @($ZipPath, $RepoStatePath, $BuildResultPath)) {
+        if ([string]::IsNullOrWhiteSpace($sourcePath) -or -not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+            throw "4. Newest publication source missing: $sourcePath"
+        }
+        $item = Get-Item -LiteralPath $sourcePath
+        if ($item.Length -le 0) {
+            throw "4. Newest publication source is empty: $sourcePath"
+        }
+        Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $NewestResultDIr $item.Name) -Force
+    }
+
+    $newestZip = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "peacebypiece-ui-$Version*.zip" -ErrorAction SilentlyContinue
+    $newestRepoState = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "repo-state-$Version-*.txt" -ErrorAction SilentlyContinue
+    $newestBuildResult = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "build-result-$Version-*.txt" -ErrorAction SilentlyContinue
+
+    if ($newestZip.Count -ne 1 -or $newestRepoState.Count -ne 1 -or $newestBuildResult.Count -ne 1) {
+        throw "4. Newest set contract failed. ZIP=$($newestZip.Count) repo-state=$($newestRepoState.Count) build-result=$($newestBuildResult.Count)"
+    }
+
+    foreach ($textPath in @($newestRepoState[0].FullName, $newestBuildResult[0].FullName)) {
+        $content = Get-Content -LiteralPath $textPath -Raw -Encoding UTF8
+        if ($content -notmatch [regex]::Escape($Version)) {
+            throw "4. Newest APP_VERSION mismatch: $textPath"
+        }
+        if ($content -notmatch [regex]::Escape($HeadHash)) {
+            throw "4. Newest HEAD mismatch: $textPath"
+        }
     }
 }
 
@@ -898,10 +1077,12 @@ function NewLocalRepositoryHandoff {
     TestLocalRepoExportZipContract -ZipPath $zipPath -ExpectedEntries $requiredEntries | Out-Null
 
     $zipItem = Get-Item -LiteralPath $zipPath
-    $repoStatePath = NewLocalRepoStateFile -Version $version -ZipPath $zipPath -ZipSizeBytes $zipItem.Length -WorkingTreeClean $workingTreeClean
+    $verificationSummary = GetLocalRepoVerificationSummary -ResultPath $VerificationResultPath -ProfileName $VerificationProfile
+    $buildResultPath = NewLocalRepoBuildResultFile -Version $version -VerificationSummary $verificationSummary
+    $repoStatePath = NewLocalRepoStateFile -Version $version -ZipPath $zipPath -ZipSizeBytes $zipItem.Length -WorkingTreeClean $workingTreeClean -VerificationSummary $verificationSummary -BuildResultPath $buildResultPath
 
     $repoStateContent = Get-Content -LiteralPath $repoStatePath -Raw -Encoding UTF8
-    foreach ($requiredText in @("Generated At:", "Repository Path:", "Branch:", "HEAD Hash:", "APP_VERSION:", "Generated ZIP:", "Exclude Rule Summary:")) {
+    foreach ($requiredText in @("Generated At:", "Repository Path:", "Branch:", "HEAD Hash:", "APP_VERSION:", "Generated ZIP:", "Verification Result Path:", "Build Result:", "Exclude Rule Summary:")) {
         if ($repoStateContent -notmatch [regex]::Escape($requiredText)) {
             throw "repo-state 내용 검사 실패: $requiredText"
         }
@@ -913,14 +1094,20 @@ function NewLocalRepositoryHandoff {
         LogWarn "생성 후 Git working tree 상태가 시작 시점과 달라졌습니다."
     }
 
+    $headHash = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "HEAD") | Select-Object -First 1)
+    PublishLocalRepoHandoffNewestSet -ZipPath $zipPath -RepoStatePath $repoStatePath -BuildResultPath $buildResultPath -Version $version -HeadHash $headHash
+
     Write-Host ""
     LogInfo "ZIP 전체 경로: $zipPath"
     LogInfo "repo-state 전체 경로: $repoStatePath"
+    LogInfo "build-result 전체 경로: $buildResultPath"
+    LogInfo "4. Newest 경로: $NewestResultDIr"
     LogInfo "ZIP 크기: $($zipItem.Length) bytes"
     LogInfo "APP_VERSION: $version"
     LogInfo "Git clean 여부: $workingTreeClean"
     LogInfo "ChatGPT 업로드 파일 1: $(Split-Path -Leaf $zipPath)"
     LogInfo "ChatGPT 업로드 파일 2: $(Split-Path -Leaf $repoStatePath)"
+    LogInfo "ChatGPT 업로드 파일 3: $(Split-Path -Leaf $buildResultPath)"
 
     Write-Host ""
     Write-Host "Enter를 누르면 개발 / 테스트 도구 메뉴로 돌아갑니다."
@@ -931,6 +1118,7 @@ function NewLocalRepositoryHandoff {
     return [pscustomobject]@{
         ZipPath = $zipPath
         RepoStatePath = $repoStatePath
+        BuildResultPath = $buildResultPath
         ZipSizeBytes = $zipItem.Length
         AppVersion = $version
         GitClean = $workingTreeClean

@@ -3,100 +3,164 @@
 ## Status
 
 - Roadmap checkpoint version: `0.24.11`
-- Source of truth: local Git repository and committed documentation, not prior chat memory.
-- Baseline HEAD: `454dba23a704fe880b78f7e5eb5dcef37f93043d`
-- App display version after this checkpoint: `0.24.11`
-- Feature implementation progress: about `93%` as a prior screen/function skeleton estimate; not remeasured in this checkpoint.
-- Productization readiness: `77%`; this keeps the productization estimate conservative while `/id-control`, `/roadmap`, and safe verification reuse are being productized. Remaining readiness work still includes R2 reconciliation display, dev/test account-switch browser evidence, permissions, responsive QA, PDF policy, E2E evidence, and operational safety.
-- Internal system-admin routes: `/id-control` is the guarded dev/test identity-control console, and `/roadmap` is the guarded read-only productization roadmap view. The former `/dev/test-console` route redirects to `/id-control` only after the same dev/test and active system-admin guard passes.
+- APP_VERSION: `0.24.11`
+- Feature implementation progress: about `93%`
+- Productization readiness: `77%`
+- Canonical structured source: `lib/internal/roadmap/index.ts`
+- Compatibility facade: `lib/internal/productizationRoadmap.ts`
+- Current-state handoff: `docs/codex-current-state.md`
+- System-admin screen: `/roadmap`
 
-This roadmap separates product work from Codex operating rules. `AGENTS.md` stays limited to operating, safety, Git, question, and reporting rules. Product scope and remaining release work live here. Future status blocks should keep feature implementation progress and productization readiness separate when both are reported. The `/roadmap` screen uses `lib/internal/productizationRoadmap.ts` as its structured display data; future roadmap changes should update both this document and that data file together.
+`/roadmap` is now the shared development board for the user, ChatGPT, and Codex. It shows two levels of information in one read-only system-admin screen:
 
-## Productization Summary
+- user-facing version summaries
+- detailed development contracts used before starting a version
 
-The app has a broad working skeleton with many DB-backed workspace, system, storage, permission, and simulator contracts already in place. That is why the older feature implementation progress can remain high. The `76%` figure in this roadmap is narrower and stricter: it measures productization readiness, including removal or quarantine of residual mock/sample paths, real data evidence, permissions, responsive/manual verification, PDF policy decisions, and dev/test operational safety without touching production DB/R2.
+The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
 
-## User Types And Screens
+## Canonical Policy
 
-| User type | Main routes | Current classification | Productization notes |
-|---|---|---|---|
-| System administrator | `/system`, `/system/companies`, `/system/account-requests`, `/system/audit-logs`, `/system/billing`, `/system/storage-usage`, `/system/standards/*` | Partial to DB-backed | System layout requires system session. Companies, audit logs, standards, and account requests have DB/API paths. Billing/storage still include design or skeleton pieces. |
-| Customer administrator | `/workspace`, `/workspace/settings`, `/workspace/members`, `/workspace/files`, `/workspace/stats`, `/workspace/subscription`, `/workspace/standards`, `/workspace/workorders`, `/workspace/material-orders`, `/workspace/materials`, `/workspace/partners` | Mostly DB-backed, partial product polish | Permission guards exist on most pages. Admin main uses operational dashboard snapshots plus DB-backed plan/storage summary. Storage/files use DB snapshot API. Remaining work is R2 reconciliation display and final responsive verification. |
-| General user | `/workspace`, `/workspace/workorders`, `/workspace/material-orders`, `/workspace/materials`, `/workspace/partners`, `/workspace/legal`, `/me/settings` | DB-backed with permission gating | Member permissions are checked through page/API guards. Need broader direct-route denial tests and real session/E2E coverage. |
-| External or partner user | Invitation routes and partner data paths | Partial | Invitation join routes exist. Dedicated external supplier portal is not confirmed; partner/factory data is currently managed inside workspace/admin flows. |
-| Dev/test user | `/id-control`, `/dev/test-console` redirect, `/functions`, `/ui`, simulator commands | Guarded dev/test-only | Runtime and active system-admin checks exist. Execute DB/R2 paths remain approval-gated or disabled; many checks are dry-run/contract only. |
+Before starting a new version feature task, read the canonical detail in `lib/internal/roadmap/` and the current state in `docs/codex-current-state.md`.
 
-## Screen Inventory
+If user chat, old handoff files, archived docs, and current roadmap/current-state conflict, prefer:
 
-| Area | Routes | Data state | Permission state | Remaining work |
-|---|---|---|---|---|
-| Public auth/invite | `/`, `/login`, `/invite/company/[token]`, `/invite/member/[token]`, `/pending`, `/service-paused` | Implemented with auth/invitation/company access repositories | Public plus session-aware redirects | Real Google login and pending/service-paused browser checks remain manual. |
-| Customer admin main | `/workspace` | DB operational snapshots plus DB-backed plan/storage summary for company admins; member permission lookup for member home | `requireWaflSessionForArea("workspace")` plus member permissions | Browser responsive QA and R2 reconciliation surfacing remain. |
-| Workorders | `/workspace/workorders`, legacy `/worker` | DB repository mode only; API routes under `/api/workorders/*` | `/workspace/workorders` requires `workorder.read`; `/worker` uses current session but lacks the same page guard | Consolidate `/worker` with guarded workspace route or document it as dev/internal legacy alias. |
-| Material orders | `/workspace/material-orders` | DB/API-backed feature module | `material.order.request` plus place/request capability checks | Complete refresh-loss regression coverage, PDF handoff, responsive verification. |
-| Materials | `/workspace/materials` | Calls `listWorkspaceMaterials`; stale source fixture removed in 0.24.08 after static, build, mutation-audit, and contract-test verification | `standards.read` plus capability state | Continue DB-backed material workflow QA and permission denial coverage. |
-| Partners | `/workspace/partners` | DB-backed partner master components/API | `partner.read`, create/update capability checks | Final supplier/factory flow QA and permission denial tests. |
-| Files/storage | `/workspace/files`, `/workspace/storage` redirect | DB snapshot from attachments/trash plus company file policy; customer admin main reuses the same metadata path for quota warnings | `storage.read` and storage API guards | Align system storage and R2 reconciliation evidence. |
-| Members/invites | `/workspace/members`, `/workspace/invites` redirect | DB member repository and invitation APIs | `member.read`, `member.invite`, permission update checks | Last-admin policy and lifecycle edge cases need release tests. |
-| Settings/subscription/legal | `/workspace/settings`, `/workspace/subscription`, `/workspace/legal`, `/me/settings` | DB-backed settings/profile/policy flows | Admin-only settings, workspace/session guards | Real browser session, policy re-agreement, blocked-company checks. |
-| System console | `/system` and subroutes | Mixed DB-backed and design/checkpoint pages | System session required at layout/API levels | Finish billing/storage production data paths and system dashboard QA. |
-| Functions/id-control/UI catalog | `/functions`, `/id-control`, `/dev/test-console` redirect, `/ui`, `/roadmap` | Catalog/contract/dev-test DB reads, roadmap structured read-only data, no product data mutation by default | Runtime allowed modes plus active system admin for dev/test tools; roadmap is active system-admin read-only | Keep production blocking, account switch restore, audit log coverage, and roadmap data/doc sync. |
+1. local Git state
+2. `lib/internal/roadmap/*`
+3. `docs/codex-current-state.md`
+4. current baseline docs under `docs/현재기준/`
+5. archived historical docs
 
-## Data, Storage, And Plans
+Do not expand a roadmap detail beyond its declared scope. If the success conditions cannot be met, do not mark the item complete.
 
-- Plan definitions exist in `lib/billing/defaultPlans.ts` and policy helpers in `lib/billing/storageQuotaPolicy.ts`.
-- Customer file usage has a DB-backed snapshot route at `app/api/admin/files/snapshot/route.ts`.
-- Customer admin main now uses `lib/admin/dashboard/adminPlanStorageSummary.ts` to combine subscription state, company file-policy quota, attachment/trash usage, and member-limit warnings.
-- System storage usage API exists at `app/api/system/storage-usage/route.ts`; `lib/billing/storageUsageRepository.ts` now reads DB attachment/trash metadata for summaries and writes explicit snapshots to `storage_usage_snapshots`.
-- Simulator company A-J fixture covers 0%, 5%, 15%, 30%, 50%, 70%, 90%, 99%, 100%, and 110% clamped storage scenarios in `tests/fixtures/functions/company-scenarios.json`.
-- R2 usage reconciliation exists as dry-run/test tooling, but production and dev/test R2 mutation remain blocked without explicit approval.
+## Roadmap Data Structure
 
-## Permissions And Accounts
+Each version detail includes:
 
-- Workspace page/API guards are centralized in `lib/auth/routeGuard.ts` and `lib/auth/apiRouteGuards.ts`.
-- System admin access is validated against active DB rows in `lib/auth/systemAdminAccess.ts`.
-- Dev/test account switching is guarded by `WAFL_ENABLE_DEV_TEST_CONSOLE`, non-production runtime, active system-admin session, target allowlist, original session matching, and audit logs.
-- Remaining work: direct URL denial coverage for every protected route, `/worker` route policy, last-admin edge cases, and account-switch restore/manual browser checks.
-- `/id-control` preserves the existing dev/test context switch guard and audit behavior. `/roadmap` is system-admin read-only and must not grow edit/save/delete actions without a separate policy decision.
+- version, status, title
+- user summary, visible changes, expected UI
+- development purpose, development UI structure
+- scope, out-of-scope
+- implementation principles
+- success conditions, failure conditions
+- cautions, stop conditions
+- permission, DB, R2, and migration impact
+- automatic and manual tests
+- expected change areas
+- recommended commit message
+- next-version boundary
+- completion conditions
+- result summary, commit hash, verification result, remaining issues
+- user confirmation requirement and result
 
-## PDF Roadmap
+Status labels shown on `/roadmap` are Korean:
 
-- Workorder PDF generation exists at `app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts`.
-- Workorder PDF currently renders through an external generator when configured, falls back to server PDF, uploads to R2/worker, and registers an attachment.
-- PDF policy decisions are tracked in `lib/functions/pdfPolicyCatalog.ts`.
-- Supplier/material-order PDF is still policy-contract level; final generation route and R2 storage policy are not confirmed.
-- Remaining decisions: generation stage, amount visibility, due date source, branding, signature/stamp, page orientation, image layout, missing value handling, regeneration, download/print rules, and failure recovery.
+- 예정
+- 진행 중
+- 구현 완료
+- 검증 대기
+- 사용자 확인 필요
+- 사용자 결정 필요
+- 완료
+- 보류
+- 취소
 
-## Mock, Sample, Fixture, And Generated Data Policy
+Completion must not be set unless implementation is done, actual verify-safe passed, a commit hash exists, push completed, origin/master is synchronized, the working tree is clean, and any required user confirmation is complete.
 
-| Class | Current handling |
-|---|---|
-| Production code mock/sample paths | 0.24.08 removed the proven-unreferenced material fixture and `lib/data/sample` chain. Keep remaining candidates until import graph and replacement path are proven. |
-| Dev/test fixture data | Keep. Simulator and functions contracts depend on `tests/fixtures/functions/*` and `tools/simulator/fixtures/*`. |
-| Unreferenced source fixture | 0.24.08 deleted the stale material fixture after direct import, dynamic string, route/API, test, script, docs, fallback, and replacement-path review. |
-| Generated local folders | Classify as `GENERATED-LOCAL` / `GIT-IGNORE`, not source `DELETE-SAFE`: `.next`, `artifacts`, `.tmp`, `test-results`, `playwright-report`, root `node_modules`, worker `node_modules`, worker `.wrangler`. They may be regenerated locally and are cleaned only on explicit request. |
-| Historical docs | Keep or archive only with index refresh; do not delete by age. |
+UI, responsive, and PDF work stays in `사용자 확인 필요` until human review is complete, even if automatic tests pass.
+
+## 0.24.12 Draft
+
+Version: `0.24.12`
+
+Title: 일반 사용자 workspace 및 worker 공통화
+
+Status: 예정
+
+User summary:
+
+- `/worker` 화면의 크기와 정보 밀도를 줄인다.
+- 태블릿 가로에서 workspace 패널 스크롤을 정상화한다.
+- 작업지시서와 발주서의 화면 구조와 피드백을 통일한다.
+- 저장 중 다른 값이 사라지지 않도록 저장 흐름을 안정화한다.
+
+Required development criteria:
+
+- PC 3패널
+- iPad mini 가로 2패널 검토
+- 큰 태블릿 가로 3패널
+- 모바일 및 태블릿 세로 1패널
+- 패널 독립 스크롤
+- `/worker` density 축소
+- workorder/material-order shell 공통화
+- entity별 single save queue
+- stale response 방지
+- toast 통일
+- 저장 후 refresh persistence
+- 기존 권한 의미 유지
+- DB Migration 없음이 기본 전제
+- modal/focus 문제는 저장/반응형 작업에 직접 필요한 범위만 포함
+- PDF/R2 정책과 supplier/material-order PDF는 0.24.13으로 이월
+
+0.24.12 기능 코드는 아직 시작하지 않는다. 이번 checkpoint는 roadmap 개발 인프라와 0.24.12 상세 기준 등록만 포함한다.
 
 ## Version Roadmap
 
-| Version | Scope | Completion criteria |
-|---|---|---|
-| `0.24.07` | Productization roadmap and inventory | Roadmap, audit inventory, current-state, app version, and local commit metadata updated; no product code deletion or mutation. |
-| `0.24.08` | Mock/sample/fixture and unused-code cleanup | Completed. Removed only proven-unreferenced source mock/sample files; static reference/export graph, build, Mutation Audit, and selected Node contract tests passed. Kept simulator/test fixtures, lockfile, Cloudflare review files, and repository overlap items. |
-| `0.24.09` | Customer admin main and plan/storage | Completed. Customer admin dashboard surfaces plan status, file-policy storage quota, attachment/trash usage, and member-limit warnings from DB-backed paths. R2 reconciliation display remains for later productization. |
-| `0.24.10` | System admin storage and automation foundation | Completed. DB metadata-backed system storage usage, `verify-safe.ps1`, `finish-version.ps1`, ZIP/repo-state handoff automation, and Git finish automation foundation. Completed commits include `a4c1921d86e68de27e282150b4195cff27d76d0c` and `644e8825dafaf38ca0c736eed6c4efcc33fe38d5`. |
-| `0.24.11` | System admin id-control and roadmap | In progress. `/id-control` replaces `/dev/test-console`, `/dev/test-console` redirects after the same guard, `/roadmap` shows Korean read-only version data, and `id-control-roadmap` verification uses fingerprinted results. |
-| `0.24.12` | User workspace screens | General user WAFL common UI, `/worker` sizing/density, responsive layout, save lock, single save queue, workorder/material-order save/toast/permission consistency. |
-| `0.24.13` | PDF | Workorder PDF, material-order PDF, temporary/final PDF policy, Worker/R2 integration, regeneration/deletion policy, automated PDF verification. |
-| `0.24.14` | Functions, Simulator, PowerShell, automation | `/functions`, Simulator, `/id-control`, PowerShell menus, contract/E2E/Smoke/Permissions, Seed/Reset/Cleanup policy, R2 demo create/delete, Playwright reports, function catalog cleanup. |
-| `0.24.15` | Integrated validation checkpoint | Full Build, Mutation Audit, contract tests, E2E, Smoke, Permissions, responsive, PDF, DB/R2 integration, manual integrated QA, and productization readiness recalculation. |
+| Version | Title | Status | Boundary |
+|---|---|---|---|
+| `0.24.10` | 시스템 관리자 저장공간과 자동화 기반 | 완료 | DB-backed storage usage and initial verification/finish wrappers |
+| `0.24.11` | 시스템 관리자 ID 제어와 roadmap 기준판 | 진행 중 | `/id-control`, `/roadmap`, canonical roadmap, post-finish handoff |
+| `0.24.12` | 일반 사용자 workspace 및 worker 공통화 | 예정 | General user workspace/worker UI density, responsive shell, save flow |
+| `0.24.13` | 작업지시서와 발주서 PDF | 예정 | PDF, Worker/R2, temporary/final file policy |
+| `0.24.14` | Functions, Simulator, PowerShell 자동화 정리 | 예정 | Dev/test tooling and execute/dry-run safety |
+| `0.24.15` | 통합 검증 체크포인트 | 검증 대기 | Full validation and productization readiness recalculation |
 
-## Completion Criteria
+## Standard Completion Flow
 
-- No production DB/R2 access or mutation during productization prep without explicit approval.
-- All protected screens have page-level and API-level permission evidence.
-- All mock/sample/fixture paths are classified as production, dev/test, test-only, unreferenced, or dynamic-risk.
-- Customer and system storage usage show plan quota, DB metadata usage, R2 reconciliation status, and warning thresholds consistently.
-- Workorder and supplier PDFs have resolved output policy, permission checks, R2 storage policy, and failure behavior.
-- Responsive QA covers desktop, tablet landscape/portrait, and mobile portrait for workorders, material orders, admin, system, and worker surfaces.
-- Build, mutation audit, contract tests, simulator dry-runs, and selected E2E/manual tests are either passed or explicitly listed as blocked/not run with reasons.
+Future version work should follow this flow:
+
+1. Read the roadmap detail for the next planned version.
+2. Develop only within the declared scope.
+3. Update roadmap result with actual implementation, verification, commit, and remaining issues.
+4. Run Verify.
+5. Run Plan.
+6. Run Finish.
+7. Commit.
+8. Push.
+9. Confirm ahead 0 / behind 0 and clean working tree.
+10. Generate the latest ZIP, repo-state, and build-result in `4. Newest`.
+11. Report the result.
+
+The normal wrapper commands for this roadmap infrastructure work are:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile roadmap-development-contract
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Plan -Profile roadmap-development-contract -CommitMessage "feat: expand roadmap into development contract" -ExpectedAppVersion "0.24.11"
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Finish -Profile roadmap-development-contract -CommitMessage "feat: expand roadmap into development contract" -ExpectedAppVersion "0.24.11"
+```
+
+`Finish` creates the latest ChatGPT handoff artifacts by default after commit and push succeed. Use `-SkipHandoff` only for special cases where the export should be deliberately omitted.
+
+## 4. Newest Handoff
+
+After Verify PASS, Plan PASS, Finish PASS, commit, push, ahead/behind 0/0, and clean working tree, the pipeline generates the latest ChatGPT handoff set in `Paths.NewestResultDir`:
+
+- `peacebypiece-ui-{APP_VERSION}.zip`
+- `repo-state-{APP_VERSION}-{yyyyMMdd-HHmmss}.txt`
+- `build-result-{APP_VERSION}-{yyyyMMdd-HHmmss}.txt`
+
+The ZIP is a full source ZIP with original directory structure, not a flat patch ZIP. It reuses the existing local repo export policy:
+
+- excludes `.git`, `node_modules`, `.next`, `.wrangler`, `artifacts`, `.tmp`, `test-results`, `playwright-report`
+- excludes `.env` and `.env.*`, while keeping `.env.example`
+- excludes generated ZIP, repo-state, build-result, backup/temp/copy files
+- scans suspicious secret/token filenames and text content before creating the ZIP
+
+If artifact generation fails, do not revert the already completed commit or push. Report the failure and rerun the fixed wrapper command instead of manually rebuilding ZIP/repo-state/build-result with ad hoc commands.
+
+## Productization Notes
+
+- No production DB/R2 access or mutation is allowed during roadmap infrastructure work.
+- DB Migration is not part of this checkpoint.
+- Dependency and lockfile changes are not part of this checkpoint.
+- 0.24.12 feature implementation is not part of this checkpoint.
+- UI/responsive/PDF completion requires manual confirmation when the roadmap detail says so.
