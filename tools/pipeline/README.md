@@ -74,6 +74,24 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 
 ## 안전 검증 wrapper
 
+`approved-workflow.ps1` is the preferred fixed approval entry point for repeat Codex automation. It accepts only four actions and does not evaluate user input as PowerShell code.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\approved-workflow.ps1 -Action Verify -Profile automation-infrastructure
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\approved-workflow.ps1 -Action Handoff
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\approved-workflow.ps1 -Action Plan -Profile automation-infrastructure -CommitMessage "chore: add approved workflow entry point" -ExpectedAppVersion "0.24.11"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\approved-workflow.ps1 -Action Finish -Profile automation-infrastructure -CommitMessage "chore: add approved workflow entry point" -ExpectedAppVersion "0.24.11"
+```
+
+Actions:
+
+- `Verify`: delegates to `verify-safe.ps1` with an allowlisted profile and writes a verification result path.
+- `Handoff`: delegates to `peacebypiece-auto-pipeline.ps1 -CreateLocalRepoHandoff`; no build or Git write.
+- `Plan`: gathers normalized explicit paths, computes the current working tree fingerprint, selects the newest matching PASS verification result, and reports whether Finish can run.
+- `Finish`: repeats the same checks, selects the matching PASS result, then delegates to `finish-version.ps1 -Execute` with explicit paths.
+
+`approved-workflow.ps1` blocks arbitrary actions, arbitrary script paths, non-allowlisted profiles, missing verification results, CheckOnly results, stale or mismatched fingerprints, non-`master` Finish, package/lockfile changes, DB migration changes, secret/production value candidates, and unexpected changed files. It does not run `Invoke-Expression`, `cmd /c`, `git add .`, `git add -A`, force push, amend, reset, clean, checkout, rebase, merge, dependency install, DB/R2 mutation, Seed, Reset, Cleanup, Migration, or production access.
+
 `verify-safe.ps1`은 버전 작업 후 안전 검증을 한 번에 실행하는 wrapper입니다. Git add/commit/push, DB/R2 mutation, Seed/Reset/Cleanup/Migration, dependency 설치, 파일 삭제, production write를 수행하지 않습니다.
 
 현재 주요 프로필:
@@ -81,6 +99,7 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 ```powershell
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage
 .\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap
+.\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure
 ```
 
 이 프로필은 공통 검증인 `git diff --check`, PowerShell parse check, package/lockfile 변경 확인, secret/production 값 검사, DB migration 변경 확인, `npm run build`, `npm run audit:wafl-mutations`와 다음 contract tests를 실행합니다.
@@ -96,11 +115,17 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 - `node tests/dev-test-context-system-admin-contract.mjs`
 - `node tests/simulator-onboarding-fixture-contract.mjs`
 
+`automation-infrastructure` 프로필은 승인 자동화 wrapper, PowerShell parse, repo-state publication contract, build, mutation audit, package/lockfile 차단, migration 차단, secret/production scan을 확인합니다.
+
+- `node tests/approved-workflow-contract.mjs`
+- `node tests/pipeline-repo-state-publication-contract.mjs`
+
 명령 계획과 안전 가드만 확인하려면:
 
 ```powershell
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap -CheckOnly
+.\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure -CheckOnly
 ```
 
 검증 결과 파일은 `Paths.RepoStatusDir` 아래 `verify-safe-{profile}-{yyyyMMdd-HHmmss}.txt`로 생성됩니다. `VERIFY_SAFE_RESULT: PASS`가 있어야 Git 완료 wrapper의 실행 근거로 사용할 수 있습니다. `-CheckOnly`는 실제 검증 PASS가 아니며 commit/push 근거로 사용할 수 없습니다.
@@ -109,7 +134,7 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 
 ## Git 완료 wrapper
 
-`finish-version.ps1`은 개별 `git add`, `git commit`, `git push` 대신 명시 경로 allowlist로 Git 완료를 묶는 wrapper입니다. 기본은 plan mode라 Git write가 없습니다.
+`finish-version.ps1`은 개별 `git add`, `git commit`, `git push` 대신 명시 경로 allowlist로 Git 완료를 묶는 lower-level wrapper입니다. 일반 작업에서는 `approved-workflow.ps1 -Action Plan/Finish`를 먼저 사용합니다. 기본은 plan mode라 Git write가 없습니다.
 
 Plan mode:
 

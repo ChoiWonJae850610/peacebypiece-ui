@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "repository-cleanup")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "repository-cleanup", "automation-infrastructure")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -257,7 +257,8 @@ function InvokePowerShellParseCheck {
         "tools/pipeline/peacebypiece-auto-pipeline.ps1",
         "tools/pipeline/pipeline-common.ps1",
         "tools/pipeline/verify-safe.ps1",
-        "tools/pipeline/finish-version.ps1"
+        "tools/pipeline/finish-version.ps1",
+        "tools/pipeline/approved-workflow.ps1"
     )
 
     $failed = New-Object System.Collections.Generic.List[string]
@@ -519,6 +520,10 @@ $profileCommands = @{
     );
     "repository-cleanup" = @(
         @{ Name = "functions PDF contract"; Command = "node"; Arguments = @("tests/functions-pdf-contract.mjs") }
+    );
+    "automation-infrastructure" = @(
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
+        @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") }
     )
 }
 

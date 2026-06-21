@@ -16,6 +16,7 @@
 - Pipeline config: `tools/pipeline/pipeline.config.psd1`
 - Safe verification wrapper: `tools/pipeline/verify-safe.ps1`
 - Git finish wrapper: `tools/pipeline/finish-version.ps1`
+- Approved workflow wrapper: `tools/pipeline/approved-workflow.ps1`
 - Internal system-admin routes: `/id-control` for dev/test identity control and `/roadmap` for read-only productization roadmap.
 - Root operating rules: `AGENTS.md`
 
@@ -96,6 +97,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - 0.24.09 and the preceding operating-rule commit were pushed to `origin/master`; HEAD is `b41642c41e6c81f28a2d4cb3846f4b99071b6ee5` after that version.
 - After 0.24.09, `AGENTS.md` was consolidated again to combine automatic development, response style, commit-stop cases, and manual verification guidance into one operating policy without bumping `APP_VERSION` or changing product code.
 - After 0.24.10, PowerShell automation was supplemented without bumping `APP_VERSION`: menu 7 local repository handoff now uses Git file candidates, nested generated-folder exclusion, content-aware secret screening, and independent ZIP contract validation; `verify-safe.ps1` and `finish-version.ps1` provide guarded validation and version-finish wrappers.
+- After docs cleanup 1차, PowerShell automation adds `approved-workflow.ps1` as the fixed approval entry point for Verify, Handoff, Plan, and Finish. It auto-selects the newest matching PASS verification result by profile, branch, HEAD, changed files, and changed fingerprint before delegating Git writes to `finish-version.ps1`.
 - `/id-control` is the guarded replacement route for `/dev/test-console`; the old route redirects only after the same dev/test runtime and active system-admin guard passes. `/roadmap` is an active system-admin read-only view backed by `lib/internal/productizationRoadmap.ts` and synchronized with `docs/productization-roadmap.md`.
 - 0.24.11 fills `/roadmap` with Korean version-plan data for 0.24.10 through 0.24.15, updates APP_VERSION to `0.24.11`, keeps feature implementation progress about `93%`, and sets productization readiness to `77%`.
 - `verify-safe.ps1` now has an `id-control-roadmap` profile and writes branch, HEAD, changed files, changed fingerprint, command lines, Mutation Audit finding count, and high-risk count into verification result files. `finish-version.ps1` reuses PASS verification results only when profile, HEAD, explicit paths, and changed fingerprint match.
@@ -130,7 +132,7 @@ The `0.24.02` seed baseline added `크롭 맨투맨`, `니트`, and `기본 니�
 - `pnpm-lock.yaml`, deprecated Cloudflare legacy worker/example files, and repository overlap between `lib/repositories/*` and `lib/workorder/repository/*` remain DELETE-REVIEW or UPDATE-MERGE review items, not deletion targets.
 - `docs/productization-roadmap.md` is now the product roadmap source; do not put feature backlog or temporary version plans in `AGENTS.md`.
 - General version work can now auto-stage, auto-commit, and auto-push to `origin master` only when the `AGENTS.md` automatic Git conditions are all true; otherwise Codex must stop before Git index/history/remote changes and report the blocker.
-- Prefer `tools/pipeline/verify-safe.ps1` over ad hoc validation commands when its profile matches the work, and prefer `tools/pipeline/finish-version.ps1` over separate Git add/commit/push. The wrappers reduce approval count but do not bypass Codex app OS approval or DB/R2/Git-write safety policy.
+- Prefer `tools/pipeline/approved-workflow.ps1 -Action Verify/Plan/Finish` over ad hoc validation and manually assembled Git commands when its profile matches the work. The wrappers reduce approval count but do not bypass Codex app OS approval or DB/R2/Git-write safety policy.
 - 0.24.09 started while `master` was already ahead of `origin/master` by the local operating-rule commit, so automatic push conditions were not met at first. After user approval and validation, the operating-rule commit and 0.24.09 commit were pushed together.
 - DB smoke tests remain not run unless explicitly approved because they create rollback fixtures and require DB access. No DB/R2/Seed/Reset/Cleanup/Migration should run during internal route/roadmap work.
 - Some pending browser/session checks require real Google login and cannot be fully proven by local static checks.

@@ -5,9 +5,12 @@
 
 ## 기본 검증
 
-저장소 변경 후에는 변경 범위에 맞는 `tools/pipeline/verify-safe.ps1` profile을 우선 사용한다.
+저장소 변경 후에는 변경 범위에 맞는 `tools/pipeline/approved-workflow.ps1 -Action Verify` profile을 우선 사용한다.
 
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\approved-workflow.ps1 -Action Verify -Profile automation-infrastructure
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\approved-workflow.ps1 -Action Plan -Profile automation-infrastructure -CommitMessage "chore: add approved workflow entry point" -ExpectedAppVersion "0.24.11"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\approved-workflow.ps1 -Action Finish -Profile automation-infrastructure -CommitMessage "chore: add approved workflow entry point" -ExpectedAppVersion "0.24.11"
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\verify-safe.ps1 -Profile repository-cleanup
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage
@@ -63,8 +66,11 @@ Canonical entry point는 `tools/pipeline/peacebypiece-auto-pipeline.ps1`이다. 
 - `pipeline-patch-processing.ps1`: commit-meta, ZIP 안정화, 패치 적용, Git/build/archive 처리
 - `verify-safe.ps1`: 안전 검증 wrapper
 - `finish-version.ps1`: explicit path Git finish wrapper
+- `approved-workflow.ps1`: Verify, Handoff, Plan, Finish 고정 승인 wrapper
 
-`finish-version.ps1`는 PASS verification result의 profile, HEAD, explicit path, changed fingerprint가 현재 작업과 일치할 때만 stage/commit/push를 진행한다. 삭제된 tracked 파일도 explicit path allowlist 안에서만 처리한다.
+`approved-workflow.ps1 -Action Finish`는 PASS verification result의 profile, branch, HEAD, explicit path, changed fingerprint가 현재 작업과 일치할 때만 `finish-version.ps1 -Execute`를 호출한다. 삭제된 tracked 파일도 explicit path allowlist 안에서만 처리한다.
+
+`approved-workflow.ps1`는 `Verify`, `Handoff`, `Plan`, `Finish` 모드만 허용하며 arbitrary command, arbitrary script path, `Invoke-Expression`, `cmd /c`, `git add .`, `git add -A`, force/amend/reset/clean/checkout/rebase/merge, dependency install, DB/R2 mutation, Seed/Reset/Cleanup/Migration, production access를 수행하지 않는다.
 
 ## 보류 및 주의
 
