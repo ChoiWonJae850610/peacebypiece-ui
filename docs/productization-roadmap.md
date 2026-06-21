@@ -164,3 +164,17 @@ If artifact generation fails, do not revert the already completed commit or push
 - Dependency and lockfile changes are not part of this checkpoint.
 - 0.24.12 feature implementation is not part of this checkpoint.
 - UI/responsive/PDF completion requires manual confirmation when the roadmap detail says so.
+
+## System-Admin Internal Access Baseline
+
+Before starting 0.24.12 feature implementation, system-admin 내부 조회 화면은 환경과 관계없이 접근 가능하도록 보정한다.
+이 항목은 0.24.12 기능 개발 전 기반 보정이며, 일반 사용자 workspace/worker 기능 구현을 시작하지 않는다.
+
+- `/id-control`, `/roadmap`, `/ui`, `/functions`는 authenticated active system-admin이면 Vercel preview/production에서도 조회 가능하다.
+- 일반 사용자, 고객사 관리자, 작업자, 미인증 사용자는 직접 URL 접근도 차단한다.
+- system-admin navigation card는 개발 제어센터, 제품화 로드맵, WAFL UI 카탈로그, 기능 및 자동화 현황을 항상 보여준다.
+- 위험 mutation action은 dev/test 환경 제한 유지가 기준이다. Seed, Reset, Cleanup, DB/R2 변경, destructive simulator action, test fixture 생성/삭제, schema 실행은 운영 환경에서 실행하지 않는다.
+- 제한된 실행 버튼은 비활성 상태와 한글 사유를 표시하고, secret/token/raw binding은 표시하지 않는다.
+- Recommended profile: `system-admin-internal-access`
+- DB Migration 없음. 실제 DB/R2 작업 없음.
+- 0.24.12 planned 상세 범위는 변경하지 않는다.

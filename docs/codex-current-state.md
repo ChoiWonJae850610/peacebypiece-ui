@@ -36,6 +36,9 @@ Use current local Git state, the canonical roadmap detail, and this current-stat
 - `/dev/test-console` remains production-blocked and redirects to `/id-control` only after the same dev/test runtime and active system-admin guard passes.
 - `/roadmap` is a system-administrator-only read-only screen.
 - `/roadmap` must not add edit, add, delete, save, DB write, R2 write, localStorage canonical source, or URL/query mutation paths without a separate explicit policy decision.
+- system-admin 내부 조회 화면은 환경과 관계없이 접근 가능하다. `/id-control`, `/roadmap`, `/ui`, `/functions`는 allowlisted active system-admin이면 Vercel preview/production에서도 조회할 수 있다.
+- 위험 mutation action은 dev/test 환경 제한 유지가 원칙이다. Seed, Reset, Cleanup, DB/R2 변경, test fixture 생성/삭제, schema 실행은 page 접근 허용과 별개로 runtime/action guard를 유지한다.
+- 0.24.12 기능 개발 전 기반 보정으로 system-admin route access와 destructive action guard를 분리했다. 0.24.12 일반 사용자 workspace/worker 기능 구현은 아직 시작하지 않았다.
 
 ## Roadmap Infrastructure
 
@@ -103,7 +106,19 @@ The handoff step is read/export-only and reuses the existing ZIP candidate, excl
 
 ## Validation Expectations
 
-Recommended profile: `roadmap-development-contract`
+Recommended profile for the current system-admin access checkpoint: `system-admin-internal-access`
+
+Use:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile system-admin-internal-access
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Plan -Profile system-admin-internal-access -CommitMessage "fix: allow system admin internal views across environments" -ExpectedAppVersion "0.24.11"
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Finish -Profile system-admin-internal-access -CommitMessage "fix: allow system admin internal views across environments" -ExpectedAppVersion "0.24.11"
+```
+
+The profile covers system-admin route access, non-system-admin blocking, runtime-independent read-only access, destructive action environment guard, navigation cards, read-only API access, secret non-exposure, Build, Mutation Audit, package/lockfile unchanged, and migration unchanged.
+
+Previous roadmap infrastructure profile: `roadmap-development-contract`
 
 The profile should cover:
 

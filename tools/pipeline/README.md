@@ -108,6 +108,7 @@ Actions:
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage
 .\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap
 .\tools\pipeline\verify-safe.ps1 -Profile roadmap-development-contract
+.\tools\pipeline\verify-safe.ps1 -Profile system-admin-internal-access
 .\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure
 ```
 
@@ -131,6 +132,13 @@ Actions:
 - `node tests/approved-workflow-contract.mjs`
 - `node tests/pipeline-repo-state-publication-contract.mjs`
 
+`system-admin-internal-access` 프로필은 `/id-control`, `/roadmap`, `/ui`, `/functions`의 system-admin runtime-independent 조회 접근, 일반 사용자 차단, destructive action dev/test guard 유지, 내부 navigation card, read-only API access, secret non-exposure를 확인합니다.
+
+- `node tests/system-admin-internal-access-contract.mjs`
+- `node tests/internal-system-routes-contract.mjs`
+- `node tests/dev-test-context-system-admin-contract.mjs`
+- `node tests/approved-workflow-contract.mjs`
+
 `automation-infrastructure` 프로필은 승인 자동화 wrapper, PowerShell parse, repo-state publication contract, build, mutation audit, package/lockfile 차단, migration 차단, secret/production scan을 확인합니다.
 
 - `node tests/approved-workflow-contract.mjs`
@@ -142,6 +150,7 @@ Actions:
 .\tools\pipeline\verify-safe.ps1 -Profile system-admin-storage -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile id-control-roadmap -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile roadmap-development-contract -CheckOnly
+.\tools\pipeline\verify-safe.ps1 -Profile system-admin-internal-access -CheckOnly
 .\tools\pipeline\verify-safe.ps1 -Profile automation-infrastructure -CheckOnly
 ```
 

@@ -14,7 +14,6 @@ export const dynamic = "force-dynamic";
 
 export default async function UiCatalogRoutePage() {
   const runtimeMode = getWaflUiCatalogRuntimeMode();
-  if (!isWaflUiCatalogRuntimeAllowed()) notFound();
 
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) redirect("/?error=SESSION_REQUIRED");
@@ -24,6 +23,7 @@ export default async function UiCatalogRoutePage() {
     <WaflUiCatalogPage
       appVersion={APP_VERSION}
       runtimeMode={runtimeMode}
+      isRuntimeAllowed={isWaflUiCatalogRuntimeAllowed()}
       allowedRuntimeModes={[...WAFL_UI_CATALOG_ALLOWED_RUNTIME_MODES]}
     />
   );

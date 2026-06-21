@@ -10,8 +10,6 @@ import FunctionsCatalogClient from "./FunctionsCatalogClient";
 export const dynamic = "force-dynamic";
 
 export default async function FunctionsPage() {
-  if (!isWaflFunctionsRuntimeAllowed()) notFound();
-
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) redirect("/?error=SESSION_REQUIRED");
   if (!(await isActiveSystemAdminSession(actualSession))) notFound();
@@ -20,6 +18,7 @@ export default async function FunctionsPage() {
     <FunctionsCatalogClient
       appVersion={APP_VERSION}
       runtimeMode={getWaflFunctionsRuntimeMode()}
+      isExecutionRuntimeAllowed={isWaflFunctionsRuntimeAllowed()}
       catalog={WAFL_FUNCTION_CATALOG}
     />
   );

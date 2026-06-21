@@ -17,11 +17,11 @@ import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 import {
-  SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION,
   SYSTEM_CONSOLE_NAVIGATION_SECTIONS,
   type SystemConsoleNavigationCard,
   type SystemConsoleNavigationTone,
 } from "@/lib/system/systemConsoleShell";
+import { SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION } from "@/lib/system/systemInternalToolsNavigation";
 
 const i18n = getI18n();
 const system = i18n.system;
@@ -91,8 +91,6 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
 }
 
 export default function SystemConsoleShell() {
-  const internalToolsVisible = process.env.NODE_ENV !== "production";
-
   return (
     <SystemShell contentClassName="mx-auto flex max-w-7xl flex-col gap-5 sm:gap-6">
       <section className="relative overflow-hidden rounded-[38px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-[var(--pbp-shadow-elevated)]">
@@ -147,19 +145,17 @@ export default function SystemConsoleShell() {
 
       <SystemStatsOverview />
 
-      {internalToolsVisible ? (
-        <AdminSection
-          title="내부 개발 도구"
-          description={`현재 runtime: ${process.env.NEXT_PUBLIC_APP_RUNTIME_MODE ?? process.env.NODE_ENV ?? "unknown"} · 활성 시스템관리자 전용 · production 차단`}
-          className="p-5 sm:p-6"
-          bodyClassName="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
-          headerClassName={SYSTEM_SECTION_HEADER_CLASS}
-        >
-          {SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION.map((card) => (
-            <SystemNavigationCard key={card.id} card={card} />
-          ))}
-        </AdminSection>
-      ) : null}
+      <AdminSection
+        title="내부 관리 도구"
+        description={`현재 runtime: ${process.env.NEXT_PUBLIC_APP_RUNTIME_MODE ?? process.env.NODE_ENV ?? "unknown"} · 활성 시스템 관리자 전용 · 조회 화면은 모든 환경에서 접근 가능하며 실행형 작업은 환경별 제한을 따릅니다.`}
+        className="p-5 sm:p-6"
+        bodyClassName="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        headerClassName={SYSTEM_SECTION_HEADER_CLASS}
+      >
+        {SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION.map((card) => (
+          <SystemNavigationCard key={card.id} card={card} />
+        ))}
+      </AdminSection>
 
       {SYSTEM_CONSOLE_NAVIGATION_SECTIONS.map((section) => (
         <AdminSection

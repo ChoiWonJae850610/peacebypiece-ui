@@ -23,6 +23,7 @@ $AllowedProfiles = @(
     "system-admin-storage",
     "id-control-roadmap",
     "roadmap-development-contract",
+    "system-admin-internal-access",
     "repository-cleanup",
     "automation-infrastructure"
 )

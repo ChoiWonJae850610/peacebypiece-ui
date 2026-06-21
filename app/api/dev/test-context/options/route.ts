@@ -8,10 +8,6 @@ import { buildDevTestContextOptions } from "@/lib/dev/testContext/service";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  if (!isDevTestContextEnabled()) {
-    return NextResponse.json({ error: "DEV_TEST_CONTEXT_DISABLED", reason: getDevTestContextDisabledReason() }, { status: 404 });
-  }
-
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) {
     return NextResponse.json({ error: "SESSION_REQUIRED" }, { status: 401 });
@@ -20,7 +16,25 @@ export async function GET() {
     return NextResponse.json({ error: "SYSTEM_ADMIN_REQUIRED" }, { status: 403 });
   }
   const effectiveSession = (await getCurrentWaflSession()) ?? actualSession;
+
+  if (!isDevTestContextEnabled()) {
+    return NextResponse.json(
+      {
+        actualSession,
+        effectiveSession,
+        activeTarget: null,
+        targets: [],
+        devTestContextEnabled: false,
+        disabledReason: getDevTestContextDisabledReason(),
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   const options = await buildDevTestContextOptions(actualSession, effectiveSession);
 
-  return NextResponse.json(options, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(
+    { ...options, devTestContextEnabled: true, disabledReason: null },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

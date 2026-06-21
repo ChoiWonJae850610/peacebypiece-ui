@@ -202,7 +202,7 @@ export const SYSTEM_CONSOLE_NAVIGATION_SECTIONS: SystemConsoleNavigationSection[
 ];
 
 
-export const SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION: SystemConsoleNavigationCard[] = [
+const SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION_LEGACY: SystemConsoleNavigationCard[] = [
   {
     id: "dev-test-console",
     label: "테스트 콘솔",

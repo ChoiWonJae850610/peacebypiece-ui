@@ -36,6 +36,7 @@ import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 type WaflUiCatalogPageProps = {
   appVersion: string;
   runtimeMode: string;
+  isRuntimeAllowed: boolean;
   allowedRuntimeModes: string[];
 };
 
@@ -2845,6 +2846,7 @@ function SpecTable() {
 export default function WaflUiCatalogPage({
   appVersion,
   runtimeMode,
+  isRuntimeAllowed,
   allowedRuntimeModes,
 }: WaflUiCatalogPageProps) {
   return (
@@ -2875,7 +2877,10 @@ export default function WaflUiCatalogPage({
                 현재 접근 상태
               </p>
               <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">
-                활성 시스템관리자 Google 계정과 허용 runtime이 모두 확인된 경우에만 접근한다. 허용 모드는 {allowedRuntimeModes.join(" / ")} 이다.
+                활성 시스템 관리자 계정이면 배포 환경과 관계없이 UI 카탈로그 조회와 반응형 확인이 가능합니다. 현재 runtime은 {runtimeMode}입니다.
+                {isRuntimeAllowed
+                  ? " 개발/테스트 전용 예시 실행이 가능한 환경입니다."
+                  : ` 실행형 데모는 ${allowedRuntimeModes.join(" / ")} 환경에서만 사용할 수 있습니다.`}
               </p>
             </WaflInfoBox>
           </div>

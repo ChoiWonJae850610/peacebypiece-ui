@@ -13,6 +13,7 @@ const requiredWorkflowTokens = [
   '"system-admin-storage"',
   '"id-control-roadmap"',
   '"roadmap-development-contract"',
+  '"system-admin-internal-access"',
   '"repository-cleanup"',
   '"automation-infrastructure"',
   "function SelectMatchingVerificationResult",
@@ -64,6 +65,7 @@ for (const token of forbiddenWorkflowTokens) {
 const requiredVerifyTokens = [
   '"automation-infrastructure"',
   '"roadmap-development-contract"',
+  '"system-admin-internal-access"',
   "tools/pipeline/approved-workflow.ps1",
   "approved workflow contract",
   "roadmap development contract",

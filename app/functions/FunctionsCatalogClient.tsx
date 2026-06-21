@@ -57,10 +57,12 @@ function catalogForView(catalog: WaflFunctionItem[], view: CatalogView) {
 export default function FunctionsCatalogClient({
   appVersion,
   runtimeMode,
+  isExecutionRuntimeAllowed,
   catalog,
 }: {
   appVersion: string;
   runtimeMode: string;
+  isExecutionRuntimeAllowed: boolean;
   catalog: WaflFunctionItem[];
 }) {
   const [view, setView] = useState<CatalogView>("functions");
@@ -113,7 +115,12 @@ export default function FunctionsCatalogClient({
                 제품 기능 명세, 테스트 시나리오, 자동화 연결과 dev/test 도구를 구분해 관리합니다.
               </p>
               <p className="mt-2 text-xs text-[var(--pbp-text-muted)]">
-                v{appVersion} · runtime {runtimeMode} · 활성 시스템관리자 전용 · production 차단
+                v{appVersion} · runtime {runtimeMode} · 활성 시스템 관리자 전용 · 조회 가능
+              </p>
+              <p className="mt-2 text-xs text-[var(--pbp-text-muted)]">
+                {isExecutionRuntimeAllowed
+                  ? "현재 환경에서는 개발/테스트 실행형 도구를 사용할 수 있습니다."
+                  : "현재 환경에서는 기능 및 자동화 현황 조회만 가능하며 Seed, Reset, Cleanup, DB/R2 변경 실행은 개발/테스트 환경에서만 사용할 수 있습니다."}
               </p>
             </div>
             <div className="grid min-w-[260px] grid-cols-3 gap-2">

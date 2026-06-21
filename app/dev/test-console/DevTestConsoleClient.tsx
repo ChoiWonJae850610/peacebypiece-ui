@@ -36,6 +36,8 @@ type DevTestContextOptions = {
   effectiveSession: SessionSummary;
   activeTarget: DevTestContextTarget | null;
   targets: DevTestContextTarget[];
+  devTestContextEnabled?: boolean;
+  disabledReason?: "production" | "flag_disabled" | null;
 };
 
 function formatRole(role: string, roleTemplateCode?: string | null) {
@@ -69,7 +71,15 @@ function formatOnboardingStatus(target: DevTestContextTarget) {
   return target.onboardingStatus ?? "상태 미확인";
 }
 
-export default function DevTestConsoleClient() {
+export default function DevTestConsoleClient({
+  runtimeMode = "unknown",
+  devTestContextEnabled = true,
+  devTestContextDisabledReason = null,
+}: {
+  runtimeMode?: string;
+  devTestContextEnabled?: boolean;
+  devTestContextDisabledReason?: "production" | "flag_disabled" | null;
+}) {
   const [options, setOptions] = useState<DevTestContextOptions | null>(null);
   const [selectedTargetKey, setSelectedTargetKey] = useState("");
   const [message, setMessage] = useState("");
@@ -112,7 +122,7 @@ export default function DevTestConsoleClient() {
   }, []);
 
   async function switchContext() {
-    if (!selectedTargetKey) return;
+    if (!devTestContextEnabled || !selectedTargetKey) return;
     setIsBusy(true);
     setMessage("");
     try {
@@ -133,6 +143,7 @@ export default function DevTestConsoleClient() {
   }
 
   async function clearContext() {
+    if (!devTestContextEnabled) return;
     setIsBusy(true);
     setMessage("");
     try {
@@ -153,21 +164,51 @@ export default function DevTestConsoleClient() {
   }
 
   const isOverlayActive = Boolean(options.activeTarget) && (options.actualSession.userId !== options.effectiveSession.userId || options.actualSession.role !== options.effectiveSession.role || options.actualSession.companyId !== options.effectiveSession.companyId);
+  const disabledReasonText =
+    devTestContextDisabledReason === "production"
+      ? "현재 배포 환경에서는 실제 계정 전환 실행이 제한됩니다."
+      : devTestContextDisabledReason === "flag_disabled"
+        ? "개발/테스트 계정 전환 플래그가 꺼져 있어 실행이 제한됩니다."
+        : "현재 환경에서는 실제 계정 전환 실행이 제한됩니다.";
 
   return (
     <main className="min-h-screen bg-[var(--pbp-surface-soft)] px-6 py-8 text-[var(--pbp-text-primary)]">
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <WaflSurface as="header" tone="warning" className="p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pbp-status-warning-fg)]">DEV ONLY</p>
-          <h1 className="mt-2 text-2xl font-semibold">개발 전용 테스트 사용자 전환</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pbp-status-warning-fg)]">SYSTEM ADMIN</p>
+          <h1 className="mt-2 text-2xl font-semibold">개발 제어센터</h1>
           <p className="mt-2 text-sm text-[var(--pbp-status-warning-fg)]">
-            실제 Google 로그인은 유지하고, 앱 내부 업무 컨텍스트만 시스템관리자 또는 테스트 fixture 사용자로 전환합니다. production에서는 사용할 수 없습니다.
+            시스템 관리자는 배포 환경과 관계없이 내부 조회 화면에 접근할 수 있습니다. 실제 계정 전환 실행은 기존 개발/테스트 제한을 유지합니다.
           </p>
         </WaflSurface>
 
+        <section className="grid gap-3 md:grid-cols-4">
+          <WaflSurface shape="control" className="p-4 shadow-sm">
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">현재 runtime</p>
+            <p className="mt-2 text-base font-semibold">{runtimeMode}</p>
+          </WaflSurface>
+          <WaflSurface shape="control" className="p-4 shadow-sm">
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">system-admin 상태</p>
+            <p className="mt-2 text-base font-semibold">확인됨</p>
+          </WaflSurface>
+          <WaflSurface shape="control" className="p-4 shadow-sm md:col-span-2">
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">실행 제한</p>
+            <p className="mt-2 text-sm text-[var(--pbp-text-muted)]">
+              {devTestContextEnabled ? "계정 전환 실행이 허용된 개발/테스트 환경입니다." : disabledReasonText}
+            </p>
+          </WaflSurface>
+        </section>
+
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <WaflLinkButton href="/roadmap" variant="secondary" size="sm">제품화 로드맵</WaflLinkButton>
+          <WaflLinkButton href="/ui" variant="secondary" size="sm">WAFL UI 카탈로그</WaflLinkButton>
+          <WaflLinkButton href="/functions" variant="secondary" size="sm">기능 및 자동화 현황</WaflLinkButton>
+          <WaflLinkButton href="/system" variant="secondary" size="sm">시스템 대시보드</WaflLinkButton>
+        </section>
+
         <section className="grid gap-4 md:grid-cols-2">
           <WaflSurface shape="control" className="p-5 shadow-sm">
-            <h2 className="text-base font-semibold">실제 로그인 사용자</h2>
+            <h2 className="text-base font-semibold">현재 로그인 계정</h2>
             <dl className="mt-4 space-y-2 text-sm">
               <div><dt className="text-[var(--pbp-text-muted)]">이름</dt><dd className="font-medium">{options.actualSession.name}</dd></div>
               <div><dt className="text-[var(--pbp-text-muted)]">이메일</dt><dd>{options.actualSession.email}</dd></div>
@@ -176,7 +217,7 @@ export default function DevTestConsoleClient() {
           </WaflSurface>
 
           <WaflSurface shape="control" className="p-5 shadow-sm">
-            <h2 className="text-base font-semibold">현재 업무 컨텍스트</h2>
+            <h2 className="text-base font-semibold">현재 impersonation 상태</h2>
             <dl className="mt-4 space-y-2 text-sm">
               <div><dt className="text-[var(--pbp-text-muted)]">상태</dt><dd className="font-medium">{isOverlayActive ? "테스트 사용자 적용 중" : "원래 사용자"}</dd></div>
               <div><dt className="text-[var(--pbp-text-muted)]">회사</dt><dd>{options.effectiveSession.companyName ?? "-"}</dd></div>
@@ -239,11 +280,11 @@ export default function DevTestConsoleClient() {
           ) : null}
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <WaflButton onClick={switchContext} disabled={isBusy || !selectedTargetKey} variant="primary" size="sm">
+            <WaflButton onClick={switchContext} disabled={isBusy || !selectedTargetKey || !devTestContextEnabled} variant="primary" size="sm">
               이 사용자로 보기
             </WaflButton>
-            <WaflButton onClick={clearContext} disabled={isBusy} variant="secondary" size="sm">
-              원래 사용자로 복구
+            <WaflButton onClick={clearContext} disabled={isBusy || !devTestContextEnabled} variant="secondary" size="sm">
+              원래 세션 복원
             </WaflButton>
             <WaflLinkButton href="/workspace" variant="secondary" size="sm">
               workspace로 이동
@@ -261,6 +302,12 @@ export default function DevTestConsoleClient() {
               제품화 로드맵
             </WaflLinkButton>
           </div>
+
+          {!devTestContextEnabled ? (
+            <WaflInfoBox shape="control" tone="warning" className="mt-4 p-4 text-sm">
+              개발/테스트 환경에서만 실행할 수 있습니다. 현재 화면은 계정, 역할, runtime, navigation 확인을 위한 조회 모드로 표시됩니다.
+            </WaflInfoBox>
+          ) : null}
 
           {message ? <p className="mt-4 text-sm text-[var(--pbp-text-muted)]">{message}</p> : null}
         </WaflSurface>
