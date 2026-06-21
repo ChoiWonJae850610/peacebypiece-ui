@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "repository-cleanup")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -40,6 +40,11 @@ function TestGitNoiseLine {
 function GetChangedFiles {
     $names = New-Object System.Collections.Generic.List[string]
     foreach ($line in (InvokeSafeGit -Arguments @("diff", "--name-only"))) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$line) -and -not (TestGitNoiseLine -Line ([string]$line))) {
+            $names.Add([string]$line)
+        }
+    }
+    foreach ($line in (InvokeSafeGit -Arguments @("diff", "--cached", "--name-only"))) {
         if (-not [string]::IsNullOrWhiteSpace([string]$line) -and -not (TestGitNoiseLine -Line ([string]$line))) {
             $names.Add([string]$line)
         }
@@ -104,6 +109,12 @@ function GetChangedFingerprint {
 
     $diffOutput = @(InvokeSafeGit -Arguments @("diff", "--binary", "--no-ext-diff"))
     foreach ($line in $diffOutput) {
+        if (-not (TestGitNoiseLine -Line ([string]$line))) {
+            $parts.Add([string]$line)
+        }
+    }
+    $cachedDiffOutput = @(InvokeSafeGit -Arguments @("diff", "--cached", "--binary", "--no-ext-diff"))
+    foreach ($line in $cachedDiffOutput) {
         if (-not (TestGitNoiseLine -Line ([string]$line))) {
             $parts.Add([string]$line)
         }
@@ -271,6 +282,99 @@ function InvokePowerShellParseCheck {
     return [pscustomobject]@{ Name = "PowerShell parse check"; Passed = $true; Skipped = $false; ExitCode = 0 }
 }
 
+function InvokeRepositoryCleanupCheck {
+    $failures = New-Object System.Collections.Generic.List[string]
+    $legacyReportPath = "reports/" + "functions-pdf-contract-latest.json"
+    $missingSeedPatchPath = "db/schema/" + "patch_0_10_48_system_standards_seed_refresh.sql"
+
+    function FindRepositoryCleanupText {
+        param(
+            [string]$Root,
+            [string]$Pattern
+        )
+
+        $path = Join-Path $ProjectDir $Root
+        if (-not (Test-Path -LiteralPath $path)) {
+            return @()
+        }
+        if (Test-Path -LiteralPath $path -PathType Leaf) {
+            return @(Select-String -LiteralPath $path -Pattern $Pattern -SimpleMatch -ErrorAction SilentlyContinue)
+        }
+        $files = @(Get-ChildItem -LiteralPath $path -Recurse -File -ErrorAction SilentlyContinue)
+        if ($files.Count -eq 0) {
+            return @()
+        }
+        return @(Select-String -LiteralPath $files.FullName -Pattern $Pattern -SimpleMatch -ErrorAction SilentlyContinue)
+    }
+
+    $activeReportReferenceRoots = @("app", "components", "features", "lib", "scripts", "tests", "cloudflare", "package.json", "README.md", "docs/README.md")
+    foreach ($root in $activeReportReferenceRoots) {
+        $matches = @(FindRepositoryCleanupText -Root $root -Pattern $legacyReportPath)
+        if ($matches.Count -gt 0) {
+            $failures.Add("legacy report reference remains under $root")
+        }
+    }
+
+    $activeSqlReferenceRoots = @("app", "components", "features", "lib", "scripts", "tests", "README.md", "docs/README.md", "db/README.md")
+    foreach ($root in $activeSqlReferenceRoots) {
+        $matches = @(FindRepositoryCleanupText -Root $root -Pattern $missingSeedPatchPath)
+        if ($matches.Count -gt 0) {
+            $failures.Add("missing SQL patch guidance remains under $root")
+        }
+    }
+
+    $trackedFiles = @(InvokeSafeGit -Arguments @("ls-files") | ForEach-Object { ([string]$_) -replace '\\', '/' })
+    if ($trackedFiles -notcontains "db/seed/system_standards_seed.sql") {
+        $failures.Add("canonical system standards seed is missing")
+    }
+
+    $canonicalDuplicateFiles = @(Get-ChildItem -LiteralPath (Join-Path $ProjectDir "docs") -Recurse -File -Filter "wafl-ui-system.md" -ErrorAction SilentlyContinue)
+    $removedDuplicateFiles = @(Get-ChildItem -LiteralPath (Join-Path $ProjectDir "docs") -Recurse -File -Filter "wafl-ui-system-0.19.50.md" -ErrorAction SilentlyContinue)
+    if ($canonicalDuplicateFiles.Count -eq 0) {
+        $failures.Add("canonical WAFL UI system document missing")
+    }
+    if ($removedDuplicateFiles.Count -gt 0) {
+        $failures.Add("duplicate WAFL UI system suffix document still exists")
+    }
+
+    if (Test-Path -LiteralPath (Join-Path $ProjectDir $legacyReportPath) -PathType Leaf) {
+        $failures.Add("legacy functions PDF report still exists")
+    }
+
+    $oldArchiveSlugs = @(
+        "81_wafl-a-type-workorder-production-sync-gate.md",
+        "82_wafl-a-type-review-request-production-service-code-forward.md",
+        "83_wafl-a-type-workorder-review-reject-regression.md",
+        "84_wafl-a-type-workorder-service-code-screen-action-audit.md",
+        "85_wafl-a-type-workorder-service-code-first-wire.md",
+        "86_wafl-a-type-workorder-service-code-workflow-wire.md",
+        "87_wafl-a-type-factory-order-replace-save.md",
+        "88_wafl-a-type-production-current-table-sql-design.md",
+        "89_wafl-a-type-production-current-table-schema-implementation.md"
+    )
+    foreach ($slug in $oldArchiveSlugs) {
+        $matches = @(FindRepositoryCleanupText -Root "docs" -Pattern $slug)
+        if ($matches.Count -gt 0) {
+            $failures.Add("old archive link slug remains: $slug")
+        }
+    }
+
+    foreach ($prefix in @("81-", "82-", "83-", "84-", "85-", "86-", "87-", "88-", "89-")) {
+        if (-not ($trackedFiles | Where-Object { $_ -match "/$([regex]::Escape($prefix)).+\.md$" })) {
+            $failures.Add("archive target with prefix $prefix is missing")
+        }
+    }
+
+    if ($failures.Count -gt 0) {
+        Write-Host "[FAIL] repository cleanup checks" -ForegroundColor Red
+        foreach ($failure in $failures) { Write-Host " - $failure" }
+        return [pscustomobject]@{ Name = "repository cleanup checks"; Passed = $false; Skipped = $false; ExitCode = 1 }
+    }
+
+    Write-Host "[PASS] repository cleanup checks"
+    return [pscustomobject]@{ Name = "repository cleanup checks"; Passed = $true; Skipped = $false; ExitCode = 0 }
+}
+
 $profileCommands = @{
     "system-admin-storage" = @(
         @{ Name = "system storage usage contract"; Command = "node"; Arguments = @("tests/system-storage-usage-real-data-contract.mjs") },
@@ -283,6 +387,9 @@ $profileCommands = @{
         @{ Name = "internal system routes contract"; Command = "node"; Arguments = @("tests/internal-system-routes-contract.mjs") },
         @{ Name = "dev/test context system admin contract"; Command = "node"; Arguments = @("tests/dev-test-context-system-admin-contract.mjs") },
         @{ Name = "simulator onboarding fixture contract"; Command = "node"; Arguments = @("tests/simulator-onboarding-fixture-contract.mjs") }
+    );
+    "repository-cleanup" = @(
+        @{ Name = "functions PDF contract"; Command = "node"; Arguments = @("tests/functions-pdf-contract.mjs") }
     )
 }
 
@@ -338,6 +445,10 @@ else {
 
 $results.Add((InvokeCheck -Name "npm run build" -Command "npm" -Arguments @("run", "build")))
 $results.Add((InvokeCheck -Name "npm run audit:wafl-mutations" -Command "npm" -Arguments @("run", "audit:wafl-mutations")))
+
+if ($Profile -eq "repository-cleanup") {
+    $results.Add((InvokeRepositoryCleanupCheck))
+}
 
 foreach ($commandSpec in $profileCommands[$Profile]) {
     $results.Add((InvokeCheck -Name $commandSpec.Name -Command $commandSpec.Command -Arguments $commandSpec.Arguments))

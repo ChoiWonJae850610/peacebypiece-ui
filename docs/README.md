@@ -1,13 +1,15 @@
-# WAFL / PeaceByPiece 문서 목록
+# WAFL / PeaceByPiece 문서 인덱스
 
-- 기준 앱 버전: `0.20.23`
-- 0.19.94.10: 문서 정리 종료 기준을 확정하고 자동테스트 복귀 기준을 문서화했다.
-- 문서 정리 기준: 현재 개발 기준 문서와 보관 문서를 분리하고, 테스트 불가 기간에는 기능 코드/DB/API/R2 흐름을 변경하지 않는 저위험 정리 작업을 우선한다.
+- 기준 앱 버전: `0.24.11`
+- tracked docs 파일 수: 668
+- docs 루트 파일 수: 307
+- 현재 정리 기준: 루트에 누적된 버전별 완료 보고서는 삭제보다 archive 이동을 우선하고, 대량 이동은 manifest와 사용자 승인 후 수행한다.
 
 ## 1. 현재 기준 문서
 
 현재 개발·테스트·리팩토링에서 우선 확인해야 하는 문서는 `docs/현재기준/`에 둔다.
 
+- `docs/현재기준/README.md`
 - 리팩토링 규칙
 - 소스 구조
 - 라우팅 구조
@@ -19,7 +21,14 @@
 - 원단·부자재 데이터베이스/발주 설계
 - full-reset 검증
 
-## 2. 정책 문서
+## 2. 운영 기준 문서
+
+- 현재 상태: `docs/codex-current-state.md`
+- 제품화 로드맵: `docs/productization-roadmap.md`
+- cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
+- docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
+
+## 3. 정책 문서
 
 서비스 약관, 개인정보처리방침, 요금·환불·저장소·데이터 보관 정책은 `docs/정책문서/`에 둔다.
 
@@ -29,7 +38,9 @@
 - 정책 기반 개발 우선순위
 - 고객 공개용 초안: `docs/정책문서/고객공개/`
 
-## 3. 보관 문서
+정책/약관 문서는 product policy와 사용자 데이터 보호에 연결되므로 자동 삭제하지 않는다.
+
+## 4. 보관 문서
 
 과거 설계 기록, 점검 기록, WAFL A-Type 누적 문서는 `docs/보관문서/`에 둔다.
 
@@ -39,321 +50,38 @@
 - `docs/보관문서/설계초안/`
 - `docs/보관문서/DB기록/`
 
-보관 문서는 삭제 대상이 아니라 과거 판단 근거로 유지한다. 현재 개발 기준으로 사용할 때는 먼저 `docs/현재기준/` 문서와 충돌 여부를 확인한다.
+다음 archive 단계의 권장 추가 구조는 아래와 같다.
 
-## 4. docs 루트 잔여 문서
+- `docs/보관문서/versions/`
+- `docs/보관문서/build-fixes/`
+- `docs/보관문서/completed-features/`
+- `docs/보관문서/qa-history/`
+- `docs/보관문서/deprecated/`
 
-0.19.94.8 보관 이동 후 docs 루트에는 최근 운영·정책·DB/API smoke·Playwright·회사 파일 업로드 관련 문서만 남기는 방향으로 정리한다.
+## 5. 현재 통계
 
-### 운영/정리 기준
+| 영역 | 파일 수 |
+| --- | ---: |
+| docs 루트 | 307 |
+| docs/보관문서 | 293 |
+| docs/정책문서 | 32 |
+| docs/현재기준 | 28 |
+| docs/audits | 8 |
 
-- [docs-archive-move-0.19.94.8.md](docs-archive-move-0.19.94.8.md)
-- [docs-archive-plan-0.19.94.5.md](docs-archive-plan-0.19.94.5.md)
-- [docs-manual-review-classification-0.19.94.7.md](docs-manual-review-classification-0.19.94.7.md)
-- [docs-root-archive-candidates-0.19.94.6.md](docs-root-archive-candidates-0.19.94.6.md)
-- [patch-automation-delete-safety-0.19.94.4.md](patch-automation-delete-safety-0.19.94.4.md)
-- [project-doc-sql-script-cleanup-audit-0.19.94.3.md](project-doc-sql-script-cleanup-audit-0.19.94.3.md)
-- [project-file-structure-audit-0.19.94.1.md](project-file-structure-audit-0.19.94.1.md)
-- [project-file-structure-cleanup-0.19.94.2.md](project-file-structure-cleanup-0.19.94.2.md)
+## 6. 정리 원칙
 
-### 회사/멤버/협력업체
+- docs 루트에는 README, current-state, roadmap, 최신 audit처럼 현재 판단에 필요한 canonical 문서만 남기는 방향으로 정리한다.
+- 버전별 결과 문서는 `docs/audits/` 또는 `docs/보관문서/versions/`로 보낸다.
+- build-fix, UI 세부 패치, Playwright 초기 구축, simulator 소규모 수정, billing/storage 단계 문서는 문서군별 manifest를 만든 뒤 이동한다.
+- exact duplicate와 legacy generated output은 참조 0건과 canonical 대체 파일을 확인한 뒤 삭제한다.
+- DB/migration/lockfile/auth/permission/policy/Cloudflare deploy 파일은 사용자 승인 없이 삭제하지 않는다.
 
-- [company-account-request-approval-application-0.19.78.md](company-account-request-approval-application-0.19.78.md)
-- [company-account-request-system-reviewer-0.19.77.md](company-account-request-system-reviewer-0.19.77.md)
-- [company-approval-required-policy-agreement-0.19.84.md](company-approval-required-policy-agreement-0.19.84.md)
-- [company-file-upload-design-0.19.94.md](company-file-upload-design-0.19.94.md)
-- [company-files-db-api-0.19.95.md](company-files-db-api-0.19.95.md)
-- [company-files-ui-0.19.96.md](company-files-ui-0.19.96.md)
-- [company-files-r2-upload-0.19.97.md](company-files-r2-upload-0.19.97.md)
-- [company-file-review-design-0.19.98.md](company-file-review-design-0.19.98.md)
-- [customer-settings-feature-design-0.19.72.md](customer-settings-feature-design-0.19.72.md)
-- [customer-settings-request-history-0.19.73.md](customer-settings-request-history-0.19.73.md)
-- [member-directory-quick-status-actions-0.19.71.md](member-directory-quick-status-actions-0.19.71.md)
-- [member-directory-responsive-list-0.18.54.md](member-directory-responsive-list-0.18.54.md)
-- [member-directory-scroll-regression-fix-0.19.06.md](member-directory-scroll-regression-fix-0.19.06.md)
-- [member-lifecycle-db-api-0.19.67.md](member-lifecycle-db-api-0.19.67.md)
-- [member-lifecycle-design-0.19.66.md](member-lifecycle-design-0.19.66.md)
-- [member-lifecycle-ui-0.19.69.md](member-lifecycle-ui-0.19.69.md)
-- [member-policy-access-entry-0.19.81.md](member-policy-access-entry-0.19.81.md)
-- [member-self-withdrawal-ui-0.19.70.md](member-self-withdrawal-ui-0.19.70.md)
-- [partner-phone-duplicate-contract-0.19.93.1.md](partner-phone-duplicate-contract-0.19.93.1.md)
-- [system-company-account-request-review-0.19.75.md](system-company-account-request-review-0.19.75.md)
-- [system-company-account-request-review-action-0.19.76.md](system-company-account-request-review-action-0.19.76.md)
+## 7. 검증
 
-### 정책/약관
+repository cleanup 변경은 아래 profile을 우선 사용한다.
 
-- [policy-agreement-status-ui-0.19.83.md](policy-agreement-status-ui-0.19.83.md)
-- [policy-document-management-design-0.19.79.md](policy-document-management-design-0.19.79.md)
-- [policy-public-documents-0.19.80.md](policy-public-documents-0.19.80.md)
-- [policy-version-agreement-db-api-0.19.82.md](policy-version-agreement-db-api-0.19.82.md)
-- [policy-reagreement-blocking-design-0.20.00.md](policy-reagreement-blocking-design-0.20.00.md)
-- [policy-reagreement-db-api-0.20.01.md](policy-reagreement-db-api-0.20.01.md)
-- [policy-reagreement-ui-0.20.02.md](policy-reagreement-ui-0.20.02.md)
-- [billing-plan-storage-design-0.20.04.md](billing-plan-storage-design-0.20.04.md)
-- [billing-storage-db-api-0.20.05.md](billing-storage-db-api-0.20.05.md)
-- [billing-storage-ui-0.20.06.md](billing-storage-ui-0.20.06.md)
-- [storage-quota-enforcement-design-0.20.07.md](storage-quota-enforcement-design-0.20.07.md)
-- [storage-quota-enforcement-0.20.08.md](storage-quota-enforcement-0.20.08.md)
-- [full-smoke-qa-0.20.09.md](full-smoke-qa-0.20.09.md)
-- [settings-ia-redesign-0.20.10.md](settings-ia-redesign-0.20.10.md)
-- [settings-navigation-density-0.20.11.md](settings-navigation-density-0.20.11.md)
-- [settings-account-files-redesign-0.20.12.md](settings-account-files-redesign-0.20.12.md)
-- [0.20.13 환경설정 요금제·저장공간 탭 UI 재정리](./settings-billing-density-0.20.13.md)
-- [0.20.14 환경설정 약관·정책 탭 UI 재정리](./settings-legal-modal-0.20.14.md)
-- [0.20.16 환경설정 서비스 건의 UI 재정리](./settings-feedback-form-0.20.16.md)
-- [0.20.17 환경설정 운영형 UI 2차 재설계](./settings-operational-redesign-0.20.17.md)
-- [0.20.20 환경설정 회사 정보 필드별 수정 요청 UI](./settings-account-field-request-0.20.20.md)
-- [0.20.21 기준정보 직접관리/요청관리 재구성](./settings-standards-inline-request-0.20.21.md)
-- [0.20.21.1 생산품 유형 1차·2차·3차 계층형 보정](./settings-standards-product-hierarchy-0.20.21.1.md)
-- [0.20.21.2 기준정보 계층형 UI 오류 및 밀도 보정](./settings-standards-density-fix-0.20.21.2.md)
-- [0.20.21.3 환경설정 공통 헤더·탭·상태 컴포넌트 보정](./settings-common-components-0.20.21.3.md)
-- [0.20.22 환경설정 마무리 QA 및 공통 UI 보정](./settings-environment-finish-0.20.22.md)
-- [0.20.23 작업지시서 화면 정리 1차 기준](./workorder-screen-cleanup-plan-0.20.23.md)
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/pipeline/verify-safe.ps1 -Profile repository-cleanup
+```
 
-### DB/API smoke
-
-- [db-api-smoke-test-0.19.85.md](db-api-smoke-test-0.19.85.md)
-- [db-api-smoke-test-scope-expansion-0.19.88.md](db-api-smoke-test-scope-expansion-0.19.88.md)
-- [db-api-smoke-test-scope-expansion-fix-0.19.88.1.md](db-api-smoke-test-scope-expansion-fix-0.19.88.1.md)
-- [db-api-smoke-test-sql-fix-0.19.86.md](db-api-smoke-test-sql-fix-0.19.86.md)
-- [db-api-smoke-test-success-baseline-0.19.87.md](db-api-smoke-test-success-baseline-0.19.87.md)
-
-### Playwright/E2E
-
-- [navigation-feedback-logout-confirm-0.19.92.md](navigation-feedback-logout-confirm-0.19.92.md)
-- [personal-language-switcher-development-only-0.19.93.md](personal-language-switcher-development-only-0.19.93.md)
-- [playwright-cookie-and-create-workorder-enter-fix-0.19.92.1.md](playwright-cookie-and-create-workorder-enter-fix-0.19.92.1.md)
-- [playwright-e2e-test-plan-0.19.89.md](playwright-e2e-test-plan-0.19.89.md)
-- [playwright-environment-fix-0.19.90.1.md](playwright-environment-fix-0.19.90.1.md)
-- [playwright-environment-setup-0.19.90.md](playwright-environment-setup-0.19.90.md)
-- [playwright-policy-settings-e2e-0.19.91.md](playwright-policy-settings-e2e-0.19.91.md)
-- [playwright-workspace-selector-stabilization-0.19.92.2.md](playwright-workspace-selector-stabilization-0.19.92.2.md)
-- [playwright-workspace-smoke-softening-0.19.92.3.md](playwright-workspace-smoke-softening-0.19.92.3.md)
-
-
-## 5. 테스트 불가 기간 정리 원칙
-
-현재 v8 기준으로 사용자가 테스트 가능 상태를 명시했으므로 이후 기능 작업은 자동테스트 복귀를 전제로 진행한다. 기능 코드, DB/API, R2, 권한, 정책 차단, 요금제/저장소 제한처럼 영향 범위가 있는 작업은 패치 적용 후 최소 다음 자동테스트를 우선 확인한다.
-
-- DB/API 변경 포함: `npm run test:smoke:db-api`
-- 화면/라우팅/권한 변경 포함: `npm run test:e2e`
-- 릴리스 후보 또는 큰 기능 묶음: `npm run build` + `npm run test:smoke:db-api` + `npm run test:e2e`
-
-ChatGPT/container에서는 `npm run build`를 실행하지 않고, 사용자가 로컬에서 확인한다. Playwright 산출물인 `playwright-report/`, `test-results/`는 생성 산출물로 보고 필요 시 삭제 가능하지만, 기능 소스 폴더 삭제는 금지한다.
-
-## 6. 0.19.94.9 점검 결과
-
-- docs 루트 잔여 md 파일: 44개
-- 보관 이동 후 직접 링크가 깨질 수 있는 과거 0.18~0.19 초반 문서 목록은 `docs/README.md`의 직접 링크에서 제거했다.
-- 과거 문서는 `docs/보관문서/` 하위 분류를 통해 접근한다.
-- 기능 코드, DB schema, API route, R2 업로드 흐름은 변경하지 않았다.
-
-상세 문서: [docs 루트 잔여 문서 점검 0.19.94.9](docs-root-residual-audit-0.19.94.9.md)
-
-
-## 7. 0.19.94.10 문서 정리 마무리 판단
-
-- docs 루트 잔여 문서 44개는 최근 운영·정책·DB/API smoke·Playwright·회사 파일 업로드 관련 활성 문서로 유지한다.
-- `docs/보관문서/README.md`를 추가해 보관 문서 접근 기준을 명시한다.
-- `docs/현재기준/README.md`를 추가해 기능 작업 전 확인해야 할 현재 기준 문서 묶음을 명시한다.
-- 문서 정리 1차는 종료하고, 다음 버전부터는 `0.19.95` 고객사 회사 파일 DB/API 1차로 기능 작업에 복귀한다.
-- 기능 작업 복귀 후 테스트는 자동테스트 중심으로 진행한다.
-
-상세 문서: [문서 정리 마무리 및 자동테스트 복귀 기준 0.19.94.10](docs-cleanup-completion-0.19.94.10.md)
-- [시스템관리자 회사 파일 검토 UI/API 1차](./company-file-review-ui-api-0.19.99.md)
-
-
-## 8. 0.20.00 정책 강제 재동의/차단 UX 설계
-
-중요 정책 변경 시 사용자에게 재동의를 요구하고, 미동의 상태에서는 업무 화면 진입을 제한하는 UX 기준을 문서화했다.
-
-- 재동의 대상: `policy_versions.requires_reagreement = true`인 활성 필수 정책
-- 차단 대상: 고객사 관리자와 일반 멤버의 업무 화면
-- 예외 허용: 정책 열람, 재동의 제출, 로그아웃, 고객지원 안내
-- 시스템관리자 운영 화면은 별도 정책으로 분리 검토
-- 실제 DB/API/라우팅 차단 구현은 `0.20.01` 이후 단계에서 진행한다.
-
-상세 문서: [정책 강제 재동의/차단 UX 설계 0.20.00](policy-reagreement-blocking-design-0.20.00.md)
-
-## 9. 0.20.01 정책 재동의 필요 상태 DB/API 1차
-
-중요 정책 변경 시 현재 사용자에게 재동의가 필요한 정책 목록을 조회하고, 재동의 완료 기록을 저장하는 DB/API 계약을 추가했다.
-
-- 조회 API: `GET /api/policies/reagreement`
-- 저장 API: `POST /api/policies/reagreement`
-- 기준 필드: `policy_versions.requires_reagreement`
-- 저장 테이블: 기존 `policy_agreements` 사용
-- 신규 DB schema 없음
-- DB/API smoke test에 재동의 pending/저장 후 해소 계약 추가
-
-상세 문서: [정책 재동의 필요 상태 DB/API 1차 0.20.01](policy-reagreement-db-api-0.20.01.md)
-
-
-## 10. 0.20.02 정책 재동의 안내 UI 1차
-
-`0.20.01`의 재동의 필요 상태 DB/API를 `/workspace/legal` 화면에 연결했다.
-
-- 재동의 필요 상태 패널 추가
-- 재동의 대상/완료/남은 건수 표시
-- 재동의 필요 문서 목록 표시
-- `필수 정책 전체 재동의` 버튼 추가
-- `GET /api/policies/reagreement`, `POST /api/policies/reagreement` 연결
-- Playwright E2E에 재동의 안내/저장 mock 테스트 추가
-- 업무 접근 차단은 아직 연결하지 않음
-
-상세 문서: [정책 재동의 안내 UI 1차 0.20.02](policy-reagreement-ui-0.20.02.md)
-
-## 11. 0.20.03 정책 미동의 업무 접근 차단 1차
-
-정책 재동의가 필요한 사용자의 업무 화면 접근을 차단하는 1차 UX를 연결했다.
-
-- `/workspace/legal`은 재동의 완료를 위한 예외 경로로 허용
-- `/workspace/legal` 외 업무 화면은 재동의 대기 상태에서 차단 안내 표시
-- 약관·정책 화면 이동, 로그아웃, 고객지원 문의 허용
-- Playwright E2E에 재동의 대기 상태 차단 mock 테스트 추가
-- 시스템관리자 운영 화면은 이번 범위에서 제외
-
-상세 문서: [정책 미동의 업무 접근 차단 1차 0.20.03](policy-business-access-blocking-0.20.03.md)
-
-
-## 12. 0.20.04 요금제/무료체험/저장공간 운영 데이터 설계 1차
-
-WAFL 요금제, 무료체험, 저장공간, 멤버 제한, 결제 실패/해지/미납 상태의 1차 운영 기준을 문서화했다.
-
-- 무료체험 기본값: 7일
-- 무료체험 저장공간: 100MB
-- 무료체험 멤버 제한: 고객사 관리자 포함 3명
-- 요금제 후보: Lite, Flow, Studio
-- 결제 상태: trialing, active, past_due, payment_failed, cancel_scheduled, canceled, suspended
-- 실제 PG 연동과 결제수단 저장은 이번 범위에서 제외
-- 다음 구현 단계는 `0.20.05`의 company_subscriptions DB/API 1차다.
-
-상세 문서: [요금제/무료체험/저장공간 운영 데이터 설계 0.20.04](billing-plan-storage-design-0.20.04.md)
-
-
-## 13. 0.20.05 요금제/저장공간 DB·API 1차
-
-`0.20.04` 설계 기준에 따라 고객사 단위 현재 요금제·저장공간·멤버 한도 조회를 위한 DB/API 1차 구조를 추가했다.
-
-- 신규 테이블: `company_subscriptions`
-- 신규 API: `GET /api/admin/subscription`
-- 요금제 코드: `trial`, `lite`, `flow`, `studio`, `custom`
-- 상태 코드: `trialing`, `active`, `past_due`, `payment_failed`, `cancel_scheduled`, `canceled`, `suspended`
-- 저장공간 사용량 1차 기준: 활성 `company_files.size_bytes` 합계
-- 멤버 수 1차 기준: 같은 회사의 활성 `users` 수
-- `full_reset.sql`, migration, DB/API smoke test에 구독 계약을 반영했다.
-- 실제 PG 연동, 결제수단 저장, 업로드 제한은 이번 범위에서 제외했다.
-
-상세 문서: [요금제/저장공간 DB·API 1차 0.20.05](billing-storage-db-api-0.20.05.md)
-
-
-## 14. 0.20.06 요금제/저장공간 UI 1차
-
-환경설정의 요금제·저장공간 영역이 `GET /api/admin/subscription` 응답을 사용해 현재 요금제, 구독 상태, 저장공간 사용량, 멤버 사용량, 무료체험 종료일, 최근 갱신 시점을 표시한다.
-
-상세 문서: [요금제/저장공간 UI 1차 0.20.06](billing-storage-ui-0.20.06.md)
-
-
-## 15. 0.20.07 저장소 사용량 제한 설계 1차
-
-저장공간 사용량에 따라 파일 업로드를 안내·제한하는 1차 운영 기준을 문서화했다.
-
-- 80% 이상: 업로드 허용 + 경고 안내
-- 100% 이상: 신규 파일 업로드 차단
-- 텍스트 작업지시서, 텍스트 메모, 조회, 삭제, 복원은 허용
-- 업로드 준비 API와 메타데이터 저장 API에서 모두 guard 필요
-- 회사 파일 업로드 경로부터 작게 적용하고, 작업지시서 첨부/디자인은 후속 단계에서 확장
-- R2/첨부/메모/휴지통/purge 정상 흐름은 이번 설계에서 변경하지 않는다.
-
-상세 문서: [저장소 사용량 제한 설계 1차 0.20.07](storage-quota-enforcement-design-0.20.07.md)
-
-
-## 16. 0.20.08 저장소 사용량 제한 1차
-
-회사 파일 업로드 경로에 저장공간 사용량 guard를 적용했다.
-
-- 업로드 준비 API와 메타데이터 저장 API에서 모두 저장공간 한도 검증
-- 80% 이상은 업로드 허용 후 경고 안내
-- 100% 초과는 `STORAGE_QUOTA_EXCEEDED`로 차단
-- 같은 회사 파일 유형을 교체하는 경우 기존 활성 파일 크기를 차감한 예상 사용량으로 판정
-- Playwright E2E mock 업로드 응답에 저장공간 경고 검증 추가
-- 작업지시서 첨부/디자인 업로드 제한은 후속 버전으로 분리
-
-상세 문서: [저장소 사용량 제한 1차 0.20.08](storage-quota-enforcement-0.20.08.md)
-
-## 12. 0.20.04~0.20.08 요금제·저장공간·업로드 제한 구현 묶음
-
-요금제/무료체험/저장공간 운영 기준을 문서화하고, 고객사 구독 상태 DB/API, 환경설정 UI, 회사 파일 업로드 경로의 저장공간 제한 1차를 연결했다.
-
-- `0.20.04`: 요금제/무료체험/저장공간 운영 데이터 설계
-- `0.20.05`: `company_subscriptions` DB/API 1차와 DB/API smoke 계약
-- `0.20.06`: 환경설정 요금제·저장공간 UI 1차
-- `0.20.07`: 저장소 사용량 제한 설계
-- `0.20.08`: 회사 파일 업로드 경로 저장공간 guard 1차
-
-상세 문서: [전체 smoke QA 3차 0.20.09](full-smoke-qa-0.20.09.md)
-
-
-
-## 17. 0.20.15 환경설정 기준정보 설정 UI 재정리
-
-환경설정의 기준정보 설정 화면을 카드형 설명 구조에서 내부 탭 + 목록/테이블형 관리 구조로 정리했다.
-
-- 생산품 유형 / 단위 표준 / 외주 공정 유형 내부 탭 추가
-- 선택된 탭 기준으로 항목 목록을 즉시 표시
-- 선택 항목 관리 버튼으로 기존 관리 모달 연결
-- 설명성 뱃지와 버튼 카드 반복 노출 축소
-- 기준정보 저장 API와 기존 모달 흐름은 변경하지 않음
-
-상세 문서: [환경설정 기준정보 설정 UI 재정리 0.20.15](settings-standards-tabs-0.20.15.md)
-
-## 18. 0.20.16 환경설정 서비스 건의 UI 재정리
-
-환경설정의 서비스 건의 탭을 카드형 설명 구조에서 접수 폼 + 접수 이력 구조로 정리했다.
-
-- 문의 유형 / 제목 / 내용 입력 폼 추가
-- 이메일 작성 버튼을 입력값 기반 mailto로 연결
-- 기능 건의 / 오류 제보 / 개선 요청 카드 반복 노출 제거
-- 접수 이력 영역을 향후 API 연결 위치로 정리
-- 정식 접수 API 전까지 이메일 접수 모드 유지
-
-상세 문서: [환경설정 서비스 건의 UI 재정리 0.20.16](settings-feedback-form-0.20.16.md)
-- `settings-legal-markdown-rendering-0.20.18.md` — 환경설정 약관·정책 Markdown 원문 렌더링 1차 기준
-- [0.20.19 환경설정 서비스 건의 DB 접수형 전환](./settings-feedback-db-intake-0.20.19.md)
-
-## 19. 0.20.21 환경설정 기준정보 직접관리/요청관리 재구성
-
-환경설정의 기준정보 설정 화면을 실제 운영 흐름에 맞게 재구성했다.
-
-- 생산품 유형은 탭 안에서 직접 추가하고 사용 여부를 전환
-- 단위 표준과 외주공정 유형은 직접 수정 대신 추가 요청으로 분리
-- 선택 항목 관리 모달 제거
-- 코드명, 순서, 과한 상태 뱃지 제거
-- 유형 추가 요청은 서비스 건의 DB 접수 API를 재사용
-
-상세 문서: [환경설정 기준정보 직접관리/요청관리 재구성 0.20.21](settings-standards-inline-request-0.20.21.md)
-
-## 20. 0.20.21.1 환경설정 생산품 유형 계층형 보정
-
-0.20.21에서 단순 목록형으로 정리했던 생산품 유형을 1차·2차·3차 계층형 분류 체계로 보정했다.
-
-- 생산품 유형을 3열 계층형 구조로 표시
-- 1차 선택 시 2차, 2차 선택 시 3차 목록 표시
-- 각 단계별 항목 추가 지원
-- 각 항목별 사용/미사용 전환 유지
-- 상위 항목 미사용 시 하위 항목도 함께 미사용 처리
-- 단위 표준/외주공정 유형은 요청형 구조 유지
-
-상세 문서: [환경설정 기준정보 생산품 유형 계층형 보정 0.20.21.1](settings-standards-product-hierarchy-0.20.21.1.md)
-- [환경설정 기준정보 헤더·토글·테마 정렬 보정 0.20.21.4](./settings-standards-theme-alignment-0.20.21.4.md)
-
-## 21. 0.20.23 작업지시서 화면 정리 1차 기준
-
-환경설정 UI 정리 이후 작업지시서 화면을 목록, 상세, 우측 패널 단위로 나누어 정리할 기준을 문서화했다. PC 3패널 구조를 유지하면서 WAFL 공통 헤더, selected token, 상태 pill, empty state 패턴을 점진 적용하는 방향이다.
-
-상세 문서: [작업지시서 화면 정리 1차 기준 0.20.23](workorder-screen-cleanup-plan-0.20.23.md)
-
-- `company-file-upload-diagnostics-0.20.23.1.md` — 회사 파일 업로드 실패 메시지 개선 및 R2 진단 로그 보강 기준
-- `company-file-r2-worker-policy-0.20.23.2.md` — 회사 파일 R2 Worker key policy 보정 기준
-
-- [회사 파일 미리보기/업로드 정책 UI 1차 (0.20.23.3)](./company-file-preview-policy-0.20.23.3.md)
+기능 코드, DB/API, R2, 권한, 정책 차단, 요금제/저장소 제한처럼 영향 범위가 있는 작업은 해당 영역의 `verify-safe` profile 또는 별도 계약 테스트를 추가해 확인한다.

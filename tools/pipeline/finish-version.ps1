@@ -67,6 +67,11 @@ function GetChangedFiles {
             $names.Add((NormalizeRelativePath -Path ([string]$line)))
         }
     }
+    foreach ($line in (InvokeFinishGit -Arguments @("diff", "--cached", "--name-only"))) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$line) -and -not (TestGitNoiseLine -Line ([string]$line))) {
+            $names.Add((NormalizeRelativePath -Path ([string]$line)))
+        }
+    }
     foreach ($line in (InvokeFinishGit -Arguments @("ls-files", "--others", "--exclude-standard"))) {
         if (-not [string]::IsNullOrWhiteSpace([string]$line) -and -not (TestGitNoiseLine -Line ([string]$line))) {
             $names.Add((NormalizeRelativePath -Path ([string]$line)))
@@ -127,6 +132,12 @@ function GetChangedFingerprint {
 
     $diffOutput = @(InvokeFinishGit -Arguments @("diff", "--binary", "--no-ext-diff"))
     foreach ($line in $diffOutput) {
+        if (-not (TestGitNoiseLine -Line ([string]$line))) {
+            $parts.Add([string]$line)
+        }
+    }
+    $cachedDiffOutput = @(InvokeFinishGit -Arguments @("diff", "--cached", "--binary", "--no-ext-diff"))
+    foreach ($line in $cachedDiffOutput) {
         if (-not (TestGitNoiseLine -Line ([string]$line))) {
             $parts.Add([string]$line)
         }
@@ -376,8 +387,15 @@ if (-not $Execute) {
 AssertVerificationResult -CurrentHeadHash $currentHeadHash -CurrentChangedFiles $changedFiles -CurrentChangedFingerprint $currentChangedFingerprint -AllowedPaths $allowPaths
 
 foreach ($path in $allowPaths) {
-    $addOutput = @(InvokeFinishGit -Arguments @("add", "--", $path))
-    AssertGitSuccess -Label "git add $path" -Output $addOutput
+    $fullPath = Join-Path $ProjectDir $path
+    if (Test-Path -LiteralPath $fullPath) {
+        $addOutput = @(InvokeFinishGit -Arguments @("add", "--", $path))
+        AssertGitSuccess -Label "git add $path" -Output $addOutput
+    }
+    else {
+        $rmOutput = @(InvokeFinishGit -Arguments @("rm", "--cached", "--ignore-unmatch", "--", $path))
+        AssertGitSuccess -Label "git rm --cached $path" -Output $rmOutput
+    }
 }
 
 $cachedCheck = @(InvokeFinishGit -Arguments @("diff", "--cached", "--check"))

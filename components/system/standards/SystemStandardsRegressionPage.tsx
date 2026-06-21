@@ -95,7 +95,7 @@ export default function SystemStandardsRegressionPage({ snapshot }: { snapshot: 
           <li>· 기준정보 화면과 작업지시서 선택지는 fallback을 사용하지 않고 DB 결과만 사용합니다.</li>
           <li>· 단위 표준과 외주공정 유형 수량은 시스템 원장 기준 전체 수와 고객사별 사용 수를 분리해서 봐야 합니다.</li>
           <li>· 생산품 유형 기본값 복원은 시스템관리자가 기본으로 지정한 활성 템플릿 1개를 기준으로 합니다.</li>
-          <li>· 수량이 부족하면 db/schema/patch_0_10_48_system_standards_seed_refresh.sql을 먼저 실행합니다.</li>
+          <li>· 수량이 부족하면 기존 DB 유지 보강용 seed인 db/seed/system_standards_seed.sql을 승인된 개발 DB 절차로 실행합니다.</li>
         </ul>
         <div className={`mt-4 ${SYSTEM_CODE_INLINE_CLASS}`}>
           /api/system/standards/regression

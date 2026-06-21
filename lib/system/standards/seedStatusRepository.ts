@@ -116,6 +116,6 @@ export async function getSystemStandardsSeedStatus(): Promise<SystemStandardsSee
     items,
     message: ready
       ? "시스템 기준정보 seed가 준비되어 있습니다."
-      : "시스템 기준정보 seed가 비어 있거나 일부 부족합니다. 기존 DB 유지 시 db/schema/patch_0_10_48_system_standards_seed_refresh.sql을 실행하세요.",
+      : "시스템 기준정보 seed가 비어 있거나 일부 부족합니다. 기존 DB 유지 시 db/seed/system_standards_seed.sql을 승인된 개발 DB 절차로 실행하세요.",
   };
 }
