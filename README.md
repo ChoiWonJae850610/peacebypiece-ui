@@ -36,7 +36,7 @@ powershell -ExecutionPolicy Bypass -File tools/pipeline/verify-safe.ps1 -Profile
 ## 현재 기준
 
 - 앱 표시 버전은 `lib/constants/version.ts`의 `APP_VERSION`을 기준으로 한다. `package.json`의 `version`은 npm package metadata다.
-- `docs/`에는 tracked 문서 668개가 있으며, 루트 문서가 307개라 다음 cleanup에서 archive manifest 기준으로 정리한다.
+- `docs/`에는 tracked 문서 664개가 있으며, 루트 문서가 266개라 다음 cleanup에서 archive manifest 기준으로 계속 정리한다.
 - `docs/현재기준/`과 `docs/productization-roadmap.md`가 현재 개발 판단의 우선 기준이다.
 - `/id-control`은 내부 identity-control console의 현재 경로다. `/dev/test-console`은 production 차단과 명시 enable guard를 유지한다.
 - `/roadmap`은 system administrator 전용 read-only 화면이다. edit/save/delete, DB/R2 write, URL/query/localStorage mutation은 별도 정책 결정 없이는 추가하지 않는다.

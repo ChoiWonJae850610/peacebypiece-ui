@@ -286,6 +286,7 @@ function InvokeRepositoryCleanupCheck {
     $failures = New-Object System.Collections.Generic.List[string]
     $legacyReportPath = "reports/" + "functions-pdf-contract-latest.json"
     $missingSeedPatchPath = "db/schema/" + "patch_0_10_48_system_standards_seed_refresh.sql"
+    $docsRoot = Join-Path $ProjectDir "docs"
 
     function FindRepositoryCleanupText {
         param(
@@ -305,6 +306,54 @@ function InvokeRepositoryCleanupCheck {
             return @()
         }
         return @(Select-String -LiteralPath $files.FullName -Pattern $Pattern -SimpleMatch -ErrorAction SilentlyContinue)
+    }
+
+    function GetRepositoryCleanupDocsCount {
+        param([string]$RelativeRoot)
+
+        $path = Join-Path $ProjectDir $RelativeRoot
+        if (-not (Test-Path -LiteralPath $path)) {
+            return 0
+        }
+        return @(Get-ChildItem -LiteralPath $path -Recurse -File -Filter "*.md" -ErrorAction SilentlyContinue).Count
+    }
+
+    function TestRepositoryCleanupMarkdownLinks {
+        param([string[]]$RelativePaths)
+
+        $brokenLinks = New-Object System.Collections.Generic.List[string]
+        foreach ($relativePath in $RelativePaths) {
+            $normalized = $relativePath -replace '\\', '/'
+            if ($normalized -notmatch '\.md$') {
+                continue
+            }
+            $fullPath = Join-Path $ProjectDir $normalized
+            if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+                continue
+            }
+
+            $content = Get-Content -LiteralPath $fullPath -Raw -Encoding UTF8
+            $matches = [regex]::Matches($content, '\[[^\]]+\]\(([^)]+\.md(?:#[^)]+)?)\)')
+            foreach ($match in $matches) {
+                $target = [string]$match.Groups[1].Value
+                if ($target -match '^[a-z]+://' -or $target.StartsWith('#') -or $target.StartsWith('mailto:')) {
+                    continue
+                }
+
+                $targetPath = ($target -split '#', 2)[0]
+                if ([string]::IsNullOrWhiteSpace($targetPath)) {
+                    continue
+                }
+
+                $baseDir = Split-Path -Parent $fullPath
+                $resolved = Join-Path $baseDir $targetPath
+                if (-not (Test-Path -LiteralPath $resolved -PathType Leaf)) {
+                    $brokenLinks.Add("$normalized -> $target")
+                }
+            }
+        }
+
+        return @($brokenLinks | Sort-Object -Unique)
     }
 
     $activeReportReferenceRoots = @("app", "components", "features", "lib", "scripts", "tests", "cloudflare", "package.json", "README.md", "docs/README.md")
@@ -339,6 +388,86 @@ function InvokeRepositoryCleanupCheck {
 
     if (Test-Path -LiteralPath (Join-Path $ProjectDir $legacyReportPath) -PathType Leaf) {
         $failures.Add("legacy functions PDF report still exists")
+    }
+
+    $requiredCanonicalDocNames = @(
+        "testing-and-automation.md",
+        "simulator.md",
+        "wafl-ui-system.md"
+    )
+    foreach ($fileName in $requiredCanonicalDocNames) {
+        $matches = @(Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter $fileName -ErrorAction SilentlyContinue | Where-Object {
+            (($_.FullName -replace '\\', '/') -match '/docs/.+/')
+        })
+        if ($matches.Count -eq 0) {
+            $failures.Add("required canonical doc missing: $fileName")
+        }
+    }
+
+    $movedArchiveTargets = @(
+        @{ Directory = "qa-history"; FileName = "playwright-environment-setup-0.19.90.md" },
+        @{ Directory = "qa-history"; FileName = "project-test-simulator-structure-0.23.72.md" },
+        @{ Directory = "completed-features"; FileName = "wafl-ui-catalog-0.20.99.md" },
+        @{ Directory = "qa-history"; FileName = "pipeline-background-watcher-0.23.85.md" }
+    )
+    foreach ($target in $movedArchiveTargets) {
+        $matches = @(Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter $target.FileName -ErrorAction SilentlyContinue | Where-Object {
+            (($_.FullName -replace '\\', '/') -match "/$([regex]::Escape($target.Directory))/$([regex]::Escape($target.FileName))$")
+        })
+        if ($matches.Count -eq 0) {
+            $failures.Add("expected archive target missing: $($target.Directory)/$($target.FileName)")
+        }
+    }
+
+    $removedRootDocs = @(
+        "docs/playwright-environment-setup-0.19.90.md",
+        "docs/project-test-simulator-structure-0.23.72.md",
+        "docs/wafl-ui-catalog-0.20.99.md",
+        "docs/pipeline-background-watcher-0.23.85.md",
+        "docs/build-fix-0.20.38.md",
+        "docs/codex-handoff-0.23.99.md"
+    )
+    foreach ($relativePath in $removedRootDocs) {
+        if (Test-Path -LiteralPath (Join-Path $ProjectDir $relativePath) -PathType Leaf) {
+            $failures.Add("old root doc still exists: $relativePath")
+        }
+    }
+
+    $docsTotalCount = GetRepositoryCleanupDocsCount -RelativeRoot "docs"
+    $docsRootCount = @(Get-ChildItem -LiteralPath $docsRoot -File -Filter "*.md" -ErrorAction SilentlyContinue).Count
+    if ($docsTotalCount -gt 664) {
+        $failures.Add("docs total count did not stay within cleanup target: $docsTotalCount")
+    }
+    if ($docsRootCount -gt 266) {
+        $failures.Add("docs root count did not decrease to cleanup target: $docsRootCount")
+    }
+
+    $deletedDocReferences = New-Object System.Collections.Generic.List[string]
+    $deletedDocs = @(
+        "build-fix-0.20.38.md",
+        "build-fix-0.20.44.md",
+        "build-fix-0.20.58.md",
+        "build-fix-0.20.59.md",
+        "build-fix-modal-focus-0.20.62.md",
+        "dev-test-console-audit-target-build-fix-0.23.79.md",
+        "wafl-list-card-menu-build-fix-0.21.64.md",
+        "codex-handoff-0.23.99.md"
+    )
+    foreach ($fileName in $deletedDocs) {
+        $matches = @(FindRepositoryCleanupText -Root "docs" -Pattern $fileName | Where-Object {
+            (([string]$_.Path) -replace '\\', '/') -notlike "*/docs/audits/docs-archive-manifest-0.24.11.md"
+        })
+        if ($matches.Count -gt 0) {
+            $deletedDocReferences.Add($fileName)
+        }
+    }
+    if ($deletedDocReferences.Count -gt 0) {
+        $failures.Add("deleted doc reference remains outside manifest: $($deletedDocReferences -join ', ')")
+    }
+
+    $changedMarkdownLinks = @(TestRepositoryCleanupMarkdownLinks -RelativePaths $changedFiles)
+    if ($changedMarkdownLinks.Count -gt 0) {
+        $failures.Add("broken markdown link in changed docs: $($changedMarkdownLinks -join '; ')")
     }
 
     $oldArchiveSlugs = @(

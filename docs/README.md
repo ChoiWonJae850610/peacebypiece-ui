@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece 문서 인덱스
 
 - 기준 앱 버전: `0.24.11`
-- tracked docs 파일 수: 668
-- docs 루트 파일 수: 307
+- tracked docs 파일 수: 664
+- docs 루트 파일 수: 266
 - 현재 정리 기준: 루트에 누적된 버전별 완료 보고서는 삭제보다 archive 이동을 우선하고, 대량 이동은 manifest와 사용자 승인 후 수행한다.
 
 ## 1. 현재 기준 문서
@@ -27,6 +27,9 @@
 - 제품화 로드맵: `docs/productization-roadmap.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
+- 테스트/자동화 현재 기준: `docs/현재기준/testing-and-automation.md`
+- Simulator 현재 기준: `docs/현재기준/simulator.md`
+- WAFL UI 시스템 현재 기준: `docs/현재기준/wafl-ui-system.md`
 
 ## 3. 정책 문서
 
@@ -62,17 +65,17 @@
 
 | 영역 | 파일 수 |
 | --- | ---: |
-| docs 루트 | 307 |
-| docs/보관문서 | 293 |
+| docs 루트 | 266 |
+| docs/보관문서 | 325 |
 | docs/정책문서 | 32 |
-| docs/현재기준 | 28 |
-| docs/audits | 8 |
+| docs/현재기준 | 31 |
+| docs/audits | 10 |
 
 ## 6. 정리 원칙
 
 - docs 루트에는 README, current-state, roadmap, 최신 audit처럼 현재 판단에 필요한 canonical 문서만 남기는 방향으로 정리한다.
 - 버전별 결과 문서는 `docs/audits/` 또는 `docs/보관문서/versions/`로 보낸다.
-- build-fix, UI 세부 패치, Playwright 초기 구축, simulator 소규모 수정, billing/storage 단계 문서는 문서군별 manifest를 만든 뒤 이동한다.
+- build-fix, Playwright 초기 구축, simulator 소규모 수정, WAFL UI catalog, pipeline version 문서는 1차로 병합/보관/삭제했다. 남은 문서군은 manifest 기준으로 나누어 이동한다.
 - exact duplicate와 legacy generated output은 참조 0건과 canonical 대체 파일을 확인한 뒤 삭제한다.
 - DB/migration/lockfile/auth/permission/policy/Cloudflare deploy 파일은 사용자 승인 없이 삭제하지 않는다.
 
