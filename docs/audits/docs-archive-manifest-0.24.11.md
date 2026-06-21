@@ -2,16 +2,16 @@
 
 This manifest tracks the applied documentation cleanup batches for `APP_VERSION 0.24.11`.
 
-## Current Counts After Batch 2
+## Current Counts After Batch 3
 
-| Metric | Before batch 1 | After batch 1 | After batch 2 |
-| --- | ---: | ---: | ---: |
-| tracked docs files | 669 | 664 | 662 |
-| docs root files | 307 | 266 | 206 |
-| docs/현재기준 files | 28 | 31 | 34 |
-| docs/보관문서 files | 292 | 325 | 380 |
-| moved files in batch | 0 | 33 | 55 |
-| deleted files in batch | 0 | 8 | 5 |
+| Metric | Before batch 1 | After batch 1 | After batch 2 | After batch 3 |
+| --- | ---: | ---: | ---: | ---: |
+| tracked docs files | 669 | 664 | 662 | 656 |
+| docs root files | 307 | 266 | 206 | 180 |
+| docs/현재기준 files | 28 | 31 | 34 | 34 |
+| docs/보관문서 files | 292 | 325 | 380 | 400 |
+| moved files in batch | 0 | 33 | 55 | 20 |
+| deleted files in batch | 0 | 8 | 5 | 6 |
 
 ## Canonical Documents Updated Or Added
 
@@ -23,9 +23,12 @@ This manifest tracks the applied documentation cleanup batches for `APP_VERSION 
 | `docs/현재기준/workorder.md` | 2 | Current workorder screen, save, permission, responsive, attachment, and PDF linkage baseline |
 | `docs/현재기준/material-order.md` | 2 | Current material-order status, save, allocation, permission, responsive, and PDF preparation baseline |
 | `docs/현재기준/modal-and-focus.md` | 2 | Current modal/focus/input policy, resolved approach, remaining reproduction conditions, and deprecated approaches |
-| `docs/codex-current-state.md` | 1, 2 | Current handoff source after old handoff and root history consolidation |
-| `docs/현재기준/README.md` | 1, 2 | Current baseline docs index |
-| `docs/README.md` | 1, 2 | Repository docs index and counts |
+| `docs/현재기준/요금-저장소-정책-설계.md` | 3 | Current billing, subscription, storage quota, member-limit, permission, and verification baseline |
+| `docs/현재기준/wafl-ui-system.md` | 3 | Current responsive/device/layout policy added to the WAFL UI baseline |
+| `docs/현재기준/testing-and-automation.md` | 3 | Current DB/API smoke execution policy and rollback-only guidance |
+| `docs/codex-current-state.md` | 1, 2, 3 | Current handoff source after old handoff and root history consolidation |
+| `docs/현재기준/README.md` | 1, 2, 3 | Current baseline docs index |
+| `docs/README.md` | 1, 2, 3 | Repository docs index and counts |
 
 ## Batch 1 Summary
 
@@ -98,6 +101,61 @@ These were one-off early mobile structure or QA notes whose current policy is no
 - `docs/material-order-mobile-structure-0.20.31.md`
 - `docs/full-smoke-qa-0.20.09.md`
 
+## Batch 3 Classification
+
+| Group | Classification | Result |
+| --- | --- | --- |
+| billing/storage histories | `MERGE-THEN-ARCHIVE` | Current subscription, storage quota, member-limit, permission, and verification policy merged into `docs/현재기준/요금-저장소-정책-설계.md`; 5 history files archived |
+| responsive/device/layout histories | `MERGE-THEN-ARCHIVE` | Current workspace layout, component-only breakpoint, tablet drawer/chrome, and mobile interaction policy merged into `docs/현재기준/wafl-ui-system.md`; 10 history files archived |
+| legacy DB smoke histories | `MERGE-THEN-ARCHIVE` | Current DB/API smoke execution and rollback-only guidance merged into `docs/현재기준/testing-and-automation.md`; 5 history files archived |
+| old docs cleanup result records | `DELETE-SAFE` | 6 superseded 0.19.94 cleanup plan/result notes deleted after current manifest and inventory replaced them |
+| DB schema/migration/seed/auth/permission/legal/PDF core docs | `PROTECTED` | Not touched |
+
+## Batch 3 Moved Files
+
+### Billing And Storage To `docs/보관문서/completed-features/`
+
+- `billing-plan-storage-design-0.20.04.md`
+- `billing-storage-db-api-0.20.05.md`
+- `billing-storage-ui-0.20.06.md`
+- `storage-quota-enforcement-design-0.20.07.md`
+- `storage-quota-enforcement-0.20.08.md`
+
+### Responsive And Device Layout To `docs/보관문서/completed-features/`
+
+- `mobile-tablet-ia-policy-0.20.26.md`
+- `mobile-common-shell-0.20.27.md`
+- `mobile-list-drawer-pattern-0.20.32.md`
+- `mobile-fab-action-pattern-0.20.34.md`
+- `workspace-responsive-refactor-0.21.93.md`
+- `tablet-responsive-layout-policy-audit-0.23.22.md`
+- `tablet-panel-min-width-policy-0.23.23.md`
+- `responsive-breakpoint-role-audit-0.23.24.md`
+- `tablet-workspace-chrome-unification-0.23.25.md`
+
+### Responsive Build QA To `docs/보관문서/qa-history/`
+
+- `responsive-breakpoint-import-fix-0.22.00.md`
+
+### DB Smoke History To `docs/보관문서/qa-history/`
+
+- `db-api-smoke-test-0.19.85.md`
+- `db-api-smoke-test-sql-fix-0.19.86.md`
+- `db-api-smoke-test-success-baseline-0.19.87.md`
+- `db-api-smoke-test-scope-expansion-0.19.88.md`
+- `db-api-smoke-test-scope-expansion-fix-0.19.88.1.md`
+
+## Batch 3 Deleted Files
+
+These 0.19.94 cleanup plan/result notes are superseded by this manifest, `docs/audits/repository-cleanup-inventory-0.24.11.md`, and Git history.
+
+- `docs/docs-archive-plan-0.19.94.5.md`
+- `docs/docs-root-archive-candidates-0.19.94.6.md`
+- `docs/docs-manual-review-classification-0.19.94.7.md`
+- `docs/docs-archive-move-0.19.94.8.md`
+- `docs/docs-root-residual-audit-0.19.94.9.md`
+- `docs/docs-cleanup-completion-0.19.94.10.md`
+
 ## Protected Scope
 
 The cleanup did not modify or delete:
@@ -112,14 +170,15 @@ The cleanup did not modify or delete:
 - application feature code
 - roadmap and id-control feature code
 
+Batch 3 also kept company approval, member lifecycle, auth/session, policy/legal, PDF, Cloudflare deploy, package/lockfile, DB schema, DB migration, seed SQL, and active test/script files in place.
+
 ## Remaining Cleanup Candidates
 
 | Group | Recommended next action |
 | --- | --- |
-| billing/storage root histories | Merge into current billing/storage docs, then archive or delete one-off notes |
-| remaining responsive/UI small patch notes | Merge into `wafl-ui-system.md` and `modal-and-focus.md`, then delete or archive |
-| legacy DB smoke/read-only records | Separate protected DB policy from one-off execution logs before touching |
-| old version reports | Move valuable summaries to `docs/보관문서/versions/`, delete simple release notes after reference scan |
+| remaining root docs | No further large cleanup in 0.24.11; handle only as individual follow-up when a feature task needs it |
+| protected policy/auth/permission/legal/PDF/DB docs | Keep in place unless the user explicitly requests that exact policy/schema/document work |
+| old version reports outside this batch | Leave for individual review; do not start another bulk cleanup automatically |
 
 ## Reference Policy For Next Batch
 
@@ -128,3 +187,7 @@ The cleanup did not modify or delete:
 3. Keep each applied batch under the approved move/delete limit.
 4. Run `approved-workflow.ps1 -Action Verify -Profile repository-cleanup`.
 5. Stop if the wrapper reports fingerprint, profile, branch, package/lockfile, migration, secret, or link failures.
+
+## Cleanup Closure
+
+Batch 3 is the final large-scale documentation cleanup for `APP_VERSION 0.24.11`. Do not automatically start another bulk docs cleanup after this batch. The next product work checkpoint is `0.24.12`, starting with general user workspace and `/worker` responsive/save-flow commonization, but that work starts only after a separate user request.

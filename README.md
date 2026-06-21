@@ -36,7 +36,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 ## 현재 기준
 
 - 앱 표시 버전은 `lib/constants/version.ts`의 `APP_VERSION`을 기준으로 한다. `package.json`의 `version`은 npm package metadata다.
-- `docs/`에는 tracked 문서 662개가 있으며 root 문서는 206개다. 다음 cleanup도 archive manifest 기준으로 진행한다.
+- `docs/`에는 tracked 문서 656개가 있으며 root 문서는 180개다. 0.24.11 대규모 문서 cleanup은 3차로 종료하고, 남은 문서는 필요 시 개별 정리한다.
 - `docs/현재기준/`과 `docs/productization-roadmap.md`가 현재 개발 판단의 우선 기준이다.
 - `/id-control`은 내부 identity-control console의 현재 경로다. `/dev/test-console`은 production 차단과 명시 enable guard를 유지한다.
 - `/roadmap`은 system administrator 전용 read-only 화면이다. edit/save/delete, DB/R2 write, URL/query/localStorage mutation은 별도 정책 결정 없이 추가하지 않는다.

@@ -19,6 +19,7 @@
 
 - `wafl-ui-system.md`
 - `modal-and-focus.md`
+- `wafl-ui-system.md`에는 current responsive/device/layout 기준도 포함한다.
 
 ### 작업지시서와 발주
 
@@ -48,3 +49,4 @@
 - 화면/레이아웃/권한 변경은 관련 Playwright/E2E 또는 contract 보강 여부를 확인한다.
 - R2, 첨부, 메모, 상태, purge 흐름은 직접 목표가 아니면 변경하지 않는다.
 - 보관 문서와 현재 기준 문서가 충돌하면 현재 기준 문서를 우선한다.
+- 0.24.11 대규모 문서 cleanup은 3차로 종료되었으므로, 남은 root 문서는 대량 이동 대신 개별 필요가 있을 때만 정리한다.

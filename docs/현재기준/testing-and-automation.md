@@ -54,6 +54,20 @@ npm run test:e2e:functions-responsive
 
 production에서는 실행하지 않는다. 현재 suite는 화면 진입, route, 기본 문구, overflow와 viewport 계약을 우선 확인하며 생성·수정·삭제 mutation을 자동 실행하지 않는다.
 
+## DB/API Smoke
+
+DB/API smoke는 현재도 `scripts/smoke-db-api.mjs`와 `npm run test:smoke:db-api`가 기준이다. 실행 전에는 승인된 개발/테스트 DB URL이 필요하며 운영 DB에서는 실행하지 않는다.
+
+검증 성격:
+
+- 필수 schema/table/column 계약 확인
+- 멤버 생명주기 상태 전환 계약 확인
+- 회사 계정 요청 승인/반려 계약 확인
+- 정책 동의 저장/조회/upsert 계약 확인
+- 회사 파일, 구독, 저장공간 관련 계약 확장 확인
+
+write 검증은 transaction 안에서 실행하고 마지막에 rollback하는 것을 기준으로 한다. smoke 결과 기록 문서는 archive 이력으로 보관하며, 현재 실행 기준은 script, `package.json` script, pipeline wrapper, 이 문서를 우선한다.
+
 ## PowerShell Pipeline
 
 Canonical entry point는 `tools/pipeline/peacebypiece-auto-pipeline.ps1`이다. 설정은 `tools/pipeline/pipeline.config.psd1`에서 관리하며 DB URL, 비밀번호, R2 key, token 같은 비밀값은 config에 저장하지 않는다.
