@@ -2,10 +2,10 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.14`
-- APP_VERSION: `0.24.14`
+- Roadmap checkpoint version: `0.24.15`
+- APP_VERSION: `0.24.15`
 - Feature implementation progress: about `93%`
-- Productization readiness: `80%`
+- Productization readiness: `82%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -19,9 +19,13 @@
 
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
 
+## 0.24.15 WAFL Productization Audit checkpoint
+
+0.24.15 expands the previous screen/source refactoring audit into a productization audit. It records WAFL Component, UI Consistency, Source Quality, Common Module, i18n, Runtime/Permission, Functions, Product Cleanup, Performance, and Release Readiness findings in `docs/audits/productization-audit-report-0.24.15.md` and converts them into PB backlog entries in `docs/productization-backlog.md`. This version does not run DB/R2/Seed/Reset/Cleanup, does not change package/lockfiles, and does not perform broad UI refactoring.
+
 ## 0.24.14 Functions automation checkpoint
 
-0.24.14 makes `/functions` a more reliable development and verification hub. The catalog now records profile, command, safety grade, and execution notes for automation links. The new `functions-automation` verify profile groups catalog structure, automation coverage, storage, environment, PDF, and approved workflow contracts. This version does not run DB/R2/Seed/Reset/Cleanup and does not relax destructive guards.
+0.24.14 makes `/functions` a more reliable development and verification hub. The catalog records profile, command, safety grade, and execution notes for automation links. The `functions-automation` verify profile groups catalog structure, automation coverage, storage, environment, PDF, and approved workflow contracts. This version did not run DB/R2/Seed/Reset/Cleanup and did not relax destructive guards.
 
 ## Canonical Policy
 
@@ -154,8 +158,8 @@ Required development criteria:
 | `0.24.11` | 시스템 관리자 ID 제어와 roadmap 기준판 | 진행 중 | `/id-control`, `/roadmap`, canonical roadmap, post-finish handoff |
 | `0.24.12` | 일반 사용자 workspace 및 worker 공통화 | 사용자 확인 필요 | General user workspace/worker UI density, responsive shell, save flow |
 | `0.24.13` | 문서/폴더 정리 2차 | 검증 대기 | Root/docs/current-state/index/archive and Vercel QA handoff documentation |
-| `0.24.14` | Functions 90% 구현/검증 정리 | 예정 | `/functions` catalog, PowerShell profile linkage, guarded command visibility |
-| `0.24.15` | 전체 화면/소스 리팩터링 감사 | 예정 | Audit app/features/components without broad implementation changes |
+| `0.24.14` | Functions 90% 구현/검증 정리 | 사용자 확인 필요 | `/functions` catalog, PowerShell profile linkage, guarded command visibility |
+| `0.24.15` | WAFL Productization Audit | 검증 대기 | Productization audit report and PB backlog without broad implementation changes |
 | `0.24.16` | WAFL 컴포넌트 적용/공통화 1차 | 예정 | Apply shared page shell, section, button, filter, empty/loading/error states |
 | `0.24.17` | 소스 리팩터링 1차 | 예정 | Reduce duplicate utils, hardcoding, i18n gaps, and selected large files |
 | `0.24.18` | R2/Simulator 테스트 기반 | 예정 | Logical usage vs R2 objects, quota fixtures, cleanup preview, reconciliation dry-run |
@@ -212,7 +216,7 @@ If artifact generation fails, do not revert the already completed commit or push
 - Dependency and lockfile changes are not part of this checkpoint.
 - PDF/R2 policy and supplier/material-order PDF remain planned work and are now separated into R2/Simulator foundation at 0.24.18 and PDF/R2 policy at 0.24.19.
 - Functions/Simulator/PowerShell work is split into Functions catalog coverage at 0.24.14 and automation expansion at 0.24.20.
-- Source cleanup is split into audit-only 0.24.15, WAFL component application 0.24.16, and source refactoring 0.24.17.
+- Source cleanup is split into productization audit-only 0.24.15, WAFL component application 0.24.16, and source refactoring 0.24.17. 0.24.15 output is the Productization Audit Report and PB backlog.
 - Final real-device and pre-customer validation is 0.24.21.
 - UI/responsive/PDF completion requires manual confirmation when the roadmap detail says so.
 

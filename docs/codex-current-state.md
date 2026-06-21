@@ -2,14 +2,14 @@
 
 ## Start Manifest
 
-- Current result version: `0.24.14`
-- Baseline before this version: `0.24.13`
+- Current result version: `0.24.15`
+- Baseline before this version: `0.24.14`
 - APP_VERSION source: `lib/constants/version.ts`
-- Current work version: `0.24.14`
-- Current work title: `Functions 90% 구현/검증 정리`
+- Current work version: `0.24.15`
+- Current work title: `WAFL Productization Audit`
 - Current branch policy: `master`, `origin/master` synchronized before automatic Finish
 - Vercel policy before 1.0: QA deployment, not customer production
-- DB migration: none for 0.24.14
+- DB migration: none for 0.24.15
 - R2/DB execute: not allowed without separate explicit approval
 
 Use this file as the first routing manifest only. For detailed rules, read the target files below instead of re-reading the whole repository.
@@ -23,6 +23,7 @@ Use this file as the first routing manifest only. For detailed rules, read the t
 | Simulator / Functions / QA | `lib/internal/roadmap/index.ts`, `tools/simulator/README.md`, `tools/pipeline/README.md`, `lib/functions/catalog.ts` | completed feature history and archived QA logs |
 | Pipeline / Git finish | `tools/pipeline/README.md`, `tools/pipeline/approved-workflow.ps1`, `tools/pipeline/verify-safe.ps1`, `tools/pipeline/finish-version.ps1` | UI component docs unless profile touches UI |
 | Docs cleanup / Codex optimization | `docs/README.md`, this file, `docs/productization-roadmap.md`, `tools/pipeline/README.md` | product feature source files unless referenced by changed docs |
+| Productization audit | `lib/internal/roadmap/roadmap-0.24.15.ts`, `docs/audits/productization-audit-report-0.24.15.md`, `docs/productization-backlog.md`, `docs/productization-roadmap.md` | archived completed-feature history unless investigating a regression |
 
 ## Default Search Exclusions
 
@@ -105,6 +106,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 
 Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/push unless the user manually confirms the responsive result.
 
+
+## 0.24.15 Productization Audit Policy
+
+- 0.24.15 expands the previous screen/source refactoring audit into WAFL Productization Audit.
+- The audit areas are WAFL Component, UI Consistency, Source Quality, Common Module, i18n, Runtime/Permission, Functions, Product Cleanup, Performance, and Release Readiness.
+- Canonical outputs are `docs/audits/productization-audit-report-0.24.15.md` and `docs/productization-backlog.md`.
+- PB items are tracked as productization backlog entries and should be resolved by priority, not by ad hoc screen edits.
+- DB/R2/Seed/Reset/Cleanup/Migration execution is not part of 0.24.15.
+- 0.24.16 starts from PB Critical/High items that can be handled without policy or data-shape changes.
 
 ## 0.24.14 Functions Automation Policy
 

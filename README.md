@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.14`
+- 기준 앱 버전: `0.24.15`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.14`는 Functions 90% 구현/검증 정리로 `/functions` catalog의 자동화 profile, 명령, 안전 등급, dry-run/confirmation 기준을 정리한다.
+- 현재 작업 상태: `0.24.15`는 WAFL Productization Audit으로 전체 화면/소스 리팩터링 감사를 제품화 감사로 확장하고 Productization Audit Report와 Productization Backlog를 고정한다.
 
 ## 개발 실행
 
@@ -33,12 +33,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 - 정리/감사 문서: `docs/audits/`
 - Codex 작업 시작 매니페스트: `docs/codex-current-state.md`
 - 제품화 로드맵: `docs/productization-roadmap.md`
+- 제품화 백로그: `docs/productization-backlog.md`
+- 제품화 감사 보고서: `docs/audits/productization-audit-report-0.24.15.md`
 - 누적 테스트 항목: `pending-tests.md`
 
 ## 현재 기준
 
 - 앱 표시 버전은 `lib/constants/version.ts`의 `APP_VERSION`을 기준으로 한다. `package.json`의 `version`은 npm package metadata다.
-- `docs/`에는 tracked 문서 656개가 있으며 root에는 최소 진입점만 둔다. 0.24.13부터 현재 판단은 `docs/codex-current-state.md`와 `docs/현재기준/document-management.md`를 우선한다.
+- `docs/`에는 tracked 문서 661개가 있으며 root에는 최소 진입점만 둔다. 0.24.13부터 현재 판단은 `docs/codex-current-state.md`와 `docs/현재기준/document-management.md`를 우선한다.
 - `docs/codex-current-state.md`가 작업 유형별 진입 문서를 라우팅하고, 세부 기준은 `lib/internal/roadmap/`과 `docs/현재기준/`을 따른다.
 - `/id-control`은 내부 identity-control console의 현재 경로다. `/dev/test-console`은 system_admin 정책 확인 후 `/id-control`로 이동하는 호환 경로다.
 - `/roadmap`은 system administrator 전용 read-only 화면이다. edit/save/delete, DB/R2 write, URL/query/localStorage mutation은 별도 정책 결정 없이 추가하지 않는다.

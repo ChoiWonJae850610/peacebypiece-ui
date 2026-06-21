@@ -204,3 +204,9 @@
 - [ ] 작업지시서와 통계가 정규화된 1·2·3차 분류를 유지하는지 확인
 - [ ] 21번을 연속 두 번 실행해도 분류 중복이 다시 생기지 않는지 확인
 - [ ] npm run build 미실행 — 사용자가 로컬에서 확인.
+
+## 0.24.15 WAFL Productization Audit
+
+- Productization Audit Report의 10개 감사 영역이 실제 후속 작업 우선순위와 맞는지 검토한다.
+- Productization Backlog PB-001~PB-017의 Critical/High 순서가 사용자 제품화 우선순위와 맞는지 검토한다.
+- 이번 버전은 UI 동작 변경 없음. 로컬 적용 후 `npm run build`와 `approved-workflow.ps1 -Action Verify`의 적합 profile을 실행한다.
