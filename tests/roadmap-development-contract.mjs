@@ -5,6 +5,7 @@ const page = fs.readFileSync("app/roadmap/page.tsx", "utf8");
 const types = fs.readFileSync("lib/internal/roadmap/types.ts", "utf8");
 const index = fs.readFileSync("lib/internal/roadmap/index.ts", "utf8");
 const draft = fs.readFileSync("lib/internal/roadmap/roadmap-0.24.12.ts", "utf8");
+const roadmapDoc = fs.readFileSync("docs/productization-roadmap.md", "utf8");
 const facade = fs.readFileSync("lib/internal/productizationRoadmap.ts", "utf8");
 const workflow = fs.readFileSync("tools/pipeline/approved-workflow.ps1", "utf8");
 const pipeline = fs.readFileSync("tools/pipeline/peacebypiece-auto-pipeline.ps1", "utf8");
@@ -105,10 +106,36 @@ for (const draftToken of [
   "권한 의미를 유지",
   "DB Migration 없음",
   "modal/focus",
-  "0.24.13은 workorder/material-order PDF",
+  "0.24.13은 기능 개발을 바로 이어가지 않고 문서/폴더 정리 2차",
+  "0.24.18은 R2/Simulator 테스트 기반",
+  "0.24.19는 workorder/material-order PDF",
 ]) {
   assert.ok(draft.includes(draftToken), `0.24.12 draft missing ${draftToken}`);
 }
+
+const rearrangedRoadmap = [
+  ["0.24.13", "문서/폴더 정리 2차"],
+  ["0.24.14", "Functions 90% 구현/검증 정리"],
+  ["0.24.15", "전체 화면/소스 리팩터링 감사"],
+  ["0.24.16", "WAFL 컴포넌트 적용/공통화 1차"],
+  ["0.24.17", "소스 리팩터링 1차"],
+  ["0.24.18", "R2/Simulator 테스트 기반"],
+  ["0.24.19", "PDF/R2 정책 및 PDF 생성 구조"],
+  ["0.24.20", "Functions/Simulator/PowerShell 자동화 확장"],
+  ["0.24.21", "통합 검증 체크포인트"],
+];
+
+for (const [version, title] of rearrangedRoadmap) {
+  const roadmapFile = fs.readFileSync(`lib/internal/roadmap/roadmap-${version}.ts`, "utf8");
+  assert.ok(index.includes(`ROADMAP_${version.replace(/\./g, "_")}`), `index missing ${version} import or registration`);
+  assert.ok(roadmapFile.includes(`version: "${version}"`), `roadmap ${version} missing version`);
+  assert.ok(roadmapFile.includes(title), `roadmap ${version} missing title ${title}`);
+  assert.ok(roadmapDoc.includes(`\`${version}\``), `roadmap doc missing ${version}`);
+  assert.ok(roadmapDoc.includes(title), `roadmap doc missing ${title}`);
+}
+
+assert.ok(roadmapDoc.includes("기존 기능 계획을 취소하지 않고 재배치"), "roadmap doc must explain rearrangement policy");
+assert.ok(roadmapDoc.includes("Vercel 배포본은 운영이 아니라 실기기 QA 환경"), "roadmap doc must clarify Vercel QA policy");
 
 for (const completionToken of ["구현 완료", "실제 verify-safe PASS", "commit hash 존재", "git push origin master 완료", "사용자 확인 완료"]) {
   assert.ok(draft.includes(completionToken), `completion policy missing ${completionToken}`);

@@ -48,7 +48,7 @@ export const ROADMAP_0_24_12: RoadmapVersionDetail = {
   ],
   outOfScope: [
     "0.24.12 단계에서 DB Migration을 만들지 않는다.",
-    "PDF 생성, R2 저장, supplier/material-order PDF 정책 확정은 0.24.13으로 넘긴다.",
+    "PDF 생성, R2 저장, supplier/material-order PDF 정책 확정은 roadmap 재배치 후 0.24.19로 넘긴다.",
     "새 권한 체계, tenant isolation 정책 변경, 사용자 데이터 shape 변경은 하지 않는다.",
     "일반 사용자 기능 자체의 신규 업무 범위 확대는 하지 않는다.",
     "modal/focus 전체 재설계는 하지 않고, 저장/반응형 작업에 직접 필요한 공통 정책 적용만 포함한다.",
@@ -107,7 +107,7 @@ export const ROADMAP_0_24_12: RoadmapVersionDetail = {
   r2Impact: "none",
   r2ImpactNotes: [
     "R2 정책 변경 없음.",
-    "PDF/R2 저장, 재생성, 삭제 정책은 0.24.13 범위로 넘긴다.",
+    "PDF/R2 저장, 재생성, 삭제 정책은 R2/Simulator 테스트 기반 0.24.18과 PDF/R2 정책 0.24.19 범위로 넘긴다.",
   ],
   migrationRequired: false,
   migrationNotes: "0.24.12의 기본 전제는 DB Migration 없음이다. Migration이 필요해지면 중단하고 별도 범위로 재정의한다.",
@@ -140,9 +140,9 @@ export const ROADMAP_0_24_12: RoadmapVersionDetail = {
   ],
   recommendedCommitMessage: "feat: commonize workspace worker shell and save flow",
   nextVersionBoundary: [
-    "0.24.13은 workorder/material-order PDF, Worker/R2 저장, 임시/최종 PDF 정책을 다룬다.",
-    "0.24.13으로 supplier/material-order PDF의 금액 표시, 파일명, 재생성, R2 저장 정책을 넘긴다.",
-    "0.24.13으로 PDF 화면/PDF 파일 비교와 Worker/R2 실제 호출 검증을 넘긴다.",
+    "0.24.13은 기능 개발을 바로 이어가지 않고 문서/폴더 정리 2차를 다룬다.",
+    "0.24.18은 R2/Simulator 테스트 기반을 다루고, 0.24.19는 workorder/material-order PDF, Worker/R2 저장, 임시/최종 PDF 정책을 다룬다.",
+    "0.24.19로 supplier/material-order PDF의 금액 표시, 파일명, 재생성, R2 저장 정책과 PDF 화면/PDF 파일 비교를 넘긴다.",
     "0.24.12에서 해결하지 못한 modal/focus 전체 재설계는 별도 정책 결정 후 후속 버전으로 넘긴다.",
   ],
   completionConditions: [
@@ -164,7 +164,7 @@ export const ROADMAP_0_24_12: RoadmapVersionDetail = {
     verificationResult: "workspace-commonization 실행 대상",
     remainingIssues: [
       "UI/반응형 수동 확인 전에는 완료로 전환할 수 없다.",
-      "PDF/R2 저장 정책과 supplier/material-order PDF는 0.24.13에서 다룬다.",
+      "PDF/R2 저장 정책과 supplier/material-order PDF는 재배치 후 0.24.18~0.24.19에서 다룬다.",
     ],
     userConfirmationRequired: true,
     userConfirmationResult: "미확인",

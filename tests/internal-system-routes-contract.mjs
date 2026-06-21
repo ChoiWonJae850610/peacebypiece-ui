@@ -9,6 +9,9 @@ const roadmapFacade = fs.readFileSync("lib/internal/productizationRoadmap.ts", "
 const roadmapIndex = fs.readFileSync("lib/internal/roadmap/index.ts", "utf8");
 const roadmapDraft = fs.readFileSync("lib/internal/roadmap/roadmap-0.24.12.ts", "utf8");
 const roadmapDoc = fs.readFileSync("docs/productization-roadmap.md", "utf8");
+const runtimePolicy = fs.readFileSync("lib/runtime/runtimePolicy.ts", "utf8");
+const switchRoute = fs.readFileSync("app/api/dev/test-context/switch/route.ts", "utf8");
+const clearRoute = fs.readFileSync("app/api/dev/test-context/clear/route.ts", "utf8");
 const verifySafe = fs.readFileSync("tools/pipeline/verify-safe.ps1", "utf8");
 const finishVersion = fs.readFileSync("tools/pipeline/finish-version.ps1", "utf8");
 
@@ -20,10 +23,39 @@ for (const source of [idControlPage, devRedirectPage, roadmapPage]) {
 
 assert.match(idControlPage, /isDevTestContextEnabled/);
 assert.match(idControlPage, /DevTestConsoleClient/);
-assert.match(devRedirectPage, /isDevTestContextEnabled/);
+assert.doesNotMatch(devRedirectPage, /isDevTestContextEnabled/);
+assert.match(devRedirectPage, /canAccessIdControl\(\{\s*isSystemAdmin\s*\}\)/);
 assert.match(devRedirectPage, /redirect\("\/id-control"\)/);
 assert.doesNotMatch(devRedirectPage, /return\s+<DevTestConsoleClient/);
 assert.match(idControlClient, /href="\/roadmap"/);
+
+for (const [name, source] of [
+  ["runtime policy", runtimePolicy],
+  ["dev console redirect", devRedirectPage],
+]) {
+  assert.doesNotMatch(
+    source,
+    /NODE_ENV|VERCEL_ENV|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/,
+    `${name} must not restore runtime/env based page access gates`,
+  );
+}
+
+for (const fnName of [
+  "canAccessIdControl",
+  "canSwitchTestAccount",
+  "canViewFunctionsCatalog",
+  "canViewUICatalog",
+  "canViewDiagnostics",
+]) {
+  assert.match(runtimePolicy, new RegExp(`export function ${fnName}`), `runtime policy missing ${fnName}`);
+}
+
+assert.match(switchRoute, /isDevTestContextEnabled/);
+assert.match(switchRoute, /DEV_TEST_CONTEXT_DISABLED/);
+assert.match(clearRoute, /isDevTestContextEnabled/);
+assert.match(clearRoute, /WAFL_DEV_TEST_CONTEXT_COOKIE/);
+assert.doesNotMatch(switchRoute, /status:\s*404/);
+assert.doesNotMatch(clearRoute, /status:\s*404/);
 
 assert.match(roadmapPage, /PRODUCTIZATION_ROADMAP/);
 assert.match(roadmapPage, /href="\/id-control"/);

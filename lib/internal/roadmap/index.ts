@@ -1,6 +1,15 @@
 import { APP_VERSION } from "@/lib/constants/version";
 
 import { ROADMAP_0_24_12 } from "./roadmap-0.24.12";
+import { ROADMAP_0_24_13 } from "./roadmap-0.24.13";
+import { ROADMAP_0_24_14 } from "./roadmap-0.24.14";
+import { ROADMAP_0_24_15 } from "./roadmap-0.24.15";
+import { ROADMAP_0_24_16 } from "./roadmap-0.24.16";
+import { ROADMAP_0_24_17 } from "./roadmap-0.24.17";
+import { ROADMAP_0_24_18 } from "./roadmap-0.24.18";
+import { ROADMAP_0_24_19 } from "./roadmap-0.24.19";
+import { ROADMAP_0_24_20 } from "./roadmap-0.24.20";
+import { ROADMAP_0_24_21 } from "./roadmap-0.24.21";
 import type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapStatus, RoadmapVersionDetail } from "./types";
 
 export type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapResult, RoadmapStatus, RoadmapVersionDetail } from "./types";
@@ -124,105 +133,6 @@ const ROADMAP_0_24_11: RoadmapVersionDetail = {
   },
 };
 
-const ROADMAP_0_24_13: RoadmapVersionDetail = {
-  version: "0.24.13",
-  title: "작업지시서와 발주서 PDF",
-  status: "planned",
-  userSummary: ["작업지시서와 발주서 PDF 생성, 저장, 재생성 정책을 정한다."],
-  visibleChanges: ["PDF 다운로드/인쇄/보관 흐름이 업무 목적별로 정리된다."],
-  expectedUi: ["PDF 버튼 위치, 생성 상태, 실패 메시지를 화면과 PDF 결과가 일치하도록 정리한다."],
-  developmentPurpose: ["PDF Worker, R2 저장, 임시/최종 PDF 정책을 확정한다."],
-  developmentUiStructure: ["workorder PDF와 supplier/material-order PDF를 목적별로 분리한다."],
-  scope: ["PDF generation", "Worker/R2 integration", "filename rules", "regeneration policy"],
-  outOfScope: ["0.24.12 workspace shell/density 변경"],
-  implementationPrinciples: ["사람 눈 PDF 비교가 필요한 항목은 사용자 확인 전 완료하지 않는다."],
-  successConditions: ["PDF contract PASS", "manual PDF comparison complete"],
-  failureConditions: ["R2 write 정책 미확정 상태에서 production 저장", "화면/PDF 내용 불일치"],
-  cautions: ["R2 mutation은 명시 승인 필요"],
-  stopConditions: ["PDF 표시 정책 결정 필요", "R2 저장 정책 결정 필요"],
-  permissionImpact: "guarded",
-  permissionNotes: ["PDF 조회/생성 권한을 업무 권한과 일치시킨다."],
-  dbImpact: "pending_decision",
-  dbImpactNotes: ["PDF attachment 등록 정책에 따라 DB write가 필요할 수 있다."],
-  r2Impact: "pending_decision",
-  r2ImpactNotes: ["임시/최종 PDF R2 저장 정책 결정 필요"],
-  migrationRequired: false,
-  migrationNotes: "기본 전제는 DB Migration 없음",
-  automaticTests: ["PDF policy contract", "Worker/R2 adapter contract"],
-  manualTests: ["화면/PDF 비교", "다운로드/인쇄 QA"],
-  expectedChangeAreas: ["app/api/workorders/*generated*", "cloudflare/pdf-generator-worker/*", "lib/functions/pdfPolicyCatalog.ts"],
-  recommendedCommitMessage: "feat: finalize workorder and material order pdf flow",
-  nextVersionBoundary: ["0.24.14는 Functions, Simulator, PowerShell 자동화를 다룬다."],
-  completionConditions: ["verify-safe PASS", "PDF 수동 확인 완료", "commit/push 완료"],
-  result: { completedSummary: [], commitHash: "", verificationResult: "", remainingIssues: [], userConfirmationRequired: true, userConfirmationResult: "미확인" },
-};
-
-const ROADMAP_0_24_14: RoadmapVersionDetail = {
-  version: "0.24.14",
-  title: "Functions, Simulator, PowerShell 자동화 정리",
-  status: "planned",
-  userSummary: ["개발/테스트 도구와 simulator 실행 흐름을 안전하게 정리한다."],
-  visibleChanges: ["/functions, /id-control, PowerShell 메뉴에서 테스트 환경 상태를 더 명확히 본다."],
-  expectedUi: ["dev/test 도구는 production 차단과 system-admin guard를 계속 유지한다."],
-  developmentPurpose: ["Seed/Reset/Cleanup/R2 demo 실행 정책과 dry-run contract를 정리한다."],
-  developmentUiStructure: ["PowerShell fixed wrapper와 simulator command를 명확히 분리한다."],
-  scope: ["/functions", "Simulator", "PowerShell menus", "contract/E2E/Smoke/Permissions"],
-  outOfScope: ["일반 사용자 UI 기능 확장", "PDF 정책 결정"],
-  implementationPrinciples: ["execute mode는 명시 승인 없이는 실행하지 않는다."],
-  successConditions: ["functions/simulator/pipeline contracts PASS"],
-  failureConditions: ["production 접근", "destructive command guard 약화"],
-  cautions: ["DB/R2 mutation은 별도 승인 필요"],
-  stopConditions: ["Seed/Reset/Cleanup execute 필요", "production binding 필요"],
-  permissionImpact: "guarded",
-  permissionNotes: ["system-admin/dev-test guard 유지"],
-  dbImpact: "guarded",
-  dbImpactNotes: ["dry-run과 execute를 분리한다."],
-  r2Impact: "guarded",
-  r2ImpactNotes: ["R2 demo create/delete는 명시 승인 필요"],
-  migrationRequired: false,
-  migrationNotes: "DB Migration 없음",
-  automaticTests: ["functions contract", "simulator contract", "PowerShell parse"],
-  manualTests: ["destructive confirmation flow review", "Playwright report 확인"],
-  expectedChangeAreas: ["tools/pipeline/*", "tools/simulator/*", "tests/functions-*"],
-  recommendedCommitMessage: "feat: harden functions simulator automation",
-  nextVersionBoundary: ["0.24.15는 통합 검증 체크포인트다."],
-  completionConditions: ["verify-safe PASS", "commit/push 완료"],
-  result: { completedSummary: [], commitHash: "", verificationResult: "", remainingIssues: [], userConfirmationRequired: false, userConfirmationResult: "" },
-};
-
-const ROADMAP_0_24_15: RoadmapVersionDetail = {
-  version: "0.24.15",
-  title: "통합 검증 체크포인트",
-  status: "verification_pending",
-  userSummary: ["출시 전 남은 검증과 사용자 확인 항목을 한 번에 재계산한다."],
-  visibleChanges: ["주요 화면, 권한, PDF, responsive, DB/R2 통합 상태가 PASS/미완료로 정리된다."],
-  expectedUi: ["사용자 확인이 필요한 UI/PDF/responsive 항목은 완료와 분리해 표시한다."],
-  developmentPurpose: ["제품화 readiness를 다시 산정하고 남은 차단 항목을 확정한다."],
-  developmentUiStructure: ["검증 결과와 수동 QA 결과를 roadmap result에 반영한다."],
-  scope: ["Build", "Mutation Audit", "contract tests", "E2E", "Smoke", "Permissions", "responsive", "PDF", "DB/R2 integration"],
-  outOfScope: ["새 기능 추가"],
-  implementationPrinciples: ["검증 실패를 숨기지 않고 실패/skip 이유를 분리한다."],
-  successConditions: ["필수 자동 검증 PASS", "필수 수동 확인 완료", "origin/master sync"],
-  failureConditions: ["검증 실패 은폐", "사용자 확인 전 완료 처리"],
-  cautions: ["DB/R2 integration은 승인된 dev/test 대상에서만 수행한다."],
-  stopConditions: ["실제 production 접근 필요", "사용자 판단 필요"],
-  permissionImpact: "guarded",
-  permissionNotes: ["역할별 접근 결과를 구분한다."],
-  dbImpact: "guarded",
-  dbImpactNotes: ["dev/test 승인 범위 내 read 또는 rollback 가능한 smoke만 허용한다."],
-  r2Impact: "guarded",
-  r2ImpactNotes: ["R2 실제 작업은 별도 승인 필요"],
-  migrationRequired: false,
-  migrationNotes: "통합 검증 단계에서 migration이 발견되면 별도 버전으로 분리한다.",
-  automaticTests: ["full verify-safe matrix", "E2E", "Smoke", "Permissions"],
-  manualTests: ["real Google login", "role QA", "responsive QA", "PDF QA"],
-  expectedChangeAreas: ["tests/*", "docs/productization-roadmap.md", "lib/internal/roadmap/*"],
-  recommendedCommitMessage: "chore: complete productization validation checkpoint",
-  nextVersionBoundary: ["이후 버전은 통합 검증 결과에 따라 결정한다."],
-  completionConditions: ["검증 완료", "사용자 확인 완료", "commit/push 완료"],
-  result: { completedSummary: [], commitHash: "", verificationResult: "", remainingIssues: [], userConfirmationRequired: true, userConfirmationResult: "미확인" },
-};
-
 export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
   featureProgressPercent: 93,
@@ -233,7 +143,20 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
     "새 버전 기능 작업 전에는 lib/internal/roadmap의 canonical 상세 명세와 docs/codex-current-state.md를 먼저 읽는다. /roadmap은 사용자와 ChatGPT/Codex가 함께 보는 조회 전용 개발 기준판이며, 화면에서 편집·추가·삭제·저장 기능을 제공하지 않는다.",
   statusLabels: ROADMAP_STATUS_LABELS,
   impactLabels: ROADMAP_IMPACT_LABELS,
-  versions: [ROADMAP_0_24_10, ROADMAP_0_24_11, ROADMAP_0_24_12, ROADMAP_0_24_13, ROADMAP_0_24_14, ROADMAP_0_24_15],
+  versions: [
+    ROADMAP_0_24_10,
+    ROADMAP_0_24_11,
+    ROADMAP_0_24_12,
+    ROADMAP_0_24_13,
+    ROADMAP_0_24_14,
+    ROADMAP_0_24_15,
+    ROADMAP_0_24_16,
+    ROADMAP_0_24_17,
+    ROADMAP_0_24_18,
+    ROADMAP_0_24_19,
+    ROADMAP_0_24_20,
+    ROADMAP_0_24_21,
+  ],
 };
 
 export function getRoadmapVersionAnchor(version: string) {

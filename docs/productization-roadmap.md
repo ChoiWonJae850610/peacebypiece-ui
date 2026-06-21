@@ -10,6 +10,7 @@
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
+- Current planning policy: 1.0 전까지 `master` 단일 브랜치를 개발/QA 기준으로 사용하며, Vercel 배포본은 운영이 아니라 실기기 QA 환경으로 본다.
 
 `/roadmap` is now the shared development board for the user, ChatGPT, and Codex. It shows two levels of information in one read-only system-admin screen:
 
@@ -68,6 +69,8 @@ Completion must not be set unless implementation is done, actual verify-safe pas
 
 UI, responsive, and PDF work stays in `사용자 확인 필요` until human review is complete, even if automatic tests pass.
 
+0.24.13 이후 roadmap은 기존 기능 계획을 취소하지 않고 재배치한 것이다. PDF, R2, Functions, Simulator, 고객사 관리자, 실기기 QA 기본 기능은 유지하되, 기능 개발을 계속하기 전에 문서/폴더/정책/소스 리팩터링/자동화 구조를 명확히 편입한다. 각 버전은 하나의 큰 목표만 갖고, 감사 버전과 실제 수정 버전은 분리한다.
+
 ## 0.24.12 Current Work
 
 Version: `0.24.12`
@@ -99,7 +102,7 @@ Required development criteria:
 - 기존 권한 의미 유지
 - DB Migration 없음이 기본 전제
 - modal/focus 문제는 저장/반응형 작업에 직접 필요한 범위만 포함
-- PDF/R2 정책과 supplier/material-order PDF는 0.24.13으로 이월
+- PDF/R2 정책과 supplier/material-order PDF는 재배치 후 0.24.19로 이월
 
 0.24.12 적용 내용:
 
@@ -115,9 +118,15 @@ Required development criteria:
 | `0.24.10` | 시스템 관리자 저장공간과 자동화 기반 | 완료 | DB-backed storage usage and initial verification/finish wrappers |
 | `0.24.11` | 시스템 관리자 ID 제어와 roadmap 기준판 | 진행 중 | `/id-control`, `/roadmap`, canonical roadmap, post-finish handoff |
 | `0.24.12` | 일반 사용자 workspace 및 worker 공통화 | 사용자 확인 필요 | General user workspace/worker UI density, responsive shell, save flow |
-| `0.24.13` | 작업지시서와 발주서 PDF | 예정 | PDF, Worker/R2, temporary/final file policy |
-| `0.24.14` | Functions, Simulator, PowerShell 자동화 정리 | 예정 | Dev/test tooling and execute/dry-run safety |
-| `0.24.15` | 통합 검증 체크포인트 | 검증 대기 | Full validation and productization readiness recalculation |
+| `0.24.13` | 문서/폴더 정리 2차 | 예정 | Root/docs/current-state/index/archive and Vercel QA handoff documentation |
+| `0.24.14` | Functions 90% 구현/검증 정리 | 예정 | `/functions` catalog, PowerShell profile linkage, guarded command visibility |
+| `0.24.15` | 전체 화면/소스 리팩터링 감사 | 예정 | Audit app/features/components without broad implementation changes |
+| `0.24.16` | WAFL 컴포넌트 적용/공통화 1차 | 예정 | Apply shared page shell, section, button, filter, empty/loading/error states |
+| `0.24.17` | 소스 리팩터링 1차 | 예정 | Reduce duplicate utils, hardcoding, i18n gaps, and selected large files |
+| `0.24.18` | R2/Simulator 테스트 기반 | 예정 | Logical usage vs R2 objects, quota fixtures, cleanup preview, reconciliation dry-run |
+| `0.24.19` | PDF/R2 정책 및 PDF 생성 구조 | 예정 | Temporary/final PDF policy, generation timing, R2 path/delete policy, PDF comparison |
+| `0.24.20` | Functions/Simulator/PowerShell 자동화 확장 | 예정 | Stronger menu/profile/report/scenario launcher integration |
+| `0.24.21` | 통합 검증 체크포인트 | 검증 대기 | PC/iPad mini/Galaxy Tab/mobile QA, role access, Vercel QA, pre-customer backlog |
 
 ## Standard Completion Flow
 
@@ -135,10 +144,10 @@ Future version work should follow this flow:
 10. Generate the latest ZIP, repo-state, and build-result in `4. Newest`.
 11. Report the result.
 
-The normal wrapper commands for this workspace commonization work are:
+The normal wrapper commands for this roadmap/document contract work are:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile workspace-commonization
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Verify -Profile roadmap-development-contract
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Handoff
 ```
 
@@ -166,7 +175,10 @@ If artifact generation fails, do not revert the already completed commit or push
 - No production DB/R2 access or mutation is allowed during 0.24.12.
 - DB Migration is not part of 0.24.12.
 - Dependency and lockfile changes are not part of this checkpoint.
-- PDF/R2 policy and supplier/material-order PDF remain 0.24.13 work.
+- PDF/R2 policy and supplier/material-order PDF remain planned work and are now separated into R2/Simulator foundation at 0.24.18 and PDF/R2 policy at 0.24.19.
+- Functions/Simulator/PowerShell work is split into Functions catalog coverage at 0.24.14 and automation expansion at 0.24.20.
+- Source cleanup is split into audit-only 0.24.15, WAFL component application 0.24.16, and source refactoring 0.24.17.
+- Final real-device and pre-customer validation is 0.24.21.
 - UI/responsive/PDF completion requires manual confirmation when the roadmap detail says so.
 
 ## System-Admin Internal Access Baseline
