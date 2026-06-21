@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import ToastMessage, { type ToastTone } from "@/components/common/ToastMessage";
@@ -252,7 +253,12 @@ function MaterialList({
         </div>
         <div className="divide-y divide-[var(--pbp-border)]">
           {items.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm pbp-text-muted">등록된 {MATERIAL_KIND_LABELS[kind]} 항목이 없습니다.</div>
+            <div className="p-4">
+              <AdminEmptyState
+                title={`등록된 ${MATERIAL_KIND_LABELS[kind]} 항목이 없습니다.`}
+                className="shadow-none"
+              />
+            </div>
           ) : (
             items.map((item) => (
               <article key={item.id} className="grid gap-3 px-4 py-4 md:grid-cols-[1.2fr_0.7fr_0.7fr_0.8fr] md:items-center">

@@ -86,7 +86,7 @@ The following areas often need explicit user judgment and must not be silently f
 
 ## Codex Sprint Prompt Template
 
-Use this template after 0.24.16 is applied:
+Use `docs/project/codex-sprint-prompt.md` as the reusable Sprint instruction template after 0.24.17. The compact inline version below remains as a quick reference:
 
 ```text
 Read:

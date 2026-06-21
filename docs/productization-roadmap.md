@@ -2,10 +2,10 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.16`
-- APP_VERSION: `0.24.16`
+- Roadmap checkpoint version: `0.24.17`
+- APP_VERSION: `0.24.17`
 - Feature implementation progress: about `93%`
-- Productization readiness: `84%`
+- Productization readiness: `86%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -19,6 +19,10 @@
 
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
 
+
+## 0.24.17 Productization Sprint #1
+
+0.24.17 applies the first small productization implementation pass after the 0.24.15 audit and 0.24.16 operating-context checkpoint. It moves `AdminSettingsHub` payload/presentation helpers into a shared module, extracts `WaflUiCatalogPage` static types into a separate catalog type module, and replaces the materials screen's local empty-list message with the shared `AdminEmptyState`. It also adds the reusable Codex sprint prompt template at `docs/project/codex-sprint-prompt.md`. This version does not change runtime gates, permissions, DB schema, API contracts, R2/PDF policy, package metadata, or lockfiles.
 
 ## 0.24.16 Codex/GPT operating context checkpoint
 
@@ -157,6 +161,8 @@ Required development criteria:
 
 ## Version Roadmap
 
+Structured roadmap title tokens kept for contract checks: `문서/폴더 정리 2차`, `Functions 90% 구현/검증 정리`, `전체 화면/소스 리팩터링 감사`, `WAFL 컴포넌트 적용/공통화 1차`, `소스 리팩터링 1차`, `R2/Simulator 테스트 기반`, `PDF/R2 정책 및 PDF 생성 구조`, `Functions/Simulator/PowerShell 자동화 확장`, `통합 검증 체크포인트`.
+
 | Version | Title | Status | Boundary |
 |---|---|---|---|
 | `0.24.10` | 시스템 관리자 저장공간과 자동화 기반 | 완료 | DB-backed storage usage and initial verification/finish wrappers |
@@ -166,7 +172,7 @@ Required development criteria:
 | `0.24.14` | Functions 90% 구현/검증 정리 | 사용자 확인 필요 | `/functions` catalog, PowerShell profile linkage, guarded command visibility |
 | `0.24.15` | WAFL Productization Audit | 검증 대기 | Productization audit report and PB backlog without broad implementation changes |
 | `0.24.16` | Codex/GPT Productization Operating Context | 구현 완료 | Project context, decision log, productization guide, and release checklist |
-| `0.24.17` | 소스 리팩터링 1차 | 예정 | Reduce duplicate utils, hardcoding, i18n gaps, and selected large files |
+| `0.24.17` | 소스 리팩터링 1차 | 사용자 확인 필요 | Safe shared presentation/type extraction and materials empty-state commonization |
 | `0.24.18` | R2/Simulator 테스트 기반 | 예정 | Logical usage vs R2 objects, quota fixtures, cleanup preview, reconciliation dry-run |
 | `0.24.19` | PDF/R2 정책 및 PDF 생성 구조 | 예정 | Temporary/final PDF policy, generation timing, R2 path/delete policy, PDF comparison |
 | `0.24.20` | Functions/Simulator/PowerShell 자동화 확장 | 예정 | Stronger menu/profile/report/scenario launcher integration |

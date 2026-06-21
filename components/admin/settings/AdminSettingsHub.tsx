@@ -15,9 +15,7 @@ import WaflPageHero from "@/components/admin/common/WaflPageHero";
 import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
 import WaflSettingCard from "@/components/admin/common/WaflSettingCard";
 import WaflSettingsSectionGroup from "@/components/admin/common/WaflSettingsSectionGroup";
-import WaflSettingsTabs, {
-  type WaflSettingsTabTone,
-} from "@/components/admin/common/WaflSettingsTabs";
+import WaflSettingsTabs from "@/components/admin/common/WaflSettingsTabs";
 import {
   AdminStatusBadge,
   type AdminStatusBadgeTone,
@@ -34,10 +32,10 @@ import {
   ADMIN_SETTINGS_NOTICE_BY_ID,
   type AdminSettingsMenuId,
 } from "@/lib/admin/settings/adminSettingsHub";
-import { type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
+import type { AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
+import type { AdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
 import { formatStorageBytes } from "@/lib/billing/storageQuotaPolicy";
 import { formatPbpNumberWithUnit } from "@/lib/utils/formatters";
-import { type AdminAccountSettingsOverview } from "@/lib/admin/settings/adminAccountSettingsOverview";
 import AdminCompanyFilesPanel from "@/components/admin/settings/AdminCompanyFilesPanel";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
@@ -46,161 +44,30 @@ import {
   CUSTOMER_POLICY_DOCUMENTS,
   getRequiredPolicyDocumentCount,
   type CustomerPolicyDocument,
-  type CustomerPolicyDocumentCategory,
 } from "@/lib/policies/customerPolicyDocuments";
-
-type AdminCurrentCompanyPayload = {
-  ok?: boolean;
-  billing?: AdminBillingPlanOverview;
-  account?: AdminAccountSettingsOverview;
-};
-
-type CompanyAccountRequestStatus =
-  | "pending"
-  | "reviewing"
-  | "approved"
-  | "rejected"
-  | "cancelled";
-
-type CompanyAccountRequestType = "company_info_change" | "account_deactivation";
-
-type CompanyAccountRequestRecord = {
-  id: string;
-  requestType: CompanyAccountRequestType;
-  requestStatus: CompanyAccountRequestStatus;
-  requestTitle: string;
-  requestMessage: string;
-  reviewerName: string | null;
-  reviewedAt: string | null;
-  reviewMessage: string | null;
-  createdAt: string;
-};
-
-type CompanyAccountRequestsPayload = {
-  ok?: boolean;
-  requests?: CompanyAccountRequestRecord[];
-};
-
-type CompanySubscriptionSnapshot = {
-  id: string | null;
-  companyId: string;
-  planCode: string;
-  planLabel: string;
-  status: string;
-  statusLabel: string;
-  trialStartedAt: string | null;
-  trialEndsAt: string | null;
-  currentPeriodStartedAt: string | null;
-  currentPeriodEndsAt: string | null;
-  cancelScheduledAt: string | null;
-  canceledAt: string | null;
-  storageLimitBytes: number;
-  storageUsedBytes: number;
-  storageUsageRatio: number;
-  memberLimit: number;
-  activeMemberCount: number;
-  source: "company_subscriptions" | "company_fallback";
-  updatedAt: string | null;
-};
-
-type CompanySubscriptionPayload = {
-  ok?: boolean;
-  subscription?: CompanySubscriptionSnapshot;
-};
-
-type CompanyFeedbackType = "feature" | "bug" | "improvement";
-
-type CompanyFeedbackStatus = "received" | "reviewing" | "answered" | "closed";
-
-type CompanyFeedbackRequestRecord = {
-  id: string;
-  feedbackType: CompanyFeedbackType;
-  feedbackStatus: CompanyFeedbackStatus;
-  title: string;
-  message: string;
-  reviewerName: string | null;
-  reviewedAt: string | null;
-  responseMessage: string | null;
-  createdAt: string;
-};
-
-type CompanyFeedbackPayload = {
-  ok?: boolean;
-  requests?: CompanyFeedbackRequestRecord[];
-  feedback?: CompanyFeedbackRequestRecord;
-};
-
-type CustomerPolicyMarkdownDocument = {
-  id: string;
-  title: string;
-  subtitle: string;
-  category: CustomerPolicyDocumentCategory;
-  categoryLabel: string;
-  versionLabel: string;
-  effectiveDateLabel: string;
-  requiredForApproval: boolean;
-  sourceFileName: string;
-  sourceNote: string | null;
-  markdown: string;
-};
-
-type CustomerPolicyMarkdownPayload = {
-  ok?: boolean;
-  document?: CustomerPolicyMarkdownDocument;
-  error?: string;
-};
-
-const settingsMenuToneMap: Record<string, WaflSettingsTabTone> = {
-  blue: "info",
-  amber: "warning",
-  emerald: "success",
-  violet: "brand",
-};
-
-function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(date);
-}
-
-const policyCategoryTone: Record<
-  CustomerPolicyDocumentCategory,
-  AdminStatusBadgeTone
-> = {
-  service: "brand",
-  privacy: "info",
-  billing: "success",
-  data: "warning",
-  operation: "neutral",
-};
-
-function formatSettingsRequestDate(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-const requestStatusTone: Record<
-  CompanyAccountRequestStatus,
-  AdminStatusBadgeTone
-> = {
-  pending: "warning",
-  reviewing: "info",
-  approved: "success",
-  rejected: "danger",
-  cancelled: "neutral",
-};
+import {
+  formatDateTime,
+  formatPercent,
+  formatSettingsDateTime,
+  formatSettingsRequestDate,
+  policyCategoryTone,
+  requestStatusTone,
+  resolveSubscriptionStatusTone,
+  settingsMenuToneMap,
+  type AdminCurrentCompanyPayload,
+  type CompanyAccountRequestRecord,
+  type CompanyAccountRequestsPayload,
+  type CompanyAccountRequestStatus,
+  type CompanyAccountRequestType,
+  type CompanyFeedbackPayload,
+  type CompanyFeedbackRequestRecord,
+  type CompanyFeedbackStatus,
+  type CompanyFeedbackType,
+  type CompanySubscriptionPayload,
+  type CompanySubscriptionSnapshot,
+  type CustomerPolicyMarkdownDocument,
+  type CustomerPolicyMarkdownPayload,
+} from "@/lib/admin/settings/adminSettingsHubPresentation";
 
 function resolveRequestStatusLabel(
   status: CompanyAccountRequestStatus,
@@ -227,37 +94,6 @@ function resolveRequestTypeLabel(
       "계정 비활성화",
     );
   return t("settings.accountRequest.type.companyInfoChange", "회사 정보 변경");
-}
-
-function formatSettingsDateTime(value: string | null): string {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatPercent(value: number): string {
-  if (!Number.isFinite(value)) return "0%";
-  return `${Math.min(999, Math.max(0, Math.round(value * 100)))}%`;
-}
-
-function resolveSubscriptionStatusTone(status: string): AdminStatusBadgeTone {
-  if (status === "active" || status === "trialing") return "success";
-  if (
-    status === "past_due" ||
-    status === "payment_failed" ||
-    status === "cancel_scheduled"
-  )
-    return "warning";
-  if (status === "canceled" || status === "suspended") return "danger";
-  return "neutral";
 }
 
 function BillingPlanPanel({

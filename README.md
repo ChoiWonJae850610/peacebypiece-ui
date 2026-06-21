@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.16`
+- 기준 앱 버전: `0.24.17`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.16`은 Codex/GPT 공동 제품화 Sprint를 위한 프로젝트 운영 문서 체계를 고정한다.
+- 현재 작업 상태: `0.24.17`은 Productization Sprint #1로 WAFL 공통 UI와 source quality 정리를 작은 범위에서 적용한다.
 
 ## 개발 실행
 

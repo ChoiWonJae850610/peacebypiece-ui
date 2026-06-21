@@ -2,14 +2,14 @@
 
 ## Start Manifest
 
-- Current result version: `0.24.16`
-- Baseline before this version: `0.24.15`
+- Current result version: `0.24.17`
+- Baseline before this version: `0.24.16`
 - APP_VERSION source: `lib/constants/version.ts`
-- Current work version: `0.24.16`
-- Current work title: `WAFL Productization Audit`
+- Current work version: `0.24.17`
+- Current work title: `Productization Sprint #1`
 - Current branch policy: `master`, `origin/master` synchronized before automatic Finish
 - Vercel policy before 1.0: QA deployment, not customer production
-- DB migration: none for 0.24.16
+- DB migration: none for 0.24.17
 - R2/DB execute: not allowed without separate explicit approval
 
 Use this file as the first routing manifest only. For detailed rules, read the target files below instead of re-reading the whole repository.
@@ -115,6 +115,16 @@ Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/pu
 - Codex must read `AGENTS.md`, this current-state file, `docs/project/01-codex-context.md`, `docs/project/02-project-decisions.md`, `docs/project/03-productization.md`, `docs/project/04-release-checklist.md`, and the target roadmap detail before implementation.
 - This version does not perform broad UI refactoring, DB/R2/Seed/Reset/Cleanup, package changes, or policy changes.
 - Next implementation sprint should use the PB backlog and target roadmap detail instead of relying on chat memory.
+
+## 0.24.17 Productization Sprint #1
+
+- 0.24.17 starts the safe implementation pass for WAFL component/source quality cleanup.
+- `AdminSettingsHub` keeps its UI behavior but moves payload types, status tone maps, and formatting helpers into `lib/admin/settings/adminSettingsHubPresentation.ts`.
+- `WaflUiCatalogPage` keeps its rendered catalog but moves static type definitions into `app/ui/waflUiCatalogTypes.ts` as the first boundary for later data splitting.
+- `MaterialsWorkspacePage` replaces a screen-local empty list message with `AdminEmptyState`, keeping the same materials API and permission behavior.
+- `APP_VERSION`, roadmap/current-state docs, pending tests, and Sprint prompt template are aligned to 0.24.17.
+- DB/R2/Seed/Reset/Cleanup/Migration, runtime policy, permission policy, package metadata, and lockfiles are unchanged.
+- Manual confirmation remains needed only for the small `/workspace/materials` empty-state visual change.
 
 ## 0.24.15 Productization Audit Policy
 

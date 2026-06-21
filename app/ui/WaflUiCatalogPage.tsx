@@ -32,64 +32,15 @@ import WaflFilterBar, {
 import WaflNoticeBox from "@/components/admin/common/WaflNoticeBox";
 import WaflPageHero from "@/components/admin/common/WaflPageHero";
 import WaflSectionPanel from "@/components/admin/common/WaflSectionPanel";
-
-type WaflUiCatalogPageProps = {
-  appVersion: string;
-  runtimeMode: string;
-  isRuntimeAllowed: boolean;
-  allowedRuntimeModes: string[];
-};
-
-type CatalogSection = {
-  id: string;
-  title: string;
-  plainTitle: string;
-  description: string;
-  status: "guide" | "sampled" | "skeleton";
-};
-
-type QuickDecision = {
-  label: string;
-  component: string;
-  rule: string;
-  example: string;
-};
-
-type ComponentSpec = {
-  name: string;
-  path: string;
-  plainRule: string;
-  purpose: string;
-  props: string;
-  avoid: string;
-  screens: string;
-};
-
-type ScreenChecklist = {
-  screen: string;
-  routeHint: string;
-  purpose: string;
-  requiredComponents: string[];
-  checkItems: string[];
-  missingRisk: string;
-};
-
-type ComponentInventoryItem = {
-  name: string;
-  group: "Primitive" | "Pattern" | "Domain" | "Legacy";
-  role: string;
-  keepDecision: "유지" | "통합 후보" | "폐기 후보" | "전환 대상";
-  target: string;
-  priority: "높음" | "중간" | "낮음";
-  note: string;
-};
-
-type ComponentGroupGuide = {
-  group: ComponentInventoryItem["group"];
-  meaning: string;
-  rule: string;
-  examples: string;
-};
+import type {
+  CatalogSection,
+  ComponentGroupGuide,
+  ComponentInventoryItem,
+  ComponentSpec,
+  QuickDecision,
+  ScreenChecklist,
+  WaflUiCatalogPageProps,
+} from "./waflUiCatalogTypes";
 
 const catalogSections: CatalogSection[] = [
   {

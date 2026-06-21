@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_17: RoadmapVersionDetail = {
   version: "0.24.17",
   title: "소스 리팩터링 1차",
-  status: "planned",
+  status: "user_test_needed",
   userSummary: ["감사 결과를 바탕으로 중복 util, 하드코딩, i18n 누락, 대형 파일 일부를 정리한다."],
   visibleChanges: ["사용자 기능은 유지하되 코드 구조가 더 작고 추적 가능해진다."],
   expectedUi: ["UI 변경이 필요한 경우 범위를 작게 잡고 별도 확인 항목으로 표시한다."],
@@ -30,5 +30,21 @@ export const ROADMAP_0_24_17: RoadmapVersionDetail = {
   recommendedCommitMessage: "refactor: split high-noise source modules",
   nextVersionBoundary: ["0.24.18은 R2/Simulator 테스트 기반을 다룬다."],
   completionConditions: ["scoped refactor 완료", "required tests PASS", "DB/R2 mutation 없음", "commit/push 완료"],
-  result: { completedSummary: [], commitHash: "", verificationResult: "", remainingIssues: [], userConfirmationRequired: false, userConfirmationResult: "" },
+  result: {
+    completedSummary: [
+      "AdminSettingsHub의 payload 타입, 상태 tone, 날짜/퍼센트 포매터를 lib 공통 presentation 모듈로 승격했다.",
+      "WaflUiCatalogPage의 정적 타입을 별도 모듈로 분리해 대형 파일 분리의 첫 경계를 만들었다.",
+      "materials 목록의 빈 상태를 AdminEmptyState로 교체해 WAFL state 계열 사용을 늘렸다.",
+      "APP_VERSION과 문서/스프린트 템플릿을 0.24.17 기준으로 갱신했다.",
+    ],
+    commitHash: "최종 commit 후 결과 보고서에 기록",
+    verificationResult: "tsc --noEmit PASS, next build PASS, approved-workflow Verify roadmap-development-contract PASS.",
+    remainingIssues: [
+      "WaflUiCatalogPage의 정적 섹션 데이터 본문 분리는 다음 source quality sprint로 이월한다.",
+      "AdminSettingsHub 내부 패널 컴포넌트 분리는 동작 영향이 커질 수 있어 후속 작은 단위로 진행한다.",
+      "materials 빈 상태의 시각 표현은 사용자 확인이 필요하다.",
+    ],
+    userConfirmationRequired: true,
+    userConfirmationResult: "materials 목록 empty state 시각 확인 필요",
+  },
 };

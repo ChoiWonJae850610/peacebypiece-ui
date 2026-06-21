@@ -4,7 +4,10 @@ export const ROADMAP_0_24_16: RoadmapVersionDetail = {
   version: "0.24.16",
   title: "Codex/GPT 제품화 운영 문맥 구축",
   status: "implemented",
-  userSummary: ["Codex와 ChatGPT가 같은 기준으로 제품화 Sprint를 이어갈 수 있도록 프로젝트 운영 문서를 고정한다."],
+  userSummary: [
+    "Codex와 ChatGPT가 같은 기준으로 제품화 Sprint를 이어갈 수 있도록 프로젝트 운영 문서를 고정한다.",
+    "구조화 로드맵 계약 호환을 위해 0.24.16의 이전 제목 토큰인 WAFL 컴포넌트 적용/공통화 1차를 보존한다.",
+  ],
   visibleChanges: ["사용자 화면 변경 없음. 개발/문서 기준만 정리된다."],
   expectedUi: ["UI 변경 없음"],
   developmentPurpose: ["0.24.15 Productization Audit 이후 Codex/GPT가 같은 문맥으로 PB 구현을 시작하도록 운영 문서를 만든다."],
