@@ -1,4 +1,13 @@
-﻿# Pending tests — 0.23.81
+# Pending tests — 0.24.13
+
+- [ ] `docs/README.md`에서 현재 기준/보관/감사/정책 문서 역할이 모순 없이 보이는지 확인
+- [ ] `docs/codex-current-state.md`만 읽어도 다음 작업 시작 파일과 기본 제외 경로를 알 수 있는지 확인
+- [ ] `docs/현재기준/document-management.md`의 Vercel QA 흐름이 실제 1.0 전 작업 흐름과 맞는지 확인
+- [ ] `/roadmap`에서 APP_VERSION 0.24.13, 현재 작업 0.24.13, 다음 작업 0.24.14가 보이는지 확인
+- [ ] 0.24.14 Functions 작업을 시작할 때 보관문서 검색 없이 필요한 시작 문서가 충분한지 확인
+
+
+# Pending tests — 0.23.81
 
 - 활성 `system_users.system_admin` Google 이메일로 로그인 후 `/dev/test-console` 접근 확인
 - 같은 계정으로 `/ui`, `/functions` 접근 확인

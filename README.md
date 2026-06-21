@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.12`
+- 기준 앱 버전: `0.24.13`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.12`는 일반 사용자 workspace/worker 공통화와 Codex 작업 시작 매니페스트 정리를 포함한다.
+- 현재 작업 상태: `0.24.13`은 문서/폴더 정리 2차로 Codex 시작 문서, 현재 기준 문서, 보관 문서, Vercel QA 흐름을 정리한다.
 
 ## 개발 실행
 
@@ -26,6 +26,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 
 - 문서 인덱스: `docs/README.md`
 - 현재 기준 문서: `docs/현재기준/`
+- 문서 구조 기준: `docs/현재기준/document-management.md`
 - 정책 문서: `docs/정책문서/`
 - 보관 문서: `docs/보관문서/`
 - 정리/감사 문서: `docs/audits/`
@@ -36,10 +37,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 ## 현재 기준
 
 - 앱 표시 버전은 `lib/constants/version.ts`의 `APP_VERSION`을 기준으로 한다. `package.json`의 `version`은 npm package metadata다.
-- `docs/`에는 tracked 문서 656개가 있으며 root 문서는 180개다. 0.24.11 대규모 문서 cleanup은 3차로 종료하고, 남은 문서는 필요 시 개별 정리한다.
+- `docs/`에는 tracked 문서 656개가 있으며 root에는 최소 진입점만 둔다. 0.24.13부터 현재 판단은 `docs/codex-current-state.md`와 `docs/현재기준/document-management.md`를 우선한다.
 - `docs/codex-current-state.md`가 작업 유형별 진입 문서를 라우팅하고, 세부 기준은 `lib/internal/roadmap/`과 `docs/현재기준/`을 따른다.
-- `/id-control`은 내부 identity-control console의 현재 경로다. `/dev/test-console`은 production 차단과 명시 enable guard를 유지한다.
+- `/id-control`은 내부 identity-control console의 현재 경로다. `/dev/test-console`은 system_admin 정책 확인 후 `/id-control`로 이동하는 호환 경로다.
 - `/roadmap`은 system administrator 전용 read-only 화면이다. edit/save/delete, DB/R2 write, URL/query/localStorage mutation은 별도 정책 결정 없이 추가하지 않는다.
+
+
+## 1.0 전 QA 배포 흐름
+
+- 1.0 전까지 `master`는 개발/QA 기준 브랜치다.
+- Vercel 배포본은 고객 운영이 아니라 iPad, Galaxy Tab, mobile, PC 실기기 QA 환경으로 본다.
+- local/build/contract 검증 후 commit/push하고, Vercel 배포에서 수동 확인한다.
+- 문제가 발견되면 같은 버전 보완 또는 다음 버전 패치로 처리한다.
 
 ## DB 보조 파일
 

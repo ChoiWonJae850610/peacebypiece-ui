@@ -1,15 +1,16 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.11`
+- 기준 앱 버전: `0.24.13`
 - tracked docs 파일 수: `656`
 - docs root 파일 수: `180`
-- 정리 기준: root에는 현재 기준 문서, 최신 audit, roadmap, 운영 handoff만 남기고 버전별 완료 기록은 canonical 병합 후 archive 또는 삭제한다.
+- 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
 
 ## 1. 현재 기준 문서
 
 현재 개발, 검증, 운영 판단에서 먼저 확인할 문서는 `docs/현재기준/`에 둔다.
 
 - `docs/현재기준/README.md`
+- `docs/현재기준/document-management.md`
 - `docs/현재기준/testing-and-automation.md`
 - `docs/현재기준/simulator.md`
 - `docs/현재기준/wafl-ui-system.md`
@@ -29,6 +30,7 @@
 - 제품화 로드맵: `docs/productization-roadmap.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
+- document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
 - PowerShell pipeline guide: `tools/pipeline/README.md`
 
 ## 3. 정책 문서
@@ -55,7 +57,7 @@
 | docs/보관문서 | 400 |
 | docs/정책문서 | 32 |
 | docs/현재기준 | 34 |
-| docs/audits | 10 |
+| docs/audits | 11 |
 
 ## 6. 정리 원칙
 
@@ -67,7 +69,22 @@
 - exact duplicate와 일회성 결과 기록은 canonical 반영, 참조 0건, 정책/DB/권한/PDF 핵심 아님을 확인한 뒤 삭제한다.
 - DB/migration/lockfile/auth/permission/policy/legal/Cloudflare deploy 파일은 사용자 승인 없이 삭제하지 않는다.
 
-## 7. 검증
+
+## 7. Codex 검색 정책
+
+현재 구현·정책 판단을 할 때는 `docs/보관문서/**`, `docs/**/legacy/**`, `docs/**/deprecated/**`를 기본 제외한다. 과거 회귀 원인이나 삭제 근거를 확인해야 할 때만 보관 문서를 검색한다.
+
+작업 시작 순서는 `docs/codex-current-state.md` → 해당 `lib/internal/roadmap/roadmap-*.ts` → `docs/현재기준/` 관련 문서 → 필요한 경우 `docs/audits/` 순서다.
+
+## 8. Vercel QA 흐름
+
+1. local/build/contract 검증을 통과한다.
+2. 1.0 전까지는 `master`에 commit/push한다.
+3. Vercel 배포본을 운영이 아니라 실기기 QA 환경으로 본다.
+4. iPad, Galaxy Tab, mobile, PC에서 수동 확인한다.
+5. 문제는 같은 버전 보완 또는 다음 버전 패치로 처리한다.
+
+## 9. 검증
 
 repository cleanup 변경은 승인 자동화 wrapper를 사용한다.
 

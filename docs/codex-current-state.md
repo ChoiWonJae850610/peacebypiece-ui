@@ -2,13 +2,14 @@
 
 ## Start Manifest
 
-- Current result version: `0.24.12`
-- Baseline before this version: `0.24.11`
+- Current result version: `0.24.13`
+- Baseline before this version: `0.24.12`
 - APP_VERSION source: `lib/constants/version.ts`
-- Current work version: `0.24.12`
-- Current work title: `일반 사용자 workspace 및 worker 공통화`
+- Current work version: `0.24.13`
+- Current work title: `문서/폴더 정리 2차`
 - Current branch policy: `master`, `origin/master` synchronized before automatic Finish
-- DB migration: none for 0.24.12
+- Vercel policy before 1.0: QA deployment, not customer production
+- DB migration: none for 0.24.13
 - R2/DB execute: not allowed without separate explicit approval
 
 Use this file as the first routing manifest only. For detailed rules, read the target files below instead of re-reading the whole repository.
@@ -17,8 +18,8 @@ Use this file as the first routing manifest only. For detailed rules, read the t
 
 | Work type | 먼저 읽을 파일 | 기본으로 읽지 않아도 되는 파일 |
 | --- | --- | --- |
-| 0.24.12 workspace/worker | `lib/internal/roadmap/roadmap-0.24.12.ts`, `lib/responsive/useWorkspaceLayoutMode.ts`, `components/common/ui/Wafl*WorkspaceFrame.tsx`, related route/page file | `docs/보관문서/**`, old version result docs, PDF/R2 docs unless touched |
-| PDF / R2 next work | `lib/internal/roadmap/roadmap-0.24.13.ts` when added, `lib/functions/pdfPolicyCatalog.ts`, `cloudflare/README.md`, `lib/storage/r2/*` | legacy R2 demo upload notes unless investigating history |
+| Docs / folder cleanup | `lib/internal/roadmap/roadmap-0.24.13.ts`, `docs/README.md`, `docs/현재기준/document-management.md`, `docs/audits/document-structure-cleanup-0.24.13.md` | product feature source files unless referenced by changed docs |
+| Functions next work | `lib/internal/roadmap/roadmap-0.24.14.ts`, `lib/functions/catalog.ts`, `tools/pipeline/README.md`, `tools/pipeline/approved-workflow.ps1` | archived completed-feature history unless investigating a regression |
 | Simulator / Functions / QA | `lib/internal/roadmap/index.ts`, `tools/simulator/README.md`, `tools/pipeline/README.md`, `lib/functions/catalog.ts` | completed feature history and archived QA logs |
 | Pipeline / Git finish | `tools/pipeline/README.md`, `tools/pipeline/approved-workflow.ps1`, `tools/pipeline/verify-safe.ps1`, `tools/pipeline/finish-version.ps1` | UI component docs unless profile touches UI |
 | Docs cleanup / Codex optimization | `docs/README.md`, this file, `docs/productization-roadmap.md`, `tools/pipeline/README.md` | product feature source files unless referenced by changed docs |
@@ -45,6 +46,14 @@ Prefer current canonical sources over archived notes:
 4. `docs/현재기준/*`
 5. archived/historical docs
 
+## 0.24.13 Applied Scope
+
+- `APP_VERSION` moves to `0.24.13`.
+- Document entry points are clarified through `docs/README.md`, `docs/codex-current-state.md`, and `docs/현재기준/document-management.md`.
+- Historical and archived documents remain searchable only when explicitly needed; they are not default context.
+- Vercel before 1.0 is documented as QA deployment, so commit/push is required before iPad/mobile real-device verification.
+- No feature source, DB, R2, Seed, Reset, Cleanup, or Migration execution is included.
+
 ## 0.24.12 Applied Scope
 
 - `/worker` now uses the same fixed workspace shell boundary as `/workspace/workorders`.
@@ -65,7 +74,7 @@ Prefer current canonical sources over archived notes:
 | Roadmap data/page only | `roadmap-development-contract` | Read-only roadmap contract and handoff contract. |
 | System-admin internal routes | `system-admin-internal-access` | `/id-control`, `/roadmap`, `/ui`, `/functions` access guard. |
 | Pipeline wrapper only | `automation-infrastructure` | Approved workflow and repo-state publication contracts. |
-| Docs cleanup only | `repository-cleanup` | Use only when no product behavior changes. |
+| Docs cleanup only | `repository-cleanup` | Use only when no product behavior changes. 0.24.13 document structure cleanup belongs here. |
 | System storage usage | `system-admin-storage` | Storage usage DB metadata and system dashboard contracts. |
 
 Use:

@@ -2,10 +2,10 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.12`
-- APP_VERSION: `0.24.12`
+- Roadmap checkpoint version: `0.24.13`
+- APP_VERSION: `0.24.13`
 - Feature implementation progress: about `93%`
-- Productization readiness: `77%`
+- Productization readiness: `80%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -111,6 +111,37 @@ Required development criteria:
 - Codex Optimization Phase 1로 `docs/codex-current-state.md`를 짧은 작업 시작 매니페스트로 정리했다.
 - UI/반응형 수동 확인 전에는 완료로 전환하지 않는다.
 
+## 0.24.13 Current Work
+
+Version: `0.24.13`
+
+Title: 문서/폴더 정리 2차
+
+Status: 검증 대기
+
+User summary:
+
+- 기능 개발을 더 이어가기 전에 Codex가 읽는 문서와 폴더 기준을 다시 정리한다.
+- 현재 기준 문서, 보관 문서, 감사 문서, root 진입점의 역할을 구분한다.
+- 1.0 전까지 Vercel 배포본을 실기기 QA 환경으로 쓰는 흐름을 문서화한다.
+
+Required development criteria:
+
+- `APP_VERSION`은 `0.24.13`으로 갱신한다.
+- `docs/codex-current-state.md`가 첫 작업 시작 매니페스트 역할을 한다.
+- `docs/현재기준/document-management.md`가 문서 계층과 검색 제외 기준을 설명한다.
+- `docs/audits/document-structure-cleanup-0.24.13.md`가 대량 이동을 보류한 이유와 후속 기준을 기록한다.
+- 보관 문서와 legacy/history 문서는 기본 검색 제외 대상으로 문서화한다.
+- 1.0 전 `master` 단일 브랜치와 Vercel QA 흐름을 README/docs에 명시한다.
+- 기능 코드, DB, R2, Seed, Reset, Cleanup, Migration은 변경하지 않는다.
+
+0.24.13 적용 내용:
+
+- 문서 진입점과 현재 기준 문서의 역할을 정리했다.
+- 보관 문서 기본 제외와 root 문서 최소화 기준을 추가했다.
+- Vercel 배포본을 1.0 전 실기기 QA 환경으로 쓰는 절차를 문서화했다.
+- 다음 0.24.14 Functions 정리 작업의 읽기 경로를 고정했다.
+
 ## Version Roadmap
 
 | Version | Title | Status | Boundary |
@@ -118,7 +149,7 @@ Required development criteria:
 | `0.24.10` | 시스템 관리자 저장공간과 자동화 기반 | 완료 | DB-backed storage usage and initial verification/finish wrappers |
 | `0.24.11` | 시스템 관리자 ID 제어와 roadmap 기준판 | 진행 중 | `/id-control`, `/roadmap`, canonical roadmap, post-finish handoff |
 | `0.24.12` | 일반 사용자 workspace 및 worker 공통화 | 사용자 확인 필요 | General user workspace/worker UI density, responsive shell, save flow |
-| `0.24.13` | 문서/폴더 정리 2차 | 예정 | Root/docs/current-state/index/archive and Vercel QA handoff documentation |
+| `0.24.13` | 문서/폴더 정리 2차 | 검증 대기 | Root/docs/current-state/index/archive and Vercel QA handoff documentation |
 | `0.24.14` | Functions 90% 구현/검증 정리 | 예정 | `/functions` catalog, PowerShell profile linkage, guarded command visibility |
 | `0.24.15` | 전체 화면/소스 리팩터링 감사 | 예정 | Audit app/features/components without broad implementation changes |
 | `0.24.16` | WAFL 컴포넌트 적용/공통화 1차 | 예정 | Apply shared page shell, section, button, filter, empty/loading/error states |
