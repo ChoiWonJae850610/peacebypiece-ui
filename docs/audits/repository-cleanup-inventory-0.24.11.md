@@ -16,7 +16,7 @@ Tracked file count before cleanup: 1,871.
 
 | Area | Files |
 | --- | ---: |
-| docs | 668 |
+| docs | 662 |
 | lib | 567 |
 | components | 347 |
 | app | 141 |
@@ -34,20 +34,20 @@ Tracked file count before cleanup: 1,871.
 
 | Area | Files |
 | --- | ---: |
-| docs root | 307 |
-| docs/보관문서 | 293 |
+| docs root | 206 |
+| docs/보관문서 | 380 |
 | docs/정책문서 | 32 |
-| docs/현재기준 | 28 |
-| docs/audits | 8 |
+| docs/현재기준 | 34 |
+| docs/audits | 10 |
 
-Docs root still contains many version-specific implementation reports. The next cleanup should move them by manifest instead of deleting them.
+Docs root has been reduced through docs cleanup batch 1 and batch 2. Remaining version-specific implementation reports should continue to move by manifest instead of ad hoc deletion.
 
 ## Classification
 
 | Classification | Items |
 | --- | --- |
 | KEEP | `app/`, `components/`, `features/`, `lib/`, `tests/`, `scripts/`, active `tools/`, active `cloudflare/r2-upload-worker.js`, active `cloudflare/pdf-generator-worker/`, `pending-tests.md`, current docs |
-| MERGE | README/current-state drift, repeated build-fix/modal/workorder/material-order/WAFL UI docs, old handoff notes |
+| MERGE | README/current-state drift, remaining repeated release/build/QA docs, billing/storage docs |
 | ARCHIVE | docs root version reports, Playwright setup history, simulator version reports, billing/storage implementation reports |
 | DELETE-SAFE | exact duplicate `docs/보관문서/wafl-a-type/wafl-ui-system-0.19.50.md` after hash/ref check; tracked ignored legacy report after ref check |
 | DELETE-REVIEW | `pnpm-lock.yaml`, deprecated Cloudflare PDF single-file/example config, broad docs root archive moves, empty active-source folders |
@@ -112,7 +112,7 @@ The inspected migration themes are reflected in or compatible with `full_reset.s
 - `pnpm-lock.yaml` remains until npm-only package manager policy is explicitly confirmed.
 - `db/migrations/*` remains unchanged.
 - Deprecated Cloudflare PDF single-file/example config remains pending deploy/CI reference review.
-- Docs root bulk archive move is deferred to the manifest-based next cleanup step.
+- Docs cleanup batch 1 and batch 2 moved or deleted the approved build-fix, Playwright, simulator, WAFL UI, pipeline, workorder, material-order, and modal/focus batches under manifest limits.
 - Empty local folders are not Git-tracked and were not removed.
 
 ## Verification Plan
@@ -134,4 +134,4 @@ Use `tools/pipeline/verify-safe.ps1 -Profile repository-cleanup`. The profile ch
 
 ## Next Cleanup Step
 
-Use `docs/audits/docs-archive-manifest-0.24.11.md` to move docs root version reports into archive directories. Do not perform the move until the exact manifest is approved.
+Use `docs/audits/docs-archive-manifest-0.24.11.md` to move remaining docs root version reports into archive directories. Do not perform a new batch until the exact scope and limit are approved.

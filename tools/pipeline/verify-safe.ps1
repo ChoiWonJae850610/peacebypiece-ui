@@ -394,7 +394,10 @@ function InvokeRepositoryCleanupCheck {
     $requiredCanonicalDocNames = @(
         "testing-and-automation.md",
         "simulator.md",
-        "wafl-ui-system.md"
+        "wafl-ui-system.md",
+        "workorder.md",
+        "material-order.md",
+        "modal-and-focus.md"
     )
     foreach ($fileName in $requiredCanonicalDocNames) {
         $matches = @(Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter $fileName -ErrorAction SilentlyContinue | Where-Object {
@@ -409,7 +412,10 @@ function InvokeRepositoryCleanupCheck {
         @{ Directory = "qa-history"; FileName = "playwright-environment-setup-0.19.90.md" },
         @{ Directory = "qa-history"; FileName = "project-test-simulator-structure-0.23.72.md" },
         @{ Directory = "completed-features"; FileName = "wafl-ui-catalog-0.20.99.md" },
-        @{ Directory = "qa-history"; FileName = "pipeline-background-watcher-0.23.85.md" }
+        @{ Directory = "qa-history"; FileName = "pipeline-background-watcher-0.23.85.md" },
+        @{ Directory = "workorder"; FileName = "workorder-save-serialization-0.23.37.md" },
+        @{ Directory = "material-order"; FileName = "material-order-line-immediate-persistence-0.23.47.md" },
+        @{ Directory = "modal"; FileName = "modal-focus-input-policy-0.22.08.md" }
     )
     foreach ($target in $movedArchiveTargets) {
         $matches = @(Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter $target.FileName -ErrorAction SilentlyContinue | Where-Object {
@@ -426,7 +432,11 @@ function InvokeRepositoryCleanupCheck {
         "docs/wafl-ui-catalog-0.20.99.md",
         "docs/pipeline-background-watcher-0.23.85.md",
         "docs/build-fix-0.20.38.md",
-        "docs/codex-handoff-0.23.99.md"
+        "docs/codex-handoff-0.23.99.md",
+        "docs/workorder-save-serialization-0.23.37.md",
+        "docs/material-order-line-immediate-persistence-0.23.47.md",
+        "docs/modal-focus-input-policy-0.22.08.md",
+        "docs/full-smoke-qa-0.20.09.md"
     )
     foreach ($relativePath in $removedRootDocs) {
         if (Test-Path -LiteralPath (Join-Path $ProjectDir $relativePath) -PathType Leaf) {
@@ -436,10 +446,10 @@ function InvokeRepositoryCleanupCheck {
 
     $docsTotalCount = GetRepositoryCleanupDocsCount -RelativeRoot "docs"
     $docsRootCount = @(Get-ChildItem -LiteralPath $docsRoot -File -Filter "*.md" -ErrorAction SilentlyContinue).Count
-    if ($docsTotalCount -gt 664) {
+    if ($docsTotalCount -gt 662) {
         $failures.Add("docs total count did not stay within cleanup target: $docsTotalCount")
     }
-    if ($docsRootCount -gt 266) {
+    if ($docsRootCount -gt 206) {
         $failures.Add("docs root count did not decrease to cleanup target: $docsRootCount")
     }
 
@@ -452,7 +462,12 @@ function InvokeRepositoryCleanupCheck {
         "build-fix-modal-focus-0.20.62.md",
         "dev-test-console-audit-target-build-fix-0.23.79.md",
         "wafl-list-card-menu-build-fix-0.21.64.md",
-        "codex-handoff-0.23.99.md"
+        "codex-handoff-0.23.99.md",
+        "workorder-mobile-structure-0.20.28.md",
+        "workorder-mobile-structure-0.20.29.md",
+        "material-order-mobile-structure-0.20.30.md",
+        "material-order-mobile-structure-0.20.31.md",
+        "full-smoke-qa-0.20.09.md"
     )
     foreach ($fileName in $deletedDocs) {
         $matches = @(FindRepositoryCleanupText -Root "docs" -Pattern $fileName | Where-Object {
