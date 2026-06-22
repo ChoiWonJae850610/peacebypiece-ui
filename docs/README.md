@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.21.5`
+- 기준 앱 버전: `0.24.21.6`
 - tracked docs 파일 수: `669`
 - docs root 파일 수: `181`
 - 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/project/`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
@@ -54,6 +54,8 @@
 - Customer Signup, Consent, Approval and Trial Provisioning: `docs/project/20-customer-signup-consent-approval-trial-spec.md`
 - Public Website and Commercial Onboarding: `docs/project/21-public-website-commercial-onboarding-spec.md`
 - UI and Routing Remediation: `docs/project/22-ui-routing-remediation-spec.md`
+- Codex Productization Sprint Master Pack: `docs/project/23-codex-productization-sprint-master-pack.md`
+- Repository Cleanup Foundation: `docs/project/24-repository-cleanup-foundation.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
@@ -121,4 +123,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Finish -Profile repository-cleanup -CommitMessage "docs: consolidate billing storage and legacy QA history" -ExpectedAppVersion "0.24.11"
 ```
 
-- Codex Productization Sprint Master Pack: `docs/project/23-codex-productization-sprint-master-pack.md`

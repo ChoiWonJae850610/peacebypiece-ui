@@ -1,8 +1,8 @@
-# Codex Current State — 0.24.21.5
+# Codex Current State — 0.24.21.6
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.5`
+- 현재 버전: `0.24.21.6`
 - 다음 버전: `0.24.22`
 - 다음 작업: Codex가 Sprint A Productization UI Foundation(PB-005·PB-006·PB-010, 저장소 원통형, 회사 파일 상태)을 실제 구현
 - 먼저 읽기: `docs/project/23-codex-productization-sprint-master-pack.md`와 해당 Sprint의 canonical 명세
@@ -78,7 +78,7 @@ Prefer current canonical sources over archived notes:
 - 승인 후 회사, 최초 관리자, Trial 7일, 100MB quota, 멤버 3명 제한, 기본 catalog provisioning 순서를 정의한다.
 - provisioning 실패와 idempotent retry, 민감 파일 접근 감사 기준을 포함한다.
 - 실제 공개 홈페이지, 가입 API/UI, DB schema/migration, PG/결제, DB/R2 실행은 포함하지 않는다.
-- Next GPT documentation target is 0.24.21.3 public website and commercial onboarding information architecture.
+- 0.24.21.3에서 public website and commercial onboarding information architecture를 완료했다.
 
 
 ## 0.24.21.4 UI and Routing Remediation Contract
@@ -90,7 +90,7 @@ Prefer current canonical sources over archived notes:
 - Opaque identifiers do not replace session, tenant, role, permission, or resource-state authorization.
 - If implementation requires DB schema, migration, backfill, old-link breakage, or production mutation, Codex must stop for explicit approval.
 - No UI, route, DB, R2, Seed, Reset, Cleanup, or Migration implementation is included in 0.24.21.4.
-- Next GPT documentation target is 0.24.21.5 Codex Sprint Master Pack integration.
+- 0.24.21.5에서 Codex Sprint Master Pack 통합을 완료했다.
 
 
 ## 0.24.13 Applied Scope
@@ -214,3 +214,10 @@ Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/pu
 - Stable codes, idempotent seed, preservation of company-disabled settings, existing document references, dry-run evidence, and company-scoped retry are mandatory.
 - No DB/R2/Seed/Reset/Cleanup/Migration execution is included in 0.24.21.1.
 - Next GPT documentation target is 0.24.21.2 customer signup, policy consent, approval, Trial, and initial company provisioning flow.
+
+## Repository Cleanup Foundation
+
+- 기준 문서: `docs/project/24-repository-cleanup-foundation.md`
+- handoff ZIP은 generated outputs를 제외한다.
+- GitHub에서 정상인 한글 경로를 rename하지 않는다.
+- 대량 삭제·이동·소스 분해는 Codex Cleanup Sprint로 분리한다.

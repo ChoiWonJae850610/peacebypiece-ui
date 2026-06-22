@@ -23,6 +23,11 @@ const required = [
   "DB Migration:",
   "DB/R2 Executed:",
   "repo-state-$safeVersion-$timestamp",
+  "any path segment named reports",
+  "*.tsbuildinfo",
+  "playwright-report",
+  "test-results",
+  "artifacts",
 ];
 
 for (const token of required) {

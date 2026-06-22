@@ -1,43 +1,36 @@
-# Pending Tests — 0.24.21.5
+# Pending Tests — 0.24.21.6
 
-## 패치 적용 후 자동 검증
+## 자동 검증
 
+- [ ] `node tests/pipeline-repo-state-publication-contract.mjs`
+- [ ] `roadmap-development-contract`
 - [ ] `tsc --noEmit`
 - [ ] `next build`
-- [ ] `roadmap-development-contract`
-- [ ] 문서 경로/version 계약
 - [ ] Mutation Audit high-risk 0
-- [ ] package.json / package-lock.json 무변경
-- [ ] DB/R2/Seed/Reset/Cleanup/Migration 미실행
 
-## 수동 문서 확인
+## Handoff ZIP 실검증
 
-- [ ] `/roadmap`에서 현재 `0.24.21.5`, 다음 `0.24.22`가 표시된다.
-- [ ] `docs/README.md`에서 23번 Master Pack 링크가 정상이다.
-- [ ] 0.24.22는 Sprint A만 구현하도록 제한되어 있다.
-- [ ] Sprint A~F 각각에 범위·제외·중단 조건이 있다.
-- [ ] 자동 승인 가능 명령과 수동 승인/중단 명령이 분리되어 있다.
-- [ ] Build→Contract→Mutation Audit→Playwright→Vercel QA 순서가 명시되어 있다.
-- [ ] 미결정 정책이 Blocked Decision Queue에 남아 있다.
-- [ ] 이번 패치에 UI/API/route/DB/R2/seed/migration 구현이 없다.
+- [ ] PowerShell 메뉴 7로 새 전체 소스 ZIP과 repo-state를 생성한다.
+- [ ] ZIP에 `artifacts/`가 없다.
+- [ ] ZIP에 `playwright-report/`가 없다.
+- [ ] ZIP에 `test-results/`가 없다.
+- [ ] ZIP에 `reports/`가 없다.
+- [ ] ZIP에 `.wrangler/`가 없다.
+- [ ] ZIP에 `*.tsbuildinfo`가 없다.
+- [ ] `.env.example`은 포함되고 다른 `.env*`는 없다.
+- [ ] repo-state Exclude Rule Summary에 `reports`와 `*.tsbuildinfo`가 표시된다.
 
-## 0.24.22 Codex 시작 전 확인
+## 회귀 방지
 
-- [ ] 최신 `master = origin/master`, ahead 0, behind 0, working tree clean.
-- [ ] `docs/project/23-codex-productization-sprint-master-pack.md`를 읽는다.
-- [ ] Sprint A의 실제 대상 파일을 search evidence로 확정한다.
-- [ ] package/lockfile, schema/migration, production DB/R2 변경이 없는지 확인한다.
-- [ ] 사용자 미결정 항목을 구현값으로 고정하지 않는다.
-- [ ] Sprint B~F를 0.24.22 commit에 섞지 않는다.
+- [ ] GitHub의 한글 폴더·파일명이 변경되지 않았다.
+- [ ] `package.json`, `package-lock.json`, `pnpm-lock.yaml`이 변경되지 않았다.
+- [ ] DB/R2/Seed/Reset/Cleanup/Migration을 실행하지 않았다.
+- [ ] UI/API/route runtime 동작을 변경하지 않았다.
 
-## Blocked Decision Queue
+## 후속 Cleanup Sprint
 
-- [ ] 시스템 기본 분류/스펙 활성화와 단면/둘레 정책
-- [ ] 가입 사업자등록증·인증·Trial 결제·보존 정책
-- [ ] 브랜드·도메인·가격·문의·CTA·배포 분리·analytics
-- [ ] workorder public-id schema/migration 여부
-- [ ] 계정 종료 export/grace/purge 기간
-- [ ] Final/superseded PDF 보존기간
-- [ ] mandatory four-eyes production 명령
-- [ ] Final PDF 생성 가능 workflow 단계
-- [ ] 고객 공개 audit log와 incident escalation owner
+- [ ] 빈 폴더와 placeholder 경로를 tracked evidence로 재분류한다.
+- [ ] import graph 기반 orphan audit를 수행한다.
+- [ ] docs root/history/archive 이동안을 검증한다.
+- [ ] npm/pnpm canonical package manager를 확인한다.
+- [ ] 대형 파일 분해 우선순위를 Codex Sprint로 확정한다.

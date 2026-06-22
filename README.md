@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.21.5`
+- 기준 앱 버전: `0.24.21.6`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.21.5`는 0.24.22 이후 Codex Productization Sprint의 구현 순서, 승인·검증·중단·handoff 경계를 하나의 Master Pack으로 통합한다.
+- 현재 작업 상태: `0.24.21.6`은 Repository Cleanup Foundation으로, 전체 소스 handoff ZIP의 생성 산출물 제외 계약과 후속 cleanup 경계를 보강한다.
 
 ## 개발 실행
 
@@ -96,3 +96,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 - `pnpm-lock.yaml`, `package-lock.json`, dependency metadata는 명시 승인 없이 변경하지 않는다.
 - DB schema, migration, seed SQL, 인증/권한/정책/법무, tenant isolation은 별도 승인 없이 삭제, 이동, 완화하지 않는다.
 - 대량 문서 이동은 `docs/audits/docs-archive-manifest-0.24.11.md` 같은 manifest를 사용하고 승인된 범위 안에서 진행한다.
+
+- Repository Cleanup Foundation: `docs/project/24-repository-cleanup-foundation.md`

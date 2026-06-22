@@ -1,4 +1,4 @@
-﻿# ==========================================
+# ==========================================
 # PeaceByPiece Patch Auto Pipeline
 # Encoding: UTF-8 with BOM
 # ==========================================
@@ -395,7 +395,8 @@ function TestLocalRepoExportExcludedPath {
         "artifacts",
         ".tmp",
         "test-results",
-        "playwright-report"
+        "playwright-report",
+        "reports"
     )
 
     foreach ($segment in $lowerSegments) {
@@ -408,7 +409,7 @@ function TestLocalRepoExportExcludedPath {
         return $true
     }
 
-    if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt" -or $leaf -like "build-result-*.txt") {
+    if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt" -or $leaf -like "build-result-*.txt" -or $leaf -like "*.tsbuildinfo") {
         return $true
     }
 
@@ -448,6 +449,8 @@ function GetLocalRepoExportExcludeSummary {
         "any path segment named .tmp",
         "any path segment named test-results",
         "any path segment named playwright-report",
+        "any path segment named reports",
+        "*.tsbuildinfo",
         ".env, .env.* except .env.example",
         "generated ZIP files",
         "repo-state-*.txt",
@@ -907,7 +910,7 @@ function TestLocalRepoExportZipContract {
     try {
         $entryNames = @($archive.Entries | ForEach-Object { $_.FullName })
         $lowerEntryNames = @($entryNames | ForEach-Object { $_.ToLowerInvariant() })
-        $blockedSegments = @(".git", "node_modules", ".next", ".wrangler", "artifacts", ".tmp", "test-results", "playwright-report")
+        $blockedSegments = @(".git", "node_modules", ".next", ".wrangler", "artifacts", ".tmp", "test-results", "playwright-report", "reports")
 
         foreach ($entryName in $entryNames) {
             $segments = @($entryName.Trim("/") -split "/" | ForEach-Object { $_.ToLowerInvariant() })
@@ -922,7 +925,7 @@ function TestLocalRepoExportZipContract {
                 throw "ZIP contract 실패: env 파일 포함($entryName)"
             }
 
-            if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt" -or $leaf -like "build-result-*.txt") {
+            if ($leaf -like "*.zip" -or $leaf -like "repo-state-*.txt" -or $leaf -like "build-result-*.txt" -or $leaf -like "*.tsbuildinfo") {
                 throw "ZIP contract 실패: 생성물 포함($entryName)"
             }
         }
