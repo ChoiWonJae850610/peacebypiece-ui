@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.21`
+- 기준 앱 버전: `0.24.21.2`
 - tracked docs 파일 수: `669`
 - docs root 파일 수: `181`
 - 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/project/`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
@@ -51,6 +51,7 @@
 - Codex Ready Queue: `docs/project/17-codex-ready-queue.md`
 - Sprint Queue: `docs/project/18-sprint-queue.md`
 - System Default Catalog and Seed Specification: `docs/project/19-system-default-catalog-and-seed-spec.md`
+- Customer Signup, Consent, Approval and Trial Provisioning: `docs/project/20-customer-signup-consent-approval-trial-spec.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
@@ -81,7 +82,7 @@
 | docs/정책문서 | 32 |
 | docs/현재기준 | 34 |
 | docs/audits | 13 |
-| docs/project | 19 |
+| docs/project | 20 |
 
 ## 6. 정리 원칙
 

@@ -1,4 +1,4 @@
-# Pending Tests — 0.24.21.1
+# Pending Tests — 0.24.21.2
 
 ## 패치 적용 후 자동 검증
 
@@ -12,44 +12,52 @@
 
 ## 수동 문서·화면 확인
 
-- [ ] `/roadmap`에서 현재 `0.24.21.1`, 다음 `0.24.21.2`가 표시된다.
-- [ ] `docs/README.md`에서 19번 canonical 문서 링크가 정상이다.
-- [ ] 현재 system seed의 제품 유형 3개 경로 gap이 정확히 기록되어 있다.
-- [ ] 기본 분류, 사이즈 스펙, 신규 회사 provisioning, 기존 회사 backfill 계약이 서로 충돌하지 않는다.
-- [ ] 이번 패치에 SQL, schema, migration, seed 실행 또는 제품 코드 변경이 없다.
+- [ ] `/roadmap`에서 현재 `0.24.21.2`, 다음 `0.24.21.3`이 표시된다.
+- [ ] `docs/README.md`에서 20번 canonical 문서 링크가 정상이다.
+- [ ] Trial 7일, 100MB, 멤버 3명 기준이 기존 정책과 일치한다.
+- [ ] 가입 요청 상태와 승인 provisioning 순서가 서로 충돌하지 않는다.
+- [ ] 정책 동의가 문서별 version/evidence로 분리되어 있다.
+- [ ] 이번 패치에 공개 홈페이지, DB/API/UI, PG/결제 구현이 없다.
 
-## 사용자 결정이 필요한 항목 — 이번 문서
+## 사용자 결정이 필요한 항목 — 가입/승인
 
-- [ ] 속옷·액세서리 분류를 신규 고객사에 기본 활성화할지 여부.
-- [ ] 가슴·허리·엉덩이를 단면 기준으로 기본 제공하고 둘레는 선택 항목으로 둘지 여부.
-- [ ] 고객사에 시스템 기본 분류의 직접 이름 변경을 허용할지, 별칭만 허용할지 여부.
-- [ ] 기존 고객사에 새 시스템 기본 항목을 자동 enable할지, 고객사 관리자 확인 후 enable할지 여부.
+- [ ] 사업자등록증을 가입 요청 필수로 할지 여부.
+- [ ] 시스템 관리자 승인 전 이메일/휴대전화 인증 수준.
+- [ ] 카드 등록 없이 Trial을 시작할지 여부.
+- [ ] Trial 종료 후 읽기 전용 유예기간.
+- [ ] 거절·취소 가입 요청과 첨부파일 보존기간.
+- [ ] 동일 사용자의 복수 회사 관리자 허용 여부.
+- [ ] 가입 승인 명령을 mandatory four-eyes 대상으로 할지 여부.
+- [ ] 마케팅 동의 채널과 철회 방식.
 
 ## 기존 사용자 결정 대기 항목
 
-- [ ] 계정 종료 후 고객 export 가능 기간과 실제 데이터 purge 전 grace 기간.
-- [ ] Final PDF와 superseded PDF의 보존 기간.
-- [ ] Mandatory four-eyes 승인이 필요한 production 명령의 확정 목록.
-- [ ] Final workorder PDF 생성 가능 상태.
-- [ ] Final supplier/material-order PDF 생성 가능 상태.
-- [ ] 고객에게 공개할 audit log 범위.
-- [ ] production incident communication/escalation 최종 책임자.
+- [ ] 속옷·액세서리 기본 활성화 여부.
+- [ ] 가슴·허리·엉덩이 기본 단면/둘레 정책.
+- [ ] 시스템 기본 분류 이름 변경 또는 별칭 범위.
+- [ ] 기존 고객사 새 기본 항목 자동 enable 여부.
+- [ ] 계정 종료 후 export 가능 기간과 purge grace.
+- [ ] Final PDF와 superseded PDF 보존기간.
+- [ ] Mandatory four-eyes production 명령 목록.
+- [ ] Final workorder/supplier PDF 생성 가능 상태.
+- [ ] 고객 공개 audit log 범위.
+- [ ] production incident escalation 책임자.
 
-## 다음 버전 실제 작업 — 0.24.21.2
+## 다음 버전 실제 작업 — 0.24.21.3
 
-- [ ] 공개 홈페이지에서 고객사 가입 요청으로 진입하는 흐름.
-- [ ] 회사/최초 관리자 입력 필드와 중복 검증 기준.
-- [ ] 이용약관·개인정보·저장소/운영정책 필수/선택 동의.
-- [ ] 동의 문서 version, timestamp, evidence와 재동의 계약.
-- [ ] 가입 요청 draft/submitted/reviewing/changes_requested/approved/rejected/canceled 상태.
-- [ ] 시스템 관리자 승인 후 Trial, quota, 회사, 관리자, 기본 기준정보 provisioning 순서.
-- [ ] 결제 연결 시점과 미구현 경계.
+- [ ] 공개 홈페이지 사이트맵과 페이지 역할.
+- [ ] 홈, 기능, 요금제, 사용방법, 보안, 약관, 가입, 로그인 IA.
+- [ ] `wafl.co.kr`, `app.wafl.co.kr`, 관리자 도메인 분리안.
+- [ ] 홍보용 제품 화면 캡처 요구 목록.
+- [ ] 기능·가격·보안·Trial CTA 콘텐츠 계약.
+- [ ] 공개 사이트와 앱의 배포·인증 경계.
+- [ ] SEO, 문의, 전환 추적, 공개 금지 정보 기준.
+- [ ] Codex 구현용 public website Sprint 범위.
 
 ## 이번 버전에서 실행하지 않는 항목
 
-- SQL 작성 또는 실행 없음.
-- DB schema/migration/seed/reset/backfill 실행 없음.
-- 시스템 관리자 UI 구현 없음.
-- 가입/약관/결제 페이지 구현 없음.
-- PDF/R2 renderer 또는 production mutation 없음.
-- permission/runtime/API/dependency/lockfile 변경 없음.
+- 공개 홈페이지·가입 폼·시스템 관리자 Queue 구현 없음.
+- DB schema/migration/API/seed/provisioning 실행 없음.
+- PG·결제·세금계산서 구현 없음.
+- 사업자등록증 R2 업로드 변경 없음.
+- permission/runtime/dependency/lockfile 변경 없음.

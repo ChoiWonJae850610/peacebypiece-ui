@@ -2,8 +2,8 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.21.1`
-- APP_VERSION: `0.24.21.1`
+- Roadmap checkpoint version: `0.24.21.2`
+- APP_VERSION: `0.24.21.2`
 - Feature implementation progress: about `93%`
 - Productization readiness: `89%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
@@ -20,6 +20,12 @@
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
 
 
+
+## 0.24.21.2 고객사 가입·동의·승인·Trial Provisioning 계약
+
+기존 프로젝트의 고객사 승인, 정책 문서 version, 사용자별 동의 이력, Trial 7일/100MB/3명 정책을 공개 가입 요청 흐름과 연결한다. 가입 요청 상태, 시스템 관리자 Queue, 문서별 동의 evidence, 승인 후 회사·최초 관리자·Trial·quota·기본 catalog를 idempotent하게 생성하는 순서를 Codex 구현 입력으로 확정한다. 실제 공개 홈페이지, DB/API/UI, PG/결제, production mutation은 포함하지 않는다.
+
+다음 GPT 문서 버전은 `0.24.21.3`이며 공개 홈페이지 사이트맵, 요금제·기능·보안 콘텐츠, 도메인 분리, 상업 onboarding과 화면 캡처 요구사항을 정리한다.
 
 ## 0.24.21.1 시스템 기본 분류·사이즈 스펙·Seed 계약
 

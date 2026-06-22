@@ -1,11 +1,11 @@
-# Codex Current State — 0.24.21
+# Codex Current State — 0.24.21.2
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21`
-- 다음 버전: `0.24.22`
-- 다음 구현: PB-005/006/010 중심 Productization Sprint #2
-- 먼저 읽기: `docs/project/16-pb-breakdown.md`, `17-codex-ready-queue.md`, `18-sprint-queue.md`
+- 현재 버전: `0.24.21.2`
+- 다음 버전: `0.24.21.3`
+- 다음 작업: 공개 홈페이지·도메인·요금제·상업 onboarding 정보구조 문서화
+- 먼저 읽기: `docs/project/19-system-default-catalog-and-seed-spec.md`, `20-customer-signup-consent-approval-trial-spec.md`
 - 사용자 결정 대기 정책은 구현 범위에서 제외한다.
 
 
@@ -34,6 +34,7 @@ Use this file as the first routing manifest only. For detailed rules, read the t
 | Docs cleanup / Codex optimization | `docs/README.md`, this file, `docs/productization-roadmap.md`, `tools/pipeline/README.md` | product feature source files unless referenced by changed docs |
 | Productization audit | `lib/internal/roadmap/roadmap-0.24.15.ts`, `docs/audits/productization-audit-report-0.24.15.md`, `docs/productization-backlog.md`, `docs/productization-roadmap.md` | archived completed-feature history unless investigating a regression |
 | Release / QA planning | `docs/project/12-release-engineering.md`, `docs/project/13-qa-matrix.md`, `docs/project/14-playwright-plan.md`, `docs/project/15-browser-device-matrix.md` | archived QA history unless investigating a regression |
+| Customer signup / consent / approval | `docs/project/20-customer-signup-consent-approval-trial-spec.md`, `docs/정책문서/`, `docs/project/19-system-default-catalog-and-seed-spec.md` | archived signup notes unless investigating a conflict |
 
 ## Default Search Exclusions
 
@@ -56,6 +57,16 @@ Prefer current canonical sources over archived notes:
 3. this `docs/codex-current-state.md`
 4. `docs/현재기준/*`
 5. archived/historical docs
+
+## 0.24.21.2 Applied Scope
+
+- 공개 홈페이지 가입 요청부터 시스템 관리자 승인까지 상태 계약을 확정한다.
+- 필수/선택 정책 동의와 문서 version/hash/timestamp evidence를 분리한다.
+- 승인 후 회사, 최초 관리자, Trial 7일, 100MB quota, 멤버 3명 제한, 기본 catalog provisioning 순서를 정의한다.
+- provisioning 실패와 idempotent retry, 민감 파일 접근 감사 기준을 포함한다.
+- 실제 공개 홈페이지, 가입 API/UI, DB schema/migration, PG/결제, DB/R2 실행은 포함하지 않는다.
+- Next GPT documentation target is 0.24.21.3 public website and commercial onboarding information architecture.
+
 
 ## 0.24.13 Applied Scope
 
