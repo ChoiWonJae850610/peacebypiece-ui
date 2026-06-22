@@ -53,7 +53,24 @@ Three values remain distinct:
 
 The customer quota decision uses a documented logical policy. Physical reconciliation detects drift and must not silently rewrite billing data without an auditable operation.
 
-Company plans may define capacity, warning thresholds, upload blocking threshold, trash treatment, and retention. Seed/test companies should use varied registered usage values to verify usage graphs at multiple fill levels.
+The current commercial storage baseline is:
+
+| Plan | Included storage | Member limit | Export baseline |
+| --- | ---: | ---: | --- |
+| Trial | 100 MB | 3 | restricted |
+| Lite | 500 MB | 3 | monthly 1 |
+| Flow | 1.5 GB | 10 | monthly 3 |
+| Studio | 5 GB | 30 | monthly 10 |
+
+Additional storage is sold in 1 GB units at the currently documented baseline of KRW 7,000/month. A later pricing decision may revise price without changing the technical quota contract.
+
+- At 80% logical usage, show a warning without blocking normal work.
+- At 100%, block new file uploads and new persisted generated-file creation.
+- While blocked, allow reads, file deletion, trash emptying, export where entitled, and plan/storage upgrade.
+- Text-only workorder editing remains available unless a separate product policy explicitly blocks it.
+- Trash bytes count toward quota while recoverable.
+- Plan downgrade is rejected or deferred when current counted usage exceeds the target limit.
+- Seed/test companies use varied registered usage values to verify charts and warning states.
 
 ## Lifecycle
 
@@ -67,13 +84,17 @@ Company plans may define capacity, warning thresholds, upload blocking threshold
 
 ## Retention Defaults
 
-Exact commercial/legal periods require user approval. Until approved:
+The current documented baseline is:
 
-- no production purge automation is enabled;
-- retention values remain configuration/policy data, not hard-coded UI assumptions;
-- legal hold blocks purge;
-- account suspension and account deletion are separate states;
-- export/grace-period requirements are documented before destructive removal.
+- Customer trash retention: 30 days.
+- Before day 30, restore remains available when ownership and quota checks pass.
+- After day 30, an item becomes purge-eligible; production purge is not implied by elapsed time alone and remains guarded/audited.
+- Long-term nonpayment is handled through 30/60/90-day stages rather than immediate destructive deletion.
+- Service termination notice baseline: 30 days.
+- Suspension, closure request, grace/retention, and physical purge remain separate states.
+- Legal hold blocks purge.
+- Exact account-closure export/grace duration and final-PDF retention duration remain unresolved policy values.
+- No production purge automation is enabled until those remaining periods and approval controls are finalized.
 
 ## Download and Access
 

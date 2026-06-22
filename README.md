@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.19`
+- 기준 앱 버전: `0.24.20`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.19`는 PDF 사양, R2 저장 정책, 관리자 운영 설계를 canonical 문서로 확정한다.
+- 현재 작업 상태: `0.24.20`은 Release Engineering, QA Matrix, Playwright 계획, Browser/Device Matrix를 canonical 문서로 확정하고 0.24.19 정책의 기존 결정값을 정정한다.
 
 ## 개발 실행
 
@@ -40,6 +40,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
   - `docs/project/02-project-decisions.md`
   - `docs/project/03-productization.md`
   - `docs/project/04-release-checklist.md`
+  - `docs/project/05-productization-bible.md`
+  - `docs/project/06-architecture-guide.md`
+  - `docs/project/07-wafl-component-standard.md`
+  - `docs/project/08-release-readiness-matrix.md`
+  - `docs/project/09-pdf-specification.md`
+  - `docs/project/10-r2-storage-policy.md`
+  - `docs/project/11-admin-operations-design.md`
+  - `docs/project/12-release-engineering.md`
+  - `docs/project/13-qa-matrix.md`
+  - `docs/project/14-playwright-plan.md`
+  - `docs/project/15-browser-device-matrix.md`
 - 누적 테스트 항목: `pending-tests.md`
 
 ## 현재 기준

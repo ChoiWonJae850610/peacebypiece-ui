@@ -83,10 +83,15 @@ Do not log passwords, tokens, signed URLs, raw secrets, full private file conten
 
 ## Support Access
 
-- Default support uses metadata and user-provided evidence.
-- Any customer-content access is time-bounded, purpose-bound, minimally scoped, and visible in audit logs.
-- Impersonation clearly shows current identity/company and provides restore-to-original-session.
+- Default support uses metadata, logs, hashes, status codes, and user-provided evidence without opening customer content.
+- Customer-content access is allowed only for a named support, legal, security, or data-recovery case.
+- The operator must record customer, target resource, reason, requested scope, requester, approver where required, start time, expiry, actions, and result.
+- Access is time-bounded, purpose-bound, minimally scoped, and fully auditable.
+- System-administrator status alone does not grant unrestricted browse/download access.
+- View, download, export, impersonation, and mutation are separate capabilities.
+- Impersonation clearly shows effective/original identity and company and provides restore-to-original-session.
 - Production support tooling must not reuse dev/test seed shortcuts.
+- Emergency access may be separately defined, but it must be reviewed after the incident and must never bypass audit evidence.
 
 ## Storage Operations
 
@@ -113,9 +118,13 @@ A release view consumes the Release Readiness Matrix and shows gate evidence rat
 
 ## Decisions Still Required
 
-- commercial plan capacities and overage/blocking behavior;
-- retention/grace/purge periods;
-- exact support-content access policy;
-- four-eyes operations list;
+The following values are still product-owner decisions:
+
+- exact account-closure export/grace duration;
+- exact final-PDF retention and superseded-version retention;
+- exact production operations requiring mandatory four-eyes approval;
+- exact workflow states that permit final workorder and supplier-order PDF generation;
 - customer-visible audit scope;
 - production incident communication and escalation ownership.
+
+Plan capacities, the 80% warning/100% upload-block baseline, 30-day customer trash retention, and purpose-bound audited support access are existing policy baselines and are not open placeholders.

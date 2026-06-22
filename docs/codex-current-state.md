@@ -2,14 +2,14 @@
 
 ## Start Manifest
 
-- Current result version: `0.24.18`
-- Baseline before this version: `0.24.17`
+- Current result version: `0.24.20`
+- Baseline before this version: `0.24.19`
 - APP_VERSION source: `lib/constants/version.ts`
-- Current work version: `0.24.18`
-- Current work title: `Productization Canonical Standards`
+- Current work version: `0.24.20`
+- Current work title: `Release Engineering and QA Standards`
 - Current branch policy: `master`, `origin/master` synchronized before automatic Finish
 - Vercel policy before 1.0: QA deployment, not customer production
-- DB migration: none for 0.24.18
+- DB migration: none for 0.24.20
 - R2/DB execute: not allowed without separate explicit approval
 
 Use this file as the first routing manifest only. For detailed rules, read the target files below instead of re-reading the whole repository.
@@ -24,6 +24,7 @@ Use this file as the first routing manifest only. For detailed rules, read the t
 | Pipeline / Git finish | `tools/pipeline/README.md`, `tools/pipeline/approved-workflow.ps1`, `tools/pipeline/verify-safe.ps1`, `tools/pipeline/finish-version.ps1` | UI component docs unless profile touches UI |
 | Docs cleanup / Codex optimization | `docs/README.md`, this file, `docs/productization-roadmap.md`, `tools/pipeline/README.md` | product feature source files unless referenced by changed docs |
 | Productization audit | `lib/internal/roadmap/roadmap-0.24.15.ts`, `docs/audits/productization-audit-report-0.24.15.md`, `docs/productization-backlog.md`, `docs/productization-roadmap.md` | archived completed-feature history unless investigating a regression |
+| Release / QA planning | `docs/project/12-release-engineering.md`, `docs/project/13-qa-matrix.md`, `docs/project/14-playwright-plan.md`, `docs/project/15-browser-device-matrix.md` | archived QA history unless investigating a regression |
 
 ## Default Search Exclusions
 

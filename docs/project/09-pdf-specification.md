@@ -92,6 +92,14 @@ Minimum metadata:
 
 Automatic checks should cover model validation, permission guards, deterministic naming, idempotency, template registration, object-key construction, and failure rollback. Manual QA must compare screen data and rendered PDF on PC, iPad/tablet, and mobile download flows, including Korean typography, multi-page tables, images, print margins, and stale-final behavior.
 
+## Product Decisions Still Open
+
+- Exact final-generation state for workorder PDFs.
+- Exact final-generation state for supplier/material-order PDFs.
+- Final and superseded PDF retention periods after account closure or document replacement.
+
+These values must be decided before production final-PDF generation is enabled. Draft preview generation may be implemented separately behind existing permission and environment guards.
+
 ## Stop Conditions
 
 Stop implementation and request a separate decision when:

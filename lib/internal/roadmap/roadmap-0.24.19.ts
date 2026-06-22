@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_19: RoadmapVersionDetail = {
   version: "0.24.19",
   title: "PDF/R2 정책 및 PDF 생성 구조",
-  status: "verification_pending",
+  status: "completed",
   userSummary: ["작업지시서와 발주서 PDF의 임시본/최종본, 저장, 삭제, 생성 시점 정책을 정한다."],
   visibleChanges: ["PDF 버튼, 생성 상태, 다운로드/인쇄 결과가 화면 데이터와 일치하도록 정리된다."],
   expectedUi: ["PDF 출력 화면과 실제 PDF 파일을 비교해 사람이 확인할 수 있는 QA 항목을 남긴다."],
@@ -30,5 +30,5 @@ export const ROADMAP_0_24_19: RoadmapVersionDetail = {
   recommendedCommitMessage: "docs: define pdf r2 and admin operations policy",
   nextVersionBoundary: ["0.24.20은 Functions/Simulator/PowerShell 자동화를 확장한다."],
   completionConditions: ["canonical policy 문서 작성 완료", "roadmap/version 동기화", "required checks PASS", "commit/push 완료", "실제 PDF/R2 구현과 정책 결정 잔여 항목은 후속 PB로 유지"],
-  result: { completedSummary: ["PDF 사양, R2 저장 정책, 회사/시스템 관리자 운영 경계를 canonical 문서로 정리했다."], commitHash: "", verificationResult: "수동 패치 생성 완료; 적용 후 roadmap-development-contract 및 build 확인 필요", remainingIssues: ["PDF 엔진/템플릿 구현", "production R2 binding 및 reconciliation 구현", "요금제별 용량·보존기간·support access·four-eyes 정책 사용자 결정"], userConfirmationRequired: true, userConfirmationResult: "상업/운영 정책 결정 대기" },
+  result: { completedSummary: ["PDF 사양, R2 저장 정책, 회사/시스템 관리자 운영 경계를 canonical 문서로 정리했다.", "기존 정책 문서의 요금제 용량, 80% 경고/100% 업로드 차단, 휴지통 30일, 목적 제한 support access 기준을 canonical 문서에 반영했다."], commitHash: "910409d96a9e5f86dc2e134ae2748eb8de40f5ae", verificationResult: "0.24.19 commit/push 완료; 0.24.20에서 기존 정책값 정정", remainingIssues: ["PDF 엔진/템플릿 구현", "production R2 binding 및 reconciliation 구현", "계정 종료 export/grace 기간", "PDF final/superseded retention", "four-eyes 필수 명령 목록", "최종 PDF 생성 가능 상태"], userConfirmationRequired: true, userConfirmationResult: "실제 미결정 정책만 후속 사용자 결정 대기" },
 };
