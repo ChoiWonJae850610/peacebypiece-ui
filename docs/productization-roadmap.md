@@ -2,10 +2,10 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.17`
-- APP_VERSION: `0.24.17`
+- Roadmap checkpoint version: `0.24.21`
+- APP_VERSION: `0.24.21`
 - Feature implementation progress: about `93%`
-- Productization readiness: `86%`
+- Productization readiness: `89%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -19,6 +19,10 @@
 
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
 
+
+## 0.24.21 PB Breakdown 및 Codex Ready Queue
+
+0.24.21은 Productization Backlog를 Ready/Conditional/Blocked 구현 단위로 분해하고 Codex Ready Queue와 Sprint Queue를 확정한다. 0.24.22는 PB-005, PB-006, PB-010 중심 Productization Sprint #2로 진행한다. 기존 통합 QA 체크포인트는 삭제하지 않고 0.24.25 후보로 이월한다. 사용자 결정 대기 중인 final PDF 상태, 보존기간, production four-eyes 명령은 구현 queue에서 제외한다.
 
 ## 0.24.17 Productization Sprint #1
 

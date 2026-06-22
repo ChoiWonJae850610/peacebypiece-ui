@@ -1,4 +1,13 @@
-# Codex Current State
+# Codex Current State — 0.24.21
+
+## 현재 작업 기준
+
+- 현재 버전: `0.24.21`
+- 다음 버전: `0.24.22`
+- 다음 구현: PB-005/006/010 중심 Productization Sprint #2
+- 먼저 읽기: `docs/project/16-pb-breakdown.md`, `17-codex-ready-queue.md`, `18-sprint-queue.md`
+- 사용자 결정 대기 정책은 구현 범위에서 제외한다.
+
 
 ## Start Manifest
 

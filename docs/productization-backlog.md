@@ -1,4 +1,4 @@
-# Productization Backlog — 0.24.15
+# Productization Backlog — 0.24.21
 
 ## 기준
 
@@ -53,3 +53,14 @@
 0.24.16은 PB 구현을 바로 시작하기 전에 Codex/GPT 공동 작업 문맥을 프로젝트 문서로 고정한다. 이 작업은 PB-014(Productization audit 전용 contract test/회귀 방지)와 PB-017(PB 완료/보류/이월 상태 추적 규칙)의 기반 작업이다.
 
 다음 실제 구현 Sprint는 `docs/project/` 문서와 이 backlog를 읽은 뒤 PB-001, PB-005, PB-006 등 낮은 blast radius 항목부터 시작한다.
+
+
+## 0.24.21 PB 실행 준비 상태
+
+세부 기준은 `docs/project/16-pb-breakdown.md`를 따른다.
+
+- Ready: PB-005, PB-006, PB-010, PB-013
+- Conditional: PB-001, PB-002, PB-004, PB-011
+- Sprint #2 우선순위: PB-005 + PB-006 + PB-010
+- PB-002 final PDF/retention과 production purge는 사용자 결정 전 구현 queue에서 제외
+- 통합 실기기 QA는 0.24.25 후보로 보존
