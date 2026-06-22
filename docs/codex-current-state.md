@@ -2,14 +2,14 @@
 
 ## Start Manifest
 
-- Current result version: `0.24.17`
-- Baseline before this version: `0.24.16`
+- Current result version: `0.24.18`
+- Baseline before this version: `0.24.17`
 - APP_VERSION source: `lib/constants/version.ts`
-- Current work version: `0.24.17`
-- Current work title: `Productization Sprint #1`
+- Current work version: `0.24.18`
+- Current work title: `Productization Canonical Standards`
 - Current branch policy: `master`, `origin/master` synchronized before automatic Finish
 - Vercel policy before 1.0: QA deployment, not customer production
-- DB migration: none for 0.24.17
+- DB migration: none for 0.24.18
 - R2/DB execute: not allowed without separate explicit approval
 
 Use this file as the first routing manifest only. For detailed rules, read the target files below instead of re-reading the whole repository.
@@ -141,3 +141,11 @@ Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/pu
 - `functions-automation` is the canonical verify profile for catalog, storage, environment, PDF, and automation coverage contracts.
 - Seed, Reset, Cleanup, R2 mutation, and DB mutation stay guarded by dry-run/confirmation/fingerprint/prefix/service-code rules.
 - The catalog may describe executable commands, but it must not execute DB/R2/Seed/Reset/Cleanup during documentation or catalog verification.
+
+## 0.24.18 Productization Canonical Standards
+
+- `docs/project/05-productization-bible.md` defines the canonical productization principles, PB lifecycle, release gates, and ownership.
+- `docs/project/06-architecture-guide.md` defines layer boundaries, dependency direction, mutation rules, runtime/permission separation, and PDF/R2 architecture boundaries.
+- `docs/project/07-wafl-component-standard.md` defines WAFL component families, interaction, accessibility, responsive, and adoption rules.
+- `docs/project/08-release-readiness-matrix.md` records release conditions, current status, evidence, ownership, and blocking rules.
+- This version changes documents and roadmap/version metadata only. Runtime behavior, permissions, DB, R2, package metadata, and lockfiles remain unchanged.

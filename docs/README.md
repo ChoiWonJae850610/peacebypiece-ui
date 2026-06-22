@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.17`
+- 기준 앱 버전: `0.24.18`
 - tracked docs 파일 수: `662`
 - docs root 파일 수: `181`
 - 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/project/`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
@@ -36,6 +36,10 @@
 - Productization Guide: `docs/project/03-productization.md`
 - Release Checklist: `docs/project/04-release-checklist.md`
 - Codex Sprint Prompt Template: `docs/project/codex-sprint-prompt.md`
+- Productization Bible: `docs/project/05-productization-bible.md`
+- Architecture Guide: `docs/project/06-architecture-guide.md`
+- WAFL Component Standard: `docs/project/07-wafl-component-standard.md`
+- Release Readiness Matrix: `docs/project/08-release-readiness-matrix.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
