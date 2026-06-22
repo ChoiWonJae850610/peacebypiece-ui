@@ -52,6 +52,7 @@
 - Sprint Queue: `docs/project/18-sprint-queue.md`
 - System Default Catalog and Seed Specification: `docs/project/19-system-default-catalog-and-seed-spec.md`
 - Customer Signup, Consent, Approval and Trial Provisioning: `docs/project/20-customer-signup-consent-approval-trial-spec.md`
+- Public Website and Commercial Onboarding: `docs/project/21-public-website-commercial-onboarding-spec.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`

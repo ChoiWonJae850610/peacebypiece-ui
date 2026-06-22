@@ -1,11 +1,11 @@
-# Codex Current State — 0.24.21.2
+# Codex Current State — 0.24.21.3
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.2`
-- 다음 버전: `0.24.21.3`
-- 다음 작업: 공개 홈페이지·도메인·요금제·상업 onboarding 정보구조 문서화
-- 먼저 읽기: `docs/project/19-system-default-catalog-and-seed-spec.md`, `20-customer-signup-consent-approval-trial-spec.md`
+- 현재 버전: `0.24.21.3`
+- 다음 버전: `0.24.21.4`
+- 다음 작업: 저장소 원통형 UI, 파일 설정 중복 표시, workorder URL 식별자 등 UI·routing remediation 문서화
+- 먼저 읽기: `docs/project/20-customer-signup-consent-approval-trial-spec.md`, `21-public-website-commercial-onboarding-spec.md`
 - 사용자 결정 대기 정책은 구현 범위에서 제외한다.
 
 
@@ -35,6 +35,7 @@ Use this file as the first routing manifest only. For detailed rules, read the t
 | Productization audit | `lib/internal/roadmap/roadmap-0.24.15.ts`, `docs/audits/productization-audit-report-0.24.15.md`, `docs/productization-backlog.md`, `docs/productization-roadmap.md` | archived completed-feature history unless investigating a regression |
 | Release / QA planning | `docs/project/12-release-engineering.md`, `docs/project/13-qa-matrix.md`, `docs/project/14-playwright-plan.md`, `docs/project/15-browser-device-matrix.md` | archived QA history unless investigating a regression |
 | Customer signup / consent / approval | `docs/project/20-customer-signup-consent-approval-trial-spec.md`, `docs/정책문서/`, `docs/project/19-system-default-catalog-and-seed-spec.md` | archived signup notes unless investigating a conflict |
+| Public website / commercial onboarding | `docs/project/21-public-website-commercial-onboarding-spec.md`, `docs/project/20-customer-signup-consent-approval-trial-spec.md`, `docs/정책문서/` | internal system-admin implementation unless boundary verification is required |
 
 ## Default Search Exclusions
 
@@ -57,6 +58,17 @@ Prefer current canonical sources over archived notes:
 3. this `docs/codex-current-state.md`
 4. `docs/현재기준/*`
 5. archived/historical docs
+
+
+## 0.24.21.3 Applied Scope
+
+- `docs/project/21-public-website-commercial-onboarding-spec.md`가 public website와 상업 onboarding의 canonical 입력이다.
+- Home, Features, Pricing, Guide, Security, Terms, Signup, Login 사이트맵과 CTA 역할을 확정한다.
+- `wafl.co.kr`, `app.wafl.co.kr`, 비공개 system-admin host의 권장 경계를 정의한다.
+- Trial 7일, 100MB, 멤버 3명과 기존 요금제·quota 정책을 public pricing 표현과 연결한다.
+- 제품 캡처는 demo fixture만 사용하고 실제 고객 데이터, 내부 route, system-admin 정보는 공개하지 않는다.
+- public UI, 도메인 구매/DNS, 가입 API/UI, PG/결제, analytics SDK, production 배포는 포함하지 않는다.
+- Next GPT documentation target is 0.24.21.4 UI and routing remediation specification.
 
 ## 0.24.21.2 Applied Scope
 
