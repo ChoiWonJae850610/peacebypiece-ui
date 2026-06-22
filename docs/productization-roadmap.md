@@ -2,10 +2,10 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.21.2`
-- APP_VERSION: `0.24.21.2`
+- Roadmap checkpoint version: `0.24.21.5`
+- APP_VERSION: `0.24.21.5`
 - Feature implementation progress: about `93%`
-- Productization readiness: `89%`
+- Productization readiness: `92%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -19,6 +19,16 @@
 
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
 
+
+
+## 0.24.21.5 Codex Productization Sprint Master Pack
+
+0.24.18~0.24.21.4에서 확정한 제품화 기준을 Sprint A~F 실행 순서로 통합한다. 0.24.22는 Sprint A만 구현하며 관리자/worker WAFL 밀도, Functions 안전 UX, 저장소 원통형과 회사 파일 상태를 우선한다. Seed/Simulator, 가입·동의·승인, workorder routing, 공개 홈페이지, PDF/R2는 의존성과 사용자 결정 경계에 따라 후속 Sprint로 분리한다.
+
+- canonical input: `docs/project/23-codex-productization-sprint-master-pack.md`
+- 이번 버전은 문서/roadmap만 변경
+- DB/R2/Seed/Migration 실행 없음
+- 사용자 미결정 정책은 Blocked Decision Queue 유지
 
 
 ## 0.24.21.2 고객사 가입·동의·승인·Trial Provisioning 계약

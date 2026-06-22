@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.21.2`
+- 기준 앱 버전: `0.24.21.5`
 - tracked docs 파일 수: `669`
 - docs root 파일 수: `181`
 - 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/project/`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
@@ -120,3 +120,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Plan -Profile repository-cleanup -CommitMessage "docs: consolidate billing storage and legacy QA history" -ExpectedAppVersion "0.24.11"
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Finish -Profile repository-cleanup -CommitMessage "docs: consolidate billing storage and legacy QA history" -ExpectedAppVersion "0.24.11"
 ```
+
+- Codex Productization Sprint Master Pack: `docs/project/23-codex-productization-sprint-master-pack.md`

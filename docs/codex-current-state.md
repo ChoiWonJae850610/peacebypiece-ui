@@ -1,11 +1,11 @@
-# Codex Current State — 0.24.21.4
+# Codex Current State — 0.24.21.5
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.4`
-- 다음 버전: `0.24.21.5`
-- 다음 작업: 0.24.22 Codex Sprint Master Pack 통합 및 구현 순서·검증·중단 경계 확정
-- 먼저 읽기: `docs/project/22-ui-routing-remediation-spec.md`, `docs/project/19-system-default-catalog-and-seed-spec.md`, `20-customer-signup-consent-approval-trial-spec.md`, `21-public-website-commercial-onboarding-spec.md`
+- 현재 버전: `0.24.21.5`
+- 다음 버전: `0.24.22`
+- 다음 작업: Codex가 Sprint A Productization UI Foundation(PB-005·PB-006·PB-010, 저장소 원통형, 회사 파일 상태)을 실제 구현
+- 먼저 읽기: `docs/project/23-codex-productization-sprint-master-pack.md`와 해당 Sprint의 canonical 명세
 - 사용자 결정 대기 정책은 구현 범위에서 제외한다.
 
 
