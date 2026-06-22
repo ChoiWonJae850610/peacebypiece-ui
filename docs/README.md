@@ -53,6 +53,7 @@
 - System Default Catalog and Seed Specification: `docs/project/19-system-default-catalog-and-seed-spec.md`
 - Customer Signup, Consent, Approval and Trial Provisioning: `docs/project/20-customer-signup-consent-approval-trial-spec.md`
 - Public Website and Commercial Onboarding: `docs/project/21-public-website-commercial-onboarding-spec.md`
+- UI and Routing Remediation: `docs/project/22-ui-routing-remediation-spec.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
@@ -83,7 +84,7 @@
 | docs/정책문서 | 32 |
 | docs/현재기준 | 34 |
 | docs/audits | 13 |
-| docs/project | 20 |
+| docs/project | 21 |
 
 ## 6. 정리 원칙
 

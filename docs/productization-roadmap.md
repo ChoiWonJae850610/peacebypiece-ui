@@ -279,3 +279,20 @@ Status: 검증 대기
 - 제품 캡처, SEO, 문의, analytics 최소수집과 공개 금지 정보 기준을 정의한다.
 - 실제 public UI, 가입 API/UI, PG, DNS, production 배포는 Codex 후속 Sprint로 남긴다.
 - 다음 `0.24.21.4`는 저장소 원통형 UI, 설정 파일 중복 표시, workorder URL 식별자 등 UI·routing remediation 계약이다.
+
+## 0.24.21.4 Documentation Preparation
+
+Version: `0.24.21.4`
+
+Title: 저장소 UI·회사 파일 필드·Workorder Routing 계약
+
+Status: 검증 대기
+
+- 저장공간 원통형 usage visualization의 geometry, 상태, 접근성, responsive 기준을 고정한다.
+- 80% 경고와 100% 신규 업로드 제한을 기존 quota 정책과 연결한다.
+- 대표 이미지·사업자등록증은 항목명을 한 번만 표시하고 badge는 등록·검토 상태만 표현한다.
+- 작업지시서 URL은 순차 id나 page/index query 대신 opaque public identifier를 사용하도록 canonical 방향을 정한다.
+- refresh, direct link, back navigation, old route compatibility, tenant/permission 재검증 조건을 포함한다.
+- 실제 UI/routing/API 구현, DB schema/migration/backfill, R2 변경은 Codex 후속 Sprint로 남긴다.
+- 다음 `0.24.21.5`는 0.24.22 Codex Sprint Master Pack 통합과 구현 순서·검증·중단 경계 확정이다.
+

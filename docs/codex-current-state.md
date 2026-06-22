@@ -1,11 +1,11 @@
-# Codex Current State — 0.24.21.3
+# Codex Current State — 0.24.21.4
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.3`
-- 다음 버전: `0.24.21.4`
-- 다음 작업: 저장소 원통형 UI, 파일 설정 중복 표시, workorder URL 식별자 등 UI·routing remediation 문서화
-- 먼저 읽기: `docs/project/20-customer-signup-consent-approval-trial-spec.md`, `21-public-website-commercial-onboarding-spec.md`
+- 현재 버전: `0.24.21.4`
+- 다음 버전: `0.24.21.5`
+- 다음 작업: 0.24.22 Codex Sprint Master Pack 통합 및 구현 순서·검증·중단 경계 확정
+- 먼저 읽기: `docs/project/22-ui-routing-remediation-spec.md`, `docs/project/19-system-default-catalog-and-seed-spec.md`, `20-customer-signup-consent-approval-trial-spec.md`, `21-public-website-commercial-onboarding-spec.md`
 - 사용자 결정 대기 정책은 구현 범위에서 제외한다.
 
 
@@ -36,6 +36,7 @@ Use this file as the first routing manifest only. For detailed rules, read the t
 | Release / QA planning | `docs/project/12-release-engineering.md`, `docs/project/13-qa-matrix.md`, `docs/project/14-playwright-plan.md`, `docs/project/15-browser-device-matrix.md` | archived QA history unless investigating a regression |
 | Customer signup / consent / approval | `docs/project/20-customer-signup-consent-approval-trial-spec.md`, `docs/정책문서/`, `docs/project/19-system-default-catalog-and-seed-spec.md` | archived signup notes unless investigating a conflict |
 | Public website / commercial onboarding | `docs/project/21-public-website-commercial-onboarding-spec.md`, `docs/project/20-customer-signup-consent-approval-trial-spec.md`, `docs/정책문서/` | internal system-admin implementation unless boundary verification is required |
+| UI / routing remediation | `docs/project/22-ui-routing-remediation-spec.md`, storage/file foundation docs, workorder route source and contracts | archived visual history unless investigating regression |
 
 ## Default Search Exclusions
 
@@ -78,6 +79,18 @@ Prefer current canonical sources over archived notes:
 - provisioning 실패와 idempotent retry, 민감 파일 접근 감사 기준을 포함한다.
 - 실제 공개 홈페이지, 가입 API/UI, DB schema/migration, PG/결제, DB/R2 실행은 포함하지 않는다.
 - Next GPT documentation target is 0.24.21.3 public website and commercial onboarding information architecture.
+
+
+## 0.24.21.4 UI and Routing Remediation Contract
+
+- `docs/project/22-ui-routing-remediation-spec.md` is the canonical input for storage cylinder, company file fields, and workorder routing cleanup.
+- Storage usage keeps the existing quota source and presents normal, 80% warning, 100% upload-blocked, error, stale, and over-quota states.
+- Representative image and business registration fields show the resource name once; badges express only registration/review state.
+- Workorder detail routes should use a stable opaque public identifier rather than sequential ids or transient page/index query state.
+- Opaque identifiers do not replace session, tenant, role, permission, or resource-state authorization.
+- If implementation requires DB schema, migration, backfill, old-link breakage, or production mutation, Codex must stop for explicit approval.
+- No UI, route, DB, R2, Seed, Reset, Cleanup, or Migration implementation is included in 0.24.21.4.
+- Next GPT documentation target is 0.24.21.5 Codex Sprint Master Pack integration.
 
 
 ## 0.24.13 Applied Scope
