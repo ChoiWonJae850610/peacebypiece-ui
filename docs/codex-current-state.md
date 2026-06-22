@@ -168,3 +168,13 @@ Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/pu
 - `docs/project/11-admin-operations-design.md` separates company administrator and system administrator responsibilities and defines action classes, approval, audit, support access, incident, storage, and release operations.
 - This version is policy/documentation only. It does not activate PDF generation, production R2 mutation, DB/schema changes, support content access, or destructive administration.
 - Remaining user decisions include plan capacity/overage, retention/grace/purge periods, support content-access policy, and four-eyes operation scope.
+
+
+## 0.24.21.1 System Default Catalog and Seed Contract
+
+- `docs/project/19-system-default-catalog-and-seed-spec.md` is the canonical input for product taxonomy, garment measurement catalog, company provisioning, seed, and backfill work.
+- The current canonical seed has only three product paths: top/t-shirt/short-sleeve, bottom/pants/slacks, and outer/jacket/tailored. This is recorded as a productization gap, not fixed by this documentation patch.
+- Codex must investigate existing schema and repository support before creating SQL or migration.
+- Stable codes, idempotent seed, preservation of company-disabled settings, existing document references, dry-run evidence, and company-scoped retry are mandatory.
+- No DB/R2/Seed/Reset/Cleanup/Migration execution is included in 0.24.21.1.
+- Next GPT documentation target is 0.24.21.2 customer signup, policy consent, approval, Trial, and initial company provisioning flow.

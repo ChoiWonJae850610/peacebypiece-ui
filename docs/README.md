@@ -50,6 +50,7 @@
 - PB Breakdown: `docs/project/16-pb-breakdown.md`
 - Codex Ready Queue: `docs/project/17-codex-ready-queue.md`
 - Sprint Queue: `docs/project/18-sprint-queue.md`
+- System Default Catalog and Seed Specification: `docs/project/19-system-default-catalog-and-seed-spec.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
@@ -80,7 +81,7 @@
 | docs/정책문서 | 32 |
 | docs/현재기준 | 34 |
 | docs/audits | 13 |
-| docs/project | 18 |
+| docs/project | 19 |
 
 ## 6. 정리 원칙
 

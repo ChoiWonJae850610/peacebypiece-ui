@@ -2,8 +2,8 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.21`
-- APP_VERSION: `0.24.21`
+- Roadmap checkpoint version: `0.24.21.1`
+- APP_VERSION: `0.24.21.1`
 - Feature implementation progress: about `93%`
 - Productization readiness: `89%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
@@ -19,6 +19,13 @@
 
 The screen must stay read-only. Do not add edit, add, delete, save, drag-and-drop, localStorage canonical source, query mutation, DB write, or R2 write paths without a separate explicit policy decision.
 
+
+
+## 0.24.21.1 시스템 기본 분류·사이즈 스펙·Seed 계약
+
+현재 system standards seed의 생산품 분류가 3개 경로에 그치는 점을 제품화 gap으로 기록한다. 시스템 기본 분류와 고객사 사용자 정의값을 분리하고, 제품군별 기본 사이즈 스펙, 신규 고객사 provisioning, 기존 고객사 idempotent backfill, simulator fixture, 시스템 관리자 운영 화면의 요구사항을 Codex 구현 입력으로 확정한다. 실제 SQL, migration, seed 실행, production mutation은 포함하지 않는다.
+
+다음 GPT 문서 버전은 `0.24.21.2`이며 고객사 가입 요청, 약관 동의, 시스템 관리자 승인, Trial 시작과 초기 회사 provisioning 흐름을 정리한다. 실제 코드 구현 Sprint는 문서 준비 이후 Codex가 수행한다.
 
 ## 0.24.21 PB Breakdown 및 Codex Ready Queue
 
