@@ -149,3 +149,12 @@ Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/pu
 - `docs/project/07-wafl-component-standard.md` defines WAFL component families, interaction, accessibility, responsive, and adoption rules.
 - `docs/project/08-release-readiness-matrix.md` records release conditions, current status, evidence, ownership, and blocking rules.
 - This version changes documents and roadmap/version metadata only. Runtime behavior, permissions, DB, R2, package metadata, and lockfiles remain unchanged.
+
+
+## 0.24.19 PDF, R2, and Administrator Operations Policy
+
+- `docs/project/09-pdf-specification.md` defines workorder/supplier PDF families, versioned document models, draft/final behavior, permissions, idempotency, metadata, and QA evidence.
+- `docs/project/10-r2-storage-policy.md` defines tenant-safe object keys, storage classes, logical/physical usage, quota, lifecycle, retention, private download, and dry-run reconciliation.
+- `docs/project/11-admin-operations-design.md` separates company administrator and system administrator responsibilities and defines action classes, approval, audit, support access, incident, storage, and release operations.
+- This version is policy/documentation only. It does not activate PDF generation, production R2 mutation, DB/schema changes, support content access, or destructive administration.
+- Remaining user decisions include plan capacity/overage, retention/grace/purge periods, support content-access policy, and four-eyes operation scope.
