@@ -30,18 +30,38 @@ try {
   await client.query('BEGIN READ ONLY');
   console.log(`WAFL DB READ-ONLY AUDIT: ${mode}`);
   console.log(`Statements: ${statements.length}`);
-  let issueCount = 0;
+  let totalResultRows = 0;
+  let totalReportedIssues = 0;
   for (let i = 0; i < statements.length; i += 1) {
     const result = await client.query(statements[i]);
     const count = result.rowCount ?? result.rows.length;
-    issueCount += count;
+    totalResultRows += count;
+
+    if (mode === 'constraints') {
+      for (const row of result.rows) {
+        const issueCount = Number.parseInt(String(row.issue_count ?? '0'), 10);
+        if (!Number.isFinite(issueCount) || issueCount < 0) {
+          throw new Error(`Invalid issue_count returned by constraint audit: ${row.issue_count}`);
+        }
+        totalReportedIssues += issueCount;
+      }
+    }
+
     console.log(`\n[${i + 1}] rows=${count}`);
     if (count > 0) console.log(JSON.stringify(result.rows.slice(0, 20), null, 2));
     if (count > 20) console.log(`... ${count - 20} more rows omitted`);
   }
   await client.query('ROLLBACK');
-  console.log(`\nTotal result rows: ${issueCount}`);
-  process.exitCode = issueCount > 0 ? 2 : 0;
+  console.log(`\nTotal result rows: ${totalResultRows}`);
+
+  if (mode === 'constraints') {
+    console.log(`Total reported issues: ${totalReportedIssues}`);
+    process.exitCode = totalReportedIssues > 0 ? 2 : 0;
+  } else if (mode === 'reconciliation') {
+    process.exitCode = totalResultRows > 0 ? 2 : 0;
+  } else {
+    process.exitCode = 0;
+  }
 } catch (error) {
   try { await client.query('ROLLBACK'); } catch {}
   throw error;
