@@ -1,20 +1,17 @@
-# Pending Tests — 0.24.21.12
+# Pending Tests — 0.24.21.13
 
-## 자동 확인 완료
-- `node tests/db-readonly-audit-menu-contract.mjs`
-- package.json JSON parse
-- SQL runner SELECT/WITH allowlist 및 mutation token block 계약
-- flat patch ZIP/UTF-8 검증
+## 수정 확인
+- `roadmap-0.24.21.12.ts`가 `RoadmapVersionDetail` 정식 필드만 사용하도록 수정됨
+- `dbNotes`, `storageImpact`, `storageNotes`, `testPlan`, `files` 제거
+- `dbImpactNotes`, `r2Impact`, `r2ImpactNotes`, `migrationRequired`, `automaticTests`, `manualTests`, `expectedChangeAreas`, `result` 추가
 
 ## 사용자 로컬 확인 필요
-1. PowerShell 개발/테스트 도구 메뉴에 30~32가 표시되는지
-2. 승인된 dev/test DB에서 메뉴 30 실행
-3. 메뉴 31 실행
-4. 메뉴 32 실행
-5. production runtime 또는 fingerprint mismatch에서 실행이 차단되는지
-6. `newest-result`에 결과 파일이 생성되는지
-7. canonical pipeline, TypeScript, build 통과
+1. `npm run build` 통과
+2. `node tests/db-readonly-audit-menu-contract.mjs` 통과
+3. `/roadmap` 현재 버전 `0.24.21.13`, 다음 버전 `0.24.22` 확인
+4. PowerShell 메뉴 30~32 유지 확인
+5. 정상 시 commit 후 `origin/master` push
 
-## 주의
-- 메뉴 30~32는 읽기 전용이지만 실제 dev/test DB 연결이 필요하다.
-- 결과 파일에는 내부 식별자가 포함될 수 있으므로 외부 공유 금지.
+## DB/R2
+- DB Migration 없음
+- DB/R2 접근·변경 없음
