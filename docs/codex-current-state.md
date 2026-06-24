@@ -1,8 +1,8 @@
-# Codex Current State — 0.24.21.6
+# Codex Current State — 0.24.21.8
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.6`
+- 현재 버전: `0.24.21.8`
 - 다음 버전: `0.24.22`
 - 다음 작업: Codex가 Sprint A Productization UI Foundation(PB-005·PB-006·PB-010, 저장소 원통형, 회사 파일 상태)을 실제 구현
 - 먼저 읽기: `docs/project/23-codex-productization-sprint-master-pack.md`와 해당 Sprint의 canonical 명세
@@ -221,3 +221,11 @@ Because 0.24.12 includes UI/responsive behavior, stop before automatic commit/pu
 - handoff ZIP은 generated outputs를 제외한다.
 - GitHub에서 정상인 한글 경로를 rename하지 않는다.
 - 대량 삭제·이동·소스 분해는 Codex Cleanup Sprint로 분리한다.
+
+
+## 한글 / Unicode 인코딩 기준
+
+- canonical 문서: `docs/project/25-korean-unicode-encoding-standard.md`
+- 일반 소스·문서는 UTF-8, Windows PowerShell 스크립트는 UTF-8 BOM을 사용한다.
+- GitHub에서 정상인 한글 경로는 ZIP 분석 도구의 깨진 표시만 보고 rename하지 않는다.
+- `node tests/unicode-encoding-contract.mjs`로 decode, U+FFFD, 경로 round-trip과 PowerShell BOM을 검증한다.

@@ -164,3 +164,15 @@
 ## Tool And Approval Settings
 - Codex approval settings cannot be changed from this file, and the Codex app OS execution approval UI cannot be bypassed by repository rules. The recommended operating posture is: auto-allow repository file reads, safe scoped edits, read-only Git commands, and safe validation; ask for network writes, Git index/history/remote changes, dependency changes, DB/R2 mutation, production access, and destructive commands.
 - Use wrappers to reduce approval count, not to broaden permission. Do not encourage broad always-approve prefixes such as all `powershell`, all `node`, or all `git`. Prefer exact read/validation commands or version-scoped wrapper commands.
+
+
+## Korean And Unicode Encoding
+- General source, documentation, JSON, YAML, SQL, and configuration text must be UTF-8 with LF line endings.
+- PowerShell `.ps1`, `.psm1`, and `.psd1` files executed by Windows PowerShell 5.1 must be UTF-8 with BOM.
+- Preserve Korean and other Unicode file and folder names. Do not rename them to English only to avoid encoding issues.
+- Treat GitHub and `git ls-files` as the path source of truth. Do not rename a path solely because a ZIP extraction or analysis tool displays mojibake.
+- Never mass-rewrite files through an encoding conversion command without a manifest, byte-level evidence, and explicit approval.
+- Repair corrupted Korean text only when the original can be proven from Git history, GitHub, or another canonical source. Do not guess missing text.
+- Before finishing any patch that touches Korean paths or text, run `node tests/unicode-encoding-contract.mjs`. For PowerShell changes, also run `node tests/pipeline-powershell-encoding-contract.mjs`.
+- Patch ZIPs and full handoff ZIPs must preserve Unicode entry names. Verify Korean paths after ZIP creation before delivery.
+- The canonical detailed standard is `docs/project/25-korean-unicode-encoding-standard.md`.

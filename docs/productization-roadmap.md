@@ -2,8 +2,8 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.21.6`
-- APP_VERSION: `0.24.21.6`
+- Roadmap checkpoint version: `0.24.21.8`
+- APP_VERSION: `0.24.21.8`
 - Feature implementation progress: about `93%`
 - Productization readiness: `92%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
@@ -307,9 +307,17 @@ Status: 검증 대기
 - 다음 `0.24.21.5`는 0.24.22 Codex Sprint Master Pack 통합과 구현 순서·검증·중단 경계 확정이다.
 
 
-## 0.24.21.6 — Repository Cleanup Foundation
+## 0.24.21.8 — Repository Cleanup Foundation
 
 - handoff ZIP generated-output 제외 계약 보강
 - 한글 경로 no-rename 정책
 - 빈 폴더·문서·package manager·대형 파일 cleanup 경계
 - 다음 구현 버전: 0.24.22 Codex Sprint A
+
+
+## 한글 / Unicode 인코딩 기준
+
+- canonical 문서: `docs/project/25-korean-unicode-encoding-standard.md`
+- 일반 소스·문서는 UTF-8, Windows PowerShell 스크립트는 UTF-8 BOM을 사용한다.
+- GitHub에서 정상인 한글 경로는 ZIP 분석 도구의 깨진 표시만 보고 rename하지 않는다.
+- `node tests/unicode-encoding-contract.mjs`로 decode, U+FFFD, 경로 round-trip과 PowerShell BOM을 검증한다.
