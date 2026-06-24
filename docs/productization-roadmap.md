@@ -1,9 +1,15 @@
+# Productization Roadmap Authority
+
+> Active baseline: `0.24.21.17`. Next implementation: `0.24.22` DB Foundation.
+> The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
+> Sections below that describe 0.24.22 as UI-first, Productization Sprint #2, or PB-005/006/010 are historical records and must not drive implementation.
+
 
 ## 0.24.21.15 pre-Codex policy gate
 
 - Final policy source: `docs/project/26-final-policy-decisions-and-master-todo.md`.
 - Reconciliation audit: `docs/project/30-pre-codex-policy-reconciliation.md`.
-- Next implementation version remains `0.24.22` Sprint A.
+- Next implementation version is `0.24.22` Sprint A — Database Foundation and Authority Alignment.
 # Productization Roadmap
 
 ## 0.24.21.16 — Pre-Codex Integrated Master Plan
@@ -21,7 +27,7 @@
 - read-only reconciliation SQL과 실행 금지 safe DDL draft를 제공한다.
 - membership, billing, workorder URL, attachment/PDF lifecycle, deletion, category/size/POM 구조의 staged migration·rollback 기준을 확정한다.
 - DB/R2/production 실행과 migration 적용은 하지 않는다.
-- 다음 버전은 0.24.22 Codex Sprint A Productization UI Foundation이다.
+- [SUPERSEDED HISTORICAL RECORD] 당시 다음 버전은 0.24.22 UI Foundation으로 계획했으나, 현재는 0.24.22 DB Foundation으로 대체됐다.
 
 # PeaceByPiece / WAFL Productization Roadmap
 
@@ -57,7 +63,7 @@ The screen must stay read-only. Do not add edit, add, delete, save, drag-and-dro
 
 ## 0.24.21.5 Codex Productization Sprint Master Pack
 
-0.24.18~0.24.21.4에서 확정한 제품화 기준을 Sprint A~F 실행 순서로 통합한다. 0.24.22는 Sprint A만 구현하며 관리자/worker WAFL 밀도, Functions 안전 UX, 저장소 원통형과 회사 파일 상태를 우선한다. Seed/Simulator, 가입·동의·승인, workorder routing, 공개 홈페이지, PDF/R2는 의존성과 사용자 결정 경계에 따라 후속 Sprint로 분리한다.
+[SUPERSEDED HISTORICAL RECORD] 0.24.18~0.24.21.4에서 확정한 제품화 기준을 Sprint A~F 실행 순서로 통합한다. 0.24.22는 Sprint A만 구현하며 관리자/worker WAFL 밀도, Functions 안전 UX, 저장소 원통형과 회사 파일 상태를 우선한다. Seed/Simulator, 가입·동의·승인, workorder routing, 공개 홈페이지, PDF/R2는 의존성과 사용자 결정 경계에 따라 후속 Sprint로 분리한다.
 
 - canonical input: `docs/project/23-codex-productization-sprint-master-pack.md`
 - 이번 버전은 문서/roadmap만 변경
@@ -79,7 +85,7 @@ The screen must stay read-only. Do not add edit, add, delete, save, drag-and-dro
 
 ## 0.24.21 PB Breakdown 및 Codex Ready Queue
 
-0.24.21은 Productization Backlog를 Ready/Conditional/Blocked 구현 단위로 분해하고 Codex Ready Queue와 Sprint Queue를 확정한다. 0.24.22는 PB-005, PB-006, PB-010 중심 Productization Sprint #2로 진행한다. 기존 통합 QA 체크포인트는 삭제하지 않고 0.24.25 후보로 이월한다. 사용자 결정 대기 중인 final PDF 상태, 보존기간, production four-eyes 명령은 구현 queue에서 제외한다.
+[SUPERSEDED HISTORICAL RECORD] 0.24.21은 Productization Backlog를 Ready/Conditional/Blocked 구현 단위로 분해하고 Codex Ready Queue와 Sprint Queue를 확정한다. 0.24.22는 PB-005, PB-006, PB-010 중심 Productization Sprint #2로 진행한다. 기존 통합 QA 체크포인트는 삭제하지 않고 0.24.25 후보로 이월한다. 사용자 결정 대기 중인 final PDF 상태, 보존기간, production four-eyes 명령은 구현 queue에서 제외한다.
 
 ## 0.24.17 Productization Sprint #1
 
@@ -247,7 +253,7 @@ Structured roadmap title tokens kept for contract checks: `문서/폴더 정리 
 - Consolidates brand/domain/pricing, system catalog/size model, signup/Trial/payment failure, termination/deletion, logs, opaque URL, PDF lifecycle, deployment, and launch policy.
 - Conflicting provisional clauses in project specs 19~23 are superseded by document 26.
 - No UI/API/DB/R2/PG implementation is included.
-- Next implementation target remains `0.24.22` Sprint A Productization UI Foundation.
+- [SUPERSEDED HISTORICAL RECORD] This former UI-first target is replaced by 0.24.22 DB Foundation.
 
 ## Standard Completion Flow
 
@@ -356,7 +362,7 @@ Status: 검증 대기
 - handoff ZIP generated-output 제외 계약 보강
 - 한글 경로 no-rename 정책
 - 빈 폴더·문서·package manager·대형 파일 cleanup 경계
-- 다음 구현 버전: 0.24.22 Codex Sprint A
+- [SUPERSEDED HISTORICAL RECORD] 당시 0.24.22 UI Sprint 계획. 현재 active target은 DB Foundation.
 
 
 ## 한글 / Unicode 인코딩 기준

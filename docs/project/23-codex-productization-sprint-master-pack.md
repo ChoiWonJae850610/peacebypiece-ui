@@ -2,6 +2,8 @@
 
 
 > Canonical update (0.24.21.16): execution order is superseded by `docs/project/31-pre-codex-integrated-master-plan.md`.
+
+> Historical-use rule (0.24.21.17): all Sprint labels, 0.24.22 prompts, and UI-first boundaries below are retained only as planning history. Codex must not execute them unless document 31 explicitly reuses that scope in its current version.
 Version: 0.24.21.16  
 Status: Final execution input before Codex implementation  
 Target implementation baseline: 0.24.22 and later Productization Sprints  

@@ -1,6 +1,6 @@
 # Pre-Codex Integrated Productization Master Plan
 
-Version: 0.24.21.16  
+Version: 0.24.21.17  
 Status: Final execution plan before Codex implementation  
 Execution baseline: `0.24.22` and later  
 Scope: confirmed policy, DB audit, source audit, missing features, operations, security, QA, launch dependencies
@@ -47,6 +47,8 @@ Read in this order before implementation:
 - A new source file above 50KB requires an explicit split rationale and follow-up ticket.
 - Every mutating API requires tenant scope, permission check, validation, audit metadata, and regression tests.
 - Customer content must never enter general operational logs.
+- `/id-control` and the dev/test account switcher are protected QA infrastructure, not dead-code candidates; preserve original-session restore and audit logging, and block them completely in production.
+- Any new audit, migration, seed, reset, cleanup, PDF, R2, Export, responsive, performance, or E2E command that belongs in the existing PowerShell menu must be recorded with proposed menu number, read-only/dry-run/destructive classification, confirmation rule, and environment restriction.
 
 ## 4. Cross-cutting completion gate for every Sprint
 
@@ -148,7 +150,7 @@ Scope:
 - Direct-link/refresh/back-navigation behavior.
 - Restrict system administrator customer-content access.
 - Allow business-certificate view only in the approval viewer; block download.
-- Verify all dev/test pages, account switching, reset/seed/simulator functions are production-blocked.
+- Preserve `/id-control` system-admin and seeded test-company role switching, current impersonation display, restore-to-original-session, and audit log; verify all dev/test pages, account switching, reset/seed/simulator functions are production-blocked.
 - Add CSP, HSTS, frame, content-type, referrer, permissions, sensitive-cache, cookie, and CSRF review.
 
 ### 0.24.26 — Sprint E: Public Signup, Verification, Approval, and Trial
@@ -157,7 +159,7 @@ Goal: implement self-service commercial onboarding without PG-specific payment e
 
 Scope:
 
-- Public WAFL signup and login entry.
+- Public WAFL website at `www.wafl.co.kr`, root-to-www redirect, pricing comparison, Trial CTA, inquiry/policy links, signup/login entry, and post-login app routing.
 - Email verification.
 - Company/admin/plan/card-reference request model.
 - Business number API result display plus manual certificate comparison.
@@ -294,3 +296,24 @@ Version numbers may split when a migration, external dependency, or regression r
 DB authority → source cleanup → UI → authorization/routing → signup → catalog/size → PDF/R2 → Export → deletion/quota → PG billing → launch hardening.
 
 Codex must not skip a prerequisite merely because a later UI is easier to implement.
+
+
+## 7. PowerShell follow-up registry rule
+
+Each Sprint must decide whether its verification or operator command belongs in the existing automation menu. The Sprint result must record:
+
+- proposed menu number and name,
+- command entry point,
+- read-only, dry-run, safe-write, destructive, or environment-restricted classification,
+- confirmation phrase if destructive,
+- production block or four-eyes requirement,
+- expected result artifact and PASS/FAIL rule.
+
+Initial candidates to track, not silently add:
+
+- DB authority/source-of-truth report: read-only, dev/test and approved production-read context.
+- Migration dry-run and rollback verification: dry-run, dev/test only until separately approved.
+- R2 reconciliation and orphan report: read-only by default; repair is separate confirmed action.
+- PDF lifecycle verification: safe test environment only.
+- Export package verification: safe test data only.
+- Deletion scheduler dry-run: dry-run and environment-restricted; actual deletion is destructive and separately confirmed.

@@ -1,26 +1,24 @@
-# Pending Tests — 0.24.21.16
+# Pending Tests — 0.24.21.17
 
-## 문서·계획 정합성
-- `docs/project/31-pre-codex-integrated-master-plan.md`에 정책·DB 감사·소스 감사·미구현 기능·운영·보안·QA가 모두 포함됐는지 확인
-- 0.24.22가 DB Foundation, 0.24.23이 Source Architecture Cleanup, 0.24.24가 UI Foundation으로 표시되는지 확인
-- `docs/project/23`, `26`, `30`이 31번 문서를 active execution authority로 가리키는지 확인
-- deferred 항목(PG, analytics/cookie, Instagram, 법률/수탁자)이 구현 확정값과 섞이지 않았는지 확인
+## 자동/로컬 검증
 
-## 사용자 로컬 확인
-1. `npm run build`
-2. TypeScript/roadmap/document contract
-3. Unicode encoding contract
-4. `/roadmap` 현재 `0.24.21.16`, 다음 `0.24.22`
-5. 제품화 준비도 약 80%, 기능 진척도 약 93% 표시 확인
-6. 메뉴 30~32가 그대로 유지되는지 확인
-7. 정상 시 commit/push 후 Vercel QA 확인
+- `npm run build`
+- roadmap/version contract
+- document authority scan
+- Unicode filename/encoding contract
+- package/lockfile 무변경 확인
 
-## DB/R2
-- DB Migration 없음
-- DB/R2/PG 실행 없음
-- 0.24.22 실제 DB 작업 전 read-only reconciliation, deployed schema/RLS drift, dry-run, rollback 계획 확인 필요
+## 문서 확인
 
-## 후속
-- 0.24.22 DB Foundation and Authority Alignment
-- 0.24.23 Source Architecture Cleanup
-- 0.24.24 WAFL UI Foundation
+- README, `docs/codex-current-state.md`, `docs/productization-roadmap.md`가 현재 `0.24.21.17`, 다음 `0.24.22 DB Foundation`을 표시한다.
+- `docs/project/31-pre-codex-integrated-master-plan.md`가 단일 active execution authority로 표시된다.
+- 문서 19, 23, 28의 과거 UI-first 0.24.22 문구가 active 지시로 읽히지 않는다.
+- 문서 31에 공개 WAFL 사이트, `/id-control` 보존·production 차단, PowerShell 메뉴 추적 규칙이 포함된다.
+- 문서 32의 0.24.22 GO/STOP 기준을 검토한다.
+
+## 화면/배포 확인
+
+- `/roadmap` 현재 버전 `0.24.21.17`, 다음 버전 `0.24.22` 확인
+- 다음 작업이 DB Foundation and Authority Alignment로 표시되는지 확인
+- PowerShell 기존 메뉴 30~32가 유지되는지 확인
+- 검증 후 commit/push 및 Vercel QA 배포 확인

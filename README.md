@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.21.9`
+- 기준 앱 버전: `0.24.21.17`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.21.9`는 최종 정책 결정과 repository-wide 미개발 기능을 통합한 canonical Master TODO 문서 버전이다.
+- 현재 작업 상태: `0.24.21.17`은 Codex 시작 전 authority·문서 정합성 정리를 완료한 기준이다. 다음 구현 버전은 `0.24.22` DB Foundation이다.
 
 ## 개발 실행
 
@@ -62,13 +62,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
   - `docs/project/24-repository-cleanup-foundation.md`
   - `docs/project/25-korean-unicode-encoding-standard.md`
   - `docs/project/26-final-policy-decisions-and-master-todo.md`
+  - `docs/project/27-database-schema-query-permission-audit.md`
+  - `docs/project/28-database-source-of-truth-safe-migration-design.md`
+  - `docs/project/29-db-readonly-audit-menu-standard.md`
+  - `docs/project/30-pre-codex-policy-reconciliation.md`
+  - `docs/project/31-pre-codex-integrated-master-plan.md`
+  - `docs/project/32-pre-codex-authority-consistency-gate.md`
 - 누적 테스트 항목: `pending-tests.md`
 
 ## 현재 기준
 
 - 앱 표시 버전은 `lib/constants/version.ts`의 `APP_VERSION`을 기준으로 한다. `package.json`의 `version`은 npm package metadata다.
 - `docs/`에는 tracked 문서 661개가 있으며 root에는 최소 진입점만 둔다. 0.24.13부터 현재 판단은 `docs/codex-current-state.md`와 `docs/현재기준/document-management.md`를 우선한다.
-- `docs/codex-current-state.md`가 작업 유형별 진입 문서를 라우팅하고, 세부 기준은 `lib/internal/roadmap/`과 `docs/현재기준/`을 따른다.
+- `docs/codex-current-state.md`가 작업 유형별 진입 문서를 라우팅한다. Codex 제품화 실행 순서는 `docs/project/31-pre-codex-integrated-master-plan.md`만 active authority로 사용하고, 과거 Sprint 문서는 historical reference로만 본다.
 - `/id-control`은 내부 identity-control console의 현재 경로다. `/dev/test-console`은 system_admin 정책 확인 후 `/id-control`로 이동하는 호환 경로다.
 - `/roadmap`은 system administrator 전용 read-only 화면이다. edit/save/delete, DB/R2 write, URL/query/localStorage mutation은 별도 정책 결정 없이 추가하지 않는다.
 

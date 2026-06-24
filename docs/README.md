@@ -63,6 +63,7 @@
 - DB Read-only Audit Menu Standard: `docs/project/29-db-readonly-audit-menu-standard.md`
 - Pre-Codex Policy Reconciliation Audit: `docs/project/30-pre-codex-policy-reconciliation.md`
 - Pre-Codex Integrated Productization Master Plan: `docs/project/31-pre-codex-integrated-master-plan.md`
+- Pre-Codex Authority and Document Consistency Gate: `docs/project/32-pre-codex-authority-consistency-gate.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
@@ -93,7 +94,7 @@
 | docs/정책문서 | 32 |
 | docs/현재기준 | 34 |
 | docs/audits | 13 |
-| docs/project | 28 |
+| docs/project | 32 |
 
 ## 6. 정리 원칙
 

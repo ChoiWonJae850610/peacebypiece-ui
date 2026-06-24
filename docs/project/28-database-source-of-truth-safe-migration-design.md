@@ -191,4 +191,4 @@ Stop and request explicit approval when any of these occur:
 
 ## 12. 0.24.22 boundary
 
-0.24.22 remains Codex Sprint A for UI productization. This document prevents Sprint A from silently changing database authority. Any database implementation discovered during Sprint A must be split into a separately approved migration version.
+0.24.22 is now the evidence-first DB Foundation and authority-alignment Sprint. It may trace, reconcile, design, and verify source-of-truth and migration boundaries, but it must not silently execute destructive or production schema changes. Proven schema changes must be split into separately reviewed migration versions with dry-run and rollback evidence.

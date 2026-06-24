@@ -194,7 +194,7 @@ Codex는 구현 전에 다음을 조사한다.
 - 없다면 additive migration이 필요한가.
 - migration 없이 기존 JSON/row 구조로 안전하게 표현 가능한가.
 
-Schema 변경이 필요하면 0.24.22 UI Sprint에 섞지 말고 별도 DB Sprint와 사용자 승인 대상으로 분리한다.
+Schema 변경이 필요하면 해당 기능 Sprint에 숨겨 넣지 말고, 0.24.22 DB Foundation의 근거와 별도 migration 버전·사용자 승인 경계로 분리한다.
 
 ## 9. 시스템 관리자 화면 요구사항
 
