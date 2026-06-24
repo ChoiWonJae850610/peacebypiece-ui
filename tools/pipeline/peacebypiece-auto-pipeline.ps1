@@ -1,4 +1,4 @@
-# ==========================================
+﻿# ==========================================
 # PeaceByPiece Patch Auto Pipeline
 # Encoding: UTF-8 with BOM
 # ==========================================
@@ -479,7 +479,7 @@ function TestSuspiciousSecretExportCandidate {
         return $true
     }
 
-    if ($leaf -match '(^|[-_.])(secret|token|credential|credentials)([-_.]|$)' -and $leaf -match '\.(json|txt|ya?ml|psd1|ps1|config)$') {
+    if (($leaf -match "(^|[-_.])(secret|token|credential|credentials)([-_.]|`$)") -and ($leaf -match "\.(json|txt|ya?ml|psd1|ps1|config)(`$)")) {
         return $true
     }
 
@@ -564,9 +564,9 @@ function TestSuspiciousSecretContent {
         "-----BEGIN (RSA |DSA |EC |OPENSSH |)PRIVATE KEY-----",
         "(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{32,}",
         "\bAKIA[0-9A-Z]{16}\b",
-        "(?i)\bcloudflare[_-]?(api[_-]?)?token\b\s*[:=]\s*[`"'][A-Za-z0-9_\-\.]{24,}[`"']",
+        '(?i)\bcloudflare[_-]?(api[_-]?)?token\b\s*[:=]\s*[\x22\x27][A-Za-z0-9_\-\.]{24,}[\x22\x27]',
         "(?i)(postgres|postgresql|mysql|mongodb)://[^/\s:@]+:[^@\s]+@",
-        "(?i)\b(secret|api[_-]?key|access[_-]?token|auth[_-]?token|password|passwd|pwd|credential)\b\s*[:=]\s*[`"'](?!\s*(example|sample|placeholder|dummy|test|mock|changeme|your-|<))[A-Za-z0-9_\-./+=@$!%*#?&]{16,}[`"']"
+        '(?i)\b(secret|api[_-]?key|access[_-]?token|auth[_-]?token|password|passwd|pwd|credential)\b\s*[:=]\s*[\x22\x27](?!\s*(example|sample|placeholder|dummy|test|mock|changeme|your-|<))[A-Za-z0-9_\-./+=@$!%*#?&]{16,}[\x22\x27]'
     )
 
     foreach ($pattern in $secretPatterns) {
@@ -704,10 +704,15 @@ function GetLocalRepoVerificationCommandResult {
     }
 
     $text = [string]$line
-    $passed = if ($text -match 'Passed=([^;]+)') { $matches[1].Trim() } else { "" }
-    $command = if ($text -match 'Command=([^;]+)') { $matches[1].Trim() } else { "" }
-    $findingCount = if ($text -match 'FindingCount=([^;]*)') { $matches[1].Trim() } else { "" }
-    $highRiskCount = if ($text -match 'HighRiskCount=([^;]*)') { $matches[1].Trim() } else { "" }
+    $passedMatch = [regex]::Match($text, 'Passed=([^;]+)')
+    $commandMatch = [regex]::Match($text, 'Command=([^;]+)')
+    $findingCountMatch = [regex]::Match($text, 'FindingCount=([^;]*)')
+    $highRiskCountMatch = [regex]::Match($text, 'HighRiskCount=([^;]*)')
+
+    $passed = if ($passedMatch.Success) { $passedMatch.Groups[1].Value.Trim() } else { "" }
+    $command = if ($commandMatch.Success) { $commandMatch.Groups[1].Value.Trim() } else { "" }
+    $findingCount = if ($findingCountMatch.Success) { $findingCountMatch.Groups[1].Value.Trim() } else { "" }
+    $highRiskCount = if ($highRiskCountMatch.Success) { $highRiskCountMatch.Groups[1].Value.Trim() } else { "" }
 
     return [pscustomobject]@{
         Passed = $passed
@@ -1146,7 +1151,7 @@ function GetProjectAppVersionForTestResult {
 
         try {
             $content = ReadUtf8Text -Path $candidatePath
-            $pattern = "(?m)^\s*export\s+const\s+APP_VERSION\s*=\s*[`"']([^`"']+)[`"']\s*;?"
+            $pattern = '(?m)^\s*export\s+const\s+APP_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)[\x22\x27]\s*;?'
             $match = [regex]::Match($content, $pattern)
 
             if ($match.Success) {

@@ -1,36 +1,25 @@
-# Pending Tests — 0.24.21.6
+# Pending Tests — 0.24.21.7
 
 ## 자동 검증
 
+- [ ] `node tests/pipeline-powershell-encoding-contract.mjs`
 - [ ] `node tests/pipeline-repo-state-publication-contract.mjs`
 - [ ] `roadmap-development-contract`
 - [ ] `tsc --noEmit`
 - [ ] `next build`
-- [ ] Mutation Audit high-risk 0
 
-## Handoff ZIP 실검증
+## Windows PowerShell 실검증
 
-- [ ] PowerShell 메뉴 7로 새 전체 소스 ZIP과 repo-state를 생성한다.
-- [ ] ZIP에 `artifacts/`가 없다.
-- [ ] ZIP에 `playwright-report/`가 없다.
-- [ ] ZIP에 `test-results/`가 없다.
-- [ ] ZIP에 `reports/`가 없다.
-- [ ] ZIP에 `.wrangler/`가 없다.
-- [ ] ZIP에 `*.tsbuildinfo`가 없다.
-- [ ] `.env.example`은 포함되고 다른 `.env*`는 없다.
-- [ ] repo-state Exclude Rule Summary에 `reports`와 `*.tsbuildinfo`가 표시된다.
+- [ ] `tools/pipeline/peacebypiece-auto-pipeline.ps1`을 Windows PowerShell에서 실행한다.
+- [ ] 482, 567, 569, 707행 주변 parser 오류가 발생하지 않는다.
+- [ ] 한글 메뉴·안내 문구가 깨지지 않는다.
+- [ ] menu 7로 전체 소스 ZIP과 repo-state를 생성한다.
+- [ ] 0.24.21.6의 generated-output 제외 계약이 유지된다.
 
 ## 회귀 방지
 
-- [ ] GitHub의 한글 폴더·파일명이 변경되지 않았다.
-- [ ] `package.json`, `package-lock.json`, `pnpm-lock.yaml`이 변경되지 않았다.
+- [ ] secret 후보 탐지 정규식이 유지된다.
+- [ ] verification result의 Passed/Command/FindingCount/HighRiskCount 파싱이 유지된다.
+- [ ] package와 lockfile이 변경되지 않았다.
 - [ ] DB/R2/Seed/Reset/Cleanup/Migration을 실행하지 않았다.
 - [ ] UI/API/route runtime 동작을 변경하지 않았다.
-
-## 후속 Cleanup Sprint
-
-- [ ] 빈 폴더와 placeholder 경로를 tracked evidence로 재분류한다.
-- [ ] import graph 기반 orphan audit를 수행한다.
-- [ ] docs root/history/archive 이동안을 검증한다.
-- [ ] npm/pnpm canonical package manager를 확인한다.
-- [ ] 대형 파일 분해 우선순위를 Codex Sprint로 확정한다.

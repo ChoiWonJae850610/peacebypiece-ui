@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.21.6`
+- 기준 앱 버전: `0.24.21.7`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.21.6`은 Repository Cleanup Foundation으로, 전체 소스 handoff ZIP의 생성 산출물 제외 계약과 후속 cleanup 경계를 보강한다.
+- 현재 작업 상태: `0.24.21.7`은 Windows PowerShell canonical pipeline의 UTF-8 BOM과 parser-sensitive 정규식을 복구하는 호환성 hotfix다.
 
 ## 개발 실행
 
