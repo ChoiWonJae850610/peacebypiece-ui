@@ -20,7 +20,7 @@ const currentState = read("docs/codex-current-state.md");
 const verifySafe = read("tools/pipeline/verify-safe.ps1");
 const approvedWorkflow = read("tools/pipeline/approved-workflow.ps1");
 
-assert.match(version, /APP_VERSION\s*=\s*"0\.24\.12"/);
+assert.match(version, /APP_VERSION\s*=\s*"\d+\.\d+\.\d+(?:\.\d+)*"/);
 
 assert.match(workerPage, /WorkspaceShell/);
 assert.match(workerPage, /contentMode="fixed-md"/);
@@ -68,12 +68,11 @@ assert.match(workOrderController, /workspaceWriteLockRef/);
 assert.match(workOrderController, /workspaceWriteLockMessage/);
 
 for (const token of [
-  "Start Manifest",
-  "Default Search Exclusions",
-  "workspace-commonization",
-  "docs/보관문서/**",
-  "docs/**/legacy/**",
-  "Pipeline Verify Profile",
+  "Active execution gate",
+  "Single active execution authority",
+  "Applicable contract",
+  "Pre-Codex Final Contract Gate",
+  "PowerShell",
 ]) {
   assert.ok(currentState.includes(token), `current-state manifest missing ${token}`);
 }

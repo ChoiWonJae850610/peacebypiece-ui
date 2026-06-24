@@ -1,8 +1,8 @@
-# Codex Current State — 0.24.21.18
+# Codex Current State — 0.24.21.19
 
 ## Active execution gate
 
-- Current version: `0.24.21.18`.
+- Current version: `0.24.21.19`.
 - Next implementation version: `0.24.22`.
 - Next work: **Sprint A — Database Foundation and Authority Alignment**.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
@@ -42,6 +42,10 @@ If safe schema changes are proven necessary, split them into separately reviewed
 
 - Public website scope remains in the plan: `www.wafl.co.kr`, root-to-www redirect, pricing, Trial CTA, inquiry/policy links, signup/login, and post-login app routing.
 - `/id-control` is not dead code. It is a dev/test QA facility and must remain production-blocked.
+- Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`, not by environment-name strings.
+- `/id-control` test account switching is allowed only for the active system administrator with allowlisted targets, original-session restore, signed context, and audit logging.
+- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
+- The canonical verification profile for this boundary remains `system-admin-internal-access`.
 - System administrators must not gain access to customer operational content; the business-certificate approval viewer remains the narrow exception.
 - Existing role, workflow, PDF, DB, and R2 semantics must not be changed during architecture cleanup without target tests and explicit Sprint scope.
 
@@ -60,3 +64,10 @@ If safe schema changes are proven necessary, split them into separately reviewed
 - Documentation and roadmap match actual implementation.
 - `master = origin/master`, working tree clean.
 - Vercel deployment and PC/mobile/tablet real-device QA complete.
+
+## Pre-Codex Final Contract Gate
+
+- PowerShell 경로: `5. 개발 / 테스트 도구` → `33. Pre-Codex Final Contract Gate`
+- 안전 등급: 읽기 전용·비파괴·DB/R2 변경 없음
+- 실행 계약: document structure, workspace commonization, system-admin internal access, roadmap development, Unicode encoding
+- 별도 build 확인: `5` → `2. NPM Build`

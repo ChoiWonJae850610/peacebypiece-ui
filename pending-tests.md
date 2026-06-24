@@ -1,24 +1,18 @@
-# Pending Tests — 0.24.21.18
+# Pending Tests — 0.24.21.19
 
-## 자동/로컬 검증
-
+## 자동 검증
+- `node tests/pre-codex-final-contract-gate-contract.mjs`
+- `node tests/document-structure-contract.mjs`
+- `node tests/workspace-commonization-contract.mjs`
+- `node tests/system-admin-internal-access-contract.mjs`
 - `node tests/roadmap-development-contract.mjs`
 - `node tests/unicode-encoding-contract.mjs`
-- `npm run build`
-- APP_VERSION, README, docs index, roadmap current/next version 일치
-- package/lockfile 무변경 확인
+- `node tests/pipeline-powershell-encoding-contract.mjs`
 
-## 문서·roadmap 확인
-
-- `/roadmap` 현재 버전 `0.24.21.18`, 다음 버전 `0.24.22` 확인
-- `0.24.22 DB Foundation and Authority Alignment` 상세가 표시되는지 확인
-- 문서 31 섹션 번호가 1~8로 중복 없이 표시되는지 확인
-- 문서 28의 GO 제목이 DB Foundation 기준인지 확인
-- 문서 31이 active execution authority, 문서 32가 GO/STOP gate로 표시되는지 확인
-- 과거 0.24.11이 진행 중이 아니라 완료로 표시되는지 확인
-
-## 다음 Sprint 진입 확인
-
-- PowerShell 메뉴 30~32 read-only 감사 유지
-- 실제 migration은 0.24.22에서 직접 실행하지 않고 별도 승인 버전으로 분리
-- 검증 후 commit/push 및 Vercel QA 배포 확인
+## 사용자 로컬 확인
+1. PowerShell 메인 메뉴 `5` → 개발/테스트 도구 `33` 실행
+2. 결과 파일 `OK_Pre_Codex_Final_Contract_Gate_0.24.21.19-*.txt` 확인
+3. PowerShell 메인 메뉴 `5` → 개발/테스트 도구 `2` NPM Build 실행
+4. `/roadmap` 현재 `0.24.21.19`, 다음 `0.24.22` 확인
+5. `/functions`에 `조회만 가능` 안내 확인
+6. 왼쪽 아래 개발 모드 Issue가 있으면 상세 내용 확인

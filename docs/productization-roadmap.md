@@ -1,8 +1,17 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.21.17`. Next implementation: `0.24.22` DB Foundation.
+> Active baseline: `0.24.21.19`. Next implementation: `0.24.22` DB Foundation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Sections below that describe 0.24.22 as UI-first, Productization Sprint #2, or PB-005/006/010 are historical records and must not drive implementation.
+
+
+## 0.24.21.19 — Final Pre-Codex Contract Gate
+
+- 오래된 고정 버전 계약을 현재 버전과 무관한 구조 계약으로 보정한다.
+- 시스템 관리자 Functions 화면의 read-only 상태를 명확히 표시한다.
+- PowerShell 개발/테스트 메뉴 33에서 Codex 시작 전 핵심 계약을 한 번에 실행한다.
+- roadmap/docs/version 정합성을 0.24.21.19 기준으로 마감한다.
+- 이 버전은 DB/R2/PG mutation, schema migration, package/lockfile 변경을 포함하지 않는다.
 
 
 ## 0.24.21.15 pre-Codex policy gate
@@ -42,8 +51,8 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.21.16`
-- APP_VERSION: `0.24.21.16`
+- Roadmap checkpoint version: `0.24.21.19`
+- APP_VERSION: `0.24.21.19`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `80%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
@@ -246,6 +255,7 @@ Structured roadmap title tokens kept for contract checks: `문서/폴더 정리 
 | `0.24.21` | PB Breakdown 및 Codex Ready Queue | 완료 | PB breakdown, Codex ready queue and integrated verification preparation |
 | `0.24.21.9` | Final Policy Decisions and Master TODO | 검증 대기 | Canonical decisions, full undeveloped feature inventory, and implementation queue |
 | `0.24.21.18` | Final Pre-Codex Roadmap Contract Fix | 검증 대기 | Canonical 0.24.22 roadmap, contract repair, authority and version consistency |
+| `0.24.21.19` | Final Pre-Codex Contract Gate | 검증 대기 | Version-agnostic contracts, system-admin read-only copy, PowerShell menu 33 |
 | `0.24.22` | DB Foundation and Authority Alignment | 예정 | Evidence-first DB authority, RLS, constraints, indexes, reconciliation and migration boundaries |
 
 

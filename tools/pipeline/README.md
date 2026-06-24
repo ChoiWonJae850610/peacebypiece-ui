@@ -258,3 +258,12 @@ It checks:
 Use it when `/functions`, `lib/functions/catalog.ts`, Functions fixtures, or Functions automation metadata changes.
 
 The profile must remain non-mutating by default. Seed, Reset, Cleanup, DB mutation, and R2 mutation require separate confirmation/fingerprint/prefix/service-code guards and must not be executed by catalog verification.
+
+## Pre-Codex 최종 계약 게이트
+
+개발/테스트 도구 메뉴에서 다음 순서로 실행합니다.
+
+- `5` → `33. Pre-Codex Final Contract Gate`
+- 안전 등급: 읽기 전용·비파괴·DB/R2 변경 없음
+- 실행 범위: document structure, workspace commonization, system-admin internal access, roadmap development, Unicode encoding 계약
+- production build는 별도로 `5` → `2. NPM Build`에서 확인합니다.

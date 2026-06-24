@@ -1935,6 +1935,21 @@ function InvokeReadOnlyDbAudit {
     }
 }
 
+
+function RunPreCodexFinalContractGate {
+    param([bool]$PauseAfter = $true)
+    $command = @(
+        "node tests/pre-codex-final-contract-gate-contract.mjs",
+        "node tests/document-structure-contract.mjs",
+        "node tests/workspace-commonization-contract.mjs",
+        "node tests/system-admin-internal-access-contract.mjs",
+        "node tests/roadmap-development-contract.mjs",
+        "node tests/unicode-encoding-contract.mjs"
+    ) -join " && "
+
+    return (InvokeProjectCommandWithResultFile -Title "Pre-Codex Final Contract Gate" -Label "Pre_Codex_Final_Contract_Gate" -NpmCommand $command -LoadEnvLocal $false -PauseAfter $PauseAfter)
+}
+
 function RunDbSchemaReconciliationAudit { return (InvokeReadOnlyDbAudit -Mode 'reconciliation' -Title 'DB Schema Reconciliation Audit' -Label 'DB_Reconciliation_Audit') }
 function RunDbConstraintReadinessCheck { return (InvokeReadOnlyDbAudit -Mode 'constraints' -Title 'DB Constraint Readiness Check' -Label 'DB_Constraint_Readiness') }
 function RunDbIndexReadinessReport { return (InvokeReadOnlyDbAudit -Mode 'indexes' -Title 'DB Index Usage and Query Readiness Report' -Label 'DB_Index_Readiness') }
@@ -1986,6 +2001,7 @@ function ShowDeveloperToolsMenu {
         Write-Host "30. DB Schema Reconciliation Audit               [DEV/TEST·읽기 전용]"
         Write-Host "31. DB Constraint Readiness Check                [DEV/TEST·읽기 전용]"
         Write-Host "32. DB Index Usage/Query Readiness Report        [DEV/TEST·읽기 전용]"
+        Write-Host "33. Pre-Codex Final Contract Gate                [안전/비파괴]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -1996,7 +2012,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~32 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~33 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2034,9 +2050,10 @@ function ShowDeveloperToolsMenu {
             30 { RunDbSchemaReconciliationAudit | Out-Null }
             31 { RunDbConstraintReadinessCheck | Out-Null }
             32 { RunDbIndexReadinessReport | Out-Null }
+            33 { RunPreCodexFinalContractGate | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~32 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~33 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }

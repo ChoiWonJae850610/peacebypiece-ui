@@ -115,7 +115,7 @@ export default function FunctionsCatalogClient({
                 제품 기능 명세, 테스트 시나리오, 자동화 연결과 dev/test 도구를 구분해 관리합니다.
               </p>
               <p className="mt-2 text-xs text-[var(--pbp-text-muted)]">
-                v{appVersion} · runtime {runtimeMode} · 활성 시스템 관리자 전용 · 조회 가능
+                v{appVersion} · runtime {runtimeMode} · 활성 시스템 관리자 전용 · 조회만 가능
               </p>
               <p className="mt-2 text-xs text-[var(--pbp-text-muted)]">
                 {isExecutionRuntimeAllowed
