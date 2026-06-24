@@ -1,3 +1,9 @@
+
+## 0.24.21.15 pre-Codex policy gate
+
+- Final policy source: `docs/project/26-final-policy-decisions-and-master-todo.md`.
+- Reconciliation audit: `docs/project/30-pre-codex-policy-reconciliation.md`.
+- Next implementation version remains `0.24.22` Sprint A.
 # Productization Roadmap
 
 ## 0.24.21.11 — Database Source-of-Truth and Safe Migration Design
@@ -22,7 +28,7 @@
 ## Status
 
 - Roadmap checkpoint version: `0.24.21.8`
-- APP_VERSION: `0.24.21.8`
+- APP_VERSION: `0.24.21.15`
 - Feature implementation progress: about `93%`
 - Productization readiness: `92%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`

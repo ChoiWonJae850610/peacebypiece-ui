@@ -1,8 +1,8 @@
 # Codex Productization Sprint Master Pack
 
 
-> Canonical update (0.24.21.9): conflicting provisional policy in this document is superseded by `docs/project/26-final-policy-decisions-and-master-todo.md`.
-Version: 0.24.21.5  
+> Canonical update (0.24.21.15): synchronized with `docs/project/26-final-policy-decisions-and-master-todo.md`.
+Version: 0.24.21.15  
 Status: Final execution input before Codex implementation  
 Target implementation baseline: 0.24.22 and later Productization Sprints  
 Runtime implementation: deferred to Codex
@@ -103,7 +103,7 @@ PB: 시스템 기본 데이터, PB-011
 - schema/migration이 필요한 경우
 - 기존 고객 데이터와 code 충돌
 - production 접근 필요
-- 기본 활성화 정책에 사용자 결정 필요
+- 속옷·액세서리는 시스템 기본 분류로 추가하되 기본 비활성화한다.
 
 ### Sprint C — Customer Signup, Consent and Approval
 
@@ -195,12 +195,14 @@ PB: 시스템 기본 데이터, PB-011
 - audit metadata
 - PDF/R2 contract and Playwright
 
-선행 사용자 결정:
+확정 입력:
 
-- Final workorder/supplier PDF 생성 가능 단계
-- Final/superseded PDF 보존기간
-- 계정 종료 후 export/grace/purge 기간
-- four-eyes production command 목록
+- 관련 발주가 없으면 최종 workorder PDF 즉시 생성 가능.
+- 관련 발주가 있으면 모두 발주완료 후 최종 PDF 생성.
+- supplier PDF는 발주요청 시 생성.
+- 최종 PDF는 최신 파일 1개만 유지하고 과거 파일/metadata 이력은 보관하지 않음.
+- 계정 종료 후 30일 view/export/recovery 후 KST 00:00 자동 삭제.
+- production destructive command는 기존 승인 경계를 유지.
 
 ## 5. 파일 후보와 조사 순서
 
@@ -277,31 +279,16 @@ Codex는 수정 전에 실제 repository에서 다음을 검색해 정확한 파
 - migration Sprint는 forward/rollback plan과 dry-run evidence 없이는 시작 금지
 - push 후 문제는 same-master follow-up patch로 수정
 
-## 9. Blocked Decision Queue
+## 9. Remaining Deferred Decision Queue
 
-다음은 Codex가 임의 결정하지 않는다.
+Codex Sprint A를 막지 않는 보류 항목만 남긴다.
 
-- 속옷·액세서리 기본 활성화
-- 가슴·허리·엉덩이 단면/둘레 기본
-- 시스템 기본 분류 이름 수정 또는 별칭 정책
-- 기존 고객사 신규 기본 분류 자동 활성화
-- 사업자등록증 가입 필수 여부
-- 가입 전 인증 수준
-- 카드 없이 Trial 시작 여부
-- Trial 종료 읽기 전용 기간
-- 거절/취소 가입 자료 보존기간
-- 한 사용자의 복수 회사 관리자 허용
-- 가입 승인 mandatory four-eyes 여부
-- 최종 브랜드/도메인/공개 가격/문의 채널/CTA
-- public/app repository·deployment 분리
-- cookie/analytics
-- workorder public-id schema/migration
-- 계정 종료 export/grace/purge
-- Final/superseded PDF 보존기간
-- mandatory four-eyes production 명령
-- Final PDF 생성 가능 workflow 단계
-- 고객 공개 audit log 범위
-- production incident escalation owner
+- PG/payment provider selection after business registration.
+- External analytics and cookie consent/banner.
+- Instagram content format, cadence, final screenshots, and masking rules.
+- Production legal wording and processor disclosures after provider selection.
+
+다음 항목은 더 이상 blocked decision이 아니다: 속옷/액세서리 기본 비활성 제공, 측정 모델, 시스템 분류 이름 변경 금지, 사업자등록증 필수, 이메일 인증, 카드 필수, 승인 시 Trial 시작, 자동 삭제 기본 ON, 30일 recovery/export, 최신 PDF 1개, PDF 생성 단계, 운영자 incident owner.
 
 ## 10. Codex 완료 보고 형식
 

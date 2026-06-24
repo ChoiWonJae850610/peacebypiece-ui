@@ -1,3 +1,10 @@
+
+## 0.24.21.15 final policy reconciliation
+
+- Canonical policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
+- Conflict register: `docs/project/30-pre-codex-policy-reconciliation.md`.
+- Current version: `0.24.21.15`; next implementation boundary: `0.24.22` Codex Sprint A.
+- Sprint A is UI productization only; payment, signup provisioning, Export, PDF lifecycle, deletion scheduler, catalog DB work, and production separation remain later Sprints.
 # Codex Current State — 0.24.21.11
 
 ## 현재 작업 기준

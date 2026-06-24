@@ -1,8 +1,8 @@
 # System Default Catalog and Seed Specification
 
 
-> Canonical update (0.24.21.9): conflicting provisional policy in this document is superseded by `docs/project/26-final-policy-decisions-and-master-todo.md`.
-Version: 0.24.21.1  
+> Canonical update (0.24.21.15): synchronized with `docs/project/26-final-policy-decisions-and-master-todo.md`.
+Version: 0.24.21.15  
 Status: Codex implementation input  
 Scope: system product taxonomy, garment measurement catalog, seed/backfill contract, system-admin operations
 
@@ -36,7 +36,7 @@ Scope: system product taxonomy, garment measurement catalog, seed/backfill contr
 
 ### 3.2 고객사 설정
 
-- 고객사 관리자가 활성/비활성, 정렬, 별칭, 사용자 정의 항목을 관리한다.
+- 고객사 관리자가 활성/비활성, 정렬, 사용자 정의 항목을 관리한다. 시스템 기본 분류의 이름 변경과 별칭은 허용하지 않는다.
 - 시스템 기본값 업데이트가 고객사의 명시적 비활성화 또는 사용자 정의 순서를 덮어쓰지 않는다.
 - 시스템 기본값과 사용자 정의 항목은 source/type 필드 또는 별도 관계로 구분한다.
 
@@ -64,13 +64,25 @@ Scope: system product taxonomy, garment measurement catalog, seed/backfill contr
 | 원피스/세트 | 원피스 | 미니, 미디, 롱, 셔츠원피스 |
 | 원피스/세트 | 점프수트 | 점프수트, 오버롤 |
 | 원피스/세트 | 세트 | 상하세트, 트레이닝세트 |
-| 이너웨어 | 언더웨어 | 브라탑, 팬티, 이너탑 |
-| 액세서리 | 패션잡화 | 모자, 머플러, 벨트, 가방 |
+| 속옷 | 브라-일반 | 풀컵, 하프컵, 노와이어 |
+| 속옷 | 브라-기능성 | 스포츠, 수유, 보정 |
+| 속옷 | 팬티-여성 | 삼각, 사각, 보정 |
+| 속옷 | 팬티-남성 | 삼각, 드로즈, 트렁크 |
+| 속옷 | 이너웨어-상의 | 캐미솔, 런닝, 발열상의 |
+| 속옷 | 이너웨어-하의 | 내의하의, 속바지, 보정하의 |
+| 속옷 | 잠옷 | 상의, 하의, 세트 |
+| 액세서리 | 가방 | 숄더, 토트, 기타 |
+| 액세서리 | 모자 | 캡, 니트, 기타 |
+| 액세서리 | 벨트 | 일반, 장식 |
+| 액세서리 | 스카프·머플러 | 스카프, 머플러 |
+| 액세서리 | 양말·레그웨어 | 양말, 스타킹 |
+| 액세서리 | 주얼리 | 목걸이, 귀걸이, 팔찌, 반지 |
+| 액세서리 | 기타 | 장갑, 헤어 액세서리, 키링, 우산 |
 | 기타 | 사용자 분류 | 기타 의류, 샘플/테스트 |
 
 ### 4.1 코드 규칙
 
-- 1차: `apparel.top`, `apparel.bottom`, `apparel.outer`, `apparel.onepiece_set`, `apparel.inner`, `apparel.accessory`, `apparel.other`
+- 1차: `apparel.top`, `apparel.bottom`, `apparel.outer`, `apparel.onepiece_set`, `apparel.underwear`, `apparel.accessory`, `apparel.other`
 - 2차: `apparel.top.tshirt`처럼 부모 code를 prefix로 사용한다.
 - 3차: `apparel.top.tshirt.short_sleeve`처럼 안정적인 영문 snake_case suffix를 사용한다.
 - 화면 표시 이름은 한국어이며 향후 i18n label mapping을 추가할 수 있다.
@@ -110,8 +122,11 @@ Scope: system product taxonomy, garment measurement catalog, seed/backfill contr
 - `bust_point` BP 위치
 - `back_length` 등길이
 
-### 5.4 액세서리 예시
+### 5.4 속옷·액세서리 예시
 
+- 브라: 밑가슴둘레, 컵높이, 컵너비, 옆선높이, 어깨끈길이
+- 팬티: 허리단면, 힙단면, 밑위, 옆선길이
+- 이너웨어/잠옷: 총장, 가슴단면, 허리단면, 소매길이
 - 모자: 머리둘레, 챙길이, 높이
 - 가방: 가로, 세로, 폭, 스트랩길이
 - 벨트: 전체길이, 폭, 홀 간격
@@ -135,6 +150,7 @@ Scope: system product taxonomy, garment measurement catalog, seed/backfill contr
 | 팬츠 | 허리단면, 엉덩이단면, 총기장, 앞밑위, 뒤밑위, 허벅지단면, 밑단단면, 인심 |
 | 스커트 | 허리단면, 엉덩이단면, 스커트길이, 밑단단면 |
 | 원피스/점프수트 | 총장, 어깨너비, 가슴단면, 허리단면, 엉덩이단면, 소매길이, 암홀, 밑단단면 |
+| 속옷 | 해당 하위 유형의 전용 항목만 기본 표시 |
 | 액세서리 | 해당 하위 유형의 전용 항목만 기본 표시 |
 
 사용자는 작업지시서별로 항목을 추가·숨김·정렬할 수 있어야 한다. 기본 매핑은 시작값이지 강제 스키마가 아니다.
@@ -248,13 +264,11 @@ Schema 변경이 필요하면 0.24.22 UI Sprint에 섞지 말고 별도 DB Sprin
 - seed 재실행 시 중복 0건이다.
 - production 실행 없이 dev/test evidence가 확보된다.
 
-## 13. 사용자 결정이 필요한 항목
+## 13. 최종 분류 활성화 계약
 
-이번 문서에서 즉시 구현을 막지 않는 선택 항목:
-
-- 기본 분류 목록에 속옷·액세서리를 기본 활성화할지 여부
-- 가슴/허리/엉덩이를 단면 기본으로 고정할지, 둘레 옵션을 동시에 제공할지
-- 고객사에 시스템 기본 분류 이름 변경을 허용할지, 별칭만 허용할지
-- 기존 고객사에 신규 기본 항목을 자동 enable할지, 관리자 승인 후 enable할지
-
-Codex는 위 항목을 임의 확정하지 않고 기본값 제안과 영향 보고 후 진행한다.
+- 핵심 의류 분류는 신규 고객사에 기본 활성화한다.
+- 속옷과 액세서리는 시스템 기본 분류로 제공하지만 신규 고객사에서는 기본 비활성화한다.
+- 고객사가 필요할 때 활성화한다.
+- 시스템 기본 분류 이름 변경과 별칭은 허용하지 않는다.
+- 고객사 사용자 정의 분류는 별도로 생성할 수 있다.
+- 기존 고객사 backfill은 신규 관계를 추가하되 자동 활성화하지 않고 dry-run 결과를 먼저 제공한다.

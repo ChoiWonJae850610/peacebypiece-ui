@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.21.10`
+- 기준 앱 버전: `0.24.21.15`
 - tracked docs 파일 수: `688`
 - docs root 파일 수: `181`
 - 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/project/`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
@@ -60,6 +60,8 @@
 - Final Policy Decisions and Master TODO: `docs/project/26-final-policy-decisions-and-master-todo.md`
 - Database Schema, Query, and Permission Audit: `docs/project/27-database-schema-query-permission-audit.md`
 - Database Source-of-Truth and Safe Migration Design: `docs/project/28-database-source-of-truth-safe-migration-design.md`
+- DB Read-only Audit Menu Standard: `docs/project/29-db-readonly-audit-menu-standard.md`
+- Pre-Codex Policy Reconciliation Audit: `docs/project/30-pre-codex-policy-reconciliation.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`

@@ -1,260 +1,286 @@
 # Final Policy Decisions and Master TODO
 
-Version: 0.24.21.10  
+Version: 0.24.21.15  
 Status: Canonical product-policy decision log and consolidated implementation backlog  
-Scope: decisions confirmed in the 2026-06-24 productization review, unresolved TODO, and repository-wide undeveloped product work
+Scope: all product, billing, export, PDF, deletion, signup, catalog, operational, legal-review, and Codex implementation decisions confirmed through 2026-06-24
 
 ## 1. Canonical precedence
 
-This document supersedes conflicting provisional language in earlier productization specs. Earlier documents remain implementation references, but when they conflict with this file, this file wins until a later committed decision replaces it.
+This document is the highest-priority pre-1.0 product-policy source. Earlier specifications remain useful implementation references, but any conflicting provisional language is superseded by this file and by later committed canonical decisions.
 
-## 2. Brand, domain, pricing, and public entry
+Each requirement is classified as:
 
-- Final brand: `WAFL`.
-- Primary public domain: `www.wafl.co.kr`.
-- Root domain `wafl.co.kr` should redirect to `www.wafl.co.kr`.
-- Public primary CTA: `7일 무료로 시작하기`.
-- Public pricing uses final customer charge amounts including VAT.
-- Lite: KRW 9,900/month, VAT included.
-- Flow: KRW 19,900/month, VAT included.
-- Studio: KRW 39,900/month, VAT included.
-- Additional storage: KRW 7,000 per 1GB/month, VAT included.
-- Do not market by showing a lower supply price with VAT added later.
-- Customer support channel: email only.
-- The app should provide a common inquiry entry and inquiry categories such as standards addition request, account change, feature suggestion, and other inquiry.
-- No marketing email program. Email is used only for authentication, approval, billing, security, policy, incident, and operational notices.
-- Instagram handle candidate: `wafl.co.kr`, subject to actual availability when the account is created.
-- No public chatbot in the initial launch scope.
+- `CONFIRMED`: product policy decided by the owner.
+- `IMPLEMENTED`: confirmed and present in the current codebase.
+- `TODO`: confirmed but not fully implemented.
+- `DEFERRED`: intentionally postponed until after Codex Sprint A or a later launch phase.
+- `LEGAL_REVIEW`: operational direction confirmed, but current Korean law, tax, PG, processor, or privacy requirements must be rechecked before production launch.
 
-## 3. System default catalog and size specification
+## 2. Brand, domain, public entry, and support
 
-### 3.1 Product categories
+- `CONFIRMED` Final brand: `WAFL`.
+- `CONFIRMED` Primary public domain: `www.wafl.co.kr`.
+- `CONFIRMED` Root `wafl.co.kr` redirects to `www.wafl.co.kr`.
+- `CONFIRMED` Public website contains signup and login entry points; authenticated users enter the customer application and can access workorder/workspace screens according to permissions.
+- `CONFIRMED` Primary CTA: `7일 무료로 시작하기`.
+- `CONFIRMED` Public pricing shows final VAT-included payment amounts, not a smaller pre-VAT headline price.
+- `CONFIRMED` Customer support channel: email plus in-app inquiry intake.
+- `CONFIRMED` Inquiry states visible to customers: `접수`, `처리 중`, `답변 완료`. No separate `종료` state.
+- `CONFIRMED` Inquiry response target: within one business day.
+- `CONFIRMED` Serious incidents are announced by email and in-app notice.
+- `CONFIRMED` No public chatbot at initial launch.
+- `DEFERRED` Instagram handle candidate: `wafl.co.kr`; video format, cadence, public screenshots, and masking rules remain post-Sprint TODO.
+- `DEFERRED` External analytics and cookie banner/consent remain launch TODOs and must be reviewed together before any non-essential tracking is added.
 
-- Provide a broad three-level system catalog focused on apparel, including common market forms under tops, bottoms, and outerwear.
-- All new companies receive the system catalog enabled by default.
-- Customers cannot delete or rename system categories.
-- Customers can disable system categories.
-- Customers can create and enable their own categories.
-- No alias feature.
-- Whether underwear and accessories belong in the default enabled catalog remains TODO.
+## 3. Pricing, plans, Trial, and storage add-on
 
-### 3.2 Size and measurement model
+### 3.1 Plans
 
-- System base size data is body-circumference based.
-- Pattern reference values may automatically calculate one quarter of body circumference.
-- Workorder and final PDF size specs primarily store finished-garment flat measurements.
-- Linear measurements such as body length, shoulder, and sleeve are stored as actual lengths.
-- Each measurement item declares a type: circumference, half-flat, quarter-pattern-reference, or length.
-- Customers select `cm` or `inch`.
-- Inch input supports an integer part plus fraction options: `1/8`, `1/4`, `3/8`, `1/2`, `5/8`, `3/4`, and whole units.
-- Provide women 55/66/77, men 90/95/100/105, and XS/S/M/L/XL base systems with editable default actual measurements.
-- Provide both cm and inch defaults.
-- Customers can load defaults and adjust ease and final measurements.
-- System administrators can maintain and revise the default size systems and values.
-- PDF size tables include measurement-position illustrations/POM guidance.
+- `CONFIRMED` Trial: 7 days, 100MB, 3 members, limited company-wide export.
+- `CONFIRMED` Lite: KRW 9,900/month, VAT included, 500MB, 3 members, one company-wide export per month.
+- `CONFIRMED` Flow: KRW 19,900/month, VAT included, 1.5GB, 10 members, three company-wide exports per month.
+- `CONFIRMED` Studio: KRW 39,900/month, VAT included, 5GB, 30 members, ten company-wide exports per month.
+- `CONFIRMED` Custom: negotiated.
+- `CONFIRMED` Additional storage: KRW 7,000 per 1GB/month, VAT included.
+- `CONFIRMED` Additional storage is a permanent add-on for customers who need more storage without additional members or plan features. It is not merely a temporary bridge to an upper plan.
 
-## 4. Signup, approval, Trial, billing, and cancellation
+### 3.2 Trial and card registration
 
-### 4.1 Signup and approval
+- `CONFIRMED` The customer selects the intended paid plan during signup.
+- `CONFIRMED` Card registration is mandatory during signup before Trial approval.
+- `CONFIRMED` WAFL stores no raw card data; only PG-managed tokens/billing keys or equivalent payment references may be stored.
+- `CONFIRMED` Trial begins at the exact moment the system administrator approves the signup.
+- `CONFIRMED` Trial storage remains 100MB.
+- `CONFIRMED` Billing notice emails are sent immediately after signup, three days before billing, and one day before billing.
+- `CONFIRMED` The notices show today's charge as zero during Trial, the scheduled billing date, scheduled amount, selected plan, and cancellation method.
+- `CONFIRMED` Cancellation during Trial leaves service available until Trial end.
+- `CONFIRMED` If not canceled, the selected plan activates and the registered card is charged at Trial end.
+- `CONFIRMED` There is no post-Trial read-only grace period for a normally completed Trial.
+- `DEFERRED` PG/provider selection occurs after business registration.
 
-- Email verification is mandatory before approval.
-- Phone verification is not used.
-- Business registration certificate is required in production signup, but not forced during the current test period.
-- One customer-admin email belongs to only one company; one person cannot be customer administrator for multiple companies.
-- Company signup approval is performed by one system administrator. No dual approval.
-- Rejected or canceled initial signup requests do not create service accounts.
-- Their uploaded business-registration files are deleted after 30 days.
-- Minimal request records such as email, company name, and rejection reason are retained for 90 days, then deleted.
+### 3.3 Refund and plan changes
 
-### 4.2 Trial and payment
+- `CONFIRMED` Ordinary mid-cycle cancellation does not produce a refund; service continues until the paid period ends and renewal is canceled.
+- `CONFIRMED` No refund is granted merely because the customer did not use the service after payment.
+- `CONFIRMED` Duplicate charges and system-caused erroneous charges are fully refunded.
+- `CONFIRMED` Long WAFL-caused service outages are compensated primarily by extending the service period rather than refunding.
+- `LEGAL_REVIEW` Mandatory statutory or PG refund rights override the product policy.
+- `CONFIRMED` Upgrade: applies immediately; the remaining-period price difference is calculated and charged pro rata; the next renewal uses the new plan price.
+- `CONFIRMED` Downgrade: applies immediately with a pro-rata refund of the remaining price difference, but only if current storage, member count, and other usage fit within the lower plan.
+- `CONFIRMED` If lower-plan limits are exceeded, downgrade submission is blocked, the exact over-limit items are shown, and the current plan remains active until resolved.
+- `CONFIRMED` Do not automatically deactivate members or delete files to force a downgrade.
 
-- The user selects a paid plan at initial signup.
-- Card registration is mandatory before the Trial begins.
-- The Trial lasts seven days.
-- Signup confirmation email is sent immediately and includes Trial length, selected plan, expected automatic billing date and amount, and cancellation method.
-- If the user cancels during the Trial, access remains until the Trial end date.
-- Unless canceled, the selected plan activates after seven days and the registered card is charged automatically.
-- There is no separate read-only grace period after a normally completed Trial.
-- Payment provider/PG selection is deferred until business registration is completed.
+## 4. System default catalog and size specification
 
-### 4.3 Payment failure
+### 4.1 Three-level category policy
 
-- Payment day: one attempt, normal use continues, failure email sent.
-- Day 3: retry and warning.
-- Day 7: retry; block new file upload and new workorder creation while allowing view, export, and payment-method update.
-- Day 14: retry.
-- Day 21: retry.
-- Day 30: final retry, then terminate the account if still unpaid.
-- After termination, allow view and export for 30 additional days.
-- After those 30 days, the account becomes eligible for permanent deletion.
-- Actual retry orchestration may use the PG provider's supported billing mechanism while preserving these business milestones.
+- `CONFIRMED` Provide a broad three-level system catalog focused on apparel.
+- `CONFIRMED` Core apparel categories are enabled by default for every new company.
+- `CONFIRMED` Customers cannot rename or delete system categories.
+- `CONFIRMED` Customers can enable or disable system categories and create their own custom categories.
+- `CONFIRMED` No alias feature.
+- `CONFIRMED` Underwear and accessories are included in the system catalog but disabled by default; customers may enable them when needed.
 
-## 5. Account termination, retention, deletion, and logs
+#### Underwear baseline — item-centered structure
 
-### 5.1 Customer data lifecycle
+- 브라 > 일반 > 풀컵, 하프컵, 노와이어
+- 브라 > 기능성 > 스포츠, 수유, 보정
+- 팬티 > 여성 > 삼각, 사각, 보정
+- 팬티 > 남성 > 삼각, 드로즈, 트렁크
+- 이너웨어 > 상의 > 캐미솔, 런닝, 발열상의
+- 이너웨어 > 하의 > 내의하의, 속바지, 보정하의
+- 잠옷 > 상의/하의/세트 > 세부 유형
 
-- Normal termination and nonpayment termination both allow 30 days of view/export after account termination.
-- After 30 days, permanently delete customer content and personal identifiers.
-- Delete: company account, user personal information, business registration data, workorders, purchase orders, partner/factory/material/process data, attachments, images, PDFs, customer-created categories/settings, customer-specific activity logs, and identifiable customer-level statistics.
-- Retain only legally required transaction/tax evidence and fully anonymized aggregate service statistics.
+#### Accessories baseline
 
-### 5.2 Deletion operation
+- 가방 > 숄더/토트/기타 > 세부 유형
+- 모자 > 캡/니트/기타 > 세부 유형
+- 벨트 > 일반/장식 > 세부 유형
+- 스카프·머플러 > 스카프/머플러 > 세부 유형
+- 양말·레그웨어 > 양말/스타킹 > 세부 유형
+- 주얼리 > 목걸이/귀걸이/팔찌/반지 > 세부 유형
+- 기타 > 장갑/헤어 액세서리/키링/우산 > 세부 유형
 
-- Provide automatic deletion capability with default setting `OFF`.
-- System-admin UI must show deletion candidates, termination date, elapsed days, scheduled deletion date, manual delete action, and automatic deletion ON/OFF.
-- Send a deletion-complete email after successful deletion.
+### 4.2 Size and measurement model
 
-### 5.3 Legal/operational retention baseline
+- `CONFIRMED` System base size data is body-circumference based.
+- `CONFIRMED` Pattern reference values may calculate one quarter of body circumference.
+- `CONFIRMED` Workorder and final PDF size specs primarily use finished-garment flat measurements.
+- `CONFIRMED` Length fields use actual length.
+- `CONFIRMED` Measurement types: circumference, half-flat, quarter-pattern-reference, length.
+- `CONFIRMED` Customers choose cm or inch.
+- `CONFIRMED` Inch entry supports whole units plus 1/8, 1/4, 3/8, 1/2, 5/8, and 3/4.
+- `CONFIRMED` Provide women 55/66/77, men 90/95/100/105, and XS/S/M/L/XL defaults in cm and inch.
+- `CONFIRMED` Customers can load and edit defaults; system administrators maintain default systems and values.
+- `CONFIRMED` PDF size tables include POM/measurement-position guidance.
 
-- Books and tax evidence: 5 years.
-- Payment and refund transaction records: 5 years.
-- Tax invoice and receipt issue records: 5 years.
-- Customer inquiry and dispute records: 3 years.
-- Security/access logs: 1 year.
-- Deletion execution logs: 5 years.
-- General application error logs: 90 days.
-- Fully anonymized aggregate statistics: no fixed expiration.
-- Revalidate these periods against current Korean law, tax advice, and the actual business model before public launch.
+## 5. Signup, verification, approval, and business registration
 
-### 5.4 Log privacy
+- `CONFIRMED` Email verification is mandatory.
+- `CONFIRMED` Phone verification is not used.
+- `CONFIRMED` Business registration certificate is required in production signup, but not forced during current dev/test work.
+- `CONFIRMED` One customer-admin email belongs to only one company.
+- `CONFIRMED` Signup approval is performed by one system administrator; no mandatory dual approval.
+- `CONFIRMED` Approval target: within one business day.
+- `CONFIRMED` Signup includes business registration number and certificate image.
+- `CONFIRMED` The business registration number is validated through an external API, and the result is displayed to the system administrator.
+- `CONFIRMED` The system administrator manually compares the API result, entered company data, and uploaded certificate.
+- `CONFIRMED` API failure does not prevent manual review.
+- `CONFIRMED` If validation fails or entered information does not match the certificate, the administrator may reject or send a correction request email.
+- `CONFIRMED` A correction request has a three-day deadline. If not completed by the deadline, the request is automatically rejected.
+- `CONFIRMED` Correction request is sent once for that review cycle; there is no repeated reminder loop.
+- `CONFIRMED` Business certificate access is limited to the dedicated approval viewer and cannot be downloaded by the system administrator.
+- `CONFIRMED` General workorders, customer attachments, partner/factory/material details, and PDFs remain inaccessible to the system administrator.
+- `CONFIRMED` The certificate is retained while the company is active and is deleted with customer data after termination plus the 30-day recovery period.
+- `LEGAL_REVIEW` Validate the certificate retention basis, processor disclosure, and access-log requirements before launch.
+- `CONFIRMED` Rejected/canceled initial requests create no service account; uploaded certificate files are deleted after 30 days; minimal request/rejection records remain for 90 days, then are deleted.
 
-- System administrators cannot view customer content.
-- Keep enough non-content metadata to diagnose incidents: error code, timestamp, feature/screen/API path, internal company reference, app version, browser/device/OS, request status, processing stage, file size/type, storage state, and billing state.
-- Do not log workorder contents, memo contents, image/attachment/PDF bodies, detailed partner data, secrets, tokens, card data, or passwords.
-- On customer deletion, remove direct identifiers and customer mapping tables from retained logs.
-- Retained logs may keep only non-reversible hashes or random references that cannot be used to re-identify the customer.
-- Customers do not receive raw operational logs. Notify only customer-impacting outcomes such as payment success/failure, retry schedule, account termination/deletion schedule, deletion completion, major incidents, and security anomalies.
+## 6. Payment failure and service restrictions
 
-## 6. Workorder URL and sharing
+- `CONFIRMED` Retry milestones: payment day, day 3, day 7, day 14, day 21, day 30, adapted only as required by the PG's billing mechanism.
+- `CONFIRMED` Day 0 normal service plus failure email.
+- `CONFIRMED` Day 3 retry plus warning.
+- `CONFIRMED` Day 7 restriction begins.
+- `CONFIRMED` Day 30 final failure terminates the account, followed by a 30-day view/export/recovery period.
+- `CONFIRMED` At 100% storage, existing data may be viewed and existing text content may be edited.
+- `CONFIRMED` At 100% storage, deletion, attachment deletion, trash emptying, and permanent purge remain allowed so the customer can free space.
+- `CONFIRMED` At 100% storage, block new workorder creation, reorder, new uploads, attachment replacement, drawing edits that create a new file, PDF regeneration, and workflow transitions such as review request, review completion, purchase request, and purchase completion.
+- `CONFIRMED` Stage changes that may create documents or new stored artifacts remain blocked until usage is below the limit or capacity is increased.
 
-- Do not add screen sharing, share buttons, or shared links.
-- Workorders are delivered as complete or incomplete PDF files.
-- Browser workorder URLs use a stable opaque URL identifier.
-- The URL identifier is not an access grant.
-- Every request requires login, tenant membership, and resource permission checks.
-- Copying the URL to an unauthorized person must never expose the workorder.
-- The URL identifier follows the workorder lifecycle and is deleted when the workorder is permanently deleted.
+## 7. Company-wide Export
 
-## 7. PDF policy
+- `CONFIRMED` Everyday workorder/PDF download is not an Export and is never counted against the plan's company-wide Export allowance.
+- `CONFIRMED` Company-wide Export means a comprehensive backup of customer-owned data.
+- `CONFIRMED` Export package contains:
+  - CSV tables for Excel-friendly review.
+  - JSON data preserving structured relationships for migration or restoration.
+  - Original attachments.
+  - Current final workorder PDFs and relevant supplier/order PDFs.
+  - Folder-structured ZIP output.
+- `CONFIRMED` Export includes necessary business records, but not every detailed event log.
+- `CONFIRMED` History may include actor names, but excludes actor email addresses, deleted-item history, and detailed personal-information history.
+- `CONFIRMED` Export is generated asynchronously on the server.
+- `CONFIRMED` Completion email contains no attachment; it provides a login-required download link.
+- `CONFIRMED` Download link expires after seven days.
+- `CONFIRMED` The generated ZIP is deleted immediately when the link expires. A later request creates a new package.
+- `CONFIRMED` Large exports are split into ZIP parts of at most 500MB each.
+- `CONFIRMED` Export allowance is consumed only after successful generation; failed jobs do not consume a count.
+- `CONFIRMED` During the 30-day post-termination period, one final company-wide Export is guaranteed outside the plan's normal monthly allowance.
+- `TODO` Define export-job schema, status, encryption/checksum, signed-link delivery, retry, partial failure, and R2 lifecycle.
 
-- Customers can generate and send incomplete or final workorder PDFs.
-- Only the newest final workorder PDF is retained and available for view/download.
-- Superseded final PDF versions are not retained.
-- PDFs remain while the customer account and customer data remain, then are deleted with customer data after the termination retention period.
-- If a workorder has no fabric/accessory orders, the final workorder PDF may be generated immediately.
-- If it has fabric/accessory orders, the final workorder PDF may be generated only after all related purchase orders reach completed ordering status.
-- Supplier purchase-order PDF is generated when the purchase order is requested.
-- Do not create a separate actual-result/completion PDF.
-- Page 1 contains basic information, design, and memo/data summary.
-- Following pages contain size specifications and other details in tables, with measurement-position illustrations.
+## 8. PDF policy
 
-## 8. Runtime, deployment, and operations
+- `CONFIRMED` Workorder PDFs may be incomplete or final.
+- `CONFIRMED` Incomplete PDF shows all three: a prominent `미완성` watermark, status badge, and missing-item list.
+- `CONFIRMED` Only the latest final PDF file is kept.
+- `CONFIRMED` Previous PDF files and their generation timestamp, actor, revision, replacement, or superseded metadata are not retained.
+- `CONFIRMED` If PDF generation fails and a previous valid PDF exists, keep serving the previous valid PDF.
+- `CONFIRMED` Show generation failure status and a customer retry action.
+- `CONFIRMED` Notify the operator immediately on the first PDF generation failure.
+- `CONFIRMED` If no fabric/accessory orders exist, final workorder PDF may be generated immediately.
+- `CONFIRMED` If related orders exist, final workorder PDF may be generated only after all related purchase orders reach ordering completion.
+- `CONFIRMED` Supplier purchase-order PDF is generated at purchase request.
+- `CONFIRMED` No separate actual-result PDF.
+- `CONFIRMED` Page 1 contains basic information, design, and memo/data summary; later pages contain size specs and details, including POM guidance.
+- `TODO` Select one canonical production renderer and remove or production-block legacy fallbacks after verification.
 
-- Before 1.0, keep `master` as the single development/QA branch.
-- Keep the current Vercel URL as the development/QA deployment.
-- After Codex implementation is completed, create a separate production Vercel project for `www.wafl.co.kr`.
-- Production and development must use separate DB, R2, secrets, and environment variables.
-- A separate GitHub repository is not required; one repository with separated deployments/environments is preferred.
-- Final incident/security response owner: WAFL operator.
-- Root-cause remediation may require coordination with Vercel, Cloudflare, PG, email, domain, or other vendors.
+## 9. Account termination, recovery, and automatic deletion
 
-## 8.1 Database audit gate before implementation
+- `CONFIRMED` Normal termination and nonpayment termination provide 30 days of view, Export, and recovery.
+- `CONFIRMED` The customer may cancel termination at any time during that period and is restored immediately without operator approval.
+- `CONFIRMED` A nonpayment-terminated customer is restored immediately if payment is completed during the 30-day period.
+- `CONFIRMED` Recovery ends at 00:00 KST on the 30th day after the termination date.
+- `CONFIRMED` A final deletion-warning email is sent one day before deletion.
+- `CONFIRMED` Automatic customer-data deletion is ON by default from launch.
+- `CONFIRMED` At the deletion time, legally retained evidence is separated and customer content/personal data is deleted immediately without an additional grace period.
+- `CONFIRMED` If automatic deletion fails, retry every hour.
+- `CONFIRMED` Notify the operator as a critical incident on the first deletion failure.
+- `CONFIRMED` Send deletion-completion email after successful deletion.
+- `CONFIRMED` Delete company data, user personal data, business certificate, workorders, purchase orders, partners/factories/materials/processes, attachments, images, PDFs, customer categories/settings, customer-specific activity logs, and identifiable customer statistics.
+- `CONFIRMED` Retain only legally required transaction/tax evidence and fully anonymized aggregate service statistics.
+- `LEGAL_REVIEW` Revalidate all retention periods and the exact KST deadline calculation before launch.
 
-- `docs/project/27-database-schema-query-permission-audit.md` is the canonical DB audit input.
-- 0.24.21.11 must define source-of-truth, reconciliation, safe constraints/indexes, migration, dry-run, and rollback before DB-backed payment/deletion/size/PDF changes.
-- 0.24.22 remains the Codex Sprint A implementation boundary.
+## 10. Log, privacy, and system-administrator access
 
-## 9. Consolidated implementation TODO
+- `CONFIRMED` General error logs: 90 days.
+- `CONFIRMED` Security/access logs: 1 year.
+- `CONFIRMED` Payment/refund/account-termination/deletion logs: 5 years.
+- `CONFIRMED` Inquiry/dispute records: 3 years.
+- `CONFIRMED` Fully anonymized aggregate statistics: no fixed expiry.
+- `CONFIRMED` Retained logs remove direct identifiers and tenant mappings after deletion and may keep only non-reversible references.
+- `CONFIRMED` Do not log workorder text, memo, file/PDF bodies, detailed partner data, secrets, tokens, passwords, or card data.
+- `CONFIRMED` Customers receive outcome notices rather than raw operational logs.
+- `TODO` Centralize structured logging, allowed metadata, correlation IDs, redaction, retention class, and operator alerts.
 
-### A. Immediate Codex implementation queue
+## 11. Workorder URL and sharing
 
-1. Sprint A Productization UI Foundation
-   - PB-005 administrator screen WAFL commonization.
-   - PB-006 `/worker`, `/workspace`, and administrator dashboard density cleanup.
-   - PB-010 Functions pre-run environment/profile/safety/dry-run UX.
-   - Storage cylindrical usage visualization.
-   - Company representative-image/business-registration duplicate label cleanup.
-   - Empty/loading/error/permission/responsive states.
-2. System default catalog and size specification
-   - Three-level apparel catalog.
-   - Company enable/disable and customer-created category behavior.
-   - Body/quarter/flat measurement model.
-   - cm/inch fraction input.
-   - Base size systems and system-admin editor.
-   - Idempotent provisioning/seed and safe dry-run backfill.
-3. Customer signup, consent, approval, Trial, and billing foundation
-   - Email verification and one-company admin uniqueness.
-   - Production business-registration requirement with test-mode exception.
-   - Plan selection, mandatory card setup, seven-day Trial, automatic conversion.
-   - Single-admin approval Queue and idempotent provisioning.
-   - Rejected/canceled retention jobs.
-   - Payment failure schedule and service restriction states.
-4. Workorder opaque URL identifier
-   - Stable URL ID and authorization on direct/refresh/back navigation.
-   - Existing data backfill plan if a new DB column is needed.
-   - No share-link implementation.
-5. PDF/R2 productization
-   - Incomplete/final workorder PDF renderer.
-   - Supplier-order PDF at request time.
-   - Latest-final-only replacement policy.
-   - Private R2 lifecycle, quota reservation, signed download, trash/purge, and audit metadata.
-   - Size-table and POM illustration layout.
-6. Account termination and deletion operations
-   - 30-day view/export mode.
-   - Candidate queue, manual delete, auto-delete OFF default, notification email.
-   - Customer-data deletion and legal-record separation.
-   - Log anonymization and retention jobs.
-7. Public website and commercial onboarding
-   - WAFL brand, `www.wafl.co.kr`, pricing with VAT, additional-storage display.
-   - Primary CTA `7일 무료로 시작하기`.
-   - Email inquiry path, no chatbot, no marketing email.
-   - Public policy pages and launch-safe wording.
-8. Production separation and launch preparation
-   - Separate Vercel production project.
-   - Separate production DB/R2/environment variables.
-   - Domain/DNS configuration.
-   - Production email provider and PG integration after business registration.
+- `CONFIRMED` No screen sharing, share buttons, anonymous links, or internal share links.
+- `CONFIRMED` Browser workorder URLs use a stable opaque URL identifier separate from the DB technical primary key.
+- `CONFIRMED` Every request requires login, tenant membership, and resource permission.
+- `CONFIRMED` Copying a URL never grants access.
+- `CONFIRMED` The opaque ID is deleted with the workorder at permanent deletion.
 
-### B. Repository-wide undeveloped or incomplete productization work
+## 12. Runtime, deployment, and operational ownership
 
-- PB-001 route/API permission meaning audit.
-- PB-003 mock/demo/fallback removal from production paths.
-- PB-004 integrated iPad mini, Galaxy Tab, mobile, and PC QA.
-- PB-007 split very large screen/domain files.
-- PB-008 expand common save-lock/toast/sequence/revision contracts.
-- PB-009 public/signup/policy i18n cleanup.
-- PB-011 R2 usage fixtures, cleanup preview, and reconciliation dry-run.
-- PB-012 decide whether deprecated Cloudflare PDF Worker entrypoints can be removed.
-- PB-013 reduce render scope of large catalog/settings/admin screens.
-- PB-014 productization audit regression contracts.
-- PB-016 production console/debug output policy and cleanup.
-- Simulator DB seed/cleanup adapters and R2 upload/delete adapters.
-- Functions/Simulator/PowerShell menu and report integration.
-- Policy re-agreement end-to-end blocking and evidence verification.
-- Company file upload/download/preview and business-registration review workflow.
-- Billing, refund, tax invoice/receipt, payment-failure, and account-state operational screens.
-- Public legal-document placeholders: business entity, representative, address, registration number, privacy officer, support email, PG/vendor names, effective dates.
-- Performance, accessibility, responsive, permission, tenant-isolation, mutation, and release regression validation.
-- Repository cleanup: generated artifacts, package-manager policy, oversized files, dead code, docs canonical/archive consistency, deprecated worker candidates.
-- Final consolidated manual QA and pre-customer launch checklist.
+- `CONFIRMED` Before 1.0, `master` remains the single development/QA branch.
+- `CONFIRMED` The current Vercel URL remains the dev/QA deployment.
+- `CONFIRMED` After Codex implementation, create a separate production Vercel project for `www.wafl.co.kr`.
+- `CONFIRMED` Production and dev/test use separate DB, R2, secrets, and environment variables.
+- `CONFIRMED` One GitHub repository is sufficient.
+- `CONFIRMED` Final incident/security-response owner: WAFL operator, with vendor escalation to Vercel, Cloudflare, PG, email, domain, or other providers as appropriate.
+- `TODO` Add monitoring for Vercel deploy, API 5xx, DB, R2, email, payment webhook, PDF generation, deletion jobs, and reconciliation mismatches.
+- `TODO` Define backup/restore, RPO/RTO, and run a restoration exercise before launch.
 
-### C. Deferred decision/TODO list
+## 13. Implementation status and Master TODO
 
-- Include underwear in the default enabled system catalog.
-- Include accessories in the default enabled system catalog.
-- Select the PG/payment provider after business registration.
-- Confirm Instagram account availability and define video format, cadence, and content plan after product completion.
-- Select public screenshots and promotional content after product completion.
-- Decide whether external analytics is needed.
-- If non-essential tracking is introduced, determine cookie-consent/banner requirements.
+### 13.1 Codex Sprint A — 0.24.22
 
-## 10. Implementation order after 0.24.21.9
+- Customer administrator screens WAFL commonization.
+- `/worker`, `/workspace`, administrator dashboard density cleanup.
+- Functions environment/profile/safety/dry-run UX.
+- Storage cylindrical visualization.
+- Company image/business-certificate duplicate labels.
+- Empty/loading/error/permission/responsive states.
+- PC/mobile/tablet verification.
+- No DB migration, payment, PDF renderer, public-site implementation, or production mutation in Sprint A.
 
-- Next code version: `0.24.22`.
-- Start with Sprint A Productization UI Foundation.
-- After Codex implementation and validation, proceed through the dependency order in section 9 rather than treating all TODOs as parallel work.
-- Any schema, migration, production DB/R2, PG, secret, or destructive deletion execution still requires the existing explicit safety boundary.
+### 13.2 Confirmed post-Sprint implementation queue
 
-## 11. DB Migration
+1. System catalog, sizes, underwear/accessory disabled defaults, provisioning, seed, dry-run backfill.
+2. Public signup, email verification, certificate/API/manual review, correction deadline, one-day approval target.
+3. Plan selection, card setup, Trial, scheduled notices, payment retry, upgrade/downgrade proration, refund exceptions.
+4. Company-wide Export job, split ZIP, seven-day signed access, expiry deletion, final termination Export.
+5. Opaque workorder URL and tenant/permission regression tests.
+6. Incomplete/final workorder PDF, supplier PDF, latest-only retention, first-failure alert, R2 lifecycle.
+7. Termination recovery, auto-delete scheduler, hourly retry, first-failure critical alert, legal-record separation.
+8. Public website, production Vercel, separate DB/R2/env, domain/DNS, email provider, PG.
+9. Monitoring, operator queues, CI, E2E, accessibility, performance, device QA, backup/restore.
+10. Repository cleanup: oversized files, duplicate services, dead routes/components, mock/fallback production paths, deprecated PDF Worker candidates, docs consistency.
 
-None in 0.24.21.9. Future implementation items may require schema/migration approval.
+### 13.3 Deferred TODO
+
+- `DEFERRED` External analytics selection.
+- `DEFERRED` Cookie banner and non-essential tracking consent.
+- `DEFERRED` Instagram video/content strategy and final public screenshots.
+- `DEFERRED` Exact PG/provider selection until business registration.
+
+## 14. Legal and production-launch review gate
+
+Before public launch, verify against current law and actual provider contracts:
+
+- automatic billing disclosures and cancellation UX;
+- refund exceptions and proration behavior;
+- privacy collection basis and consent separation;
+- business certificate purpose, access, retention, and deletion;
+- processing outsourcing and international transfers for Vercel, Cloudflare, Google, email, and PG;
+- statutory record retention;
+- cookie/analytics requirements if added;
+- privacy officer/contact information;
+- terms, privacy policy, billing/refund policy, storage/deletion policy, and actual runtime behavior consistency.
+
+## 15. DB and safety boundary
+
+- `docs/project/27-database-schema-query-permission-audit.md` and `docs/project/28-database-source-of-truth-safe-migration-design.md` remain the DB audit basis.
+- DB read-only menus 30–32 are the pre-implementation verification gate.
+- Schema, migration, seed, backfill, production DB/R2, PG, secret, and destructive actions remain separately approved work.
+- No DB migration in 0.24.21.15.
