@@ -1876,6 +1876,69 @@ function InvokeResetDatabaseSchema {
 }
 
 
+
+function TestReadOnlyDbAuditGuard {
+    param([string]$Runtime, [string]$DatabaseUrl)
+
+    $allowed = @([string[]]$PipelineConfig.Simulator.AllowedRuntimes)
+    $normalized = ([string]$Runtime).Trim().ToLowerInvariant()
+    if ([string]::IsNullOrWhiteSpace($normalized) -or $allowed -notcontains $normalized) {
+        return [pscustomobject]@{ Passed = $false; Reason = "runtime-blocked"; Runtime = $(if ($normalized) { $normalized } else { "unset" }); Fingerprint = "unknown" }
+    }
+    if ([string]::IsNullOrWhiteSpace($DatabaseUrl)) {
+        return [pscustomobject]@{ Passed = $false; Reason = "database-url-missing"; Runtime = $normalized; Fingerprint = "unknown" }
+    }
+    try {
+        $uri = [System.Uri]$DatabaseUrl
+        $dbName = $uri.AbsolutePath.Trim('/')
+        if (@('postgres','postgresql') -notcontains $uri.Scheme.ToLowerInvariant() -or [string]::IsNullOrWhiteSpace($uri.Host) -or [string]::IsNullOrWhiteSpace($dbName)) {
+            return [pscustomobject]@{ Passed = $false; Reason = "database-url-invalid"; Runtime = $normalized; Fingerprint = "unknown" }
+        }
+        $fingerprint = GetSha256HexPrefix -Value ("{0}/{1}" -f $uri.Host, $dbName)
+        $approved = ([string]$PipelineConfig.Simulator.ApprovedDbFingerprint).Trim().ToLowerInvariant()
+        if ([string]::IsNullOrWhiteSpace($approved) -or $fingerprint -ne $approved) {
+            return [pscustomobject]@{ Passed = $false; Reason = "fingerprint-mismatch"; Runtime = $normalized; Fingerprint = $fingerprint }
+        }
+        return [pscustomobject]@{ Passed = $true; Reason = "approved-dev-test-target"; Runtime = $normalized; Fingerprint = $fingerprint }
+    }
+    catch {
+        return [pscustomobject]@{ Passed = $false; Reason = "database-url-parse-failed"; Runtime = $normalized; Fingerprint = "unknown" }
+    }
+}
+
+function InvokeReadOnlyDbAudit {
+    param([string]$Mode, [string]$Title, [string]$Label)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { WaitForDeveloperToolsMenu; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Read-only DB audit guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Result: $($guard.Reason)"
+    if (-not $guard.Passed) {
+        LogError "읽기 전용 DB 감사가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        WaitForDeveloperToolsMenu
+        return 2
+    }
+
+    $previous = $env:WAFL_DB_AUDIT_APPROVED
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        return (InvokeProjectCommandWithResultFile -Title $Title -Label $Label -NpmCommand "node scripts/run-readonly-db-audit.mjs $Mode" -LoadEnvLocal $false -PauseAfter $true)
+    }
+    finally {
+        if ($null -eq $previous) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previous }
+    }
+}
+
+function RunDbSchemaReconciliationAudit { return (InvokeReadOnlyDbAudit -Mode 'reconciliation' -Title 'DB Schema Reconciliation Audit' -Label 'DB_Reconciliation_Audit') }
+function RunDbConstraintReadinessCheck { return (InvokeReadOnlyDbAudit -Mode 'constraints' -Title 'DB Constraint Readiness Check' -Label 'DB_Constraint_Readiness') }
+function RunDbIndexReadinessReport { return (InvokeReadOnlyDbAudit -Mode 'indexes' -Title 'DB Index Usage and Query Readiness Report' -Label 'DB_Index_Readiness') }
+
 # ==========================================
 # 10. 메인 화면 / 메인 while 루프
 # ==========================================
@@ -1919,6 +1982,11 @@ function ShowDeveloperToolsMenu {
         Write-Host "28. Simulator Adapter Plan                       [안전/계획만]"
         Write-Host "29. Simulator DB Adapter Contract                [안전/변경 없음]"
         Write-Host ""
+        Write-Host "[DB 구조·제약·인덱스 읽기 전용 감사]"
+        Write-Host "30. DB Schema Reconciliation Audit               [DEV/TEST·읽기 전용]"
+        Write-Host "31. DB Constraint Readiness Check                [DEV/TEST·읽기 전용]"
+        Write-Host "32. DB Index Usage/Query Readiness Report        [DEV/TEST·읽기 전용]"
+        Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
         Write-Host "22. Simulator DB Cleanup Execute                 [파괴적/DEV·TEST]"
@@ -1928,7 +1996,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~29 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~32 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -1963,9 +2031,12 @@ function ShowDeveloperToolsMenu {
             27 { RunSimulatorAdapterContract | Out-Null }
             28 { RunSimulatorAdapterPlan | Out-Null }
             29 { RunSimulatorDbAdapterContract | Out-Null }
+            30 { RunDbSchemaReconciliationAudit | Out-Null }
+            31 { RunDbConstraintReadinessCheck | Out-Null }
+            32 { RunDbIndexReadinessReport | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~29 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~32 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
