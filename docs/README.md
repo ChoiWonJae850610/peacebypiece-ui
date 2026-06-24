@@ -59,6 +59,7 @@
 - Korean / Unicode Encoding Standard: `docs/project/25-korean-unicode-encoding-standard.md`
 - Final Policy Decisions and Master TODO: `docs/project/26-final-policy-decisions-and-master-todo.md`
 - Database Schema, Query, and Permission Audit: `docs/project/27-database-schema-query-permission-audit.md`
+- Database Source-of-Truth and Safe Migration Design: `docs/project/28-database-source-of-truth-safe-migration-design.md`
 - cleanup inventory: `docs/audits/repository-cleanup-inventory-0.24.11.md`
 - docs archive manifest: `docs/audits/docs-archive-manifest-0.24.11.md`
 - document structure cleanup audit: `docs/audits/document-structure-cleanup-0.24.13.md`
@@ -89,7 +90,7 @@
 | docs/정책문서 | 32 |
 | docs/현재기준 | 34 |
 | docs/audits | 13 |
-| docs/project | 27 |
+| docs/project | 28 |
 
 ## 6. 정리 원칙
 

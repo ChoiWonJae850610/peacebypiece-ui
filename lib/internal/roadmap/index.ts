@@ -20,6 +20,7 @@ import { ROADMAP_0_24_21_7 } from "./roadmap-0.24.21.7";
 import { ROADMAP_0_24_21_8 } from "./roadmap-0.24.21.8";
 import { ROADMAP_0_24_21_9 } from "./roadmap-0.24.21.9";
 import { ROADMAP_0_24_21_10 } from "./roadmap-0.24.21.10";
+import { ROADMAP_0_24_21_11 } from "./roadmap-0.24.21.11";
 import type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapStatus, RoadmapVersionDetail } from "./types";
 
 export type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapResult, RoadmapStatus, RoadmapVersionDetail } from "./types";
@@ -147,8 +148,8 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
   featureProgressPercent: 93,
   productizationProgressPercent: 92,
-  currentWorkVersion: "0.24.21.10",
-  nextWorkVersion: "0.24.21.11",
+  currentWorkVersion: "0.24.21.11",
+  nextWorkVersion: "0.24.22",
   canonicalPolicy:
     "새 버전 기능 작업 전에는 lib/internal/roadmap의 canonical 상세 명세와 docs/codex-current-state.md를 먼저 읽는다. 0.24.15 이후 제품화 작업은 docs/project/*, docs/audits/productization-audit-report-0.24.15.md와 docs/productization-backlog.md의 PB 우선순위를 함께 따른다. /roadmap은 사용자와 ChatGPT/Codex가 함께 보는 조회 전용 개발 기준판이며, 화면에서 편집·추가·삭제·저장 기능을 제공하지 않는다.",
   statusLabels: ROADMAP_STATUS_LABELS,
@@ -176,6 +177,7 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
     ROADMAP_0_24_21_8,
     ROADMAP_0_24_21_9,
     ROADMAP_0_24_21_10,
+    ROADMAP_0_24_21_11,
   ],
 };
 

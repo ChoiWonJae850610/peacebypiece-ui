@@ -1,22 +1,10 @@
-# Pending Tests — 0.24.21.10
+# Pending Tests — 0.24.21.11
 
-## Automatic
-
-- `node tests/db-schema-audit-contract.mjs`
-- `node tests/unicode-encoding-contract.mjs`
-- local canonical document/roadmap contracts
-
-## Manual review
-
-- Verify the 60-table domain classification against current runtime ownership.
-- Confirm that no table is interpreted as approved for deletion.
-- In 0.24.21.11, validate deployed schema/RLS drift only in an approved dev/test environment.
-- Run duplicate/orphan/reconciliation SQL as dry-run before proposing any constraint.
-- Obtain query-plan evidence before adding or removing indexes.
-
-## Not executed in this patch
-
-- DB connection or SQL execution
-- migration/reset/seed/cleanup
-- R2 access or mutation
-- production access
+- 로컬에서 `node tests/db-safe-migration-design-contract.mjs` 실행
+- 로컬에서 `node tests/unicode-encoding-contract.mjs` 실행
+- `/roadmap`에서 현재 0.24.21.11, 다음 0.24.22 표시 확인
+- `docs/project/28-database-source-of-truth-safe-migration-design.md` 열람 확인
+- reconciliation SQL이 SELECT-only인지 확인
+- safe DDL draft의 모든 DDL/DML이 주석 처리되었는지 확인
+- DB/R2/migration/reset/seed/cleanup 실행 금지
+- 실제 migration 전 dev/test schema drift, reconciliation, EXPLAIN evidence 별도 수행

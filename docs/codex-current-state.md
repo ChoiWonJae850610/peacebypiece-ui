@@ -1,15 +1,25 @@
-# Codex Current State — 0.24.21.10
+# Codex Current State — 0.24.21.11
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.10`
-- 다음 버전: `0.24.21.11`
-- 다음 작업: 전체 DB source-of-truth, safe constraint/index, migration/dry-run/rollback 설계를 0.24.21.11에서 확정
+- 현재 버전: `0.24.21.11`
+- 다음 버전: `0.24.22`
+- 다음 작업: 0.24.22 Codex Sprint A Productization UI Foundation 실제 구현
 - 먼저 읽기: `docs/project/23-codex-productization-sprint-master-pack.md`와 해당 Sprint의 canonical 명세
 - 사용자 결정 대기 정책은 구현 범위에서 제외한다.
 
 
 
+
+## 0.24.21.11 Database Safe Migration Design
+
+- `docs/project/28-database-source-of-truth-safe-migration-design.md`가 DB source-of-truth와 safe migration의 canonical 기준이다.
+- `db/audits/0.24.21.11-reconciliation-readonly.sql`은 SELECT-only 충돌·고아 탐지 초안이다.
+- `db/audits/0.24.21.11-safe-ddl-draft.sql`은 모든 DDL이 주석 처리된 검토용 초안이며 migration이 아니다.
+- membership canonical은 `company_members`, plan catalog는 `plans`, current subscription은 `company_subscriptions` 방향으로 설계한다.
+- workorder URL id, final PDF uniqueness, deletion job, payment evidence, size/POM 구조는 별도 승인 migration 후보로 남긴다.
+- reconciliation, deployed-schema/RLS drift, EXPLAIN evidence가 없으면 DB 변경을 중단한다.
+- 0.24.22 Codex Sprint A는 DB authority를 바꾸지 않는 UI 제품화 범위로 진행한다.
 
 ## 0.24.21.10 Database Audit
 

@@ -1,3 +1,13 @@
+# Productization Roadmap
+
+## 0.24.21.11 — Database Source-of-Truth and Safe Migration Design
+
+- 0.24.21.10 감사 결과를 canonical source-of-truth matrix로 전환한다.
+- read-only reconciliation SQL과 실행 금지 safe DDL draft를 제공한다.
+- membership, billing, workorder URL, attachment/PDF lifecycle, deletion, category/size/POM 구조의 staged migration·rollback 기준을 확정한다.
+- DB/R2/production 실행과 migration 적용은 하지 않는다.
+- 다음 버전은 0.24.22 Codex Sprint A Productization UI Foundation이다.
+
 # PeaceByPiece / WAFL Productization Roadmap
 
 ## 0.24.21.10 — Database Schema, Query, and Permission Audit
