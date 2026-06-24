@@ -1,14 +1,25 @@
-# Codex Current State — 0.24.21.9
+# Codex Current State — 0.24.21.10
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.9`
-- 다음 버전: `0.24.22`
-- 다음 작업: Codex가 Sprint A Productization UI Foundation(PB-005·PB-006·PB-010, 저장소 원통형, 회사 파일 상태)을 실제 구현
+- 현재 버전: `0.24.21.10`
+- 다음 버전: `0.24.21.11`
+- 다음 작업: 전체 DB source-of-truth, safe constraint/index, migration/dry-run/rollback 설계를 0.24.21.11에서 확정
 - 먼저 읽기: `docs/project/23-codex-productization-sprint-master-pack.md`와 해당 Sprint의 canonical 명세
 - 사용자 결정 대기 정책은 구현 범위에서 제외한다.
 
 
+
+
+## 0.24.21.10 Database Audit
+
+- `docs/project/27-database-schema-query-permission-audit.md`가 전체 DB schema/query/permission read-only 감사 기준이다.
+- 현재 schema inventory는 60 tables, 193 explicit indexes, 2 views다.
+- 최고 위험은 users/company_users/company_members, legacy/template permissions, companies/subscriptions/plans/assignments의 중복 source of truth다.
+- repository schema에는 RLS DDL이 없으므로 deployed DB 정책을 별도 확인해야 한다.
+- 0.24.21.10은 SQL/DB/R2를 실행하거나 변경하지 않는다.
+- 0.24.21.11에서 reconciliation SQL, source-of-truth matrix, safe migration/rollback, query-backed index proposal을 작성한다.
+- 0.24.22 Codex Sprint A actual implementation boundary는 유지한다.
 
 ## 0.24.21.9 Canonical Policy and Master TODO
 

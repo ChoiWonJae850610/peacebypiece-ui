@@ -1,6 +1,6 @@
 # Final Policy Decisions and Master TODO
 
-Version: 0.24.21.9  
+Version: 0.24.21.10  
 Status: Canonical product-policy decision log and consolidated implementation backlog  
 Scope: decisions confirmed in the 2026-06-24 productization review, unresolved TODO, and repository-wide undeveloped product work
 
@@ -157,6 +157,12 @@ This document supersedes conflicting provisional language in earlier productizat
 - A separate GitHub repository is not required; one repository with separated deployments/environments is preferred.
 - Final incident/security response owner: WAFL operator.
 - Root-cause remediation may require coordination with Vercel, Cloudflare, PG, email, domain, or other vendors.
+
+## 8.1 Database audit gate before implementation
+
+- `docs/project/27-database-schema-query-permission-audit.md` is the canonical DB audit input.
+- 0.24.21.11 must define source-of-truth, reconciliation, safe constraints/indexes, migration, dry-run, and rollback before DB-backed payment/deletion/size/PDF changes.
+- 0.24.22 remains the Codex Sprint A implementation boundary.
 
 ## 9. Consolidated implementation TODO
 

@@ -1,0 +1,100 @@
+import type { RoadmapVersionDetail } from "./types";
+
+export const ROADMAP_0_24_21_10: RoadmapVersionDetail = {
+  version: "0.24.21.10",
+  title: "Database Schema, Query, and Permission Audit",
+  status: "verification_pending",
+  userSummary: [
+    "전체 DB schema와 실제 repository/route 사용을 대조해 중복 source of truth, JOIN/비정규화, PK/FK, index, tenant 권한 위험을 문서화한다.",
+  ],
+  visibleChanges: ["앱 UI 변화 없음"],
+  expectedUi: ["사용자 화면 변화 없음"],
+  developmentPurpose: [
+    "0.24.22 Codex 구현 전에 DB 구조의 중복과 누락을 확인하고 0.24.21.11의 안전한 migration 설계 입력을 만든다.",
+  ],
+  developmentUiStructure: ["read-only source/schema audit와 canonical 문서만 변경"],
+  scope: [
+    "full_reset.sql 60개 테이블과 193개 index inventory",
+    "membership, permission, billing, workorder, attachment, statistics source-of-truth 감사",
+    "repository/route tenant scope와 RLS evidence 감사",
+    "PK/FK/unique/check/timestamp/ID 생성 정책 감사",
+    "결제·삭제·사이즈/POM·PDF 정책에 필요한 누락 구조 식별",
+  ],
+  outOfScope: [
+    "SQL 실행",
+    "migration 적용",
+    "DB/R2 mutation",
+    "테이블·컬럼·index 삭제 또는 추가",
+    "production 접근",
+    "package/lockfile 변경",
+  ],
+  implementationPrinciples: [
+    "실제 source와 schema evidence를 구분한다.",
+    "사용 빈도가 낮다는 이유만으로 테이블을 삭제 후보로 확정하지 않는다.",
+    "JOIN 수보다 중복 source of truth와 tenant 누락을 우선 위험으로 본다.",
+    "모든 destructive proposal은 reconciliation, dry-run, rollback 이후에만 허용한다.",
+  ],
+  successConditions: [
+    "전체 domain별 구조와 중복 source of truth가 문서화됨",
+    "고위험 membership/billing/workorder/file/tenant 이슈가 우선순위화됨",
+    "0.24.21.11 deliverable과 stop condition이 명확함",
+    "DB audit contract PASS",
+  ],
+  failureConditions: [
+    "분석 버전에서 DB schema를 직접 변경",
+    "실제 usage 확인 없이 삭제/병합 확정",
+    "RLS 존재를 근거 없이 가정",
+    "production DB/R2 접근",
+  ],
+  cautions: [
+    "repository에 RLS DDL이 없다는 사실과 실제 deployed DB의 RLS 부재는 동일하지 않다.",
+    "full_reset.sql header version 0.17.29는 현재 앱 기준과 동기화가 필요하다.",
+  ],
+  stopConditions: [
+    "deployed schema 확인이 필요한 판단",
+    "실데이터 conflict/orphan 검사가 필요한 판단",
+    "외부 job/writer 존재 여부를 확인할 수 없음",
+  ],
+  permissionImpact: "read_only",
+  permissionNotes: ["권한 코드는 변경하지 않고 tenant/RLS evidence만 감사한다."],
+  dbImpact: "read_only",
+  dbImpactNotes: ["SQL 파일과 query source를 읽기만 하며 DB에 연결하거나 실행하지 않는다."],
+  r2Impact: "none",
+  r2ImpactNotes: ["R2 접근·변경 없음"],
+  migrationRequired: false,
+  migrationNotes: "DB Migration 없음",
+  automaticTests: ["db-schema-audit-contract", "unicode-encoding-contract"],
+  manualTests: ["감사 결과의 table-domain 분류와 0.24.21.11 범위 검토"],
+  expectedChangeAreas: [
+    "docs/project/27-database-schema-query-permission-audit.md",
+    "docs/codex-current-state.md",
+    "docs/productization-roadmap.md",
+    "lib/internal/roadmap/*",
+  ],
+  recommendedCommitMessage: "docs: audit database schema queries and permissions",
+  nextVersionBoundary: [
+    "0.24.21.11에서 source-of-truth matrix, safe constraints/indexes, migration/dry-run/rollback 설계를 작성한다.",
+    "0.24.22 Codex Sprint A actual implementation boundary는 유지한다.",
+  ],
+  completionConditions: [
+    "canonical DB audit 문서 생성",
+    "roadmap/current-state 동기화",
+    "contract PASS",
+    "commit/push 완료",
+  ],
+  result: {
+    completedSummary: [
+      "60개 table, 193개 explicit index, 2개 view를 inventory했다.",
+      "membership, billing, workorder, attachment deletion, tenant isolation의 핵심 중복과 위험을 식별했다.",
+    ],
+    commitHash: "",
+    verificationResult: "handoff source 정적 감사 완료; DB/R2/production 실행 없음",
+    remainingIssues: [
+      "0.24.21.11 source-of-truth 및 migration 설계",
+      "deployed DB RLS/schema drift 확인",
+      "실데이터 reconciliation과 EXPLAIN evidence는 안전한 dev/test 환경에서 후속 수행",
+    ],
+    userConfirmationRequired: false,
+    userConfirmationResult: "사용자가 0.24.21.10/11 선행 감사 순서를 승인함",
+  },
+};

@@ -1,5 +1,14 @@
 # PeaceByPiece / WAFL Productization Roadmap
 
+## 0.24.21.10 — Database Schema, Query, and Permission Audit
+
+- 60 tables, 193 explicit indexes, 2 views를 정적 inventory한다.
+- membership/permission/billing/workorder/file lifecycle의 중복 source of truth를 감사한다.
+- repository RLS evidence, tenant query scope, PK/FK/unique/check/timestamp/ID 정책을 감사한다.
+- DB/R2/SQL 실행과 migration은 하지 않는다.
+- 다음 0.24.21.11에서 safe constraints/indexes와 migration/dry-run/rollback 설계를 작성한다.
+
+
 ## Status
 
 - Roadmap checkpoint version: `0.24.21.8`
