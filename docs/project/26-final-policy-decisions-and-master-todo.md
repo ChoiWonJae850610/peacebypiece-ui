@@ -1,6 +1,6 @@
 # Final Policy Decisions and Master TODO
 
-Version: 0.24.21.15  
+Version: 0.24.21.16  
 Status: Canonical product-policy decision log and consolidated implementation backlog  
 Scope: all product, billing, export, PDF, deletion, signup, catalog, operational, legal-review, and Codex implementation decisions confirmed through 2026-06-24
 
@@ -233,18 +233,15 @@ Each requirement is classified as:
 
 ## 13. Implementation status and Master TODO
 
-### 13.1 Codex Sprint A — 0.24.22
+### 13.1 Integrated Codex execution plan
 
-- Customer administrator screens WAFL commonization.
-- `/worker`, `/workspace`, administrator dashboard density cleanup.
-- Functions environment/profile/safety/dry-run UX.
-- Storage cylindrical visualization.
-- Company image/business-certificate duplicate labels.
-- Empty/loading/error/permission/responsive states.
-- PC/mobile/tablet verification.
-- No DB migration, payment, PDF renderer, public-site implementation, or production mutation in Sprint A.
+- `docs/project/31-pre-codex-integrated-master-plan.md` is the active implementation sequence.
+- 0.24.22 begins with DB Foundation and authority alignment, not UI-first implementation.
+- Source Architecture Cleanup follows before WAFL UI Foundation.
+- Authorization/routing, signup, catalog/size, PDF/R2, Export, deletion/quota, PG billing, and launch hardening follow in dependency order.
+- Every Sprint has migration, test, stop, commit/push, and Vercel QA boundaries.
 
-### 13.2 Confirmed post-Sprint implementation queue
+### 13.2 Confirmed implementation queue
 
 1. System catalog, sizes, underwear/accessory disabled defaults, provisioning, seed, dry-run backfill.
 2. Public signup, email verification, certificate/API/manual review, correction deadline, one-day approval target.
@@ -283,4 +280,4 @@ Before public launch, verify against current law and actual provider contracts:
 - `docs/project/27-database-schema-query-permission-audit.md` and `docs/project/28-database-source-of-truth-safe-migration-design.md` remain the DB audit basis.
 - DB read-only menus 30–32 are the pre-implementation verification gate.
 - Schema, migration, seed, backfill, production DB/R2, PG, secret, and destructive actions remain separately approved work.
-- No DB migration in 0.24.21.15.
+- No DB migration in 0.24.21.16.

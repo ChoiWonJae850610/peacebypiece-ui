@@ -1,11 +1,15 @@
 # Codex Productization Sprint Master Pack
 
 
-> Canonical update (0.24.21.15): synchronized with `docs/project/26-final-policy-decisions-and-master-todo.md`.
-Version: 0.24.21.15  
+> Canonical update (0.24.21.16): execution order is superseded by `docs/project/31-pre-codex-integrated-master-plan.md`.
+Version: 0.24.21.16  
 Status: Final execution input before Codex implementation  
 Target implementation baseline: 0.24.22 and later Productization Sprints  
 Runtime implementation: deferred to Codex
+
+## 0. Current execution authority
+
+The Sprint A~F order below is retained as historical planning context only. The active implementation order is defined in `docs/project/31-pre-codex-integrated-master-plan.md`, which adds the DB Foundation and Source Architecture Cleanup Sprints before UI implementation and integrates all remaining commercial, operational, security, and QA work.
 
 ## 1. 목적
 

@@ -1,19 +1,28 @@
+## 0.24.21.16 integrated Codex execution gate
 
-## 0.24.21.15 final policy reconciliation
+- Canonical execution plan: `docs/project/31-pre-codex-integrated-master-plan.md`.
+- Current version: `0.24.21.16`; next implementation version: `0.24.22`.
+- 0.24.22 is DB Foundation and authority alignment, not the former UI-first Sprint.
+- 0.24.23 performs Source Architecture Cleanup before UI Foundation.
+- The active dependency order is DB → source cleanup → UI → authorization/routing → signup → catalog/size → PDF/R2 → Export → deletion/quota → PG billing → launch hardening.
+- Any migration, production mutation, or scope expansion outside the active Sprint is a stop condition.
+
+
+## Historical — 0.24.21.15 final policy reconciliation
 
 - Canonical policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
 - Conflict register: `docs/project/30-pre-codex-policy-reconciliation.md`.
 - Current version: `0.24.21.15`; next implementation boundary: `0.24.22` Codex Sprint A.
 - Sprint A is UI productization only; payment, signup provisioning, Export, PDF lifecycle, deletion scheduler, catalog DB work, and production separation remain later Sprints.
-# Codex Current State — 0.24.21.11
+# Codex Current State — 0.24.21.16
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.11`
+- 현재 버전: `0.24.21.16`
 - 다음 버전: `0.24.22`
-- 다음 작업: 0.24.22 Codex Sprint A Productization UI Foundation 실제 구현
-- 먼저 읽기: `docs/project/23-codex-productization-sprint-master-pack.md`와 해당 Sprint의 canonical 명세
-- 사용자 결정 대기 정책은 구현 범위에서 제외한다.
+- 다음 작업: 0.24.22 DB Foundation and Authority Alignment
+- 먼저 읽기: `docs/project/31-pre-codex-integrated-master-plan.md`, `docs/project/26-final-policy-decisions-and-master-todo.md`, DB audit 27·28
+- 사용자 결정 대기 정책은 구현 범위에서 제외하고 DEFERRED/LEGAL_REVIEW로 유지한다.
 
 
 

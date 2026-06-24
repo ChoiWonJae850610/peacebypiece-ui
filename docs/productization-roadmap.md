@@ -6,6 +6,15 @@
 - Next implementation version remains `0.24.22` Sprint A.
 # Productization Roadmap
 
+## 0.24.21.16 — Pre-Codex Integrated Master Plan
+
+- 최종 정책, DB 감사, 소스 감사, 미구현 기능, 운영·보안·QA 작업을 하나의 실행계획으로 통합한다.
+- 0.24.22는 DB Foundation, 0.24.23은 Source Architecture Cleanup, 0.24.24는 UI Foundation으로 재배치한다.
+- 이후 권한/라우팅, 가입, 분류/사이즈, PDF/R2, Export, 자동삭제, PG, 출시 안정화 순서로 진행한다.
+- canonical input: `docs/project/31-pre-codex-integrated-master-plan.md`.
+- 이번 버전은 문서/roadmap만 변경하며 DB/R2/PG 실행과 migration 적용은 없다.
+
+
 ## 0.24.21.11 — Database Source-of-Truth and Safe Migration Design
 
 - 0.24.21.10 감사 결과를 canonical source-of-truth matrix로 전환한다.
@@ -27,10 +36,10 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.21.8`
-- APP_VERSION: `0.24.21.15`
+- Roadmap checkpoint version: `0.24.21.16`
+- APP_VERSION: `0.24.21.16`
 - Feature implementation progress: about `93%`
-- Productization readiness: `92%`
+- Productization readiness: about `80%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
 - Compatibility facade: `lib/internal/productizationRoadmap.ts`
 - Current-state handoff: `docs/codex-current-state.md`

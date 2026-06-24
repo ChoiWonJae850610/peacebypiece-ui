@@ -1,6 +1,6 @@
 # Pre-Codex Policy Reconciliation Audit
 
-Version: 0.24.21.15  
+Version: 0.24.21.16  
 Status: Completed document comparison and cleanup register  
 Scope: repository policy/spec comparison against the final confirmed decisions before Codex Sprint A
 
@@ -53,9 +53,9 @@ Many `docs/*.md` files describe completed version-specific work. They are not re
 - Storage-100% mutation matrix is not fully enforced across all routes.
 - Central incident monitoring, structured logging, CI, and recovery exercises remain incomplete.
 
-## 6. Codex Sprint A boundary
+## 6. Superseded implementation boundary
 
-Sprint A remains UI productization only. It must not implement payment, signup provisioning, Export, PDF lifecycle, deletion scheduler, catalog migration, or production environment separation. If Sprint A discovers a schema or permission-contract requirement, stop and split it into a separately approved version.
+The earlier UI-first Sprint A boundary has been superseded. The active order begins with DB Foundation in 0.24.22, followed by Source Architecture Cleanup and then UI Foundation. See `docs/project/31-pre-codex-integrated-master-plan.md`.
 
 ## 7. Verification
 
