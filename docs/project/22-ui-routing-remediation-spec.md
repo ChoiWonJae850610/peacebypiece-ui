@@ -1,5 +1,7 @@
 # UI and Routing Remediation Specification
 
+
+> Canonical update (0.24.21.9): conflicting provisional policy in this document is superseded by `docs/project/26-final-policy-decisions-and-master-todo.md`.
 Version: 0.24.21.4  
 Status: Canonical design and implementation input  
 Scope: storage usage visualization, company file fields, workorder routing identifiers  

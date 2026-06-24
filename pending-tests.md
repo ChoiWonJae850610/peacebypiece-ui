@@ -1,27 +1,31 @@
-# Pending Tests — 0.24.21.8
+# Pending Tests — 0.24.21.9
 
 ## 자동 검증
 
+- [ ] `node tests/document-structure-contract.mjs`
+- [ ] `node tests/roadmap-development-contract.mjs`
 - [ ] `node tests/unicode-encoding-contract.mjs`
-- [ ] `node tests/pipeline-powershell-encoding-contract.mjs`
-- [ ] `node tests/pipeline-repo-state-publication-contract.mjs`
-- [ ] `roadmap-development-contract`
-- [ ] `tsc --noEmit`
-- [ ] `next build`
+- [ ] `npx tsc --noEmit`
 
-## 한글 / Unicode 실검증
+## 문서 검토
 
-- [ ] GitHub에서 `docs/현재기준`, `docs/정책문서`, `docs/보관문서` 경로가 정상 표시된다.
-- [ ] Windows PowerShell에서 canonical pipeline 한글 메뉴가 정상 표시된다.
-- [ ] 전체 소스 ZIP을 Windows에서 해제했을 때 한글 파일명과 폴더명이 정상이다.
-- [ ] Flat Patch ZIP 내부의 한글 entry name이 정상이다.
-- [ ] VS Code에서 Markdown, SQL, TypeScript 한글 본문이 정상이다.
+- [ ] `docs/project/26-final-policy-decisions-and-master-todo.md`가 최신 사용자 결정과 일치한다.
+- [ ] 기존 project spec 19~23의 충돌 정책은 26번 문서 우선으로 연결된다.
+- [ ] 완료·미개발·보류 TODO가 섞이지 않고 구분된다.
+- [ ] 0.24.22 Sprint A 범위가 기존 master pack과 일치한다.
+- [ ] 법률·세무 보존기간은 출시 전 재검토 대상으로 남아 있다.
 
 ## 회귀 방지
 
-- [ ] 일반 text 파일은 UTF-8로 decode된다.
-- [ ] U+FFFD replacement character가 없다.
-- [ ] canonical PowerShell은 UTF-8 BOM을 유지한다.
-- [ ] 한글 경로를 임의로 영문 rename하지 않았다.
+- [ ] 앱 UI/API/DB/R2 동작을 변경하지 않았다.
 - [ ] package와 lockfile을 변경하지 않았다.
-- [ ] DB/R2/Seed/Reset/Cleanup/Migration을 실행하지 않았다.
+- [ ] DB Migration이 없다.
+- [ ] secret, production URL, token, 실제 계정정보를 포함하지 않았다.
+
+## 이번 패치 생성 환경 실행 결과
+
+- PASS: `node tests/unicode-encoding-contract.mjs`
+- 기존 contract blocker: `document-structure-contract`가 현재 버전과 무관한 `APP_VERSION = "0.24.13"` 고정 기대값으로 실패
+- 기존 contract blocker: `roadmap-development-contract`가 기존 0.24.18 title mismatch로 실패
+- 환경 blocker: 전달 ZIP에 `node_modules`가 없어 `npx tsc --noEmit`이 React/Next/Node type module을 찾지 못해 실패
+- 위 실패는 0.24.21.9 문서 변경에서 새로 발생한 앱 동작 오류로 확인되지 않았으며, 사용자 로컬 canonical pipeline에서 재검증 필요

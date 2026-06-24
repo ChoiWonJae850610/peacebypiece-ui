@@ -1,13 +1,22 @@
-# Codex Current State — 0.24.21.8
+# Codex Current State — 0.24.21.9
 
 ## 현재 작업 기준
 
-- 현재 버전: `0.24.21.8`
+- 현재 버전: `0.24.21.9`
 - 다음 버전: `0.24.22`
 - 다음 작업: Codex가 Sprint A Productization UI Foundation(PB-005·PB-006·PB-010, 저장소 원통형, 회사 파일 상태)을 실제 구현
 - 먼저 읽기: `docs/project/23-codex-productization-sprint-master-pack.md`와 해당 Sprint의 canonical 명세
 - 사용자 결정 대기 정책은 구현 범위에서 제외한다.
 
+
+
+## 0.24.21.9 Canonical Policy and Master TODO
+
+- `docs/project/26-final-policy-decisions-and-master-todo.md`가 2026-06-24 이후 제품 정책과 전체 TODO의 최신 canonical 기준이다.
+- 가입·Trial·결제 실패·해지·삭제, 로그 보존, opaque workorder URL, PDF lifecycle, WAFL 브랜드/도메인/가격, 시스템 기본 분류·사이즈 스펙 결정을 반영한다.
+- 기존 `docs/project/19`~`23`의 provisional 문구가 26번 문서와 충돌하면 26번 문서를 우선한다.
+- 다음 실제 구현 버전은 `0.24.22`이며 Sprint A Productization UI Foundation부터 진행한다.
+- 사업자등록 후 PG 선정, 속옷·액세서리 기본 분류, analytics/cookie, Instagram 홍보 콘텐츠는 TODO로 유지한다.
 
 ## Start Manifest
 

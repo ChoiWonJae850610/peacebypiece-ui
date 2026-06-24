@@ -1,4 +1,4 @@
-# Productization Backlog — 0.24.21
+# Productization Backlog — 0.24.21.9
 
 ## 기준
 
@@ -64,3 +64,17 @@
 - Sprint #2 우선순위: PB-005 + PB-006 + PB-010
 - PB-002 final PDF/retention과 production purge는 사용자 결정 전 구현 queue에서 제외
 - 통합 실기기 QA는 0.24.25 후보로 보존
+
+## 0.24.21.9 Master TODO synchronization
+
+`docs/project/26-final-policy-decisions-and-master-todo.md` is the canonical consolidated queue. The following productization tracks remain open until implementation and verification evidence exists:
+
+- Sprint A: PB-005, PB-006, PB-010, storage cylinder, company-file state cleanup, responsive/resource states.
+- System defaults and size spec provisioning, cm/inch fraction input, safe seed/backfill.
+- Signup/email verification/card-first Trial/approval/payment-failure/account deletion lifecycle.
+- Opaque workorder URL identifier with tenant authorization and no share links.
+- PDF/R2 productization with latest-final-only retention.
+- Public website, production environment split, PG/email/domain launch integration.
+- Repository cleanup, simulator/R2 adapters, integrated device QA, release/legal placeholder replacement.
+
+Deferred decision TODO: underwear/accessories default catalog, PG provider, Instagram content plan, external analytics, and cookie banner.

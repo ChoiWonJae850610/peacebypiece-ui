@@ -1,5 +1,7 @@
 # Codex Productization Sprint Master Pack
 
+
+> Canonical update (0.24.21.9): conflicting provisional policy in this document is superseded by `docs/project/26-final-policy-decisions-and-master-todo.md`.
 Version: 0.24.21.5  
 Status: Final execution input before Codex implementation  
 Target implementation baseline: 0.24.22 and later Productization Sprints  

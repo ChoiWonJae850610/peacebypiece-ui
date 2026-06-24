@@ -204,6 +204,16 @@ Structured roadmap title tokens kept for contract checks: `문서/폴더 정리 
 | `0.24.19` | PDF/R2 정책 및 PDF 생성 구조 | 예정 | Temporary/final PDF policy, generation timing, R2 path/delete policy, PDF comparison |
 | `0.24.20` | Functions/Simulator/PowerShell 자동화 확장 | 예정 | Stronger menu/profile/report/scenario launcher integration |
 | `0.24.21` | 통합 검증 체크포인트 | 검증 대기 | PC/iPad mini/Galaxy Tab/mobile QA, role access, Vercel QA, pre-customer backlog |
+| `0.24.21.9` | Final Policy Decisions and Master TODO | 검증 대기 | Canonical decisions, full undeveloped feature inventory, and implementation queue |
+
+
+## 0.24.21.9 Final Policy Decisions and Master TODO
+
+- Canonical decision and TODO source: `docs/project/26-final-policy-decisions-and-master-todo.md`.
+- Consolidates brand/domain/pricing, system catalog/size model, signup/Trial/payment failure, termination/deletion, logs, opaque URL, PDF lifecycle, deployment, and launch policy.
+- Conflicting provisional clauses in project specs 19~23 are superseded by document 26.
+- No UI/API/DB/R2/PG implementation is included.
+- Next implementation target remains `0.24.22` Sprint A Productization UI Foundation.
 
 ## Standard Completion Flow
 

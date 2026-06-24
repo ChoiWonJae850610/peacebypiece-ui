@@ -1,5 +1,7 @@
 # System Default Catalog and Seed Specification
 
+
+> Canonical update (0.24.21.9): conflicting provisional policy in this document is superseded by `docs/project/26-final-policy-decisions-and-master-todo.md`.
 Version: 0.24.21.1  
 Status: Codex implementation input  
 Scope: system product taxonomy, garment measurement catalog, seed/backfill contract, system-admin operations

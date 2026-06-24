@@ -1,5 +1,7 @@
 # Public Website and Commercial Onboarding Specification
 
+
+> Canonical update (0.24.21.9): conflicting provisional policy in this document is superseded by `docs/project/26-final-policy-decisions-and-master-todo.md`.
 Version: 0.24.21.3  
 Status: Codex implementation input  
 Scope: public marketing website, domain boundary, pricing/Trial presentation, signup CTA, commercial onboarding information architecture

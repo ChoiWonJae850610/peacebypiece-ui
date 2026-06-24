@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.21.8`
+- 기준 앱 버전: `0.24.21.9`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.21.8`은 Windows PowerShell canonical pipeline의 UTF-8 BOM과 parser-sensitive 정규식을 복구하는 호환성 hotfix다.
+- 현재 작업 상태: `0.24.21.9`는 최종 정책 결정과 repository-wide 미개발 기능을 통합한 canonical Master TODO 문서 버전이다.
 
 ## 개발 실행
 
@@ -61,6 +61,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
   - `docs/project/23-codex-productization-sprint-master-pack.md`
   - `docs/project/24-repository-cleanup-foundation.md`
   - `docs/project/25-korean-unicode-encoding-standard.md`
+  - `docs/project/26-final-policy-decisions-and-master-todo.md`
 - 누적 테스트 항목: `pending-tests.md`
 
 ## 현재 기준
