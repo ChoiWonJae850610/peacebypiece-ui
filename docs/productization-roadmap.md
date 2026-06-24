@@ -233,18 +233,20 @@ Structured roadmap title tokens kept for contract checks: `문서/폴더 정리 
 | Version | Title | Status | Boundary |
 |---|---|---|---|
 | `0.24.10` | 시스템 관리자 저장공간과 자동화 기반 | 완료 | DB-backed storage usage and initial verification/finish wrappers |
-| `0.24.11` | 시스템 관리자 ID 제어와 roadmap 기준판 | 진행 중 | `/id-control`, `/roadmap`, canonical roadmap, post-finish handoff |
+| `0.24.11` | 시스템 관리자 ID 제어와 roadmap 기준판 | 완료 | `/id-control`, `/roadmap`, canonical roadmap, post-finish handoff |
 | `0.24.12` | 일반 사용자 workspace 및 worker 공통화 | 사용자 확인 필요 | General user workspace/worker UI density, responsive shell, save flow |
 | `0.24.13` | 문서/폴더 정리 2차 | 검증 대기 | Root/docs/current-state/index/archive and Vercel QA handoff documentation |
 | `0.24.14` | Functions 90% 구현/검증 정리 | 사용자 확인 필요 | `/functions` catalog, PowerShell profile linkage, guarded command visibility |
 | `0.24.15` | WAFL Productization Audit | 검증 대기 | Productization audit report and PB backlog without broad implementation changes |
-| `0.24.16` | Codex/GPT Productization Operating Context | 구현 완료 | Project context, decision log, productization guide, and release checklist |
+| `0.24.16` | Codex/GPT 제품화 운영 문맥 구축 | 구현 완료 | Project context, decision log, productization guide, and release checklist |
 | `0.24.17` | 소스 리팩터링 1차 | 사용자 확인 필요 | Safe shared presentation/type extraction and materials empty-state commonization |
-| `0.24.18` | R2/Simulator 테스트 기반 | 예정 | Logical usage vs R2 objects, quota fixtures, cleanup preview, reconciliation dry-run |
+| `0.24.18` | 제품화 기준 문서 확정 | 완료 | Productization Bible, Architecture Guide, WAFL Component Standard, Release Readiness Matrix |
 | `0.24.19` | PDF/R2 정책 및 PDF 생성 구조 | 예정 | Temporary/final PDF policy, generation timing, R2 path/delete policy, PDF comparison |
-| `0.24.20` | Functions/Simulator/PowerShell 자동화 확장 | 예정 | Stronger menu/profile/report/scenario launcher integration |
-| `0.24.21` | 통합 검증 체크포인트 | 검증 대기 | PC/iPad mini/Galaxy Tab/mobile QA, role access, Vercel QA, pre-customer backlog |
+| `0.24.20` | Release Engineering 및 QA 기준 | 완료 | Release engineering, QA matrix, Playwright and browser/device standards |
+| `0.24.21` | PB Breakdown 및 Codex Ready Queue | 완료 | PB breakdown, Codex ready queue and integrated verification preparation |
 | `0.24.21.9` | Final Policy Decisions and Master TODO | 검증 대기 | Canonical decisions, full undeveloped feature inventory, and implementation queue |
+| `0.24.21.18` | Final Pre-Codex Roadmap Contract Fix | 검증 대기 | Canonical 0.24.22 roadmap, contract repair, authority and version consistency |
+| `0.24.22` | DB Foundation and Authority Alignment | 예정 | Evidence-first DB authority, RLS, constraints, indexes, reconciliation and migration boundaries |
 
 
 ## 0.24.21.9 Final Policy Decisions and Master TODO

@@ -116,13 +116,13 @@ for (const draftToken of [
 const rearrangedRoadmap = [
   ["0.24.13", "문서/폴더 정리 2차"],
   ["0.24.14", "Functions 90% 구현/검증 정리"],
-  ["0.24.15", "전체 화면/소스 리팩터링 감사"],
-  ["0.24.16", "WAFL 컴포넌트 적용/공통화 1차"],
+  ["0.24.15", "WAFL Productization Audit"],
+  ["0.24.16", "Codex/GPT 제품화 운영 문맥 구축"],
   ["0.24.17", "소스 리팩터링 1차"],
-  ["0.24.18", "R2/Simulator 테스트 기반"],
+  ["0.24.18", "제품화 기준 문서 확정"],
   ["0.24.19", "PDF/R2 정책 및 PDF 생성 구조"],
-  ["0.24.20", "Functions/Simulator/PowerShell 자동화 확장"],
-  ["0.24.21", "통합 검증 체크포인트"],
+  ["0.24.20", "Release Engineering 및 QA 기준"],
+  ["0.24.21", "PB Breakdown 및 Codex Ready Queue"],
 ];
 
 for (const [version, title] of rearrangedRoadmap) {
@@ -136,6 +136,22 @@ for (const [version, title] of rearrangedRoadmap) {
 
 assert.ok(roadmapDoc.includes("기존 기능 계획을 취소하지 않고 재배치"), "roadmap doc must explain rearrangement policy");
 assert.ok(roadmapDoc.includes("Vercel 배포본은 운영이 아니라 실기기 QA 환경"), "roadmap doc must clarify Vercel QA policy");
+
+const nextRoadmap = fs.readFileSync("lib/internal/roadmap/roadmap-0.24.22.ts", "utf8");
+for (const token of [
+  'version: "0.24.22"',
+  "DB Foundation and Authority Alignment",
+  "source of truth",
+  "RLS",
+  "reconciliation",
+  "dry-run",
+  "rollback",
+  "production DB destructive mutation",
+  "migrationRequired: false",
+]) {
+  assert.ok(nextRoadmap.includes(token), `0.24.22 roadmap missing ${token}`);
+}
+assert.ok(index.includes("ROADMAP_0_24_22"), "index missing 0.24.22 registration");
 
 for (const completionToken of ["구현 완료", "실제 verify-safe PASS", "commit hash 존재", "git push origin master 완료", "사용자 확인 완료"]) {
   assert.ok(draft.includes(completionToken), `completion policy missing ${completionToken}`);

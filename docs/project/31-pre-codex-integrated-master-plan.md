@@ -298,7 +298,7 @@ DB authority → source cleanup → UI → authorization/routing → signup → 
 Codex must not skip a prerequisite merely because a later UI is easier to implement.
 
 
-## 7. PowerShell follow-up registry rule
+## 8. PowerShell follow-up registry rule
 
 Each Sprint must decide whether its verification or operator command belongs in the existing automation menu. The Sprint result must record:
 

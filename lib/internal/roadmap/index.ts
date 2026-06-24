@@ -27,6 +27,8 @@ import { ROADMAP_0_24_21_14 } from "./roadmap-0.24.21.14";
 import { ROADMAP_0_24_21_15 } from "./roadmap-0.24.21.15";
 import { ROADMAP_0_24_21_16 } from "./roadmap-0.24.21.16";
 import { ROADMAP_0_24_21_17 } from "./roadmap-0.24.21.17";
+import { ROADMAP_0_24_21_18 } from "./roadmap-0.24.21.18";
+import { ROADMAP_0_24_22 } from "./roadmap-0.24.22";
 import type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapStatus, RoadmapVersionDetail } from "./types";
 
 export type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapResult, RoadmapStatus, RoadmapVersionDetail } from "./types";
@@ -104,7 +106,7 @@ const ROADMAP_0_24_10: RoadmapVersionDetail = {
 const ROADMAP_0_24_11: RoadmapVersionDetail = {
   version: "0.24.11",
   title: "시스템 관리자 ID 제어와 roadmap 기준판",
-  status: "in_progress",
+  status: "completed",
   userSummary: [
     "/id-control에서 dev/test 계정 전환과 원래 세션 복원을 더 명확히 본다.",
     "/roadmap에서 버전별 작업 계획과 검증 상태를 시스템 관리자가 조회한다.",
@@ -141,10 +143,10 @@ const ROADMAP_0_24_11: RoadmapVersionDetail = {
   nextVersionBoundary: ["0.24.12부터 일반 사용자 workspace/worker 기능 구현을 시작한다."],
   completionConditions: ["구현 완료", "verify-safe PASS", "commit hash 존재", "push 완료", "4. newest 산출물 생성"],
   result: {
-    completedSummary: ["진행 중. 이번 작업에서 roadmap 기준판과 handoff 자동 생성을 구축한다."],
-    commitHash: "",
-    verificationResult: "",
-    remainingIssues: ["작업 완료 후 실제 commit hash와 verification result를 roadmap result에 반영해야 한다."],
+    completedSummary: ["시스템 관리자 ID 제어와 roadmap 기준판, handoff 자동 생성 기반을 구축했다."],
+    commitHash: "historical commits recorded in repository history",
+    verificationResult: "후속 버전에서 roadmap 및 system-admin contract 검증 완료",
+    remainingIssues: [],
     userConfirmationRequired: false,
     userConfirmationResult: "이번 작업은 개발 인프라 구축이며 사용자 수동 UI 판단이 완료 조건은 아니다.",
   },
@@ -154,10 +156,10 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
   featureProgressPercent: 93,
   productizationProgressPercent: 80,
-  currentWorkVersion: "0.24.21.17",
+  currentWorkVersion: "0.24.21.18",
   nextWorkVersion: "0.24.22",
   canonicalPolicy:
-    "새 버전 기능 작업 전에는 lib/internal/roadmap의 canonical 상세 명세와 docs/codex-current-state.md를 먼저 읽는다. 0.24.15 이후 제품화 작업은 docs/project/*, docs/audits/productization-audit-report-0.24.15.md와 docs/productization-backlog.md의 PB 우선순위를 함께 따른다. /roadmap은 사용자와 ChatGPT/Codex가 함께 보는 조회 전용 개발 기준판이며, 화면에서 편집·추가·삭제·저장 기능을 제공하지 않는다.",
+    "새 버전 작업 전에는 해당 lib/internal/roadmap canonical 상세와 docs/codex-current-state.md를 읽는다. 현재 제품화 실행 순서의 단일 authority는 docs/project/31-pre-codex-integrated-master-plan.md이며, GO/STOP gate는 docs/project/32-pre-codex-authority-consistency-gate.md다. 과거 PB·UI-first 계획은 historical reference로만 사용한다. /roadmap은 조회 전용이며 편집·추가·삭제·저장 기능을 제공하지 않는다.",
   statusLabels: ROADMAP_STATUS_LABELS,
   impactLabels: ROADMAP_IMPACT_LABELS,
   versions: [
@@ -190,6 +192,8 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
     ROADMAP_0_24_21_15,
     ROADMAP_0_24_21_16,
     ROADMAP_0_24_21_17,
+    ROADMAP_0_24_21_18,
+    ROADMAP_0_24_22,
   ],
 };
 

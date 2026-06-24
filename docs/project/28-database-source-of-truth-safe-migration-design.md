@@ -171,7 +171,7 @@ Design candidates, not approved migrations:
 
 ## 11. Stop/go gate before 0.24.22 and later migrations
 
-### GO for UI Sprint A
+### GO for 0.24.22 evidence-first DB Foundation
 
 - no DB mutation is required for the selected UI work;
 - current APIs remain backward-compatible;

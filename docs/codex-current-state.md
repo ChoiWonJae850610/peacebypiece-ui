@@ -1,8 +1,8 @@
-# Codex Current State — 0.24.21.17
+# Codex Current State — 0.24.21.18
 
 ## Active execution gate
 
-- Current version: `0.24.21.17`.
+- Current version: `0.24.21.18`.
 - Next implementation version: `0.24.22`.
 - Next work: **Sprint A — Database Foundation and Authority Alignment**.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.

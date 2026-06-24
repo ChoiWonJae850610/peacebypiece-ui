@@ -1,8 +1,9 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.21.16`
-- tracked docs 파일 수: `693`
+- 기준 앱 버전: `0.24.21.18`
+- tracked docs 파일 수: `694`
 - docs root 파일 수: `181`
+- docs/project 파일 수: `33`
 - 정리 기준: root에는 최소 진입점만 두고, 현재 판단은 `docs/codex-current-state.md`, `docs/project/`, `docs/현재기준/`, `docs/productization-roadmap.md`를 우선한다.
 
 ## 1. 현재 기준 문서
