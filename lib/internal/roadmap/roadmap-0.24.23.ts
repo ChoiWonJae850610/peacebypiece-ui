@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_23: RoadmapVersionDetail = {
   version: "0.24.23",
   title: "Source Architecture Cleanup",
-  status: "verification_pending",
+  status: "user_decision_needed",
   userSummary: [
     "기능 확장 전에 대형 소스 파일과 중복 책임 경계를 다시 측정하고, 안전한 범위부터 책임 단위로 분리한다.",
     "이번 버전은 drawing editor의 canvas primitive/helper를 분리하고, 나머지 대형 파일과 PDF Worker/logger/fallback 경계를 감사 증거로 고정한다.",
@@ -118,7 +118,7 @@ export const ROADMAP_0_24_23: RoadmapVersionDetail = {
       "0.24.23 source architecture audit로 대형 파일, 중복 repository/service 경계, dead/mock/fallback, legacy PDF Worker, logger/redaction 상태를 기록했다.",
       "권한, tenant, workflow, DB, R2, PDF 정책, package/lockfile은 변경하지 않았다.",
     ],
-    commitHash: "",
+    commitHash: "0e21685b1cdff4c94957d8c6639bd63ed89e422c",
     verificationResult: "approved workflow Verify source-architecture-cleanup PASS; build PASS; mutation audit 162 findings, 0 high-risk; source architecture cleanup contract PASS; roadmap-development-contract PASS; functions PDF contract PASS",
     remainingIssues: [
       "WaflUiCatalogPage, AdminSettingsHub, joinRequestRepository, admin i18n split은 후속 cleanup으로 남김",
