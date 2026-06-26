@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_24: RoadmapVersionDetail = {
   version: "0.24.24",
   title: "WAFL UI Foundation",
-  status: "verification_pending",
+  status: "user_test_needed",
   userSummary: [
     "고객사 관리자 메인, worker, workspace 화면에 기존 WAFL 공통 UI 문법을 더 일관되게 적용한다.",
     "저장공간 사용량, 요금제/구성원 상태, empty/loading/error 상태, 반응형 카드 밀도를 실제 주요 화면에서 정리한다.",
@@ -129,8 +129,8 @@ export const ROADMAP_0_24_24: RoadmapVersionDetail = {
       "/workspace 바로가기 카드 밀도와 태블릿 컬럼 기준을 조정했다.",
       "권한, tenant, workflow, API, DB, R2, package/lockfile은 변경하지 않았다.",
     ],
-    commitHash: "",
-    verificationResult: "verification pending",
+    commitHash: "d2ca2f3dc7c5738229ec32754e704b98ad13768b",
+    verificationResult: "approved workflow Verify workspace-commonization PASS; build PASS; mutation audit 162 findings, 0 high-risk; workspace-commonization, WAFL UI foundation, compact dashboard, roadmap, approved workflow contracts PASS",
     remainingIssues: [
       "PC/mobile/tablet 실제 화면 확인은 사용자 확인 필요",
       "AdminSettingsHub 전체 UI Foundation 적용은 후속 cleanup으로 남김",
