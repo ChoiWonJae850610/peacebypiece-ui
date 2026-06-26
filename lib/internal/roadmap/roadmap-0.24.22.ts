@@ -117,8 +117,8 @@ export const ROADMAP_0_24_22: RoadmapVersionDetail = {
       "승인된 dev/test DB fingerprint에서 메뉴 30~32 read-only 감사를 실행했다. reconciliation은 0행, constraint issue 합계는 0건, index readiness는 430행 보고서로 정상 종료했다.",
       "0.24.22에서는 production DB/R2 mutation, destructive migration, schema/package/lockfile 변경을 수행하지 않았다.",
     ],
-    commitHash: "",
-    verificationResult: "DB read-only audit 30/31/32 PASS; db audit/menu/design contracts PASS; roadmap-development-contract PASS; unicode-encoding-contract PASS; full approved workflow pending",
+    commitHash: "753ba58671a81227588556bc6cfc22c35343c993",
+    verificationResult: "DB read-only audit 30/31/32 PASS; db audit/menu/design contracts PASS; roadmap-development-contract PASS; unicode-encoding-contract PASS; approved workflow Verify/Plan/Finish PASS and origin/master synchronized",
     remainingIssues: [
       "DB authority와 migration 후보는 사용자 확인 후 다음 단계로 확정한다.",
       "실제 schema migration/backfill/RLS DDL은 별도 버전, dry-run, rollback, 명시 승인 전까지 보류한다.",
