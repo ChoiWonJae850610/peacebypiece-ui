@@ -55,6 +55,7 @@ export * from "./WaflActionMenu";
 export * from "./WaflPrimitive";
 export * from "./WaflButton";
 export * from "./WaflCostSummary";
+export { default as WaflStorageUsageMeter, type WaflStorageUsageMeterDetail, type WaflStorageUsageTone } from "./WaflStorageUsageMeter";
 export * from "./WaflToast";
 export { useWaflToastOperation, type WaflToastOperationState } from "./useWaflToastOperation";
 export type { WaflMutationError } from "@/lib/mutations/waflMutationError";

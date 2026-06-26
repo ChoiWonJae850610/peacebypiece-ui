@@ -1,23 +1,23 @@
-# Codex Current State — 0.24.23
+# Codex Current State - 0.24.24
 
 ## Active execution gate
 
-- Current version: `0.24.23`.
-- Next implementation version: `0.24.24` only after 0.24.23 result confirmation.
-- Current work result: **Sprint B — Source Architecture Cleanup** first responsibility split and audit evidence captured.
-- Next work: **Sprint C — WAFL UI Foundation** after user approval.
+- Current version: `0.24.24`.
+- Next implementation version: `0.24.25` only after 0.24.24 UI/responsive result confirmation.
+- Current work result: **Sprint C - WAFL UI Foundation** applied to customer-admin dashboard, workspace cards, storage usage meter, and shared state contracts.
+- Next work: **Sprint D - Authorization, Runtime Boundary, and Opaque Routing** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
 - DB audit and migration design: documents 27, 28, and 29.
 
-The active dependency order is:
+Active dependency order:
 
-`DB Foundation → Source Architecture Cleanup → WAFL UI Foundation → Authorization/Runtime/Opaque Routing → Signup/Trial → Catalog/Size/POM → PDF/R2 → Export → Storage/Termination/Deletion → PG Billing → Operations/Security/Launch QA`
+`DB Foundation -> Source Architecture Cleanup -> WAFL UI Foundation -> Authorization/Runtime/Opaque Routing -> Signup/Trial -> Catalog/Size/POM -> PDF/R2 -> Export -> Storage/Termination/Deletion -> PG Billing -> Operations/Security/Launch QA`
 
-Any older document that describes `0.24.22` as an UI-first Sprint, PB-005/006/010 implementation, or a no-DB-authority-change UI boundary is historical and superseded.
+Older documents that describe `0.24.22` as UI-first, PB-005/006/010 implementation, or a no-DB-authority-change UI boundary are historical and superseded.
 
-## Mandatory start rules
+## Mandatory Start Rules
 
 1. Read `AGENTS.md`, this file, document 26, document 31, then the target Sprint specifications.
 2. Do not broaden the current Sprint without stopping and recording the newly discovered dependency.
@@ -25,80 +25,76 @@ Any older document that describes `0.24.22` as an UI-first Sprint, PB-005/006/01
 4. Any DB change requires read-only reconciliation, deployed-schema drift evidence, dry-run, rollback steps, and a separate migration boundary.
 5. Before 1.0, `master` remains the single development/QA branch. After local/build/contract checks pass, commit and push to `origin/master` for Vercel real-device QA.
 6. Preserve `/id-control` and the system-admin/test-company role switcher for dev/test QA. Keep original-session restore and audit logging. Block all of it in production.
-7. New audit, migration, seed, reset, cleanup, PDF, R2, Export, performance, or E2E commands that should be operator-accessible must be tracked for the existing PowerShell menu with menu number, safety classification, confirmation requirement, and environment restriction.
 
-## 0.24.22 result boundary
+## 0.24.22 Result Boundary
 
-0.24.22 was executed as an evidence-first DB Foundation Sprint. It:
-
-- traced membership, plan/subscription, workorder ID, attachment/trash/deletion, and tenant/RLS authority through documents 27/28/31/32 and the 0.24.22 roadmap contract;
-- ran the read-only menu 30–32 reports against the approved dev/test DB fingerprint;
-- recorded source-of-truth, conflict, backfill, migration, rollback, and GO/STOP boundaries;
-- avoided unrelated UI implementation and avoided destructive migration execution.
-
-Read-only DB audit result:
+0.24.22 was executed as an evidence-first DB Foundation Sprint.
 
 - Menu 30 DB Schema Reconciliation Audit: PASS, total result rows 0.
 - Menu 31 DB Constraint Readiness Check: PASS, total reported issues 0.
 - Menu 32 DB Index Usage/Query Readiness Report: PASS, total result rows 430 as a report.
 - Production DB/R2 mutation: 0.
 - Schema migration/backfill/RLS DDL execution: none.
-- Commit/push evidence: `753ba58671a81227588556bc6cfc22c35343c993` pushed to `origin/master`; latest handoff files generated in `4. Newest`.
+- Commit/push evidence: `753ba58671a81227588556bc6cfc22c35343c993`.
 
-0.24.23 must not start until the owner confirms the 0.24.22 DB authority and migration boundary report.
+## 0.24.23 Result Boundary
 
-If safe schema changes are proven necessary, split them into separately reviewed migration versions rather than silently applying them inside an unrelated patch.
-
-## 0.24.23 result boundary
-
-0.24.23 was executed as a source architecture cleanup Sprint. It:
-
-- measured the current oversized source files and responsibility hotspots;
-- split drawing canvas primitive/helper/type/icon logic out of `WorkOrderDrawingCanvasEditor.tsx`;
-- recorded duplicate repository/service boundaries, dead/mock/fallback candidates, legacy PDF Worker status, TypeScript/API/DB risks, and logger/redaction baseline in `docs/audits/source-architecture-cleanup-0.24.23.md`;
-- avoided permission, tenant, workflow, DB, R2, PDF policy, package, and lockfile changes.
-
-Source cleanup result:
+0.24.23 was executed as a source architecture cleanup Sprint.
 
 - `components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx`: 52,725 bytes before cleanup, 40,366 bytes after cleanup.
 - `components/workorder/drawing/workOrderDrawingCanvasPrimitives.tsx`: 15,425 bytes.
+- Source audit: `docs/audits/source-architecture-cleanup-0.24.23.md`.
 - New files above 50KB: 0.
 - Production DB/R2 mutation: 0.
 - Schema migration/backfill/RLS DDL execution: none.
 - Deprecated PDF Worker deletion: not performed.
 
-0.24.24 must not start until the owner confirms the 0.24.23 source cleanup result.
+0.24.24 started only after the owner confirmed the 0.24.23 source cleanup result.
 
-## Runtime and product preservation
+## 0.24.24 Result Boundary
+
+0.24.24 was executed as a WAFL UI Foundation Sprint.
+
+- Added `components/common/ui/WaflStorageUsageMeter.tsx` as a shared storage usage visualization focused on readable numbers, status, and quota context.
+- Applied the shared meter to the customer administrator main dashboard and file storage plan card.
+- Reduced `/workspace` dashboard card height and avoided forcing 3 columns before wide desktop.
+- Kept `/worker` on the existing `WorkOrderWorkspace` route and verified its WAFL empty/loading state panel boundary.
+- Avoided permission, tenant, API, repository, DB, R2, PDF, package, and lockfile changes.
+
+UI Foundation result:
+
+- New source files above 50KB: 0.
+- Production DB/R2 mutation: 0.
+- Schema migration/backfill/RLS DDL execution: none.
+- Package/lockfile change: none.
+- Manual PC/mobile/tablet visual confirmation remains required before 0.24.25 starts.
+
+## Runtime And Product Preservation
 
 - Public website scope remains in the plan: `www.wafl.co.kr`, root-to-www redirect, pricing, Trial CTA, inquiry/policy links, signup/login, and post-login app routing.
 - `/id-control` is not dead code. It is a dev/test QA facility and must remain production-blocked.
 - Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`, not by environment-name strings.
-- `/id-control` test account switching is allowed only for the active system administrator with allowlisted targets, original-session restore, signed context, and audit logging.
 - Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
-- The canonical verification profile for this boundary remains `system-admin-internal-access`.
 - System administrators must not gain access to customer operational content; the business-certificate approval viewer remains the narrow exception.
-- Existing role, workflow, PDF, DB, and R2 semantics must not be changed during architecture cleanup without target tests and explicit Sprint scope.
+- Existing role, workflow, PDF, DB, and R2 semantics must not be changed during UI Foundation work without target tests and explicit Sprint scope.
 
-## Deferred dependencies
+## Deferred Dependencies
 
 - PG provider and final payment-provider wording: after business registration/provider selection.
 - Analytics and Cookie consent: post-Codex TODO.
 - Instagram operating strategy: post-Codex TODO.
 - Final legal, tax, processor, overseas-transfer, and operator identity wording: pre-launch review.
 
-## Required completion gate for every Sprint
+## Required Completion Gate For Every Sprint
 
 - TypeScript and production build pass.
 - Applicable contract, E2E, tenant, permission, mutation, Unicode, and secret checks pass.
 - No unapproved package/lockfile changes.
 - Documentation and roadmap match actual implementation.
 - `master = origin/master`, working tree clean.
-- Vercel deployment and PC/mobile/tablet real-device QA complete.
+- Vercel deployment and PC/mobile/tablet real-device QA complete when required.
 
 ## Pre-Codex Final Contract Gate
 
-- PowerShell 경로: `5. 개발 / 테스트 도구` → `33. Pre-Codex Final Contract Gate`
-- 안전 등급: 읽기 전용·비파괴·DB/R2 변경 없음
-- 실행 계약: document structure, workspace commonization, system-admin internal access, roadmap development, Unicode encoding
-- 별도 build 확인: `5` → `2. NPM Build`
+- PowerShell wrapper verification remains the preferred entry point for version work.
+- Single active execution authority and Applicable contract checks must remain visible to Codex before implementation.

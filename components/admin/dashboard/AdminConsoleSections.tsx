@@ -40,7 +40,7 @@ function WorkspaceCardIcon({ index }: { index: number }) {
     <span
       data-wafl-component="workspace-card-index"
       aria-hidden="true"
-      className="inline-flex h-11 w-11 items-center justify-center wafl-shape-icon bg-[var(--pbp-surface-soft)] text-sm font-semibold pbp-text-primary ring-1 ring-[var(--pbp-border)]"
+      className="inline-flex h-9 w-9 items-center justify-center wafl-shape-icon bg-[var(--pbp-surface-soft)] text-xs font-semibold pbp-text-primary ring-1 ring-[var(--pbp-border)]"
     >
       {String(index + 1).padStart(2, "0")}
     </span>
@@ -60,9 +60,9 @@ function AdminWorkspaceCardView({
     <WaflSurface
       as="article"
       component="admin-workspace-card"
-      className="group flex h-full min-h-[132px] overflow-hidden bg-[var(--pbp-surface-base)] p-0 transition hover:border-[var(--pbp-border-strong)]"
+      className="group flex h-full min-h-[112px] overflow-hidden bg-[var(--pbp-surface-base)] p-0 transition hover:border-[var(--pbp-border-strong)]"
     >
-      <div className="relative flex h-full min-w-0 flex-1 flex-col justify-between gap-3 p-4">
+      <div className="relative flex h-full min-w-0 flex-1 flex-col justify-between gap-2.5 p-3.5">
         <div className="relative min-w-0">
           <div className="flex items-start justify-between gap-4">
             <WorkspaceCardIcon index={index} />
@@ -71,10 +71,10 @@ function AdminWorkspaceCardView({
             ) : null}
           </div>
 
-          <h2 className="mt-3 text-base font-semibold tracking-[-0.02em] pbp-text-primary">
+          <h2 className="mt-2.5 text-sm font-semibold pbp-text-primary">
             {text.label}
           </h2>
-          <p className="mt-1.5 line-clamp-2 text-xs leading-5 pbp-text-muted">
+          <p className="mt-1 line-clamp-2 text-xs leading-5 pbp-text-muted">
             {text.description}
           </p>
         </div>
@@ -147,11 +147,11 @@ export default function AdminConsoleSections({
         "자주 사용하는 업무와 관리 화면으로 이동합니다.",
       )}
       actions={null}
-      className="overflow-hidden p-5 sm:p-6"
-      bodyClassName="mt-5"
+      className="overflow-hidden p-4 sm:p-5"
+      bodyClassName="mt-4"
       headerClassName="max-w-4xl"
     >
-      <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 2xl:grid-cols-3">
         {primaryCards.map((item, index) => (
           <AdminWorkspaceCardView key={item.id} item={item} index={index} />
         ))}

@@ -1,17 +1,12 @@
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { ADMIN_STORAGE_LABEL_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import WaflBadge from "@/components/common/ui/WaflBadge";
+import WaflStorageUsageMeter from "@/components/common/ui/WaflStorageUsageMeter";
 import { WaflSurface } from "@/components/common/ui/WaflSurface";
-import {
-  ADMIN_STORAGE_LABEL_CLASS,
-  ADMIN_STORAGE_MUTED_TEXT_CLASS,
-  ADMIN_STORAGE_VALUE_CLASS,
-} from "@/components/admin/common/adminSemanticClassNames";
 import type { AdminStorageUsageSummary } from "@/lib/admin/files/types";
 import { formatStorageBytes } from "@/lib/admin/files/storageSummaryPresentation";
-import { formatPbpFixedGigabytes } from "@/lib/utils/formatters";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
-
-import { StorageCylinder } from "./StorageCylinder";
+import { formatPbpFixedGigabytes } from "@/lib/utils/formatters";
 
 export function PlanUsageCard({
   usageSummary,
@@ -20,13 +15,13 @@ export function PlanUsageCard({
   usageSummary: AdminStorageUsageSummary;
   statusLabel: string;
 }) {
+  const t = useAdminTranslation();
   const hasPlanLimit =
     Number.isFinite(usageSummary.limitBytes) && usageSummary.limitBytes > 0;
   const usedGbLabel = formatPbpFixedGigabytes(usageSummary.usedBytes, 2);
   const remainingBytes = hasPlanLimit
     ? Math.max(0, usageSummary.limitBytes - usageSummary.usedBytes)
     : 0;
-  const t = useAdminTranslation();
   const remainingLabel = hasPlanLimit
     ? formatStorageBytes(remainingBytes)
     : t("filesSummary.planCapacityPending", "요금제 확인 중");
@@ -71,37 +66,32 @@ export function PlanUsageCard({
         </AdminButton>
       </div>
 
-      <StorageCylinder percent={hasPlanLimit ? usageSummary.usagePercent : 0} />
-
-      <div className="mt-3 text-center">
-        <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-lg tracking-tight`}>
-          {hasPlanLimit
-            ? `${usageSummary.usedLabel} / ${usageSummary.limitLabel}`
-            : t("filesSummary.planCapacityLoading", "요금제 용량 확인 중")}
-        </p>
-        <p
-          className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-0.5 text-[11px] font-semibold`}
-        >
-          {hasPlanLimit
-            ? `${usedGbLabel} ${t("filesSummary.usedSuffix", "사용")} · ${remainingLabel} ${t("filesSummary.remainingSuffix", "남음")}`
-            : t(
-                "filesSummary.planCapacityLoadingDescription",
-                "고객 정보의 요금제 용량을 불러오는 중",
-              )}
-        </p>
-      </div>
-
-      <div
-        data-wafl-component="storage-progress-track"
-        className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--pbp-surface)] shadow-none"
-      >
-        <div
-          className={`h-full rounded-full ${isDanger ? "bg-[var(--pbp-status-danger)]" : isCaution ? "bg-[var(--pbp-status-warning)]" : "bg-[var(--admin-theme-surface)]"}`}
-          style={{
-            width: `${hasPlanLimit ? Math.min(100, Math.max(0, usageSummary.usagePercent)) : 0}%`,
-          }}
-        />
-      </div>
+      <WaflStorageUsageMeter
+        showCylinder
+        compact
+        percent={hasPlanLimit ? usageSummary.usagePercent : 0}
+        usedLabel={
+          hasPlanLimit
+            ? usageSummary.usedLabel
+            : t("filesSummary.planCapacityLoading", "요금제 용량 확인 중")
+        }
+        limitLabel={hasPlanLimit ? usageSummary.limitLabel : "-"}
+        statusLabel={statusLabel}
+        tone={isDanger ? "danger" : isCaution ? "caution" : "normal"}
+        details={[
+          {
+            label: t("filesSummary.usedSuffix", "사용"),
+            value: usedGbLabel,
+            description: hasPlanLimit
+              ? `${remainingLabel} ${t("filesSummary.remainingSuffix", "남음")}`
+              : t(
+                  "filesSummary.planCapacityLoadingDescription",
+                  "고객 정보의 요금제 용량을 불러오는 중입니다.",
+                ),
+          },
+        ]}
+        className="mt-3 border-transparent bg-[var(--pbp-surface)]"
+      />
     </WaflSurface>
   );
 }

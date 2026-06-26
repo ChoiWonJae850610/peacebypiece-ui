@@ -559,6 +559,8 @@ $profileCommands = @{
     );
     "workspace-commonization" = @(
         @{ Name = "workspace commonization contract"; Command = "node"; Arguments = @("tests/workspace-commonization-contract.mjs") },
+        @{ Name = "WAFL UI foundation contract"; Command = "node"; Arguments = @("tests/wafl-ui-foundation-contract.mjs") },
+        @{ Name = "customer workspace compact dashboard contract"; Command = "node"; Arguments = @("tests/customer-workspace-compact-dashboard-contract.mjs") },
         @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") }
     );
