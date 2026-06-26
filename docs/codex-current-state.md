@@ -1,11 +1,11 @@
-# Codex Current State — 0.24.22
+# Codex Current State — 0.24.23
 
 ## Active execution gate
 
-- Current version: `0.24.22`.
-- Next implementation version: `0.24.23` only after 0.24.22 result confirmation.
-- Current work result: **Sprint A — Database Foundation and Authority Alignment** read-only evidence captured.
-- Next work: **Sprint B — Source Architecture Cleanup** after confirmation.
+- Current version: `0.24.23`.
+- Next implementation version: `0.24.24` only after 0.24.23 result confirmation.
+- Current work result: **Sprint B — Source Architecture Cleanup** first responsibility split and audit evidence captured.
+- Next work: **Sprint C — WAFL UI Foundation** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
@@ -48,6 +48,26 @@ Read-only DB audit result:
 0.24.23 must not start until the owner confirms the 0.24.22 DB authority and migration boundary report.
 
 If safe schema changes are proven necessary, split them into separately reviewed migration versions rather than silently applying them inside an unrelated patch.
+
+## 0.24.23 result boundary
+
+0.24.23 was executed as a source architecture cleanup Sprint. It:
+
+- measured the current oversized source files and responsibility hotspots;
+- split drawing canvas primitive/helper/type/icon logic out of `WorkOrderDrawingCanvasEditor.tsx`;
+- recorded duplicate repository/service boundaries, dead/mock/fallback candidates, legacy PDF Worker status, TypeScript/API/DB risks, and logger/redaction baseline in `docs/audits/source-architecture-cleanup-0.24.23.md`;
+- avoided permission, tenant, workflow, DB, R2, PDF policy, package, and lockfile changes.
+
+Source cleanup result:
+
+- `components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx`: 52,725 bytes before cleanup, 40,366 bytes after cleanup.
+- `components/workorder/drawing/workOrderDrawingCanvasPrimitives.tsx`: 15,425 bytes.
+- New files above 50KB: 0.
+- Production DB/R2 mutation: 0.
+- Schema migration/backfill/RLS DDL execution: none.
+- Deprecated PDF Worker deletion: not performed.
+
+0.24.24 must not start until the owner confirms the 0.24.23 source cleanup result.
 
 ## Runtime and product preservation
 

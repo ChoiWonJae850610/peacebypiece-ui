@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.22`
+- 기준 앱 버전: `0.24.23`
 - tracked docs 파일 수: `693`
 - docs root 파일 수: `180`
 - docs/project 파일 수: `33`

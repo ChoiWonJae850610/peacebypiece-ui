@@ -1,6 +1,6 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.22`. Next implementation candidate: `0.24.23` Source Architecture Cleanup after 0.24.22 confirmation.
+> Active baseline: `0.24.23`. Next implementation candidate: `0.24.24` WAFL UI Foundation after 0.24.23 confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Sections below that describe 0.24.22 as UI-first, Productization Sprint #2, or PB-005/006/010 are historical records and must not drive implementation.
 
@@ -14,6 +14,16 @@
 - 문서 27/28/31/32 기준 source-of-truth, migration/backfill/rollback, RLS/tenant 경계를 확인했다.
 - production DB/R2 mutation, destructive migration, schema/package/lockfile 변경은 수행하지 않았다.
 - DB authority와 migration 후보는 사용자 확인 필요 상태이며, 확인 전 0.24.23을 시작하지 않는다.
+
+
+## 0.24.23 — Source Architecture Cleanup
+
+- 실제 대형 파일과 책임 집중 영역을 다시 측정했다.
+- `WorkOrderDrawingCanvasEditor`에서 canvas primitive/helper/type/icon 책임을 `workOrderDrawingCanvasPrimitives.tsx`로 분리했다.
+- drawing editor는 52,725 bytes에서 40,366 bytes로 내려갔고, 새 primitive 파일은 15,425 bytes다.
+- `WaflUiCatalogPage`, `AdminSettingsHub`, `joinRequestRepository`, admin i18n, PDF Worker, logger 경계는 감사 문서에 후속 cleanup 순서로 남겼다.
+- 권한, tenant, workflow, DB, R2, PDF 정책, package/lockfile은 변경하지 않았다.
+- 0.24.24 WAFL UI Foundation은 사용자 승인 전 시작하지 않는다.
 
 
 ## 0.24.21.19 — Final Pre-Codex Contract Gate
@@ -62,8 +72,8 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.22`
-- APP_VERSION: `0.24.22`
+- Roadmap checkpoint version: `0.24.23`
+- APP_VERSION: `0.24.23`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `80%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
@@ -268,6 +278,7 @@ Structured roadmap title tokens kept for contract checks: `문서/폴더 정리 
 | `0.24.21.18` | Final Pre-Codex Roadmap Contract Fix | 검증 대기 | Canonical 0.24.22 roadmap, contract repair, authority and version consistency |
 | `0.24.21.19` | Final Pre-Codex Contract Gate | 검증 대기 | Version-agnostic contracts, system-admin read-only copy, PowerShell menu 33 |
 | `0.24.22` | DB Foundation and Authority Alignment | 사용자 결정 필요 | Evidence-first DB authority, RLS, constraints, indexes, reconciliation and migration boundaries |
+| `0.24.23` | Source Architecture Cleanup | 검증 대기 | Oversized source split, duplicate boundary audit, PDF Worker and logger cleanup evidence |
 
 
 ## 0.24.21.9 Final Policy Decisions and Master TODO

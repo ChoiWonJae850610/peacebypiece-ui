@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.22`
+- 기준 앱 버전: `0.24.23`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.22`는 DB Foundation and Authority Alignment read-only 감사와 source-of-truth/migration 경계 정리 기준이다. 다음 후보는 `0.24.23` Source Architecture Cleanup이지만 0.24.22 결과 확인 전에는 시작하지 않는다.
+- 현재 작업 상태: `0.24.23`은 Source Architecture Cleanup의 첫 책임 분리와 감사 경계 정리 기준이다. 다음 후보는 `0.24.24` WAFL UI Foundation이지만 사용자 승인 전에는 시작하지 않는다.
 
 ## 개발 실행
 

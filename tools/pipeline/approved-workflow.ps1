@@ -25,6 +25,7 @@ $AllowedProfiles = @(
     "roadmap-development-contract",
     "system-admin-internal-access",
     "repository-cleanup",
+    "source-architecture-cleanup",
     "automation-infrastructure",
     "workspace-commonization",
     "functions-automation"
