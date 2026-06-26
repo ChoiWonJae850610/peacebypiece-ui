@@ -1,8 +1,19 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.21.19`. Next implementation: `0.24.22` DB Foundation.
+> Active baseline: `0.24.22`. Next implementation candidate: `0.24.23` Source Architecture Cleanup after 0.24.22 confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Sections below that describe 0.24.22 as UI-first, Productization Sprint #2, or PB-005/006/010 are historical records and must not drive implementation.
+
+
+## 0.24.22 — DB Foundation and Authority Alignment
+
+- 승인된 dev/test DB fingerprint에서 read-only 메뉴 30~32를 실행했다.
+- Menu 30 reconciliation: PASS, total result rows 0.
+- Menu 31 constraint readiness: PASS, total reported issues 0.
+- Menu 32 index readiness: PASS, total result rows 430 reporting-only.
+- 문서 27/28/31/32 기준 source-of-truth, migration/backfill/rollback, RLS/tenant 경계를 확인했다.
+- production DB/R2 mutation, destructive migration, schema/package/lockfile 변경은 수행하지 않았다.
+- DB authority와 migration 후보는 사용자 확인 필요 상태이며, 확인 전 0.24.23을 시작하지 않는다.
 
 
 ## 0.24.21.19 — Final Pre-Codex Contract Gate
@@ -51,8 +62,8 @@
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.21.19`
-- APP_VERSION: `0.24.21.19`
+- Roadmap checkpoint version: `0.24.22`
+- APP_VERSION: `0.24.22`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `80%`
 - Canonical structured source: `lib/internal/roadmap/index.ts`
@@ -256,7 +267,7 @@ Structured roadmap title tokens kept for contract checks: `문서/폴더 정리 
 | `0.24.21.9` | Final Policy Decisions and Master TODO | 검증 대기 | Canonical decisions, full undeveloped feature inventory, and implementation queue |
 | `0.24.21.18` | Final Pre-Codex Roadmap Contract Fix | 검증 대기 | Canonical 0.24.22 roadmap, contract repair, authority and version consistency |
 | `0.24.21.19` | Final Pre-Codex Contract Gate | 검증 대기 | Version-agnostic contracts, system-admin read-only copy, PowerShell menu 33 |
-| `0.24.22` | DB Foundation and Authority Alignment | 예정 | Evidence-first DB authority, RLS, constraints, indexes, reconciliation and migration boundaries |
+| `0.24.22` | DB Foundation and Authority Alignment | 사용자 결정 필요 | Evidence-first DB authority, RLS, constraints, indexes, reconciliation and migration boundaries |
 
 
 ## 0.24.21.9 Final Policy Decisions and Master TODO

@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_22: RoadmapVersionDetail = {
   version: "0.24.22",
   title: "DB Foundation and Authority Alignment",
-  status: "planned",
+  status: "user_decision_needed",
   userSummary: [
     "기능 확장 전에 고객사 멤버십·구독·작업지시서·첨부파일의 DB 기준을 하나로 정리한다.",
     "실제 migration을 서두르지 않고 코드의 읽기·쓰기 경로, 배포 DB drift, RLS와 제약조건 근거를 먼저 확정한다.",
@@ -112,11 +112,19 @@ export const ROADMAP_0_24_22: RoadmapVersionDetail = {
     "master commit/push와 Vercel QA 완료",
   ],
   result: {
-    completedSummary: [],
+    completedSummary: [
+      "문서 27/28/29/31/32 기준으로 membership, billing, workorder URL, attachment/trash/PDF/deletion, tenant/RLS authority의 source-of-truth와 migration 경계를 재확인했다.",
+      "승인된 dev/test DB fingerprint에서 메뉴 30~32 read-only 감사를 실행했다. reconciliation은 0행, constraint issue 합계는 0건, index readiness는 430행 보고서로 정상 종료했다.",
+      "0.24.22에서는 production DB/R2 mutation, destructive migration, schema/package/lockfile 변경을 수행하지 않았다.",
+    ],
     commitHash: "",
-    verificationResult: "",
-    remainingIssues: ["실행 전 계획 상태"],
+    verificationResult: "DB read-only audit 30/31/32 PASS; db audit/menu/design contracts PASS; roadmap-development-contract PASS; unicode-encoding-contract PASS; full approved workflow pending",
+    remainingIssues: [
+      "DB authority와 migration 후보는 사용자 확인 후 다음 단계로 확정한다.",
+      "실제 schema migration/backfill/RLS DDL은 별도 버전, dry-run, rollback, 명시 승인 전까지 보류한다.",
+      "0.24.23 Source Architecture Cleanup은 0.24.22 결과 확인 전 시작하지 않는다.",
+    ],
     userConfirmationRequired: true,
-    userConfirmationResult: "DB authority와 migration 후보는 조사 결과 보고 후 사용자 확인 필요",
+    userConfirmationResult: "read-only 감사 결과와 source-of-truth/migration 경계 보고 후 사용자 확인 필요",
   },
 };

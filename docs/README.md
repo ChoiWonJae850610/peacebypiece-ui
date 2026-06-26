@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.21.19`
+- 기준 앱 버전: `0.24.22`
 - tracked docs 파일 수: `693`
 - docs root 파일 수: `180`
 - docs/project 파일 수: `33`
@@ -131,4 +131,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Plan -Profile repository-cleanup -CommitMessage "docs: consolidate billing storage and legacy QA history" -ExpectedAppVersion "0.24.11"
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-workflow.ps1 -Action Finish -Profile repository-cleanup -CommitMessage "docs: consolidate billing storage and legacy QA history" -ExpectedAppVersion "0.24.11"
 ```
-

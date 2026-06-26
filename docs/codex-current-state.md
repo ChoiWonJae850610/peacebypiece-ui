@@ -1,10 +1,11 @@
-# Codex Current State — 0.24.21.19
+# Codex Current State — 0.24.22
 
 ## Active execution gate
 
-- Current version: `0.24.21.19`.
-- Next implementation version: `0.24.22`.
-- Next work: **Sprint A — Database Foundation and Authority Alignment**.
+- Current version: `0.24.22`.
+- Next implementation version: `0.24.23` only after 0.24.22 result confirmation.
+- Current work result: **Sprint A — Database Foundation and Authority Alignment** read-only evidence captured.
+- Next work: **Sprint B — Source Architecture Cleanup** after confirmation.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
@@ -26,15 +27,24 @@ Any older document that describes `0.24.22` as an UI-first Sprint, PB-005/006/01
 6. Preserve `/id-control` and the system-admin/test-company role switcher for dev/test QA. Keep original-session restore and audit logging. Block all of it in production.
 7. New audit, migration, seed, reset, cleanup, PDF, R2, Export, performance, or E2E commands that should be operator-accessible must be tracked for the existing PowerShell menu with menu number, safety classification, confirmation requirement, and environment restriction.
 
-## 0.24.22 boundary
+## 0.24.22 result boundary
 
-0.24.22 is an evidence-first DB Foundation Sprint. It must:
+0.24.22 was executed as an evidence-first DB Foundation Sprint. It:
 
-- trace membership, plan/subscription, workorder ID, attachment/trash/deletion, and tenant/RLS authority;
-- compare repository schema with deployed dev/test schema;
-- run or consume the read-only menu 30–32 reports;
-- produce source-of-truth, conflict, backfill, migration, rollback, and GO/STOP evidence;
-- avoid unrelated UI implementation and avoid destructive migration execution.
+- traced membership, plan/subscription, workorder ID, attachment/trash/deletion, and tenant/RLS authority through documents 27/28/31/32 and the 0.24.22 roadmap contract;
+- ran the read-only menu 30–32 reports against the approved dev/test DB fingerprint;
+- recorded source-of-truth, conflict, backfill, migration, rollback, and GO/STOP boundaries;
+- avoided unrelated UI implementation and avoided destructive migration execution.
+
+Read-only DB audit result:
+
+- Menu 30 DB Schema Reconciliation Audit: PASS, total result rows 0.
+- Menu 31 DB Constraint Readiness Check: PASS, total reported issues 0.
+- Menu 32 DB Index Usage/Query Readiness Report: PASS, total result rows 430 as a report.
+- Production DB/R2 mutation: 0.
+- Schema migration/backfill/RLS DDL execution: none.
+
+0.24.23 must not start until the owner confirms the 0.24.22 DB authority and migration boundary report.
 
 If safe schema changes are proven necessary, split them into separately reviewed migration versions rather than silently applying them inside an unrelated patch.
 
