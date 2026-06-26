@@ -4,7 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 const manifestPath = path.join("tools", "simulator", "fixtures", "attachments", "canonical-lifecycle-manifest.json");
+const dbFixturePath = path.join("tests", "fixtures", "functions", "company-scenarios.json");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+const dbFixture = JSON.parse(fs.readFileSync(dbFixturePath, "utf8"));
 
 const requiredFields = [
   "fixture_id",
@@ -46,6 +48,7 @@ const attachmentIds = new Set();
 const r2Keys = new Set();
 const representativeByWorkOrder = new Map();
 const companyTotals = new Map();
+const seedCompanies = new Map(dbFixture.companies.map((company) => [company.id, company]));
 
 for (const item of manifest.normalLifecycleFixtures) {
   for (const field of requiredFields) {
@@ -69,6 +72,19 @@ for (const item of manifest.normalLifecycleFixtures) {
     r2Keys.add(item.canonical_r2_key);
   }
 
+  if (item.workorder_id) {
+    const seedCompany = seedCompanies.get(item.company_id);
+    assert.ok(seedCompany, `${item.fixture_id} company must exist in Simulator DB Seed fixture`);
+    assert.ok(seedCompany.workorders > 0, `${item.fixture_id} references a company with no seeded workorders`);
+    const match = item.workorder_id.match(new RegExp(`^${item.company_id}-workorder-(\\d{5})$`));
+    assert.ok(match, `${item.fixture_id} workorder_id must follow Simulator DB Seed id format`);
+    const workorderNumber = Number.parseInt(match[1], 10);
+    assert.ok(
+      workorderNumber >= 1 && workorderNumber <= seedCompany.workorders,
+      `${item.fixture_id} workorder_id is outside Simulator DB Seed range`,
+    );
+  }
+
   if (item.is_representative_design) {
     assert.equal(item.attachment_kind, "design");
     assert.equal(item.lifecycle_status === "trashed", false, "trashed item must not be representative");
@@ -90,6 +106,7 @@ for (const item of manifest.normalLifecycleFixtures) {
 }
 
 for (const item of manifest.capacityBoundaryFixtures) {
+  assert.ok(seedCompanies.has(item.company_id), `${item.company_id} capacity company must exist in Simulator DB Seed fixture`);
   assert.equal(item.source, "capacity_boundary_contract_only");
   assert.ok(item.expected_company_total_bytes >= item.expected_company_active_bytes);
   assert.ok(item.quota_bytes > 0);

@@ -1,7 +1,7 @@
-import { createHmac } from "crypto";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { isSupportedCompanyOnboardingFileStorageKey } from "@/lib/admin/settings/companyOnboardingFilePolicy";
 import { isSupportedCompanyFileStorageKey } from "@/lib/admin/settings/companyFilePolicy";
+import { createR2WorkerSignature, createR2WorkerSignedUrl, normalizeWorkerBaseUrl } from "@/lib/storage/r2/r2WorkerSignature.mjs";
 
 export type R2WorkerUploadConfig = {
   uploadUrl: string;
@@ -52,10 +52,6 @@ function readEnv(name: string): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
-function normalizeBaseUrl(value: string): string {
-  return value.replace(/\/+$/, "");
-}
-
 function assertSafeWorkerStorageKey(key: string): string {
   const value = key.trim().replace(/^\/+/, "");
   const isSupportedWorkOrderKey = isSupportedWorkOrderAttachmentStorageKey(value);
@@ -66,16 +62,6 @@ function assertSafeWorkerStorageKey(key: string): string {
     throw new Error("R2_WORKER_INVALID_STORAGE_KEY");
   }
   return value;
-}
-
-function createSignature(input: { secret: string; purpose: "upload" | "file" | "delete"; key: string; contentType?: string; expiresAt: number }): string {
-  const payload = input.purpose === "upload"
-    ? ["PUT", input.key, input.contentType || "application/octet-stream", String(input.expiresAt)].join("\n")
-    : input.purpose === "delete"
-      ? ["DELETE", input.key, String(input.expiresAt)].join("\n")
-      : ["GET", input.key, String(input.expiresAt)].join("\n");
-
-  return createHmac("sha256", input.secret).update(payload).digest("hex");
 }
 
 async function readWorkerError(response: Response): Promise<string> {
@@ -98,7 +84,7 @@ export function getR2WorkerUploadConfig(): R2WorkerUploadConfig | null {
   const uploadUrl = readEnv("R2_WORKER_UPLOAD_URL");
   const secret = readEnv("R2_WORKER_UPLOAD_SECRET");
   if (!uploadUrl || !secret) return null;
-  return { uploadUrl: normalizeBaseUrl(uploadUrl), secret };
+  return { uploadUrl: normalizeWorkerBaseUrl(uploadUrl), secret };
 }
 
 export function isR2WorkerUploadConfigured(): boolean {
@@ -111,9 +97,9 @@ export function createR2WorkerUploadSignature(input: {
   contentType: string;
   expiresAt: number;
 }): string {
-  return createSignature({
+  return createR2WorkerSignature({
     secret: input.secret,
-    purpose: "upload",
+    method: "PUT",
     key: input.key,
     contentType: input.contentType,
     expiresAt: input.expiresAt,
@@ -125,9 +111,9 @@ export function createR2WorkerFileSignature(input: {
   key: string;
   expiresAt: number;
 }): string {
-  return createSignature({
+  return createR2WorkerSignature({
     secret: input.secret,
-    purpose: "file",
+    method: "GET",
     key: input.key,
     expiresAt: input.expiresAt,
   });
@@ -138,9 +124,9 @@ export function createR2WorkerDeleteSignature(input: {
   key: string;
   expiresAt: number;
 }): string {
-  return createSignature({
+  return createR2WorkerSignature({
     secret: input.secret,
-    purpose: "delete",
+    method: "DELETE",
     key: input.key,
     expiresAt: input.expiresAt,
   });
@@ -154,15 +140,16 @@ export function createR2WorkerUploadUrl(input: CreateR2WorkerUploadUrlInput): R2
   const contentType = input.contentType || "application/octet-stream";
   const expiresInSeconds = input.expiresInSeconds ?? DEFAULT_WORKER_UPLOAD_EXPIRES_SECONDS;
   const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-  const signature = createR2WorkerUploadSignature({ secret: config.secret, key, contentType, expiresAt });
+  const url = createR2WorkerSignedUrl({
+    uploadUrl: config.uploadUrl,
+    secret: config.secret,
+    method: "PUT",
+    key,
+    contentType,
+    expiresAt,
+  });
 
-  const url = new URL(config.uploadUrl);
-  url.searchParams.set("key", key);
-  url.searchParams.set("contentType", contentType);
-  url.searchParams.set("expires", String(expiresAt));
-  url.searchParams.set("signature", signature);
-
-  return { url: url.toString(), method: "PUT", headers: { "Content-Type": contentType }, expiresInSeconds };
+  return { url, method: "PUT", headers: { "Content-Type": contentType }, expiresInSeconds };
 }
 
 export function createR2WorkerFileUrl(input: CreateR2WorkerFileUrlInput): R2WorkerFileUrlResult {
@@ -172,14 +159,15 @@ export function createR2WorkerFileUrl(input: CreateR2WorkerFileUrlInput): R2Work
   const key = assertSafeWorkerStorageKey(input.key);
   const expiresInSeconds = input.expiresInSeconds ?? DEFAULT_WORKER_FILE_EXPIRES_SECONDS;
   const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-  const signature = createR2WorkerFileSignature({ secret: config.secret, key, expiresAt });
+  const url = createR2WorkerSignedUrl({
+    uploadUrl: config.uploadUrl,
+    secret: config.secret,
+    method: "GET",
+    key,
+    expiresAt,
+  });
 
-  const url = new URL(config.uploadUrl);
-  url.searchParams.set("key", key);
-  url.searchParams.set("expires", String(expiresAt));
-  url.searchParams.set("signature", signature);
-
-  return { url: url.toString(), method: "GET", expiresInSeconds };
+  return { url, method: "GET", expiresInSeconds };
 }
 
 export function createR2WorkerDeleteUrl(input: CreateR2WorkerDeleteUrlInput): R2WorkerDeleteUrlResult {
@@ -189,14 +177,15 @@ export function createR2WorkerDeleteUrl(input: CreateR2WorkerDeleteUrlInput): R2
   const key = assertSafeWorkerStorageKey(input.key);
   const expiresInSeconds = input.expiresInSeconds ?? DEFAULT_WORKER_DELETE_EXPIRES_SECONDS;
   const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-  const signature = createR2WorkerDeleteSignature({ secret: config.secret, key, expiresAt });
+  const url = createR2WorkerSignedUrl({
+    uploadUrl: config.uploadUrl,
+    secret: config.secret,
+    method: "DELETE",
+    key,
+    expiresAt,
+  });
 
-  const url = new URL(config.uploadUrl);
-  url.searchParams.set("key", key);
-  url.searchParams.set("expires", String(expiresAt));
-  url.searchParams.set("signature", signature);
-
-  return { url: url.toString(), method: "DELETE", expiresInSeconds };
+  return { url, method: "DELETE", expiresInSeconds };
 }
 
 export async function deleteR2ObjectViaWorker(input: CreateR2WorkerDeleteUrlInput): Promise<void> {

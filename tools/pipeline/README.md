@@ -18,6 +18,10 @@ powershell -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiece-auto-pipe
 
 `Simulator.ApprovedDbFingerprint`는 DB URL의 host/database 조합을 해시한 식별값입니다. Seed와 cleanup은 현재 연결 대상의 fingerprint가 이 값과 정확히 일치할 때만 실행됩니다.
 
+## Simulator R2 Worker 승인
+
+Attachment lifecycle upload/verify/cleanup은 S3 endpoint 직접 접근이 아니라 `R2_WORKER_UPLOAD_URL`의 signed `PUT`/`GET`/`DELETE` 경로를 사용합니다. 실제 실행 전 `Simulator.ApprovedWorkerUrlFingerprint`, `Simulator.ApprovedWorkerHostFingerprint`, 또는 `Simulator.ApprovedWorkerUrlAllowlist` 중 하나가 현재 dev/test Worker fingerprint와 일치해야 하며, Worker URL 원문과 `R2_WORKER_UPLOAD_SECRET`은 출력하거나 설정 파일에 저장하지 않습니다.
+
 ## Reset Database Schema Guard
 
 Development/test menu 9 requires the exact confirmation phrase `RESET WAF-FN SCHEMA`. Before the SQL runner can be prepared, the menu calls the shared reset guard in `pipeline-common.ps1` and blocks production runtime, missing/unknown runtime, non-PostgreSQL URLs, approved fingerprint mismatch, non-`wafl-fn` prefix, and confirmation mismatch. Logs must report only PASS/BLOCKED style status and must not print the DB URL, host, database name, credential, token, secret, or actual fingerprint.

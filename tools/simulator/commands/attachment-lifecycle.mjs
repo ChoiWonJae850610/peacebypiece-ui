@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { createR2WorkerSignedUrl, normalizeWorkerBaseUrl } from "../../../lib/storage/r2/r2WorkerSignature.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -92,13 +93,57 @@ function databaseIdentity() {
   }
 }
 
-function r2Identity() {
-  const accountId = readEnv("R2_ACCOUNT_ID");
-  const bucketName = readEnv("R2_BUCKET_NAME");
-  if (!accountId || !bucketName) return { present: false, fingerprint: null };
+function workerIdentity() {
+  const uploadUrl = readEnv("R2_WORKER_UPLOAD_URL");
+  if (!uploadUrl) return { present: false, fingerprint: null, hostFingerprint: null, protocolOk: false, productionLike: false };
+  try {
+    const normalized = normalizeWorkerBaseUrl(uploadUrl);
+    const url = new URL(normalized);
+    const productionLike = /(^|[-_.])prod(uction)?($|[-_.])|production/i.test(`${url.hostname} ${url.pathname}`);
+    return {
+      present: true,
+      fingerprint: hashPrefix(normalized),
+      hostFingerprint: hashPrefix(url.host.toLowerCase()),
+      protocolOk: url.protocol === "https:",
+      productionLike,
+    };
+  } catch {
+    return { present: true, fingerprint: null, hostFingerprint: null, protocolOk: false, productionLike: false };
+  }
+}
+
+function workerFingerprintApproved(worker) {
+  if (!worker.fingerprint) return false;
+  const approvedUrlFingerprint = String(readEnv("WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT") || "").toLowerCase();
+  const approvedHostFingerprint = String(readEnv("WAFL_SIMULATOR_APPROVED_WORKER_HOST_FINGERPRINT") || "").toLowerCase();
+  const approvedAllowlist = String(readEnv("WAFL_SIMULATOR_APPROVED_WORKER_URL_ALLOWLIST") || "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  const urlConfigured = Boolean(approvedUrlFingerprint);
+  const hostConfigured = Boolean(approvedHostFingerprint);
+  if (urlConfigured && hostConfigured) {
+    return worker.fingerprint === approvedUrlFingerprint && worker.hostFingerprint === approvedHostFingerprint;
+  }
+  return (
+    worker.fingerprint === approvedUrlFingerprint ||
+    (worker.hostFingerprint && worker.hostFingerprint === approvedHostFingerprint) ||
+    approvedAllowlist.includes(worker.fingerprint)
+  );
+}
+
+function workerFingerprintMatchDetails(worker) {
+  const approvedUrlFingerprint = String(readEnv("WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT") || "").toLowerCase();
+  const approvedHostFingerprint = String(readEnv("WAFL_SIMULATOR_APPROVED_WORKER_HOST_FINGERPRINT") || "").toLowerCase();
+  const approvedAllowlist = String(readEnv("WAFL_SIMULATOR_APPROVED_WORKER_URL_ALLOWLIST") || "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
   return {
-    present: true,
-    fingerprint: hashPrefix(`${accountId}/${bucketName}`),
+    urlFingerprintMatch: Boolean(worker.fingerprint && approvedUrlFingerprint && worker.fingerprint === approvedUrlFingerprint),
+    hostFingerprintMatch: Boolean(worker.hostFingerprint && approvedHostFingerprint && worker.hostFingerprint === approvedHostFingerprint),
+    allowlistMatch: Boolean(worker.fingerprint && approvedAllowlist.includes(worker.fingerprint)),
+    exactUrlAndHostRequired: Boolean(approvedUrlFingerprint && approvedHostFingerprint),
   };
 }
 
@@ -249,23 +294,27 @@ async function generateLocalFiles(manifest) {
 function buildPreflight(manifest, summary) {
   const runtime = normalizeRuntime();
   const db = databaseIdentity();
-  const r2 = r2Identity();
+  const worker = workerIdentity();
   const approvedDbFingerprint = readEnv("WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT");
-  const approvedR2Fingerprint = readEnv("WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT");
   return {
     targetRuntime: runtime || "unset",
     neonFingerprint: db.fingerprint || "unavailable",
     neonFingerprintApproved: Boolean(db.fingerprint && approvedDbFingerprint && db.fingerprint === approvedDbFingerprint.toLowerCase()),
-    r2AccountBucketFingerprint: r2.fingerprint || "unavailable",
-    r2FingerprintApproved: Boolean(r2.fingerprint && approvedR2Fingerprint && r2.fingerprint === approvedR2Fingerprint.toLowerCase()),
+    workerUrlFingerprint: worker.fingerprint || "unavailable",
+    workerHostFingerprint: worker.hostFingerprint || "unavailable",
+    workerProductionPatternBlocked: worker.productionLike === false,
+    ...workerFingerprintMatchDetails(worker),
+    workerFingerprintApproved: workerFingerprintApproved(worker),
     targetCompanyCount: summary.companyCount,
     targetWorkOrderCount: summary.workOrderCount,
     generatedFileCount: summary.materializedFileCount,
     expectedTotalBytes: summary.expectedTotalBytes,
     simulatorPrefix: manifest.testPrefix,
     dbMutationRange: "attachments, attachment_trash_items, storage_usage_snapshots rows whose ids/company ids start with wafl-fn and are listed in the canonical manifest",
-    r2MutationRange: "only canonical_r2_key values listed in the manifest under companies/wafl-fn-company-*/workorders/*",
+    r2MutationRange: "only canonical_r2_key values listed in the manifest under companies/wafl-fn-company-*/workorders/* through the dev/test Cloudflare Worker",
+    workerAdapterCapabilities: ["signed PUT exact key", "signed GET exact key byte/content-type verification", "signed DELETE exact key followed by GET 404 verification"],
     cleanupRange: "only manifest attachment ids, trash items, snapshots, and exact manifest R2 keys; no whole bucket or broad prefix delete",
+    reconciliationScope: "manifest-scoped exact keys/attachment ids/trash ids/snapshot company ids only; no bucket-wide orphan scan or prefix LIST",
     confirmationString: confirmationForMode(mode),
     resumeRollbackCompensation: "Re-run verify to detect partial state. Re-run upload-seed for idempotent DB metadata repair. Cleanup deletes only manifest R2 keys after key validation and then marks/removes simulator metadata. If R2 delete fails, DB metadata is not removed.",
   };
@@ -286,11 +335,548 @@ function assertMutationGuards(manifest) {
   if (readEnv("WAFL_SIMULATOR_ATTACHMENT_CONFIRM") !== confirmationForMode(mode)) throw new Error(`mutation blocked: WAFL_SIMULATOR_ATTACHMENT_CONFIRM=${confirmationForMode(mode)} required`);
   if (readEnv("WAFL_FUNCTIONS_TEST_PREFIX") !== manifest.testPrefix) throw new Error("mutation blocked: WAFL_FUNCTIONS_TEST_PREFIX mismatch");
   const db = databaseIdentity();
-  const r2 = r2Identity();
+  const worker = workerIdentity();
   if (!db.present || !db.protocolOk || !db.fingerprint) throw new Error("mutation blocked: valid PostgreSQL identity required");
-  if (!r2.present || !r2.fingerprint) throw new Error("mutation blocked: R2 account/bucket identity required");
+  if (!worker.present || !worker.protocolOk || !worker.fingerprint) throw new Error("mutation blocked: valid HTTPS Worker identity required");
+  if (worker.productionLike) throw new Error("mutation blocked: production-like Worker URL pattern");
   if (db.fingerprint !== String(readEnv("WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT") || "").toLowerCase()) throw new Error("mutation blocked: DB fingerprint mismatch");
-  if (r2.fingerprint !== String(readEnv("WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT") || "").toLowerCase()) throw new Error("mutation blocked: R2 fingerprint mismatch");
+  if (!workerFingerprintApproved(worker)) throw new Error("mutation blocked: Worker fingerprint mismatch");
+}
+
+function getDatabaseUrl() {
+  const entry = DATABASE_KEYS.map((key) => [key, readEnv(key)]).find(([, value]) => value);
+  if (!entry) throw new Error("DATABASE_URL_REQUIRED");
+  return entry[1];
+}
+
+function getWorkerConfig() {
+  const uploadUrl = readEnv("R2_WORKER_UPLOAD_URL");
+  const secret = readEnv("R2_WORKER_UPLOAD_SECRET");
+  if (!uploadUrl || !secret) throw new Error("R2_WORKER_CONFIG_REQUIRED");
+  return {
+    uploadUrl: normalizeWorkerBaseUrl(uploadUrl),
+    secret,
+  };
+}
+
+async function createPgClient() {
+  const { default: pg } = await import("pg");
+  const client = new pg.Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  return client;
+}
+
+function createWorkerSignedUrl(config, { method, key, contentType }) {
+  return createR2WorkerSignedUrl({
+    uploadUrl: config.uploadUrl,
+    secret: config.secret,
+    method,
+    key,
+    contentType: contentType || "application/octet-stream",
+    expiresAt: Math.floor(Date.now() / 1000) + 600,
+  });
+}
+
+function materializedItems(manifest) {
+  return manifest.normalLifecycleFixtures.filter(isNormalMaterializedAttachment);
+}
+
+function localPathForItem(item) {
+  return path.join(OUT_ROOT, "files", item.canonical_r2_key);
+}
+
+async function readWorkerError(response) {
+  try {
+    const text = await response.text();
+    return text.trim().slice(0, 160);
+  } catch {
+    return "";
+  }
+}
+
+function isWorkerMissingObject(status, body) {
+  return status === 404 || /WORKER_FILE_NOT_FOUND|NOT_FOUND/i.test(String(body || ""));
+}
+
+function contentTypeMatches(actual, expected) {
+  const actualBase = String(actual || "").split(";")[0].trim().toLowerCase();
+  const expectedBase = String(expected || "application/octet-stream").trim().toLowerCase();
+  return actualBase === expectedBase;
+}
+
+async function getWorkerObject(config, item) {
+  const url = createWorkerSignedUrl(config, {
+    method: "GET",
+    key: item.canonical_r2_key,
+    contentType: item.mime_type,
+  });
+  const response = await fetch(url, { method: "GET" });
+  const contentType = response.headers.get("content-type") || "";
+  if (!response.ok) {
+    const body = await readWorkerError(response);
+    return {
+      key: item.canonical_r2_key,
+      status: response.status,
+      bytes: 0,
+      contentType,
+      missing: isWorkerMissingObject(response.status, body),
+      transportIssue: !isWorkerMissingObject(response.status, body),
+      error: body || `WORKER_GET_FAILED_${response.status}`,
+    };
+  }
+
+  const body = Buffer.from(await response.arrayBuffer());
+  return {
+    key: item.canonical_r2_key,
+    status: response.status,
+    bytes: body.byteLength,
+    contentType,
+    missing: false,
+    transportIssue: false,
+    error: null,
+  };
+}
+
+async function deleteWorkerObjectAndVerifyMissing(config, item) {
+  const deleteUrl = createWorkerSignedUrl(config, {
+    method: "DELETE",
+    key: item.canonical_r2_key,
+    contentType: item.mime_type,
+  });
+  const deleteResponse = await fetch(deleteUrl, { method: "DELETE" });
+  if (!deleteResponse.ok) {
+    const body = await readWorkerError(deleteResponse);
+    if (!isWorkerMissingObject(deleteResponse.status, body)) {
+      return {
+        key: item.canonical_r2_key,
+        deleted: false,
+        deleteStatus: deleteResponse.status,
+        missingAfterDelete: false,
+        error: body || `WORKER_DELETE_FAILED_${deleteResponse.status}`,
+      };
+    }
+  }
+
+  const afterDelete = await getWorkerObject(config, item);
+  return {
+    key: item.canonical_r2_key,
+    deleted: afterDelete.missing,
+    deleteStatus: deleteResponse.status,
+    missingAfterDelete: afterDelete.missing,
+    error: afterDelete.missing ? null : (afterDelete.error || "WORKER_DELETE_VERIFY_NOT_MISSING"),
+  };
+}
+
+async function uploadAndVerifyR2Objects(manifest) {
+  const workerConfig = getWorkerConfig();
+  const items = materializedItems(manifest);
+  const results = [];
+
+  for (const item of items) {
+    const body = await fs.readFile(localPathForItem(item));
+    if (body.byteLength !== item.exact_size_bytes) {
+      results.push({ key: item.canonical_r2_key, status: "failed", error: "LOCAL_SIZE_MISMATCH", expectedBytes: item.exact_size_bytes, actualBytes: body.byteLength });
+      continue;
+    }
+
+    const putUrl = createWorkerSignedUrl(workerConfig, {
+      method: "PUT",
+      key: item.canonical_r2_key,
+      contentType: item.mime_type,
+    });
+    const putResponse = await fetch(putUrl, {
+      method: "PUT",
+      headers: { "content-type": item.mime_type || "application/octet-stream" },
+      body,
+    });
+    if (!putResponse.ok) {
+      results.push({
+        key: item.canonical_r2_key,
+        status: "failed",
+        expectedBytes: item.exact_size_bytes,
+        putStatus: putResponse.status,
+        getBytes: 0,
+        contentType: null,
+        error: (await readWorkerError(putResponse)) || `WORKER_PUT_FAILED_${putResponse.status}`,
+      });
+      continue;
+    }
+
+    const get = await getWorkerObject(workerConfig, item);
+    const ok =
+      !get.missing &&
+      !get.transportIssue &&
+      get.bytes === item.exact_size_bytes &&
+      contentTypeMatches(get.contentType, item.mime_type);
+    results.push({
+      key: item.canonical_r2_key,
+      status: ok ? "uploaded" : "failed",
+      expectedBytes: item.exact_size_bytes,
+      putStatus: putResponse.status,
+      getStatus: get.status,
+      getBytes: get.bytes,
+      contentType: get.contentType,
+      error: ok ? null : (get.error || "WORKER_GET_SIZE_OR_CONTENT_TYPE_MISMATCH"),
+    });
+  }
+
+  return {
+    results,
+    successCount: results.filter((item) => item.status === "uploaded").length,
+    failedCount: results.filter((item) => item.status !== "uploaded").length,
+    totalBytes: results.filter((item) => item.status === "uploaded").reduce((sum, item) => sum + item.getBytes, 0),
+    orphanScanScope: "not_performed_manifest_scoped_only",
+    orphanCount: null,
+    orphanKeys: [],
+  };
+}
+
+function companyTotalsFromManifest(manifest) {
+  const totals = new Map();
+  for (const item of manifest.normalLifecycleFixtures) {
+    if (!item.company_id) continue;
+    const current = totals.get(item.company_id) || { companyId: item.company_id, activeBytes: 0, trashBytes: 0, totalBytes: 0, attachmentCount: 0 };
+    if (["active", "restored"].includes(item.lifecycle_status)) current.activeBytes += item.exact_size_bytes;
+    if (item.lifecycle_status === "trashed") current.trashBytes += item.exact_size_bytes;
+    if (isNormalMaterializedAttachment(item)) current.attachmentCount += 1;
+    current.totalBytes = current.activeBytes + current.trashBytes;
+    totals.set(item.company_id, current);
+  }
+  return Array.from(totals.values()).sort((a, b) => a.companyId.localeCompare(b.companyId));
+}
+
+async function validateDatabaseTargets(manifest, existingClient = null) {
+  const client = existingClient || await createPgClient();
+  const ownsClient = !existingClient;
+  const items = materializedItems(manifest);
+  const companyIds = Array.from(new Set(items.map((item) => item.company_id)));
+  const workOrderIds = Array.from(new Set(items.map((item) => item.workorder_id)));
+
+  try {
+    if (ownsClient) await client.query("BEGIN READ ONLY");
+    const companyCheck = await client.query("SELECT id, name FROM companies WHERE id = ANY($1::text[])", [companyIds]);
+    const existingCompanies = new Map(companyCheck.rows.map((row) => [row.id, row.name || null]));
+    const missingCompanies = companyIds.filter((id) => !existingCompanies.has(id));
+    if (missingCompanies.length > 0) throw new Error(`MISSING_SIMULATOR_COMPANIES:${missingCompanies.join(",")}`);
+
+    const workOrderCheck = await client.query("SELECT id, company_id FROM spec_sheets WHERE id = ANY($1::text[])", [workOrderIds]);
+    const existingWorkOrders = new Map(workOrderCheck.rows.map((row) => [row.id, row.company_id]));
+    const missingWorkOrders = workOrderIds.filter((id) => !existingWorkOrders.has(id));
+    if (missingWorkOrders.length > 0) throw new Error(`MISSING_SIMULATOR_WORKORDERS:${missingWorkOrders.join(",")}`);
+    for (const item of items) {
+      if (existingWorkOrders.get(item.workorder_id) !== item.company_id) {
+        throw new Error(`WORKORDER_COMPANY_MISMATCH:${item.workorder_id}`);
+      }
+    }
+    if (ownsClient) await client.query("COMMIT");
+    return {
+      companyIds,
+      workOrderIds,
+      companyNames: existingCompanies,
+      checkedCompanyCount: companyIds.length,
+      checkedWorkOrderCount: workOrderIds.length,
+    };
+  } catch (error) {
+    if (ownsClient) {
+      try { await client.query("ROLLBACK"); } catch {}
+    }
+    throw error;
+  } finally {
+    if (ownsClient) await client.end();
+  }
+}
+
+async function seedAttachmentMetadata(manifest) {
+  const client = await createPgClient();
+  const items = materializedItems(manifest);
+  const attachmentIds = items.map((item) => item.attachment_id);
+  const trashIds = items.filter((item) => item.lifecycle_status === "trashed").map((item) => `${item.attachment_id}-trash`);
+  const companyIds = Array.from(new Set(items.map((item) => item.company_id)));
+  const totals = companyTotalsFromManifest(manifest);
+
+  try {
+    const targetCheck = await validateDatabaseTargets(manifest, client);
+    const existingCompanies = targetCheck.companyNames;
+
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [`${manifest.testPrefix}:attachment-lifecycle-upload-seed`]);
+
+    await client.query(
+      `DELETE FROM attachment_trash_items
+        WHERE attachment_id = ANY($1::text[])
+           OR id = ANY($2::text[])`,
+      [attachmentIds, trashIds],
+    );
+
+    for (const item of items) {
+      const isTrashed = item.lifecycle_status === "trashed";
+      const isActive = !isTrashed;
+      const deletedAt = isTrashed ? item.trashed_at : null;
+      const companyName = existingCompanies.get(item.company_id);
+      await client.query(
+        `INSERT INTO attachments (
+           id, company_id, company_name, order_id, type, storage_key, original_name,
+           mime_type, size_bytes, author_id, is_primary, source_type,
+           is_active, deleted_at, deleted_by, delete_source, delete_scope,
+           delete_parent_type, delete_parent_id, delete_batch_id, purge_after_at, updated_at
+         )
+         VALUES (
+           $1,$2,$3,$4,$5,$6,$7,$8,$9,'wafl-fn-simulator',
+           $10,'user',$11,$12,
+           CASE WHEN $12::timestamptz IS NULL THEN NULL ELSE 'wafl-fn-simulator' END,
+           CASE WHEN $12::timestamptz IS NULL THEN NULL ELSE 'manual' END,
+           CASE WHEN $12::timestamptz IS NULL THEN NULL ELSE 'single' END,
+           CASE WHEN $12::timestamptz IS NULL THEN NULL ELSE 'none' END,
+           NULL,
+           CASE WHEN $12::timestamptz IS NULL THEN NULL ELSE $1 END,
+           CASE WHEN $12::timestamptz IS NULL THEN NULL ELSE $12::timestamptz + interval '30 days' END,
+           now()
+         )
+         ON CONFLICT (id) DO UPDATE SET
+           company_id=EXCLUDED.company_id,
+           company_name=EXCLUDED.company_name,
+           order_id=EXCLUDED.order_id,
+           type=EXCLUDED.type,
+           storage_key=EXCLUDED.storage_key,
+           original_name=EXCLUDED.original_name,
+           mime_type=EXCLUDED.mime_type,
+           size_bytes=EXCLUDED.size_bytes,
+           author_id=EXCLUDED.author_id,
+           is_primary=EXCLUDED.is_primary,
+           source_type=EXCLUDED.source_type,
+           is_active=EXCLUDED.is_active,
+           deleted_at=EXCLUDED.deleted_at,
+           deleted_by=EXCLUDED.deleted_by,
+           delete_source=EXCLUDED.delete_source,
+           delete_scope=EXCLUDED.delete_scope,
+           delete_parent_type=EXCLUDED.delete_parent_type,
+           delete_parent_id=EXCLUDED.delete_parent_id,
+           delete_batch_id=EXCLUDED.delete_batch_id,
+           purge_after_at=EXCLUDED.purge_after_at,
+           updated_at=now()`,
+        [
+          item.attachment_id,
+          item.company_id,
+          companyName,
+          item.workorder_id,
+          item.attachment_kind === "design" ? "design" : "file",
+          item.canonical_r2_key,
+          item.original_filename,
+          item.mime_type,
+          item.exact_size_bytes,
+          item.is_representative_design === true && isActive,
+          isActive,
+          deletedAt,
+        ],
+      );
+
+      if (isTrashed) {
+        await client.query(
+          `INSERT INTO attachment_trash_items (
+             id, company_id, company_name, attachment_id, order_id, storage_key,
+             original_name, mime_type, size_bytes, deleted_by, delete_source,
+             delete_scope, delete_parent_type, delete_batch_id, deleted_at,
+             purge_after_at, purge_status, updated_at
+           )
+           VALUES (
+             $1,$2,$3,$4,$5,$6,$7,$8,$9,'wafl-fn-simulator','manual',
+             'single','none',$4,$10::timestamptz,$10::timestamptz + interval '30 days',
+             'pending',now()
+           )
+           ON CONFLICT (id) DO UPDATE SET
+             company_id=EXCLUDED.company_id,
+             company_name=EXCLUDED.company_name,
+             attachment_id=EXCLUDED.attachment_id,
+             order_id=EXCLUDED.order_id,
+             storage_key=EXCLUDED.storage_key,
+             original_name=EXCLUDED.original_name,
+             mime_type=EXCLUDED.mime_type,
+             size_bytes=EXCLUDED.size_bytes,
+             deleted_by=EXCLUDED.deleted_by,
+             delete_source=EXCLUDED.delete_source,
+             delete_scope=EXCLUDED.delete_scope,
+             delete_parent_type=EXCLUDED.delete_parent_type,
+             delete_batch_id=EXCLUDED.delete_batch_id,
+             deleted_at=EXCLUDED.deleted_at,
+             purge_after_at=EXCLUDED.purge_after_at,
+             restored_at=NULL,
+             restored_by=NULL,
+             purged_at=NULL,
+             purge_status='pending',
+             last_purge_error=NULL,
+             updated_at=now()`,
+          [
+            `${item.attachment_id}-trash`,
+            item.company_id,
+            companyName,
+            item.attachment_id,
+            item.workorder_id,
+            item.canonical_r2_key,
+            item.original_filename,
+            item.mime_type,
+            item.exact_size_bytes,
+            item.trashed_at,
+          ],
+        );
+      }
+    }
+
+    await client.query(
+      `DELETE FROM storage_usage_snapshots
+        WHERE company_id = ANY($1::text[])
+          AND memo LIKE '[SIM ATTACHMENT LIFECYCLE]%'`,
+      [companyIds],
+    );
+    for (const total of totals) {
+      await client.query(
+        `INSERT INTO storage_usage_snapshots (company_id, used_bytes, attachment_count, source, memo)
+         VALUES ($1, $2, $3, 'db_attachment_metadata', $4)`,
+        [
+          total.companyId,
+          total.totalBytes,
+          total.attachmentCount,
+          `[SIM ATTACHMENT LIFECYCLE] active=${total.activeBytes}; trash=${total.trashBytes}; manifest=${manifest.manifestId}`,
+        ],
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    try { await client.query("ROLLBACK"); } catch {}
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
+async function reconcileUploadSeed(manifest) {
+  const client = await createPgClient();
+  const workerConfig = getWorkerConfig();
+  const items = materializedItems(manifest);
+  const attachmentIds = items.map((item) => item.attachment_id);
+  const companyIds = Array.from(new Set(manifest.normalLifecycleFixtures.map((item) => item.company_id).filter(Boolean)));
+  try {
+    const attachments = await client.query(
+      `SELECT id, company_id, order_id, storage_key, size_bytes, is_primary, is_active, deleted_at
+         FROM attachments
+        WHERE id = ANY($1::text[])`,
+      [attachmentIds],
+    );
+    const trash = await client.query(
+      `SELECT id, attachment_id, company_id, storage_key, size_bytes, purge_status, restored_at, purged_at
+         FROM attachment_trash_items
+        WHERE attachment_id = ANY($1::text[])`,
+      [attachmentIds],
+    );
+    const snapshots = await client.query(
+      `SELECT DISTINCT ON (company_id) company_id, used_bytes, attachment_count, measured_at
+         FROM storage_usage_snapshots
+        WHERE company_id = ANY($1::text[])
+          AND memo LIKE '[SIM ATTACHMENT LIFECYCLE]%'
+        ORDER BY company_id, measured_at DESC`,
+      [companyIds],
+    );
+    const representativeDuplicates = await client.query(
+      `SELECT order_id, COUNT(*)::int AS count
+         FROM attachments
+        WHERE company_id = ANY($1::text[])
+          AND type = 'design'
+          AND is_primary = true
+          AND is_active = true
+          AND deleted_at IS NULL
+        GROUP BY order_id
+       HAVING COUNT(*) > 1`,
+      [companyIds],
+    );
+
+    const attachmentById = new Map(attachments.rows.map((row) => [row.id, row]));
+    const missingDbRows = items.filter((item) => !attachmentById.has(item.attachment_id));
+    const r2Results = [];
+    for (const item of items) {
+      const result = await getWorkerObject(workerConfig, item);
+      r2Results.push(result);
+    }
+    const r2ByKey = new Map(r2Results.map((row) => [row.key, row]));
+    const sizeMismatches = [];
+    const contentTypeMismatches = [];
+    for (const item of items) {
+      const db = attachmentById.get(item.attachment_id);
+      const r2 = r2ByKey.get(item.canonical_r2_key);
+      const dbBytes = Number(db?.size_bytes || 0);
+      const r2Bytes = Number(r2?.bytes || 0);
+      if (!db || !r2 || r2.missing || dbBytes !== item.exact_size_bytes || r2Bytes !== item.exact_size_bytes) {
+        sizeMismatches.push({ attachmentId: item.attachment_id, expected: item.exact_size_bytes, dbBytes, r2Bytes, r2Missing: Boolean(r2?.missing) });
+      }
+      if (r2 && !r2.missing && !r2.transportIssue && !contentTypeMatches(r2.contentType, item.mime_type)) {
+        contentTypeMismatches.push({ attachmentId: item.attachment_id, expected: item.mime_type, actual: r2.contentType });
+      }
+    }
+    const missingR2Objects = r2Results.filter((row) => row.missing);
+    const workerTransportIssues = r2Results.filter((row) => row.transportIssue);
+    const totals = companyTotalsFromManifest(manifest);
+
+    return {
+      reconciliationScope: "manifest-scoped exact keys, attachment ids, trash ids, and snapshot company ids only",
+      bucketWideOrphanScan: false,
+      dbAttachmentRowCount: attachments.rows.length,
+      dbTrashRowCount: trash.rows.length,
+      snapshotRows: snapshots.rows.map((row) => ({
+        companyId: row.company_id,
+        usedBytes: Number(row.used_bytes || 0),
+        attachmentCount: Number(row.attachment_count || 0),
+      })),
+      companyBytes: totals,
+      r2Count: r2Results.filter((row) => !row.missing).length,
+      r2Bytes: r2Results.reduce((sum, row) => sum + row.bytes, 0),
+      sizeMismatchCount: sizeMismatches.length,
+      sizeMismatches,
+      contentTypeMismatchCount: contentTypeMismatches.length,
+      contentTypeMismatches,
+      missingDbRowCount: missingDbRows.length,
+      missingDbRows: missingDbRows.map((item) => item.attachment_id),
+      missingR2ObjectCount: missingR2Objects.length,
+      missingR2Objects: missingR2Objects.map((row) => row.key),
+      workerTransportIssueCount: workerTransportIssues.length,
+      workerTransportIssues: workerTransportIssues.map((row) => ({ key: row.key, status: row.status, error: row.error })),
+      orphanObjectCount: null,
+      orphanObjects: [],
+      orphanScanScope: "not_performed_manifest_scoped_only",
+      duplicateRepresentativeCount: representativeDuplicates.rows.length,
+      duplicateRepresentatives: representativeDuplicates.rows,
+      issueCount:
+        sizeMismatches.length +
+        contentTypeMismatches.length +
+        missingDbRows.length +
+        missingR2Objects.length +
+        workerTransportIssues.length +
+        representativeDuplicates.rows.length,
+    };
+  } finally {
+    await client.end();
+  }
+}
+
+async function executeUploadSeed(manifest, report) {
+  report.generated = await generateLocalFiles(manifest);
+  const targetCheck = await validateDatabaseTargets(manifest);
+  report.uploadSeed = {
+    databaseTargetCheck: {
+      checkedCompanyCount: targetCheck.checkedCompanyCount,
+      checkedWorkOrderCount: targetCheck.checkedWorkOrderCount,
+    },
+  };
+  const upload = await uploadAndVerifyR2Objects(manifest);
+  report.uploadSeed.upload = upload;
+  if (upload.failedCount > 0) {
+    report.mutationExecuted = true;
+    throw new Error("R2_UPLOAD_VERIFY_FAILED");
+  }
+  await seedAttachmentMetadata(manifest);
+  const reconciliation = await reconcileUploadSeed(manifest);
+  report.uploadSeed.reconciliation = reconciliation;
+  report.mutationExecuted = true;
+  report.stopBeforeActualMutation = false;
+  return report.uploadSeed;
 }
 
 async function writeReport(report) {
@@ -332,7 +918,20 @@ async function main() {
       report.note = "Plan/preflight only. No DB or R2 mutation was executed.";
     } else {
       assertMutationGuards(manifest);
-      throw new Error("ACTUAL_DB_R2_MUTATION_REQUIRES_SEPARATE_USER_APPROVAL_AND_RUNTIME_EXECUTION");
+      if (mode !== "upload-seed") {
+        throw new Error("ACTUAL_DB_R2_MUTATION_REQUIRES_SEPARATE_USER_APPROVAL_AND_RUNTIME_EXECUTION");
+      }
+      try {
+        await executeUploadSeed(manifest, report);
+      } catch (error) {
+        report.uploadSeed = {
+          ...(report.uploadSeed || {}),
+          failed: true,
+          error: error instanceof Error ? error.message : String(error),
+        };
+        await writeReport(report);
+        throw error;
+      }
     }
   }
 
@@ -343,7 +942,13 @@ async function main() {
   console.log(`prefix=${summary.r2Prefix}`);
   console.log(`report=${path.relative(PROJECT_ROOT, REPORT_PATH).replaceAll(path.sep, "/")}`);
   if (mode === "generate") console.log(`generated=${report.generated.length}`);
-  if (MUTATING_MODES.has(mode)) console.log("No DB or R2 mutation was executed.");
+  if (MUTATING_MODES.has(mode) && !execute) console.log("No DB or R2 mutation was executed.");
+  if (mode === "upload-seed" && execute) {
+    const reconciliation = report.uploadSeed?.reconciliation;
+    console.log(`r2Uploaded=${report.uploadSeed?.upload?.successCount ?? 0} r2Failed=${report.uploadSeed?.upload?.failedCount ?? 0}`);
+    console.log(`dbAttachments=${reconciliation?.dbAttachmentRowCount ?? 0} dbTrash=${reconciliation?.dbTrashRowCount ?? 0}`);
+    console.log(`reconciliationIssues=${reconciliation?.issueCount ?? "unknown"}`);
+  }
 }
 
 main().catch(async (error) => {

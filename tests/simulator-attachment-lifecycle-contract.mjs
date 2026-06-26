@@ -19,7 +19,7 @@ for (const token of [
   "WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION",
   "WAFL_SIMULATOR_ATTACHMENT_CONFIRM",
   "WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT",
-  "WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT",
+  "WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT",
   "WAFL_FUNCTIONS_TEST_PREFIX",
   "ACTUAL_DB_R2_MUTATION_REQUIRES_SEPARATE_USER_APPROVAL_AND_RUNTIME_EXECUTION",
 ]) {
@@ -29,10 +29,20 @@ for (const token of [
 assert.match(source, /runtime === "production"/);
 assert.match(source, /companies\/\$\{manifest\.testPrefix\}-/);
 assert.match(source, /cleanupRange/);
+assert.match(source, /reconciliationScope/);
 assert.match(source, /resumeRollbackCompensation/);
 assert.match(source, /MUTATING_MODES/);
 assert.match(source, /mode === "generate"/);
 assert.match(source, /exact_size_bytes/);
+assert.match(source, /createR2WorkerSignedUrl/);
+assert.match(source, /R2_WORKER_UPLOAD_URL/);
+assert.match(source, /R2_WORKER_UPLOAD_SECRET/);
+assert.match(source, /method: "PUT"/);
+assert.match(source, /method: "GET"/);
+assert.match(source, /orphanScanScope: "not_performed_manifest_scoped_only"/);
+assert.doesNotMatch(source, /@aws-sdk\/client-s3/);
+assert.doesNotMatch(source, /S3Client|HeadObjectCommand|ListObjectsV2Command|PutObjectCommand|GetObjectCommand/);
+assert.doesNotMatch(source, /R2_ENDPOINT|R2_ACCESS_KEY_ID|R2_SECRET_ACCESS_KEY/);
 assert.doesNotMatch(source, /console\.log\(.*DATABASE_URL/);
 assert.doesNotMatch(source, /console\.log\(.*R2_SECRET/);
 assert.doesNotMatch(source, /console\.log\(.*R2_WORKER_UPLOAD_SECRET/);
@@ -60,8 +70,9 @@ for (const confirmation of [
   assert.ok(source.includes(confirmation), `command missing confirmation ${confirmation}`);
 }
 
-assert.match(pipeline, /ApprovedR2Fingerprint/);
-assert.match(pipeline, /WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT/);
+assert.match(pipeline, /ApprovedWorkerUrlFingerprint|ApprovedWorkerHostFingerprint|ApprovedWorkerUrlAllowlist/);
+assert.match(pipeline, /WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT/);
+assert.doesNotMatch(pipeline, /WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT/);
 assert.match(pipeline, /0~41/);
 assert.match(verify, /simulator attachment manifest contract/);
 assert.match(verify, /simulator attachment lifecycle contract/);

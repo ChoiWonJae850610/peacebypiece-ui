@@ -1433,21 +1433,27 @@ function InvokeSimulatorAttachmentMutationPreflight {
     $previousEnable = $env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION
     $previousConfirm = $env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM
     $previousApprovedDbFingerprint = $env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT
-    $previousApprovedR2Fingerprint = $env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT
+    $previousApprovedWorkerUrlFingerprint = $env:WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT
+    $previousApprovedWorkerHostFingerprint = $env:WAFL_SIMULATOR_APPROVED_WORKER_HOST_FINGERPRINT
+    $previousApprovedWorkerUrlAllowlist = $env:WAFL_SIMULATOR_APPROVED_WORKER_URL_ALLOWLIST
     $previousTestPrefix = $env:WAFL_FUNCTIONS_TEST_PREFIX
     try {
         $approvedDbFingerprint = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
-        $approvedR2Fingerprint = [string]$PipelineConfig.Simulator.ApprovedR2Fingerprint
+        $approvedWorkerUrlFingerprint = [string]$PipelineConfig.Simulator.ApprovedWorkerUrlFingerprint
+        $approvedWorkerHostFingerprint = [string]$PipelineConfig.Simulator.ApprovedWorkerHostFingerprint
+        $approvedWorkerUrlAllowlist = [string]$PipelineConfig.Simulator.ApprovedWorkerUrlAllowlist
         if ([string]::IsNullOrWhiteSpace($approvedDbFingerprint)) {
             throw "pipeline.config.psd1에 Simulator.ApprovedDbFingerprint가 설정되지 않았습니다."
         }
-        if ([string]::IsNullOrWhiteSpace($approvedR2Fingerprint)) {
-            throw "pipeline.config.psd1에 Simulator.ApprovedR2Fingerprint가 설정되지 않았습니다."
+        if ([string]::IsNullOrWhiteSpace($approvedWorkerUrlFingerprint) -and [string]::IsNullOrWhiteSpace($approvedWorkerHostFingerprint) -and [string]::IsNullOrWhiteSpace($approvedWorkerUrlAllowlist)) {
+            throw "pipeline.config.psd1에 Simulator.ApprovedWorkerUrlFingerprint 또는 ApprovedWorkerHostFingerprint 또는 ApprovedWorkerUrlAllowlist가 설정되지 않았습니다."
         }
         $env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION = "1"
         $env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM = $ConfirmText
         $env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT = $approvedDbFingerprint
-        $env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT = $approvedR2Fingerprint
+        $env:WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT = $approvedWorkerUrlFingerprint
+        $env:WAFL_SIMULATOR_APPROVED_WORKER_HOST_FINGERPRINT = $approvedWorkerHostFingerprint
+        $env:WAFL_SIMULATOR_APPROVED_WORKER_URL_ALLOWLIST = $approvedWorkerUrlAllowlist
         $env:WAFL_FUNCTIONS_TEST_PREFIX = [string]$PipelineConfig.Simulator.TestPrefix
         InvokeProjectCommandWithResultFile -Title $ActionName -Label $Label -NpmCommand "node tools/simulator/commands/attachment-lifecycle.mjs --mode=$Mode --execute" -LoadEnvLocal $true -PauseAfter $PauseAfter | Out-Null
     }
@@ -1455,7 +1461,9 @@ function InvokeSimulatorAttachmentMutationPreflight {
         if ($null -eq $previousEnable) { Remove-Item Env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION = $previousEnable }
         if ($null -eq $previousConfirm) { Remove-Item Env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM = $previousConfirm }
         if ($null -eq $previousApprovedDbFingerprint) { Remove-Item Env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT = $previousApprovedDbFingerprint }
-        if ($null -eq $previousApprovedR2Fingerprint) { Remove-Item Env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT = $previousApprovedR2Fingerprint }
+        if ($null -eq $previousApprovedWorkerUrlFingerprint) { Remove-Item Env:WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT = $previousApprovedWorkerUrlFingerprint }
+        if ($null -eq $previousApprovedWorkerHostFingerprint) { Remove-Item Env:WAFL_SIMULATOR_APPROVED_WORKER_HOST_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_APPROVED_WORKER_HOST_FINGERPRINT = $previousApprovedWorkerHostFingerprint }
+        if ($null -eq $previousApprovedWorkerUrlAllowlist) { Remove-Item Env:WAFL_SIMULATOR_APPROVED_WORKER_URL_ALLOWLIST -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_APPROVED_WORKER_URL_ALLOWLIST = $previousApprovedWorkerUrlAllowlist }
         if ($null -eq $previousTestPrefix) { Remove-Item Env:WAFL_FUNCTIONS_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_FUNCTIONS_TEST_PREFIX = $previousTestPrefix }
     }
 }
