@@ -20,6 +20,7 @@ export const SIMULATOR_DB_MANIFEST = {
     { name: "material_order_lines", key: "company_id", requiredColumns: ["id", "company_id", "material_order_id", "item_name", "item_type"], cleanupOrder: 49 },
     { name: "material_order_allocations", key: "company_id", requiredColumns: ["id", "company_id", "material_order_line_id", "work_order_id"], cleanupOrder: 48 },
     { name: "attachments", key: "company_id", requiredColumns: ["id", "company_id", "order_id", "storage_key", "original_name", "size_bytes"], cleanupOrder: 40 },
+    { name: "attachment_trash_items", key: "company_id", requiredColumns: ["id", "company_id", "attachment_id", "order_id", "storage_key", "size_bytes", "purge_status"], cleanupOrder: 39 },
     { name: "storage_usage_snapshots", key: "company_id", requiredColumns: ["company_id", "used_bytes", "attachment_count", "source"], cleanupOrder: 30 }
   ],
   mutationPolicy: {

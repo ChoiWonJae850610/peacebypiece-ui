@@ -570,6 +570,8 @@ $profileCommands = @{
         @{ Name = "functions storage contract"; Command = "node"; Arguments = @("tests/functions-storage-contract.mjs") },
         @{ Name = "functions environment audit contract"; Command = "node"; Arguments = @("tests/functions-environment-audit-contract.mjs") },
         @{ Name = "functions PDF contract"; Command = "node"; Arguments = @("tests/functions-pdf-contract.mjs") },
+        @{ Name = "simulator attachment manifest contract"; Command = "node"; Arguments = @("tests/simulator-attachment-manifest-contract.mjs") },
+        @{ Name = "simulator attachment lifecycle contract"; Command = "node"; Arguments = @("tests/simulator-attachment-lifecycle-contract.mjs") },
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") }
     )
 }

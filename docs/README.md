@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.24`
+- 기준 앱 버전: `0.24.24.1`
 - 현재 실행 기준: `docs/codex-current-state.md`
 - active 실행계획: `docs/project/31-pre-codex-integrated-master-plan.md`
 - GO/STOP 기준: `docs/project/32-pre-codex-authority-consistency-gate.md`
@@ -40,3 +40,13 @@
 - `/workspace` 카드 밀도와 태블릿 컬럼 기준 조정
 - `/worker` WorkOrderWorkspace 및 WAFL empty/loading state boundary 유지
 - 권한, tenant, API, repository, DB, R2, package/lockfile 변경 없음
+
+## 4. 0.24.24.1 기준
+
+0.24.24.1은 Simulator Attachment/R2 Lifecycle Integration 비파괴 기반입니다.
+
+- canonical simulator attachment manifest 추가
+- normal lifecycle fixture와 capacity boundary fixture 분리
+- PowerShell 메뉴 34~41 simulator attachment lifecycle 구조 추가
+- 실제 Neon DB/R2 mutation, cleanup, fault fixture 생성은 별도 승인 전까지 미실행
+- 감사 문서: `docs/audits/simulator-attachment-r2-lifecycle-0.24.24.1.md`

@@ -400,7 +400,7 @@ async function seed(client, plan) {
     await client.query(
       `INSERT INTO storage_usage_snapshots (company_id,used_bytes,attachment_count,source,memo)
        VALUES ($1,$2,$3,'manual',$4)`,
-      [row.companyId, source.storage.usedBytes, source.files, `[SIM] ${source.storage.expectedPercent}% fixture; R2 object reconciliation pending`],
+      [row.companyId, source.storage.usedBytes, source.files, `[SIM] ${source.storage.expectedPercent}% capacity boundary fixture; not normal attachment/R2 source of truth`],
     );
   }
 }

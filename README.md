@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.24`
+- 기준 앱 버전: `0.24.24.1`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.24`는 WAFL UI Foundation 적용 결과입니다. 다음 후보는 `0.24.25` Authorization/Runtime/Opaque Routing이며 사용자 승인 전에는 시작하지 않습니다.
+- 현재 작업 상태: `0.24.24.1`은 Simulator Attachment/R2 Lifecycle Integration 비파괴 기반입니다. 실제 Neon/R2 mutation과 `0.24.25` Authorization/Runtime/Opaque Routing은 별도 사용자 승인 전에는 시작하지 않습니다.
 
 ## 개발 실행
 
@@ -31,6 +31,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\pipeline\approved-work
 - 제품화 백로그: `docs/productization-backlog.md`
 - 제품화 감사 보고서: `docs/audits/productization-audit-report-0.24.15.md`
 - 0.24.23 source cleanup 감사: `docs/audits/source-architecture-cleanup-0.24.23.md`
+- 0.24.24.1 simulator attachment/R2 감사: `docs/audits/simulator-attachment-r2-lifecycle-0.24.24.1.md`
 - Codex/GPT 제품화 운영 문서: `docs/project/`
 - 현재 structured roadmap source: `lib/internal/roadmap/`
 

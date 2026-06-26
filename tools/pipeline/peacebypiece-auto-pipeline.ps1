@@ -1407,6 +1407,85 @@ function RunSimulatorDbAdapterContract {
     return (InvokeProjectCommandWithResultFile -Title "Simulator DB Adapter Contract" -Label "Simulator_DB_Adapter_Contract" -NpmCommand "npm run simulator:db:contract" -LoadEnvLocal $false -PauseAfter $PauseAfter)
 }
 
+function RunSimulatorAttachmentPlan {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "Simulator Attachment Plan" -Label "Simulator_Attachment_Plan" -NpmCommand "node tools/simulator/commands/attachment-lifecycle.mjs --mode=plan" -LoadEnvLocal $true -PauseAfter $PauseAfter)
+}
+
+function RunSimulatorAttachmentLocalGenerate {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "Simulator Attachment Local Generate" -Label "Simulator_Attachment_Local_Generate" -NpmCommand "node tools/simulator/commands/attachment-lifecycle.mjs --mode=generate" -LoadEnvLocal $false -PauseAfter $PauseAfter)
+}
+
+function InvokeSimulatorAttachmentMutationPreflight {
+    param(
+        [string]$ActionName,
+        [string]$ConfirmText,
+        [string]$Mode,
+        [string]$Label,
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (ConfirmFunctionsDataExecute -ActionName $ActionName -ConfirmText $ConfirmText)) {
+        return
+    }
+
+    $previousEnable = $env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION
+    $previousConfirm = $env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM
+    $previousApprovedDbFingerprint = $env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT
+    $previousApprovedR2Fingerprint = $env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT
+    $previousTestPrefix = $env:WAFL_FUNCTIONS_TEST_PREFIX
+    try {
+        $approvedDbFingerprint = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $approvedR2Fingerprint = [string]$PipelineConfig.Simulator.ApprovedR2Fingerprint
+        if ([string]::IsNullOrWhiteSpace($approvedDbFingerprint)) {
+            throw "pipeline.config.psd1에 Simulator.ApprovedDbFingerprint가 설정되지 않았습니다."
+        }
+        if ([string]::IsNullOrWhiteSpace($approvedR2Fingerprint)) {
+            throw "pipeline.config.psd1에 Simulator.ApprovedR2Fingerprint가 설정되지 않았습니다."
+        }
+        $env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION = "1"
+        $env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM = $ConfirmText
+        $env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT = $approvedDbFingerprint
+        $env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT = $approvedR2Fingerprint
+        $env:WAFL_FUNCTIONS_TEST_PREFIX = [string]$PipelineConfig.Simulator.TestPrefix
+        InvokeProjectCommandWithResultFile -Title $ActionName -Label $Label -NpmCommand "node tools/simulator/commands/attachment-lifecycle.mjs --mode=$Mode --execute" -LoadEnvLocal $true -PauseAfter $PauseAfter | Out-Null
+    }
+    finally {
+        if ($null -eq $previousEnable) { Remove-Item Env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_ATTACHMENT_ENABLE_MUTATION = $previousEnable }
+        if ($null -eq $previousConfirm) { Remove-Item Env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_ATTACHMENT_CONFIRM = $previousConfirm }
+        if ($null -eq $previousApprovedDbFingerprint) { Remove-Item Env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_APPROVED_DB_FINGERPRINT = $previousApprovedDbFingerprint }
+        if ($null -eq $previousApprovedR2Fingerprint) { Remove-Item Env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT = $previousApprovedR2Fingerprint }
+        if ($null -eq $previousTestPrefix) { Remove-Item Env:WAFL_FUNCTIONS_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_FUNCTIONS_TEST_PREFIX = $previousTestPrefix }
+    }
+}
+
+function RunSimulatorAttachmentUploadSeed {
+    InvokeSimulatorAttachmentMutationPreflight -ActionName "Simulator Attachment Upload+Seed" -ConfirmText "UPLOAD SEED WAF-FN ATTACHMENTS" -Mode "upload-seed" -Label "Simulator_Attachment_Upload_Seed"
+}
+
+function RunSimulatorAttachmentVerifyReconcile {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "Simulator Attachment Verify+Reconcile" -Label "Simulator_Attachment_Verify_Reconcile" -NpmCommand "node tools/simulator/commands/attachment-lifecycle.mjs --mode=verify" -LoadEnvLocal $true -PauseAfter $PauseAfter)
+}
+
+function RunSimulatorAttachmentLifecycleTest {
+    InvokeSimulatorAttachmentMutationPreflight -ActionName "Simulator Attachment Lifecycle Test" -ConfirmText "RUN WAF-FN ATTACHMENT LIFECYCLE" -Mode "lifecycle" -Label "Simulator_Attachment_Lifecycle_Test"
+}
+
+function RunSimulatorAttachmentCleanup {
+    InvokeSimulatorAttachmentMutationPreflight -ActionName "Simulator Attachment Cleanup" -ConfirmText "CLEAN WAF-FN ATTACHMENTS" -Mode "cleanup" -Label "Simulator_Attachment_Cleanup"
+}
+
+function RunSimulatorAttachmentFaultPlan {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "Simulator Attachment Fault Plan" -Label "Simulator_Attachment_Fault_Plan" -NpmCommand "node tools/simulator/commands/attachment-lifecycle.mjs --mode=fault-plan" -LoadEnvLocal $true -PauseAfter $PauseAfter)
+}
+
+function RunSimulatorAttachmentFaultExecute {
+    InvokeSimulatorAttachmentMutationPreflight -ActionName "Simulator Attachment Fault Execute" -ConfirmText "CREATE WAF-FN ATTACHMENT FAULTS" -Mode "fault-execute" -Label "Simulator_Attachment_Fault_Execute"
+}
+
 function ConfirmFunctionsDataExecute {
     param(
         [string]$ActionName,
@@ -1996,6 +2075,14 @@ function ShowDeveloperToolsMenu {
         Write-Host "27. Simulator Adapter Contract                   [안전/변경 없음]"
         Write-Host "28. Simulator Adapter Plan                       [안전/계획만]"
         Write-Host "29. Simulator DB Adapter Contract                [안전/변경 없음]"
+        Write-Host "34. Simulator Attachment Plan                    [읽기 전용/변경 없음]"
+        Write-Host "35. Simulator Attachment Local Generate          [로컬 .tmp 생성]"
+        Write-Host "36. Simulator Attachment Upload+Seed             [DEV/TEST DB·R2 변경/별도 승인]"
+        Write-Host "37. Simulator Attachment Verify+Reconcile        [읽기 전용/변경 없음]"
+        Write-Host "38. Simulator Attachment Lifecycle Test          [DEV/TEST 변경/복구 가능/별도 승인]"
+        Write-Host "39. Simulator Attachment Cleanup                 [파괴적 DEV/TEST/별도 승인]"
+        Write-Host "40. Simulator Attachment Fault Plan              [읽기 전용/변경 없음]"
+        Write-Host "41. Simulator Attachment Fault Execute           [DEV/TEST fault 생성/별도 승인]"
         Write-Host ""
         Write-Host "[DB 구조·제약·인덱스 읽기 전용 감사]"
         Write-Host "30. DB Schema Reconciliation Audit               [DEV/TEST·읽기 전용]"
@@ -2012,7 +2099,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~33 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~41 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2051,9 +2138,17 @@ function ShowDeveloperToolsMenu {
             31 { RunDbConstraintReadinessCheck | Out-Null }
             32 { RunDbIndexReadinessReport | Out-Null }
             33 { RunPreCodexFinalContractGate | Out-Null }
+            34 { RunSimulatorAttachmentPlan | Out-Null }
+            35 { RunSimulatorAttachmentLocalGenerate | Out-Null }
+            36 { RunSimulatorAttachmentUploadSeed }
+            37 { RunSimulatorAttachmentVerifyReconcile | Out-Null }
+            38 { RunSimulatorAttachmentLifecycleTest }
+            39 { RunSimulatorAttachmentCleanup }
+            40 { RunSimulatorAttachmentFaultPlan | Out-Null }
+            41 { RunSimulatorAttachmentFaultExecute }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~33 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~41 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }

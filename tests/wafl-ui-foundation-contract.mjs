@@ -75,11 +75,11 @@ for (const forbidden of [
   }
 }
 
-if (!version.includes('APP_VERSION = "0.24.24"')) {
-  throw new Error("APP_VERSION is not 0.24.24");
+if (!version.includes('APP_VERSION = "0.24.24.1"')) {
+  throw new Error("APP_VERSION is not 0.24.24.1");
 }
-if (!roadmapIndex.includes("ROADMAP_0_24_24") || !roadmapIndex.includes('currentWorkVersion: "0.24.24"')) {
-  throw new Error("0.24.24 roadmap is not registered as current work");
+if (!roadmapIndex.includes("ROADMAP_0_24_24") || !roadmapIndex.includes("ROADMAP_0_24_24_1") || !roadmapIndex.includes('currentWorkVersion: "0.24.24.1"')) {
+  throw new Error("0.24.24.1 roadmap is not registered as current work");
 }
 
 console.log("wafl ui foundation contract: OK");

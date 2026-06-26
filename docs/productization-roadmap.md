@@ -1,13 +1,13 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.24`. Next implementation candidate: `0.24.25` Authorization, Runtime Boundary, and Opaque Routing after user confirmation.
+> Active baseline: `0.24.24.1`. Next implementation candidate: `0.24.25` Authorization, Runtime Boundary, and Opaque Routing after user confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.24`
-- APP_VERSION: `0.24.24`
+- Roadmap checkpoint version: `0.24.24.1`
+- APP_VERSION: `0.24.24.1`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `81%`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -19,13 +19,24 @@
 1. `0.24.22` - DB Foundation and Authority Alignment
 2. `0.24.23` - Source Architecture Cleanup
 3. `0.24.24` - WAFL UI Foundation
-4. `0.24.25` - Authorization, Runtime Boundary, and Opaque Routing
-5. `0.24.26` - Public Signup, Verification, Approval, and Trial
-6. `0.24.27` - System Catalog, Sizes, and POM
-7. `0.24.28` - PDF and R2 Lifecycle
-8. `0.24.29` - Company-wide Export
-9. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
-10. `0.24.31` - PG Billing and Subscription Operations
+4. `0.24.24.1` - Simulator Attachment/R2 Lifecycle Integration
+5. `0.24.25` - Authorization, Runtime Boundary, and Opaque Routing
+6. `0.24.26` - Public Signup, Verification, Approval, and Trial
+7. `0.24.27` - System Catalog, Sizes, and POM
+8. `0.24.28` - PDF and R2 Lifecycle
+9. `0.24.29` - Company-wide Export
+10. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
+11. `0.24.31` - PG Billing and Subscription Operations
+
+## 0.24.24.1 - Simulator Attachment/R2 Lifecycle Integration
+
+- Added a canonical simulator attachment manifest for normal lifecycle fixtures.
+- Separated normal realistic attachment/R2 fixtures from capacity boundary fixtures.
+- Added dev/test Neon/R2 fingerprint guard and preflight reporting structure.
+- Added PowerShell menu 34~41 for attachment plan, local generate, upload/seed, verify/reconcile, lifecycle, cleanup, and fault fixture boundaries.
+- Added simulator attachment manifest and lifecycle contracts to the functions-automation verification profile.
+- Did not execute actual Neon DB mutation, actual R2 upload/delete, lifecycle mutation, cleanup, fault creation, DB migration, production access, package change, or lockfile change.
+- Actual dev/test Neon/R2 execution requires a separate approval after preflight reporting.
 
 ## 0.24.24 - WAFL UI Foundation
 

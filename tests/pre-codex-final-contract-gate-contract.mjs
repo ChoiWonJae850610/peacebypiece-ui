@@ -17,7 +17,7 @@ for (const token of [
 }
 
 assert.ok(script.includes("[안전/비파괴]"), "menu 33 must be classified as safe/non-destructive");
-assert.ok(script.includes("0~33 범위"), "developer tools menu input range must include 33");
+assert.ok(script.includes("0~41 범위"), "developer tools menu input range must include 41");
 assert.doesNotMatch(
   script.match(/function RunPreCodexFinalContractGate[\s\S]*?\n}/)?.[0] ?? "",
   /DATABASE_URL|Seed Execute|Cleanup Execute|migration apply|R2 delete/i,

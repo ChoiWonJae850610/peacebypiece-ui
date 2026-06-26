@@ -1,10 +1,10 @@
-# Codex Current State - 0.24.24
+# Codex Current State - 0.24.24.1
 
 ## Active execution gate
 
-- Current version: `0.24.24`.
-- Next implementation version: `0.24.25` only after 0.24.24 UI/responsive result confirmation.
-- Current work result: **Sprint C - WAFL UI Foundation** applied to customer-admin dashboard, workspace cards, storage usage meter, and shared state contracts.
+- Current version: `0.24.24.1`.
+- Next implementation version: `0.24.25` only after 0.24.24.1 simulator attachment/R2 foundation confirmation and separate user approval.
+- Current work result: **Simulator Attachment/R2 Lifecycle Integration foundation** added canonical simulator attachment manifest, guard/preflight/menu structure, and contracts without actual DB/R2 mutation.
 - Next work: **Sprint D - Authorization, Runtime Boundary, and Opaque Routing** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
@@ -13,7 +13,7 @@
 
 Active dependency order:
 
-`DB Foundation -> Source Architecture Cleanup -> WAFL UI Foundation -> Authorization/Runtime/Opaque Routing -> Signup/Trial -> Catalog/Size/POM -> PDF/R2 -> Export -> Storage/Termination/Deletion -> PG Billing -> Operations/Security/Launch QA`
+`DB Foundation -> Source Architecture Cleanup -> WAFL UI Foundation -> Simulator Attachment/R2 Lifecycle Integration -> Authorization/Runtime/Opaque Routing -> Signup/Trial -> Catalog/Size/POM -> PDF/R2 -> Export -> Storage/Termination/Deletion -> PG Billing -> Operations/Security/Launch QA`
 
 Older documents that describe `0.24.22` as UI-first, PB-005/006/010 implementation, or a no-DB-authority-change UI boundary are historical and superseded.
 
@@ -68,6 +68,24 @@ UI Foundation result:
 - Schema migration/backfill/RLS DDL execution: none.
 - Package/lockfile change: none.
 - Manual PC/mobile/tablet visual confirmation remains required before 0.24.25 starts.
+
+## 0.24.24.1 Result Boundary
+
+0.24.24.1 was executed as a non-destructive simulator attachment/R2 lifecycle foundation follow-up after 0.24.24 QA found that Simulator DB Seed and actual Neon attachment/R2 source-of-truth could diverge.
+
+- Added canonical manifest: `tools/simulator/fixtures/attachments/canonical-lifecycle-manifest.json`.
+- Added attachment lifecycle command: `tools/simulator/commands/attachment-lifecycle.mjs`.
+- Added PowerShell menu 34~41 for plan/generate/upload+seed/verify/lifecycle/cleanup/fault boundaries.
+- Added dev/test DB and R2 fingerprint preflight guard variables and exact confirmation strings.
+- Added contracts: `tests/simulator-attachment-manifest-contract.mjs` and `tests/simulator-attachment-lifecycle-contract.mjs`.
+- Normal lifecycle fixtures are separate from capacity boundary fixtures.
+- Production DB/R2 mutation: 0.
+- Dev/test Neon DB/R2 mutation: 0.
+- Actual R2 upload/delete, Neon attachment seed, lifecycle mutation, cleanup, and fault fixture creation: not executed.
+- DB schema migration/backfill/RLS DDL execution: none.
+- Package/lockfile change: none.
+
+Before any actual dev/test Neon/R2 simulator execution, Codex must stop and report runtime, Neon fingerprint, R2 account/bucket fingerprint, company count, workorder count, file count, expected bytes, simulator prefix, DB mutation range, R2 mutation range, cleanup range, confirmation string, and partial-failure recovery method.
 
 ## Runtime And Product Preservation
 
