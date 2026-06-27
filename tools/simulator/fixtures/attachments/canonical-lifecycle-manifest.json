@@ -181,42 +181,23 @@
       "expected_company_total_bytes": 557056
     },
     {
-      "fixture_id": "E-active-image",
+      "fixture_id": "E-suspended-no-attachments",
       "scenario_code": "E",
       "company_id": "wafl-fn-company-e",
-      "workorder_id": "wafl-fn-company-e-workorder-00001",
-      "attachment_id": "wafl-fn-company-e-attachment-image-001",
-      "attachment_kind": "file",
-      "original_filename": "e-active-image.png",
-      "mime_type": "image/png",
-      "exact_size_bytes": 131072,
-      "canonical_r2_key": "companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-active-image.png",
-      "preview_mode": "image_inline",
+      "workorder_id": null,
+      "attachment_id": null,
+      "attachment_kind": "none",
+      "original_filename": null,
+      "mime_type": null,
+      "exact_size_bytes": 0,
+      "canonical_r2_key": null,
+      "preview_mode": "none",
       "is_representative_design": false,
-      "lifecycle_status": "active",
+      "lifecycle_status": "empty",
       "trashed_at": null,
-      "expected_company_active_bytes": 131072,
-      "expected_company_trash_bytes": 262144,
-      "expected_company_total_bytes": 393216
-    },
-    {
-      "fixture_id": "E-trashed-pdf",
-      "scenario_code": "E",
-      "company_id": "wafl-fn-company-e",
-      "workorder_id": "wafl-fn-company-e-workorder-00001",
-      "attachment_id": "wafl-fn-company-e-attachment-trash-001",
-      "attachment_kind": "file",
-      "original_filename": "e-trash-reference.pdf",
-      "mime_type": "application/pdf",
-      "exact_size_bytes": 262144,
-      "canonical_r2_key": "companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-trash-reference.pdf",
-      "preview_mode": "pdf_safe",
-      "is_representative_design": false,
-      "lifecycle_status": "trashed",
-      "trashed_at": "2026-06-01T00:00:00.000Z",
-      "expected_company_active_bytes": 131072,
-      "expected_company_trash_bytes": 262144,
-      "expected_company_total_bytes": 393216
+      "expected_company_active_bytes": 0,
+      "expected_company_trash_bytes": 0,
+      "expected_company_total_bytes": 0
     },
     {
       "fixture_id": "F-restored-representative",
@@ -253,8 +234,8 @@
       "lifecycle_status": "active",
       "trashed_at": null,
       "expected_company_active_bytes": 655360,
-      "expected_company_trash_bytes": 0,
-      "expected_company_total_bytes": 655360
+      "expected_company_trash_bytes": 262144,
+      "expected_company_total_bytes": 917504
     },
     {
       "fixture_id": "G-workorder-2-file",
@@ -272,8 +253,27 @@
       "lifecycle_status": "active",
       "trashed_at": null,
       "expected_company_active_bytes": 655360,
-      "expected_company_trash_bytes": 0,
-      "expected_company_total_bytes": 655360
+      "expected_company_trash_bytes": 262144,
+      "expected_company_total_bytes": 917504
+    },
+    {
+      "fixture_id": "G-trashed-pdf",
+      "scenario_code": "G",
+      "company_id": "wafl-fn-company-g",
+      "workorder_id": "wafl-fn-company-g-workorder-00003",
+      "attachment_id": "wafl-fn-company-g-attachment-trash-001",
+      "attachment_kind": "file",
+      "original_filename": "g-trash-reference.pdf",
+      "mime_type": "application/pdf",
+      "exact_size_bytes": 262144,
+      "canonical_r2_key": "companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00003/attachments/g-trash-reference.pdf",
+      "preview_mode": "pdf_safe",
+      "is_representative_design": false,
+      "lifecycle_status": "trashed",
+      "trashed_at": "2026-06-01T00:00:00.000Z",
+      "expected_company_active_bytes": 655360,
+      "expected_company_trash_bytes": 262144,
+      "expected_company_total_bytes": 917504
     },
     {
       "fixture_id": "G-missing-r2-detection",
@@ -291,8 +291,8 @@
       "lifecycle_status": "fault_reference_only",
       "trashed_at": null,
       "expected_company_active_bytes": 655360,
-      "expected_company_trash_bytes": 0,
-      "expected_company_total_bytes": 655360
+      "expected_company_trash_bytes": 262144,
+      "expected_company_total_bytes": 917504
     }
   ],
   "capacityBoundaryFixtures": [

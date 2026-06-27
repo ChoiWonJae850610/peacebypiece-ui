@@ -16,8 +16,30 @@ const REPORT_PATH = path.join(REPORT_DIR, "simulator-attachment-lifecycle-latest
 
 const ALLOWED_RUNTIMES = new Set(["development", "dev", "local", "test", "demo"]);
 const DATABASE_KEYS = ["DATABASE_URL", "POSTGRES_URL", "POSTGRES_PRISMA_URL", "POSTGRES_URL_NON_POOLING", "NEON_DATABASE_URL"];
-const MUTATING_MODES = new Set(["upload-seed", "lifecycle", "cleanup", "fault-execute"]);
-const VALID_MODES = new Set(["plan", "generate", "upload-seed", "verify", "lifecycle", "cleanup", "fault-plan", "fault-execute"]);
+const MUTATING_MODES = new Set(["upload-seed", "repair-e-to-g", "lifecycle", "cleanup", "fault-execute"]);
+const VALID_MODES = new Set(["plan", "generate", "upload-seed", "repair-e-to-g", "verify", "lifecycle", "cleanup", "fault-plan", "fault-execute"]);
+const LEGACY_E_ATTACHMENT_FIXTURES = [
+  {
+    fixture_id: "legacy-E-active-image",
+    company_id: "wafl-fn-company-e",
+    workorder_id: "wafl-fn-company-e-workorder-00001",
+    attachment_id: "wafl-fn-company-e-attachment-image-001",
+    original_filename: "e-active-image.png",
+    mime_type: "image/png",
+    exact_size_bytes: 131072,
+    canonical_r2_key: "companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-active-image.png",
+  },
+  {
+    fixture_id: "legacy-E-trashed-pdf",
+    company_id: "wafl-fn-company-e",
+    workorder_id: "wafl-fn-company-e-workorder-00001",
+    attachment_id: "wafl-fn-company-e-attachment-trash-001",
+    original_filename: "e-trash-reference.pdf",
+    mime_type: "application/pdf",
+    exact_size_bytes: 262144,
+    canonical_r2_key: "companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-trash-reference.pdf",
+  },
+];
 const REQUIRED_ATTACHMENT_FIELDS = [
   "fixture_id",
   "company_id",
@@ -273,10 +295,10 @@ function createBytesForItem(item) {
   return output;
 }
 
-async function generateLocalFiles(manifest) {
+async function generateLocalFiles(manifest, items = manifest.normalLifecycleFixtures.filter(isNormalMaterializedAttachment)) {
   const generated = [];
   const filesRoot = path.join(OUT_ROOT, "files");
-  for (const item of manifest.normalLifecycleFixtures.filter(isNormalMaterializedAttachment)) {
+  for (const item of items) {
     const targetPath = path.join(filesRoot, item.canonical_r2_key);
     const resolvedTarget = path.resolve(targetPath);
     const resolvedRoot = path.resolve(filesRoot);
@@ -322,6 +344,7 @@ function buildPreflight(manifest, summary) {
 
 function confirmationForMode(value) {
   if (value === "upload-seed") return "UPLOAD SEED WAF-FN ATTACHMENTS";
+  if (value === "repair-e-to-g") return "REPAIR WAF-FN ATTACHMENTS E TO G";
   if (value === "lifecycle") return "RUN WAF-FN ATTACHMENT LIFECYCLE";
   if (value === "cleanup") return "CLEAN WAF-FN ATTACHMENTS";
   if (value === "fault-execute") return "CREATE WAF-FN ATTACHMENT FAULTS";
@@ -467,9 +490,8 @@ async function deleteWorkerObjectAndVerifyMissing(config, item) {
   };
 }
 
-async function uploadAndVerifyR2Objects(manifest) {
+async function uploadAndVerifyR2Objects(manifest, items = materializedItems(manifest)) {
   const workerConfig = getWorkerConfig();
-  const items = materializedItems(manifest);
   const results = [];
 
   for (const item of items) {
@@ -749,6 +771,147 @@ async function seedAttachmentMetadata(manifest) {
   }
 }
 
+function repairGTrashItems(manifest) {
+  return materializedItems(manifest).filter(
+    (item) =>
+      item.company_id === "wafl-fn-company-g" &&
+      item.lifecycle_status === "trashed" &&
+      item.attachment_id === "wafl-fn-company-g-attachment-trash-001",
+  );
+}
+
+async function removeLegacyEAttachmentRowsAndResetSnapshot(manifest) {
+  const client = await createPgClient();
+  const legacyAttachmentIds = LEGACY_E_ATTACHMENT_FIXTURES.map((item) => item.attachment_id);
+  const legacyStorageKeys = LEGACY_E_ATTACHMENT_FIXTURES.map((item) => item.canonical_r2_key);
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [`${manifest.testPrefix}:attachment-lifecycle-e-to-g-repair`]);
+    await client.query(
+      `DELETE FROM attachment_trash_items
+        WHERE attachment_id = ANY($1::text[])
+           OR storage_key = ANY($2::text[])`,
+      [legacyAttachmentIds, legacyStorageKeys],
+    );
+    await client.query(
+      `DELETE FROM attachments
+        WHERE id = ANY($1::text[])
+           OR storage_key = ANY($2::text[])`,
+      [legacyAttachmentIds, legacyStorageKeys],
+    );
+    await client.query(
+      `DELETE FROM storage_usage_snapshots
+        WHERE company_id = 'wafl-fn-company-e'
+          AND memo LIKE '[SIM ATTACHMENT LIFECYCLE]%'`,
+    );
+    await client.query(
+      `INSERT INTO storage_usage_snapshots (company_id, used_bytes, attachment_count, source, memo)
+       VALUES ('wafl-fn-company-e', 0, 0, 'db_attachment_metadata', $1)`,
+      [`[SIM ATTACHMENT LIFECYCLE] active=0; trash=0; manifest=${manifest.manifestId}; repair=e-to-g`],
+    );
+    await client.query("COMMIT");
+    return {
+      removedAttachmentIds: legacyAttachmentIds,
+      removedStorageKeys: legacyStorageKeys,
+      eSnapshotUsedBytes: 0,
+    };
+  } catch (error) {
+    try { await client.query("ROLLBACK"); } catch {}
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
+async function validateRepairEToGTargets(manifest) {
+  const client = await createPgClient();
+  const gTrashItems = repairGTrashItems(manifest);
+  if (gTrashItems.length !== 1) throw new Error("REPAIR_G_TRASH_FIXTURE_REQUIRED");
+  const gTrashItem = gTrashItems[0];
+  const legacyAttachmentIds = LEGACY_E_ATTACHMENT_FIXTURES.map((item) => item.attachment_id);
+  const legacyStorageKeys = LEGACY_E_ATTACHMENT_FIXTURES.map((item) => item.canonical_r2_key);
+  try {
+    await client.query("BEGIN READ ONLY");
+    const company = await client.query(
+      `SELECT id, is_active, subscription_status, billing_status
+         FROM companies
+        WHERE id = 'wafl-fn-company-g'`,
+    );
+    const companyRow = company.rows[0];
+    if (!companyRow || companyRow.is_active !== true) throw new Error("REPAIR_G_COMPANY_NOT_ACTIVE");
+    if (companyRow.subscription_status !== "active" || companyRow.billing_status !== "active") {
+      throw new Error("REPAIR_G_COMPANY_NOT_APPROVED_FOR_UI");
+    }
+
+    const workorder = await client.query(
+      `SELECT id, company_id, is_active, deleted_at
+         FROM spec_sheets
+        WHERE id = $1`,
+      [gTrashItem.workorder_id],
+    );
+    const workorderRow = workorder.rows[0];
+    if (
+      !workorderRow ||
+      workorderRow.company_id !== "wafl-fn-company-g" ||
+      workorderRow.is_active !== true ||
+      workorderRow.deleted_at !== null
+    ) {
+      throw new Error("REPAIR_G_WORKORDER_NOT_ACTIVE");
+    }
+
+    const legacyAttachments = await client.query(
+      `SELECT id, storage_key
+         FROM attachments
+        WHERE id = ANY($1::text[])
+        ORDER BY id`,
+      [legacyAttachmentIds],
+    );
+    const legacyAttachmentMap = new Map(legacyAttachments.rows.map((row) => [row.id, row.storage_key]));
+    for (const legacy of LEGACY_E_ATTACHMENT_FIXTURES) {
+      if (legacyAttachmentMap.get(legacy.attachment_id) !== legacy.canonical_r2_key) {
+        throw new Error(`REPAIR_LEGACY_E_ATTACHMENT_MISMATCH:${legacy.attachment_id}`);
+      }
+    }
+
+    const legacyTrash = await client.query(
+      `SELECT id, attachment_id, storage_key
+         FROM attachment_trash_items
+        WHERE attachment_id = $1
+          AND id = $2`,
+      ["wafl-fn-company-e-attachment-trash-001", "wafl-fn-company-e-attachment-trash-001-trash"],
+    );
+    const legacyTrashRow = legacyTrash.rows[0];
+    if (!legacyTrashRow || legacyTrashRow.storage_key !== LEGACY_E_ATTACHMENT_FIXTURES[1].canonical_r2_key) {
+      throw new Error("REPAIR_LEGACY_E_TRASH_ROW_MISMATCH");
+    }
+
+    if (gTrashItem.canonical_r2_key !== "companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00003/attachments/g-trash-reference.pdf") {
+      throw new Error("REPAIR_G_CANONICAL_KEY_MISMATCH");
+    }
+    if (gTrashItem.exact_size_bytes !== 262144 || gTrashItem.mime_type !== "application/pdf") {
+      throw new Error("REPAIR_G_FIXTURE_CONTRACT_MISMATCH");
+    }
+    if (legacyStorageKeys.some((key) => !key.startsWith("companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/"))) {
+      throw new Error("REPAIR_LEGACY_E_KEY_SCOPE_MISMATCH");
+    }
+
+    await client.query("COMMIT");
+    return {
+      gCompanyId: "wafl-fn-company-g",
+      gWorkOrderId: gTrashItem.workorder_id,
+      legacyAttachmentIds,
+      legacyStorageKeys,
+      gAttachmentId: gTrashItem.attachment_id,
+      gStorageKey: gTrashItem.canonical_r2_key,
+    };
+  } catch (error) {
+    try { await client.query("ROLLBACK"); } catch {}
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
 async function reconcileUploadSeed(manifest) {
   const client = await createPgClient();
   const workerConfig = getWorkerConfig();
@@ -879,6 +1042,64 @@ async function executeUploadSeed(manifest, report) {
   return report.uploadSeed;
 }
 
+async function executeRepairEToG(manifest, report) {
+  const gTrashItems = repairGTrashItems(manifest);
+  if (gTrashItems.length !== 1) throw new Error("REPAIR_G_TRASH_FIXTURE_REQUIRED");
+  report.generated = await generateLocalFiles(manifest, gTrashItems);
+  const repairTargetCheck = await validateRepairEToGTargets(manifest);
+  const targetCheck = await validateDatabaseTargets(manifest);
+  report.repairEToG = {
+    databaseTargetCheck: {
+      checkedCompanyCount: targetCheck.checkedCompanyCount,
+      checkedWorkOrderCount: targetCheck.checkedWorkOrderCount,
+    },
+    repairTargetCheck,
+    legacyE: {
+      attachmentIds: LEGACY_E_ATTACHMENT_FIXTURES.map((item) => item.attachment_id),
+      storageKeys: LEGACY_E_ATTACHMENT_FIXTURES.map((item) => item.canonical_r2_key),
+    },
+    newG: {
+      attachmentIds: gTrashItems.map((item) => item.attachment_id),
+      storageKeys: gTrashItems.map((item) => item.canonical_r2_key),
+    },
+  };
+
+  const upload = await uploadAndVerifyR2Objects(manifest, gTrashItems);
+  report.repairEToG.upload = upload;
+  if (upload.failedCount > 0) {
+    report.mutationExecuted = true;
+    throw new Error("REPAIR_G_WORKER_UPLOAD_VERIFY_FAILED");
+  }
+
+  await seedAttachmentMetadata(manifest);
+  const beforeLegacyDeleteReconciliation = await reconcileUploadSeed(manifest);
+  report.repairEToG.beforeLegacyDeleteReconciliation = beforeLegacyDeleteReconciliation;
+  if (beforeLegacyDeleteReconciliation.issueCount > 0) {
+    report.mutationExecuted = true;
+    throw new Error("REPAIR_G_RECONCILIATION_FAILED");
+  }
+
+  const workerConfig = getWorkerConfig();
+  const legacyDeleteResults = [];
+  for (const legacy of LEGACY_E_ATTACHMENT_FIXTURES) {
+    legacyDeleteResults.push(await deleteWorkerObjectAndVerifyMissing(workerConfig, legacy));
+  }
+  report.repairEToG.legacyDelete = {
+    results: legacyDeleteResults,
+    failedCount: legacyDeleteResults.filter((item) => !item.missingAfterDelete).length,
+  };
+  if (report.repairEToG.legacyDelete.failedCount > 0) {
+    report.mutationExecuted = true;
+    throw new Error("REPAIR_LEGACY_E_WORKER_DELETE_FAILED");
+  }
+
+  report.repairEToG.legacyDbCleanup = await removeLegacyEAttachmentRowsAndResetSnapshot(manifest);
+  report.repairEToG.finalReconciliation = await reconcileUploadSeed(manifest);
+  report.mutationExecuted = true;
+  report.stopBeforeActualMutation = false;
+  return report.repairEToG;
+}
+
 async function writeReport(report) {
   await fs.mkdir(REPORT_DIR, { recursive: true });
   await fs.writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
@@ -918,14 +1139,19 @@ async function main() {
       report.note = "Plan/preflight only. No DB or R2 mutation was executed.";
     } else {
       assertMutationGuards(manifest);
-      if (mode !== "upload-seed") {
+      if (mode !== "upload-seed" && mode !== "repair-e-to-g") {
         throw new Error("ACTUAL_DB_R2_MUTATION_REQUIRES_SEPARATE_USER_APPROVAL_AND_RUNTIME_EXECUTION");
       }
       try {
-        await executeUploadSeed(manifest, report);
+        if (mode === "repair-e-to-g") {
+          await executeRepairEToG(manifest, report);
+        } else {
+          await executeUploadSeed(manifest, report);
+        }
       } catch (error) {
-        report.uploadSeed = {
-          ...(report.uploadSeed || {}),
+        const targetKey = mode === "repair-e-to-g" ? "repairEToG" : "uploadSeed";
+        report[targetKey] = {
+          ...(report[targetKey] || {}),
           failed: true,
           error: error instanceof Error ? error.message : String(error),
         };
@@ -947,6 +1173,12 @@ async function main() {
     const reconciliation = report.uploadSeed?.reconciliation;
     console.log(`r2Uploaded=${report.uploadSeed?.upload?.successCount ?? 0} r2Failed=${report.uploadSeed?.upload?.failedCount ?? 0}`);
     console.log(`dbAttachments=${reconciliation?.dbAttachmentRowCount ?? 0} dbTrash=${reconciliation?.dbTrashRowCount ?? 0}`);
+    console.log(`reconciliationIssues=${reconciliation?.issueCount ?? "unknown"}`);
+  }
+  if (mode === "repair-e-to-g" && execute) {
+    const reconciliation = report.repairEToG?.finalReconciliation;
+    console.log(`gUploaded=${report.repairEToG?.upload?.successCount ?? 0} gFailed=${report.repairEToG?.upload?.failedCount ?? 0}`);
+    console.log(`legacyEDeleteFailed=${report.repairEToG?.legacyDelete?.failedCount ?? "unknown"}`);
     console.log(`reconciliationIssues=${reconciliation?.issueCount ?? "unknown"}`);
   }
 }

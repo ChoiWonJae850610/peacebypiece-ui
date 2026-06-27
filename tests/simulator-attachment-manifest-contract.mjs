@@ -76,6 +76,7 @@ for (const item of manifest.normalLifecycleFixtures) {
     const seedCompany = seedCompanies.get(item.company_id);
     assert.ok(seedCompany, `${item.fixture_id} company must exist in Simulator DB Seed fixture`);
     assert.ok(seedCompany.workorders > 0, `${item.fixture_id} references a company with no seeded workorders`);
+    assert.notEqual(seedCompany.status, "suspended", `${item.fixture_id} must not place UI lifecycle attachments on suspended companies`);
     const match = item.workorder_id.match(new RegExp(`^${item.company_id}-workorder-(\\d{5})$`));
     assert.ok(match, `${item.fixture_id} workorder_id must follow Simulator DB Seed id format`);
     const workorderNumber = Number.parseInt(match[1], 10);
@@ -92,11 +93,43 @@ for (const item of manifest.normalLifecycleFixtures) {
     representativeByWorkOrder.set(item.workorder_id, item.attachment_id);
   }
 
+  if (item.lifecycle_status === "trashed") {
+    const seedCompany = seedCompanies.get(item.company_id);
+    assert.ok(seedCompany, `${item.fixture_id} trashed fixture company must exist`);
+    assert.notEqual(seedCompany.status, "suspended", `${item.fixture_id} trash fixture must be switchable in UI`);
+    assert.ok(item.trashed_at, `${item.fixture_id} trashed fixture needs deleted_at seed value`);
+    assert.equal(item.is_representative_design, false, `${item.fixture_id} trashed fixture must not be representative`);
+    assert.ok(item.workorder_id, `${item.fixture_id} trashed fixture must be attached to an active workorder`);
+    assert.match(item.attachment_id, /^wafl-fn-company-[a-j]-attachment-/);
+    assert.match(item.canonical_r2_key, new RegExp(`^companies/${item.company_id}/workorders/${item.workorder_id}/`));
+  }
+
   const totals = companyTotals.get(item.company_id) || { active: 0, trash: 0 };
   if (["active", "restored"].includes(item.lifecycle_status)) totals.active += item.exact_size_bytes;
   if (item.lifecycle_status === "trashed") totals.trash += item.exact_size_bytes;
   companyTotals.set(item.company_id, totals);
 }
+
+const suspendedMaterialized = manifest.normalLifecycleFixtures.filter((item) => {
+  const seedCompany = seedCompanies.get(item.company_id);
+  return seedCompany?.status === "suspended" && item.attachment_kind !== "none" && item.lifecycle_status !== "fault_reference_only";
+});
+assert.deepEqual(
+  suspendedMaterialized.map((item) => item.fixture_id),
+  [],
+  "suspended/inactive companies must not host customer UI attachment or trash fixtures",
+);
+
+const gTrashFixture = manifest.normalLifecycleFixtures.find((item) => item.fixture_id === "G-trashed-pdf");
+assert.ok(gTrashFixture, "G trash fixture must exist for UI trash verification");
+assert.equal(gTrashFixture.company_id, "wafl-fn-company-g");
+assert.equal(gTrashFixture.workorder_id, "wafl-fn-company-g-workorder-00003");
+assert.equal(gTrashFixture.original_filename, "g-trash-reference.pdf");
+
+const eFixtures = manifest.normalLifecycleFixtures.filter((item) => item.company_id === "wafl-fn-company-e");
+assert.equal(eFixtures.length, 1, "company E should remain represented only by an empty scenario fixture");
+assert.equal(eFixtures[0].attachment_kind, "none");
+assert.equal(eFixtures[0].expected_company_total_bytes, 0);
 
 for (const item of manifest.normalLifecycleFixtures) {
   const totals = companyTotals.get(item.company_id);

@@ -26,6 +26,7 @@ These local R2 commands do not touch the real DB or real R2. R2 upload/delete ad
 - `node tools/simulator/commands/attachment-lifecycle.mjs --mode=plan`: validate the canonical attachment/R2 lifecycle manifest and write a preflight report without DB/R2 mutation.
 - `node tools/simulator/commands/attachment-lifecycle.mjs --mode=generate`: create exact-size local files under `.tmp/simulator/attachments` from the canonical manifest only.
 - `node tools/simulator/commands/attachment-lifecycle.mjs --mode=verify`: prepare manifest-scoped reconciliation expectations for DB metadata, Worker `GET` R2 object bytes, storage snapshot, admin main, and `/workspace/files`. This does not perform a bucket-wide orphan scan.
+- `node tools/simulator/commands/attachment-lifecycle.mjs --mode=repair-e-to-g`: plan the exact-key dev/test repair that moves the UI trash fixture from suspended company E to active company G. `--execute` requires a separate approval and the confirmation string `REPAIR WAF-FN ATTACHMENTS E TO G`.
 
 Planning and contract commands do not connect to DB/R2 and do not mutate data.
 

@@ -171,3 +171,104 @@ Execution result:
 - Compensation cleanup required: no
 
 This execution did not run representative lifecycle changes, additional soft delete, restore, permanent delete, cleanup, fault fixture creation, DB schema migration, production access, or Cloudflare Worker code changes.
+
+## UI Trash Fixture Placement Correction Plan
+
+Manual UI QA after the Worker-based upload/seed showed that the trash fixture was not reachable from the customer UI because it was placed on `wafl-fn-company-e`.
+
+Read-only verification confirmed:
+
+- `wafl-fn-company-e` is intentionally inactive/suspended:
+  - `companies.is_active = false`
+  - subscription status `suspended`
+  - billing status `past-due`
+  - member status `suspended`
+  - linked user inactive
+- `wafl-fn-company-g` is active/approved and switchable for UI verification:
+  - `companies.is_active = true`
+  - subscription status `active`
+  - billing status `active`
+  - member status `approved`
+  - linked user active
+- Existing E fixture rows:
+  - attachment `wafl-fn-company-e-attachment-image-001`, active, 131,072 bytes
+  - attachment `wafl-fn-company-e-attachment-trash-001`, trashed, 262,144 bytes
+  - trash row `wafl-fn-company-e-attachment-trash-001-trash`
+  - snapshot used bytes 393,216
+- Existing E Worker objects:
+  - `companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-active-image.png`
+  - `companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-trash-reference.pdf`
+- Existing G fixture rows:
+  - `wafl-fn-company-g-attachment-001` on `wafl-fn-company-g-workorder-00001`
+  - `wafl-fn-company-g-attachment-002` on `wafl-fn-company-g-workorder-00002`
+  - snapshot used bytes 655,360
+
+Canonical manifest correction:
+
+- Company E is now an empty suspended-company scenario with no normal attachment/trash fixture.
+- The UI trash fixture moves to company G:
+  - workorder `wafl-fn-company-g-workorder-00003`
+  - attachment `wafl-fn-company-g-attachment-trash-001`
+  - trash row `wafl-fn-company-g-attachment-trash-001-trash`
+  - filename `g-trash-reference.pdf`
+  - key `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00003/attachments/g-trash-reference.pdf`
+  - bytes 262,144
+
+Expected bytes after the separately approved repair:
+
+- E active/trash/total: 0 / 0 / 0
+- G active/trash/total: 655,360 / 262,144 / 917,504
+
+Repair command boundary:
+
+- Command: `node tools/simulator/commands/attachment-lifecycle.mjs --mode=repair-e-to-g --execute`
+- Confirmation: `REPAIR WAF-FN ATTACHMENTS E TO G`
+- The repair command is dev/test guarded by runtime, Neon fingerprint, Worker URL fingerprint, Worker host fingerprint, simulator prefix, exact-key scope, and confirmation string.
+- It must PUT and verify only the new G trash key, seed canonical manifest metadata/snapshots, DELETE only the two legacy E exact keys, verify GET 404, remove only legacy E attachment/trash rows, reset E snapshot to 0, then run manifest-scoped reconciliation.
+- Actual repair mutation was not executed in the code/contract phase.
+
+## Dev/Test E To G Repair Execution
+
+The separately approved E to G repair was executed against the approved dev/test Neon and Worker/R2 targets only.
+
+Preflight evidence:
+
+- Runtime: `development`
+- Neon fingerprint: `01e5dcc7fea3`
+- Worker URL fingerprint: `b49fb0bd3ff1`
+- Worker host fingerprint: `446bdb61c239`
+- Worker URL and host fingerprints: exact match
+- Production-like Worker URL pattern: blocked / not detected
+- Confirmation: `REPAIR WAF-FN ATTACHMENTS E TO G`
+
+Execution result:
+
+- New G local fixture generated: 1 file / 262,144 bytes
+- New G signed Worker PUT: 1 success / 0 failed
+- New G signed Worker GET: 1 success / 0 failed
+- New G byte mismatch: 0
+- New G Content-Type mismatch: 0
+- New G attachment row: `wafl-fn-company-g-attachment-trash-001`
+- New G trash row: `wafl-fn-company-g-attachment-trash-001-trash`
+- New G exact key: `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00003/attachments/g-trash-reference.pdf`
+- Legacy E exact Worker DELETE: 2 success / 0 failed
+- Legacy E deleted keys:
+  - `companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-active-image.png`
+  - `companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-trash-reference.pdf`
+- Legacy E deleted attachment rows:
+  - `wafl-fn-company-e-attachment-image-001`
+  - `wafl-fn-company-e-attachment-trash-001`
+- Legacy E deleted trash row: `wafl-fn-company-e-attachment-trash-001-trash`
+- E final active/trash/total bytes: 0 / 0 / 0
+- G final active/trash/total bytes: 655,360 / 262,144 / 917,504
+- E snapshot used bytes: 0
+- G snapshot used bytes: 917,504
+- G trash row status: `pending`, `restored_at NULL`, `purged_at NULL`
+- Missing object/row: 0
+- Byte mismatch: 0
+- Content-Type mismatch: 0
+- Manifest-scoped reconciliation issues: 0
+- Partial failure: none
+- Compensation cleanup required: no
+
+This repair did not run general lifecycle scenarios, restore, permanent delete, fault fixtures, whole cleanup, production access, DB migration, or Cloudflare Worker code changes.

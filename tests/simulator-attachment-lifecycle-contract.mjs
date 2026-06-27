@@ -33,6 +33,10 @@ assert.match(source, /reconciliationScope/);
 assert.match(source, /resumeRollbackCompensation/);
 assert.match(source, /MUTATING_MODES/);
 assert.match(source, /mode === "generate"/);
+assert.match(source, /repair-e-to-g/);
+assert.match(source, /REPAIR WAF-FN ATTACHMENTS E TO G/);
+assert.match(source, /LEGACY_E_ATTACHMENT_FIXTURES/);
+assert.match(source, /deleteWorkerObjectAndVerifyMissing/);
 assert.match(source, /exact_size_bytes/);
 assert.match(source, /createR2WorkerSignedUrl/);
 assert.match(source, /R2_WORKER_UPLOAD_URL/);
@@ -69,6 +73,7 @@ for (const confirmation of [
   assert.ok(pipeline.includes(confirmation), `missing confirmation ${confirmation}`);
   assert.ok(source.includes(confirmation), `command missing confirmation ${confirmation}`);
 }
+assert.ok(source.includes("REPAIR WAF-FN ATTACHMENTS E TO G"), "command missing E to G repair confirmation");
 
 assert.match(pipeline, /ApprovedWorkerUrlFingerprint|ApprovedWorkerHostFingerprint|ApprovedWorkerUrlAllowlist/);
 assert.match(pipeline, /WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT/);
@@ -93,5 +98,12 @@ const uploadPlan = spawnSync(process.execPath, [commandPath, "--mode=upload-seed
 });
 assert.equal(uploadPlan.status, 0, uploadPlan.stderr);
 assert.match(uploadPlan.stdout, /No DB or R2 mutation was executed/);
+
+const repairPlan = spawnSync(process.execPath, [commandPath, "--mode=repair-e-to-g"], {
+  cwd: process.cwd(),
+  encoding: "utf8",
+});
+assert.equal(repairPlan.status, 0, repairPlan.stderr);
+assert.match(repairPlan.stdout, /No DB or R2 mutation was executed/);
 
 console.log("simulator attachment lifecycle contract passed: guard, menu, preflight, verify profile");
