@@ -27,6 +27,7 @@ export type UnifiedTrashRow =
       visualTone: "workorder" | "image" | "pdf" | "file";
       thumbnailUrl: string | null;
       previewUrl: string | null;
+      downloadUrl: string | null;
       restorePolicyLabel: string;
       restorePolicy: "workorder_bundle";
       canRestore: true;
@@ -50,6 +51,7 @@ export type UnifiedTrashRow =
       visualTone: "workorder" | "image" | "pdf" | "file";
       thumbnailUrl: string | null;
       previewUrl: string | null;
+      downloadUrl: string | null;
       restorePolicyLabel: string;
       restorePolicy: AdminTrashFileItem["restorePolicy"];
       canRestore: boolean;
@@ -246,6 +248,7 @@ export function createUnifiedRows(input: {
     visualTone: getTrashVisualInfo({ kind: "workorder" }).tone,
     thumbnailUrl: null,
     previewUrl: null,
+    downloadUrl: null,
     restorePolicyLabel: t(
       "filesList.restorePolicies.workorderBundle",
       "작업지시서 단위 처리",
@@ -290,6 +293,7 @@ export function createUnifiedRows(input: {
       visualTone: visualInfo.tone,
       thumbnailUrl: item.thumbnailUrl,
       previewUrl: item.previewUrl,
+      downloadUrl: item.downloadUrl,
       restorePolicyLabel: item.restorePolicyLabel,
       restorePolicy: item.restorePolicy,
       canRestore: item.canRestore,

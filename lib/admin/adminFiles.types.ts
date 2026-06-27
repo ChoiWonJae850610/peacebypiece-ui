@@ -126,6 +126,7 @@ export type AdminTrashFileItem = {
   fileSizeLabel: string;
   thumbnailUrl: string | null;
   previewUrl: string | null;
+  downloadUrl: string | null;
   deletedAt: string;
   deletedBy: string;
   purgeAfterAt: string;

@@ -20,6 +20,12 @@ import {
   mergeDetailSnapshotIntoWorkOrders,
   replaceWithDetailSnapshot,
 } from "@/lib/workorder/workOrderHydration";
+import {
+  WORKORDER_ATTACHMENT_REFRESH_EVENT,
+  isWorkOrderAttachmentRefreshStorageKey,
+  readWorkOrderAttachmentRefreshDetail,
+  type WorkOrderAttachmentRefreshDetail,
+} from "@/lib/workorder/attachments/attachmentRefreshEvents";
 
 const EMPTY_CURRENT_USER: UserProfile = {
   id: "",
@@ -269,14 +275,14 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     [selectedId, workOrders],
   );
 
-  useEffect(() => {
-    if (repositoryStatus !== "ready" || !selectedId || !isSelectedWorkOrderDetailLoading) return;
-    if (detailLoadInFlightIdsRef.current.has(selectedId)) return;
+  const reloadWorkOrderDetail = useCallback((workOrderId: string) => {
+    const targetId = workOrderId.trim();
+    if (!targetId || detailLoadInFlightIdsRef.current.has(targetId)) return;
 
-    detailLoadInFlightIdsRef.current.add(selectedId);
+    detailLoadInFlightIdsRef.current.add(targetId);
 
     repository
-      .loadWorkOrderDetailAsync(selectedId)
+      .loadWorkOrderDetailAsync(targetId)
       .then((loadedWorkOrder) => {
         if (!isMountedRef.current) return;
         const normalizedDetail = stabilizeWorkOrders(normalizeWorkOrderDataList([{ ...loadedWorkOrder, hasDetailSnapshot: true }]))[0];
@@ -291,12 +297,43 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
       })
       .catch((error) => {
         if (!isMountedRef.current) return;
-        setRepositoryError(createRepositoryError("initialize", error, "Failed to load workorder detail."));
+        setRepositoryError(createRepositoryError("initialize", error, "Failed to refresh workorder attachments."));
       })
       .finally(() => {
-        detailLoadInFlightIdsRef.current.delete(selectedId);
+        detailLoadInFlightIdsRef.current.delete(targetId);
       });
-  }, [isSelectedWorkOrderDetailLoading, repository, repositoryStatus, selectedId]);
+  }, [repository]);
+
+  useEffect(() => {
+    if (repositoryStatus !== "ready" || !selectedId || !isSelectedWorkOrderDetailLoading) return;
+    reloadWorkOrderDetail(selectedId);
+  }, [isSelectedWorkOrderDetailLoading, reloadWorkOrderDetail, repositoryStatus, selectedId]);
+
+  useEffect(() => {
+    if (repositoryStatus !== "ready" || typeof window === "undefined") return;
+
+    function refreshFromDetail(detail: WorkOrderAttachmentRefreshDetail | null) {
+      if (!detail) return;
+      detail.workOrderIds.forEach((workOrderId) => reloadWorkOrderDetail(workOrderId));
+    }
+
+    function handleRefresh(event: Event) {
+      refreshFromDetail((event as CustomEvent<WorkOrderAttachmentRefreshDetail>).detail ?? null);
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (!isWorkOrderAttachmentRefreshStorageKey(event.key)) return;
+      refreshFromDetail(readWorkOrderAttachmentRefreshDetail(event.newValue));
+    }
+
+    window.addEventListener(WORKORDER_ATTACHMENT_REFRESH_EVENT, handleRefresh);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener(WORKORDER_ATTACHMENT_REFRESH_EVENT, handleRefresh);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [reloadWorkOrderDetail, repositoryStatus]);
 
   useEffect(() => {
     const currentSelectedWorkOrder = selectedId ? workOrders.find((item) => item.id === selectedId) ?? null : null;

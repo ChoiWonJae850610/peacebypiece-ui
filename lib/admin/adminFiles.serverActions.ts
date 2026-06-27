@@ -376,6 +376,19 @@ function createAttachmentFilePreviewUrl(
   return createAttachmentFileProxyUrl(cleanKey);
 }
 
+function createAttachmentFileDownloadUrl(
+  storageKey: string | null | undefined,
+  fileName: string,
+): string | null {
+  if (!storageKey) return null;
+  const cleanKey = String(storageKey).trim();
+  if (!cleanKey) return null;
+  const params = new URLSearchParams({ key: cleanKey, download: "1" });
+  const cleanFileName = fileName.trim();
+  if (cleanFileName) params.set("name", cleanFileName);
+  return `/api/workorders/attachments/file?${params.toString()}`;
+}
+
 function getFileType(
   mimeType: string | null | undefined,
   fileName = "",
@@ -659,6 +672,7 @@ export async function listAdminFileManagementRows(input: {
       fileSizeLabel: formatBytes(sizeBytes),
       thumbnailUrl: createAttachmentFilePreviewUrl(row.thumbnail_key),
       previewUrl: createAttachmentFilePreviewUrl(row.storage_key),
+      downloadUrl: createAttachmentFileDownloadUrl(row.storage_key, fileName),
       deletedAt: formatDateTime(effectiveDeletedAt),
       deletedBy: row.deleted_by || "미지정",
       purgeAfterAt: formatDate(row.purge_after_at),

@@ -145,7 +145,7 @@ export function createDbAttachmentRepository(): AttachmentWritableRepository {
                 deleted_at,
                 created_at
            FROM attachments
-          WHERE order_id = ANY($1::uuid[])
+          WHERE order_id = ANY($1::text[])
             AND is_active = true
             AND deleted_at IS NULL
           ORDER BY order_id ASC, created_at ASC`,

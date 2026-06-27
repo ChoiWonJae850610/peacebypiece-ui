@@ -503,18 +503,43 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
         </div>
       </WaflInfoBox>
 
-      {row.kind === "attachment" && row.previewUrl ? (
-        <WaflLinkButton
-          href={row.previewUrl}
-          target="_blank"
-          rel="noreferrer"
-          variant="secondary"
-          size="md"
-          width="full"
-          className="justify-start text-xs font-medium text-[var(--pbp-text-muted)]"
-        >
-          {t("filesList.detail.openPreview", "파일 미리보기 열기")}
-        </WaflLinkButton>
+      {row.kind === "attachment" && (row.previewUrl || row.downloadUrl) ? (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {row.previewUrl ? (
+            <WaflLinkButton
+              href={row.previewUrl}
+              target="_blank"
+              rel="noreferrer"
+              variant="secondary"
+              size="md"
+              width="full"
+              className="justify-start text-xs font-medium text-[var(--pbp-text-muted)]"
+            >
+              {t("filesList.detail.openPreview", "파일 미리보기 열기")}
+            </WaflLinkButton>
+          ) : null}
+          {row.downloadUrl ? (
+            <WaflLinkButton
+              href={row.downloadUrl}
+              target="_blank"
+              rel="noreferrer"
+              variant="secondary"
+              size="md"
+              width="full"
+              className="justify-start text-xs font-medium text-[var(--pbp-text-muted)]"
+            >
+              {t("filesList.detail.downloadFile", "파일 다운로드")}
+            </WaflLinkButton>
+          ) : null}
+        </div>
+      ) : null}
+      {row.kind === "attachment" && row.visualTone === "pdf" ? (
+        <p className="text-xs leading-relaxed text-[var(--pbp-text-muted)]">
+          {t(
+            "filesList.detail.pdfPreviewNotice",
+            "PDF는 브라우저 새 탭에서 열립니다. 열리지 않으면 다운로드로 확인하세요.",
+          )}
+        </p>
       ) : null}
       {row.kind === "workorder" ? (
         <WorkOrderStageInline statusLabel={row.sourceItem.statusLabel} t={t} />

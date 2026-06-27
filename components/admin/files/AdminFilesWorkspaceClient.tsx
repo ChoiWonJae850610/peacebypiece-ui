@@ -18,6 +18,7 @@ import type { WorkspaceNavigationItem } from "@/lib/navigation/workspaceNavigati
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { waflLegacyApiRequest } from "@/lib/api/waflApiClient";
+import { notifyWorkOrderAttachmentRefresh } from "@/lib/workorder/attachments/attachmentRefreshEvents";
 
 type AdminFilesWorkspaceClientProps = {
   navigationItems: WorkspaceNavigationItem[];
@@ -137,6 +138,15 @@ export default function AdminFilesWorkspaceClient({ navigationItems }: AdminFile
       });
       showActionToast(result.message, result.ok ? "success" : "danger");
       if (result.ok) {
+        if (action === "restore" && itemIds.length > 0) {
+          notifyWorkOrderAttachmentRefresh({
+            workOrderIds: snapshot.trashItems
+              .filter((item) => itemIds.includes(item.id))
+              .map((item) => item.workorderId),
+            source: "storage-trash-restore",
+            reason: "trash-items-restored",
+          });
+        }
         setSelectedTrashItemIds([]);
         setSelectedWorkOrderIds([]);
         await refreshSnapshot();
