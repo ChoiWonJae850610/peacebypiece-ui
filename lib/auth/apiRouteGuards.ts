@@ -9,6 +9,12 @@ import type { WaflSessionPayload } from "@/lib/auth/session";
 import { isCompanyAdminSessionRole, isMemberSessionRole, isSystemAdminSessionRole, isWorkspaceSessionRole } from "@/lib/constants/sessionRoles";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
 
+export const WAFL_API_ERROR_CODES = {
+  permissionDenied: "WAFL_PERMISSION_DENIED",
+  notFound: "WAFL_NOT_FOUND",
+  runtimeBlocked: "WAFL_RUNTIME_BLOCKED",
+} as const;
+
 export type WorkspaceApiVisibilityScope =
   | { mode: "company" }
   | {
@@ -62,7 +68,7 @@ function createApiErrorResponse(
       code,
       ...(extra ?? {}),
     },
-    { status },
+    { status, headers: { "Cache-Control": "no-store" } },
   );
 }
 
@@ -96,7 +102,7 @@ export function createWorkspacePermissionRequiredResponse(
 ): NextResponse {
   return createApiErrorResponse(
     "Current user does not have permission to access this workspace action.",
-    "WORKSPACE_PERMISSION_REQUIRED",
+    WAFL_API_ERROR_CODES.permissionDenied,
     403,
     { permissionCode },
   );
@@ -105,8 +111,25 @@ export function createWorkspacePermissionRequiredResponse(
 export function createSystemAdminRequiredResponse(): NextResponse {
   return createApiErrorResponse(
     "System administrator session is required for this request.",
-    "SYSTEM_ADMIN_REQUIRED",
+    WAFL_API_ERROR_CODES.permissionDenied,
     403,
+  );
+}
+
+export function createWaflNotFoundResponse(): NextResponse {
+  return createApiErrorResponse(
+    "The requested resource was not found.",
+    WAFL_API_ERROR_CODES.notFound,
+    404,
+  );
+}
+
+export function createWaflRuntimeBlockedResponse(reason: string): NextResponse {
+  return createApiErrorResponse(
+    "This action is blocked in the current runtime.",
+    WAFL_API_ERROR_CODES.runtimeBlocked,
+    403,
+    { reason },
   );
 }
 

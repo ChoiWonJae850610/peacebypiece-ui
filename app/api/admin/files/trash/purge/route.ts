@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
@@ -22,11 +23,10 @@ function getErrorMessage(error: unknown): string {
 }
 
 export async function POST(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
+  const guard = await requireWorkspaceApiGuard({
     permissionCode: MEMBER_PERMISSION_CODE.storageDeleteRequest,
-    routeLabel: "admin.files.trash.purgeRequest",
   });
-  if (permissionDenied) return permissionDenied;
+  if (!guard.ok) return guard.response;
 
   const scopeResult = await requireAdminFileCompanyScope();
   if (!scopeResult.ok) return scopeResult.response;

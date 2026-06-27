@@ -5,6 +5,8 @@ import { resolveWorkOrderServiceCodeForRequest } from "@/lib/workorder/serviceCo
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
 import { assertServiceCanUseSideEffect } from "@/lib/workorder/serviceCodeGuards";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
 
 export const runtime = "nodejs";
@@ -37,8 +39,14 @@ function createServiceCodeErrorResponse(result: Extract<ReturnType<typeof resolv
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireWorkspaceApiGuard({
+    permissionCode: MEMBER_PERMISSION_CODE.workorderUpdate,
+  });
+  if (!guard.ok) return guard.response;
+
   const scopeResult = await requireAdminFileCompanyScope();
   if (!scopeResult.ok) return scopeResult.response;
+  const { companyId } = scopeResult.companyScope;
 
   try {
     const payload = (await request.json().catch(() => null)) as PrimaryAttachmentRequest | null;
@@ -70,7 +78,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
     }
 
-    const updated = await repository.setPrimaryDesignAttachment({ workOrderId, attachmentId });
+    const updated = await repository.setPrimaryDesignAttachment({
+      workOrderId,
+      attachmentId,
+      companyId,
+    });
     if (!updated) {
       return NextResponse.json({ attachmentId: null, error: "DESIGN_ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }

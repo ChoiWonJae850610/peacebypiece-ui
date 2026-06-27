@@ -10,6 +10,8 @@ import { isImageContentType, isWorkOrderAttachmentThumbnailKeyForScope } from "@
 import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import { queryDb } from "@/lib/db/client";
 import { normalizeAttachmentUploadScope, validateAttachmentFile, validateAttachmentFileCount } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
@@ -125,6 +127,11 @@ function createUploadAttachment(input: {
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireWorkspaceApiGuard({
+    permissionCode: MEMBER_PERMISSION_CODE.workorderUpdate,
+  });
+  if (!guard.ok) return guard.response;
+
   try {
     const scopeResult = await requireAdminFileCompanyScope();
     if (!scopeResult.ok) return scopeResult.response;

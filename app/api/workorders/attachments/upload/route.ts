@@ -9,6 +9,8 @@ import { createWorkOrderAttachmentThumbnailKey, isImageContentType } from "@/lib
 import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import { queryDb } from "@/lib/db/client";
 import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
 import { validateAttachmentFile, validateAttachmentFileCount, normalizeAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
@@ -110,6 +112,11 @@ function createUploadTarget(input: { companyId: string; workOrderId: string; sco
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireWorkspaceApiGuard({
+    permissionCode: MEMBER_PERMISSION_CODE.workorderUpdate,
+  });
+  if (!guard.ok) return guard.response;
+
   if (!isR2WorkerUploadConfigured() && !isR2Configured()) {
     return NextResponse.json({ uploadTargets: [], error: "R2_UPLOAD_NOT_CONFIGURED" }, { status: 503 });
   }

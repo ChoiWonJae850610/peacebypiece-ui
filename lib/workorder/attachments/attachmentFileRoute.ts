@@ -8,7 +8,13 @@ import { getCompanyIdFromWorkOrderAttachmentStorageKey, isSupportedWorkOrderAtta
 import { getOrSetCachedR2Url, type R2UrlCacheState } from "@/lib/storage/r2/r2UrlCache";
 import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import {
+  createWaflNotFoundResponse,
+  requireWorkspaceApiGuard,
+} from "@/lib/auth/apiRouteGuards";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
+import { queryDb } from "@/lib/db/client";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 
 function isSafeStorageKey(value: string): boolean {
   return (
@@ -31,10 +37,24 @@ async function requireAttachmentFileCompanyAccess(key: string): Promise<NextResp
   }
 
   if (!keyCompanyId || keyCompanyId !== companyId) {
-    return NextResponse.json({ ok: false, error: "ATTACHMENT_FILE_COMPANY_SCOPE_MISMATCH" }, { status: 403 });
+    return createWaflNotFoundResponse();
   }
 
-  return createCompanyApiAccessBlockedResponse(companyId);
+  const blockedResponse = await createCompanyApiAccessBlockedResponse(companyId);
+  if (blockedResponse) return blockedResponse;
+
+  const attachmentRow = await queryDb<{ id: string }>(
+    `SELECT id
+      FROM attachments
+      WHERE company_id = $1
+        AND (storage_key = $2 OR thumbnail_key = $2)
+        AND is_active = true
+        AND deleted_at IS NULL
+      LIMIT 1`,
+    [companyId, key],
+  );
+
+  return attachmentRow.rows[0] ? null : createWaflNotFoundResponse();
 }
 function createReadableStream(body: Buffer | Uint8Array | ArrayBuffer): ReadableStream {
   const chunk = body instanceof ArrayBuffer ? new Uint8Array(body) : new Uint8Array(body);
@@ -120,6 +140,11 @@ async function createR2SdkFileResponse(input: {
 }
 
 export async function handleWorkOrderAttachmentFileGet(request: NextRequest) {
+  const guard = await requireWorkspaceApiGuard({
+    permissionCode: MEMBER_PERMISSION_CODE.storageRead,
+  });
+  if (!guard.ok) return guard.response;
+
   const key = request.nextUrl.searchParams.get("key")?.trim() ?? "";
   const isDownloadRequest = request.nextUrl.searchParams.get("download") === "1";
   const downloadName = sanitizeDownloadFileName(request.nextUrl.searchParams.get("name"));

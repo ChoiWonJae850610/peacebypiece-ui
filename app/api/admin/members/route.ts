@@ -1,12 +1,12 @@
-import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import { handleListAdminMembers } from "@/lib/admin/members/memberRouteHandlers";
 
 export async function GET(request: Request) {
-  const permissionDenied = requireApiPermission(request, {
+  const guard = await requireWorkspaceApiGuard({
     permissionCode: MEMBER_PERMISSION_CODE.memberRead,
-    routeLabel: "admin.members.list",
   });
-  if (permissionDenied) return permissionDenied;
+  if (!guard.ok) return guard.response;
 
   return handleListAdminMembers(request);
 }

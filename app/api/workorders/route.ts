@@ -1,4 +1,3 @@
-import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
 import {
   handleDeleteWorkOrders,
   handleGetWorkOrders,
@@ -11,12 +10,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: MEMBER_PERMISSION_CODE.workorderCreate,
-    routeLabel: "workorders.create",
-  });
-  if (permissionDenied) return permissionDenied;
-
   return handlePostWorkOrders(request);
 }
 
@@ -25,11 +18,5 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const permissionDenied = requireApiPermission(request, {
-    permissionCode: MEMBER_PERMISSION_CODE.workorderDelete,
-    routeLabel: "workorders.delete",
-  });
-  if (permissionDenied) return permissionDenied;
-
   return handleDeleteWorkOrders(request);
 }

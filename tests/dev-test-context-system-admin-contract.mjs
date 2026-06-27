@@ -13,6 +13,7 @@ const optionsRoute = fs.readFileSync("app/api/dev/test-context/options/route.ts"
 const switchRoute = fs.readFileSync("app/api/dev/test-context/switch/route.ts", "utf8");
 const clearRoute = fs.readFileSync("app/api/dev/test-context/clear/route.ts", "utf8");
 const config = fs.readFileSync("lib/dev/testContext/config.ts", "utf8");
+const serverRuntime = fs.readFileSync("lib/runtime/serverRuntime.ts", "utf8");
 const runtimeMode = fs.readFileSync("lib/runtime/runtimeMode.ts", "utf8");
 const runtimePolicy = fs.readFileSync("lib/runtime/runtimePolicy.ts", "utf8");
 const functionsRuntime = fs.readFileSync("lib/functions/runtimeAccess.ts", "utf8");
@@ -38,7 +39,6 @@ assert.match(uiPage, /isWaflUiCatalogRuntimeAllowed/);
 assert.doesNotMatch(uiPage, /WAFL_UI_CATALOG_RUNTIME_GATE_ENABLED = false/);
 
 for (const [name, source] of [
-  ["dev test config", config],
   ["runtime mode", runtimeMode],
   ["functions runtime", functionsRuntime],
   ["ui runtime", uiRuntime],
@@ -50,6 +50,13 @@ for (const [name, source] of [
 ]) {
   assert.doesNotMatch(source, /NODE_ENV|VERCEL_ENV|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/, `${name} must not feature-gate by environment`);
 }
+assert.match(config, /isServerDevTestRuntime/);
+assert.match(config, /WAFL_ENABLE_DEV_TEST_CONTEXT === "1"/);
+assert.doesNotMatch(config, /NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
+assert.match(serverRuntime, /WAFL_SERVER_RUNTIME_MODE/);
+assert.match(serverRuntime, /VERCEL_ENV/);
+assert.match(serverRuntime, /NODE_ENV/);
+assert.doesNotMatch(serverRuntime, /NEXT_PUBLIC/);
 
 for (const fnName of [
   "canAccessIdControl",

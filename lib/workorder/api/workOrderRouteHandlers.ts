@@ -25,9 +25,11 @@ import type { WaflSessionPayload } from "@/lib/auth/session";
 import {
   createWorkspaceCompanyRequiredResponse,
   createWorkspacePermissionRequiredResponse,
+  createWaflNotFoundResponse,
   hasWorkspaceApiPermission,
   requireWorkspaceApiGuard,
 } from "@/lib/auth/apiRouteGuards";
+import { validateOpaqueWorkOrderRouteParam } from "@/lib/routing/opaqueRouteParams";
 import {
   createWorkOrderForCompany,
   deleteWorkOrderForCompany,
@@ -409,13 +411,8 @@ function createInvalidPayloadResponse(message: string) {
 }
 
 function createWorkOrderNotFoundResponse(workOrderId: string) {
-  return NextResponse.json(
-    {
-      message: `spec_sheets row not found for id: ${workOrderId}`,
-      code: "DB_REQUEST_FAILED",
-    },
-    { status: 404 },
-  );
+  void workOrderId;
+  return createWaflNotFoundResponse();
 }
 
 function getAuditRequestId(request: Request): string | null {
@@ -483,8 +480,9 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
 
-  if (!workOrderId.trim()) {
-    return createInvalidPayloadResponse("workOrderId is required.");
+  const routeParam = validateOpaqueWorkOrderRouteParam(workOrderId);
+  if (!routeParam.ok) {
+    return routeParam.response;
   }
 
   try {
@@ -494,7 +492,7 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
     if (readPermissionResponse) return readPermissionResponse;
 
     const workOrder = await getWorkOrderDetailByCompany(
-      workOrderId,
+      routeParam.value,
       scopeResult.scope,
     );
 
@@ -840,6 +838,11 @@ export async function handlePatchWorkOrderState(
   }
 
   try {
+    const routeParam = validateOpaqueWorkOrderRouteParam(workOrderId);
+    if (!routeParam.ok) {
+      return routeParam.response;
+    }
+
     const body = await readJsonBody<{
       patch?: Partial<WorkOrderStatePatch>;
       historyLogs?: unknown[];
@@ -857,8 +860,8 @@ export async function handlePatchWorkOrderState(
     const patchId =
       typeof body.patch.id === "string" && body.patch.id.trim()
         ? body.patch.id.trim()
-        : workOrderId;
-    if (patchId !== workOrderId) {
+        : routeParam.value;
+    if (patchId !== routeParam.value) {
       return createInvalidPayloadResponse(
         "workOrder id does not match route parameter.",
       );
@@ -886,7 +889,7 @@ export async function handlePatchWorkOrderState(
     if (!scopeResult.ok) return scopeResult.response;
 
     const previousWorkOrder = await getWorkOrderDetailByCompany(
-      workOrderId,
+      routeParam.value,
       scopeResult.scope,
     );
     if (!previousWorkOrder) {
@@ -938,7 +941,7 @@ export async function handlePatchWorkOrderState(
       hasDefinedWaflPatchProperty(guardedPatch, propertyName);
 
     const statePatch: WorkOrderStatePatch = {
-      id: workOrderId,
+      id: routeParam.value,
       lastSavedAt:
         typeof guardedPatch.lastSavedAt === "string" &&
         guardedPatch.lastSavedAt.trim()

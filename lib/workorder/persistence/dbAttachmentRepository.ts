@@ -28,11 +28,6 @@ function toNumberOrNull(value: unknown): number | null {
   return null;
 }
 
-function toIsoString(value: unknown): string {
-  if (value instanceof Date) return value.toISOString();
-  return typeof value === "string" ? value : new Date().toISOString();
-}
-
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value,
@@ -259,7 +254,7 @@ export function createDbAttachmentRepository(): AttachmentWritableRepository {
 
       return Number(result.rows[0]?.count ?? 0);
     },
-    setPrimaryDesignAttachment: async ({ workOrderId, attachmentId }) => {
+    setPrimaryDesignAttachment: async ({ workOrderId, attachmentId, companyId }) => {
       const target = await queryDb<AttachmentRow>(
         `SELECT id,
                 order_id,
@@ -279,11 +274,12 @@ export function createDbAttachmentRepository(): AttachmentWritableRepository {
            FROM attachments
           WHERE id = $1
             AND order_id = $2
+            AND company_id = $3
             AND type = 'design'
             AND is_active = true
             AND deleted_at IS NULL
           LIMIT 1`,
-        [attachmentId, workOrderId],
+        [attachmentId, workOrderId, companyId],
       );
 
       if (!target.rows[0]) return null;
@@ -292,16 +288,18 @@ export function createDbAttachmentRepository(): AttachmentWritableRepository {
         `UPDATE attachments
             SET is_primary = false
           WHERE order_id = $1
+            AND company_id = $2
             AND type = 'design'
             AND is_active = true
             AND deleted_at IS NULL`,
-        [workOrderId],
+        [workOrderId, companyId],
       );
 
       const result = await queryDb<AttachmentRow>(
         `UPDATE attachments
             SET is_primary = true
           WHERE id = $1
+            AND company_id = $2
           RETURNING id,
                     order_id,
                     type,
@@ -315,7 +313,7 @@ export function createDbAttachmentRepository(): AttachmentWritableRepository {
                     is_active,
                     deleted_at,
                     created_at`,
-        [attachmentId],
+        [attachmentId, companyId],
       );
 
       return result.rows[0] ?? null;

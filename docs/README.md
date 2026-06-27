@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.24.1`
+- 기준 앱 버전: `0.24.25`
 - 현재 실행 기준: `docs/codex-current-state.md`
 - active 실행계획: `docs/project/31-pre-codex-integrated-master-plan.md`
 - GO/STOP 기준: `docs/project/32-pre-codex-authority-consistency-gate.md`
@@ -41,12 +41,12 @@
 - `/worker` WorkOrderWorkspace 및 WAFL empty/loading state boundary 유지
 - 권한, tenant, API, repository, DB, R2, package/lockfile 변경 없음
 
-## 4. 0.24.24.1 기준
+## 4. 0.24.25 기준
 
-0.24.24.1은 Simulator Attachment/R2 Lifecycle Integration 비파괴 기반입니다.
+0.24.25는 Authorization, Runtime Boundary, and Opaque Routing 적용 버전입니다.
 
-- canonical simulator attachment manifest 추가
-- normal lifecycle fixture와 capacity boundary fixture 분리
-- PowerShell 메뉴 34~41 simulator attachment lifecycle 구조 추가
-- 실제 Neon DB/R2 mutation, cleanup, fault fixture 생성은 별도 승인 전까지 미실행
-- 감사 문서: `docs/audits/simulator-attachment-r2-lifecycle-0.24.24.1.md`
+- 서버측 권한 검증과 직접 URL/API 우회 차단
+- production dev/test account switching 차단과 서버 runtime 판정
+- opaque-compatible workorder route parameter validation
+- DB migration, DB/R2 mutation, Cloudflare Worker 변경 없음
+- 0.24.24.1 simulator 감사 문서: `docs/audits/simulator-attachment-r2-lifecycle-0.24.24.1.md`

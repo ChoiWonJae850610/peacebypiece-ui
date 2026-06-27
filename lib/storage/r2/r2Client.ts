@@ -167,6 +167,20 @@ function buildCanonicalQuery(params: Record<string, string>): string {
 // [Public helpers]
 // ================================
 
+function getR2SafeErrorLog(error: unknown): { message?: string; code?: string; name?: string } {
+  if (!error || typeof error !== "object") {
+    return {};
+  }
+
+  const record = error as { message?: unknown; code?: unknown; name?: unknown };
+
+  return {
+    message: typeof record.message === "string" ? record.message : undefined,
+    code: typeof record.code === "string" ? record.code : undefined,
+    name: typeof record.name === "string" ? record.name : undefined,
+  };
+}
+
 export function createAttachmentFileProxyUrl(key: string): string {
   const cleanKey = cleanStorageKey(key);
   return `/api/workorders/attachments/file?key=${encodeURIComponent(cleanKey)}`;
@@ -235,14 +249,10 @@ export async function putR2Object(input: PutR2ObjectInput): Promise<void> {
         ContentType: input.contentType || "application/octet-stream",
       })
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[R2_PUT_ERROR]", {
-      bucketName: config.bucketName,
-      key,
-      endpoint: config.endpoint,
-      message: error?.message,
-      code: error?.code,
-      name: error?.name,
+      hasKey: Boolean(key),
+      ...getR2SafeErrorLog(error),
     });
 
     throw error;
@@ -269,14 +279,10 @@ export async function getR2Object(input: GetR2ObjectInput): Promise<R2ObjectResu
       contentType: result.ContentType || "application/octet-stream",
       contentLength: Number(result.ContentLength || body.byteLength),
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[R2_GET_ERROR]", {
-      bucketName: config.bucketName,
-      key,
-      endpoint: config.endpoint,
-      message: error?.message,
-      code: error?.code,
-      name: error?.name,
+      hasKey: Boolean(key),
+      ...getR2SafeErrorLog(error),
     });
 
     throw error;
@@ -295,14 +301,10 @@ export async function deleteR2Object(input: GetR2ObjectInput): Promise<void> {
         Key: key,
       })
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[R2_DELETE_ERROR]", {
-      bucketName: config.bucketName,
-      key,
-      endpoint: config.endpoint,
-      message: error?.message,
-      code: error?.code,
-      name: error?.name,
+      hasKey: Boolean(key),
+      ...getR2SafeErrorLog(error),
     });
 
     throw error;
@@ -349,9 +351,7 @@ export async function deleteR2ObjectWithPresignedRequest(input: GetR2ObjectInput
   if (!response.ok) {
     const message = await response.text().catch(() => "");
     console.error("[R2_PRESIGNED_DELETE_ERROR]", {
-      bucketName: config.bucketName,
-      key,
-      endpoint: config.endpoint,
+      hasKey: Boolean(key),
       status: response.status,
       message,
     });

@@ -1,15 +1,16 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.24.1`. Next implementation candidate: `0.24.25` Authorization, Runtime Boundary, and Opaque Routing after user confirmation.
+> Active baseline: `0.24.25`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
+> Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.24.1`
-- APP_VERSION: `0.24.24.1`
+- Roadmap checkpoint version: `0.24.25`
+- APP_VERSION: `0.24.25`
 - Feature implementation progress: about `93%`
-- Productization readiness: about `81%`
+- Productization readiness: about `84%`
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Current planning policy: before 1.0, `master` remains the single development/QA branch and Vercel deployment is used for real-device QA.
@@ -27,6 +28,21 @@
 9. `0.24.29` - Company-wide Export
 10. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
 11. `0.24.31` - PG Billing and Subscription Operations
+
+## 0.24.25 - Authorization, Runtime Boundary, and Opaque Routing
+
+- Server-side permission checks now own app route authorization; app routes no longer use the legacy header-preview permission guard.
+- Dev/test account switching requires active system administrator, server non-production runtime, and `WAFL_ENABLE_DEV_TEST_CONTEXT=1`; production and unknown runtime stay blocked.
+- Workorder direct route parameters are validated through an opaque-compatible common validator before repository access.
+- Missing, malformed, cross-company, and inaccessible workorder/attachment resources use common WAFL not-found/permission states with reduced information exposure.
+- Attachment file proxy access now requires `storage.read`, company prefix match, and active DB attachment metadata for the requested storage or thumbnail key.
+- R2 client error logs avoid endpoint, bucket, raw key, signed URL, token, and secret output.
+- No DB migration, DB/R2 mutation, package/lockfile change, or Cloudflare Worker change was included.
+- Operations dashboard PLAN AND STORAGE / policy 기준 / member status UI cleanup was deferred because it is outside the official Sprint D security boundary.
+- Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`, not by environment-name strings.
+- `/id-control` test account switching is allowed only when the server dev/test runtime and explicit enable flag allow it.
+- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
+- Verification profile reference: `system-admin-internal-access`.
 
 ## 0.24.24.1 - Simulator Attachment/R2 Lifecycle Integration
 
@@ -83,6 +99,7 @@ UI, responsive, and PDF work stays in user-confirmation-needed status until huma
 
 The following historical tokens are kept for roadmap contract compatibility. They are not the active execution order when they conflict with document 31.
 
+- `0.24.12` - historical roadmap expansion and internal read-only routes baseline
 - `0.24.13` - 臾몄꽌/?대뜑 ?뺣━ 2李?
 - `0.24.14` - Functions 90% 援ы쁽/寃利??뺣━
 - `0.24.15` - WAFL Productization Audit

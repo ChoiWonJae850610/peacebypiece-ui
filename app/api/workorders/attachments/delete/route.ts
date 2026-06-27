@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import { WORKORDER_SERVICE_CODE } from "@/lib/constants/workorderServiceCodes";
 import { resolveWorkOrderServiceCodeForRequest } from "@/lib/workorder/serviceCodeRequest";
 import { WORKORDER_SERVICE_OPERATION, WORKORDER_SERVICE_RESOURCE } from "@/lib/workorder/serviceCodeSideEffects";
@@ -73,11 +74,10 @@ function getAuditIpAddress(request: NextRequest): string | null {
 }
 
 export async function POST(request: NextRequest) {
-  const permissionDenied = requireApiPermission(request, {
+  const guard = await requireWorkspaceApiGuard({
     permissionCode: MEMBER_PERMISSION_CODE.storageDeleteRequest,
-    routeLabel: "workorders.attachments.delete",
   });
-  if (permissionDenied) return permissionDenied;
+  if (!guard.ok) return guard.response;
 
   try {
     const payload = (await request.json().catch(() => null)) as AttachmentDeleteRequest | null;

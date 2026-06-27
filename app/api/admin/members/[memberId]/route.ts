@@ -1,4 +1,5 @@
-import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import { handleUpdateAdminMember } from "@/lib/admin/members/memberRouteHandlers";
 
 type AdminMemberRouteContext = {
@@ -8,11 +9,10 @@ type AdminMemberRouteContext = {
 };
 
 export async function PATCH(request: Request, context: AdminMemberRouteContext) {
-  const permissionDenied = requireApiPermission(request, {
+  const guard = await requireWorkspaceApiGuard({
     permissionCode: MEMBER_PERMISSION_CODE.memberPermissionUpdate,
-    routeLabel: "admin.members.update",
   });
-  if (permissionDenied) return permissionDenied;
+  if (!guard.ok) return guard.response;
 
   const { memberId } = await context.params;
   return handleUpdateAdminMember(memberId, request);

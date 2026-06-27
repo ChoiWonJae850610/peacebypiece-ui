@@ -1,0 +1,147 @@
+import type { RoadmapVersionDetail } from "./types";
+
+export const ROADMAP_0_24_25: RoadmapVersionDetail = {
+  version: "0.24.25",
+  title: "Authorization, Runtime Boundary, and Opaque Routing",
+  status: "implemented",
+  userSummary: [
+    "Server-side authorization, tenant boundary, direct URL/API access, production runtime blocking, and opaque workorder route validation were hardened.",
+    "The sprint keeps the existing DB schema and R2/Worker files unchanged while documenting the future stable opaque workorder URL identifier boundary.",
+  ],
+  visibleChanges: [
+    "Unauthorized or missing resources now use common WAFL permission/not-found/runtime-blocked API states.",
+    "Dev/test account switching remains visible to active system administrators but is disabled unless the server runtime and explicit flag allow it.",
+    "Attachment file access requires both company scope and active DB metadata; R2-only objects are not exposed through the app proxy.",
+  ],
+  expectedUi: [
+    "No broad customer UI redesign is included.",
+    "/id-control still renders for active system administrators, but account switching shows disabled state in production or when the dev/test flag is off.",
+  ],
+  developmentPurpose: [
+    "Close UI-only authorization gaps and header-preview permission bypass risk.",
+    "Minimize information disclosure for invalid, cross-company, or inaccessible route parameters.",
+    "Prepare a stable opaque workorder route contract without adding a DB migration in this version.",
+  ],
+  developmentUiStructure: [
+    "Existing workspace and internal pages are preserved.",
+    "Server route guards and repository scope checks own authorization decisions.",
+  ],
+  scope: [
+    "Full API/route company-scope audit",
+    "IDOR tests using other-company identifiers",
+    "Server-side permission enforcement",
+    "Opaque workorder route parameter validation and compatibility boundary",
+    "Direct-link, refresh, and back-navigation not-found behavior",
+    "System administrator and impersonation runtime boundary verification",
+    "Production blocking for dev/test account switching and simulator-like actions",
+    "Audit trace and sensitive log redaction review",
+  ],
+  outOfScope: [
+    "DB migration or backfill for a new opaque workorder URL column",
+    "Production DB/R2 mutation",
+    "Cloudflare Worker code changes",
+    "Signup, Trial, catalog/size/POM, PDF/R2 lifecycle, Export, billing, or launch QA implementation",
+    "Operations dashboard PLAN AND STORAGE, policy 기준, and member status UI cleanup",
+  ],
+  implementationPrinciples: [
+    "Never trust client headers or public environment variables for authorization or runtime decisions.",
+    "Always combine session, company scope, resource scope, and permission checks on the server.",
+    "Return the same not-found shape for missing and cross-company resources where possible.",
+    "Keep audit logs while avoiding raw token, secret, endpoint, bucket, key, or signed URL logging.",
+  ],
+  successConditions: [
+    "No app route uses the legacy header-preview API permission guard.",
+    "Workorder deep links validate opaque-compatible parameters before repository access.",
+    "Attachment proxy requires active DB metadata in the caller company.",
+    "Dev/test account switching is production-blocked by server runtime and explicit flag.",
+    "Relevant authorization, runtime, opaque route, cross-company, build, and diff checks pass.",
+  ],
+  failureConditions: [
+    "A direct URL/API can mutate or read another company's resource.",
+    "A production runtime can enable dev/test account switching, seed, reset, or simulator execution through client-visible flags.",
+    "A signed URL, token, secret, production endpoint, account ID, bucket, or raw storage key is logged.",
+    "DB migration or Cloudflare Worker change becomes required.",
+  ],
+  cautions: [
+    "Stable opaque workorder URL persistence still needs a future DB migration/backfill plan.",
+    "System administrators may inspect internal read-only pages, but customer content access remains restricted.",
+    "Production DB/R2 mutation remains forbidden.",
+  ],
+  stopConditions: [
+    "A schema change is required to complete a target behavior.",
+    "Production data or production R2 access is required.",
+    "Authorization policy needs a product decision beyond the canonical Sprint D scope.",
+  ],
+  permissionImpact: "guarded",
+  permissionNotes: [
+    "Workspace APIs now rely on server session/member permission checks instead of request-header preview permissions.",
+    "Attachment read/write paths require server permission checks and company-scoped DB metadata.",
+  ],
+  dbImpact: "read_only",
+  dbImpactNotes: [
+    "No migration or DB mutation was added by this version.",
+    "Runtime DB reads are used only for existing company/resource scope validation.",
+  ],
+  r2Impact: "read_only",
+  r2ImpactNotes: [
+    "No R2 mutation or Cloudflare Worker code change was added.",
+    "R2 proxy access is limited to DB-backed active attachment keys for the caller company.",
+  ],
+  migrationRequired: false,
+  migrationNotes: "DB migration none. Opaque workorder URL persistence remains a future migration/backfill boundary.",
+  automaticTests: [
+    "authorization-runtime-boundary-contract",
+    "workspace-member-session-guard-contract",
+    "internal-system-routes-contract",
+    "dev-test-context-system-admin-contract",
+    "unicode-encoding-contract",
+    "lint",
+    "typecheck/build",
+    "git diff --check",
+  ],
+  manualTests: [
+    "Active system administrator: open /id-control and verify account switching is disabled in production or when WAFL_ENABLE_DEV_TEST_CONTEXT is not 1.",
+    "Workspace member without storage/workorder/member permissions: direct API calls return WAFL_PERMISSION_DENIED.",
+    "Other-company workorder or attachment key: direct URL/API returns WAFL_NOT_FOUND without exposing the target id.",
+  ],
+  expectedChangeAreas: [
+    "lib/auth/apiRouteGuards.ts",
+    "lib/runtime/serverRuntime.ts",
+    "lib/dev/testContext/config.ts",
+    "lib/routing/opaqueRouteParams.ts",
+    "app/api/workorders/*",
+    "app/api/admin/*",
+    "lib/workorder/*",
+    "tests/authorization-runtime-boundary-contract.mjs",
+    "docs/*",
+    "lib/internal/roadmap/*",
+    "lib/constants/version.ts",
+  ],
+  recommendedCommitMessage: "feat: harden authorization runtime and opaque routing",
+  nextVersionBoundary: [
+    "0.24.26 - Public Signup, Verification, Approval, and Trial",
+    "Do not add DB migration/backfill for opaque workorder URL identifiers without a separate migration boundary.",
+  ],
+  completionConditions: [
+    "implementation complete",
+    "required verification PASS or blockers reported",
+    "roadmap/current-state/docs/version aligned",
+    "commit and push only if automatic Git conditions are satisfied",
+  ],
+  result: {
+    completedSummary: [
+      "Server-side API permission checks replaced legacy request-header preview guards on app routes.",
+      "Production/dev-test runtime boundary now uses server-only runtime evaluation and an explicit enable flag.",
+      "Workorder route parameters and attachment proxy access were hardened for opaque/deep-link and cross-company cases.",
+    ],
+    commitHash: "not created; automatic Git conditions were blocked by a dirty starting working tree",
+    verificationResult:
+      "PASS: typecheck, build, targeted changed-file lint, authorization/runtime boundary contract, workspace member session guard, internal routes, dev/test context, system-admin internal access, unicode, and git diff --check. Full repository ESLint remains blocked by pre-existing React Compiler errors outside the 0.24.25 change scope.",
+    remainingIssues: [
+      "Stable opaque workorder URL column, compatibility backfill, and final route migration remain future DB migration work.",
+      "Operations dashboard UI cleanup was deferred because it is unrelated to the official Sprint D security boundary.",
+    ],
+    userConfirmationRequired: false,
+    userConfirmationResult: "Automatic authorization/runtime/contract validation is sufficient for this non-visual security hardening sprint.",
+  },
+};

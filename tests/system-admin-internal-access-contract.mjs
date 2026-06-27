@@ -20,6 +20,7 @@ const currentState = read("docs/codex-current-state.md");
 const productizationRoadmap = read("docs/productization-roadmap.md");
 const runtimePolicy = read("lib/runtime/runtimePolicy.ts");
 const devConfig = read("lib/dev/testContext/config.ts");
+const serverRuntime = read("lib/runtime/serverRuntime.ts");
 const functionsRuntime = read("lib/functions/runtimeAccess.ts");
 const uiRuntime = read("lib/uiCatalog/runtimeAccess.ts");
 const runtimeMode = read("lib/runtime/runtimeMode.ts");
@@ -75,7 +76,6 @@ assert.match(systemShell, /SYSTEM_CONSOLE_INTERNAL_TOOLS_NAVIGATION\.map/);
 
 for (const [name, source] of [
   ["runtime policy", runtimePolicy],
-  ["dev config", devConfig],
   ["functions runtime", functionsRuntime],
   ["ui runtime", uiRuntime],
   ["runtime mode", runtimeMode],
@@ -88,6 +88,13 @@ for (const [name, source] of [
 ]) {
   assert.doesNotMatch(source, /NODE_ENV|VERCEL_ENV|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/, `${name} must not gate internal tools by environment strings`);
 }
+assert.match(devConfig, /isServerDevTestRuntime/);
+assert.match(devConfig, /WAFL_ENABLE_DEV_TEST_CONTEXT === "1"/);
+assert.doesNotMatch(devConfig, /NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
+assert.match(serverRuntime, /WAFL_SERVER_RUNTIME_MODE/);
+assert.match(serverRuntime, /VERCEL_ENV/);
+assert.match(serverRuntime, /NODE_ENV/);
+assert.doesNotMatch(serverRuntime, /NEXT_PUBLIC/);
 
 for (const fnName of [
   "canAccessIdControl",

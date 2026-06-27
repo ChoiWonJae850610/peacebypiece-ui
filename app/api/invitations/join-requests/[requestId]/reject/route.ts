@@ -1,4 +1,5 @@
-import { MEMBER_PERMISSION_CODE, requireApiPermission } from "@/lib/permissions";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
 import { handleRejectMemberJoinRequest } from "@/lib/invitations/api/joinRequestRouteHandlers";
 
 type MemberJoinRequestReviewRouteContext = {
@@ -8,11 +9,10 @@ type MemberJoinRequestReviewRouteContext = {
 };
 
 export async function POST(request: Request, context: MemberJoinRequestReviewRouteContext) {
-  const permissionDenied = requireApiPermission(request, {
+  const guard = await requireWorkspaceApiGuard({
     permissionCode: MEMBER_PERMISSION_CODE.memberReject,
-    routeLabel: "invitations.joinRequests.member.reject",
   });
-  if (permissionDenied) return permissionDenied;
+  if (!guard.ok) return guard.response;
 
   const { requestId } = await context.params;
   return handleRejectMemberJoinRequest(requestId, request);

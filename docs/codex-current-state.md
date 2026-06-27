@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.24.1
+# Codex Current State - 0.24.25
 
 ## Active execution gate
 
-- Current version: `0.24.24.1`.
-- Next implementation version: `0.24.25` only after 0.24.24.1 simulator attachment/R2 foundation confirmation and separate user approval.
-- Current work result: **Simulator Attachment/R2 Lifecycle Integration foundation** added canonical simulator attachment manifest, guard/preflight/menu structure, and contracts without actual DB/R2 mutation.
-- Next work: **Sprint D - Authorization, Runtime Boundary, and Opaque Routing** after user approval.
+- Current version: `0.24.25`.
+- Next implementation version: `0.24.26`.
+- Current work result: **Authorization, Runtime Boundary, and Opaque Routing** hardened server-side permission checks, production dev/test boundaries, opaque-compatible workorder route validation, attachment DB membership checks, and sensitive R2 logging boundaries.
+- Next work: **Sprint E - Public Signup, Verification, Approval, and Trial** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
@@ -87,10 +87,30 @@ UI Foundation result:
 
 Before any actual dev/test Neon/R2 simulator execution, Codex must stop and report runtime, Neon fingerprint, R2 account/bucket fingerprint, company count, workorder count, file count, expected bytes, simulator prefix, DB mutation range, R2 mutation range, cleanup range, confirmation string, and partial-failure recovery method.
 
+## 0.24.25 Result Boundary
+
+0.24.25 was executed as the Authorization, Runtime Boundary, and Opaque Routing Sprint.
+
+- Replaced app route usage of the legacy header-preview permission guard with server session, company scope, member status, and permission checks.
+- Added common WAFL API states for permission denied, not found, and runtime blocked responses.
+- Added server-only runtime resolution for dev/test account switching; `NEXT_PUBLIC_*` runtime values are not trusted for server decisions.
+- Kept `/id-control` visible to active system administrators, while account switching requires non-production server runtime plus `WAFL_ENABLE_DEV_TEST_CONTEXT=1`.
+- Added opaque-compatible workorder route parameter validation for UUID, current simulator IDs, and future `wo_...` identifiers without adding a DB migration.
+- Changed workorder not-found behavior to avoid returning the requested id in API responses.
+- Required attachment file proxy access to pass workspace `storage.read`, company prefix, and active DB `attachments.storage_key` or `thumbnail_key` membership.
+- Added company scope to primary design attachment updates.
+- Reduced R2 error logs so endpoint, bucket, raw key, signed URL, tokens, and secrets are not logged by the shared R2 client.
+- Production DB/R2 mutation: 0.
+- Dev/test DB/R2 mutation: 0.
+- DB schema migration/backfill/RLS DDL execution: none.
+- Cloudflare Worker code change: none.
+- Operations dashboard PLAN AND STORAGE / policy 기준 / member status UI cleanup was deferred because it is unrelated to the official Sprint D security boundary.
+
 ## Runtime And Product Preservation
 
 - Public website scope remains in the plan: `www.wafl.co.kr`, root-to-www redirect, pricing, Trial CTA, inquiry/policy links, signup/login, and post-login app routing.
-- `/id-control` is not dead code. It is a dev/test QA facility and must remain production-blocked.
+- `/id-control` is not dead code. Its read/view shell remains active-system-admin-only; dev/test account switching and execution actions remain production-blocked.
+- `/id-control` test account switching is allowed only when the server dev/test runtime and explicit enable flag allow it.
 - Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`, not by environment-name strings.
 - Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
 - System administrators must not gain access to customer operational content; the business-certificate approval viewer remains the narrow exception.
@@ -107,6 +127,7 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 
 - TypeScript and production build pass.
 - Applicable contract, E2E, tenant, permission, mutation, Unicode, and secret checks pass.
+- Internal route guard verification includes `system-admin-internal-access`.
 - No unapproved package/lockfile changes.
 - Documentation and roadmap match actual implementation.
 - `master = origin/master`, working tree clean.
