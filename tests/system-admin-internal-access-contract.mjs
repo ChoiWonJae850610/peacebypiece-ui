@@ -65,9 +65,11 @@ assert.match(clearRoute, /isDevTestContextEnabled/);
 assert.match(clearRoute, /WAFL_DEV_TEST_CONTEXT_COOKIE/);
 
 assert.match(optionsRoute, /isActiveSystemAdminSession/);
-assert.match(optionsRoute, /devTestContextEnabled:\s*false/);
-assert.match(optionsRoute, /disabledReason:\s*getDevTestContextDisabledReason\(\)/);
-assert.match(optionsRoute, /targets:\s*\[\]/);
+assert.match(optionsRoute, /devTestContextEnabled,/);
+assert.match(optionsRoute, /disabledReason:\s*devTestContextEnabled\s*\?\s*null\s*:\s*getDevTestContextDisabledReason\(\)/);
+assert.match(optionsRoute, /buildDevTestContextOptions\(actualSession, effectiveSession\)/);
+assert.match(optionsRoute, /devTestContextEnabled\s*=\s*canSwitchTestAccount/);
+assert.doesNotMatch(optionsRoute, /targets:\s*\[\]/);
 assert.doesNotMatch(optionsRoute, /DEV_TEST_CONTEXT_DISABLED/);
 
 assert.doesNotMatch(systemShell, /internalToolsVisible/);

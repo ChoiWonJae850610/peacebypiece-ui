@@ -85,5 +85,8 @@ assert.doesNotMatch(clearRoute, /status:\s*404/);
 assert.match(switchRoute, /dev_test\.context_switched/);
 assert.match(clearRoute, /dev_test\.context_cleared/);
 assert.match(switchRoute, /WAFL_DEV_TEST_CONTEXT_COOKIE/);
+assert.match(optionsRoute, /buildDevTestContextOptions\(actualSession, effectiveSession\)/);
+assert.match(optionsRoute, /devTestContextEnabled\s*=\s*canSwitchTestAccount/);
+assert.doesNotMatch(optionsRoute, /targets:\s*\[\]/);
 
 console.log("dev test console system-admin access contract passed");

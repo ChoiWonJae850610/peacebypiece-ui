@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.25`
+- 기준 앱 버전: `0.24.25.1`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.25`는 Authorization, Runtime Boundary, and Opaque Routing 적용 버전입니다. 다음 공식 작업은 `0.24.26` Public Signup, Verification, Approval, and Trial입니다.
+- 현재 작업 상태: `0.24.25.1`은 0.24.25 배포 이후 확인된 `/id-control` read-only 계정 목록 회귀 보정 버전입니다. 다음 공식 작업은 `0.24.26` Public Signup, Verification, Approval, and Trial입니다.
 
 ## 개발 실행
 

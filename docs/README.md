@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.25`
+- 기준 앱 버전: `0.24.25.1`
 - 현재 실행 기준: `docs/codex-current-state.md`
 - active 실행계획: `docs/project/31-pre-codex-integrated-master-plan.md`
 - GO/STOP 기준: `docs/project/32-pre-codex-authority-consistency-gate.md`
@@ -41,9 +41,9 @@
 - `/worker` WorkOrderWorkspace 및 WAFL empty/loading state boundary 유지
 - 권한, tenant, API, repository, DB, R2, package/lockfile 변경 없음
 
-## 4. 0.24.25 기준
+## 4. 0.24.25.1 기준
 
-0.24.25는 Authorization, Runtime Boundary, and Opaque Routing 적용 버전입니다.
+0.24.25.1은 0.24.25 배포 이후 확인된 `/id-control` read-only 계정 목록 회귀 보정 버전입니다. 다음 공식 작업은 0.24.26 Public Signup, Verification, Approval, and Trial입니다.
 
 - 서버측 권한 검증과 직접 URL/API 우회 차단
 - production dev/test account switching 차단과 서버 runtime 판정

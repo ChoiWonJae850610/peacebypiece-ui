@@ -1,10 +1,10 @@
-# Codex Current State - 0.24.25
+# Codex Current State - 0.24.25.1
 
 ## Active execution gate
 
-- Current version: `0.24.25`.
+- Current version: `0.24.25.1`.
 - Next implementation version: `0.24.26`.
-- Current work result: **Authorization, Runtime Boundary, and Opaque Routing** hardened server-side permission checks, production dev/test boundaries, opaque-compatible workorder route validation, attachment DB membership checks, and sensitive R2 logging boundaries.
+- Current work result: **0.24.25.1 /id-control read-only account list regression fix** restored active system-admin account target listing while preserving 0.24.25 authorization, runtime, tenant, and action-block boundaries.
 - Next work: **Sprint E - Public Signup, Verification, Approval, and Trial** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
@@ -105,6 +105,20 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - DB schema migration/backfill/RLS DDL execution: none.
 - Cloudflare Worker code change: none.
 - Operations dashboard PLAN AND STORAGE / policy 기준 / member status UI cleanup was deferred because it is unrelated to the official Sprint D security boundary.
+
+## 0.24.25.1 Result Boundary
+
+0.24.25.1 is a post-deploy regression fix for `/id-control`; it is not the start of 0.24.26.
+
+- `/api/dev/test-context/options` now builds read-only target options for active system administrators before evaluating switch-action enablement.
+- `/id-control` can show seeded company/system target options even when production runtime or `WAFL_ENABLE_DEV_TEST_CONTEXT` disables account switching.
+- `/api/dev/test-context/switch` and `/clear` still require active system administrator, server dev/test runtime, and `WAFL_ENABLE_DEV_TEST_CONTEXT=1`.
+- General users and customer accounts remain blocked from `/id-control`.
+- Production DB/R2 mutation: 0.
+- Dev/test DB/R2 mutation: 0.
+- DB schema migration/backfill/RLS DDL execution: none.
+- Cloudflare Worker code change: none.
+- Manual PC/mobile production verification is required after Vercel deploys the patch commit.
 
 ## Runtime And Product Preservation
 

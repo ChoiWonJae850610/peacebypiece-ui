@@ -1,14 +1,14 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.25`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
+> Active baseline: `0.24.25.1`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.25`
-- APP_VERSION: `0.24.25`
+- Roadmap checkpoint version: `0.24.25.1`
+- APP_VERSION: `0.24.25.1`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `84%`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -22,12 +22,22 @@
 3. `0.24.24` - WAFL UI Foundation
 4. `0.24.24.1` - Simulator Attachment/R2 Lifecycle Integration
 5. `0.24.25` - Authorization, Runtime Boundary, and Opaque Routing
-6. `0.24.26` - Public Signup, Verification, Approval, and Trial
-7. `0.24.27` - System Catalog, Sizes, and POM
-8. `0.24.28` - PDF and R2 Lifecycle
-9. `0.24.29` - Company-wide Export
-10. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
-11. `0.24.31` - PG Billing and Subscription Operations
+6. `0.24.25.1` - /id-control Read-only Account List Regression Fix
+7. `0.24.26` - Public Signup, Verification, Approval, and Trial
+8. `0.24.27` - System Catalog, Sizes, and POM
+9. `0.24.28` - PDF and R2 Lifecycle
+10. `0.24.29` - Company-wide Export
+11. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
+12. `0.24.31` - PG Billing and Subscription Operations
+
+## 0.24.25.1 - /id-control Read-only Account List Regression Fix
+
+- Restores active system-admin read-only target listing on `/id-control` after the 0.24.25 runtime boundary hardening.
+- `/api/dev/test-context/options` builds account targets before evaluating whether switch/clear actions are enabled.
+- Production and flag-disabled runtimes still return `devTestContextEnabled: false` and keep switch/clear actions blocked.
+- General users and customer accounts remain blocked from `/id-control`.
+- No DB migration, DB/R2 mutation, package/lockfile change, or Cloudflare Worker change is included.
+- This patch does not start 0.24.26.
 
 ## 0.24.25 - Authorization, Runtime Boundary, and Opaque Routing
 

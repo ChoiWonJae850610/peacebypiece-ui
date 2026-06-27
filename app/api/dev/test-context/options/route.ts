@@ -18,25 +18,15 @@ export async function GET() {
     return NextResponse.json({ error: "SYSTEM_ADMIN_REQUIRED" }, { status: 403 });
   }
   const effectiveSession = (await getCurrentWaflSession()) ?? actualSession;
-
-  if (!canSwitchTestAccount({ isSystemAdmin }) || !isDevTestContextEnabled()) {
-    return NextResponse.json(
-      {
-        actualSession,
-        effectiveSession,
-        activeTarget: null,
-        targets: [],
-        devTestContextEnabled: false,
-        disabledReason: getDevTestContextDisabledReason(),
-      },
-      { headers: { "Cache-Control": "no-store" } },
-    );
-  }
-
   const options = await buildDevTestContextOptions(actualSession, effectiveSession);
+  const devTestContextEnabled = canSwitchTestAccount({ isSystemAdmin }) && isDevTestContextEnabled();
 
   return NextResponse.json(
-    { ...options, devTestContextEnabled: true, disabledReason: null },
+    {
+      ...options,
+      devTestContextEnabled,
+      disabledReason: devTestContextEnabled ? null : getDevTestContextDisabledReason(),
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
