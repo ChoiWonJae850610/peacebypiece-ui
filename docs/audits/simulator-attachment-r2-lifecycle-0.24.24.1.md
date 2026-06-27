@@ -272,3 +272,312 @@ Execution result:
 - Compensation cleanup required: no
 
 This repair did not run general lifecycle scenarios, restore, permanent delete, fault fixtures, whole cleanup, production access, DB migration, or Cloudflare Worker code changes.
+
+## Valid File Fixture Correction Plan
+
+Manual UI QA after restore confirmed that `g-trash-reference.pdf` is present in DB/R2 and Worker signed GET returns `200`, `262,144` bytes, and `application/pdf`, but browser PDF viewer and local PDF readers cannot open the downloaded file. The same generator pattern also affected image fixture validity because it optimized for exact byte count rather than complete file format structure.
+
+Root cause:
+
+- The previous simulator attachment generator repeated a short `%PDF...%%EOF` byte fragment until `exact_size_bytes` was reached.
+- That produced the expected byte count but not a single valid PDF document with a coherent xref table and `startxref`.
+- PNG/JPEG image fixtures must also be generated as complete files, not by repeating sample bytes to fill the target size.
+
+Canonical materialized file scope:
+
+- Total files: 11
+- Total bytes: 2,449,408
+- MIME counts:
+  - `image/png`: 7
+  - `image/jpeg`: 1
+  - `application/pdf`: 3
+
+Code-only correction:
+
+- PDF fixtures are now generated as exact-size valid PDF documents:
+  - `%PDF-1.4` header
+  - catalog/pages/page/font objects
+  - content stream with deterministic padding
+  - xref table
+  - trailer
+  - valid `startxref`
+  - final `%%EOF`
+- PNG fixtures are now generated as exact-size valid PNG files:
+  - PNG signature
+  - IHDR
+  - IDAT
+  - deterministic `tEXt` padding chunk
+  - IEND
+  - valid CRC for each chunk
+- JPEG fixtures are now generated as exact-size valid JPEG files:
+  - SOI/EOI markers
+  - baseline JPEG structure from a minimal decodable image
+  - deterministic COM padding segments
+  - SOF/SOS structure validation
+- `mime_type` and `exact_size_bytes` remain unchanged.
+- DB schema, Worker API, preview UI, and canonical keys are unchanged.
+
+Dev/test correction required before UI retest:
+
+- Replace all current canonical normal lifecycle materialized exact Worker/R2 objects with regenerated valid file bytes.
+- Target exact keys:
+  - `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00001/design/b-main-design.png`
+  - `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00001/attachments/b-detail-image.jpg`
+  - `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/design/b-candidate-design-a.png`
+  - `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/design/b-candidate-design-b.png`
+  - `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/design/b-candidate-design-c.png`
+  - `companies/wafl-fn-company-d/workorders/wafl-fn-company-d-workorder-00001/design/d-artwork.png`
+  - `companies/wafl-fn-company-d/workorders/wafl-fn-company-d-workorder-00001/attachments/d-spec-reference.pdf`
+  - `companies/wafl-fn-company-f/workorders/wafl-fn-company-f-workorder-00001/design/f-restored-design.png`
+  - `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00001/attachments/g-first-workorder.pdf`
+  - `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00002/attachments/g-second-workorder.png`
+  - `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00003/attachments/g-trash-reference.pdf`
+- Excludes fault fixtures, E legacy keys, capacity-only fixtures, and manifest-external keys.
+- Each replacement must keep the same exact byte length and Content-Type as the manifest.
+- No DB row update is required because `size_bytes`, `storage_key`, lifecycle state, trash state, representative state, and storage snapshots remain valid when the remote object bytes keep the same length.
+- No schema migration, restore rerun, seed rerun, cleanup, permanent delete, fault fixture, or Cloudflare Worker deployment is required.
+
+Repair mode:
+
+- Command: `node tools/simulator/commands/attachment-lifecycle.mjs --mode=replace-valid-file-fixtures --execute`
+- Confirmation: `REPLACE WAF-FN VALID FILE FIXTURES`
+- Behavior:
+  - generate all canonical materialized local fixtures
+  - validate local byte length and file format
+  - signed Worker PUT to each exact manifest key
+  - signed Worker GET from each exact manifest key
+  - validate HTTP 200, byte length, Content-Type, and remote file format
+  - do not update DB rows, trash rows, snapshots, representative status, restore status, or cleanup state
+- Partial failure:
+  - report per-key PUT/GET/format status
+  - do not hide partially replaced keys
+  - idempotent rerun of the same mode can normalize all exact manifest keys again
+  - no broad prefix delete or DB cleanup is involved
+
+Actual Worker PUT mutation is not approved in this code/contract phase. Before execution, a separate approval must confirm:
+
+- runtime
+- Neon fingerprint if a read-only DB existence check is included
+- Worker URL fingerprint
+- Worker host fingerprint
+- exact key
+- local regenerated byte count
+- Content-Type
+- confirmation string
+- compensation method if PUT or GET verification fails
+
+Confirmation string:
+
+- `REPLACE WAF-FN VALID FILE FIXTURES`
+
+## Scenario Status Matrix Before Valid-File Replacement
+
+Status legend:
+
+- Complete: code, contract, and the latest approved dev/test evidence are aligned.
+- Partial complete: foundation exists, but a later lifecycle mutation or UI confirmation is still pending.
+- Not executed: explicit dev/test mutation has not been approved or run.
+- User UI confirmation needed: automated evidence is not enough because the scenario is visual or browser-behavior dependent.
+
+File generation and lookup:
+
+| Item | Status | Evidence / remaining boundary |
+|---|---|---|
+| Valid PNG generation | Complete | Local generator now creates exact-size PNG files with PNG signature, IHDR, IDAT, padding chunk, IEND, and valid CRC. |
+| Valid JPEG generation | Complete | Local generator now creates exact-size JPEG files with SOI/EOI, SOF/SOS, and deterministic COM padding. |
+| Valid PDF generation | Complete | Local generator now creates exact-size PDF files with catalog/page objects, xref, trailer, startxref, and EOF. |
+| Worker PUT | Partial complete | Initial upload/seed and E-to-G repair PUT succeeded previously. Valid-file replacement PUT for the current 11 canonical keys is not executed. |
+| Worker GET | Partial complete | Prior GET byte/type checks passed, but current remote objects still need valid-file replacement and GET format verification. |
+| Byte length match | Partial complete | Existing DB/R2 byte counts matched. Replacement mode keeps the same `exact_size_bytes` and must verify all 11 remote bytes again. |
+| Content-Type match | Partial complete | Existing Content-Type checks passed. Replacement mode must reverify all 11 remote Content-Type values after overwrite. |
+| Image preview | User UI confirmation needed | Valid PNG/JPEG local contracts pass; remote replacement and browser UI retest are still pending. |
+| PDF preview | User UI confirmation needed | Existing G PDF was byte-valid but not PDF-valid. Valid PDF generator is ready; remote replacement and browser PDF retest are pending. |
+| File download | User UI confirmation needed | Download path worked for byte transport, but downloaded PDF validity depends on valid-file replacement. |
+| Workorder attachment display | Partial complete | Restore/listing code was fixed and committed in `c2751ef6`; G UI confirmation showed storage/list behavior, but file preview retest remains. |
+| General attachment vs design classification | Partial complete | Manifest and DB rows distinguish `file` and `design`; representative lifecycle mutations are not fully executed. |
+
+Representative design:
+
+| Item | Status | Evidence / remaining boundary |
+|---|---|---|
+| First representative design assignment | Partial complete | Seeded manifest includes representative designs for B/D/F; explicit lifecycle scenario is still pending. |
+| Design A to B representative change | Not executed | Requires separately approved lifecycle mutation. |
+| Previous representative auto-clear | Not executed | Requires separately approved lifecycle mutation. |
+| Max one active representative per workorder | Partial complete | Manifest-scoped reconciliation reports no duplicates; DB constraint migration was not added. |
+| Representative design list/detail display | User UI confirmation needed | Data exists for B/D/F after upload/repair, but UI verification is separate. |
+| Representative design trash move | Not executed | Requires lifecycle mutation. |
+| Representative deletion fallback/no-representative policy | Not executed | Requires lifecycle mutation and policy confirmation if behavior is ambiguous. |
+| Restore representative conflict prevention | Not executed | Requires lifecycle mutation. |
+| User reselects restored design as representative | Not executed | Requires lifecycle mutation and UI confirmation. |
+
+Trash and restore:
+
+| Item | Status | Evidence / remaining boundary |
+|---|---|---|
+| General file soft delete | Not executed | Normal lifecycle soft-delete scenario is still pending. |
+| Immediate exclusion from normal list | Partial complete | Repository/listing conditions were fixed; broad soft-delete scenario has not been run. |
+| Trash list display | Complete | User confirmed G trash file is visible. |
+| Trash file included in usage | Complete | User confirmed `896KB`, matching `917,504` bytes. |
+| Trash file open/download | Partial complete | Worker GET/download transport works; PDF validity needs replacement and UI retest. |
+| Restore | Partial complete | User clicked restore; code was fixed afterward. A clean retest after valid-file replacement is still needed. |
+| Exclude from trash after restore | Partial complete | Restore repository and state refresh were fixed; retest pending. |
+| Show restored file on original workorder | Partial complete | Attachment refresh/listing fix was committed; retest pending. |
+| Same-tab immediate refresh | Partial complete | `attachmentRefreshEvents` and state refresh were fixed; retest pending. |
+| Other-tab storage event refresh | Partial complete | Cross-tab refresh helper was added; retest pending. |
+| No R2 reupload on restore | Complete | Restore path updates DB metadata only; R2 object remains in place. |
+| Storage total remains unchanged on restore | Complete | Policy keeps R2 object and byte total; no file-size change occurs. |
+| Active/trash breakdown refresh | Partial complete | Code path fixed; UI retest pending. |
+
+Permanent delete:
+
+| Item | Status | Evidence / remaining boundary |
+|---|---|---|
+| Permanent delete request | Not executed | Requires separate approval. |
+| Worker exact key DELETE | Not executed | E legacy repair DELETE succeeded, but normal permanent-delete scenario has not run. |
+| GET 404 after delete | Not executed | E legacy repair verified deletion; normal scenario is pending. |
+| DB purge only after R2 delete success | Partial complete | Code contract enforces R2-first purge; normal scenario is pending. |
+| No DB metadata pre-delete on R2 failure | Partial complete | Code contract enforces failure recording; fault scenario pending. |
+| Attachment/trash metadata cleanup | Not executed | Requires permanent-delete scenario. |
+| Storage usage decrease | Not executed | Requires permanent-delete scenario. |
+| Snapshot recalculation | Not executed | Requires permanent-delete scenario. |
+| Final reconciliation issue 0 | Not executed | Requires permanent-delete scenario. |
+
+Fault fixture:
+
+| Item | Status | Evidence / remaining boundary |
+|---|---|---|
+| DB-only missing Worker object | Not executed | Fault execute is separately gated and not approved. |
+| Worker-only object without DB metadata | Not executed | Fault execute is separately gated and not approved. |
+| DB size vs actual object mismatch | Not executed | Fault execute is separately gated and not approved. |
+| MIME mismatch | Not executed | Fault execute is separately gated and not approved. |
+| Duplicate representative design | Not executed | Fault execute is separately gated and not approved. |
+| Trash state mismatch | Not executed | Fault execute is separately gated and not approved. |
+| Worker delete failure | Not executed | Fault execute is separately gated and not approved. |
+| Fault fixture cleanup | Not executed | Fault cleanup is separately gated and not approved. |
+
+Operations tools:
+
+| Item | Status | Evidence / remaining boundary |
+|---|---|---|
+| Exact-key cleanup | Partial complete | Cleanup mode is exact-key scoped, but not executed. |
+| Fixture count 0 after cleanup | Not executed | Requires cleanup approval. |
+| Idempotent regenerate | Complete | Local generate mode is repeatable and exact-size contract-covered. |
+| Rerun same mode after partial failure | Partial complete | Replacement and repair modes are designed for idempotent exact-key rerun; remote execution pending. |
+| Manifest-scoped reconciliation | Complete | The tool and documentation define manifest-scoped reconciliation. |
+| Whole bucket orphan scan not performed | Complete | Scope explicitly excludes bucket-wide orphan claims because Worker LIST is not part of 0.24.24.1. |
+
+## Company A-J Fixture Matrix
+
+Normal lifecycle fixture rows are small, real files with Worker/R2 objects. Capacity fixtures are quota boundary evidence and must not be presented as downloadable multi-GB files.
+
+| Company | State / UI switch | Workorders | DB attachments | Worker objects | Active bytes | Trash bytes | Total bytes | Representative | Trash | Lifecycle purpose | Capacity purpose |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|
+| A `wafl-fn-company-a` | active / switchable | 10 | 0 | 0 | 0 | 0 | 0 | No | No | Empty normal company | 0% baseline |
+| B `wafl-fn-company-b` | active / switchable | 100 | 5 | 5 | 770,048 | 0 | 770,048 | Yes | No | Representative and candidate designs; JPEG attachment | 5% company-scenario baseline only |
+| C `wafl-fn-company-c` | pending / not normal UI switch | 0 | 0 | 0 | 0 | 0 | 0 | No | No | Approval-pending empty company | 15% company-scenario baseline only |
+| D `wafl-fn-company-d` | file-rejected / limited | 12 | 2 | 2 | 557,056 | 0 | 557,056 | Yes | No | Mixed image/PDF fixture | 30% company-scenario baseline only |
+| E `wafl-fn-company-e` | suspended / blocked | 80 | 0 | 0 | 0 | 0 | 0 | No | No | Suspended company without UI lifecycle file | 50% company-scenario baseline only |
+| F `wafl-fn-company-f` | withdrawal-requested / limited | 20 | 1 | 1 | 204,800 | 0 | 204,800 | Yes | No | Restored representative design reference | 70% company-scenario baseline only |
+| G `wafl-fn-company-g` | active / switchable | 70 | 3 | 3 | 655,360 | 262,144 | 917,504 | No | Yes | Multi-workorder trash/restore fixture | 90% company-scenario baseline only |
+| H `wafl-fn-company-h` | active / switchable | 1,000 | 0 | 0 | 80,530,636,800 | 0 | 80,530,636,800 | No | No | None | Capacity boundary only, no real large R2 object |
+| I `wafl-fn-company-i` | active / switchable | 120 | 0 | 0 | 107,374,182,400 | 0 | 107,374,182,400 | No | No | None | 100% capacity boundary only, no real large R2 object |
+| J `wafl-fn-company-j` | active / switchable | 160 | 0 | 0 | 11,811,160,064 | 0 | 11,811,160,064 | No | No | None | 110% over-limit boundary only, no real large R2 object |
+
+## Storage Meter Cylinder UI Correction
+
+Problem:
+
+- The previous `WaflStorageUsageMeter` cylinder was narrow and vertically framed, so it could read as a battery, cup, or water tank rather than database storage.
+- Very small real usage such as `1022KB / 5.0GB` could round to `0%`, which made the number and visual state feel contradictory.
+
+Correction:
+
+- Keep the shared `WaflStorageUsageMeter` component.
+- Render `showCylinder` as a wider database cylinder stack with top and bottom ellipses, layered horizontal disk separators, and a bottom-up fill clipped to the cylinder body.
+- Use WAFL theme tokens for surface, border, status fill, and text colors.
+- Do not use external images, paid icons, or screen-specific SVG copies.
+- Keep administrator main and `/workspace/files` on the same shared component.
+
+Percent policy:
+
+- Visual fill uses `clampPercent(percent)` and clamps to `0..100`.
+- Display text uses `formatPercentLabel(percent)`:
+  - `0` or invalid -> `0%`
+  - `0 < percent < 1` -> `<1%`
+  - `1..100` -> rounded integer percent
+  - `110` -> `110%` text while the fill remains 100%; the existing status badge carries the over-limit state.
+- Remaining capacity labels stay outside the cylinder in the existing details area, so real small usage remains visible even when the percent is `<1%`.
+
+Contract values:
+
+- Storage meter contract covers `0`, `0.02`, `5`, `15`, `30`, `50`, `70`, `90`, `99`, `100`, and `110`.
+- It verifies fill clamp, `<1%` display, over-limit display, shared component usage in the admin main and `/workspace/files`, reduced-motion support, and removal of the legacy small water-tank sizing tokens.
+
+Manual UI confirmation still required:
+
+- `/workspace` or customer administrator main: confirm the storage card reads visually as database storage.
+- `/workspace/files`: confirm the plan usage card keeps the cylinder shape on desktop and mobile and long capacity labels do not overflow.
+- After valid-file replacement PUT is separately approved and executed, confirm image/PDF preview and download again.
+
+## Dev/Test Valid File Fixture Replacement Execution
+
+The separately approved valid-file replacement was executed against the approved dev/test Worker/R2 target only. No DB rows were inserted, updated, or deleted.
+
+Preflight evidence:
+
+- Runtime: `development`
+- Neon fingerprint: `01e5dcc7fea3`
+- Worker URL fingerprint: `b49fb0bd3ff1`
+- Worker host fingerprint: `446bdb61c239`
+- Worker URL and host fingerprints: exact match
+- Production-like Worker URL pattern: blocked / not detected
+- Confirmation: `REPLACE WAF-FN VALID FILE FIXTURES`
+- Scope: canonical normal lifecycle materialized exact keys only
+- Target files: 11
+- Target bytes: 2,449,408
+- MIME counts:
+  - `image/png`: 7
+  - `image/jpeg`: 1
+  - `application/pdf`: 3
+- Excluded: fault fixtures, E legacy keys, capacity-only fixtures, and manifest-external keys
+
+Execution result:
+
+- Local fixtures generated: 11 files / 2,449,408 bytes
+- Local byte/format validation: 11 success / 0 failed
+- Signed Worker PUT: 11 success / 0 failed
+- Signed Worker GET: 11 success / 0 failed
+- Remote byte mismatch: 0
+- Remote Content-Type mismatch: 0
+- Remote invalid file format:
+  - PNG: 0
+  - JPEG: 0
+  - PDF: 0
+- DB mutation executed by replacement mode: no
+- DB attachment rows after read-only reconciliation: 11
+- DB trash rows after read-only reconciliation: 2
+- R2 object count after manifest-scoped reconciliation: 11
+- R2 bytes after manifest-scoped reconciliation: 2,449,408
+- Missing DB rows: 0
+- Missing Worker objects: 0
+- Worker transport issues: 0
+- Duplicate representative count: 0
+- Manifest-scoped reconciliation issues: 0
+- Partial failure: none
+- Re-run required: no
+
+Replaced exact keys:
+
+- `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00001/design/b-main-design.png`
+- `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00001/attachments/b-detail-image.jpg`
+- `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/design/b-candidate-design-a.png`
+- `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/design/b-candidate-design-b.png`
+- `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/design/b-candidate-design-c.png`
+- `companies/wafl-fn-company-d/workorders/wafl-fn-company-d-workorder-00001/design/d-artwork.png`
+- `companies/wafl-fn-company-d/workorders/wafl-fn-company-d-workorder-00001/attachments/d-spec-reference.pdf`
+- `companies/wafl-fn-company-f/workorders/wafl-fn-company-f-workorder-00001/design/f-restored-design.png`
+- `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00001/attachments/g-first-workorder.pdf`
+- `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00002/attachments/g-second-workorder.png`
+- `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00003/attachments/g-trash-reference.pdf`
+
+This execution did not run representative design lifecycle, restore, permanent delete, fault fixtures, whole cleanup, production access, DB migration, or Cloudflare Worker code changes.

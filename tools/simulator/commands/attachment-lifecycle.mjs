@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import zlib from "node:zlib";
 import { createR2WorkerSignedUrl, normalizeWorkerBaseUrl } from "../../../lib/storage/r2/r2WorkerSignature.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,8 +17,8 @@ const REPORT_PATH = path.join(REPORT_DIR, "simulator-attachment-lifecycle-latest
 
 const ALLOWED_RUNTIMES = new Set(["development", "dev", "local", "test", "demo"]);
 const DATABASE_KEYS = ["DATABASE_URL", "POSTGRES_URL", "POSTGRES_PRISMA_URL", "POSTGRES_URL_NON_POOLING", "NEON_DATABASE_URL"];
-const MUTATING_MODES = new Set(["upload-seed", "repair-e-to-g", "lifecycle", "cleanup", "fault-execute"]);
-const VALID_MODES = new Set(["plan", "generate", "upload-seed", "repair-e-to-g", "verify", "lifecycle", "cleanup", "fault-plan", "fault-execute"]);
+const MUTATING_MODES = new Set(["upload-seed", "repair-e-to-g", "replace-valid-file-fixtures", "lifecycle", "cleanup", "fault-execute"]);
+const VALID_MODES = new Set(["plan", "generate", "upload-seed", "repair-e-to-g", "replace-valid-file-fixtures", "verify", "lifecycle", "cleanup", "fault-plan", "fault-execute"]);
 const LEGACY_E_ATTACHMENT_FIXTURES = [
   {
     fixture_id: "legacy-E-active-image",
@@ -277,22 +278,216 @@ async function readManifest() {
   return JSON.parse(await fs.readFile(MANIFEST_PATH, "utf8"));
 }
 
+const PNG_SIGNATURE = Buffer.from("89504e470d0a1a0a", "hex");
+const MINIMAL_JPEG = Buffer.from(
+  "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAH/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAEFAqf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/ASP/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/ASP/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAY/Aqf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/IV//2gAIAQICBj8CH//EABQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQMBAT8hH//EABQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQIBAT8hH//Z",
+  "base64",
+);
+const CRC32_TABLE = Array.from({ length: 256 }, (_, index) => {
+  let value = index;
+  for (let bit = 0; bit < 8; bit += 1) {
+    value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+  }
+  return value >>> 0;
+});
+
+function crc32(buffer) {
+  let value = 0xffffffff;
+  for (const byte of buffer) {
+    value = CRC32_TABLE[(value ^ byte) & 0xff] ^ (value >>> 8);
+  }
+  return (value ^ 0xffffffff) >>> 0;
+}
+
+function createPngChunk(type, data = Buffer.alloc(0)) {
+  const typeBytes = Buffer.from(type, "ascii");
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.byteLength, 0);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(Buffer.concat([typeBytes, data])), 0);
+  return Buffer.concat([length, typeBytes, data, crc]);
+}
+
+function createValidPngBytes(targetSize) {
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(1, 0);
+  ihdr.writeUInt32BE(1, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 6;
+  ihdr[10] = 0;
+  ihdr[11] = 0;
+  ihdr[12] = 0;
+
+  const pixelData = zlib.deflateSync(Buffer.from([0, 238, 238, 238, 255]));
+  const fixedChunks = [
+    PNG_SIGNATURE,
+    createPngChunk("IHDR", ihdr),
+    createPngChunk("IDAT", pixelData),
+    createPngChunk("IEND"),
+  ];
+  const fixedSize = fixedChunks.reduce((total, chunk) => total + chunk.byteLength, 0);
+  if (targetSize < fixedSize) throw new Error(`PNG fixture target is too small: ${targetSize}`);
+
+  const textPayloadSize = targetSize - fixedSize - 12;
+  if (textPayloadSize < 0) throw new Error(`PNG fixture target cannot fit metadata chunk: ${targetSize}`);
+  const textPayload = Buffer.alloc(textPayloadSize, 0x20);
+  Buffer.from("fixture\0wafl", "latin1").copy(textPayload, 0, 0, Math.min(textPayloadSize, 12));
+  const textChunk = createPngChunk("tEXt", textPayload);
+  return Buffer.concat([PNG_SIGNATURE, createPngChunk("IHDR", ihdr), createPngChunk("IDAT", pixelData), textChunk, createPngChunk("IEND")]);
+}
+
+function createJpegCommentPadding(totalSize) {
+  const chunks = [];
+  let remaining = totalSize;
+  while (remaining > 0) {
+    if (remaining < 4) throw new Error(`JPEG padding remainder too small: ${remaining}`);
+    let segmentSize = Math.min(remaining, 65537);
+    if (remaining - segmentSize > 0 && remaining - segmentSize < 4) {
+      segmentSize -= 4;
+    }
+    const payloadSize = segmentSize - 4;
+    const chunk = Buffer.alloc(segmentSize, 0x20);
+    chunk[0] = 0xff;
+    chunk[1] = 0xfe;
+    chunk.writeUInt16BE(payloadSize + 2, 2);
+    chunks.push(chunk);
+    remaining -= segmentSize;
+  }
+  return Buffer.concat(chunks);
+}
+
+function createValidJpegBytes(targetSize) {
+  if (targetSize < MINIMAL_JPEG.byteLength) throw new Error(`JPEG fixture target is too small: ${targetSize}`);
+  const paddingSize = targetSize - MINIMAL_JPEG.byteLength;
+  if (paddingSize === 0) return Buffer.from(MINIMAL_JPEG);
+  const padding = createJpegCommentPadding(paddingSize);
+  return Buffer.concat([MINIMAL_JPEG.subarray(0, 2), padding, MINIMAL_JPEG.subarray(2)]);
+}
+
+function buildPdfWithPadding(paddingLength) {
+  const content = `BT /F1 12 Tf 20 120 Td (WAFL simulator attachment fixture) Tj ET\n${" ".repeat(paddingLength)}`;
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 240 180] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+    `<< /Length ${Buffer.byteLength(content, "utf8")} >>\nstream\n${content}\nendstream`,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  let body = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
+  const offsets = [0];
+  for (let index = 0; index < objects.length; index += 1) {
+    offsets.push(Buffer.byteLength(body, "binary"));
+    body += `${index + 1} 0 obj\n${objects[index]}\nendobj\n`;
+  }
+  const xrefOffset = Buffer.byteLength(body, "binary");
+  body += `xref\n0 ${objects.length + 1}\n`;
+  body += "0000000000 65535 f \n";
+  for (let index = 1; index < offsets.length; index += 1) {
+    body += `${String(offsets[index]).padStart(10, "0")} 00000 n \n`;
+  }
+  body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+  return Buffer.from(body, "binary");
+}
+
+function createValidPdfBytes(targetSize) {
+  if (targetSize < 512) throw new Error(`PDF fixture target is too small: ${targetSize}`);
+  let paddingLength = Math.max(0, targetSize - buildPdfWithPadding(0).byteLength);
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const pdf = buildPdfWithPadding(paddingLength);
+    const delta = targetSize - pdf.byteLength;
+    if (delta === 0) return pdf;
+    paddingLength += delta;
+    if (paddingLength < 0) break;
+  }
+  throw new Error(`Unable to create exact-size PDF fixture: ${targetSize}`);
+}
+
 function createBytesForItem(item) {
   const targetSize = item.exact_size_bytes;
   if (targetSize === 0) return Buffer.alloc(0);
-  let base;
-  if (item.mime_type === "application/pdf") {
-    base = Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF\n", "utf8");
-  } else if (String(item.mime_type || "").startsWith("image/")) {
-    base = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/ax3pPAAAAAASUVORK5CYII=", "base64");
-  } else {
-    base = Buffer.from("WAFL simulator attachment fixture\n", "utf8");
-  }
+  if (item.mime_type === "application/pdf") return createValidPdfBytes(targetSize);
+  if (item.mime_type === "image/png") return createValidPngBytes(targetSize);
+  if (item.mime_type === "image/jpeg") return createValidJpegBytes(targetSize);
+
+  const base = Buffer.from("WAFL simulator attachment fixture\n", "utf8");
   const output = Buffer.alloc(targetSize);
   for (let offset = 0; offset < targetSize; offset += base.length) {
     base.copy(output, offset, 0, Math.min(base.length, targetSize - offset));
   }
   return output;
+}
+
+function validatePdfBytes(buffer, item) {
+  const text = buffer.toString("latin1");
+  if (!text.startsWith("%PDF-1.4\n")) throw new Error(`${item.fixture_id}:PDF_HEADER_INVALID`);
+  const startxref = Number(text.match(/\nstartxref\n(\d+)\n%%EOF\n$/)?.[1] ?? -1);
+  if (!Number.isSafeInteger(startxref) || startxref <= 0) throw new Error(`${item.fixture_id}:PDF_STARTXREF_INVALID`);
+  if (text.slice(startxref, startxref + 4) !== "xref") throw new Error(`${item.fixture_id}:PDF_XREF_POINTER_INVALID`);
+  if (!/\/Root 1 0 R/.test(text) || !/\/Type \/Page/.test(text)) throw new Error(`${item.fixture_id}:PDF_STRUCTURE_INVALID`);
+}
+
+function validatePngBytes(buffer, item) {
+  if (buffer.subarray(0, 8).compare(PNG_SIGNATURE) !== 0) throw new Error(`${item.fixture_id}:PNG_SIGNATURE_INVALID`);
+  let offset = 8;
+  const chunks = [];
+  while (offset < buffer.byteLength) {
+    if (offset + 12 > buffer.byteLength) throw new Error(`${item.fixture_id}:PNG_CHUNK_HEADER_INVALID`);
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.subarray(offset + 4, offset + 8).toString("ascii");
+    const dataEnd = offset + 8 + length;
+    const crcEnd = dataEnd + 4;
+    if (crcEnd > buffer.byteLength) throw new Error(`${item.fixture_id}:PNG_CHUNK_LENGTH_INVALID`);
+    const expectedCrc = buffer.readUInt32BE(dataEnd);
+    const actualCrc = crc32(buffer.subarray(offset + 4, dataEnd));
+    if (expectedCrc !== actualCrc) throw new Error(`${item.fixture_id}:PNG_CRC_INVALID:${type}`);
+    chunks.push(type);
+    offset = crcEnd;
+    if (type === "IEND") break;
+  }
+  if (offset !== buffer.byteLength) throw new Error(`${item.fixture_id}:PNG_TRAILING_BYTES`);
+  if (chunks[0] !== "IHDR" || !chunks.includes("IDAT") || chunks[chunks.length - 1] !== "IEND") {
+    throw new Error(`${item.fixture_id}:PNG_STRUCTURE_INVALID`);
+  }
+}
+
+function validateJpegBytes(buffer, item) {
+  if (buffer[0] !== 0xff || buffer[1] !== 0xd8) throw new Error(`${item.fixture_id}:JPEG_SOI_INVALID`);
+  if (buffer[buffer.byteLength - 2] !== 0xff || buffer[buffer.byteLength - 1] !== 0xd9) throw new Error(`${item.fixture_id}:JPEG_EOI_INVALID`);
+  let offset = 2;
+  let sawSof = false;
+  let sawSos = false;
+  while (offset < buffer.byteLength - 2) {
+    if (buffer[offset] !== 0xff) throw new Error(`${item.fixture_id}:JPEG_MARKER_INVALID`);
+    while (buffer[offset] === 0xff) offset += 1;
+    const marker = buffer[offset];
+    offset += 1;
+    if (marker === 0xd9) break;
+    if (marker === 0xda) {
+      sawSos = true;
+      if (offset + 2 > buffer.byteLength) throw new Error(`${item.fixture_id}:JPEG_SOS_LENGTH_INVALID`);
+      const length = buffer.readUInt16BE(offset);
+      offset += length;
+      const eoi = buffer.lastIndexOf(Buffer.from([0xff, 0xd9]));
+      if (eoi < offset) throw new Error(`${item.fixture_id}:JPEG_ENTROPY_INVALID`);
+      offset = eoi;
+      continue;
+    }
+    if (offset + 2 > buffer.byteLength) throw new Error(`${item.fixture_id}:JPEG_SEGMENT_LENGTH_MISSING`);
+    const length = buffer.readUInt16BE(offset);
+    if (length < 2 || offset + length > buffer.byteLength) throw new Error(`${item.fixture_id}:JPEG_SEGMENT_LENGTH_INVALID`);
+    if (marker >= 0xc0 && marker <= 0xc3) sawSof = true;
+    offset += length;
+  }
+  if (!sawSof || !sawSos) throw new Error(`${item.fixture_id}:JPEG_STRUCTURE_INVALID`);
+}
+
+function validateFileBytesForItem(item, bytes) {
+  if (bytes.byteLength !== item.exact_size_bytes) {
+    throw new Error(`${item.fixture_id}:SIZE_MISMATCH:${bytes.byteLength}:${item.exact_size_bytes}`);
+  }
+  if (item.mime_type === "application/pdf") validatePdfBytes(bytes, item);
+  if (item.mime_type === "image/png") validatePngBytes(bytes, item);
+  if (item.mime_type === "image/jpeg") validateJpegBytes(bytes, item);
 }
 
 async function generateLocalFiles(manifest, items = manifest.normalLifecycleFixtures.filter(isNormalMaterializedAttachment)) {
@@ -307,6 +502,7 @@ async function generateLocalFiles(manifest, items = manifest.normalLifecycleFixt
     }
     await fs.mkdir(path.dirname(resolvedTarget), { recursive: true });
     const bytes = createBytesForItem(item);
+    validateFileBytesForItem(item, bytes);
     await fs.writeFile(resolvedTarget, bytes);
     generated.push({ fixtureId: item.fixture_id, path: path.relative(PROJECT_ROOT, resolvedTarget).replaceAll(path.sep, "/"), bytes: bytes.byteLength });
   }
@@ -345,6 +541,7 @@ function buildPreflight(manifest, summary) {
 function confirmationForMode(value) {
   if (value === "upload-seed") return "UPLOAD SEED WAF-FN ATTACHMENTS";
   if (value === "repair-e-to-g") return "REPAIR WAF-FN ATTACHMENTS E TO G";
+  if (value === "replace-valid-file-fixtures") return "REPLACE WAF-FN VALID FILE FIXTURES";
   if (value === "lifecycle") return "RUN WAF-FN ATTACHMENT LIFECYCLE";
   if (value === "cleanup") return "CLEAN WAF-FN ATTACHMENTS";
   if (value === "fault-execute") return "CREATE WAF-FN ATTACHMENT FAULTS";
@@ -427,7 +624,7 @@ function contentTypeMatches(actual, expected) {
   return actualBase === expectedBase;
 }
 
-async function getWorkerObject(config, item) {
+async function getWorkerObject(config, item, options = {}) {
   const url = createWorkerSignedUrl(config, {
     method: "GET",
     key: item.canonical_r2_key,
@@ -454,6 +651,7 @@ async function getWorkerObject(config, item) {
     status: response.status,
     bytes: body.byteLength,
     contentType,
+    body: options.includeBody ? body : undefined,
     missing: false,
     transportIssue: false,
     error: null,
@@ -551,6 +749,117 @@ async function uploadAndVerifyR2Objects(manifest, items = materializedItems(mani
     orphanCount: null,
     orphanKeys: [],
   };
+}
+
+async function replaceValidFileFixtures(manifest, report) {
+  const items = materializedItems(manifest);
+  report.generated = await generateLocalFiles(manifest, items);
+  const workerConfig = getWorkerConfig();
+  const results = [];
+
+  for (const item of items) {
+    const body = await fs.readFile(localPathForItem(item));
+    const local = { ok: true, error: null };
+    try {
+      validateFileBytesForItem(item, body);
+    } catch (error) {
+      local.ok = false;
+      local.error = error instanceof Error ? error.message : String(error);
+    }
+    if (!local.ok) {
+      results.push({
+        key: item.canonical_r2_key,
+        mimeType: item.mime_type,
+        expectedBytes: item.exact_size_bytes,
+        status: "failed",
+        local,
+        putStatus: null,
+        getStatus: null,
+        getBytes: 0,
+        contentType: null,
+        remoteFormatValid: false,
+        error: local.error,
+      });
+      continue;
+    }
+
+    const putUrl = createWorkerSignedUrl(workerConfig, {
+      method: "PUT",
+      key: item.canonical_r2_key,
+      contentType: item.mime_type,
+    });
+    const putResponse = await fetch(putUrl, {
+      method: "PUT",
+      headers: { "Content-Type": item.mime_type },
+      body,
+    });
+    if (!putResponse.ok) {
+      results.push({
+        key: item.canonical_r2_key,
+        mimeType: item.mime_type,
+        expectedBytes: item.exact_size_bytes,
+        status: "failed",
+        local,
+        putStatus: putResponse.status,
+        getStatus: null,
+        getBytes: 0,
+        contentType: null,
+        remoteFormatValid: false,
+        error: (await readWorkerError(putResponse)) || `WORKER_PUT_FAILED_${putResponse.status}`,
+      });
+      continue;
+    }
+
+    const get = await getWorkerObject(workerConfig, item, { includeBody: true });
+    let remoteFormatValid = false;
+    let formatError = null;
+    try {
+      if (get.body) validateFileBytesForItem(item, get.body);
+      remoteFormatValid = Boolean(get.body);
+    } catch (error) {
+      formatError = error instanceof Error ? error.message : String(error);
+    }
+    const ok = (
+      !get.missing &&
+      !get.transportIssue &&
+      get.bytes === item.exact_size_bytes &&
+      contentTypeMatches(get.contentType, item.mime_type) &&
+      remoteFormatValid
+    );
+    results.push({
+      key: item.canonical_r2_key,
+      mimeType: item.mime_type,
+      expectedBytes: item.exact_size_bytes,
+      status: ok ? "replaced" : "failed",
+      local,
+      putStatus: putResponse.status,
+      getStatus: get.status,
+      getBytes: get.bytes,
+      contentType: get.contentType,
+      remoteFormatValid,
+      error: ok ? null : (formatError || get.error || "REMOTE_VALIDATION_FAILED"),
+    });
+  }
+
+  report.replaceValidFileFixtures = {
+    scope: "canonical normal lifecycle materialized exact keys only; excludes fault fixtures, E legacy keys, and manifest-external keys",
+    targetCount: items.length,
+    expectedTotalBytes: items.reduce((total, item) => total + item.exact_size_bytes, 0),
+    results,
+    successCount: results.filter((item) => item.status === "replaced").length,
+    failedCount: results.filter((item) => item.status !== "replaced").length,
+    dbMutationExecuted: false,
+  };
+  report.mutationExecuted = results.some((item) => item.putStatus && item.putStatus >= 200 && item.putStatus < 300);
+  report.stopBeforeActualMutation = false;
+  if (report.replaceValidFileFixtures.failedCount > 0) {
+    throw new Error("VALID_FILE_FIXTURE_REPLACE_FAILED");
+  }
+  report.replaceValidFileFixtures.reconciliation = await reconcileUploadSeed(manifest);
+  if (report.replaceValidFileFixtures.reconciliation.issueCount > 0) {
+    throw new Error("VALID_FILE_FIXTURE_RECONCILIATION_FAILED");
+  }
+  return report.replaceValidFileFixtures;
 }
 
 function companyTotalsFromManifest(manifest) {
@@ -1139,12 +1448,14 @@ async function main() {
       report.note = "Plan/preflight only. No DB or R2 mutation was executed.";
     } else {
       assertMutationGuards(manifest);
-      if (mode !== "upload-seed" && mode !== "repair-e-to-g") {
+      if (mode !== "upload-seed" && mode !== "repair-e-to-g" && mode !== "replace-valid-file-fixtures") {
         throw new Error("ACTUAL_DB_R2_MUTATION_REQUIRES_SEPARATE_USER_APPROVAL_AND_RUNTIME_EXECUTION");
       }
       try {
         if (mode === "repair-e-to-g") {
           await executeRepairEToG(manifest, report);
+        } else if (mode === "replace-valid-file-fixtures") {
+          await replaceValidFileFixtures(manifest, report);
         } else {
           await executeUploadSeed(manifest, report);
         }

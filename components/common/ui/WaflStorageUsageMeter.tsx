@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,12 @@ const toneTrackClassMap: Record<WaflStorageUsageTone, string> = {
   danger: "bg-[var(--pbp-status-danger-fg)]",
 };
 
+const toneFillClassMap: Record<WaflStorageUsageTone, string> = {
+  normal: "fill-[var(--pbp-status-success-fg)]",
+  caution: "fill-[var(--pbp-status-warning-fg)]",
+  danger: "fill-[var(--pbp-status-danger-fg)]",
+};
+
 const toneBadgeClassMap: Record<WaflStorageUsageTone, string> = {
   normal: "border-[var(--pbp-status-success-bg)] bg-[var(--pbp-status-success-bg)] text-[var(--pbp-status-success-fg)]",
   caution: "border-[var(--pbp-status-warning-bg)] bg-[var(--pbp-status-warning-bg)] text-[var(--pbp-status-warning-fg)]",
@@ -37,33 +43,81 @@ const toneBadgeClassMap: Record<WaflStorageUsageTone, string> = {
 
 function clampPercent(percent: number) {
   if (!Number.isFinite(percent)) return 0;
-  return Math.min(100, Math.max(0, Math.round(percent)));
+  return Math.min(100, Math.max(0, percent));
 }
 
-function StorageCylinder({ percent, tone }: { percent: number; tone: WaflStorageUsageTone }) {
-  const safePercent = clampPercent(percent);
-  const fillClassName = toneTrackClassMap[tone];
+function formatPercentLabel(percent: number) {
+  if (!Number.isFinite(percent) || percent <= 0) return "0%";
+  if (percent < 1) return "<1%";
+  return `${Math.round(percent)}%`;
+}
+
+function StorageCylinder({ percent, tone, percentLabel }: { percent: number; tone: WaflStorageUsageTone; percentLabel: string }) {
+  const clipPathId = `wafl-storage-cylinder-fill-${useId().replace(/:/g, "")}`;
+  const fillPercent = clampPercent(percent);
+  const fillHeight = 76 * (fillPercent / 100);
+  const fillTop = 28 + (76 - fillHeight);
+  const fillClassName = toneFillClassMap[tone];
 
   return (
     <div
       data-wafl-component="storage-cylinder"
-      className="relative mx-auto h-[82px] w-[94px] shrink-0"
+      data-storage-shape="database-cylinder-stack"
+      className="relative mx-auto h-[118px] w-[168px] shrink-0"
       aria-hidden="true"
     >
-      <div className="absolute inset-x-4 bottom-0 h-[64px] overflow-hidden rounded-b-[28px] border-x border-b border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-inner">
-        <div
-          className={cn("absolute inset-x-0 bottom-0 rounded-b-[24px] opacity-25", fillClassName)}
-          style={{ height: `${Math.max(6, safePercent)}%` }}
+      <svg className="h-full w-full" viewBox="0 0 168 118" role="img">
+        <defs>
+          <clipPath id={clipPathId}>
+            <path d="M24 26C24 14.954 50.863 6 84 6s60 8.954 60 20v66c0 11.046-26.863 20-60 20s-60-8.954-60-20V26Z" />
+          </clipPath>
+        </defs>
+        <path
+          d="M24 26C24 14.954 50.863 6 84 6s60 8.954 60 20v66c0 11.046-26.863 20-60 20s-60-8.954-60-20V26Z"
+          className="fill-[var(--pbp-surface)] stroke-[var(--pbp-border-strong)]"
+          strokeWidth="1.5"
         />
-      </div>
-      <div className="absolute inset-x-4 top-0 h-9 rounded-[50%] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-sm" />
-      <div
-        className={cn("absolute inset-x-4 rounded-[50%] border border-[var(--pbp-border)] opacity-45", fillClassName)}
-        style={{ bottom: `${Math.max(0, Math.min(56, safePercent * 0.56))}px`, height: 30 }}
-      />
+        <g clipPath={`url(#${clipPathId})`}>
+          <rect
+            x="24"
+            y={fillTop}
+            width="120"
+            height={fillHeight}
+            className={cn("opacity-30 motion-reduce:transition-none", fillClassName)}
+          />
+          {fillPercent > 0 ? (
+            <ellipse
+              cx="84"
+              cy={fillTop}
+              rx="60"
+              ry="20"
+              className={cn("opacity-45", fillClassName)}
+            />
+          ) : null}
+        </g>
+        <ellipse
+          cx="84"
+          cy="26"
+          rx="60"
+          ry="20"
+          className="fill-[var(--pbp-surface-base)] stroke-[var(--pbp-border-strong)]"
+          strokeWidth="1.5"
+        />
+        <path d="M24 48C24 59.046 50.863 68 84 68s60-8.954 60-20" className="fill-none stroke-[var(--pbp-border)]" strokeWidth="1.25" />
+        <path d="M24 70C24 81.046 50.863 90 84 90s60-8.954 60-20" className="fill-none stroke-[var(--pbp-border)]" strokeWidth="1.25" />
+        <path d="M24 92C24 103.046 50.863 112 84 112s60-8.954 60-20" className="fill-none stroke-[var(--pbp-border-strong)]" strokeWidth="1.5" />
+        <ellipse
+          cx="84"
+          cy="92"
+          rx="60"
+          ry="20"
+          className="fill-none stroke-[var(--pbp-border-strong)]"
+          strokeWidth="1.5"
+        />
+      </svg>
       <div className="absolute inset-0 flex items-center justify-center pt-2">
-        <span className="rounded-full bg-[var(--pbp-surface)]/90 px-3 py-1 text-sm font-bold text-[var(--pbp-text-primary)] shadow-sm">
-          {safePercent}%
+        <span className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 px-3 py-1 text-base font-bold text-[var(--pbp-text-primary)] shadow-sm">
+          {percentLabel}
         </span>
       </div>
     </div>
@@ -82,6 +136,7 @@ export default function WaflStorageUsageMeter({
   className,
 }: WaflStorageUsageMeterProps) {
   const safePercent = clampPercent(percent);
+  const percentLabel = formatPercentLabel(percent);
   const normalizedTone = tone === "danger" ? "danger" : tone === "caution" ? "caution" : "normal";
 
   return (
@@ -93,8 +148,8 @@ export default function WaflStorageUsageMeter({
         className,
       )}
     >
-      <div className={cn("grid min-w-0 gap-4", showCylinder ? "sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center" : "")}>
-        {showCylinder ? <StorageCylinder percent={safePercent} tone={normalizedTone} /> : null}
+      <div className={cn("grid min-w-0 gap-4", showCylinder ? "sm:grid-cols-[minmax(144px,0.42fr)_minmax(0,1fr)] sm:items-center" : "")}>
+        {showCylinder ? <StorageCylinder percent={percent} tone={normalizedTone} percentLabel={percentLabel} /> : null}
         <div className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <span className="min-w-0 font-semibold text-[var(--pbp-text-primary)]">
@@ -116,7 +171,7 @@ export default function WaflStorageUsageMeter({
             />
           </div>
           <p className="mt-1 text-right text-xs font-semibold text-[var(--pbp-text-muted)]">
-            {safePercent}%
+            {percentLabel}
           </p>
         </div>
       </div>

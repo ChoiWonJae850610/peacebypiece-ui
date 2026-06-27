@@ -35,9 +35,17 @@ assert.match(source, /MUTATING_MODES/);
 assert.match(source, /mode === "generate"/);
 assert.match(source, /repair-e-to-g/);
 assert.match(source, /REPAIR WAF-FN ATTACHMENTS E TO G/);
+assert.match(source, /replace-valid-file-fixtures/);
+assert.match(source, /REPLACE WAF-FN VALID FILE FIXTURES/);
+assert.match(source, /replaceValidFileFixtures/);
+assert.match(source, /VALID_FILE_FIXTURE_RECONCILIATION_FAILED/);
 assert.match(source, /LEGACY_E_ATTACHMENT_FIXTURES/);
 assert.match(source, /deleteWorkerObjectAndVerifyMissing/);
 assert.match(source, /exact_size_bytes/);
+assert.match(source, /createValidPdfBytes/);
+assert.match(source, /createValidPngBytes/);
+assert.match(source, /createValidJpegBytes/);
+assert.match(source, /validateFileBytesForItem/);
 assert.match(source, /createR2WorkerSignedUrl/);
 assert.match(source, /R2_WORKER_UPLOAD_URL/);
 assert.match(source, /R2_WORKER_UPLOAD_SECRET/);
@@ -47,6 +55,7 @@ assert.match(source, /orphanScanScope: "not_performed_manifest_scoped_only"/);
 assert.doesNotMatch(source, /@aws-sdk\/client-s3/);
 assert.doesNotMatch(source, /S3Client|HeadObjectCommand|ListObjectsV2Command|PutObjectCommand|GetObjectCommand/);
 assert.doesNotMatch(source, /R2_ENDPOINT|R2_ACCESS_KEY_ID|R2_SECRET_ACCESS_KEY/);
+assert.doesNotMatch(source, /base = Buffer\.from\("%PDF-1\.4/);
 assert.doesNotMatch(source, /console\.log\(.*DATABASE_URL/);
 assert.doesNotMatch(source, /console\.log\(.*R2_SECRET/);
 assert.doesNotMatch(source, /console\.log\(.*R2_WORKER_UPLOAD_SECRET/);
@@ -74,6 +83,7 @@ for (const confirmation of [
   assert.ok(source.includes(confirmation), `command missing confirmation ${confirmation}`);
 }
 assert.ok(source.includes("REPAIR WAF-FN ATTACHMENTS E TO G"), "command missing E to G repair confirmation");
+assert.ok(source.includes("REPLACE WAF-FN VALID FILE FIXTURES"), "command missing valid file fixture replacement confirmation");
 
 assert.match(pipeline, /ApprovedWorkerUrlFingerprint|ApprovedWorkerHostFingerprint|ApprovedWorkerUrlAllowlist/);
 assert.match(pipeline, /WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT/);
@@ -105,5 +115,12 @@ const repairPlan = spawnSync(process.execPath, [commandPath, "--mode=repair-e-to
 });
 assert.equal(repairPlan.status, 0, repairPlan.stderr);
 assert.match(repairPlan.stdout, /No DB or R2 mutation was executed/);
+
+const replacePlan = spawnSync(process.execPath, [commandPath, "--mode=replace-valid-file-fixtures"], {
+  cwd: process.cwd(),
+  encoding: "utf8",
+});
+assert.equal(replacePlan.status, 0, replacePlan.stderr);
+assert.match(replacePlan.stdout, /No DB or R2 mutation was executed/);
 
 console.log("simulator attachment lifecycle contract passed: guard, menu, preflight, verify profile");
