@@ -17,8 +17,8 @@ const REPORT_PATH = path.join(REPORT_DIR, "simulator-attachment-lifecycle-latest
 
 const ALLOWED_RUNTIMES = new Set(["development", "dev", "local", "test", "demo"]);
 const DATABASE_KEYS = ["DATABASE_URL", "POSTGRES_URL", "POSTGRES_PRISMA_URL", "POSTGRES_URL_NON_POOLING", "NEON_DATABASE_URL"];
-const MUTATING_MODES = new Set(["upload-seed", "repair-e-to-g", "replace-valid-file-fixtures", "lifecycle", "cleanup", "fault-execute"]);
-const VALID_MODES = new Set(["plan", "generate", "upload-seed", "repair-e-to-g", "replace-valid-file-fixtures", "verify", "lifecycle", "cleanup", "fault-plan", "fault-execute"]);
+const MUTATING_MODES = new Set(["upload-seed", "repair-e-to-g", "replace-valid-file-fixtures", "delete-exact-orphan-objects", "lifecycle", "cleanup", "fault-execute"]);
+const VALID_MODES = new Set(["plan", "generate", "upload-seed", "repair-e-to-g", "replace-valid-file-fixtures", "delete-exact-orphan-objects", "verify", "lifecycle", "cleanup", "fault-plan", "fault-execute"]);
 const LEGACY_E_ATTACHMENT_FIXTURES = [
   {
     fixture_id: "legacy-E-active-image",
@@ -39,6 +39,56 @@ const LEGACY_E_ATTACHMENT_FIXTURES = [
     mime_type: "application/pdf",
     exact_size_bytes: 262144,
     canonical_r2_key: "companies/wafl-fn-company-e/workorders/wafl-fn-company-e-workorder-00001/attachments/e-trash-reference.pdf",
+  },
+];
+const EXACT_ORPHAN_OBJECT_FIXTURES = [
+  {
+    fixture_id: "A-r2-only-orphan-png-00002",
+    company_id: "wafl-fn-company-a",
+    workorder_id: "wafl-fn-company-a-workorder-00002",
+    attachment_id: null,
+    attachment_kind: "file",
+    original_filename: "b9abf894-48b6-4ba6-ba1d-775849e8e2a1.png",
+    mime_type: "image/png",
+    exact_size_bytes: 129422,
+    expected_sha256: "705cdd7104cdc1d0cdf58518f70a067c7c46a31bd7793b442db4a79b0e4302ef",
+    canonical_r2_key: "companies/wafl-fn-company-a/workorders/wafl-fn-company-a-workorder-00002/attachments/b9abf894-48b6-4ba6-ba1d-775849e8e2a1.png",
+  },
+  {
+    fixture_id: "B-r2-only-orphan-pdf-00001",
+    company_id: "wafl-fn-company-b",
+    workorder_id: "wafl-fn-company-b-workorder-00001",
+    attachment_id: null,
+    attachment_kind: "file",
+    original_filename: "b0ac58b6-19b6-4df3-b74a-9102b997e78f.pdf",
+    mime_type: "application/pdf",
+    exact_size_bytes: 2557888,
+    expected_sha256: "8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf",
+    canonical_r2_key: "companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00001/attachments/b0ac58b6-19b6-4df3-b74a-9102b997e78f.pdf",
+  },
+  {
+    fixture_id: "B-r2-only-orphan-pdf-00002",
+    company_id: "wafl-fn-company-b",
+    workorder_id: "wafl-fn-company-b-workorder-00002",
+    attachment_id: null,
+    attachment_kind: "file",
+    original_filename: "c28be1a3-4d21-4bca-9260-3b334e649004.pdf",
+    mime_type: "application/pdf",
+    exact_size_bytes: 2557888,
+    expected_sha256: "8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf",
+    canonical_r2_key: "companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/attachments/c28be1a3-4d21-4bca-9260-3b334e649004.pdf",
+  },
+  {
+    fixture_id: "B-r2-only-orphan-pdf-00099",
+    company_id: "wafl-fn-company-b",
+    workorder_id: "wafl-fn-company-b-workorder-00099",
+    attachment_id: null,
+    attachment_kind: "file",
+    original_filename: "0867d8f6-f610-4b17-92c9-0fce20db29ad.pdf",
+    mime_type: "application/pdf",
+    exact_size_bytes: 2557888,
+    expected_sha256: "8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf",
+    canonical_r2_key: "companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00099/attachments/0867d8f6-f610-4b17-92c9-0fce20db29ad.pdf",
   },
 ];
 const REQUIRED_ATTACHMENT_FIELDS = [
@@ -530,6 +580,7 @@ function buildPreflight(manifest, summary) {
     simulatorPrefix: manifest.testPrefix,
     dbMutationRange: "attachments, attachment_trash_items, storage_usage_snapshots rows whose ids/company ids start with wafl-fn and are listed in the canonical manifest",
     r2MutationRange: "only canonical_r2_key values listed in the manifest under companies/wafl-fn-company-*/workorders/* through the dev/test Cloudflare Worker",
+    exactOrphanDeleteRange: "delete-exact-orphan-objects mode targets only four hard-coded A/B exact keys after Worker GET byte/MIME/SHA, DB row 0, manifest exclusion, and allowlist checks",
     workerAdapterCapabilities: ["signed PUT exact key", "signed GET exact key byte/content-type verification", "signed DELETE exact key followed by GET 404 verification"],
     cleanupRange: "only manifest attachment ids, trash items, snapshots, and exact manifest R2 keys; no whole bucket or broad prefix delete",
     reconciliationScope: "manifest-scoped exact keys/attachment ids/trash ids/snapshot company ids only; no bucket-wide orphan scan or prefix LIST",
@@ -542,6 +593,7 @@ function confirmationForMode(value) {
   if (value === "upload-seed") return "UPLOAD SEED WAF-FN ATTACHMENTS";
   if (value === "repair-e-to-g") return "REPAIR WAF-FN ATTACHMENTS E TO G";
   if (value === "replace-valid-file-fixtures") return "REPLACE WAF-FN VALID FILE FIXTURES";
+  if (value === "delete-exact-orphan-objects") return "DELETE WAF-FN A B EXACT ORPHAN OBJECTS";
   if (value === "lifecycle") return "RUN WAF-FN ATTACHMENT LIFECYCLE";
   if (value === "cleanup") return "CLEAN WAF-FN ATTACHMENTS";
   if (value === "fault-execute") return "CREATE WAF-FN ATTACHMENT FAULTS";
@@ -686,6 +738,155 @@ async function deleteWorkerObjectAndVerifyMissing(config, item) {
     missingAfterDelete: afterDelete.missing,
     error: afterDelete.missing ? null : (afterDelete.error || "WORKER_DELETE_VERIFY_NOT_MISSING"),
   };
+}
+
+function sha256Hex(buffer) {
+  return crypto.createHash("sha256").update(buffer).digest("hex");
+}
+
+function exactOrphanManifestExclusionCheck(manifest) {
+  const manifestKeys = new Set(materializedItems(manifest).map((item) => item.canonical_r2_key));
+  const duplicateTargets = [];
+  const unsafeTargets = [];
+  const manifestIncludedTargets = [];
+  const seen = new Set();
+  for (const item of EXACT_ORPHAN_OBJECT_FIXTURES) {
+    if (seen.has(item.canonical_r2_key)) duplicateTargets.push(item.canonical_r2_key);
+    seen.add(item.canonical_r2_key);
+    if (!validateStorageKey(item, manifest.testPrefix)) unsafeTargets.push(item.canonical_r2_key);
+    if (manifestKeys.has(item.canonical_r2_key)) manifestIncludedTargets.push(item.canonical_r2_key);
+  }
+  return {
+    targetCount: EXACT_ORPHAN_OBJECT_FIXTURES.length,
+    expectedTotalBytes: EXACT_ORPHAN_OBJECT_FIXTURES.reduce((total, item) => total + item.exact_size_bytes, 0),
+    duplicateTargets,
+    unsafeTargets,
+    manifestIncludedTargets,
+    faultManifestScope: "faultFixtures are scenario names only; these exact keys are not listed in the canonical normal manifest",
+    ok: duplicateTargets.length === 0 && unsafeTargets.length === 0 && manifestIncludedTargets.length === 0,
+  };
+}
+
+async function validateExactOrphanDbRows(items) {
+  const client = await createPgClient();
+  const keys = items.map((item) => item.canonical_r2_key);
+  try {
+    await client.query("BEGIN READ ONLY");
+    const attachments = await client.query(
+      `SELECT id, company_id, order_id, storage_key
+         FROM attachments
+        WHERE storage_key = ANY($1::text[])
+        ORDER BY storage_key, id`,
+      [keys],
+    );
+    const trash = await client.query(
+      `SELECT id, company_id, attachment_id, order_id, storage_key
+         FROM attachment_trash_items
+        WHERE storage_key = ANY($1::text[])
+        ORDER BY storage_key, id`,
+      [keys],
+    );
+    await client.query("COMMIT");
+    return {
+      attachmentRowCount: attachments.rows.length,
+      trashRowCount: trash.rows.length,
+      attachmentRows: attachments.rows,
+      trashRows: trash.rows,
+      ok: attachments.rows.length === 0 && trash.rows.length === 0,
+    };
+  } catch (error) {
+    try { await client.query("ROLLBACK"); } catch {}
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
+async function validateExactOrphanWorkerObjects(items) {
+  const workerConfig = getWorkerConfig();
+  const results = [];
+  for (const item of items) {
+    const get = await getWorkerObject(workerConfig, item, { includeBody: true });
+    const actualSha256 = get.body ? sha256Hex(get.body) : null;
+    const ok =
+      !get.missing &&
+      !get.transportIssue &&
+      get.status === 200 &&
+      get.bytes === item.exact_size_bytes &&
+      contentTypeMatches(get.contentType, item.mime_type) &&
+      actualSha256 === item.expected_sha256;
+    results.push({
+      fixtureId: item.fixture_id,
+      key: item.canonical_r2_key,
+      expectedBytes: item.exact_size_bytes,
+      actualBytes: get.bytes,
+      expectedContentType: item.mime_type,
+      actualContentType: get.contentType,
+      expectedSha256: item.expected_sha256,
+      actualSha256,
+      getStatus: get.status,
+      ok,
+      error: ok ? null : (get.error || "EXACT_ORPHAN_PRE_DELETE_GUARD_FAILED"),
+    });
+  }
+  return {
+    results,
+    ok: results.every((item) => item.ok),
+    failedCount: results.filter((item) => !item.ok).length,
+  };
+}
+
+async function validateExactOrphanDeletePreconditions(manifest) {
+  const items = EXACT_ORPHAN_OBJECT_FIXTURES;
+  const allowlist = exactOrphanManifestExclusionCheck(manifest);
+  const worker = await validateExactOrphanWorkerObjects(items);
+  const db = await validateExactOrphanDbRows(items);
+  return {
+    scope: "four hard-coded A/B exact R2 keys only; no prefix delete, no search-result delete, no bucket cleanup",
+    confirmationString: "DELETE WAF-FN A B EXACT ORPHAN OBJECTS",
+    targets: items.map((item) => ({
+      fixtureId: item.fixture_id,
+      key: item.canonical_r2_key,
+      expectedBytes: item.exact_size_bytes,
+      expectedContentType: item.mime_type,
+      expectedSha256: item.expected_sha256,
+    })),
+    expectedTotalDeleteBytes: allowlist.expectedTotalBytes,
+    allowlist,
+    worker,
+    db,
+    ok: allowlist.ok && worker.ok && db.ok,
+  };
+}
+
+async function executeExactOrphanObjectDelete(manifest, report) {
+  const preDelete = await validateExactOrphanDeletePreconditions(manifest);
+  report.deleteExactOrphanObjects = { preDelete };
+  if (!preDelete.ok) {
+    throw new Error("EXACT_ORPHAN_DELETE_PREFLIGHT_FAILED");
+  }
+
+  const workerConfig = getWorkerConfig();
+  const deleteResults = [];
+  for (const item of EXACT_ORPHAN_OBJECT_FIXTURES) {
+    deleteResults.push(await deleteWorkerObjectAndVerifyMissing(workerConfig, item));
+  }
+  const failedDeletes = deleteResults.filter((item) => !item.missingAfterDelete);
+  report.deleteExactOrphanObjects.delete = {
+    results: deleteResults,
+    successCount: deleteResults.length - failedDeletes.length,
+    failedCount: failedDeletes.length,
+    deletedBytes: failedDeletes.length === 0 ? preDelete.expectedTotalDeleteBytes : null,
+  };
+  report.mutationExecuted = deleteResults.some((item) => item.deleteStatus >= 200 && item.deleteStatus < 300);
+  if (failedDeletes.length > 0) {
+    throw new Error("EXACT_ORPHAN_DELETE_FAILED");
+  }
+
+  report.deleteExactOrphanObjects.postDeleteDb = await validateExactOrphanDbRows(EXACT_ORPHAN_OBJECT_FIXTURES);
+  report.deleteExactOrphanObjects.canonicalManifestReconciliation = await reconcileUploadSeed(manifest);
+  report.stopBeforeActualMutation = false;
+  return report.deleteExactOrphanObjects;
 }
 
 async function uploadAndVerifyR2Objects(manifest, items = materializedItems(manifest)) {
@@ -1446,9 +1647,27 @@ async function main() {
   if (MUTATING_MODES.has(mode)) {
     if (!execute) {
       report.note = "Plan/preflight only. No DB or R2 mutation was executed.";
+      if (mode === "delete-exact-orphan-objects") {
+        const allowlist = exactOrphanManifestExclusionCheck(manifest);
+        report.deleteExactOrphanObjects = {
+          scope: "plan only; no Worker GET/DELETE and no DB query were executed",
+          confirmationString: "DELETE WAF-FN A B EXACT ORPHAN OBJECTS",
+          expectedTotalDeleteBytes: allowlist.expectedTotalBytes,
+          targetCount: EXACT_ORPHAN_OBJECT_FIXTURES.length,
+          targets: EXACT_ORPHAN_OBJECT_FIXTURES.map((item) => ({
+            fixtureId: item.fixture_id,
+            key: item.canonical_r2_key,
+            expectedBytes: item.exact_size_bytes,
+            expectedContentType: item.mime_type,
+            expectedSha256: item.expected_sha256,
+          })),
+          allowlist,
+          partialFailureHandling: "Pre-delete guard failure stops before any DELETE. After a DELETE success, GET 404 must confirm removal. Failed keys remain exact-key rerunnable; no DB cleanup or broad R2 cleanup is performed.",
+        };
+      }
     } else {
       assertMutationGuards(manifest);
-      if (mode !== "upload-seed" && mode !== "repair-e-to-g" && mode !== "replace-valid-file-fixtures") {
+      if (mode !== "upload-seed" && mode !== "repair-e-to-g" && mode !== "replace-valid-file-fixtures" && mode !== "delete-exact-orphan-objects") {
         throw new Error("ACTUAL_DB_R2_MUTATION_REQUIRES_SEPARATE_USER_APPROVAL_AND_RUNTIME_EXECUTION");
       }
       try {
@@ -1456,11 +1675,20 @@ async function main() {
           await executeRepairEToG(manifest, report);
         } else if (mode === "replace-valid-file-fixtures") {
           await replaceValidFileFixtures(manifest, report);
+        } else if (mode === "delete-exact-orphan-objects") {
+          await executeExactOrphanObjectDelete(manifest, report);
         } else {
           await executeUploadSeed(manifest, report);
         }
       } catch (error) {
-        const targetKey = mode === "repair-e-to-g" ? "repairEToG" : "uploadSeed";
+        const targetKey =
+          mode === "repair-e-to-g"
+            ? "repairEToG"
+            : mode === "replace-valid-file-fixtures"
+              ? "replaceValidFileFixtures"
+              : mode === "delete-exact-orphan-objects"
+                ? "deleteExactOrphanObjects"
+                : "uploadSeed";
         report[targetKey] = {
           ...(report[targetKey] || {}),
           failed: true,
@@ -1491,6 +1719,14 @@ async function main() {
     console.log(`gUploaded=${report.repairEToG?.upload?.successCount ?? 0} gFailed=${report.repairEToG?.upload?.failedCount ?? 0}`);
     console.log(`legacyEDeleteFailed=${report.repairEToG?.legacyDelete?.failedCount ?? "unknown"}`);
     console.log(`reconciliationIssues=${reconciliation?.issueCount ?? "unknown"}`);
+  }
+  if (mode === "delete-exact-orphan-objects") {
+    console.log(`exactOrphanTargets=${report.deleteExactOrphanObjects?.targetCount ?? EXACT_ORPHAN_OBJECT_FIXTURES.length}`);
+    console.log(`exactOrphanExpectedBytes=${report.deleteExactOrphanObjects?.expectedTotalDeleteBytes ?? EXACT_ORPHAN_OBJECT_FIXTURES.reduce((total, item) => total + item.exact_size_bytes, 0)}`);
+    if (execute) {
+      console.log(`exactOrphanDeleted=${report.deleteExactOrphanObjects?.delete?.successCount ?? 0}`);
+      console.log(`exactOrphanDeleteFailed=${report.deleteExactOrphanObjects?.delete?.failedCount ?? "unknown"}`);
+    }
   }
 }
 

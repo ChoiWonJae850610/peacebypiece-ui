@@ -39,6 +39,15 @@ assert.match(source, /replace-valid-file-fixtures/);
 assert.match(source, /REPLACE WAF-FN VALID FILE FIXTURES/);
 assert.match(source, /replaceValidFileFixtures/);
 assert.match(source, /VALID_FILE_FIXTURE_RECONCILIATION_FAILED/);
+assert.match(source, /delete-exact-orphan-objects/);
+assert.match(source, /DELETE WAF-FN A B EXACT ORPHAN OBJECTS/);
+assert.match(source, /EXACT_ORPHAN_OBJECT_FIXTURES/);
+assert.match(source, /expected_sha256/);
+assert.match(source, /validateExactOrphanDeletePreconditions/);
+assert.match(source, /EXACT_ORPHAN_DELETE_PREFLIGHT_FAILED/);
+assert.match(source, /exactOrphanExpectedBytes/);
+assert.match(source, /b9abf894-48b6-4ba6-ba1d-775849e8e2a1\.png/);
+assert.match(source, /8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf/);
 assert.match(source, /LEGACY_E_ATTACHMENT_FIXTURES/);
 assert.match(source, /deleteWorkerObjectAndVerifyMissing/);
 assert.match(source, /exact_size_bytes/);
@@ -84,6 +93,7 @@ for (const confirmation of [
 }
 assert.ok(source.includes("REPAIR WAF-FN ATTACHMENTS E TO G"), "command missing E to G repair confirmation");
 assert.ok(source.includes("REPLACE WAF-FN VALID FILE FIXTURES"), "command missing valid file fixture replacement confirmation");
+assert.ok(source.includes("DELETE WAF-FN A B EXACT ORPHAN OBJECTS"), "command missing exact orphan delete confirmation");
 
 assert.match(pipeline, /ApprovedWorkerUrlFingerprint|ApprovedWorkerHostFingerprint|ApprovedWorkerUrlAllowlist/);
 assert.match(pipeline, /WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT/);
@@ -122,5 +132,14 @@ const replacePlan = spawnSync(process.execPath, [commandPath, "--mode=replace-va
 });
 assert.equal(replacePlan.status, 0, replacePlan.stderr);
 assert.match(replacePlan.stdout, /No DB or R2 mutation was executed/);
+
+const exactOrphanPlan = spawnSync(process.execPath, [commandPath, "--mode=delete-exact-orphan-objects"], {
+  cwd: process.cwd(),
+  encoding: "utf8",
+});
+assert.equal(exactOrphanPlan.status, 0, exactOrphanPlan.stderr);
+assert.match(exactOrphanPlan.stdout, /No DB or R2 mutation was executed/);
+assert.match(exactOrphanPlan.stdout, /exactOrphanTargets=4/);
+assert.match(exactOrphanPlan.stdout, /exactOrphanExpectedBytes=7803086/);
 
 console.log("simulator attachment lifecycle contract passed: guard, menu, preflight, verify profile");

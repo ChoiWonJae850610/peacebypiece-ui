@@ -581,3 +581,269 @@ Replaced exact keys:
 - `companies/wafl-fn-company-g/workorders/wafl-fn-company-g-workorder-00003/attachments/g-trash-reference.pdf`
 
 This execution did not run representative design lifecycle, restore, permanent delete, fault fixtures, whole cleanup, production access, DB migration, or Cloudflare Worker code changes.
+
+## B Company Prefix Audit Follow-Up
+
+User UI/R2 observation:
+
+- Cloudflare R2 UI showed PDF objects under B company workorder attachment folders:
+  - `wafl-fn-company-b-workorder-00001/attachments`
+  - `wafl-fn-company-b-workorder-00002/attachments`
+  - `wafl-fn-company-b-workorder-00099/attachments`
+- Those PDF objects were not visible in the app.
+
+Direct S3/R2 LIST status:
+
+- A read-only `ListObjectsV2Command` audit was prepared for exact prefix `companies/wafl-fn-company-b/workorders/`.
+- Execution stopped because the direct S3/R2 endpoint path failed during TLS negotiation.
+- Error family: `EPROTO / sslv3 alert handshake failure / alert 40`.
+- No R2 object was read with GET, created, updated, deleted, copied, listed successfully, or cleaned up.
+- No DB row was inserted, updated, deleted, or cleaned up.
+- Prefix-wide LIST evidence was not obtained.
+- The previous `manifest-scoped reconciliation issues: 0` result remains valid only for canonical manifest exact keys. It was not a bucket-wide or prefix-wide orphan scan and did not prove that manifest-external B prefix objects were absent.
+
+DB-only read-only audit:
+
+- Runtime: `development`
+- Neon fingerprint: `01e5dcc7fea3`
+- Transaction mode: `BEGIN READ ONLY`
+- Query scope: B company `spec_sheets`, `attachments`, and `attachment_trash_items` rows only.
+- R2/Worker access: none
+- DB mutation: none
+
+DB result summary:
+
+| Workorder | DB workorder exists | DB attachment rows | DB PDF attachment rows | DB trash rows | App attachment visibility from DB |
+|---|---:|---:|---:|---:|---|
+| `wafl-fn-company-b-workorder-00001` | Yes | 2 | 0 | 0 | Existing JPEG/design PNG rows pass `is_active = true AND deleted_at IS NULL`; no DB PDF row exists. |
+| `wafl-fn-company-b-workorder-00002` | Yes | 3 | 0 | 0 | Existing design PNG rows pass `is_active = true AND deleted_at IS NULL`; no DB PDF row exists. |
+| `wafl-fn-company-b-workorder-00099` | Yes | 0 | 0 | 0 | No DB attachment row exists, so any R2 object under this workorder is not app-visible. |
+
+Canonical B image metadata:
+
+- `00001/design/b-main-design.png`: DB row exists, active, not deleted.
+- `00001/attachments/b-detail-image.jpg`: DB row exists, active, not deleted.
+- `00002/design/b-candidate-design-a.png`: DB row exists, active, not deleted.
+- `00002/design/b-candidate-design-b.png`: DB row exists, active, not deleted.
+- `00002/design/b-candidate-design-c.png`: DB row exists, active, not deleted.
+
+Display-path conclusion:
+
+- `dbAttachmentRepository.listSnapshotsByWorkOrderIds` displays rows matching `order_id = ANY($1::text[]) AND is_active = true AND deleted_at IS NULL`.
+- No PDF MIME exclusion was found in the B company attachment hydration path.
+- The observed B PDFs are not hidden because of PDF type filtering in the DB hydration query. They are absent from `attachments` and `attachment_trash_items` for the audited B workorders.
+- `00099` is a normal seeded DB workorder, but it currently has no DB attachment row. An R2 object under `00099/attachments` would be R2-only/manifest-external from the app's current DB-backed perspective.
+
+## B Company Exact-Key Worker GET Audit
+
+The user provided the three exact PDF keys observed in the Cloudflare R2 UI. A read-only Worker signed `GET` audit was executed against those exact keys only.
+
+Safety:
+
+- Runtime: `development`
+- Worker URL fingerprint: `b49fb0bd3ff1`
+- Worker host fingerprint: `446bdb61c239`
+- Access method: existing signed Worker `GET`
+- Direct S3/R2 LIST: not retried
+- Worker `PUT`/`DELETE`: not executed
+- DB mutation: not executed
+- R2 cleanup: not executed
+
+Exact-key results:
+
+| Workorder | Exact key | GET status | Bytes | Content-Type | Last-Modified | SHA-256 | PDF validation | Classification |
+|---|---|---:|---:|---|---|---|---|---|
+| `00001` | `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00001/attachments/b0ac58b6-19b6-4df3-b74a-9102b997e78f.pdf` | 200 | 2,557,888 | `application/pdf` | not returned by Worker response | `8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf` | valid | R2-only orphan candidate |
+| `00002` | `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/attachments/c28be1a3-4d21-4bca-9260-3b334e649004.pdf` | 200 | 2,557,888 | `application/pdf` | not returned by Worker response | `8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf` | valid | R2-only orphan candidate |
+| `00099` | `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00099/attachments/0867d8f6-f610-4b17-92c9-0fce20db29ad.pdf` | 200 | 2,557,888 | `application/pdf` | not returned by Worker response | `8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf` | valid | R2-only orphan candidate |
+
+PDF validation details:
+
+- All three files start with `%PDF-`.
+- All three files include `%%EOF`.
+- All three files include `xref`, `trailer`, `startxref`, `/Type /Catalog`, `/Type /Pages`, and `/Type /Page` signals.
+- `pypdf` opened all three files successfully with strict parsing.
+- Each file has 3 pages and is not encrypted.
+- Page media box: `595 x 841`.
+- The first 4KB did not match the repeated-byte/fake-fixture signature used by the previous invalid simulator fixture pattern.
+- The three files are byte-for-byte identical.
+
+Observed PDF metadata:
+
+- `/Title`: `4560835309-20201118155735`
+- `/Creator`: `4560835309`
+- `/Producer`: `SINDOH D411`
+- `/CreationDate`: `D:20201118155735Z`
+- `/ModDate`: `D:20201118155735Z`
+
+Source investigation:
+
+- The three UUID filenames do not appear in the current repository or Git history.
+- They are not canonical normal lifecycle fixture keys.
+- They are not fault fixture keys.
+- They are not legacy E fixture keys.
+- Current app code can create `attachments/{uuid}.pdf` keys through normal workorder attachment upload and generated order-request PDF flows.
+- The file metadata looks like a scanned PDF rather than the current simulator valid-file generator output.
+- Because the DB has no matching `attachments` or `attachment_trash_items` rows, the most precise current classification is `R2-only orphan candidate / manifest-external object`. Exact creation source remains unproven from repository evidence alone.
+
+Cleanup eligibility:
+
+- These three objects are deletion candidates only after a separate exact-key cleanup approval.
+- Any cleanup must target these exact keys only.
+- No DB cleanup is needed for these three objects unless a later DB audit finds matching rows.
+
+## A/B Company Attachment Consistency Follow-Up
+
+The A company R2/UI mismatch was audited together with the previous B company orphan investigation. Direct S3/R2 LIST remained blocked and was not retried.
+
+Safety:
+
+- Runtime: `development`
+- Neon fingerprint: `01e5dcc7fea3`
+- Worker URL fingerprint: `b49fb0bd3ff1`
+- Worker host fingerprint: `446bdb61c239`
+- DB transaction mode: `BEGIN READ ONLY`
+- DB access: `SELECT` only
+- Worker access: signed `GET` only for the known A exact key
+- Worker `PUT`/`DELETE`: not executed
+- R2 cleanup: not executed
+- DB mutation: not executed
+- Cloudflare Worker code change: not executed
+
+DB read-only result:
+
+| Company | Workorder | DB workorder exists | Attachment rows | Design rows | General file rows | Trash rows | Display conclusion |
+|---|---|---:|---:|---:|---:|---:|---|
+| A | `wafl-fn-company-a-workorder-00002` | Yes | 0 | 0 | 0 | 0 | No DB row exists for the R2 PNG, so it is not app-visible. |
+| A | `wafl-fn-company-a-workorder-00008` | Yes | 1 | 1 | 0 | 0 | The visible item is a design row only; the general attachment count of 0 is expected from DB state. |
+| B | `wafl-fn-company-b-workorder-00001` | Yes | 2 | 1 | 1 | 0 | Canonical design and JPEG file rows are visible; the extra PDF exact key has no DB row. |
+| B | `wafl-fn-company-b-workorder-00002` | Yes | 3 | 3 | 0 | 0 | Canonical design rows are visible; the extra PDF exact key has no DB row. |
+| B | `wafl-fn-company-b-workorder-00099` | Yes | 0 | 0 | 0 | 0 | Workorder exists, but no DB attachment/trash row exists. |
+
+A exact PNG audit:
+
+| Exact key | GET status | Bytes | Content-Type | Last-Modified | SHA-256 | PNG validation | Classification |
+|---|---:|---:|---|---|---|---|---|
+| `companies/wafl-fn-company-a/workorders/wafl-fn-company-a-workorder-00002/attachments/b9abf894-48b6-4ba6-ba1d-775849e8e2a1.png` | 200 | 129,422 | `image/png` | not returned by Worker response | `705cdd7104cdc1d0cdf58518f70a067c7c46a31bd7793b442db4a79b0e4302ef` | valid | R2-only orphan candidate / manifest-external object |
+
+PNG validation details:
+
+- PNG signature exists.
+- `IHDR` and `IEND` chunks exist.
+- Chunk CRC validation passed.
+- `IDAT` data inflated successfully.
+- Decoded scanline length matched the IHDR values.
+- IHDR: width `1920`, height `1032`, bit depth `8`, color type `2`, compression `0`, filter `0`, interlace `0`.
+
+A `00008` DB row:
+
+- id: `d3ab91f6-5f06-4b6d-9a65-42ba09add4d2`
+- type: `design`
+- original_name: `workorder-drawing-2026-06-26T12-41-22-601Z.png`
+- storage_key: `companies/wafl-fn-company-a/workorders/wafl-fn-company-a-workorder-00008/design/4fa82c53-977f-4648-82b2-5fb76e3643da.png`
+- mime_type: `image/png`
+- size_bytes: `40918`
+- is_active: `true`
+- deleted_at: `NULL`
+- is_primary: `true`
+
+UI and code-path conclusion:
+
+- `dbAttachmentRepository.listSnapshotsByWorkOrderIds` reads only active, non-deleted DB rows: `order_id = ANY($1::text[]) AND is_active = true AND deleted_at IS NULL`.
+- The repository uses `text[]`, so non-UUID simulator workorder IDs are supported.
+- Attachment mapping preserves `storageKey`, proxy `previewUrl`, `thumbnailUrl`, `type`, `scope`, and `isPrimary`.
+- `buildAttachmentPanelSections` separates design and general attachment panels by the `scope` values supplied by hydration.
+- `WorkOrderAttachmentPanel` renders any row it receives; images render thumbnails/previews and PDFs render file labels.
+- No MIME-based exclusion for general PDF/image attachments was found.
+- No code defect was found for a normal active DB row. The missing A/B objects are absent because they have no `attachments` or `attachment_trash_items` rows.
+
+Classification:
+
+- A `00002` PNG: R2-only orphan candidate / manifest-external object. It is not a canonical normal fixture, not a fault fixture, and not represented in DB/trash metadata.
+- A `00008` visible design: active DB design attachment. The general attachment count of 0 is consistent with DB state.
+- B three PDFs: unchanged from the previous audit, R2-only orphan candidates / manifest-external objects.
+
+Cleanup guidance:
+
+- A PNG should not be treated as an immediate deletion target yet because its exact creation source remains unproven.
+- B PDFs remain exact-key orphan cleanup candidates, but only under a separate user-approved cleanup action.
+- No DB rows should be invented to make R2-only objects visible. The creation source must be established before any data correction.
+
+## A/B Exact Orphan Cleanup Preparation
+
+Additional A PNG source investigation:
+
+- UUID searched: `b9abf894-48b6-4ba6-ba1d-775849e8e2a1`.
+- SHA-256 searched: `705cdd7104cdc1d0cdf58518f70a067c7c46a31bd7793b442db4a79b0e4302ef`.
+- Size searched: `129422`.
+- Current repository search result: no source reference outside this audit document.
+- Git history search result: no source reference found for the UUID or SHA-256.
+- Local generated/output file search result: no matching 129,422 byte file and no local filename match found.
+- Canonical manifest result: not included.
+- Fault fixture result: not included.
+- DB result: no `attachments` or `attachment_trash_items` row.
+- Current app reference result: none found.
+
+Interpretation:
+
+- The A PNG is a valid file and exists in dev/test R2, but validity alone does not prove deletion safety.
+- Current evidence does not prove whether the object is a real user upload residue, a simulator/test residue, or a manual R2 upload.
+- From the current app's DB-backed attachment contract, it is not referenced and cannot be displayed.
+- It should remain a separately approved exact-key cleanup candidate rather than being silently deleted.
+
+Prepared cleanup mode:
+
+- Mode: `--mode=delete-exact-orphan-objects`
+- Confirmation: `DELETE WAF-FN A B EXACT ORPHAN OBJECTS`
+- Scope: exactly four hard-coded A/B keys only.
+- Prohibited by implementation intent: prefix delete, search-result auto-delete, bucket cleanup, DB cleanup, fixture regenerate.
+- Expected total delete bytes: `7,803,086`.
+
+Exact cleanup targets:
+
+| Company | Exact key | Expected bytes | Expected MIME | Expected SHA-256 |
+|---|---|---:|---|---|
+| A | `companies/wafl-fn-company-a/workorders/wafl-fn-company-a-workorder-00002/attachments/b9abf894-48b6-4ba6-ba1d-775849e8e2a1.png` | 129,422 | `image/png` | `705cdd7104cdc1d0cdf58518f70a067c7c46a31bd7793b442db4a79b0e4302ef` |
+| B | `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00001/attachments/b0ac58b6-19b6-4df3-b74a-9102b997e78f.pdf` | 2,557,888 | `application/pdf` | `8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf` |
+| B | `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00002/attachments/c28be1a3-4d21-4bca-9260-3b334e649004.pdf` | 2,557,888 | `application/pdf` | `8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf` |
+| B | `companies/wafl-fn-company-b/workorders/wafl-fn-company-b-workorder-00099/attachments/0867d8f6-f610-4b17-92c9-0fce20db29ad.pdf` | 2,557,888 | `application/pdf` | `8030b36d458248011d3006b47915a580a629846bf5d6f84a1ecf5f6e67d5c5cf` |
+
+Pre-delete guards:
+
+- Runtime must be development/dev/local/test/demo.
+- Neon fingerprint must match the approved dev/test fingerprint.
+- Worker URL and host fingerprints must match the approved dev/test fingerprints.
+- Each exact key must be in the hard-coded allowlist.
+- Each exact key must pass signed Worker `GET 200`.
+- Worker GET bytes must equal the expected byte length.
+- Worker GET Content-Type must equal the expected MIME.
+- Worker GET SHA-256 must equal the expected SHA-256.
+- DB `attachments` row count must be 0 for all four storage keys.
+- DB `attachment_trash_items` row count must be 0 for all four storage keys.
+- The keys must not be included in the canonical normal lifecycle manifest.
+- Any mismatch stops the entire delete before a Worker `DELETE`.
+
+Post-delete verification plan after separate approval:
+
+1. Delete exactly the four keys with signed Worker `DELETE`.
+2. For each key, signed Worker `GET` must return 404/not-found.
+3. DB matching row counts must remain 0.
+4. Canonical manifest reconciliation must remain issue 0.
+5. Report actual deleted object count and deleted bytes.
+6. Report DB-backed usage separately from physical R2 bucket bytes because orphan objects were not counted in DB storage snapshots.
+
+Partial failure handling:
+
+- If any pre-delete guard fails, no object is deleted.
+- If a DELETE succeeds for some keys and fails for others, report exact success/failure keys.
+- Do not perform DB cleanup, prefix cleanup, or bucket cleanup as compensation.
+- Re-run the same exact-key mode after fixing the failed condition; already-deleted keys must verify as missing.
+
+Orphan prevention follow-up policy:
+
+- Upload success followed by DB insert failure should roll back the newly uploaded R2 object through exact-key deletion.
+- DB insert success followed by response failure should use an idempotency key or deterministic retry contract to avoid duplicate physical objects.
+- Add a recurring dev/test orphan audit path that distinguishes DB-backed usage from physical R2 object inventory.
+- Keep `manifest-scoped reconciliation` separate from `prefix-wide orphan audit`; never claim bucket-wide orphan zero from manifest-scoped checks.
+- Design a safe production inventory/listing path before any production orphan action. This may require a read-only inventory job or audited Worker endpoint, but not broad ad hoc S3 listing.
+- User files must not be auto-deleted solely because they are manifest-external. Unknown objects should be quarantined or reported first, with exact-key approval before deletion.
