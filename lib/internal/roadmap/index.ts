@@ -38,6 +38,7 @@ import { ROADMAP_0_24_25_1 } from "./roadmap-0.24.25.1";
 import { ROADMAP_0_24_25_2 } from "./roadmap-0.24.25.2";
 import { ROADMAP_0_24_25_3 } from "./roadmap-0.24.25.3";
 import { ROADMAP_0_24_25_4 } from "./roadmap-0.24.25.4";
+import { ROADMAP_0_24_26 } from "./roadmap-0.24.26";
 import type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapStatus, RoadmapVersionDetail } from "./types";
 
 export type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapResult, RoadmapStatus, RoadmapVersionDetail } from "./types";
@@ -212,6 +213,7 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
     ROADMAP_0_24_25_2,
     ROADMAP_0_24_25_3,
     ROADMAP_0_24_25_4,
+    ROADMAP_0_24_26,
   ],
 };
 

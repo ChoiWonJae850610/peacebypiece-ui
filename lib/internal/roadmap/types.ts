@@ -47,6 +47,8 @@ export type RoadmapVersionDetail = {
   automaticTests: string[];
   manualTests: string[];
   expectedChangeAreas: string[];
+  futureDependencies?: string[];
+  userDecisionsRequired?: string[];
   recommendedCommitMessage: string;
   nextVersionBoundary: string[];
   completionConditions: string[];

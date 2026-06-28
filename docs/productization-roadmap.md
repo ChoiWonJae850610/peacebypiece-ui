@@ -41,6 +41,40 @@
 - Trial constants are aligned to 7 days, 100MB, and 3 members.
 - `/id-control` options loading has an explicit safe error/retry state.
 - No DB migration, DB/R2 mutation, package/lockfile change, Cloudflare Worker change, or 0.24.26 public signup implementation is included.
+- Commit result: `7162f1a95b73cc1f995b47675d38337527c255cb`.
+- Verification result: targeted ESLint, `tsc --noEmit`, system-admin actual/effective session contract, system internal access contracts, certificate approval viewer no-download contract, Trial policy contract, dev-test-context system-admin contract, id-control error-state contract, authorization runtime boundary contract, workspace member session guard contract, unicode encoding contract, `next build`, `git diff --check`, and `git diff --cached --check` passed.
+- Remaining manual QA: Vercel PC/mobile actual/effective session, `/id-control` switch/restore, direct customer login system route blocking, business-certificate inline viewer and `download=1` blocking, and Trial 7 days/100MB/3 members UI display.
+
+## 0.24.26 - Public Signup, Verification, Approval, and Trial
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.26.ts`.
+- This entry is a planning contract only until the next implementation step begins; it does not start signup product code, DB migration, DB/R2 mutation, or Worker changes.
+- Scope includes public signup CTA, Google OAuth with `email_verified=true`, unjoined verified-user state, new-company application, invitation/code-first existing-company join, join_requests/invitations reuse, system-admin approve/reject/correction request, pending/rejected limited screens, pre-approval `/workspace` and API blocking, approval-time company/user/company_member/subscription/Trial/quota/catalog provisioning, idempotency, audit, IDOR defense, duplicate prevention, email normalization, and signup abuse controls.
+- Trial values are fixed at 7 days, 100MB storage, and 3 members, and Trial starts at system-admin approval.
+- Business certificate is required for production new-company applications; dev/test fixture exceptions must be explicitly guarded.
+- Business certificate access remains approval-viewer-only with no WAFL-provided download path.
+- PG charge and subscription operations remain 0.24.31; 0.24.26 may define only PG-neutral payment-method references and must not store raw card data, fake card placeholders, or fake payment references.
+- DB migration is likely required for signup application/provisioning state, but migration creation or execution requires separate approval, read-only reconciliation, dry-run evidence, and rollback planning.
+
+## Reserved Future Dependencies
+
+### 0.24.28 - PDF and R2 Lifecycle
+
+- Reserved scope: actual R2 lifecycle simulator completion, valid PNG/JPEG/PDF fixtures, representative design file, multiple attachments, trash, restore, permanent delete, GET 404 verification, missing R2 handling, exact-key orphan audit, manifest-scoped reconciliation, upload-success/DB-failure rollback, PDF cleanup/regenerate, PowerShell menu/docs/contracts cleanup, production mutation ban, and exact scope confirmation.
+- Bounded performance fixture only: small thumbnail, 1MB image, 5MB image, 10MB PDF, and limited multiple attachments.
+- Explicitly excluded: actual tens-of-GB R2 fixture creation and broad prefix/bucket delete.
+
+### 0.24.30 - Storage Enforcement, Termination, and Automatic Deletion
+
+- Reserved capacity profile: 0%, <1%, 10%, 20%, 30%, 50%, 70%, 90%, 99%, 100%, and 110%.
+- Reserved scope: plan-specific storage limits, Trial 100MB linkage, DB capacity snapshot profile, visual fill clamp 0~100%, exact text percentage, over-limit display, remaining capacity, trash inclusion policy, upload preflight enforcement, concurrent quota race, warning threshold, grace period, termination, automatic deletion scheduling, cancellation/recovery, capacity apply/verify/restore commands, production mutation blocking, and dev/test exact confirmation.
+- Future PowerShell menu names may include Simulator Storage Capacity Plan/Apply/Verify/Restore and Simulator R2 Performance Fixture Plan/Execute/Cleanup, but menu numbers must be assigned only after checking the latest pipeline menu for conflicts.
+
+### Capacity Fixture Backlog
+
+- Current H/I/J fixture expectations are not canonicalized by mutation in this step; for example DB scenario H is 99% while the attachment capacity manifest H is about 70~80%.
+- Lifecycle fixture, capacity fixture, and performance fixture must remain distinct fixture classes.
+- Future 0.24.30 should prefer a profile apply approach over permanently assigning every capacity boundary to A~J companies.
 
 ## 0.24.25.3 - /id-control Runtime-independent System-admin Impersonation
 
@@ -94,8 +128,11 @@
 - Added dev/test Neon/R2 fingerprint guard and preflight reporting structure.
 - Added PowerShell menu 34~41 for attachment plan, local generate, upload/seed, verify/reconcile, lifecycle, cleanup, and fault fixture boundaries.
 - Added simulator attachment manifest and lifecycle contracts to the functions-automation verification profile.
-- Did not execute actual Neon DB mutation, actual R2 upload/delete, lifecycle mutation, cleanup, fault creation, DB migration, production access, package change, or lockfile change.
-- Actual dev/test Neon/R2 execution requires a separate approval after preflight reporting.
+- Initial 0.24.24.1 implementation was a non-destructive foundation stage and did not execute actual Neon DB mutation, actual R2 upload/delete, lifecycle mutation, cleanup, fault creation, DB migration, production access, package change, or lockfile change.
+- Later approved dev/test execution performed attachment upload/seed, verify/reconcile, and actual R2 PUT/GET verification.
+- Later approved dev/test execution created valid PDF/PNG/JPEG fixtures, confirmed G PDF restore, and confirmed manifest-scoped reconciliation issue count 0.
+- Production DB/R2 mutation remained 0.
+- Broad prefix/bucket delete was not executed.
 
 ## 0.24.24 - WAFL UI Foundation
 

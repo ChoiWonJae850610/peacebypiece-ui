@@ -5,7 +5,7 @@
 - Current version: `0.24.25.4`.
 - Next implementation version: `0.24.26`.
 - Current work result: **0.24.25.4 policy mismatch correction** aligns system-admin actual/effective session boundaries, business-certificate viewer download blocking, Trial constants, and /id-control error-state UX with the final owner policy before 0.24.26 begins.
-- Next work: **Sprint E - Public Signup, Verification, Approval, and Trial** after user approval.
+- Next work: **Sprint E - Public Signup, Verification, Approval, and Trial**. The detailed canonical roadmap exists at `lib/internal/roadmap/roadmap-0.24.26.ts`; product implementation has not started.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
@@ -179,6 +179,9 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 
 ## Deferred Dependencies
 
+- 0.24.28 PDF/R2 lifecycle reserved scope is recorded in `docs/productization-roadmap.md` and `docs/productization-backlog.md`; implementation has not started.
+- 0.24.30 storage enforcement/capacity reserved scope is recorded in `docs/productization-roadmap.md` and `docs/productization-backlog.md`; implementation has not started.
+- H/I/J capacity fixture mismatch is recorded as backlog; no DB/R2 mutation was performed to correct fixture data.
 - PG provider and final payment-provider wording: after business registration/provider selection.
 - Analytics and Cookie consent: post-Codex TODO.
 - Instagram operating strategy: post-Codex TODO.

@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_25_4: RoadmapVersionDetail = {
   version: "0.24.25.4",
   title: "Policy Mismatch Correction for System-admin Boundary, Certificate Viewer, and Trial",
-  status: "implemented",
+  status: "user_test_needed",
   userSummary: [
     "Corrects the 0.24.25 policy audit mismatches before starting 0.24.26.",
     "Keeps active system-admin internal APIs based on the actual signed-in actor while workspace APIs keep using the effective impersonated role.",
@@ -134,10 +134,18 @@ export const ROADMAP_0_24_25_4: RoadmapVersionDetail = {
       "Trial constants were aligned to 7 days, 100MB, and 3 members.",
       "/id-control options loading now has a safe error/retry state.",
     ],
-    commitHash: "pending until final Git commit",
-    verificationResult: "Pending.",
-    remainingIssues: [],
-    userConfirmationRequired: false,
-    userConfirmationResult: "Automatic contracts and build are sufficient for this policy-boundary correction.",
+    commitHash: "7162f1a95b73cc1f995b47675d38337527c255cb",
+    verificationResult:
+      "PASS: targeted ESLint; tsc --noEmit; system-admin actual/effective session contract; system internal access contracts; certificate approval viewer no-download contract; Trial policy contract; dev-test-context system-admin contract; id-control error-state contract; authorization runtime boundary contract; workspace member session guard contract; unicode encoding contract; next build; git diff --check; git diff --cached --check.",
+    remainingIssues: [
+      "Vercel PC/mobile actual/effective session manual QA.",
+      "/id-control switch/restore manual QA.",
+      "Direct customer login system-route blocking manual QA.",
+      "Business certificate inline viewer and download=1 blocking manual QA.",
+      "Trial 7 days, 100MB, 3 members UI display manual QA.",
+    ],
+    userConfirmationRequired: true,
+    userConfirmationResult:
+      "Automatic contracts and build passed, but real-device UI and Vercel production/preview behavior still require manual confirmation.",
   },
 };

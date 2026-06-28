@@ -78,3 +78,26 @@
 - Repository cleanup, simulator/R2 adapters, integrated device QA, release/legal placeholder replacement.
 
 Deferred decision TODO: underwear/accessories default catalog, PG provider, Instagram content plan, external analytics, and cookie banner.
+
+## 0.24.28 Reserved: PDF and R2 Lifecycle
+
+- Complete the actual R2 lifecycle simulator with valid PNG/JPEG/PDF fixtures.
+- Cover representative design files, multiple attachments, trash, restore, permanent delete, GET 404 verification, missing R2 handling, exact-key orphan audit, manifest-scoped reconciliation, upload-success/DB-failure rollback, PDF cleanup/regenerate, and PowerShell menu/docs/contracts cleanup.
+- Include only bounded performance fixtures: small thumbnail, 1MB image, 5MB image, 10MB PDF, and limited multiple attachments.
+- Do not create actual tens-of-GB R2 fixtures.
+- Keep production mutation forbidden.
+- Require exact scope confirmation before implementation.
+
+## 0.24.30 Reserved: Storage Enforcement, Termination, and Automatic Deletion
+
+- Capacity profile: 0%, <1%, 10%, 20%, 30%, 50%, 70%, 90%, 99%, 100%, and 110%.
+- Include plan-specific storage limits, Trial 100MB linkage, DB capacity snapshot profile, visual fill clamp 0~100%, exact text percentage, over-limit display, remaining capacity, trash inclusion policy, upload preflight enforcement, concurrent quota race, warning threshold, grace period, termination, automatic deletion scheduling, cancellation/recovery, capacity apply/verify/restore commands, production mutation blocking, and dev/test exact confirmation.
+- Future PowerShell menu names may include Simulator Storage Capacity Plan, Simulator Storage Capacity Apply, Simulator Storage Capacity Verify, Simulator Storage Capacity Restore, Simulator R2 Performance Fixture Plan, Simulator R2 Performance Fixture Execute, and Simulator R2 Performance Fixture Cleanup.
+- Do not assign menu numbers until the latest pipeline menu is checked for conflicts.
+
+## Capacity Fixture Backlog
+
+- H/I/J capacity expectations currently differ between DB scenario data and attachment capacity manifest data; for example DB scenario H is 99%, while attachment capacity manifest H is about 70~80%.
+- Do not correct this through immediate mutation.
+- Keep lifecycle fixture, capacity fixture, and performance fixture as separate fixture classes.
+- Prefer a future 0.24.30 profile apply approach over permanently assigning every capacity boundary to A~J companies.
