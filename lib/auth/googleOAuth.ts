@@ -6,7 +6,7 @@ const GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 
 export const GOOGLE_OAUTH_STATE_COOKIE = "wafl_google_oauth_state";
 
-export type GoogleOAuthRequestType = "member" | "company" | "login";
+export type GoogleOAuthRequestType = "member" | "company" | "login" | "signup";
 
 export type GoogleOAuthStatePayload = {
   nonce: string;
@@ -18,6 +18,7 @@ export type GoogleOAuthStatePayload = {
 export type GoogleUserProfile = {
   sub: string;
   email: string;
+  emailVerified: boolean;
   name: string;
   picture: string | null;
 };
@@ -60,7 +61,7 @@ export function decodeGoogleOAuthState(value: string | null): GoogleOAuthStatePa
 
   try {
     const parsed = JSON.parse(fromBase64Url(value)) as Partial<GoogleOAuthStatePayload>;
-    const requestType = parsed.requestType === "member" || parsed.requestType === "company" || parsed.requestType === "login" ? parsed.requestType : null;
+    const requestType = parsed.requestType === "member" || parsed.requestType === "company" || parsed.requestType === "login" || parsed.requestType === "signup" ? parsed.requestType : null;
     const nonce = typeof parsed.nonce === "string" ? parsed.nonce.trim() : "";
     const token = typeof parsed.token === "string" ? parsed.token.trim() : null;
     const returnTo = typeof parsed.returnTo === "string" ? parsed.returnTo.trim() : null;
@@ -152,6 +153,7 @@ export async function fetchGoogleUserProfile(accessToken: string): Promise<Googl
   return {
     sub,
     email,
+    emailVerified: payload.email_verified === true,
     name: name || email,
     picture: payload.picture?.trim() || null,
   };

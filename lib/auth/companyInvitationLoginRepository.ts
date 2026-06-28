@@ -79,7 +79,7 @@ async function findExistingUser(client: DbTransactionClient, profile: GoogleUser
   return result.rows[0] ?? null;
 }
 
-async function createProfileRequiredCompany(client: DbTransactionClient, profile: GoogleUserProfile): Promise<CompanyRow> {
+async function createProfileRequiredCompany(client: DbTransactionClient): Promise<CompanyRow> {
   const result = await client.query<CompanyRow>(
     `
       INSERT INTO companies (
@@ -300,6 +300,7 @@ export async function createCompanyAdminAccountFromInvitationSession(
   const profile: GoogleUserProfile = {
     sub: googleSub,
     email: session.email,
+    emailVerified: true,
     name: session.name,
     picture: session.googlePictureUrl ?? null,
   };
@@ -308,7 +309,7 @@ export async function createCompanyAdminAccountFromInvitationSession(
     const existingUser = await findExistingUser(client, profile);
     const company = existingUser
       ? { id: existingUser.company_id, name: existingUser.company_name || buildDraftCompanyName() }
-      : await createProfileRequiredCompany(client, profile);
+      : await createProfileRequiredCompany(client);
     const user = existingUser
       ? await updateExistingCompanyAdminUserLogin(client, { user: existingUser, profile })
       : await createCompanyAdminUser(client, { companyId: company.id, profile });

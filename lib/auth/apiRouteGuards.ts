@@ -8,6 +8,7 @@ import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import { isCompanyAdminSessionRole, isMemberSessionRole, isSystemAdminSessionRole, isWorkspaceSessionRole } from "@/lib/constants/sessionRoles";
 import { hasMemberPermission, type MemberPermissionCode } from "@/lib/permissions";
+import { getCurrentSignupApplicantSession } from "@/lib/signup/currentSignupApplicantSession";
 
 export const WAFL_API_ERROR_CODES = {
   permissionDenied: "WAFL_PERMISSION_DENIED",
@@ -86,6 +87,14 @@ export function createWorkspaceCompanyRequiredResponse(): NextResponse {
     "Company session is required for workspace requests.",
     "COMPANY_SESSION_REQUIRED",
     401,
+  );
+}
+
+export function createSignupApplicantWorkspaceBlockedResponse(): NextResponse {
+  return createApiErrorResponse(
+    "Signup applicants cannot access workspace APIs before approval.",
+    "SIGNUP_APPLICANT_WORKSPACE_BLOCKED",
+    403,
   );
 }
 
@@ -175,6 +184,11 @@ export async function hasWorkspaceApiPermission(
 export async function requireWorkspaceApiGuard(
   options: WorkspaceApiGuardOptions = {},
 ): Promise<WorkspaceApiGuardResult> {
+  const applicantSession = await getCurrentSignupApplicantSession();
+  if (applicantSession) {
+    return { ok: false, response: createSignupApplicantWorkspaceBlockedResponse() };
+  }
+
   const session = await getCurrentWaflSession();
   if (!session) {
     return { ok: false, response: createApiSessionRequiredResponse("workspace") };

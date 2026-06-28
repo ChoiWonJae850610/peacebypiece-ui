@@ -80,7 +80,7 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 
 `approved-workflow.ps1 -Action Finish`가 성공하면 기본적으로 이 handoff를 자동 실행합니다. 생성 시점은 Verify PASS, Plan PASS, Finish PASS, commit, `git push origin master`, ahead/behind 0/0, working tree clean 이후입니다. 특별히 생략해야 할 때만 `-SkipHandoff`를 사용합니다.
 
-`build-result`는 build를 다시 실행하지 않습니다. Finish에서 사용한 matching `verify-safe` result의 `npm run build`, Mutation Audit, contract test 요약을 재사용해 기록합니다. repo-state도 verification result path, verification profile, build result, Mutation Audit finding/high-risk, DB Migration 없음, DB/R2 실행 없음, 생성 ZIP 경로와 크기를 포함합니다.
+`build-result`는 build를 다시 실행하지 않습니다. Finish에서 사용한 matching `verify-safe` result의 `npm run build`, Mutation Audit, contract test 요약을 재사용해 기록합니다. repo-state도 verification result path, verification profile, build result, Mutation Audit finding/high-risk, DB Migration Applied, DB Schema Mutation, Business Data Mutation, R2 Mutation, Production Migration, 생성 ZIP 경로와 크기를 포함합니다.
 
 `4. Newest` 갱신은 최신 정상 완료 세트를 쉽게 찾기 위한 정책입니다. 기존 이력 폴더의 과거 산출물은 삭제하지 않고, newest 폴더만 최신 ZIP과 matching repo-state 2개 파일로 교체합니다. build-result는 Repo_Status에 보관하고 repo-state에서 참조합니다. incomplete 또는 0-byte 파일, APP_VERSION/HEAD 불일치 세트는 실패로 처리합니다.
 

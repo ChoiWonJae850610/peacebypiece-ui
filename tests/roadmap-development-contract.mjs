@@ -172,8 +172,11 @@ for (const pipelineToken of [
   "Verification Result Path:",
   "Build Result:",
   "Mutation Audit Finding Count:",
-  "DB Migration:",
-  "DB/R2 Executed:",
+  "DB Migration Applied:",
+  "DB Schema Mutation:",
+  "Business Data Mutation:",
+  "R2 Mutation:",
+  "Production Migration:",
   "4. Newest",
 ]) {
   assert.ok(`${workflow}\n${pipeline}\n${readme}`.includes(pipelineToken), `handoff contract missing ${pipelineToken}`);

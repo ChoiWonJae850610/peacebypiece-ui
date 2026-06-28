@@ -791,8 +791,11 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
     AddRepoStateSection -Lines $lines -Title "Contract Test Summary:" -Values @([string]$VerificationSummary.ContractSummary)
     AddRepoStateSection -Lines $lines -Title "Package/Lockfile Changed:" -Values @("false")
-    AddRepoStateSection -Lines $lines -Title "DB Migration:" -Values @("none")
-    AddRepoStateSection -Lines $lines -Title "DB/R2 Executed:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migration applied once: db/migrations/patch_0_24_26_signup_applications.sql")
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test schema migration only")
+    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "Production Migration:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "Final Git Status --short:" -Values $statusShort -EmptyText "clean"
 
     [System.IO.File]::WriteAllLines($buildResultPath, $lines, [System.Text.Encoding]::UTF8)
@@ -862,8 +865,11 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "Build Result Path:" -Values @($BuildResultPath)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
-    AddRepoStateSection -Lines $lines -Title "DB Migration:" -Values @("none")
-    AddRepoStateSection -Lines $lines -Title "DB/R2 Executed:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migration applied once: db/migrations/patch_0_24_26_signup_applications.sql")
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test schema migration only")
+    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "Production Migration:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "Exclude Rule Summary:" -Values (GetLocalRepoExportExcludeSummary)
 
     [System.IO.File]::WriteAllLines($repoStatePath, $lines, [System.Text.Encoding]::UTF8)

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { WAFL_AUTH_SESSION_COOKIE } from "@/lib/auth/session";
 import { WAFL_DEV_TEST_CONTEXT_COOKIE } from "@/lib/dev/testContext/session";
+import { WAFL_SIGNUP_APPLICANT_SESSION_COOKIE } from "@/lib/signup/signupApplicantSession";
 
 function createLogoutResponse(request: Request) {
   const response = NextResponse.redirect(new URL("/", request.url));
@@ -14,6 +15,13 @@ function createLogoutResponse(request: Request) {
     maxAge: 0,
   });
   response.cookies.set(WAFL_DEV_TEST_CONTEXT_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: 0,
+  });
+  response.cookies.set(WAFL_SIGNUP_APPLICANT_SESSION_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
     secure,

@@ -13,6 +13,7 @@ import {
 function readRequestType(url: URL): GoogleOAuthRequestType {
   const intent = url.searchParams.get("intent")?.trim();
   const requestType = url.searchParams.get("requestType")?.trim();
+  if (intent === "signup" || requestType === "signup") return "signup";
   if (intent === "login" || requestType === "login") return "login";
   if (requestType === "company") return "company";
   return "member";
@@ -21,6 +22,10 @@ function readRequestType(url: URL): GoogleOAuthRequestType {
 function toErrorRedirect(request: Request, requestType: GoogleOAuthRequestType, error: string, token: string | null): NextResponse {
   if (requestType === "login") {
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, request.url));
+  }
+
+  if (requestType === "signup") {
+    return NextResponse.redirect(new URL(`/pending?type=signup&error=${encodeURIComponent(error)}`, request.url));
   }
 
   if (token) {
@@ -35,7 +40,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const requestType = readRequestType(url);
   const token = url.searchParams.get("token")?.trim() || null;
-  const returnTo = requestType === "login" ? normalizeSafeReturnPath(url.searchParams.get("returnTo")) : null;
+  const returnTo = requestType === "login" || requestType === "signup" ? normalizeSafeReturnPath(url.searchParams.get("returnTo")) : null;
 
   try {
     if ((requestType === "member" || requestType === "company") && !token) {

@@ -42,6 +42,9 @@ for (const token of [
   "System catalog, size, or POM row provisioning; this remains 0.24.27",
   "preparationHistory",
   "ef0602de1c99fea54cd63cc69c110a3e7ad3a79d",
+  "0fadb95e9561fb89d0198b393599d419d121e5bd",
+  "PostgreSQL signup repository and applicant API/session foundation",
+  "schema mutation true only for approved dev/test migration",
 ]) {
   assert.ok(roadmap.includes(token), `0.24.26 roadmap missing ${token}`);
 }

@@ -9,6 +9,7 @@ import { isCompanyAdminSessionRole, isSystemAdminSessionRole, isWorkspaceSession
 import { hasWorkspaceApiPermission } from "@/lib/auth/apiRouteGuards";
 import { buildLoginPath } from "@/lib/auth/returnPath";
 import type { MemberPermissionCode } from "@/lib/permissions";
+import { getCurrentSignupApplicantSession } from "@/lib/signup/currentSignupApplicantSession";
 
 type ProtectedArea = "workspace" | "system" | "worker" | "me";
 
@@ -47,6 +48,11 @@ export async function requireWaflSessionForArea(
   area: ProtectedArea,
   options: CompanyAccessGuardOptions = {},
 ): Promise<WaflSessionPayload> {
+  const applicantSession = await getCurrentSignupApplicantSession();
+  if (applicantSession && (area === "workspace" || area === "worker")) {
+    redirect("/pending?type=signup");
+  }
+
   const session = await getCurrentWaflSession();
   if (!session) {
     redirect(buildLoginPath(options.returnTo, "SESSION_REQUIRED"));
