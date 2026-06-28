@@ -54,21 +54,21 @@ assert.doesNotMatch(
 
 assert.match(uiPage, /isRuntimeAllowed=\{isWaflUiCatalogRuntimeAllowed\(\)\}/);
 assert.match(functionsPage, /isExecutionRuntimeAllowed=\{isWaflFunctionsRuntimeAllowed\(\)\}/);
-assert.match(idControlPage, /devTestContextEnabled=\{devTestContextEnabled\}/);
-assert.match(idControlPage, /devTestContextDisabledReason=\{getDevTestContextDisabledReason\(\)\}/);
+assert.match(idControlPage, /<DevTestConsoleClient \/>/);
+assert.doesNotMatch(idControlPage, /devTestContextEnabled=\{|devTestContextDisabledReason=|isDevTestContextEnabled|getDevTestContextDisabledReason/);
 
 assert.doesNotMatch(devRedirectPage, /isDevTestContextEnabled/);
 assert.match(devRedirectPage, /redirect\("\/id-control"\)/);
-assert.match(switchRoute, /isDevTestContextEnabled/);
 assert.match(switchRoute, /DEV_TEST_CONTEXT_DISABLED/);
-assert.match(clearRoute, /isDevTestContextEnabled/);
+assert.match(switchRoute, /isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
+assert.match(clearRoute, /isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
 assert.match(clearRoute, /WAFL_DEV_TEST_CONTEXT_COOKIE/);
 
 assert.match(optionsRoute, /isActiveSystemAdminSession/);
 assert.match(optionsRoute, /devTestContextEnabled,/);
-assert.match(optionsRoute, /disabledReason:\s*devTestContextEnabled\s*\?\s*null\s*:\s*getDevTestContextDisabledReason\(\)/);
+assert.match(optionsRoute, /disabledReason:\s*devTestContextEnabled\s*\?\s*null\s*:\s*getDevTestContextDisabledReasonForSystemAdmin\(isSystemAdmin\)/);
 assert.match(optionsRoute, /buildDevTestContextOptions\(actualSession, effectiveSession\)/);
-assert.match(optionsRoute, /devTestContextEnabled\s*=\s*canSwitchTestAccount/);
+assert.match(optionsRoute, /devTestContextEnabled\s*=\s*isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
 assert.doesNotMatch(optionsRoute, /targets:\s*\[\]/);
 assert.doesNotMatch(optionsRoute, /DEV_TEST_CONTEXT_DISABLED/);
 
@@ -92,6 +92,8 @@ for (const [name, source] of [
 }
 assert.match(devConfig, /isServerDevTestRuntime/);
 assert.match(devConfig, /WAFL_ENABLE_DEV_TEST_CONTEXT === "1"/);
+assert.match(devConfig, /WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT === "1"/);
+assert.match(devConfig, /production_impersonation_flag_disabled/);
 assert.doesNotMatch(devConfig, /NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
 assert.match(serverRuntime, /WAFL_SERVER_RUNTIME_MODE/);
 assert.match(serverRuntime, /VERCEL_ENV/);

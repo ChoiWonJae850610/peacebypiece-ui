@@ -29,8 +29,8 @@ for (const page of [idControlPage, consoleRedirectPage, functionsPage, uiPage]) 
   assert.match(page, /isActiveSystemAdminSession/);
   assert.match(page, /notFound\(\)/);
 }
-assert.match(idControlPage, /isDevTestContextEnabled/);
 assert.match(idControlPage, /DevTestConsoleClient/);
+assert.doesNotMatch(idControlPage, /isDevTestContextEnabled|getDevTestContextDisabledReason/);
 assert.doesNotMatch(consoleRedirectPage, /isDevTestContextEnabled/);
 assert.match(consoleRedirectPage, /redirect\("\/id-control"\)/);
 assert.doesNotMatch(consoleRedirectPage, /<DevTestConsoleClient/);
@@ -52,6 +52,9 @@ for (const [name, source] of [
 }
 assert.match(config, /isServerDevTestRuntime/);
 assert.match(config, /WAFL_ENABLE_DEV_TEST_CONTEXT === "1"/);
+assert.match(config, /WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT === "1"/);
+assert.match(config, /production_impersonation_flag_disabled/);
+assert.match(config, /isDevTestContextActionAllowedForSystemAdmin/);
 assert.doesNotMatch(config, /NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
 assert.match(serverRuntime, /WAFL_SERVER_RUNTIME_MODE/);
 assert.match(serverRuntime, /VERCEL_ENV/);
@@ -73,6 +76,7 @@ assert.match(repository, /role = 'system_admin'/);
 assert.match(session, /targetCompanyId: string \| null/);
 assert.match(session, /value === "system_admin"/);
 assert.match(service, /isActiveSystemAdminSession\(actualSession\)/);
+assert.match(service, /isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
 assert.match(service, /target\.role === "system_admin"/);
 assert.match(service, /target\.email\.trim\(\)\.toLowerCase\(\) !== actualSession\.email/);
 
@@ -84,9 +88,12 @@ assert.doesNotMatch(switchRoute, /status:\s*404/);
 assert.doesNotMatch(clearRoute, /status:\s*404/);
 assert.match(switchRoute, /dev_test\.context_switched/);
 assert.match(clearRoute, /dev_test\.context_cleared/);
+assert.match(switchRoute, /isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
+assert.match(clearRoute, /isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
 assert.match(switchRoute, /WAFL_DEV_TEST_CONTEXT_COOKIE/);
 assert.match(optionsRoute, /buildDevTestContextOptions\(actualSession, effectiveSession\)/);
-assert.match(optionsRoute, /devTestContextEnabled\s*=\s*canSwitchTestAccount/);
+assert.match(optionsRoute, /devTestContextEnabled\s*=\s*isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
 assert.doesNotMatch(optionsRoute, /targets:\s*\[\]/);
+assert.match(idControlPage, /<DevTestConsoleClient \/>/);
 
 console.log("dev test console system-admin access contract passed");

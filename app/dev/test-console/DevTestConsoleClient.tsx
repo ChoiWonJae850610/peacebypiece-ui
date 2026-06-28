@@ -37,7 +37,7 @@ type DevTestContextOptions = {
   activeTarget: DevTestContextTarget | null;
   targets: DevTestContextTarget[];
   devTestContextEnabled?: boolean;
-  disabledReason?: "production" | "flag_disabled" | null;
+  disabledReason?: "production" | "flag_disabled" | "production_impersonation_flag_disabled" | null;
 };
 
 function formatRole(role: string, roleTemplateCode?: string | null) {
@@ -73,12 +73,8 @@ function formatOnboardingStatus(target: DevTestContextTarget) {
 
 export default function DevTestConsoleClient({
   runtimeMode = "unknown",
-  devTestContextEnabled = true,
-  devTestContextDisabledReason = null,
 }: {
   runtimeMode?: string;
-  devTestContextEnabled?: boolean;
-  devTestContextDisabledReason?: "production" | "flag_disabled" | null;
 }) {
   const [options, setOptions] = useState<DevTestContextOptions | null>(null);
   const [selectedTargetKey, setSelectedTargetKey] = useState("");
@@ -121,8 +117,11 @@ export default function DevTestConsoleClient({
     void loadOptions();
   }, []);
 
+  const isOverlayActive = Boolean(options?.activeTarget) && (options?.actualSession.userId !== options?.effectiveSession.userId || options?.actualSession.role !== options?.effectiveSession.role || options?.actualSession.companyId !== options?.effectiveSession.companyId);
+  const isActionEnabled = options?.devTestContextEnabled === true;
+
   async function switchContext() {
-    if (!devTestContextEnabled || !selectedTargetKey) return;
+    if (!isActionEnabled || !selectedTargetKey) return;
     setIsBusy(true);
     setMessage("");
     try {
@@ -143,7 +142,7 @@ export default function DevTestConsoleClient({
   }
 
   async function clearContext() {
-    if (!devTestContextEnabled) return;
+    if (!isActionEnabled || !isOverlayActive) return;
     setIsBusy(true);
     setMessage("");
     try {
@@ -163,11 +162,12 @@ export default function DevTestConsoleClient({
     return <WaflInfoBox shape="control" tone="muted" className="p-6 text-sm">테스트 콘솔 정보를 불러오는 중입니다.</WaflInfoBox>;
   }
 
-  const isOverlayActive = Boolean(options.activeTarget) && (options.actualSession.userId !== options.effectiveSession.userId || options.actualSession.role !== options.effectiveSession.role || options.actualSession.companyId !== options.effectiveSession.companyId);
   const disabledReasonText =
-    devTestContextDisabledReason === "production"
+    options.disabledReason === "production"
       ? "현재 배포 환경에서는 실제 계정 전환 실행이 제한됩니다."
-      : devTestContextDisabledReason === "flag_disabled"
+      : options.disabledReason === "production_impersonation_flag_disabled"
+        ? "운영 QA 계정 전환 서버 플래그가 꺼져 있어 실행이 제한됩니다."
+        : options.disabledReason === "flag_disabled"
         ? "개발/테스트 계정 전환 플래그가 꺼져 있어 실행이 제한됩니다."
         : "현재 환경에서는 실제 계정 전환 실행이 제한됩니다.";
 
@@ -194,7 +194,7 @@ export default function DevTestConsoleClient({
           <WaflSurface shape="control" className="p-4 shadow-sm md:col-span-2">
             <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">실행 제한</p>
             <p className="mt-2 text-sm text-[var(--pbp-text-muted)]">
-              {devTestContextEnabled ? "계정 전환 실행이 허용된 개발/테스트 환경입니다." : disabledReasonText}
+              {isActionEnabled ? "계정 전환 실행이 허용된 환경입니다." : disabledReasonText}
             </p>
           </WaflSurface>
         </section>
@@ -280,10 +280,10 @@ export default function DevTestConsoleClient({
           ) : null}
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <WaflButton onClick={switchContext} disabled={isBusy || !selectedTargetKey || !devTestContextEnabled} variant="primary" size="sm">
+            <WaflButton onClick={switchContext} disabled={isBusy || !selectedTargetKey || !isActionEnabled} variant="primary" size="sm">
               이 사용자로 보기
             </WaflButton>
-            <WaflButton onClick={clearContext} disabled={isBusy || !devTestContextEnabled} variant="secondary" size="sm">
+            <WaflButton onClick={clearContext} disabled={isBusy || !isActionEnabled || !isOverlayActive} variant="secondary" size="sm">
               원래 세션 복원
             </WaflButton>
             <WaflLinkButton href="/workspace" variant="secondary" size="sm">
@@ -303,9 +303,9 @@ export default function DevTestConsoleClient({
             </WaflLinkButton>
           </div>
 
-          {!devTestContextEnabled ? (
+          {!isActionEnabled ? (
             <WaflInfoBox shape="control" tone="warning" className="mt-4 p-4 text-sm">
-              개발/테스트 환경에서만 실행할 수 있습니다. 현재 화면은 계정, 역할, runtime, navigation 확인을 위한 조회 모드로 표시됩니다.
+              개발/테스트 환경에서만 실행할 수 있습니다. {disabledReasonText} 현재 화면은 계정, 역할, runtime, navigation 확인을 위한 조회 모드로 표시됩니다.
             </WaflInfoBox>
           ) : null}
 

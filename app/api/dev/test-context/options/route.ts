@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 
 import { getCurrentWaflAuthSession, getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
-import { getDevTestContextDisabledReason, isDevTestContextEnabled } from "@/lib/dev/testContext/config";
+import {
+  getDevTestContextDisabledReasonForSystemAdmin,
+  isDevTestContextActionAllowedForSystemAdmin,
+} from "@/lib/dev/testContext/config";
 import { buildDevTestContextOptions } from "@/lib/dev/testContext/service";
-import { canSwitchTestAccount } from "@/lib/runtime/runtimePolicy";
 
 export const dynamic = "force-dynamic";
 
@@ -19,13 +21,13 @@ export async function GET() {
   }
   const effectiveSession = (await getCurrentWaflSession()) ?? actualSession;
   const options = await buildDevTestContextOptions(actualSession, effectiveSession);
-  const devTestContextEnabled = canSwitchTestAccount({ isSystemAdmin }) && isDevTestContextEnabled();
+  const devTestContextEnabled = isDevTestContextActionAllowedForSystemAdmin(isSystemAdmin);
 
   return NextResponse.json(
     {
       ...options,
       devTestContextEnabled,
-      disabledReason: devTestContextEnabled ? null : getDevTestContextDisabledReason(),
+      disabledReason: devTestContextEnabled ? null : getDevTestContextDisabledReasonForSystemAdmin(isSystemAdmin),
     },
     { headers: { "Cache-Control": "no-store" } },
   );

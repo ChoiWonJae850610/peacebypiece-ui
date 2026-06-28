@@ -21,8 +21,8 @@ for (const source of [idControlPage, devRedirectPage, roadmapPage]) {
   assert.match(source, /notFound\(\)/);
 }
 
-assert.match(idControlPage, /isDevTestContextEnabled/);
 assert.match(idControlPage, /DevTestConsoleClient/);
+assert.doesNotMatch(idControlPage, /isDevTestContextEnabled|getDevTestContextDisabledReason/);
 assert.doesNotMatch(devRedirectPage, /isDevTestContextEnabled/);
 assert.match(devRedirectPage, /canAccessIdControl\(\{\s*isSystemAdmin\s*\}\)/);
 assert.match(devRedirectPage, /redirect\("\/id-control"\)/);
@@ -50,9 +50,9 @@ for (const fnName of [
   assert.match(runtimePolicy, new RegExp(`export function ${fnName}`), `runtime policy missing ${fnName}`);
 }
 
-assert.match(switchRoute, /isDevTestContextEnabled/);
+assert.match(switchRoute, /isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
 assert.match(switchRoute, /DEV_TEST_CONTEXT_DISABLED/);
-assert.match(clearRoute, /isDevTestContextEnabled/);
+assert.match(clearRoute, /isDevTestContextActionAllowedForSystemAdmin\(isSystemAdmin\)/);
 assert.match(clearRoute, /WAFL_DEV_TEST_CONTEXT_COOKIE/);
 assert.doesNotMatch(switchRoute, /status:\s*404/);
 assert.doesNotMatch(clearRoute, /status:\s*404/);

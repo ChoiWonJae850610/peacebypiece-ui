@@ -1,14 +1,14 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.25.1`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
+> Active baseline: `0.24.25.2`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.25.1`
-- APP_VERSION: `0.24.25.1`
+- Roadmap checkpoint version: `0.24.25.2`
+- APP_VERSION: `0.24.25.2`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `84%`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -23,12 +23,23 @@
 4. `0.24.24.1` - Simulator Attachment/R2 Lifecycle Integration
 5. `0.24.25` - Authorization, Runtime Boundary, and Opaque Routing
 6. `0.24.25.1` - /id-control Read-only Account List Regression Fix
-7. `0.24.26` - Public Signup, Verification, Approval, and Trial
-8. `0.24.27` - System Catalog, Sizes, and POM
-9. `0.24.28` - PDF and R2 Lifecycle
-10. `0.24.29` - Company-wide Export
-11. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
-12. `0.24.31` - PG Billing and Subscription Operations
+7. `0.24.25.2` - /id-control Production QA Impersonation Allowlist
+8. `0.24.26` - Public Signup, Verification, Approval, and Trial
+9. `0.24.27` - System Catalog, Sizes, and POM
+10. `0.24.28` - PDF and R2 Lifecycle
+11. `0.24.29` - Company-wide Export
+12. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
+13. `0.24.31` - PG Billing and Subscription Operations
+
+## 0.24.25.2 - /id-control Production QA Impersonation Allowlist
+
+- Production switch/clear action is opt-in and requires active system administrator, `WAFL_ENABLE_DEV_TEST_CONTEXT=1`, and server-only `WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT=1`.
+- `/id-control` buttons use `/api/dev/test-context/options` as the single source of truth for action enabled/disabled state.
+- Target listing remains read-only and active-system-admin-only even when actions are disabled.
+- Targets remain limited to existing seed/test targets returned by `buildDevTestContextOptions`; arbitrary production customer ids are not accepted.
+- Switch and restore audit logging remains in place and does not log raw cookie payloads, tokens, secrets, or signed URLs.
+- No DB migration, DB/R2 mutation, package/lockfile change, or Cloudflare Worker change is included.
+- This patch does not start 0.24.26.
 
 ## 0.24.25.1 - /id-control Read-only Account List Regression Fix
 

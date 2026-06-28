@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 
 import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
-import { getDevTestContextDisabledReason, isDevTestContextEnabled } from "@/lib/dev/testContext/config";
+import {
+  getDevTestContextDisabledReasonForSystemAdmin,
+  isDevTestContextActionAllowedForSystemAdmin,
+} from "@/lib/dev/testContext/config";
 import { createDevTestContextOverlayPayload } from "@/lib/dev/testContext/service";
 import { createDevTestContextCookieValue, WAFL_DEV_TEST_CONTEXT_COOKIE } from "@/lib/dev/testContext/session";
-import { canSwitchTestAccount } from "@/lib/runtime/runtimePolicy";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 
 export const dynamic = "force-dynamic";
@@ -23,8 +25,11 @@ export async function POST(request: Request) {
   if (!isSystemAdmin) {
     return NextResponse.json({ error: "SYSTEM_ADMIN_REQUIRED" }, { status: 403 });
   }
-  if (!canSwitchTestAccount({ isSystemAdmin }) || !isDevTestContextEnabled()) {
-    return NextResponse.json({ error: "DEV_TEST_CONTEXT_DISABLED", reason: getDevTestContextDisabledReason() }, { status: 403 });
+  if (!isDevTestContextActionAllowedForSystemAdmin(isSystemAdmin)) {
+    return NextResponse.json(
+      { error: "DEV_TEST_CONTEXT_DISABLED", reason: getDevTestContextDisabledReasonForSystemAdmin(isSystemAdmin) },
+      { status: 403 },
+    );
   }
   const body = (await request.json().catch(() => null)) as SwitchRequestBody | null;
   const targetKey = typeof body?.targetKey === "string" ? body.targetKey.trim() : "";

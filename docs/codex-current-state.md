@@ -1,10 +1,10 @@
-# Codex Current State - 0.24.25.1
+# Codex Current State - 0.24.25.2
 
 ## Active execution gate
 
-- Current version: `0.24.25.1`.
+- Current version: `0.24.25.2`.
 - Next implementation version: `0.24.26`.
-- Current work result: **0.24.25.1 /id-control read-only account list regression fix** restored active system-admin account target listing while preserving 0.24.25 authorization, runtime, tenant, and action-block boundaries.
+- Current work result: **0.24.25.2 /id-control production QA impersonation gate** allows explicitly flagged production QA switching for active system administrators while preserving allowlisted seed targets, audit logging, and default-deny action boundaries.
 - Next work: **Sprint E - Public Signup, Verification, Approval, and Trial** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
@@ -115,6 +115,22 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - `/api/dev/test-context/switch` and `/clear` still require active system administrator, server dev/test runtime, and `WAFL_ENABLE_DEV_TEST_CONTEXT=1`.
 - General users and customer accounts remain blocked from `/id-control`.
 - `4. Newest` release handoff is normalized to exactly two files: latest full source ZIP and matching repo-state TXT. build-result remains in Repo_Status and is referenced from repo-state.
+- Production DB/R2 mutation: 0.
+- Dev/test DB/R2 mutation: 0.
+- DB schema migration/backfill/RLS DDL execution: none.
+- Cloudflare Worker code change: none.
+- Manual PC/mobile production verification is required after Vercel deploys the patch commit.
+
+## 0.24.25.2 Result Boundary
+
+0.24.25.2 is a post-deploy `/id-control` production QA impersonation gate fix; it is not the start of 0.24.26.
+
+- `/id-control` target listing remains active-system-admin-only and independent from action enablement.
+- Switch/clear actions require active system administrator, `WAFL_ENABLE_DEV_TEST_CONTEXT=1`, and `WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT=1` in production.
+- `WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT` is server-only; `NEXT_PUBLIC_*` values must not control impersonation.
+- Targets must come from the existing `buildDevTestContextOptions` seed/test target allowlist.
+- Switch and clear continue to write audit logs without raw cookie payloads, tokens, secrets, or signed URLs.
+- General users, customer accounts, non-active system administrators, invalid targets, and arbitrary user ids remain blocked.
 - Production DB/R2 mutation: 0.
 - Dev/test DB/R2 mutation: 0.
 - DB schema migration/backfill/RLS DDL execution: none.

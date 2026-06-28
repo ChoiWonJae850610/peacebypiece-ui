@@ -2,7 +2,7 @@ import "server-only";
 
 import type { WaflSessionPayload } from "@/lib/auth/session";
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
-import { canSwitchTestAccount } from "@/lib/runtime/runtimePolicy";
+import { isDevTestContextActionAllowedForSystemAdmin } from "./config";
 import { getDevTestContextTargetByKey, listDevTestContextTargets, type DevTestContextTarget } from "./repository";
 import { verifyDevTestContextCookieValue, type DevTestContextOverlayPayload } from "./session";
 
@@ -15,7 +15,7 @@ export type DevTestContextOptions = {
 
 export async function applyDevTestContextOverlay(baseSession: WaflSessionPayload, value: string | null | undefined): Promise<WaflSessionPayload> {
   const isSystemAdmin = await isActiveSystemAdminSession(baseSession);
-  if (!canSwitchTestAccount({ isSystemAdmin })) return baseSession;
+  if (!isDevTestContextActionAllowedForSystemAdmin(isSystemAdmin)) return baseSession;
   const overlay = verifyDevTestContextCookieValue(value);
   if (!overlay || overlay.originalUserId !== baseSession.userId) return baseSession;
   const target = await getDevTestContextTargetByKey(overlay.targetKey);
@@ -28,7 +28,7 @@ export async function applyDevTestContextOverlay(baseSession: WaflSessionPayload
 
 export async function createDevTestContextOverlayPayload(actualSession: WaflSessionPayload, targetKey: string): Promise<{ payload: DevTestContextOverlayPayload; target: DevTestContextTarget } | null> {
   const isSystemAdmin = await isActiveSystemAdminSession(actualSession);
-  if (!canSwitchTestAccount({ isSystemAdmin })) return null;
+  if (!isDevTestContextActionAllowedForSystemAdmin(isSystemAdmin)) return null;
   const target = await getDevTestContextTargetByKey(targetKey);
   if (!target) return null;
   if (target.role === "system_admin" && target.email.trim().toLowerCase() !== actualSession.email.trim().toLowerCase()) return null;
