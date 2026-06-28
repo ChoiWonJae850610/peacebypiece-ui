@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const roadmap = fs.readFileSync("lib/internal/roadmap/roadmap-0.24.26.ts", "utf8");
+const version = fs.readFileSync("lib/constants/version.ts", "utf8");
 const index = fs.readFileSync("lib/internal/roadmap/index.ts", "utf8");
 const productizationRoadmap = fs.readFileSync("docs/productization-roadmap.md", "utf8");
 const backlog = fs.readFileSync("docs/productization-backlog.md", "utf8");
@@ -9,6 +10,7 @@ const prep = fs.readFileSync("docs/project/33-public-signup-schema-repository-pr
 
 for (const token of [
   'version: "0.24.26"',
+  'status: "in_progress"',
   "Public Signup, Verification, Approval, and Trial",
   "Google OAuth",
   "email_verified=true",
@@ -66,6 +68,7 @@ for (const section of [
 }
 
 assert.match(index, /ROADMAP_0_24_26/);
+assert.ok(version.includes('APP_VERSION = "0.24.26"'), "APP_VERSION must be 0.24.26");
 assert.match(index, /roadmap-0\.24\.26/);
 assert.match(productizationRoadmap, /0\.24\.26 - Public Signup, Verification, Approval, and Trial/);
 assert.match(productizationRoadmap, /33-public-signup-schema-repository-prep-0\.24\.26\.md/);
@@ -76,7 +79,9 @@ assert.match(backlog, /0\.24\.28 Reserved: PDF and R2 Lifecycle/);
 assert.match(backlog, /0\.24\.30 Reserved: Storage Enforcement, Termination, and Automatic Deletion/);
 assert.match(backlog, /Capacity Fixture Backlog/);
 
-assert.doesNotMatch(roadmap, /queryDb|createSignedUploadUrl|PutObjectCommand|DeleteObjectCommand|migration execution/i);
+assert.doesNotMatch(roadmap, /queryDb|createSignedUploadUrl|PutObjectCommand|DeleteObjectCommand/i);
+assert.match(roadmap, /approved migration once against the approved dev\/test DB fingerprint 01e5dcc7fea3/);
+assert.match(roadmap, /Production migration and any additional DB mutation remain forbidden/);
 assert.doesNotMatch(`${roadmap}\n${prep}`, /payment_reference_provider|payment_reference_id|payment_reference_status|payment-method reference readiness|payment reference readiness/i);
 assert.doesNotMatch(`${roadmap}\n${prep}`, /Approval creates .*default catalog|Approval-time provisioning .*default catalog/i);
 

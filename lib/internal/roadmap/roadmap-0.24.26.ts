@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   version: "0.24.26",
   title: "Public Signup, Verification, Approval, and Trial",
-  status: "planned",
+  status: "in_progress",
   userSummary: [
     "Defines the executable roadmap for public signup, verified identity, system-admin approval, and Trial provisioning.",
     "This roadmap records the final owner policy as implementation criteria; it does not start product code in the metadata-only canonicalization step.",
@@ -49,7 +49,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "Actual PG payment charge, payment-method registration, payment-reference storage, and subscription operation; this remains 0.24.31.",
     "Storing raw card data, fake card placeholders, fake payment references, or PG-neutral payment references.",
     "System catalog, size, or POM row provisioning; this remains 0.24.27.",
-    "Executing DB migrations before explicit user approval.",
+    "Executing DB migrations without explicit user approval or against production.",
     "Production DB/R2 mutation during roadmap creation.",
     "Cloudflare Worker source changes unless a later implementation step explicitly requires them.",
     "0.24.28 PDF/R2 lifecycle product code.",
@@ -82,7 +82,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "Raw card data, fake payment placeholders, fake payment references, or PG-neutral payment references are stored.",
     "System catalog, size, or POM rows are created in 0.24.26.",
     "Business certificate files become downloadable through a WAFL route.",
-    "A DB migration or data mutation is executed without explicit approval and rollback planning.",
+    "A DB migration or data mutation is executed without explicit approval, rollback planning, or approved dev/test fingerprint guard.",
     "Trial values regress to legacy 1GB or 5 members.",
   ],
   cautions: [
@@ -91,7 +91,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "Migration may be required for signup request/application state, but creation and execution require separate approval.",
   ],
   stopConditions: [
-    "A DB schema migration becomes necessary before the user approves migration scope.",
+    "A new DB schema migration or production migration becomes necessary beyond the explicitly approved signup schema migration.",
     "Production DB/R2/PG access or mutation becomes necessary.",
     "A new product-policy decision not covered by documents 26, 31, 20, 21, or 30 is discovered.",
     "Existing public website source cannot be located and implementation would require a new source-structure decision.",
@@ -116,7 +116,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   ],
   migrationRequired: true,
   migrationNotes:
-    "Likely required for signup application and provisioning state, but migration creation/execution is explicitly forbidden until the implementation step presents scope, dry-run, rollback, and user approval.",
+    "Created signup_applications and signup_application_files and executed the approved migration once against the approved dev/test DB fingerprint 01e5dcc7fea3. Production migration and any additional DB mutation remain forbidden without separate approval.",
   automaticTests: [
     "signup email_verified contract",
     "pending/rejected workspace route/API guard contract",
@@ -161,7 +161,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "No settled product policy is reopened in this roadmap.",
     "Technical implementation must still choose the existing public website source location before product code begins.",
     "Technical implementation must choose rate-limit/CAPTCHA mechanism before public signup launch.",
-    "Migration scope and execution require separate explicit approval before any migration file or DB execution.",
+    "Any additional migration scope, production migration, backfill, or provisioning data mutation requires separate explicit approval before DB execution.",
   ],
   preparationHistory: [
     {
@@ -189,18 +189,23 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   ],
   result: {
     completedSummary: [
-      "Canonical detailed roadmap created only; signup product implementation not started.",
-      "0.24.28 and 0.24.30 reserved dependency notes are recorded in roadmap/backlog docs.",
+      "Canonical detailed roadmap and schema/repository preparation design are complete.",
+      "Signup product implementation started with a migration-backed schema foundation and TypeScript domain/repository/service contracts.",
+      "The approved dev/test signup migration was executed once: preflight compatibility audit PASS, migration apply PASS, post-apply schema audit PASS, schema smoke rollback PASS, and smoke row residue 0.",
+      "The draft requires explicit email_verified evidence, normalized 10-digit business registration matching, application-owned certificate files, and provisioning failure handling through the approval operation.",
+      "0.24.28 and 0.24.30 reserved dependency notes remain recorded in roadmap/backlog docs.",
     ],
-    commitHash: "pending until final Git commit",
-    verificationResult: "Pending.",
+    commitHash: "implementation working tree pending; latest preparation commit 23d325e3771abff066f3bdc715f07b204013f210",
+    verificationResult:
+      "DB migration verification PASS: runtime development, approved DB fingerprint 01e5dcc7fea3, migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, preflight findings 0, post-apply findings 0, smoke rollback complete, R2 mutation 0.",
     remainingIssues: [
-      "Confirm existing public website source location before implementing product code.",
-      "Design migration scope and obtain approval before creating or executing migration files.",
+      "Wire the signup repository to the database after the approved dev/test migration foundation.",
+      "Implement actual pending user middleware/page/API/repository guards after this foundation step.",
       "Decide technical rate-limit/CAPTCHA mechanism during implementation planning.",
+      "Public signup UI/API/OAuth callback, system-admin approval UI, and actual company/user/member/subscription provisioning remain unimplemented.",
     ],
     userConfirmationRequired: true,
     userConfirmationResult:
-      "Roadmap can be used as the next implementation contract; product implementation still requires the next explicit work step.",
+      "Production migration, public signup UI/OAuth callback changes, API wiring, and provisioning execution require later explicit work steps.",
   },
 };

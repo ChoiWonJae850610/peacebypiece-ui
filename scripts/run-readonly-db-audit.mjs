@@ -9,8 +9,11 @@ const files = {
   reconciliation: 'db/audits/0.24.21.11-reconciliation-readonly.sql',
   constraints: 'db/audits/0.24.21.12-constraint-readiness-readonly.sql',
   indexes: 'db/audits/0.24.21.12-index-readiness-readonly.sql',
+  'signup-compatibility': 'db/audits/0.24.26-signup-migration-compatibility-readonly.sql',
+  'signup-post-apply': 'db/audits/0.24.26-signup-post-apply-schema-readonly.sql',
 };
 const sqlPath = files[mode];
+const findingModes = new Set(['reconciliation', 'signup-compatibility', 'signup-post-apply']);
 if (!sqlPath) throw new Error(`Unknown audit mode: ${mode}`);
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required.');
 if (process.env.WAFL_DB_AUDIT_APPROVED !== '1') throw new Error('Read-only audit guard approval is missing.');
@@ -30,6 +33,7 @@ try {
   await client.query('BEGIN READ ONLY');
   console.log(`WAFL DB READ-ONLY AUDIT: ${mode}`);
   console.log(`Statements: ${statements.length}`);
+  console.log('Mutation: none');
   let totalResultRows = 0;
   let totalReportedIssues = 0;
   for (let i = 0; i < statements.length; i += 1) {
@@ -52,18 +56,28 @@ try {
     if (count > 20) console.log(`... ${count - 20} more rows omitted`);
   }
   await client.query('ROLLBACK');
+  console.log('Transaction: rolled back');
   console.log(`\nTotal result rows: ${totalResultRows}`);
 
   if (mode === 'constraints') {
     console.log(`Total reported issues: ${totalReportedIssues}`);
+    console.log(`Result: ${totalReportedIssues > 0 ? 'FAIL' : 'PASS'}`);
     process.exitCode = totalReportedIssues > 0 ? 2 : 0;
-  } else if (mode === 'reconciliation') {
+  } else if (findingModes.has(mode)) {
+    console.log(`Total compatibility findings: ${totalResultRows}`);
+    console.log(`Result: ${totalResultRows > 0 ? 'FAIL' : 'PASS'}`);
     process.exitCode = totalResultRows > 0 ? 2 : 0;
   } else {
+    console.log('Result: PASS');
     process.exitCode = 0;
   }
 } catch (error) {
-  try { await client.query('ROLLBACK'); } catch {}
+  try {
+    await client.query('ROLLBACK');
+    console.error('Transaction: rollback attempted');
+  } catch {
+    console.error('Transaction: rollback attempt failed');
+  }
   throw error;
 } finally {
   await client.end();

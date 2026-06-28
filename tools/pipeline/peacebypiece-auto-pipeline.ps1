@@ -1186,7 +1186,8 @@ function InvokeProjectCommandWithResultFile {
         [string]$Label,
         [string]$NpmCommand,
         [bool]$LoadEnvLocal = $false,
-        [bool]$PauseAfter = $true
+        [bool]$PauseAfter = $true,
+        [string]$ResultDirectory = ""
     )
 
     cls
@@ -1209,13 +1210,17 @@ function InvokeProjectCommandWithResultFile {
         }
     }
 
-    EnsureDirectory -Path $NewestResultDIr
+    $resultDirectoryPath = $NewestResultDIr
+    if (-not [string]::IsNullOrWhiteSpace($ResultDirectory)) {
+        $resultDirectoryPath = $ResultDirectory
+    }
+    EnsureDirectory -Path $resultDirectoryPath
 
     $versionForFile = SanitizeResultFileNamePart -Value (GetProjectAppVersionForTestResult)
     $labelForFile = SanitizeResultFileNamePart -Value $Label
     $timestamp = GetTimestamp
     $runningFileName = "Running_${labelForFile}_${versionForFile}-${timestamp}.txt"
-    $runningFilePath = Join-Path $NewestResultDIr $runningFileName
+    $runningFilePath = Join-Path $resultDirectoryPath $runningFileName
 
     @(
         "Test: $Title",
@@ -1255,7 +1260,7 @@ function InvokeProjectCommandWithResultFile {
     }
 
     $resultFileName = "${statusPrefix}_${labelForFile}_${versionForFile}-${timestamp}.txt"
-    $resultFilePath = Join-Path $NewestResultDIr $resultFileName
+    $resultFilePath = Join-Path $resultDirectoryPath $resultFileName
     Move-Item -LiteralPath $runningFilePath -Destination $resultFilePath -Force
 
     Write-Host ""
@@ -2022,7 +2027,8 @@ function InvokeReadOnlyDbAudit {
     $previous = $env:WAFL_DB_AUDIT_APPROVED
     try {
         $env:WAFL_DB_AUDIT_APPROVED = '1'
-        return (InvokeProjectCommandWithResultFile -Title $Title -Label $Label -NpmCommand "node scripts/run-readonly-db-audit.mjs $Mode" -LoadEnvLocal $false -PauseAfter $true)
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        return (InvokeProjectCommandWithResultFile -Title $Title -Label $Label -NpmCommand "node scripts/run-readonly-db-audit.mjs $Mode" -LoadEnvLocal $false -PauseAfter $true -ResultDirectory $dbAuditLogDir)
     }
     finally {
         if ($null -eq $previous) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previous }
@@ -2047,6 +2053,7 @@ function RunPreCodexFinalContractGate {
 function RunDbSchemaReconciliationAudit { return (InvokeReadOnlyDbAudit -Mode 'reconciliation' -Title 'DB Schema Reconciliation Audit' -Label 'DB_Reconciliation_Audit') }
 function RunDbConstraintReadinessCheck { return (InvokeReadOnlyDbAudit -Mode 'constraints' -Title 'DB Constraint Readiness Check' -Label 'DB_Constraint_Readiness') }
 function RunDbIndexReadinessReport { return (InvokeReadOnlyDbAudit -Mode 'indexes' -Title 'DB Index Usage and Query Readiness Report' -Label 'DB_Index_Readiness') }
+function RunSignupMigrationCompatibilityAudit { return (InvokeReadOnlyDbAudit -Mode 'signup-compatibility' -Title 'Signup Migration Compatibility Audit' -Label 'Signup_Migration_Compatibility_Audit') }
 
 # ==========================================
 # 10. 메인 화면 / 메인 while 루프
@@ -2104,6 +2111,7 @@ function ShowDeveloperToolsMenu {
         Write-Host "31. DB Constraint Readiness Check                [DEV/TEST·읽기 전용]"
         Write-Host "32. DB Index Usage/Query Readiness Report        [DEV/TEST·읽기 전용]"
         Write-Host "33. Pre-Codex Final Contract Gate                [안전/비파괴]"
+        Write-Host "42. Signup Migration Compatibility Audit         [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2114,7 +2122,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~41 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~42 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2161,9 +2169,10 @@ function ShowDeveloperToolsMenu {
             39 { RunSimulatorAttachmentCleanup }
             40 { RunSimulatorAttachmentFaultPlan | Out-Null }
             41 { RunSimulatorAttachmentFaultExecute }
+            42 { RunSignupMigrationCompatibilityAudit | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~41 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~42 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }

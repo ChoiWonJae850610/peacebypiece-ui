@@ -35,6 +35,8 @@ BEGIN
       ('company_user_permissions', to_regclass('public.company_user_permissions')),
       ('company_members', to_regclass('public.company_members')),
       ('company_account_requests', to_regclass('public.company_account_requests')),
+      ('signup_applications', to_regclass('public.signup_applications')),
+      ('signup_application_files', to_regclass('public.signup_application_files')),
       ('member_permissions', to_regclass('public.member_permissions')),
       ('role_templates', to_regclass('public.role_templates')),
       ('role_template_permissions', to_regclass('public.role_template_permissions')),
@@ -576,7 +578,19 @@ BEGIN
       ('company_files_storage_key_unique'),
       ('company_files_review_status_idx'),
       ('company_account_requests_company_status_idx'),
-      ('company_account_requests_type_created_idx')
+      ('company_account_requests_type_created_idx'),
+      ('signup_applications_review_queue_idx'),
+      ('signup_applications_correction_due_idx'),
+      ('signup_applications_active_email_idx'),
+      ('signup_applications_active_google_sub_idx'),
+      ('signup_applications_active_business_registration_idx'),
+      ('signup_applications_created_company_idx'),
+      ('signup_applications_created_user_idx'),
+      ('signup_applications_created_member_idx'),
+      ('signup_applications_created_subscription_idx'),
+      ('signup_application_files_application_type_active_idx'),
+      ('signup_application_files_storage_key_unique'),
+      ('signup_application_files_active_certificate_unique')
   ) AS required_indexes(index_name)
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 

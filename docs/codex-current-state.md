@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.25.4
+# Codex Current State - 0.24.26
 
 ## Active execution gate
 
-- Current version: `0.24.25.4`.
-- Next implementation version: `0.24.26`.
-- Current work result: **0.24.25.4 policy mismatch correction** aligns system-admin actual/effective session boundaries, business-certificate viewer download blocking, Trial constants, and /id-control error-state UX with the final owner policy before 0.24.26 begins.
-- Next work: **Sprint E - Public Signup, Verification, Approval, and Trial**. The detailed canonical roadmap exists at `lib/internal/roadmap/roadmap-0.24.26.ts`; the first schema/repository preparation note exists at `docs/project/33-public-signup-schema-repository-prep-0.24.26.md`; product implementation has not started.
+- Current version: `0.24.26`.
+- Current implementation version: `0.24.26`.
+- Current work result: **0.24.26 schema/repository foundation in progress** starts Public Signup, Verification, Approval, and Trial with signup_applications schema applied once to the approved dev/test DB and TypeScript domain/repository/service contracts.
+- Next work: continue scoped signup repository/API/OAuth/public signup flow wiring; do not start later versions or production migration.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
@@ -166,6 +166,39 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - Dev/test DB/R2 mutation: 0.
 - DB schema migration/backfill/RLS DDL execution: none.
 - Cloudflare Worker code change: none.
+
+## 0.24.26 Implementation Boundary
+
+0.24.26 starts with schema/repository foundation only.
+
+- APP_VERSION is `0.24.26`.
+- Canonical roadmap status is `in_progress`.
+- The signup migration was explicitly approved and executed once against the approved dev/test DB only.
+- The first implementation step is limited to signup application schema draft, TypeScript domain types, repository/service contracts, status transition validation, duplicate/idempotency constraints, approval provisioning interface, and pending application session/identity contract.
+- `email_verified` has no database default; OAuth/API code must pass verified Google email evidence explicitly and the schema keeps `CHECK (email_verified = true)`.
+- Business registration matching uses `business_registration_number_normalized`, a digits-only canonical 10-digit value, for active duplicate prevention and repository lookup.
+- Existing `company_files` and `company_onboarding_files` require `company_id`, so pre-company business certificate ownership is represented by `signup_application_files`; approval may later link to `company_files` through `approved_company_file_id`.
+- Generic status transitions do not jump to `provisioning_failed`; provisioning failure is represented by the approval provisioning operation after provisioning has started.
+- Pending signup route prefix constants are a contract foundation only. Actual middleware/page/API/repository access blocking is not implemented yet and must cover workspace, workorders, files, members, company settings, subscription, direct resource ID routes, and server actions.
+- Public signup UI, Google callback changes, actual application API wiring, system-admin review UI, additional DB/R2 mutation beyond the approved schema migration, Cloudflare Worker changes, and later version work remain out of scope for this step.
+
+### 0.24.26 Dev/Test Migration Evidence
+
+- Executed migration file: `db/migrations/patch_0_24_26_signup_applications.sql`.
+- Migration SHA-256: `b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395`.
+- Execution runtime/fingerprint: `development`, approved DB fingerprint `01e5dcc7fea3`.
+- Execution time: `2026-06-29 00:34 KST`.
+- Production migration: none.
+- Created schema: `public.signup_applications`, `public.signup_application_files`, related PK/FK/check constraints, and planned indexes.
+- Preflight compatibility audit: PASS, total compatibility findings 0.
+- Migration apply: PASS, single SQL file only, exit code 0.
+- Post-apply read-only schema audit: PASS, total compatibility findings 0, transaction rolled back.
+- Schema smoke rollback: PASS, transaction rolled back.
+- Smoke row residue: 0 by post-apply read-only audit.
+- DB mutation scope: schema migration only; no business data seed/backfill/provisioning rows.
+- R2 mutation: 0.
+- `4. Newest` remains reserved for latest full source ZIP and matching repo-state only; DB audit logs are stored under `C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\DB_Audit\`.
+- 0.24.26 remains `in_progress`; public signup UI/API/OAuth callback, system-admin approval UI, and actual provisioning are not implemented yet.
 
 ## Runtime And Product Preservation
 
