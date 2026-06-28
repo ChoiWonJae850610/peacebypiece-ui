@@ -11,6 +11,7 @@ export const ROADMAP_0_24_25_1: RoadmapVersionDetail = {
   visibleChanges: [
     "Active system administrators can see seeded account targets on /id-control even when switching is disabled.",
     "The page can distinguish read-only listing from disabled execution actions.",
+    "4. Newest release handoff now contains only the latest source ZIP and matching repo-state file.",
   ],
   expectedUi: [
     "/id-control shows account groups and target options to active system administrators.",
@@ -29,6 +30,7 @@ export const ROADMAP_0_24_25_1: RoadmapVersionDetail = {
     "/api/dev/test-context/options response contract",
     "system-admin internal access contracts",
     "version and release artifact alignment",
+    "4. Newest ZIP/repo-state publication cleanup",
   ],
   outOfScope: [
     "0.24.26 Public Signup, Verification, Approval, and Trial",
@@ -118,7 +120,8 @@ export const ROADMAP_0_24_25_1: RoadmapVersionDetail = {
   result: {
     completedSummary: [
       "Options route now builds system-admin target options before evaluating switch action enablement.",
-      "Contracts now reject empty targets caused solely by disabled switch actions.",
+    "Contracts now reject empty targets caused solely by disabled switch actions.",
+      "The local handoff pipeline now publishes only ZIP and repo-state to 4. Newest while keeping build-result in Repo_Status.",
     ],
     commitHash: "pending until final Git commit",
     verificationResult:

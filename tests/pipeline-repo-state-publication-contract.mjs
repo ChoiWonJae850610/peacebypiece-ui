@@ -17,6 +17,8 @@ const required = [
   "function NewLocalRepoBuildResultFile",
   "function PublishLocalRepoHandoffNewestSet",
   "build-result-$safeVersion-$timestamp",
+  "[System.IO.Path]::GetFileName($BuildResultPath)",
+  "$newestFiles.Count -ne 2",
   "Verification Result Path:",
   "Build Result:",
   "Mutation Audit Finding Count:",

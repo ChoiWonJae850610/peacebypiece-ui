@@ -967,7 +967,7 @@ function PublishLocalRepoHandoffNewestSet {
         Remove-Item -LiteralPath $_.FullName -Recurse -Force
     }
 
-    foreach ($sourcePath in @($ZipPath, $RepoStatePath, $BuildResultPath)) {
+    foreach ($sourcePath in @($ZipPath, $RepoStatePath)) {
         if ([string]::IsNullOrWhiteSpace($sourcePath) -or -not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
             throw "4. Newest publication source missing: $sourcePath"
         }
@@ -980,13 +980,20 @@ function PublishLocalRepoHandoffNewestSet {
 
     $newestZip = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "peacebypiece-ui-$Version*.zip" -ErrorAction SilentlyContinue
     $newestRepoState = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "repo-state-$Version-*.txt" -ErrorAction SilentlyContinue
-    $newestBuildResult = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "build-result-$Version-*.txt" -ErrorAction SilentlyContinue
+    $newestFiles = @(Get-ChildItem -LiteralPath $NewestResultDIr -File -ErrorAction SilentlyContinue)
 
-    if ($newestZip.Count -ne 1 -or $newestRepoState.Count -ne 1 -or $newestBuildResult.Count -ne 1) {
-        throw "4. Newest set contract failed. ZIP=$($newestZip.Count) repo-state=$($newestRepoState.Count) build-result=$($newestBuildResult.Count)"
+    if ($newestFiles.Count -ne 2 -or $newestZip.Count -ne 1 -or $newestRepoState.Count -ne 1) {
+        throw "4. Newest set contract failed. files=$($newestFiles.Count) ZIP=$($newestZip.Count) repo-state=$($newestRepoState.Count)"
     }
 
-    foreach ($textPath in @($newestRepoState[0].FullName, $newestBuildResult[0].FullName)) {
+    $repoStateContent = Get-Content -LiteralPath $newestRepoState[0].FullName -Raw -Encoding UTF8
+    foreach ($requiredText in @($Version, $HeadHash, [System.IO.Path]::GetFileName($ZipPath), [System.IO.Path]::GetFileName($BuildResultPath))) {
+        if ($repoStateContent -notmatch [regex]::Escape($requiredText)) {
+            throw "4. Newest repo-state mismatch: $requiredText"
+        }
+    }
+
+    foreach ($textPath in @($newestRepoState[0].FullName)) {
         $content = Get-Content -LiteralPath $textPath -Raw -Encoding UTF8
         if ($content -notmatch [regex]::Escape($Version)) {
             throw "4. Newest APP_VERSION mismatch: $textPath"
@@ -1115,7 +1122,7 @@ function NewLocalRepositoryHandoff {
     LogInfo "Git clean 여부: $workingTreeClean"
     LogInfo "ChatGPT 업로드 파일 1: $(Split-Path -Leaf $zipPath)"
     LogInfo "ChatGPT 업로드 파일 2: $(Split-Path -Leaf $repoStatePath)"
-    LogInfo "ChatGPT 업로드 파일 3: $(Split-Path -Leaf $buildResultPath)"
+    LogInfo "build-result 보관 파일: $(Split-Path -Leaf $buildResultPath)"
 
     Write-Host ""
     Write-Host "Enter를 누르면 개발 / 테스트 도구 메뉴로 돌아갑니다."

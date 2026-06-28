@@ -165,6 +165,7 @@ for (const pipelineToken of [
   "NewLocalRepoBuildResultFile",
   "PublishLocalRepoHandoffNewestSet",
   "build-result-$safeVersion-$timestamp",
+  "$newestFiles.Count -ne 2",
   "repo-state-$safeVersion-$timestamp",
   "peacebypiece-ui-$version",
   "ZIP Size Bytes:",

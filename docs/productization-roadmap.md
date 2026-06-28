@@ -36,6 +36,7 @@
 - `/api/dev/test-context/options` builds account targets before evaluating whether switch/clear actions are enabled.
 - Production and flag-disabled runtimes still return `devTestContextEnabled: false` and keep switch/clear actions blocked.
 - General users and customer accounts remain blocked from `/id-control`.
+- `4. Newest` is cleaned to exactly two files: the latest full source ZIP and matching repo-state TXT.
 - No DB migration, DB/R2 mutation, package/lockfile change, or Cloudflare Worker change is included.
 - This patch does not start 0.24.26.
 

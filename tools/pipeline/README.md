@@ -61,7 +61,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiec
 - ZIP: `Paths.BuildZipDir` 아래 `peacebypiece-ui-{APP_VERSION}.zip`
 - repo-state: `Paths.RepoStatusDir` 아래 `repo-state-{APP_VERSION}-{yyyyMMdd-HHmmss}.txt`
 - build-result: `Paths.RepoStatusDir` 아래 `build-result-{APP_VERSION}-{yyyyMMdd-HHmmss}.txt`
-- latest handoff set: `Paths.NewestResultDir` (`4. Newest`) 아래 최신 ZIP, repo-state, build-result 3개 파일
+- latest handoff set: `Paths.NewestResultDir` (`4. Newest`) 아래 최신 ZIP, matching repo-state 2개 파일
 
 기존 파일은 덮어쓰지 않고 이름 충돌 시 timestamp/counter를 붙입니다. ZIP은 patch flat 구조가 아니라 원래 디렉터리 구조를 유지한 전체 소스 ZIP입니다. 파일 후보 목록은 `git ls-files -co --exclude-standard` 기준으로 만들며, tracked 수정 파일과 안전한 untracked 파일을 포함합니다.
 
@@ -76,13 +76,13 @@ ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockf
 
 생성 후에는 ZIP 내부 contract 검증도 실행합니다. 이 검증은 생성 시 제외 함수와 별도로 중첩 `node_modules`, `.next`, `.wrangler`, `.env.local`, `.git`, 생성 ZIP, 기존 repo-state 제외와 `.env.example` 및 필수 파일 포함을 확인합니다.
 
-완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, build-result 전체 경로, `4. Newest` 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 세 파일명을 출력합니다.
+완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, build-result 전체 경로, `4. Newest` 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 두 파일명과 build-result 보관 파일명을 출력합니다.
 
 `approved-workflow.ps1 -Action Finish`가 성공하면 기본적으로 이 handoff를 자동 실행합니다. 생성 시점은 Verify PASS, Plan PASS, Finish PASS, commit, `git push origin master`, ahead/behind 0/0, working tree clean 이후입니다. 특별히 생략해야 할 때만 `-SkipHandoff`를 사용합니다.
 
 `build-result`는 build를 다시 실행하지 않습니다. Finish에서 사용한 matching `verify-safe` result의 `npm run build`, Mutation Audit, contract test 요약을 재사용해 기록합니다. repo-state도 verification result path, verification profile, build result, Mutation Audit finding/high-risk, DB Migration 없음, DB/R2 실행 없음, 생성 ZIP 경로와 크기를 포함합니다.
 
-`4. Newest` 갱신은 최신 정상 완료 세트를 쉽게 찾기 위한 정책입니다. 기존 이력 폴더의 과거 산출물은 삭제하지 않고, newest 폴더만 최신 ZIP, matching repo-state, matching build-result 세트로 교체합니다. incomplete 또는 0-byte 파일, APP_VERSION/HEAD 불일치 세트는 실패로 처리합니다.
+`4. Newest` 갱신은 최신 정상 완료 세트를 쉽게 찾기 위한 정책입니다. 기존 이력 폴더의 과거 산출물은 삭제하지 않고, newest 폴더만 최신 ZIP과 matching repo-state 2개 파일로 교체합니다. build-result는 Repo_Status에 보관하고 repo-state에서 참조합니다. incomplete 또는 0-byte 파일, APP_VERSION/HEAD 불일치 세트는 실패로 처리합니다.
 
 ## 안전 검증 wrapper
 

@@ -114,6 +114,7 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - `/id-control` can show seeded company/system target options even when production runtime or `WAFL_ENABLE_DEV_TEST_CONTEXT` disables account switching.
 - `/api/dev/test-context/switch` and `/clear` still require active system administrator, server dev/test runtime, and `WAFL_ENABLE_DEV_TEST_CONTEXT=1`.
 - General users and customer accounts remain blocked from `/id-control`.
+- `4. Newest` release handoff is normalized to exactly two files: latest full source ZIP and matching repo-state TXT. build-result remains in Repo_Status and is referenced from repo-state.
 - Production DB/R2 mutation: 0.
 - Dev/test DB/R2 mutation: 0.
 - DB schema migration/backfill/RLS DDL execution: none.
