@@ -14,12 +14,12 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   ],
   expectedUi: [
     "Public signup CTA starts Google OAuth and requires an email-verified Google profile.",
-    "New company applicants submit required business information, consent evidence, intended plan, payment-method reference readiness, and a business certificate.",
+    "New company applicants submit required business information, consent evidence, intended plan, and a business certificate.",
     "System administrators review, request correction, reject, or approve the application through an internal queue.",
   ],
   developmentPurpose: [
     "Create the public signup and approval boundary without weakening authenticated workspace, system-admin, tenant, or destructive-action guards.",
-    "Provision company, first admin, membership, subscription, Trial, quota, and default catalog atomically and idempotently at approval time.",
+    "Provision company, first admin, membership, role/permission, subscription, Trial quota, audit, and business-certificate ownership atomically and idempotently at approval time.",
   ],
   developmentUiStructure: [
     "Public website/app boundary with signup/login entry points.",
@@ -36,7 +36,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "System-admin review, correction request, rejection, approval, retry, and repair.",
     "Pending/rejected limited state screens.",
     "Block /workspace and workspace APIs before approval.",
-    "Approval-time provisioning of company, user, company_member, subscription, Trial, quota, and default catalog.",
+    "Approval-time provisioning of company, user, company_member, role/permission, company_subscription, Trial, storage quota, member limit, audit, and business-certificate ownership link.",
     "Idempotent provisioning and provisioning_failed recovery.",
     "Trial: 7 days, 100MB storage, 3 members.",
     "Trial starts when the system administrator approves the signup.",
@@ -46,8 +46,9 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "Audit trace, IDOR defense, duplicate prevention, email normalization, and signup abuse controls.",
   ],
   outOfScope: [
-    "Actual PG payment charge and subscription operation; this remains 0.24.31.",
-    "Storing raw card data, fake card placeholders, or fake payment references.",
+    "Actual PG payment charge, payment-method registration, payment-reference storage, and subscription operation; this remains 0.24.31.",
+    "Storing raw card data, fake card placeholders, fake payment references, or PG-neutral payment references.",
+    "System catalog, size, or POM row provisioning; this remains 0.24.27.",
     "Executing DB migrations before explicit user approval.",
     "Production DB/R2 mutation during roadmap creation.",
     "Cloudflare Worker source changes unless a later implementation step explicitly requires them.",
@@ -56,9 +57,9 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   ],
   implementationPrinciples: [
     "Final owner policy documents are the source of truth; this roadmap structures settled policy instead of reopening decisions.",
-    "Signup identity, company application, payment-method reference, business evidence, and provisioning state must be explicit and auditable.",
+    "Signup identity, company application, business evidence, and provisioning state must be explicit and auditable.",
     "Approval provisioning must be idempotent and must not expose partially-created companies as active workspaces.",
-    "Use a PG-neutral payment-method interface; real PG integration is reserved for 0.24.31.",
+    "Do not require card registration or payment-method readiness in 0.24.26; payment and payment-reference storage are reserved for 0.24.31.",
     "Do not trust client-public environment variables for server authorization or runtime decisions.",
     "System-admin certificate access is approval-only and viewer-only; general customer business files remain isolated.",
     "Destructive simulator, reset, seed, cleanup, DB/R2 mutation, and migration actions remain separately guarded.",
@@ -68,7 +69,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "Unapproved users cannot access /workspace or workspace APIs by direct URL/API call.",
     "Application statuses cover draft, submitted, reviewing, changes_requested, approved, rejected, canceled, and provisioning_failed.",
     "System-admin can approve, reject, and request correction with audit trace.",
-    "Approval creates company, first admin, company_member, subscription, Trial, quota, and default catalog exactly once.",
+    "Approval creates company, first admin, company_member, role/permission, subscription, Trial, quota, audit, and business-certificate ownership link exactly once.",
     "Trial values are 7 days, 100MB, and 3 members, starting at approval time.",
     "Business certificate access is limited to approval viewer and blocks WAFL-provided download.",
     "Duplicate email, company, and business-registration paths are denied or routed to safe review states.",
@@ -78,7 +79,8 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "Public signup allows unverified Google email.",
     "Pending/rejected users can access workspace content or APIs.",
     "Approval can create duplicate active companies, duplicate first admins, or partial active state.",
-    "Raw card data, fake payment placeholders, or fake payment references are stored.",
+    "Raw card data, fake payment placeholders, fake payment references, or PG-neutral payment references are stored.",
+    "System catalog, size, or POM rows are created in 0.24.26.",
     "Business certificate files become downloadable through a WAFL route.",
     "A DB migration or data mutation is executed without explicit approval and rollback planning.",
     "Trial values regress to legacy 1GB or 5 members.",
@@ -103,7 +105,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   ],
   dbImpact: "pending_decision",
   dbImpactNotes: [
-    "Signup applications, consent evidence, payment-method reference metadata, business certificate metadata, review/audit state, and idempotent provisioning records may require schema work.",
+    "Signup applications, consent evidence, business certificate metadata, review/audit state, and idempotent provisioning records may require schema work.",
     "Migration design must be read-only reconciled and separately approved before execution.",
   ],
   r2Impact: "guarded",
@@ -152,6 +154,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   futureDependencies: [
     "0.24.28 PDF and R2 Lifecycle: actual R2 lifecycle simulator, valid PNG/JPEG/PDF fixtures, restore/delete/404/orphan/reconcile/rollback coverage, bounded performance fixtures, and production mutation ban.",
     "0.24.30 Storage Enforcement, Termination, and Automatic Deletion: capacity profile 0%, <1%, 10%, 20%, 30%, 50%, 70%, 90%, 99%, 100%, 110%, Trial 100MB linkage, upload preflight, warning/grace/termination/deletion scheduling, and profile apply/verify/restore commands.",
+    "0.24.31 PG Billing and Subscription Operations: payment-method registration, PG-neutral payment references, billing keys, Trial-end charging, and subscription operation.",
     "Capacity fixture backlog: H/I/J DB scenario and attachment manifest expectations differ and must be resolved through future profile apply design, not immediate mutation.",
   ],
   userDecisionsRequired: [
@@ -159,6 +162,18 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
     "Technical implementation must still choose the existing public website source location before product code begins.",
     "Technical implementation must choose rate-limit/CAPTCHA mechanism before public signup launch.",
     "Migration scope and execution require separate explicit approval before any migration file or DB execution.",
+  ],
+  preparationHistory: [
+    {
+      commitHash: "ef0602de1c99fea54cd63cc69c110a3e7ad3a79d",
+      summary: [
+        "Canonical detailed roadmap file was created and registered.",
+        "0.24.28 R2 lifecycle and 0.24.30 storage enforcement reserved dependencies were recorded.",
+        "H/I/J capacity fixture mismatch was recorded as backlog without mutation.",
+      ],
+      verificationResult:
+        "PASS: roadmap-0.24.26 contract; roadmap development contract; unicode encoding contract; targeted ESLint; tsc --noEmit; next build; git diff --check; git diff --cached --check.",
+    },
   ],
   recommendedCommitMessage: "0.24.26 공개 가입 승인 Trial 로드맵 정리",
   nextVersionBoundary: [

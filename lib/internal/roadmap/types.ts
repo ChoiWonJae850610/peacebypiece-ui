@@ -20,6 +20,12 @@ export type RoadmapResult = {
   userConfirmationResult: string;
 };
 
+export type RoadmapPreparationRecord = {
+  commitHash: string;
+  summary: string[];
+  verificationResult: string;
+};
+
 export type RoadmapVersionDetail = {
   version: string;
   status: RoadmapStatus;
@@ -49,6 +55,7 @@ export type RoadmapVersionDetail = {
   expectedChangeAreas: string[];
   futureDependencies?: string[];
   userDecisionsRequired?: string[];
+  preparationHistory?: RoadmapPreparationRecord[];
   recommendedCommitMessage: string;
   nextVersionBoundary: string[];
   completionConditions: string[];

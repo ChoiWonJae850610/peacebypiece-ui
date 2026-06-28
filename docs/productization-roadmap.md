@@ -48,12 +48,14 @@
 ## 0.24.26 - Public Signup, Verification, Approval, and Trial
 
 - Canonical detail file: `lib/internal/roadmap/roadmap-0.24.26.ts`.
+- First preparation note: `docs/project/33-public-signup-schema-repository-prep-0.24.26.md`.
 - This entry is a planning contract only until the next implementation step begins; it does not start signup product code, DB migration, DB/R2 mutation, or Worker changes.
-- Scope includes public signup CTA, Google OAuth with `email_verified=true`, unjoined verified-user state, new-company application, invitation/code-first existing-company join, join_requests/invitations reuse, system-admin approve/reject/correction request, pending/rejected limited screens, pre-approval `/workspace` and API blocking, approval-time company/user/company_member/subscription/Trial/quota/catalog provisioning, idempotency, audit, IDOR defense, duplicate prevention, email normalization, and signup abuse controls.
+- Scope includes public signup CTA, Google OAuth with `email_verified=true`, unjoined verified-user state, new-company application, invitation/code-first existing-company join, join_requests/invitations reuse, system-admin approve/reject/correction request, pending/rejected limited screens, pre-approval `/workspace` and API blocking, approval-time company/user/company_member/role-permission/company_subscription/Trial/quota/audit/business-certificate ownership linking, idempotency, audit, IDOR defense, duplicate prevention, email normalization, and signup abuse controls.
 - Trial values are fixed at 7 days, 100MB storage, and 3 members, and Trial starts at system-admin approval.
 - Business certificate is required for production new-company applications; dev/test fixture exceptions must be explicitly guarded.
 - Business certificate access remains approval-viewer-only with no WAFL-provided download path.
-- PG charge and subscription operations remain 0.24.31; 0.24.26 may define only PG-neutral payment-method references and must not store raw card data, fake card placeholders, or fake payment references.
+- Card registration, payment-method readiness, PG-neutral payment references, PG charge, and subscription operations remain 0.24.31; 0.24.26 must not store raw card data, fake card placeholders, fake payment references, or PG-neutral payment references.
+- System catalog, size, and POM row provisioning remain 0.24.27; 0.24.26 may record only a follow-up dependency such as catalog provisioning pending.
 - DB migration is likely required for signup application/provisioning state, but migration creation or execution requires separate approval, read-only reconciliation, dry-run evidence, and rollback planning.
 
 ## Reserved Future Dependencies

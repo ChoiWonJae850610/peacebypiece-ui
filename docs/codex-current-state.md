@@ -5,7 +5,7 @@
 - Current version: `0.24.25.4`.
 - Next implementation version: `0.24.26`.
 - Current work result: **0.24.25.4 policy mismatch correction** aligns system-admin actual/effective session boundaries, business-certificate viewer download blocking, Trial constants, and /id-control error-state UX with the final owner policy before 0.24.26 begins.
-- Next work: **Sprint E - Public Signup, Verification, Approval, and Trial**. The detailed canonical roadmap exists at `lib/internal/roadmap/roadmap-0.24.26.ts`; product implementation has not started.
+- Next work: **Sprint E - Public Signup, Verification, Approval, and Trial**. The detailed canonical roadmap exists at `lib/internal/roadmap/roadmap-0.24.26.ts`; the first schema/repository preparation note exists at `docs/project/33-public-signup-schema-repository-prep-0.24.26.md`; product implementation has not started.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
