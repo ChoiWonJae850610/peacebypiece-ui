@@ -6,7 +6,7 @@ export const ROADMAP_0_24_25_1: RoadmapVersionDetail = {
   status: "implemented",
   userSummary: [
     "Restored the /id-control read-only account target list for active system administrators after the 0.24.25 runtime boundary hardening.",
-    "Kept production account switching and clear/switch actions blocked by the existing server runtime and explicit enable flag.",
+    "Kept production account switching and clear/switch actions blocked by the then-existing runtime action gate, later superseded by 0.24.25.3.",
   ],
   visibleChanges: [
     "Active system administrators can see seeded account targets on /id-control even when switching is disabled.",
@@ -15,7 +15,7 @@ export const ROADMAP_0_24_25_1: RoadmapVersionDetail = {
   ],
   expectedUi: [
     "/id-control shows account groups and target options to active system administrators.",
-    "Switch and restore buttons remain disabled in production or when WAFL_ENABLE_DEV_TEST_CONTEXT is not 1.",
+    "Switch and restore button policy was later superseded by 0.24.25.3.",
   ],
   developmentPurpose: [
     "Fix the regression where /api/dev/test-context/options returned an empty target list whenever switching was disabled.",

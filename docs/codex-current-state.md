@@ -1,10 +1,10 @@
-# Codex Current State - 0.24.25.2
+# Codex Current State - 0.24.25.3
 
 ## Active execution gate
 
-- Current version: `0.24.25.2`.
+- Current version: `0.24.25.3`.
 - Next implementation version: `0.24.26`.
-- Current work result: **0.24.25.2 /id-control production QA impersonation gate** allows explicitly flagged production QA switching for active system administrators while preserving allowlisted seed targets, audit logging, and default-deny action boundaries.
+- Current work result: **0.24.25.3 /id-control runtime-independent system-admin impersonation** allows active system administrators to switch to allowlisted seed/test targets in any runtime while preserving target allowlists, audit logging, and destructive-action boundaries.
 - Next work: **Sprint E - Public Signup, Verification, Approval, and Trial** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
@@ -24,7 +24,7 @@ Older documents that describe `0.24.22` as UI-first, PB-005/006/010 implementati
 3. Do not execute production DB/R2/PG mutations without separate explicit approval.
 4. Any DB change requires read-only reconciliation, deployed-schema drift evidence, dry-run, rollback steps, and a separate migration boundary.
 5. Before 1.0, `master` remains the single development/QA branch. After local/build/contract checks pass, commit and push to `origin/master` for Vercel real-device QA.
-6. Preserve `/id-control` and the system-admin/test-company role switcher for dev/test QA. Keep original-session restore and audit logging. Block all of it in production.
+6. Preserve `/id-control` and the system-admin/test-company role switcher for QA. Keep original-session restore and audit logging. Do not extend this to Seed, Reset, Cleanup, DB/R2 mutation, or destructive simulator actions.
 
 ## 0.24.22 Result Boundary
 
@@ -94,7 +94,7 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - Replaced app route usage of the legacy header-preview permission guard with server session, company scope, member status, and permission checks.
 - Added common WAFL API states for permission denied, not found, and runtime blocked responses.
 - Added server-only runtime resolution for dev/test account switching; `NEXT_PUBLIC_*` runtime values are not trusted for server decisions.
-- Kept `/id-control` visible to active system administrators, while account switching requires non-production server runtime plus `WAFL_ENABLE_DEV_TEST_CONTEXT=1`.
+- Kept `/id-control` visible to active system administrators; the original 0.24.25 account-switching runtime gate was later superseded by the 0.24.25.3 policy below.
 - Added opaque-compatible workorder route parameter validation for UUID, current simulator IDs, and future `wo_...` identifiers without adding a DB migration.
 - Changed workorder not-found behavior to avoid returning the requested id in API responses.
 - Required attachment file proxy access to pass workspace `storage.read`, company prefix, and active DB `attachments.storage_key` or `thumbnail_key` membership.
@@ -111,8 +111,8 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 0.24.25.1 is a post-deploy regression fix for `/id-control`; it is not the start of 0.24.26.
 
 - `/api/dev/test-context/options` now builds read-only target options for active system administrators before evaluating switch-action enablement.
-- `/id-control` can show seeded company/system target options even when production runtime or `WAFL_ENABLE_DEV_TEST_CONTEXT` disables account switching.
-- `/api/dev/test-context/switch` and `/clear` still require active system administrator, server dev/test runtime, and `WAFL_ENABLE_DEV_TEST_CONTEXT=1`.
+- `/id-control` can show seeded company/system target options even when account switching is disabled.
+- `/api/dev/test-context/switch` and `/clear` still require active system administrator; the original runtime action gate was later superseded by the 0.24.25.3 policy below.
 - General users and customer accounts remain blocked from `/id-control`.
 - `4. Newest` release handoff is normalized to exactly two files: latest full source ZIP and matching repo-state TXT. build-result remains in Repo_Status and is referenced from repo-state.
 - Production DB/R2 mutation: 0.
@@ -126,8 +126,8 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 0.24.25.2 is a post-deploy `/id-control` production QA impersonation gate fix; it is not the start of 0.24.26.
 
 - `/id-control` target listing remains active-system-admin-only and independent from action enablement.
-- Switch/clear actions require active system administrator, `WAFL_ENABLE_DEV_TEST_CONTEXT=1`, and `WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT=1` in production.
-- `WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT` is server-only; `NEXT_PUBLIC_*` values must not control impersonation.
+- Switch/clear actions originally required an extra production QA action gate, but that policy was superseded by 0.24.25.3.
+- `NEXT_PUBLIC_*` values must not control impersonation.
 - Targets must come from the existing `buildDevTestContextOptions` seed/test target allowlist.
 - Switch and clear continue to write audit logs without raw cookie payloads, tokens, secrets, or signed URLs.
 - General users, customer accounts, non-active system administrators, invalid targets, and arbitrary user ids remain blocked.
@@ -137,11 +137,26 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - Cloudflare Worker code change: none.
 - Manual PC/mobile production verification is required after Vercel deploys the patch commit.
 
+## 0.24.25.3 Result Boundary
+
+0.24.25.3 is a post-deploy `/id-control` account switching policy correction; it is not the start of 0.24.26.
+
+- `/id-control` switch/clear actions are allowed for active system administrators regardless of local, development, preview, or production runtime.
+- `/id-control` switch/clear actions no longer require runtime or action environment flags.
+- System-admin allowlist validation, active system-admin route/API guards, seed/test target allowlist lookup, overlay validation, and switch/restore audit logging remain required.
+- General users, customer accounts, inactive/non-allowlisted system administrators, invalid targets, arbitrary user ids, arbitrary company ids, and raw role input remain blocked.
+- Seed, Reset, Cleanup, DB/R2 mutation, DB migration, Purge, and destructive simulator guards are unchanged.
+- Production DB/R2 mutation: 0.
+- Dev/test DB/R2 mutation: 0.
+- DB schema migration/backfill/RLS DDL execution: none.
+- Cloudflare Worker code change: none.
+- Manual PC/mobile production verification is recommended after Vercel deploys the patch commit.
+
 ## Runtime And Product Preservation
 
 - Public website scope remains in the plan: `www.wafl.co.kr`, root-to-www redirect, pricing, Trial CTA, inquiry/policy links, signup/login, and post-login app routing.
-- `/id-control` is not dead code. Its read/view shell remains active-system-admin-only; dev/test account switching and execution actions remain production-blocked.
-- `/id-control` test account switching is allowed only when the server dev/test runtime and explicit enable flag allow it.
+- `/id-control` is not dead code. Its read/view shell and seed/test account switching remain active-system-admin-only.
+- `/id-control` test account switching is allowed for active system administrators regardless of runtime/env action flags.
 - Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`, not by environment-name strings.
 - Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
 - System administrators must not gain access to customer operational content; the business-certificate approval viewer remains the narrow exception.

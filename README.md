@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.25.2`
+- 기준 앱 버전: `0.24.25.3`
 - 프로젝트 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
-- 현재 작업 상태: `0.24.25.2`는 Vercel production 실기기 QA용 `/id-control` production impersonation action gate 보정 버전입니다. 다음 공식 작업은 `0.24.26` Public Signup, Verification, Approval, and Trial입니다.
+- 현재 작업 상태: `0.24.25.3`은 `/id-control` account impersonation을 active system-admin에게 runtime/env와 무관하게 허용하는 보정 버전입니다. 다음 공식 작업은 `0.24.26` Public Signup, Verification, Approval, and Trial입니다.
 
 ## 개발 실행
 

@@ -1,0 +1,132 @@
+import type { RoadmapVersionDetail } from "./types";
+
+export const ROADMAP_0_24_25_3: RoadmapVersionDetail = {
+  version: "0.24.25.3",
+  title: "/id-control Runtime-independent System-admin Impersonation",
+  status: "implemented",
+  userSummary: [
+    "Makes /id-control account switching available to active system administrators in every runtime.",
+    "Removes the extra dev/test and production impersonation environment flags from switch/restore authorization.",
+  ],
+  visibleChanges: [
+    "Allowed active system administrators can select seed/test targets and use 'view as this user' without runtime-specific flags.",
+    "The restore button remains available only when an impersonation overlay is active.",
+  ],
+  expectedUi: [
+    "/id-control keeps the current impersonation role and company visible.",
+    "Disabled action text now reflects account/session authorization instead of runtime or environment flag state.",
+  ],
+  developmentPurpose: [
+    "Align the 0.24.25.x post-deploy policy with real-device QA needs across local, preview, and production.",
+    "Keep account switching scoped to active system administrators and allowlisted seed/test targets only.",
+  ],
+  developmentUiStructure: [
+    "Keep /id-control backed by the options API as the single source of truth for action state.",
+    "Do not change /dev/test-console redirect behavior or destructive simulator/runtime guards.",
+  ],
+  scope: [
+    "/id-control account switching action policy",
+    "dev test context config",
+    "options/switch/clear route contracts",
+    "runtime-independent impersonation contract",
+    "release docs and handoff artifacts",
+  ],
+  outOfScope: [
+    "0.24.26 Public Signup, Verification, Approval, and Trial",
+    "general customer or support impersonation",
+    "DB reset, seed, cleanup, migration, or R2 mutation enablement",
+    "Cloudflare Worker changes",
+  ],
+  implementationPrinciples: [
+    "Active system administrator allowlist remains mandatory.",
+    "Targets must come from buildDevTestContextOptions and repository allowlisted seed/test data.",
+    "Runtime mode and WAFL_ENABLE_* action flags must not decide /id-control account switching authorization.",
+    "Switch and restore keep audit logs and never log raw cookie payloads, tokens, or secrets.",
+  ],
+  successConditions: [
+    "Local active system-admin can switch without action environment flags.",
+    "Preview active system-admin can switch without a preview-specific action flag.",
+    "Production active system-admin can switch without a production-specific action environment flag.",
+    "General users, inactive/non-allowlisted system-admins, and arbitrary targets remain blocked.",
+    "Seed, Reset, Cleanup, DB/R2 mutation, and destructive simulator production guards are unchanged.",
+  ],
+  failureConditions: [
+    "Runtime mode blocks /id-control switch/restore for an active system administrator.",
+    "An environment variable is required for /id-control account switching.",
+    "A raw user id, company id, or role can be supplied to bypass the target allowlist.",
+    "Audit logging is removed from switch or restore.",
+  ],
+  cautions: [
+    "This version intentionally allows active system-admin account switching in production for QA.",
+    "If launch policy needs production blocking later, create a separate policy version.",
+  ],
+  stopConditions: [
+    "A broader impersonation policy is required.",
+    "Production DB/R2 mutation is required.",
+    "A schema change is required.",
+  ],
+  permissionImpact: "guarded",
+  permissionNotes: [
+    "Active system-admin DB allowlist remains required.",
+    "General users and customer accounts remain blocked from /id-control and dev test context APIs.",
+  ],
+  dbImpact: "read_only",
+  dbImpactNotes: [
+    "Only existing system-admin and seed/test target metadata are read.",
+    "No DB mutation or migration is included.",
+  ],
+  r2Impact: "none",
+  r2ImpactNotes: ["No R2 or Cloudflare Worker path is touched."],
+  migrationRequired: false,
+  migrationNotes: "DB migration none.",
+  automaticTests: [
+    "targeted ESLint",
+    "tsc --noEmit",
+    "authorization-runtime-boundary-contract",
+    "dev-test-context-system-admin-contract",
+    "dev-test-context-runtime-independent-impersonation-contract",
+    "system-admin-internal-access-contract",
+    "internal-system-routes-contract",
+    "workspace-member-session-guard-contract",
+    "unicode-encoding-contract",
+    "next build",
+    "git diff --check",
+  ],
+  manualTests: [
+    "Local active system-admin: open /id-control, select a seed target, switch, then restore.",
+    "Vercel preview active system-admin: repeat switch and restore without action env flags.",
+    "Vercel production active system-admin: repeat switch and restore without action env flags.",
+    "General customer user direct /id-control and API access remain blocked.",
+    "Invalid target key returns a deny/error without exposing customer data.",
+  ],
+  expectedChangeAreas: [
+    "lib/dev/testContext/config.ts",
+    "app/dev/test-console/DevTestConsoleClient.tsx",
+    "tests/*dev-test-context*",
+    "docs/*",
+    "lib/internal/roadmap/*",
+  ],
+  recommendedCommitMessage: "0.24.25.3 id-control 계정 전환 정책 보정",
+  nextVersionBoundary: [
+    "0.24.26 - Public Signup, Verification, Approval, and Trial",
+    "Do not start 0.24.26 in this patch.",
+  ],
+  completionConditions: [
+    "implementation complete",
+    "required verification PASS",
+    "commit and push complete",
+    "4. Newest contains only latest ZIP and matching repo-state",
+  ],
+  result: {
+    completedSummary: [
+      "Removed runtime and WAFL_ENABLE_* action flag gates from /id-control switch/restore authorization.",
+      "Kept active system-admin guard, seed/test target lookup, overlay validation, and audit logging.",
+      "Updated contracts and release docs for runtime-independent system-admin impersonation.",
+    ],
+    commitHash: "pending until final Git commit",
+    verificationResult: "Pending.",
+    remainingIssues: [],
+    userConfirmationRequired: true,
+    userConfirmationResult: "Manual PC/mobile production QA remains recommended after deployment.",
+  },
+};

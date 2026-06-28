@@ -50,12 +50,10 @@ for (const [name, source] of [
 ]) {
   assert.doesNotMatch(source, /NODE_ENV|VERCEL_ENV|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/, `${name} must not feature-gate by environment`);
 }
-assert.match(config, /isServerDevTestRuntime/);
-assert.match(config, /WAFL_ENABLE_DEV_TEST_CONTEXT === "1"/);
-assert.match(config, /WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT === "1"/);
-assert.match(config, /production_impersonation_flag_disabled/);
 assert.match(config, /isDevTestContextActionAllowedForSystemAdmin/);
-assert.doesNotMatch(config, /NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
+assert.match(config, /canSwitchTestAccount\(\{\s*isSystemAdmin\s*\}\)/);
+assert.match(config, /system_admin_required/);
+assert.doesNotMatch(config, /isServerDevTestRuntime|isServerProductionRuntime|WAFL_ENABLE_DEV_TEST_CONTEXT|WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT|production_impersonation_flag_disabled|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
 assert.match(serverRuntime, /WAFL_SERVER_RUNTIME_MODE/);
 assert.match(serverRuntime, /VERCEL_ENV/);
 assert.match(serverRuntime, /NODE_ENV/);

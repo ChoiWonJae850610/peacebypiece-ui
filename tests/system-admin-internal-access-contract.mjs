@@ -90,11 +90,10 @@ for (const [name, source] of [
 ]) {
   assert.doesNotMatch(source, /NODE_ENV|VERCEL_ENV|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/, `${name} must not gate internal tools by environment strings`);
 }
-assert.match(devConfig, /isServerDevTestRuntime/);
-assert.match(devConfig, /WAFL_ENABLE_DEV_TEST_CONTEXT === "1"/);
-assert.match(devConfig, /WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT === "1"/);
-assert.match(devConfig, /production_impersonation_flag_disabled/);
-assert.doesNotMatch(devConfig, /NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
+assert.match(devConfig, /isDevTestContextActionAllowedForSystemAdmin/);
+assert.match(devConfig, /canSwitchTestAccount\(\{\s*isSystemAdmin\s*\}\)/);
+assert.match(devConfig, /system_admin_required/);
+assert.doesNotMatch(devConfig, /isServerDevTestRuntime|isServerProductionRuntime|WAFL_ENABLE_DEV_TEST_CONTEXT|WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT|production_impersonation_flag_disabled|NEXT_PUBLIC_APP_RUNTIME_MODE|WAFL_ENABLE_DEV_TEST_CONSOLE/);
 assert.match(serverRuntime, /WAFL_SERVER_RUNTIME_MODE/);
 assert.match(serverRuntime, /VERCEL_ENV/);
 assert.match(serverRuntime, /NODE_ENV/);
@@ -130,14 +129,14 @@ for (const token of [
 }
 
 for (const token of [
-  "시스템 관리자는 배포 환경과 관계없이 내부 조회 화면에 접근할 수 있습니다.",
-  "실제 계정 전환 실행은 기존 개발/테스트 제한을 유지합니다.",
+  "runtime과 관계없이 /id-control",
+  "Seed, Reset, Cleanup, DB/R2 변경 기능은 별도 차단 정책을 유지합니다.",
   "현재 로그인 계정",
   "system-admin 상태",
   "현재 runtime",
   "현재 impersonation 상태",
   "원래 세션 복원",
-  "개발/테스트 환경에서만 실행할 수 있습니다.",
+  "계정 전환을 실행할 수 없습니다.",
   "제품화 로드맵",
   "WAFL UI 카탈로그",
   "기능 및 자동화 현황",

@@ -37,7 +37,7 @@ type DevTestContextOptions = {
   activeTarget: DevTestContextTarget | null;
   targets: DevTestContextTarget[];
   devTestContextEnabled?: boolean;
-  disabledReason?: "production" | "flag_disabled" | "production_impersonation_flag_disabled" | null;
+  disabledReason?: "system_admin_required" | null;
 };
 
 function formatRole(role: string, roleTemplateCode?: string | null) {
@@ -114,7 +114,10 @@ export default function DevTestConsoleClient({
   }
 
   useEffect(() => {
-    void loadOptions();
+    const timer = window.setTimeout(() => {
+      void loadOptions();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const isOverlayActive = Boolean(options?.activeTarget) && (options?.actualSession.userId !== options?.effectiveSession.userId || options?.actualSession.role !== options?.effectiveSession.role || options?.actualSession.companyId !== options?.effectiveSession.companyId);
@@ -163,13 +166,9 @@ export default function DevTestConsoleClient({
   }
 
   const disabledReasonText =
-    options.disabledReason === "production"
-      ? "현재 배포 환경에서는 실제 계정 전환 실행이 제한됩니다."
-      : options.disabledReason === "production_impersonation_flag_disabled"
-        ? "운영 QA 계정 전환 서버 플래그가 꺼져 있어 실행이 제한됩니다."
-        : options.disabledReason === "flag_disabled"
-        ? "개발/테스트 계정 전환 플래그가 꺼져 있어 실행이 제한됩니다."
-        : "현재 환경에서는 실제 계정 전환 실행이 제한됩니다.";
+    options.disabledReason === "system_admin_required"
+      ? "활성 시스템 관리자만 계정 전환을 실행할 수 있습니다."
+      : "선택한 계정은 현재 전환 대상이 아닙니다.";
 
   return (
     <main className="min-h-screen bg-[var(--pbp-surface-soft)] px-6 py-8 text-[var(--pbp-text-primary)]">
@@ -178,7 +177,7 @@ export default function DevTestConsoleClient({
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pbp-status-warning-fg)]">SYSTEM ADMIN</p>
           <h1 className="mt-2 text-2xl font-semibold">개발 제어센터</h1>
           <p className="mt-2 text-sm text-[var(--pbp-status-warning-fg)]">
-            시스템 관리자는 배포 환경과 관계없이 내부 조회 화면에 접근할 수 있습니다. 실제 계정 전환 실행은 기존 개발/테스트 제한을 유지합니다.
+            시스템 관리자는 runtime과 관계없이 /id-control에서 허용된 seed/test 계정 전환을 실행할 수 있습니다. Seed, Reset, Cleanup, DB/R2 변경 기능은 별도 차단 정책을 유지합니다.
           </p>
         </WaflSurface>
 
@@ -305,7 +304,7 @@ export default function DevTestConsoleClient({
 
           {!isActionEnabled ? (
             <WaflInfoBox shape="control" tone="warning" className="mt-4 p-4 text-sm">
-              개발/테스트 환경에서만 실행할 수 있습니다. {disabledReasonText} 현재 화면은 계정, 역할, runtime, navigation 확인을 위한 조회 모드로 표시됩니다.
+              계정 전환을 실행할 수 없습니다. {disabledReasonText} 대상 목록은 진단을 위해 읽기 전용으로 유지됩니다.
             </WaflInfoBox>
           ) : null}
 

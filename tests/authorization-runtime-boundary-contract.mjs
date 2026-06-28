@@ -51,14 +51,10 @@ assert.match(runtime, /return SERVER_RUNTIME_MODES\.production/);
 assert.doesNotMatch(runtime, /NEXT_PUBLIC/);
 
 const devConfig = read("lib/dev/testContext/config.ts");
-assert.match(devConfig, /isServerDevTestRuntime/);
-assert.match(devConfig, /WAFL_ENABLE_DEV_TEST_CONTEXT === "1"/);
-assert.match(devConfig, /WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT === "1"/);
-assert.match(devConfig, /production_impersonation_flag_disabled/);
 assert.match(devConfig, /isDevTestContextActionAllowedForSystemAdmin/);
-assert.match(devConfig, /return "production"/);
-assert.match(devConfig, /return "flag_disabled"/);
-assert.doesNotMatch(devConfig, /NEXT_PUBLIC/);
+assert.match(devConfig, /canSwitchTestAccount\(\{\s*isSystemAdmin\s*\}\)/);
+assert.match(devConfig, /system_admin_required/);
+assert.doesNotMatch(devConfig, /isServerDevTestRuntime|isServerProductionRuntime|WAFL_ENABLE_DEV_TEST_CONTEXT|WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT|production_impersonation_flag_disabled|NEXT_PUBLIC/);
 
 const workOrderHandlers = read("lib/workorder/api/workOrderRouteHandlers.ts");
 assert.match(workOrderHandlers, /validateOpaqueWorkOrderRouteParam/);

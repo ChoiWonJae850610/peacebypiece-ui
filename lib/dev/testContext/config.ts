@@ -1,32 +1,11 @@
 import "server-only";
 
 import { canSwitchTestAccount } from "@/lib/runtime/runtimePolicy";
-import { isServerDevTestRuntime, isServerProductionRuntime } from "@/lib/runtime/serverRuntime";
 
-export type DevTestContextDisabledReason =
-  | "production"
-  | "flag_disabled"
-  | "production_impersonation_flag_disabled"
-  | null;
-
-export function isDevTestContextRuntimeAllowed(): boolean {
-  return isServerDevTestRuntime();
-}
-
-export function isDevTestContextFlagEnabled(): boolean {
-  return process.env.WAFL_ENABLE_DEV_TEST_CONTEXT === "1";
-}
-
-export function isProductionDevTestContextFlagEnabled(): boolean {
-  return process.env.WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT === "1";
-}
+export type DevTestContextDisabledReason = "system_admin_required" | null;
 
 export function isDevTestContextEnabledForSystemAdmin(isSystemAdmin: boolean): boolean {
-  if (!canSwitchTestAccount({ isSystemAdmin })) return false;
-  if (!isDevTestContextFlagEnabled()) return false;
-  if (isDevTestContextRuntimeAllowed()) return true;
-  if (isServerProductionRuntime()) return isProductionDevTestContextFlagEnabled();
-  return false;
+  return canSwitchTestAccount({ isSystemAdmin });
 }
 
 export function isDevTestContextEnabled(): boolean {
@@ -34,15 +13,7 @@ export function isDevTestContextEnabled(): boolean {
 }
 
 export function getDevTestContextDisabledReasonForSystemAdmin(isSystemAdmin: boolean): DevTestContextDisabledReason {
-  if (!canSwitchTestAccount({ isSystemAdmin })) return "production";
-  if (!isDevTestContextFlagEnabled()) {
-    return "flag_disabled";
-  }
-  if (isDevTestContextRuntimeAllowed()) return null;
-  if (isServerProductionRuntime()) {
-    return isProductionDevTestContextFlagEnabled() ? null : "production_impersonation_flag_disabled";
-  }
-  return "production";
+  return canSwitchTestAccount({ isSystemAdmin }) ? null : "system_admin_required";
 }
 
 export function getDevTestContextDisabledReason(): DevTestContextDisabledReason {

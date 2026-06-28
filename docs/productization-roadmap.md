@@ -1,14 +1,14 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.25.2`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
+> Active baseline: `0.24.25.3`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.25.2`
-- APP_VERSION: `0.24.25.2`
+- Roadmap checkpoint version: `0.24.25.3`
+- APP_VERSION: `0.24.25.3`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `84%`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -24,16 +24,27 @@
 5. `0.24.25` - Authorization, Runtime Boundary, and Opaque Routing
 6. `0.24.25.1` - /id-control Read-only Account List Regression Fix
 7. `0.24.25.2` - /id-control Production QA Impersonation Allowlist
-8. `0.24.26` - Public Signup, Verification, Approval, and Trial
-9. `0.24.27` - System Catalog, Sizes, and POM
-10. `0.24.28` - PDF and R2 Lifecycle
-11. `0.24.29` - Company-wide Export
-12. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
-13. `0.24.31` - PG Billing and Subscription Operations
+8. `0.24.25.3` - /id-control Runtime-independent System-admin Impersonation
+9. `0.24.26` - Public Signup, Verification, Approval, and Trial
+10. `0.24.27` - System Catalog, Sizes, and POM
+11. `0.24.28` - PDF and R2 Lifecycle
+12. `0.24.29` - Company-wide Export
+13. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
+14. `0.24.31` - PG Billing and Subscription Operations
+
+## 0.24.25.3 - /id-control Runtime-independent System-admin Impersonation
+
+- `/id-control` switch/clear action no longer requires server dev/test runtime or action environment flags.
+- Active system administrator, system-admin allowlist, seed/test target allowlist, and switch/restore audit logging remain required.
+- Options API remains the single source of truth for button enabled/disabled state.
+- Arbitrary user id, company id, role input, general customer accounts, inactive system admins, and non-allowlisted system admins remain blocked.
+- Seed, Reset, Cleanup, DB/R2 mutation, DB migration, Purge, and destructive simulator guards are unchanged.
+- No DB migration, DB/R2 mutation, package/lockfile change, or Cloudflare Worker change is included.
+- This patch does not start 0.24.26.
 
 ## 0.24.25.2 - /id-control Production QA Impersonation Allowlist
 
-- Production switch/clear action is opt-in and requires active system administrator, `WAFL_ENABLE_DEV_TEST_CONTEXT=1`, and server-only `WAFL_ENABLE_PRODUCTION_DEV_TEST_CONTEXT=1`.
+- 0.24.25.2 originally added a production QA action gate, but this was superseded by the 0.24.25.3 runtime-independent system-admin impersonation policy.
 - `/id-control` buttons use `/api/dev/test-context/options` as the single source of truth for action enabled/disabled state.
 - Target listing remains read-only and active-system-admin-only even when actions are disabled.
 - Targets remain limited to existing seed/test targets returned by `buildDevTestContextOptions`; arbitrary production customer ids are not accepted.
@@ -54,7 +65,7 @@
 ## 0.24.25 - Authorization, Runtime Boundary, and Opaque Routing
 
 - Server-side permission checks now own app route authorization; app routes no longer use the legacy header-preview permission guard.
-- Dev/test account switching requires active system administrator, server non-production runtime, and `WAFL_ENABLE_DEV_TEST_CONTEXT=1`; production and unknown runtime stay blocked.
+- Dev/test account switching originally required server non-production runtime and an action flag; this was superseded by the 0.24.25.3 policy for `/id-control`.
 - Workorder direct route parameters are validated through an opaque-compatible common validator before repository access.
 - Missing, malformed, cross-company, and inaccessible workorder/attachment resources use common WAFL not-found/permission states with reduced information exposure.
 - Attachment file proxy access now requires `storage.read`, company prefix match, and active DB attachment metadata for the requested storage or thumbnail key.
@@ -62,7 +73,7 @@
 - No DB migration, DB/R2 mutation, package/lockfile change, or Cloudflare Worker change was included.
 - Operations dashboard PLAN AND STORAGE / policy 기준 / member status UI cleanup was deferred because it is outside the official Sprint D security boundary.
 - Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`, not by environment-name strings.
-- `/id-control` test account switching is allowed only when the server dev/test runtime and explicit enable flag allow it.
+- `/id-control` test account switching is allowed for active system administrators regardless of runtime/env action flags.
 - Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
 - Verification profile reference: `system-admin-internal-access`.
 

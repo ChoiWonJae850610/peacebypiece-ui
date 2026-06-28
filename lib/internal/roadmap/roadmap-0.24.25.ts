@@ -15,7 +15,7 @@ export const ROADMAP_0_24_25: RoadmapVersionDetail = {
   ],
   expectedUi: [
     "No broad customer UI redesign is included.",
-    "/id-control still renders for active system administrators, but account switching shows disabled state in production or when the dev/test flag is off.",
+    "/id-control still renders for active system administrators; the account-switching runtime gate from this version was later superseded by 0.24.25.3.",
   ],
   developmentPurpose: [
     "Close UI-only authorization gaps and header-preview permission bypass risk.",
@@ -53,7 +53,7 @@ export const ROADMAP_0_24_25: RoadmapVersionDetail = {
     "No app route uses the legacy header-preview API permission guard.",
     "Workorder deep links validate opaque-compatible parameters before repository access.",
     "Attachment proxy requires active DB metadata in the caller company.",
-    "Dev/test account switching is production-blocked by server runtime and explicit flag.",
+    "Dev/test account switching runtime gating from this version was later superseded by 0.24.25.3.",
     "Relevant authorization, runtime, opaque route, cross-company, build, and diff checks pass.",
   ],
   failureConditions: [
@@ -100,7 +100,7 @@ export const ROADMAP_0_24_25: RoadmapVersionDetail = {
     "git diff --check",
   ],
   manualTests: [
-    "Active system administrator: open /id-control and verify account switching is disabled in production or when WAFL_ENABLE_DEV_TEST_CONTEXT is not 1.",
+    "Active system administrator: open /id-control and verify latest account-switching behavior using the current 0.24.25.3 policy.",
     "Workspace member without storage/workorder/member permissions: direct API calls return WAFL_PERMISSION_DENIED.",
     "Other-company workorder or attachment key: direct URL/API returns WAFL_NOT_FOUND without exposing the target id.",
   ],
@@ -131,7 +131,7 @@ export const ROADMAP_0_24_25: RoadmapVersionDetail = {
   result: {
     completedSummary: [
       "Server-side API permission checks replaced legacy request-header preview guards on app routes.",
-      "Production/dev-test runtime boundary now uses server-only runtime evaluation and an explicit enable flag.",
+      "Production/dev-test runtime boundary originally used server-only runtime evaluation and an action gate; /id-control switching was later superseded by 0.24.25.3.",
       "Workorder route parameters and attachment proxy access were hardened for opaque/deep-link and cross-company cases.",
     ],
     commitHash: "not created; automatic Git conditions were blocked by a dirty starting working tree",
