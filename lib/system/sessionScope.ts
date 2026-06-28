@@ -2,7 +2,8 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 
-import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
+import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 
 export const SYSTEM_ADMIN_SESSION_REQUIRED = "SYSTEM_ADMIN_SESSION_REQUIRED";
 export const SYSTEM_ADMIN_ROLE_REQUIRED = "SYSTEM_ADMIN_ROLE_REQUIRED";
@@ -19,7 +20,7 @@ export type SystemAdminScopeResult =
   | { ok: false; response: NextResponse };
 
 export async function requireSystemAdminScope(): Promise<SystemAdminScopeResult> {
-  const session = await getCurrentWaflSession();
+  const session = await getCurrentWaflAuthSession();
 
   if (!session) {
     return {
@@ -29,6 +30,13 @@ export async function requireSystemAdminScope(): Promise<SystemAdminScopeResult>
   }
 
   if (session.role !== "system_admin") {
+    return {
+      ok: false,
+      response: NextResponse.json({ ok: false, error: SYSTEM_ADMIN_ROLE_REQUIRED }, { status: 403 }),
+    };
+  }
+
+  if (!(await isActiveSystemAdminSession(session))) {
     return {
       ok: false,
       response: NextResponse.json({ ok: false, error: SYSTEM_ADMIN_ROLE_REQUIRED }, { status: 403 }),

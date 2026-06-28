@@ -3,7 +3,8 @@
 ## Canonical Project Context
 - For productization/version work, read these files before implementation: `docs/codex-current-state.md`, `docs/project/01-codex-context.md`, `docs/project/02-project-decisions.md`, `docs/project/03-productization.md`, `docs/project/04-release-checklist.md`, `docs/productization-backlog.md`, and the target `lib/internal/roadmap/roadmap-*.ts`.
 - `AGENTS.md` defines operating rules. `docs/project/*` records the project context, durable decisions, productization process, and release checklist. Do not duplicate large policy blocks in both places.
-- If chat history conflicts with committed project context, prefer local Git state, then `lib/internal/roadmap/*`, then `docs/codex-current-state.md`, then `docs/project/*`.
+- For product policy, billing, signup, trial, access-boundary, and launch decisions, prefer the final owner policy documents first: `docs/codex-current-state.md`, then `docs/project/26-final-policy-decisions-and-master-todo.md`, then `docs/project/31-pre-codex-integrated-master-plan.md`, then related latest confirmed topic specs, then `lib/internal/roadmap/*`, then older/provisional documents.
+- If existing implementation, older roadmap text, or general security defaults conflict with final owner policy, classify it as an implementation mismatch and align the roadmap/implementation to the final policy instead of re-asking settled decisions.
 
 
 ## Start Of Work

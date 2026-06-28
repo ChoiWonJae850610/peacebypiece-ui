@@ -12,14 +12,14 @@ export const DEFAULT_PLAN_CODES = {
 } as const;
 
 export const DEFAULT_PLAN_STORAGE_LIMITS = {
-  TRIAL: 1024 * 1024 * 1024,
+  TRIAL: 100 * 1024 * 1024,
   STARTER: 5 * 1024 * 1024 * 1024,
   TEAM: 50 * 1024 * 1024 * 1024,
   BUSINESS: 200 * 1024 * 1024 * 1024,
 } as const;
 
 export const DEFAULT_PLAN_MEMBER_LIMITS = {
-  TRIAL: 5,
+  TRIAL: 3,
   STARTER: 3,
   TEAM: 15,
   BUSINESS: 50,

@@ -80,6 +80,8 @@ export default function DevTestConsoleClient({
   const [selectedTargetKey, setSelectedTargetKey] = useState("");
   const [message, setMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [optionsStatus, setOptionsStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [optionsError, setOptionsError] = useState("");
   const [cleanRoomModalOpen, setCleanRoomModalOpen] = useState(false);
 
   const groupedTargets = useMemo(() => {
@@ -101,9 +103,20 @@ export default function DevTestConsoleClient({
   const companyTargetCount = groupedTargets.filter((group) => group.companyName !== "시스템관리자").length;
   const roleTargetCount = options?.targets.filter((target) => target.targetType === "company").length ?? 0;
 
+  function handleOptionsLoadFailure() {
+    setOptions(null);
+    setOptionsStatus("error");
+    setOptionsError("REQUEST_FAILED");
+  }
+
   async function loadOptions() {
+    setOptionsStatus("loading");
+    setOptionsError("");
     const response = await fetch("/api/dev/test-context/options", { cache: "no-store" });
     if (!response.ok) {
+      setOptions(null);
+      setOptionsStatus("error");
+      setOptionsError(`HTTP ${response.status}`);
       setMessage(`옵션 조회 실패: ${response.status}`);
       return;
     }
@@ -111,11 +124,12 @@ export default function DevTestConsoleClient({
     const nextOptions = (await response.json()) as DevTestContextOptions;
     setOptions(nextOptions);
     setSelectedTargetKey(nextOptions.activeTarget?.targetKey ?? nextOptions.targets[0]?.targetKey ?? "");
+    setOptionsStatus("success");
   }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void loadOptions();
+      void loadOptions().catch(handleOptionsLoadFailure);
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -138,7 +152,7 @@ export default function DevTestConsoleClient({
         return;
       }
       setMessage("테스트 사용자 컨텍스트를 적용했습니다.");
-      await loadOptions();
+      await loadOptions().catch(handleOptionsLoadFailure);
     } finally {
       setIsBusy(false);
     }
@@ -155,10 +169,31 @@ export default function DevTestConsoleClient({
         return;
       }
       setMessage("원래 사용자 컨텍스트로 복구했습니다.");
-      await loadOptions();
+      await loadOptions().catch(handleOptionsLoadFailure);
     } finally {
       setIsBusy(false);
     }
+  }
+
+  if (!options && optionsStatus === "error") {
+    return (
+      <main className="min-h-screen bg-[var(--pbp-surface-soft)] px-6 py-8 text-[var(--pbp-text-primary)]">
+        <div className="mx-auto flex max-w-3xl flex-col gap-4">
+          <WaflInfoBox shape="control" tone="warning" className="p-6 text-sm">
+            <p className="font-semibold">Unable to load id-control options.</p>
+            <p className="mt-2 text-[var(--pbp-text-muted)]">{optionsError || "OPTIONS_LOAD_FAILED"}</p>
+          </WaflInfoBox>
+          <div className="flex flex-wrap gap-3">
+            <WaflButton onClick={() => void loadOptions().catch(handleOptionsLoadFailure)} variant="primary" size="sm">
+              Retry
+            </WaflButton>
+            <WaflLinkButton href="/system" variant="secondary" size="sm">
+              System dashboard
+            </WaflLinkButton>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   if (!options) {

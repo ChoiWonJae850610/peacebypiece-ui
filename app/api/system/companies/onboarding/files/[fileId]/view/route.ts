@@ -41,6 +41,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return createSystemCompanyOnboardingFileErrorResponse("COMPANY_ONBOARDING_FILE_VIEW_NOT_CONFIGURED", 503);
   }
 
+  if (request.nextUrl.searchParams.get("download") === "1") {
+    return createSystemCompanyOnboardingFileErrorResponse("COMPANY_ONBOARDING_FILE_DOWNLOAD_BLOCKED", 403);
+  }
+
   const params = await context.params;
   const fileId = params.fileId?.trim() ?? "";
   if (!fileId) {
@@ -73,10 +77,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     const signedUrl = createR2WorkerFileUrl({ key: file.storageKey });
-    const download = request.nextUrl.searchParams.get("download") === "1";
     const targetUrl = appendDownloadParams({
       url: signedUrl.url,
-      download,
+      download: false,
       fileName: file.originalName,
     });
 

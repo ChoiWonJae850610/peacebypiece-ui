@@ -1,14 +1,14 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.25.3`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
+> Active baseline: `0.24.25.4`. Next implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial after user confirmation.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.25.3`
-- APP_VERSION: `0.24.25.3`
+- Roadmap checkpoint version: `0.24.25.4`
+- APP_VERSION: `0.24.25.4`
 - Feature implementation progress: about `93%`
 - Productization readiness: about `84%`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -25,12 +25,22 @@
 6. `0.24.25.1` - /id-control Read-only Account List Regression Fix
 7. `0.24.25.2` - /id-control Production QA Impersonation Allowlist
 8. `0.24.25.3` - /id-control Runtime-independent System-admin Impersonation
-9. `0.24.26` - Public Signup, Verification, Approval, and Trial
-10. `0.24.27` - System Catalog, Sizes, and POM
-11. `0.24.28` - PDF and R2 Lifecycle
-12. `0.24.29` - Company-wide Export
-13. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
-14. `0.24.31` - PG Billing and Subscription Operations
+9. `0.24.25.4` - Policy Mismatch Correction for System-admin Boundary, Certificate Viewer, and Trial
+10. `0.24.26` - Public Signup, Verification, Approval, and Trial
+11. `0.24.27` - System Catalog, Sizes, and POM
+12. `0.24.28` - PDF and R2 Lifecycle
+13. `0.24.29` - Company-wide Export
+14. `0.24.30` - Storage Enforcement, Termination, and Automatic Deletion
+15. `0.24.31` - PG Billing and Subscription Operations
+
+## 0.24.25.4 - Policy Mismatch Correction for System-admin Boundary, Certificate Viewer, and Trial
+
+- System-admin internal APIs validate the actual signed-in active system-admin actor, including during `/id-control` customer impersonation.
+- Workspace/customer APIs continue to use the effective impersonated role and permission scope.
+- Business-certificate approval viewer download mode is blocked by the server route.
+- Trial constants are aligned to 7 days, 100MB, and 3 members.
+- `/id-control` options loading has an explicit safe error/retry state.
+- No DB migration, DB/R2 mutation, package/lockfile change, Cloudflare Worker change, or 0.24.26 public signup implementation is included.
 
 ## 0.24.25.3 - /id-control Runtime-independent System-admin Impersonation
 

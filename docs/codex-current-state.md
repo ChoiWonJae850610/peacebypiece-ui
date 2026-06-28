@@ -1,10 +1,10 @@
-# Codex Current State - 0.24.25.3
+# Codex Current State - 0.24.25.4
 
 ## Active execution gate
 
-- Current version: `0.24.25.3`.
+- Current version: `0.24.25.4`.
 - Next implementation version: `0.24.26`.
-- Current work result: **0.24.25.3 /id-control runtime-independent system-admin impersonation** allows active system administrators to switch to allowlisted seed/test targets in any runtime while preserving target allowlists, audit logging, and destructive-action boundaries.
+- Current work result: **0.24.25.4 policy mismatch correction** aligns system-admin actual/effective session boundaries, business-certificate viewer download blocking, Trial constants, and /id-control error-state UX with the final owner policy before 0.24.26 begins.
 - Next work: **Sprint E - Public Signup, Verification, Approval, and Trial** after user approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
@@ -20,11 +20,12 @@ Older documents that describe `0.24.22` as UI-first, PB-005/006/010 implementati
 ## Mandatory Start Rules
 
 1. Read `AGENTS.md`, this file, document 26, document 31, then the target Sprint specifications.
-2. Do not broaden the current Sprint without stopping and recording the newly discovered dependency.
-3. Do not execute production DB/R2/PG mutations without separate explicit approval.
-4. Any DB change requires read-only reconciliation, deployed-schema drift evidence, dry-run, rollback steps, and a separate migration boundary.
-5. Before 1.0, `master` remains the single development/QA branch. After local/build/contract checks pass, commit and push to `origin/master` for Vercel real-device QA.
-6. Preserve `/id-control` and the system-admin/test-company role switcher for QA. Keep original-session restore and audit logging. Do not extend this to Seed, Reset, Cleanup, DB/R2 mutation, or destructive simulator actions.
+2. Treat the final owner policy documents as the implementation source of truth; if older roadmap/provisional text or prior code conflicts with document 26/current-state, classify it as an implementation mismatch instead of re-asking the same policy.
+3. Do not broaden the current Sprint without stopping and recording the newly discovered dependency.
+4. Do not execute production DB/R2/PG mutations without separate explicit approval.
+5. Any DB change requires read-only reconciliation, deployed-schema drift evidence, dry-run, rollback steps, and a separate migration boundary.
+6. Before 1.0, `master` remains the single development/QA branch. After local/build/contract checks pass, commit and push to `origin/master` for Vercel real-device QA.
+7. Preserve `/id-control` and the system-admin/test-company role switcher for QA. Keep original-session restore and audit logging. Do not extend this to Seed, Reset, Cleanup, DB/R2 mutation, or destructive simulator actions.
 
 ## 0.24.22 Result Boundary
 
@@ -151,6 +152,20 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - DB schema migration/backfill/RLS DDL execution: none.
 - Cloudflare Worker code change: none.
 - Manual PC/mobile production verification is recommended after Vercel deploys the patch commit.
+
+## 0.24.25.4 Result Boundary
+
+0.24.25.4 is a policy mismatch correction before 0.24.26; it is not the start of Public Signup, Verification, Approval, and Trial.
+
+- `/api/system/**` common system-admin scope now validates the actual signed auth session and the active system-admin allowlist, so internal system APIs remain available to the real system-admin actor during `/id-control` customer impersonation.
+- Customer workspace APIs continue to use the effective impersonated session for role and permission checks.
+- System-admin business-certificate approval viewer requests block WAFL-provided download mode; normal approval viewing remains available.
+- Trial constants are aligned to the final policy: 7 days, 100MB, and 3 members.
+- `/id-control` options loading now has a safe error/retry state instead of staying in loading after fetch, HTTP, or parsing failures.
+- Production DB/R2 mutation: 0.
+- Dev/test DB/R2 mutation: 0.
+- DB schema migration/backfill/RLS DDL execution: none.
+- Cloudflare Worker code change: none.
 
 ## Runtime And Product Preservation
 

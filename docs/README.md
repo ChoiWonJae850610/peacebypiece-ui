@@ -1,6 +1,6 @@
 # WAFL / PeaceByPiece Docs Index
 
-- 기준 앱 버전: `0.24.25.3`
+- 기준 앱 버전: `0.24.25.4`
 - 현재 실행 기준: `docs/codex-current-state.md`
 - active 실행계획: `docs/project/31-pre-codex-integrated-master-plan.md`
 - GO/STOP 기준: `docs/project/32-pre-codex-authority-consistency-gate.md`
@@ -41,9 +41,9 @@
 - `/worker` WorkOrderWorkspace 및 WAFL empty/loading state boundary 유지
 - 권한, tenant, API, repository, DB, R2, package/lockfile 변경 없음
 
-## 4. 0.24.25.3 기준
+## 4. 0.24.25.4 기준
 
-0.24.25.3은 `/id-control` account impersonation을 active system-admin에게 runtime/env와 무관하게 허용하는 보정 버전입니다. 다음 공식 작업은 0.24.26 Public Signup, Verification, Approval, and Trial입니다.
+0.24.25.4는 0.24.25 정책 대조 감사에서 확인된 핵심 mismatch를 보정한 버전입니다. 다음 공식 작업은 0.24.26 Public Signup, Verification, Approval, and Trial입니다.
 
 - 서버측 권한 검증과 직접 URL/API 우회 차단
 - `/id-control` account switching은 active system-admin, system-admin allowlist, seed/test target allowlist, audit trace를 유지하며 runtime/env action flag를 요구하지 않음

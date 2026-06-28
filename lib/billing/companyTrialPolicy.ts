@@ -1,7 +1,7 @@
 export const COMPANY_TRIAL_DAYS = 7;
 export const TRIAL_PLAN_CODE = "trial" as const;
-export const TRIAL_STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
-export const TRIAL_MEMBER_LIMIT = 5;
+export const TRIAL_STORAGE_LIMIT_BYTES = 100 * 1024 * 1024;
+export const TRIAL_MEMBER_LIMIT = 3;
 export const COMPANY_SUBSCRIPTION_STATUSES = [
   "trialing",
   "trial_expired",
