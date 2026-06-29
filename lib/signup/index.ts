@@ -3,6 +3,7 @@ export * from "./signupApplicationFilePolicy";
 export * from "./signupApplicantSession";
 export * from "./currentSignupApplicantSession";
 export * from "./signupApplicationApiService";
+export * from "./signupRequestGuards";
 export * from "./signupApplicationRepository";
 export * from "./signupApplicationService";
 export * from "./signupApplicationSession";

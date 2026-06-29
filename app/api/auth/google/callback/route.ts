@@ -49,6 +49,13 @@ function createSessionResponse(request: Request, redirectPath: string, session: 
     maxAge: 60 * 60 * 24 * 7,
   });
   response.cookies.delete(GOOGLE_OAUTH_STATE_COOKIE);
+  response.cookies.set(WAFL_SIGNUP_APPLICANT_SESSION_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: new URL(request.url).protocol === "https:",
+    path: "/",
+    maxAge: 0,
+  });
   return response;
 }
 

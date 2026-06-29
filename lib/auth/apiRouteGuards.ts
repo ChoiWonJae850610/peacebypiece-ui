@@ -184,13 +184,13 @@ export async function hasWorkspaceApiPermission(
 export async function requireWorkspaceApiGuard(
   options: WorkspaceApiGuardOptions = {},
 ): Promise<WorkspaceApiGuardResult> {
-  const applicantSession = await getCurrentSignupApplicantSession();
-  if (applicantSession) {
-    return { ok: false, response: createSignupApplicantWorkspaceBlockedResponse() };
-  }
-
   const session = await getCurrentWaflSession();
   if (!session) {
+    const applicantSession = await getCurrentSignupApplicantSession();
+    if (applicantSession) {
+      return { ok: false, response: createSignupApplicantWorkspaceBlockedResponse() };
+    }
+
     return { ok: false, response: createApiSessionRequiredResponse("workspace") };
   }
 

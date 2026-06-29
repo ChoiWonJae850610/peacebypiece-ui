@@ -205,6 +205,8 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "PostgreSQL signup repository and applicant API/session foundation are wired for draft/create/read/update/submit/status/cancel, applicant ownership checks, duplicate mapping, and compare-and-set status transitions.",
       "Google OAuth preserves email_verified and the signup entry rejects unverified Google profiles without routing existing member/system-admin/invitation login into signup.",
       "Pending signup applicants are blocked from workspace page/API access before approval while actual system-admin internal APIs keep the actual-session boundary.",
+      "Normal workspace/system-admin WAFL sessions now take precedence over stale signup applicant cookies, and normal login clears the signup applicant cookie.",
+      "Public signup draft/status UI is available through the existing public entry and /pending?type=signup, with draft save, submit/resubmit, status display, cancel, logout, and safe error/loading states.",
       "Repo-state/build-result metadata now distinguishes DB Migration Applied, DB Schema Mutation, Business Data Mutation, R2 Mutation, and Production Migration; schema mutation true only for approved dev/test migration.",
       "The draft requires explicit email_verified evidence, normalized 10-digit business registration matching, application-owned certificate files, and provisioning failure handling through the approval operation.",
       "0.24.28 and 0.24.30 reserved dependency notes remain recorded in roadmap/backlog docs.",
@@ -214,7 +216,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "Foundation verification PASS so far: runtime development, approved DB fingerprint 01e5dcc7fea3, migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, preflight findings 0, migration apply PASS, post-apply findings 0, smoke rollback complete, business data mutation 0, R2 mutation 0; repository/API/session/guard contracts added for the next validation run.",
     remainingIssues: [
       "Decide technical rate-limit/CAPTCHA mechanism during implementation planning.",
-      "Public signup full UI, certificate R2 upload, system-admin approval/rejection/correction UI, notification email, and actual company/user/member/subscription provisioning remain unimplemented.",
+      "Certificate R2 upload, system-admin approval/rejection/correction UI, notification email, and actual company/user/member/subscription provisioning remain unimplemented.",
       "Production migration and any additional DB schema/data/R2 mutation require separate explicit approval.",
     ],
     userConfirmationRequired: true,

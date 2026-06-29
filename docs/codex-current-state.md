@@ -4,8 +4,8 @@
 
 - Current version: `0.24.26`.
 - Current implementation version: `0.24.26`.
-- Current work result: **0.24.26 signup foundation in progress** starts Public Signup, Verification, Approval, and Trial with signup_applications schema applied once to the approved dev/test DB plus PostgreSQL repository, applicant session, Google email_verified, draft/status APIs, and pending workspace guards.
-- Next work: continue scoped public signup UI, certificate upload/viewer, system-admin review, notification, and approval provisioning work; do not start later versions or production migration.
+- Current work result: **0.24.26 signup foundation in progress** starts Public Signup, Verification, Approval, and Trial with signup_applications schema applied once to the approved dev/test DB plus PostgreSQL repository, applicant session, Google email_verified, draft/status APIs, pending workspace guards, normal-session precedence over stale applicant cookies, and public signup draft/status UI.
+- Next work: continue scoped certificate upload/viewer, system-admin review, notification, and approval provisioning work; do not start later versions or production migration.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
@@ -174,13 +174,14 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - APP_VERSION is `0.24.26`.
 - Canonical roadmap status is `in_progress`.
 - The signup migration was explicitly approved and executed once against the approved dev/test DB only.
-- The first implementation step is limited to signup application schema, TypeScript domain types, PostgreSQL repository/service/API foundation, status transition validation, duplicate/idempotency constraints, Google email_verified preservation, applicant session/ownership, and pending access guard foundation.
+- The first implementation step is limited to signup application schema, TypeScript domain types, PostgreSQL repository/service/API foundation, status transition validation, duplicate/idempotency constraints, Google email_verified preservation, applicant session/ownership, pending access guard foundation, and public signup draft/status UI.
 - `email_verified` has no database default; OAuth/API code must pass verified Google email evidence explicitly and the schema keeps `CHECK (email_verified = true)`.
 - Business registration matching uses `business_registration_number_normalized`, a digits-only canonical 10-digit value, for active duplicate prevention and repository lookup.
 - Existing `company_files` and `company_onboarding_files` require `company_id`, so pre-company business certificate ownership is represented by `signup_application_files`; approval may later link to `company_files` through `approved_company_file_id`.
 - Generic status transitions do not jump to `provisioning_failed`; provisioning failure is represented by the approval provisioning operation after provisioning has started.
-- Pending signup applicants are blocked from workspace page/API access before approval; signup draft/status/edit/resubmit/cancel APIs re-check applicant session ownership by Google sub and normalized email.
-- Public signup full UI, certificate R2 upload, system-admin review UI, notification email, approval/rejection/correction APIs, actual company/user/member/subscription provisioning, additional DB/R2 mutation beyond the approved schema migration, Cloudflare Worker changes, and later version work remain out of scope for this step.
+- Pending signup applicants are blocked from workspace page/API access before approval only when no normal WAFL session exists. A valid normal workspace or actual system-admin session takes precedence over a stale applicant cookie.
+- Signup draft/status/edit/resubmit/cancel APIs re-check applicant session ownership by Google sub and normalized email. UI status is derived from repository/DB application status, not from cookie onboarding state.
+- Public signup UI currently covers CTA, Google signup entry, verified applicant draft form, save, submit/resubmit, status display, cancel, logout, loading/error/empty states, and a placeholder for certificate upload. Certificate R2 upload, system-admin review UI, notification email, approval/rejection/correction APIs, actual company/user/member/subscription provisioning, additional DB/R2 mutation beyond the approved schema migration, Cloudflare Worker changes, and later version work remain out of scope for this step.
 
 ### 0.24.26 Dev/Test Migration Evidence
 
@@ -199,7 +200,7 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - R2 mutation: 0.
 - `4. Newest` remains reserved for latest full source ZIP and matching repo-state only; DB audit logs are stored under `C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\DB_Audit\`.
 - Latest repo-state must distinguish DB Migration Applied, DB Schema Mutation, Business Data Mutation, R2 Mutation, and Production Migration; for this foundation, DB schema mutation is true only for the approved dev/test migration, while business data mutation, R2 mutation, and production migration remain false.
-- 0.24.26 remains `in_progress`; public signup full UI, certificate R2 upload, system-admin approval UI/API, notification email, and actual provisioning are not implemented yet.
+- 0.24.26 remains `in_progress`; certificate R2 upload, system-admin approval UI/API, notification email, and actual provisioning are not implemented yet.
 
 ## Runtime And Product Preservation
 

@@ -54,6 +54,17 @@ export default function WaflLoginPage({ error, returnTo }: WaflLoginPageProps) {
           <GoogleMark />
           Google로 계속하기
         </a>
+        <div className="rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
+          <p className="font-black text-[var(--pbp-text-primary)]">처음 사용하는 회사인가요?</p>
+          <p className="mt-1">Google 인증 후 7일 Trial 신청서를 작성할 수 있습니다.</p>
+          <a
+            href="/api/auth/google/start?intent=signup"
+            className="mt-3 flex w-full items-center justify-center gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-brand-primary)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm font-black text-[var(--pbp-brand-primary)] transition hover:bg-[var(--pbp-surface-soft)]"
+          >
+            <GoogleMark />
+            7일 무료로 시작하기
+          </a>
+        </div>
       </ATypePublicCard>
     </ATypePublicFrame>
   );

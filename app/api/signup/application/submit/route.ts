@@ -6,6 +6,7 @@ import {
   submitOwnedSignupApplication,
   summarizeSignupApplication,
 } from "@/lib/signup/signupApplicationApiService";
+import { assertSignupRateLimitExtensionPoint, createSignupMutationForbiddenResponse, isSameOriginSignupMutation } from "@/lib/signup/signupRequestGuards";
 
 function jsonError(error: unknown): NextResponse {
   if (error instanceof SignupApplicationApiError) {
@@ -14,8 +15,10 @@ function jsonError(error: unknown): NextResponse {
   return NextResponse.json({ ok: false, code: "SIGNUP_APPLICATION_SUBMIT_UNAVAILABLE" }, { status: 500, headers: { "Cache-Control": "no-store" } });
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    if (!isSameOriginSignupMutation(request)) return createSignupMutationForbiddenResponse();
+    assertSignupRateLimitExtensionPoint();
     const session = await getCurrentSignupApplicantSession();
     if (!session) throw new SignupApplicationApiError("SIGNUP_APPLICANT_SESSION_REQUIRED", 401);
     const application = await submitOwnedSignupApplication({ session });

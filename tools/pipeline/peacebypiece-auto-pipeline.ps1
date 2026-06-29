@@ -734,6 +734,10 @@ function GetLocalRepoVerificationSummary {
             Profile = $ProfileName
             Result = "not provided"
             HeadHash = ""
+            TargetedEslintPassed = ""
+            TargetedEslintCommand = ""
+            TypecheckPassed = ""
+            TypecheckCommand = ""
             BuildPassed = ""
             BuildCommand = ""
             ExecutedAt = ""
@@ -745,6 +749,8 @@ function GetLocalRepoVerificationSummary {
 
     $lines = @(Get-Content -LiteralPath $ResultPath -Encoding UTF8)
     $build = GetLocalRepoVerificationCommandResult -Lines $lines -ResultName "npm run build"
+    $targetedEslint = GetLocalRepoVerificationCommandResult -Lines $lines -ResultName "targeted ESLint"
+    $typecheck = GetLocalRepoVerificationCommandResult -Lines $lines -ResultName "tsc --noEmit"
     $mutation = GetLocalRepoVerificationCommandResult -Lines $lines -ResultName "npm run audit:wafl-mutations"
     $contracts = @($lines | Where-Object {
         $text = [string]$_
@@ -756,6 +762,10 @@ function GetLocalRepoVerificationSummary {
         Profile = if ([string]::IsNullOrWhiteSpace($ProfileName)) { GetLocalRepoVerificationField -Lines $lines -Name "Profile" } else { $ProfileName }
         Result = if (($lines -join "`n") -match 'VERIFY_SAFE_RESULT:\s*(PASS|FAIL|CHECK_ONLY)') { $matches[1] } else { "unknown" }
         HeadHash = GetLocalRepoVerificationField -Lines $lines -Name "HeadHash"
+        TargetedEslintPassed = $targetedEslint.Passed
+        TargetedEslintCommand = $targetedEslint.Command
+        TypecheckPassed = $typecheck.Passed
+        TypecheckCommand = $typecheck.Command
         BuildPassed = $build.Passed
         BuildCommand = $build.Command
         ExecutedAt = GetLocalRepoVerificationField -Lines $lines -Name "ExecutedAt"
@@ -784,6 +794,11 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "HEAD Hash:" -Values @([string]$headHash)
     AddRepoStateSection -Lines $lines -Title "Verification Profile:" -Values @([string]$VerificationSummary.Profile)
     AddRepoStateSection -Lines $lines -Title "Verification Result Path:" -Values @([string]$VerificationSummary.Path)
+    AddRepoStateSection -Lines $lines -Title "Verification Result:" -Values @([string]$VerificationSummary.Result)
+    AddRepoStateSection -Lines $lines -Title "Targeted ESLint:" -Values @($(if ($VerificationSummary.TargetedEslintPassed -eq "True") { "PASS" } elseif ($VerificationSummary.TargetedEslintPassed -eq "False") { "FAIL" } else { "unknown" }))
+    AddRepoStateSection -Lines $lines -Title "Targeted ESLint Command:" -Values @([string]$VerificationSummary.TargetedEslintCommand)
+    AddRepoStateSection -Lines $lines -Title "Typecheck:" -Values @($(if ($VerificationSummary.TypecheckPassed -eq "True") { "PASS" } elseif ($VerificationSummary.TypecheckPassed -eq "False") { "FAIL" } else { "unknown" }))
+    AddRepoStateSection -Lines $lines -Title "Typecheck Command:" -Values @([string]$VerificationSummary.TypecheckCommand)
     AddRepoStateSection -Lines $lines -Title "Build Result:" -Values @($(if ($VerificationSummary.BuildPassed -eq "True") { "PASS" } elseif ($VerificationSummary.BuildPassed -eq "False") { "FAIL" } else { "unknown" }))
     AddRepoStateSection -Lines $lines -Title "Build Command:" -Values @([string]$VerificationSummary.BuildCommand)
     AddRepoStateSection -Lines $lines -Title "Executed At:" -Values @([string]$VerificationSummary.ExecutedAt)
@@ -861,6 +876,11 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "ZIP Size Bytes:" -Values @([string]$ZipSizeBytes)
     AddRepoStateSection -Lines $lines -Title "Verification Result Path:" -Values @([string]$VerificationSummary.Path)
     AddRepoStateSection -Lines $lines -Title "Verification Profile:" -Values @([string]$VerificationSummary.Profile)
+    AddRepoStateSection -Lines $lines -Title "Verification Result:" -Values @([string]$VerificationSummary.Result)
+    AddRepoStateSection -Lines $lines -Title "Targeted ESLint:" -Values @($(if ($VerificationSummary.TargetedEslintPassed -eq "True") { "PASS" } elseif ($VerificationSummary.TargetedEslintPassed -eq "False") { "FAIL" } else { "unknown" }))
+    AddRepoStateSection -Lines $lines -Title "Targeted ESLint Command:" -Values @([string]$VerificationSummary.TargetedEslintCommand)
+    AddRepoStateSection -Lines $lines -Title "Typecheck:" -Values @($(if ($VerificationSummary.TypecheckPassed -eq "True") { "PASS" } elseif ($VerificationSummary.TypecheckPassed -eq "False") { "FAIL" } else { "unknown" }))
+    AddRepoStateSection -Lines $lines -Title "Typecheck Command:" -Values @([string]$VerificationSummary.TypecheckCommand)
     AddRepoStateSection -Lines $lines -Title "Build Result:" -Values @($(if ($VerificationSummary.BuildPassed -eq "True") { "PASS" } elseif ($VerificationSummary.BuildPassed -eq "False") { "FAIL" } else { "unknown" }))
     AddRepoStateSection -Lines $lines -Title "Build Result Path:" -Values @($BuildResultPath)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)

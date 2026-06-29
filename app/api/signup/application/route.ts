@@ -9,6 +9,7 @@ import {
   summarizeSignupApplication,
   updateOwnedSignupApplicationDraft,
 } from "@/lib/signup/signupApplicationApiService";
+import { assertSignupRateLimitExtensionPoint, createSignupMutationForbiddenResponse, isSameOriginSignupMutation } from "@/lib/signup/signupRequestGuards";
 import {
   type SignupApplicantOnboardingState,
   createSignupApplicantSessionCookieValue,
@@ -21,6 +22,15 @@ function jsonError(error: unknown): NextResponse {
     return NextResponse.json({ ok: false, code: error.code }, { status: error.status, headers: { "Cache-Control": "no-store" } });
   }
   return NextResponse.json({ ok: false, code: "SIGNUP_APPLICATION_UNAVAILABLE" }, { status: 500, headers: { "Cache-Control": "no-store" } });
+}
+
+function summarizeApplicant(session: Awaited<ReturnType<typeof requireApplicantSession>>) {
+  return {
+    name: session.applicantName,
+    email: session.email,
+    emailNormalized: session.emailNormalized,
+    emailVerified: true,
+  };
 }
 
 async function requireApplicantSession() {
@@ -53,10 +63,10 @@ export async function GET() {
   try {
     const session = await requireApplicantSession();
     if (!session.applicationId) {
-      return NextResponse.json({ ok: true, application: null }, { headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json({ ok: true, applicant: summarizeApplicant(session), application: null }, { headers: { "Cache-Control": "no-store" } });
     }
     const application = await getOwnedSignupApplication(session);
-    return NextResponse.json({ ok: true, application: summarizeSignupApplication(application) }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ok: true, applicant: summarizeApplicant(session), application: summarizeSignupApplication(application) }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return jsonError(error);
   }
@@ -64,10 +74,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    if (!isSameOriginSignupMutation(request)) return createSignupMutationForbiddenResponse();
+    assertSignupRateLimitExtensionPoint();
     const session = await requireApplicantSession();
     const company = parseSignupApplicationCompanyInput(await request.json().catch(() => null));
     const application = await createSignupApplicationDraft({ session, company });
-    const response = NextResponse.json({ ok: true, application: summarizeSignupApplication(application) }, { headers: { "Cache-Control": "no-store" } });
+    const response = NextResponse.json({ ok: true, applicant: summarizeApplicant(session), application: summarizeSignupApplication(application) }, { headers: { "Cache-Control": "no-store" } });
     await setApplicantSessionApplicationId(response, {
       session,
       applicationId: application.id,
@@ -82,10 +94,12 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    if (!isSameOriginSignupMutation(request)) return createSignupMutationForbiddenResponse();
+    assertSignupRateLimitExtensionPoint();
     const session = await requireApplicantSession();
     const company = parseSignupApplicationCompanyInput(await request.json().catch(() => null));
     const application = await updateOwnedSignupApplicationDraft({ session, company });
-    return NextResponse.json({ ok: true, application: summarizeSignupApplication(application) }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ok: true, applicant: summarizeApplicant(session), application: summarizeSignupApplication(application) }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return jsonError(error);
   }

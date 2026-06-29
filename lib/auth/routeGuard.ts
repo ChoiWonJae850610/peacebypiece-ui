@@ -48,13 +48,13 @@ export async function requireWaflSessionForArea(
   area: ProtectedArea,
   options: CompanyAccessGuardOptions = {},
 ): Promise<WaflSessionPayload> {
-  const applicantSession = await getCurrentSignupApplicantSession();
-  if (applicantSession && (area === "workspace" || area === "worker")) {
-    redirect("/pending?type=signup");
-  }
-
   const session = await getCurrentWaflSession();
   if (!session) {
+    const applicantSession = await getCurrentSignupApplicantSession();
+    if (applicantSession && (area === "workspace" || area === "worker")) {
+      redirect("/pending?type=signup");
+    }
+
     redirect(buildLoginPath(options.returnTo, "SESSION_REQUIRED"));
   }
 

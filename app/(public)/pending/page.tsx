@@ -1,4 +1,5 @@
 import PendingApprovalDashboard from "@/components/invitations/PendingApprovalDashboard";
+import SignupApplicationDashboard from "@/components/signup/SignupApplicationDashboard";
 
 type PendingPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -17,6 +18,9 @@ function getRequestType(value: string | null): "member" | "company" | null {
 
 export default async function PendingPage({ searchParams }: PendingPageProps) {
   const resolvedSearchParams = (await searchParams) || {};
+  if (getParam(resolvedSearchParams, "type") === "signup") {
+    return <SignupApplicationDashboard />;
+  }
 
   return (
     <PendingApprovalDashboard
