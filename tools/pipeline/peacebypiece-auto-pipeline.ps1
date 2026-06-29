@@ -26,6 +26,10 @@
 
 param(
     [switch]$CreateLocalRepoHandoff,
+    [switch]$RunSignupConsentCompatibilityAudit,
+    [switch]$ApplySignupConsentMigration,
+    [switch]$RunSignupConsentPostApplyAudit,
+    [switch]$RunSignupConsentRollbackSmoke,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -806,8 +810,8 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
     AddRepoStateSection -Lines $lines -Title "Contract Test Summary:" -Values @([string]$VerificationSummary.ContractSummary)
     AddRepoStateSection -Lines $lines -Title "Package/Lockfile Changed:" -Values @("false")
-    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migration applied once: db/migrations/patch_0_24_26_signup_applications.sql")
-    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test schema migration only")
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migrations applied once: db/migrations/patch_0_24_26_signup_applications.sql; db/migrations/patch_0_24_26_signup_application_consents.sql")
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test signup and consent schema migrations only")
     AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "Production Migration:" -Values @("false")
@@ -885,8 +889,8 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "Build Result Path:" -Values @($BuildResultPath)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
-    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migration applied once: db/migrations/patch_0_24_26_signup_applications.sql")
-    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test schema migration only")
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migrations applied once: db/migrations/patch_0_24_26_signup_applications.sql; db/migrations/patch_0_24_26_signup_application_consents.sql")
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test signup and consent schema migrations only")
     AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "Production Migration:" -Values @("false")
@@ -2032,9 +2036,9 @@ function TestReadOnlyDbAuditGuard {
 }
 
 function InvokeReadOnlyDbAudit {
-    param([string]$Mode, [string]$Title, [string]$Label)
+    param([string]$Mode, [string]$Title, [string]$Label, [bool]$PauseAfter = $true)
 
-    if (-not (LoadEnvLocalForSmokeTest)) { WaitForDeveloperToolsMenu; return 1 }
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
     $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
     if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
     $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
@@ -2046,7 +2050,7 @@ function InvokeReadOnlyDbAudit {
     Write-Host "- Result: $($guard.Reason)"
     if (-not $guard.Passed) {
         LogError "읽기 전용 DB 감사가 차단되었습니다. dev/test 승인 DB만 허용합니다."
-        WaitForDeveloperToolsMenu
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
         return 2
     }
 
@@ -2054,7 +2058,67 @@ function InvokeReadOnlyDbAudit {
     try {
         $env:WAFL_DB_AUDIT_APPROVED = '1'
         $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
-        return (InvokeProjectCommandWithResultFile -Title $Title -Label $Label -NpmCommand "node scripts/run-readonly-db-audit.mjs $Mode" -LoadEnvLocal $false -PauseAfter $true -ResultDirectory $dbAuditLogDir)
+        return (InvokeProjectCommandWithResultFile -Title $Title -Label $Label -NpmCommand "node scripts/run-readonly-db-audit.mjs $Mode" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir)
+    }
+    finally {
+        if ($null -eq $previous) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previous }
+    }
+}
+
+function InvokeApprovedDbMigrationCommand {
+    param([string]$Mode, [string]$Title, [string]$Label, [bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Approved DB migration guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Result: $($guard.Reason)"
+    if (-not $guard.Passed) {
+        LogError "승인 DB migration이 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $previous = $env:WAFL_DB_MIGRATION_APPROVED
+    try {
+        $env:WAFL_DB_MIGRATION_APPROVED = '1'
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        return (InvokeProjectCommandWithResultFile -Title $Title -Label $Label -NpmCommand "node scripts/run-approved-db-migration.mjs $Mode" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir)
+    }
+    finally {
+        if ($null -eq $previous) { Remove-Item Env:WAFL_DB_MIGRATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_MIGRATION_APPROVED = $previous }
+    }
+}
+
+function InvokeApprovedDbSmokeCommand {
+    param([string]$Command, [string]$Title, [string]$Label, [bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Approved DB rollback smoke guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Result: $($guard.Reason)"
+    if (-not $guard.Passed) {
+        LogError "DB rollback smoke가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $previous = $env:WAFL_DB_AUDIT_APPROVED
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        return (InvokeProjectCommandWithResultFile -Title $Title -Label $Label -NpmCommand $Command -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir)
     }
     finally {
         if ($null -eq $previous) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previous }
@@ -2080,6 +2144,22 @@ function RunDbSchemaReconciliationAudit { return (InvokeReadOnlyDbAudit -Mode 'r
 function RunDbConstraintReadinessCheck { return (InvokeReadOnlyDbAudit -Mode 'constraints' -Title 'DB Constraint Readiness Check' -Label 'DB_Constraint_Readiness') }
 function RunDbIndexReadinessReport { return (InvokeReadOnlyDbAudit -Mode 'indexes' -Title 'DB Index Usage and Query Readiness Report' -Label 'DB_Index_Readiness') }
 function RunSignupMigrationCompatibilityAudit { return (InvokeReadOnlyDbAudit -Mode 'signup-compatibility' -Title 'Signup Migration Compatibility Audit' -Label 'Signup_Migration_Compatibility_Audit') }
+function RunSignupConsentMigrationCompatibilityAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'signup-consents-compatibility' -Title 'Signup Consent Migration Compatibility Audit' -Label 'Signup_Consent_Migration_Compatibility_Audit' -PauseAfter $PauseAfter)
+}
+function RunSignupConsentPostApplyAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'signup-consents-post-apply' -Title 'Signup Consent Post-Apply Schema Audit' -Label 'Signup_Consent_Post_Apply_Schema_Audit' -PauseAfter $PauseAfter)
+}
+function ApplySignupConsentMigration {
+    param([bool]$PauseAfter = $true)
+    return (InvokeApprovedDbMigrationCommand -Mode 'signup-consents' -Title 'Apply Signup Consent Migration' -Label 'Apply_Signup_Consent_Migration' -PauseAfter $PauseAfter)
+}
+function RunSignupConsentRollbackSmoke {
+    param([bool]$PauseAfter = $true)
+    return (InvokeApprovedDbSmokeCommand -Command 'node scripts/run-signup-consent-rollback-smoke.mjs' -Title 'Signup Consent Rollback Smoke' -Label 'Signup_Consent_Rollback_Smoke' -PauseAfter $PauseAfter)
+}
 
 # ==========================================
 # 10. 메인 화면 / 메인 while 루프
@@ -2138,6 +2218,7 @@ function ShowDeveloperToolsMenu {
         Write-Host "32. DB Index Usage/Query Readiness Report        [DEV/TEST·읽기 전용]"
         Write-Host "33. Pre-Codex Final Contract Gate                [안전/비파괴]"
         Write-Host "42. Signup Migration Compatibility Audit         [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "43. Signup Consent Migration Compatibility Audit [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2148,7 +2229,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~42 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~43 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2196,9 +2277,10 @@ function ShowDeveloperToolsMenu {
             40 { RunSimulatorAttachmentFaultPlan | Out-Null }
             41 { RunSimulatorAttachmentFaultExecute }
             42 { RunSignupMigrationCompatibilityAudit | Out-Null }
+            43 { RunSignupConsentMigrationCompatibilityAudit | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~42 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~43 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -2421,6 +2503,22 @@ function MainLoop {
 InitializePipeline
 if ($CreateLocalRepoHandoff) {
     NewLocalRepositoryHandoff | Out-Null
+}
+elseif ($RunSignupConsentCompatibilityAudit) {
+    $exitCode = RunSignupConsentMigrationCompatibilityAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplySignupConsentMigration) {
+    $exitCode = ApplySignupConsentMigration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSignupConsentPostApplyAudit) {
+    $exitCode = RunSignupConsentPostApplyAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSignupConsentRollbackSmoke) {
+    $exitCode = RunSignupConsentRollbackSmoke -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {
     MainLoop

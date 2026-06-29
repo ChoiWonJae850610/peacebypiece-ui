@@ -13,10 +13,14 @@ const duplicateNumbers = (numbers) =>
 
 assert.deepEqual(duplicateNumbers(menuNumbers), [], "developer tools menu numbers must be unique");
 assert.ok(menuNumbers.includes(42), "signup compatibility audit menu number 42 must be displayed");
+assert.ok(menuNumbers.includes(43), "signup consent compatibility audit menu number 43 must be displayed");
 assert.ok(switchNumbers.includes(42), "signup compatibility audit switch case 42 must exist");
-assert.ok(menuBody.includes("0~42 범위"), "developer tools menu range must include 42");
+assert.ok(switchNumbers.includes(43), "signup consent compatibility audit switch case 43 must exist");
+assert.ok(menuBody.includes("0~43"), "developer tools menu range must include 43");
 
 const signupSwitch = menuBody.match(/^\s*42\s*\{[^\n]+\}/m)?.[0] ?? "";
 assert.match(signupSwitch, /RunSignupMigrationCompatibilityAudit \| Out-Null/);
+const signupConsentSwitch = menuBody.match(/^\s*43\s*\{[^\n]+\}/m)?.[0] ?? "";
+assert.match(signupConsentSwitch, /RunSignupConsentMigrationCompatibilityAudit \| Out-Null/);
 
 console.log("db-readonly-audit-menu-number-uniqueness-contract: PASS");

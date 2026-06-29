@@ -44,7 +44,7 @@ for (const token of [
   "ef0602de1c99fea54cd63cc69c110a3e7ad3a79d",
   "0fadb95e9561fb89d0198b393599d419d121e5bd",
   "PostgreSQL signup repository and applicant API/session foundation",
-  "schema mutation true only for approved dev/test migration",
+  "schema mutation true only for approved dev/test signup and consent schema migrations",
 ]) {
   assert.ok(roadmap.includes(token), `0.24.26 roadmap missing ${token}`);
 }
@@ -83,7 +83,7 @@ assert.match(backlog, /0\.24\.30 Reserved: Storage Enforcement, Termination, and
 assert.match(backlog, /Capacity Fixture Backlog/);
 
 assert.doesNotMatch(roadmap, /queryDb|createSignedUploadUrl|PutObjectCommand|DeleteObjectCommand/i);
-assert.match(roadmap, /approved migration once against the approved dev\/test DB fingerprint 01e5dcc7fea3/);
+assert.match(roadmap, /executed the approved signup and consent schema migrations once against the approved dev\/test DB fingerprint 01e5dcc7fea3/);
 assert.match(roadmap, /Production migration and any additional DB mutation remain forbidden/);
 assert.doesNotMatch(`${roadmap}\n${prep}`, /payment_reference_provider|payment_reference_id|payment_reference_status|payment-method reference readiness|payment reference readiness/i);
 assert.doesNotMatch(`${roadmap}\n${prep}`, /Approval creates .*default catalog|Approval-time provisioning .*default catalog/i);

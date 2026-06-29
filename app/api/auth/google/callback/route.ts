@@ -31,6 +31,26 @@ function redirectToSignupPending(request: Request, error?: string): NextResponse
   return NextResponse.redirect(new URL(`/pending?type=signup${suffix}`, request.url));
 }
 
+function isRawSignupState(value: string | null): boolean {
+  if (!value) return false;
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as { requestType?: unknown };
+    return parsed.requestType === "signup";
+  } catch {
+    return false;
+  }
+}
+
+function mapSignupOAuthErrorCode(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (message === "GOOGLE_EMAIL_NOT_VERIFIED") return "GOOGLE_EMAIL_NOT_VERIFIED";
+  if (message === "GOOGLE_USERINFO_FETCH_FAILED") return "GOOGLE_PROFILE_FAILED";
+  if (message === "GOOGLE_SUB_REQUIRED" || message === "GOOGLE_EMAIL_REQUIRED") return "GOOGLE_PROFILE_FAILED";
+  if (message === "GOOGLE_OAUTH_CLIENT_ID_REQUIRED" || message === "GOOGLE_OAUTH_CLIENT_SECRET_REQUIRED") return "SIGNUP_SESSION_FAILED";
+  if (message === "GOOGLE_TOKEN_EXCHANGE_FAILED") return "GOOGLE_TOKEN_EXCHANGE_FAILED";
+  return "SIGNUP_SESSION_FAILED";
+}
+
 function readStoredNonce(request: Request): string | null {
   return request.headers.get("cookie")
     ?.split(";")
@@ -90,20 +110,25 @@ function createSignupApplicantSessionResponse(request: Request, profile: Awaited
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code")?.trim() || "";
-  const state = decodeGoogleOAuthState(url.searchParams.get("state"));
+  const rawState = url.searchParams.get("state");
+  const state = decodeGoogleOAuthState(rawState);
   const storedNonce = readStoredNonce(request);
+  const rawStateLooksSignup = isRawSignupState(rawState);
 
   if (!state) {
+    if (rawStateLooksSignup) return redirectToSignupPending(request, "GOOGLE_AUTH_STATE_INVALID");
     return NextResponse.redirect(new URL("/invite/error?error=GOOGLE_OAUTH_STATE_INVALID", request.url));
   }
 
   if (!code) {
+    if (state.requestType === "signup") return redirectToSignupPending(request, "GOOGLE_AUTH_CODE_MISSING");
     return state.requestType === "login"
       ? redirectToLogin(request, "GOOGLE_OAUTH_CODE_REQUIRED")
       : redirectToInvitation(request, state.requestType === "company" ? "company" : "member", state.token ?? "", "GOOGLE_OAUTH_CODE_REQUIRED");
   }
 
   if (!storedNonce || storedNonce !== state.nonce) {
+    if (state.requestType === "signup") return redirectToSignupPending(request, "GOOGLE_AUTH_STATE_INVALID");
     return state.requestType === "login"
       ? redirectToLogin(request, "GOOGLE_OAUTH_STATE_MISMATCH")
       : redirectToInvitation(request, state.requestType === "company" ? "company" : "member", state.token ?? "", "GOOGLE_OAUTH_STATE_MISMATCH");
@@ -151,7 +176,7 @@ export async function GET(request: Request) {
     return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : "GOOGLE_OAUTH_CALLBACK_FAILED";
-    if (state.requestType === "signup") return redirectToSignupPending(request, message);
+    if (state.requestType === "signup") return redirectToSignupPending(request, mapSignupOAuthErrorCode(error));
     return state.requestType === "login"
       ? redirectToLogin(request, message)
       : redirectToInvitation(request, state.requestType === "company" ? "company" : "member", state.token ?? "", message);

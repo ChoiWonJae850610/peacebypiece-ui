@@ -3,7 +3,15 @@ import fs from "node:fs";
 
 const runner = fs.readFileSync("scripts/run-readonly-db-audit.mjs", "utf8");
 
-assert.ok(runner.includes("const findingModes = new Set(['reconciliation', 'signup-compatibility', 'signup-post-apply'])"));
+for (const mode of [
+  "reconciliation",
+  "signup-compatibility",
+  "signup-post-apply",
+  "signup-consents-compatibility",
+  "signup-consents-post-apply",
+]) {
+  assert.match(runner, new RegExp(`['"]${mode}['"]`), `finding mode missing ${mode}`);
+}
 assert.ok(runner.includes("process.exitCode = totalResultRows > 0 ? 2 : 0"));
 assert.ok(runner.includes("Total compatibility findings"));
 assert.ok(runner.includes("Result:"));

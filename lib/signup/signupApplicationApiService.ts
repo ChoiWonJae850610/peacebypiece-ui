@@ -15,27 +15,8 @@ import type {
   SignupApplicationPlanCode,
   SignupApplicationRecord,
 } from "./signupApplicationTypes";
-
-export type SignupApplicationApiErrorCode =
-  | "SIGNUP_APPLICANT_SESSION_REQUIRED"
-  | "SIGNUP_APPLICATION_ID_REQUIRED"
-  | "SIGNUP_APPLICATION_NOT_FOUND"
-  | "SIGNUP_APPLICATION_CONFLICT"
-  | "SIGNUP_DUPLICATE_EMAIL"
-  | "SIGNUP_DUPLICATE_GOOGLE_SUB"
-  | "SIGNUP_DUPLICATE_BUSINESS_REGISTRATION"
-  | "SIGNUP_DUPLICATE_PROVISIONED_RESOURCE"
-  | "SIGNUP_PAYLOAD_INVALID";
-
-export class SignupApplicationApiError extends Error {
-  constructor(
-    readonly code: SignupApplicationApiErrorCode,
-    readonly status: number,
-  ) {
-    super(code);
-    this.name = "SignupApplicationApiError";
-  }
-}
+import { assertOwnedSignupRequiredConsents } from "./signupConsentApiService";
+import { SignupApplicationApiError } from "./signupApplicationApiError";
 
 function readString(payload: Record<string, unknown>, key: string): string {
   const value = payload[key];
@@ -188,6 +169,7 @@ export async function submitOwnedSignupApplication(input: {
   if (application.status !== "draft" && application.status !== "changes_requested") {
     throw new SignupApplicationApiError("SIGNUP_APPLICATION_CONFLICT", 409);
   }
+  await assertOwnedSignupRequiredConsents(input.session);
   return createPostgresSignupApplicationRepository().submitDraft({
     applicationId: application.id,
     owner: createSignupApplicantOwner(input.session),

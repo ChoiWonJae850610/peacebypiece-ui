@@ -48,6 +48,7 @@ DROP TABLE IF EXISTS storage_usage_snapshots CASCADE;
 DROP TABLE IF EXISTS company_plan_assignments CASCADE;
 DROP TABLE IF EXISTS plans CASCADE;
 
+DROP TABLE IF EXISTS signup_application_consents CASCADE;
 DROP TABLE IF EXISTS signup_application_files CASCADE;
 DROP TABLE IF EXISTS signup_applications CASCADE;
 
@@ -1683,6 +1684,41 @@ CREATE TABLE signup_application_files (
   CONSTRAINT signup_application_files_mime_type_check CHECK (length(trim(mime_type)) > 0)
 );
 
+CREATE TABLE signup_application_consents (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  application_id text NOT NULL REFERENCES signup_applications(id) ON DELETE CASCADE,
+  consent_type text NOT NULL,
+  policy_code text NOT NULL,
+  policy_version text NOT NULL,
+  agreed_at timestamptz NOT NULL,
+  agreed_email_normalized text NOT NULL,
+  agreed_google_sub text NOT NULL,
+  revoked_at timestamptz,
+  revoke_reason_code text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT signup_application_consents_type_check CHECK (
+    consent_type IN ('terms_of_service', 'privacy_policy')
+  ),
+  CONSTRAINT signup_application_consents_policy_code_check CHECK (
+    length(trim(policy_code)) > 0
+  ),
+  CONSTRAINT signup_application_consents_policy_version_check CHECK (
+    length(trim(policy_version)) > 0
+  ),
+  CONSTRAINT signup_application_consents_email_normalized_check CHECK (
+    agreed_email_normalized = lower(trim(agreed_email_normalized))
+    AND length(agreed_email_normalized) > 0
+  ),
+  CONSTRAINT signup_application_consents_google_sub_check CHECK (
+    length(trim(agreed_google_sub)) > 0
+  ),
+  CONSTRAINT signup_application_consents_revoke_check CHECK (
+    (revoked_at IS NULL AND revoke_reason_code IS NULL)
+    OR (revoked_at IS NOT NULL AND revoke_reason_code IS NOT NULL AND length(trim(revoke_reason_code)) > 0)
+  )
+);
+
 CREATE INDEX signup_applications_review_queue_idx
   ON signup_applications (status, created_at DESC);
 
@@ -1729,6 +1765,12 @@ CREATE UNIQUE INDEX signup_application_files_active_certificate_unique
   ON signup_application_files (application_id, file_type)
   WHERE deleted_at IS NULL AND file_type = 'business_registration';
 
+CREATE INDEX signup_application_consents_application_idx
+  ON signup_application_consents (application_id, consent_type, agreed_at DESC);
+
+CREATE UNIQUE INDEX signup_application_consents_active_type_unique
+  ON signup_application_consents (application_id, consent_type)
+  WHERE revoked_at IS NULL;
 
 CREATE TABLE company_account_requests (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,

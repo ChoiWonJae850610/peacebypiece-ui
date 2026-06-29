@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 
 import { getCurrentSignupApplicantSession } from "@/lib/signup/currentSignupApplicantSession";
 import {
-  SignupApplicationApiError,
   submitOwnedSignupApplication,
   summarizeSignupApplication,
 } from "@/lib/signup/signupApplicationApiService";
+import { SignupApplicationApiError } from "@/lib/signup/signupApplicationApiError";
 import { assertSignupRateLimitExtensionPoint, createSignupMutationForbiddenResponse, isSameOriginSignupMutation } from "@/lib/signup/signupRequestGuards";
 
 function jsonError(error: unknown): NextResponse {

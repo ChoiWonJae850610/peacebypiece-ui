@@ -105,8 +105,10 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   ],
   dbImpact: "pending_decision",
   dbImpactNotes: [
-    "Signup applications, consent evidence, business certificate metadata, review/audit state, and idempotent provisioning records may require schema work.",
-    "Migration design must be read-only reconciled and separately approved before execution.",
+    "Signup applications and signup application files were created by the approved dev/test schema migration.",
+    "Signup consent evidence now has a separate additive migration, read-only compatibility audit, post-apply audit, and rollback smoke; the consent migration was executed once against the approved dev/test DB fingerprint.",
+    "Business certificate metadata, review/audit state, and idempotent provisioning records may still require additional schema work.",
+    "Any additional migration must be read-only reconciled and separately approved before execution.",
   ],
   r2Impact: "guarded",
   r2ImpactNotes: [
@@ -116,7 +118,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   ],
   migrationRequired: true,
   migrationNotes:
-    "Created signup_applications and signup_application_files and executed the approved migration once against the approved dev/test DB fingerprint 01e5dcc7fea3. Production migration and any additional DB mutation remain forbidden without separate approval.",
+    "Created signup_applications, signup_application_files, and signup_application_consents and executed the approved signup and consent schema migrations once against the approved dev/test DB fingerprint 01e5dcc7fea3. Production migration and any additional DB mutation remain forbidden without separate approval.",
   automaticTests: [
     "signup email_verified contract",
     "pending/rejected workspace route/API guard contract",
@@ -207,13 +209,15 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "Pending signup applicants are blocked from workspace page/API access before approval while actual system-admin internal APIs keep the actual-session boundary.",
       "Normal workspace/system-admin WAFL sessions now take precedence over stale signup applicant cookies, and normal login clears the signup applicant cookie.",
       "Public signup draft/status UI is available through the existing public entry and /pending?type=signup, with draft save, submit/resubmit, status display, cancel, logout, and safe error/loading states.",
-      "Repo-state/build-result metadata now distinguishes DB Migration Applied, DB Schema Mutation, Business Data Mutation, R2 Mutation, and Production Migration; schema mutation true only for approved dev/test migration.",
+      "Signup required consent evidence is implemented as a separate applied dev/test schema migration and API/UI/service foundation; first-click submit creates the draft, stores server-owned consent evidence, and immediately submits.",
+      "Signup OAuth callback errors now return safe signup pending error codes instead of leaking raw provider/internal messages into the signup route.",
+      "Repo-state/build-result metadata now distinguishes DB Migration Applied, DB Schema Mutation, Business Data Mutation, R2 Mutation, and Production Migration; schema mutation true only for approved dev/test signup and consent schema migrations.",
       "The draft requires explicit email_verified evidence, normalized 10-digit business registration matching, application-owned certificate files, and provisioning failure handling through the approval operation.",
       "0.24.28 and 0.24.30 reserved dependency notes remain recorded in roadmap/backlog docs.",
     ],
     commitHash: "0fadb95e9561fb89d0198b393599d419d121e5bd",
     verificationResult:
-      "Foundation verification PASS so far: runtime development, approved DB fingerprint 01e5dcc7fea3, migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, preflight findings 0, migration apply PASS, post-apply findings 0, smoke rollback complete, business data mutation 0, R2 mutation 0; repository/API/session/guard contracts added for the next validation run.",
+      "Foundation verification PASS so far: runtime development, approved DB fingerprint 01e5dcc7fea3, signup migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, consent migration SHA-256 7b6f1f7f220925b0090c6765222d0805b5a9cfd40615c4648dbae2f9f3fe5eea, preflight findings 0, migration apply PASS, post-apply findings 0, rollback smoke residual rows 0, business data mutation 0, R2 mutation 0.",
     remainingIssues: [
       "Decide technical rate-limit/CAPTCHA mechanism during implementation planning.",
       "Certificate R2 upload, system-admin approval/rejection/correction UI, notification email, and actual company/user/member/subscription provisioning remain unimplemented.",

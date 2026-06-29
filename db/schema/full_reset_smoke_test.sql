@@ -37,6 +37,7 @@ BEGIN
       ('company_account_requests', to_regclass('public.company_account_requests')),
       ('signup_applications', to_regclass('public.signup_applications')),
       ('signup_application_files', to_regclass('public.signup_application_files')),
+      ('signup_application_consents', to_regclass('public.signup_application_consents')),
       ('member_permissions', to_regclass('public.member_permissions')),
       ('role_templates', to_regclass('public.role_templates')),
       ('role_template_permissions', to_regclass('public.role_template_permissions')),
@@ -255,6 +256,15 @@ BEGIN
       ('company_account_requests', 'request_message'),
       ('company_account_requests', 'request_payload'),
         ('company_account_requests', 'reviewed_by_system_user_id'),
+      ('signup_application_consents', 'application_id'),
+      ('signup_application_consents', 'consent_type'),
+      ('signup_application_consents', 'policy_code'),
+      ('signup_application_consents', 'policy_version'),
+      ('signup_application_consents', 'agreed_at'),
+      ('signup_application_consents', 'agreed_email_normalized'),
+      ('signup_application_consents', 'agreed_google_sub'),
+      ('signup_application_consents', 'revoked_at'),
+      ('signup_application_consents', 'revoke_reason_code'),
       ('member_permissions', 'permission_code'),
       ('role_templates', 'role_code'),
       ('role_template_permissions', 'permission_code'),
@@ -590,7 +600,9 @@ BEGIN
       ('signup_applications_created_subscription_idx'),
       ('signup_application_files_application_type_active_idx'),
       ('signup_application_files_storage_key_unique'),
-      ('signup_application_files_active_certificate_unique')
+      ('signup_application_files_active_certificate_unique'),
+      ('signup_application_consents_application_idx'),
+      ('signup_application_consents_active_type_unique')
   ) AS required_indexes(index_name)
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 

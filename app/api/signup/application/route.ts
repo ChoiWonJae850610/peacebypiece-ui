@@ -5,10 +5,10 @@ import {
   createSignupApplicationDraft,
   getOwnedSignupApplication,
   parseSignupApplicationCompanyInput,
-  SignupApplicationApiError,
   summarizeSignupApplication,
   updateOwnedSignupApplicationDraft,
 } from "@/lib/signup/signupApplicationApiService";
+import { SignupApplicationApiError } from "@/lib/signup/signupApplicationApiError";
 import { assertSignupRateLimitExtensionPoint, createSignupMutationForbiddenResponse, isSameOriginSignupMutation } from "@/lib/signup/signupRequestGuards";
 import {
   type SignupApplicantOnboardingState,

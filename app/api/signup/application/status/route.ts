@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { getCurrentSignupApplicantSession } from "@/lib/signup/currentSignupApplicantSession";
 import {
   getOwnedSignupApplication,
-  SignupApplicationApiError,
   summarizeSignupApplication,
 } from "@/lib/signup/signupApplicationApiService";
+import { SignupApplicationApiError } from "@/lib/signup/signupApplicationApiError";
 
 function jsonError(error: unknown): NextResponse {
   if (error instanceof SignupApplicationApiError) {

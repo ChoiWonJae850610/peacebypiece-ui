@@ -4,7 +4,7 @@
 
 - Current version: `0.24.26`.
 - Current implementation version: `0.24.26`.
-- Current work result: **0.24.26 signup foundation in progress** starts Public Signup, Verification, Approval, and Trial with signup_applications schema applied once to the approved dev/test DB plus PostgreSQL repository, applicant session, Google email_verified, draft/status APIs, pending workspace guards, normal-session precedence over stale applicant cookies, and public signup draft/status UI.
+- Current work result: **0.24.26 signup foundation in progress** starts Public Signup, Verification, Approval, and Trial with signup_applications schema and signup_application_consents schema applied once to the approved dev/test DB plus PostgreSQL repository, applicant session, Google email_verified, draft/status APIs, pending workspace guards, normal-session precedence over stale applicant cookies, public signup draft/status UI, and consent evidence API/UI foundation.
 - Next work: continue scoped certificate upload/viewer, system-admin review, notification, and approval provisioning work; do not start later versions or production migration.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
@@ -181,25 +181,33 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - Generic status transitions do not jump to `provisioning_failed`; provisioning failure is represented by the approval provisioning operation after provisioning has started.
 - Pending signup applicants are blocked from workspace page/API access before approval only when no normal WAFL session exists. A valid normal workspace or actual system-admin session takes precedence over a stale applicant cookie.
 - Signup draft/status/edit/resubmit/cancel APIs re-check applicant session ownership by Google sub and normalized email. UI status is derived from repository/DB application status, not from cookie onboarding state.
-- Public signup UI currently covers CTA, Google signup entry, verified applicant draft form, save, submit/resubmit, status display, cancel, logout, loading/error/empty states, and a placeholder for certificate upload. Certificate R2 upload, system-admin review UI, notification email, approval/rejection/correction APIs, actual company/user/member/subscription provisioning, additional DB/R2 mutation beyond the approved schema migration, Cloudflare Worker changes, and later version work remain out of scope for this step.
+- Public signup UI currently covers CTA, Google signup entry, verified applicant draft form, save, first-click submit, submit/resubmit, required consent UI, status display, cancel, logout, loading/error/empty states, and a placeholder for certificate upload. Certificate R2 upload, system-admin review UI, notification email, approval/rejection/correction APIs, actual company/user/member/subscription provisioning, additional DB/R2 mutation beyond the approved schema migrations, Cloudflare Worker changes, and later version work remain out of scope for this step.
+- Required signup consent evidence is represented by the separate additive migration `db/migrations/patch_0_24_26_signup_application_consents.sql`; this migration was executed once against the approved dev/test DB fingerprint after compatibility audit findings 0.
+- Signup OAuth callback failures for signup now redirect to `/pending?type=signup&error=<safe-code>` and do not expose raw provider details.
 
 ### 0.24.26 Dev/Test Migration Evidence
 
 - Executed migration file: `db/migrations/patch_0_24_26_signup_applications.sql`.
 - Migration SHA-256: `b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395`.
+- Executed additive consent migration file: `db/migrations/patch_0_24_26_signup_application_consents.sql`.
+- Consent migration SHA-256: `7b6f1f7f220925b0090c6765222d0805b5a9cfd40615c4648dbae2f9f3fe5eea`.
 - Execution runtime/fingerprint: `development`, approved DB fingerprint `01e5dcc7fea3`.
 - Execution time: `2026-06-29 00:34 KST`.
 - Production migration: none.
 - Created schema: `public.signup_applications`, `public.signup_application_files`, related PK/FK/check constraints, and planned indexes.
+- Created additive consent schema: `public.signup_application_consents`, related FK/check constraints, `signup_application_consents_application_idx`, and `signup_application_consents_active_type_unique`; duplicate `signup_application_consents_active_version_unique` is intentionally absent.
 - Preflight compatibility audit: PASS, total compatibility findings 0.
 - Migration apply: PASS, single SQL file only, exit code 0.
+- Consent migration apply: PASS, single additive SQL file only, exit code 0.
 - Post-apply read-only schema audit: PASS, total compatibility findings 0, transaction rolled back.
+- Consent post-apply read-only schema audit: PASS, total compatibility findings 0, transaction rolled back.
 - Schema smoke rollback: PASS, transaction rolled back.
+- Consent rollback smoke: PASS, transaction rolled back, residual rows 0.
 - Smoke row residue: 0 by post-apply read-only audit.
 - DB mutation scope: schema migration only; no business data seed/backfill/provisioning rows.
 - R2 mutation: 0.
 - `4. Newest` remains reserved for latest full source ZIP and matching repo-state only; DB audit logs are stored under `C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\DB_Audit\`.
-- Latest repo-state must distinguish DB Migration Applied, DB Schema Mutation, Business Data Mutation, R2 Mutation, and Production Migration; for this foundation, DB schema mutation is true only for the approved dev/test migration, while business data mutation, R2 mutation, and production migration remain false.
+- Latest repo-state must distinguish DB Migration Applied, DB Schema Mutation, Business Data Mutation, R2 Mutation, and Production Migration; for this foundation, DB schema mutation is true only for the approved dev/test signup and consent schema migrations, while business data mutation, R2 mutation, and production migration remain false.
 - 0.24.26 remains `in_progress`; certificate R2 upload, system-admin approval UI/API, notification email, and actual provisioning are not implemented yet.
 
 ## Runtime And Product Preservation
