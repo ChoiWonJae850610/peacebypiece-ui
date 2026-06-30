@@ -30,6 +30,8 @@ param(
     [switch]$ApplySignupConsentMigration,
     [switch]$RunSignupConsentPostApplyAudit,
     [switch]$RunSignupConsentRollbackSmoke,
+    [switch]$RunSignupCertificateR2IntegrationPreflight,
+    [switch]$RunSignupCertificateR2IntegrationTest,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -691,6 +693,23 @@ function GetLocalRepoVerificationField {
     return ([string]$line).Substring($prefix.Length).Trim()
 }
 
+function GetLocalRepoVerificationEvidenceLine {
+    param(
+        [string[]]$Lines,
+        [string[]]$Patterns,
+        [string]$Fallback = "not provided"
+    )
+
+    foreach ($pattern in $Patterns) {
+        $line = $Lines | Where-Object { ([string]$_) -match $pattern } | Select-Object -First 1
+        if ($null -ne $line) {
+            return ([string]$line).Trim()
+        }
+    }
+
+    return $Fallback
+}
+
 function GetLocalRepoVerificationCommandResult {
     param(
         [string[]]$Lines,
@@ -726,6 +745,21 @@ function GetLocalRepoVerificationCommandResult {
     }
 }
 
+function GetLocalRepoVerificationNamedValue {
+    param(
+        [string[]]$Lines,
+        [string]$Name,
+        [string]$Fallback = "not provided"
+    )
+
+    $value = GetLocalRepoVerificationField -Lines $Lines -Name $Name
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        return $Fallback
+    }
+
+    return $value
+}
+
 function GetLocalRepoVerificationSummary {
     param(
         [string]$ResultPath,
@@ -748,6 +782,21 @@ function GetLocalRepoVerificationSummary {
             MutationFindingCount = ""
             MutationHighRiskCount = ""
             ContractSummary = "not provided"
+            DbMigrationApplyResult = "not provided"
+            PostApplyAuditResult = "not provided"
+            RollbackSmokeResult = "not provided"
+            DevTestDbTestDataMutation = "not provided"
+            DevTestR2Mutation = "not provided"
+            ProductionMutation = "not provided"
+            SchemaMigrationThisRun = "not provided"
+            CertificateIntegrationResult = "not provided"
+            PngUpload = "not provided"
+            JpegReplacement = "not provided"
+            PdfReplacement = "not provided"
+            Revoke = "not provided"
+            FinalResidualDbRows = "not provided"
+            FinalResidualR2Objects = "not provided"
+            LiveViewerIntegration = "not provided"
         }
     }
 
@@ -776,6 +825,33 @@ function GetLocalRepoVerificationSummary {
         MutationFindingCount = $mutation.FindingCount
         MutationHighRiskCount = $mutation.HighRiskCount
         ContractSummary = if ($contracts.Count -eq 0) { "none" } else { ($contracts | ForEach-Object { ([string]$_).Split(":")[0] }) -join ", " }
+        DbMigrationApplyResult = GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+            'DB Migration Apply Result:\s*(PASS|FAIL)',
+            'Migration apply:\s*(PASS|FAIL)',
+            'Consent migration apply:\s*(PASS|FAIL)'
+        )
+        PostApplyAuditResult = GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+            'Post-Apply Audit Result:\s*(PASS|FAIL)',
+            'Post-apply .*audit:\s*(PASS|FAIL)',
+            'post-apply .*findings\s+0'
+        )
+        RollbackSmokeResult = GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+            'Rollback Smoke Result:\s*(PASS|FAIL)',
+            'rollback smoke:\s*(PASS|FAIL)',
+            'rollback smoke .*PASS'
+        )
+        DevTestDbTestDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test DB Test-Data Mutation"
+        DevTestR2Mutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation"
+        ProductionMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation"
+        SchemaMigrationThisRun = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run"
+        CertificateIntegrationResult = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Certificate Integration Result"
+        PngUpload = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PNG Upload"
+        JpegReplacement = GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement"
+        PdfReplacement = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Replacement"
+        Revoke = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Revoke"
+        FinalResidualDbRows = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows"
+        FinalResidualR2Objects = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects"
+        LiveViewerIntegration = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Live Viewer Integration"
     }
 }
 
@@ -809,11 +885,26 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
     AddRepoStateSection -Lines $lines -Title "Contract Test Summary:" -Values @([string]$VerificationSummary.ContractSummary)
+    AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
+    AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
+    AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
+    AddRepoStateSection -Lines $lines -Title "Certificate Integration Result:" -Values @([string]$VerificationSummary.CertificateIntegrationResult)
+    AddRepoStateSection -Lines $lines -Title "PNG Upload:" -Values @([string]$VerificationSummary.PngUpload)
+    AddRepoStateSection -Lines $lines -Title "JPEG Replacement:" -Values @([string]$VerificationSummary.JpegReplacement)
+    AddRepoStateSection -Lines $lines -Title "PDF Replacement:" -Values @([string]$VerificationSummary.PdfReplacement)
+    AddRepoStateSection -Lines $lines -Title "Revoke:" -Values @([string]$VerificationSummary.Revoke)
+    AddRepoStateSection -Lines $lines -Title "Final Residual DB Rows:" -Values @([string]$VerificationSummary.FinalResidualDbRows)
+    AddRepoStateSection -Lines $lines -Title "Final Residual R2 Objects:" -Values @([string]$VerificationSummary.FinalResidualR2Objects)
+    AddRepoStateSection -Lines $lines -Title "Live Viewer Integration:" -Values @([string]$VerificationSummary.LiveViewerIntegration)
     AddRepoStateSection -Lines $lines -Title "Package/Lockfile Changed:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migrations applied once: db/migrations/patch_0_24_26_signup_applications.sql; db/migrations/patch_0_24_26_signup_application_consents.sql")
     AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test signup and consent schema migrations only")
-    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @("false")
-    AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
+    AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Dev/Test R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
+    AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
+    AddRepoStateSection -Lines $lines -Title "Production Mutation:" -Values @([string]$VerificationSummary.ProductionMutation)
     AddRepoStateSection -Lines $lines -Title "Production Migration:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "Final Git Status --short:" -Values $statusShort -EmptyText "clean"
 
@@ -889,10 +980,26 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "Build Result Path:" -Values @($BuildResultPath)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
+    AddRepoStateSection -Lines $lines -Title "Contract Test Summary:" -Values @([string]$VerificationSummary.ContractSummary)
+    AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
+    AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
+    AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
+    AddRepoStateSection -Lines $lines -Title "Certificate Integration Result:" -Values @([string]$VerificationSummary.CertificateIntegrationResult)
+    AddRepoStateSection -Lines $lines -Title "PNG Upload:" -Values @([string]$VerificationSummary.PngUpload)
+    AddRepoStateSection -Lines $lines -Title "JPEG Replacement:" -Values @([string]$VerificationSummary.JpegReplacement)
+    AddRepoStateSection -Lines $lines -Title "PDF Replacement:" -Values @([string]$VerificationSummary.PdfReplacement)
+    AddRepoStateSection -Lines $lines -Title "Revoke:" -Values @([string]$VerificationSummary.Revoke)
+    AddRepoStateSection -Lines $lines -Title "Final Residual DB Rows:" -Values @([string]$VerificationSummary.FinalResidualDbRows)
+    AddRepoStateSection -Lines $lines -Title "Final Residual R2 Objects:" -Values @([string]$VerificationSummary.FinalResidualR2Objects)
+    AddRepoStateSection -Lines $lines -Title "Live Viewer Integration:" -Values @([string]$VerificationSummary.LiveViewerIntegration)
     AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migrations applied once: db/migrations/patch_0_24_26_signup_applications.sql; db/migrations/patch_0_24_26_signup_application_consents.sql")
     AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test signup and consent schema migrations only")
-    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @("false")
-    AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @("false")
+    AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
+    AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Dev/Test R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
+    AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
+    AddRepoStateSection -Lines $lines -Title "Production Mutation:" -Values @([string]$VerificationSummary.ProductionMutation)
     AddRepoStateSection -Lines $lines -Title "Production Migration:" -Values @("false")
     AddRepoStateSection -Lines $lines -Title "Exclude Rule Summary:" -Values (GetLocalRepoExportExcludeSummary)
 
@@ -1217,7 +1324,9 @@ function InvokeProjectCommandWithResultFile {
         [string]$NpmCommand,
         [bool]$LoadEnvLocal = $false,
         [bool]$PauseAfter = $true,
-        [string]$ResultDirectory = ""
+        [string]$ResultDirectory = "",
+        [int]$ApprovalRequiredExitCode = -1,
+        [string]$ApprovalRequiredResultToken = ""
     )
 
     cls
@@ -1282,8 +1391,17 @@ function InvokeProjectCommandWithResultFile {
     Add-Content -LiteralPath $runningFilePath -Encoding UTF8 -Value "FinishedAt: $finishedTimestamp"
     Add-Content -LiteralPath $runningFilePath -Encoding UTF8 -Value "ExitCode: $testExitCode"
 
+    $isApprovalRequired = $false
+    if ($ApprovalRequiredExitCode -ge 0 -and $testExitCode -eq $ApprovalRequiredExitCode -and -not [string]::IsNullOrWhiteSpace($ApprovalRequiredResultToken)) {
+        $resultText = Get-Content -LiteralPath $runningFilePath -Encoding UTF8 -Raw
+        $isApprovalRequired = $resultText.Contains($ApprovalRequiredResultToken)
+    }
+
     if ($testExitCode -eq 0) {
         $statusPrefix = "OK"
+    }
+    elseif ($isApprovalRequired) {
+        $statusPrefix = "ApprovalRequired"
     }
     else {
         $statusPrefix = "Failed"
@@ -1297,6 +1415,9 @@ function InvokeProjectCommandWithResultFile {
 
     if ($testExitCode -eq 0) {
         LogInfo "$Title 완료. ExitCode: $testExitCode"
+    }
+    elseif ($isApprovalRequired) {
+        LogWarning "$Title 승인 필요. ExitCode: $testExitCode"
     }
     else {
         LogError "$Title 실패. ExitCode: $testExitCode"
@@ -2161,6 +2282,112 @@ function RunSignupConsentRollbackSmoke {
     return (InvokeApprovedDbSmokeCommand -Command 'node scripts/run-signup-consent-rollback-smoke.mjs' -Title 'Signup Consent Rollback Smoke' -Label 'Signup_Consent_Rollback_Smoke' -PauseAfter $PauseAfter)
 }
 
+function RunSignupCertificateR2IntegrationTest {
+    param([bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Signup Certificate R2 integration guard"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Production: false required"
+    Write-Host "Mutation: dev/test DB test rows + dev/test R2 fixture objects, with cleanup/finally"
+    Write-Host "Mode: signup-certificate-r2-integration"
+
+    if (-not $guard.Passed) {
+        LogError "Signup Certificate R2 integration test가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $r2TestLogDir = Join-Path (Split-Path -Parent $LogDir) "R2_Test"
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousIntegrationApproved = $env:WAFL_SIGNUP_CERTIFICATE_R2_INTEGRATION_APPROVED
+    $previousConfirmation = $env:WAFL_SIGNUP_CERTIFICATE_R2_CONFIRMATION
+    $previousR2Alias = $env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS
+    $previousR2EnvironmentFingerprint = $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT
+    $previousR2UrlFingerprint = $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT
+    $previousR2HostFingerprint = $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT
+    $previousManifestDir = $env:WAFL_SIGNUP_CERTIFICATE_R2_MANIFEST_DIR
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_INTEGRATION_APPROVED = '1'
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_CONFIRMATION = 'RUN_SIGNUP_CERTIFICATE_R2_DEV_TEST_INTEGRATION'
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS = 'dev-test'
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerEnvironmentFingerprint
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerUrlFingerprint
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerHostFingerprint
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_MANIFEST_DIR = $r2TestLogDir
+        return (InvokeProjectCommandWithResultFile -Title "Signup Certificate R2 Integration Test" -Label "Signup_Certificate_R2_Integration_Test" -NpmCommand "node scripts/run-signup-certificate-r2-integration.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $r2TestLogDir)
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousIntegrationApproved) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_INTEGRATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_INTEGRATION_APPROVED = $previousIntegrationApproved }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousR2Alias) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS = $previousR2Alias }
+        if ($null -eq $previousR2EnvironmentFingerprint) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT = $previousR2EnvironmentFingerprint }
+        if ($null -eq $previousR2UrlFingerprint) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT = $previousR2UrlFingerprint }
+        if ($null -eq $previousR2HostFingerprint) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT = $previousR2HostFingerprint }
+        if ($null -eq $previousManifestDir) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_MANIFEST_DIR -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_MANIFEST_DIR = $previousManifestDir }
+    }
+}
+
+function RunSignupCertificateR2IntegrationPreflight {
+    param([bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Signup Certificate R2 integration preflight"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Mutation: none"
+    Write-Host "Mode: signup-certificate-r2-preflight"
+
+    if (-not $guard.Passed) {
+        LogError "Signup Certificate R2 preflight가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $r2TestLogDir = Join-Path (Split-Path -Parent $LogDir) "R2_Test"
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousR2Alias = $env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS
+    $previousR2EnvironmentFingerprint = $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT
+    $previousR2UrlFingerprint = $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT
+    $previousR2HostFingerprint = $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS = 'dev-test'
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerEnvironmentFingerprint
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerUrlFingerprint
+        $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerHostFingerprint
+        return (InvokeProjectCommandWithResultFile -Title "Signup Certificate R2 Integration Preflight" -Label "Signup_Certificate_R2_Integration_Preflight" -NpmCommand "node scripts/run-signup-certificate-r2-integration.mjs --preflight" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $r2TestLogDir -ApprovalRequiredExitCode 2 -ApprovalRequiredResultToken "Result: APPROVAL_REQUIRED")
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousR2Alias) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_ENV_ALIAS = $previousR2Alias }
+        if ($null -eq $previousR2EnvironmentFingerprint) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_ENVIRONMENT_FINGERPRINT = $previousR2EnvironmentFingerprint }
+        if ($null -eq $previousR2UrlFingerprint) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_URL_FINGERPRINT = $previousR2UrlFingerprint }
+        if ($null -eq $previousR2HostFingerprint) { Remove-Item Env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_CERTIFICATE_R2_APPROVED_WORKER_HOST_FINGERPRINT = $previousR2HostFingerprint }
+    }
+}
+
 # ==========================================
 # 10. 메인 화면 / 메인 while 루프
 # ==========================================
@@ -2219,6 +2446,8 @@ function ShowDeveloperToolsMenu {
         Write-Host "33. Pre-Codex Final Contract Gate                [안전/비파괴]"
         Write-Host "42. Signup Migration Compatibility Audit         [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host "43. Signup Consent Migration Compatibility Audit [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "44. Signup Certificate R2 Integration Test       [DEV/TEST DB·R2 변경/별도 승인/자동 정리]"
+        Write-Host "45. Signup Certificate R2 Integration Preflight  [읽기 전용/DEV·TEST 승인 DB·R2 fingerprint]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2229,7 +2458,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~43 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~45 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2278,9 +2507,11 @@ function ShowDeveloperToolsMenu {
             41 { RunSimulatorAttachmentFaultExecute }
             42 { RunSignupMigrationCompatibilityAudit | Out-Null }
             43 { RunSignupConsentMigrationCompatibilityAudit | Out-Null }
+            44 { RunSignupCertificateR2IntegrationTest | Out-Null }
+            45 { RunSignupCertificateR2IntegrationPreflight | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~43 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~45 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -2518,6 +2749,14 @@ elseif ($RunSignupConsentPostApplyAudit) {
 }
 elseif ($RunSignupConsentRollbackSmoke) {
     $exitCode = RunSignupConsentRollbackSmoke -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSignupCertificateR2IntegrationPreflight) {
+    $exitCode = RunSignupCertificateR2IntegrationPreflight -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSignupCertificateR2IntegrationTest) {
+    $exitCode = RunSignupCertificateR2IntegrationTest -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

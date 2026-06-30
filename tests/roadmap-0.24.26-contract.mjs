@@ -44,7 +44,8 @@ for (const token of [
   "ef0602de1c99fea54cd63cc69c110a3e7ad3a79d",
   "0fadb95e9561fb89d0198b393599d419d121e5bd",
   "PostgreSQL signup repository and applicant API/session foundation",
-  "schema mutation true only for approved dev/test signup and consent schema migrations",
+  "schema mutation remains tied to the previously approved dev/test signup and consent schema migrations",
+  "certificate integration records dev/test DB/R2 fixture mutation with residual DB/R2 0",
 ]) {
   assert.ok(roadmap.includes(token), `0.24.26 roadmap missing ${token}`);
 }

@@ -14,13 +14,21 @@ const duplicateNumbers = (numbers) =>
 assert.deepEqual(duplicateNumbers(menuNumbers), [], "developer tools menu numbers must be unique");
 assert.ok(menuNumbers.includes(42), "signup compatibility audit menu number 42 must be displayed");
 assert.ok(menuNumbers.includes(43), "signup consent compatibility audit menu number 43 must be displayed");
+assert.ok(menuNumbers.includes(44), "signup certificate R2 integration menu number 44 must be displayed");
+assert.ok(menuNumbers.includes(45), "signup certificate R2 preflight menu number 45 must be displayed");
 assert.ok(switchNumbers.includes(42), "signup compatibility audit switch case 42 must exist");
 assert.ok(switchNumbers.includes(43), "signup consent compatibility audit switch case 43 must exist");
-assert.ok(menuBody.includes("0~43"), "developer tools menu range must include 43");
+assert.ok(switchNumbers.includes(44), "signup certificate R2 integration switch case 44 must exist");
+assert.ok(switchNumbers.includes(45), "signup certificate R2 preflight switch case 45 must exist");
+assert.ok(menuBody.includes("0~45"), "developer tools menu range must include 45");
 
 const signupSwitch = menuBody.match(/^\s*42\s*\{[^\n]+\}/m)?.[0] ?? "";
 assert.match(signupSwitch, /RunSignupMigrationCompatibilityAudit \| Out-Null/);
 const signupConsentSwitch = menuBody.match(/^\s*43\s*\{[^\n]+\}/m)?.[0] ?? "";
 assert.match(signupConsentSwitch, /RunSignupConsentMigrationCompatibilityAudit \| Out-Null/);
+const signupCertificateR2Switch = menuBody.match(/^\s*44\s*\{[^\n]+\}/m)?.[0] ?? "";
+assert.match(signupCertificateR2Switch, /RunSignupCertificateR2IntegrationTest \| Out-Null/);
+const signupCertificateR2PreflightSwitch = menuBody.match(/^\s*45\s*\{[^\n]+\}/m)?.[0] ?? "";
+assert.match(signupCertificateR2PreflightSwitch, /RunSignupCertificateR2IntegrationPreflight \| Out-Null/);
 
 console.log("db-readonly-audit-menu-number-uniqueness-contract: PASS");

@@ -167,15 +167,14 @@ function buildCanonicalQuery(params: Record<string, string>): string {
 // [Public helpers]
 // ================================
 
-function getR2SafeErrorLog(error: unknown): { message?: string; code?: string; name?: string } {
+function getR2SafeErrorLog(error: unknown): { code?: string; name?: string } {
   if (!error || typeof error !== "object") {
     return {};
   }
 
-  const record = error as { message?: unknown; code?: unknown; name?: unknown };
+  const record = error as { code?: unknown; name?: unknown };
 
   return {
-    message: typeof record.message === "string" ? record.message : undefined,
     code: typeof record.code === "string" ? record.code : undefined,
     name: typeof record.name === "string" ? record.name : undefined,
   };
@@ -349,12 +348,13 @@ export async function deleteR2ObjectWithPresignedRequest(input: GetR2ObjectInput
 
   const response = await fetch(url, { method: "DELETE" });
   if (!response.ok) {
-    const message = await response.text().catch(() => "");
+    await response.text().catch(() => "");
     console.error("[R2_PRESIGNED_DELETE_ERROR]", {
       hasKey: Boolean(key),
       status: response.status,
-      message,
+      reason: "presigned-delete-failed",
+      retryable: response.status === 408 || response.status === 429 || response.status >= 500,
     });
-    throw new Error(message || `R2_PRESIGNED_DELETE_FAILED_${response.status}`);
+    throw new Error(`R2_PRESIGNED_DELETE_FAILED_${response.status}`);
   }
 }

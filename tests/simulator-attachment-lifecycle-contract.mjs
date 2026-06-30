@@ -98,7 +98,7 @@ assert.ok(source.includes("DELETE WAF-FN A B EXACT ORPHAN OBJECTS"), "command mi
 assert.match(pipeline, /ApprovedWorkerUrlFingerprint|ApprovedWorkerHostFingerprint|ApprovedWorkerUrlAllowlist/);
 assert.match(pipeline, /WAFL_SIMULATOR_APPROVED_WORKER_URL_FINGERPRINT/);
 assert.doesNotMatch(pipeline, /WAFL_SIMULATOR_APPROVED_R2_FINGERPRINT/);
-assert.match(pipeline, /0~42/);
+assert.match(pipeline, /0~45/);
 assert.match(verify, /simulator attachment manifest contract/);
 assert.match(verify, /simulator attachment lifecycle contract/);
 assert.match(r2Manifest, /canonicalAttachmentManifest/);

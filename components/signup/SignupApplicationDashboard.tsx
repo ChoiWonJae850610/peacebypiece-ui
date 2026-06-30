@@ -57,6 +57,18 @@ type SignupConsentView = {
   revokedAt: string | null;
 };
 
+type SignupCertificateView = {
+  id: string;
+  applicationId: string;
+  fileType: "business_registration";
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+  reviewedAt: string | null;
+  approvedCompanyFileId: string | null;
+};
+
 type SignupApplicationResponse = {
   ok?: boolean;
   code?: string;
@@ -69,6 +81,12 @@ type SignupConsentsResponse = {
   code?: string;
   policies?: SignupConsentPolicyView[];
   consents?: SignupConsentView[];
+};
+
+type SignupCertificateResponse = {
+  ok?: boolean;
+  code?: string;
+  certificate?: SignupCertificateView | null;
 };
 
 type FormState = {
@@ -216,9 +234,29 @@ function getSafeErrorMessage(code: string | null): string {
   if (code === "SIGNUP_APPLICATION_ID_REQUIRED") return "신청서를 먼저 저장한 뒤 다시 시도해 주세요.";
   if (code === "SIGNUP_PAYLOAD_INVALID") return "필수 입력값을 확인해 주세요. 사업자등록번호는 숫자 10자리여야 합니다.";
   if (code === "SIGNUP_CONSENT_REQUIRED") return "필수 약관과 개인정보 처리방침 동의가 필요합니다.";
+  if (code === "SIGNUP_CERTIFICATE_UPLOAD_NOT_CONFIGURED") return "파일 업로드 저장소가 아직 연결되지 않았습니다. 관리자에게 설정을 요청해 주세요.";
+  if (code === "SIGNUP_CERTIFICATE_UPLOAD_NOT_ALLOWED") return "현재 신청 상태에서는 사업자등록증을 변경할 수 없습니다.";
+  if (code === "SIGNUP_CERTIFICATE_FILE_REQUIRED") return "업로드할 사업자등록증 파일을 선택해 주세요.";
+  if (code === "SIGNUP_CERTIFICATE_SIZE_UNSUPPORTED") return "파일 크기는 최대 10MB까지 허용됩니다.";
+  if (
+    code === "SIGNUP_CERTIFICATE_MIME_TYPE_UNSUPPORTED"
+    || code === "SIGNUP_CERTIFICATE_EXTENSION_UNSUPPORTED"
+    || code === "SIGNUP_CERTIFICATE_SIGNATURE_UNSUPPORTED"
+  ) {
+    return "PNG, JPEG, PDF 형식의 정상 파일만 업로드할 수 있습니다.";
+  }
+  if (code === "SIGNUP_CERTIFICATE_UPLOAD_FAILED") return "파일 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+  if (code === "SIGNUP_CERTIFICATE_DELETE_FAILED") return "파일 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.";
   if (code.startsWith("SIGNUP_DUPLICATE")) return "이미 검토 중인 신청 정보가 있습니다. 상태 화면을 새로고침해 주세요.";
   if (code === "SIGNUP_APPLICATION_CONFLICT") return "현재 상태에서는 이 작업을 수행할 수 없습니다. 상태를 새로고침해 주세요.";
   return "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+function formatFileSize(sizeBytes: number): string {
+  if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) return "0 B";
+  if (sizeBytes < 1024) return `${sizeBytes} B`;
+  if (sizeBytes < 1024 * 1024) return `${(sizeBytes / 1024).toFixed(1)} KB`;
+  return `${(sizeBytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 async function fetchConsents(): Promise<SignupConsentsResponse> {
@@ -228,12 +266,21 @@ async function fetchConsents(): Promise<SignupConsentsResponse> {
   return payload;
 }
 
+async function fetchCertificate(): Promise<SignupCertificateResponse> {
+  const response = await fetch("/api/signup/application/certificate", { cache: "no-store" });
+  const payload = (await response.json().catch(() => ({}))) as SignupCertificateResponse;
+  if (!response.ok || !payload.ok) throw new Error(payload.code || "SIGNUP_CERTIFICATE_STATUS_FAILED");
+  return payload;
+}
+
 export default function SignupApplicationDashboard() {
   const [applicant, setApplicant] = useState<SignupApplicantView | null>(null);
   const [application, setApplication] = useState<SignupApplicationView | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [policies, setPolicies] = useState<SignupConsentPolicyView[]>(fallbackPolicies);
   const [consents, setConsents] = useState<SignupConsentView[]>([]);
+  const [certificate, setCertificate] = useState<SignupCertificateView | null>(null);
+  const [selectedCertificateFile, setSelectedCertificateFile] = useState<File | null>(null);
   const [consentSelections, setConsentSelections] = useState<ConsentSelectionState>(emptyConsentSelections);
   const [isLoading, setIsLoading] = useState(true);
   const [isBusy, setIsBusy] = useState(false);
@@ -277,8 +324,12 @@ export default function SignupApplicationDashboard() {
       setForm(createFormFromApplication(payload.application ?? null));
       if (payload.applicant) {
         applyConsentPayload(await fetchConsents());
+        const certificatePayload = await fetchCertificate();
+        setCertificate(certificatePayload.certificate ?? null);
       } else {
         setConsents([]);
+        setCertificate(null);
+        setSelectedCertificateFile(null);
         setConsentSelections(emptyConsentSelections);
       }
     } catch (nextError) {
@@ -286,6 +337,8 @@ export default function SignupApplicationDashboard() {
       setApplicant(null);
       setApplication(null);
       setConsents([]);
+      setCertificate(null);
+      setSelectedCertificateFile(null);
       setConsentSelections(emptyConsentSelections);
     } finally {
       setIsLoading(false);
@@ -347,6 +400,61 @@ export default function SignupApplicationDashboard() {
         )));
         if (!hasCurrentConsent) await saveConsent(consentType);
       }
+    }
+  }
+
+  async function uploadCertificate() {
+    if (isBusy) return;
+    if (!selectedCertificateFile) {
+      setError(getSafeErrorMessage("SIGNUP_CERTIFICATE_FILE_REQUIRED"));
+      return;
+    }
+
+    setIsBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      if (!application) await saveApplicationDraft();
+      const formData = new FormData();
+      formData.append("file", selectedCertificateFile);
+      const response = await fetch("/api/signup/application/certificate", {
+        method: "POST",
+        body: formData,
+      });
+      const payload = (await response.json().catch(() => ({}))) as SignupCertificateResponse;
+      if (!response.ok || !payload.ok || !payload.certificate) {
+        throw new Error(payload.code || "SIGNUP_CERTIFICATE_UPLOAD_FAILED");
+      }
+      setCertificate(payload.certificate);
+      setSelectedCertificateFile(null);
+      setMessage("사업자등록증이 등록되었습니다.");
+    } catch (nextError) {
+      setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
+      await loadStatus().catch(() => undefined);
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function deleteCertificate() {
+    if (isBusy || !certificate) return;
+    setIsBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/signup/application/certificate", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileId: certificate.id }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as SignupCertificateResponse;
+      if (!response.ok || !payload.ok) throw new Error(payload.code || "SIGNUP_CERTIFICATE_DELETE_FAILED");
+      setCertificate(payload.certificate ?? null);
+      setMessage("사업자등록증 등록을 철회했습니다.");
+    } catch (nextError) {
+      setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
+    } finally {
+      setIsBusy(false);
     }
   }
 
@@ -459,7 +567,7 @@ export default function SignupApplicationDashboard() {
       title={<>가입 신청을<br />안전하게 진행하세요</>}
       description="이 화면은 Google 인증을 마친 신청자의 회사 신청 상태만 보여줍니다. Workspace 접근은 승인과 provisioning이 끝날 때까지 차단됩니다."
       heroItems={["7일 Trial", "100MB", "3명", "관리자 승인"]}
-      footer={<p>사업자등록증 업로드와 관리자 승인 화면은 다음 scoped step에서 연결합니다.</p>}
+      footer={<p>사업자등록증 파일은 승인 전용 viewer에서만 열람되며 공개 URL이나 다운로드 링크를 제공하지 않습니다.</p>}
     >
       <ATypePublicCard eyebrow={copy.label} title={copy.title} description={copy.description}>
         {isLoading ? <ATypePublicNotice tone="info">신청 상태를 불러오는 중입니다.</ATypePublicNotice> : null}
@@ -524,8 +632,41 @@ export default function SignupApplicationDashboard() {
                     <option value="custom">Custom</option>
                   </select>
                 </label>
-                <div className="rounded-[var(--pbp-radius-xl)] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-soft)] p-4 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">
-                  사업자등록증 업로드는 다음 단계에서 연결합니다. 이번 화면에서는 제출 준비 상태와 동의 증적을 저장합니다.
+                <div className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-soft)] p-4 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">
+                  <div>
+                    <p className="text-sm font-black text-[var(--pbp-text-primary)]">사업자등록증</p>
+                    <p>PNG, JPEG, PDF · 최대 10MB</p>
+                  </div>
+                  {certificate ? (
+                    <div className="min-w-0 rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] p-3">
+                      <p className="truncate font-black text-[var(--pbp-text-primary)]">{certificate.originalName}</p>
+                      <p>{certificate.mimeType} · {formatFileSize(certificate.sizeBytes)} · {formatDateTime(certificate.uploadedAt)}</p>
+                    </div>
+                  ) : (
+                    <p>현재 등록된 파일이 없습니다.</p>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,application/pdf,.png,.jpg,.jpeg,.pdf"
+                    disabled={isBusy}
+                    onChange={(event) => setSelectedCertificateFile(event.target.files?.[0] ?? null)}
+                    className="w-full min-w-0 text-xs font-semibold text-[var(--pbp-text-secondary)] file:mr-3 file:rounded-[var(--pbp-radius-lg)] file:border-0 file:bg-[var(--pbp-brand-primary)] file:px-3 file:py-2 file:text-xs file:font-black file:text-[var(--pbp-text-inverse)]"
+                  />
+                  {selectedCertificateFile ? (
+                    <p className="break-all text-[var(--pbp-text-primary)]">
+                      선택됨: {selectedCertificateFile.name} · {formatFileSize(selectedCertificateFile.size)}
+                    </p>
+                  ) : null}
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <button type="button" onClick={uploadCertificate} disabled={isBusy || !selectedCertificateFile} className="flex-1 rounded-[var(--pbp-radius-lg)] bg-[var(--pbp-action-primary-surface)] px-3 py-2 text-xs font-black text-[var(--pbp-action-primary-text)] disabled:bg-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
+                      {certificate ? "교체 업로드" : "파일 업로드"}
+                    </button>
+                    {certificate ? (
+                      <button type="button" onClick={deleteCertificate} disabled={isBusy} className="flex-1 rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-status-danger-border)] bg-[var(--pbp-surface-base)] px-3 py-2 text-xs font-black text-[var(--pbp-status-danger-fg)] disabled:border-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
+                        등록 철회
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4">
                   {policies.map((policy) => (
@@ -551,6 +692,7 @@ export default function SignupApplicationDashboard() {
                 <p><span className="font-black text-[var(--pbp-text-primary)]">회사명</span> {application?.requestedCompanyName ?? "-"}</p>
                 <p><span className="font-black text-[var(--pbp-text-primary)]">사업자명</span> {application?.businessName ?? "-"}</p>
                 <p><span className="font-black text-[var(--pbp-text-primary)]">요금제</span> {application?.requestedPlanCode ?? "-"}</p>
+                <p><span className="font-black text-[var(--pbp-text-primary)]">사업자등록증</span> {certificate ? `${certificate.originalName} · ${formatFileSize(certificate.sizeBytes)}` : "등록된 파일 없음"}</p>
                 <p><span className="font-black text-[var(--pbp-text-primary)]">제출일</span> {formatDateTime(application?.submittedAt ?? null) ?? "-"}</p>
               </div>
             )}

@@ -30,7 +30,9 @@ for (const token of [
   "제출",
   "수정 후 다시 제출",
   "신청 취소",
-  "사업자등록증 업로드는 다음 단계",
+  "사업자등록증",
+  "교체 업로드",
+  "등록 철회",
   "WAFL 이용약관",
   "개인정보 처리방침",
 ]) {
@@ -54,6 +56,7 @@ assert.doesNotMatch(`${dashboard}\n${apiRoute}\n${submitRoute}\n${cancelRoute}`,
 assert.doesNotMatch(dashboard, /companyId|memberId|role|emailVerified.*input|googleSub.*input/);
 assert.match(dashboard, /fetch\("\/api\/signup\/application"/);
 assert.ok(dashboard.includes('fetch("/api/signup/application/consents"'));
+assert.ok(dashboard.includes('fetch("/api/signup/application/certificate"'));
 assert.ok(dashboard.includes('fetch("/api/signup/application/submit"'));
 assert.ok(dashboard.includes('fetch("/api/signup/application/cancel"'));
 assert.match(dashboard, /await saveApplicationDraft\(\);\s+await ensureSelectedConsents\(\);\s+const response = await fetch\("\/api\/signup\/application\/submit"/s);

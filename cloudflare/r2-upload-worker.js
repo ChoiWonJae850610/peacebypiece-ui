@@ -6,11 +6,12 @@ const CORS_HEADERS = {
 };
 
 const TEXT_ENCODER = new TextEncoder();
-const WORKER_VERSION = "0.13.69";
+const WORKER_VERSION = "0.13.70";
 const ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments)\/[^/]+$/i;
 const SCOPED_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
 const COMPANY_ONBOARDING_KEY_PATTERN = /^companies\/[^/]+\/onboarding\/(logo|business-license)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 const COMPANY_FILE_KEY_PATTERN = /^companies\/[^/]+\/company-files\/(representative_image|business_registration)\/[^/]+\.(jpg|png|webp|pdf)$/i;
+const SIGNUP_APPLICATION_CERTIFICATE_KEY_PATTERN = /^signup-applications\/[^/]+\/business-registration\/[^/]+\.(png|jpg|pdf)$/i;
 
 const ATTACHMENT_POLICY = {
   maxFileSizeBytes: 10 * 1024 * 1024,
@@ -42,8 +43,21 @@ const COMPANY_FILE_POLICY = {
   },
 };
 
+const SIGNUP_APPLICATION_CERTIFICATE_POLICY = {
+  maxFileSizeBytes: 10 * 1024 * 1024,
+  allowedMimeTypesByExtension: {
+    png: "image/png",
+    jpg: "image/jpeg",
+    pdf: "application/pdf",
+  },
+};
+
 function normalizeStorageKey(value) {
-  return String(value || "").replace(/^\/+/, "").trim();
+  return String(value || "").trim();
+}
+
+function hasUnsafeStorageKeySyntax(key) {
+  return !key || key.startsWith("/") || key.includes("\\") || key.includes("..");
 }
 
 function getScopeFromKey(key) {
@@ -66,8 +80,34 @@ function getCompanyFileTypeFromKey(key) {
   return null;
 }
 
+function isSignupApplicationCertificateKey(key) {
+  return SIGNUP_APPLICATION_CERTIFICATE_KEY_PATTERN.test(normalizeStorageKey(key));
+}
+
+function getSignupApplicationCertificateExtension(key) {
+  const normalized = normalizeStorageKey(key);
+  const match = normalized.match(/\.([a-z0-9]+)$/i);
+  return match ? match[1].toLowerCase() : "";
+}
+
+function isAllowedSignupApplicationCertificate({ key, contentType, size }) {
+  const extension = getSignupApplicationCertificateExtension(key);
+  const expectedMimeType = SIGNUP_APPLICATION_CERTIFICATE_POLICY.allowedMimeTypesByExtension[extension];
+  const normalizedContentType = String(contentType || "").toLowerCase();
+  return Boolean(
+    expectedMimeType
+    && expectedMimeType === normalizedContentType
+    && size > 0
+    && size <= SIGNUP_APPLICATION_CERTIFICATE_POLICY.maxFileSizeBytes,
+  );
+}
+
 function isAllowedWorkerFile({ key, contentType, size }) {
   const normalizedContentType = String(contentType || "").toLowerCase();
+  if (isSignupApplicationCertificateKey(key)) {
+    return isAllowedSignupApplicationCertificate({ key, contentType, size });
+  }
+
   const companyOnboardingFileType = getCompanyOnboardingFileTypeFromKey(key);
 
   if (companyOnboardingFileType) {
@@ -101,13 +141,17 @@ function json(data, init = {}) {
 }
 
 function isSafeStorageKey(key) {
+  const raw = String(key || "").trim();
+  if (hasUnsafeStorageKeySyntax(raw)) return false;
+
   const normalized = normalizeStorageKey(key);
   return (
     ATTACHMENT_KEY_PATTERN.test(normalized) ||
     SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
     COMPANY_ONBOARDING_KEY_PATTERN.test(normalized) ||
-    COMPANY_FILE_KEY_PATTERN.test(normalized)
-  ) && !normalized.includes("..") && !normalized.startsWith("/");
+    COMPANY_FILE_KEY_PATTERN.test(normalized) ||
+    SIGNUP_APPLICATION_CERTIFICATE_KEY_PATTERN.test(normalized)
+  );
 }
 
 function readSecret(env) {
@@ -213,7 +257,7 @@ function createFileHeaders(object, url) {
   return headers;
 }
 
-export default {
+const r2UploadWorker = {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -266,3 +310,5 @@ export default {
     return new Response(object.body, { status: 200, headers: createFileHeaders(object, url) });
   },
 };
+
+export default r2UploadWorker;

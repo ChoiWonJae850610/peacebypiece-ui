@@ -34,6 +34,7 @@
         # host/database 문자열의 SHA-256 앞 12자리. 비밀번호나 URL이 아닙니다.
         ApprovedDbFingerprint = "01e5dcc7fea3"
         # Worker URL 또는 host 문자열의 SHA-256 앞 12자리. 실제 URL이나 secret이 아닙니다.
+        ApprovedWorkerEnvironmentFingerprint = "cd6334cbc703"
         ApprovedWorkerUrlFingerprint = "b49fb0bd3ff1"
         ApprovedWorkerHostFingerprint = "446bdb61c239"
         ApprovedWorkerUrlAllowlist = ""

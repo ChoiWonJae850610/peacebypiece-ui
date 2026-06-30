@@ -1,6 +1,7 @@
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { isSupportedCompanyOnboardingFileStorageKey } from "@/lib/admin/settings/companyOnboardingFilePolicy";
 import { isSupportedCompanyFileStorageKey } from "@/lib/admin/settings/companyFilePolicy";
+import { isSupportedSignupApplicationCertificateStorageKey } from "@/lib/signup/signupApplicationFilePolicy";
 import { createR2WorkerSignature, createR2WorkerSignedUrl, normalizeWorkerBaseUrl } from "@/lib/storage/r2/r2WorkerSignature.mjs";
 
 export type R2WorkerUploadConfig = {
@@ -43,6 +44,20 @@ export type R2WorkerDeleteUrlResult = {
   expiresInSeconds: number;
 };
 
+export class R2WorkerRequestError extends Error {
+  code: string;
+  status: number;
+  retryable: boolean;
+
+  constructor(input: { code: string; status: number; retryable: boolean }) {
+    super(input.code);
+    this.name = "R2WorkerRequestError";
+    this.code = input.code;
+    this.status = input.status;
+    this.retryable = input.retryable;
+  }
+}
+
 const DEFAULT_WORKER_UPLOAD_EXPIRES_SECONDS = 10 * 60;
 const DEFAULT_WORKER_FILE_EXPIRES_SECONDS = 5 * 60;
 const DEFAULT_WORKER_DELETE_EXPIRES_SECONDS = 5 * 60;
@@ -57,27 +72,38 @@ function assertSafeWorkerStorageKey(key: string): string {
   const isSupportedWorkOrderKey = isSupportedWorkOrderAttachmentStorageKey(value);
   const isSupportedCompanyOnboardingKey = isSupportedCompanyOnboardingFileStorageKey(value) && value.startsWith("companies/");
   const isSupportedCompanyFileKey = isSupportedCompanyFileStorageKey(value) && value.startsWith("companies/");
+  const isSupportedSignupCertificateKey = isSupportedSignupApplicationCertificateStorageKey(value);
 
-  if ((!isSupportedWorkOrderKey && !isSupportedCompanyOnboardingKey && !isSupportedCompanyFileKey) || value.includes("..")) {
+  if ((!isSupportedWorkOrderKey && !isSupportedCompanyOnboardingKey && !isSupportedCompanyFileKey && !isSupportedSignupCertificateKey) || value.includes("..")) {
     throw new Error("R2_WORKER_INVALID_STORAGE_KEY");
   }
   return value;
 }
 
-async function readWorkerError(response: Response): Promise<string> {
+async function readWorkerError(response: Response): Promise<{ body: string; code: string; status: number; retryable: boolean }> {
   const body = await response.text().catch(() => "");
-  if (!body) return `R2_WORKER_REQUEST_FAILED_${response.status}`;
-
-  try {
-    const parsed = JSON.parse(body) as { error?: string; message?: string };
-    return parsed.message || parsed.error || body;
-  } catch {
-    return body;
-  }
+  return {
+    body,
+    code: `R2_WORKER_REQUEST_FAILED_${response.status}`,
+    status: response.status,
+    retryable: response.status === 408 || response.status === 429 || response.status >= 500,
+  };
 }
 
-function isR2WorkerObjectNotFound(status: number, message: string): boolean {
-  return status === 404 || /(?:WORKER_FILE_NOT_FOUND|OBJECT_NOT_FOUND|NOT_FOUND|NO_SUCH_KEY)/i.test(message);
+function isR2WorkerObjectNotFound(status: number, body: string): boolean {
+  return status === 404 || /(?:WORKER_FILE_NOT_FOUND|OBJECT_NOT_FOUND|NOT_FOUND|NO_SUCH_KEY)/i.test(body);
+}
+
+function isR2WorkerMethodNotAllowed(status: number, body: string): boolean {
+  return status === 405 || /METHOD_NOT_ALLOWED/i.test(body);
+}
+
+function createR2WorkerRequestError(input: { status: number; retryable: boolean }): R2WorkerRequestError {
+  return new R2WorkerRequestError({
+    code: `R2_WORKER_DELETE_FAILED_${input.status}`,
+    status: input.status,
+    retryable: input.retryable,
+  });
 }
 
 export function getR2WorkerUploadConfig(): R2WorkerUploadConfig | null {
@@ -194,11 +220,11 @@ export async function deleteR2ObjectViaWorker(input: CreateR2WorkerDeleteUrlInpu
   if (deleteResponse.ok) return;
 
   const deleteError = await readWorkerError(deleteResponse);
-  if (isR2WorkerObjectNotFound(deleteResponse.status, deleteError)) return;
+  if (isR2WorkerObjectNotFound(deleteResponse.status, deleteError.body)) return;
 
-  const shouldTryPostFallback = deleteResponse.status === 405 || /METHOD_NOT_ALLOWED/i.test(deleteError);
+  const shouldTryPostFallback = isR2WorkerMethodNotAllowed(deleteResponse.status, deleteError.body);
   if (!shouldTryPostFallback) {
-    throw new Error(deleteError || "R2_WORKER_DELETE_FAILED");
+    throw createR2WorkerRequestError(deleteError);
   }
 
   const fallbackUrl = new URL(request.url);
@@ -206,7 +232,7 @@ export async function deleteR2ObjectViaWorker(input: CreateR2WorkerDeleteUrlInpu
   const fallbackResponse = await fetch(fallbackUrl.toString(), { method: "POST" });
   if (!fallbackResponse.ok) {
     const fallbackError = await readWorkerError(fallbackResponse);
-    if (isR2WorkerObjectNotFound(fallbackResponse.status, fallbackError)) return;
-    throw new Error(fallbackError || deleteError || "R2_WORKER_DELETE_FAILED");
+    if (isR2WorkerObjectNotFound(fallbackResponse.status, fallbackError.body)) return;
+    throw createR2WorkerRequestError(fallbackError);
   }
 }
