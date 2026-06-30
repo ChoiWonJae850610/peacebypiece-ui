@@ -10,7 +10,7 @@ const prep = fs.readFileSync("docs/project/33-public-signup-schema-repository-pr
 
 for (const token of [
   'version: "0.24.26"',
-  'status: "in_progress"',
+  'status: "completed"',
   "Public Signup, Verification, Approval, and Trial",
   "Google OAuth",
   "email_verified=true",
@@ -46,6 +46,9 @@ for (const token of [
   "PostgreSQL signup repository and applicant API/session foundation",
   "schema mutation remains tied to the previously approved dev/test signup and consent schema migrations",
   "certificate integration records dev/test DB/R2 fixture mutation with residual DB/R2 0",
+  "approve provisioning integration PASS",
+  "existing user reuse PASS",
+  "applicant workspace PASS",
 ]) {
   assert.ok(roadmap.includes(token), `0.24.26 roadmap missing ${token}`);
 }

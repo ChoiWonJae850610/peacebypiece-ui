@@ -5,6 +5,7 @@ const migration = fs.readFileSync("db/migrations/patch_0_24_26_signup_applicatio
 const repository = fs.readFileSync("lib/signup/signupApplicationRepository.ts", "utf8");
 const service = fs.readFileSync("lib/signup/signupApplicationService.ts", "utf8");
 const provisioning = fs.readFileSync("lib/signup/signupApplicationProvisioning.ts", "utf8");
+const provisioningRepository = fs.readFileSync("lib/signup/signupApplicationProvisioningRepository.ts", "utf8");
 const session = fs.readFileSync("lib/signup/signupApplicationSession.ts", "utf8");
 
 for (const indexName of [
@@ -24,15 +25,18 @@ for (const token of [
   "provisionApprovedSignup",
   "approvedBySystemUserId",
   "approvedAt",
-  "markProvisioningStarted",
-  "markProvisioningCompleted",
-  "markProvisioningFailed",
-  "expectedStatus",
-  "compareAndSet: true",
-  "idempotencyKey",
+  "FOR UPDATE",
+  "provisioning_status = 'in_progress'",
+  "provisioning_status = 'completed'",
+  "started.rowCount !== 1",
+  "completed.rowCount !== 1",
+  "SIGNUP_PROVISIONING_START_CONFLICT",
+  "SIGNUP_PROVISIONING_COMPLETE_CONFLICT",
+  "markProvisioningFailedOutsideTransaction",
+  "created_company_id",
   "SignupApprovalProvisioningPort",
 ]) {
-  assert.ok(`${service}\n${provisioning}`.includes(token), `provisioning contract missing ${token}`);
+  assert.ok(`${service}\n${provisioning}\n${provisioningRepository}`.includes(token), `provisioning contract missing ${token}`);
 }
 
 for (const token of [
@@ -49,6 +53,6 @@ for (const token of [
   assert.ok(session.includes(token), `pending session contract missing ${token}`);
 }
 
-assert.doesNotMatch(`${migration}\n${service}\n${provisioning}`, /createDefaultCatalog|size provisioning|POM/i);
+assert.doesNotMatch(`${migration}\n${service}\n${provisioning}\n${provisioningRepository}`, /createDefaultCatalog|size provisioning|POM/i);
 
 console.log("signup application idempotency contract passed");

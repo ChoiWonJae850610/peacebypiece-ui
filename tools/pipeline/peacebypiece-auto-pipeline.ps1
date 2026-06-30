@@ -32,6 +32,9 @@ param(
     [switch]$RunSignupConsentRollbackSmoke,
     [switch]$RunSignupCertificateR2IntegrationPreflight,
     [switch]$RunSignupCertificateR2IntegrationTest,
+    [switch]$RunSignupApprovalProvisioningIntegration,
+    [switch]$CleanupSignupApprovalProvisioningFixtures,
+    [switch]$DiagnoseSignupApprovalProvisioningSchema,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -2388,6 +2391,147 @@ function RunSignupCertificateR2IntegrationPreflight {
     }
 }
 
+function RunSignupApprovalProvisioningIntegration {
+    param([bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:WAFL_SERVER_RUNTIME_MODE }
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Signup Approval Provisioning integration guard"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Production: false required"
+    Write-Host "Mutation: dev/test DB fixture rows only, with manifest-scoped cleanup"
+    Write-Host "R2 Mutation: none"
+    Write-Host "Mode: signup-approval-provisioning-integration"
+
+    if (-not $guard.Passed) {
+        LogError "Signup Approval Provisioning integration test가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $approvalLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousProvisioningEnabled = $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING
+    $previousProvisioningConfirmation = $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING = '1'
+        $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION = 'RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST'
+        return (InvokeProjectCommandWithResultFile -Title "Signup Approval Provisioning Integration" -Label "Signup_Approval_Provisioning_Integration" -NpmCommand "node scripts/run-signup-approval-provisioning-integration.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $approvalLogDir)
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousProvisioningEnabled) { Remove-Item Env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING -ErrorAction SilentlyContinue } else { $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING = $previousProvisioningEnabled }
+        if ($null -eq $previousProvisioningConfirmation) { Remove-Item Env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION = $previousProvisioningConfirmation }
+    }
+}
+
+function CleanupSignupApprovalProvisioningFixtures {
+    param([bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:WAFL_SERVER_RUNTIME_MODE }
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Signup Approval Provisioning fixture cleanup guard"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Production: false required"
+    Write-Host "Mutation: dev/test DB fixture cleanup only"
+    Write-Host "R2 Mutation: none"
+    Write-Host "Mode: signup-approval-provisioning-cleanup"
+
+    if (-not $guard.Passed) {
+        LogError "Signup Approval Provisioning fixture cleanup이 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $approvalLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousProvisioningEnabled = $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING
+    $previousProvisioningConfirmation = $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION
+    $previousCleanupOnly = $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CLEANUP_ONLY
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING = '1'
+        $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION = 'RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST'
+        $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CLEANUP_ONLY = '1'
+        return (InvokeProjectCommandWithResultFile -Title "Signup Approval Provisioning Fixture Cleanup" -Label "Signup_Approval_Provisioning_Fixture_Cleanup" -NpmCommand "node scripts/run-signup-approval-provisioning-integration.mjs --cleanup-leftovers" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $approvalLogDir)
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousProvisioningEnabled) { Remove-Item Env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING -ErrorAction SilentlyContinue } else { $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING = $previousProvisioningEnabled }
+        if ($null -eq $previousProvisioningConfirmation) { Remove-Item Env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION = $previousProvisioningConfirmation }
+        if ($null -eq $previousCleanupOnly) { Remove-Item Env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CLEANUP_ONLY -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CLEANUP_ONLY = $previousCleanupOnly }
+    }
+}
+
+function DiagnoseSignupApprovalProvisioningSchema {
+    param([bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:WAFL_SERVER_RUNTIME_MODE }
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Signup Approval Provisioning schema diagnostic guard"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Production: false required"
+    Write-Host "Mutation: none"
+    Write-Host "R2 Mutation: none"
+    Write-Host "Mode: signup-approval-provisioning-schema-diagnostic"
+
+    if (-not $guard.Passed) {
+        LogError "Signup Approval Provisioning schema diagnostic이 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $approvalLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousProvisioningEnabled = $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING
+    $previousProvisioningConfirmation = $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION
+    $previousDiagnostic = $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_SCHEMA_DIAGNOSTIC
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING = '1'
+        $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION = 'RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST'
+        $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_SCHEMA_DIAGNOSTIC = '1'
+        return (InvokeProjectCommandWithResultFile -Title "Signup Approval Provisioning Schema Diagnostic" -Label "Signup_Approval_Provisioning_Schema_Diagnostic" -NpmCommand "node scripts/run-signup-approval-provisioning-integration.mjs --schema-diagnostic" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $approvalLogDir)
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousProvisioningEnabled) { Remove-Item Env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING -ErrorAction SilentlyContinue } else { $env:WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING = $previousProvisioningEnabled }
+        if ($null -eq $previousProvisioningConfirmation) { Remove-Item Env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_CONFIRMATION = $previousProvisioningConfirmation }
+        if ($null -eq $previousDiagnostic) { Remove-Item Env:WAFL_SIGNUP_APPROVAL_PROVISIONING_SCHEMA_DIAGNOSTIC -ErrorAction SilentlyContinue } else { $env:WAFL_SIGNUP_APPROVAL_PROVISIONING_SCHEMA_DIAGNOSTIC = $previousDiagnostic }
+    }
+}
+
 # ==========================================
 # 10. 메인 화면 / 메인 while 루프
 # ==========================================
@@ -2448,6 +2592,7 @@ function ShowDeveloperToolsMenu {
         Write-Host "43. Signup Consent Migration Compatibility Audit [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host "44. Signup Certificate R2 Integration Test       [DEV/TEST DB·R2 변경/별도 승인/자동 정리]"
         Write-Host "45. Signup Certificate R2 Integration Preflight  [읽기 전용/DEV·TEST 승인 DB·R2 fingerprint]"
+        Write-Host "46. Signup Approval Provisioning Integration    [DEV/TEST DB 변경/자동 정리/R2 변경 없음]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2458,7 +2603,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~45 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~46 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2509,9 +2654,10 @@ function ShowDeveloperToolsMenu {
             43 { RunSignupConsentMigrationCompatibilityAudit | Out-Null }
             44 { RunSignupCertificateR2IntegrationTest | Out-Null }
             45 { RunSignupCertificateR2IntegrationPreflight | Out-Null }
+            46 { RunSignupApprovalProvisioningIntegration | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~45 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~46 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -2757,6 +2903,18 @@ elseif ($RunSignupCertificateR2IntegrationPreflight) {
 }
 elseif ($RunSignupCertificateR2IntegrationTest) {
     $exitCode = RunSignupCertificateR2IntegrationTest -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSignupApprovalProvisioningIntegration) {
+    $exitCode = RunSignupApprovalProvisioningIntegration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($CleanupSignupApprovalProvisioningFixtures) {
+    $exitCode = CleanupSignupApprovalProvisioningFixtures -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($DiagnoseSignupApprovalProvisioningSchema) {
+    $exitCode = DiagnoseSignupApprovalProvisioningSchema -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

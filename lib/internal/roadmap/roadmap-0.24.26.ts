@@ -3,14 +3,14 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   version: "0.24.26",
   title: "Public Signup, Verification, Approval, and Trial",
-  status: "in_progress",
+  status: "completed",
   userSummary: [
-    "Defines the executable roadmap for public signup, verified identity, system-admin approval, and Trial provisioning.",
-    "This roadmap records the final owner policy as implementation criteria; it does not start product code in the metadata-only canonicalization step.",
+    "Completed the 0.24.26 foundation for public signup, verified identity, system-admin review, certificate evidence, approval provisioning, and Trial linkage.",
+    "The final owner policy is implemented as guarded foundation code and verified by static contracts plus approved dev/test certificate and approve provisioning integration runs.",
   ],
   visibleChanges: [
-    "Public WAFL signup entry and Trial CTA are planned for the next implementation step.",
-    "Pending, rejected, and not-yet-approved users will receive limited state screens instead of workspace access.",
+    "Public WAFL signup entry, applicant draft/status screens, certificate upload foundation, and system-admin review screens are wired.",
+    "Pending, rejected, and not-yet-approved users receive limited state screens instead of workspace access.",
   ],
   expectedUi: [
     "Public signup CTA starts Google OAuth and requires an email-verified Google profile.",
@@ -107,7 +107,8 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   dbImpactNotes: [
     "Signup applications and signup application files were created by the approved dev/test schema migration.",
     "Signup consent evidence now has a separate additive migration, read-only compatibility audit, post-apply audit, and rollback smoke; the consent migration was executed once against the approved dev/test DB fingerprint.",
-    "The existing signup schema has enough created-id, provisioning status/error/attempt, certificate link, and idempotency fields for the current approval provisioning foundation; no additional migration was added in this step.",
+    "The existing signup schema has enough created-id, provisioning status/error/attempt, certificate link, and idempotency fields for the approval provisioning foundation; no additional migration was added in this completion step.",
+    "Guarded dev/test approve provisioning integration executed synthetic fixture rows only, ended with residual DB rows 0, and did not perform schema migration or R2 mutation.",
     "Any additional migration must be read-only reconciled and separately approved before execution.",
   ],
   r2Impact: "guarded",
@@ -190,7 +191,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
         "PASS: signup migration apply, post-apply schema audit findings 0, schema smoke rollback, roadmap/update contracts, tsc --noEmit, next build, git diff --check, git diff --cached --check.",
     },
   ],
-  recommendedCommitMessage: "0.24.26 공개 가입 승인 Trial 로드맵 정리",
+  recommendedCommitMessage: "0.24.26 공개 가입 승인 및 Trial 기반 완료",
   nextVersionBoundary: [
     "0.24.27 - System Catalog, Sizes, and POM.",
     "0.24.28 - PDF and R2 Lifecycle; reserved R2 lifecycle simulator and bounded performance fixture scope are recorded as future dependencies.",
@@ -225,24 +226,27 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "System-admin signup review list/detail foundation is implemented with actual-active-system-admin route/API guards, bounded pagination, consent evidence display, certificate inline viewer wiring, safe detail fields, and submitted/reviewing correction/rejection transition APIs.",
       "Review transitions are limited to submitted -> reviewing, submitted/reviewing -> changes_requested, and submitted/reviewing -> rejected with compare-and-set status checks, reason validation for terminal/correction actions, same-origin mutation guards, safe error codes, and no approve/provisioning execution.",
       "Approval/provisioning foundation now includes the PostgreSQL port/repository and dry-run/gated approve API wiring: application FOR UPDATE, server-side eligibility, Google-sub user reuse, email-only merge denial, company/user/member/permission/subscription/certificate ownership creation, approved created-id linkage, and audit insert are modeled in one transaction.",
-      "Actual approve provisioning execution is still blocked by default behind non-production runtime, WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING=1, and exact confirmation RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST; this step did not execute company/user/member/subscription mutations.",
+      "Existing Google-sub user reuse now preserves the user's current tenant anchor and role, adds the new company-admin membership through company_members, and continues to deny email-only automatic merges as SIGNUP_APPROVAL_IDENTITY_CONFLICT.",
+      "Approval provisioning now requires CAS rowCount 1 for both start and completion, prepares created IDs before the final approved/completed transition, and keeps duplicate/idempotent approval requests from creating duplicate company, member, subscription, company file, or audit state.",
+      "Actual approve provisioning execution remains blocked by default behind non-production runtime, WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING=1, and exact confirmation RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST; the approved dev/test integration runner uses only dedicated synthetic fixtures and performs no R2 mutation.",
+      "Guarded dev/test approve provisioning integration PASS was confirmed once: new applicant PASS, idempotency PASS, identity conflict PASS, existing user reuse PASS, Trial PASS, applicant workspace PASS, cleanup PASS, residual DB rows 0, residual R2 objects 0, dev/test DB fixture mutation true, production mutation false, and schema migration this run false.",
       "The system-admin review detail UI now displays a dry-run provisioning plan and safe approve execution-gate response without sending the mutation confirmation phrase.",
       "Orphan cleanup backlog table was not added, and broad orphan/reconciliation/range/stream/performance verification remains reserved for 0.24.28.",
       "Repo-state/build-result metadata now distinguishes DB Migration Applied, previous DB Schema Mutation, Schema Migration This Run, Dev/Test DB Test-Data Mutation, Dev/Test R2 Mutation, Production Mutation, and Production Migration; schema mutation remains tied to the previously approved dev/test signup and consent schema migrations while certificate integration records dev/test DB/R2 fixture mutation with residual DB/R2 0.",
       "The draft requires explicit email_verified evidence, normalized 10-digit business registration matching, application-owned certificate files, and provisioning failure handling through the approval operation.",
       "0.24.28 and 0.24.30 reserved dependency notes remain recorded in roadmap/backlog docs.",
     ],
-    commitHash: "0fadb95e9561fb89d0198b393599d419d121e5bd",
+    commitHash: "pending-final-commit",
     verificationResult:
-      "Foundation verification PASS so far: runtime development, approved DB fingerprint 01e5dcc7fea3, signup migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, consent migration SHA-256 7b6f1f7f220925b0090c6765222d0805b5a9cfd40615c4648dbae2f9f3fe5eea, preflight findings 0, migration apply PASS, post-apply findings 0, rollback smoke residual rows 0, certificate integration PASS, PNG/JPEG/PDF/revoke PASS, residual DB rows 0, residual R2 objects 0, production mutation false, schema migration this run false.",
+      "Foundation verification PASS so far: runtime development, approved DB fingerprint 01e5dcc7fea3, signup migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, consent migration SHA-256 7b6f1f7f220925b0090c6765222d0805b5a9cfd40615c4648dbae2f9f3fe5eea, preflight findings 0, migration apply PASS, post-apply findings 0, rollback smoke residual rows 0, certificate integration PASS, PNG/JPEG/PDF/revoke PASS, approve provisioning integration PASS, new applicant/idempotency/identity conflict/existing user reuse/Trial/applicant workspace PASS, residual DB rows 0, residual R2 objects 0, production mutation false, schema migration this run false.",
     remainingIssues: [
       "Decide technical rate-limit/CAPTCHA mechanism during implementation planning.",
-      "Separately approve and execute one guarded dev/test approve mutation before marking actual provisioning execution complete.",
-      "Continue notification email, Trial workspace/session linkage, and remaining live viewer verification after provisioning execution is explicitly approved.",
+      "Notification email remains a non-executed integration boundary in this foundation handoff; no real email was sent.",
+      "Complete live certificate viewer browser QA on the deployed environment.",
       "Production migration and any additional DB schema/data/R2 mutation require separate explicit approval.",
     ],
     userConfirmationRequired: true,
     userConfirmationResult:
-      "Production migration, public signup UI/OAuth callback changes, API wiring, and provisioning execution require later explicit work steps.",
+      "Production migration, live browser QA, real email sending, and PG/billing operation require later explicit work steps.",
   },
 };

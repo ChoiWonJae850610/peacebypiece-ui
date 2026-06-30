@@ -36,6 +36,8 @@ export type SignupProvisioningSafeCode =
   | "SIGNUP_APPROVAL_IDENTITY_CONFLICT"
   | "SIGNUP_APPROVAL_PLAN_INVALID"
   | "SIGNUP_PROVISIONING_ALREADY_RUNNING"
+  | "SIGNUP_PROVISIONING_START_CONFLICT"
+  | "SIGNUP_PROVISIONING_COMPLETE_CONFLICT"
   | "SIGNUP_PROVISIONING_FAILED";
 
 export class SignupProvisioningPlanError extends Error {
@@ -441,28 +443,24 @@ async function findOrCreateUser(
     await client.query(
       `
         UPDATE users
-        SET company_id = $2,
-            email = COALESCE(email, $3),
-            name = $4,
-            display_name = COALESCE(display_name, $4),
-            google_picture_url = COALESCE($5, google_picture_url),
-            avatar_url = COALESCE($5, avatar_url),
-            role = $6,
+        SET email = COALESCE(email, $2),
+            name = $3,
+            display_name = COALESCE(display_name, $3),
+            google_picture_url = COALESCE($4, google_picture_url),
+            avatar_url = COALESCE($4, avatar_url),
             auth_provider = COALESCE(auth_provider, 'google'),
-            provider_user_id = COALESCE(provider_user_id, $7),
+            provider_user_id = COALESCE(provider_user_id, $5),
             email_verified = true,
             status = 'active',
             is_active = true,
-            updated_at = $8
+            updated_at = $6
         WHERE id = $1
       `,
       [
         existing.id,
-        input.companyId,
         input.app.email,
         input.app.applicant_name,
         input.app.google_picture_url,
-        getUserRoleForCompanyAdmin(),
         input.app.google_sub,
         input.approvedAt,
       ],
@@ -911,7 +909,7 @@ export class PostgresSignupApprovalProvisioningRepository implements SignupAppro
 
         const certificate = await assertProvisioningEligibility(client, app);
 
-        await client.query(
+        const started = await client.query(
           `
             UPDATE signup_applications
             SET provisioning_status = 'in_progress',
@@ -926,6 +924,9 @@ export class PostgresSignupApprovalProvisioningRepository implements SignupAppro
           `,
           [app.id, input.approvedBySystemUserId, approvedAt],
         );
+        if (started.rowCount !== 1) {
+          throw new SignupProvisioningPlanError("SIGNUP_PROVISIONING_START_CONFLICT");
+        }
 
         const companyId = await insertCompany(client, { app, approvedAt });
         const user = await findOrCreateUser(client, { app, companyId, approvedAt });
@@ -959,23 +960,46 @@ export class PostgresSignupApprovalProvisioningRepository implements SignupAppro
           subscriptionId,
         };
         const trial = getTrialSnapshot(approvedAt);
-        await client.query(
+        const prepared = await client.query(
+          `
+            UPDATE signup_applications
+            SET created_company_id = $2,
+                created_user_id = $3,
+                created_company_member_id = $4,
+                created_subscription_id = $5,
+                updated_at = $6
+            WHERE id = $1
+              AND status = 'reviewing'
+              AND provisioning_status = 'in_progress'
+          `,
+          [app.id, companyId, user.userId, companyMemberId, subscriptionId, approvedAt],
+        );
+        if (prepared.rowCount !== 1) {
+          throw new SignupProvisioningPlanError("SIGNUP_PROVISIONING_COMPLETE_CONFLICT");
+        }
+        const completed = await client.query(
           `
             UPDATE signup_applications
             SET status = 'approved',
                 provisioning_status = 'completed',
                 provisioning_completed_at = $6,
                 approved_at = $6,
-                created_company_id = $2,
-                created_user_id = $3,
-                created_company_member_id = $4,
-                created_subscription_id = $5,
+                reviewed_by_system_user_id = $7,
+                reviewed_at = COALESCE(reviewed_at, $6),
                 updated_at = $6
             WHERE id = $1
+              AND status = 'reviewing'
               AND provisioning_status = 'in_progress'
+              AND created_company_id = $2
+              AND created_user_id = $3
+              AND created_company_member_id = $4
+              AND created_subscription_id = $5
           `,
-          [app.id, companyId, user.userId, companyMemberId, subscriptionId, approvedAt],
+          [app.id, companyId, user.userId, companyMemberId, subscriptionId, approvedAt, input.approvedBySystemUserId],
         );
+        if (completed.rowCount !== 1) {
+          throw new SignupProvisioningPlanError("SIGNUP_PROVISIONING_COMPLETE_CONFLICT");
+        }
         await insertAuditLog(client, {
           app,
           approvedBySystemUserId: input.approvedBySystemUserId,

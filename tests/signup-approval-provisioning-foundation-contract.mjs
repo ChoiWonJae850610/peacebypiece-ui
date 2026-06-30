@@ -17,6 +17,11 @@ assert.match(repository, /INSERT INTO companies/, "provisioning must create the 
 assert.match(repository, /INSERT INTO users/, "provisioning must create the first admin user when Google sub is new");
 assert.match(repository, /WHERE google_sub = \$1/, "existing user reuse must be by Google sub");
 assert.match(repository, /lower\(email\) = \$1[\s\S]*google_sub IS NULL OR google_sub <> \$2/, "email-only merge must be denied");
+const existingUserUpdate = repository.slice(
+  repository.indexOf("if (existing) {"),
+  repository.indexOf("return { userId: existing.id, reused: true };"),
+);
+assert.doesNotMatch(existingUserUpdate, /company_id\s*=\s*\$\d|role\s*=\s*\$\d/, "existing Google-sub user reuse must not overwrite users.company_id or users.role");
 assert.match(repository, /hasCompanyIdentityConflict/, "existing company identity conflicts must be checked before provisioning");
 assert.match(repository, /regexp_replace\(COALESCE\(business_registration_number/, "business-registration duplicate checks must normalize digits");
 assert.match(repository, /SIGNUP_APPROVAL_IDENTITY_CONFLICT/, "identity conflicts must use a safe code");
@@ -35,6 +40,11 @@ assert.doesNotMatch(repository, /putR2Object|deleteR2Object|uploadObject|R2_WORK
 assert.match(repository, /INSERT INTO audit_logs/, "approval provisioning must write an audit trace in the transaction");
 assert.match(repository, /event_type[\s\S]*signup\.approved/, "audit event must be signup.approved");
 assert.match(repository, /status = 'approved'[\s\S]*provisioning_status = 'completed'[\s\S]*created_company_id/, "application must be marked approved with created ids");
+assert.match(repository, /started\.rowCount !== 1/, "provisioning start must require CAS rowCount 1");
+assert.match(repository, /created_company_id = \$2[\s\S]*status = 'reviewing'[\s\S]*provisioning_status = 'in_progress'/, "provisioning must prepare created ids before final approved transition");
+assert.match(repository, /completed\.rowCount !== 1/, "provisioning completion must require CAS rowCount 1");
+assert.match(repository, /SIGNUP_PROVISIONING_START_CONFLICT/);
+assert.match(repository, /SIGNUP_PROVISIONING_COMPLETE_CONFLICT/);
 assert.match(repository, /markProvisioningFailedOutsideTransaction/, "transaction rollback failure must use a safe out-of-transaction failure marker");
 assert.match(repository, /SIGNUP_APPROVAL_EMAIL_NOT_VERIFIED/);
 assert.match(repository, /SIGNUP_APPROVAL_CONSENT_INCOMPLETE/);

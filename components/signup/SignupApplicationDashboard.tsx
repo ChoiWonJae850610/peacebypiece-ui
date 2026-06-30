@@ -168,7 +168,7 @@ const statusCopy: Record<SignupApplicationStatus | "verified_identity", {
   approved: {
     label: "승인 완료",
     title: "승인이 완료되었습니다",
-    description: "아직 실제 workspace provisioning 단계가 연결되지 않았습니다. 준비 상태가 완료될 때까지 이 화면에 머뭅니다.",
+    description: "회사와 Trial workspace 준비가 완료되었습니다. 다시 로그인하거나 새로고침하면 정상 WAFL workspace로 이동할 수 있습니다.",
     tone: "success",
   },
   rejected: {
