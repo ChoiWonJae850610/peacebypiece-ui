@@ -34,6 +34,9 @@ assert.match(repository, /TRIAL_PLAN_CODE/, "subscription must use the canonical
 assert.match(repository, /TRIAL_STORAGE_LIMIT_BYTES/, "Trial storage must use the canonical constant");
 assert.match(repository, /TRIAL_MEMBER_LIMIT/, "Trial member limit must use the canonical constant");
 assert.match(repository, /getTrialEndsAt\(input\.approvedAt\)|getTrialEndsAt\(approvedAt\)/, "Trial end must derive from approval time");
+assert.match(repository, /provisionCompanyCatalog/, "approval provisioning must create company catalog defaults");
+assert.match(repository, /SYSTEM_CATALOG_VERSION_CODE/, "approval audit must record the system catalog version");
+assert.match(repository, /wouldProvisionCatalog/, "dry-run plan must report catalog provisioning readiness");
 assert.match(repository, /INSERT INTO company_files/, "certificate ownership must link through company_files");
 assert.match(repository, /UPDATE signup_application_files[\s\S]*approved_company_file_id/, "signup certificate metadata must record the company file link");
 assert.doesNotMatch(repository, /putR2Object|deleteR2Object|uploadObject|R2_WORKER|signed URL|storage_key.*console/i, "provisioning must not mutate R2 or expose raw storage details");

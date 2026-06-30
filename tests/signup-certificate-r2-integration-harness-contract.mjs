@@ -136,7 +136,7 @@ for (const token of [
 assert.ok(config.includes('ApprovedWorkerEnvironmentFingerprint = "cd6334cbc703"'), "approved environment fingerprint must match the user-approved preflight value");
 assert.ok(pipeline.includes('$statusPrefix = "ApprovalRequired"'), "preflight approval-required exit 2 must not be labeled failed");
 assert.ok(pipeline.includes('LogWarning "$Title 승인 필요. ExitCode: $testExitCode"'), "approval-required results must be reported distinctly");
-assert.ok(pipeline.includes("0~46"), "developer menu input range must include 46");
+assert.ok(pipeline.includes("0~50"), "developer menu input range must include 50");
 assert.doesNotMatch(pipeline, /Newest.*Signup_Certificate_R2_Integration_Test/, "integration logs must not target 4. Newest");
 
 const integrationStart = pipeline.indexOf("function RunSignupCertificateR2IntegrationTest");

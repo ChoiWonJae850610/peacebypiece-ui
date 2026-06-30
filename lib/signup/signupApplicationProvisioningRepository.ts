@@ -8,6 +8,8 @@ import {
   TRIAL_STORAGE_LIMIT_BYTES,
   getTrialEndsAt,
 } from "@/lib/billing/companyTrialPolicy";
+import { provisionCompanyCatalog } from "@/lib/catalog/systemCatalogRepository";
+import { SYSTEM_CATALOG_VERSION_CODE } from "@/lib/catalog/systemCatalogPolicy";
 import { withDbTransaction, type DbQueryResultRow, type DbTransactionClient } from "@/lib/db/client";
 import {
   MEMBER_PERMISSION_CATALOG,
@@ -59,6 +61,7 @@ export type SignupProvisioningPlan = {
   wouldAssignCompanyAdmin: boolean;
   wouldCreateTrialSubscription: boolean;
   wouldLinkCertificate: boolean;
+  wouldProvisionCatalog: boolean;
   requestedPlanCode: SignupApplicationPlanCode | null;
   trial: {
     startedAt: string | null;
@@ -773,6 +776,7 @@ async function insertAuditLog(
         subscriptionId: input.provisionedIds.subscriptionId,
         trialStorageLimitBytes: TRIAL_STORAGE_LIMIT_BYTES,
         trialMemberLimit: TRIAL_MEMBER_LIMIT,
+        catalogVersionCode: SYSTEM_CATALOG_VERSION_CODE,
       }),
       input.approvedAt,
     ],
@@ -835,6 +839,7 @@ function createBlockedPlan(input: {
     wouldAssignCompanyAdmin: input.blockingReasons.length === 0,
     wouldCreateTrialSubscription: input.blockingReasons.length === 0,
     wouldLinkCertificate: input.blockingReasons.length === 0,
+    wouldProvisionCatalog: input.blockingReasons.length === 0,
     requestedPlanCode: input.app?.requested_plan_code ?? null,
     trial: {
       startedAt: iso(trial?.startedAt ?? null),
@@ -945,6 +950,7 @@ export class PostgresSignupApprovalProvisioningRepository implements SignupAppro
           [companyId, user.userId, approvedAt],
         );
         const subscriptionId = await insertTrialSubscription(client, { companyId, approvedAt });
+        await provisionCompanyCatalog(client, companyId);
         await linkCertificateToCompanyFile(client, {
           app,
           certificate,

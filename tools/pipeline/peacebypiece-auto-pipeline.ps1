@@ -35,6 +35,10 @@ param(
     [switch]$RunSignupApprovalProvisioningIntegration,
     [switch]$CleanupSignupApprovalProvisioningFixtures,
     [switch]$DiagnoseSignupApprovalProvisioningSchema,
+    [switch]$RunSystemCatalogCompatibilityAudit,
+    [switch]$ApplySystemCatalogMigration,
+    [switch]$RunSystemCatalogPostApplyAudit,
+    [switch]$RunSystemCatalogProvisioningIntegration,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -2280,6 +2284,66 @@ function ApplySignupConsentMigration {
     param([bool]$PauseAfter = $true)
     return (InvokeApprovedDbMigrationCommand -Mode 'signup-consents' -Title 'Apply Signup Consent Migration' -Label 'Apply_Signup_Consent_Migration' -PauseAfter $PauseAfter)
 }
+
+function RunSystemCatalogCompatibilityAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'system-catalog-compatibility' -Title 'System Catalog Compatibility Audit' -Label 'System_Catalog_Compatibility_Audit' -PauseAfter $PauseAfter)
+}
+
+function ApplySystemCatalogMigration {
+    param([bool]$PauseAfter = $true)
+    return (InvokeApprovedDbMigrationCommand -Mode 'system-catalog' -Title 'Apply System Catalog Migration' -Label 'Apply_System_Catalog_Migration' -PauseAfter $PauseAfter)
+}
+
+function RunSystemCatalogPostApplyAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'system-catalog-post-apply' -Title 'System Catalog Post-Apply Audit' -Label 'System_Catalog_Post_Apply_Audit' -PauseAfter $PauseAfter)
+}
+
+function RunSystemCatalogProvisioningIntegration {
+    param([bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:WAFL_SERVER_RUNTIME_MODE }
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "System Catalog Provisioning integration guard"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Production: false required"
+    Write-Host "Mutation: dev/test DB fixture rows only, with cleanup"
+    Write-Host "R2 Mutation: none"
+    Write-Host "Mode: system-catalog-provisioning-integration"
+
+    if (-not $guard.Passed) {
+        LogError "System Catalog Provisioning integration test가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $catalogLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousCatalogEnabled = $env:WAFL_ENABLE_SYSTEM_CATALOG_INTEGRATION
+    $previousCatalogConfirmation = $env:WAFL_SYSTEM_CATALOG_INTEGRATION_CONFIRMATION
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_ENABLE_SYSTEM_CATALOG_INTEGRATION = '1'
+        $env:WAFL_SYSTEM_CATALOG_INTEGRATION_CONFIRMATION = 'RUN_SYSTEM_CATALOG_PROVISIONING_DEV_TEST'
+        return (InvokeProjectCommandWithResultFile -Title "System Catalog Provisioning Integration" -Label "System_Catalog_Provisioning_Integration" -NpmCommand "node scripts/run-system-catalog-provisioning-integration.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $catalogLogDir)
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousCatalogEnabled) { Remove-Item Env:WAFL_ENABLE_SYSTEM_CATALOG_INTEGRATION -ErrorAction SilentlyContinue } else { $env:WAFL_ENABLE_SYSTEM_CATALOG_INTEGRATION = $previousCatalogEnabled }
+        if ($null -eq $previousCatalogConfirmation) { Remove-Item Env:WAFL_SYSTEM_CATALOG_INTEGRATION_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_SYSTEM_CATALOG_INTEGRATION_CONFIRMATION = $previousCatalogConfirmation }
+    }
+}
 function RunSignupConsentRollbackSmoke {
     param([bool]$PauseAfter = $true)
     return (InvokeApprovedDbSmokeCommand -Command 'node scripts/run-signup-consent-rollback-smoke.mjs' -Title 'Signup Consent Rollback Smoke' -Label 'Signup_Consent_Rollback_Smoke' -PauseAfter $PauseAfter)
@@ -2593,6 +2657,10 @@ function ShowDeveloperToolsMenu {
         Write-Host "44. Signup Certificate R2 Integration Test       [DEV/TEST DB·R2 변경/별도 승인/자동 정리]"
         Write-Host "45. Signup Certificate R2 Integration Preflight  [읽기 전용/DEV·TEST 승인 DB·R2 fingerprint]"
         Write-Host "46. Signup Approval Provisioning Integration    [DEV/TEST DB 변경/자동 정리/R2 변경 없음]"
+        Write-Host "47. System Catalog Compatibility Audit          [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "48. System Catalog Migration Apply              [DEV/TEST DB 변경/별도 승인]"
+        Write-Host "49. System Catalog Post-Apply Audit             [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "50. System Catalog Provisioning Integration     [DEV/TEST DB 변경/자동 정리/R2 변경 없음]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2603,7 +2671,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~46 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~50 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2655,9 +2723,13 @@ function ShowDeveloperToolsMenu {
             44 { RunSignupCertificateR2IntegrationTest | Out-Null }
             45 { RunSignupCertificateR2IntegrationPreflight | Out-Null }
             46 { RunSignupApprovalProvisioningIntegration | Out-Null }
+            47 { RunSystemCatalogCompatibilityAudit | Out-Null }
+            48 { ApplySystemCatalogMigration | Out-Null }
+            49 { RunSystemCatalogPostApplyAudit | Out-Null }
+            50 { RunSystemCatalogProvisioningIntegration | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~46 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~50 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -2915,6 +2987,22 @@ elseif ($CleanupSignupApprovalProvisioningFixtures) {
 }
 elseif ($DiagnoseSignupApprovalProvisioningSchema) {
     $exitCode = DiagnoseSignupApprovalProvisioningSchema -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSystemCatalogCompatibilityAudit) {
+    $exitCode = RunSystemCatalogCompatibilityAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplySystemCatalogMigration) {
+    $exitCode = ApplySystemCatalogMigration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSystemCatalogPostApplyAudit) {
+    $exitCode = RunSystemCatalogPostApplyAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunSystemCatalogProvisioningIntegration) {
+    $exitCode = RunSystemCatalogProvisioningIntegration -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

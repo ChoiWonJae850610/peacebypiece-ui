@@ -8,6 +8,7 @@ const { Client } = pg;
 
 const migrations = {
   "signup-consents": "db/migrations/patch_0_24_26_signup_application_consents.sql",
+  "system-catalog": "db/migrations/patch_0_24_27_system_catalog.sql",
 };
 
 const mode = process.argv[2] ?? "";
@@ -21,11 +22,14 @@ const resolvedPath = path.resolve(sqlPath);
 const sql = await fs.readFile(resolvedPath, "utf8");
 const hash = crypto.createHash("sha256").update(sql).digest("hex");
 
-if (!/CREATE TABLE IF NOT EXISTS signup_application_consents/.test(sql)) {
+if (mode === "signup-consents" && !/CREATE TABLE IF NOT EXISTS signup_application_consents/.test(sql)) {
   throw new Error("Unexpected migration target.");
 }
-if (/signup_application_consents_active_version_unique/.test(sql)) {
+if (mode === "signup-consents" && /signup_application_consents_active_version_unique/.test(sql)) {
   throw new Error("Unexpected duplicate active version unique index remains.");
+}
+if (mode === "system-catalog" && !/CREATE TABLE IF NOT EXISTS system_catalog_versions/.test(sql)) {
+  throw new Error("Unexpected system catalog migration target.");
 }
 const sqlForSafetyScan = sql
   .replace(/--.*$/gm, "")

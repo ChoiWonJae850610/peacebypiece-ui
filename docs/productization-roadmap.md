@@ -1,16 +1,16 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.26`. Current implementation candidate: `0.24.26` Public Signup, Verification, Approval, and Trial.
+> Active baseline: `0.24.27`. Current implementation candidate: `0.24.27` System Catalog, Sizes, and POM.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.26`
-- APP_VERSION: `0.24.26`
-- Feature implementation progress: about `93%`
-- Productization readiness: about `84%`
+- Roadmap checkpoint version: `0.24.27`
+- APP_VERSION: `0.24.27`
+- Feature implementation progress: about `95%`
+- Productization readiness: about `86%`
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Current planning policy: before 1.0, `master` remains the single development/QA branch and Vercel deployment is used for real-device QA.
@@ -49,14 +49,21 @@
 
 - Canonical detail file: `lib/internal/roadmap/roadmap-0.24.26.ts`.
 - First preparation note: `docs/project/33-public-signup-schema-repository-prep-0.24.26.md`.
-- This entry is in progress: canonical roadmap, signup schema migration foundation, PostgreSQL repository/API/session foundation, Google email_verified handling, pending workspace guard foundation, normal-session precedence over stale applicant cookies, and public signup draft/status UI have started; system-admin approval UI/API, certificate R2 upload, notification email, actual provisioning execution, production migration, and Worker changes remain pending.
+- This entry is complete for the committed foundation scope: canonical roadmap, signup schema migration foundation, PostgreSQL repository/API/session foundation, Google email_verified handling, pending workspace guard foundation, normal-session precedence over stale applicant cookies, public signup draft/status UI, consent evidence API/UI foundation, certificate API/UI/service foundation, guarded certificate R2 integration, system-admin signup review list/detail foundation, approval provisioning repository/API/UI gate, and guarded dev/test approve provisioning integration.
 - Scope includes public signup CTA, Google OAuth with `email_verified=true`, unjoined verified-user state, new-company application, invitation/code-first existing-company join, join_requests/invitations reuse, system-admin approve/reject/correction request, pending/rejected limited screens, pre-approval `/workspace` and API blocking, approval-time company/user/company_member/role-permission/company_subscription/Trial/quota/audit/business-certificate ownership linking, idempotency, audit, IDOR defense, duplicate prevention, email normalization, and signup abuse controls.
 - Trial values are fixed at 7 days, 100MB storage, and 3 members, and Trial starts at system-admin approval.
 - Business certificate is required for production new-company applications; dev/test fixture exceptions must be explicitly guarded.
 - Business certificate access remains approval-viewer-only with no WAFL-provided download path.
 - Card registration, payment-method readiness, PG-neutral payment references, PG charge, and subscription operations remain 0.24.31; 0.24.26 must not store raw card data, fake card placeholders, fake payment references, or PG-neutral payment references.
-- System catalog, size, and POM row provisioning remain 0.24.27; 0.24.26 may record only a follow-up dependency such as catalog provisioning pending.
+- System catalog, size, and POM row provisioning moves to 0.24.27 and must not be backfilled into existing companies automatically.
 - The signup schema migration was separately approved and executed once against the approved dev/test DB only; production migration and any additional schema/data/R2 mutation still require separate approval, read-only reconciliation, dry-run evidence, and rollback planning.
+
+## 0.24.27 - System Catalog, Sizes, and POM
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.27.ts`.
+- Scope includes the additive system catalog schema, three-level apparel catalog defaults, underwear/accessory default-inactive catalog entries, size-set foundation, POM definition foundation, company catalog activation records, company-admin category activation UI/API, new-company signup approval provisioning linkage, read-only compatibility/post-apply audits, and guarded dev/test provisioning integration.
+- Existing companies are not automatically changed by migration or background backfill. Any future existing-company dry-run/backfill remains a separate explicitly approved operation.
+- Production migration, production DB/R2 mutation, Cloudflare Worker mutation, notification sending, PG/billing operations, and 0.24.28 PDF/R2 work remain excluded.
 
 ## Reserved Future Dependencies
 

@@ -13,9 +13,11 @@ const files = {
   'signup-post-apply': 'db/audits/0.24.26-signup-post-apply-schema-readonly.sql',
   'signup-consents-compatibility': 'db/audits/0.24.26-signup-consents-migration-compatibility-readonly.sql',
   'signup-consents-post-apply': 'db/audits/0.24.26-signup-consents-post-apply-schema-readonly.sql',
+  'system-catalog-compatibility': 'db/audits/0.24.27-system-catalog-compatibility-readonly.sql',
+  'system-catalog-post-apply': 'db/audits/0.24.27-system-catalog-post-apply-readonly.sql',
 };
 const sqlPath = files[mode];
-const findingModes = new Set(['reconciliation', 'signup-compatibility', 'signup-post-apply', 'signup-consents-compatibility', 'signup-consents-post-apply']);
+const findingModes = new Set(['reconciliation', 'signup-compatibility', 'signup-post-apply', 'signup-consents-compatibility', 'signup-consents-post-apply', 'system-catalog-compatibility', 'system-catalog-post-apply']);
 if (!sqlPath) throw new Error(`Unknown audit mode: ${mode}`);
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required.');
 if (process.env.WAFL_DB_AUDIT_APPROVED !== '1') throw new Error('Read-only audit guard approval is missing.');

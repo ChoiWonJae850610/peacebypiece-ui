@@ -17,12 +17,20 @@ assert.ok(menuNumbers.includes(43), "signup consent compatibility audit menu num
 assert.ok(menuNumbers.includes(44), "signup certificate R2 integration menu number 44 must be displayed");
 assert.ok(menuNumbers.includes(45), "signup certificate R2 preflight menu number 45 must be displayed");
 assert.ok(menuNumbers.includes(46), "signup approval provisioning integration menu number 46 must be displayed");
+assert.ok(menuNumbers.includes(47), "system catalog compatibility audit menu number 47 must be displayed");
+assert.ok(menuNumbers.includes(48), "system catalog migration apply menu number 48 must be displayed");
+assert.ok(menuNumbers.includes(49), "system catalog post-apply audit menu number 49 must be displayed");
+assert.ok(menuNumbers.includes(50), "system catalog provisioning integration menu number 50 must be displayed");
 assert.ok(switchNumbers.includes(42), "signup compatibility audit switch case 42 must exist");
 assert.ok(switchNumbers.includes(43), "signup consent compatibility audit switch case 43 must exist");
 assert.ok(switchNumbers.includes(44), "signup certificate R2 integration switch case 44 must exist");
 assert.ok(switchNumbers.includes(45), "signup certificate R2 preflight switch case 45 must exist");
 assert.ok(switchNumbers.includes(46), "signup approval provisioning integration switch case 46 must exist");
-assert.ok(menuBody.includes("0~46"), "developer tools menu range must include 46");
+assert.ok(switchNumbers.includes(47), "system catalog compatibility audit switch case 47 must exist");
+assert.ok(switchNumbers.includes(48), "system catalog migration apply switch case 48 must exist");
+assert.ok(switchNumbers.includes(49), "system catalog post-apply audit switch case 49 must exist");
+assert.ok(switchNumbers.includes(50), "system catalog provisioning integration switch case 50 must exist");
+assert.ok(menuBody.includes("0~50"), "developer tools menu range must include 50");
 
 const signupSwitch = menuBody.match(/^\s*42\s*\{[^\n]+\}/m)?.[0] ?? "";
 assert.match(signupSwitch, /RunSignupMigrationCompatibilityAudit \| Out-Null/);
@@ -34,5 +42,13 @@ const signupCertificateR2PreflightSwitch = menuBody.match(/^\s*45\s*\{[^\n]+\}/m
 assert.match(signupCertificateR2PreflightSwitch, /RunSignupCertificateR2IntegrationPreflight \| Out-Null/);
 const signupApprovalProvisioningSwitch = menuBody.match(/^\s*46\s*\{[^\n]+\}/m)?.[0] ?? "";
 assert.match(signupApprovalProvisioningSwitch, /RunSignupApprovalProvisioningIntegration \| Out-Null/);
+const systemCatalogCompatibilitySwitch = menuBody.match(/^\s*47\s*\{[^\n]+\}/m)?.[0] ?? "";
+assert.match(systemCatalogCompatibilitySwitch, /RunSystemCatalogCompatibilityAudit \| Out-Null/);
+const systemCatalogMigrationSwitch = menuBody.match(/^\s*48\s*\{[^\n]+\}/m)?.[0] ?? "";
+assert.match(systemCatalogMigrationSwitch, /ApplySystemCatalogMigration \| Out-Null/);
+const systemCatalogPostApplySwitch = menuBody.match(/^\s*49\s*\{[^\n]+\}/m)?.[0] ?? "";
+assert.match(systemCatalogPostApplySwitch, /RunSystemCatalogPostApplyAudit \| Out-Null/);
+const systemCatalogIntegrationSwitch = menuBody.match(/^\s*50\s*\{[^\n]+\}/m)?.[0] ?? "";
+assert.match(systemCatalogIntegrationSwitch, /RunSystemCatalogProvisioningIntegration \| Out-Null/);
 
 console.log("db-readonly-audit-menu-number-uniqueness-contract: PASS");

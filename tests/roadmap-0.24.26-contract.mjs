@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const roadmap = fs.readFileSync("lib/internal/roadmap/roadmap-0.24.26.ts", "utf8");
-const version = fs.readFileSync("lib/constants/version.ts", "utf8");
 const index = fs.readFileSync("lib/internal/roadmap/index.ts", "utf8");
 const productizationRoadmap = fs.readFileSync("docs/productization-roadmap.md", "utf8");
 const backlog = fs.readFileSync("docs/productization-backlog.md", "utf8");
@@ -75,7 +74,6 @@ for (const section of [
 }
 
 assert.match(index, /ROADMAP_0_24_26/);
-assert.ok(version.includes('APP_VERSION = "0.24.26"'), "APP_VERSION must be 0.24.26");
 assert.match(index, /roadmap-0\.24\.26/);
 assert.match(productizationRoadmap, /0\.24\.26 - Public Signup, Verification, Approval, and Trial/);
 assert.match(productizationRoadmap, /33-public-signup-schema-repository-prep-0\.24\.26\.md/);

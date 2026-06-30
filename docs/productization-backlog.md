@@ -77,7 +77,7 @@
 - Public website, production environment split, PG/email/domain launch integration.
 - Repository cleanup, simulator/R2 adapters, integrated device QA, release/legal placeholder replacement.
 
-Deferred decision TODO: underwear/accessories default catalog, PG provider, Instagram content plan, external analytics, and cookie banner.
+Deferred decision TODO: PG provider, Instagram content plan, external analytics, and cookie banner.
 
 ## 0.24.28 Reserved: PDF and R2 Lifecycle
 

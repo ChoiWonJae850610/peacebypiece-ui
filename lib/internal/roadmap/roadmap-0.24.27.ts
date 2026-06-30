@@ -1,0 +1,162 @@
+import type { RoadmapVersionDetail } from "./types";
+
+export const ROADMAP_0_24_27: RoadmapVersionDetail = {
+  version: "0.24.27",
+  title: "System Catalog, Sizes, and POM",
+  status: "completed",
+  userSummary: [
+    "Adds the versioned WAFL system catalog foundation for categories, size sets, and POM templates.",
+    "Connects new-company provisioning to company-local catalog activation without automatically changing existing companies.",
+  ],
+  visibleChanges: [
+    "System administrators can inspect system catalog defaults at /system/catalog.",
+    "Company administrators can inspect and toggle company category activation at /workspace/settings/catalog.",
+  ],
+  expectedUi: [
+    "System catalog overview shows version, category count, default active categories, optional categories, and category rows.",
+    "Company catalog settings show provisioned version, enabled categories, POM count, and category activation toggles.",
+  ],
+  developmentPurpose: [
+    "Separate immutable system defaults from company-local activation state.",
+    "Provide the category, size, and POM foundation required before PDF/R2 workorder specification work.",
+  ],
+  developmentUiStructure: [
+    "System-admin read-only catalog overview.",
+    "Company-admin catalog activation screen backed by company-scoped API.",
+  ],
+  scope: [
+    "Versioned system catalog schema.",
+    "Three-level category model with stable codes and parent relations.",
+    "Apparel default active, underwear default inactive, accessories default inactive.",
+    "System size sets/options and category mappings.",
+    "System POM definitions and category mappings.",
+    "Company catalog activation, company size activation, company POM activation, and provisioned catalog version record.",
+    "Signup approval provisioning connection for newly created companies.",
+    "Dev/test compatibility audit, migration apply, post-apply audit, and provisioning integration runner.",
+  ],
+  outOfScope: [
+    "Existing company automatic backfill.",
+    "System catalog edit UI.",
+    "Full workorder size-spec/POM editing table.",
+    "PDF generation, R2 attachment lifecycle, export, storage enforcement, PG billing, and notification email.",
+    "Production migration or production DB/R2 mutation.",
+  ],
+  implementationPrinciples: [
+    "System catalog rows are versioned canonical templates, not mutable shared customer data.",
+    "Company rows store activation state and provisioned version; existing company data is not overwritten.",
+    "Display labels are not primary keys; stable codes are used for relations.",
+    "Seed and provisioning are idempotent.",
+  ],
+  successConditions: [
+    "System categories have unique stable codes, valid parent relations, exactly three levels, and no cycles.",
+    "Underwear and accessories are present but default inactive.",
+    "Size sets/options and POM definitions are queryable and mapped to categories.",
+    "New-company provisioning creates company-local catalog/version/size/POM activation rows exactly once.",
+    "Existing companies are unchanged by migration apply alone.",
+    "Dev/test integration ends with residual DB rows 0 and R2 mutation false.",
+  ],
+  failureConditions: [
+    "Existing companies receive automatic catalog activation during migration.",
+    "System catalog changes overwrite company-local activation.",
+    "Underwear or accessories are active by default.",
+    "A destructive migration, production mutation, R2 mutation, or 0.24.28+ feature is required.",
+  ],
+  cautions: [
+    "Catalog labels are English in the seed foundation to avoid mojibake and keep stable code relations explicit; localized labels can be layered later.",
+    "Existing product-type template screens remain compatibility surfaces and are not removed in this version.",
+  ],
+  stopConditions: [
+    "A destructive migration or existing customer data backfill becomes required.",
+    "Production DB/R2 access becomes necessary.",
+    "PDF/R2 lifecycle, storage enforcement, or PG billing scope becomes necessary.",
+  ],
+  permissionImpact: "guarded",
+  permissionNotes: [
+    "System catalog overview requires actual active system-admin session.",
+    "Company catalog read/activation requires company settings permission and tenant scope.",
+  ],
+  dbImpact: "guarded",
+  dbImpactNotes: [
+    "Additive dev/test schema migration creates system/company catalog, size, and POM tables.",
+    "Migration apply alone does not insert company activation rows for existing companies.",
+    "Dev/test integration uses synthetic company fixture rows and cleans them to residual 0.",
+  ],
+  r2Impact: "none",
+  r2ImpactNotes: ["No R2 object is created, read, updated, or deleted in 0.24.27."],
+  migrationRequired: true,
+  migrationNotes:
+    "Additive migration db/migrations/patch_0_24_27_system_catalog.sql is required for dev/test. Production migration remains unexecuted unless separately approved.",
+  automaticTests: [
+    "system catalog policy contract",
+    "system catalog schema contract",
+    "system catalog provisioning integration runner contract",
+    "signup approval provisioning regression contract",
+    "authorization runtime boundary contract",
+    "roadmap 0.24.27 contract",
+    "roadmap development contract",
+    "PowerShell parse/encoding",
+    "unicode encoding",
+    "targeted ESLint",
+    "tsc --noEmit",
+    "next build",
+  ],
+  manualTests: [
+    "/system/catalog as active system-admin",
+    "/workspace/settings/catalog as company-admin",
+    "Activate and deactivate an optional category on a dev/test company",
+  ],
+  expectedChangeAreas: [
+    "db/migrations/patch_0_24_27_system_catalog.sql",
+    "db/audits/0.24.27-system-catalog-*.sql",
+    "lib/catalog/*",
+    "lib/signup/signupApplicationProvisioningRepository.ts",
+    "app/api/system/catalog/route.ts",
+    "app/api/admin/catalog/route.ts",
+    "app/(system)/system/catalog/page.tsx",
+    "app/(workspace)/workspace/settings/catalog/page.tsx",
+    "tools/pipeline/peacebypiece-auto-pipeline.ps1",
+    "scripts/run-system-catalog-provisioning-integration.mjs",
+  ],
+  futureDependencies: [
+    "0.24.28 PDF and R2 Lifecycle consumes POM/size/category foundation for document output.",
+    "0.24.30 Storage Enforcement remains separate.",
+    "0.24.31 PG Billing remains separate.",
+  ],
+  userDecisionsRequired: [
+    "No settled product policy was reopened.",
+    "Existing company opt-in backfill remains a later explicit operation.",
+  ],
+  preparationHistory: [
+    {
+      commitHash: "c21c4a818227e83f18464417f69fba35f0f0bc8f",
+      summary: ["0.24.26 signup approval provisioning completed and pushed."],
+      verificationResult: "PASS: dev/test approval provisioning integration residual DB/R2 0.",
+    },
+  ],
+  recommendedCommitMessage: "0.24.27 시스템 카탈로그와 사이즈 POM 기반 구축",
+  nextVersionBoundary: ["0.24.28 - PDF and R2 Lifecycle."],
+  completionConditions: [
+    "APP_VERSION 0.24.27",
+    "Dev/test migration and catalog integration PASS when approved.",
+    "Contracts, typecheck, build, commit, push, and 4. Newest handoff complete.",
+  ],
+  result: {
+    completedSummary: [
+      "Versioned system catalog, company activation, size set, and POM schema foundation implemented.",
+      "Canonical seed module and idempotent repository provisioning implemented.",
+      "Signup approval provisioning now provisions new-company catalog defaults in the same transaction.",
+      "System/company catalog APIs and minimal UI surfaces implemented.",
+      "PowerShell menus 47-50 and dev/test catalog integration runner implemented.",
+    ],
+    commitHash: "pending-final-commit",
+    verificationResult:
+      "PASS before commit: system catalog compatibility audit, approved dev/test migration apply, post-apply audit, provisioning integration residual DB 0/R2 0, system catalog contracts, signup approval provisioning regression, targeted ESLint, tsc --noEmit, next build, and git diff --check. Extra document-structure-contract has an unrelated pre-existing README mojibake/link failure.",
+    remainingIssues: [
+      "Production migration not executed.",
+      "Existing company catalog backfill remains opt-in backlog.",
+      "Full workorder size-spec/POM editor remains later scope.",
+    ],
+    userConfirmationRequired: true,
+    userConfirmationResult: "Manual PC/mobile UI QA remains recommended after Vercel deployment.",
+  },
+};

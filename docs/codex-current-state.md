@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.26
+# Codex Current State - 0.24.27
 
 ## Active execution gate
 
-- Current version: `0.24.26`.
-- Current implementation version: `0.24.26`.
-- Current work result: **0.24.26 signup foundation complete for commit/push handoff** implements Public Signup, Verification, Approval, and Trial foundation with signup_applications and signup_application_consents schema applied once to the approved dev/test DB; PostgreSQL repository, applicant session, Google email_verified, draft/status APIs, pending workspace guards, normal-session precedence over stale applicant cookies, public signup draft/status UI, consent evidence API/UI foundation, certificate API/UI/service foundation, guarded certificate R2 integration PASS, system-admin signup review list/detail foundation, approval provisioning repository/API/UI gate, and guarded dev/test approve provisioning integration PASS.
-- Next work: 0.24.27 System Catalog, Sizes, and POM after 0.24.26 commit/push handoff. Do not execute production migration, production DB/R2 mutation, actual email sending, PG/billing operations, or later-version work without separate explicit approval.
+- Current version: `0.24.27`.
+- Current implementation version: `0.24.27`.
+- Current work result: **0.24.27 System Catalog, Sizes, and POM validation PASS before commit** adds the canonical three-level system catalog, system size sets, POM definitions, company catalog activation schema, company-admin catalog activation API/UI, signup approval provisioning linkage for new-company catalog defaults, and guarded PowerShell menu entries for compatibility audit, migration apply, post-apply audit, and dev/test provisioning integration.
+- Next work: 0.24.28 PDF and R2 Lifecycle after 0.24.27 commit/push handoff. Do not execute production migration, production DB/R2 mutation, actual email sending, PG/billing operations, or later-version work without separate explicit approval.
 - Single active execution authority: `docs/project/31-pre-codex-integrated-master-plan.md`.
 - Authority consistency gate: `docs/project/32-pre-codex-authority-consistency-gate.md`.
 - Final owner policy: `docs/project/26-final-policy-decisions-and-master-todo.md`.
@@ -226,7 +226,22 @@ Before any actual dev/test Neon/R2 simulator execution, Codex must stop and repo
 - R2 mutation: 0 for schema migrations; later approved certificate integration attempts created no lasting R2 objects and ended with residual R2 objects 0.
 - `4. Newest` remains reserved for latest full source ZIP and matching repo-state only; DB audit logs are stored under `C:\CWJ_Project\Patch\PeacebyPiece\2. Logs\DB_Audit\`.
 - Latest repo-state must distinguish DB Migration Applied, previous DB Schema Mutation, Schema Migration This Run, Dev/Test DB Test-Data Mutation, Dev/Test R2 Mutation, Production Mutation, and Production Migration. For this foundation, DB schema mutation is true only for the previously approved dev/test signup and consent schema migrations; the certificate integration run has schema migration false, dev/test DB test-data mutation true with residual rows 0, dev/test R2 mutation true with residual objects 0, production mutation false, and production migration false. The approve provisioning integration run has schema migration false, dev/test DB fixture mutation true with residual rows 0, dev/test R2 mutation false with residual objects 0, production mutation false, and production migration false.
-- 0.24.26 is ready for commit/push handoff after final validation and menu 7 handoff artifact generation. 0.24.27 must not start until this handoff is complete.
+- 0.24.27 has passed guarded dev/test compatibility audit, additive dev/test migration apply, post-apply audit, provisioning integration, targeted ESLint, `tsc --noEmit`, `next build`, and `git diff --check`. It must still finish commit/push and menu 7 handoff artifact generation before 0.24.28 starts.
+
+## 0.24.27 Result Boundary
+
+0.24.27 is the System Catalog, Sizes, and POM Sprint.
+
+- Canonical catalog policy follows document 26 and document 31: apparel categories are active by default; underwear and accessories are included but inactive by default.
+- Added additive schema for system catalog versions/categories, company catalog category activations, system size sets/options, company size-set activations, system POM definitions, company POM activations, and company catalog provisioning records.
+- Existing companies are not automatically backfilled by migration. Company catalog defaults are provisioned only through the explicit provisioning path.
+- New-company signup approval provisioning calls the catalog provisioning repository in the same approval transaction after the company exists.
+- Company administrators can view and toggle company category activation through `/workspace/settings/catalog`; general members remain blocked by server and API guards.
+- Active actual system administrators can inspect the system catalog through `/system/catalog` and `/api/system/catalog`.
+- PowerShell menu entries 47~50 cover read-only compatibility audit, approved dev/test migration apply, read-only post-apply audit, and guarded dev/test provisioning integration.
+- Approved dev/test DB fingerprint `01e5dcc7fea3` was used for this Sprint's system catalog compatibility audit, additive migration apply, post-apply audit, and provisioning integration. Production migration was not executed.
+- The guarded provisioning integration created only synthetic dev/test fixture rows, verified apparel default active, underwear/accessory default inactive, idempotency, and activation toggle, then cleaned to residual DB rows 0. R2 mutation remained 0.
+- Production migration, production DB mutation, production R2 mutation, Cloudflare Worker mutation, PG/billing operation, email sending, and 0.24.28 work remain out of scope.
 
 ## Runtime And Product Preservation
 
