@@ -95,7 +95,7 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
             type="button"
             disabled
             className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] opacity-55"
-            title="승인과 provisioning은 이후 단계에서 연결합니다."
+            title={application.approveEligibility.eligible ? "provisioning 실행은 다음 승인 단계에서 별도 연결합니다." : application.approveEligibility.reasons.join(", ")}
           >
             승인 준비 중
           </button>
@@ -110,6 +110,20 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
             placeholder="신청자에게 보여도 되는 보완 요청 또는 반려 사유를 입력합니다."
           />
         </label>
+        <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">
+          <p className="font-semibold text-[var(--pbp-text-primary)]">
+            승인 eligibility: {application.approveEligibility.eligible ? "충족" : "미충족"}
+          </p>
+          {application.approveEligibility.reasons.length > 0 ? (
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              {application.approveEligibility.reasons.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2">실제 company/member/subscription provisioning 실행은 아직 연결하지 않았습니다.</p>
+          )}
+        </div>
         <p className="text-xs text-[var(--pbp-text-muted)]">
           현재 상태가 바뀐 경우 compare-and-set 보호로 충돌 처리됩니다. 실제 승인, 회사 생성, Trial 활성화, 이메일 발송은 실행하지 않습니다.
         </p>

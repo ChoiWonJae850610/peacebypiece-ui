@@ -32,5 +32,8 @@ assert.match(detailView, /Google email_verified가 false입니다/, "detail UI m
 assert.match(detailView, /필수 동의 종류 충족/, "detail UI must show required consent type presence");
 assert.match(detailView, /현재 정책 버전 충족/, "detail UI must show current policy version status");
 assert.match(detailView, /전체 검토 조건 충족/, "detail UI must show full consent eligibility");
+assert.match(repository, /approveEligibility/, "review detail must expose approve eligibility without executing provisioning");
+assert.match(repository, /certificatePresent: listItem\.certificate\.exists/, "approve eligibility must require certificate presence");
+assert.match(repository, /requiredConsentVersionsCurrent: listItem\.requiredConsentVersionsCurrent/, "approve eligibility must require current consent versions");
 
 console.log("signup review evidence contract: OK");

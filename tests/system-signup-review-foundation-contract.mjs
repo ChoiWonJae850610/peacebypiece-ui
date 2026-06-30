@@ -53,12 +53,17 @@ assert.match(repository, /googleSubjectFingerprint/, "identity evidence may expo
 assert.match(repository, /createHash\("sha256"\)/, "Google subject fingerprint must use SHA-256");
 assert.match(repository, /row\.email_verified === true/, "email evidence must reflect DB value");
 assert.doesNotMatch(repository, /emailVerified:\s*true|googleEmailVerified:\s*true/, "email evidence must not hardcode true");
+assert.match(repository, /approveEligibility/, "detail response must expose approve eligibility");
+assert.match(repository, /reviewStatusReady: row\.status === "reviewing"/, "approve eligibility must require reviewing status");
+assert.match(repository, /provisioningNotStarted: row\.provisioning_status === "not_started"/, "approve eligibility must require provisioning not started");
 
 assert.match(actions, /expectedStatus: application\.status/, "client transition must send expected status for CAS");
 assert.match(actions, /SIGNUP_REVIEW_TRANSITION_FAILED/, "client transition errors must stay safe");
 assert.match(actions, /승인 준비 중/, "approve must be disabled/placeholder only");
 assert.doesNotMatch(actions, /runTransition\("approved"\)|action:\s*"approved"|fetch\([^)]*approve/i, "client must not execute approve/provisioning");
 assert.match(actions, /disabled[\s\S]*승인 준비 중/, "approve must remain disabled placeholder");
+assert.match(actions, /approveEligibility\.eligible/, "approve placeholder must show eligibility state");
+assert.match(actions, /approveEligibility\.reasons/, "approve placeholder must show safe blocking reasons");
 assert.match(detailApi, /isSameOrigin/, "mutation route must enforce same-origin");
 assert.match(detailApi, /SIGNUP_REVIEW_SAME_ORIGIN_REQUIRED/, "same-origin failure must be safe");
 assert.match(detailApi, /codeForError/, "API must map unknown errors to safe code");

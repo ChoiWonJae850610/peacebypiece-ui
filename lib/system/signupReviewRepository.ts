@@ -138,6 +138,18 @@ export type SignupReviewDetail = SignupReviewListItem & {
   createdAt: string;
   consents: SignupReviewConsentEvidence[];
   certificateViewerPath: string | null;
+  approveEligibility: {
+    eligible: boolean;
+    reasons: string[];
+    checks: {
+      reviewStatusReady: boolean;
+      emailVerified: boolean;
+      requiredConsentTypesPresent: boolean;
+      requiredConsentVersionsCurrent: boolean;
+      certificatePresent: boolean;
+      provisioningNotStarted: boolean;
+    };
+  };
 };
 
 export type SignupReviewListResult = {
@@ -237,13 +249,30 @@ function mapListItem(row: SignupReviewRow): SignupReviewListItem {
 
 function mapDetail(row: SignupReviewDetailRow, consents: SignupConsentRow[]): SignupReviewDetail {
   const listItem = mapListItem(row);
+  const emailVerified = row.email_verified === true;
   const certificateViewerPath = listItem.certificate.fileId
     ? `/api/system/signup/applications/${encodeURIComponent(row.id)}/certificate/${encodeURIComponent(listItem.certificate.fileId)}/view`
     : null;
+  const approveChecks = {
+    reviewStatusReady: row.status === "reviewing",
+    emailVerified,
+    requiredConsentTypesPresent: listItem.requiredConsentTypesPresent,
+    requiredConsentVersionsCurrent: listItem.requiredConsentVersionsCurrent,
+    certificatePresent: listItem.certificate.exists,
+    provisioningNotStarted: row.provisioning_status === "not_started",
+  };
+  const approveReasons = [
+    approveChecks.reviewStatusReady ? null : "status must be reviewing",
+    approveChecks.emailVerified ? null : "Google email_verified must be true",
+    approveChecks.requiredConsentTypesPresent ? null : "required consent types are missing",
+    approveChecks.requiredConsentVersionsCurrent ? null : "required consent versions are not current",
+    approveChecks.certificatePresent ? null : "business certificate is missing",
+    approveChecks.provisioningNotStarted ? null : "provisioning already started or completed",
+  ].filter((reason): reason is string => Boolean(reason));
 
   return {
     ...listItem,
-    emailVerified: row.email_verified === true,
+    emailVerified,
     identityEvidence: {
       googleEmailVerified: row.email_verified === true,
       googleSubjectFingerprint: fingerprint(row.google_sub),
@@ -262,6 +291,11 @@ function mapDetail(row: SignupReviewDetailRow, consents: SignupConsentRow[]): Si
       revokedAt: iso(consent.revoked_at),
     })),
     certificateViewerPath,
+    approveEligibility: {
+      eligible: approveReasons.length === 0,
+      reasons: approveReasons,
+      checks: approveChecks,
+    },
   };
 }
 

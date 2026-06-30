@@ -224,6 +224,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "Actual certificate R2 integration PASS was confirmed once after the 42702 fix: PNG upload PASS, JPEG replacement PASS, PDF replacement PASS, revoke PASS, residual cleanup PASS, residual DB rows 0, residual R2 objects 0, production mutation false, and schema migration false.",
       "System-admin signup review list/detail foundation is implemented with actual-active-system-admin route/API guards, bounded pagination, consent evidence display, certificate inline viewer wiring, safe detail fields, and submitted/reviewing correction/rejection transition APIs.",
       "Review transitions are limited to submitted -> reviewing, submitted/reviewing -> changes_requested, and submitted/reviewing -> rejected with compare-and-set status checks, reason validation for terminal/correction actions, same-origin mutation guards, safe error codes, and no approve/provisioning execution.",
+      "Approval/provisioning foundation analysis confirmed the schema/repository/service skeleton can represent provisioning start/completion/failure and idempotent created ids, but the actual company/user/member/subscription provisioning port is still missing. The UI now shows eligibility-aware disabled approval state only.",
       "Orphan cleanup backlog table was not added, and broad orphan/reconciliation/range/stream/performance verification remains reserved for 0.24.28.",
       "Repo-state/build-result metadata now distinguishes DB Migration Applied, previous DB Schema Mutation, Schema Migration This Run, Dev/Test DB Test-Data Mutation, Dev/Test R2 Mutation, Production Mutation, and Production Migration; schema mutation remains tied to the previously approved dev/test signup and consent schema migrations while certificate integration records dev/test DB/R2 fixture mutation with residual DB/R2 0.",
       "The draft requires explicit email_verified evidence, normalized 10-digit business registration matching, application-owned certificate files, and provisioning failure handling through the approval operation.",
@@ -234,7 +235,8 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "Foundation verification PASS so far: runtime development, approved DB fingerprint 01e5dcc7fea3, signup migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, consent migration SHA-256 7b6f1f7f220925b0090c6765222d0805b5a9cfd40615c4648dbae2f9f3fe5eea, preflight findings 0, migration apply PASS, post-apply findings 0, rollback smoke residual rows 0, certificate integration PASS, PNG/JPEG/PDF/revoke PASS, residual DB rows 0, residual R2 objects 0, production mutation false, schema migration this run false.",
     remainingIssues: [
       "Decide technical rate-limit/CAPTCHA mechanism during implementation planning.",
-      "Continue approval/provisioning, notification email, Trial workspace/session linkage, and remaining live viewer verification after the certificate + review foundation is committed/pushed.",
+      "Implement and separately approve the actual company/user/member/subscription provisioning port before enabling approval execution.",
+      "Continue notification email, Trial workspace/session linkage, and remaining live viewer verification after provisioning execution is explicitly approved.",
       "Production migration and any additional DB schema/data/R2 mutation require separate explicit approval.",
     ],
     userConfirmationRequired: true,
