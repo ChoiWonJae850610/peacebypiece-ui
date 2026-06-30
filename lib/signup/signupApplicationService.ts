@@ -49,14 +49,6 @@ export function createSignupApplicationService(dependencies: {
       const approvedAt = input.now ?? new Date();
       assertCanStartSignupProvisioning(input.application.status);
 
-      await dependencies.repository.markProvisioningStarted({
-        applicationId: input.application.id,
-        systemUserId: input.approvedBySystemUserId,
-        now: approvedAt,
-        expectedStatus: "reviewing",
-        compareAndSet: true,
-      });
-
       try {
         const result = await dependencies.provisioning.provisionApprovedSignup({
           application: input.application,
@@ -66,29 +58,16 @@ export function createSignupApplicationService(dependencies: {
 
         assertTrialPolicySnapshot(result.trial, approvedAt);
 
-        return dependencies.repository.markProvisioningCompleted({
-          applicationId: input.application.id,
-          provisionedIds: result.provisionedIds,
-          now: approvedAt,
-          idempotencyKey: input.application.id,
-        });
-      } catch (error) {
-        const errorCode = sanitizeProvisioningErrorCode(error);
-        try {
-          await dependencies.repository.markProvisioningFailed({
-            applicationId: input.application.id,
-            errorCode,
-            now: approvedAt,
-            expectedProvisioningStatus: "in_progress",
-            compareAndSet: true,
-          });
-        } catch {
+        const updated = await dependencies.repository.findById(input.application.id);
+        if (!updated || updated.status !== "approved" || updated.provisioningStatus !== "completed") {
           throw new SignupProvisioningPersistedError(
             input.application.id,
-            "SIGNUP_PROVISIONING_FAILED_UNRECORDED",
+            "SIGNUP_PROVISIONING_COMPLETED_RECORD_NOT_FOUND",
           );
         }
-
+        return updated;
+      } catch (error) {
+        const errorCode = sanitizeProvisioningErrorCode(error);
         throw new SignupProvisioningPersistedError(input.application.id, errorCode);
       }
     },
@@ -115,6 +94,15 @@ export class SignupProvisioningPersistedError extends Error {
 export function sanitizeProvisioningErrorCode(error: unknown): string {
   if (error instanceof SignupProvisioningError && /^[A-Z0-9_]{3,80}$/.test(error.code)) {
     return error.code;
+  }
+  if (
+    error
+    && typeof error === "object"
+    && "code" in error
+    && typeof (error as { code?: unknown }).code === "string"
+    && /^[A-Z0-9_]{3,80}$/.test((error as { code: string }).code)
+  ) {
+    return (error as { code: string }).code;
   }
   return "SIGNUP_PROVISIONING_FAILED";
 }

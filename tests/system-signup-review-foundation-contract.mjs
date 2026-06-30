@@ -59,9 +59,11 @@ assert.match(repository, /provisioningNotStarted: row\.provisioning_status === "
 
 assert.match(actions, /expectedStatus: application\.status/, "client transition must send expected status for CAS");
 assert.match(actions, /SIGNUP_REVIEW_TRANSITION_FAILED/, "client transition errors must stay safe");
-assert.match(actions, /승인 준비 중/, "approve must be disabled/placeholder only");
-assert.doesNotMatch(actions, /runTransition\("approved"\)|action:\s*"approved"|fetch\([^)]*approve/i, "client must not execute approve/provisioning");
-assert.match(actions, /disabled[\s\S]*승인 준비 중/, "approve must remain disabled placeholder");
+assert.match(actions, /승인 계획 확인/, "detail UI must expose a dry-run provisioning plan action");
+assert.match(actions, /provisioning-plan/, "client must call the dry-run provisioning plan endpoint");
+assert.match(actions, /승인 실행 gate 확인/, "detail UI must expose an execution gate check");
+assert.match(actions, /\/approve/, "client may call approve only to confirm the server execution gate");
+assert.doesNotMatch(actions, /RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST/, "client must not send actual provisioning confirmation");
 assert.match(actions, /approveEligibility\.eligible/, "approve placeholder must show eligibility state");
 assert.match(actions, /approveEligibility\.reasons/, "approve placeholder must show safe blocking reasons");
 assert.match(detailApi, /isSameOrigin/, "mutation route must enforce same-origin");

@@ -11,6 +11,25 @@ type Props = {
 
 const REASON_MAX_LENGTH = 600;
 
+type ProvisioningPlan = {
+  canProvision: boolean;
+  blockingReasons: string[];
+  wouldCreateCompany: boolean;
+  wouldCreateUser: boolean;
+  wouldReuseUser: boolean;
+  wouldCreateMembership: boolean;
+  wouldAssignCompanyAdmin: boolean;
+  wouldCreateTrialSubscription: boolean;
+  wouldLinkCertificate: boolean;
+  requestedPlanCode: string | null;
+  trial: {
+    startedAt: string | null;
+    endsAt: string | null;
+    storageLimitBytes: number;
+    memberLimit: number;
+  };
+};
+
 function canMoveToReviewing(status: SignupReviewStatus): boolean {
   return status === "submitted";
 }
@@ -23,6 +42,7 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [provisioningPlan, setProvisioningPlan] = useState<ProvisioningPlan | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const trimmedReason = reason.trim();
@@ -60,6 +80,49 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
     });
   }
 
+  async function loadProvisioningPlan() {
+    setMessage(null);
+    startTransition(async () => {
+      const response = await fetch(`/api/system/signup/applications/${encodeURIComponent(application.id)}/provisioning-plan`, {
+        method: "GET",
+        cache: "no-store",
+      });
+      const payload = await response.json().catch(() => null) as { ok?: boolean; code?: string; plan?: ProvisioningPlan } | null;
+      if (!response.ok || !payload?.ok || !payload.plan) {
+        setMessage(payload?.code ?? "SIGNUP_PROVISIONING_PLAN_UNAVAILABLE");
+        return;
+      }
+      setProvisioningPlan(payload.plan);
+      setMessage(payload.plan.canProvision ? "승인 실행 계획을 확인했습니다. 실제 실행은 별도 승인 gate가 필요합니다." : "승인 실행 차단 사유가 있습니다.");
+    });
+  }
+
+  async function checkApproveGate() {
+    setMessage(null);
+    startTransition(async () => {
+      const response = await fetch(`/api/system/signup/applications/${encodeURIComponent(application.id)}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({}),
+      });
+      const payload = await response.json().catch(() => null) as {
+        ok?: boolean;
+        code?: string;
+        gate?: { enabled?: boolean; reasons?: string[] };
+        plan?: ProvisioningPlan;
+      } | null;
+      if (payload?.plan) setProvisioningPlan(payload.plan);
+      if (!response.ok || !payload?.ok) {
+        const gateReasons = payload?.gate?.reasons?.length ? ` (${payload.gate.reasons.join(", ")})` : "";
+        setMessage(`${payload?.code ?? "SIGNUP_PROVISIONING_EXECUTION_BLOCKED"}${gateReasons}`);
+        return;
+      }
+      setMessage("승인 provisioning이 완료되었습니다.");
+      router.refresh();
+    });
+  }
+
   const reviewingEnabled = canMoveToReviewing(application.status);
   const reasonActionsEnabled = canCloseWithReason(application.status);
 
@@ -93,11 +156,20 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
           </button>
           <button
             type="button"
-            disabled
-            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] opacity-55"
-            title={application.approveEligibility.eligible ? "provisioning 실행은 다음 승인 단계에서 별도 연결합니다." : application.approveEligibility.reasons.join(", ")}
+            disabled={isPending}
+            onClick={loadProvisioningPlan}
+            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
           >
-            승인 준비 중
+            승인 계획 확인
+          </button>
+          <button
+            type="button"
+            disabled={!application.approveEligibility.eligible || isPending}
+            onClick={checkApproveGate}
+            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
+            title={application.approveEligibility.eligible ? "실제 실행은 서버 execution gate와 confirmation이 필요합니다." : application.approveEligibility.reasons.join(", ")}
+          >
+            승인 실행 gate 확인
           </button>
         </div>
         <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--pbp-text-primary)]">
@@ -121,11 +193,31 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
               ))}
             </ul>
           ) : (
-            <p className="mt-2">실제 company/member/subscription provisioning 실행은 아직 연결하지 않았습니다.</p>
+            <p className="mt-2">company/member/subscription provisioning port가 준비되었고, 실제 실행은 별도 서버 gate와 confirmation 이후에만 가능합니다.</p>
           )}
         </div>
+        {provisioningPlan ? (
+          <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">
+            <p className="font-semibold text-[var(--pbp-text-primary)]">
+              Provisioning plan: {provisioningPlan.canProvision ? "ready" : "blocked"}
+            </p>
+            <div className="mt-2 grid gap-1 sm:grid-cols-2">
+              <span>company: {provisioningPlan.wouldCreateCompany ? "create" : "-"}</span>
+              <span>user: {provisioningPlan.wouldReuseUser ? "reuse by Google sub" : provisioningPlan.wouldCreateUser ? "create" : "-"}</span>
+              <span>membership: {provisioningPlan.wouldCreateMembership ? "create" : "-"}</span>
+              <span>company-admin permissions: {provisioningPlan.wouldAssignCompanyAdmin ? "assign" : "-"}</span>
+              <span>Trial subscription: {provisioningPlan.wouldCreateTrialSubscription ? "create" : "-"}</span>
+              <span>certificate: {provisioningPlan.wouldLinkCertificate ? "link" : "-"}</span>
+              <span>storage: {provisioningPlan.trial.storageLimitBytes} bytes</span>
+              <span>members: {provisioningPlan.trial.memberLimit}</span>
+            </div>
+            {provisioningPlan.blockingReasons.length > 0 ? (
+              <p className="mt-2 font-semibold text-[var(--pbp-status-warning)]">{provisioningPlan.blockingReasons.join(", ")}</p>
+            ) : null}
+          </div>
+        ) : null}
         <p className="text-xs text-[var(--pbp-text-muted)]">
-          현재 상태가 바뀐 경우 compare-and-set 보호로 충돌 처리됩니다. 실제 승인, 회사 생성, Trial 활성화, 이메일 발송은 실행하지 않습니다.
+          현재 상태가 바뀐 경우 compare-and-set 보호로 충돌 처리됩니다. 이메일 발송은 실행하지 않으며, 승인 mutation은 서버 gate와 confirmation 없이는 차단됩니다.
         </p>
         {message ? <p className="text-sm font-semibold text-[var(--pbp-status-warning)]">{message}</p> : null}
       </div>

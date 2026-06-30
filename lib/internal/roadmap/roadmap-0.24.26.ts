@@ -107,7 +107,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
   dbImpactNotes: [
     "Signup applications and signup application files were created by the approved dev/test schema migration.",
     "Signup consent evidence now has a separate additive migration, read-only compatibility audit, post-apply audit, and rollback smoke; the consent migration was executed once against the approved dev/test DB fingerprint.",
-    "Business certificate metadata, review/audit state, and idempotent provisioning records may still require additional schema work.",
+    "The existing signup schema has enough created-id, provisioning status/error/attempt, certificate link, and idempotency fields for the current approval provisioning foundation; no additional migration was added in this step.",
     "Any additional migration must be read-only reconciled and separately approved before execution.",
   ],
   r2Impact: "guarded",
@@ -224,7 +224,9 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "Actual certificate R2 integration PASS was confirmed once after the 42702 fix: PNG upload PASS, JPEG replacement PASS, PDF replacement PASS, revoke PASS, residual cleanup PASS, residual DB rows 0, residual R2 objects 0, production mutation false, and schema migration false.",
       "System-admin signup review list/detail foundation is implemented with actual-active-system-admin route/API guards, bounded pagination, consent evidence display, certificate inline viewer wiring, safe detail fields, and submitted/reviewing correction/rejection transition APIs.",
       "Review transitions are limited to submitted -> reviewing, submitted/reviewing -> changes_requested, and submitted/reviewing -> rejected with compare-and-set status checks, reason validation for terminal/correction actions, same-origin mutation guards, safe error codes, and no approve/provisioning execution.",
-      "Approval/provisioning foundation analysis confirmed the schema/repository/service skeleton can represent provisioning start/completion/failure and idempotent created ids, but the actual company/user/member/subscription provisioning port is still missing. The UI now shows eligibility-aware disabled approval state only.",
+      "Approval/provisioning foundation now includes the PostgreSQL port/repository and dry-run/gated approve API wiring: application FOR UPDATE, server-side eligibility, Google-sub user reuse, email-only merge denial, company/user/member/permission/subscription/certificate ownership creation, approved created-id linkage, and audit insert are modeled in one transaction.",
+      "Actual approve provisioning execution is still blocked by default behind non-production runtime, WAFL_ENABLE_SIGNUP_APPROVAL_PROVISIONING=1, and exact confirmation RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST; this step did not execute company/user/member/subscription mutations.",
+      "The system-admin review detail UI now displays a dry-run provisioning plan and safe approve execution-gate response without sending the mutation confirmation phrase.",
       "Orphan cleanup backlog table was not added, and broad orphan/reconciliation/range/stream/performance verification remains reserved for 0.24.28.",
       "Repo-state/build-result metadata now distinguishes DB Migration Applied, previous DB Schema Mutation, Schema Migration This Run, Dev/Test DB Test-Data Mutation, Dev/Test R2 Mutation, Production Mutation, and Production Migration; schema mutation remains tied to the previously approved dev/test signup and consent schema migrations while certificate integration records dev/test DB/R2 fixture mutation with residual DB/R2 0.",
       "The draft requires explicit email_verified evidence, normalized 10-digit business registration matching, application-owned certificate files, and provisioning failure handling through the approval operation.",
@@ -235,7 +237,7 @@ export const ROADMAP_0_24_26: RoadmapVersionDetail = {
       "Foundation verification PASS so far: runtime development, approved DB fingerprint 01e5dcc7fea3, signup migration SHA-256 b0f83b1026891099a65ae1b8e57f6269db52e00d1d9c6066b1b227039f16a395, consent migration SHA-256 7b6f1f7f220925b0090c6765222d0805b5a9cfd40615c4648dbae2f9f3fe5eea, preflight findings 0, migration apply PASS, post-apply findings 0, rollback smoke residual rows 0, certificate integration PASS, PNG/JPEG/PDF/revoke PASS, residual DB rows 0, residual R2 objects 0, production mutation false, schema migration this run false.",
     remainingIssues: [
       "Decide technical rate-limit/CAPTCHA mechanism during implementation planning.",
-      "Implement and separately approve the actual company/user/member/subscription provisioning port before enabling approval execution.",
+      "Separately approve and execute one guarded dev/test approve mutation before marking actual provisioning execution complete.",
       "Continue notification email, Trial workspace/session linkage, and remaining live viewer verification after provisioning execution is explicitly approved.",
       "Production migration and any additional DB schema/data/R2 mutation require separate explicit approval.",
     ],

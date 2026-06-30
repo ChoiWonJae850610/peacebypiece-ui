@@ -4,6 +4,7 @@ import fs from "node:fs";
 const trial = fs.readFileSync("lib/billing/companyTrialPolicy.ts", "utf8");
 const service = fs.readFileSync("lib/signup/signupApplicationService.ts", "utf8");
 const provisioning = fs.readFileSync("lib/signup/signupApplicationProvisioning.ts", "utf8");
+const provisioningRepository = fs.readFileSync("lib/signup/signupApplicationProvisioningRepository.ts", "utf8");
 
 assert.ok(trial.includes("COMPANY_TRIAL_DAYS = 7"), "Trial duration must be 7 days");
 assert.ok(trial.includes("TRIAL_STORAGE_LIMIT_BYTES = 100 * 1024 * 1024"), "Trial storage must be 100MB");
@@ -17,9 +18,9 @@ for (const token of [
   "input.startedAt.getTime() !== approvedAt.getTime()",
   "getTrialEndsAt(input.startedAt)",
 ]) {
-  assert.ok(`${service}\n${provisioning}`.includes(token), `approval Trial contract missing ${token}`);
+  assert.ok(`${service}\n${provisioning}\n${provisioningRepository}`.includes(token), `approval Trial contract missing ${token}`);
 }
 
-assert.doesNotMatch(`${service}\n${provisioning}`, /1\s*\*\s*1024\s*\*\s*1024\s*\*\s*1024|memberLimit:\s*5/);
+assert.doesNotMatch(`${service}\n${provisioning}\n${provisioningRepository}`, /1\s*\*\s*1024\s*\*\s*1024\s*\*\s*1024|memberLimit:\s*5/);
 
 console.log("signup application trial policy contract passed");
