@@ -5,6 +5,7 @@ import type { AttachmentScope } from "@/types/workorder";
 
 const SAFE_EXTENSION_PATTERN = /^[a-z0-9]{1,12}$/i;
 const WORK_ORDER_ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments)\/[^/]+$/i;
+const WORK_ORDER_PDF_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/pdf\/[^/]+\.pdf$/i;
 const WORK_ORDER_GENERATED_DOCUMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/generated\/order-request\/[^/]+\.pdf$/i;
 const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
 
@@ -16,7 +17,7 @@ function getFileExtension(filename: string): string {
 function sanitizeSegment(value: string): string {
   return value
     .trim()
-    .replace(/[^a-zA-Z0-9가-힣._-]+/g, "-")
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 80) || "item";
@@ -81,16 +82,16 @@ export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
   const normalized = normalizeStorageKey(key);
   return (
     WORK_ORDER_ATTACHMENT_KEY_PATTERN.test(normalized) ||
+    WORK_ORDER_PDF_KEY_PATTERN.test(normalized) ||
     WORK_ORDER_GENERATED_DOCUMENT_KEY_PATTERN.test(normalized) ||
     WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalized)
   );
 }
 
-
 export type ParsedWorkOrderAttachmentStorageKey = {
   companyId: string;
   workOrderId: string;
-  directory: "design" | "attachments" | "generated/order-request";
+  directory: "design" | "attachments" | "pdf" | "generated/order-request";
   fileName: string;
   isThumbnail: boolean;
 };
@@ -123,6 +124,24 @@ export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrder
 
   if (segments.length === 6) {
     const [root, companyId, workorders, workOrderId, directory, fileName] = segments;
+    if (
+      root === "companies" &&
+      workorders === "workorders" &&
+      directory === "pdf" &&
+      companyId &&
+      workOrderId &&
+      fileName &&
+      fileName.toLowerCase().endsWith(".pdf")
+    ) {
+      return {
+        companyId,
+        workOrderId,
+        directory,
+        fileName,
+        isThumbnail: false,
+      };
+    }
+
     const isSupportedDirectory = directory === "design" || directory === "attachments";
     if (root !== "companies" || workorders !== "workorders" || !companyId || !workOrderId || !isSupportedDirectory || !fileName) {
       return null;
@@ -201,4 +220,3 @@ export function getCompanyIdFromWorkOrderAttachmentStorageKey(key: string): stri
   const segments = normalized.split("/");
   return segments[0] === "companies" && segments[1] ? segments[1] : null;
 }
-

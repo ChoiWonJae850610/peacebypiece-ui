@@ -6,9 +6,9 @@ import { renderPdfWithExternalGenerator } from "@/lib/generated-documents/pdfGen
 import { resolveOrderRequestRepresentativeImageDataUrl } from "@/lib/generated-documents/order-request/orderRequestRepresentativeImage";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { isDatabaseConfigured } from "@/lib/db/client";
-import { createAttachmentFileProxyUrl, putR2Object } from "@/lib/storage/r2/r2Client";
+import { createAttachmentFileProxyUrl, deleteR2Object, putR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
-import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
+import { createR2WorkerUploadUrl, deleteR2ObjectViaWorker, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import {
   ATTACHMENT_SOURCE_TYPE,
   GENERATED_DOCUMENT_TYPE,
@@ -20,6 +20,7 @@ import { createAttachmentRepository } from "@/lib/workorder/persistence/attachme
 import type { AttachmentRepository, AttachmentWritableRepository } from "@/lib/workorder/persistence/attachmentRepository";
 import { findDbWorkOrderById, type WorkOrderCompanyScope } from "@/lib/workorder/repository/dbWorkOrderReadRepository";
 import { buildOrderRequestServerPdf, buildOrderRequestServerPdfHtml } from "@/lib/workorder/serverOrderRequestPdf";
+import { validateWorkOrderPdfDueDate, WORK_ORDER_PDF_DOCUMENT_TYPES } from "@/lib/workorder/pdf/workOrderPdfPolicy";
 import type { Attachment } from "@/types/workorder";
 
 export const runtime = "nodejs";
@@ -38,25 +39,35 @@ function readText(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error ?? "UNKNOWN_ERROR");
-}
-
 function logOrderRequestPdfError(stage: string, error: unknown) {
-  console.error(`[ORDER_REQUEST_PDF:${stage}]`, error);
+  const message = error instanceof Error ? error.message : String(error ?? "UNKNOWN_ERROR");
+  console.error(`[ORDER_REQUEST_PDF:${stage}]`, { code: message.slice(0, 80) });
 }
 
-function createOrderRequestPdfErrorResponse(stage: string, error: unknown, status = 500) {
+function createOrderRequestPdfErrorResponse(stage: string, status = 500) {
   return NextResponse.json(
     {
       ok: false,
       attachment: null,
       error: `ORDER_REQUEST_PDF_${stage}_FAILED`,
-      message: toErrorMessage(error),
       stage,
     },
     { status },
   );
+}
+
+async function cleanupGeneratedPdfObject(storageKey: string): Promise<void> {
+  try {
+    if (isR2WorkerUploadConfigured()) {
+      await deleteR2ObjectViaWorker({ key: storageKey });
+      return;
+    }
+    if (isR2Configured()) {
+      await deleteR2Object({ key: storageKey });
+    }
+  } catch (error) {
+    logOrderRequestPdfError("REGISTER_CLEANUP_PENDING", error);
+  }
 }
 
 function isWritableRepository(repository: AttachmentRepository): repository is AttachmentWritableRepository {
@@ -181,6 +192,14 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ ok: false, attachment: null, error: "WORK_ORDER_NOT_FOUND" }, { status: 404 });
   }
 
+  const dueDateValidation = validateWorkOrderPdfDueDate({
+    documentType: WORK_ORDER_PDF_DOCUMENT_TYPES.vendorShare,
+    dueDate: workOrder.dueDate,
+  });
+  if (!dueDateValidation.ok) {
+    return NextResponse.json({ ok: false, attachment: null, error: dueDateValidation.error }, { status: 409 });
+  }
+
   const repository = await createAttachmentRepository();
   if (!isWritableRepository(repository)) {
     return NextResponse.json({ ok: false, attachment: null, error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
@@ -219,7 +238,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
   } catch (error) {
     logOrderRequestPdfError("GENERATE", error);
-    return createOrderRequestPdfErrorResponse("GENERATE", error);
+    return createOrderRequestPdfErrorResponse("GENERATE");
   }
 
   const storageKey = createOrderRequestPdfStorageKey({
@@ -232,7 +251,7 @@ export async function POST(request: Request, context: RouteContext) {
     await putGeneratedPdfObject({ storageKey, pdf });
   } catch (error) {
     logOrderRequestPdfError("UPLOAD", error);
-    return createOrderRequestPdfErrorResponse("UPLOAD", error);
+    return createOrderRequestPdfErrorResponse("UPLOAD");
   }
 
   const provisionalAttachment = createGeneratedOrderRequestAttachment({
@@ -258,7 +277,8 @@ export async function POST(request: Request, context: RouteContext) {
     createdId = created.id;
   } catch (error) {
     logOrderRequestPdfError("REGISTER", error);
-    return createOrderRequestPdfErrorResponse("REGISTER", error);
+    await cleanupGeneratedPdfObject(storageKey);
+    return createOrderRequestPdfErrorResponse("REGISTER");
   }
 
   const attachment = createGeneratedOrderRequestAttachment({

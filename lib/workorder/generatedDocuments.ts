@@ -1,4 +1,5 @@
 import { ATTACHMENT_SCOPE } from "@/lib/constants/workorderIdentity";
+import { createWorkOrderPdfStorageKey } from "@/lib/workorder/pdf/workOrderPdfPolicy";
 import type { AttachmentScope } from "@/types/workorder";
 
 export const ATTACHMENT_SOURCE_TYPE = {
@@ -23,13 +24,13 @@ function sanitizeFileNameSegment(value: string): string {
     .replace(/[\\/:*?"<>|]+/g, "-")
     .replace(/\s+/g, " ")
     .replace(/-+/g, "-")
-    .slice(0, 80) || "작업지시서";
+    .slice(0, 80) || "workorder";
 }
 
 function sanitizeStorageSegment(value: string): string {
   return value
     .trim()
-    .replace(/[^a-zA-Z0-9가-힣._-]+/g, "-")
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 80) || "item";
@@ -49,10 +50,10 @@ export function createOrderRequestPdfDisplayName(input: {
   createdAt?: Date;
 }): string {
   const title = sanitizeFileNameSegment(input.workOrderTitle);
-  const manager = sanitizeFileNameSegment(input.managerName || "담당자미지정");
+  const manager = sanitizeFileNameSegment(input.managerName || "manager");
   const timestamp = formatOrderRequestDocumentTimestamp(input.createdAt ?? new Date());
 
-  return `발주서_${title}_${timestamp}_${manager}.pdf`;
+  return `order-request_${title}_${timestamp}_${manager}.pdf`;
 }
 
 export function createOrderRequestPdfStorageKey(input: {
@@ -60,11 +61,11 @@ export function createOrderRequestPdfStorageKey(input: {
   workOrderId: string;
   fileId: string;
 }): string {
-  const companyId = sanitizeStorageSegment(input.companyId);
-  const workOrderId = sanitizeStorageSegment(input.workOrderId);
-  const fileId = sanitizeStorageSegment(input.fileId);
-
-  return `companies/${companyId}/workorders/${workOrderId}/attachments/${fileId}.pdf`;
+  return createWorkOrderPdfStorageKey({
+    companyId: sanitizeStorageSegment(input.companyId),
+    workOrderId: sanitizeStorageSegment(input.workOrderId),
+    pdfId: sanitizeStorageSegment(input.fileId),
+  });
 }
 
 export function getGeneratedOrderRequestAttachmentScope(): AttachmentScope {

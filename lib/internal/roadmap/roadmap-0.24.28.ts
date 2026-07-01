@@ -1,0 +1,143 @@
+import type { RoadmapVersionDetail } from "./types";
+
+export const ROADMAP_0_24_28: RoadmapVersionDetail = {
+  version: "0.24.28",
+  title: "PDF and R2 Lifecycle",
+  status: "completed",
+  userSummary: [
+    "Defines the canonical workorder PDF/R2 lifecycle foundation.",
+    "Moves generated workorder PDFs to the canonical company/workorder-scoped PDF storage key.",
+  ],
+  visibleChanges: [
+    "Order-request PDF generation now uses the canonical PDF R2 key shape.",
+    "Order-request/vendor-share PDF generation is blocked server-side when the workorder due date is missing.",
+  ],
+  expectedUi: [
+    "Existing workorder PDF action remains available when required workorder data is present.",
+    "Missing due date returns a safe server error instead of silently creating a share PDF.",
+  ],
+  developmentPurpose: [
+    "Centralize PDF visibility, due-date, naming, and storage-key policy before richer PDF formats.",
+    "Prepare exact-key R2 lifecycle simulation and reconciliation without prefix deletes or raw URL exposure.",
+  ],
+  developmentUiStructure: [
+    "Current route keeps the existing generated order-request PDF API surface.",
+    "PDF viewer/proxy and lifecycle controls stay server-side and tenant-guarded.",
+  ],
+  scope: [
+    "Canonical PDF document type and field visibility policy.",
+    "Canonical PDF storage key: companies/{companyId}/workorders/{workOrderId}/pdf/{pdfId}.pdf.",
+    "Server-side due-date guard for vendor/share/final PDF generation.",
+    "R2 upload success plus DB registration failure exact-key cleanup.",
+    "Worker source allowlist and policy for workorder PDF keys.",
+    "0.24.27 carryover fixes: repo-state metadata fields, README document structure contract, and system catalog current-version rollover.",
+    "PowerShell menu entries for PDF/R2 read-only audit, fixture generation, integration, reconciliation dry run, and exact cleanup plan.",
+  ],
+  outOfScope: [
+    "Production DB/R2 mutation.",
+    "Cloudflare Worker production deployment.",
+    "Kakao Biz message/API integration.",
+    "Storage quota enforcement.",
+    "PG/billing operations.",
+  ],
+  implementationPrinciples: [
+    "Client code must not receive raw R2 keys, public bucket URLs, signed URLs, secrets, or credentials.",
+    "Deletes and cleanup are exact-key only; prefix delete and bucket-wide cleanup are forbidden.",
+    "Generated PDF policy is centralized and type-specific; vendor/share PDFs exclude cost fields.",
+  ],
+  successConditions: [
+    "Canonical PDF key policy and Worker key policy contracts pass.",
+    "Existing workorder attachment, onboarding, company-file, and signup-certificate Worker policies regressions remain covered.",
+    "Upload/register compensation records cleanup-pending safely if exact-key cleanup fails.",
+    "PDF/R2 lifecycle menus are labeled with the correct read-only or dev/test mutation boundaries.",
+    "0.24.27 carryover contracts pass.",
+  ],
+  failureConditions: [
+    "A generic Worker catch-all key pattern is introduced.",
+    "Raw R2 key, signed URL, secret, DB URL, or credential is logged or exposed to the browser.",
+    "Prefix delete, bucket-wide scan/delete, production mutation, or destructive migration is required.",
+  ],
+  cautions: [
+    "Dev/test Worker 0.13.71 deployment was confirmed before live integration.",
+    "Existing historical attachment-key generated PDFs remain compatibility data; the new generation path uses the canonical PDF key.",
+  ],
+  stopConditions: [
+    "Production DB/R2/Worker access becomes necessary.",
+    "A destructive migration or existing customer object backfill is required.",
+    "Dev/test Worker deployment target cannot be confirmed.",
+  ],
+  permissionImpact: "guarded",
+  permissionNotes: [
+    "PDF generation and viewer routes use tenant-scoped workorder permission checks.",
+    "System-admin impersonation must not expand customer workorder content permission beyond the effective customer role.",
+  ],
+  dbImpact: "guarded",
+  dbImpactNotes: [
+    "No schema migration is required for the foundation because existing attachment metadata supports generated document rows.",
+    "Dev/test lifecycle integration may create fixture rows only under explicit guard and must clean residual rows to 0.",
+  ],
+  r2Impact: "guarded",
+  r2ImpactNotes: [
+    "Canonical PDF R2 objects may be created/deleted only in approved dev/test integration.",
+    "Source-level Worker policy accepts the canonical PDF key; dev/test deployment was verified.",
+  ],
+  migrationRequired: false,
+  migrationNotes: "No DB migration is required for the initial 0.24.28 foundation.",
+  automaticTests: [
+    "document-structure-contract",
+    "system catalog rollover contract",
+    "workorder PDF policy contract",
+    "workorder PDF viewer contract",
+    "R2 Worker PDF key policy contract",
+    "R2 Worker signature regression contract",
+    "roadmap 0.24.28 contract",
+    "roadmap development contract",
+    "PowerShell parse/encoding",
+    "unicode encoding",
+    "targeted ESLint",
+    "tsc --noEmit",
+    "next build",
+  ],
+  manualTests: [
+    "Generate order-request PDF on a dev/test workorder with due date.",
+    "Confirm missing due date blocks vendor/share PDF generation and guides the user to enter it.",
+    "PDF/R2 lifecycle integration passed on approved dev/test; repeat only after relevant Worker/R2 changes.",
+  ],
+  expectedChangeAreas: [
+    "lib/workorder/pdf/*",
+    "lib/workorder/generatedDocuments.ts",
+    "lib/storage/r2/r2Keys.ts",
+    "app/api/workorders/[workOrderId]/generated/order-request-pdf/route.ts",
+    "app/api/workorders/[workOrderId]/generated/order-request-pdf/[attachmentId]/view/route.ts",
+    "cloudflare/r2-upload-worker.js",
+    "tools/pipeline/peacebypiece-auto-pipeline.ps1",
+    "tests/*pdf*r2*",
+  ],
+  futureDependencies: [
+    "0.24.30 storage capacity enforcement uses the lifecycle/reconciliation foundation.",
+    "0.24.31 PG billing remains separate.",
+  ],
+  recommendedCommitMessage: "0.24.28 PDF 양식과 R2 생명주기 기반 구축",
+  nextVersionBoundary: ["0.24.29 - Reserved productization checkpoint.", "0.24.30 - Storage capacity profiles."],
+  completionConditions: [
+    "APP_VERSION 0.24.28",
+    "Static contracts, targeted ESLint, typecheck, build, and git diff checks pass.",
+    "Dev/test Worker deployment and live PDF/R2 integration PASS under approved guard.",
+    "Commit, push, and 4. Newest handoff complete.",
+  ],
+  result: {
+    completedSummary: [
+      "Canonical workorder PDF model, field visibility policy, due-date guard, and canonical PDF R2 key foundation implemented.",
+      "R2 upload Worker 0.13.71 workorder PDF key policy implemented and dev/test deployment verified.",
+      "PDF/R2 lifecycle integration passed for upload, trash, restore, regeneration, permanent delete, missing/orphan detection, upload/DB failure cleanup, size boundaries, reconciliation, and exact cleanup.",
+      "Server proxy inline PDF viewer route added with tenant guard, no-store, nosniff, and no signed URL exposure.",
+      "0.24.27 carryover document-structure, repo-state metadata, and catalog rollover fixes completed.",
+    ],
+    commitHash: "pending-final-commit",
+    verificationResult:
+      "PASS before commit: PDF/R2 lifecycle integration exit 0, residual DB rows 0, residual R2 objects 0, Worker 0.13.71, PDF Generator Worker 0.16.1.1, contracts, targeted ESLint, tsc --noEmit, next build, and git diff --check.",
+    remainingIssues: ["Manual PDF visual QA remains recommended after Vercel deployment."],
+    userConfirmationRequired: true,
+    userConfirmationResult: "Manual PDF visual QA remains required.",
+  },
+};

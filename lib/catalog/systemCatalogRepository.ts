@@ -76,6 +76,19 @@ export async function seedSystemCatalog(client: DbTransactionClient | null = nul
   await run(
     client,
     `
+      UPDATE system_catalog_versions
+      SET is_current = false,
+          status = CASE WHEN status = 'current' THEN 'archived' ELSE status END,
+          updated_at = now()
+      WHERE is_current = true
+        AND code <> $1
+    `,
+    [SYSTEM_CATALOG_VERSION_CODE],
+  );
+
+  await run(
+    client,
+    `
       INSERT INTO system_catalog_versions (id, code, label, status, is_current, updated_at)
       VALUES ($1, $1, 'WAFL System Catalog 0.24.27', 'current', true, now())
       ON CONFLICT (code) DO UPDATE

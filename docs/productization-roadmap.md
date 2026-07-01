@@ -1,14 +1,14 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.27`. Current implementation candidate: `0.24.27` System Catalog, Sizes, and POM.
+> Active baseline: `0.24.28`. Current implementation candidate: `0.24.28` PDF and R2 Lifecycle validation PASS before commit.
 > The only active Sprint sequence is `docs/project/31-pre-codex-integrated-master-plan.md`.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.27`
-- APP_VERSION: `0.24.27`
+- Roadmap checkpoint version: `0.24.28`
+- APP_VERSION: `0.24.28`
 - Feature implementation progress: about `95%`
 - Productization readiness: about `86%`
 - Current-state handoff: `docs/codex-current-state.md`

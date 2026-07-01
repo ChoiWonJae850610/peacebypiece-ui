@@ -39,6 +39,11 @@ param(
     [switch]$ApplySystemCatalogMigration,
     [switch]$RunSystemCatalogPostApplyAudit,
     [switch]$RunSystemCatalogProvisioningIntegration,
+    [switch]$RunPdfR2LifecycleCompatibilityAudit,
+    [switch]$RunPdfR2FixtureGenerate,
+    [switch]$RunPdfR2LifecycleIntegration,
+    [switch]$RunPdfR2ReconciliationDryRun,
+    [switch]$RunPdfR2ExactCleanupPlan,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -801,6 +806,18 @@ function GetLocalRepoVerificationSummary {
             JpegReplacement = "not provided"
             PdfReplacement = "not provided"
             Revoke = "not provided"
+            PdfR2LifecycleIntegrationResult = "not provided"
+            PdfR2WorkerVersion = "not provided"
+            PdfGeneratorWorkerVersion = "not provided"
+            PdfUpload = "not provided"
+            PdfTrash = "not provided"
+            PdfRestore = "not provided"
+            PdfRegeneration = "not provided"
+            PdfPermanentDelete = "not provided"
+            PdfMissingDetection = "not provided"
+            PdfOrphanDetection = "not provided"
+            PdfReconciliation = "not provided"
+            PdfExactCleanupPlan = "not provided"
             FinalResidualDbRows = "not provided"
             FinalResidualR2Objects = "not provided"
             LiveViewerIntegration = "not provided"
@@ -856,6 +873,18 @@ function GetLocalRepoVerificationSummary {
         JpegReplacement = GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement"
         PdfReplacement = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Replacement"
         Revoke = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Revoke"
+        PdfR2LifecycleIntegrationResult = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Lifecycle Integration Result"
+        PdfR2WorkerVersion = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Worker Version"
+        PdfGeneratorWorkerVersion = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Generator Worker Version"
+        PdfUpload = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Upload"
+        PdfTrash = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Trash"
+        PdfRestore = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Restore"
+        PdfRegeneration = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Regeneration"
+        PdfPermanentDelete = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Permanent Delete"
+        PdfMissingDetection = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Missing Detection"
+        PdfOrphanDetection = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Orphan Detection"
+        PdfReconciliation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Reconciliation"
+        PdfExactCleanupPlan = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Exact Cleanup Plan"
         FinalResidualDbRows = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows"
         FinalResidualR2Objects = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects"
         LiveViewerIntegration = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Live Viewer Integration"
@@ -900,12 +929,24 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "JPEG Replacement:" -Values @([string]$VerificationSummary.JpegReplacement)
     AddRepoStateSection -Lines $lines -Title "PDF Replacement:" -Values @([string]$VerificationSummary.PdfReplacement)
     AddRepoStateSection -Lines $lines -Title "Revoke:" -Values @([string]$VerificationSummary.Revoke)
+    AddRepoStateSection -Lines $lines -Title "PDF/R2 Lifecycle Integration Result:" -Values @([string]$VerificationSummary.PdfR2LifecycleIntegrationResult)
+    AddRepoStateSection -Lines $lines -Title "PDF/R2 Worker Version:" -Values @([string]$VerificationSummary.PdfR2WorkerVersion)
+    AddRepoStateSection -Lines $lines -Title "PDF Generator Worker Version:" -Values @([string]$VerificationSummary.PdfGeneratorWorkerVersion)
+    AddRepoStateSection -Lines $lines -Title "PDF Upload:" -Values @([string]$VerificationSummary.PdfUpload)
+    AddRepoStateSection -Lines $lines -Title "PDF Trash:" -Values @([string]$VerificationSummary.PdfTrash)
+    AddRepoStateSection -Lines $lines -Title "PDF Restore:" -Values @([string]$VerificationSummary.PdfRestore)
+    AddRepoStateSection -Lines $lines -Title "PDF Regeneration:" -Values @([string]$VerificationSummary.PdfRegeneration)
+    AddRepoStateSection -Lines $lines -Title "PDF Permanent Delete:" -Values @([string]$VerificationSummary.PdfPermanentDelete)
+    AddRepoStateSection -Lines $lines -Title "PDF Missing Detection:" -Values @([string]$VerificationSummary.PdfMissingDetection)
+    AddRepoStateSection -Lines $lines -Title "PDF Orphan Detection:" -Values @([string]$VerificationSummary.PdfOrphanDetection)
+    AddRepoStateSection -Lines $lines -Title "PDF Reconciliation:" -Values @([string]$VerificationSummary.PdfReconciliation)
+    AddRepoStateSection -Lines $lines -Title "PDF Exact Cleanup Plan:" -Values @([string]$VerificationSummary.PdfExactCleanupPlan)
     AddRepoStateSection -Lines $lines -Title "Final Residual DB Rows:" -Values @([string]$VerificationSummary.FinalResidualDbRows)
     AddRepoStateSection -Lines $lines -Title "Final Residual R2 Objects:" -Values @([string]$VerificationSummary.FinalResidualR2Objects)
     AddRepoStateSection -Lines $lines -Title "Live Viewer Integration:" -Values @([string]$VerificationSummary.LiveViewerIntegration)
     AddRepoStateSection -Lines $lines -Title "Package/Lockfile Changed:" -Values @("false")
-    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migrations applied once: db/migrations/patch_0_24_26_signup_applications.sql; db/migrations/patch_0_24_26_signup_application_consents.sql")
-    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test signup and consent schema migrations only")
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
     AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
@@ -996,11 +1037,23 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "JPEG Replacement:" -Values @([string]$VerificationSummary.JpegReplacement)
     AddRepoStateSection -Lines $lines -Title "PDF Replacement:" -Values @([string]$VerificationSummary.PdfReplacement)
     AddRepoStateSection -Lines $lines -Title "Revoke:" -Values @([string]$VerificationSummary.Revoke)
+    AddRepoStateSection -Lines $lines -Title "PDF/R2 Lifecycle Integration Result:" -Values @([string]$VerificationSummary.PdfR2LifecycleIntegrationResult)
+    AddRepoStateSection -Lines $lines -Title "PDF/R2 Worker Version:" -Values @([string]$VerificationSummary.PdfR2WorkerVersion)
+    AddRepoStateSection -Lines $lines -Title "PDF Generator Worker Version:" -Values @([string]$VerificationSummary.PdfGeneratorWorkerVersion)
+    AddRepoStateSection -Lines $lines -Title "PDF Upload:" -Values @([string]$VerificationSummary.PdfUpload)
+    AddRepoStateSection -Lines $lines -Title "PDF Trash:" -Values @([string]$VerificationSummary.PdfTrash)
+    AddRepoStateSection -Lines $lines -Title "PDF Restore:" -Values @([string]$VerificationSummary.PdfRestore)
+    AddRepoStateSection -Lines $lines -Title "PDF Regeneration:" -Values @([string]$VerificationSummary.PdfRegeneration)
+    AddRepoStateSection -Lines $lines -Title "PDF Permanent Delete:" -Values @([string]$VerificationSummary.PdfPermanentDelete)
+    AddRepoStateSection -Lines $lines -Title "PDF Missing Detection:" -Values @([string]$VerificationSummary.PdfMissingDetection)
+    AddRepoStateSection -Lines $lines -Title "PDF Orphan Detection:" -Values @([string]$VerificationSummary.PdfOrphanDetection)
+    AddRepoStateSection -Lines $lines -Title "PDF Reconciliation:" -Values @([string]$VerificationSummary.PdfReconciliation)
+    AddRepoStateSection -Lines $lines -Title "PDF Exact Cleanup Plan:" -Values @([string]$VerificationSummary.PdfExactCleanupPlan)
     AddRepoStateSection -Lines $lines -Title "Final Residual DB Rows:" -Values @([string]$VerificationSummary.FinalResidualDbRows)
     AddRepoStateSection -Lines $lines -Title "Final Residual R2 Objects:" -Values @([string]$VerificationSummary.FinalResidualR2Objects)
     AddRepoStateSection -Lines $lines -Title "Live Viewer Integration:" -Values @([string]$VerificationSummary.LiveViewerIntegration)
-    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @("dev/test signup schema migrations applied once: db/migrations/patch_0_24_26_signup_applications.sql; db/migrations/patch_0_24_26_signup_application_consents.sql")
-    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @("true - approved dev/test signup and consent schema migrations only")
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
     AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
@@ -2344,6 +2397,59 @@ function RunSystemCatalogProvisioningIntegration {
         if ($null -eq $previousCatalogConfirmation) { Remove-Item Env:WAFL_SYSTEM_CATALOG_INTEGRATION_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_SYSTEM_CATALOG_INTEGRATION_CONFIRMATION = $previousCatalogConfirmation }
     }
 }
+
+function RunPdfR2LifecycleCompatibilityAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "PDF/R2 Lifecycle Compatibility Audit" -Label "PDF_R2_Lifecycle_Compatibility_Audit" -NpmCommand "node scripts/run-pdf-r2-lifecycle-audit.mjs --compatibility" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "DB_Audit"))
+}
+
+function RunPdfR2FixtureGenerate {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "PDF/R2 Fixture Generate" -Label "PDF_R2_Fixture_Generate" -NpmCommand "node scripts/generate-pdf-r2-fixtures.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "R2_Test"))
+}
+
+function RunPdfR2LifecycleIntegration {
+    param([bool]$PauseAfter = $true)
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousIntegrationApproved = $env:WAFL_PDF_R2_LIFECYCLE_INTEGRATION_APPROVED
+    $previousConfirmation = $env:WAFL_PDF_R2_LIFECYCLE_CONFIRMATION
+    $previousR2Alias = $env:WAFL_PDF_R2_ENV_ALIAS
+    $previousR2EnvironmentFingerprint = $env:WAFL_PDF_R2_APPROVED_ENVIRONMENT_FINGERPRINT
+    $previousR2UrlFingerprint = $env:WAFL_PDF_R2_APPROVED_WORKER_URL_FINGERPRINT
+    $previousR2HostFingerprint = $env:WAFL_PDF_R2_APPROVED_WORKER_HOST_FINGERPRINT
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_PDF_R2_LIFECYCLE_INTEGRATION_APPROVED = '1'
+        $env:WAFL_PDF_R2_LIFECYCLE_CONFIRMATION = 'RUN_PDF_R2_LIFECYCLE_DEV_TEST'
+        $env:WAFL_PDF_R2_ENV_ALIAS = 'dev-test'
+        $env:WAFL_PDF_R2_APPROVED_ENVIRONMENT_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerEnvironmentFingerprint
+        $env:WAFL_PDF_R2_APPROVED_WORKER_URL_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerUrlFingerprint
+        $env:WAFL_PDF_R2_APPROVED_WORKER_HOST_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedWorkerHostFingerprint
+        return (InvokeProjectCommandWithResultFile -Title "PDF/R2 Lifecycle Integration" -Label "PDF_R2_Lifecycle_Integration" -NpmCommand "node scripts/run-pdf-r2-lifecycle-integration.mjs" -LoadEnvLocal $true -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "R2_Test"))
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousIntegrationApproved) { Remove-Item Env:WAFL_PDF_R2_LIFECYCLE_INTEGRATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_PDF_R2_LIFECYCLE_INTEGRATION_APPROVED = $previousIntegrationApproved }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_PDF_R2_LIFECYCLE_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_PDF_R2_LIFECYCLE_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousR2Alias) { Remove-Item Env:WAFL_PDF_R2_ENV_ALIAS -ErrorAction SilentlyContinue } else { $env:WAFL_PDF_R2_ENV_ALIAS = $previousR2Alias }
+        if ($null -eq $previousR2EnvironmentFingerprint) { Remove-Item Env:WAFL_PDF_R2_APPROVED_ENVIRONMENT_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_PDF_R2_APPROVED_ENVIRONMENT_FINGERPRINT = $previousR2EnvironmentFingerprint }
+        if ($null -eq $previousR2UrlFingerprint) { Remove-Item Env:WAFL_PDF_R2_APPROVED_WORKER_URL_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_PDF_R2_APPROVED_WORKER_URL_FINGERPRINT = $previousR2UrlFingerprint }
+        if ($null -eq $previousR2HostFingerprint) { Remove-Item Env:WAFL_PDF_R2_APPROVED_WORKER_HOST_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_PDF_R2_APPROVED_WORKER_HOST_FINGERPRINT = $previousR2HostFingerprint }
+    }
+}
+
+function RunPdfR2ReconciliationDryRun {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "PDF/R2 Reconciliation Dry Run" -Label "PDF_R2_Reconciliation_Dry_Run" -NpmCommand "node scripts/run-pdf-r2-reconciliation-dry-run.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "R2_Test"))
+}
+
+function RunPdfR2ExactCleanupPlan {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "PDF/R2 Exact Cleanup Plan" -Label "PDF_R2_Exact_Cleanup_Plan" -NpmCommand "node scripts/run-pdf-r2-exact-cleanup-plan.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "R2_Test"))
+}
 function RunSignupConsentRollbackSmoke {
     param([bool]$PauseAfter = $true)
     return (InvokeApprovedDbSmokeCommand -Command 'node scripts/run-signup-consent-rollback-smoke.mjs' -Title 'Signup Consent Rollback Smoke' -Label 'Signup_Consent_Rollback_Smoke' -PauseAfter $PauseAfter)
@@ -2661,6 +2767,11 @@ function ShowDeveloperToolsMenu {
         Write-Host "48. System Catalog Migration Apply              [DEV/TEST DB 변경/별도 승인]"
         Write-Host "49. System Catalog Post-Apply Audit             [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host "50. System Catalog Provisioning Integration     [DEV/TEST DB 변경/자동 정리/R2 변경 없음]"
+        Write-Host "51. PDF/R2 Lifecycle Compatibility Audit        [읽기 전용/로컬 정적 감사]"
+        Write-Host "52. PDF Fixture Generate                        [로컬 .tmp 생성]"
+        Write-Host "53. PDF/R2 Lifecycle Integration                [DEV/TEST DB·R2 변경/별도 승인/자동 정리]"
+        Write-Host "54. PDF/R2 Reconciliation Dry Run               [읽기 전용/manifest-scoped]"
+        Write-Host "55. PDF/R2 Exact Cleanup Plan                   [계획만/실제 삭제 없음]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2671,7 +2782,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~50 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~55 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2727,9 +2838,14 @@ function ShowDeveloperToolsMenu {
             48 { ApplySystemCatalogMigration | Out-Null }
             49 { RunSystemCatalogPostApplyAudit | Out-Null }
             50 { RunSystemCatalogProvisioningIntegration | Out-Null }
+            51 { RunPdfR2LifecycleCompatibilityAudit | Out-Null }
+            52 { RunPdfR2FixtureGenerate | Out-Null }
+            53 { RunPdfR2LifecycleIntegration | Out-Null }
+            54 { RunPdfR2ReconciliationDryRun | Out-Null }
+            55 { RunPdfR2ExactCleanupPlan | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~50 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~55 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -3003,6 +3119,26 @@ elseif ($RunSystemCatalogPostApplyAudit) {
 }
 elseif ($RunSystemCatalogProvisioningIntegration) {
     $exitCode = RunSystemCatalogProvisioningIntegration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPdfR2LifecycleCompatibilityAudit) {
+    $exitCode = RunPdfR2LifecycleCompatibilityAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPdfR2FixtureGenerate) {
+    $exitCode = RunPdfR2FixtureGenerate -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPdfR2LifecycleIntegration) {
+    $exitCode = RunPdfR2LifecycleIntegration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPdfR2ReconciliationDryRun) {
+    $exitCode = RunPdfR2ReconciliationDryRun -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPdfR2ExactCleanupPlan) {
+    $exitCode = RunPdfR2ExactCleanupPlan -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

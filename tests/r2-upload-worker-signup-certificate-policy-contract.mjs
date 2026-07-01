@@ -67,7 +67,7 @@ const validPngKey = "signup-applications/app_0-24-26-a/business-registration/fil
 const validJpgKey = "signup-applications/app_0-24-26-a/business-registration/file_0-24-26-a.jpg";
 const validPdfKey = "signup-applications/app_0-24-26-a/business-registration/file_0-24-26-a.pdf";
 
-assert.match(workerSource, /const WORKER_VERSION = "0\.13\.70"/, "Worker patch version must be bumped");
+assert.match(workerSource, /const WORKER_VERSION = "0\.13\.71"/, "Worker patch version must be bumped");
 assert.ok(
   workerSource.includes("const SIGNUP_APPLICATION_CERTIFICATE_KEY_PATTERN = /^signup-applications\\/[^/]+\\/business-registration\\/[^/]+\\.(png|jpg|pdf)$/i;"),
   "signup certificate key pattern must be explicit",

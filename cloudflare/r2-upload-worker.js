@@ -6,8 +6,9 @@ const CORS_HEADERS = {
 };
 
 const TEXT_ENCODER = new TextEncoder();
-const WORKER_VERSION = "0.13.70";
+const WORKER_VERSION = "0.13.71";
 const ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments)\/[^/]+$/i;
+const WORK_ORDER_PDF_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/pdf\/[^/]+\.pdf$/i;
 const SCOPED_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
 const COMPANY_ONBOARDING_KEY_PATTERN = /^companies\/[^/]+\/onboarding\/(logo|business-license)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 const COMPANY_FILE_KEY_PATTERN = /^companies\/[^/]+\/company-files\/(representative_image|business_registration)\/[^/]+\.(jpg|png|webp|pdf)$/i;
@@ -52,6 +53,11 @@ const SIGNUP_APPLICATION_CERTIFICATE_POLICY = {
   },
 };
 
+const WORK_ORDER_PDF_POLICY = {
+  maxFileSizeBytes: 10 * 1024 * 1024,
+  allowedMimeType: "application/pdf",
+};
+
 function normalizeStorageKey(value) {
   return String(value || "").trim();
 }
@@ -84,6 +90,10 @@ function isSignupApplicationCertificateKey(key) {
   return SIGNUP_APPLICATION_CERTIFICATE_KEY_PATTERN.test(normalizeStorageKey(key));
 }
 
+function isWorkOrderPdfKey(key) {
+  return WORK_ORDER_PDF_KEY_PATTERN.test(normalizeStorageKey(key));
+}
+
 function getSignupApplicationCertificateExtension(key) {
   const normalized = normalizeStorageKey(key);
   const match = normalized.match(/\.([a-z0-9]+)$/i);
@@ -104,6 +114,12 @@ function isAllowedSignupApplicationCertificate({ key, contentType, size }) {
 
 function isAllowedWorkerFile({ key, contentType, size }) {
   const normalizedContentType = String(contentType || "").toLowerCase();
+  if (isWorkOrderPdfKey(key)) {
+    return normalizedContentType === WORK_ORDER_PDF_POLICY.allowedMimeType
+      && size > 0
+      && size <= WORK_ORDER_PDF_POLICY.maxFileSizeBytes;
+  }
+
   if (isSignupApplicationCertificateKey(key)) {
     return isAllowedSignupApplicationCertificate({ key, contentType, size });
   }
@@ -147,6 +163,7 @@ function isSafeStorageKey(key) {
   const normalized = normalizeStorageKey(key);
   return (
     ATTACHMENT_KEY_PATTERN.test(normalized) ||
+    WORK_ORDER_PDF_KEY_PATTERN.test(normalized) ||
     SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
     COMPANY_ONBOARDING_KEY_PATTERN.test(normalized) ||
     COMPANY_FILE_KEY_PATTERN.test(normalized) ||
