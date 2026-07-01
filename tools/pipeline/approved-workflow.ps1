@@ -29,7 +29,8 @@ $AllowedProfiles = @(
     "automation-infrastructure",
     "workspace-commonization",
     "functions-automation",
-    "billing-foundation"
+    "billing-foundation",
+    "billing-operations"
 )
 
 function NormalizeWorkflowPath {

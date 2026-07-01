@@ -18,7 +18,7 @@ const initialThemeRootAttributes = buildPbpThemeRootAttributes(DEFAULT_PBP_THEME
 const WAFL_COMPONENT_DEBUG_OUTLINE_ENABLED = false;
 
 export const metadata: Metadata = {
-  title: "WAFL 0.24.31",
+  title: "WAFL 0.24.32",
   description: baseI18n.common.metadataDescription,
 };
 

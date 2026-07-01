@@ -8,6 +8,7 @@ import {
   TRIAL_STORAGE_LIMIT_BYTES,
   getTrialEndsAt,
 } from "@/lib/billing/companyTrialPolicy";
+import { createTrialBillingState, insertNotificationOutbox } from "@/lib/billing/billingOperationsRepository";
 import { provisionCompanyCatalog } from "@/lib/catalog/systemCatalogRepository";
 import { SYSTEM_CATALOG_VERSION_CODE } from "@/lib/catalog/systemCatalogPolicy";
 import { withDbTransaction, type DbQueryResultRow, type DbTransactionClient } from "@/lib/db/client";
@@ -34,6 +35,7 @@ export type SignupProvisioningSafeCode =
   | "SIGNUP_APPROVAL_CONSENT_INCOMPLETE"
   | "SIGNUP_APPROVAL_CONSENT_OUTDATED"
   | "SIGNUP_APPROVAL_CERTIFICATE_MISSING"
+  | "SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED"
   | "SIGNUP_APPROVAL_STATUS_CONFLICT"
   | "SIGNUP_APPROVAL_IDENTITY_CONFLICT"
   | "SIGNUP_APPROVAL_PLAN_INVALID"
@@ -350,6 +352,34 @@ async function hasCompanyIdentityConflict(
   return result.rows[0]?.exists === true;
 }
 
+async function hasReadyPaymentMethodReference(
+  client: DbTransactionClient,
+  app: SignupProvisioningApplicationRow,
+): Promise<boolean> {
+  try {
+    const result = await client.query<{ exists: boolean }>(
+      `
+        SELECT EXISTS (
+          SELECT 1
+          FROM company_payment_method_references payment
+          WHERE payment.application_id = $1
+            AND payment.readiness_state = 'ready'
+            AND payment.revoked_at IS NULL
+            AND NOT (
+              payment.environment = 'production'
+              AND payment.provider_code = 'fake_dev_test'
+            )
+          LIMIT 1
+        ) AS exists
+      `,
+      [app.id],
+    );
+    return result.rows[0]?.exists === true;
+  } catch {
+    return false;
+  }
+}
+
 async function assertProvisioningEligibility(
   client: DbTransactionClient,
   app: SignupProvisioningApplicationRow,
@@ -376,6 +406,9 @@ async function assertProvisioningEligibility(
   const certificate = await selectActiveCertificate(client, app.id);
   if (!certificate) {
     throw new SignupProvisioningPlanError("SIGNUP_APPROVAL_CERTIFICATE_MISSING");
+  }
+  if (!(await hasReadyPaymentMethodReference(client, app))) {
+    throw new SignupProvisioningPlanError("SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED");
   }
   if (await hasEmailOnlyUserConflict(client, { emailNormalized: app.email_normalized, googleSub: app.google_sub })) {
     throw new SignupProvisioningPlanError("SIGNUP_APPROVAL_IDENTITY_CONFLICT");
@@ -950,6 +983,28 @@ export class PostgresSignupApprovalProvisioningRepository implements SignupAppro
           [companyId, user.userId, approvedAt],
         );
         const subscriptionId = await insertTrialSubscription(client, { companyId, approvedAt });
+        const trial = getTrialSnapshot(approvedAt);
+        await createTrialBillingState({
+          client,
+          companyId,
+          subscriptionId,
+          selectedPaidPlanCode: app.requested_plan_code,
+          trialStartedAt: trial.startedAt,
+          trialEndsAt: trial.endsAt,
+          idempotencyKey: `signup-approval-trial:${app.id}`,
+        });
+        await insertNotificationOutbox(client, {
+          companyId,
+          userId: user.userId,
+          templateCode: "trial_started",
+          recipientScope: "company_admin",
+          payload: {
+            applicationId: app.id,
+            selectedPaidPlanCode: app.requested_plan_code,
+            trialEndsAt: trial.endsAt.toISOString(),
+          },
+          idempotencyKey: `signup-approval-trial-notice:${app.id}`,
+        });
         await provisionCompanyCatalog(client, companyId);
         await linkCertificateToCompanyFile(client, {
           app,
@@ -965,7 +1020,6 @@ export class PostgresSignupApprovalProvisioningRepository implements SignupAppro
           companyMemberId,
           subscriptionId,
         };
-        const trial = getTrialSnapshot(approvedAt);
         const prepared = await client.query(
           `
             UPDATE signup_applications

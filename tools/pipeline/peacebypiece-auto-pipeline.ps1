@@ -44,6 +44,10 @@ param(
     [switch]$RunPdfR2LifecycleIntegration,
     [switch]$RunPdfR2ReconciliationDryRun,
     [switch]$RunPdfR2ExactCleanupPlan,
+    [switch]$RunBillingCompatibilityAudit,
+    [switch]$ApplyBillingOperationsMigration,
+    [switch]$RunBillingPostApplyAudit,
+    [switch]$RunBillingOperationsIntegration,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -2397,6 +2401,57 @@ function RunSystemCatalogPostApplyAudit {
     return (InvokeReadOnlyDbAudit -Mode 'system-catalog-post-apply' -Title 'System Catalog Post-Apply Audit' -Label 'System_Catalog_Post_Apply_Audit' -PauseAfter $PauseAfter)
 }
 
+function RunBillingCompatibilityAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'billing-compatibility' -Title 'Billing Compatibility Audit' -Label 'Billing_Compatibility_Audit' -PauseAfter $PauseAfter)
+}
+
+function ApplyBillingOperationsMigration {
+    param([bool]$PauseAfter = $true)
+    return (InvokeApprovedDbMigrationCommand -Mode 'billing-operations' -Title 'Apply Billing Operations Migration' -Label 'Apply_Billing_Operations_Migration' -PauseAfter $PauseAfter)
+}
+
+function RunBillingPostApplyAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'billing-post-apply' -Title 'Billing Post-Apply Audit' -Label 'Billing_Post_Apply_Audit' -PauseAfter $PauseAfter)
+}
+
+function RunBillingOperationsIntegration {
+    param([bool]$PauseAfter = $true)
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $approvedFingerprint = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+    if ([string]::IsNullOrWhiteSpace($approvedFingerprint)) {
+        LogError "pipeline.config.psd1에 Simulator.ApprovedDbFingerprint가 설정되지 않았습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 1
+    }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:WAFL_SERVER_RUNTIME_MODE }
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Billing Operations Integration guard"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Production: false required"
+    Write-Host "Mutation: dev/test DB fixture rows only, rollback transaction"
+    Write-Host "R2 Mutation: none"
+    Write-Host "Mode: billing-operations-integration"
+
+    if (-not $guard.Passed) {
+        LogError "Billing Operations Integration guard failed: $($guard.Reason)"
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 1
+    }
+
+    $env:WAFL_DB_AUDIT_APPROVED = "1"
+    $env:WAFL_APPROVED_DB_FINGERPRINT = $approvedFingerprint
+    $env:WAFL_BILLING_OPERATIONS_CONFIRMATION = "RUN_BILLING_OPERATIONS_DEV_TEST"
+    return (InvokeProjectCommandWithResultFile -Title "Billing Operations Integration" -Label "Billing_Operations_Integration" -NpmCommand "node scripts/run-billing-operations-integration.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "DB_Audit"))
+}
+
 function RunSystemCatalogProvisioningIntegration {
     param([bool]$PauseAfter = $true)
 
@@ -2816,6 +2871,10 @@ function ShowDeveloperToolsMenu {
         Write-Host "53. PDF/R2 Lifecycle Integration                [DEV/TEST DB·R2 변경/별도 승인/자동 정리]"
         Write-Host "54. PDF/R2 Reconciliation Dry Run               [읽기 전용/manifest-scoped]"
         Write-Host "55. PDF/R2 Exact Cleanup Plan                   [계획만/실제 삭제 없음]"
+        Write-Host "56. Billing Compatibility Audit                 [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "57. Billing Migration Apply                     [DEV/TEST DB 변경/별도 승인]"
+        Write-Host "58. Billing Post-Apply Audit                    [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "59. Billing Simulator Integration               [DEV/TEST DB rollback fixture/cleanup]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2826,7 +2885,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~55 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~59 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -2887,9 +2946,13 @@ function ShowDeveloperToolsMenu {
             53 { RunPdfR2LifecycleIntegration | Out-Null }
             54 { RunPdfR2ReconciliationDryRun | Out-Null }
             55 { RunPdfR2ExactCleanupPlan | Out-Null }
+            56 { RunBillingCompatibilityAudit | Out-Null }
+            57 { ApplyBillingOperationsMigration | Out-Null }
+            58 { RunBillingPostApplyAudit | Out-Null }
+            59 { RunBillingOperationsIntegration | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~55 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~59 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -3183,6 +3246,22 @@ elseif ($RunPdfR2ReconciliationDryRun) {
 }
 elseif ($RunPdfR2ExactCleanupPlan) {
     $exitCode = RunPdfR2ExactCleanupPlan -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunBillingCompatibilityAudit) {
+    $exitCode = RunBillingCompatibilityAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplyBillingOperationsMigration) {
+    $exitCode = ApplyBillingOperationsMigration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunBillingPostApplyAudit) {
+    $exitCode = RunBillingPostApplyAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunBillingOperationsIntegration) {
+    $exitCode = RunBillingOperationsIntegration -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

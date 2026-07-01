@@ -9,3 +9,6 @@ export * from "./paymentMethodReferencePolicy";
 export * from "./subscriptionLifecyclePolicy";
 export * from "./companyExportPolicy";
 export * from "./notificationOutboxPolicy";
+export * from "./billingOperationsTypes";
+export * from "./billingOperationsRepository";
+export * from "./billingOperationsService";

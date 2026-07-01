@@ -1,13 +1,13 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.31`. Current implementation candidate: `0.24.31` Canonical Policy Conformance Remediation and PG-neutral Billing Foundation.
+> Active baseline: `0.24.32`. Current implementation candidate: `0.24.32` PG Billing and Subscription Operations.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.31`
-- APP_VERSION: `0.24.31`
+- Roadmap checkpoint version: `0.24.32`
+- APP_VERSION: `0.24.32`
 - Feature implementation progress: about `95%`
 - Productization readiness: about `88%`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -40,6 +40,15 @@
 14. `0.24.30` - Storage Capacity Profiles
 15. `0.24.31` - Canonical Policy Conformance Remediation and PG-neutral Billing Foundation
 16. `0.24.32` - PG Billing and Subscription Operations
+17. `0.24.33` - Next official roadmap item after billing operations
+
+## 0.24.32 - PG Billing and Subscription Operations
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.32.ts`.
+- Builds on audit: `docs/audits/0.24.31-canonical-policy-conformance-audit.md`.
+- Additive persistence: payment readiness, billing lifecycle state, invoice, payment attempt, transaction, refund, subscription change, retry schedule, event, webhook interface, notification outbox, company export, termination, and recovery tables.
+- Operations: signup approval payment-readiness gate, Trial conversion simulator, upgrade/downgrade quote and simulator seams, cancel/reverse cancel, retry schedule, termination/recovery, export, notification outbox, signup correction auto-reject, deletion dry-run.
+- Exclusions: no actual PG provider, no merchant secret, no real card entry, no production charge/refund/webhook, no actual email delivery, no production export/deletion, no Worker change.
 
 ## 0.24.31 - Canonical Policy Conformance Remediation and PG-neutral Billing Foundation
 

@@ -33,6 +33,7 @@ function statusForProvisioningError(error: unknown): number {
   if (error instanceof SignupProvisioningPlanError) {
     if (error.code === "SIGNUP_APPROVAL_STATUS_CONFLICT") return 409;
     if (error.code === "SIGNUP_PROVISIONING_ALREADY_RUNNING") return 409;
+    if (error.code === "SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED") return 409;
     return 400;
   }
   if (error instanceof SignupProvisioningPersistedError) return 500;

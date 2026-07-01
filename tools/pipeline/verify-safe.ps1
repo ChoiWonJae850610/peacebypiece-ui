@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -654,6 +654,56 @@ $profileCommands = @{
         @{ Name = "workorder PDF policy contract"; Command = "node"; Arguments = @("tests/workorder-pdf-policy-contract.mjs") },
         @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
         @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
+    );
+    "billing-operations" = @(
+        @{
+            Name = "targeted ESLint";
+            Command = "node";
+            Arguments = @(
+                "node_modules/eslint/bin/eslint.js",
+                "app/api/admin/subscription/operations/route.ts",
+                "app/api/system/billing/operations/route.ts",
+                "app/layout.tsx",
+                "lib/billing/billingOperationsRepository.ts",
+                "lib/billing/billingOperationsService.ts",
+                "lib/billing/billingOperationsTypes.ts",
+                "lib/billing/index.ts",
+                "lib/constants/version.ts",
+                "lib/internal/roadmap/index.ts",
+                "lib/internal/roadmap/roadmap-0.24.32.ts",
+                "lib/signup/signupApplicationProvisioningRepository.ts",
+                "scripts/run-approved-db-migration.mjs",
+                "scripts/run-billing-operations-integration.mjs",
+                "scripts/run-readonly-db-audit.mjs",
+                "tests/billing-approval-gate-contract.mjs",
+                "tests/billing-integration-runner-contract.mjs",
+                "tests/billing-operations-schema-contract.mjs",
+                "tests/billing-operations-service-contract.mjs",
+                "tests/billing-powershell-menu-contract.mjs",
+                "tests/roadmap-0.24.32-contract.mjs"
+            )
+        },
+        @{ Name = "tsc --noEmit"; Command = "node"; Arguments = @("node_modules/typescript/bin/tsc", "--noEmit") },
+        @{ Name = "billing operations schema contract"; Command = "node"; Arguments = @("tests/billing-operations-schema-contract.mjs") },
+        @{ Name = "billing operations service contract"; Command = "node"; Arguments = @("tests/billing-operations-service-contract.mjs") },
+        @{ Name = "billing approval gate contract"; Command = "node"; Arguments = @("tests/billing-approval-gate-contract.mjs") },
+        @{ Name = "billing PowerShell menu contract"; Command = "node"; Arguments = @("tests/billing-powershell-menu-contract.mjs") },
+        @{ Name = "billing integration runner contract"; Command = "node"; Arguments = @("tests/billing-integration-runner-contract.mjs") },
+        @{ Name = "billing pricing policy contract"; Command = "node"; Arguments = @("tests/billing-pricing-policy-contract.mjs") },
+        @{ Name = "billing security contract"; Command = "node"; Arguments = @("tests/billing-security-contract.mjs") },
+        @{ Name = "subscription lifecycle policy contract"; Command = "node"; Arguments = @("tests/subscription-lifecycle-policy-contract.mjs") },
+        @{ Name = "company export foundation contract"; Command = "node"; Arguments = @("tests/company-export-foundation-contract.mjs") },
+        @{ Name = "notification outbox foundation contract"; Command = "node"; Arguments = @("tests/notification-outbox-foundation-contract.mjs") },
+        @{ Name = "signup correction deadline contract"; Command = "node"; Arguments = @("tests/signup-correction-deadline-contract.mjs") },
+        @{ Name = "storage full-block coverage contract"; Command = "node"; Arguments = @("tests/storage-full-block-coverage-contract.mjs") },
+        @{ Name = "roadmap 0.24.32 contract"; Command = "node"; Arguments = @("tests/roadmap-0.24.32-contract.mjs") },
+        @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
+        @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") },
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
+        @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
+        @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
+        @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
+        @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
     )
 }
 
@@ -687,9 +737,18 @@ else {
 }
 
 $migrationChanges = @($changedFiles | Where-Object { $_ -match '^(db/migrations/|db/schema/|.*migration.*\.sql$)' })
-if ($migrationChanges.Count -gt 0) {
+$allowedMigrationChanges = @()
+if ($Profile -eq "billing-operations") {
+    $allowedMigrationChanges = @("db/migrations/patch_0_24_32_billing_operations.sql")
+}
+$unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
+if ($unexpectedMigrationChanges.Count -gt 0) {
     Write-Host "[FAIL] unexpected DB migration/schema changes: $($migrationChanges -join ', ')" -ForegroundColor Red
     $results.Add([pscustomobject]@{ Name = "DB migration unchanged"; Passed = $false; Skipped = $false; ExitCode = 1 })
+}
+elseif ($migrationChanges.Count -gt 0) {
+    Write-Host "[PASS] DB migration scoped to profile: $($migrationChanges -join ', ')"
+    $results.Add([pscustomobject]@{ Name = "DB migration scoped"; Passed = $true; Skipped = $false; ExitCode = 0 })
 }
 else {
     Write-Host "[PASS] DB migration unchanged"

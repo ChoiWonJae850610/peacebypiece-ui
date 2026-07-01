@@ -1,12 +1,12 @@
-# Codex Current State - 0.24.31
+# Codex Current State - 0.24.32
 
 ## Version
 
-- Current version: `0.24.31`.
-- Current implementation version: `0.24.31`.
+- Current version: `0.24.32`.
+- Current implementation version: `0.24.32`.
 - Branch: `master`.
-- Previous completed version: `0.24.30` Storage Capacity Profiles.
-- Next official version: `0.24.32` to be confirmed from the canonical roadmap after this checkpoint.
+- Previous completed version: `0.24.31` Canonical Policy Conformance Remediation and PG-neutral Billing Foundation.
+- Next official version: `0.24.33` to be confirmed from the canonical roadmap after this checkpoint.
 
 ## Policy Authority
 
@@ -17,33 +17,32 @@
 - System-admin actual/effective session boundaries and runtime-independent internal read screens remain unchanged from 0.24.25.x corrections.
 - Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, Purge, and production mutation guards remain unchanged.
 
-## 0.24.31 Scope
+## 0.24.32 Scope
 
-0.24.31 is Canonical Policy Conformance Remediation and PG-neutral Billing Foundation. It audits current implementation against final owner policy and adds provider-neutral domain foundations without real PG/email/provider execution.
+0.24.32 is PG Billing and Subscription Operations. It connects the 0.24.31 provider-neutral billing foundation to additive persistence, guarded services, APIs, migration/audit wrappers, and simulator-safe operation paths without real PG/email/provider execution.
 
 Implemented foundation:
 
-- Canonical policy conformance audit: `docs/audits/0.24.31-canonical-policy-conformance-audit.md`.
-- Pricing policy: Trial 0 KRW, Lite 9,900 KRW, Flow 19,900 KRW, Studio 39,900 KRW, Custom negotiated, additional storage 7,000 KRW per 1GB/month, VAT included.
-- Payment method reference policy: provider-neutral reference only, dev/test fake reference blocked in production, raw card data and raw provider payload excluded.
-- Trial billing notice foundation: today charge 0, selected paid plan, scheduled billing date/amount, and cancellation policy.
-- Subscription lifecycle foundation: upgrade proration, downgrade refund/eligibility, retry schedule Day 0/3/7/14/21/30, termination/recovery/deletion states.
-- Company-wide Export foundation: async job policy, exact-key manifest, split ZIP readiness, seven-day download expiry, final termination export readiness, no raw R2 URL exposure.
-- Notification outbox foundation: template codes, recipient scope, idempotency key, safe payload policy, actual email delivery false.
-- Signup correction deadline foundation: 3-day deadline, auto-reject job identity, safe notification template, scheduler approval boundary.
-- Storage 100% full-block coverage expanded to workorder creation and workflow growth transitions while read/delete/export paths remain allowed.
+- Canonical policy conformance audit remains: `docs/audits/0.24.31-canonical-policy-conformance-audit.md`.
+- Additive migration file: `db/migrations/patch_0_24_32_billing_operations.sql`.
+- Payment readiness persistence: `company_payment_method_references` stores provider-neutral references only; production fake readiness is blocked.
+- Signup approval gate: approval/provisioning checks persisted payment readiness server-side before Trial starts.
+- Billing lifecycle persistence: `billing_subscription_states` carries canonical lifecycle states without replacing the legacy `company_subscriptions` snapshot.
+- Invoice/payment/refund/retry/event persistence: integer KRW, VAT-included, idempotency keys, safe failure codes, and no raw provider payload.
+- Company export, termination/recovery, notification outbox, and correction auto-reject have persistence and simulator-safe operation seams.
+- Company-admin/system-admin billing operation APIs are guarded by tenant/system scope and same-origin checks.
 
-Out of scope for 0.24.31:
+Out of scope for 0.24.32:
 
 - Actual PG provider SDK, merchant key, billing key issuance, webhook, real charge, or real refund.
 - Actual email provider integration or external email sending.
 - Production company export, production deletion, broad R2 prefix deletion, or real customer data mutation.
-- DB migration execution or destructive schema change.
+- Destructive schema change or production migration.
 - Worker source change or Worker deployment.
 
 ## Verification State
 
-- DB migration this version: none.
+- DB migration this version: additive file added; dev/test apply requires approved fingerprint guard.
 - Production DB/R2/Worker mutation: false.
 - Actual PG integration: false.
 - Actual email delivery: false.
@@ -52,10 +51,10 @@ Out of scope for 0.24.31:
 
 ## Current Roadmap
 
-- Canonical current detail: `lib/internal/roadmap/roadmap-0.24.31.ts`.
+- Canonical current detail: `lib/internal/roadmap/roadmap-0.24.32.ts`.
 - Productization roadmap document: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
 
 ## Next Version
 
-0.24.32 must be read from the next canonical roadmap/user instruction before implementation. Do not infer live PG, production export, production deletion, or email provider work without explicit scope.
+0.24.33 must be read from the next canonical roadmap/user instruction before implementation. Do not infer live PG, production export, production deletion, or email provider work without explicit scope.

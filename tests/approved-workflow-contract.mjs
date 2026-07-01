@@ -5,8 +5,10 @@ import path from "node:path";
 const root = process.cwd();
 const workflowPath = path.join(root, "tools", "pipeline", "approved-workflow.ps1");
 const verifyPath = path.join(root, "tools", "pipeline", "verify-safe.ps1");
+const finishPath = path.join(root, "tools", "pipeline", "finish-version.ps1");
 const workflow = fs.readFileSync(workflowPath, "utf8");
 const verify = fs.readFileSync(verifyPath, "utf8");
+const finish = fs.readFileSync(finishPath, "utf8");
 
 const requiredWorkflowTokens = [
   '[ValidateSet("Verify", "Handoff", "Plan", "Finish")]',
@@ -18,6 +20,7 @@ const requiredWorkflowTokens = [
   '"automation-infrastructure"',
   '"workspace-commonization"',
   '"billing-foundation"',
+  '"billing-operations"',
   "function SelectMatchingVerificationResult",
   "VERIFY_SAFE_RESULT:\\s*PASS",
   "ChangedFingerprint",
@@ -68,6 +71,7 @@ const requiredVerifyTokens = [
   '"automation-infrastructure"',
   '"workspace-commonization"',
   '"billing-foundation"',
+  '"billing-operations"',
   '"roadmap-development-contract"',
   '"system-admin-internal-access"',
   "tools/pipeline/approved-workflow.ps1",
@@ -81,6 +85,17 @@ const requiredVerifyTokens = [
 for (const token of requiredVerifyTokens) {
   if (!verify.includes(token)) {
     throw new Error(`Missing verify-safe automation contract token: ${token}`);
+  }
+}
+
+for (const token of [
+  '"billing-operations"',
+  "patch_0_24_32_billing_operations.sql",
+  "unexpectedMigrationChanges",
+  "DB migration/schema changes allowed for profile",
+]) {
+  if (!finish.includes(token)) {
+    throw new Error(`Missing finish-version billing migration safety token: ${token}`);
   }
 }
 

@@ -357,8 +357,16 @@ if ($packageChanges.Count -gt 0) {
 }
 
 $migrationChanges = @($changedFiles | Where-Object { $_ -match '^(db/migrations/|db/schema/|.*migration.*\.sql$)' })
-if ($migrationChanges.Count -gt 0) {
-    throw "Unexpected DB migration/schema changes: $($migrationChanges -join ', ')"
+$allowedMigrationChanges = @()
+if ($VerificationProfile -eq "billing-operations") {
+    $allowedMigrationChanges = @("db/migrations/patch_0_24_32_billing_operations.sql")
+}
+$unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
+if ($unexpectedMigrationChanges.Count -gt 0) {
+    throw "Unexpected DB migration/schema changes: $($unexpectedMigrationChanges -join ', ')"
+}
+elseif ($migrationChanges.Count -gt 0) {
+    Write-Host "[INFO] DB migration/schema changes allowed for profile ${VerificationProfile}: $($migrationChanges -join ', ')"
 }
 
 $sensitiveFiles = @(FindSensitiveFiles -ChangedFiles $changedFiles)
