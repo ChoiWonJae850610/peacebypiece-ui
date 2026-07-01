@@ -9,11 +9,16 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
   const usageSummary = {
     usedBytes: 0,
     limitBytes: 0,
+    remainingBytes: 0,
+    reservedBytes: 0,
     usedLabel: "0B",
     limitLabel: "Checking plan",
     usagePercent: 0,
+    displayUsagePercent: 0,
     statusLabel: "normal" as const,
     statusTone: "normal" as const,
+    state: "healthy" as const,
+    sourceLabel: "placeholder",
   };
 
   return {

@@ -1,19 +1,26 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.29`. Current implementation candidate: `0.24.29` Integrated Productization Checkpoint.
+> Active baseline: `0.24.30`. Current implementation candidate: `0.24.30` Storage Capacity Profiles.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.29`
-- APP_VERSION: `0.24.29`
-- Feature implementation progress: about `95%`
-- Productization readiness: about `88%`
+- Roadmap checkpoint version: `0.24.30`
+- APP_VERSION: `0.24.30`
+- Feature implementation progress: about `94%`
+- Productization readiness: about `86%`
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Manual QA status: `PENDING_USER_QA`
 - Current planning policy: before 1.0, `master` remains the single development/QA branch and Vercel deployment is used for real-device QA.
+
+## Internal Access Boundary
+
+- Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`.
+- `/id-control` test account switching is allowed for active allowlisted system-admin users and remains unrelated to destructive Seed/Reset/Cleanup operations.
+- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
+- Regression contract: system-admin-internal-access.
 
 ## Active Sprint Sequence
 
@@ -33,13 +40,15 @@
 14. `0.24.30` - Storage Capacity Profiles
 15. `0.24.31` - PG Billing and Subscription Operations
 
-## 0.24.29 - Integrated Productization Checkpoint
+## 0.24.30 - Storage Capacity Profiles
 
-- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.29.ts`.
-- This checkpoint verifies the integrated flow from public signup to system-admin review, approval provisioning, new-company catalog, workspace access, workorder PDF generation, inline viewer, and PDF/R2 lifecycle regression.
-- It is not a Company-wide Export sprint. The older 0.24.29 export label is superseded by the user-confirmed checkpoint scope.
-- Manual QA checklist: `docs/qa/0.24.29-integrated-productization-checkpoint.md`.
-- Production DB/R2/Worker mutation, new DB migration, storage capacity enforcement, PG/billing, notification sending, Kakao sending, dashboard redesign, and `/workers` density redesign remain excluded.
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.30.ts`.
+- Trial remains 7 days, 100MB, 3 members.
+- Lite, Flow, and Studio storage/member limits are synchronized to the final policy.
+- Storage usage includes active attachments, recoverable trash, company files, onboarding files, and approved signup certificates that were not already promoted to company files.
+- Growth paths are guarded before storage writes: workorder attachment upload request, attachment completion, and generated PDF storage.
+- Usage data keeps actual percent separate from display-clamped percent for 0%-110% profile QA.
+- DB migration, production mutation, Worker source change, and Worker deployment are not part of this version.
 
 ## Completed Foundation
 
@@ -59,9 +68,15 @@
 - Canonical detail file: `lib/internal/roadmap/roadmap-0.24.28.ts`.
 - Canonical PDF model, field visibility, due-date guard, canonical PDF R2 key, Worker 0.13.71 policy, server proxy inline viewer, lifecycle integration, reconciliation, exact cleanup, and residual DB/R2 0 evidence are complete.
 
+### 0.24.29 - Integrated Productization Checkpoint
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.29.ts`.
+- The integrated signup, provisioning, catalog, workorder PDF, and PDF/R2 lifecycle checkpoint is complete.
+- Manual QA checklist: `docs/qa/0.24.29-integrated-productization-checkpoint.md`.
+
 ## Next Version
 
-### 0.24.30 - Storage Capacity Profiles
+### 0.24.31 - PG Billing and Subscription Operations
 
-- Planned scope: usage profiles 0%, <1%, 10%, 20%, 30%, 50%, 70%, 90%, 99%, 100%, 110%, Trial 100MB linkage, plan limits, upload enforcement, quota race, warning, grace, termination, deletion, apply/verify/restore, and H/I/J fixture mismatch cleanup.
-- 0.24.30 must not be started inside the 0.24.29 checkpoint.
+- Planned boundary: real PG provider integration, payment method registration, billing key/reference handling, subscription operation flow, and raw card data exclusion.
+- Do not start 0.24.31 work inside the 0.24.30 storage capacity checkpoint.

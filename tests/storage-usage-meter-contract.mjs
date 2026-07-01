@@ -41,7 +41,7 @@ for (const forbidden of [
   assert.ok(!meter.includes(forbidden), `legacy battery/water-tank meter token remains: ${forbidden}`);
 }
 
-const percentFixtures = [0, 0.02, 5, 15, 30, 50, 70, 90, 99, 100, 110];
+const percentFixtures = [0, 0.02, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110];
 
 function clampPercent(percent) {
   if (!Number.isFinite(percent)) return 0;
@@ -54,7 +54,7 @@ function formatPercentLabel(percent) {
   return `${Math.round(percent)}%`;
 }
 
-const expectedLabels = ["0%", "<1%", "5%", "15%", "30%", "50%", "70%", "90%", "99%", "100%", "110%"];
+const expectedLabels = ["0%", "<1%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "110%"];
 assert.deepEqual(percentFixtures.map(formatPercentLabel), expectedLabels);
 assert.equal(clampPercent(110), 100, "110% must visually clamp to 100% fill");
 assert.equal(clampPercent(0.02), 0.02, "small nonzero usage must retain fill before label formatting");
@@ -65,6 +65,7 @@ for (const source of [adminDashboard, planUsageCard]) {
 }
 
 assert.ok(planUsageCard.includes("showCylinder"), "/workspace/files plan usage card must show the cylinder meter");
+assert.ok(planUsageCard.includes("displayUsagePercent"), "/workspace/files meter must use clamped display percent");
 assert.ok(adminDashboard.includes("WaflStorageUsageMeter"), "admin main dashboard must use the same component");
 
 console.log("storage usage meter contract passed: database cylinder stack and percent display policy");

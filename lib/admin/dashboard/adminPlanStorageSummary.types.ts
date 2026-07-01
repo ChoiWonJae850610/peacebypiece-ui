@@ -7,6 +7,7 @@ export type AdminDashboardPlanStorageSummary = {
   storageUsedLabel: string;
   storageLimitLabel: string;
   storageUsagePercent: number;
+  storageDisplayUsagePercent: number;
   storageStatusLabel: string;
   storageStatusTone: AdminDashboardPlanStorageTone;
   activeStorageLabel: string;

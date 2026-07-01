@@ -6,23 +6,23 @@ import type {
 
 export const DEFAULT_PLAN_CODES = {
   TRIAL: "trial",
-  STARTER: "starter",
-  TEAM: "team",
-  BUSINESS: "business",
+  LITE: "lite",
+  FLOW: "flow",
+  STUDIO: "studio",
 } as const;
 
 export const DEFAULT_PLAN_STORAGE_LIMITS = {
   TRIAL: 100 * 1024 * 1024,
-  STARTER: 5 * 1024 * 1024 * 1024,
-  TEAM: 50 * 1024 * 1024 * 1024,
-  BUSINESS: 200 * 1024 * 1024 * 1024,
+  LITE: 500 * 1024 * 1024,
+  FLOW: Math.round(1.5 * 1024 * 1024 * 1024),
+  STUDIO: 5 * 1024 * 1024 * 1024,
 } as const;
 
 export const DEFAULT_PLAN_MEMBER_LIMITS = {
   TRIAL: 3,
-  STARTER: 3,
-  TEAM: 15,
-  BUSINESS: 50,
+  LITE: 3,
+  FLOW: 10,
+  STUDIO: 30,
 } as const;
 
 export function resolveCompanyPlanPolicy(

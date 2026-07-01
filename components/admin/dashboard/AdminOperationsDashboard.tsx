@@ -155,7 +155,7 @@ export default function AdminOperationsDashboard({
               <WaflStorageUsageMeter
                 compact
                 className="mt-4"
-                percent={planStorageSummary.storageUsagePercent}
+                percent={planStorageSummary.storageDisplayUsagePercent}
                 usedLabel={planStorageSummary.storageUsedLabel}
                 limitLabel={planStorageSummary.storageLimitLabel}
                 statusLabel={planStorageSummary.storageStatusLabel}

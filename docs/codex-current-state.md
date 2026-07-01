@@ -1,74 +1,76 @@
-# Codex Current State - 0.24.29
+# Codex Current State - 0.24.30
 
-## Current Snapshot
+## Version
 
-- Current version: `0.24.29`.
-- Current implementation version: `0.24.29`.
-- Current work result: **Integrated Productization Checkpoint**.
-- Previous completed versions:
-  - `0.24.26` Public Signup, Verification, Approval, and Trial.
-  - `0.24.27` System Catalog, Sizes, and POM.
-  - `0.24.28` PDF and R2 Lifecycle.
-- Next official version: `0.24.30` Storage Capacity Profiles.
+- Current version: `0.24.30`.
+- Current implementation version: `0.24.30`.
+- Branch: `master`.
+- Previous completed version: `0.24.29` Integrated Productization Checkpoint.
+- Next official version: `0.24.31` PG Billing and Subscription Operations.
 
-## Policy Source Order
+## Policy Authority
 
-For product policy, billing, signup, trial, access-boundary, PDF/R2, and launch decisions, use:
+- Product policy source order remains: `AGENTS.md`, this file, `docs/project/26-final-policy-decisions-and-master-todo.md`, `docs/project/31-pre-codex-integrated-master-plan.md`, related latest confirmed topic specs, then canonical roadmap.
+- Final owner policy still requires Trial 7 days, Trial storage 100MB, Trial members 3, no raw card storage, and PG-neutral handling until the 0.24.31 billing sprint.
+- System-admin actual/effective session boundaries and runtime-independent internal read screens remain unchanged from 0.24.25.x corrections.
+- Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`.
+- `/id-control` test account switching is allowed for active allowlisted system-admin users and remains unrelated to destructive Seed/Reset/Cleanup operations.
+- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
+- Regression contract: system-admin-internal-access.
 
-1. `AGENTS.md`
-2. `docs/codex-current-state.md`
-3. `docs/project/26-final-policy-decisions-and-master-todo.md`
-4. `docs/project/31-pre-codex-integrated-master-plan.md`
-5. related latest confirmed topic specs
-6. `lib/internal/roadmap/*`
-7. older/provisional documents
+## 0.24.30 Scope
 
-If implementation, old roadmap text, or general defaults conflict with final owner policy, classify it as implementation mismatch and align the implementation/roadmap to final policy.
+0.24.30 is Storage Capacity Profiles. It connects plan limits, company usage aggregation, workspace storage summary data, and server-side upload quota preflight.
 
-## 0.24.29 Scope
+Implemented storage policy:
 
-0.24.29 is the Integrated Productization Checkpoint. It does not add a new large feature. It verifies and packages the combined flow from signup through approval provisioning, system catalog, workspace access, workorder PDF generation, and PDF/R2 viewer/lifecycle evidence.
+- Trial: 100MB storage, 3 members.
+- Lite: 500MB storage, 3 members.
+- Flow: 1.5GB storage, 10 members.
+- Studio: 5GB storage, 30 members.
+- Custom: negotiated; current technical fallback remains Studio-sized until a system-admin override exists.
 
-Included:
+Usage inclusion:
 
-- APP_VERSION and roadmap/current-state synchronization to `0.24.29`.
-- Signup review and catalog QA-surface copy/responsive cleanup.
-- Signup/provisioning guarded dev/test integration regression.
-- System catalog guarded dev/test integration regression.
-- PDF/R2 lifecycle regression based on 0.24.28 live PASS evidence plus policy/static contracts.
-- Route/navigation, authorization, tenant, mock/hardcoded, Vercel readiness, and mutation audit evidence.
-- Manual QA checklist for PC, iPhone, iPad, and Android validation.
-- Repo-state metadata cleanup so contract summary is grouped/count-based rather than repeated `contract` labels.
+- Active workorder attachments.
+- Recoverable trash items that are not restored and not purged.
+- Active company files.
+- Active onboarding files.
+- Approved signup business certificates that have not already been promoted to a company file.
 
-Excluded:
+Growth paths guarded:
 
-- `0.24.30` Storage Capacity Profiles, Trial quota enforcement, quota race, warning/grace/termination/deletion.
-- PG/billing/payment method work.
+- Workorder attachment upload target creation.
+- Workorder attachment upload completion.
+- Generated workorder PDF storage.
+
+Allowed while full:
+
+- Existing text/content reads and edits that do not create storage objects.
+- Delete, trash, restore, purge, and exact cleanup paths that reduce or preserve storage.
+
+Out of scope for 0.24.30:
+
+- PG billing, payment method, billing key, or subscription operation implementation.
 - Notification email sending.
 - Kakao external API sending.
-- Customer dashboard redesign or `/workers` density redesign.
-- PDF/R2 lifecycle feature expansion.
+- Automatic deletion, grace-period jobs, or termination jobs.
+- Worker source change or Worker deployment.
+- Customer dashboard redesign or `/workers` redesign.
 
-## Worker And Integration State
-
-- R2 upload Worker source/deployed dev-test version: `0.13.71`.
-- PDF Generator Worker version: `0.16.1.1`.
-- 0.24.28 guarded live PDF/R2 lifecycle integration passed on approved dev/test DB/R2.
-- PDF/R2 final residual DB rows: `0`.
-- PDF/R2 final residual R2 objects: `0`.
-- 0.24.29 does not require Worker source change or redeployment unless a checkpoint regression proves otherwise.
-
-## Data Safety
+## Verification State
 
 - DB migration this version: none.
-- Production DB mutation: forbidden.
-- Production R2 mutation: forbidden.
-- Production Worker mutation: forbidden.
-- Dev/test fixture mutation is allowed only through approved guarded runners with residual DB/R2 0.
-- Raw DB URLs, Worker URLs, R2 keys, signed URLs, tokens, cookies, and secrets must not be exposed to clients, docs, logs, or repo-state.
+- Production DB/R2/Worker mutation: false.
+- Worker source/deployment change: none.
+- User manual QA: pending after Vercel deployment.
 
-## Manual QA
+## Current Roadmap
 
-- Manual QA status: `PENDING_USER_QA`.
-- Checklist: `docs/qa/0.24.29-integrated-productization-checkpoint.md`.
-- Codex automatic validation is not a substitute for real-device visual QA on Vercel.
+- Canonical current detail: `lib/internal/roadmap/roadmap-0.24.30.ts`.
+- Productization roadmap document: `docs/productization-roadmap.md`.
+- Runtime roadmap screen: `/roadmap`.
+
+## Next Version
+
+0.24.31 is PG Billing and Subscription Operations. It must not start until 0.24.30 is committed, pushed, and handed off.

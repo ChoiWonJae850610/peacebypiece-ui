@@ -89,13 +89,56 @@ export function createStorageUsageRepository(): StorageUsageRepository {
            WHERE company_id = $1::text
              AND restored_at IS NULL
              AND purged_at IS NULL
+         ), company_files_usage AS (
+           SELECT
+             COALESCE(SUM(COALESCE(size_bytes, 0)), 0)::bigint AS used_bytes,
+             COUNT(*)::int AS file_count,
+             MAX(uploaded_at) AS measured_at
+           FROM company_files
+           WHERE company_id = $1::text
+             AND deleted_at IS NULL
+         ), onboarding_files_usage AS (
+           SELECT
+             COALESCE(SUM(COALESCE(size_bytes, 0)), 0)::bigint AS used_bytes,
+             COUNT(*)::int AS file_count,
+             MAX(uploaded_at) AS measured_at
+           FROM company_onboarding_files
+           WHERE company_id = $1::text
+             AND deleted_at IS NULL
+         ), signup_certificate_usage AS (
+           SELECT
+             COALESCE(SUM(COALESCE(file.size_bytes, 0)), 0)::bigint AS used_bytes,
+             COUNT(*)::int AS file_count,
+             MAX(file.uploaded_at) AS measured_at
+           FROM signup_application_files file
+           JOIN signup_applications app ON app.id = file.application_id
+           WHERE app.created_company_id = $1::text
+             AND app.status = 'approved'
+             AND file.file_type = 'business_registration'
+             AND file.deleted_at IS NULL
+             AND file.approved_company_file_id IS NULL
          )
          SELECT
-           (COALESCE(a.used_bytes, 0) + COALESCE(t.used_bytes, 0))::bigint AS used_bytes,
-           (COALESCE(a.attachment_count, 0) + COALESCE(t.attachment_count, 0))::int AS attachment_count,
-           GREATEST(a.measured_at, t.measured_at, now()) AS measured_at
+           (
+             COALESCE(a.used_bytes, 0)
+             + COALESCE(t.used_bytes, 0)
+             + COALESCE(c.used_bytes, 0)
+             + COALESCE(o.used_bytes, 0)
+             + COALESCE(s.used_bytes, 0)
+           )::bigint AS used_bytes,
+           (
+             COALESCE(a.attachment_count, 0)
+             + COALESCE(t.attachment_count, 0)
+             + COALESCE(c.file_count, 0)
+             + COALESCE(o.file_count, 0)
+             + COALESCE(s.file_count, 0)
+           )::int AS attachment_count,
+           GREATEST(a.measured_at, t.measured_at, c.measured_at, o.measured_at, s.measured_at, now()) AS measured_at
          FROM active_attachments a
-         CROSS JOIN active_trash t`,
+         CROSS JOIN active_trash t
+         CROSS JOIN company_files_usage c
+         CROSS JOIN onboarding_files_usage o
+         CROSS JOIN signup_certificate_usage s`,
         [normalizedCompanyId],
       );
       const row = result.rows[0];
@@ -106,7 +149,7 @@ export function createStorageUsageRepository(): StorageUsageRepository {
         attachmentCount: toNonNegativeInteger(row?.attachment_count),
         measuredAt: toIso(row?.measured_at),
         source: "db_attachment_metadata",
-        note: "DB attachment metadata aggregation. Includes active attachments and unresolved trash metadata; R2 inventory reconciliation is tracked separately.",
+        note: "DB metadata aggregation. Includes active workorder attachments, recoverable trash, company files, onboarding files, and approved signup certificates not already linked to company_files; R2 inventory reconciliation is tracked separately.",
       };
     },
 

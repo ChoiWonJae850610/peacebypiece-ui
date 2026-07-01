@@ -8,6 +8,8 @@ import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
 import { isImageContentType, isWorkOrderAttachmentThumbnailKeyForScope } from "@/lib/storage/r2/r2ThumbnailKeys";
 import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
+import { checkCompanyUploadStorageQuota } from "@/lib/billing/companyStorageQuotaRepository";
+import { STORAGE_QUOTA_UPLOAD_ERROR_CODES } from "@/lib/billing/storageQuotaPolicy";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
@@ -196,6 +198,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const incomingSizeBytes = uploadTargets.reduce((total, target) => total + (target.fileSize ?? 0), 0);
+    const quotaResult = await checkCompanyUploadStorageQuota({ companyId, incomingSizeBytes });
+    if (!quotaResult.ok) {
+      return NextResponse.json(
+        { attachments: [], error: quotaResult.error, message: quotaResult.message },
+        { status: 503 },
+      );
+    }
+    if (quotaResult.decision.status === "blocked") {
+      return NextResponse.json(
+        {
+          attachments: [],
+          error: STORAGE_QUOTA_UPLOAD_ERROR_CODES.exceeded,
+          message: quotaResult.decision.message,
+          quota: quotaResult.decision,
+        },
+        { status: 409 },
+      );
+    }
+
     const attachments: Attachment[] = [];
 
     for (const target of uploadTargets) {
@@ -253,7 +275,7 @@ export async function POST(request: NextRequest) {
       },
     })));
 
-    return NextResponse.json({ attachments });
+    return NextResponse.json({ attachments, quota: quotaResult.decision });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Attachment upload complete failed.";
     console.error("[ATTACHMENT_UPLOAD_COMPLETE_FAILED]", { message, error });

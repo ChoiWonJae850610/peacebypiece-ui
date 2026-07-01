@@ -52,6 +52,10 @@ export type CompanySubscriptionSnapshot = {
   storageLimitBytes: number;
   storageUsedBytes: number;
   storageUsageRatio: number;
+  storageUsagePercent: number;
+  storageDisplayUsagePercent: number;
+  storageRemainingBytes: number;
+  storageState: "healthy" | "warning" | "blocked" | "over_limit";
   memberLimit: number;
   activeMemberCount: number;
   source: "company_subscriptions" | "company_fallback";

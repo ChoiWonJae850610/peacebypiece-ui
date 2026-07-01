@@ -18,20 +18,20 @@ export const COMPANY_SUBSCRIPTION_LIMITS = {
     memberLimit: 3,
   },
   lite: {
-    storageLimitBytes: 1024 * 1024 * 1024,
-    memberLimit: 5,
+    storageLimitBytes: 500 * 1024 * 1024,
+    memberLimit: 3,
   },
   flow: {
-    storageLimitBytes: 10 * 1024 * 1024 * 1024,
-    memberLimit: 15,
+    storageLimitBytes: Math.round(1.5 * 1024 * 1024 * 1024),
+    memberLimit: 10,
   },
   studio: {
-    storageLimitBytes: 50 * 1024 * 1024 * 1024,
-    memberLimit: 50,
+    storageLimitBytes: 5 * 1024 * 1024 * 1024,
+    memberLimit: 30,
   },
   custom: {
-    storageLimitBytes: 50 * 1024 * 1024 * 1024,
-    memberLimit: 50,
+    storageLimitBytes: 5 * 1024 * 1024 * 1024,
+    memberLimit: 30,
   },
 } as const satisfies Record<CompanySubscriptionPlanCode, { storageLimitBytes: number; memberLimit: number }>;
 

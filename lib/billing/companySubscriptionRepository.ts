@@ -26,6 +26,10 @@ export type CompanySubscriptionSnapshot = {
   storageLimitBytes: number;
   storageUsedBytes: number;
   storageUsageRatio: number;
+  storageUsagePercent: number;
+  storageDisplayUsagePercent: number;
+  storageRemainingBytes: number;
+  storageState: "healthy" | "warning" | "blocked" | "over_limit";
   memberLimit: number;
   activeMemberCount: number;
   source: "company_subscriptions" | "company_fallback";
@@ -79,6 +83,14 @@ function getRatio(usedBytes: number, limitBytes: number): number {
   return usedBytes / limitBytes;
 }
 
+function getStorageState(usedBytes: number, limitBytes: number): CompanySubscriptionSnapshot["storageState"] {
+  const ratio = getRatio(usedBytes, limitBytes);
+  if (ratio > 1) return "over_limit";
+  if (ratio >= 1) return "blocked";
+  if (ratio >= 0.8) return "warning";
+  return "healthy";
+}
+
 async function getCompanySubscriptionRow(companyId: string): Promise<CompanySubscriptionRow | null> {
   const result = await queryDb<CompanySubscriptionRow>(
     `SELECT
@@ -125,12 +137,44 @@ async function getCompanyFallbackRow(companyId: string): Promise<CompanyFallback
 async function getCompanyUsage(companyId: string): Promise<{ storageUsedBytes: number; activeMemberCount: number }> {
   const result = await queryDb<UsageRow>(
     `SELECT
-       COALESCE((
-         SELECT SUM(size_bytes)::bigint
-         FROM company_files
-         WHERE company_id = $1::text
-           AND deleted_at IS NULL
-       ), 0)::bigint AS storage_used_bytes,
+       (
+         COALESCE((
+           SELECT SUM(COALESCE(size_bytes, 0))::bigint
+           FROM attachments
+           WHERE company_id = $1::text
+             AND deleted_at IS NULL
+             AND COALESCE(is_active, true) = true
+         ), 0)
+         + COALESCE((
+           SELECT SUM(COALESCE(size_bytes, 0))::bigint
+           FROM attachment_trash_items
+           WHERE company_id = $1::text
+             AND restored_at IS NULL
+             AND purged_at IS NULL
+         ), 0)
+         + COALESCE((
+           SELECT SUM(COALESCE(size_bytes, 0))::bigint
+           FROM company_files
+           WHERE company_id = $1::text
+             AND deleted_at IS NULL
+         ), 0)
+         + COALESCE((
+           SELECT SUM(COALESCE(size_bytes, 0))::bigint
+           FROM company_onboarding_files
+           WHERE company_id = $1::text
+             AND deleted_at IS NULL
+         ), 0)
+         + COALESCE((
+           SELECT SUM(COALESCE(file.size_bytes, 0))::bigint
+           FROM signup_application_files file
+           JOIN signup_applications app ON app.id = file.application_id
+           WHERE app.created_company_id = $1::text
+             AND app.status = 'approved'
+             AND file.file_type = 'business_registration'
+             AND file.deleted_at IS NULL
+             AND file.approved_company_file_id IS NULL
+         ), 0)
+       )::bigint AS storage_used_bytes,
        COALESCE((
          SELECT COUNT(*)::int
          FROM users
@@ -170,6 +214,10 @@ function mapSubscriptionRow(row: CompanySubscriptionRow, usage: { storageUsedByt
     storageLimitBytes,
     storageUsedBytes: usage.storageUsedBytes,
     storageUsageRatio: getRatio(usage.storageUsedBytes, storageLimitBytes),
+    storageUsagePercent: Math.round(getRatio(usage.storageUsedBytes, storageLimitBytes) * 100),
+    storageDisplayUsagePercent: Math.min(100, Math.max(0, Math.round(getRatio(usage.storageUsedBytes, storageLimitBytes) * 100))),
+    storageRemainingBytes: Math.max(0, storageLimitBytes - usage.storageUsedBytes),
+    storageState: getStorageState(usage.storageUsedBytes, storageLimitBytes),
     memberLimit,
     activeMemberCount: usage.activeMemberCount,
     source: "company_subscriptions",
@@ -200,6 +248,10 @@ function mapFallbackRow(row: CompanyFallbackRow, usage: { storageUsedBytes: numb
     storageLimitBytes,
     storageUsedBytes: usage.storageUsedBytes,
     storageUsageRatio: getRatio(usage.storageUsedBytes, storageLimitBytes),
+    storageUsagePercent: Math.round(getRatio(usage.storageUsedBytes, storageLimitBytes) * 100),
+    storageDisplayUsagePercent: Math.min(100, Math.max(0, Math.round(getRatio(usage.storageUsedBytes, storageLimitBytes) * 100))),
+    storageRemainingBytes: Math.max(0, storageLimitBytes - usage.storageUsedBytes),
+    storageState: getStorageState(usage.storageUsedBytes, storageLimitBytes),
     memberLimit,
     activeMemberCount: usage.activeMemberCount,
     source: "company_fallback",

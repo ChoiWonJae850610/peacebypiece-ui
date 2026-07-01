@@ -1,8 +1,8 @@
 # WAFL / PeaceByPiece UI
 
-- 기준 앱 버전: `0.24.29`
-- 현재 작업: `0.24.29` Integrated Productization Checkpoint
-- 제품 성격: 의류 생산, 작업지시서, 원단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
+- 기준 앱 버전: `0.24.30`
+- 현재 작업: `0.24.30` Storage Capacity Profiles
+- 제품 성격: 의류 생산, 작업지시서, 재단/부자재 발주, 고객사 운영을 관리하는 WAFL UI
 
 ## 개발 실행
 

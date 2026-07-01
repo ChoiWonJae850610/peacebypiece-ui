@@ -73,3 +73,37 @@ export async function checkCompanyFileUploadStorageQuota(input: {
     }),
   };
 }
+
+export async function checkCompanyUploadStorageQuota(input: {
+  companyId: string;
+  incomingSizeBytes: number;
+  replaceableBytes?: number | null;
+}): Promise<CompanyFileStorageQuotaResult> {
+  const companyId = input.companyId.trim();
+  if (!companyId) {
+    return {
+      ok: false,
+      error: STORAGE_QUOTA_UPLOAD_ERROR_CODES.unavailable,
+      message: "회사 범위를 확인할 수 없어 저장공간 한도를 검증할 수 없습니다.",
+    };
+  }
+
+  const subscription = await getCurrentCompanySubscription(companyId);
+  if (!subscription) {
+    return {
+      ok: false,
+      error: STORAGE_QUOTA_UPLOAD_ERROR_CODES.unavailable,
+      message: "고객사 요금제와 저장공간 정보를 확인할 수 없습니다.",
+    };
+  }
+
+  return {
+    ok: true,
+    decision: evaluateStorageQuotaForUpload({
+      storageLimitBytes: subscription.storageLimitBytes,
+      storageUsedBytes: subscription.storageUsedBytes,
+      incomingSizeBytes: input.incomingSizeBytes,
+      replaceableBytes: input.replaceableBytes,
+    }),
+  };
+}

@@ -8,6 +8,8 @@ import { createWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createWorkOrderAttachmentThumbnailKey, isImageContentType } from "@/lib/storage/r2/r2ThumbnailKeys";
 import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { createAttachmentRepository } from "@/lib/workorder/persistence/attachmentAdapter";
+import { checkCompanyUploadStorageQuota } from "@/lib/billing/companyStorageQuotaRepository";
+import { STORAGE_QUOTA_UPLOAD_ERROR_CODES } from "@/lib/billing/storageQuotaPolicy";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
 import { MEMBER_PERMISSION_CODE } from "@/lib/permissions";
@@ -170,7 +172,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ uploadTargets: files.map((file) => createUploadTarget({ companyId, workOrderId, scope, file })) });
+    const incomingSizeBytes = files.reduce((total, file) => total + file.size, 0);
+    const quotaResult = await checkCompanyUploadStorageQuota({ companyId, incomingSizeBytes });
+    if (!quotaResult.ok) {
+      return NextResponse.json(
+        { uploadTargets: [], error: quotaResult.error, message: quotaResult.message },
+        { status: 503 },
+      );
+    }
+    if (quotaResult.decision.status === "blocked") {
+      return NextResponse.json(
+        {
+          uploadTargets: [],
+          error: STORAGE_QUOTA_UPLOAD_ERROR_CODES.exceeded,
+          message: quotaResult.decision.message,
+          quota: quotaResult.decision,
+        },
+        { status: 409 },
+      );
+    }
+
+    return NextResponse.json({
+      uploadTargets: files.map((file) => createUploadTarget({ companyId, workOrderId, scope, file })),
+      quota: quotaResult.decision,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Attachment upload prepare failed.";
     console.error("[ATTACHMENT_UPLOAD_PREPARE_FAILED]", { message, error });

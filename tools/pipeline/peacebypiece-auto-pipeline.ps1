@@ -890,6 +890,9 @@ function GetLocalRepoVerificationSummary {
             'rollback smoke .*PASS'
         )
         DevTestDbTestDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test DB Test-Data Mutation"
+        DevTestFixtureMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation"
+        BusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation"
+        ProductionBusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation"
         DevTestR2Mutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation"
         ProductionMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation"
         SchemaMigrationThisRun = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run"
@@ -980,7 +983,9 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
-    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Dev/Test Fixture Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.DevTestFixtureMutation)) { [string]$VerificationSummary.DevTestDbTestDataMutation } else { [string]$VerificationSummary.DevTestFixtureMutation }))
+    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.BusinessDataMutation)) { "false" } else { [string]$VerificationSummary.BusinessDataMutation }))
+    AddRepoStateSection -Lines $lines -Title "Production Business Data Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.ProductionBusinessDataMutation)) { "false" } else { [string]$VerificationSummary.ProductionBusinessDataMutation }))
     AddRepoStateSection -Lines $lines -Title "Dev/Test R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
     AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
     AddRepoStateSection -Lines $lines -Title "Production Mutation:" -Values @([string]$VerificationSummary.ProductionMutation)
@@ -1093,7 +1098,9 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
-    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Dev/Test Fixture Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.DevTestFixtureMutation)) { [string]$VerificationSummary.DevTestDbTestDataMutation } else { [string]$VerificationSummary.DevTestFixtureMutation }))
+    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.BusinessDataMutation)) { "false" } else { [string]$VerificationSummary.BusinessDataMutation }))
+    AddRepoStateSection -Lines $lines -Title "Production Business Data Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.ProductionBusinessDataMutation)) { "false" } else { [string]$VerificationSummary.ProductionBusinessDataMutation }))
     AddRepoStateSection -Lines $lines -Title "Dev/Test R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
     AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @([string]$VerificationSummary.DevTestR2Mutation)
     AddRepoStateSection -Lines $lines -Title "Production Mutation:" -Values @([string]$VerificationSummary.ProductionMutation)

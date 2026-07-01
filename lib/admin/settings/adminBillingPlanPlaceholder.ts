@@ -69,11 +69,11 @@ function resolveCompanyLabel(input: AdminBillingPlanOverviewInput | undefined): 
   return companyName ? companyName : "현재 고객사";
 }
 
-const starterPlan = DEFAULT_PLAN_DEFINITIONS.find((plan) => plan.code === DEFAULT_PLAN_CODES.STARTER) ?? DEFAULT_PLAN_DEFINITIONS[0];
+const litePlan = DEFAULT_PLAN_DEFINITIONS.find((plan) => plan.code === DEFAULT_PLAN_CODES.LITE) ?? DEFAULT_PLAN_DEFINITIONS[0];
 
 export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewInput): AdminBillingPlanOverview {
-  const fallbackPlan = starterPlan;
-  const fallbackStorageBytes = fallbackPlan?.storage.includedStorageBytes ?? 5 * BYTES_PER_GB;
+  const fallbackPlan = litePlan;
+  const fallbackStorageBytes = fallbackPlan?.storage.includedStorageBytes ?? 500 * 1024 * 1024;
   const storageLimitBytes = normalizeStorageLimitBytes(input, fallbackStorageBytes);
   const companyLabel = resolveCompanyLabel(input);
   const dataSourceLabel = input?.ok ? "현재 고객사 설정 조회" : "현재 고객사 설정 없음";
@@ -83,8 +83,8 @@ export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewIn
     title: `${companyLabel} 요금제·결제 현황`,
     description:
       "고객관리자는 현재 요금제, 저장공간 한도, 결제 연결 상태를 읽기 전용으로 확인하고 변경 요청은 시스템관리자에게 전달하는 흐름으로 시작합니다.",
-    currentPlanLabel: fallbackPlan?.name ?? "Starter",
-    planCodeLabel: fallbackPlan?.code ?? DEFAULT_PLAN_CODES.STARTER,
+    currentPlanLabel: fallbackPlan?.name ?? "Lite",
+    planCodeLabel: fallbackPlan?.code ?? DEFAULT_PLAN_CODES.LITE,
     billingStatusLabel: "결제 연동 전",
     systemManagedLabel: "시스템관리자 관리",
     dataSourceLabel,
@@ -92,7 +92,7 @@ export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewIn
       {
         id: "current-plan",
         label: "현재 요금제",
-        value: fallbackPlan?.name ?? "Starter",
+        value: fallbackPlan?.name ?? "Lite",
         description: "정식 plan assignment 연결 전까지 기본 요금제 정책을 표시합니다.",
       },
       {
@@ -116,7 +116,7 @@ export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewIn
       {
         id: "monthly-price",
         label: "월 이용료",
-        value: fallbackPlan ? formatPbpKrw(fallbackPlan.priceKrw) : "29,000원",
+        value: fallbackPlan ? formatPbpKrw(fallbackPlan.priceKrw) : "9,900원",
         description: "정식 결제 연동 전까지는 참고용 정책값으로만 사용합니다.",
       },
     ],
@@ -148,4 +148,3 @@ export function buildAdminBillingPlanOverview(input?: AdminBillingPlanOverviewIn
     ] as const,
   };
 }
-

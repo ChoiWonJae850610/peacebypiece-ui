@@ -20,11 +20,23 @@ export type AdminFileTypeDistributionItem = {
 export type AdminStorageUsageSummary = {
   usedBytes: number;
   limitBytes: number;
+  remainingBytes: number;
+  reservedBytes: number;
   usedLabel: string;
   limitLabel: string;
   usagePercent: number;
+  displayUsagePercent: number;
   statusLabel: string;
   statusTone: "normal" | "caution" | "danger";
+  state:
+    | "healthy"
+    | "warning"
+    | "grace"
+    | "read_only"
+    | "blocked"
+    | "over_limit"
+    | "reconciliation_required";
+  sourceLabel: string;
 };
 
 export type AdminFileTabKey =

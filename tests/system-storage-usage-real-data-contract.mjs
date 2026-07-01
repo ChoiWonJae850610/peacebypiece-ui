@@ -13,8 +13,12 @@ assert.match(routeHandlers, /createStorageUsageSnapshot/);
 assert.match(repository, /queryDb/);
 assert.match(repository, /FROM attachments/);
 assert.match(repository, /FROM attachment_trash_items/);
+assert.match(repository, /FROM company_files/);
+assert.match(repository, /FROM company_onboarding_files/);
+assert.match(repository, /FROM signup_application_files file/);
+assert.match(repository, /approved signup certificates not already linked to company_files/);
 assert.match(repository, /INSERT INTO storage_usage_snapshots/);
-assert.match(repository, /DB attachment metadata aggregation/);
+assert.match(repository, /DB metadata aggregation/);
 assert.doesNotMatch(repository, /storageUsageSnapshots:\s*StorageUsageSnapshot\[\]/);
 assert.doesNotMatch(repository, /skeleton default summary/);
 

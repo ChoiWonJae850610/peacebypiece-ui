@@ -20,7 +20,7 @@ export function PlanUsageCard({
     Number.isFinite(usageSummary.limitBytes) && usageSummary.limitBytes > 0;
   const usedGbLabel = formatPbpFixedGigabytes(usageSummary.usedBytes, 2);
   const remainingBytes = hasPlanLimit
-    ? Math.max(0, usageSummary.limitBytes - usageSummary.usedBytes)
+    ? usageSummary.remainingBytes
     : 0;
   const remainingLabel = hasPlanLimit
     ? formatStorageBytes(remainingBytes)
@@ -69,7 +69,7 @@ export function PlanUsageCard({
       <WaflStorageUsageMeter
         showCylinder
         compact
-        percent={hasPlanLimit ? usageSummary.usagePercent : 0}
+        percent={hasPlanLimit ? usageSummary.displayUsagePercent : 0}
         usedLabel={
           hasPlanLimit
             ? usageSummary.usedLabel

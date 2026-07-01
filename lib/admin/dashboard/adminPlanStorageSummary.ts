@@ -2,7 +2,7 @@ import "server-only";
 
 import { listAdminFileManagementRows } from "@/lib/admin/files/serverActions";
 import { getCompanySettings } from "@/lib/admin/settings/companyRepository";
-import { buildResolvedStorageUsageSummary, formatStorageBytes, resolveStorageQuotaFromCompanyFilePolicy } from "@/lib/billing/storageQuotaPolicy";
+import { buildResolvedStorageUsageSummary, formatStorageBytes, getDefaultAdminStorageQuotaPolicy } from "@/lib/billing/storageQuotaPolicy";
 import { getCurrentCompanySubscription } from "@/lib/billing/companySubscriptionRepository";
 import type { AdminDashboardPlanStorageSummary } from "@/lib/admin/dashboard/adminPlanStorageSummary.types";
 
@@ -39,8 +39,19 @@ export async function buildAdminDashboardPlanStorageSummary(
   });
   const activeBytes = rows.attachments.reduce((total, item) => total + item.fileSizeBytes, 0);
   const trashBytes = rows.trashItems.reduce((total, item) => total + item.fileSizeBytes, 0);
-  const quotaPolicy = resolveStorageQuotaFromCompanyFilePolicy(settings.filePolicy);
-  const usageSummary = buildResolvedStorageUsageSummary({ activeBytes, trashBytes, quotaPolicy });
+  const baseQuotaPolicy = getDefaultAdminStorageQuotaPolicy(true);
+  const usageSummary = buildResolvedStorageUsageSummary({
+    activeBytes: subscription?.storageUsedBytes ?? activeBytes,
+    trashBytes: subscription ? 0 : trashBytes,
+    quotaPolicy: {
+      ...baseQuotaPolicy,
+      limitBytes: subscription?.storageLimitBytes ?? baseQuotaPolicy.limitBytes,
+      limitLabel: subscription ? formatStorageBytes(subscription.storageLimitBytes) : baseQuotaPolicy.limitLabel,
+      source: subscription ? "plan" : "fallback",
+      sourceLabel: subscription?.source === "company_subscriptions" ? "구독 DB 저장공간" : "기본 저장공간 정책",
+      includeTrashInUsage: true,
+    },
+  });
   const memberStatus = buildMemberStatus({
     activeMemberCount: subscription?.activeMemberCount ?? 0,
     memberLimit: subscription?.memberLimit ?? 0,
@@ -53,6 +64,7 @@ export async function buildAdminDashboardPlanStorageSummary(
     storageUsedLabel: usageSummary.usedLabel,
     storageLimitLabel: usageSummary.limitLabel,
     storageUsagePercent: usageSummary.usagePercent,
+    storageDisplayUsagePercent: usageSummary.displayUsagePercent,
     storageStatusLabel: usageSummary.statusLabel,
     storageStatusTone: usageSummary.statusTone,
     activeStorageLabel: formatStorageBytes(activeBytes),
@@ -61,7 +73,7 @@ export async function buildAdminDashboardPlanStorageSummary(
     memberStatusLabel: memberStatus.memberStatusLabel,
     memberStatusTone: memberStatus.memberStatusTone,
     includeTrashInUsage: settings.filePolicy.includeTrashInUsage,
-    policySourceLabel: quotaPolicy.sourceLabel,
+    policySourceLabel: usageSummary.sourceLabel,
     subscriptionHref: "/workspace/subscription",
     storageHref: "/workspace/files",
   };

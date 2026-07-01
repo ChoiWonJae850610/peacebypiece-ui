@@ -187,11 +187,16 @@ const ADMIN_FILE_FALLBACK_USAGE = buildResolvedStorageUsageSummary({
 export const ADMIN_FILE_USAGE_SUMMARY: AdminStorageUsageSummary = {
   usedBytes: ADMIN_FILE_FALLBACK_USAGE.usedBytes,
   limitBytes: ADMIN_FILE_FALLBACK_USAGE.limitBytes,
+  remainingBytes: ADMIN_FILE_FALLBACK_USAGE.remainingBytes,
+  reservedBytes: ADMIN_FILE_FALLBACK_USAGE.reservedBytes,
   usedLabel: ADMIN_FILE_FALLBACK_USAGE.usedLabel,
   limitLabel: ADMIN_FILE_FALLBACK_USAGE.limitLabel,
   usagePercent: ADMIN_FILE_FALLBACK_USAGE.usagePercent,
+  displayUsagePercent: ADMIN_FILE_FALLBACK_USAGE.displayUsagePercent,
   statusLabel: ADMIN_FILE_FALLBACK_USAGE.statusLabel,
   statusTone: ADMIN_FILE_FALLBACK_USAGE.statusTone,
+  state: ADMIN_FILE_FALLBACK_USAGE.state,
+  sourceLabel: ADMIN_FILE_FALLBACK_USAGE.sourceLabel,
 };
 
 export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [

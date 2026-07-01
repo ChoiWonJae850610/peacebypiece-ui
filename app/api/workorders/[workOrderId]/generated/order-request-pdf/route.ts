@@ -5,6 +5,8 @@ import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { renderPdfWithExternalGenerator } from "@/lib/generated-documents/pdfGeneratorClient";
 import { resolveOrderRequestRepresentativeImageDataUrl } from "@/lib/generated-documents/order-request/orderRequestRepresentativeImage";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
+import { checkCompanyUploadStorageQuota } from "@/lib/billing/companyStorageQuotaRepository";
+import { STORAGE_QUOTA_UPLOAD_ERROR_CODES } from "@/lib/billing/storageQuotaPolicy";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl, deleteR2Object, putR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
@@ -246,6 +248,29 @@ export async function POST(request: Request, context: RouteContext) {
     workOrderId,
     fileId,
   });
+
+  const quotaResult = await checkCompanyUploadStorageQuota({
+    companyId: scopeResult.scope.companyId,
+    incomingSizeBytes: pdf.byteLength,
+  });
+  if (!quotaResult.ok) {
+    return NextResponse.json(
+      { ok: false, attachment: null, error: quotaResult.error, message: quotaResult.message },
+      { status: 503 },
+    );
+  }
+  if (quotaResult.decision.status === "blocked") {
+    return NextResponse.json(
+      {
+        ok: false,
+        attachment: null,
+        error: STORAGE_QUOTA_UPLOAD_ERROR_CODES.exceeded,
+        message: quotaResult.decision.message,
+        quota: quotaResult.decision,
+      },
+      { status: 409 },
+    );
+  }
 
   try {
     await putGeneratedPdfObject({ storageKey, pdf });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/files/presentation";
 import { buildResolvedStorageUsageSummary, formatStorageBytes, resolveStorageQuotaFromCompanyFilePolicy } from "@/lib/billing/storageQuotaPolicy";
+import { getCurrentCompanySubscription } from "@/lib/billing/companySubscriptionRepository";
 import { getCompanySettings } from "@/lib/admin/settings/companyRepository";
 import { requireAdminFileCompanyScope } from "@/lib/admin/files/sessionScope";
 import { listAdminFileManagementRows } from "@/lib/admin/files/serverActions";
@@ -22,11 +23,53 @@ function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: 
   return {
     usedBytes: summary.usedBytes,
     limitBytes: summary.limitBytes,
+    remainingBytes: summary.remainingBytes,
+    reservedBytes: summary.reservedBytes,
     usedLabel: summary.usedLabel,
     limitLabel: summary.limitLabel,
     usagePercent: summary.usagePercent,
+    displayUsagePercent: summary.displayUsagePercent,
     statusLabel: summary.statusLabel,
     statusTone: summary.statusTone,
+    state: summary.state,
+    sourceLabel: summary.sourceLabel,
+  };
+}
+
+function buildUsageSummaryFromSubscription(input: {
+  storageUsedBytes: number;
+  storageLimitBytes: number;
+  sourceLabel: string;
+  includeTrashInUsage: boolean;
+  filePolicy: CompanyFilePolicySettings;
+}): AdminStorageUsageSummary {
+  const quotaPolicy = resolveStorageQuotaFromCompanyFilePolicy(input.filePolicy);
+  const summary = buildResolvedStorageUsageSummary({
+    activeBytes: input.storageUsedBytes,
+    trashBytes: 0,
+    quotaPolicy: {
+      ...quotaPolicy,
+      limitBytes: input.storageLimitBytes,
+      limitLabel: formatStorageBytes(input.storageLimitBytes),
+      source: "plan",
+      sourceLabel: input.sourceLabel,
+      includeTrashInUsage: input.includeTrashInUsage,
+    },
+  });
+
+  return {
+    usedBytes: summary.usedBytes,
+    limitBytes: summary.limitBytes,
+    remainingBytes: summary.remainingBytes,
+    reservedBytes: summary.reservedBytes,
+    usedLabel: summary.usedLabel,
+    limitLabel: summary.limitLabel,
+    usagePercent: summary.usagePercent,
+    displayUsagePercent: summary.displayUsagePercent,
+    statusLabel: summary.statusLabel,
+    statusTone: summary.statusTone,
+    state: summary.state,
+    sourceLabel: summary.sourceLabel,
   };
 }
 function normalizeTrendPeriod(value: string | null): AdminFileTrendPeriod {
@@ -161,9 +204,19 @@ export async function GET(request: Request) {
       companyId,
       trashRetentionDays: settings.filePolicy.trashRetentionDays,
     });
+    const subscription = await getCurrentCompanySubscription(companyId);
     const activeBytes = rows.attachments.reduce((total, item) => total + item.fileSizeBytes, 0);
     const trashBytes = rows.trashItems.reduce((total, item) => total + item.fileSizeBytes, 0);
     const purgeRequestSummary = await getPurgeRequestSummary(companyId);
+    const usageSummary = subscription
+      ? buildUsageSummaryFromSubscription({
+          storageUsedBytes: subscription.storageUsedBytes,
+          storageLimitBytes: subscription.storageLimitBytes,
+          sourceLabel: subscription.source === "company_subscriptions" ? "subscription plan quota" : "company fallback quota",
+          includeTrashInUsage: true,
+          filePolicy: settings.filePolicy,
+        })
+      : buildUsageSummary(activeBytes, trashBytes, settings.filePolicy);
 
     return NextResponse.json({
       ok: true,
@@ -174,7 +227,7 @@ export async function GET(request: Request) {
         workOrders: rows.workOrders,
         attachments: rows.attachments,
         trashItems: rows.trashItems,
-        usageSummary: buildUsageSummary(activeBytes, trashBytes, settings.filePolicy),
+        usageSummary,
         usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, purgeRequestSummary.count, purgeRequestSummary.bytes, settings.filePolicy),
         storagePolicies: buildAdminStoragePolicyItems(policySettings),
         policySettings,
