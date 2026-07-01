@@ -889,13 +889,13 @@ function GetLocalRepoVerificationSummary {
             'rollback smoke:\s*(PASS|FAIL)',
             'rollback smoke .*PASS'
         )
-        DevTestDbTestDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test DB Test-Data Mutation" -DefaultValue "false"
-        DevTestFixtureMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation" -DefaultValue "false"
-        BusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation" -DefaultValue "false"
-        ProductionBusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation" -DefaultValue "false"
-        DevTestR2Mutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -DefaultValue "false"
-        ProductionMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -DefaultValue "false"
-        SchemaMigrationThisRun = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -DefaultValue "false"
+        DevTestDbTestDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test DB Test-Data Mutation" -Fallback "false"
+        DevTestFixtureMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation" -Fallback "false"
+        BusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation" -Fallback "false"
+        ProductionBusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation" -Fallback "false"
+        DevTestR2Mutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false"
+        ProductionMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -Fallback "false"
+        SchemaMigrationThisRun = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false"
         CertificateIntegrationResult = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Certificate Integration Result"
         PngUpload = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PNG Upload"
         JpegReplacement = GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement"
