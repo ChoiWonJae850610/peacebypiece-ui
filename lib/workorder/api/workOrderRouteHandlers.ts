@@ -14,6 +14,9 @@ import {
 } from "@/lib/db/client";
 import { isWorkOrderServiceCode, type WorkOrderServiceCodeValue } from "@/lib/constants/workorderServiceCodes";
 import { traceWaflFlow, traceWaflResult } from "@/lib/debug/trace";
+import { checkCompanyStorageGrowthActionQuota } from "@/lib/billing/companyStorageQuotaRepository";
+import { STORAGE_QUOTA_UPLOAD_ERROR_CODES } from "@/lib/billing/storageQuotaPolicy";
+import { WORKFLOW_STATE } from "@/lib/constants/workorderStates";
 import { guardProductionCompositionPatchByServiceCode } from "@/lib/workorder/serviceCodeGuards";
 import { hasDefinedWaflPatchProperty } from "@/lib/mutations/waflPatchResult";
 import { getPersonalProfile } from "@/lib/me/profileRepository";
@@ -77,6 +80,41 @@ type DbApiErrorPayload = {
   message: string;
   code: DbApiErrorCode;
 };
+
+function createStorageQuotaGrowthBlockedResponse(message: string) {
+  return NextResponse.json(
+    {
+      message,
+      code: STORAGE_QUOTA_UPLOAD_ERROR_CODES.exceeded,
+    },
+    { status: 409 },
+  );
+}
+
+async function requireCompanyStorageGrowthAllowed(companyId: string) {
+  const quotaResult = await checkCompanyStorageGrowthActionQuota({ companyId });
+  if (!quotaResult.ok) {
+    return NextResponse.json(
+      { message: quotaResult.message, code: quotaResult.error },
+      { status: 503 },
+    );
+  }
+  if (quotaResult.decision.status === "blocked") {
+    return createStorageQuotaGrowthBlockedResponse(quotaResult.decision.message);
+  }
+  return null;
+}
+
+function isWorkflowGrowthTransition(previous: WorkOrder, next: WorkOrder): boolean {
+  if (previous.workflowState === next.workflowState) return false;
+  return (
+    next.workflowState === WORKFLOW_STATE.reviewRequested ||
+    next.workflowState === WORKFLOW_STATE.reviewCompleted ||
+    next.workflowState === WORKFLOW_STATE.materialOrderPending ||
+    next.workflowState === WORKFLOW_STATE.inspection ||
+    next.workflowState === WORKFLOW_STATE.completed
+  );
+}
 
 type WorkOrderRequestCompanyScopeResult =
   | { ok: true; scope: WorkOrderCompanyScope }
@@ -613,6 +651,8 @@ export async function handlePostWorkOrders(request: Request) {
     if (!scopeResult.ok) return scopeResult.response;
     const createPermissionResponse = await requireCurrentWorkOrderPermission("workorder.create");
     if (createPermissionResponse) return createPermissionResponse;
+    const quotaGrowthResponse = await requireCompanyStorageGrowthAllowed(scopeResult.scope.companyId);
+    if (quotaGrowthResponse) return quotaGrowthResponse;
 
     const workOrderToCreate = await applySessionActorDefaults(
       body.workOrder,
@@ -723,6 +763,11 @@ export async function handlePatchWorkOrders(request: Request) {
             factoryOrderRequestTouched: hasOwnFactoryOrderRequest(workOrder),
           });
         if (workflowPermissionResponse) return workflowPermissionResponse;
+
+        if (isWorkflowGrowthTransition(previousWorkOrder, workOrder)) {
+          const quotaGrowthResponse = await requireCompanyStorageGrowthAllowed(scopeResult.scope.companyId);
+          if (quotaGrowthResponse) return quotaGrowthResponse;
+        }
       }
 
       const workOrders = await saveWorkOrdersForCompany(
@@ -790,6 +835,11 @@ export async function handlePatchWorkOrders(request: Request) {
         factoryOrderRequestTouched: hasOwnFactoryOrderRequest(body.workOrder),
       });
     if (workflowPermissionResponse) return workflowPermissionResponse;
+
+    if (isWorkflowGrowthTransition(previousWorkOrder, body.workOrder)) {
+      const quotaGrowthResponse = await requireCompanyStorageGrowthAllowed(scopeResult.scope.companyId);
+      if (quotaGrowthResponse) return quotaGrowthResponse;
+    }
 
     const workOrder = await saveWorkOrderForCompany(
       body.workOrder,
@@ -936,6 +986,11 @@ export async function handlePatchWorkOrderState(
         },
       });
     if (workflowPermissionResponse) return workflowPermissionResponse;
+
+    if (isWorkflowGrowthTransition(previousWorkOrder, nextWorkOrderForPolicy)) {
+      const quotaGrowthResponse = await requireCompanyStorageGrowthAllowed(scopeResult.scope.companyId);
+      if (quotaGrowthResponse) return quotaGrowthResponse;
+    }
 
     const hasDefinedPatchProperty = (propertyName: keyof WorkOrderStatePatch) =>
       hasDefinedWaflPatchProperty(guardedPatch, propertyName);

@@ -107,3 +107,13 @@ export async function checkCompanyUploadStorageQuota(input: {
     }),
   };
 }
+
+export async function checkCompanyStorageGrowthActionQuota(input: {
+  companyId: string;
+}): Promise<CompanyFileStorageQuotaResult> {
+  return checkCompanyUploadStorageQuota({
+    companyId: input.companyId,
+    incomingSizeBytes: 1,
+    replaceableBytes: 0,
+  });
+}

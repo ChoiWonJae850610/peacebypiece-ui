@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -281,6 +281,27 @@ function InvokePowerShellParseCheck {
 
     Write-Host "[PASS] PowerShell parse check"
     return [pscustomobject]@{ Name = "PowerShell parse check"; Passed = $true; Skipped = $false; ExitCode = 0 }
+}
+
+function InvokePackageScriptCheck {
+    param(
+        [string]$Name,
+        [string]$ScriptName
+    )
+
+    if (Get-Command "npm" -ErrorAction SilentlyContinue) {
+        return InvokeCheck -Name $Name -Command "npm" -Arguments @("run", $ScriptName)
+    }
+
+    if ($ScriptName -eq "build") {
+        return InvokeCheck -Name "$Name (node fallback)" -Command "node" -Arguments @("node_modules/next/dist/bin/next", "build")
+    }
+
+    if ($ScriptName -eq "audit:wafl-mutations") {
+        return InvokeCheck -Name "$Name (node fallback)" -Command "node" -Arguments @("scripts/audit-wafl-mutations.mjs")
+    }
+
+    return [pscustomobject]@{ Name = $Name; CommandLine = "npm run $ScriptName"; Passed = $false; Skipped = $false; ExitCode = 127; FindingCount = ""; HighRiskCount = ""; OutputSummary = "npm unavailable and no fallback configured" }
 }
 
 function InvokeRepositoryCleanupCheck {
@@ -576,6 +597,29 @@ $profileCommands = @{
         @{ Name = "simulator attachment lifecycle contract"; Command = "node"; Arguments = @("tests/simulator-attachment-lifecycle-contract.mjs") },
         @{ Name = "simulator attachment file format contract"; Command = "node"; Arguments = @("tests/simulator-attachment-file-format-contract.mjs") },
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") }
+    );
+    "billing-foundation" = @(
+        @{ Name = "canonical policy conformance audit contract"; Command = "node"; Arguments = @("tests/canonical-policy-conformance-audit-contract.mjs") },
+        @{ Name = "billing pricing policy contract"; Command = "node"; Arguments = @("tests/billing-pricing-policy-contract.mjs") },
+        @{ Name = "billing security contract"; Command = "node"; Arguments = @("tests/billing-security-contract.mjs") },
+        @{ Name = "billing payment readiness contract"; Command = "node"; Arguments = @("tests/billing-payment-readiness-contract.mjs") },
+        @{ Name = "subscription lifecycle policy contract"; Command = "node"; Arguments = @("tests/subscription-lifecycle-policy-contract.mjs") },
+        @{ Name = "company export foundation contract"; Command = "node"; Arguments = @("tests/company-export-foundation-contract.mjs") },
+        @{ Name = "notification outbox foundation contract"; Command = "node"; Arguments = @("tests/notification-outbox-foundation-contract.mjs") },
+        @{ Name = "signup correction deadline contract"; Command = "node"; Arguments = @("tests/signup-correction-deadline-contract.mjs") },
+        @{ Name = "storage full-block coverage contract"; Command = "node"; Arguments = @("tests/storage-full-block-coverage-contract.mjs") },
+        @{ Name = "roadmap 0.24.31 contract"; Command = "node"; Arguments = @("tests/roadmap-0.24.31-contract.mjs") },
+        @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
+        @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") },
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
+        @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
+        @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
+        @{ Name = "signup application trial policy contract"; Command = "node"; Arguments = @("tests/signup-application-trial-policy-contract.mjs") },
+        @{ Name = "storage capacity profile contract"; Command = "node"; Arguments = @("tests/storage-capacity-profile-contract.mjs") },
+        @{ Name = "storage quota upload guard contract"; Command = "node"; Arguments = @("tests/storage-quota-upload-guard-contract.mjs") },
+        @{ Name = "workorder PDF policy contract"; Command = "node"; Arguments = @("tests/workorder-pdf-policy-contract.mjs") },
+        @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
+        @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
     )
 }
 
@@ -629,8 +673,8 @@ else {
     $results.Add([pscustomobject]@{ Name = "secret/production scan"; Passed = $true; Skipped = $false; ExitCode = 0 })
 }
 
-$results.Add((InvokeCheck -Name "npm run build" -Command "npm" -Arguments @("run", "build")))
-$results.Add((InvokeCheck -Name "npm run audit:wafl-mutations" -Command "npm" -Arguments @("run", "audit:wafl-mutations")))
+$results.Add((InvokePackageScriptCheck -Name "npm run build" -ScriptName "build"))
+$results.Add((InvokePackageScriptCheck -Name "npm run audit:wafl-mutations" -ScriptName "audit:wafl-mutations"))
 
 if ($Profile -eq "repository-cleanup") {
     $results.Add((InvokeRepositoryCleanupCheck))

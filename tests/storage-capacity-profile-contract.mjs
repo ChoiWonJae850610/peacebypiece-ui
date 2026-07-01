@@ -12,7 +12,7 @@ const fullReset = read("db/schema/full_reset.sql");
 const quotaPolicy = read("lib/billing/storageQuotaPolicy.ts");
 const subscriptionRepository = read("lib/billing/companySubscriptionRepository.ts");
 
-assert.match(version, /APP_VERSION = "0\.24\.30"/);
+assert.match(version, /APP_VERSION = "0\.24\.31"/);
 
 for (const token of [
   "LITE: \"lite\"",

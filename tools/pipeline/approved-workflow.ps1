@@ -28,7 +28,8 @@ $AllowedProfiles = @(
     "source-architecture-cleanup",
     "automation-infrastructure",
     "workspace-commonization",
-    "functions-automation"
+    "functions-automation",
+    "billing-foundation"
 )
 
 function NormalizeWorkflowPath {

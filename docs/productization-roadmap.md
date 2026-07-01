@@ -1,15 +1,15 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.30`. Current implementation candidate: `0.24.30` Storage Capacity Profiles.
+> Active baseline: `0.24.31`. Current implementation candidate: `0.24.31` Canonical Policy Conformance Remediation and PG-neutral Billing Foundation.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.30`
-- APP_VERSION: `0.24.30`
-- Feature implementation progress: about `94%`
-- Productization readiness: about `86%`
+- Roadmap checkpoint version: `0.24.31`
+- APP_VERSION: `0.24.31`
+- Feature implementation progress: about `95%`
+- Productization readiness: about `88%`
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Manual QA status: `PENDING_USER_QA`
@@ -19,7 +19,7 @@
 
 - Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`.
 - `/id-control` test account switching is allowed for active allowlisted system-admin users and remains unrelated to destructive Seed/Reset/Cleanup operations.
-- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
+- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, Purge, and production mutation guards remain unchanged.
 - Regression contract: system-admin-internal-access.
 
 ## Active Sprint Sequence
@@ -38,17 +38,18 @@
 12. `0.24.28` - PDF and R2 Lifecycle
 13. `0.24.29` - Integrated Productization Checkpoint
 14. `0.24.30` - Storage Capacity Profiles
-15. `0.24.31` - PG Billing and Subscription Operations
+15. `0.24.31` - Canonical Policy Conformance Remediation and PG-neutral Billing Foundation
+16. `0.24.32` - PG Billing and Subscription Operations
 
-## 0.24.30 - Storage Capacity Profiles
+## 0.24.31 - Canonical Policy Conformance Remediation and PG-neutral Billing Foundation
 
-- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.30.ts`.
-- Trial remains 7 days, 100MB, 3 members.
-- Lite, Flow, and Studio storage/member limits are synchronized to the final policy.
-- Storage usage includes active attachments, recoverable trash, company files, onboarding files, and approved signup certificates that were not already promoted to company files.
-- Growth paths are guarded before storage writes: workorder attachment upload request, attachment completion, and generated PDF storage.
-- Usage data keeps actual percent separate from display-clamped percent for 0%-110% profile QA.
-- DB migration, production mutation, Worker source change, and Worker deployment are not part of this version.
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.31.ts`.
+- Formal audit: `docs/audits/0.24.31-canonical-policy-conformance-audit.md`.
+- Pricing policy is synchronized to final owner policy: Trial 7 days/100MB/3 members/0 KRW; Lite 9,900 KRW/500MB/3 members; Flow 19,900 KRW/1.5GB/10 members; Studio 39,900 KRW/5GB/30 members; Custom negotiated; add-on storage 7,000 KRW per 1GB/month; VAT included.
+- PG-neutral payment reference and simulator-safe billing lifecycle foundation are implemented without actual PG, merchant, webhook, charge, refund, or raw card storage.
+- Retry, termination/recovery/deletion, company-wide Export, notification outbox, and signup correction deadline foundations are recorded as policy/domain contracts.
+- Storage full-block coverage now includes workorder creation and workflow growth transitions in addition to existing upload/PDF guards.
+- DB migration execution, production mutation, actual email delivery, Worker source change, and Worker deployment are not part of this version.
 
 ## Completed Foundation
 
@@ -74,9 +75,14 @@
 - The integrated signup, provisioning, catalog, workorder PDF, and PDF/R2 lifecycle checkpoint is complete.
 - Manual QA checklist: `docs/qa/0.24.29-integrated-productization-checkpoint.md`.
 
+### 0.24.30 - Storage Capacity Profiles
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.30.ts`.
+- Trial/Lite/Flow/Studio storage/member limits, storage usage aggregation, capacity profile evidence, upload guard, and generated PDF guard are complete.
+
 ## Next Version
 
-### 0.24.31 - PG Billing and Subscription Operations
+### 0.24.32 - To Be Confirmed
 
-- Planned boundary: real PG provider integration, payment method registration, billing key/reference handling, subscription operation flow, and raw card data exclusion.
-- Do not start 0.24.31 work inside the 0.24.30 storage capacity checkpoint.
+- Read the next canonical roadmap or user instruction before implementation.
+- Do not infer actual PG provider, production export, production deletion, production email, or Worker deployment work without explicit scope.
