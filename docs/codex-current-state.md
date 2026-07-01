@@ -1,12 +1,15 @@
-# Codex Current State - 0.24.28
+# Codex Current State - 0.24.29
 
 ## Current Snapshot
 
-- Current version: `0.24.28`.
-- Current implementation version: `0.24.28`.
-- Current work result: **0.24.28 PDF and R2 Lifecycle validation PASS before commit**.
-- Previous completed version: `0.24.27` System Catalog, Sizes, and POM.
-- Next official work after this checkpoint: reserved productization checkpoint before `0.24.30` Storage Capacity Profiles.
+- Current version: `0.24.29`.
+- Current implementation version: `0.24.29`.
+- Current work result: **Integrated Productization Checkpoint**.
+- Previous completed versions:
+  - `0.24.26` Public Signup, Verification, Approval, and Trial.
+  - `0.24.27` System Catalog, Sizes, and POM.
+  - `0.24.28` PDF and R2 Lifecycle.
+- Next official version: `0.24.30` Storage Capacity Profiles.
 
 ## Policy Source Order
 
@@ -22,55 +25,50 @@ For product policy, billing, signup, trial, access-boundary, PDF/R2, and launch 
 
 If implementation, old roadmap text, or general defaults conflict with final owner policy, classify it as implementation mismatch and align the implementation/roadmap to final policy.
 
-## 0.24.27 Carryover Corrections
+## 0.24.29 Scope
 
-- README and docs README now point to existing canonical UTF-8 document paths.
-- `document-structure-contract` checks canonical UTF-8 links instead of mojibake placeholders.
-- System catalog seed unsets previous `is_current` rows before marking the current version, without changing existing company catalog activation rows automatically.
-- Menu 7 repo-state/build-result publication keeps explicit verification fields and must not infer PASS for not-run items.
-
-## 0.24.28 Scope
-
-0.24.28 is the PDF and R2 Lifecycle sprint.
+0.24.29 is the Integrated Productization Checkpoint. It does not add a new large feature. It verifies and packages the combined flow from signup through approval provisioning, system catalog, workspace access, workorder PDF generation, and PDF/R2 viewer/lifecycle evidence.
 
 Included:
 
-- Canonical PDF document type and field visibility policy.
-- Canonical generated PDF key: `companies/{companyId}/workorders/{workOrderId}/pdf/{pdfId}.pdf`.
-- Server-side due-date guard for order-request/vendor/share PDF generation.
-- Exact-key cleanup when R2 PDF upload succeeds but DB metadata registration fails.
-- Cloudflare R2 upload Worker source policy for canonical workorder PDF keys.
-- Static contracts for PDF policy, R2 key policy, Worker signature regression, PowerShell menu wiring, and roadmap.
-- PowerShell menu entries for PDF/R2 read-only audit, local fixture generation, dev/test lifecycle integration, reconciliation dry run, and exact cleanup plan.
+- APP_VERSION and roadmap/current-state synchronization to `0.24.29`.
+- Signup review and catalog QA-surface copy/responsive cleanup.
+- Signup/provisioning guarded dev/test integration regression.
+- System catalog guarded dev/test integration regression.
+- PDF/R2 lifecycle regression based on 0.24.28 live PASS evidence plus policy/static contracts.
+- Route/navigation, authorization, tenant, mock/hardcoded, Vercel readiness, and mutation audit evidence.
+- Manual QA checklist for PC, iPhone, iPad, and Android validation.
+- Repo-state metadata cleanup so contract summary is grouped/count-based rather than repeated `contract` labels.
 
 Excluded:
 
-- Production DB/R2 mutation.
-- Production Worker deployment.
-- Actual Kakao Biz message/API integration.
-- Storage quota enforcement.
-- PG/billing operation.
+- `0.24.30` Storage Capacity Profiles, Trial quota enforcement, quota race, warning/grace/termination/deletion.
+- PG/billing/payment method work.
+- Notification email sending.
+- Kakao external API sending.
+- Customer dashboard redesign or `/workers` density redesign.
+- PDF/R2 lifecycle feature expansion.
 
 ## Worker And Integration State
 
 - R2 upload Worker source/deployed dev-test version: `0.13.71`.
-- PDF Generator Worker version: `0.16.1.1`; unchanged in 0.24.28.
-- Guarded live PDF/R2 lifecycle integration passed on approved dev/test DB/R2.
-- Integration covered upload, trash, restore, regeneration, permanent delete, missing detection, orphan detection, upload success/DB failure cleanup, 1MB/5MB/10MB boundary, over-10MB reject, reconciliation, exact cleanup plan, and residual cleanup.
-- Final residual DB rows: `0`.
-- Final residual R2 objects: `0`.
+- PDF Generator Worker version: `0.16.1.1`.
+- 0.24.28 guarded live PDF/R2 lifecycle integration passed on approved dev/test DB/R2.
+- PDF/R2 final residual DB rows: `0`.
+- PDF/R2 final residual R2 objects: `0`.
+- 0.24.29 does not require Worker source change or redeployment unless a checkpoint regression proves otherwise.
 
 ## Data Safety
 
-- DB migration: none for 0.24.28.
+- DB migration this version: none.
 - Production DB mutation: forbidden.
 - Production R2 mutation: forbidden.
-- Prefix delete and bucket-wide cleanup: forbidden.
-- Cleanup must use manifest-scoped exact keys only.
-- Raw R2 keys, signed URLs, worker endpoints, DB URLs, tokens, cookies, and secrets must not be exposed to clients or logs.
+- Production Worker mutation: forbidden.
+- Dev/test fixture mutation is allowed only through approved guarded runners with residual DB/R2 0.
+- Raw DB URLs, Worker URLs, R2 keys, signed URLs, tokens, cookies, and secrets must not be exposed to clients, docs, logs, or repo-state.
 
 ## Manual QA
 
-- PDF visual layout still needs manual PC/mobile QA after automatic validation.
-- Due-date-missing behavior should be checked from the workorder PDF action.
-- Live R2 lifecycle integration is complete for approved dev/test. Manual PDF visual QA remains recommended after Vercel deployment.
+- Manual QA status: `PENDING_USER_QA`.
+- Checklist: `docs/qa/0.24.29-integrated-productization-checkpoint.md`.
+- Codex automatic validation is not a substitute for real-device visual QA on Vercel.

@@ -38,6 +38,11 @@ function canCloseWithReason(status: SignupReviewStatus): boolean {
   return status === "submitted" || status === "reviewing";
 }
 
+function formatBytes(value: number): string {
+  if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
+  return `${(value / 1024 / 1024).toFixed(1)} MB`;
+}
+
 export default function SystemSignupReviewDetailActions({ application }: Props) {
   const router = useRouter();
   const [reason, setReason] = useState("");
@@ -93,7 +98,7 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
         return;
       }
       setProvisioningPlan(payload.plan);
-      setMessage(payload.plan.canProvision ? "승인 실행 계획을 확인했습니다. 실제 실행은 별도 승인 gate가 필요합니다." : "승인 실행 차단 사유가 있습니다.");
+      setMessage(payload.plan.canProvision ? "승인 실행 계획을 확인했습니다. 실제 실행은 별도 서버 gate를 통과해야 합니다." : "승인 실행 차단 사유가 있습니다.");
     });
   }
 
@@ -128,7 +133,7 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
 
   return (
     <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
-      <div className="flex flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -167,19 +172,19 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
             disabled={!application.approveEligibility.eligible || isPending}
             onClick={checkApproveGate}
             className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
-            title={application.approveEligibility.eligible ? "실제 실행은 서버 execution gate와 confirmation이 필요합니다." : application.approveEligibility.reasons.join(", ")}
+            title={application.approveEligibility.eligible ? "실제 실행은 서버 execution gate를 통과해야 합니다." : application.approveEligibility.reasons.join(", ")}
           >
             승인 실행 gate 확인
           </button>
         </div>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--pbp-text-primary)]">
+        <label className="flex min-w-0 flex-col gap-2 text-sm font-semibold text-[var(--pbp-text-primary)]">
           사유
           <textarea
             value={reason}
             onChange={(event) => setReason(event.target.value.slice(0, REASON_MAX_LENGTH))}
             rows={4}
-            className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-brand-primary)]"
-            placeholder="신청자에게 보여도 되는 보완 요청 또는 반려 사유를 입력합니다."
+            className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-sm font-medium text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-brand-primary)]"
+            placeholder="신청자에게 보이는 보완 요청 또는 반려 사유를 입력합니다."
           />
         </label>
         <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs text-[var(--pbp-text-muted)]">
@@ -193,7 +198,7 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
               ))}
             </ul>
           ) : (
-            <p className="mt-2">company/member/subscription provisioning port가 준비되었고, 실제 실행은 별도 서버 gate와 confirmation 이후에만 가능합니다.</p>
+            <p className="mt-2">company/member/subscription provisioning 조건이 준비되어 있으며, 실제 실행은 서버 gate를 통과한 뒤에만 가능합니다.</p>
           )}
         </div>
         {provisioningPlan ? (
@@ -208,18 +213,19 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
               <span>company-admin permissions: {provisioningPlan.wouldAssignCompanyAdmin ? "assign" : "-"}</span>
               <span>Trial subscription: {provisioningPlan.wouldCreateTrialSubscription ? "create" : "-"}</span>
               <span>certificate: {provisioningPlan.wouldLinkCertificate ? "link" : "-"}</span>
-              <span>storage: {provisioningPlan.trial.storageLimitBytes} bytes</span>
+              <span>storage: {formatBytes(provisioningPlan.trial.storageLimitBytes)}</span>
               <span>members: {provisioningPlan.trial.memberLimit}</span>
             </div>
             {provisioningPlan.blockingReasons.length > 0 ? (
-              <p className="mt-2 font-semibold text-[var(--pbp-status-warning)]">{provisioningPlan.blockingReasons.join(", ")}</p>
+              <p className="mt-2 break-words font-semibold text-[var(--pbp-status-warning)]">{provisioningPlan.blockingReasons.join(", ")}</p>
             ) : null}
           </div>
         ) : null}
         <p className="text-xs text-[var(--pbp-text-muted)]">
-          현재 상태가 바뀐 경우 compare-and-set 보호로 충돌 처리됩니다. 이메일 발송은 실행하지 않으며, 승인 mutation은 서버 gate와 confirmation 없이는 차단됩니다.
+          현재 상태가 바뀐 경우 compare-and-set 보호로 충돌 처리됩니다. 이메일 발송은 실행하지 않으며,
+          승인 mutation은 서버 gate와 confirmation 없이 차단됩니다.
         </p>
-        {message ? <p className="text-sm font-semibold text-[var(--pbp-status-warning)]">{message}</p> : null}
+        {message ? <p className="break-words text-sm font-semibold text-[var(--pbp-status-warning)]">{message}</p> : null}
       </div>
     </div>
   );

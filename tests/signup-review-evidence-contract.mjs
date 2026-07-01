@@ -29,9 +29,9 @@ assert.match(consentPolicy, /policyCode: "wafl_privacy_policy"[\s\S]*policyVersi
 
 assert.match(listView, /버전 불일치/, "list UI must show old-version consent state");
 assert.match(detailView, /Google email_verified가 false입니다/, "detail UI must clearly show false email_verified state");
-assert.match(detailView, /필수 동의 종류 충족/, "detail UI must show required consent type presence");
-assert.match(detailView, /현재 정책 버전 충족/, "detail UI must show current policy version status");
-assert.match(detailView, /전체 검토 조건 충족/, "detail UI must show full consent eligibility");
+assert.match(detailView, /필수 동의 종류/, "detail UI must show required consent type presence");
+assert.match(detailView, /현재 정책 버전/, "detail UI must show current policy version status");
+assert.match(detailView, /전체 검토 조건/, "detail UI must show full consent eligibility");
 assert.match(repository, /approveEligibility/, "review detail must expose approve eligibility without executing provisioning");
 assert.match(repository, /certificatePresent: listItem\.certificate\.exists/, "approve eligibility must require certificate presence");
 assert.match(repository, /requiredConsentVersionsCurrent: listItem\.requiredConsentVersionsCurrent/, "approve eligibility must require current consent versions");

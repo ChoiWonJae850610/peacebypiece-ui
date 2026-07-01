@@ -121,7 +121,8 @@ for (const token of [
 assert.match(roadmapDoc, /\/id-control/);
 assert.match(roadmapDoc, /\/roadmap/);
 assert.match(roadmapDoc, /lib\/internal\/roadmap\/index\.ts/);
-assert.match(roadmapDoc, /0\.24\.12/);
+assert.match(roadmapDoc, /0\.24\.29/);
+assert.match(roadmapDoc, /Integrated Productization Checkpoint/);
 
 assert.match(verifySafe, /id-control-roadmap/);
 assert.match(verifySafe, /roadmap-development-contract/);

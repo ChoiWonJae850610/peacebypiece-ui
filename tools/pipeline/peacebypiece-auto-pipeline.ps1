@@ -794,6 +794,12 @@ function GetLocalRepoVerificationSummary {
             MutationFindingCount = ""
             MutationHighRiskCount = ""
             ContractSummary = "not provided"
+            E2ESmokeSummary = "not provided"
+            SignupProvisioningRegression = "not provided"
+            CatalogRegression = "not provided"
+            PdfR2Regression = "not provided"
+            VercelReadiness = "not provided"
+            ManualQaStatus = "not provided"
             DbMigrationApplyResult = "not provided"
             PostApplyAuditResult = "not provided"
             RollbackSmokeResult = "not provided"
@@ -833,6 +839,13 @@ function GetLocalRepoVerificationSummary {
         $text = [string]$_
         $text -match 'contract:' -and $text -match 'Passed=True'
     })
+    $contractGroupSummary = GetLocalRepoVerificationField -Lines $lines -Name "Contract Group Summary"
+    $smokeSummary = GetLocalRepoVerificationField -Lines $lines -Name "E2E/Smoke Summary"
+    $signupRegression = GetLocalRepoVerificationField -Lines $lines -Name "Signup/Provisioning Regression"
+    $catalogRegression = GetLocalRepoVerificationField -Lines $lines -Name "Catalog Regression"
+    $pdfR2Regression = GetLocalRepoVerificationField -Lines $lines -Name "PDF/R2 Regression"
+    $vercelReadiness = GetLocalRepoVerificationField -Lines $lines -Name "Vercel Readiness"
+    $manualQaStatus = GetLocalRepoVerificationField -Lines $lines -Name "Manual QA Status"
 
     return [pscustomobject]@{
         Path = $ResultPath
@@ -848,7 +861,19 @@ function GetLocalRepoVerificationSummary {
         ExecutedAt = GetLocalRepoVerificationField -Lines $lines -Name "ExecutedAt"
         MutationFindingCount = $mutation.FindingCount
         MutationHighRiskCount = $mutation.HighRiskCount
-        ContractSummary = if ($contracts.Count -eq 0) { "none" } else { ($contracts | ForEach-Object { ([string]$_).Split(":")[0] }) -join ", " }
+        ContractSummary = if (-not [string]::IsNullOrWhiteSpace($contractGroupSummary)) {
+            $contractGroupSummary
+        } elseif ($contracts.Count -eq 0) {
+            "none"
+        } else {
+            "$($contracts.Count) passed, 0 failed"
+        }
+        E2ESmokeSummary = if ([string]::IsNullOrWhiteSpace($smokeSummary)) { "not provided" } else { $smokeSummary }
+        SignupProvisioningRegression = if ([string]::IsNullOrWhiteSpace($signupRegression)) { "not provided" } else { $signupRegression }
+        CatalogRegression = if ([string]::IsNullOrWhiteSpace($catalogRegression)) { "not provided" } else { $catalogRegression }
+        PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { "not provided" } else { $pdfR2Regression }
+        VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { "not provided" } else { $vercelReadiness }
+        ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { "not provided" } else { $manualQaStatus }
         DbMigrationApplyResult = GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'DB Migration Apply Result:\s*(PASS|FAIL)',
             'Migration apply:\s*(PASS|FAIL)',
@@ -921,6 +946,12 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
     AddRepoStateSection -Lines $lines -Title "Contract Test Summary:" -Values @([string]$VerificationSummary.ContractSummary)
+    AddRepoStateSection -Lines $lines -Title "E2E/Smoke Summary:" -Values @([string]$VerificationSummary.E2ESmokeSummary)
+    AddRepoStateSection -Lines $lines -Title "Signup/Provisioning Regression:" -Values @([string]$VerificationSummary.SignupProvisioningRegression)
+    AddRepoStateSection -Lines $lines -Title "Catalog Regression:" -Values @([string]$VerificationSummary.CatalogRegression)
+    AddRepoStateSection -Lines $lines -Title "PDF/R2 Regression:" -Values @([string]$VerificationSummary.PdfR2Regression)
+    AddRepoStateSection -Lines $lines -Title "Vercel Readiness:" -Values @([string]$VerificationSummary.VercelReadiness)
+    AddRepoStateSection -Lines $lines -Title "Manual QA Status:" -Values @([string]$VerificationSummary.ManualQaStatus)
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
@@ -1029,6 +1060,12 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "Mutation Audit Finding Count:" -Values @([string]$VerificationSummary.MutationFindingCount)
     AddRepoStateSection -Lines $lines -Title "Mutation Audit High Risk Count:" -Values @([string]$VerificationSummary.MutationHighRiskCount)
     AddRepoStateSection -Lines $lines -Title "Contract Test Summary:" -Values @([string]$VerificationSummary.ContractSummary)
+    AddRepoStateSection -Lines $lines -Title "E2E/Smoke Summary:" -Values @([string]$VerificationSummary.E2ESmokeSummary)
+    AddRepoStateSection -Lines $lines -Title "Signup/Provisioning Regression:" -Values @([string]$VerificationSummary.SignupProvisioningRegression)
+    AddRepoStateSection -Lines $lines -Title "Catalog Regression:" -Values @([string]$VerificationSummary.CatalogRegression)
+    AddRepoStateSection -Lines $lines -Title "PDF/R2 Regression:" -Values @([string]$VerificationSummary.PdfR2Regression)
+    AddRepoStateSection -Lines $lines -Title "Vercel Readiness:" -Values @([string]$VerificationSummary.VercelReadiness)
+    AddRepoStateSection -Lines $lines -Title "Manual QA Status:" -Values @([string]$VerificationSummary.ManualQaStatus)
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)

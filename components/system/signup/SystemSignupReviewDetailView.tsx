@@ -20,7 +20,7 @@ function formatBytes(value: number | null): string {
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
+    <div className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
       <p className={SYSTEM_SMALL_TEXT_CLASS}>{label}</p>
       <p className={`mt-1 break-words text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{value || "-"}</p>
     </div>
@@ -30,9 +30,9 @@ function Field({ label, value }: { label: string; value: string | null | undefin
 function ConsentEvidenceStatus({ application }: { application: SignupReviewDetail }) {
   return (
     <div className="grid gap-3 md:grid-cols-3">
-      <Field label="필수 동의 종류 충족" value={application.requiredConsentTypesPresent ? "true" : "false"} />
-      <Field label="현재 정책 버전 충족" value={application.requiredConsentVersionsCurrent ? "true" : "false"} />
-      <Field label="전체 검토 조건 충족" value={application.requiredConsentsComplete ? "true" : "false"} />
+      <Field label="필수 동의 종류" value={application.requiredConsentTypesPresent ? "충족" : "미충족"} />
+      <Field label="현재 정책 버전" value={application.requiredConsentVersionsCurrent ? "충족" : "미충족"} />
+      <Field label="전체 검토 조건" value={application.requiredConsentsComplete ? "충족" : "미충족"} />
     </div>
   );
 }
@@ -40,15 +40,15 @@ function ConsentEvidenceStatus({ application }: { application: SignupReviewDetai
 export default function SystemSignupReviewDetailView({ application }: { application: SignupReviewDetail }) {
   return (
     <SystemShell>
-      <div className="flex flex-col gap-5">
+      <div className="flex min-w-0 flex-col gap-5">
         <header className={SYSTEM_CARD_CLASS}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">Signup review</p>
-              <h1 className="mt-2 text-2xl font-semibold text-[var(--pbp-text-primary)]">{application.requestedCompanyName}</h1>
-              <p className="mt-2 text-sm text-[var(--pbp-text-muted)]">{application.applicantName} / {application.emailDisplay}</p>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">SIGNUP REVIEW</p>
+              <h1 className="mt-2 break-words text-2xl font-semibold text-[var(--pbp-text-primary)]">{application.requestedCompanyName}</h1>
+              <p className="mt-2 break-words text-sm text-[var(--pbp-text-muted)]">{application.applicantName} / {application.emailDisplay}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex shrink-0 flex-wrap gap-2">
               <AdminStatusBadge tone="info">{application.status}</AdminStatusBadge>
               <Link href="/system/signup-applications" className="rounded-full border border-[var(--pbp-border)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)]">
                 목록
@@ -71,7 +71,7 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
             <Field label="provisioning error" value={application.provisioningErrorCode} />
           </div>
           {!application.identityEvidence.googleEmailVerified ? (
-            <p className="mt-3 text-sm font-semibold text-[var(--pbp-status-danger)]">Google email_verified가 false입니다. 승인 조건으로 사용할 수 없습니다.</p>
+            <p className="mt-3 text-sm font-semibold text-[var(--pbp-status-danger)]">Google email_verified가 false입니다. 승인 조건을 충족하지 않습니다.</p>
           ) : null}
         </section>
 
@@ -82,9 +82,9 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {application.consents.map((consent) => (
-              <div key={consent.id} className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
-                <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{consent.consentType}</p>
-                <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{consent.policyCode} / v{consent.policyVersion}</p>
+              <div key={consent.id} className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+                <p className="break-words text-sm font-semibold text-[var(--pbp-text-primary)]">{consent.consentType}</p>
+                <p className="mt-1 break-words text-xs text-[var(--pbp-text-muted)]">{consent.policyCode} / v{consent.policyVersion}</p>
                 <p className="mt-2 text-xs text-[var(--pbp-text-muted)]">동의 {formatDate(consent.agreedAt)} / 철회 {formatDate(consent.revokedAt)}</p>
               </div>
             ))}
@@ -94,12 +94,12 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
 
         <section className={SYSTEM_CARD_CLASS}>
           <h2 className={SYSTEM_SECTION_TITLE_CLASS}>사업자등록증</h2>
-          <div className="mt-4 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+          <div className="mt-4 min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
             {application.certificate.exists ? (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-[var(--pbp-text-primary)]">{application.certificate.originalName}</p>
-                  <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-semibold text-[var(--pbp-text-primary)]">{application.certificate.originalName}</p>
+                  <p className="mt-1 break-words text-xs text-[var(--pbp-text-muted)]">
                     {application.certificate.mimeType} / {formatBytes(application.certificate.sizeBytes)} / {formatDate(application.certificate.uploadedAt)}
                   </p>
                 </div>
@@ -108,14 +108,14 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
                     href={application.certificateViewerPath}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full bg-[var(--pbp-brand-primary)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-inverse)]"
+                    className="shrink-0 rounded-full bg-[var(--pbp-brand-primary)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-inverse)]"
                   >
                     inline viewer
                   </a>
                 ) : null}
               </div>
             ) : (
-              <p className="text-sm text-[var(--pbp-text-muted)]">제출된 파일이 없습니다. live Worker viewer integration은 별도 브라우저 QA가 필요합니다.</p>
+              <p className="text-sm text-[var(--pbp-text-muted)]">제출된 파일이 없습니다. 증빙 viewer는 서버 프록시로만 열리며 signed URL을 노출하지 않습니다.</p>
             )}
           </div>
         </section>

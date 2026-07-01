@@ -117,7 +117,7 @@ export const ROADMAP_0_24_28: RoadmapVersionDetail = {
     "0.24.30 storage capacity enforcement uses the lifecycle/reconciliation foundation.",
     "0.24.31 PG billing remains separate.",
   ],
-  recommendedCommitMessage: "0.24.28 PDF 양식과 R2 생명주기 기반 구축",
+  recommendedCommitMessage: "0.24.28 PDF와 R2 생명주기 검증 완료",
   nextVersionBoundary: ["0.24.29 - Reserved productization checkpoint.", "0.24.30 - Storage capacity profiles."],
   completionConditions: [
     "APP_VERSION 0.24.28",
@@ -133,7 +133,7 @@ export const ROADMAP_0_24_28: RoadmapVersionDetail = {
       "Server proxy inline PDF viewer route added with tenant guard, no-store, nosniff, and no signed URL exposure.",
       "0.24.27 carryover document-structure, repo-state metadata, and catalog rollover fixes completed.",
     ],
-    commitHash: "pending-final-commit",
+    commitHash: "6850f32cd0eadcd7c76c20d699e755add8076357",
     verificationResult:
       "PASS before commit: PDF/R2 lifecycle integration exit 0, residual DB rows 0, residual R2 objects 0, Worker 0.13.71, PDF Generator Worker 0.16.1.1, contracts, targeted ESLint, tsc --noEmit, next build, and git diff --check.",
     remainingIssues: ["Manual PDF visual QA remains recommended after Vercel deployment."],

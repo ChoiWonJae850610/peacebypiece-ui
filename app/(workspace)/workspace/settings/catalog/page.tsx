@@ -18,8 +18,8 @@ export default async function WorkspaceCatalogSettingsPage() {
       session={session}
       activeHref="/workspace/settings"
       companyName={companyScope?.companyName ?? session.companyName}
-      title="Catalog Settings"
-      description="Company category activation, size sets, and POM templates."
+      title="카탈로그 설정"
+      description="회사별 분류 활성화, 사이즈 세트, POM 템플릿을 확인합니다."
     >
       {catalog ? <CompanyCatalogSettingsClient initialCatalog={catalog} /> : null}
     </WorkspacePageShell>

@@ -26,6 +26,12 @@ const required = [
   "Build Result:",
   "Build Result Path:",
   "Contract Test Summary:",
+  "E2E/Smoke Summary:",
+  "Signup/Provisioning Regression:",
+  "Catalog Regression:",
+  "PDF/R2 Regression:",
+  "Vercel Readiness:",
+  "Manual QA Status:",
   "Mutation Audit Finding Count:",
   "DB Migration Applied:",
   "DB Migration Apply Result:",
@@ -47,11 +53,16 @@ const required = [
   "Business Data Mutation:",
   "R2 Mutation:",
   "Production Migration:",
-  "dev/test signup schema migrations applied once: db/migrations/patch_0_24_26_signup_applications.sql; db/migrations/patch_0_24_26_signup_application_consents.sql",
-  "true - approved dev/test signup and consent schema migrations only",
   "DevTestDbTestDataMutation",
   "DevTestR2Mutation",
   "SchemaMigrationThisRun",
+  "contractGroupSummary",
+  "E2ESmokeSummary",
+  "SignupProvisioningRegression",
+  "CatalogRegression",
+  "PdfR2Regression",
+  "VercelReadiness",
+  "ManualQaStatus",
   "repo-state-$safeVersion-$timestamp",
   "any path segment named reports",
   "*.tsbuildinfo",
@@ -68,6 +79,10 @@ for (const token of required) {
 
 if (/R2 Mutation:" -Values @\("false"\)/.test(source)) {
   throw new Error("R2 Mutation must not be hardcoded false after actual R2 integration");
+}
+
+if (/Split\(":\"\)\[0\]/.test(source)) {
+  throw new Error("Contract summary must not collapse every contract line to the literal word contract");
 }
 
 const commitFunction = source.slice(
