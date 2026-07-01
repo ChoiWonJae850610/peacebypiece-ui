@@ -71,6 +71,8 @@ const requiredVerifyTokens = [
   '"roadmap-development-contract"',
   '"system-admin-internal-access"',
   "tools/pipeline/approved-workflow.ps1",
+  "targeted ESLint",
+  "tsc --noEmit",
   "approved workflow contract",
   "roadmap development contract",
   "tests/approved-workflow-contract.mjs",

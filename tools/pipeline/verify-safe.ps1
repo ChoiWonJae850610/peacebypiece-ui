@@ -599,6 +599,40 @@ $profileCommands = @{
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") }
     );
     "billing-foundation" = @(
+        @{
+            Name = "targeted ESLint";
+            Command = "node";
+            Arguments = @(
+                "node_modules/eslint/bin/eslint.js",
+                "app/layout.tsx",
+                "lib/billing/canonicalBillingPolicy.ts",
+                "lib/billing/companyExportPolicy.ts",
+                "lib/billing/companyStorageQuotaRepository.ts",
+                "lib/billing/index.ts",
+                "lib/billing/notificationOutboxPolicy.ts",
+                "lib/billing/paymentMethodReferencePolicy.ts",
+                "lib/billing/subscriptionLifecyclePolicy.ts",
+                "lib/constants/version.ts",
+                "lib/internal/roadmap/index.ts",
+                "lib/internal/roadmap/roadmap-0.24.31.ts",
+                "lib/signup/signupCorrectionPolicy.ts",
+                "lib/workorder/api/workOrderRouteHandlers.ts",
+                "tests/approved-workflow-contract.mjs",
+                "tests/billing-payment-readiness-contract.mjs",
+                "tests/billing-pricing-policy-contract.mjs",
+                "tests/billing-security-contract.mjs",
+                "tests/canonical-policy-conformance-audit-contract.mjs",
+                "tests/company-export-foundation-contract.mjs",
+                "tests/notification-outbox-foundation-contract.mjs",
+                "tests/roadmap-0.24.31-contract.mjs",
+                "tests/roadmap-development-contract.mjs",
+                "tests/signup-correction-deadline-contract.mjs",
+                "tests/storage-capacity-profile-contract.mjs",
+                "tests/storage-full-block-coverage-contract.mjs",
+                "tests/subscription-lifecycle-policy-contract.mjs"
+            )
+        },
+        @{ Name = "tsc --noEmit"; Command = "node"; Arguments = @("node_modules/typescript/bin/tsc", "--noEmit") },
         @{ Name = "canonical policy conformance audit contract"; Command = "node"; Arguments = @("tests/canonical-policy-conformance-audit-contract.mjs") },
         @{ Name = "billing pricing policy contract"; Command = "node"; Arguments = @("tests/billing-pricing-policy-contract.mjs") },
         @{ Name = "billing security contract"; Command = "node"; Arguments = @("tests/billing-security-contract.mjs") },
