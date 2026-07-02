@@ -46,6 +46,7 @@ import { ROADMAP_0_24_30 } from "./roadmap-0.24.30";
 import { ROADMAP_0_24_31 } from "./roadmap-0.24.31";
 import { ROADMAP_0_24_32 } from "./roadmap-0.24.32";
 import { ROADMAP_0_24_33 } from "./roadmap-0.24.33";
+import { ROADMAP_0_24_33_1 } from "./roadmap-0.24.33.1";
 import type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapStatus, RoadmapVersionDetail } from "./types";
 
 export type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapResult, RoadmapStatus, RoadmapVersionDetail } from "./types";
@@ -172,8 +173,8 @@ const ROADMAP_0_24_11: RoadmapVersionDetail = {
 export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
   featureProgressPercent: 96,
-  productizationProgressPercent: 91,
-  currentWorkVersion: "0.24.33",
+  productizationProgressPercent: 92,
+  currentWorkVersion: "0.24.33.1",
   nextWorkVersion: "0.24.34",
   canonicalPolicy:
     "새 버전 작업 전에는 해당 lib/internal/roadmap canonical 상세와 docs/codex-current-state.md를 읽는다. 현재 제품화 실행 순서의 단일 authority는 docs/project/31-pre-codex-integrated-master-plan.md이며, GO/STOP gate는 docs/project/32-pre-codex-authority-consistency-gate.md다. 과거 PB·UI-first 계획은 historical reference로만 사용한다. /roadmap은 조회 전용이며 편집·추가·삭제·저장 기능을 제공하지 않는다.",
@@ -228,6 +229,7 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   ROADMAP_0_24_31,
   ROADMAP_0_24_32,
   ROADMAP_0_24_33,
+  ROADMAP_0_24_33_1,
   ],
 };
 

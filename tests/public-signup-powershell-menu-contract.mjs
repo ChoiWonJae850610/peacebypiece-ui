@@ -11,10 +11,19 @@ assert.match(pipeline, /\[switch\]\$ApplyPublicSignupE2eMigration/, "pipeline mu
 assert.match(pipeline, /\[switch\]\$RunPublicSignupE2eCompatibilityAudit/, "pipeline must expose a public signup compatibility audit switch");
 assert.match(pipeline, /\[switch\]\$RunPublicSignupE2ePostApplyAudit/, "pipeline must expose a public signup post-apply audit switch");
 assert.match(pipeline, /\[switch\]\$RunPublicSignupE2eIntegration/, "pipeline must expose a public signup e2e integration switch");
+assert.match(pipeline, /\[switch\]\$RunAuthenticatedPublicSignupE2e/, "pipeline must expose authenticated public signup e2e switch");
+assert.match(pipeline, /\[switch\]\$RunPublicSignupChromiumE2e/, "pipeline must expose public signup Chromium e2e switch");
+assert.match(pipeline, /\[switch\]\$RunPublicSignupBrowserMatrixE2e/, "pipeline must expose public signup browser matrix switch");
+assert.match(pipeline, /\[switch\]\$RunPublicSignupDeployedSmoke/, "pipeline must expose public signup deployed smoke switch");
+assert.match(pipeline, /\[switch\]\$RunPublicSignupFinalResidualAudit/, "pipeline must expose public signup final residual audit switch");
+assert.match(pipeline, /\[switch\]\$RunFunctionsAutomationCoverageAudit/, "pipeline must expose functions automation coverage audit switch");
 assert.match(pipeline, /function ApplyPublicSignupE2eMigration/, "pipeline must define the public signup migration function");
 assert.match(pipeline, /function RunPublicSignupE2eCompatibilityAudit/, "pipeline must define the public signup compatibility audit function");
 assert.match(pipeline, /function RunPublicSignupE2ePostApplyAudit/, "pipeline must define the public signup post-apply audit function");
 assert.match(pipeline, /function RunPublicSignupE2eIntegration/, "pipeline must define the public signup e2e integration function");
+assert.match(pipeline, /function RunAuthenticatedPublicSignupE2e/, "pipeline must define authenticated public signup e2e function");
+assert.match(pipeline, /function RunPublicSignupBrowserMatrixE2e/, "pipeline must define public signup browser matrix function");
+assert.match(pipeline, /function RunPublicSignupFinalResidualAudit/, "pipeline must define public signup residual audit function");
 assert.match(pipeline, /Mode 'public-signup-e2e'/, "pipeline must call the approved migration runner mode");
 assert.match(pipeline, /Mode 'public-signup-e2e-compatibility'/, "pipeline must call the read-only compatibility audit mode");
 assert.match(pipeline, /Mode 'public-signup-e2e-post-apply'/, "pipeline must call the read-only post-apply audit mode");
@@ -22,6 +31,12 @@ assert.match(pipeline, /60\. Public Signup E2E Migration Apply/, "menu number 60
 assert.match(pipeline, /61\. Public Signup E2E Compatibility Audit/, "menu number 61 must be reserved for public signup compatibility audit");
 assert.match(pipeline, /62\. Public Signup E2E Post-Apply Audit/, "menu number 62 must be reserved for public signup post-apply audit");
 assert.match(pipeline, /63\. Public Signup E2E Integration/, "menu number 63 must be reserved for public signup e2e integration");
+assert.match(pipeline, /64\. Authenticated Public Signup E2E/, "menu number 64 must be reserved for authenticated public signup e2e");
+assert.match(pipeline, /65\. Public Signup Chromium E2E/, "menu number 65 must be reserved for Chromium public signup e2e");
+assert.match(pipeline, /66\. Public Signup Browser Matrix E2E/, "menu number 66 must be reserved for browser matrix public signup e2e");
+assert.match(pipeline, /67\. Public Signup Deployed Smoke/, "menu number 67 must be reserved for deployed public signup smoke");
+assert.match(pipeline, /68\. Public Signup Final Residual Audit/, "menu number 68 must be reserved for final residual audit");
+assert.match(pipeline, /69\. Functions Automation Coverage Audit/, "menu number 69 must be reserved for functions automation coverage audit");
 assert.match(pipeline, /60 \{ ApplyPublicSignupE2eMigration \| Out-Null \}/, "menu number 60 must execute the public signup migration");
 assert.match(pipeline, /61 \{ RunPublicSignupE2eCompatibilityAudit \| Out-Null \}/, "menu number 61 must execute compatibility audit");
 assert.match(pipeline, /62 \{ RunPublicSignupE2ePostApplyAudit \| Out-Null \}/, "menu number 62 must execute post-apply audit");
@@ -30,6 +45,12 @@ assert.match(pipeline, /elseif \(\$ApplyPublicSignupE2eMigration\)/, "CLI switch
 assert.match(pipeline, /elseif \(\$RunPublicSignupE2eCompatibilityAudit\)/, "CLI switch must execute compatibility audit");
 assert.match(pipeline, /elseif \(\$RunPublicSignupE2ePostApplyAudit\)/, "CLI switch must execute post-apply audit");
 assert.match(pipeline, /elseif \(\$RunPublicSignupE2eIntegration\)/, "CLI switch must execute public signup e2e integration");
+assert.match(pipeline, /elseif \(\$RunAuthenticatedPublicSignupE2e\)/, "CLI switch must execute authenticated public signup e2e");
+assert.match(pipeline, /elseif \(\$RunPublicSignupChromiumE2e\)/, "CLI switch must execute public signup Chromium e2e");
+assert.match(pipeline, /elseif \(\$RunPublicSignupBrowserMatrixE2e\)/, "CLI switch must execute public signup browser matrix e2e");
+assert.match(pipeline, /elseif \(\$RunPublicSignupDeployedSmoke\)/, "CLI switch must execute deployed smoke");
+assert.match(pipeline, /elseif \(\$RunPublicSignupFinalResidualAudit\)/, "CLI switch must execute final residual audit");
+assert.match(pipeline, /elseif \(\$RunFunctionsAutomationCoverageAudit\)/, "CLI switch must execute functions automation coverage audit");
 assert.match(pipeline, /InvokeApprovedDbMigrationCommand/, "migration apply must reuse the approved DB migration guard");
 assert.match(pipeline, /InvokeReadOnlyDbAudit/, "public signup audits must reuse the read-only DB audit guard");
 

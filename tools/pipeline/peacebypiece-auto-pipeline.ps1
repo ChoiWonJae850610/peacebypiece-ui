@@ -52,6 +52,12 @@ param(
     [switch]$ApplyPublicSignupE2eMigration,
     [switch]$RunPublicSignupE2ePostApplyAudit,
     [switch]$RunPublicSignupE2eIntegration,
+    [switch]$RunAuthenticatedPublicSignupE2e,
+    [switch]$RunPublicSignupChromiumE2e,
+    [switch]$RunPublicSignupBrowserMatrixE2e,
+    [switch]$RunPublicSignupDeployedSmoke,
+    [switch]$RunPublicSignupFinalResidualAudit,
+    [switch]$RunFunctionsAutomationCoverageAudit,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -2521,6 +2527,65 @@ function RunPublicSignupE2eIntegration {
     }
 }
 
+  function RunAuthenticatedPublicSignupE2e {
+      param([bool]$PauseAfter = $true)
+      $e2eLogDir = Join-Path (Split-Path -Parent $LogDir) "E2E"
+      return (InvokeProjectCommandWithResultFile -Title "Authenticated Public Signup E2E" -Label "Authenticated_Public_Signup_E2E" -NpmCommand "npx playwright test tests/e2e/public-signup-authenticated.spec.mjs" -LoadEnvLocal $true -PauseAfter $PauseAfter -ResultDirectory $e2eLogDir)
+  }
+
+  function RunPublicSignupChromiumE2e {
+      param([bool]$PauseAfter = $true)
+      $e2eLogDir = Join-Path (Split-Path -Parent $LogDir) "E2E"
+      return (InvokeProjectCommandWithResultFile -Title "Public Signup Chromium E2E" -Label "Public_Signup_Chromium_E2E" -NpmCommand "npx playwright test tests/e2e/public-signup-authenticated.spec.mjs --project=chromium-desktop" -LoadEnvLocal $true -PauseAfter $PauseAfter -ResultDirectory $e2eLogDir)
+  }
+
+  function RunPublicSignupBrowserMatrixE2e {
+      param([bool]$PauseAfter = $true)
+      $e2eLogDir = Join-Path (Split-Path -Parent $LogDir) "E2E"
+      return (InvokeProjectCommandWithResultFile -Title "Public Signup Browser Matrix E2E" -Label "Public_Signup_Browser_Matrix_E2E" -NpmCommand "npx playwright test tests/e2e/public-signup-authenticated.spec.mjs --project=chromium-desktop --project=webkit-desktop --project=mobile-chromium --project=mobile-webkit --project=ipad-webkit" -LoadEnvLocal $true -PauseAfter $PauseAfter -ResultDirectory $e2eLogDir)
+  }
+
+  function RunPublicSignupDeployedSmoke {
+      param([bool]$PauseAfter = $true)
+      $e2eLogDir = Join-Path (Split-Path -Parent $LogDir) "E2E"
+      return (InvokeProjectCommandWithResultFile -Title "Public Signup Deployed Smoke" -Label "Public_Signup_Deployed_Smoke" -NpmCommand "npx playwright test tests/e2e/public-signup-e2e.spec.mjs --project=chromium-desktop" -LoadEnvLocal $true -PauseAfter $PauseAfter -ResultDirectory $e2eLogDir)
+  }
+
+  function RunPublicSignupFinalResidualAudit {
+      param([bool]$PauseAfter = $true)
+      if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+      $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+      if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:WAFL_SERVER_RUNTIME_MODE }
+      if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+      $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+      if (-not $guard.Passed) {
+          LogError "Public Signup final residual audit가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+          if ($PauseAfter) { WaitForDeveloperToolsMenu }
+          return 2
+      }
+      $integrationLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+      $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+      $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+      $previousConfirmation = $env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION
+      try {
+          $env:WAFL_DB_AUDIT_APPROVED = '1'
+          $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+          $env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION = 'RUN_PUBLIC_SIGNUP_E2E_DEV_TEST'
+          return (InvokeProjectCommandWithResultFile -Title "Public Signup Final Residual Audit" -Label "Public_Signup_Final_Residual_Audit" -NpmCommand "node scripts/run-public-signup-e2e-integration.mjs --residual-only" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $integrationLogDir)
+      }
+      finally {
+          if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+          if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+          if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION = $previousConfirmation }
+      }
+  }
+
+  function RunFunctionsAutomationCoverageAudit {
+      param([bool]$PauseAfter = $true)
+      $auditLogDir = Join-Path (Split-Path -Parent $LogDir) "Repo_Status"
+      return (InvokeProjectCommandWithResultFile -Title "Functions Automation Coverage Audit" -Label "Functions_Automation_Coverage_Audit" -NpmCommand "node tests/functions-public-signup-automation-contract.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $auditLogDir)
+  }
+
 function RunBillingPostApplyAudit {
     param([bool]$PauseAfter = $true)
     return (InvokeReadOnlyDbAudit -Mode 'billing-post-apply' -Title 'Billing Post-Apply Audit' -Label 'Billing_Post_Apply_Audit' -PauseAfter $PauseAfter)
@@ -2989,6 +3054,12 @@ function ShowDeveloperToolsMenu {
         Write-Host "61. Public Signup E2E Compatibility Audit       [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host "62. Public Signup E2E Post-Apply Audit          [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host "63. Public Signup E2E Integration               [DEV/TEST DB synthetic fixture/cleanup]"
+        Write-Host "64. Authenticated Public Signup E2E             [DEV/TEST 브라우저 fixture/cleanup]"
+        Write-Host "65. Public Signup Chromium E2E                  [DEV/TEST Chromium]"
+        Write-Host "66. Public Signup Browser Matrix E2E            [DEV/TEST Chromium/WebKit/mobile/iPad]"
+        Write-Host "67. Public Signup Deployed Smoke                [읽기 전용/배포 URL smoke]"
+        Write-Host "68. Public Signup Final Residual Audit          [읽기 전용/DEV·TEST residual]"
+        Write-Host "69. Functions Automation Coverage Audit         [읽기 전용]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2999,7 +3070,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~59 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~69 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -3068,9 +3139,15 @@ function ShowDeveloperToolsMenu {
             61 { RunPublicSignupE2eCompatibilityAudit | Out-Null }
             62 { RunPublicSignupE2ePostApplyAudit | Out-Null }
             63 { RunPublicSignupE2eIntegration | Out-Null }
+            64 { RunAuthenticatedPublicSignupE2e | Out-Null }
+            65 { RunPublicSignupChromiumE2e | Out-Null }
+            66 { RunPublicSignupBrowserMatrixE2e | Out-Null }
+            67 { RunPublicSignupDeployedSmoke | Out-Null }
+            68 { RunPublicSignupFinalResidualAudit | Out-Null }
+            69 { RunFunctionsAutomationCoverageAudit | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~59 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~69 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -3396,6 +3473,30 @@ elseif ($RunPublicSignupE2ePostApplyAudit) {
 }
 elseif ($RunPublicSignupE2eIntegration) {
     $exitCode = RunPublicSignupE2eIntegration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunAuthenticatedPublicSignupE2e) {
+    $exitCode = RunAuthenticatedPublicSignupE2e -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPublicSignupChromiumE2e) {
+    $exitCode = RunPublicSignupChromiumE2e -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPublicSignupBrowserMatrixE2e) {
+    $exitCode = RunPublicSignupBrowserMatrixE2e -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPublicSignupDeployedSmoke) {
+    $exitCode = RunPublicSignupDeployedSmoke -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPublicSignupFinalResidualAudit) {
+    $exitCode = RunPublicSignupFinalResidualAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunFunctionsAutomationCoverageAudit) {
+    $exitCode = RunFunctionsAutomationCoverageAudit -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

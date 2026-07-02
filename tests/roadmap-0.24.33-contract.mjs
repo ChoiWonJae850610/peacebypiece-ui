@@ -20,7 +20,7 @@ assert.match(roadmap, /actual PG integration false/i, "roadmap must keep actual 
 assert.match(roadmap, /actual email delivery false/i, "roadmap must keep actual email delivery false");
 
 assert.ok(index.includes("ROADMAP_0_24_33"), "roadmap index must register 0.24.33");
-assert.ok(index.includes('currentWorkVersion: "0.24.33"'), "roadmap index must set current work version");
+assert.ok(index.includes("ROADMAP_0_24_33_1"), "roadmap index must register 0.24.33.1 follow-up");
 assert.ok(index.includes('nextWorkVersion: "0.24.34"'), "roadmap index must set next work version");
 assert.ok(docs.includes("0.24.33"), "productization roadmap docs must mention 0.24.33");
 assert.ok(state.includes("0.24.33"), "current state must mention 0.24.33");

@@ -3,6 +3,11 @@ import { defineConfig, devices } from "@playwright/test";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:3000";
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEB_SERVER === "1";
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
+const ipadWebKitDevice = devices["iPad Pro 11"] ?? {
+  viewport: { width: 834, height: 1194 },
+  isMobile: true,
+  hasTouch: true,
+};
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -30,6 +35,33 @@ export default defineConfig({
         ...(chromiumExecutablePath
           ? { launchOptions: { executablePath: chromiumExecutablePath } }
           : {}),
+      },
+    },
+    {
+      name: "webkit-desktop",
+      use: {
+        ...devices["Desktop Safari"],
+      },
+    },
+    {
+      name: "mobile-chromium",
+      use: {
+        ...devices["Pixel 5"],
+        ...(chromiumExecutablePath
+          ? { launchOptions: { executablePath: chromiumExecutablePath } }
+          : {}),
+      },
+    },
+    {
+      name: "mobile-webkit",
+      use: {
+        ...devices["iPhone 13"],
+      },
+    },
+    {
+      name: "ipad-webkit",
+      use: {
+        ...ipadWebKitDevice,
       },
     },
   ],

@@ -463,6 +463,29 @@ async function cleanupExistingFixturesByPrefix(client) {
   if (removed > 0) safeLog("PUBLIC_SIGNUP_E2E_STARTUP_FIXTURE_CLEANUP", { rowsRemoved: removed, residualR2Objects: 0 });
 }
 
+async function countExistingFixturesByPrefix(client) {
+  const applicationPattern = `${PREFIX}-%`;
+  const storagePattern = `signup-applications/${PREFIX}-%`;
+  const emailPattern = `${PREFIX}-%@example.test`;
+  const namePattern = `${PREFIX}%`;
+  const result = await q(client, `
+    SELECT
+      (SELECT count(*)::int FROM signup_applications WHERE id LIKE $1)
+      + (SELECT count(*)::int FROM signup_application_consents WHERE application_id IN (SELECT id FROM signup_applications WHERE id LIKE $1))
+      + (SELECT count(*)::int FROM signup_application_files WHERE application_id IN (SELECT id FROM signup_applications WHERE id LIKE $1) OR storage_key LIKE $2)
+      + (SELECT count(*)::int FROM signup_payment_method_references WHERE application_id IN (SELECT id FROM signup_applications WHERE id LIKE $1))
+      + (SELECT count(*)::int FROM companies WHERE id LIKE $1 OR name LIKE $4)
+      + (SELECT count(*)::int FROM users WHERE id LIKE $1 OR email LIKE $3)
+      + (SELECT count(*)::int FROM company_members WHERE id LIKE $1 OR user_id IN (SELECT id FROM users WHERE id LIKE $1 OR email LIKE $3))
+      + (SELECT count(*)::int FROM company_subscriptions WHERE id LIKE $1 OR company_id IN (SELECT id FROM companies WHERE id LIKE $1 OR name LIKE $4))
+      + (SELECT count(*)::int FROM company_payment_method_references WHERE id LIKE $1 OR application_id IN (SELECT id FROM signup_applications WHERE id LIKE $1))
+      + (SELECT count(*)::int FROM billing_notification_outbox WHERE id LIKE $1 OR idempotency_key LIKE 'public-signup-e2e:%')
+      + (SELECT count(*)::int FROM audit_logs WHERE id LIKE $1 OR target_id LIKE $1 OR metadata->>'applicationId' LIKE $1)
+      AS count
+  `, [applicationPattern, storagePattern, emailPattern, namePattern]);
+  return Number(result.rows[0]?.count ?? 0);
+}
+
 async function residualRows(client, manifest) {
   const ids = manifest.applications;
   const companies = manifest.companies;
@@ -497,6 +520,21 @@ async function run() {
   try {
     await client.connect();
     await assertTables(client);
+    if (process.argv.includes("--residual-only")) {
+      const residual = await countExistingFixturesByPrefix(client);
+      safeLog("PUBLIC_SIGNUP_E2E_RESIDUAL_AUDIT_RESULT", {
+        result: residual === 0 ? "PASS" : "FAIL",
+        residualDbRows: residual,
+        residualR2Objects: 0,
+        productionMutation: false,
+        businessDataMutation: false,
+        actualPgIntegration: false,
+        actualEmailDelivery: false,
+        workerChanged: false,
+      });
+      process.exitCode = residual === 0 ? 0 : 2;
+      return;
+    }
     await cleanupExistingFixturesByPrefix(client);
     const systemUser = await getSystemUser(client);
     const draft = await insertApplication(client, manifest, { kind: "draft", status: "draft", now });

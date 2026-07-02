@@ -1,13 +1,13 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.33`. Current implementation candidate: `0.24.33` Public Signup End-to-End UX and System-admin Review Operations.
+> Active baseline: `0.24.33.1`. Current implementation candidate: `0.24.33.1` Authenticated Public Signup E2E and Deployed QA Automation.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.33`
-- APP_VERSION: `0.24.33`
+- Roadmap checkpoint version: `0.24.33.1`
+- APP_VERSION: `0.24.33.1`
 - Feature implementation progress: about `96%`
 - Productization readiness: about `91%`
 - Current-state handoff: `docs/codex-current-state.md`
@@ -41,6 +41,17 @@
 15. `0.24.31` - Canonical Policy Conformance Remediation and PG-neutral Billing Foundation
 16. `0.24.32` - PG Billing and Subscription Operations
 17. `0.24.33` - Public Signup End-to-End UX and System-admin Review Operations
+18. `0.24.33.1` - Authenticated Public Signup E2E and Deployed QA Automation
+
+## 0.24.33.1 - Authenticated Public Signup E2E and Deployed QA Automation
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.33.1.ts`.
+- Follow-up QA version for the completed 0.24.33 public signup path.
+- Adds dev/test applicant, system-admin, and approved company-admin session fixture automation without automating the real Google OAuth screen.
+- Adds Playwright browser matrix metadata for Chromium, WebKit, mobile, and iPad plus deployed read-only smoke wiring.
+- Registers public signup QA automation coverage in `/functions` with status, profile, command, safety, runtime restriction, and remaining manual QA.
+- Verification PASS: `public-signup-authenticated-e2e`, Chromium/WebKit/mobile/iPad browser matrix, deployed smoke, residual audit, and certificate PNG/JPEG/PDF/revoke integration.
+- Keeps actual PG integration, actual email delivery, production mutation, Worker source change, Worker deployment, and 0.24.34 implementation out of scope.
 
 ## 0.24.33 - Public Signup End-to-End UX and System-admin Review Operations
 
@@ -98,7 +109,7 @@
 
 ## Next Version
 
-### 0.24.32 - To Be Confirmed
+### 0.24.34 - To Be Confirmed
 
 - Read the next canonical roadmap or user instruction before implementation.
 - Do not infer actual PG provider, production export, production deletion, production email, or Worker deployment work without explicit scope.

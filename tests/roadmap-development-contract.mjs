@@ -69,6 +69,7 @@ for (const version of [
   "0.24.31",
   "0.24.32",
   "0.24.33",
+  "0.24.33.1",
 ]) {
   const roadmapFile = read(`lib/internal/roadmap/roadmap-${version}.ts`);
   assert.ok(index.includes(`ROADMAP_${version.replace(/\./g, "_")}`), `index missing ${version} import or registration`);
@@ -77,9 +78,10 @@ for (const version of [
 
 for (const token of [
   "ROADMAP_STATUS_LABELS",
-  "currentWorkVersion: \"0.24.33\"",
+  "currentWorkVersion: \"0.24.33.1\"",
   "nextWorkVersion: \"0.24.34\"",
   "ROADMAP_0_24_33",
+  "ROADMAP_0_24_33_1",
 ]) {
   assert.ok(index.includes(token), `roadmap index missing ${token}`);
 }
@@ -108,6 +110,8 @@ for (const token of [
   "0.24.32",
   "0.24.33",
   "Public Signup End-to-End UX and System-admin Review Operations",
+  "0.24.33.1",
+  "Authenticated Public Signup E2E and Deployed QA Automation",
 ]) {
   assert.ok(roadmapDoc.includes(token), `roadmap doc missing ${token}`);
 }

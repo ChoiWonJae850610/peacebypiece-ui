@@ -40,6 +40,7 @@ assert.ok(approvedWorkflow.includes('"functions-automation"'), "approved workflo
 for (const testName of [
   "tests/functions-catalog-structure-contract.mjs",
   "tests/functions-automation-coverage-contract.mjs",
+  "tests/functions-public-signup-automation-contract.mjs",
   "tests/functions-storage-contract.mjs",
   "tests/functions-environment-audit-contract.mjs",
   "tests/functions-pdf-contract.mjs",
