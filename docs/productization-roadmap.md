@@ -1,6 +1,6 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.33.1`. Current implementation candidate: `0.24.33.1` Authenticated Public Signup E2E and Deployed QA Automation.
+> Active baseline: `0.24.33.1`. Latest completed work: `0.24.33.1` Authenticated Public Signup E2E and Deployed QA Automation. Next planned work: `0.24.34` Workorder Size Specification and Incomplete/Final PDF.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
@@ -8,8 +8,8 @@
 
 - Roadmap checkpoint version: `0.24.33.1`
 - APP_VERSION: `0.24.33.1`
-- Feature implementation progress: about `96%`
-- Productization readiness: about `91%`
+- Feature implementation progress: about `93%` after reconciling foundation-only work with still-missing product paths
+- Productization readiness: about `86%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Manual QA status: `PENDING_USER_QA`
@@ -42,6 +42,51 @@
 16. `0.24.32` - PG Billing and Subscription Operations
 17. `0.24.33` - Public Signup End-to-End UX and System-admin Review Operations
 18. `0.24.33.1` - Authenticated Public Signup E2E and Deployed QA Automation
+19. `0.24.34` - Workorder Size Specification and Incomplete/Final PDF
+20. `0.24.35` - Company-wide Export Execution
+21. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
+22. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
+
+## Roadmap Reconciliation After 0.24.33.1
+
+The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md` corrects an ambiguity in earlier roadmap wording:
+
+- `completed` means the declared scope of that version was completed.
+- It does not mean every higher-level canonical requirement in the domain is complete.
+- 0.24.27 completed system size/POM foundation, but not workorder size-spec editing.
+- 0.24.28 completed supplier PDF and private R2 lifecycle foundation, but not incomplete/final workorder PDF.
+- 0.24.31~0.24.32 completed PG-neutral billing/export/termination foundations, but not live provider execution, full Export packaging, or durable deletion scheduling.
+- Historical entries remain as completed evidence; open product paths are restored as explicit future versions rather than rewriting history.
+
+## 0.24.34 - Workorder Size Specification and Incomplete/Final PDF
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.34.ts`.
+- Connect active system/company size sets and POM defaults to real workorder editing and persistence.
+- Add cm/inch support with deterministic 1/8-inch values.
+- Preserve size/POM snapshots through save, copy, and reproduction.
+- Add separate incomplete and final workorder PDF types.
+- Incomplete PDF: watermark, status badge, missing-item list, current saved snapshot.
+- Final PDF: canonical completion eligibility, size/POM pages, latest-only retention, failure-safe replacement, retry/operator evidence.
+- Keep supplier `order_request_pdf` separate.
+- Require rendered-PDF visual verification and responsive browser coverage.
+
+## 0.24.35 - Company-wide Export Execution
+
+- Build actual dev/test Export packages with CSV, JSON, attachments, and current PDFs.
+- Add folder manifest, split archive support, authenticated download, expiry, exact cleanup, plan usage enforcement, and final termination Export readiness.
+- Keep production Export separately approved.
+
+## 0.24.36 - Termination, Recovery, and Automatic Deletion Execution
+
+- Add durable due-job execution for recovery windows, deletion warning, KST deletion boundary, exact deletion manifest execution, legal-hold exclusion, retry, operator incident evidence, and completion evidence.
+- Keep production deletion separately approved.
+
+## 0.24.37 - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
+
+- Add inquiry queue and SLA warnings.
+- Unify signup/payment/export/PDF/deletion/inquiry operations.
+- Add monitoring, daily summaries, GitHub Actions CI, accessibility/performance/query audits, and backup/restore exercises.
+- Prepare the consolidated launch checklist without silently enabling external providers or production mutation.
 
 ## 0.24.33.1 - Authenticated Public Signup E2E and Deployed QA Automation
 
@@ -109,7 +154,9 @@
 
 ## Next Version
 
-### 0.24.34 - To Be Confirmed
+### 0.24.34 - Workorder Size Specification and Incomplete/Final PDF
 
-- Read the next canonical roadmap or user instruction before implementation.
-- Do not infer actual PG provider, production export, production deletion, production email, or Worker deployment work without explicit scope.
+- Read `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md` and `lib/internal/roadmap/roadmap-0.24.34.ts` before implementation.
+- Implement workorder size/POM editing, cm/inch and 1/8-inch handling, copy/reproduction snapshots, incomplete PDF, final PDF, size/POM PDF pages, latest-only retention, and failure-safe replacement.
+- Keep supplier order-request PDF separate.
+- Do not start Company-wide Export, deletion scheduler, actual PG/email, production mutation, or Worker deployment without the later roadmap/approval boundary.

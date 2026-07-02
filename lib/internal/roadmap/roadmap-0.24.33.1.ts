@@ -127,7 +127,7 @@ export const ROADMAP_0_24_33_1: RoadmapVersionDetail = {
       "/functions automation catalog and PowerShell/verify-safe profile entries were registered for public signup QA automation.",
       "Public signup final residual audit and signup certificate PNG/JPEG/PDF/revoke integration finished with residual DB rows 0 and residual R2 objects 0.",
     ],
-    commitHash: "",
+    commitHash: "29ffb8b8c805b5528b8d8f54ed4a6cc051bb5268",
     verificationResult: "PASS - verify-safe public-signup-authenticated-e2e, Playwright browser matrix, deployed smoke, residual audit, certificate integration, targeted ESLint, typecheck, build, mutation audit",
     remainingIssues: [
       "Actual Google OAuth and real-device iPhone/iPad checks remain manual QA until user-run deployed validation.",

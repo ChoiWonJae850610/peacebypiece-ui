@@ -47,6 +47,7 @@ import { ROADMAP_0_24_31 } from "./roadmap-0.24.31";
 import { ROADMAP_0_24_32 } from "./roadmap-0.24.32";
 import { ROADMAP_0_24_33 } from "./roadmap-0.24.33";
 import { ROADMAP_0_24_33_1 } from "./roadmap-0.24.33.1";
+import { ROADMAP_0_24_34 } from "./roadmap-0.24.34";
 import type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapStatus, RoadmapVersionDetail } from "./types";
 
 export type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapResult, RoadmapStatus, RoadmapVersionDetail } from "./types";
@@ -172,12 +173,12 @@ const ROADMAP_0_24_11: RoadmapVersionDetail = {
 
 export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
-  featureProgressPercent: 96,
-  productizationProgressPercent: 92,
+  featureProgressPercent: 93,
+  productizationProgressPercent: 86,
   currentWorkVersion: "0.24.33.1",
   nextWorkVersion: "0.24.34",
   canonicalPolicy:
-    "새 버전 작업 전에는 해당 lib/internal/roadmap canonical 상세와 docs/codex-current-state.md를 읽는다. 현재 제품화 실행 순서의 단일 authority는 docs/project/31-pre-codex-integrated-master-plan.md이며, GO/STOP gate는 docs/project/32-pre-codex-authority-consistency-gate.md다. 과거 PB·UI-first 계획은 historical reference로만 사용한다. /roadmap은 조회 전용이며 편집·추가·삭제·저장 기능을 제공하지 않는다.",
+    "새 버전 작업 전에는 docs/codex-current-state.md, final owner policy, integrated master plan, 최신 구현 감사, 대상 roadmap 상세 순서로 읽는다. completed는 해당 버전의 선언된 범위 완료를 뜻하며 상위 canonical 제품 기능 전체 완료를 뜻하지 않는다. 0.24.27 size/POM, 0.24.28 PDF/R2, 0.24.29 export, 0.24.30 deletion/quota, 0.24.31~0.24.32 billing은 foundation과 실행 기능을 구분한다. /roadmap은 조회 전용이다.",
   statusLabels: ROADMAP_STATUS_LABELS,
   impactLabels: ROADMAP_IMPACT_LABELS,
   versions: [
@@ -226,10 +227,11 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
     ROADMAP_0_24_28,
     ROADMAP_0_24_29,
     ROADMAP_0_24_30,
-  ROADMAP_0_24_31,
-  ROADMAP_0_24_32,
-  ROADMAP_0_24_33,
-  ROADMAP_0_24_33_1,
+    ROADMAP_0_24_31,
+    ROADMAP_0_24_32,
+    ROADMAP_0_24_33,
+    ROADMAP_0_24_33_1,
+    ROADMAP_0_24_34,
   ],
 };
 

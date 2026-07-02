@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_33: RoadmapVersionDetail = {
   version: "0.24.33",
   title: "Public Signup End-to-End UX and System-admin Review Operations",
-  status: "in_progress",
+  status: "completed",
   userSummary: [
     "Connects the public Trial signup UI, applicant dashboard, system-admin review queue, payment-readiness preparation, approval, and approved workspace entry into one QA-ready flow.",
     "Keeps real PG, real email delivery, production customer mutation, and Worker deployment out of scope.",
@@ -129,13 +129,13 @@ export const ROADMAP_0_24_33: RoadmapVersionDetail = {
       "Applied the additive public-signup-e2e migration to the approved dev/test DB and verified compatibility/post-apply findings 0.",
       "Verified dev/test DB integration, certificate PNG/JPEG/PDF/revoke integration, public login/signup browser smoke, and final public-signup-e2e safe profile.",
     ],
-    commitHash: "",
+    commitHash: "62867cc8ad9cb6de253463e13a0bc61f6e1e9497",
     verificationResult: "PASS before commit: compatibility audit PASS, migration apply PASS, post-apply audit PASS, DB integration PASS with residual DB/R2 0, certificate integration PASS with residual DB/R2 0, browser public login/signup smoke 3 passed, verify-safe public-signup-e2e PASS.",
     remainingIssues: [
       "Full real-device QA after Vercel deployment remains user confirmation.",
       "Actual PG provider, actual email delivery, production payment readiness, and Worker changes remain out of scope.",
     ],
     userConfirmationRequired: true,
-    userConfirmationResult: "PENDING_PC_IPAD_MOBILE_QA",
+    userConfirmationResult: "AUTOMATED_SCOPE_COMPLETE_MANUAL_DEVICE_QA_DEFERRED",
   },
 };

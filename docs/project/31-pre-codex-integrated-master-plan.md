@@ -317,3 +317,58 @@ Initial candidates to track, not silently add:
 - PDF lifecycle verification: safe test environment only.
 - Export package verification: safe test data only.
 - Deletion scheduler dry-run: dry-run and environment-restricted; actual deletion is destructive and separately confirmed.
+
+## 9. Post-0.24.33.1 implementation reconciliation
+
+This section refines execution sequencing after the full implementation audit. It does not change final owner policy and does not invalidate historical completion evidence.
+
+Interpretation rule:
+
+- A historical Sprint marked complete means its declared bounded scope was implemented and verified.
+- It does not prove that all higher-level product requirements for the same domain are complete.
+- When a Sprint intentionally delivered foundation only, the remaining customer-facing execution must stay explicit in the active roadmap.
+
+Audit authority for actual implementation state:
+
+- `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md`
+
+Reconciled open execution sequence:
+
+### 0.24.34 — Workorder Size Specification and Incomplete/Final PDF
+
+- Workorder size-set selection, POM rows, size-by-POM editing, cm/inch, and 1/8-inch persistence.
+- Company defaults and workorder overrides where confirmed policy allows.
+- Copy/reproduction snapshot preservation.
+- Separate incomplete workorder PDF, final workorder PDF, and supplier order-request PDF.
+- Incomplete watermark/status/missing-item list.
+- Final generation eligibility, size/POM pages, latest-only retention, failure-safe replacement, retry/operator evidence.
+- Private R2 lifecycle, quota accounting, exact cleanup, rendered-PDF visual verification, and responsive QA.
+
+### 0.24.35 — Company-wide Export Execution
+
+- Actual package builder for CSV, JSON, attachments, and current PDFs.
+- Folder manifest, bounded batching, 500MB split parts, authenticated download, seven-day expiry, exact cleanup, plan usage enforcement, and final termination Export.
+
+### 0.24.36 — Termination, Recovery, and Automatic Deletion Execution
+
+- Durable recovery/deletion scheduler, full write guard, one-day warning, KST day-30 boundary, exact deletion manifest execution, legal-hold exclusion, hourly retry, critical incident evidence, and completion evidence.
+
+### 0.24.37 — Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
+
+- Inquiry queue and SLA warning.
+- Unified operations queues.
+- Monitoring and daily operator summary.
+- GitHub Actions CI and secrets/migration gates.
+- Accessibility, performance, bundle, pagination/virtualization, and N+1 review.
+- Backup/restore and RPO/RTO exercise foundation.
+
+External-dependency and launch work remains later and separately approved:
+
+- Actual PG/provider, merchant credentials, card registration, charge/refund/webhook.
+- Actual email provider and production delivery.
+- Production Export/deletion execution.
+- Production environment, DNS/domain, legal/processor wording, and final multi-device launch QA.
+
+The dependency rule remains:
+
+DB authority → source cleanup → UI → authorization/routing → signup → catalog/size foundation → workorder size/POM execution → PDF/R2 execution → Export execution → deletion/recovery execution → PG/live providers → operations/CI/launch hardening.
