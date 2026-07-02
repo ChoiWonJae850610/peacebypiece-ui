@@ -11,6 +11,7 @@ import WorkOrderDetailMobileHeaderSection from "@/components/workorder/detail/se
 import WorkOrderDetailMobileOrderInfoSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection";
 import WorkOrderDetailMobileProductionCompositionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileProductionCompositionSection";
 import WorkOrderDetailSharedModals from "@/components/workorder/detail/shared/WorkOrderDetailSharedModals";
+import WorkOrderSizeSpecPanel from "@/components/workorder/detail/WorkOrderSizeSpecPanel";
 import type { WorkOrderDetailViewProps } from "@/components/workorder/detail/views/detailViewTypes";
 import { useI18n } from "@/lib/i18n";
 
@@ -62,6 +63,10 @@ export default function WorkOrderDetailMobileView({
       {resolvedPanel === "order" ? (
         <WorkOrderDetailSectionStack device="mobile">
           <WorkOrderDetailMobileOrderInfoSection {...viewModel.orderInfoProps} />
+          <WorkOrderSizeSpecPanel
+            workOrderId={viewModel.workOrderId}
+            locked={viewModel.sizeSpecLocked}
+          />
         </WorkOrderDetailSectionStack>
       ) : null}
 

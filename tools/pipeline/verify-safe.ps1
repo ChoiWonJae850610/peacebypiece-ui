@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations", "public-signup-e2e", "public-signup-authenticated-e2e")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations", "public-signup-e2e", "public-signup-authenticated-e2e", "workorder-size-pdf")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -790,6 +790,48 @@ $profileCommands = @{
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
         @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
         @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
+    );
+    "workorder-size-pdf" = @(
+        @{
+            Name = "targeted ESLint";
+            Command = "node";
+            Arguments = @(
+                "node_modules/eslint/bin/eslint.js",
+                "app/api/workorders/[workOrderId]/generated/workorder-pdf/route.ts",
+                "app/api/workorders/[workOrderId]/generated/workorder-pdf/[attachmentId]/view/route.ts",
+                "app/api/workorders/[workOrderId]/size-spec/route.ts",
+                "components/workorder/detail/WorkOrderSizeSpecPanel.tsx",
+                "lib/workorder/generatedDocuments.ts",
+                "lib/workorder/serverWorkorderPdf.ts",
+                "lib/workorder/sizeSpec/repository.ts",
+                "lib/workorder/sizeSpec/types.ts",
+                "lib/workorder/sizeSpec/valuePolicy.ts",
+                "lib/constants/version.ts",
+                "lib/internal/roadmap/index.ts",
+                "lib/internal/roadmap/roadmap-0.24.34.ts",
+                "scripts/run-approved-db-migration.mjs",
+                "scripts/run-readonly-db-audit.mjs",
+                "tests/roadmap-0.24.34-contract.mjs",
+                "tests/workorder-incomplete-final-pdf-contract.mjs",
+                "tests/workorder-size-pdf-powershell-menu-contract.mjs",
+                "tests/workorder-size-spec-contract.mjs"
+            )
+        },
+        @{ Name = "tsc --noEmit"; Command = "node"; Arguments = @("node_modules/typescript/bin/tsc", "--noEmit") },
+        @{ Name = "workorder size spec contract"; Command = "node"; Arguments = @("tests/workorder-size-spec-contract.mjs") },
+        @{ Name = "workorder incomplete/final PDF contract"; Command = "node"; Arguments = @("tests/workorder-incomplete-final-pdf-contract.mjs") },
+        @{ Name = "workorder size/PDF PowerShell menu contract"; Command = "node"; Arguments = @("tests/workorder-size-pdf-powershell-menu-contract.mjs") },
+        @{ Name = "roadmap 0.24.34 contract"; Command = "node"; Arguments = @("tests/roadmap-0.24.34-contract.mjs") },
+        @{ Name = "workorder PDF policy contract"; Command = "node"; Arguments = @("tests/workorder-pdf-policy-contract.mjs") },
+        @{ Name = "workorder PDF viewer contract"; Command = "node"; Arguments = @("tests/workorder-pdf-viewer-contract.mjs") },
+        @{ Name = "system catalog schema contract"; Command = "node"; Arguments = @("tests/system-catalog-schema-contract.mjs") },
+        @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
+        @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") },
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
+        @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
+        @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
+        @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
+        @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
     )
 }
 
@@ -829,6 +871,9 @@ if ($Profile -eq "billing-operations") {
 }
 if ($Profile -eq "public-signup-e2e") {
     $allowedMigrationChanges = @("db/migrations/patch_0_24_33_public_signup_e2e.sql")
+}
+if ($Profile -eq "workorder-size-pdf") {
+    $allowedMigrationChanges = @("db/migrations/patch_0_24_34_workorder_size_spec_and_pdf.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

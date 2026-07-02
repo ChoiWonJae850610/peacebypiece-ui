@@ -105,6 +105,8 @@ export type BuildWorkOrderDetailViewModelArgs = {
 };
 
 export type WorkOrderDetailViewModel = {
+  workOrderId: string;
+  sizeSpecLocked: boolean;
   headerProps: HeaderProps;
   rejectionReasonNoticeProps: RejectionReasonNoticeProps | null;
   actionProps: ActionProps;

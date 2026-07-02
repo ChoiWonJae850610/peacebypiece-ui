@@ -11,6 +11,7 @@ const migrations = {
   "system-catalog": "db/migrations/patch_0_24_27_system_catalog.sql",
   "billing-operations": "db/migrations/patch_0_24_32_billing_operations.sql",
   "public-signup-e2e": "db/migrations/patch_0_24_33_public_signup_e2e.sql",
+  "workorder-size-spec": "db/migrations/patch_0_24_34_workorder_size_spec_and_pdf.sql",
 };
 
 const mode = process.argv[2] ?? "";
@@ -38,6 +39,9 @@ if (mode === "billing-operations" && !/CREATE TABLE IF NOT EXISTS billing_subscr
 }
 if (mode === "public-signup-e2e" && !/CREATE TABLE IF NOT EXISTS signup_payment_method_references/.test(sql)) {
   throw new Error("Unexpected public signup e2e migration target.");
+}
+if (mode === "workorder-size-spec" && !/CREATE TABLE IF NOT EXISTS workorder_size_specs/.test(sql)) {
+  throw new Error("Unexpected workorder size spec migration target.");
 }
 const sqlForSafetyScan = sql
   .replace(/--.*$/gm, "")

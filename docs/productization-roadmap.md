@@ -1,15 +1,15 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.33.1`. Latest completed work: `0.24.33.1` Authenticated Public Signup E2E and Deployed QA Automation. Next planned work: `0.24.34` Workorder Size Specification and Incomplete/Final PDF.
+> Active baseline: `0.24.34`. Latest completed work: `0.24.34` Workorder Size Specification and Incomplete/Final PDF. Next planned work: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.33.1`
-- APP_VERSION: `0.24.33.1`
-- Feature implementation progress: about `93%` after reconciling foundation-only work with still-missing product paths
-- Productization readiness: about `86%` after restoring Export, deletion, operations, CI, monitoring, and launch work
+- Roadmap checkpoint version: `0.24.34`
+- APP_VERSION: `0.24.34`
+- Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
+- Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Manual QA status: `PENDING_USER_QA`
@@ -61,14 +61,14 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 ## 0.24.34 - Workorder Size Specification and Incomplete/Final PDF
 
 - Canonical detail file: `lib/internal/roadmap/roadmap-0.24.34.ts`.
-- Connect active system/company size sets and POM defaults to real workorder editing and persistence.
-- Add cm/inch support with deterministic 1/8-inch values.
-- Preserve size/POM snapshots through save, copy, and reproduction.
-- Add separate incomplete and final workorder PDF types.
+- Connects active system/company size sets and POM defaults to real workorder editing and persistence.
+- Adds cm/inch support with deterministic 1/8-inch values.
+- Adds size/POM snapshot schema and repository support for copy/reproduction preservation.
+- Adds separate incomplete and final workorder PDF types.
 - Incomplete PDF: watermark, status badge, missing-item list, current saved snapshot.
-- Final PDF: canonical completion eligibility, size/POM pages, latest-only retention, failure-safe replacement, retry/operator evidence.
+- Final PDF: canonical completion eligibility, size/POM pages, latest-only retention, failure-safe replacement.
 - Keep supplier `order_request_pdf` separate.
-- Require rendered-PDF visual verification and responsive browser coverage.
+- Rendered-PDF visual verification and real-device PDF QA remain user/manual checks before launch.
 
 ## 0.24.35 - Company-wide Export Execution
 
@@ -154,9 +154,8 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 
 ## Next Version
 
-### 0.24.34 - Workorder Size Specification and Incomplete/Final PDF
+### 0.24.35 - Company-wide Export Execution
 
-- Read `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md` and `lib/internal/roadmap/roadmap-0.24.34.ts` before implementation.
-- Implement workorder size/POM editing, cm/inch and 1/8-inch handling, copy/reproduction snapshots, incomplete PDF, final PDF, size/POM PDF pages, latest-only retention, and failure-safe replacement.
-- Keep supplier order-request PDF separate.
-- Do not start Company-wide Export, deletion scheduler, actual PG/email, production mutation, or Worker deployment without the later roadmap/approval boundary.
+- Read the next canonical roadmap/user instruction before implementation.
+- Execute company-wide Export packaging, download, expiry, split parts, plan usage enforcement, and final termination Export readiness.
+- Do not start termination/deletion execution, actual PG/email, production mutation, or Worker deployment without the later roadmap/approval boundary.

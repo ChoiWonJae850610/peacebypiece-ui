@@ -175,8 +175,8 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
   featureProgressPercent: 93,
   productizationProgressPercent: 86,
-  currentWorkVersion: "0.24.33.1",
-  nextWorkVersion: "0.24.34",
+  currentWorkVersion: "0.24.34",
+  nextWorkVersion: "0.24.35",
   canonicalPolicy:
     "새 버전 작업 전에는 docs/codex-current-state.md, final owner policy, integrated master plan, 최신 구현 감사, 대상 roadmap 상세 순서로 읽는다. completed는 해당 버전의 선언된 범위 완료를 뜻하며 상위 canonical 제품 기능 전체 완료를 뜻하지 않는다. 0.24.27 size/POM, 0.24.28 PDF/R2, 0.24.29 export, 0.24.30 deletion/quota, 0.24.31~0.24.32 billing은 foundation과 실행 기능을 구분한다. /roadmap은 조회 전용이다.",
   statusLabels: ROADMAP_STATUS_LABELS,

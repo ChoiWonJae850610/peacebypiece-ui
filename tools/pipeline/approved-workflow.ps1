@@ -32,7 +32,8 @@ $AllowedProfiles = @(
     "billing-foundation",
     "billing-operations",
     "public-signup-e2e",
-    "public-signup-authenticated-e2e"
+    "public-signup-authenticated-e2e",
+    "workorder-size-pdf"
 )
 
 function NormalizeWorkflowPath {

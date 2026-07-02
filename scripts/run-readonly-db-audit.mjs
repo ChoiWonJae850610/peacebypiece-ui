@@ -19,9 +19,11 @@ const files = {
   'billing-post-apply': 'db/audits/0.24.32-billing-post-apply-readonly.sql',
   'public-signup-e2e-compatibility': 'db/audits/0.24.33-public-signup-e2e-compatibility-readonly.sql',
   'public-signup-e2e-post-apply': 'db/audits/0.24.33-public-signup-e2e-post-apply-readonly.sql',
+  'workorder-size-spec-compatibility': 'db/audits/0.24.34-workorder-size-spec-compatibility-readonly.sql',
+  'workorder-size-spec-post-apply': 'db/audits/0.24.34-workorder-size-spec-post-apply-readonly.sql',
 };
 const sqlPath = files[mode];
-const findingModes = new Set(['reconciliation', 'signup-compatibility', 'signup-post-apply', 'signup-consents-compatibility', 'signup-consents-post-apply', 'system-catalog-compatibility', 'system-catalog-post-apply', 'billing-compatibility', 'billing-post-apply', 'public-signup-e2e-compatibility', 'public-signup-e2e-post-apply']);
+const findingModes = new Set(['reconciliation', 'signup-compatibility', 'signup-post-apply', 'signup-consents-compatibility', 'signup-consents-post-apply', 'system-catalog-compatibility', 'system-catalog-post-apply', 'billing-compatibility', 'billing-post-apply', 'public-signup-e2e-compatibility', 'public-signup-e2e-post-apply', 'workorder-size-spec-compatibility', 'workorder-size-spec-post-apply']);
 if (!sqlPath) throw new Error(`Unknown audit mode: ${mode}`);
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required.');
 if (process.env.WAFL_DB_AUDIT_APPROVED !== '1') throw new Error('Read-only audit guard approval is missing.');

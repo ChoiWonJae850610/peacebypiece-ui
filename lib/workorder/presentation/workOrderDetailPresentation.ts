@@ -18,6 +18,8 @@ export function buildWorkOrderDetailViewModel(args: BuildWorkOrderDetailViewMode
   });
 
   return {
+    workOrderId: args.workOrder.id,
+    sizeSpecLocked: args.isReviewRequestLocked || Boolean(args.isWorkspaceWriteLocked),
     headerProps: buildHeaderSectionProps(args),
     rejectionReasonNoticeProps: buildRejectionReasonNoticeProps(args),
     actionProps: buildActionSectionProps(args),

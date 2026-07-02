@@ -58,6 +58,12 @@ param(
     [switch]$RunPublicSignupDeployedSmoke,
     [switch]$RunPublicSignupFinalResidualAudit,
     [switch]$RunFunctionsAutomationCoverageAudit,
+    [switch]$RunWorkorderSizeSpecCompatibilityAudit,
+    [switch]$ApplyWorkorderSizeSpecMigration,
+    [switch]$RunWorkorderSizeSpecPostApplyAudit,
+    [switch]$RunWorkorderSizeSpecIntegration,
+    [switch]$RunWorkorderPdfVisualCheck,
+    [switch]$RunWorkorderSizeSpecResidualAudit,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -2586,6 +2592,36 @@ function RunPublicSignupE2eIntegration {
       return (InvokeProjectCommandWithResultFile -Title "Functions Automation Coverage Audit" -Label "Functions_Automation_Coverage_Audit" -NpmCommand "node tests/functions-public-signup-automation-contract.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $auditLogDir)
   }
 
+function RunWorkorderSizeSpecCompatibilityAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'workorder-size-spec-compatibility' -Title 'Workorder Size Spec Compatibility Audit' -Label 'Workorder_Size_Spec_Compatibility_Audit' -PauseAfter $PauseAfter)
+}
+
+function ApplyWorkorderSizeSpecMigration {
+    param([bool]$PauseAfter = $true)
+    return (InvokeApprovedDbMigrationCommand -Mode 'workorder-size-spec' -Title 'Apply Workorder Size Spec Migration' -Label 'Apply_Workorder_Size_Spec_Migration' -PauseAfter $PauseAfter)
+}
+
+function RunWorkorderSizeSpecPostApplyAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'workorder-size-spec-post-apply' -Title 'Workorder Size Spec Post-Apply Audit' -Label 'Workorder_Size_Spec_Post_Apply_Audit' -PauseAfter $PauseAfter)
+}
+
+function RunWorkorderSizeSpecIntegration {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "Workorder Size Spec Integration" -Label "Workorder_Size_Spec_Integration" -NpmCommand "node tests/workorder-size-spec-contract.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "DB_Audit"))
+}
+
+function RunWorkorderPdfVisualCheck {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "Workorder PDF Visual Static Check" -Label "Workorder_PDF_Visual_Static_Check" -NpmCommand "node tests/workorder-incomplete-final-pdf-contract.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "PDF_Test"))
+}
+
+function RunWorkorderSizeSpecResidualAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'workorder-size-spec-post-apply' -Title 'Workorder Size Spec Final Residual Audit' -Label 'Workorder_Size_Spec_Final_Residual_Audit' -PauseAfter $PauseAfter)
+}
+
 function RunBillingPostApplyAudit {
     param([bool]$PauseAfter = $true)
     return (InvokeReadOnlyDbAudit -Mode 'billing-post-apply' -Title 'Billing Post-Apply Audit' -Label 'Billing_Post_Apply_Audit' -PauseAfter $PauseAfter)
@@ -3060,6 +3096,12 @@ function ShowDeveloperToolsMenu {
         Write-Host "67. Public Signup Deployed Smoke                [읽기 전용/배포 URL smoke]"
         Write-Host "68. Public Signup Final Residual Audit          [읽기 전용/DEV·TEST residual]"
         Write-Host "69. Functions Automation Coverage Audit         [읽기 전용]"
+        Write-Host "70. Workorder Size Spec Compatibility Audit     [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "71. Workorder Size Spec Migration Apply         [DEV/TEST DB 변경/별도 승인]"
+        Write-Host "72. Workorder Size Spec Post-Apply Audit        [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "73. Workorder Size Spec Integration             [안전/정적 contract]"
+        Write-Host "74. Workorder PDF Visual Static Check           [안전/정적 PDF contract]"
+        Write-Host "75. Workorder Size Spec Final Residual Audit    [읽기 전용/DEV·TEST residual]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -3070,7 +3112,7 @@ function ShowDeveloperToolsMenu {
         $choice = (Read-Host "번호를 입력하세요 (최대 2자리)").Trim()
 
         if ($choice -notmatch '^\d{1,2}$') {
-            Write-Host "잘못된 입력입니다. 0~69 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
+            Write-Host "잘못된 입력입니다. 0~75 범위의 한 자리 또는 두 자리 숫자를 입력하세요."
             Start-Sleep -Seconds 1
             continue
         }
@@ -3145,9 +3187,15 @@ function ShowDeveloperToolsMenu {
             67 { RunPublicSignupDeployedSmoke | Out-Null }
             68 { RunPublicSignupFinalResidualAudit | Out-Null }
             69 { RunFunctionsAutomationCoverageAudit | Out-Null }
+            70 { RunWorkorderSizeSpecCompatibilityAudit | Out-Null }
+            71 { ApplyWorkorderSizeSpecMigration | Out-Null }
+            72 { RunWorkorderSizeSpecPostApplyAudit | Out-Null }
+            73 { RunWorkorderSizeSpecIntegration | Out-Null }
+            74 { RunWorkorderPdfVisualCheck | Out-Null }
+            75 { RunWorkorderSizeSpecResidualAudit | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~69 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~75 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -3497,6 +3545,30 @@ elseif ($RunPublicSignupFinalResidualAudit) {
 }
 elseif ($RunFunctionsAutomationCoverageAudit) {
     $exitCode = RunFunctionsAutomationCoverageAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWorkorderSizeSpecCompatibilityAudit) {
+    $exitCode = RunWorkorderSizeSpecCompatibilityAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplyWorkorderSizeSpecMigration) {
+    $exitCode = ApplyWorkorderSizeSpecMigration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWorkorderSizeSpecPostApplyAudit) {
+    $exitCode = RunWorkorderSizeSpecPostApplyAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWorkorderSizeSpecIntegration) {
+    $exitCode = RunWorkorderSizeSpecIntegration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWorkorderPdfVisualCheck) {
+    $exitCode = RunWorkorderPdfVisualCheck -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWorkorderSizeSpecResidualAudit) {
+    $exitCode = RunWorkorderSizeSpecResidualAudit -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

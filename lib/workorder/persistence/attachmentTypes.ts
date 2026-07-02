@@ -12,7 +12,11 @@ export type WorkOrderAttachmentKind = "design" | "file";
 export const ATTACHMENT_SOURCE_TYPES = ["user", "system"] as const;
 export type AttachmentSourceType = (typeof ATTACHMENT_SOURCE_TYPES)[number];
 
-export const GENERATED_DOCUMENT_TYPES = ["order_request_pdf"] as const;
+export const GENERATED_DOCUMENT_TYPES = [
+  "order_request_pdf",
+  "workorder_incomplete_pdf",
+  "workorder_final_pdf",
+] as const;
 export type GeneratedDocumentType = (typeof GENERATED_DOCUMENT_TYPES)[number];
 
 export type WorkOrderAttachmentDbRecord = {

@@ -9,6 +9,8 @@ export const ATTACHMENT_SOURCE_TYPE = {
 
 export const GENERATED_DOCUMENT_TYPE = {
   orderRequestPdf: "order_request_pdf",
+  workorderIncompletePdf: "workorder_incomplete_pdf",
+  workorderFinalPdf: "workorder_final_pdf",
 } as const;
 
 export type AttachmentSourceType = (typeof ATTACHMENT_SOURCE_TYPE)[keyof typeof ATTACHMENT_SOURCE_TYPE];
@@ -56,7 +58,33 @@ export function createOrderRequestPdfDisplayName(input: {
   return `order-request_${title}_${timestamp}_${manager}.pdf`;
 }
 
+export function createWorkorderPdfDisplayName(input: {
+  workOrderTitle: string;
+  documentType: typeof GENERATED_DOCUMENT_TYPE.workorderIncompletePdf | typeof GENERATED_DOCUMENT_TYPE.workorderFinalPdf;
+  createdAt?: Date;
+}): string {
+  const title = sanitizeFileNameSegment(input.workOrderTitle);
+  const timestamp = formatOrderRequestDocumentTimestamp(input.createdAt ?? new Date());
+  const suffix = input.documentType === GENERATED_DOCUMENT_TYPE.workorderFinalPdf
+    ? "final"
+    : "incomplete";
+
+  return `workorder-${suffix}_${title}_${timestamp}.pdf`;
+}
+
 export function createOrderRequestPdfStorageKey(input: {
+  companyId: string;
+  workOrderId: string;
+  fileId: string;
+}): string {
+  return createWorkOrderPdfStorageKey({
+    companyId: sanitizeStorageSegment(input.companyId),
+    workOrderId: sanitizeStorageSegment(input.workOrderId),
+    pdfId: sanitizeStorageSegment(input.fileId),
+  });
+}
+
+export function createGeneratedWorkorderPdfStorageKey(input: {
   companyId: string;
   workOrderId: string;
   fileId: string;
@@ -77,5 +105,14 @@ export function isGeneratedOrderRequestPdfAttachment(input: { generatedDocumentT
     input &&
       input.sourceType === ATTACHMENT_SOURCE_TYPE.system &&
       input.generatedDocumentType === GENERATED_DOCUMENT_TYPE.orderRequestPdf,
+  );
+}
+
+export function isGeneratedWorkorderPdfAttachment(input: { generatedDocumentType?: string | null; sourceType?: string | null } | null | undefined): boolean {
+  return Boolean(
+    input &&
+      input.sourceType === ATTACHMENT_SOURCE_TYPE.system &&
+      (input.generatedDocumentType === GENERATED_DOCUMENT_TYPE.workorderIncompletePdf ||
+        input.generatedDocumentType === GENERATED_DOCUMENT_TYPE.workorderFinalPdf),
   );
 }

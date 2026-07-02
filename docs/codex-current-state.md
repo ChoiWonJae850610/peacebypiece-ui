@@ -1,13 +1,13 @@
-# Codex Current State - 0.24.33.1
+# Codex Current State - 0.24.34
 
 ## Version
 
-- Current version: `0.24.33.1`.
-- Current implementation version: `0.24.33.1`.
+- Current version: `0.24.34`.
+- Current implementation version: `0.24.34`.
 - Branch: `master`.
-- Latest completed version: `0.24.33.1` Authenticated Public Signup E2E and Deployed QA Automation.
-- Next official work: `0.24.34` Workorder Size Specification and Incomplete/Final PDF.
-- 0.24.34 implementation has not started.
+- Latest completed version: `0.24.34` Workorder Size Specification and Incomplete/Final PDF.
+- Next official work: `0.24.35` Company-wide Export Execution.
+- 0.24.35 implementation has not started.
 
 ## Mandatory Read Order
 
@@ -70,11 +70,18 @@ Completed foundations:
 - 0.24.31~0.24.32: PG-neutral billing policy, persistence, simulator, export/termination/notification foundation.
 - 0.24.30: storage capacity profiles and principal quota guards.
 
+0.24.34 completed product paths:
+
+- Workorder size-set/POM selection from active defaults.
+- Size-by-POM measurement editing and persistence with cm/inch and 1/8-inch validation.
+- Incomplete workorder PDF and final workorder PDF as distinct generated document types.
+- Incomplete watermark, status badge, missing-item list, final eligibility, size/POM pages, latest-only retention, failure-safe replacement, private R2 lifecycle, quota accounting, and inline viewer.
+
 Still open product paths:
 
-- Workorder size-set/POM selection, size-by-POM measurement editing, cm/inch and 1/8-inch input, template/override, copy/reproduction, and PDF linkage.
-- Incomplete workorder PDF and final workorder PDF as distinct document types.
-- Incomplete watermark, status badge, missing-item list, final eligibility, size/POM pages, latest-only retention, failure-safe replacement, retry, and first-failure operator evidence.
+- Full copy/reproduction UI proof for size/POM snapshots beyond repository/schema contracts.
+- Rendered PDF visual QA on real devices remains `PENDING_USER_QA`.
+- First-failure operator notification is recorded as foundation/backlog unless the actual notification provider is separately approved.
 - Actual Company-wide Export ZIP execution, expiry, split parts, cleanup, plan enforcement, and final termination Export.
 - Durable termination/recovery/deletion scheduler and exact execution.
 - Actual PG/email/provider/production launch integrations.
@@ -86,27 +93,27 @@ Canonical evidence:
 
 ## Current Roadmap
 
-- Current completed detail: `lib/internal/roadmap/roadmap-0.24.33.1.ts`.
-- Next planned detail: `lib/internal/roadmap/roadmap-0.24.34.ts`.
+- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.ts`.
+- Next planned detail: `0.24.35` Company-wide Export Execution.
 - Productization roadmap: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
 
-## 0.24.34 Official Scope
+## 0.24.34 Completed Scope
 
 `0.24.34 — Workorder Size Specification and Incomplete/Final PDF`
 
-Required scope:
+Implemented scope:
 
 - Workorder size-set selection and POM rows from active defaults.
 - Size-by-POM editing and persistence.
 - cm/inch support and deterministic 1/8-inch handling.
 - Company defaults/workorder overrides where current policy allows.
-- Copy/reproduction preservation of size/POM snapshot.
+- Size/POM snapshot schema and repository support for copy/reproduction preservation.
 - Incomplete workorder PDF with watermark, status badge, and missing-item list.
 - Final workorder PDF with canonical eligibility and size/POM pages.
 - Explicit separation from supplier order-request PDF.
-- Latest-only retention, failure-safe replacement, retry/operator evidence, private R2 lifecycle, quota accounting, and exact cleanup.
-- Responsive workorder editing and rendered-PDF visual verification.
+- Latest-only final PDF retention, failure-safe replacement, private R2 lifecycle, quota accounting, and exact cleanup hooks.
+- Responsive workorder editing surface for desktop/tablet/mobile.
 
 Out of scope:
 

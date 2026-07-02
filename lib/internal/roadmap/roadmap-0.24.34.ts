@@ -3,7 +3,7 @@ import type { RoadmapVersionDetail } from "./types";
 export const ROADMAP_0_24_34: RoadmapVersionDetail = {
   version: "0.24.34",
   title: "Workorder Size Specification and Incomplete/Final PDF",
-  status: "planned",
+  status: "completed",
   userSummary: [
     "Connects the existing system size-set/POM foundations to real workorder editing, storage, copy/reproduction, and PDF output.",
     "Adds separate incomplete and final workorder PDF products while preserving the existing supplier order-request PDF and private R2 lifecycle.",
@@ -144,14 +144,17 @@ export const ROADMAP_0_24_34: RoadmapVersionDetail = {
     "Commit/push complete and 4. Newest contains exactly the latest ZIP and matching repo-state.",
   ],
   result: {
-    completedSummary: [],
-    commitHash: "",
-    verificationResult: "NOT_STARTED",
+    completedSummary: [
+      "작업지시서별 size set/POM snapshot schema, repository, API, and responsive editor panel were added.",
+      "Incomplete/final workorder PDF generation, inline viewer, quota guard, and final latest-only replacement path were added while keeping supplier order-request PDF separate.",
+      "0.24.34 version/current-state/productization roadmap synchronization, safe verification, dev/test migration apply, post-apply audit, and residual audit passed.",
+    ],
+    commitHash: "pending final commit",
+    verificationResult: "PASS: verify-safe workorder-size-pdf, compatibility audit, dev/test additive migration apply, post-apply audit, static PDF visual contract, residual audit",
     remainingIssues: [
-      "Implementation has not started.",
-      "Manual rendered-PDF and real-device download/share QA will be required before final completion.",
+      "Manual rendered-PDF and real-device download/share QA remain required before launch.",
     ],
     userConfirmationRequired: false,
-    userConfirmationResult: "NOT_STARTED",
+    userConfirmationResult: "Automatic validation completed; manual visual/device QA remains separated from Codex completion.",
   },
 };
