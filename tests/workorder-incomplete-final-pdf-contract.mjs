@@ -15,7 +15,7 @@ for (const token of ["workorder_incomplete_pdf", "workorder_final_pdf"]) {
 assert.match(viewer, /GENERATED_DOCUMENT_TYPE\.workorderIncompletePdf/);
 assert.match(viewer, /GENERATED_DOCUMENT_TYPE\.workorderFinalPdf/);
 
-assert.match(route, /readPdfKind/);
+assert.match(route, /readRequestedPdfKind/);
 assert.match(route, /kind === "final"/);
 assert.match(route, /WORKORDER_FINAL_PDF_NOT_READY/);
 assert.match(route, /getWorkOrderSizeSpec/);

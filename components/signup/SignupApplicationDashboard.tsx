@@ -117,17 +117,48 @@ const fallbackPolicies: SignupConsentPolicyView[] = [
     consentType: "terms_of_service",
     policyCode: "wafl_terms_of_service",
     policyVersion: "0.24.26",
-    label: "WAFL 이용약관",
+    label: "이용약관",
     required: true,
   },
   {
     consentType: "privacy_policy",
     policyCode: "wafl_privacy_policy",
     policyVersion: "0.24.26",
-    label: "개인정보 처리방침",
+    label: "개인정보처리방침",
     required: true,
   },
 ];
+
+const planCards: Array<{
+  code: Exclude<SignupApplicationPlanCode, "custom">;
+  name: string;
+  price: string;
+  storage: string;
+  members: string;
+}> = [
+  { code: "lite", name: "Lite", price: "월 9,900원", storage: "500MB", members: "3명" },
+  { code: "flow", name: "Flow", price: "월 19,900원", storage: "1.5GB", members: "10명" },
+  { code: "studio", name: "Studio", price: "월 39,900원", storage: "5GB", members: "30명" },
+];
+
+const policyBody: Record<SignupConsentType, { title: string; body: string[] }> = {
+  terms_of_service: {
+    title: "이용약관",
+    body: [
+      "WAFL은 의류 생산 업무를 기록하고 협업하기 위한 서비스입니다.",
+      "가입 신청이 승인되면 7일 무료 체험이 시작되며, 체험 기간 동안 선택한 요금제의 기본 한도 안에서 서비스를 이용할 수 있습니다.",
+      "서비스 이용 중 등록한 회사 정보와 업무 자료는 고객사의 업무 처리 목적에 맞게 보관됩니다.",
+    ],
+  },
+  privacy_policy: {
+    title: "개인정보처리방침",
+    body: [
+      "가입 신청과 서비스 이용을 위해 이름, 이메일, 회사 정보, 사업자등록증 파일을 수집합니다.",
+      "사업자등록증은 가입 승인 검토와 회사 확인 목적으로만 사용됩니다.",
+      "승인 검토와 서비스 제공에 필요한 범위를 넘어 개인정보를 공개하지 않습니다.",
+    ],
+  },
+};
 
 const statusCopy: Record<SignupApplicationStatus | "verified_identity", {
   label: string;
@@ -136,57 +167,57 @@ const statusCopy: Record<SignupApplicationStatus | "verified_identity", {
   tone: "neutral" | "info" | "warning" | "danger" | "success";
 }> = {
   verified_identity: {
-    label: "신원 확인 완료",
-    title: "회사 신청서를 시작하세요",
-    description: "Google 이메일 인증을 확인했습니다. 회사 기본 정보와 필수 동의를 입력하면 신청서를 저장하고 제출할 수 있습니다.",
+    label: "본인 확인 완료",
+    title: "회사 정보를 입력해 주세요",
+    description: "Google 계정 확인이 끝났습니다. 회사 정보와 필수 동의를 제출하면 담당자가 신청 내용을 확인합니다.",
     tone: "info",
   },
   draft: {
     label: "작성 중",
-    title: "신청서를 작성 중입니다",
-    description: "제출 전에는 회사 정보, 요금제 선택, 필수 동의를 수정할 수 있습니다.",
+    title: "가입 신청을 작성 중입니다",
+    description: "회사 정보, 요금제, 사업자등록증, 필수 동의를 확인한 뒤 제출해 주세요.",
     tone: "neutral",
   },
   submitted: {
     label: "접수 완료",
-    title: "신청서가 접수되었습니다",
-    description: "시스템 관리자가 입력 정보와 증빙 제출 상태를 검토합니다.",
+    title: "가입 신청이 접수되었습니다",
+    description: "담당자가 입력 정보와 증빙 파일을 확인합니다. 승인되면 7일 무료 체험이 시작됩니다.",
     tone: "success",
   },
   reviewing: {
-    label: "검토 중",
-    title: "관리자 검토가 진행 중입니다",
-    description: "승인 처리 목표는 1영업일입니다. 검토 중에는 신청 정보를 임의로 수정할 수 없습니다.",
+    label: "확인 중",
+    title: "가입 신청을 확인하고 있습니다",
+    description: "담당자가 회사 정보와 증빙 파일을 확인하는 중입니다.",
     tone: "info",
   },
   changes_requested: {
     label: "보완 요청",
-    title: "보완 요청이 있습니다",
-    description: "요청 사유를 확인하고 필요한 내용을 수정한 뒤 다시 제출하세요.",
+    title: "보완이 필요한 항목이 있습니다",
+    description: "아래 안내를 확인하고 필요한 정보를 수정한 뒤 다시 제출해 주세요.",
     tone: "warning",
   },
   approved: {
     label: "승인 완료",
-    title: "승인이 완료되었습니다",
-    description: "회사와 Trial workspace 준비가 완료되었습니다. 다시 로그인하거나 새로고침하면 정상 WAFL workspace로 이동할 수 있습니다.",
+    title: "가입이 승인되었습니다",
+    description: "회사 workspace가 준비되었습니다. 다시 로그인하거나 화면을 새로 열면 WAFL을 이용할 수 있습니다.",
     tone: "success",
   },
   rejected: {
     label: "반려",
-    title: "신청이 반려되었습니다",
-    description: "반려 사유를 확인하세요. 필요한 경우 WAFL 지원 창구로 문의하세요.",
+    title: "가입 신청이 반려되었습니다",
+    description: "반려 사유를 확인해 주세요. 필요한 경우 WAFL 지원 창구로 문의해 주세요.",
     tone: "danger",
   },
   canceled: {
     label: "취소됨",
-    title: "신청이 취소되었습니다",
-    description: "다시 신청하려면 Google signup 인증을 새로 시작하세요.",
+    title: "가입 신청이 취소되었습니다",
+    description: "다시 신청하려면 Google로 가입 신청을 새로 시작해 주세요.",
     tone: "neutral",
   },
   provisioning_failed: {
-    label: "처리 오류",
-    title: "승인 후 처리 중 오류가 발생했습니다",
-    description: "회사 생성 과정에서 오류가 기록되었습니다. 시스템 관리자의 복구 처리를 기다려 주세요.",
+    label: "처리 지연",
+    title: "가입 처리 중 문제가 발생했습니다",
+    description: "담당자가 복구를 진행합니다. 잠시 후 다시 확인해 주세요.",
     tone: "danger",
   },
 };
@@ -230,25 +261,25 @@ function createConsentSelections(
 
 function getSafeErrorMessage(code: string | null): string {
   if (!code) return "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
-  if (code === "SIGNUP_APPLICANT_SESSION_REQUIRED") return "가입 신청 세션이 없습니다. Google로 7일 무료 시작을 다시 진행해 주세요.";
-  if (code === "SIGNUP_APPLICATION_ID_REQUIRED") return "신청서를 먼저 저장한 뒤 다시 시도해 주세요.";
-  if (code === "SIGNUP_PAYLOAD_INVALID") return "필수 입력값을 확인해 주세요. 사업자등록번호는 숫자 10자리여야 합니다.";
-  if (code === "SIGNUP_CONSENT_REQUIRED") return "필수 약관과 개인정보 처리방침 동의가 필요합니다.";
-  if (code === "SIGNUP_CERTIFICATE_UPLOAD_NOT_CONFIGURED") return "파일 업로드 저장소가 아직 연결되지 않았습니다. 관리자에게 설정을 요청해 주세요.";
-  if (code === "SIGNUP_CERTIFICATE_UPLOAD_NOT_ALLOWED") return "현재 신청 상태에서는 사업자등록증을 변경할 수 없습니다.";
-  if (code === "SIGNUP_CERTIFICATE_FILE_REQUIRED") return "업로드할 사업자등록증 파일을 선택해 주세요.";
-  if (code === "SIGNUP_CERTIFICATE_SIZE_UNSUPPORTED") return "파일 크기는 최대 10MB까지 허용됩니다.";
+  if (code === "SIGNUP_APPLICANT_SESSION_REQUIRED") return "가입 신청 세션을 확인할 수 없습니다. Google로 가입 신청을 다시 시작해 주세요.";
+  if (code === "SIGNUP_APPLICATION_ID_REQUIRED") return "회사 정보를 먼저 입력해 주세요.";
+  if (code === "SIGNUP_PAYLOAD_INVALID") return "필수 입력값을 확인해 주세요. 사업자등록번호는 숫자 10자리입니다.";
+  if (code === "SIGNUP_CONSENT_REQUIRED") return "이용약관과 개인정보처리방침 동의가 필요합니다.";
+  if (code === "SIGNUP_CERTIFICATE_UPLOAD_NOT_CONFIGURED") return "파일 업로드 준비가 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.";
+  if (code === "SIGNUP_CERTIFICATE_UPLOAD_NOT_ALLOWED") return "현재 상태에서는 사업자등록증을 변경할 수 없습니다.";
+  if (code === "SIGNUP_CERTIFICATE_FILE_REQUIRED") return "사업자등록증 파일을 선택해 주세요.";
+  if (code === "SIGNUP_CERTIFICATE_SIZE_UNSUPPORTED") return "파일 크기는 최대 10MB까지 가능합니다.";
   if (
     code === "SIGNUP_CERTIFICATE_MIME_TYPE_UNSUPPORTED"
     || code === "SIGNUP_CERTIFICATE_EXTENSION_UNSUPPORTED"
     || code === "SIGNUP_CERTIFICATE_SIGNATURE_UNSUPPORTED"
   ) {
-    return "PNG, JPEG, PDF 형식의 정상 파일만 업로드할 수 있습니다.";
+    return "PNG, JPEG, PDF 파일만 등록할 수 있습니다.";
   }
-  if (code === "SIGNUP_CERTIFICATE_UPLOAD_FAILED") return "파일 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.";
-  if (code === "SIGNUP_CERTIFICATE_DELETE_FAILED") return "파일 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.";
-  if (code.startsWith("SIGNUP_DUPLICATE")) return "이미 검토 중인 신청 정보가 있습니다. 상태 화면을 새로고침해 주세요.";
-  if (code === "SIGNUP_APPLICATION_CONFLICT") return "현재 상태에서는 이 작업을 수행할 수 없습니다. 상태를 새로고침해 주세요.";
+  if (code === "SIGNUP_CERTIFICATE_UPLOAD_FAILED") return "파일을 올리지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  if (code === "SIGNUP_CERTIFICATE_DELETE_FAILED") return "파일을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  if (code.startsWith("SIGNUP_DUPLICATE")) return "이미 확인 중인 가입 신청이 있습니다.";
+  if (code === "SIGNUP_APPLICATION_CONFLICT") return "현재 상태에서는 이 작업을 할 수 없습니다. 화면을 다시 열어 확인해 주세요.";
   return "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
@@ -257,6 +288,13 @@ function formatFileSize(sizeBytes: number): string {
   if (sizeBytes < 1024) return `${sizeBytes} B`;
   if (sizeBytes < 1024 * 1024) return `${(sizeBytes / 1024).toFixed(1)} KB`;
   return `${(sizeBytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function getFileKindLabel(file: SignupCertificateView): string {
+  if (file.mimeType === "application/pdf") return "PDF";
+  if (file.mimeType === "image/png") return "PNG";
+  if (file.mimeType === "image/jpeg") return "JPG";
+  return "파일";
 }
 
 async function fetchConsents(): Promise<SignupConsentsResponse> {
@@ -280,7 +318,6 @@ export default function SignupApplicationDashboard() {
   const [policies, setPolicies] = useState<SignupConsentPolicyView[]>(fallbackPolicies);
   const [consents, setConsents] = useState<SignupConsentView[]>([]);
   const [certificate, setCertificate] = useState<SignupCertificateView | null>(null);
-  const [selectedCertificateFile, setSelectedCertificateFile] = useState<File | null>(null);
   const [consentSelections, setConsentSelections] = useState<ConsentSelectionState>(emptyConsentSelections);
   const [isLoading, setIsLoading] = useState(true);
   const [isBusy, setIsBusy] = useState(false);
@@ -288,6 +325,7 @@ export default function SignupApplicationDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [consentError, setConsentError] = useState<string | null>(null);
   const [certificateError, setCertificateError] = useState<string | null>(null);
+  const [openPolicy, setOpenPolicy] = useState<SignupConsentType | null>(null);
 
   const status = application?.status ?? "verified_identity";
   const copy = statusCopy[status];
@@ -296,15 +334,17 @@ export default function SignupApplicationDashboard() {
   const canCancel = application?.status === "draft" || application?.status === "submitted" || application?.status === "changes_requested";
   const allRequiredConsentsSelected = requiredConsentTypes.every((consentType) => consentSelections[consentType]);
 
-  const formValid = useMemo(
+  const companyInfoValid = useMemo(
     () => (
       form.requestedCompanyName.trim().length > 0
       && form.businessName.trim().length > 0
       && normalizeBusinessRegistration(form.businessRegistrationNumber).length === 10
-      && allRequiredConsentsSelected
+      && form.requestedPlanCode !== "custom"
     ),
-    [allRequiredConsentsSelected, form],
+    [form],
   );
+
+  const formValid = companyInfoValid && allRequiredConsentsSelected && Boolean(certificate);
 
   const applyConsentPayload = useCallback((payload: SignupConsentsResponse) => {
     const nextPolicies = payload.policies?.length ? payload.policies : fallbackPolicies;
@@ -331,7 +371,6 @@ export default function SignupApplicationDashboard() {
       if (!nextApplicant) {
         setConsents([]);
         setCertificate(null);
-        setSelectedCertificateFile(null);
         setConsentSelections(emptyConsentSelections);
         return;
       }
@@ -352,14 +391,12 @@ export default function SignupApplicationDashboard() {
         }
       } else {
         setCertificate(null);
-        setSelectedCertificateFile(null);
       }
     } catch (nextError) {
       setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
       setApplication(null);
       setConsents([]);
       setCertificate(null);
-      setSelectedCertificateFile(null);
       setConsentSelections(emptyConsentSelections);
     } finally {
       setIsLoading(false);
@@ -424,14 +461,14 @@ export default function SignupApplicationDashboard() {
     }
   }
 
-  async function uploadCertificate() {
+  async function uploadCertificate(nextFile: File | null) {
     if (isBusy) return;
-    if (!selectedCertificateFile) {
+    if (!nextFile) {
       setError(getSafeErrorMessage("SIGNUP_CERTIFICATE_FILE_REQUIRED"));
       return;
     }
-    if (!application) {
-      setError("회사 정보를 먼저 임시 저장하면 사업자등록증을 업로드할 수 있습니다.");
+    if (!companyInfoValid) {
+      setError("회사명, 사업자명, 사업자등록번호, 요금제를 먼저 확인해 주세요.");
       return;
     }
 
@@ -439,8 +476,9 @@ export default function SignupApplicationDashboard() {
     setError(null);
     setMessage(null);
     try {
+      if (!application) await saveApplicationDraft();
       const formData = new FormData();
-      formData.append("file", selectedCertificateFile);
+      formData.append("file", nextFile);
       const response = await fetch("/api/signup/application/certificate", {
         method: "POST",
         body: formData,
@@ -451,8 +489,7 @@ export default function SignupApplicationDashboard() {
       }
       setCertificate(payload.certificate);
       setCertificateError(null);
-      setSelectedCertificateFile(null);
-      setMessage("사업자등록증이 등록되었습니다.");
+      setMessage("사업자등록증 파일을 등록했습니다.");
     } catch (nextError) {
       setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
       await loadStatus().catch(() => undefined);
@@ -475,31 +512,9 @@ export default function SignupApplicationDashboard() {
       const payload = (await response.json().catch(() => ({}))) as SignupCertificateResponse;
       if (!response.ok || !payload.ok) throw new Error(payload.code || "SIGNUP_CERTIFICATE_DELETE_FAILED");
       setCertificate(payload.certificate ?? null);
-      setMessage("사업자등록증 등록을 철회했습니다.");
+      setMessage("사업자등록증 파일을 삭제했습니다.");
     } catch (nextError) {
       setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
-    } finally {
-      setIsBusy(false);
-    }
-  }
-
-  async function saveDraft() {
-    if (isBusy) return;
-    if (!formValid) {
-      setError("필수 입력값과 동의를 확인해 주세요.");
-      return;
-    }
-
-    setIsBusy(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await saveApplicationDraft();
-      await ensureSelectedConsents();
-      setMessage("임시 저장되었습니다.");
-    } catch (nextError) {
-      setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
-      await loadStatus().catch(() => undefined);
     } finally {
       setIsBusy(false);
     }
@@ -508,7 +523,7 @@ export default function SignupApplicationDashboard() {
   async function submitApplication() {
     if (isBusy) return;
     if (!formValid) {
-      setError("제출하려면 필수 입력값과 동의를 확인해 주세요.");
+      setError("필수 입력, 사업자등록증, 약관 동의를 모두 확인해 주세요.");
       return;
     }
 
@@ -527,7 +542,7 @@ export default function SignupApplicationDashboard() {
       if (!response.ok || !payload.ok || !payload.application) throw new Error(payload.code || "SIGNUP_SUBMIT_FAILED");
       setApplication(payload.application);
       setForm(createFormFromApplication(payload.application));
-      setMessage("신청서가 제출되었습니다.");
+      setMessage("가입 신청을 제출했습니다.");
     } catch (nextError) {
       setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
       await loadStatus().catch(() => undefined);
@@ -551,7 +566,7 @@ export default function SignupApplicationDashboard() {
       if (!response.ok || !payload.ok || !payload.application) throw new Error(payload.code || "SIGNUP_CANCEL_FAILED");
       setApplication(payload.application);
       setForm(createFormFromApplication(payload.application));
-      setMessage("신청이 취소되었습니다.");
+      setMessage("가입 신청을 취소했습니다.");
     } catch (nextError) {
       setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
     } finally {
@@ -586,16 +601,18 @@ export default function SignupApplicationDashboard() {
     return () => window.clearTimeout(timerId);
   }, [loadStatus]);
 
+  const openedPolicy = openPolicy ? policyBody[openPolicy] : null;
+
   return (
     <ATypePublicFrame
-      eyebrow="WAFL 7일 무료 시작"
-      title={<>가입 신청을<br />안전하게 진행하세요</>}
-      description="이 화면은 Google 인증을 마친 신청자의 회사 신청 상태만 보여줍니다. Workspace 접근은 승인과 provisioning이 끝날 때까지 차단됩니다."
-      heroItems={["7일 Trial", "100MB", "3명", "관리자 승인"]}
-      footer={<p>사업자등록증 파일은 승인 전용 viewer에서만 열람되며 공개 URL이나 다운로드 링크를 제공하지 않습니다.</p>}
+      eyebrow="WAFL 무료 체험"
+      title={<>7일 무료로<br />WAFL을 시작하세요</>}
+      description="회사 정보를 제출하면 담당자가 확인합니다. 승인되면 7일 동안 무료로 이용할 수 있습니다."
+      heroItems={["가입 신청", "담당자 확인", "7일 무료 이용"]}
+      footer={<p>가입 승인 전에는 입력 정보를 확인하고, 승인 후 7일 무료 체험이 시작됩니다.</p>}
     >
       <ATypePublicCard eyebrow={copy.label} title={copy.title} description={copy.description}>
-        {isLoading ? <ATypePublicNotice tone="info">신청 상태를 불러오는 중입니다.</ATypePublicNotice> : null}
+        {isLoading ? <ATypePublicNotice tone="info">가입 신청 정보를 불러오고 있습니다.</ATypePublicNotice> : null}
 
         {!isLoading && !applicant ? (
           <div className="space-y-4">
@@ -605,7 +622,7 @@ export default function SignupApplicationDashboard() {
               className="flex w-full items-center justify-center gap-3 rounded-[var(--pbp-radius-xl)] bg-[var(--pbp-action-primary-surface)] px-5 py-4 text-sm font-black text-[var(--pbp-action-primary-text)] shadow-[var(--pbp-shadow-elevated-a-type)] transition hover:-translate-y-0.5 hover:bg-[var(--pbp-action-primary-surface-hover)]"
             >
               <GoogleMark />
-              7일 무료로 시작하기
+              Google로 가입 신청하기
             </a>
           </div>
         ) : null}
@@ -629,9 +646,7 @@ export default function SignupApplicationDashboard() {
             ) : null}
 
             {application?.status === "provisioning_failed" ? (
-              <ATypePublicNotice tone="danger">
-                처리 오류 코드: {application.provisioningErrorCode ?? "SIGNUP_PROVISIONING_FAILED"}
-              </ATypePublicNotice>
+              <ATypePublicNotice tone="danger">가입 처리에 시간이 더 필요합니다. 담당자가 확인하고 있습니다.</ATypePublicNotice>
             ) : null}
 
             {canEdit ? (
@@ -648,16 +663,36 @@ export default function SignupApplicationDashboard() {
                   사업자등록번호
                   <input inputMode="numeric" value={form.businessRegistrationNumber} onChange={(event) => setForm((current) => ({ ...current, businessRegistrationNumber: normalizeBusinessRegistration(event.target.value) }))} className="rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm font-semibold outline-none focus:border-[var(--pbp-brand-primary)]" placeholder="숫자 10자리" />
                 </label>
-                <label className="grid gap-2 text-sm font-bold text-[var(--pbp-text-primary)]">
-                  요청 요금제
-                  <select value={form.requestedPlanCode} onChange={(event) => setForm((current) => ({ ...current, requestedPlanCode: event.target.value as SignupApplicationPlanCode }))} className="rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm font-semibold outline-none focus:border-[var(--pbp-brand-primary)]">
-                    <option value="lite">Lite</option>
-                    <option value="flow">Flow</option>
-                    <option value="studio">Studio</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </label>
-                <div className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-soft)] p-4 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">
+
+                <section className="grid gap-3">
+                  <div>
+                    <p className="text-sm font-black text-[var(--pbp-text-primary)]">요금제 선택</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--pbp-text-secondary)]">부가세 포함 · 승인 후 7일 무료 · 오늘 결제금액 0원</p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {planCards.map((plan) => {
+                      const selected = form.requestedPlanCode === plan.code;
+                      return (
+                        <button
+                          key={plan.code}
+                          type="button"
+                          onClick={() => setForm((current) => ({ ...current, requestedPlanCode: plan.code }))}
+                          className={`rounded-[var(--pbp-radius-xl)] border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pbp-focus-ring)] ${
+                            selected
+                              ? "border-[var(--pbp-brand-primary)] bg-[var(--pbp-brand-muted)]"
+                              : "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] hover:bg-[var(--pbp-surface-soft)]"
+                          }`}
+                        >
+                          <span className="block text-sm font-black text-[var(--pbp-text-primary)]">{plan.name}</span>
+                          <span className="mt-2 block text-lg font-black text-[var(--pbp-brand-primary)]">{plan.price}</span>
+                          <span className="mt-2 block text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">{plan.storage} · {plan.members}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                <section className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-soft)] p-4 text-xs font-semibold leading-5 text-[var(--pbp-text-secondary)]">
                   <div>
                     <p className="text-sm font-black text-[var(--pbp-text-primary)]">사업자등록증</p>
                     <p>PNG, JPEG, PDF · 최대 10MB</p>
@@ -665,55 +700,54 @@ export default function SignupApplicationDashboard() {
                   {certificate ? (
                     <div className="min-w-0 rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] p-3">
                       <p className="truncate font-black text-[var(--pbp-text-primary)]">{certificate.originalName}</p>
-                      <p>{certificate.mimeType} · {formatFileSize(certificate.sizeBytes)} · {formatDateTime(certificate.uploadedAt)}</p>
+                      <p>{getFileKindLabel(certificate)} · {formatFileSize(certificate.sizeBytes)} · {formatDateTime(certificate.uploadedAt)}</p>
                     </div>
                   ) : (
-                    <p>현재 등록된 파일이 없습니다.</p>
+                    <p>등록된 파일이 없습니다.</p>
                   )}
-                  {!application ? <ATypePublicNotice tone="info">회사 정보를 먼저 임시 저장하면 사업자등록증을 업로드할 수 있습니다.</ATypePublicNotice> : null}
+                  {!companyInfoValid ? <ATypePublicNotice tone="info">회사 정보를 먼저 입력하면 파일을 선택할 수 있습니다.</ATypePublicNotice> : null}
                   {certificateError ? <ATypePublicNotice tone="warning">{certificateError}</ATypePublicNotice> : null}
                   <input
                     type="file"
                     accept="image/png,image/jpeg,application/pdf,.png,.jpg,.jpeg,.pdf"
-                    disabled={isBusy || !application}
-                    onChange={(event) => setSelectedCertificateFile(event.target.files?.[0] ?? null)}
+                    disabled={isBusy || !companyInfoValid}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null;
+                      if (file) void uploadCertificate(file);
+                      event.currentTarget.value = "";
+                    }}
                     className="w-full min-w-0 text-xs font-semibold text-[var(--pbp-text-secondary)] file:mr-3 file:rounded-[var(--pbp-radius-lg)] file:border-0 file:bg-[var(--pbp-brand-primary)] file:px-3 file:py-2 file:text-xs file:font-black file:text-[var(--pbp-text-inverse)]"
                   />
-                  {selectedCertificateFile ? (
-                    <p className="break-all text-[var(--pbp-text-primary)]">
-                      선택됨: {selectedCertificateFile.name} · {formatFileSize(selectedCertificateFile.size)}
-                    </p>
-                  ) : null}
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <button type="button" onClick={uploadCertificate} disabled={isBusy || !application || !selectedCertificateFile} className="flex-1 rounded-[var(--pbp-radius-lg)] bg-[var(--pbp-action-primary-surface)] px-3 py-2 text-xs font-black text-[var(--pbp-action-primary-text)] disabled:bg-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
-                      {certificate ? "교체 업로드" : "파일 업로드"}
+                  {certificate ? (
+                    <button type="button" onClick={deleteCertificate} disabled={isBusy} className="w-full rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-status-danger-border)] bg-[var(--pbp-surface-base)] px-3 py-2 text-xs font-black text-[var(--pbp-status-danger-fg)] disabled:border-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
+                      파일 삭제
                     </button>
-                    {certificate ? (
-                      <button type="button" onClick={deleteCertificate} disabled={isBusy} className="flex-1 rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-status-danger-border)] bg-[var(--pbp-surface-base)] px-3 py-2 text-xs font-black text-[var(--pbp-status-danger-fg)] disabled:border-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
-                        등록 철회
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4">
+                  ) : null}
+                </section>
+
+                <section className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4">
                   {consentError ? <ATypePublicNotice tone="warning">{consentError}</ATypePublicNotice> : null}
                   {policies.map((policy) => (
-                    <label key={policy.consentType} className="flex items-start gap-3 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
-                      <input
-                        type="checkbox"
-                        checked={consentSelections[policy.consentType]}
-                        onChange={(event) => void toggleConsent(policy.consentType, event.target.checked)}
-                        className="mt-1 h-4 w-4"
-                      />
-                      <span>
-                        {policy.label}에 동의합니다.
-                        <span className="block text-xs text-[var(--pbp-text-subtle)]">
-                          {policy.policyCode} · v{policy.policyVersion}
-                        </span>
-                      </span>
-                    </label>
+                    <div key={policy.consentType} className="flex flex-wrap items-start justify-between gap-3 rounded-[var(--pbp-radius-lg)] bg-[var(--pbp-surface-base)] p-3">
+                      <label className="flex min-w-0 flex-1 items-start gap-3 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
+                        <input
+                          type="checkbox"
+                          checked={consentSelections[policy.consentType]}
+                          onChange={(event) => void toggleConsent(policy.consentType, event.target.checked)}
+                          className="mt-1 h-4 w-4"
+                        />
+                        <span>[필수] {policy.label}에 동의합니다.</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setOpenPolicy(policy.consentType)}
+                        className="rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] px-3 py-1.5 text-xs font-black text-[var(--pbp-text-primary)]"
+                      >
+                        보기
+                      </button>
+                    </div>
                   ))}
-                </div>
+                </section>
               </div>
             ) : (
               <div className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
@@ -729,14 +763,9 @@ export default function SignupApplicationDashboard() {
             {message ? <ATypePublicNotice tone="success">{message}</ATypePublicNotice> : null}
 
             <div className="flex flex-col gap-2 sm:flex-row">
-              {canEdit ? (
-                <button type="button" onClick={saveDraft} disabled={isBusy || !formValid} className="flex-1 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-brand-primary)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm font-black text-[var(--pbp-brand-primary)] transition hover:bg-[var(--pbp-surface-soft)] disabled:border-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
-                  임시 저장
-                </button>
-              ) : null}
               {canSubmit ? (
                 <button type="button" onClick={submitApplication} disabled={isBusy || !formValid} className="flex-1 rounded-[var(--pbp-radius-xl)] bg-[var(--pbp-action-primary-surface)] px-4 py-3 text-sm font-black text-[var(--pbp-action-primary-text)] transition hover:bg-[var(--pbp-action-primary-surface-hover)] disabled:bg-[var(--pbp-surface-soft)] disabled:text-[var(--pbp-text-disabled)]">
-                  {application?.status === "changes_requested" ? "수정 후 다시 제출" : "제출"}
+                  {application?.status === "changes_requested" ? "수정 후 다시 제출" : "가입 신청 제출"}
                 </button>
               ) : null}
               {canCancel ? (
@@ -745,20 +774,28 @@ export default function SignupApplicationDashboard() {
                 </button>
               ) : null}
             </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <button type="button" onClick={loadStatus} disabled={isBusy || isLoading} className="flex-1 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm font-bold text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-soft)]">
-                상태 새로고침
-              </button>
-              <form action="/api/auth/logout" method="post" className="flex-1">
-                <button type="submit" className="w-full rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm font-bold text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-soft)]">
-                  로그아웃
-                </button>
-              </form>
-            </div>
           </div>
         ) : null}
       </ATypePublicCard>
+
+      {openedPolicy ? (
+        <div className="fixed inset-0 z-50 grid place-items-end bg-black/40 p-0 sm:place-items-center sm:p-6" role="dialog" aria-modal="true" aria-label={openedPolicy.title}>
+          <div className="max-h-[90dvh] w-full overflow-y-auto rounded-t-[var(--pbp-radius-modal)] bg-[var(--pbp-surface-base)] p-5 shadow-[var(--pbp-shadow-modal-a-type)] sm:max-w-lg sm:rounded-[var(--pbp-radius-modal)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--pbp-brand-soft)]">WAFL</p>
+                <h2 className="mt-2 text-xl font-black text-[var(--pbp-text-primary)]">{openedPolicy.title}</h2>
+              </div>
+              <button type="button" onClick={() => setOpenPolicy(null)} className="rounded-full border border-[var(--pbp-border-soft)] px-3 py-1 text-sm font-black text-[var(--pbp-text-primary)]">
+                닫기
+              </button>
+            </div>
+            <div className="mt-5 grid gap-3 text-sm font-semibold leading-7 text-[var(--pbp-text-secondary)]">
+              {openedPolicy.body.map((line) => <p key={line}>{line}</p>)}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </ATypePublicFrame>
   );
 }

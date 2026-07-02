@@ -35,7 +35,8 @@ type WorkorderPdfPayload = {
   kind?: unknown;
 };
 
-function readPdfKind(value: unknown): WorkOrderPdfKind {
+function readRequestedPdfKind(value: unknown): WorkOrderPdfKind | "auto" {
+  if (value === "auto") return "auto";
   return value === "final" ? "final" : "incomplete";
 }
 
@@ -193,8 +194,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!scopeResult.ok) return scopeResult.response;
 
   const payload = (await request.json().catch(() => null)) as WorkorderPdfPayload | null;
-  const kind = readPdfKind(payload?.kind);
-  const generatedDocumentType = generatedDocumentTypeForKind(kind);
+  const requestedKind = readRequestedPdfKind(payload?.kind);
   const workOrder = await findDbWorkOrderById(workOrderId, scopeResult.scope);
   if (!workOrder) {
     return NextResponse.json({ ok: false, attachment: null, error: "WORK_ORDER_NOT_FOUND" }, { status: 404 });
@@ -207,6 +207,11 @@ export async function POST(request: Request, context: RouteContext) {
 
   const sizeSpec = await getWorkOrderSizeSpec({ workOrder, scope: scopeResult.scope });
   const missingItems = getWorkorderPdfMissingItems({ workOrder, sizeSpec });
+  const kind: WorkOrderPdfKind =
+    requestedKind === "auto"
+      ? (missingItems.length > 0 ? "incomplete" : "final")
+      : requestedKind;
+  const generatedDocumentType = generatedDocumentTypeForKind(kind);
   if (kind === "final" && missingItems.length > 0) {
     return NextResponse.json(
       { ok: false, attachment: null, error: "WORKORDER_FINAL_PDF_NOT_READY", missingItems },
@@ -334,5 +339,5 @@ export async function POST(request: Request, context: RouteContext) {
     generatedDocumentType,
   });
 
-  return NextResponse.json({ ok: true, attachment, missingItems });
+  return NextResponse.json({ ok: true, attachment, documentKind: kind, missingItems });
 }

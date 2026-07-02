@@ -26,6 +26,27 @@ function jsonError(error: string, status: number) {
   return NextResponse.json({ ok: false, error }, { status, headers: { "Cache-Control": "no-store" } });
 }
 
+function pdfErrorPage(message: string, status: number) {
+  const escaped = message.replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[char] ?? char);
+  return new Response(
+    `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PDF 확인</title></head><body style="margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#0f172a"><main style="min-height:100vh;display:grid;place-items:center;padding:24px"><section style="max-width:420px;border:1px solid #e2e8f0;border-radius:16px;background:white;padding:24px;box-shadow:0 18px 48px rgba(15,23,42,.10)"><h1 style="margin:0 0 8px;font-size:20px">PDF를 열 수 없습니다</h1><p style="margin:0;line-height:1.6;color:#475569">${escaped}</p></section></main></body></html>`,
+    {
+      status,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+      },
+    },
+  );
+}
+
 function createInlineDisposition(fileName: string) {
   const safeFallback = fileName.replace(/[^\x20-\x7E]/g, "_").replace(/[\\/\r\n\0"]/g, "_") || "workorder.pdf";
   return `inline; filename="${safeFallback}"; filename*=UTF-8''${encodeURIComponent(fileName || "workorder.pdf")}`;
@@ -91,6 +112,6 @@ export async function GET(_request: Request, context: RouteContext) {
       },
     });
   } catch {
-    return jsonError("PDF_OBJECT_MISSING", 404);
+    return pdfErrorPage("PDF 파일을 찾을 수 없습니다. 다시 만들어 주세요.", 404);
   }
 }

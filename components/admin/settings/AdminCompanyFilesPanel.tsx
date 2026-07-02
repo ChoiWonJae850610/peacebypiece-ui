@@ -188,7 +188,7 @@ function getCompanyFileUploadUserMessage(codeOrMessage: string): string {
     return "저장공간 한도 정보를 확인할 수 없어 업로드를 시작하지 못했습니다.";
   }
   if (codeOrMessage === "COMPANY_FILE_UPLOAD_NOT_CONFIGURED") {
-    return "파일 업로드 저장소 설정이 완료되지 않았습니다. 시스템관리자에게 문의해 주세요.";
+    return "파일 업로드 준비가 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.";
   }
   if (codeOrMessage === "COMPANY_FILE_UPLOAD_PREPARE_FAILED") {
     return "파일 업로드를 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.";
@@ -214,15 +214,6 @@ function getUploadErrorMessage(error: unknown): string {
   return getCompanyFileUploadUserMessage(message);
 }
 
-function getUploadTargetLabel(urlString: string): string {
-  try {
-    const url = new URL(urlString);
-    return `${url.origin}${url.pathname}`;
-  } catch {
-    return "INVALID_UPLOAD_URL";
-  }
-}
-
 async function readUploadFailureBody(
   response: Response,
 ): Promise<string | null> {
@@ -245,13 +236,11 @@ function createCompanyFileRouteUrl(
   file: CompanyFileMetadata | null | undefined,
   download = false,
 ): string {
-  const key = String(file?.storageKey ?? "").trim();
-  if (!key) return "";
+  const fileId = String(file?.id ?? "").trim();
+  if (!fileId) return "";
 
-  const params = new URLSearchParams({ key });
+  const params = new URLSearchParams({ fileId });
   if (download) params.set("download", "1");
-  const fileName = String(file?.originalName ?? "").trim();
-  if (fileName) params.set("name", fileName);
 
   return `/api/admin/company-files/file?${params.toString()}`;
 }
@@ -456,7 +445,11 @@ export default function AdminCompanyFilesPanel() {
   }, []);
 
   useEffect(() => {
-    void loadFiles();
+    const timer = window.setTimeout(() => {
+      void loadFiles();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadFiles]);
 
   const slots = useMemo<CompanyFileSlotViewModel[]>(() => {
@@ -543,9 +536,7 @@ export default function AdminCompanyFilesPanel() {
           originalName: selectedFile.name,
           mimeType: selectedFile.type || "application/octet-stream",
           sizeBytes: selectedFile.size,
-          storageKey: preparePayload.file.storageKey,
           requestId: preparePayload.diagnostics?.requestId ?? null,
-          uploadTarget: getUploadTargetLabel(preparePayload.upload.url),
         };
         console.warn("[COMPANY_FILE_R2_UPLOAD_FAILED]", diagnostics);
         throw new CompanyFileUploadError(
@@ -574,7 +565,6 @@ export default function AdminCompanyFilesPanel() {
           originalName: selectedFile.name,
           mimeType: selectedFile.type || "application/octet-stream",
           sizeBytes: selectedFile.size,
-          storageKey: preparePayload.file.storageKey,
           requestId: preparePayload.diagnostics?.requestId ?? null,
           error: code,
           message: savePayload?.message ?? null,
@@ -647,7 +637,7 @@ export default function AdminCompanyFilesPanel() {
       ? t("common.loadingShort", "조회 중")
       : loadState === "failed"
         ? t("common.loadFailed", "조회 실패")
-        : t("settings.companyFiles.badge", "R2 업로드 연결");
+        : t("settings.companyFiles.badge", "파일 관리");
 
   return (
     <WaflSettingsSectionGroup
@@ -893,7 +883,7 @@ export default function AdminCompanyFilesPanel() {
         >
           {t(
             "settings.companyFiles.loadFailedDescription",
-            "회사 파일 상태를 불러오지 못했습니다. DB/API 1차 적용 상태와 로그인 회사 범위를 확인해 주세요.",
+            "회사 파일 상태를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
           )}
         </WaflInfoBox>
       ) : null}

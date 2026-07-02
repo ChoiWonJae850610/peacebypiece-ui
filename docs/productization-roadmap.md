@@ -1,13 +1,13 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34.1`. Latest completed work: `0.24.34.1` Public Signup First-Draft Flow Fix and Repo-state Metadata Correction. Next planned work: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.2`. Latest completed work: `0.24.34.2` Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup. Next planned work: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34.1`
-- APP_VERSION: `0.24.34.1`
+- Roadmap checkpoint version: `0.24.34.2`
+- APP_VERSION: `0.24.34.2`
 - Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
 - Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
@@ -44,9 +44,10 @@
 18. `0.24.33.1` - Authenticated Public Signup E2E and Deployed QA Automation
 19. `0.24.34` - Workorder Size Specification and Incomplete/Final PDF
 20. `0.24.34.1` - Public Signup First-Draft Flow Fix and Repo-state Metadata Correction
-21. `0.24.35` - Company-wide Export Execution
-22. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
-23. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
+21. `0.24.34.2` - Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup
+22. `0.24.35` - Company-wide Export Execution
+23. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
+24. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
 
 ## Roadmap Reconciliation After 0.24.33.1
 
@@ -76,6 +77,19 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 - Build actual dev/test Export packages with CSV, JSON, attachments, and current PDFs.
 - Add folder manifest, split archive support, authenticated download, expiry, exact cleanup, plan usage enforcement, and final termination Export readiness.
 - Keep production Export separately approved.
+
+## 0.24.34.2 - Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.34.2.ts`.
+- Cleans public signup copy, plan selection, terms viewing, certificate file selection, and final submission into a customer-facing flow.
+- Removes manual draft/status-refresh emphasis from the public signup UI and creates the first draft automatically when a certificate file is selected after required company information is present.
+- Keeps technical terms such as DB/R2/Worker, raw error codes, fake readiness, and payment-readiness details out of customer-facing copy.
+- Presents system catalog as `기준관리 - 생산품 분류·사이즈·치수`, including product categories, size sets, POMs, and default measurement chart discovery.
+- Moves workorder size details from a central table to a right-panel summary plus modal editor.
+- Supports inch entry as whole number plus 1/8 fraction selection.
+- Uses one workorder PDF output action; the server decides incomplete versus final from completeness.
+- Shows generated workorder PDFs with safe Korean filenames and a customer-safe missing-object fallback.
+- Keeps 0.24.35 Export, new migration, Worker deployment, actual PG/email, and production mutation out of scope.
 
 ## 0.24.34.1 - Public Signup First-Draft Flow Fix and Repo-state Metadata Correction
 

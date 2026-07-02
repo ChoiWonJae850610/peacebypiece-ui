@@ -148,6 +148,25 @@ export async function listActiveCompanyFiles(companyId: string): Promise<Company
   return result.rows.map(mapRow);
 }
 
+export async function getActiveCompanyFileById(input: {
+  companyId: string;
+  fileId: string;
+}): Promise<CompanyFileMetadata | null> {
+  const normalizedCompanyId = normalizeRequiredText(input.companyId, "companyId");
+  const normalizedFileId = normalizeRequiredText(input.fileId, "fileId");
+  const result = await queryDb<CompanyFileRow>(
+    `SELECT ${COMPANY_FILE_SELECT}
+       FROM company_files
+      WHERE company_id = $1::text
+        AND id = $2::text
+        AND deleted_at IS NULL
+      LIMIT 1`,
+    [normalizedCompanyId, normalizedFileId],
+  );
+
+  return result.rows[0] ? mapRow(result.rows[0]) : null;
+}
+
 export async function createOrReplaceCompanyFileMetadata(
   input: CreateCompanyFileMetadataInput,
 ): Promise<CompanyFileMetadata> {

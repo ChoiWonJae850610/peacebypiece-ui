@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.34.1
+# Codex Current State - 0.24.34.2
 
 ## Version
 
-- Current version: `0.24.34.1`.
-- Current implementation version: `0.24.34.1`.
+- Current version: `0.24.34.2`.
+- Current implementation version: `0.24.34.2`.
 - Branch: `master`.
-- Latest completed version: `0.24.34.1` Public Signup First-Draft Flow Fix and Repo-state Metadata Correction.
+- Latest completed version: `0.24.34.2` Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup.
 - Next official work: `0.24.35` Company-wide Export Execution.
 - 0.24.35 implementation has not started.
 
@@ -93,7 +93,7 @@ Canonical evidence:
 
 ## Current Roadmap
 
-- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.1.ts`.
+- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.2.ts`.
 - Next planned detail: `0.24.35` Company-wide Export Execution.
 - Productization roadmap: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
@@ -143,7 +143,31 @@ Out of scope:
 - Production mutation.
 - New DB migration.
 
-## Planned Sequence After 0.24.34.1
+## 0.24.34.2 Patch Scope
+
+`0.24.34.2 - Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup`
+
+Implemented scope:
+
+- Public signup copy was simplified for customers and no longer presents implementation terms as user-facing guidance.
+- Signup uses plan cards, terms/privacy viewers, automatic draft creation on certificate file selection, and a single `가입 신청 제출` action.
+- Customer company file copy avoids R2/DB/API implementation wording in customer-facing fallback states.
+- System catalog is presented as `기준관리 - 생산품 분류·사이즈·치수`, with product categories, size sets, POMs, and default measurement chart discovery in one entry.
+- Workorder size/POM details are summarized in the side panel and edited in a modal.
+- Inch input is split into whole-number and 1/8-fraction controls.
+- Workorder PDF output is a single action; the server automatically chooses incomplete or final based on completeness.
+- Generated workorder PDF filenames use safe Korean status labels.
+- Missing PDF object viewer fallback is a customer-safe HTML state instead of a raw JSON error page.
+
+Out of scope:
+
+- 0.24.35 Company-wide Export execution.
+- New DB migration, production migration, or production data mutation.
+- Worker source changes or deployment.
+- Actual PG/email provider integration.
+- Broad public marketing site redesign or `/workers` redesign.
+
+## Planned Sequence After 0.24.34.2
 
 1. `0.24.35 — Company-wide Export Execution`
 2. `0.24.36 — Termination, Recovery, and Automatic Deletion Execution`

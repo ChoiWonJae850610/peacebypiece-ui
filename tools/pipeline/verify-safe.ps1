@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations", "public-signup-e2e", "public-signup-authenticated-e2e", "workorder-size-pdf", "public-signup-first-draft-fix")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations", "public-signup-e2e", "public-signup-authenticated-e2e", "workorder-size-pdf", "public-signup-first-draft-fix", "customer-product-ux-cleanup")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -819,6 +819,53 @@ $profileCommands = @{
         @{ Name = "signup approval provisioning foundation contract"; Command = "node"; Arguments = @("tests/signup-approval-provisioning-foundation-contract.mjs") },
         @{ Name = "workorder size spec contract"; Command = "node"; Arguments = @("tests/workorder-size-spec-contract.mjs") },
         @{ Name = "workorder incomplete/final PDF contract"; Command = "node"; Arguments = @("tests/workorder-incomplete-final-pdf-contract.mjs") },
+        @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
+        @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") },
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
+        @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
+        @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
+        @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
+        @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
+    );
+    "customer-product-ux-cleanup" = @(
+        @{
+            Name = "targeted ESLint";
+            Command = "node";
+            Arguments = @(
+                "node_modules/eslint/bin/eslint.js",
+                "app/api/admin/company-files/file/route.ts",
+                "app/api/workorders/[workOrderId]/generated/workorder-pdf/route.ts",
+                "app/api/workorders/[workOrderId]/generated/workorder-pdf/[attachmentId]/view/route.ts",
+                "app/(system)/system/catalog/page.tsx",
+                "components/admin/settings/AdminCompanyFilesPanel.tsx",
+                "components/signup/SignupApplicationDashboard.tsx",
+                "components/workorder/detail/WorkOrderSizeSpecPanel.tsx",
+                "lib/admin/settings/companyFileRepository.ts",
+                "lib/constants/version.ts",
+                "lib/internal/roadmap/index.ts",
+                "lib/internal/roadmap/roadmap-0.24.34.2.ts",
+                "lib/workorder/generatedDocuments.ts",
+                "tools/pipeline/approved-workflow.ps1",
+                "tools/pipeline/peacebypiece-auto-pipeline.ps1",
+                "tools/pipeline/verify-safe.ps1",
+                "tests/customer-product-ux-0.24.34.2-contract.mjs",
+                "tests/roadmap-0.24.34.2-contract.mjs",
+                "tests/roadmap-development-contract.mjs",
+                "tests/workorder-pdf-auto-output-contract.mjs",
+                "tests/workorder-size-spec-contract.mjs"
+            )
+        },
+        @{ Name = "tsc --noEmit"; Command = "node"; Arguments = @("node_modules/typescript/bin/tsc", "--noEmit") },
+        @{ Name = "customer product UX contract"; Command = "node"; Arguments = @("tests/customer-product-ux-0.24.34.2-contract.mjs") },
+        @{ Name = "workorder PDF auto output contract"; Command = "node"; Arguments = @("tests/workorder-pdf-auto-output-contract.mjs") },
+        @{ Name = "roadmap 0.24.34.2 contract"; Command = "node"; Arguments = @("tests/roadmap-0.24.34.2-contract.mjs") },
+        @{ Name = "workorder size spec contract"; Command = "node"; Arguments = @("tests/workorder-size-spec-contract.mjs") },
+        @{ Name = "workorder incomplete/final PDF contract"; Command = "node"; Arguments = @("tests/workorder-incomplete-final-pdf-contract.mjs") },
+        @{ Name = "workorder PDF policy contract"; Command = "node"; Arguments = @("tests/workorder-pdf-policy-contract.mjs") },
+        @{ Name = "workorder PDF viewer contract"; Command = "node"; Arguments = @("tests/workorder-pdf-viewer-contract.mjs") },
+        @{ Name = "system catalog schema contract"; Command = "node"; Arguments = @("tests/system-catalog-schema-contract.mjs") },
+        @{ Name = "public signup first-draft contract"; Command = "node"; Arguments = @("tests/public-signup-first-draft-contract.mjs") },
+        @{ Name = "public signup e2e UX contract"; Command = "node"; Arguments = @("tests/public-signup-e2e-ux-contract.mjs") },
         @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
         @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") },
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },

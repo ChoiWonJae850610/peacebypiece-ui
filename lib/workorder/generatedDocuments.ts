@@ -43,7 +43,7 @@ export function formatOrderRequestDocumentTimestamp(date = new Date()): string {
     date.getFullYear(),
     pad2(date.getMonth() + 1),
     pad2(date.getDate()),
-  ].join("-") + "_" + [pad2(date.getHours()), pad2(date.getMinutes())].join("");
+  ].join("") + "_" + [pad2(date.getHours()), pad2(date.getMinutes())].join("");
 }
 
 export function createOrderRequestPdfDisplayName(input: {
@@ -66,10 +66,10 @@ export function createWorkorderPdfDisplayName(input: {
   const title = sanitizeFileNameSegment(input.workOrderTitle);
   const timestamp = formatOrderRequestDocumentTimestamp(input.createdAt ?? new Date());
   const suffix = input.documentType === GENERATED_DOCUMENT_TYPE.workorderFinalPdf
-    ? "final"
-    : "incomplete";
+    ? "제출용"
+    : "미완성";
 
-  return `workorder-${suffix}_${title}_${timestamp}.pdf`;
+  return `${timestamp}_${title}_작업지시서_${suffix}.pdf`;
 }
 
 export function createOrderRequestPdfStorageKey(input: {

@@ -28,9 +28,10 @@ assert.match(dashboard, /setConsentError/);
 assert.match(dashboard, /setCertificateError/);
 assert.match(dashboard, /applyConsentPayload\(await fetchConsents\(\)\)/);
 assert.match(dashboard, /const certificatePayload = await fetchCertificate\(\)/);
-assert.match(dashboard, /if \(!application\)[\s\S]{0,220}setError\(/, "certificate upload must guide first-draft users to save first");
-assert.match(dashboard, /disabled=\{isBusy \|\| !application\}/, "file input must be disabled until application exists");
-assert.match(dashboard, /disabled=\{isBusy \|\| !application \|\| !selectedCertificateFile\}/, "upload button must be disabled until application exists");
+assert.match(dashboard, /if \(!application\)[\s\S]{0,260}saveApplicationDraft\(\)/, "certificate upload must create the first draft automatically");
+assert.match(dashboard, /uploadCertificate\(file\)/, "certificate selection must upload immediately through the guarded flow");
+assert.match(dashboard, /disabled=\{isBusy \|\| !companyInfoValid\}/, "file input must wait for required company information");
+assert.doesNotMatch(dashboard, /selectedCertificateFile/, "manual certificate staging state must not return");
 
 assert.match(reviewRepository, /SIGNUP_REVIEW_DEFAULT_STATUSES[\s\S]*"submitted"[\s\S]*"reviewing"[\s\S]*"changes_requested"/, "submitted/reviewing/changes_requested must be the default system-admin queue");
 assert.doesNotMatch(reviewRepository, /SIGNUP_REVIEW_DEFAULT_STATUSES[\s\S]*"draft"/, "draft must not enter the default review queue");

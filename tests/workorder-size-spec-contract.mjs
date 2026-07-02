@@ -42,7 +42,8 @@ assert.doesNotMatch(route, /getCurrentWaflSession\(\).*companyId/s, "route shoul
 assert.match(panel, /WorkOrderSizeSpecPanel/);
 assert.match(panel, /\/size-spec/);
 assert.match(panel, /measurementUnit/);
-assert.match(panel, /미완성 PDF/);
-assert.match(panel, /최종 PDF/);
+assert.match(panel, /작업지시서 출력/);
+assert.match(panel, /kind: "auto"/);
+assert.doesNotMatch(panel, /aria-label="미완성 PDF"|aria-label="최종 PDF"/);
 
 console.log("workorder size-spec contract: PASS");

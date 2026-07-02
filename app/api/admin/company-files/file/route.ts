@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
+import { getActiveCompanyFileById } from "@/lib/admin/settings/companyFileRepository";
 import { isCompanyFileStorageKeyForCompany } from "@/lib/admin/settings/companyFilePolicy";
 import { getR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
@@ -101,11 +102,18 @@ export async function GET(request: NextRequest) {
   });
   if (!scopeResult.ok) return scopeResult.response;
 
-  const key = request.nextUrl.searchParams.get("key")?.trim() ?? "";
+  const fileId = request.nextUrl.searchParams.get("fileId")?.trim() ?? "";
   const isDownloadRequest = request.nextUrl.searchParams.get("download") === "1";
-  const downloadName = sanitizeDownloadFileName(request.nextUrl.searchParams.get("name"));
+  const file = fileId
+    ? await getActiveCompanyFileById({
+      companyId: scopeResult.companyScope.companyId,
+      fileId,
+    })
+    : null;
+  const key = file?.storageKey.trim() ?? "";
+  const downloadName = sanitizeDownloadFileName(file?.originalName ?? null);
 
-  if (!key || key.includes("..") || key.startsWith("/") || !isCompanyFileStorageKeyForCompany({ key, companyId: scopeResult.companyScope.companyId })) {
+  if (!file || !key || key.includes("..") || key.startsWith("/") || !isCompanyFileStorageKeyForCompany({ key, companyId: scopeResult.companyScope.companyId, fileType: file.fileType })) {
     return NextResponse.json({ ok: false, error: "COMPANY_FILE_INVALID_STORAGE_KEY" }, { status: 400 });
   }
 
