@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.34
+# Codex Current State - 0.24.34.1
 
 ## Version
 
-- Current version: `0.24.34`.
-- Current implementation version: `0.24.34`.
+- Current version: `0.24.34.1`.
+- Current implementation version: `0.24.34.1`.
 - Branch: `master`.
-- Latest completed version: `0.24.34` Workorder Size Specification and Incomplete/Final PDF.
+- Latest completed version: `0.24.34.1` Public Signup First-Draft Flow Fix and Repo-state Metadata Correction.
 - Next official work: `0.24.35` Company-wide Export Execution.
 - 0.24.35 implementation has not started.
 
@@ -93,7 +93,7 @@ Canonical evidence:
 
 ## Current Roadmap
 
-- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.ts`.
+- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.1.ts`.
 - Next planned detail: `0.24.35` Company-wide Export Execution.
 - Productization roadmap: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
@@ -122,7 +122,28 @@ Out of scope:
 - Operations/inquiry/monitoring/CI/accessibility/performance (`0.24.37`).
 - Actual PG/email/provider/production work unless separately approved.
 
-## Planned Sequence After 0.24.34
+## 0.24.34.1 Patch Scope
+
+`0.24.34.1 — Public Signup First-Draft Flow Fix and Repo-state Metadata Correction`
+
+Implemented scope:
+
+- Google OAuth-success applicant sessions with no signup application row are treated as a normal first-draft state.
+- `/api/signup/application/certificate` GET returns `{ ok: true, certificate: null }` when the applicant has no application yet.
+- Signup dashboard separates applicant/application loading from consent and certificate loading failures.
+- Certificate upload remains blocked until the first draft application is saved.
+- First-draft users see the company information form and do not loop back to the Google signup CTA.
+- Repo-state metadata publication is corrected so the 0.24.34 workorder-size-pdf migration/audit evidence is explicit.
+
+Out of scope:
+
+- 0.24.35 Company-wide Export execution.
+- Worker changes or deployment.
+- Actual PG/email.
+- Production mutation.
+- New DB migration.
+
+## Planned Sequence After 0.24.34.1
 
 1. `0.24.35 — Company-wide Export Execution`
 2. `0.24.36 — Termination, Recovery, and Automatic Deletion Execution`

@@ -38,6 +38,12 @@ async function requireApplicantSession() {
 export async function GET() {
   try {
     const session = await requireApplicantSession();
+    if (!session.applicationId) {
+      return NextResponse.json(
+        { ok: true, certificate: null },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
     const certificate = await getOwnedSignupApplicationCertificate({ session });
     return NextResponse.json(
       { ok: true, certificate },

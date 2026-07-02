@@ -286,6 +286,8 @@ export default function SignupApplicationDashboard() {
   const [isBusy, setIsBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [consentError, setConsentError] = useState<string | null>(null);
+  const [certificateError, setCertificateError] = useState<string | null>(null);
 
   const status = application?.status ?? "verified_identity";
   const copy = statusCopy[status];
@@ -315,26 +317,45 @@ export default function SignupApplicationDashboard() {
   const loadStatus = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    setConsentError(null);
+    setCertificateError(null);
     try {
       const response = await fetch("/api/signup/application", { cache: "no-store" });
       const payload = (await response.json().catch(() => ({}))) as SignupApplicationResponse;
       if (!response.ok || !payload.ok) throw new Error(payload.code || "SIGNUP_STATUS_FAILED");
-      setApplicant(payload.applicant ?? null);
-      setApplication(payload.application ?? null);
-      setForm(createFormFromApplication(payload.application ?? null));
-      if (payload.applicant) {
-        applyConsentPayload(await fetchConsents());
-        const certificatePayload = await fetchCertificate();
-        setCertificate(certificatePayload.certificate ?? null);
-      } else {
+      const nextApplicant = payload.applicant ?? null;
+      const nextApplication = payload.application ?? null;
+      setApplicant(nextApplicant);
+      setApplication(nextApplication);
+      setForm(createFormFromApplication(nextApplication));
+      if (!nextApplicant) {
         setConsents([]);
         setCertificate(null);
         setSelectedCertificateFile(null);
         setConsentSelections(emptyConsentSelections);
+        return;
+      }
+
+      try {
+        applyConsentPayload(await fetchConsents());
+      } catch (consentLoadError) {
+        setConsentError(getSafeErrorMessage(consentLoadError instanceof Error ? consentLoadError.message : null));
+      }
+
+      if (nextApplication) {
+        try {
+          const certificatePayload = await fetchCertificate();
+          setCertificate(certificatePayload.certificate ?? null);
+        } catch (certificateLoadError) {
+          setCertificateError(getSafeErrorMessage(certificateLoadError instanceof Error ? certificateLoadError.message : null));
+          setCertificate(null);
+        }
+      } else {
+        setCertificate(null);
+        setSelectedCertificateFile(null);
       }
     } catch (nextError) {
       setError(getSafeErrorMessage(nextError instanceof Error ? nextError.message : null));
-      setApplicant(null);
       setApplication(null);
       setConsents([]);
       setCertificate(null);
@@ -409,12 +430,15 @@ export default function SignupApplicationDashboard() {
       setError(getSafeErrorMessage("SIGNUP_CERTIFICATE_FILE_REQUIRED"));
       return;
     }
+    if (!application) {
+      setError("회사 정보를 먼저 임시 저장하면 사업자등록증을 업로드할 수 있습니다.");
+      return;
+    }
 
     setIsBusy(true);
     setError(null);
     setMessage(null);
     try {
-      if (!application) await saveApplicationDraft();
       const formData = new FormData();
       formData.append("file", selectedCertificateFile);
       const response = await fetch("/api/signup/application/certificate", {
@@ -426,6 +450,7 @@ export default function SignupApplicationDashboard() {
         throw new Error(payload.code || "SIGNUP_CERTIFICATE_UPLOAD_FAILED");
       }
       setCertificate(payload.certificate);
+      setCertificateError(null);
       setSelectedCertificateFile(null);
       setMessage("사업자등록증이 등록되었습니다.");
     } catch (nextError) {
@@ -645,10 +670,12 @@ export default function SignupApplicationDashboard() {
                   ) : (
                     <p>현재 등록된 파일이 없습니다.</p>
                   )}
+                  {!application ? <ATypePublicNotice tone="info">회사 정보를 먼저 임시 저장하면 사업자등록증을 업로드할 수 있습니다.</ATypePublicNotice> : null}
+                  {certificateError ? <ATypePublicNotice tone="warning">{certificateError}</ATypePublicNotice> : null}
                   <input
                     type="file"
                     accept="image/png,image/jpeg,application/pdf,.png,.jpg,.jpeg,.pdf"
-                    disabled={isBusy}
+                    disabled={isBusy || !application}
                     onChange={(event) => setSelectedCertificateFile(event.target.files?.[0] ?? null)}
                     className="w-full min-w-0 text-xs font-semibold text-[var(--pbp-text-secondary)] file:mr-3 file:rounded-[var(--pbp-radius-lg)] file:border-0 file:bg-[var(--pbp-brand-primary)] file:px-3 file:py-2 file:text-xs file:font-black file:text-[var(--pbp-text-inverse)]"
                   />
@@ -658,7 +685,7 @@ export default function SignupApplicationDashboard() {
                     </p>
                   ) : null}
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <button type="button" onClick={uploadCertificate} disabled={isBusy || !selectedCertificateFile} className="flex-1 rounded-[var(--pbp-radius-lg)] bg-[var(--pbp-action-primary-surface)] px-3 py-2 text-xs font-black text-[var(--pbp-action-primary-text)] disabled:bg-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
+                    <button type="button" onClick={uploadCertificate} disabled={isBusy || !application || !selectedCertificateFile} className="flex-1 rounded-[var(--pbp-radius-lg)] bg-[var(--pbp-action-primary-surface)] px-3 py-2 text-xs font-black text-[var(--pbp-action-primary-text)] disabled:bg-[var(--pbp-border-soft)] disabled:text-[var(--pbp-text-disabled)]">
                       {certificate ? "교체 업로드" : "파일 업로드"}
                     </button>
                     {certificate ? (
@@ -669,6 +696,7 @@ export default function SignupApplicationDashboard() {
                   </div>
                 </div>
                 <div className="grid gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4">
+                  {consentError ? <ATypePublicNotice tone="warning">{consentError}</ATypePublicNotice> : null}
                   {policies.map((policy) => (
                     <label key={policy.consentType} className="flex items-start gap-3 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
                       <input

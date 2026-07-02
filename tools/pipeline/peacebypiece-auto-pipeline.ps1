@@ -839,6 +839,67 @@ function GetBillingOperationsHandoffEvidence {
     }
 }
 
+function GetWorkorderSizePdfHandoffEvidence {
+    param(
+        [string]$Version
+    )
+
+    $evidenceVersion = if ($Version -eq "0.24.34.1") { "0.24.34" } else { $Version }
+    $migrationLog = GetLatestDbAuditLogText -NamePattern "OK_Apply_Workorder_Size_Spec_Migration_$evidenceVersion-*.txt"
+    $postApplyLog = GetLatestDbAuditLogText -NamePattern "OK_Workorder_Size_Spec_Post_Apply_Audit_$evidenceVersion-*.txt"
+    $residualLog = GetLatestDbAuditLogText -NamePattern "OK_Workorder_Size_Spec_Final_Residual_Audit_$evidenceVersion-*.txt"
+
+    $migrationPassed = $migrationLog -match 'Result:\s*PASS'
+    $postApplyPassed = $postApplyLog -match 'Result:\s*PASS'
+    $residualPassed = $residualLog -match 'Result:\s*PASS' -and $residualLog -match 'Total compatibility findings:\s*0'
+
+    return [pscustomobject]@{
+        DbMigrationApplyResult = if ($migrationPassed) { "PASS" } else { "not provided" }
+        PostApplyAuditResult = if ($postApplyPassed) { "PASS" } else { "not provided" }
+        FinalResidualDbRows = if ($residualPassed) { "0" } else { "not provided" }
+        FinalResidualR2Objects = "NOT_APPLICABLE - no R2 mutation"
+        DevTestFixtureMutation = "false"
+        DevTestR2Mutation = "false"
+        BusinessDataMutation = "false"
+        ProductionBusinessDataMutation = "false"
+        ProductionMutation = "false"
+        SchemaMigrationThisRun = if ($migrationPassed) { "patch_0_24_34_workorder_size_spec_and_pdf.sql" } else { "not provided" }
+    }
+}
+
+function TestWorkorderSizePdfMigrationEvidence {
+    param(
+        [object]$VerificationSummary
+    )
+
+    return ([string]$VerificationSummary.DbMigrationApplyResult -eq "PASS" -and
+        [string]$VerificationSummary.SchemaMigrationThisRun -eq "patch_0_24_34_workorder_size_spec_and_pdf.sql")
+}
+
+function GetDbMigrationAppliedDisplayValue {
+    param(
+        [object]$VerificationSummary
+    )
+
+    if (TestWorkorderSizePdfMigrationEvidence -VerificationSummary $VerificationSummary) {
+        return "true; approved dev/test only"
+    }
+
+    return [string]$VerificationSummary.DbMigrationApplyResult
+}
+
+function GetDbSchemaMutationDisplayValue {
+    param(
+        [object]$VerificationSummary
+    )
+
+    if (TestWorkorderSizePdfMigrationEvidence -VerificationSummary $VerificationSummary) {
+        return "true; additive migration only on approved dev/test DB"
+    }
+
+    return [string]$VerificationSummary.SchemaMigrationThisRun
+}
+
 function GetLocalRepoVerificationSummary {
     param(
         [string]$ResultPath,
@@ -915,6 +976,7 @@ function GetLocalRepoVerificationSummary {
     $manualQaStatus = GetLocalRepoVerificationField -Lines $lines -Name "Manual QA Status"
     $version = GetProjectAppVersion
     $billingEvidence = if ($ProfileName -eq "billing-operations") { GetBillingOperationsHandoffEvidence -Version $version } else { $null }
+    $workorderEvidence = if ($ProfileName -eq "workorder-size-pdf" -or $ProfileName -eq "public-signup-first-draft-fix") { GetWorkorderSizePdfHandoffEvidence -Version $version } else { $null }
 
     return [pscustomobject]@{
         Path = $ResultPath
@@ -943,12 +1005,12 @@ function GetLocalRepoVerificationSummary {
         PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { "not provided" } else { $pdfR2Regression }
         VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { "not provided" } else { $vercelReadiness }
         ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { "not provided" } else { $manualQaStatus }
-        DbMigrationApplyResult = if ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        DbMigrationApplyResult = if ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'DB Migration Apply Result:\s*(PASS|FAIL)',
             'Migration apply:\s*(PASS|FAIL)',
             'Consent migration apply:\s*(PASS|FAIL)'
         ) }
-        PostApplyAuditResult = if ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        PostApplyAuditResult = if ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'Post-Apply Audit Result:\s*(PASS|FAIL)',
             'Post-apply .*audit:\s*(PASS|FAIL)',
             'post-apply .*findings\s+0'
@@ -959,12 +1021,12 @@ function GetLocalRepoVerificationSummary {
             'rollback smoke .*PASS'
         ) }
         DevTestDbTestDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test DB Test-Data Mutation" -Fallback "false"
-        DevTestFixtureMutation = if ($null -ne $billingEvidence -and $billingEvidence.DevTestFixtureMutation -ne "not provided") { $billingEvidence.DevTestFixtureMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation" -Fallback "false" }
-        BusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation" -Fallback "false"
-        ProductionBusinessDataMutation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation" -Fallback "false"
-        DevTestR2Mutation = if ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
-        ProductionMutation = if ($null -ne $billingEvidence -and $billingEvidence.ProductionMutation -ne "not provided") { $billingEvidence.ProductionMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -Fallback "false" }
-        SchemaMigrationThisRun = if ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
+        DevTestFixtureMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.DevTestFixtureMutation -ne "not provided") { $workorderEvidence.DevTestFixtureMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestFixtureMutation -ne "not provided") { $billingEvidence.DevTestFixtureMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation" -Fallback "false" }
+        BusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.BusinessDataMutation -ne "not provided") { $workorderEvidence.BusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation" -Fallback "false" }
+        ProductionBusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.ProductionBusinessDataMutation -ne "not provided") { $workorderEvidence.ProductionBusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation" -Fallback "false" }
+        DevTestR2Mutation = if ($null -ne $workorderEvidence -and $workorderEvidence.DevTestR2Mutation -ne "not provided") { $workorderEvidence.DevTestR2Mutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
+        ProductionMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.ProductionMutation -ne "not provided") { $workorderEvidence.ProductionMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.ProductionMutation -ne "not provided") { $billingEvidence.ProductionMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -Fallback "false" }
+        SchemaMigrationThisRun = if ($null -ne $workorderEvidence -and $workorderEvidence.SchemaMigrationThisRun -ne "not provided") { $workorderEvidence.SchemaMigrationThisRun } elseif ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
         CertificateIntegrationResult = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Certificate Integration Result"
         PngUpload = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PNG Upload"
         JpegReplacement = GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement"
@@ -982,8 +1044,8 @@ function GetLocalRepoVerificationSummary {
         PdfOrphanDetection = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Orphan Detection"
         PdfReconciliation = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Reconciliation"
         PdfExactCleanupPlan = GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Exact Cleanup Plan"
-        FinalResidualDbRows = if ($null -ne $billingEvidence -and $billingEvidence.FinalResidualDbRows -ne "not provided") { $billingEvidence.FinalResidualDbRows } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows" }
-        FinalResidualR2Objects = if ($null -ne $billingEvidence -and $billingEvidence.FinalResidualR2Objects -ne "not provided") { $billingEvidence.FinalResidualR2Objects } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects" }
+        FinalResidualDbRows = if ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualDbRows -ne "not provided") { $workorderEvidence.FinalResidualDbRows } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualDbRows -ne "not provided") { $billingEvidence.FinalResidualDbRows } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows" }
+        FinalResidualR2Objects = if ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualR2Objects -ne "not provided") { $workorderEvidence.FinalResidualR2Objects } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualR2Objects -ne "not provided") { $billingEvidence.FinalResidualR2Objects } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects" }
         LiveViewerIntegration = GetLocalRepoVerificationNamedValue -Lines $lines -Name "Live Viewer Integration"
     }
 }
@@ -1048,8 +1110,8 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "Final Residual R2 Objects:" -Values @([string]$VerificationSummary.FinalResidualR2Objects)
     AddRepoStateSection -Lines $lines -Title "Live Viewer Integration:" -Values @([string]$VerificationSummary.LiveViewerIntegration)
     AddRepoStateSection -Lines $lines -Title "Package/Lockfile Changed:" -Values @("false")
-    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
-    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @((GetDbMigrationAppliedDisplayValue -VerificationSummary $VerificationSummary))
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @((GetDbSchemaMutationDisplayValue -VerificationSummary $VerificationSummary))
     AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
     AddRepoStateSection -Lines $lines -Title "Dev/Test Fixture Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.DevTestFixtureMutation)) { [string]$VerificationSummary.DevTestDbTestDataMutation } else { [string]$VerificationSummary.DevTestFixtureMutation }))
@@ -1163,8 +1225,8 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "Final Residual DB Rows:" -Values @([string]$VerificationSummary.FinalResidualDbRows)
     AddRepoStateSection -Lines $lines -Title "Final Residual R2 Objects:" -Values @([string]$VerificationSummary.FinalResidualR2Objects)
     AddRepoStateSection -Lines $lines -Title "Live Viewer Integration:" -Values @([string]$VerificationSummary.LiveViewerIntegration)
-    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
-    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
+    AddRepoStateSection -Lines $lines -Title "DB Migration Applied:" -Values @((GetDbMigrationAppliedDisplayValue -VerificationSummary $VerificationSummary))
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @((GetDbSchemaMutationDisplayValue -VerificationSummary $VerificationSummary))
     AddRepoStateSection -Lines $lines -Title "Schema Migration This Run:" -Values @([string]$VerificationSummary.SchemaMigrationThisRun)
     AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @([string]$VerificationSummary.DevTestDbTestDataMutation)
     AddRepoStateSection -Lines $lines -Title "Dev/Test Fixture Mutation:" -Values @($(if ([string]::IsNullOrWhiteSpace([string]$VerificationSummary.DevTestFixtureMutation)) { [string]$VerificationSummary.DevTestDbTestDataMutation } else { [string]$VerificationSummary.DevTestFixtureMutation }))

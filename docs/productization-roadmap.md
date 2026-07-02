@@ -1,13 +1,13 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34`. Latest completed work: `0.24.34` Workorder Size Specification and Incomplete/Final PDF. Next planned work: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.1`. Latest completed work: `0.24.34.1` Public Signup First-Draft Flow Fix and Repo-state Metadata Correction. Next planned work: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34`
-- APP_VERSION: `0.24.34`
+- Roadmap checkpoint version: `0.24.34.1`
+- APP_VERSION: `0.24.34.1`
 - Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
 - Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
@@ -43,9 +43,10 @@
 17. `0.24.33` - Public Signup End-to-End UX and System-admin Review Operations
 18. `0.24.33.1` - Authenticated Public Signup E2E and Deployed QA Automation
 19. `0.24.34` - Workorder Size Specification and Incomplete/Final PDF
-20. `0.24.35` - Company-wide Export Execution
-21. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
-22. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
+20. `0.24.34.1` - Public Signup First-Draft Flow Fix and Repo-state Metadata Correction
+21. `0.24.35` - Company-wide Export Execution
+22. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
+23. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
 
 ## Roadmap Reconciliation After 0.24.33.1
 
@@ -75,6 +76,15 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 - Build actual dev/test Export packages with CSV, JSON, attachments, and current PDFs.
 - Add folder manifest, split archive support, authenticated download, expiry, exact cleanup, plan usage enforcement, and final termination Export readiness.
 - Keep production Export separately approved.
+
+## 0.24.34.1 - Public Signup First-Draft Flow Fix and Repo-state Metadata Correction
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.34.1.ts`.
+- Fixes the post-Google-OAuth first-draft signup state where an applicant session exists but the application row has not been created yet.
+- Treats application absence as a normal draft-entry state, not a fatal error or reason to return to the signup CTA.
+- Keeps certificate upload blocked until the first draft application is saved, while certificate GET returns a safe empty state.
+- Corrects workorder-size-pdf repo-state metadata so migration/audit results are explicit.
+- Keeps 0.24.35 Export, Worker changes, actual PG/email, production mutation, and new DB migration out of scope.
 
 ## 0.24.36 - Termination, Recovery, and Automatic Deletion Execution
 
