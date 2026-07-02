@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.34.2
+# Codex Current State - 0.24.34.3
 
 ## Version
 
-- Current version: `0.24.34.2`.
-- Current implementation version: `0.24.34.2`.
+- Current version: `0.24.34.3`.
+- Current implementation version: `0.24.34.3`.
 - Branch: `master`.
-- Latest completed version: `0.24.34.2` Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup.
+- Latest completed version: `0.24.34.3` Workorder PDF Live R2 Integration and Visual Verification.
 - Next official work: `0.24.35` Company-wide Export Execution.
 - 0.24.35 implementation has not started.
 
@@ -93,7 +93,7 @@ Canonical evidence:
 
 ## Current Roadmap
 
-- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.2.ts`.
+- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.3.ts`.
 - Next planned detail: `0.24.35` Company-wide Export Execution.
 - Productization roadmap: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
@@ -167,7 +167,26 @@ Out of scope:
 - Actual PG/email provider integration.
 - Broad public marketing site redesign or `/workers` redesign.
 
-## Planned Sequence After 0.24.34.2
+## 0.24.34.3 Patch Scope
+
+`0.24.34.3 - Workorder PDF Live R2 Integration and Visual Verification`
+
+Implemented scope:
+
+- Generated workorder PDF completion requires non-empty PDF binary and R2 read-back verification before attachment metadata registration.
+- Workorder PDF response links use the tenant-scoped workorder generated-PDF viewer route instead of a generic raw-key file proxy.
+- The workorder PDF viewer supports inline view and server-proxied download disposition without exposing a signed URL or raw R2 URL.
+- PDF/R2 lifecycle integration now records incomplete workorder PDF, final workorder PDF, order-request PDF type isolation, previous-final preservation, exact cleanup, and residual DB/R2 evidence.
+- R2 Upload Worker remains `0.13.71`; PDF Generator Worker remains `0.16.1.1`.
+
+Out of scope:
+
+- 0.24.35 Company-wide Export execution.
+- New DB migration, production migration, or production data mutation.
+- Worker source changes or deployment.
+- Actual PG/email provider integration.
+
+## Planned Sequence After 0.24.34.3
 
 1. `0.24.35 — Company-wide Export Execution`
 2. `0.24.36 — Termination, Recovery, and Automatic Deletion Execution`

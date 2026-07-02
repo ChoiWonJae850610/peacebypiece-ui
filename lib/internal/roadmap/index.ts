@@ -50,6 +50,7 @@ import { ROADMAP_0_24_33_1 } from "./roadmap-0.24.33.1";
 import { ROADMAP_0_24_34 } from "./roadmap-0.24.34";
 import { ROADMAP_0_24_34_1 } from "./roadmap-0.24.34.1";
 import { ROADMAP_0_24_34_2 } from "./roadmap-0.24.34.2";
+import { ROADMAP_0_24_34_3 } from "./roadmap-0.24.34.3";
 import type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapStatus, RoadmapVersionDetail } from "./types";
 
 export type { ProductizationRoadmapSummary, RoadmapImpact, RoadmapResult, RoadmapStatus, RoadmapVersionDetail } from "./types";
@@ -177,7 +178,7 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
   appVersion: APP_VERSION,
   featureProgressPercent: 93,
   productizationProgressPercent: 86,
-  currentWorkVersion: "0.24.34.2",
+  currentWorkVersion: "0.24.34.3",
   nextWorkVersion: "0.24.35",
   canonicalPolicy:
     "새 버전 작업 전에는 docs/codex-current-state.md, final owner policy, integrated master plan, 최신 구현 감사, 대상 roadmap 상세 순서로 읽는다. completed는 해당 버전의 선언된 범위 완료를 뜻하며 상위 canonical 제품 기능 전체 완료를 뜻하지 않는다. 0.24.27 size/POM, 0.24.28 PDF/R2, 0.24.29 export, 0.24.30 deletion/quota, 0.24.31~0.24.32 billing은 foundation과 실행 기능을 구분한다. /roadmap은 조회 전용이다.",
@@ -236,6 +237,7 @@ export const PRODUCTIZATION_ROADMAP: ProductizationRoadmapSummary = {
     ROADMAP_0_24_34,
     ROADMAP_0_24_34_1,
     ROADMAP_0_24_34_2,
+    ROADMAP_0_24_34_3,
   ],
 };
 

@@ -35,7 +35,8 @@ $AllowedProfiles = @(
     "public-signup-authenticated-e2e",
     "workorder-size-pdf",
     "public-signup-first-draft-fix",
-    "customer-product-ux-cleanup"
+    "customer-product-ux-cleanup",
+    "workorder-pdf-live-integration"
 )
 
 function NormalizeWorkflowPath {

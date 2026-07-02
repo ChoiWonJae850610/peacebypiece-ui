@@ -16,11 +16,13 @@ for (const token of [
   "WORKORDER_FINAL_PDF_NOT_READY",
   "retirePreviousFinalPdf",
   "cleanupGeneratedPdfObject",
+  "verifyGeneratedPdfObject",
+  "PDF_R2_HEAD_FAILED_",
 ]) {
   assert.ok(route.includes(token), `workorder PDF route missing ${token}`);
 }
 
-assert.doesNotMatch(route, /signedUrl|downloadUrl|createR2WorkerFileUrl|message:\s*message/);
+assert.doesNotMatch(route, /signedUrl|downloadUrl|message:\s*message/);
 
 for (const token of [
   "pdfErrorPage",
@@ -28,7 +30,8 @@ for (const token of [
   "text/html; charset=utf-8",
   "no-store",
   "nosniff",
-  "inline;",
+  "mode: \"inline\" | \"attachment\"",
+  "searchParams.get(\"download\") === \"1\" ? \"attachment\" : \"inline\"",
 ]) {
   assert.ok(viewer.includes(token), `workorder PDF viewer missing ${token}`);
 }

@@ -47,9 +47,9 @@ function pdfErrorPage(message: string, status: number) {
   );
 }
 
-function createInlineDisposition(fileName: string) {
+function createPdfDisposition(fileName: string, mode: "inline" | "attachment") {
   const safeFallback = fileName.replace(/[^\x20-\x7E]/g, "_").replace(/[\\/\r\n\0"]/g, "_") || "workorder.pdf";
-  return `inline; filename="${safeFallback}"; filename*=UTF-8''${encodeURIComponent(fileName || "workorder.pdf")}`;
+  return `${mode}; filename="${safeFallback}"; filename*=UTF-8''${encodeURIComponent(fileName || "workorder.pdf")}`;
 }
 
 function toResponseBody(buffer: Buffer) {
@@ -58,7 +58,7 @@ function toResponseBody(buffer: Buffer) {
   return body;
 }
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   if (!isDatabaseConfigured()) return jsonError("DB_NOT_CONFIGURED", 503);
 
   const session = await getCurrentWaflSession();
@@ -69,6 +69,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const { workOrderId, attachmentId } = await context.params;
   if (!workOrderId.trim() || !attachmentId.trim()) return jsonError("PDF_ATTACHMENT_REQUIRED", 400);
+  const dispositionMode = new URL(request.url).searchParams.get("download") === "1" ? "attachment" : "inline";
 
   const result = await queryDb<GeneratedPdfRow>(
     `
@@ -106,7 +107,7 @@ export async function GET(_request: Request, context: RouteContext) {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Length": String(object.contentLength),
-        "Content-Disposition": createInlineDisposition(file.original_name),
+        "Content-Disposition": createPdfDisposition(file.original_name, dispositionMode),
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
       },

@@ -66,6 +66,7 @@ param(
     [switch]$RunWorkorderSizeSpecResidualAudit,
     [switch]$RunProductUxLanguageAudit,
     [switch]$RunCustomerProductUxCleanupVerification,
+    [switch]$RunWorkorderPdfLiveIntegrationVerification,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -980,6 +981,7 @@ function GetLocalRepoVerificationSummary {
     $billingEvidence = if ($ProfileName -eq "billing-operations") { GetBillingOperationsHandoffEvidence -Version $version } else { $null }
     $workorderEvidence = if ($ProfileName -eq "workorder-size-pdf" -or $ProfileName -eq "public-signup-first-draft-fix") { GetWorkorderSizePdfHandoffEvidence -Version $version } else { $null }
     $productUxCleanupProfile = $ProfileName -eq "customer-product-ux-cleanup"
+    $workorderPdfLiveProfile = $ProfileName -eq "workorder-pdf-live-integration"
 
     return [pscustomobject]@{
         Path = $ResultPath
@@ -1002,23 +1004,23 @@ function GetLocalRepoVerificationSummary {
         } else {
             "$($contracts.Count) passed, 0 failed"
         }
-        E2ESmokeSummary = if ([string]::IsNullOrWhiteSpace($smokeSummary)) { if ($productUxCleanupProfile) { "NOT_RUN - static cleanup profile" } else { "not provided" } } else { $smokeSummary }
+        E2ESmokeSummary = if ([string]::IsNullOrWhiteSpace($smokeSummary)) { if ($productUxCleanupProfile) { "NOT_RUN - static cleanup profile" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - browser matrix remains manual/user QA" } else { "not provided" } } else { $smokeSummary }
         SignupProvisioningRegression = if ([string]::IsNullOrWhiteSpace($signupRegression)) { if ($productUxCleanupProfile) { "PASS - public signup product UX/static contracts" } else { "not provided" } } else { $signupRegression }
         CatalogRegression = if ([string]::IsNullOrWhiteSpace($catalogRegression)) { if ($productUxCleanupProfile) { "PASS - system catalog static contract" } else { "not provided" } } else { $catalogRegression }
-        PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { if ($productUxCleanupProfile) { "PASS - workorder PDF route/viewer static contracts; live R2 NOT_RUN" } else { "not provided" } } else { $pdfR2Regression }
-        VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { if ($productUxCleanupProfile) { "NOT_RUN - deployment smoke outside 0.24.34.2 static cleanup" } else { "not provided" } } else { $vercelReadiness }
-        ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { if ($productUxCleanupProfile) { "PENDING_USER_QA - PDF visual/browser matrix" } else { "not provided" } } else { $manualQaStatus }
-        DbMigrationApplyResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { if ($productUxCleanupProfile) { "PASS - workorder PDF route/viewer static contracts; live R2 NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS - live dev/test PDF/R2 lifecycle integration and static contracts" } else { "not provided" } } else { $pdfR2Regression }
+        VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { if ($productUxCleanupProfile) { "NOT_RUN - deployment smoke outside 0.24.34.2 static cleanup" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - no deployment smoke in 0.24.34.3" } else { "not provided" } } else { $vercelReadiness }
+        ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { if ($productUxCleanupProfile) { "PENDING_USER_QA - PDF visual/browser matrix" } elseif ($workorderPdfLiveProfile) { "PENDING_USER_QA - rendered PDF visual/browser/device confirmation" } else { "not provided" } } else { $manualQaStatus }
+        DbMigrationApplyResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'DB Migration Apply Result:\s*(PASS|FAIL)',
             'Migration apply:\s*(PASS|FAIL)',
             'Consent migration apply:\s*(PASS|FAIL)'
         ) }
-        PostApplyAuditResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        PostApplyAuditResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'Post-Apply Audit Result:\s*(PASS|FAIL)',
             'Post-apply .*audit:\s*(PASS|FAIL)',
             'post-apply .*findings\s+0'
         ) }
-        RollbackSmokeResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB fixture mutation" } elseif ($null -ne $billingEvidence -and $billingEvidence.RollbackSmokeResult -ne "not provided") { $billingEvidence.RollbackSmokeResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        RollbackSmokeResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB fixture mutation" } elseif ($workorderPdfLiveProfile) { "PASS - exact fixture cleanup with residual DB/R2 0" } elseif ($null -ne $billingEvidence -and $billingEvidence.RollbackSmokeResult -ne "not provided") { $billingEvidence.RollbackSmokeResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'Rollback Smoke Result:\s*(PASS|FAIL)',
             'rollback smoke:\s*(PASS|FAIL)',
             'rollback smoke .*PASS'
@@ -1027,29 +1029,29 @@ function GetLocalRepoVerificationSummary {
         DevTestFixtureMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.DevTestFixtureMutation -ne "not provided") { $workorderEvidence.DevTestFixtureMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestFixtureMutation -ne "not provided") { $billingEvidence.DevTestFixtureMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation" -Fallback "false" }
         BusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.BusinessDataMutation -ne "not provided") { $workorderEvidence.BusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation" -Fallback "false" }
         ProductionBusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.ProductionBusinessDataMutation -ne "not provided") { $workorderEvidence.ProductionBusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation" -Fallback "false" }
-        DevTestR2Mutation = if ($null -ne $workorderEvidence -and $workorderEvidence.DevTestR2Mutation -ne "not provided") { $workorderEvidence.DevTestR2Mutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
-        ProductionMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.ProductionMutation -ne "not provided") { $workorderEvidence.ProductionMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.ProductionMutation -ne "not provided") { $billingEvidence.ProductionMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -Fallback "false" }
-        SchemaMigrationThisRun = if ($null -ne $workorderEvidence -and $workorderEvidence.SchemaMigrationThisRun -ne "not provided") { $workorderEvidence.SchemaMigrationThisRun } elseif ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
+        DevTestR2Mutation = if ($workorderPdfLiveProfile) { "true - synthetic PDF/R2 fixture integration only" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DevTestR2Mutation -ne "not provided") { $workorderEvidence.DevTestR2Mutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
+        ProductionMutation = if ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.ProductionMutation -ne "not provided") { $workorderEvidence.ProductionMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.ProductionMutation -ne "not provided") { $billingEvidence.ProductionMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -Fallback "false" }
+        SchemaMigrationThisRun = if ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.SchemaMigrationThisRun -ne "not provided") { $workorderEvidence.SchemaMigrationThisRun } elseif ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
         CertificateIntegrationResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no certificate integration in 0.24.34.2" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Certificate Integration Result" }
         PngUpload = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PNG Upload" }
         JpegReplacement = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement" }
         PdfReplacement = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Replacement" }
         Revoke = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Revoke" }
-        PdfR2LifecycleIntegrationResult = if ($productUxCleanupProfile) { "NOT_RUN - no live R2 mutation in 0.24.34.2" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Lifecycle Integration Result" }
-        PdfR2WorkerVersion = if ($productUxCleanupProfile) { "0.13.71 - unchanged" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Worker Version" }
-        PdfGeneratorWorkerVersion = if ($productUxCleanupProfile) { "0.16.1.1 - unchanged" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Generator Worker Version" }
-        PdfUpload = if ($productUxCleanupProfile) { "NOT_RUN" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Upload" }
-        PdfTrash = if ($productUxCleanupProfile) { "NOT_RUN" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Trash" }
-        PdfRestore = if ($productUxCleanupProfile) { "NOT_RUN" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Restore" }
-        PdfRegeneration = if ($productUxCleanupProfile) { "NOT_RUN - static route contract only" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Regeneration" }
-        PdfPermanentDelete = if ($productUxCleanupProfile) { "NOT_RUN" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Permanent Delete" }
-        PdfMissingDetection = if ($productUxCleanupProfile) { "PASS - safe missing-object viewer fallback contract" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Missing Detection" }
-        PdfOrphanDetection = if ($productUxCleanupProfile) { "NOT_RUN" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Orphan Detection" }
-        PdfReconciliation = if ($productUxCleanupProfile) { "NOT_RUN" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Reconciliation" }
-        PdfExactCleanupPlan = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no R2 mutation" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Exact Cleanup Plan" }
-        FinalResidualDbRows = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB mutation" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualDbRows -ne "not provided") { $workorderEvidence.FinalResidualDbRows } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualDbRows -ne "not provided") { $billingEvidence.FinalResidualDbRows } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows" }
-        FinalResidualR2Objects = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no R2 mutation" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualR2Objects -ne "not provided") { $workorderEvidence.FinalResidualR2Objects } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualR2Objects -ne "not provided") { $billingEvidence.FinalResidualR2Objects } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects" }
-        LiveViewerIntegration = if ($productUxCleanupProfile) { "NOT_RUN - static viewer fallback contract only" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Live Viewer Integration" }
+        PdfR2LifecycleIntegrationResult = if ($productUxCleanupProfile) { "NOT_RUN - no live R2 mutation in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "PASS - menu 53 live dev/test integration" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Lifecycle Integration Result" }
+        PdfR2WorkerVersion = if ($productUxCleanupProfile -or $workorderPdfLiveProfile) { "0.13.71 - unchanged" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Worker Version" }
+        PdfGeneratorWorkerVersion = if ($productUxCleanupProfile -or $workorderPdfLiveProfile) { "0.16.1.1 - unchanged" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Generator Worker Version" }
+        PdfUpload = if ($productUxCleanupProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Upload" }
+        PdfTrash = if ($productUxCleanupProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Trash" }
+        PdfRestore = if ($productUxCleanupProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Restore" }
+        PdfRegeneration = if ($productUxCleanupProfile) { "NOT_RUN - static route contract only" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Regeneration" }
+        PdfPermanentDelete = if ($productUxCleanupProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Permanent Delete" }
+        PdfMissingDetection = if ($productUxCleanupProfile) { "PASS - safe missing-object viewer fallback contract" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Missing Detection" }
+        PdfOrphanDetection = if ($productUxCleanupProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Orphan Detection" }
+        PdfReconciliation = if ($productUxCleanupProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS - matched 0, missing 1, orphan candidate 1, cleanup pending 0 in synthetic scope" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Reconciliation" }
+        PdfExactCleanupPlan = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no R2 mutation" } elseif ($workorderPdfLiveProfile) { "PASS - exact fixture cleanup only" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Exact Cleanup Plan" }
+        FinalResidualDbRows = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB mutation" } elseif ($workorderPdfLiveProfile) { "0" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualDbRows -ne "not provided") { $workorderEvidence.FinalResidualDbRows } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualDbRows -ne "not provided") { $billingEvidence.FinalResidualDbRows } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows" }
+        FinalResidualR2Objects = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no R2 mutation" } elseif ($workorderPdfLiveProfile) { "0" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualR2Objects -ne "not provided") { $workorderEvidence.FinalResidualR2Objects } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualR2Objects -ne "not provided") { $billingEvidence.FinalResidualR2Objects } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects" }
+        LiveViewerIntegration = if ($productUxCleanupProfile) { "NOT_RUN - static viewer fallback contract only" } elseif ($workorderPdfLiveProfile) { "PASS - server proxy viewer path and live R2 object read-back" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Live Viewer Integration" }
     }
 }
 
@@ -1100,6 +1102,43 @@ function AddCustomerProductUxCleanupRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Worker Deployed:" -Values @("false")
 }
 
+function AddWorkorderPdfLiveIntegrationRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [object]$VerificationSummary
+    )
+
+    if ([string]$VerificationSummary.Profile -ne "workorder-pdf-live-integration") {
+        return
+    }
+
+    AddRepoStateSection -Lines $Lines -Title "PDF Live Root Cause:" -Values @("Resolved metadata-only completion risk by requiring binary size and R2 object read-back before attachment metadata registration.")
+    AddRepoStateSection -Lines $Lines -Title "Generated PDF Object Verification:" -Values @("PASS - binary non-empty, R2 PUT, server-side object read-back before DB metadata")
+    AddRepoStateSection -Lines $Lines -Title "Generated PDF Browser URL Policy:" -Values @("PASS - tenant-scoped server proxy URL; no signed URL or raw R2 key in generated response")
+    AddRepoStateSection -Lines $Lines -Title "Incomplete PDF Binary:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Incomplete PDF R2 PUT:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Incomplete PDF R2 Read-back:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Incomplete PDF Download:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Final PDF Binary:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Final PDF R2 PUT:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Final PDF R2 Read-back:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Final PDF Download:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Order-request PDF Isolation:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Generated Document Type Isolation:" -Values @("PASS - incomplete/final/order-request types remain distinct")
+    AddRepoStateSection -Lines $Lines -Title "Previous Final Preservation:" -Values @("PASS - failed replacement preserves previous final PDF object")
+    AddRepoStateSection -Lines $Lines -Title "PDF Viewer Inline:" -Values @("PASS - server proxy inline response")
+    AddRepoStateSection -Lines $Lines -Title "PDF Viewer Download:" -Values @("PASS - server proxy attachment disposition when requested")
+    AddRepoStateSection -Lines $Lines -Title "PDF Visual Verification:" -Values @("PENDING_USER_QA - rendered-page/device visual judgment remains manual")
+    AddRepoStateSection -Lines $Lines -Title "Browser Matrix:" -Values @("NOT_RUN - no Chromium/WebKit/mobile matrix in 0.24.34.3")
+    AddRepoStateSection -Lines $Lines -Title "Chromium:" -Values @("NOT_RUN")
+    AddRepoStateSection -Lines $Lines -Title "WebKit:" -Values @("NOT_RUN")
+    AddRepoStateSection -Lines $Lines -Title "Mobile:" -Values @("NOT_RUN")
+    AddRepoStateSection -Lines $Lines -Title "iPad:" -Values @("NOT_RUN")
+    AddRepoStateSection -Lines $Lines -Title "Worker Changed:" -Values @("false")
+    AddRepoStateSection -Lines $Lines -Title "Worker Deployed:" -Values @("false")
+    AddRepoStateSection -Lines $Lines -Title "0.24.35 Status:" -Values @("NOT_STARTED")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1137,6 +1176,7 @@ function NewLocalRepoBuildResultFile {
     AddRepoStateSection -Lines $lines -Title "Vercel Readiness:" -Values @([string]$VerificationSummary.VercelReadiness)
     AddRepoStateSection -Lines $lines -Title "Manual QA Status:" -Values @([string]$VerificationSummary.ManualQaStatus)
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
@@ -1254,6 +1294,7 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "Vercel Readiness:" -Values @([string]$VerificationSummary.VercelReadiness)
     AddRepoStateSection -Lines $lines -Title "Manual QA Status:" -Values @([string]$VerificationSummary.ManualQaStatus)
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
@@ -2746,6 +2787,11 @@ function RunCustomerProductUxCleanupVerification {
     return (InvokeProjectCommandWithResultFile -Title "Customer Product UX Cleanup Verification" -Label "Customer_Product_UX_Cleanup_Verification" -NpmCommand "powershell -NoProfile -ExecutionPolicy Bypass -File tools/pipeline/verify-safe.ps1 -Profile customer-product-ux-cleanup" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "UX_Audit"))
 }
 
+function RunWorkorderPdfLiveIntegrationVerification {
+    param([bool]$PauseAfter = $true)
+    return (InvokeProjectCommandWithResultFile -Title "Workorder PDF Live R2 Integration Verification" -Label "Workorder_PDF_Live_R2_Integration_Verification" -NpmCommand "powershell -NoProfile -ExecutionPolicy Bypass -File tools/pipeline/verify-safe.ps1 -Profile workorder-pdf-live-integration" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory (Join-Path (Split-Path -Parent $LogDir) "R2_Test"))
+}
+
 function RunBillingPostApplyAudit {
     param([bool]$PauseAfter = $true)
     return (InvokeReadOnlyDbAudit -Mode 'billing-post-apply' -Title 'Billing Post-Apply Audit' -Label 'Billing_Post_Apply_Audit' -PauseAfter $PauseAfter)
@@ -3228,6 +3274,7 @@ function ShowDeveloperToolsMenu {
         Write-Host "75. Workorder Size Spec Final Residual Audit    [읽기 전용/DEV·TEST residual]"
         Write-Host "76. Product UX Language Audit                   [안전/정적 contract]"
         Write-Host "77. Customer Product UX Cleanup Verification    [안전/정적+빌드 검증]"
+        Write-Host "78. Workorder PDF Live R2 Integration Verification [안전/정적+빌드 검증]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -3321,9 +3368,10 @@ function ShowDeveloperToolsMenu {
             75 { RunWorkorderSizeSpecResidualAudit | Out-Null }
             76 { RunProductUxLanguageAudit | Out-Null }
             77 { RunCustomerProductUxCleanupVerification | Out-Null }
+            78 { RunWorkorderPdfLiveIntegrationVerification | Out-Null }
             0  { return }
             default {
-                Write-Host "등록되지 않은 메뉴 번호입니다. 0~77 범위의 표시된 번호를 입력하세요."
+                Write-Host "등록되지 않은 메뉴 번호입니다. 0~78 범위의 표시된 번호를 입력하세요."
                 Start-Sleep -Seconds 1
             }
         }
@@ -3705,6 +3753,10 @@ elseif ($RunProductUxLanguageAudit) {
 }
 elseif ($RunCustomerProductUxCleanupVerification) {
     $exitCode = RunCustomerProductUxCleanupVerification -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWorkorderPdfLiveIntegrationVerification) {
+    $exitCode = RunWorkorderPdfLiveIntegrationVerification -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

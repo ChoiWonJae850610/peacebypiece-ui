@@ -7,9 +7,9 @@ import { checkCompanyUploadStorageQuota } from "@/lib/billing/companyStorageQuot
 import { STORAGE_QUOTA_UPLOAD_ERROR_CODES } from "@/lib/billing/storageQuotaPolicy";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { renderPdfWithExternalGenerator } from "@/lib/generated-documents/pdfGeneratorClient";
-import { createAttachmentFileProxyUrl, deleteR2Object, putR2Object } from "@/lib/storage/r2/r2Client";
+import { deleteR2Object, getR2Object, putR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
-import { createR2WorkerUploadUrl, deleteR2ObjectViaWorker, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
+import { createR2WorkerFileUrl, createR2WorkerUploadUrl, deleteR2ObjectViaWorker, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import {
   ATTACHMENT_SOURCE_TYPE,
   GENERATED_DOCUMENT_TYPE,
@@ -132,10 +132,42 @@ async function putGeneratedPdfObject(input: { storageKey: string; pdf: Buffer })
   await putR2Object({ key: input.storageKey, body: input.pdf, contentType });
 }
 
+async function verifyGeneratedPdfObject(input: { storageKey: string; expectedSizeBytes: number }): Promise<void> {
+  if (input.expectedSizeBytes <= 0) {
+    throw new Error("PDF_BINARY_EMPTY");
+  }
+
+  if (isR2WorkerUploadConfigured()) {
+    const request = createR2WorkerFileUrl({ key: input.storageKey });
+    const response = await fetch(request.url, { method: request.method });
+    if (!response.ok) {
+      await response.text().catch(() => "");
+      throw new Error(`PDF_R2_HEAD_FAILED_${response.status}`);
+    }
+    const contentType = response.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase() ?? "";
+    const contentLength = Number(response.headers.get("content-length") ?? 0);
+    if (contentType && contentType !== "application/pdf") {
+      throw new Error("PDF_R2_CONTENT_TYPE_INVALID");
+    }
+    if (contentLength <= 0) {
+      const bytes = Buffer.from(await response.arrayBuffer());
+      if (bytes.byteLength <= 0) throw new Error("PDF_R2_OBJECT_EMPTY");
+    }
+    return;
+  }
+
+  if (!isR2Configured()) throw new Error("R2_VERIFY_NOT_CONFIGURED");
+  const object = await getR2Object({ key: input.storageKey });
+  if (object.contentType !== "application/pdf") throw new Error("PDF_R2_CONTENT_TYPE_INVALID");
+  if (object.contentLength <= 0 || object.body.byteLength <= 0) throw new Error("PDF_R2_OBJECT_EMPTY");
+}
+
 function createGeneratedWorkorderAttachment(input: {
   id: string;
+  workOrderId: string;
   fileName: string;
   storageKey: string;
+  exposeStorageKey?: boolean;
   actorId: string | null;
   actorName: string | null;
   generatedDocumentType: string;
@@ -144,11 +176,11 @@ function createGeneratedWorkorderAttachment(input: {
     id: input.id,
     name: input.fileName,
     type: "pdf",
-    url: createAttachmentFileProxyUrl(input.storageKey),
-    storageKey: input.storageKey,
+    url: `/api/workorders/${encodeURIComponent(input.workOrderId)}/generated/workorder-pdf/${encodeURIComponent(input.id)}/view`,
+    storageKey: input.exposeStorageKey === true ? input.storageKey : "",
     thumbnailKey: null,
     thumbnailUrl: null,
-    previewUrl: createAttachmentFileProxyUrl(input.storageKey),
+    previewUrl: `/api/workorders/${encodeURIComponent(input.workOrderId)}/generated/workorder-pdf/${encodeURIComponent(input.id)}/view`,
     scope: getGeneratedOrderRequestAttachmentScope(),
     ownerId: input.actorId,
     ownerName: input.actorName,
@@ -288,15 +320,19 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     await putGeneratedPdfObject({ storageKey, pdf });
+    await verifyGeneratedPdfObject({ storageKey, expectedSizeBytes: pdf.byteLength });
   } catch (error) {
     logWorkorderPdfError("UPLOAD", error);
+    await cleanupGeneratedPdfObject(storageKey);
     return createWorkorderPdfErrorResponse("UPLOAD");
   }
 
   const provisionalAttachment = createGeneratedWorkorderAttachment({
     id: fileId,
+    workOrderId,
     fileName,
     storageKey,
+    exposeStorageKey: true,
     actorId: scopeResult.actorId,
     actorName: scopeResult.actorName,
     generatedDocumentType,
@@ -332,6 +368,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   const attachment = createGeneratedWorkorderAttachment({
     id: createdId,
+    workOrderId,
     fileName,
     storageKey,
     actorId: scopeResult.actorId,

@@ -1,13 +1,13 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34.2`. Latest completed work: `0.24.34.2` Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup. Next planned work: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.3`. Latest completed work: `0.24.34.3` Workorder PDF Live R2 Integration and Visual Verification. Next planned work: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34.2`
-- APP_VERSION: `0.24.34.2`
+- Roadmap checkpoint version: `0.24.34.3`
+- APP_VERSION: `0.24.34.3`
 - Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
 - Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
@@ -45,9 +45,10 @@
 19. `0.24.34` - Workorder Size Specification and Incomplete/Final PDF
 20. `0.24.34.1` - Public Signup First-Draft Flow Fix and Repo-state Metadata Correction
 21. `0.24.34.2` - Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup
-22. `0.24.35` - Company-wide Export Execution
-23. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
-24. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
+22. `0.24.34.3` - Workorder PDF Live R2 Integration and Visual Verification
+23. `0.24.35` - Company-wide Export Execution
+24. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
+25. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
 
 ## Roadmap Reconciliation After 0.24.33.1
 
@@ -77,6 +78,15 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 - Build actual dev/test Export packages with CSV, JSON, attachments, and current PDFs.
 - Add folder manifest, split archive support, authenticated download, expiry, exact cleanup, plan usage enforcement, and final termination Export readiness.
 - Keep production Export separately approved.
+
+## 0.24.34.3 - Workorder PDF Live R2 Integration and Visual Verification
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.34.3.ts`.
+- Requires generated workorder PDF binary and R2 read-back verification before DB attachment metadata registration.
+- Extends PDF/R2 lifecycle evidence to incomplete workorder PDF, final workorder PDF, supplier order-request PDF type isolation, previous-final preservation, exact cleanup, and residual DB/R2 0.
+- Keeps the 0.24.34.2 single `작업지시서 출력` action and automatic incomplete/final decision policy.
+- Adds server-proxied inline/download disposition without exposing raw R2 URLs or signed URLs.
+- Keeps Company-wide Export, Worker source/deploy, production mutation, actual PG, and actual email out of scope.
 
 ## 0.24.34.2 - Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup
 

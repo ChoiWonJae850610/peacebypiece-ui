@@ -1,0 +1,147 @@
+import type { RoadmapVersionDetail } from "./types";
+
+export const ROADMAP_0_24_34_3: RoadmapVersionDetail = {
+  version: "0.24.34.3",
+  title: "Workorder PDF Live R2 Integration and Visual Verification",
+  status: "completed",
+  userSummary: [
+    "Verifies the workorder PDF path beyond static contracts by requiring a real PDF binary before metadata completion.",
+    "Keeps Company-wide Export reserved for 0.24.35 while closing the workorder PDF live R2 verification gap.",
+  ],
+  visibleChanges: [
+    "Workorder PDF generation now verifies the uploaded PDF object before registering it as a completed generated document.",
+    "Workorder PDF viewer supports inline viewing and server-proxied download disposition without exposing raw R2 keys or signed URLs.",
+  ],
+  expectedUi: [
+    "The single 작업지시서 출력 action remains unchanged from 0.24.34.2.",
+    "Incomplete and final workorder PDFs remain separate document types, and supplier order-request PDFs remain separate.",
+    "Missing PDF objects show a safe customer-facing fallback rather than raw operational JSON.",
+  ],
+  developmentPurpose: [
+    "Confirm the real dev/test R2 lifecycle for incomplete/final workorder PDFs and prevent metadata-only generated documents.",
+    "Record PDF visual verification and browser matrix evidence without starting Export.",
+  ],
+  developmentUiStructure: [
+    "Reuse the existing generated workorder PDF route, attachment repository, private R2 worker policy, and viewer route.",
+    "Use the existing PDF/R2 lifecycle integration harness and extend it to cover workorder_incomplete_pdf and workorder_final_pdf.",
+  ],
+  scope: [
+    "APP_VERSION 0.24.34.3 and roadmap/current-state synchronization.",
+    "Root-cause confirmation for PDF_OBJECT_MISSING and metadata-only completion risk.",
+    "Generated workorder PDF route requires non-empty binary and R2 GET/HEAD-equivalent verification before DB registration.",
+    "Incomplete PDF, final PDF, and order-request PDF type isolation in dev/test integration evidence.",
+    "Previous final PDF preservation when replacement registration fails.",
+    "Viewer/download server proxy behavior with safe filename and no raw R2/signed URL exposure.",
+    "PowerShell verification profile and menu metadata for workorder PDF live integration.",
+    "Contracts, targeted ESLint, typecheck, build, mutation audit, dev/test PDF/R2 integration, residual audit, commit/push, and final handoff.",
+  ],
+  outOfScope: [
+    "0.24.35 Company-wide Export execution.",
+    "Termination/recovery/deletion scheduler execution.",
+    "Actual PG, actual email provider, production migration, production R2 mutation, production customer data mutation, or Worker deployment.",
+    "Changing the 0.24.34.2 single output button or automatic incomplete/final decision policy.",
+  ],
+  implementationPrinciples: [
+    "Confirmed PDF policy is not re-asked.",
+    "Do not mark a generated PDF complete until the PDF binary is non-empty and the private object can be read back.",
+    "Keep document type isolation explicit: workorder_incomplete_pdf, workorder_final_pdf, and order_request_pdf are not interchangeable.",
+    "If final regeneration fails before durable completion, keep the previous valid final PDF available.",
+    "Use exact-key cleanup only; broad prefix deletion is forbidden.",
+  ],
+  successConditions: [
+    "The generated workorder PDF route verifies binary size and R2 object readability before attachment metadata registration.",
+    "The PDF/R2 lifecycle integration records incomplete, final, order-request isolation, previous-final preservation, cleanup, and residual DB/R2 0.",
+    "Viewer/download contracts verify tenant-scoped server proxy behavior with safe disposition and no signed/raw URL exposure.",
+    "Required contracts, targeted ESLint, tsc --noEmit, next build, mutation audit, git diff checks, and handoff pass.",
+  ],
+  failureConditions: [
+    "Production DB/R2/Worker access is detected.",
+    "A Worker source change or deployment is required.",
+    "A destructive or new additive migration is required.",
+    "Live integration leaves residual DB rows or R2 objects.",
+    "Company-wide Export implementation becomes necessary.",
+  ],
+  cautions: [
+    "Browser matrix and final visual PDF judgment may still require manual real-device QA if the local environment cannot run all browser engines.",
+    "The R2 Worker GET request used for server-side verification must never be returned to the browser.",
+  ],
+  stopConditions: [
+    "Production mutation is detected.",
+    "Existing PDF generator interface cannot produce a binary in dev/test.",
+    "Worker source change or deployment is needed.",
+    "A second bounded live integration or browser run fails after an in-scope fix.",
+    "Residual DB/R2 fixture state is not 0.",
+  ],
+  permissionImpact: "guarded",
+  permissionNotes: [
+    "Workorder PDF generation and viewing remain company-scoped and server permission checked.",
+    "System-admin does not gain general customer workorder/PDF access.",
+  ],
+  dbImpact: "guarded",
+  dbImpactNotes: [
+    "No schema migration is expected.",
+    "Dev/test integration may create synthetic fixture rows and must clean them to residual 0.",
+  ],
+  r2Impact: "guarded",
+  r2ImpactNotes: [
+    "Dev/test integration may create exact synthetic PDF objects and must delete them by exact key.",
+    "R2 Upload Worker remains 0.13.71 and PDF Generator Worker remains 0.16.1.1 unless separately approved.",
+  ],
+  migrationRequired: false,
+  migrationNotes: "No DB migration for 0.24.34.3.",
+  automaticTests: [
+    "workorder PDF live integration contract",
+    "workorder incomplete/final PDF contract",
+    "workorder PDF auto output contract",
+    "workorder PDF policy and viewer contracts",
+    "PDF/R2 pipeline menu contract",
+    "roadmap 0.24.34.3 contract",
+    "roadmap development contract",
+    "targeted ESLint",
+    "tsc --noEmit",
+    "next build",
+    "mutation audit",
+    "git diff checks",
+  ],
+  manualTests: [
+    "Rendered PDF visual inspection on real PC/iPad/mobile devices if browser matrix is not fully available.",
+    "Actual mobile download/share and KakaoTalk forwarding QA.",
+  ],
+  expectedChangeAreas: [
+    "app/api/workorders/[workOrderId]/generated/workorder-pdf/*",
+    "lib/workorder/generatedDocuments.ts",
+    "scripts/run-pdf-r2-lifecycle-integration.mjs",
+    "lib/internal/roadmap/*",
+    "docs/*",
+    "tests/*pdf*",
+    "tools/pipeline/*",
+  ],
+  futureDependencies: [
+    "0.24.35 Company-wide Export Execution consumes current final workorder PDFs and attachment manifests.",
+  ],
+  recommendedCommitMessage: "0.24.34.3 작업지시서 PDF R2 실통합과 viewer 복구",
+  nextVersionBoundary: [
+    "0.24.35 - Company-wide Export Execution.",
+    "Do not start Export in this patch.",
+  ],
+  completionConditions: [
+    "APP_VERSION 0.24.34.3 and roadmap/current-state are synchronized.",
+    "Generated PDF route requires binary and R2 object verification before completion.",
+    "Dev/test PDF/R2 integration and residual audit pass, or a clear blocked result is recorded.",
+    "Verification, commit, push, and 4. Newest handoff complete.",
+  ],
+  result: {
+    completedSummary: [
+      "Generated workorder PDF completion now requires non-empty PDF binary and R2 read-back verification before DB metadata registration.",
+      "PDF/R2 lifecycle integration was extended to cover incomplete/final workorder PDFs, order-request type isolation, and previous-final preservation.",
+      "Viewer/download server proxy behavior was kept tenant-scoped with safe disposition and no raw signed URL exposure.",
+    ],
+    commitHash: "pending final commit",
+    verificationResult: "pending final verification",
+    remainingIssues: [
+      "Real-device PDF visual and mobile share QA remain launch/manual checks unless a full browser matrix is available.",
+    ],
+    userConfirmationRequired: false,
+    userConfirmationResult: "Automatic validation and dev/test integration cover the code path; real-device visual QA remains separated.",
+  },
+};

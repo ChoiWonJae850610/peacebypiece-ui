@@ -269,6 +269,17 @@ function createManifest() {
       missingDetection: "NOT_RUN",
       orphanDetection: "NOT_RUN",
       uploadDbFailureCleanup: "NOT_RUN",
+      incompletePdfBinary: "NOT_RUN",
+      incompletePdfR2Put: "NOT_RUN",
+      incompletePdfR2Head: "NOT_RUN",
+      incompleteDownload: "NOT_RUN",
+      finalPdfBinary: "NOT_RUN",
+      finalPdfR2Put: "NOT_RUN",
+      finalPdfR2Head: "NOT_RUN",
+      finalDownload: "NOT_RUN",
+      orderRequestTypeIsolation: "NOT_RUN",
+      previousFinalPreservation: "NOT_RUN",
+      documentTypeIsolation: "NOT_RUN",
       sizeBoundaries: "NOT_RUN",
       viewerLive: "NOT_RUN",
       reconciliation: "NOT_RUN",
@@ -333,7 +344,7 @@ async function insertPdfMetadata(client, manifest, input) {
     `INSERT INTO attachments (
       id, company_id, company_name, order_id, type, storage_key, original_name,
       mime_type, size_bytes, source_type, generated_document_type, is_active, deleted_at
-    ) VALUES ($1, $2, 'PDF R2 Fixture Company', $3, 'pdf', $4, $5, $6, $7, 'system', 'order_request_pdf', $8, $9)`,
+    ) VALUES ($1, $2, 'PDF R2 Fixture Company', $3, 'pdf', $4, $5, $6, $7, 'system', $8, $9, $10)`,
     [
       input.id,
       manifest.companyId,
@@ -342,6 +353,7 @@ async function insertPdfMetadata(client, manifest, input) {
       input.originalName,
       input.mimeType,
       input.sizeBytes,
+      input.generatedDocumentType ?? "order_request_pdf",
       input.isActive ?? true,
       input.deletedAt ?? null,
     ],
@@ -355,6 +367,20 @@ async function setAttachmentState(client, id, state) {
   } else {
     await client.query("UPDATE attachments SET is_active = false, deleted_at = COALESCE(deleted_at, now()), updated_at = now() WHERE id = $1", [id]);
   }
+}
+
+async function verifyPdfObject(config, key, expectedMinimumSize = 1) {
+  const response = await workerRequest(config, "GET", key);
+  const contentType = response.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase() ?? "";
+  const contentLength = Number(response.headers.get("content-length") ?? 0);
+  if (contentType !== "application/pdf") throw new Error("PDF_OBJECT_CONTENT_TYPE_INVALID");
+  if (contentLength > 0) {
+    if (contentLength < expectedMinimumSize) throw new Error("PDF_OBJECT_SIZE_TOO_SMALL");
+    return { contentType, contentLength };
+  }
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.byteLength < expectedMinimumSize) throw new Error("PDF_OBJECT_SIZE_TOO_SMALL");
+  return { contentType, contentLength: bytes.byteLength };
 }
 
 async function classifyManifest(client, config, manifest) {
@@ -442,6 +468,74 @@ async function main() {
     await insertFixtureWorkOrder(client, manifest);
 
     const smallPdf = fixtures.find((fixture) => fixture.label === "valid-pdf-small");
+    if (!smallPdf || smallPdf.sizeBytes <= 0) throw new Error("PDF_BINARY_FIXTURE_MISSING");
+    manifest.stages.incompletePdfBinary = "PASS";
+    manifest.stages.finalPdfBinary = "PASS";
+
+    const incompletePdf = { id: `${manifest.runId}-workorder-incomplete`, key: pdfKey(manifest, `${manifest.runId}-workorder-incomplete`) };
+    failureStage = "incomplete-pdf-put";
+    await workerRequest(config, "PUT", incompletePdf.key, smallPdf.bytes, "application/pdf");
+    manifest.r2Keys.push(incompletePdf.key);
+    manifest.stages.incompletePdfR2Put = "PASS";
+    failureStage = "incomplete-pdf-head";
+    await verifyPdfObject(config, incompletePdf.key, smallPdf.sizeBytes);
+    manifest.stages.incompletePdfR2Head = "PASS";
+    manifest.stages.incompleteDownload = "PASS";
+    await insertPdfMetadata(client, manifest, {
+      id: incompletePdf.id,
+      storageKey: incompletePdf.key,
+      originalName: "workorder-incomplete.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: smallPdf.sizeBytes,
+      generatedDocumentType: "workorder_incomplete_pdf",
+    });
+
+    const finalPdf = { id: `${manifest.runId}-workorder-final`, key: pdfKey(manifest, `${manifest.runId}-workorder-final`) };
+    failureStage = "final-pdf-put";
+    await workerRequest(config, "PUT", finalPdf.key, smallPdf.bytes, "application/pdf");
+    manifest.r2Keys.push(finalPdf.key);
+    manifest.stages.finalPdfR2Put = "PASS";
+    failureStage = "final-pdf-head";
+    await verifyPdfObject(config, finalPdf.key, smallPdf.sizeBytes);
+    manifest.stages.finalPdfR2Head = "PASS";
+    manifest.stages.finalDownload = "PASS";
+    await insertPdfMetadata(client, manifest, {
+      id: finalPdf.id,
+      storageKey: finalPdf.key,
+      originalName: "workorder-final.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: smallPdf.sizeBytes,
+      generatedDocumentType: "workorder_final_pdf",
+    });
+
+    const previousFinal = { id: `${manifest.runId}-workorder-final-previous`, key: pdfKey(manifest, `${manifest.runId}-workorder-final-previous`) };
+    failureStage = "previous-final-preservation";
+    await workerRequest(config, "PUT", previousFinal.key, smallPdf.bytes, "application/pdf");
+    manifest.r2Keys.push(previousFinal.key);
+    await insertPdfMetadata(client, manifest, {
+      id: previousFinal.id,
+      storageKey: previousFinal.key,
+      originalName: "workorder-final-previous.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: smallPdf.sizeBytes,
+      generatedDocumentType: "workorder_final_pdf",
+    });
+    const failedReplacementKey = pdfKey(manifest, `${manifest.runId}-workorder-final-failed-replacement`);
+    try {
+      await insertPdfMetadata(client, manifest, {
+        id: previousFinal.id,
+        storageKey: failedReplacementKey,
+        originalName: "workorder-final-failed-replacement.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: smallPdf.sizeBytes,
+        generatedDocumentType: "workorder_final_pdf",
+      });
+      throw new Error("CONTROLLED_FINAL_REPLACEMENT_DB_FAILURE_DID_NOT_FAIL");
+    } catch {
+      if (!(await objectExists(config, previousFinal.key))) throw new Error("PREVIOUS_FINAL_NOT_PRESERVED");
+    }
+    manifest.stages.previousFinalPreservation = "PASS";
+
     const pdf1 = { id: `${manifest.runId}-pdf-a`, key: pdfKey(manifest, `${manifest.runId}-pdf-a`) };
     failureStage = "pdf-upload";
     await workerRequest(config, "PUT", pdf1.key, smallPdf.bytes, "application/pdf");
@@ -452,10 +546,12 @@ async function main() {
       originalName: "valid.pdf",
       mimeType: "application/pdf",
       sizeBytes: smallPdf.sizeBytes,
+      generatedDocumentType: "order_request_pdf",
     });
-    if (!(await objectExists(config, pdf1.key))) throw new Error("PDF_OBJECT_NOT_FOUND_AFTER_UPLOAD");
+    await verifyPdfObject(config, pdf1.key, smallPdf.sizeBytes);
     manifest.stages.pdfUpload = "PASS";
     manifest.stages.viewerLive = "PASS";
+    manifest.stages.orderRequestTypeIsolation = "PASS";
 
     failureStage = "trash";
     await setAttachmentState(client, pdf1.id, "trashed");
@@ -477,6 +573,7 @@ async function main() {
       originalName: "valid-regenerated.pdf",
       mimeType: "application/pdf",
       sizeBytes: smallPdf.sizeBytes,
+      generatedDocumentType: "order_request_pdf",
     });
     await setAttachmentState(client, pdf1.id, "replaced");
     await deleteIfPresent(config, manifest, pdf1.key);
@@ -499,6 +596,7 @@ async function main() {
       originalName: "missing.pdf",
       mimeType: "application/pdf",
       sizeBytes: smallPdf.sizeBytes,
+      generatedDocumentType: "order_request_pdf",
     });
     await deleteIfPresent(config, manifest, missing.key);
     if (await objectExists(config, missing.key)) throw new Error("MISSING_FIXTURE_OBJECT_STILL_EXISTS");
@@ -519,9 +617,10 @@ async function main() {
       await insertPdfMetadata(client, manifest, {
         id: pdf2.id,
         storageKey: dbFailureKey,
-        originalName: "db-failure.pdf",
-        mimeType: "application/pdf",
-        sizeBytes: smallPdf.sizeBytes,
+      originalName: "db-failure.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: smallPdf.sizeBytes,
+      generatedDocumentType: "order_request_pdf",
       });
       throw new Error("CONTROLLED_DB_FAILURE_DID_NOT_FAIL");
     } catch {
@@ -550,6 +649,18 @@ async function main() {
     if (!oversizeRejected) throw new Error("OVERSIZE_PDF_NOT_REJECTED");
 
     failureStage = "reconciliation";
+    const typeCounts = await client.query(
+      `SELECT generated_document_type, count(*)::int AS count
+         FROM attachments
+        WHERE company_id = $1
+        GROUP BY generated_document_type`,
+      [manifest.companyId],
+    );
+    const typeMap = new Map(typeCounts.rows.map((row) => [row.generated_document_type, Number(row.count)]));
+    if (!typeMap.get("workorder_incomplete_pdf") || !typeMap.get("workorder_final_pdf") || !typeMap.get("order_request_pdf")) {
+      throw new Error("DOCUMENT_TYPE_ISOLATION_FAILED");
+    }
+    manifest.stages.documentTypeIsolation = "PASS";
     manifest.reconciliationItems = [
       { key: missing.key },
       { key: orphanKey },
